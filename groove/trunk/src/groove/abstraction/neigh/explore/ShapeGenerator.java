@@ -89,6 +89,8 @@ public final class ShapeGenerator extends CommandLineTool {
     private ExplorationStatistics explorationStats;
     /** Flag that indicates the statistics should be printed. */
     private boolean isPrintStats;
+    /** Flag that indicates if we shoud go to reachability mode. */
+    private boolean isReachability;
     /** Local references to the command line options. */
     private final TemplatedOption<Strategy> strategyOption;
     private final TemplatedOption<Acceptor> acceptorOption;
@@ -122,6 +124,7 @@ public final class ShapeGenerator extends CommandLineTool {
         addOption(new MultiplicityBoundOption(MultKind.EDGE_MULT));
         addOption(new StatsOption());
         addOption(new ThreeMultValOption());
+        addOption(new ReachabilityOption());
     }
 
     // ------------------------------------------------------------------------
@@ -229,7 +232,7 @@ public final class ShapeGenerator extends CommandLineTool {
      */
     public AGTS getGTS() {
         if (gts == null) {
-            gts = new AGTS(getGrammar());
+            gts = new AGTS(getGrammar(), this.isReachability);
         }
         return gts;
     }
@@ -262,6 +265,9 @@ public final class ShapeGenerator extends CommandLineTool {
                 println("\tLIMITING MULTIPLICITIES TO 0, 1 and 0+");
             } else {
                 println();
+            }
+            if (this.isReachability) {
+                println("Reachability mode ON.");
             }
             println("Timestamp:\t" + this.invocationTime);
             print("\nProgress:\n\n");
@@ -342,6 +348,11 @@ public final class ShapeGenerator extends CommandLineTool {
     /** Basic setter method. */
     private void setPrintStats() {
         this.isPrintStats = true;
+    }
+
+    /** Basic setter method. */
+    private void setReachability() {
+        this.isReachability = true;
     }
 
     /** Writes output accordingly to options given to the generator. */
@@ -557,6 +568,41 @@ public final class ShapeGenerator extends CommandLineTool {
         @Override
         public void parse(String parameter) {
             Parameters.setUseThreeValues(true);
+        }
+
+    }
+
+    /**
+     * Command line option to specify that the exploration is based on
+     * reachability only.
+     * 
+     * @author Eduardo Zambon
+     */
+    private class ReachabilityOption implements CommandLineOption {
+
+        @Override
+        public String[] getDescription() {
+            return new String[] {"Reachability exploration, disables model checking afterwards."};
+        }
+
+        @Override
+        public String getParameterName() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return "c";
+        }
+
+        @Override
+        public boolean hasParameter() {
+            return false;
+        }
+
+        @Override
+        public void parse(String parameter) {
+            ShapeGenerator.this.setReachability();
         }
 
     }

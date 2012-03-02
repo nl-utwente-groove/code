@@ -34,6 +34,7 @@ import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -55,16 +56,29 @@ public final class AGTS extends GTS {
     private int subsumedStatesCount;
     /** Number of transitions marked as subsumed. */
     private int subsumedTransitionsCount;
+    /** Flag that indicates if we are only interested in reachability. */
+    private final boolean reachability;
+    /** Set of states to be removed from the GTS. Used only in reachability mode. */
+    private final Collection<ShapeState> toRemove;
+    /** Next state number. */
+    private int nextStateNr;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /** Constructs the GTS object for the given grammar. */
-    public AGTS(GraphGrammar grammar) {
+    public AGTS(GraphGrammar grammar, boolean reachability) {
         super(grammar);
         this.subsumedStatesCount = 0;
         this.subsumedTransitionsCount = 0;
+        this.reachability = reachability;
+        if (this.reachability) {
+            this.toRemove = new MyHashSet<ShapeState>();
+        } else {
+            this.toRemove = null;
+        }
+        this.nextStateNr = 0;
         this.getRecord().setReuseEvents(false);
         this.getRecord().setCheckIso(true);
         this.storeAbsLabels();
@@ -75,6 +89,9 @@ public final class AGTS extends GTS {
         super(agts.getGrammar());
         this.subsumedStatesCount = 0;
         this.subsumedTransitionsCount = 0;
+        this.reachability = agts.reachability;
+        this.toRemove = null;
+        this.nextStateNr = 0;
         this.getRecord().setReuseEvents(false);
         this.getRecord().setCheckIso(false);
         this.getRecord().setCollapse(false);
@@ -95,13 +112,22 @@ public final class AGTS extends GTS {
     public ShapeState addState(GraphState newGState) {
         assert newGState instanceof ShapeState : "Type error : " + newGState
             + " is not of type ShapeState.";
+        if (this.reachability) {
+            this.toRemove.clear();
+        }
         ShapeState newState = (ShapeState) newGState;
         ShapeState result = (ShapeState) super.addState(newState);
         if (result == null) {
             // There is no state in the transition system that subsumes the
             // new state. Maybe the new state subsumes some states that are
             // already in the GTS.
-            this.subsumedStatesCount += newState.markSubsumedStates();
+            this.subsumedStatesCount +=
+                newState.markSubsumedStates(this.toRemove);
+            if (this.reachability) {
+                getStateSet().removeAll(this.toRemove);
+            }
+            // Adjust the counter for the next state number.
+            this.nextStateNr = newState.getNumber() + 1;
         } else if (newState.isSubsumed()) {
             // The state will produce only a transition.
             this.subsumedTransitionsCount++;
@@ -118,7 +144,9 @@ public final class AGTS extends GTS {
         assert (transition instanceof ShapeTransition)
             || (transition instanceof ShapeNextState) : "Type error : "
             + transition + " is not of type ShapeTransition or ShapeNextState.";
-        super.addRuleTransition(transition);
+        if (!this.reachability) {
+            super.addRuleTransition(transition);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -129,7 +157,7 @@ public final class AGTS extends GTS {
 
     @Override
     protected ShapeStateSet createStateSet() {
-        return new ShapeStateSet(getCollapse());
+        return new ShapeStateSet(getCollapse(), isReachability());
     }
 
     /** Throws an UnsupportedOperationException. */
@@ -210,6 +238,16 @@ public final class AGTS extends GTS {
     /** Basic getter method. */
     public int getStateCount() {
         return this.nodeCount();
+    }
+
+    /** Basic inspection method. */
+    public boolean isReachability() {
+        return this.reachability;
+    }
+
+    /** Basic inspection method. */
+    public int getNextStateNr() {
+        return this.nextStateNr;
     }
 
     /**
@@ -335,9 +373,12 @@ public final class AGTS extends GTS {
     /** Class to store the states of the GTS. */
     private static final class ShapeStateSet extends GTS.StateSet {
 
+        private final boolean reachability;
+
         /** Default constructor, delegates to super class. */
-        private ShapeStateSet(int collapse) {
+        ShapeStateSet(int collapse, boolean reachability) {
             super(collapse, ShapeIsoChecker.getInstance(true).downcast());
+            this.reachability = reachability;
         }
 
         /**
@@ -356,11 +397,26 @@ public final class AGTS extends GTS {
             assert otherState instanceof ShapeState;
             ShapeState myShapeState = (ShapeState) myState;
             ShapeState otherShapeState = (ShapeState) otherState;
-            if (otherShapeState.isSubsumed()) {
-                // If the state is subsumed it means we can leave the comparison
-                // to the other subsumptor state...
-                return false;
+
+            if (this.reachability) {
+                if (myShapeState.isSubsumed() || otherShapeState.isSubsumed()) {
+                    // We are in reachability mode and one state already has a
+                    // subsumptor. This means that this method invocation
+                    // is in the context of a state removal from the state set.
+                    // At this point there is no need to check for iso, object
+                    // equality is sufficient.
+                    return myShapeState == otherShapeState;
+                }
+            } else {
+                if (otherShapeState.isSubsumed()) {
+                    // We are not in reachability mode and the other state is
+                    // subsumed. This means we can leave the comparison to the
+                    // the subsumptor state.
+                    return false;
+                }
             }
+
+            // Now let's check for iso...
             ShapeIsoChecker checker = ShapeIsoChecker.getInstance(true);
             int comparison =
                 checker.compareShapes(myShapeState.getGraph(),
@@ -372,6 +428,7 @@ public final class AGTS extends GTS {
                 // Old state subsumes new state.
                 myShapeState.setSubsumptor(otherShapeState);
             }
+
             return checker.areEqual(comparison);
         }
     }

@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.explore.ShapeGenerator;
 import groove.abstraction.neigh.lts.AGTS;
-import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -154,13 +153,11 @@ public class TestShapeGenerator {
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
 
-        if (ShapeIsoChecker.CHECK_SUBSUMPTION) {
-            generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
-            generator.start();
-            AGTS gts = generator.getReducedGTS();
-            assertEquals(152, gts.getStateCount());
-            assertEquals(618, gts.getTransitionCount());
-        }
+        generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
+        generator.start();
+        AGTS gts = generator.getReducedGTS();
+        assertEquals(152, gts.getStateCount());
+        assertEquals(618, gts.getTransitionCount());
     }
 
 }
