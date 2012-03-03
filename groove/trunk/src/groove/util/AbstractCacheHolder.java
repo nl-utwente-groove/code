@@ -27,7 +27,7 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
      * @see #getCache(boolean)
      * @see #hasCache()
      */
-    final public C getCache() {
+    public C getCache() {
         return getCache(true);
     }
 

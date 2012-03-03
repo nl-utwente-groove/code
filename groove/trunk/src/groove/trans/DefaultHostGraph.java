@@ -126,7 +126,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
             factory.addEdge(edge);
             result.addEdge(edge);
         }
-        result.setInfo(GraphInfo.getInfo(this, true).clone());
+        GraphInfo.transfer(this, result, null);
         return result;
     }
 
