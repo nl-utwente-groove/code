@@ -20,6 +20,7 @@ import groove.trans.HostElement;
 import groove.trans.HostFactory;
 import groove.trans.HostNode;
 
+import java.lang.reflect.Array;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Iterator;
@@ -131,16 +132,17 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
     @Override
     @SuppressWarnings({"hiding", "unchecked"})
     public <T> T[] toArray(T[] a) {
-        if (a.length <= this.elemCount) {
-            int i = 0;
-            for (Object obj : this) {
-                a[i] = (T) obj;
-                i++;
-            }
-            return a;
-        } else {
-            return (T[]) this.toArray();
+        if (a.length < this.elemCount) {
+            a =
+                (T[]) Array.newInstance(a.getClass().getComponentType(),
+                    this.elemCount);
         }
+        int i = 0;
+        for (Object obj : this) {
+            a[i] = (T) obj;
+            i++;
+        }
+        return a;
     }
 
     /** Checks the containment for all elements of the given collection. */
