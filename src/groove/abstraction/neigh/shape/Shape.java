@@ -24,7 +24,6 @@ import static groove.graph.EdgeRole.BINARY;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Multiplicity.MultKind;
-import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
@@ -41,7 +40,6 @@ import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
-import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -69,54 +67,19 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon
  */
-public final class Shape extends DefaultHostGraph {
+public final class Shape extends ShapeGraph {
 
     // ------------------------------------------------------------------------
     // Object Fields
     // ------------------------------------------------------------------------
-
-    /**
-     * Equivalence relation over nodes of the shape.
-     */
-    private final EquivRelation<ShapeNode> equivRel;
-    /**
-     * Node multiplicity map.
-     */
-    private final Map<ShapeNode,Multiplicity> nodeMultMap;
-    /**
-     * Outgoing edge multiplicity map.
-     */
-    private final Map<EdgeSignature,Multiplicity> outEdgeMultMap;
-    /**
-     *Incoming edge multiplicity map.
-     */
-    private final Map<EdgeSignature,Multiplicity> inEdgeMultMap;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /** Default constructor. Creates an empty shape. */
-    public Shape(ShapeFactory factory) {
-        super("shape", factory);
-        this.equivRel = new EquivRelation<ShapeNode>();
-        this.nodeMultMap = new MyHashMap<ShapeNode,Multiplicity>();
-        this.outEdgeMultMap = new MyHashMap<EdgeSignature,Multiplicity>();
-        this.inEdgeMultMap = new MyHashMap<EdgeSignature,Multiplicity>();
-    }
-
-    /** Copying constructor. Used in cloning. */
-    private Shape(Shape shape) {
-        super(shape);
-        // Clone the equivalence relation. A deep copy is used.
-        this.equivRel = shape.equivRel.clone();
-        // Clone the multiplicity maps. A shallow copy is sufficient.
-        this.nodeMultMap =
-            ((MyHashMap<ShapeNode,Multiplicity>) shape.nodeMultMap).clone();
-        this.outEdgeMultMap =
-            ((MyHashMap<EdgeSignature,Multiplicity>) shape.outEdgeMultMap).clone();
-        this.inEdgeMultMap =
-            ((MyHashMap<EdgeSignature,Multiplicity>) shape.inEdgeMultMap).clone();
+    public Shape(String name, ShapeFactory factory) {
+        super(name, factory);
     }
 
     // ------------------------------------------------------------------------
@@ -125,7 +88,9 @@ public final class Shape extends DefaultHostGraph {
 
     /** Creates a shape from the given graph. */
     public static Shape createShape(HostGraph graph) {
-        Shape shape = new Shape(ShapeFactory.newInstance(graph.getTypeGraph()));
+        Shape shape =
+            new Shape(graph.getName(),
+                ShapeFactory.newInstance(graph.getTypeGraph()));
         HostToShapeMap map = new HostToShapeMap(shape.getFactory());
         int radius = Parameters.getAbsRadius();
         // Compute the equivalence relation on the given graph.
@@ -164,11 +129,15 @@ public final class Shape extends DefaultHostGraph {
         return GraphRole.SHAPE;
     }
 
+    @Override
+    public Shape newGraph(String name) {
+        return new Shape(name, getFactory());
+    }
+
     /** Deep copy of all shape structures. */
     @Override
     public Shape clone() {
-        Shape shape = new Shape(this);
-        return shape;
+        return (Shape) super.clone();
     }
 
     @Override
@@ -229,7 +198,7 @@ public final class Shape extends DefaultHostGraph {
             sb.append("  " + this.getEdgeMult(e, OUTGOING) + ":" + e + ":"
                 + this.getEdgeMult(e, INCOMING) + "\n");
         }
-        sb.append("Equiv. Relation: " + this.equivRel + "\n");
+        sb.append("Equiv. Relation: " + getEquivRelation() + "\n");
         return sb.toString();
     }
 
@@ -312,7 +281,7 @@ public final class Shape extends DefaultHostGraph {
         EquivClass<ShapeNode> ec = this.getEquivClassOf(nodeS);
         if (ec.isSingleton()) {
             // Remove singleton equivalence class from the relation.
-            this.equivRel.remove(ec);
+            getEquivRelation().remove(ec);
         } else {
             // Remove node from equivalence class.
             // Equivalence classes are fixed, so we have to clone.
@@ -323,7 +292,7 @@ public final class Shape extends DefaultHostGraph {
         }
 
         // Remove entry from node multiplicity map.
-        this.nodeMultMap.remove(nodeS);
+        getNodeMultMap().remove(nodeS);
         // Remove node from graph.
         return super.removeNodeWithoutCheck(node);
     }
@@ -362,14 +331,9 @@ public final class Shape extends DefaultHostGraph {
     }
 
     @Override
-    public ShapeFactory getFactory() {
-        return (ShapeFactory) super.getFactory();
-    }
-
-    @Override
     public void setFixed() {
         super.setFixed();
-        this.equivRel.setFixed();
+        getEquivRelation().setFixed();
     }
 
     // ------------------------------------------------------------------------
@@ -475,18 +439,6 @@ public final class Shape extends DefaultHostGraph {
     }
 
     /**
-     * Clears all non-graph structures of the shape so they can be loaded from
-     * a file. Be very careful with this method, since it destroys all
-     * additional information in the shape apart from the graph structure.
-     */
-    public void clearStructuresForLoading() {
-        this.equivRel.clear();
-        this.nodeMultMap.clear();
-        this.outEdgeMultMap.clear();
-        this.inEdgeMultMap.clear();
-    }
-
-    /**
      * Creates nodes in the shape based on the equivalence relation given.
      * Used when creating a shape from a host graph. 
      */
@@ -561,7 +513,7 @@ public final class Shape extends DefaultHostGraph {
             for (HostNode node : ecG) {
                 ecS.add(map.getNode(node));
             }
-            this.equivRel.add(ecS);
+            getEquivRelation().add(ecS);
         }
     }
 
@@ -683,10 +635,10 @@ public final class Shape extends DefaultHostGraph {
         Map<EdgeSignature,Multiplicity> result = null;
         switch (direction) {
         case OUTGOING:
-            result = this.outEdgeMultMap;
+            result = getOutEdgeMultMap();
             break;
         case INCOMING:
-            result = this.inEdgeMultMap;
+            result = getInEdgeMultMap();
             break;
         default:
             assert false;
@@ -697,11 +649,6 @@ public final class Shape extends DefaultHostGraph {
     /** Basic getter method. */
     public Set<EdgeSignature> getEdgeMultMapKeys(EdgeMultDir direction) {
         return this.getEdgeMultMap(direction).keySet();
-    }
-
-    /** Basic getter method. */
-    public EquivRelation<ShapeNode> getEquivRelation() {
-        return this.equivRel;
     }
 
     /** Basic getter method. */
@@ -797,7 +744,7 @@ public final class Shape extends DefaultHostGraph {
         assert this.containsNode(node) : "Node " + node
             + " is not in the shape!";
         if (!mult.isZero()) {
-            this.nodeMultMap.put(node, mult);
+            getNodeMultMap().put(node, mult);
         } else {
             // Setting a node multiplicity to zero is equivalent to removing
             // the node from the shape.
@@ -821,7 +768,7 @@ public final class Shape extends DefaultHostGraph {
         assert !this.isFixed();
         assert mult.isEdgeKind();
         assert this.containsNode(es.getNode());
-        assert this.equivRel.contains(es.getEquivClass());
+        assert getEquivRelation().contains(es.getEquivClass());
         this.setEdgeSigMultWithoutCheck(es, mult);
     }
 
@@ -845,7 +792,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** Basic getter method. */
     public Multiplicity getNodeMult(ShapeNode node) {
-        Multiplicity mult = this.nodeMultMap.get(node);
+        Multiplicity mult = getNodeMultMap().get(node);
         if (mult == null) {
             mult = Multiplicity.getMultiplicity(0, 0, NODE_MULT);
         }
@@ -901,7 +848,7 @@ public final class Shape extends DefaultHostGraph {
     public EquivClass<ShapeNode> getEquivClassOf(ShapeNode node) {
         assert this.nodeSet().contains(node) : "Node " + node
             + " is not in the shape!";
-        return this.equivRel.getEquivClassOf(node);
+        return getEquivRelation().getEquivClassOf(node);
     }
 
     /** Creates a new equivalence class and adds the given node to it. */
@@ -909,7 +856,7 @@ public final class Shape extends DefaultHostGraph {
         assert !this.isFixed();
         EquivClass<ShapeNode> newEc = newNodeEquivClass();
         newEc.add(node);
-        this.equivRel.add(newEc);
+        getEquivRelation().add(newEc);
         return newEc;
     }
 
@@ -1141,7 +1088,7 @@ public final class Shape extends DefaultHostGraph {
         // split.
         this.replaceEc(origEc, remEc);
         // Update the equivalence relation.
-        this.equivRel.add(singEc);
+        getEquivRelation().add(singEc);
     }
 
     /**
@@ -1284,8 +1231,8 @@ public final class Shape extends DefaultHostGraph {
     private void replaceEc(EquivClass<ShapeNode> oldEc,
             EquivClass<ShapeNode> newEc) {
         // Update the equivalence relation.
-        this.equivRel.remove(oldEc);
-        this.equivRel.add(newEc);
+        getEquivRelation().remove(oldEc);
+        getEquivRelation().add(newEc);
         // Update all maps that use edge signatures that contained the old
         // equivalence class.
         for (EdgeSignature oldEs : this.getEdgeSignatures(oldEc)) {
@@ -1343,7 +1290,7 @@ public final class Shape extends DefaultHostGraph {
 
     /** Normalises the shape object and returns the newly modified shape. */
     public Shape normalise() {
-        Shape newShape = new Shape(this.getFactory());
+        Shape newShape = newGraph(getName());
         HostToShapeMap map = new HostToShapeMap(this.getFactory());
         int radius = Parameters.getAbsRadius();
         // Compute the equivalence relation on this shape.
@@ -1409,7 +1356,7 @@ public final class Shape extends DefaultHostGraph {
             for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
                 // Make sure that the equivalence class of the edge signature
                 // is in the equivalence relation.
-                if (!this.equivRel.contains(es.getEquivClass())) {
+                if (!getEquivRelation().contains(es.getEquivClass())) {
                     return false;
                 }
                 // Make sure the edge signature has corresponding edges.
