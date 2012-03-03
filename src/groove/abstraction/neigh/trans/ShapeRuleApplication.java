@@ -65,9 +65,6 @@ public final class ShapeRuleApplication extends RuleApplication {
     protected HostGraph computeTarget() {
         HostGraph target = this.createTarget();
         this.applyDelta(target);
-        // EZ says: don't fix the target here, otherwise we can't show it
-        // in a dialog.
-        // target.setFixed();
         return target;
     }
 

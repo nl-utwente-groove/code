@@ -84,10 +84,11 @@ public class ShapeState extends AbstractGraphState {
             CtrlState ctrlState, int number) {
         super(reference, number);
         this.shape = shape;
-        this.shape.setName(toString());
-        // Fix the shape to avoid modifications.
-        // EDUARDO: restore this after debugging is done.
-        // this.shape.setFixed();
+        if (!this.shape.isFixed()) {
+            this.shape.setName(toString());
+            // Fix the shape to avoid modifications.
+            this.shape.setFixed();
+        }
         this.transitions = new ArrayList<RuleTransition>();
         this.subsumedStates = new ArrayList<ShapeState>();
         setCtrlState(ctrlState);
