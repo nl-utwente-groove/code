@@ -76,6 +76,11 @@ public final class ShapeFactory extends HostFactory {
     }
 
     @Override
+    public ShapeNode getNode(int nr) {
+        return (ShapeNode) super.getNode(nr);
+    }
+
+    @Override
     protected ShapeEdge newEdge(HostNode source, TypeEdge type,
             HostNode target, int nr) {
         return new ShapeEdge(this, (ShapeNode) source, type,
