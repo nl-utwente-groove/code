@@ -49,7 +49,6 @@ import groove.util.Duo;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -630,22 +629,6 @@ public final class Shape extends ShapeGraph {
         }
     }
 
-    /** Returns the proper multiplicity map accordingly to the given direction. */
-    private Map<EdgeSignature,Multiplicity> getEdgeMultMap(EdgeMultDir direction) {
-        Map<EdgeSignature,Multiplicity> result = null;
-        switch (direction) {
-        case OUTGOING:
-            result = getOutEdgeMultMap();
-            break;
-        case INCOMING:
-            result = getInEdgeMultMap();
-            break;
-        default:
-            assert false;
-        }
-        return result;
-    }
-
     /** Basic getter method. */
     public Set<EdgeSignature> getEdgeMultMapKeys(EdgeMultDir direction) {
         return this.getEdgeMultMap(direction).keySet();
@@ -692,10 +675,10 @@ public final class Shape extends ShapeGraph {
             }
         }
         if (result == null) {
-            ShapeNode node = edge.incident(direction);
+            ShapeNode node = direction.incident(edge);
             TypeLabel label = edge.label();
             EquivClass<ShapeNode> ec =
-                this.getEquivClassOf(edge.opposite(direction));
+                this.getEquivClassOf(direction.opposite(edge));
             result = new EdgeSignature(direction, node, label, ec);
         }
         return result;
@@ -1308,7 +1291,7 @@ public final class Shape extends ShapeGraph {
                 for (EdgeMultDir direction : EdgeMultDir.values()) {
                     for (ShapeEdge edge : newShape.binaryEdgeSet(node,
                         direction)) {
-                        ShapeNode opp = edge.opposite(direction);
+                        ShapeNode opp = direction.opposite(edge);
                         Multiplicity oppMult = newShape.getNodeMult(opp);
                         if (oppMult.isOne() && newShape.isEdgeConcrete(edge)) {
                             // The node can only be concrete.

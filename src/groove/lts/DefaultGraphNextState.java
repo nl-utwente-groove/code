@@ -119,8 +119,9 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     /**
      * This implementation returns the rule name.
      */
-    public RuleLabel label() {
-        return new RuleLabel(this.source, getEvent(), this.addedNodes);
+    public TransitionLabel label() {
+        return TransitionLabel.createLabel(source(), getEvent(),
+            this.addedNodes);
     }
 
     @Override

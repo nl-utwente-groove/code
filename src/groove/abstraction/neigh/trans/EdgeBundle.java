@@ -257,7 +257,7 @@ public final class EdgeBundle {
      * bundle.
      */
     void addEdge(Shape shape, ShapeEdge edge) {
-        assert this.node.equals(edge.incident(this.direction));
+        assert this.node.equals(this.direction.incident(edge));
         assert this.label.equals(edge.label());
         if (this.allEdges.contains(edge)) {
             return;
@@ -298,7 +298,7 @@ public final class EdgeBundle {
     /** Returns true if the given edge is in the set of possible edges. */
     boolean isFixed(ShapeEdge edge, EdgeMultDir direction, Shape shape) {
         boolean result = false;
-        ShapeNode opposite = edge.opposite(direction);
+        ShapeNode opposite = direction.opposite(edge);
         if (shape.getNodeMult(opposite).isOne()
             && this.possibleEdges.contains(edge)) {
             result = true;

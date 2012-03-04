@@ -50,6 +50,10 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
      */
     private Map<EdgeSignature,Multiplicity> multMap;
 
+    /** Constant for the zero edge multiplicity. */
+    private static final Multiplicity ZERO_EDGE_MULT =
+        Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
+
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -72,9 +76,6 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
         // equivalence relation to their super set.
         Map<EquivClass<ShapeNode>,EquivClass<HostNode>> reverseKMap =
             new MyHashMap<EquivClass<ShapeNode>,EquivClass<HostNode>>();
-        Multiplicity zero =
-            Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
-
         kLoop: for (EquivClass<ShapeNode> k : shape.getEquivRelation()) {
             for (EquivClass<HostNode> ec : this) {
                 if (ec.containsAll(k)) {
@@ -91,7 +92,7 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
                         reverseKMap.get(esS.getEquivClass()));
                 Multiplicity accMult = this.multMap.get(es);
                 if (accMult == null) {
-                    accMult = zero;
+                    accMult = ZERO_EDGE_MULT;
                 }
                 Multiplicity mult = shape.getEdgeSigMult(esS);
                 accMult = accMult.add(mult);
@@ -116,15 +117,18 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
                     this.getMultSum(OUTGOING, (ShapeNode) n0, label, ec);
                 Multiplicity n1OutMultSum =
                     this.getMultSum(OUTGOING, (ShapeNode) n1, label, ec);
+                // Compare the sums.
+                if (!n0OutMultSum.equals(n1OutMultSum)) {
+                    equiv = false;
+                    break labelLoop;
+                }
                 Multiplicity n0InMultSum =
                     this.getMultSum(INCOMING, (ShapeNode) n0, label, ec);
                 Multiplicity n1InMultSum =
                     this.getMultSum(INCOMING, (ShapeNode) n1, label, ec);
                 // Compare the sums.
-                equiv =
-                    equiv && n0OutMultSum.equals(n1OutMultSum)
-                        && n0InMultSum.equals(n1InMultSum);
-                if (!equiv) {
+                if (!n0InMultSum.equals(n1InMultSum)) {
+                    equiv = false;
                     break labelLoop;
                 }
             }
@@ -144,9 +148,6 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
             TypeLabel label, EquivClass<? extends HostNode> ec) {
         EdgeSignature es = new EdgeSignature(direction, node, label, ec);
         Multiplicity result = this.multMap.get(es);
-        if (result == null) {
-            result = Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
-        }
-        return result;
+        return result == null ? ZERO_EDGE_MULT : result;
     }
 }

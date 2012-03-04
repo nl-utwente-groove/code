@@ -44,15 +44,17 @@ import java.util.Collections;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
-public class DefaultRuleTransition extends AbstractEdge<GraphState,RuleLabel>
-        implements RuleTransitionStub, RuleTransition {
+public class DefaultRuleTransition extends
+        AbstractEdge<GraphState,TransitionLabel> implements RuleTransitionStub,
+        RuleTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between
      * a given source and target state.
      */
     public DefaultRuleTransition(GraphState source, RuleEvent event,
             HostNode[] addedNodes, GraphState target, boolean symmetry) {
-        super(source, new RuleLabel(source, event, addedNodes), target);
+        super(source, TransitionLabel.createLabel(source, event, addedNodes),
+            target);
         this.event = event;
         this.addedNodes = addedNodes;
         this.symmetry = symmetry;

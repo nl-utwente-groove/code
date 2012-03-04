@@ -896,7 +896,7 @@ public final class EquationSystem {
                             // proper equation for this case. Abort.
                             break edgeLoop;
                         }
-                        ShapeNode opposite = edge.opposite(direction);
+                        ShapeNode opposite = direction.opposite(edge);
                         Duo<BoundVar> vars = this.nodeVarsMap.get(opposite);
                         if (vars == null) {
                             // The opposite node has no variable, so its

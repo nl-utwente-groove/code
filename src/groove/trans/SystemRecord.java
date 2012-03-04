@@ -2,10 +2,13 @@
 package groove.trans;
 
 import groove.lts.GTS;
+import groove.lts.TransitionLabel;
 import groove.util.TreeHashSet;
 
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -109,6 +112,17 @@ public class SystemRecord {
             isReuseEvents()));
     }
 
+    /** 
+     * Normalises a given transition label.
+     */
+    public TransitionLabel normaliseLabel(TransitionLabel prototype) {
+        TransitionLabel result = this.labelMap.get(prototype);
+        if (result == null) {
+            this.labelMap.put(result = prototype, prototype);
+        }
+        return result;
+    }
+
     /**
      * Returns the set of rules that may be enabled by a given rule, according
      * to the currently calculated dependencies.
@@ -167,6 +181,9 @@ public class SystemRecord {
                 return key.eventHashCode();
             }
         };
+    /** Identity map of normal transition labels. */
+    private final Map<TransitionLabel,TransitionLabel> labelMap =
+        new HashMap<TransitionLabel,TransitionLabel>();
 
     /**
      * Sets the policy of the GTS in determining state equivalence. This is only

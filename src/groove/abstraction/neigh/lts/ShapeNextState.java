@@ -21,7 +21,7 @@ import groove.control.CtrlTransition;
 import groove.graph.EdgeRole;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.RuleLabel;
+import groove.lts.TransitionLabel;
 import groove.lts.RuleTransition;
 import groove.lts.RuleTransitionStub;
 import groove.trans.Action;
@@ -80,7 +80,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public RuleLabel label() {
+    public TransitionLabel label() {
         return this.transition.label();
     }
 

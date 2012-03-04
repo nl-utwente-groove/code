@@ -38,7 +38,7 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition,
     GraphState target();
 
     /** Overrides the method to specialise the result type. */
-    RuleLabel label();
+    TransitionLabel label();
 
     /** Callback method to construct a rule application from this
      * graph transition.
