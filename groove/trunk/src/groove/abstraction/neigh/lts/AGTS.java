@@ -79,7 +79,7 @@ public final class AGTS extends GTS {
             this.toRemove = null;
         }
         this.nextStateNr = 0;
-        this.getRecord().setReuseEvents(false);
+        this.getRecord().setReuseEvents(true);
         this.getRecord().setCheckIso(true);
         this.storeAbsLabels();
     }

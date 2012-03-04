@@ -16,6 +16,8 @@
  */
 package groove.abstraction.neigh;
 
+import groove.abstraction.neigh.shape.ShapeEdge;
+import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Edge;
 import groove.graph.Node;
 
@@ -35,17 +37,19 @@ public final class Multiplicity {
 
     /** The \omega value, differs from all natural numbers. */
     public static final int OMEGA = Integer.MAX_VALUE;
-    /** Node multiplicity store. */
-    private static Multiplicity NODE_MULT_STORE[];
-    /** Edge multiplicity store. */
-    private static Multiplicity EDGE_MULT_STORE[];
-    /** Equation system multiplicity store. */
-    private static Multiplicity EQSYS_MULT_STORE[];
+    /** Multiplicity store per multiplicity kind. */
+    private static Multiplicity[][] GLOBAL_MULT_STORE =
+        new Multiplicity[MultKind.values().length][];
+    /** Array holding the multiplicities per kind in a matrix indexed by lower bound and (non-{@link #OMEGA}) upper bound. */
+    private static Multiplicity[][][] INDEXED_MULT_STORE =
+        new Multiplicity[MultKind.values().length][][];
+    /** Array holding the {@link #OMEGA}-multiplicities per kind in a indexed by lower bound. */
+    private static Multiplicity[][] OMEGA_MULT_STORE =
+        new Multiplicity[MultKind.values().length][];
 
     // ------------------------------------------------------------------------
     // Object Fields
     // ------------------------------------------------------------------------
-
     /** Multiplicity lower bound. */
     private final int i;
     /** Multiplicity upper bound. */
@@ -101,42 +105,6 @@ public final class Multiplicity {
         return bound;
     }
 
-    /** Returns the proper store for the given multiplicity kind. */
-    private static Multiplicity[] getStore(MultKind kind) {
-        Multiplicity store[] = null;
-        switch (kind) {
-        case NODE_MULT:
-            store = NODE_MULT_STORE;
-            break;
-        case EDGE_MULT:
-            store = EDGE_MULT_STORE;
-            break;
-        case EQSYS_MULT:
-            store = EQSYS_MULT_STORE;
-            break;
-        default:
-            assert false;
-        }
-        return store;
-    }
-
-    /** Sets the proper store for the given multiplicity kind. */
-    private static void setStore(Multiplicity store[], MultKind kind) {
-        switch (kind) {
-        case NODE_MULT:
-            NODE_MULT_STORE = store;
-            break;
-        case EDGE_MULT:
-            EDGE_MULT_STORE = store;
-            break;
-        case EQSYS_MULT:
-            EQSYS_MULT_STORE = store;
-            break;
-        default:
-            assert false;
-        }
-    }
-
     /** Returns true if the given number is in \Nat^\omega. */
     private static boolean isInNOmega(int i) {
         return i >= 0;
@@ -164,26 +132,33 @@ public final class Multiplicity {
         for (MultKind kind : MultKind.values()) {
             // Get the maximum bound and create the store array.
             int b = getBound(kind);
-            Multiplicity store[] = getStore(kind);
-            store = new Multiplicity[getCardinality(b)];
+            int cardinality = getCardinality(b);
+            Multiplicity[] globalStore = new Multiplicity[cardinality];
+            Multiplicity[][] indexedStore = new Multiplicity[b + 2][b + 1];
+            Multiplicity[] omegaStore = new Multiplicity[b + 2];
 
             // Create all the multiplicity objects.
             byte index = 0;
             for (int i = 0; i <= b + 1; i++) {
                 for (int j = i; j <= b; j++) {
-                    store[index] = new Multiplicity(i, j, kind, index);
+                    Multiplicity mult = new Multiplicity(i, j, kind, index);
+                    globalStore[index] = indexedStore[i][j] = mult;
                     index++;
                     assert index != 0 : "Too many multiplicity values";
                 }
                 // Special case for j = \omega.
-                store[index] = new Multiplicity(i, OMEGA, kind, index);
+                Multiplicity mult = new Multiplicity(i, OMEGA, kind, index);
+                globalStore[index] = omegaStore[i] = mult;
                 index++;
                 assert index != 0 : "Too many multiplicity values";
             }
 
             // Make sure the store is completely filled.
             assert index == getCardinality(b);
-            setStore(store, kind);
+            int kindIx = kind.ordinal();
+            GLOBAL_MULT_STORE[kindIx] = globalStore;
+            INDEXED_MULT_STORE[kindIx] = indexedStore;
+            OMEGA_MULT_STORE[kindIx] = omegaStore;
         }
     }
 
@@ -192,13 +167,12 @@ public final class Multiplicity {
      * lower and upper bounds.
      */
     public static Multiplicity getMultiplicity(int i, int j, MultKind kind) {
-        Multiplicity store[] = getStore(kind);
-        Multiplicity result = null;
-        for (int index = 0; index < store.length; index++) {
-            if (store[index].i == i && store[index].j == j) {
-                result = store[index];
-                break;
-            }
+        Multiplicity result;
+        int kindIx = kind.ordinal();
+        if (j == OMEGA) {
+            result = OMEGA_MULT_STORE[kindIx][i];
+        } else {
+            result = INDEXED_MULT_STORE[kindIx][i][j];
         }
         assert result != null;
         return result;
@@ -209,8 +183,7 @@ public final class Multiplicity {
      * index.
      */
     public static Multiplicity getMultiplicity(int index, MultKind kind) {
-        Multiplicity store[] = getStore(kind);
-        return store[index];
+        return GLOBAL_MULT_STORE[kind.ordinal()][index];
     }
 
     /**
@@ -316,19 +289,10 @@ public final class Multiplicity {
     // Overridden methods
     // ------------------------------------------------------------------------
 
-    /** Two multiplicities are equal if they have the kind and store index. */
+    /** Equality of multiplicities comes doen to object equality. */
     @Override
     public boolean equals(Object o) {
-        boolean result;
-        if (!(o instanceof Multiplicity)) {
-            result = false;
-        } else {
-            Multiplicity other = (Multiplicity) o;
-            result = (this.kind == other.kind && this.index == other.index);
-        }
-        // Check for consistency between equals and hashCode.
-        assert (!result || this.hashCode() == o.hashCode());
-        return result;
+        return this == o;
     }
 
     @Override
@@ -491,25 +455,54 @@ public final class Multiplicity {
     /** Enumeration of edge multiplicity directions. */
     public enum EdgeMultDir {
         /** Outgoing edge multiplicity. */
-        OUTGOING,
+        OUTGOING {
+            @Override
+            public EdgeMultDir reverse() {
+                return INCOMING;
+            }
+
+            @Override
+            public ShapeNode incident(ShapeEdge edge) {
+                return edge.source();
+            }
+
+            @Override
+            public ShapeNode opposite(ShapeEdge edge) {
+                return edge.target();
+            }
+        },
         /** Incoming edge multiplicity. */
-        INCOMING;
+        INCOMING {
+            @Override
+            public EdgeMultDir reverse() {
+                return OUTGOING;
+            }
+
+            @Override
+            public ShapeNode incident(ShapeEdge edge) {
+                return edge.target();
+            }
+
+            @Override
+            public ShapeNode opposite(ShapeEdge edge) {
+                return edge.source();
+            }
+        };
 
         /** Returns the reverse direction. */
-        public EdgeMultDir reverse() {
-            EdgeMultDir result = null;
-            switch (this) {
-            case OUTGOING:
-                result = INCOMING;
-                break;
-            case INCOMING:
-                result = OUTGOING;
-                break;
-            default:
-                assert false;
-            }
-            return result;
-        }
+        abstract public EdgeMultDir reverse();
+
+        /**
+         * Returns the incident end of an edge according to this direction.
+         * @return the edge target if this is {@link #INCOMING}, the source if this is {@link #OUTGOING}
+         */
+        abstract public ShapeNode incident(ShapeEdge edge);
+
+        /**
+         * Returns the opposite end of an edge according to this direction.
+         * @return the edge source if this is {@link #INCOMING}, the target if this is {@link #OUTGOING}
+         */
+        abstract public ShapeNode opposite(ShapeEdge edge);
     }
 
 }

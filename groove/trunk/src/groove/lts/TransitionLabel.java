@@ -22,14 +22,16 @@ import groove.trans.HostNode;
 import groove.trans.Recipe;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
+import groove.trans.SystemRecord;
 
 /** Class of labels that can appear on rule transitions. */
-public class RuleLabel extends AbstractLabel implements ActionLabel {
+public class TransitionLabel extends AbstractLabel implements ActionLabel {
     /** 
      * Constructs a new label on the basis of a given rule event and list
      * of created nodes.
      */
-    public RuleLabel(GraphState source, RuleEvent event, HostNode[] addedNodes) {
+    private TransitionLabel(GraphState source, RuleEvent event,
+            HostNode[] addedNodes) {
         this.event = event;
         this.recipe =
             source.getCtrlState().getTransition(event.getRule()).getRecipe();
@@ -90,8 +92,24 @@ public class RuleLabel extends AbstractLabel implements ActionLabel {
         return result.toString();
     }
 
+    /** 
+     * Creates a normalised rule label.
+     * @see SystemRecord#normaliseLabel(TransitionLabel)
+     */
+    public static final TransitionLabel createLabel(GraphState source,
+            RuleEvent event, HostNode[] addedNodes) {
+        TransitionLabel result = new TransitionLabel(source, event, addedNodes);
+        if (REUSE_LABELS) {
+            SystemRecord record = source.getGTS().getRecord();
+            result = record.normaliseLabel(result);
+        }
+        return result;
+    }
+
     /** The obligatory first character of a rule name. */
     private static final char BEGIN_CHAR = '<';
     /** The obligatory last character of a rule name. */
     private static final char END_CHAR = '>';
+    /** Flag controlling whether transition labels are normalised. */
+    private static final boolean REUSE_LABELS = true;
 }

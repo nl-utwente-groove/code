@@ -59,7 +59,6 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
         HostGraph {
     /**
      * Constructs an empty host graph.
-     * @param name name of the new host graph.
      */
     public ShapeGraph(String name) {
         this(name, ShapeFactory.newInstance());
@@ -67,10 +66,9 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
 
     /**
      * Constructs an empty host graph, with a given host factory.
-     * @param name name of the new host graph
      */
     public ShapeGraph(String name, ShapeFactory factory) {
-        super(name);
+        super(COMPACT ? "shape graph" : name);
         assert factory != null;
         this.factory = factory;
     }
@@ -183,7 +181,7 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
 
     @Override
     public ShapeGraph newGraph(String name) {
-        return new ShapeGraph(getName(), getFactory());
+        return new ShapeGraph(name, getFactory());
     }
 
     @Override
@@ -270,8 +268,9 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
     public void clearStructuresForLoading() {
         getEquivRelation().clear();
         getNodeMultMap().clear();
-        getOutEdgeMultMap().clear();
-        getInEdgeMultMap().clear();
+        for (EdgeMultDir dir : EdgeMultDir.values()) {
+            getEdgeMultMap(dir).clear();
+        }
     }
 
     /** Retrieves the node set from the cache. */
@@ -295,13 +294,8 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
     }
 
     /** Retrieves the edge set from the cache. */
-    public Map<EdgeSignature,Multiplicity> getInEdgeMultMap() {
-        return getCache().getInEdgeMultMap();
-    }
-
-    /** Retrieves the edge set from the cache. */
-    public Map<EdgeSignature,Multiplicity> getOutEdgeMultMap() {
-        return getCache().getOutEdgeMultMap();
+    public Map<EdgeSignature,Multiplicity> getEdgeMultMap(EdgeMultDir dir) {
+        return getCache().getEdgeMultMap(dir);
     }
 
     /** Flattened set of nodes, filled when the shape is fixed. */
@@ -319,6 +313,9 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
 
     /** The element factory of this host graph. */
     private final ShapeFactory factory;
+
+    /** Flag controlling if a memory-optimal implementation should be preferred. */
+    private final static boolean COMPACT = true;
 
     /** Data structure holding the essentials of a single edge signature multiplicity. */
     static class EdgeRecord {

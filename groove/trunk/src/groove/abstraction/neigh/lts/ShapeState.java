@@ -85,7 +85,8 @@ public class ShapeState extends AbstractGraphState {
         super(reference, number);
         this.shape = shape;
         if (!this.shape.isFixed()) {
-            this.shape.setName(toString());
+            // AR: commented out to save memory
+            //            this.shape.setName(toString());
             // Fix the shape to avoid modifications.
             this.shape.setFixed();
         }

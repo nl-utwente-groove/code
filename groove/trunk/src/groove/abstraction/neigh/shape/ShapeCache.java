@@ -16,6 +16,8 @@
  */
 package groove.abstraction.neigh.shape;
 
+import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
+import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Multiplicity.MultKind;
@@ -30,6 +32,7 @@ import groove.trans.HostElement;
 import groove.trans.HostNode;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -63,11 +66,11 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
         if (other.nodeMultMap != null) {
             this.nodeMultMap = other.nodeMultMap.clone();
         }
-        if (other.outEdgeMultMap != null) {
-            this.outEdgeMultMap = other.outEdgeMultMap.clone();
-        }
-        if (other.inEdgeMultMap != null) {
-            this.inEdgeMultMap = other.inEdgeMultMap.clone();
+        if (other.edgeMultMaps != null) {
+            this.edgeMultMaps = createEdgeMultMaps();
+            for (EdgeMultDir dir : EdgeMultDir.values()) {
+                this.edgeMultMaps.put(dir, other.edgeMultMaps.get(dir).clone());
+            }
         }
     }
 
@@ -147,22 +150,20 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
         return this.nodeMultMap;
     }
 
-    /** Lazily creates and returns the outgoing edge multiplicity map of the underlying shape. */
-    MyHashMap<EdgeSignature,Multiplicity> getOutEdgeMultMap() {
-        if (this.outEdgeMultMap == null) {
-            this.outEdgeMultMap =
-                computeMultMap(EdgeMultDir.OUTGOING, getGraph().outEdgeMult);
+    /** Lazily creates and returns the edge multiplicity map of the underlying shape
+     * in a given direction.
+     */
+    MyHashMap<EdgeSignature,Multiplicity> getEdgeMultMap(EdgeMultDir dir) {
+        if (this.edgeMultMaps == null) {
+            this.edgeMultMaps = createEdgeMultMaps();
+            for (EdgeMultDir any : EdgeMultDir.values()) {
+                this.edgeMultMaps.put(
+                    any,
+                    computeMultMap(any, any == EdgeMultDir.INCOMING
+                            ? getGraph().inEdgeMult : getGraph().outEdgeMult));
+            }
         }
-        return this.outEdgeMultMap;
-    }
-
-    /** Lazily creates and returns the incoming edge multiplicity map of the underlying shape. */
-    MyHashMap<EdgeSignature,Multiplicity> getInEdgeMultMap() {
-        if (this.inEdgeMultMap == null) {
-            this.inEdgeMultMap =
-                computeMultMap(EdgeMultDir.INCOMING, getGraph().inEdgeMult);
-        }
-        return this.inEdgeMultMap;
+        return this.edgeMultMaps.get(dir);
     }
 
     private MyHashMap<EdgeSignature,Multiplicity> computeMultMap(
@@ -178,6 +179,11 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
         return result;
     }
 
+    private Map<EdgeMultDir,MyHashMap<EdgeSignature,Multiplicity>> createEdgeMultMaps() {
+        return new EnumMap<Multiplicity.EdgeMultDir,MyHashMap<EdgeSignature,Multiplicity>>(
+            EdgeMultDir.class);
+    }
+
     /** Transfers the data structures in flattened form to the underlying shape. */
     void flatten() {
         assert getGraph().nodes == null;
@@ -185,8 +191,8 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
         getGraph().edges = getEdgeSet().toArray(new ShapeEdge[0]);
         getGraph().nodeEquiv = flattenEquivRel();
         getGraph().nodeMult = flattenNodeMultMap();
-        getGraph().inEdgeMult = flattenEdgeMultMap(getInEdgeMultMap());
-        getGraph().outEdgeMult = flattenEdgeMultMap(getOutEdgeMultMap());
+        getGraph().inEdgeMult = flattenEdgeMultMap(getEdgeMultMap(INCOMING));
+        getGraph().outEdgeMult = flattenEdgeMultMap(getEdgeMultMap(OUTGOING));
     }
 
     /** Computes the flattened representation of an edge multiplicity map. */
@@ -243,11 +249,7 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
     /**
      * Outgoing edge multiplicity map.
      */
-    private MyHashMap<EdgeSignature,Multiplicity> outEdgeMultMap;
-    /**
-     *Incoming edge multiplicity map.
-     */
-    private MyHashMap<EdgeSignature,Multiplicity> inEdgeMultMap;
+    private Map<EdgeMultDir,MyHashMap<EdgeSignature,Multiplicity>> edgeMultMaps;
 
     /**
      * Extension of <tt>Set</tt> that invokes the notify methods of the graph

@@ -404,7 +404,7 @@ public final class Materialisation {
      * This bundle is stored in the materialisation structures.
      */
     private EdgeBundle createBundle(ShapeEdge edge, EdgeMultDir direction) {
-        ShapeNode node = edge.incident(direction);
+        ShapeNode node = direction.incident(edge);
         EdgeSignature origEs = this.getOrigEs(edge, direction);
         return this.createBundle(node, origEs);
     }
@@ -791,7 +791,7 @@ public final class Materialisation {
                 // Look for all edges connected to the original node in the
                 // original shape.     
                 for (ShapeEdge origEdge : to.binaryEdgeSet(origNode, direction)) {
-                    ShapeNode origOppNode = origEdge.opposite(direction);
+                    ShapeNode origOppNode = direction.opposite(origEdge);
                     for (ShapeNode oppNode : morph.getPreImages(origOppNode)) {
                         ShapeEdge possibleEdge =
                             from.createEdge(node, oppNode, origEdge.label(),
@@ -1026,7 +1026,7 @@ public final class Materialisation {
         assert this.stage == 2;
         TypeLabel label = origEdge.label();
         ShapeNode incident = newNode;
-        ShapeNode opposite = origEdge.opposite(direction);
+        ShapeNode opposite = direction.opposite(origEdge);
         ShapeEdge newEdge =
             this.shape.createEdge(incident, opposite, label, direction);
         result.add(newEdge);
