@@ -19,7 +19,11 @@ package groove.abstraction.neigh.shape;
 import static groove.graph.GraphRole.HOST;
 import static groove.graph.GraphRole.SHAPE;
 import groove.abstraction.neigh.Multiplicity;
+import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.Multiplicity.MultKind;
+import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
+import groove.abstraction.neigh.equiv.NodeEquivClass;
 import groove.algebra.Algebra;
 import groove.graph.AbstractGraph;
 import groove.graph.Edge;
@@ -305,9 +309,9 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
     /** Flattened set of edges, filled when the shape is fixed. */
     ShapeEdge[] edges;
     /** Flattened node equivalence relation, filled when the shape is fixed. */
-    int[] nodeEquiv;
+    byte[] nodeEquiv;
     /** Flattened node multiplicity map, filled when the shape is fixed. */
-    Multiplicity[] nodeMult;
+    byte[] nodeMult;
     /** Flattened incoming edge multiplicity map, filled when the shape is fixed. */
     EdgeRecord[] inEdgeMult;
     /** Flattened outgoing edge multiplicity map, filled when the shape is fixed. */
@@ -318,32 +322,36 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
 
     /** Data structure holding the essentials of a single edge signature multiplicity. */
     static class EdgeRecord {
-        public EdgeRecord(EdgeSignature sig, Multiplicity mult) {
-            this.source = sig.getNode();
+        public EdgeRecord(EdgeSignature sig, Multiplicity mult,
+                ShapeFactory factory) {
+            this.source = sig.getNode().getNumber();
             this.label = sig.getLabel();
-            this.targets = sig.getEquivClass().toArray(new ShapeNode[0]);
-            this.mult = mult;
+            this.targets = new boolean[factory.getMaxNodeNr() + 1];
+            for (ShapeNode node : sig.getEquivClass()) {
+                this.targets[node.getNumber()] = true;
+            }
+            this.multIndex = mult.getIndex();
         }
 
-        public ShapeNode getSource() {
-            return this.source;
-        }
-
-        public TypeLabel getLabel() {
-            return this.label;
-        }
-
-        public ShapeNode[] getTargets() {
-            return this.targets;
+        public EdgeSignature getSig(EdgeMultDir dir, ShapeFactory factory) {
+            EquivClass<ShapeNode> cell = new NodeEquivClass<ShapeNode>(factory);
+            for (int i = 0; i < this.targets.length; i++) {
+                if (this.targets[i]) {
+                    cell.add(factory.getNode(i));
+                }
+            }
+            return new EdgeSignature(dir, factory.getNode(this.source),
+                this.label, cell);
         }
 
         public Multiplicity getMult() {
-            return this.mult;
+            return Multiplicity.getMultiplicity(this.multIndex,
+                MultKind.EDGE_MULT);
         }
 
-        final ShapeNode source;
+        final int source;
         final TypeLabel label;
-        final ShapeNode[] targets;
-        final Multiplicity mult;
+        final boolean[] targets;
+        final byte multIndex;
     }
 }

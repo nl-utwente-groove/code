@@ -18,6 +18,7 @@ package groove.abstraction.neigh.shape;
 
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
@@ -29,7 +30,6 @@ import groove.trans.HostElement;
 import groove.trans.HostNode;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -68,6 +68,11 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
         return (ShapeGraph) super.getGraph();
     }
 
+    /** Convenience method to retrieve the shape factory of the graph. */
+    private ShapeFactory getFactory() {
+        return getGraph().getFactory();
+    }
+
     /** Lazily creates and returns the node set of the underlying shape. */
     Set<ShapeNode> getNodeSet() {
         if (this.nodeSet == null) {
@@ -100,15 +105,14 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
     EquivRelation<ShapeNode> getEquivRel() {
         if (this.equivRel == null) {
             this.equivRel = new EquivRelation<ShapeNode>();
-            int[] nodeEquiv = getGraph().nodeEquiv;
+            byte[] nodeEquiv = getGraph().nodeEquiv;
             if (nodeEquiv != null) {
                 List<EquivClass<ShapeNode>> cells =
                     new ArrayList<EquivClass<ShapeNode>>(nodeEquiv.length);
                 for (ShapeNode node : getNodeSet()) {
                     int cellIx = nodeEquiv[node.getNumber()];
                     while (cellIx >= cells.size()) {
-                        cells.add(new NodeEquivClass<ShapeNode>(
-                            getGraph().getFactory()));
+                        cells.add(new NodeEquivClass<ShapeNode>(getFactory()));
                     }
                     cells.get(cellIx).add(node);
                 }
@@ -122,10 +126,13 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
     Map<ShapeNode,Multiplicity> getNodeMultMap() {
         if (this.nodeMultMap == null) {
             this.nodeMultMap = new MyHashMap<ShapeNode,Multiplicity>();
-            Multiplicity[] nodeMult = getGraph().nodeMult;
+            byte[] nodeMult = getGraph().nodeMult;
             if (nodeMult != null) {
                 for (ShapeNode node : getNodeSet()) {
-                    this.nodeMultMap.put(node, nodeMult[node.getNumber()]);
+                    Multiplicity mult =
+                        Multiplicity.getMultiplicity(
+                            nodeMult[node.getNumber()], MultKind.NODE_MULT);
+                    this.nodeMultMap.put(node, mult);
                 }
             }
         }
@@ -157,13 +164,7 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
         if (records != null) {
             for (int i = 0; i < records.length; i++) {
                 EdgeRecord record = records[i];
-                EquivClass<ShapeNode> ec =
-                    new NodeEquivClass<ShapeNode>(getGraph().getFactory());
-                ec.addAll(Arrays.asList(record.getTargets()));
-                EdgeSignature sig =
-                    new EdgeSignature(dir, record.getSource(),
-                        record.getLabel(), ec);
-                result.put(sig, record.getMult());
+                result.put(record.getSig(dir, getFactory()), record.getMult());
             }
         }
         return result;
@@ -188,30 +189,33 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
         int ix = 0;
         for (Map.Entry<EdgeSignature,Multiplicity> multEntry : multMap.entrySet()) {
             result[ix] =
-                new EdgeRecord(multEntry.getKey(), multEntry.getValue());
+                new EdgeRecord(multEntry.getKey(), multEntry.getValue(),
+                    getFactory());
             ix++;
         }
         return result;
     }
 
     /** Computes the flattened representation of the node multiplicity map. */
-    private Multiplicity[] flattenNodeMultMap() {
-        Multiplicity[] result = new Multiplicity[getNodeCounter().getCount()];
+    private byte[] flattenNodeMultMap() {
+        byte[] result = new byte[getNodeCounter().getCount()];
         for (Map.Entry<ShapeNode,Multiplicity> multEntry : getNodeMultMap().entrySet()) {
-            result[multEntry.getKey().getNumber()] = multEntry.getValue();
+            result[multEntry.getKey().getNumber()] =
+                multEntry.getValue().getIndex();
         }
         return result;
     }
 
     /** Computes the flattened representation of the node equivalence relation. */
-    private int[] flattenEquivRel() {
-        int[] result = new int[getNodeCounter().getCount()];
-        int cellIx = 0;
+    private byte[] flattenEquivRel() {
+        byte[] result = new byte[getNodeCounter().getCount()];
+        byte cellIx = 0;
         for (EquivClass<ShapeNode> cell : getEquivRel()) {
             for (ShapeNode node : cell) {
                 result[node.getNumber()] = cellIx;
             }
             cellIx++;
+            assert cellIx != 0 : "Too many cells in the node partition";
         }
         return result;
     }

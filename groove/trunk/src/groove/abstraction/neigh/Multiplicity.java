@@ -56,7 +56,7 @@ public final class Multiplicity {
      * Index of the multiplicity object in the store.
      * Serves as a perfect hash.
      */
-    private final int index;
+    private final byte index;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -67,7 +67,7 @@ public final class Multiplicity {
      * Use {@link #getMultiplicity(int, int, MultKind)} to retrieve an
      * multiplicity from the store.
      */
-    private Multiplicity(int i, int j, MultKind kind, int index) {
+    private Multiplicity(int i, int j, MultKind kind, byte index) {
         assert index >= 0;
         assert isInN(i) && isInNOmega(j);
         assert i <= j;
@@ -168,15 +168,17 @@ public final class Multiplicity {
             store = new Multiplicity[getCardinality(b)];
 
             // Create all the multiplicity objects.
-            int index = 0;
+            byte index = 0;
             for (int i = 0; i <= b + 1; i++) {
                 for (int j = i; j <= b; j++) {
                     store[index] = new Multiplicity(i, j, kind, index);
                     index++;
+                    assert index != 0 : "Too many multiplicity values";
                 }
                 // Special case for j = \omega.
                 store[index] = new Multiplicity(i, OMEGA, kind, index);
                 index++;
+                assert index != 0 : "Too many multiplicity values";
             }
 
             // Make sure the store is completely filled.
@@ -200,6 +202,15 @@ public final class Multiplicity {
         }
         assert result != null;
         return result;
+    }
+
+    /**
+     * Retrieves the multiplicity object from the store with the given
+     * index.
+     */
+    public static Multiplicity getMultiplicity(int index, MultKind kind) {
+        Multiplicity store[] = getStore(kind);
+        return store[index];
     }
 
     /**
@@ -461,6 +472,11 @@ public final class Multiplicity {
     // ------------------------------------------------------------------------
     // Inner classes
     // ------------------------------------------------------------------------
+
+    /** Returns the index of this multiplicity value. */
+    public byte getIndex() {
+        return this.index;
+    }
 
     /** Enumeration of multiplicity kinds. */
     public enum MultKind {
