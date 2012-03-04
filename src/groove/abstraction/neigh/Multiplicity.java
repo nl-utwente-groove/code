@@ -292,7 +292,17 @@ public final class Multiplicity {
     /** Equality of multiplicities comes doen to object equality. */
     @Override
     public boolean equals(Object o) {
-        return this == o;
+        boolean result;
+        if (!(o instanceof Multiplicity)) {
+            result = false;
+        } else {
+            Multiplicity other = (Multiplicity) o;
+            result =
+                (this.kind == other.kind && this.i == other.i && this.j == other.j);
+        }
+        // Check for consistency between equals and hashCode.
+        assert (!result || this.hashCode() == o.hashCode());
+        return result;
     }
 
     @Override
