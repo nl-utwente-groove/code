@@ -56,11 +56,19 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
         getNodeSet().addAll(other.getNodeSet());
         getEdgeSet().addAll(other.getEdgeSet());
         // Clone the equivalence relation. A deep copy is used.
-        this.equivRel = other.equivRel.clone();
+        if (other.equivRel != null) {
+            this.equivRel = other.equivRel.clone();
+        }
         // Clone the multiplicity maps. A shallow copy is sufficient.
-        this.nodeMultMap = other.nodeMultMap.clone();
-        this.outEdgeMultMap = other.outEdgeMultMap.clone();
-        this.inEdgeMultMap = other.inEdgeMultMap.clone();
+        if (other.nodeMultMap != null) {
+            this.nodeMultMap = other.nodeMultMap.clone();
+        }
+        if (other.outEdgeMultMap != null) {
+            this.outEdgeMultMap = other.outEdgeMultMap.clone();
+        }
+        if (other.inEdgeMultMap != null) {
+            this.inEdgeMultMap = other.inEdgeMultMap.clone();
+        }
     }
 
     @Override
@@ -123,7 +131,7 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
     }
 
     /** Lazily creates and returns the node multiplicity map of the underlying shape. */
-    Map<ShapeNode,Multiplicity> getNodeMultMap() {
+    MyHashMap<ShapeNode,Multiplicity> getNodeMultMap() {
         if (this.nodeMultMap == null) {
             this.nodeMultMap = new MyHashMap<ShapeNode,Multiplicity>();
             byte[] nodeMult = getGraph().nodeMult;
@@ -140,7 +148,7 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
     }
 
     /** Lazily creates and returns the outgoing edge multiplicity map of the underlying shape. */
-    Map<EdgeSignature,Multiplicity> getOutEdgeMultMap() {
+    MyHashMap<EdgeSignature,Multiplicity> getOutEdgeMultMap() {
         if (this.outEdgeMultMap == null) {
             this.outEdgeMultMap =
                 computeMultMap(EdgeMultDir.OUTGOING, getGraph().outEdgeMult);
@@ -149,7 +157,7 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
     }
 
     /** Lazily creates and returns the incoming edge multiplicity map of the underlying shape. */
-    Map<EdgeSignature,Multiplicity> getInEdgeMultMap() {
+    MyHashMap<EdgeSignature,Multiplicity> getInEdgeMultMap() {
         if (this.inEdgeMultMap == null) {
             this.inEdgeMultMap =
                 computeMultMap(EdgeMultDir.INCOMING, getGraph().inEdgeMult);
