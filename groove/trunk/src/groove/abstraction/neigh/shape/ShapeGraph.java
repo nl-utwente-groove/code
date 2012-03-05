@@ -305,7 +305,7 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
     /** Flattened node equivalence relation, filled when the shape is fixed. */
     byte[] nodeEquiv;
     /** Flattened node multiplicity map, filled when the shape is fixed. */
-    byte[] nodeMult;
+    char[] nodeMult;
     /** Flattened incoming edge multiplicity map, filled when the shape is fixed. */
     EdgeRecord[] inEdgeMult;
     /** Flattened outgoing edge multiplicity map, filled when the shape is fixed. */
@@ -349,6 +349,6 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
         final int source;
         final TypeLabel label;
         final boolean[] targets;
-        final byte multIndex;
+        final char multIndex;
     }
 }
