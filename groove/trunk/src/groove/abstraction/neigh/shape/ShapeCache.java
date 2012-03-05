@@ -16,26 +16,18 @@
  */
 package groove.abstraction.neigh.shape;
 
-import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
-import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
-import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.MyHashMap;
-import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
-import groove.abstraction.neigh.equiv.NodeEquivClass;
-import groove.abstraction.neigh.shape.ShapeGraph.EdgeRecord;
 import groove.graph.GraphCache;
 import groove.trans.HostEdge;
 import groove.trans.HostElement;
 import groove.trans.HostNode;
 
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -80,74 +72,97 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
     }
 
     /** Convenience method to retrieve the shape factory of the graph. */
-    private ShapeFactory getFactory() {
+    ShapeFactory getFactory() {
         return getGraph().getFactory();
+    }
+
+    /** Convenience method to retrieve the maximum node number plus one. */
+    int getNodeStoreSize() {
+        return getNodeCounter().getCount();
     }
 
     /** Lazily creates and returns the node set of the underlying shape. */
     Set<ShapeNode> getNodeSet() {
         if (this.nodeSet == null) {
-            this.nodeSet = new NotifySet<ShapeNode>();
-            ShapeNode[] nodes = getGraph().nodes;
-            if (nodes != null) {
-                for (int i = 0; i < nodes.length; i++) {
-                    this.nodeSet.add(nodes[i]);
-                }
+            ShapeStore store = getGraph().store;
+            if (store == null) {
+                setNodeSet(this.<ShapeNode>createElementSet());
+            } else {
+                store.fill(this);
             }
         }
         return this.nodeSet;
     }
 
+    /** 
+     * Assigns the node set, presumably from a shape graph store.
+     * @see ShapeStore#fill(ShapeCache) 
+     */
+    void setNodeSet(Set<ShapeNode> nodeSet) {
+        this.nodeSet = nodeSet;
+    }
+
     /** Lazily creates and returns the edge set of the underlying shape. */
     Set<ShapeEdge> getEdgeSet() {
         if (this.edgeSet == null) {
-            this.edgeSet = new NotifySet<ShapeEdge>();
-            ShapeEdge[] edges = getGraph().edges;
-            if (edges != null) {
-                for (int i = 0; i < edges.length; i++) {
-                    this.edgeSet.add(edges[i]);
-                }
+            ShapeStore store = getGraph().store;
+            if (store == null) {
+                setEdgeSet(this.<ShapeEdge>createElementSet());
+            } else {
+                store.fill(this);
             }
         }
         return this.edgeSet;
     }
 
+    /** 
+     * Assigns the edge set, presumably from a shape graph store.
+     * @see ShapeStore#fill(ShapeCache) 
+     */
+    void setEdgeSet(Set<ShapeEdge> edgeSet) {
+        this.edgeSet = edgeSet;
+    }
+
     /** Lazily creates and returns the node equivalence relation of the underlying shape. */
     EquivRelation<ShapeNode> getEquivRel() {
         if (this.equivRel == null) {
-            this.equivRel = new EquivRelation<ShapeNode>();
-            byte[] nodeEquiv = getGraph().nodeEquiv;
-            if (nodeEquiv != null) {
-                List<EquivClass<ShapeNode>> cells =
-                    new ArrayList<EquivClass<ShapeNode>>(nodeEquiv.length);
-                for (ShapeNode node : getNodeSet()) {
-                    int cellIx = nodeEquiv[node.getNumber()];
-                    while (cellIx >= cells.size()) {
-                        cells.add(new NodeEquivClass<ShapeNode>(getFactory()));
-                    }
-                    cells.get(cellIx).add(node);
-                }
-                this.equivRel.addAll(cells);
+            ShapeStore store = getGraph().store;
+            if (store == null) {
+                setEquivRel(createNodeEquiv());
+            } else {
+                store.fill(this);
             }
         }
         return this.equivRel;
     }
 
+    /** 
+     * Assigns the node equivalence relation, presumably from a shape graph store.
+     * @see ShapeStore#fill(ShapeCache) 
+     */
+    void setEquivRel(EquivRelation<ShapeNode> equivRel) {
+        this.equivRel = equivRel;
+    }
+
     /** Lazily creates and returns the node multiplicity map of the underlying shape. */
     MyHashMap<ShapeNode,Multiplicity> getNodeMultMap() {
         if (this.nodeMultMap == null) {
-            this.nodeMultMap = new MyHashMap<ShapeNode,Multiplicity>();
-            char[] nodeMult = getGraph().nodeMult;
-            if (nodeMult != null) {
-                for (ShapeNode node : getNodeSet()) {
-                    Multiplicity mult =
-                        Multiplicity.getMultiplicity(
-                            nodeMult[node.getNumber()], MultKind.NODE_MULT);
-                    this.nodeMultMap.put(node, mult);
-                }
+            ShapeStore store = getGraph().store;
+            if (store == null) {
+                setNodeMultMap(createNodeMultMap());
+            } else {
+                store.fill(this);
             }
         }
         return this.nodeMultMap;
+    }
+
+    /** 
+     * Assigns the node multiplicity map, presumably from a shape graph store.
+     * @see ShapeStore#fill(ShapeCache) 
+     */
+    void setNodeMultMap(MyHashMap<ShapeNode,Multiplicity> nodeMultMap) {
+        this.nodeMultMap = nodeMultMap;
     }
 
     /** Lazily creates and returns the edge multiplicity map of the underlying shape
@@ -155,83 +170,51 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
      */
     MyHashMap<EdgeSignature,Multiplicity> getEdgeMultMap(EdgeMultDir dir) {
         if (this.edgeMultMaps == null) {
-            this.edgeMultMaps = createEdgeMultMaps();
-            for (EdgeMultDir any : EdgeMultDir.values()) {
-                this.edgeMultMaps.put(
-                    any,
-                    computeMultMap(any, any == EdgeMultDir.INCOMING
-                            ? getGraph().inEdgeMult : getGraph().outEdgeMult));
+            ShapeStore store = getGraph().store;
+            if (store == null) {
+                setEdgeMultMaps(createEdgeMultMaps());
+            } else {
+                store.fill(this);
             }
         }
         return this.edgeMultMaps.get(dir);
     }
 
-    private MyHashMap<EdgeSignature,Multiplicity> computeMultMap(
-            EdgeMultDir dir, EdgeRecord[] records) {
-        MyHashMap<EdgeSignature,Multiplicity> result =
-            new MyHashMap<EdgeSignature,Multiplicity>();
-        if (records != null) {
-            for (int i = 0; i < records.length; i++) {
-                EdgeRecord record = records[i];
-                result.put(record.getSig(dir, getFactory()), record.getMult());
-            }
-        }
-        return result;
+    /** 
+     * Assigns the edge multiplicity maps.
+     * @see ShapeStore#fill(ShapeCache) 
+     */
+    void setEdgeMultMaps(
+            Map<EdgeMultDir,MyHashMap<EdgeSignature,Multiplicity>> edgeMultMaps) {
+        this.edgeMultMaps = edgeMultMaps;
     }
 
-    private Map<EdgeMultDir,MyHashMap<EdgeSignature,Multiplicity>> createEdgeMultMaps() {
-        return new EnumMap<Multiplicity.EdgeMultDir,MyHashMap<EdgeSignature,Multiplicity>>(
-            EdgeMultDir.class);
-    }
-
-    /** Transfers the data structures in flattened form to the underlying shape. */
+    /** Stores the data structures in flattened form in the underlying shape. */
     void flatten() {
-        assert getGraph().nodes == null;
-        getGraph().nodes = getNodeSet().toArray(new ShapeNode[0]);
-        getGraph().edges = getEdgeSet().toArray(new ShapeEdge[0]);
-        getGraph().nodeEquiv = flattenEquivRel();
-        getGraph().nodeMult = flattenNodeMultMap();
-        getGraph().inEdgeMult = flattenEdgeMultMap(getEdgeMultMap(INCOMING));
-        getGraph().outEdgeMult = flattenEdgeMultMap(getEdgeMultMap(OUTGOING));
+        getGraph().store = STORE_PROTOTYPE.flatten(this);
     }
 
-    /** Computes the flattened representation of an edge multiplicity map. */
-    private ShapeGraph.EdgeRecord[] flattenEdgeMultMap(
-            Map<EdgeSignature,Multiplicity> multMap) {
-        ShapeGraph.EdgeRecord[] result =
-            new ShapeGraph.EdgeRecord[multMap.size()];
-        int ix = 0;
-        for (Map.Entry<EdgeSignature,Multiplicity> multEntry : multMap.entrySet()) {
-            result[ix] =
-                new EdgeRecord(multEntry.getKey(), multEntry.getValue(),
-                    getFactory());
-            ix++;
+    EquivRelation<ShapeNode> createNodeEquiv() {
+        return new EquivRelation<ShapeNode>();
+    }
+
+    MyHashMap<ShapeNode,Multiplicity> createNodeMultMap() {
+        return new MyHashMap<ShapeNode,Multiplicity>();
+    }
+
+    Map<EdgeMultDir,MyHashMap<EdgeSignature,Multiplicity>> createEdgeMultMaps() {
+        Map<EdgeMultDir,MyHashMap<EdgeSignature,Multiplicity>> result =
+            new EnumMap<EdgeMultDir,MyHashMap<EdgeSignature,Multiplicity>>(
+                EdgeMultDir.class);
+        for (EdgeMultDir dir : EdgeMultDir.values()) {
+            result.put(dir, new MyHashMap<EdgeSignature,Multiplicity>());
         }
         return result;
     }
 
-    /** Computes the flattened representation of the node multiplicity map. */
-    private char[] flattenNodeMultMap() {
-        char[] result = new char[getNodeCounter().getCount()];
-        for (Map.Entry<ShapeNode,Multiplicity> multEntry : getNodeMultMap().entrySet()) {
-            result[multEntry.getKey().getNumber()] =
-                multEntry.getValue().getIndex();
-        }
-        return result;
-    }
-
-    /** Computes the flattened representation of the node equivalence relation. */
-    private byte[] flattenEquivRel() {
-        byte[] result = new byte[getNodeCounter().getCount()];
-        byte cellIx = 0;
-        for (EquivClass<ShapeNode> cell : getEquivRel()) {
-            for (ShapeNode node : cell) {
-                result[node.getNumber()] = cellIx;
-            }
-            cellIx++;
-            assert cellIx != 0 : "Too many cells in the node partition";
-        }
-        return result;
+    /** Factory method for an empty set of host elements. */
+    <E extends HostElement> Set<E> createElementSet() {
+        return new NotifySet<E>();
     }
 
     /** Set of nodes of the underlying shape. */
@@ -250,6 +233,8 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
      * Outgoing edge multiplicity map.
      */
     private Map<EdgeMultDir,MyHashMap<EdgeSignature,Multiplicity>> edgeMultMaps;
+
+    private final static ShapeStore STORE_PROTOTYPE = ShapeStore2.PROTOTYPE;
 
     /**
      * Extension of <tt>Set</tt> that invokes the notify methods of the graph
