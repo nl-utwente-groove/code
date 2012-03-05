@@ -28,6 +28,7 @@ import groove.abstraction.neigh.equiv.NodeEquivClass;
 import groove.graph.TypeLabel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,8 +65,8 @@ class ShapeStore1 implements ShapeStore {
         int ix = 0;
         for (Map.Entry<EdgeSignature,Multiplicity> multEntry : multMap.entrySet()) {
             result[ix] =
-                new EdgeRecord(multEntry.getKey(), multEntry.getValue(),
-                    cache.getFactory(), nodeEquiv);
+                canonise(new EdgeRecord(multEntry.getKey(),
+                    multEntry.getValue(), cache.getFactory(), nodeEquiv));
             ix++;
         }
         return result;
@@ -190,6 +191,17 @@ class ShapeStore1 implements ShapeStore {
     /** Prototype instance of this store implementation. */
     public static final ShapeStore PROTOTYPE = new ShapeStore1();
 
+    private EdgeRecord canonise(EdgeRecord record) {
+        EdgeRecord result = canonMap.get(record);
+        if (result == null) {
+            canonMap.put(result = record, record);
+        }
+        return result;
+    }
+
+    private static Map<EdgeRecord,EdgeRecord> canonMap =
+        new HashMap<ShapeStore1.EdgeRecord,ShapeStore1.EdgeRecord>();
+
     /** Data structure holding the essentials of a single edge signature multiplicity. */
     private static class EdgeRecord {
         public EdgeRecord(EdgeSignature sig, Multiplicity mult,
@@ -216,6 +228,50 @@ class ShapeStore1 implements ShapeStore {
         public Multiplicity getMult() {
             return Multiplicity.getMultiplicity(this.multIndex,
                 MultKind.EDGE_MULT);
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result =
+                prime * result
+                    + ((this.label == null) ? 0 : this.label.hashCode());
+            result = prime * result + this.multIndex;
+            result = prime * result + this.source;
+            result = prime * result + this.targetEc;
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            EdgeRecord other = (EdgeRecord) obj;
+            if (this.label == null) {
+                if (other.label != null) {
+                    return false;
+                }
+            } else if (!this.label.equals(other.label)) {
+                return false;
+            }
+            if (this.multIndex != other.multIndex) {
+                return false;
+            }
+            if (this.source != other.source) {
+                return false;
+            }
+            if (this.targetEc != other.targetEc) {
+                return false;
+            }
+            return true;
         }
 
         final int source;
