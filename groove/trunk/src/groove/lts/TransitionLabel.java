@@ -60,7 +60,7 @@ public class TransitionLabel extends AbstractLabel implements ActionLabel {
         if (brackets) {
             result.append(END_CHAR);
         }
-        return result.toString();
+        return result.toString().intern();
     }
 
     @Override

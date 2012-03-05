@@ -234,7 +234,7 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
      */
     private Map<EdgeMultDir,MyHashMap<EdgeSignature,Multiplicity>> edgeMultMaps;
 
-    private final static ShapeStore STORE_PROTOTYPE = ShapeStore2.PROTOTYPE;
+    private final static ShapeStore STORE_PROTOTYPE = ShapeStore1.PROTOTYPE;
 
     /**
      * Extension of <tt>Set</tt> that invokes the notify methods of the graph
