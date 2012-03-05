@@ -137,7 +137,7 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
     MyHashMap<ShapeNode,Multiplicity> getNodeMultMap() {
         if (this.nodeMultMap == null) {
             this.nodeMultMap = new MyHashMap<ShapeNode,Multiplicity>();
-            byte[] nodeMult = getGraph().nodeMult;
+            char[] nodeMult = getGraph().nodeMult;
             if (nodeMult != null) {
                 for (ShapeNode node : getNodeSet()) {
                     Multiplicity mult =
@@ -211,8 +211,8 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
     }
 
     /** Computes the flattened representation of the node multiplicity map. */
-    private byte[] flattenNodeMultMap() {
-        byte[] result = new byte[getNodeCounter().getCount()];
+    private char[] flattenNodeMultMap() {
+        char[] result = new char[getNodeCounter().getCount()];
         for (Map.Entry<ShapeNode,Multiplicity> multEntry : getNodeMultMap().entrySet()) {
             result[multEntry.getKey().getNumber()] =
                 multEntry.getValue().getIndex();

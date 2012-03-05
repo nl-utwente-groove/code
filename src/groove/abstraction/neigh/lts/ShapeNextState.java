@@ -21,9 +21,9 @@ import groove.control.CtrlTransition;
 import groove.graph.EdgeRole;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.TransitionLabel;
 import groove.lts.RuleTransition;
 import groove.lts.RuleTransitionStub;
+import groove.lts.TransitionLabel;
 import groove.trans.Action;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
@@ -139,10 +139,6 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
         return this.transition.getCtrlTransition();
     }
 
-    // ------------------------------------------------------------------------
-    // Unimplemented methods
-    // ------------------------------------------------------------------------
-
     @Override
     public boolean isPartial() {
         return getRecipe() != null;
@@ -152,6 +148,10 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     public Recipe getRecipe() {
         return getCtrlTransition().getRecipe();
     }
+
+    // ------------------------------------------------------------------------
+    // Unimplemented methods
+    // ------------------------------------------------------------------------
 
     @Override
     public HostNode[] getAddedNodes() {

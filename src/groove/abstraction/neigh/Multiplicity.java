@@ -40,16 +40,23 @@ public final class Multiplicity {
     /** Multiplicity store per multiplicity kind. */
     private static Multiplicity[][] GLOBAL_MULT_STORE =
         new Multiplicity[MultKind.values().length][];
-    /** Array holding the multiplicities per kind in a matrix indexed by lower bound and (non-{@link #OMEGA}) upper bound. */
+    /**
+     * Array holding the multiplicities per kind in a matrix indexed by
+     * lower bound and (non-{@link #OMEGA}) upper bound.
+     */
     private static Multiplicity[][][] INDEXED_MULT_STORE =
         new Multiplicity[MultKind.values().length][][];
-    /** Array holding the {@link #OMEGA}-multiplicities per kind in a indexed by lower bound. */
+    /**
+     * Array holding the {@link #OMEGA}-multiplicities per kind
+     * in a indexed by lower bound.
+     */
     private static Multiplicity[][] OMEGA_MULT_STORE =
         new Multiplicity[MultKind.values().length][];
 
     // ------------------------------------------------------------------------
     // Object Fields
     // ------------------------------------------------------------------------
+
     /** Multiplicity lower bound. */
     private final int i;
     /** Multiplicity upper bound. */
@@ -60,7 +67,7 @@ public final class Multiplicity {
      * Index of the multiplicity object in the store.
      * Serves as a perfect hash.
      */
-    private final byte index;
+    private final char index;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -71,7 +78,7 @@ public final class Multiplicity {
      * Use {@link #getMultiplicity(int, int, MultKind)} to retrieve an
      * multiplicity from the store.
      */
-    private Multiplicity(int i, int j, MultKind kind, byte index) {
+    private Multiplicity(int i, int j, MultKind kind, char index) {
         assert index >= 0;
         assert isInN(i) && isInNOmega(j);
         assert i <= j;
@@ -138,7 +145,7 @@ public final class Multiplicity {
             Multiplicity[] omegaStore = new Multiplicity[b + 2];
 
             // Create all the multiplicity objects.
-            byte index = 0;
+            char index = 0;
             for (int i = 0; i <= b + 1; i++) {
                 for (int j = i; j <= b; j++) {
                     Multiplicity mult = new Multiplicity(i, j, kind, index);
@@ -289,7 +296,7 @@ public final class Multiplicity {
     // Overridden methods
     // ------------------------------------------------------------------------
 
-    /** Equality of multiplicities comes doen to object equality. */
+    /** Equality of multiplicities comes down to object equality. */
     @Override
     public boolean equals(Object o) {
         boolean result;
@@ -448,7 +455,7 @@ public final class Multiplicity {
     // ------------------------------------------------------------------------
 
     /** Returns the index of this multiplicity value. */
-    public byte getIndex() {
+    public char getIndex() {
         return this.index;
     }
 
@@ -504,13 +511,15 @@ public final class Multiplicity {
 
         /**
          * Returns the incident end of an edge according to this direction.
-         * @return the edge target if this is {@link #INCOMING}, the source if this is {@link #OUTGOING}
+         * @return the edge target if this is {@link #INCOMING},
+         *         the source if this is {@link #OUTGOING}
          */
         abstract public ShapeNode incident(ShapeEdge edge);
 
         /**
          * Returns the opposite end of an edge according to this direction.
-         * @return the edge source if this is {@link #INCOMING}, the target if this is {@link #OUTGOING}
+         * @return the edge source if this is {@link #INCOMING},
+         *         the target if this is {@link #OUTGOING}
          */
         abstract public ShapeNode opposite(ShapeEdge edge);
     }
