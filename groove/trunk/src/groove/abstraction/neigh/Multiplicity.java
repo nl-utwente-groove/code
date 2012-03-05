@@ -20,6 +20,8 @@ import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Edge;
 import groove.graph.Node;
+import groove.trans.HostEdge;
+import groove.trans.HostNode;
 
 import java.util.Set;
 
@@ -487,6 +489,16 @@ public final class Multiplicity {
             public ShapeNode opposite(ShapeEdge edge) {
                 return edge.target();
             }
+
+            @Override
+            public HostNode incident(HostEdge edge) {
+                return edge.source();
+            }
+
+            @Override
+            public HostNode opposite(HostEdge edge) {
+                return edge.target();
+            }
         },
         /** Incoming edge multiplicity. */
         INCOMING {
@@ -502,6 +514,16 @@ public final class Multiplicity {
 
             @Override
             public ShapeNode opposite(ShapeEdge edge) {
+                return edge.source();
+            }
+
+            @Override
+            public HostNode incident(HostEdge edge) {
+                return edge.target();
+            }
+
+            @Override
+            public HostNode opposite(HostEdge edge) {
                 return edge.source();
             }
         };
@@ -522,6 +544,20 @@ public final class Multiplicity {
          *         the target if this is {@link #OUTGOING}
          */
         abstract public ShapeNode opposite(ShapeEdge edge);
+
+        /**
+         * Returns the incident end of an edge according to this direction.
+         * @return the edge target if this is {@link #INCOMING},
+         *         the source if this is {@link #OUTGOING}
+         */
+        abstract public HostNode incident(HostEdge edge);
+
+        /**
+         * Returns the opposite end of an edge according to this direction.
+         * @return the edge source if this is {@link #INCOMING},
+         *         the target if this is {@link #OUTGOING}
+         */
+        abstract public HostNode opposite(HostEdge edge);
     }
 
 }

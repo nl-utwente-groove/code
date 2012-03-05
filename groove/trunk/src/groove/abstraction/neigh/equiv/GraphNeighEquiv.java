@@ -17,6 +17,8 @@
 package groove.abstraction.neigh.equiv;
 
 import groove.abstraction.neigh.Multiplicity;
+import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.Parameters;
@@ -27,6 +29,8 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.util.TreeHashSet;
 
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,10 +56,18 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     final HostGraph graph;
     /** The set of binary labels of the given graph. Used to improve performance. */
     final Set<TypeLabel> binaryLabels;
+    /** Mapping from host nodes to their cells in this equivalence relation. */
+    private Map<HostNode,EquivClass<HostNode>> nodeToCellMap;
+    /** Mapping from host nodes to their distinguishing characteristic. */
+    private Map<HostNode,NodeInfo> nodeToInfoMap;
     /** The previously computed equivalence relation. */
     private EquivRelation<HostNode> previous;
     /** Temporary store. */
     private TreeHashSet<EdgeEquivData> store;
+
+    /** Global edge multiplicity of one. */
+    private final static Multiplicity EDGE_ONE_MULT =
+        Multiplicity.getMultiplicity(1, 1, MultKind.EDGE_MULT);
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -120,7 +132,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
                 // We have a node label that should not be grouped by the
                 // abstraction. This means that the node will be put in a
                 // singleton equivalence class.
-                ec = newNodeEquivClass();
+                ec = createNodeEquivClass();
                 ec.add(node);
                 this.add(ec);
                 continue;
@@ -132,13 +144,11 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
             // Put the node in the proper equivalence class.
             if (ec == null) {
                 // We need to create a new equivalence class.
-                ec = newNodeEquivClass();
-                ec.add(node);
+                ec = createNodeEquivClass();
                 labelsToClass.put(nodeLabels, ec);
-            } else {
-                // The equivalence class already exists, just put the node in.
-                ec.add(node);
             }
+            // The equivalence class already exists, just put the node in.
+            ec.add(node);
         }
         this.addAll(labelsToClass.values());
     }
@@ -156,8 +166,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         // Equivalence classes removed by splitting. 
         EquivRelation<HostNode> delEquivClasses = new EquivRelation<HostNode>();
 
-        this.prepareRefinement();
-
+        prepareRefinement();
         // For all equivalence classes.
         for (EquivClass<HostNode> ec : this) {
             this.refineEquivClass(ec, newEquivClasses, delEquivClasses);
@@ -182,110 +191,90 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
             return;
         }
 
-        // Convert the equivalence class to an array for efficiency's sake.
-        HostNode nodes[] = new HostNode[ec.size()];
-        ec.toArray(nodes);
-
-        // Temporary upper triangular matrix to store equivalences.
-        // This wastes some memory, but Java data structures are much worse...
-        boolean equiv[][] = new boolean[nodes.length][nodes.length];
-
-        // Perform pair-wise comparison with the elements of the array.
-        // We know that any pair of nodes are equivalent in the previous
-        // iteration because they are in the same equivalence class.
-        // We have to check if they are still equivalent in this iteration.
-        for (int i = 0; i < nodes.length - 1; i++) {
-            HostNode ni = nodes[i];
-            for (int j = i + 1; j < nodes.length; j++) {
-                HostNode nj = nodes[j];
-                equiv[i][j] = this.areStillEquivalent(ni, nj);
+        // partition the nodes in ec according to their node info.
+        Map<NodeInfo,EquivClass<HostNode>> partition =
+            new HashMap<NodeInfo,EquivClass<HostNode>>();
+        Map<HostNode,NodeInfo> nodeToInfoMap = getNodeToInfoMap();
+        for (HostNode n : ec) {
+            NodeInfo info = nodeToInfoMap.get(n);
+            EquivClass<HostNode> cell = partition.get(info);
+            if (cell == null) {
+                partition.put(info, cell = createNodeEquivClass());
             }
+            cell.add(n);
         }
 
         // Check if we must split the equivalence class.
-        if (this.mustSplit(equiv)) {
+        if (partition.size() > 1) {
             // Yes, we must. Do it.
-            this.doSplit(nodes, equiv, newEquivClasses);
+            newEquivClasses.addAll(partition.values());
             delEquivClasses.add(ec);
         } // else do nothing.
     }
 
+    /** Prepares the internal data structures for the next refinement iteration. */
+    private void prepareRefinement() {
+        this.nodeToCellMap = null;
+        this.nodeToInfoMap = null;
+    }
+
     /**
-     * Returns true if the equivalence relation stored in the equivalence matrix
-     * given needs to be split into two or more new classes.
+     * Returns the mapping from nodes to the corresponding cells in this
+     * equivalence relation.
      */
-    private boolean mustSplit(boolean equiv[][]) {
-        assert equiv.length > 0 && equiv[0].length > 0 : "Invalid equivalence matrix";
-        boolean result = false;
-        // From the way the matrix was built, we only have to look at its
-        // first row. If there is at least one false value in the first row
-        // then we know that there are at least two nodes that are no longer
-        // equivalent.
-        for (int j = 1; j < equiv[0].length; j++) {
-            if (!equiv[0][j]) {
-                // We have two nodes that are no longer equivalent. Split.
-                result = true;
-                break;
+    Map<HostNode,EquivClass<HostNode>> getNodeToCellMap() {
+        if (this.nodeToCellMap == null) {
+            this.nodeToCellMap = new HashMap<HostNode,EquivClass<HostNode>>();
+            for (EquivClass<HostNode> ec : this) {
+                for (HostNode node : ec) {
+                    this.nodeToCellMap.put(node, ec);
+                }
+            }
+        }
+        return this.nodeToCellMap;
+    }
+
+    /** Returns the mapping from nodes to their distinguishing multiplicity information. */
+    Map<HostNode,NodeInfo> getNodeToInfoMap() {
+        if (this.nodeToInfoMap == null) {
+            this.nodeToInfoMap = computeNodeToInfoMap();
+        }
+        return this.nodeToInfoMap;
+    }
+
+    /**
+     * Constructs the mapping from nodes to their distinguishing
+     * multiplicity information.
+     */
+    Map<HostNode,NodeInfo> computeNodeToInfoMap() {
+        Map<HostNode,NodeInfo> result = createNodeToInfoMap();
+        Map<HostNode,EquivClass<HostNode>> nodeToCellMap = getNodeToCellMap();
+        for (HostEdge edge : this.graph.edgeSet()) {
+            for (EdgeMultDir dir : EdgeMultDir.values()) {
+                NodeInfo sourceInfo = result.get(dir.incident(edge));
+                EquivClass<HostNode> targetEc =
+                    nodeToCellMap.get(dir.opposite(edge));
+                sourceInfo.add(dir, edge.label(), targetEc, EDGE_ONE_MULT);
             }
         }
         return result;
     }
 
     /**
-     * Split an equivalence class into two or more new equivalence classes.
-     * @param nodes - the equivalence class to be split, as an array of nodes.
-     * @param equiv - equivalence relation stored in an equivalence matrix.
-     * @param newEquivClasses - the set to store the newly created equivalence
-     *                          classes.
+     * Constructs a blank map from nodes to information objects.
+     * The map is initialised with empty information objects.
      */
-    private void doSplit(HostNode nodes[], boolean equiv[][],
-            EquivRelation<HostNode> newEquivClasses) {
-
-        for (int i = 0; i < nodes.length; i++) {
-            HostNode ni = nodes[i];
-
-            // Check first if the i-th element appears in a previous row of the
-            // equivalence matrix. Since the matrix is upper triangular, we
-            // only have to check the i-th column.
-            boolean alreadyIncluded = false;
-            // Variable ii ranges from 0 .. i - 1.
-            // Variable i has its role reversed and marks the column instead of
-            // a row.
-            for (int ii = i - 1; ii >= 0; ii--) {
-                if (equiv[ii][i]) {
-                    alreadyIncluded = true;
-                    break;
-                }
-            }
-
-            if (!alreadyIncluded) {
-                // OK, sweep the row and collect the equivalent nodes to
-                // create a new equivalence class.
-                EquivClass<HostNode> ec = newNodeEquivClass();
-                ec.add(ni);
-                for (int j = i + 1; j < nodes.length; j++) {
-                    if (equiv[i][j]) {
-                        HostNode nj = nodes[j];
-                        ec.add(nj);
-                    }
-                }
-                // This is a new equivalence class.
-                newEquivClasses.add(ec);
-            }
+    Map<HostNode,NodeInfo> createNodeToInfoMap() {
+        Map<HostNode,NodeInfo> result =
+            new HashMap<HostNode,GraphNeighEquiv.NodeInfo>();
+        for (HostNode node : this.graph.nodeSet()) {
+            result.put(node, new NodeInfo());
         }
-    }
-
-    /**
-     * Method that is called before each iteration of the refinement of the
-     * neighbourhood relation. This is used, for example, to compute auxiliary
-     * maps that can speed-up the refinement process.
-     */
-    void prepareRefinement() {
-        // Empty by design. See comment above.
+        return result;
     }
 
     /** Creates and returns a new node equivalence class object. */
-    private NodeEquivClass<HostNode> newNodeEquivClass() {
+    private NodeEquivClass<HostNode> createNodeEquivClass() {
         return new NodeEquivClass<HostNode>(this.graph.getFactory());
     }
 
@@ -373,6 +362,50 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
             result = eed;
         }
         return result;
+    }
+
+    /** 
+     * Directional mapping from type labels and target node equivalence classes
+     * to the corresponding multiplicity, for a certain host node.
+     */
+    class NodeInfo
+            extends
+            EnumMap<EdgeMultDir,Map<TypeLabel,Map<EquivClass<HostNode>,Multiplicity>>> {
+        /** Constructs the equivalence information for a given host node. */
+        NodeInfo() {
+            super(EdgeMultDir.class);
+            for (EdgeMultDir dir : EdgeMultDir.values()) {
+                put(dir,
+                    new HashMap<TypeLabel,Map<EquivClass<HostNode>,Multiplicity>>());
+            }
+        }
+
+        void add(EdgeMultDir dir, TypeLabel label, EquivClass<HostNode> ec,
+                Multiplicity mult) {
+            Map<TypeLabel,Map<EquivClass<HostNode>,Multiplicity>> labelMap =
+                get(dir);
+            Map<EquivClass<HostNode>,Multiplicity> ecMap = labelMap.get(label);
+            if (ecMap == null) {
+                labelMap.put(label, ecMap =
+                    new HashMap<EquivClass<HostNode>,Multiplicity>());
+            }
+            Multiplicity oldMult = ecMap.get(ec);
+            Multiplicity newMult = oldMult == null ? mult : oldMult.add(mult);
+            ecMap.put(ec, newMult);
+        }
+
+        @Override
+        public int hashCode() {
+            if (this.hashcode == 0) {
+                this.hashcode = super.hashCode();
+                if (this.hashcode == 0) {
+                    this.hashcode = 1;
+                }
+            }
+            return this.hashcode;
+        }
+
+        private int hashcode;
     }
 
     /**

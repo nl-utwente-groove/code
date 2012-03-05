@@ -60,7 +60,7 @@ public final class Util {
         if (!typeNode.isTopType()) {
             nodeLabels.add(typeNode.label());
         }
-        for (HostEdge edge : graph.outEdgeSet(node)) {
+        for (HostEdge edge : graph.edgeSet(node)) {
             if (edge.getRole() != BINARY) {
                 nodeLabels.add(edge.label());
             }
