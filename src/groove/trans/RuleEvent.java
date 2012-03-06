@@ -88,9 +88,13 @@ public interface RuleEvent extends Comparable<RuleEvent>, RuleTransitionStub,
      */
     public RuleApplication newApplication(HostGraph source);
 
-    /**
-     * Convenience method for {@link System#identityHashCode(Object)}, included
-     * here for efficiency.
-     */
-    public int identityHashCode();
+    /** Event reuse mode. */
+    enum Reuse {
+        /** No event or node reuse. */
+        NONE,
+        /** Normal event and node reuse. */
+        EVENT,
+        /** Aggressive node reuse, no event reuse. */
+        AGGRESSIVE;
+    }
 }

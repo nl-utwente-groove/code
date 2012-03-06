@@ -16,6 +16,7 @@
  */
 package groove.trans;
 
+import static groove.trans.RuleEvent.Reuse.EVENT;
 import groove.graph.algebra.ValueNode;
 import groove.lts.DefaultRuleTransition;
 import groove.lts.GraphState;
@@ -40,10 +41,9 @@ import java.util.Set;
 public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.AbstractEventCache>
         extends AbstractCacheHolder<C> implements RuleEvent {
     /** Constructs an event for a given rule. */
-    protected AbstractEvent(CacheReference<C> template, R rule, boolean reuse) {
+    protected AbstractEvent(CacheReference<C> template, R rule) {
         super(template);
         this.rule = rule;
-        this.reuse = reuse;
     }
 
     /** This implementation returns the event itself. */
@@ -59,9 +59,7 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
         return result;
     }
 
-    boolean isReuse() {
-        return this.reuse;
-    }
+    abstract Reuse getReuse();
 
     /** Returns a string showing this event as a rule call. */
     public String getLabelText(HostNode[] addedNodes) {
@@ -127,17 +125,6 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
         return this.rule;
     }
 
-    public int identityHashCode() {
-        int result = this.identityHashCode;
-        if (result == 0) {
-            result = this.identityHashCode = super.hashCode();
-            if (result == 0) {
-                result = this.identityHashCode = 1;
-            }
-        }
-        return result;
-    }
-
     public RuleApplication newApplication(HostGraph source) {
         return new RuleApplication(this, source);
     }
@@ -153,7 +140,8 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
      */
     @Override
     public int hashCode() {
-        return isReuse() ? identityHashCode() : eventHashCode();
+        return getReuse() == EVENT ? System.identityHashCode(this)
+                : eventHashCode();
     }
 
     /**
@@ -165,15 +153,16 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
      */
     @Override
     public boolean equals(Object obj) {
-        boolean result;
         if (obj == this) {
-            result = true;
-        } else if (obj instanceof RuleEvent) {
-            result = !this.reuse && equalsEvent((RuleEvent) obj);
-        } else {
-            result = false;
+            return true;
         }
-        return result;
+        if (getReuse() == EVENT) {
+            return false;
+        }
+        if (obj instanceof RuleEvent) {
+            return equalsEvent((RuleEvent) obj);
+        }
+        return false;
     }
 
     /**
@@ -351,14 +340,10 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
 
     /** The rule for which this is an event. */
     private final R rule;
-    /** Flag indicating if sets should be stored for reuse. */
-    private final boolean reuse;
     /**
      * The precomputed hash code.
      */
     private int hashCode;
-    /** The pre-computed identity hash code for this object. */
-    private int identityHashCode;
     /** Global empty set of nodes. */
     static final HostNode[] EMPTY_NODE_ARRAY = new HostNode[0];
 

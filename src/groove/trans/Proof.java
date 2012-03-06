@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.trans.Condition.Op;
+import groove.trans.RuleEvent.Reuse;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -152,7 +153,7 @@ public class Proof {
     private BasicEvent createSimpleEvent(SystemRecord record) {
         assert hasRule();
         if (record == null) {
-            return new BasicEvent(getRule(), getPatternMap(), false);
+            return new BasicEvent(getRule(), getPatternMap(), Reuse.NONE);
         } else {
             return record.createSimpleEvent(getRule(), getPatternMap());
         }
@@ -166,7 +167,7 @@ public class Proof {
     private RuleEvent createCompositeEvent(SystemRecord record,
             Collection<BasicEvent> eventSet) {
         if (record == null) {
-            return new CompositeEvent(getRule(), eventSet, false);
+            return new CompositeEvent(getRule(), eventSet, Reuse.NONE);
         } else {
             return record.createCompositeEvent(getRule(), eventSet);
         }

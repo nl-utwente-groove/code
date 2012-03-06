@@ -31,7 +31,7 @@ import java.util.Iterator;
  * @author Arend Rensink
  * @version $Revision: 3638 $ $Date: 2008-03-05 16:50:10 $
  */
-public class RecipeTransition extends AbstractEdge<GraphState,RecipeLabel>
+public class RecipeTransition extends AbstractEdge<GraphState,RecipeTransitionLabel>
         implements GraphTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between
@@ -39,7 +39,7 @@ public class RecipeTransition extends AbstractEdge<GraphState,RecipeLabel>
      */
     public RecipeTransition(GraphState source, Recipe recipe,
             Iterable<RuleTransition> steps, GraphState target) {
-        super(source, new RecipeLabel(recipe, steps), target);
+        super(source, new RecipeTransitionLabel(recipe, steps), target);
     }
 
     @Override

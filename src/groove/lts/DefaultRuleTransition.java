@@ -25,7 +25,6 @@ import groove.graph.Element;
 import groove.graph.Morphism;
 import groove.graph.iso.IsoChecker;
 import groove.trans.AbstractEvent;
-import groove.trans.Action;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
@@ -33,6 +32,7 @@ import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.Recipe;
+import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.view.FormatException;
@@ -45,21 +45,17 @@ import java.util.Collections;
  * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
 public class DefaultRuleTransition extends
-        AbstractEdge<GraphState,TransitionLabel> implements RuleTransitionStub,
-        RuleTransition {
+        AbstractEdge<GraphState,RuleTransitionLabel> implements
+        RuleTransitionStub, RuleTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between
      * a given source and target state.
      */
     public DefaultRuleTransition(GraphState source, RuleEvent event,
             HostNode[] addedNodes, GraphState target, boolean symmetry) {
-        super(source, TransitionLabel.createLabel(source, event, addedNodes),
-            target);
-        this.event = event;
-        this.addedNodes = addedNodes;
+        super(source,
+            RuleTransitionLabel.createLabel(source, event, addedNodes), target);
         this.symmetry = symmetry;
-        CtrlState sourceCtrl = source.getCtrlState();
-        this.ctrlTrans = sourceCtrl.getTransition(event.getRule());
     }
 
     /**
@@ -73,12 +69,12 @@ public class DefaultRuleTransition extends
     }
 
     @Override
-    public Action getAction() {
+    public Rule getAction() {
         return getEvent().getRule();
     }
 
     public RuleEvent getEvent() {
-        return this.event;
+        return label().getEvent();
     }
 
     @Override
@@ -106,7 +102,7 @@ public class DefaultRuleTransition extends
     }
 
     public HostNode[] getAddedNodes() {
-        return this.addedNodes;
+        return label().getAddedNodes();
     }
 
     public RuleTransitionStub toStub() {
@@ -257,8 +253,8 @@ public class DefaultRuleTransition extends
      */
     @Override
     protected int computeHashCode() {
-        return System.identityHashCode(this.source)
-            + System.identityHashCode(this.event);
+        return System.identityHashCode(source())
+            + System.identityHashCode(getEvent());
     }
 
     @Override
@@ -292,7 +288,8 @@ public class DefaultRuleTransition extends
 
     /** Returns the (possibly {@code null} underlying control transition. */
     public CtrlTransition getCtrlTransition() {
-        return this.ctrlTrans;
+        CtrlState sourceCtrl = this.source.getCtrlState();
+        return sourceCtrl.getTransition(getAction());
     }
 
     @Override
@@ -305,15 +302,6 @@ public class DefaultRuleTransition extends
         return getCtrlTransition().getRecipe();
     }
 
-    private final CtrlTransition ctrlTrans;
-
-    /**
-     * The underlying rule of this transition.
-     * @invariant <tt>rule != null</tt>
-     */
-    private RuleEvent event;
-    /** The array of added nodes of this transition. */
-    private final HostNode[] addedNodes;
     /**
      * The underlying morphism of this transition. Computed lazily (using the
      * footprint) using {@link #computeMorphism()}.

@@ -20,12 +20,12 @@ import groove.graph.AbstractLabel;
 import groove.trans.Recipe;
 
 /** Class of labels that can appear on rule transitions. */
-public class RecipeLabel extends AbstractLabel implements ActionLabel {
+public class RecipeTransitionLabel extends AbstractLabel implements ActionLabel {
     /** 
      * Constructs a new label on the basis of a given rule event and list
      * of created nodes.
      */
-    public RecipeLabel(Recipe recipe, Iterable<RuleTransition> steps) {
+    public RecipeTransitionLabel(Recipe recipe, Iterable<RuleTransition> steps) {
         this.recipe = recipe;
         this.steps = steps;
         this.text = getLabelText();

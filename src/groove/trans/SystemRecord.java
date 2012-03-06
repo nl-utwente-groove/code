@@ -1,8 +1,10 @@
 /* $Id$ */
 package groove.trans;
 
+import static groove.trans.RuleEvent.Reuse.EVENT;
 import groove.lts.GTS;
-import groove.lts.TransitionLabel;
+import groove.lts.RuleTransitionLabel;
+import groove.trans.RuleEvent.Reuse;
 import groove.util.TreeHashSet;
 
 import java.util.Collection;
@@ -63,7 +65,7 @@ public class SystemRecord {
     }
 
     /**
-     * Returns an event for a given rule match. If {@link #isReuseEvents()} is
+     * Returns an event for a given rule match. If {@link #getReuse()} is
      * set, events are stored internally and reused.
      */
     public RuleEvent getEvent(Proof match) {
@@ -72,11 +74,11 @@ public class SystemRecord {
 
     /**
      * Returns a "normal" event representing a given event. If
-     * {@link #isReuseEvents()} is set, events are stored internally and reused.
+     * {@link #getReuse()} is set, events are stored internally and reused.
      */
     public RuleEvent normaliseEvent(RuleEvent event) {
         RuleEvent result;
-        if (isReuseEvents() && event instanceof AbstractEvent<?,?>) {
+        if (getReuse() == EVENT && event instanceof AbstractEvent<?,?>) {
             result = this.eventMap.put((AbstractEvent<?,?>) event);
             if (result == null) {
                 // the event is new.
@@ -90,33 +92,32 @@ public class SystemRecord {
     }
 
     /**
-     * Factory method for a composite event. If {@link #isReuseEvents()} is set,
+     * Factory method for a composite event. If {@link #getReuse()} is set,
      * the event is normalised w.r.t. a global store.
      * @param rule the rule of the composite event
      * @param eventSet the set of sub-events for the composite event
      */
     public RuleEvent createCompositeEvent(Rule rule,
             Collection<BasicEvent> eventSet) {
-        return normaliseEvent(new CompositeEvent(rule, eventSet,
-            isReuseEvents()));
+        return normaliseEvent(new CompositeEvent(rule, eventSet, getReuse()));
     }
 
     /**
-     * Factory method for a simple event. If {@link #isReuseEvents()} is set,
+     * Factory method for a simple event. If {@link #getReuse()} is set,
      * the event is normalised w.r.t. a global store.
      * @param rule the rule of the composite event
      * @param elementMap the element map for the simple event
      */
     public BasicEvent createSimpleEvent(Rule rule, RuleToHostMap elementMap) {
         return (BasicEvent) normaliseEvent(new BasicEvent(rule, elementMap,
-            isReuseEvents()));
+            getReuse()));
     }
 
     /** 
      * Normalises a given transition label.
      */
-    public TransitionLabel normaliseLabel(TransitionLabel prototype) {
-        TransitionLabel result = this.labelMap.get(prototype);
+    public RuleTransitionLabel normaliseLabel(RuleTransitionLabel prototype) {
+        RuleTransitionLabel result = this.labelMap.get(prototype);
         if (result == null) {
             this.labelMap.put(result = prototype, prototype);
         }
@@ -166,7 +167,7 @@ public class SystemRecord {
     private final GTS gts;
     /**
      * Identity map for events that have been encountered during exploration.
-     * Events are stored only if {@link #isReuseEvents()} is set.
+     * Events are stored only if {@link #getReuse()} is set.
      */
     private final TreeHashSet<AbstractEvent<?,?>> eventMap =
         new TreeHashSet<AbstractEvent<?,?>>() {
@@ -182,8 +183,8 @@ public class SystemRecord {
             }
         };
     /** Identity map of normal transition labels. */
-    private final Map<TransitionLabel,TransitionLabel> labelMap =
-        new HashMap<TransitionLabel,TransitionLabel>();
+    private final Map<RuleTransitionLabel,RuleTransitionLabel> labelMap =
+        new HashMap<RuleTransitionLabel,RuleTransitionLabel>();
 
     /**
      * Sets the policy of the GTS in determining state equivalence. This is only
@@ -246,16 +247,16 @@ public class SystemRecord {
      * <code>true</code>
      * @param reuse if <code>true</code>, events are stored and reused
      */
-    public void setReuseEvents(boolean reuse) {
-        this.reuseEvents = reuse;
+    public void setReuseEvents(Reuse reuse) {
+        this.reuse = reuse;
     }
 
     /**
      * Returns the current value of the reuse property.
      * @return if <code>true</code>, previously found results are reused
      */
-    public boolean isReuseEvents() {
-        return this.reuseEvents;
+    public Reuse getReuse() {
+        return this.reuse;
     }
 
     /**
@@ -263,7 +264,7 @@ public class SystemRecord {
      * global store {@link #eventMap} of "normal" event representatives. Default
      * value: <code>true</code>.
      */
-    private boolean reuseEvents = true;
+    private Reuse reuse = EVENT;
 
     /**
      * Changes the state of the copyGraphs property.

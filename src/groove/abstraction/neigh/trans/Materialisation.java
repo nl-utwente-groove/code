@@ -48,6 +48,7 @@ import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
+import groove.trans.RuleEvent.Reuse;
 import groove.trans.RuleNode;
 import groove.trans.SystemRecord;
 import groove.util.Pair;
@@ -528,8 +529,8 @@ public final class Materialisation {
             if (record != null) {
                 event = record.normaliseEvent(event);
             } */
-            event = new BasicEvent(this.matchedRule, this.match, false);
-            ((BasicEvent) event).setAggressiveNodeReuse();
+            event =
+                new BasicEvent(this.matchedRule, this.match, Reuse.AGGRESSIVE);
             ShapeRuleApplication app =
                 new ShapeRuleApplication(event, this.shape);
             result = app.getTarget();

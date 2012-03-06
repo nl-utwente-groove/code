@@ -4,7 +4,7 @@ import groove.graph.Edge;
 import groove.gui.jgraph.JAttr.AttributeMap;
 import groove.io.HTMLConverter;
 import groove.lts.GraphTransition;
-import groove.lts.TransitionLabel;
+import groove.lts.RuleTransitionLabel;
 import groove.lts.RuleTransition;
 import groove.util.Groove;
 
@@ -82,7 +82,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     protected StringBuilder getLine(Edge edge) {
         String text =
             getJGraph().isShowAnchors() && edge instanceof RuleTransition
-                    ? TransitionLabel.getAnchorText(((RuleTransition) edge).getEvent())
+                    ? RuleTransitionLabel.getAnchorText(((RuleTransition) edge).getEvent())
                     : edge.label().text();
         return new StringBuilder(text);
     }

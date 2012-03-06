@@ -16,6 +16,7 @@
  */
 package groove.explore.strategy;
 
+import static groove.trans.RuleEvent.Reuse.NONE;
 import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
@@ -105,7 +106,7 @@ public class ReteLinearStrategy extends AbstractStrategy {
         // state is generated, otherwise it is too late.
         gts.getRecord().setCollapse(false);
         gts.getRecord().setCopyGraphs(false);
-        gts.getRecord().setReuseEvents(false);
+        gts.getRecord().setReuseEvents(NONE);
         super.prepare(gts, state);
         gts.addLTSListener(this.collector);
 

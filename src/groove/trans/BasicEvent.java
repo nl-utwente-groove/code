@@ -16,6 +16,9 @@
  */
 package groove.trans;
 
+import static groove.trans.RuleEvent.Reuse.AGGRESSIVE;
+import static groove.trans.RuleEvent.Reuse.EVENT;
+import static groove.trans.RuleEvent.Reuse.NONE;
 import groove.graph.DefaultNode;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
@@ -30,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -53,14 +55,24 @@ final public class BasicEvent extends
      * @param reuse if <code>true</code>, the event should store diverse data
      *        structures to optimise for reuse
      */
-    public BasicEvent(Rule rule, RuleToHostMap anchorMap, boolean reuse) {
-        super(reference, rule, reuse);
+    public BasicEvent(Rule rule, RuleToHostMap anchorMap, Reuse reuse) {
+        super(reference, rule);
         assert anchorMap != null : String.format(
             "Can't produce event for %s with null anchor map",
             rule.getFullName());
         rule.testFixed(true);
         this.anchorImage = computeAnchorImage(anchorMap);
         this.hostFactory = anchorMap.getFactory();
+        switch (reuse) {
+        case AGGRESSIVE:
+            this.freshNodeList = AGGRESIVE_REUSE_LIST;
+            break;
+        case NONE:
+            this.freshNodeList = NO_REUSE_LIST;
+            break;
+        default:
+            this.freshNodeList = createFreshNodeList();
+        }
     }
 
     /**
@@ -86,6 +98,17 @@ final public class BasicEvent extends
      */
     public RuleToHostMap getCoanchorMap() {
         return getCache().getCoanchorMap();
+    }
+
+    @Override
+    Reuse getReuse() {
+        if (this.freshNodeList == NO_REUSE_LIST) {
+            return NONE;
+        } else if (this.freshNodeList == AGGRESIVE_REUSE_LIST) {
+            return AGGRESSIVE;
+        } else {
+            return EVENT;
+        }
     }
 
     /**
@@ -271,13 +294,7 @@ final public class BasicEvent extends
      * Returns the set of source elements that form the anchor image.
      */
     private Set<AnchorValue> getAnchorImageSet() {
-        if (this.anchorImageSet == null) {
-            RuleToHostMap anchorMap = getAnchorMap();
-            this.anchorImageSet =
-                new HashSet<AnchorValue>(anchorMap.nodeMap().values());
-            this.anchorImageSet.addAll(anchorMap.edgeMap().values());
-        }
-        return this.anchorImageSet;
+        return getCache().getAnchorImageSet();
     }
 
     /**
@@ -395,11 +412,7 @@ final public class BasicEvent extends
      * eraser nodes.
      */
     private Set<HostNode> getErasedNodes() {
-        if (isReuse()) {
-            return getCache().getErasedNodes();
-        } else {
-            return computeErasedNodes();
-        }
+        return getCache().getErasedNodes();
     }
 
     /**
@@ -425,11 +438,7 @@ final public class BasicEvent extends
      * eraser edges.
      */
     private Set<HostEdge> getErasedEdges() {
-        if (isReuse()) {
-            return getCache().getErasedEdges();
-        } else {
-            return computeErasedEdges();
-        }
+        return getCache().getErasedEdges();
     }
 
     /**
@@ -454,11 +463,7 @@ final public class BasicEvent extends
      * creator edges.
      */
     private Set<HostEdge> getSimpleCreatedEdges() {
-        if (isReuse()) {
-            return getCache().getSimpleCreatedEdges();
-        } else {
-            return computeSimpleCreatedEdges();
-        }
+        return getCache().getSimpleCreatedEdges();
     }
 
     /**
@@ -493,7 +498,7 @@ final public class BasicEvent extends
             result = AbstractEvent.EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[count];
-            if (added == null && this.doAggressiveNodeReuse) {
+            if (added == null && getReuse() == AGGRESSIVE) {
                 added = new ArrayList<HostNode>();
             }
             for (int i = 0; i < count; i++) {
@@ -510,20 +515,8 @@ final public class BasicEvent extends
             }
         }
         // normalise the result to a previously stored instance
-        if (isReuse()) {
-            if (this.coanchorImageMap == null) {
-                this.coanchorImageMap =
-                    new HashMap<List<HostNode>,HostNode[]>();
-            }
-            List<HostNode> resultAsList = Arrays.asList(result);
-            HostNode[] existingResult = this.coanchorImageMap.get(resultAsList);
-            if (existingResult == null) {
-                this.coanchorImageMap.put(resultAsList, result);
-                coanchorImageCount++;
-            } else {
-                result = existingResult;
-                coanchorImageOverlap++;
-            }
+        if (getReuse() != NONE) {
+            result = getHostFactory().normalise(result);
         }
         return result;
     }
@@ -556,7 +549,7 @@ final public class BasicEvent extends
             }
         }
         if (!added) {
-            if (this.doAggressiveNodeReuse) {
+            if (getReuse() == AGGRESSIVE) {
                 result = getFreshNode(sourceNodes, current, type);
             } else {
                 result = createNode(type);
@@ -570,11 +563,6 @@ final public class BasicEvent extends
         }
         assert result != null;
         return result;
-    }
-
-    /** Basic setter method. */
-    public void setAggressiveNodeReuse() {
-        this.doAggressiveNodeReuse = true;
     }
 
     private HostNode getFreshNode(Set<? extends HostNode> sourceNodes,
@@ -635,10 +623,7 @@ final public class BasicEvent extends
      * <code>null</code> if the reuse policy is set to <code>false</code>.
      */
     private List<HostNode> getFreshNodes(int creatorIndex) {
-        if (isReuse()) {
-            if (this.freshNodeList == null) {
-                this.freshNodeList = createFreshNodeList();
-            }
+        if (getReuse() == EVENT) {
             return this.freshNodeList.get(creatorIndex);
         } else {
             return null;
@@ -658,19 +643,8 @@ final public class BasicEvent extends
         return new SPOEventCache();
     }
 
-    /**
-     * Returns the number of nodes that were created during rule application.
-     */
-    static public int getFreshNodeCount() {
-        return freshNodeCount;
-    }
-
     /** The derivation record that has created this event, if any. */
     private final HostFactory hostFactory;
-    /**
-     * The set of source elements that form the anchor image.
-     */
-    private Set<AnchorValue> anchorImageSet;
     /**
      * The array of source elements that form the anchor image.
      */
@@ -678,34 +652,19 @@ final public class BasicEvent extends
     /**
      * The list of nodes created by {@link #createNode(TypeLabel)}.
      */
-    private List<List<HostNode>> freshNodeList;
-    /** Store of previously used (canonical) coanchor images. */
-    private Map<List<HostNode>,HostNode[]> coanchorImageMap;
+    private final List<List<HostNode>> freshNodeList;
+
     /**
-     * Flag that indicates if a more expensive search should be used when
-     * creating nodes for this event. This is useful for abstraction, when we
-     * want to make sure the node store remains small. 
+     * Returns the number of nodes that were created during rule application.
      */
-    private boolean doAggressiveNodeReuse;
+    static public int getFreshNodeCount() {
+        return freshNodeCount;
+    }
+
     /**
      * The total number of nodes (over all rules) created by {@link BasicEvent}.
      */
     private static int freshNodeCount;
-
-    /**
-     * Reports the number of times a stored coanchor image has been recomputed
-     * for a new rule application.
-     */
-    static public int getCoanchorImageOverlap() {
-        return coanchorImageOverlap;
-    }
-
-    /**
-     * Reports the total number of coanchor images stored.
-     */
-    static public int getCoanchorImageCount() {
-        return coanchorImageCount;
-    }
 
     /**
      * The start string of the anchor image description.
@@ -722,13 +681,15 @@ final public class BasicEvent extends
      * @see #getAnchorImageString()
      */
     static public final String ANCHOR_END = ")";
-    /** Counter for the reuse in coanchor images. */
-    static private int coanchorImageOverlap;
-    /** Counter for the coanchor images. */
-    static private int coanchorImageCount;
     /** Global empty set of nodes. */
     static private final Set<HostNode> EMPTY_NODE_SET =
         Collections.<HostNode>emptySet();
+    /** Value for {@link #freshNodeList} that indicates {@link #NONE} mode. */
+    static private List<List<HostNode>> NO_REUSE_LIST =
+        new ArrayList<List<HostNode>>();
+    /** Value for {@link #freshNodeList} that indicates {@link #AGGRESSIVE} mode. */
+    static private List<List<HostNode>> AGGRESIVE_REUSE_LIST =
+        new ArrayList<List<HostNode>>();
     /** Template reference to create empty caches. */
     static private final CacheReference<SPOEventCache> reference =
         CacheReference.<SPOEventCache>newInstance(false);
@@ -767,6 +728,19 @@ final public class BasicEvent extends
                 // result.putEdge(eraserEdge, eraserImage);
             }
             return result;
+        }
+
+        /**
+         * Returns the set of source elements that form the anchor image.
+         */
+        Set<AnchorValue> getAnchorImageSet() {
+            if (this.anchorImageSet == null) {
+                RuleToHostMap anchorMap = getAnchorMap();
+                this.anchorImageSet =
+                    new HashSet<AnchorValue>(anchorMap.nodeMap().values());
+                this.anchorImageSet.addAll(anchorMap.edgeMap().values());
+            }
+            return this.anchorImageSet;
         }
 
         /**
@@ -899,6 +873,10 @@ final public class BasicEvent extends
          * Matching from the rule's lhs to the source graph.
          */
         private RuleToHostMap anchorMap;
+        /**
+         * The set of source elements that form the anchor image.
+         */
+        private Set<AnchorValue> anchorImageSet;
         /**
          * Matching from the rule's rhs to the target graph.
          */
