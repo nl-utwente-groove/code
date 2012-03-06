@@ -28,7 +28,9 @@ import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
 import groove.util.FreeNumberDispenser;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -336,6 +338,26 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         return this.typeFactory;
     }
 
+    /** 
+     * Method to normalise an array of host nodes.
+     * Normalised arrays reuse the same array object for an 
+     * array containing the same nodes. 
+     */
+    public HostNode[] normalise(HostNode[] nodes) {
+        if (this.normalHostNodeMap == null) {
+            this.normalHostNodeMap = new HashMap<List<HostNode>,HostNode[]>();
+        }
+        List<HostNode> nodeList = Arrays.asList(nodes);
+        HostNode[] result = this.normalHostNodeMap.get(nodeList);
+        if (result == null) {
+            this.normalHostNodeMap.put(nodeList, result = nodes);
+            normaliseCount++;
+        } else {
+            normaliseGain++;
+        }
+        return result;
+    }
+
     /** Internal store of previously generated value nodes. */
     private final Map<String,Map<Object,ValueNode>> valueMaps =
         new HashMap<String,Map<Object,ValueNode>>();
@@ -343,6 +365,8 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     private final TypeFactory typeFactory;
     /** Stores the node type of the next node to be created. */
     private TypeNode lastNodeType;
+    /** Store of normalised host node arrays. */
+    private Map<List<HostNode>,HostNode[]> normalHostNodeMap;
 
     /** Returns a fresh instance of this factory, without type graph. */
     public static HostFactory newInstance() {
@@ -354,4 +378,23 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         assert type != null;
         return new HostFactory(type);
     }
+
+    /**
+     * Reports the number of times a normalised node array was shared.
+     */
+    static public int getNormaliseGain() {
+        return normaliseGain;
+    }
+
+    /**
+     * Reports the total number of normalised node arrays.
+     */
+    static public int getNormaliseCount() {
+        return normaliseCount;
+    }
+
+    /** Counter for the node array reuse. */
+    static private int normaliseGain;
+    /** Counter for the normalised node array. */
+    static private int normaliseCount;
 }

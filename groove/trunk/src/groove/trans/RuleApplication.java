@@ -387,7 +387,7 @@ public class RuleApplication implements DeltaApplier {
      */
     @Override
     public int hashCode() {
-        return getEvent().identityHashCode();
+        return getEvent().hashCode() ^ getSource().hashCode();
     }
 
     /**

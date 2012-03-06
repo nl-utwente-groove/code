@@ -32,6 +32,7 @@ import groove.lts.GraphState;
 import groove.lts.RuleTransition;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
+import groove.trans.RuleEvent.Reuse;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,12 +80,12 @@ public final class AGTS extends GTS {
             this.toRemove = null;
         }
         this.nextStateNr = 0;
-        this.getRecord().setReuseEvents(true);
+        this.getRecord().setReuseEvents(Reuse.NONE);
         this.getRecord().setCheckIso(true);
         this.storeAbsLabels();
     }
 
-    /** Private constructor used to build the reduces state space. */
+    /** Private constructor used to build the reduced state space. */
     private AGTS(AGTS agts) {
         super(agts.getGrammar());
         this.subsumedStatesCount = 0;
@@ -92,7 +93,7 @@ public final class AGTS extends GTS {
         this.reachability = agts.reachability;
         this.toRemove = null;
         this.nextStateNr = 0;
-        this.getRecord().setReuseEvents(false);
+        this.getRecord().setReuseEvents(Reuse.NONE);
         this.getRecord().setCheckIso(false);
         this.getRecord().setCollapse(false);
     }

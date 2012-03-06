@@ -119,8 +119,8 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     /**
      * This implementation returns the rule name.
      */
-    public TransitionLabel label() {
-        return TransitionLabel.createLabel(source(), getEvent(),
+    public RuleTransitionLabel label() {
+        return RuleTransitionLabel.createLabel(source(), getEvent(),
             this.addedNodes);
     }
 
@@ -270,7 +270,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      */
     @Override
     public int hashCode() {
-        return source().getNumber() + getEvent().identityHashCode();
+        return source().getNumber() + getEvent().hashCode();
     }
 
     /**

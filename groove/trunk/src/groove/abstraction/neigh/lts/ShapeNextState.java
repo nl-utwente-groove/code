@@ -23,7 +23,7 @@ import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.RuleTransition;
 import groove.lts.RuleTransitionStub;
-import groove.lts.TransitionLabel;
+import groove.lts.RuleTransitionLabel;
 import groove.trans.Action;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
@@ -80,7 +80,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public TransitionLabel label() {
+    public RuleTransitionLabel label() {
         return this.transition.label();
     }
 

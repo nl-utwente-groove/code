@@ -26,7 +26,6 @@ import groove.lts.GTSAdapter;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.BasicEvent;
 import groove.trans.HostFactory;
 import groove.trans.Rule;
 import groove.trans.SystemRecord;
@@ -215,9 +214,8 @@ public class ExplorationStatistics {
             MatchSetCollector.getEventReuse());
         printf("\t\tConfluent:\t%d%n", MatchApplier.getConfluentDiamondCount());
         printf("\t\tEvents:\t\t%d%n", SystemRecord.getEventCount());
-        printf("\tCoanchor reuse:\t%d/%d%n",
-            BasicEvent.getCoanchorImageOverlap(),
-            BasicEvent.getCoanchorImageCount());
+        printf("\tCoanchor reuse:\t%d/%d%n", HostFactory.getNormaliseGain(),
+            HostFactory.getNormaliseCount());
     }
 
     /** Reports statistics on isomorphism checking. */

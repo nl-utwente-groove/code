@@ -43,11 +43,17 @@ public class CompositeEvent extends
      *        the event corresponding to the top level of <code>rule</code>.
      */
     public CompositeEvent(Rule rule, Collection<BasicEvent> eventSet,
-            boolean reuse) {
-        super(reference, rule, reuse);
+            Reuse reuse) {
+        super(reference, rule);
         assert !eventSet.isEmpty();
+        this.reuse = reuse;
         this.eventArray = new BasicEvent[eventSet.size()];
         eventSet.toArray(this.eventArray);
+    }
+
+    @Override
+    Reuse getReuse() {
+        return this.reuse;
     }
 
     public boolean conflicts(RuleEvent other) {
@@ -176,6 +182,7 @@ public class CompositeEvent extends
         }
     }
 
+    private final Reuse reuse;
     /** The (non-empty) array of sub-events constituting this event. */
     final BasicEvent[] eventArray;
     /** Cache reference instance for initialisation. */
