@@ -50,17 +50,16 @@ class ShapeStore1 implements ShapeStore {
         char[] nodeEquivArray = flattenNodeEquiv(cache);
         result.nodeEquivArray = nodeEquivArray;
         result.nodeMultArray = flattenNodeMultMap(cache);
-        result.inEdgeMult = flattenEdgeMultMap(cache, INCOMING, nodeEquivArray);
-        result.outEdgeMult =
-            flattenEdgeMultMap(cache, OUTGOING, nodeEquivArray);
+        result.inEdgeSigs = flattenEdgeSigSet(cache, INCOMING, nodeEquivArray);
+        result.outEdgeSigs = flattenEdgeSigSet(cache, OUTGOING, nodeEquivArray);
         assert nodeEquivArray != null;
         return result;
     }
 
     /** Computes the flattened representation of an edge multiplicity map. */
-    private EdgeRecord[] flattenEdgeMultMap(ShapeCache cache, EdgeMultDir dir,
+    private EdgeRecord[] flattenEdgeSigSet(ShapeCache cache, EdgeMultDir dir,
             char[] nodeEquiv) {
-        Map<EdgeSignature,Multiplicity> multMap = cache.getEdgeMultMap(dir);
+        EdgeSignatureSet multMap = cache.getEdgeSigSet(dir);
         EdgeRecord[] result = new EdgeRecord[multMap.size()];
         int ix = 0;
         for (Map.Entry<EdgeSignature,Multiplicity> multEntry : multMap.entrySet()) {
@@ -103,7 +102,7 @@ class ShapeStore1 implements ShapeStore {
         setEdgeSet(cache);
         setNodeEquiv(cache);
         setNodeMultMap(cache);
-        setEdgeMultMaps(cache);
+        setEdgeSigSets(cache);
     }
 
     private void setNodeSet(ShapeCache cache) {
@@ -157,24 +156,23 @@ class ShapeStore1 implements ShapeStore {
         cache.setNodeMultMap(nodeMultMap);
     }
 
-    private void setEdgeMultMaps(ShapeCache cache) {
+    private void setEdgeSigSets(ShapeCache cache) {
         ShapeFactory factory = cache.getFactory();
-        Map<EdgeMultDir,MyHashMap<EdgeSignature,Multiplicity>> edgeMultMaps =
-            cache.createEdgeMultMaps();
+        Map<EdgeMultDir,EdgeSignatureSet> edgeMultMaps =
+            cache.createEdgeSigSets();
         for (EdgeMultDir dir : EdgeMultDir.values()) {
-            MyHashMap<EdgeSignature,Multiplicity> edgeMultMap =
-                edgeMultMaps.get(dir);
+            EdgeSignatureSet edgeSigSet = edgeMultMaps.get(dir);
             EdgeRecord[] records =
-                dir == EdgeMultDir.INCOMING ? this.inEdgeMult
-                        : this.outEdgeMult;
+                dir == EdgeMultDir.INCOMING ? this.inEdgeSigs
+                        : this.outEdgeSigs;
             for (int i = 0; i < records.length; i++) {
                 EdgeRecord record = records[i];
-                edgeMultMap.put(
+                edgeSigSet.put(
                     record.getSig(dir, factory, this.nodeEquivArray),
                     record.getMult());
             }
         }
-        cache.setEdgeMultMaps(edgeMultMaps);
+        cache.setEdgeSigSets(edgeMultMaps);
     }
 
     /** Flattened set of edges, filled when the shape is fixed. */
@@ -184,9 +182,9 @@ class ShapeStore1 implements ShapeStore {
     /** Flattened node multiplicity map, filled when the shape is fixed. */
     private char[] nodeMultArray;
     /** Flattened incoming edge multiplicity map, filled when the shape is fixed. */
-    private EdgeRecord[] inEdgeMult;
+    private EdgeRecord[] inEdgeSigs;
     /** Flattened outgoing edge multiplicity map, filled when the shape is fixed. */
-    private EdgeRecord[] outEdgeMult;
+    private EdgeRecord[] outEdgeSigs;
 
     /** Prototype instance of this store implementation. */
     public static final ShapeStore PROTOTYPE = new ShapeStore1();

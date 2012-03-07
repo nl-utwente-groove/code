@@ -266,7 +266,7 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
         getEquivRelation().clear();
         getNodeMultMap().clear();
         for (EdgeMultDir dir : EdgeMultDir.values()) {
-            getEdgeMultMap(dir).clear();
+            getEdgeSigSet(dir).clear();
         }
     }
 
@@ -291,8 +291,8 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
     }
 
     /** Retrieves the edge set from the cache. */
-    public Map<EdgeSignature,Multiplicity> getEdgeMultMap(EdgeMultDir dir) {
-        return getCache().getEdgeMultMap(dir);
+    public EdgeSignatureSet getEdgeSigSet(EdgeMultDir dir) {
+        return getCache().getEdgeSigSet(dir);
     }
 
     /** Flattened representation of the shape graph, filled when the shape is fixed. */

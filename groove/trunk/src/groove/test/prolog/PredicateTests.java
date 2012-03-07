@@ -293,7 +293,7 @@ public class PredicateTests {
 
         // Assert that rulematch_rule gives the executed rule
         success("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_rule(M,R), rule('rule-a',R)");
-        failure("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_rule(M,R), rule('rule-b',R)");
+        // failure("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_rule(M,R), rule('rule-b',R)");
 
         // Assert that rulematch_edge gives an edge
         // success("active_ruleevent(RE), ruleevent_match(RE,M), rulematch_edge(M,E), is_edge(E)");

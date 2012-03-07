@@ -16,6 +16,7 @@
  */
 package groove.graph.iso;
 
+import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
@@ -74,7 +75,8 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
         if (this.graphCertificate == 0) {
             computeCertificates();
             if (getGraph() instanceof Shape) {
-                this.graphCertificate += computeShapeCertificate((Shape) getGraph());
+                this.graphCertificate +=
+                    computeShapeCertificate((Shape) getGraph());
             }
 
             if (this.graphCertificate == 0) {
@@ -96,15 +98,16 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
     private int computeShapeCertificate(Shape shape) {
         int result = 0;
         for (ShapeNode node : shape.nodeSet()) {
-            @SuppressWarnings("unchecked")
-            N n = (N) node;
-            int nHash = getNodeCert(n).hashCode();
             for (ShapeNode equivNode : shape.getEquivClassOf(node)) {
                 @SuppressWarnings("unchecked")
                 N equivN = (N) equivNode;
                 result += getNodeCert(equivN).hashCode();
             }
-            for (EdgeSignature sig : shape.getEdgeSignatures(node)) {
+        }
+        for (EdgeMultDir dir : EdgeMultDir.values()) {
+            for (EdgeSignature sig : shape.getEdgeSigSet(dir).keySet()) {
+                @SuppressWarnings("unchecked")
+                int nHash = getNodeCert((N) sig.getNode()).hashCode();
                 int sigHash = sig.getLabel().hashCode();
                 for (ShapeNode opposite : sig.getEquivClass()) {
                     @SuppressWarnings("unchecked")

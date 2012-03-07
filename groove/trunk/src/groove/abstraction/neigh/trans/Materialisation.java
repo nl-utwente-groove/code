@@ -1099,11 +1099,12 @@ public final class Materialisation {
         ShapeMorphism morph = this.morph.clone();
         Set<EdgeSignature> preImgEs = new MyHashSet<EdgeSignature>();
         // We need to check for nodes that got disconnected...
-        for (ShapeNode origNode : origShape.nodeSet()) {
-            for (EdgeSignature origEs : origShape.getEdgeSignatures(origNode)) {
-                Multiplicity origEsMult = origShape.getEdgeSigMult(origEs);
-                if (!origEsMult.isZeroPlus()) {
-                    for (ShapeNode node : morph.getPreImages(origNode)) {
+        for (EdgeMultDir dir : EdgeMultDir.values()) {
+            for (Entry<EdgeSignature,Multiplicity> origEsEntry : origShape.getEdgeSigSet(
+                dir).entrySet()) {
+                if (!origEsEntry.getValue().isZeroPlus()) {
+                    EdgeSignature origEs = origEsEntry.getKey();
+                    for (ShapeNode node : morph.getPreImages(origEs.getNode())) {
                         // We know that the original signature has edges.
                         // Check if the pre-images also do.
                         morph.getPreImages(shape, node, origEs, false, preImgEs);

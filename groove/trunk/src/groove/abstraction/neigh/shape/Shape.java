@@ -23,7 +23,6 @@ import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
 import static groove.graph.EdgeRole.BINARY;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
-import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
@@ -79,44 +78,6 @@ public final class Shape extends ShapeGraph {
     /** Default constructor. Creates an empty shape. */
     public Shape(String name, ShapeFactory factory) {
         super(name, factory);
-    }
-
-    // ------------------------------------------------------------------------
-    // Static Methods
-    // ------------------------------------------------------------------------
-
-    /** Creates a shape from the given graph. */
-    public static Shape createShape(HostGraph graph) {
-        Shape shape =
-            new Shape(graph.getName(),
-                ShapeFactory.newInstance(graph.getTypeGraph()));
-        HostToShapeMap map = new HostToShapeMap(shape.getFactory());
-        int radius = Parameters.getAbsRadius();
-        // Compute the equivalence relation on the given graph.
-        GraphNeighEquiv gne = new GraphNeighEquiv(graph, radius);
-        // Now build the shape.
-        shape.createShapeNodes(gne, map);
-        shape.createEquivRelation(gne.getPrevEquivRelation(), map);
-        shape.createShapeEdges(gne.getEdgesEquivRel(), map);
-        shape.createEdgeMultMaps(gne, map, graph);
-        assert shape.isInvariantOK();
-        return shape;
-    }
-
-    /**
-     * If the abstraction is set to use only three multiplicity values, then
-     * this method projects any unbounded multiplicity to 0+.
-     * If all multiplicity values are used, then this method returns the object
-     * given as parameter.
-     */
-    private static Multiplicity widenMultRange(Multiplicity mult) {
-        if (Parameters.isUseThreeValues() && mult.isUnbounded()
-            && !mult.isZeroPlus()) {
-            return Multiplicity.getMultiplicity(0, Multiplicity.OMEGA,
-                mult.getKind());
-        } else {
-            return mult;
-        }
     }
 
     // ------------------------------------------------------------------------
@@ -321,7 +282,7 @@ public final class Shape extends ShapeGraph {
                 if (es.getEquivClass().isSingleton()
                     || this.isEdgeSigUnique(es)) {
                     // Update multiplicity map.
-                    this.getEdgeMultMap(direction).remove(es);
+                    this.getEdgeSigSet(direction).remove(es);
                 }
             }
         }
@@ -631,18 +592,15 @@ public final class Shape extends ShapeGraph {
 
     /** Basic getter method. */
     public Set<EdgeSignature> getEdgeMultMapKeys(EdgeMultDir direction) {
-        return this.getEdgeMultMap(direction).keySet();
+        return this.getEdgeSigSet(direction).keySet();
     }
 
     /** Basic getter method. */
     private ShapeEdge getShapeEdge(ShapeNode source, TypeLabel label,
             ShapeNode target) {
-        ShapeEdge result = null;
-        for (ShapeEdge edge : this.outEdgeSet(source)) {
-            if (edge.label().equals(label) && edge.target().equals(target)) {
-                result = edge;
-                break;
-            }
+        ShapeEdge result = getFactory().createEdge(source, label, target);
+        if (!containsEdge(result)) {
+            result = null;
         }
         return result;
     }
@@ -667,13 +625,7 @@ public final class Shape extends ShapeGraph {
      * new one is created and returned, but it is not stored.
      */
     public EdgeSignature getEdgeSignature(ShapeEdge edge, EdgeMultDir direction) {
-        EdgeSignature result = null;
-        for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
-            if (es.contains(edge)) {
-                result = es;
-                break;
-            }
-        }
+        EdgeSignature result = getEdgeSigSet(direction).getSignature(edge);
         if (result == null) {
             ShapeNode node = direction.incident(edge);
             TypeLabel label = edge.label();
@@ -761,33 +713,29 @@ public final class Shape extends ShapeGraph {
      */
     private void setEdgeSigMultWithoutCheck(EdgeSignature es, Multiplicity mult) {
         EdgeMultDir direction = es.getDirection();
-        if (!mult.isZero()) {
-            this.getEdgeMultMap(direction).put(es, mult);
-        } else {
+        if (mult.isZero()) {
             // Setting a multiplicity to zero is equivalent to
             // removing all edges in the signature from the shape.
             for (ShapeEdge edge : this.getEdgesFromSig(es)) {
                 this.removeEdge(edge);
             }
-            this.getEdgeMultMap(direction).remove(es);
+            this.getEdgeSigSet(direction).remove(es);
+        } else {
+            this.getEdgeSigSet(direction).put(es, mult);
         }
     }
 
     /** Basic getter method. */
     public Multiplicity getNodeMult(ShapeNode node) {
-        Multiplicity mult = getNodeMultMap().get(node);
-        if (mult == null) {
-            mult = Multiplicity.getMultiplicity(0, 0, NODE_MULT);
-        }
-        return mult;
+        Multiplicity result = getNodeMultMap().get(node);
+        return result == null ? ZERO_NODE_MULT : result;
     }
 
     /**
      * Returns the bounded sum of the node multiplicities of the given set.
      */
     Multiplicity getNodeSetMultSum(Set<? extends HostNode> nodes) {
-        Multiplicity accumulator =
-            Multiplicity.getMultiplicity(0, 0, MultKind.NODE_MULT);
+        Multiplicity accumulator = ZERO_NODE_MULT;
         for (HostNode node : nodes) {
             Multiplicity nodeMult = this.getNodeMult((ShapeNode) node);
             accumulator = accumulator.add(nodeMult);
@@ -797,26 +745,22 @@ public final class Shape extends ShapeGraph {
 
     /** Basic getter method. */
     public Multiplicity getEdgeMult(ShapeEdge edge, EdgeMultDir direction) {
-        EdgeSignature es = this.getEdgeSignature(edge, direction);
-        Multiplicity mult = this.getEdgeSigMult(es);
-        return mult;
+        Multiplicity result = getEdgeSigSet(direction).getEdgeMult(edge);
+        return result == null ? ZERO_EDGE_MULT : result;
+
     }
 
     /** Basic getter method. */
     public Multiplicity getEdgeSigMult(EdgeSignature es) {
-        Multiplicity mult = this.getEdgeMultMap(es.getDirection()).get(es);
-        if (mult == null) {
-            mult = Multiplicity.getMultiplicity(0, 0, EDGE_MULT);
-        }
-        return mult;
+        Multiplicity result = this.getEdgeSigSet(es.getDirection()).get(es);
+        return result == null ? ZERO_EDGE_MULT : result;
     }
 
     /**
      * Returns the bounded sum of the edge multiplicities of the given set.
      */
-    Multiplicity getEdgeSigSetMultSum(Set<EdgeSignature> esS) {
-        Multiplicity accumulator =
-            Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
+    Multiplicity getEdgeSigSetMult(Set<EdgeSignature> esS) {
+        Multiplicity accumulator = ZERO_EDGE_MULT;
         for (EdgeSignature es : esS) {
             Multiplicity edgeMult = this.getEdgeSigMult(es);
             accumulator = accumulator.add(edgeMult);
@@ -869,9 +813,9 @@ public final class Shape extends ShapeGraph {
         return result;
     }
 
-    /** Returns true if the given signature occurs in the multiplicity map. */
+    /** Returns true if the given signature occurs in the shape. */
     public boolean hasEdgeSignature(EdgeSignature es) {
-        return this.getEdgeMultMapKeys(es.getDirection()).contains(es);
+        return this.getEdgeSigSet(es.getDirection()).containsKey(es);
     }
 
     /**
@@ -1172,20 +1116,6 @@ public final class Shape extends ShapeGraph {
         return result;
     }
 
-    /** Returns all edge signatures with the given node. */
-    public Set<EdgeSignature> getEdgeSignatures(ShapeNode node) {
-        assert this.containsNode(node);
-        Set<EdgeSignature> result = new MyHashSet<EdgeSignature>();
-        for (EdgeMultDir direction : EdgeMultDir.values()) {
-            for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
-                if (es.getNode().equals(node)) {
-                    result.add(es);
-                }
-            }
-        }
-        return result;
-    }
-
     /**
      * Update all maps that use edge signatures that contained the old
      * equivalence class. The equivalence relation stays unchanged, i.e., the
@@ -1225,7 +1155,7 @@ public final class Shape extends ShapeGraph {
                     oldEs.getLabel(), newEc);
             Multiplicity mult = this.getEdgeSigMult(oldEs);
             if (!mult.isZero()) {
-                this.getEdgeMultMap(direction).remove(oldEs);
+                this.getEdgeSigSet(direction).remove(oldEs);
                 if (this.getEdgesFromSig(newEs).size() > 0) {
                     this.setEdgeSigMult(newEs, mult);
                 }
@@ -1354,7 +1284,7 @@ public final class Shape extends ShapeGraph {
     /** Returns true if the shape has an edge multiplicity different than 1. */
     public boolean hasCollectorEdgeMults() {
         for (EdgeMultDir direction : EdgeMultDir.values()) {
-            for (Multiplicity mult : getEdgeMultMap(direction).values()) {
+            for (Multiplicity mult : getEdgeSigSet(direction).values()) {
                 if (mult.isCollector()) {
                     return true;
                 }
@@ -1363,4 +1293,48 @@ public final class Shape extends ShapeGraph {
         return false;
     }
 
+    // ------------------------------------------------------------------------
+    // Static Methods
+    // ------------------------------------------------------------------------
+
+    /** Creates a shape from the given graph. */
+    public static Shape createShape(HostGraph graph) {
+        Shape shape =
+            new Shape(graph.getName(),
+                ShapeFactory.newInstance(graph.getTypeGraph()));
+        HostToShapeMap map = new HostToShapeMap(shape.getFactory());
+        int radius = Parameters.getAbsRadius();
+        // Compute the equivalence relation on the given graph.
+        GraphNeighEquiv gne = new GraphNeighEquiv(graph, radius);
+        // Now build the shape.
+        shape.createShapeNodes(gne, map);
+        shape.createEquivRelation(gne.getPrevEquivRelation(), map);
+        shape.createShapeEdges(gne.getEdgesEquivRel(), map);
+        shape.createEdgeMultMaps(gne, map, graph);
+        assert shape.isInvariantOK();
+        return shape;
+    }
+
+    /**
+     * If the abstraction is set to use only three multiplicity values, then
+     * this method projects any unbounded multiplicity to 0+.
+     * If all multiplicity values are used, then this method returns the object
+     * given as parameter.
+     */
+    private static Multiplicity widenMultRange(Multiplicity mult) {
+        if (Parameters.isUseThreeValues() && mult.isUnbounded()
+            && !mult.isZeroPlus()) {
+            return Multiplicity.getMultiplicity(0, Multiplicity.OMEGA,
+                mult.getKind());
+        } else {
+            return mult;
+        }
+    }
+
+    /** Constant edge multiplicity 0. */
+    private final static Multiplicity ZERO_EDGE_MULT =
+        Multiplicity.getMultiplicity(0, 0, EDGE_MULT);
+    /** Constant edge multiplicity 0. */
+    private final static Multiplicity ZERO_NODE_MULT =
+        Multiplicity.getMultiplicity(0, 0, NODE_MULT);
 }

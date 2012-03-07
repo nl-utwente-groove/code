@@ -61,7 +61,7 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
         // iterate over the edge signatures of the shape to calculate the multiplicities
         Shape shape = (Shape) this.graph;
         for (EdgeMultDir dir : EdgeMultDir.values()) {
-            for (Map.Entry<EdgeSignature,Multiplicity> esEntry : shape.getEdgeMultMap(
+            for (Map.Entry<EdgeSignature,Multiplicity> esEntry : shape.getEdgeSigSet(
                 dir).entrySet()) {
                 EdgeSignature es = esEntry.getKey();
                 NodeInfo info = result.get(es.getNode());
