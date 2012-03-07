@@ -263,12 +263,29 @@ public final class Materialisation {
         Set<Materialisation> result;
         Materialisation initialMat = new Materialisation(shape, preMatch);
         if (initialMat.isRuleModifying()) {
-            result = initialMat.compute();
+            result = initialMat.getSolutions();
         } else {
             result = new MyHashSet<Materialisation>();
             result.add(initialMat);
         }
         return result;
+    }
+
+    /**
+     * Visits the set of all possible materialisations of the
+     * given shape and pre-match. This method resolves all non-determinism
+     * in the materialisation phase, so the visited
+     * materialisations are ready to be transformed by conventional rule
+     * application.
+     */
+    public static void visitMaterialisations(Shape shape, Proof preMatch,
+            Visitor<Materialisation,?> visitor) {
+        Materialisation initialMat = new Materialisation(shape, preMatch);
+        if (initialMat.isRuleModifying()) {
+            initialMat.visitSolutions(visitor);
+        } else if (initialMat.postProcess()) {
+            visitor.visit(initialMat);
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -477,6 +494,7 @@ public final class Materialisation {
         }
     }
 
+    /** Tests if this materialisation violates any NACs of the rule. */
     boolean violatesNACs() {
         boolean result = false;
         if (this.hasNACs()) {
@@ -716,7 +734,33 @@ public final class Materialisation {
     }
 
     /** Computes and returns the set of materialisation objects. */
-    private Set<Materialisation> compute() {
+    private Set<Materialisation> getSolutions() {
+        prepareSolutions();
+        ResultSet result = new ResultSet();
+        if (this.getBundles().isEmpty()) {
+            // Trivial case, no need to create an equation system.
+            result.add(this);
+        } else {
+            EquationSystem.newEqSys(this).solve(result);
+        }
+
+        return result;
+    }
+
+    /** Visits the set of materialisation objects. */
+    private void visitSolutions(Visitor<Materialisation,?> visitor) {
+        prepareSolutions();
+        if (this.getBundles().isEmpty()) {
+            // Trivial case, no need to create an equation system.
+            if (postProcess()) {
+                visitor.visit(this);
+            }
+        } else {
+            EquationSystem.newEqSys(this).visitSolutions(visitor);
+        }
+    }
+
+    private void prepareSolutions() {
         assert this.stage == 1;
         // Search for nodes in the original match image that have to be
         // materialised. 
@@ -758,15 +802,6 @@ public final class Materialisation {
         // Create a new equation system for this materialisation and return
         // the resulting materialisations from the solution.
         this.computeBundles(this.getAffectedEdges());
-        ResultSet result = new ResultSet();
-        if (this.getBundles().isEmpty()) {
-            // Trivial case, no need to create an equation system.
-            result.add(this);
-        } else {
-            EquationSystem.newEqSys(this).solve(result);
-        }
-
-        return result;
     }
 
     /**
@@ -1123,6 +1158,15 @@ public final class Materialisation {
         return this.nodeSplitMultMap.get(origNode);
     }
 
+    /** Tests a materialisation for NAC satisfaction. */
+    boolean postProcess() {
+        recursiveGarbageCollectNodes();
+        updateShapeMorphism();
+        assert isShapeMorphConsistent();
+        assert getShape().isInvariantOK();
+        return !violatesNACs();
+    }
+
     // ------------------------------------------------------------------------
     // Inner Classes
     // ------------------------------------------------------------------------
@@ -1141,11 +1185,7 @@ public final class Materialisation {
     private static class ResultSet extends MyHashSet<Materialisation> {
         @Override
         public boolean add(Materialisation mat) {
-            mat.recursiveGarbageCollectNodes();
-            mat.updateShapeMorphism();
-            assert mat.isShapeMorphConsistent();
-            assert mat.getShape().isInvariantOK();
-            if (!mat.violatesNACs()) {
+            if (mat.postProcess()) {
                 return super.add(mat);
             } else {
                 // This materialisation violates some NAC, drop it.
