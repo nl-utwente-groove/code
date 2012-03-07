@@ -37,7 +37,9 @@ import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
+import groove.util.Duo;
 import groove.util.Groove;
+import groove.util.Pair;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
@@ -825,40 +827,49 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     }
 
     /**
-     * Returns the set of type edges for a given source and target node type,
-     * or one of their supertypes.
-     * @param sourceType the minimal source type for the required edges; if {@code null}, the
-     * source type is unconstrained
-     * @param targetType the minimal target type for the required edges; if {@code null}, the
-     * target type is unconstrained
-     * @param role the role of the edges to be looked up
+     * Returns the (most concrete) type edge for a given source and target node type
+     * and edge label, or {@code null} if the edge label does not occur for the
+     * node type or any of its supertypes.
+     * @param precise if {@code true}, the source and target types must be observed
+     * precisely; otherwise, supertypes are allowed
      */
-    private Set<TypeEdge> getTypeEdges(TypeNode sourceType,
-            TypeNode targetType, EdgeRole role) {
-        Set<TypeEdge> result = new HashSet<TypeEdge>();
-        boolean sourceFixed = sourceType != null;
-        boolean targetFixed = targetType != null;
-        Set<TypeNode> derivedSourceTypes =
-            sourceFixed ? getSupertypes(sourceType) : null;
-        Set<TypeNode> derivedTargetTypes =
-            targetFixed ? getSupertypes(targetType) : null;
-        if (sourceFixed) {
-            if (derivedSourceTypes != null
-                && (!targetFixed || derivedTargetTypes != null)) {
-                for (TypeNode derivedSourceType : derivedSourceTypes) {
-                    for (TypeEdge edge : outEdgeSet(derivedSourceType)) {
-                        if (!targetFixed
-                            || derivedTargetTypes.contains(edge.target())) {
-                            result.add(edge);
-                        }
-                    }
+    public TypeEdge getTypeEdge(TypeNode sourceType, TypeLabel label,
+            TypeNode targetType, boolean precise) {
+        TypeEdge result = null;
+        if (isFixed()) {
+            TypeEdgeMap edgeMap;
+            if (precise) {
+                edgeMap = this.exactEdgeMap;
+                if (edgeMap == null) {
+                    edgeMap = this.exactEdgeMap = computeEdgeMap(true);
+                }
+            } else {
+                edgeMap = this.superEdgeMap;
+                if (edgeMap == null) {
+                    edgeMap = this.superEdgeMap = computeEdgeMap(false);
                 }
             }
+            result = edgeMap.get(sourceType, label, targetType);
         } else {
-            assert targetFixed;
-            if (derivedTargetTypes != null) {
-                for (TypeNode derivedTargetType : derivedTargetTypes) {
-                    result.addAll(inEdgeSet(derivedTargetType));
+            result = findTypeEdge(sourceType, label, targetType, precise);
+        }
+        return result;
+    }
+
+    private TypeEdgeMap computeEdgeMap(boolean precise) {
+        TypeEdgeMap result = new TypeEdgeMap();
+        for (TypeEdge edge : edgeSet()) {
+            if (precise) {
+                result.put(edge.source(), edge.target(), edge);
+            } else {
+                for (TypeNode source : getSubtypes(edge.source())) {
+                    for (TypeNode target : getSubtypes(edge.target())) {
+                        TypeEdge image = result.get(source, edge.label, target);
+                        // override existing image if this edge is concrete
+                        if (image == null || !edge.isAbstract()) {
+                            result.put(source, target, edge);
+                        }
+                    }
                 }
             }
         }
@@ -872,17 +883,15 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      * @param precise if {@code true}, the source and target types must be observed
      * precisely; otherwise, supertypes are allowed
      */
-    public TypeEdge getTypeEdge(TypeNode sourceType, TypeLabel label,
+    private TypeEdge findTypeEdge(TypeNode sourceType, TypeLabel label,
             TypeNode targetType, boolean precise) {
         TypeEdge result = null;
-        for (TypeEdge edge : getTypeEdges(sourceType, targetType,
-            label.getRole())) {
-            if (precise
-                && !(edge.source().equals(sourceType) && edge.target().equals(
-                    targetType))) {
-                continue;
-            }
-            if (!edge.label().equals(label)) {
+        for (TypeEdge edge : labelEdgeSet(label)) {
+            boolean sourceCorrect =
+                isSubtype(sourceType, edge.source(), precise);
+            boolean targetCorrect =
+                isSubtype(targetType, edge.target(), precise);
+            if (!sourceCorrect || !targetCorrect) {
                 continue;
             }
             // try to find a concrete type
@@ -894,12 +903,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 }
             }
         }
-        if (result == null && isImplicit()) {
-            // this must be due to the fact that we are still editing the graph being analysed
-            // return an edge that is not in the type graph
-            //            result = getFactory().newEdge(sourceType, label, targetType);
-        }
         return result;
+    }
+
+    /** Tests for either the subtype relation or type equality. */
+    private boolean isSubtype(TypeNode subtype, TypeNode supertype,
+            boolean precise) {
+        return precise ? supertype.equals(subtype) : isSubtype(subtype,
+            supertype);
     }
 
     /** 
@@ -1148,6 +1159,11 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     /** Set of all labels occurring in the type graph. */
     private Set<TypeLabel> labels;
 
+    /** Node-label-edge-map for precisely matching type edges. */
+    private TypeEdgeMap exactEdgeMap;
+    /** Node-label-edge-map for type edges starting at supertypes. */
+    private TypeEdgeMap superEdgeMap;
+
     /** Creates an implicit type graph for a given set of labels. */
     public static TypeGraph createImplicitType(Set<TypeLabel> labels) {
         TypeGraph result = new TypeGraph("implicit type graph", true);
@@ -1222,5 +1238,21 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         private final String name;
         private final Set<TypeNode> nodes;
         private final Set<TypeEdge> edges;
+    }
+
+    private static class TypeEdgeKey extends Pair<Duo<TypeNode>,TypeLabel> {
+        TypeEdgeKey(TypeNode source, TypeLabel label, TypeNode target) {
+            super(Duo.newDuo(source, target), label);
+        }
+    }
+
+    private static class TypeEdgeMap extends HashMap<TypeEdgeKey,TypeEdge> {
+        void put(TypeNode source, TypeNode target, TypeEdge edge) {
+            put(new TypeEdgeKey(source, edge.label(), target), edge);
+        }
+
+        TypeEdge get(TypeNode source, TypeLabel label, TypeNode target) {
+            return get(new TypeEdgeKey(source, label, target));
+        }
     }
 }
