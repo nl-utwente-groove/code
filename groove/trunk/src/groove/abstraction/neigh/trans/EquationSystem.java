@@ -30,6 +30,7 @@ import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.util.Duo;
 import groove.util.Fixable;
+import groove.util.Visitor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -297,6 +298,53 @@ public final class EquationSystem {
      * This method resolves all non-determinism of the materialisation phase. 
      */
     public void solve(Set<Materialisation> result) {
+        SolutionSet finishedSols = computeSolutions();
+        // Create the return objects.
+        for (Solution sol : finishedSols) {
+            assert this.isValid(sol);
+            Materialisation mat;
+            if (finishedSols.size() == 1) {
+                mat = this.mat;
+            } else {
+                mat = this.mat.clone();
+            }
+            boolean requiresNextStage = this.updateMat(mat, sol);
+            if (requiresNextStage) {
+                assert this.stage < 3;
+                new EquationSystem(mat).solve(result);
+            } else {
+                result.add(mat);
+            }
+        }
+    }
+
+    /**
+     * Finds all solutions of this equation system and visits all
+     * materialisation objects created from the valid solutions.
+     * This method resolves all non-determinism of the materialisation phase. 
+     */
+    public void visitSolutions(Visitor<Materialisation,?> visitor) {
+        SolutionSet finishedSols = computeSolutions();
+        // Create the return objects.
+        for (Solution sol : finishedSols) {
+            assert this.isValid(sol);
+            Materialisation mat;
+            if (finishedSols.size() == 1) {
+                mat = this.mat;
+            } else {
+                mat = this.mat.clone();
+            }
+            boolean requiresNextStage = this.updateMat(mat, sol);
+            if (requiresNextStage) {
+                assert this.stage < 3;
+                new EquationSystem(mat).visitSolutions(visitor);
+            } else if (mat.postProcess()) {
+                visitor.visit(mat);
+            }
+        }
+    }
+
+    private SolutionSet computeSolutions() {
         // Compute all solutions.
         Solution initialSol =
             new Solution(this.varsCount, this.lbRange, this.ubRange,
@@ -321,23 +369,7 @@ public final class EquationSystem {
             System.out.println(this);
             System.out.println(this.mat);
         }
-        // Create the return objects.
-        for (Solution sol : finishedSols) {
-            assert this.isValid(sol);
-            Materialisation mat;
-            if (finishedSolsSize == 1) {
-                mat = this.mat;
-            } else {
-                mat = this.mat.clone();
-            }
-            boolean requiresNextStage = this.updateMat(mat, sol);
-            if (requiresNextStage) {
-                assert this.stage < 3;
-                new EquationSystem(mat).solve(result);
-            } else {
-                result.add(mat);
-            }
-        }
+        return finishedSols;
     }
 
     /**

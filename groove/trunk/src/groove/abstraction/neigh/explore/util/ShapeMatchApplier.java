@@ -32,9 +32,9 @@ import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
 import groove.trans.RuleEvent;
 import groove.util.Pair;
+import groove.util.Visitor;
 
 import java.io.File;
-import java.util.Set;
 
 /**
  * A version of a {@link MatchApplier} for abstract exploration.
@@ -90,10 +90,10 @@ public final class ShapeMatchApplier extends MatchApplier {
      * this method is garbage: callers should not use it.
      */
     @Override
-    public RuleTransition apply(GraphState sourceGS, MatchResult match) {
+    public RuleTransition apply(GraphState sourceGS, final MatchResult match) {
         assert sourceGS instanceof ShapeState;
         addTransitionReporter.start();
-        ShapeState source = (ShapeState) sourceGS;
+        final ShapeState source = (ShapeState) sourceGS;
         RuleTransition result = null;
         RuleEvent origEvent = match.getEvent();
         Shape host = source.getGraph();
@@ -111,46 +111,22 @@ public final class ShapeMatchApplier extends MatchApplier {
         try {
             // Transform the source state.
             assert PreMatch.isValidPreMatch(host, origEvent);
-            // Find all materialisations.
-            Set<Materialisation> mats =
-                Materialisation.getMaterialisations(host,
-                    origEvent.getMatch(host));
-            // For all materialisations.
-            for (Materialisation mat : mats) {
-                // Transform and normalise the shape.
-                Pair<Shape,RuleEvent> pair = mat.applyMatch(agts.getRecord());
-                Shape transformedShape = pair.one();
-                RuleEvent realEvent = pair.two();
-                Shape target = transformedShape.normalise();
-
-                RuleTransition trans = null;
-                ShapeNextState newState =
-                    new ShapeNextState(agts.getNextStateNr(), target, source,
-                        realEvent);
-                addStateReporter.start();
-                ShapeState oldState = agts.addState(newState);
-                addStateReporter.stop();
-                if (oldState != null) {
-                    // The state was not added as an equivalent state existed.
-                    if (!agts.isReachability()) {
-                        trans =
-                            new ShapeTransition(source, realEvent, oldState);
-                        this.println("New transition: " + trans);
+            // Visit all materialisations and apply them to the source graph
+            Visitor<Materialisation,RuleTransition> visitor =
+                new Visitor<Materialisation,RuleTransition>() {
+                    @Override
+                    protected boolean process(Materialisation mat) {
+                        RuleTransition trans =
+                            applyMaterialisation(source, match, mat);
+                        if (trans != null) {
+                            setResult(trans);
+                        }
+                        return true;
                     }
-                } else {
-                    // The state was added as a next-state.
-                    trans = newState;
-                    this.println("New state: " + source + "--" + match + "-->"
-                        + newState);
-                    if (USE_GUI) {
-                        ShapePreviewDialog.showShape(newState.getGraph());
-                    }
-                }
-                if (trans != null) {
-                    agts.addRuleTransition(trans);
-                    result = trans;
-                }
-            }
+                };
+            Materialisation.visitMaterialisations(host,
+                origEvent.getMatch(host), visitor);
+            result = visitor.getResult();
         } catch (Throwable e) {
             // Additional code for bug hunting.
             System.err.println("\nFound a bug in the abstraction code!!!");
@@ -170,6 +146,46 @@ public final class ShapeMatchApplier extends MatchApplier {
         addTransitionReporter.stop();
         // Returns the last produced transition.
         return result;
+    }
+
+    /**
+     * Transforms and normalises a source graph according to a given materialisation,
+     * and adds it to the GTS, together with a transition to it if required.
+     */
+    private RuleTransition applyMaterialisation(ShapeState source,
+            MatchResult match, Materialisation mat) {
+        AGTS agts = this.getGTS();
+        // Transform and normalise the shape.
+        Pair<Shape,RuleEvent> pair = mat.applyMatch(agts.getRecord());
+        Shape transformedShape = pair.one();
+        RuleEvent realEvent = pair.two();
+        Shape target = transformedShape.normalise();
+
+        RuleTransition trans = null;
+        ShapeNextState newState =
+            new ShapeNextState(agts.getNextStateNr(), target, source, realEvent);
+        addStateReporter.start();
+        ShapeState oldState = agts.addState(newState);
+        addStateReporter.stop();
+        if (oldState != null) {
+            // The state was not added as an equivalent state existed.
+            if (!agts.isReachability()) {
+                trans = new ShapeTransition(source, realEvent, oldState);
+                this.println("New transition: " + trans);
+            }
+        } else {
+            // The state was added as a next-state.
+            trans = newState;
+            this.println("New state: " + source + "--" + match + "-->"
+                + newState);
+            if (USE_GUI) {
+                ShapePreviewDialog.showShape(newState.getGraph());
+            }
+        }
+        if (trans != null) {
+            agts.addRuleTransition(trans);
+        }
+        return trans;
     }
 
     // ------------------------------------------------------------------------
