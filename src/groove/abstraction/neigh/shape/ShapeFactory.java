@@ -17,6 +17,7 @@
 package groove.abstraction.neigh.shape;
 
 import groove.abstraction.neigh.trans.RuleToShapeMap;
+import groove.graph.Label;
 import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
@@ -78,6 +79,16 @@ public final class ShapeFactory extends HostFactory {
     @Override
     public ShapeNode getNode(int nr) {
         return (ShapeNode) super.getNode(nr);
+    }
+
+    @Override
+    public ShapeEdge createEdge(HostNode source, String text, HostNode target) {
+        return (ShapeEdge) super.createEdge(source, text, target);
+    }
+
+    @Override
+    public ShapeEdge createEdge(HostNode source, Label label, HostNode target) {
+        return (ShapeEdge) super.createEdge(source, label, target);
     }
 
     @Override

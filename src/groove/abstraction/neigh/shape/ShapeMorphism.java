@@ -266,7 +266,7 @@ public final class ShapeMorphism extends HostGraphMorphism {
                     Set<ShapeNode> nodesS = this.getPreImages(esT.getNode());
                     for (ShapeNode nodeS : nodesS) {
                         this.getPreImages(from, nodeS, esT, true, esSS);
-                        Multiplicity sum = from.getEdgeSigSetMultSum(esSS);
+                        Multiplicity sum = from.getEdgeSigSetMult(esSS);
                         // EZ says: we need subsumption, not equality.
                         //if (!esTMult.equals(sum)) {
                         if (!esTMult.subsumes(sum)) {
