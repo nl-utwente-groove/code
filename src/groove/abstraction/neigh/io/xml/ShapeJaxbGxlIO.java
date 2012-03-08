@@ -124,8 +124,7 @@ public final class ShapeJaxbGxlIO extends
     @Override
     protected ShapeEdge createEdge(ShapeNode sourceNode, String label,
             ShapeNode targetNode) {
-        return (ShapeEdge) this.elementFactory.createEdge(sourceNode, label,
-            targetNode);
+        return this.elementFactory.createEdge(sourceNode, label, targetNode);
     }
 
     /**
