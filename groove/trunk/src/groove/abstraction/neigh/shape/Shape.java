@@ -1025,23 +1025,7 @@ public final class Shape extends ShapeGraph {
      */
     private void handleCrossingEdges(Materialisation mat, ShapeNode nodeS) {
         Set<ShapeEdge> possibleEdges = new MyHashSet<ShapeEdge>();
-        // First check all edge signatures that will be affected by the split.
-        // I.e., signatures that have the given node in their equivalence class.
-        for (EdgeSignature es : this.getEdgeSignatures(this.getEquivClassOf(nodeS))) {
-            if (es.isSelfReferencing()) {
-                continue;
-            }
-            for (ShapeEdge edgeS : this.getEdgesFromSig(es)) {
-                if (!this.isEdgeConcrete(edgeS)
-                    && (edgeS.source().equals(nodeS) || edgeS.target().equals(
-                        nodeS))) {
-                    // We have an edge that is not concrete.
-                    // Add it to the list of possible edges.
-                    possibleEdges.add(edgeS);
-                }
-            }
-        }
-        // Now handle all incident edges to the node.
+        // Handle all incident edges to the node.
         for (ShapeEdge edgeS : this.edgeSet(nodeS)) {
             if (edgeS.getRole() != BINARY) {
                 continue;
