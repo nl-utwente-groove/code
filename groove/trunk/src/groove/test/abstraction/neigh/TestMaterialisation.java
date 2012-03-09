@@ -649,17 +649,15 @@ public class TestMaterialisation {
         }
     }
 
-    // VdB says: These graphs no longer exist in basic-tests.gps
-    // EZ says: Yes, they do. Reverting previous change...
     @Test
     public void testMaterialisation13() {
-        File file = new File(DIRECTORY + "materialisation-test-13.gxl");
-        Shape shape = marshaller.loadShape(file);
-        Rule rule = grammar.getRule("test-mat-13");
-
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(2);
         Multiplicity.initMultStore();
+
+        File file = new File(DIRECTORY + "materialisation-test-13.gxl");
+        Shape shape = marshaller.loadShape(file);
+        Rule rule = grammar.getRule("test-mat-13");
 
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(3, preMatches.size());
@@ -672,13 +670,13 @@ public class TestMaterialisation {
 
     @Test
     public void testMaterialisation14() {
-        File file = new File(DIRECTORY + "materialisation-test-14.gxl");
-        Shape shape = marshaller.loadShape(file);
-        Rule rule = grammar.getRule("test-mat-14");
-
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(2);
         Multiplicity.initMultStore();
+
+        File file = new File(DIRECTORY + "materialisation-test-14.gxl");
+        Shape shape = marshaller.loadShape(file);
+        Rule rule = grammar.getRule("test-mat-14");
 
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(2, preMatches.size());
