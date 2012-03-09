@@ -18,6 +18,7 @@ package groove.gui;
 
 import static groove.gui.Options.SHOW_LTS_OPTION;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
+import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.util.Pair;
@@ -347,19 +348,18 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
 
     /**
      * Rebuilds the underlying {@link GraphJGraph} from its underlying graph,
-     * and then refreshes.
+     * and then refreshes. This is necessary when the 'showBidirectionalEdges'
+     * option is changed.
      */
-    // TODO
     protected void rebuild() {
-        //        GraphJModel<?,?> model = getJGraph().getModel();
-        //        if (model instanceof AspectJModel) {
-        //            AspectJModel amodel = (AspectJModel) model;
-        //            AspectGraph graph = amodel.getGraph();
-        //            amodel.loadGraph(graph);
-        //        }
-        //        refresh();
-        System.out.println("Warning: automatic refresh of bidirectional edges "
-            + "option does not function properly yet. Please refresh manually.");
+        GraphJModel<?,?> model = getJGraph().getModel();
+        if (model instanceof AspectJModel) {
+            AspectJModel oldModel = (AspectJModel) model;
+            AspectJModel newModel =
+                oldModel.cloneWithNewGraph(oldModel.getGraph());
+            getJGraph().setModel(newModel);
+        }
+        refresh();
     }
 
     /**

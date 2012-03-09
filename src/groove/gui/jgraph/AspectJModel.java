@@ -71,6 +71,16 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         this.grammar = grammar;
     }
 
+    /** 
+     * Constructor for cloning only.
+     */
+    private AspectJModel(GraphJVertex jVertexProt, GraphJEdge jEdgeProt,
+            GrammarModel grammar) {
+        super(jVertexProt, jEdgeProt);
+        assert grammar != null;
+        this.grammar = grammar;
+    }
+
     /** Specialises the type to a list of {@link GraphJCell}s. */
     @Override
     @SuppressWarnings("unchecked")
@@ -113,6 +123,18 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         this.jModelModCount.increase();
         this.graphModCount.increase();
         setLoading(false);
+    }
+
+    /** 
+     * Clones this model, and initializes the new model with the given
+     * argument graph.
+     */
+    public AspectJModel cloneWithNewGraph(Graph<AspectNode,AspectEdge> graph) {
+        AspectJModel result =
+            new AspectJModel(this.jVertexProt, this.jEdgeProt, this.grammar);
+        result.beingEdited = this.beingEdited;
+        result.loadGraph(graph);
+        return result;
     }
 
     /** 
