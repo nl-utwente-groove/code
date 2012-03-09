@@ -1642,8 +1642,8 @@ public final class EquationSystem {
          * the maximum index. Doesn't operate on the dual range.
          */
         void nonRecCutLow(int limit) {
-            while (this.getMin() < limit && this.i < this.j) {
-                this.i++;
+            if (this.getMin() < limit && limit <= this.j) {
+                this.i = limit;
             }
         }
 
@@ -1661,8 +1661,8 @@ public final class EquationSystem {
          * the minimum index. Doesn't operate on the dual range.
          */
         void nonRecCutHigh(int limit) {
-            while (this.getMax() > limit && this.i < this.j) {
-                this.j--;
+            if (this.getMax() > limit && limit >= this.i) {
+                this.j = limit;
             }
         }
 
