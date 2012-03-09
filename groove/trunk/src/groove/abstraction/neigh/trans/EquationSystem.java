@@ -467,15 +467,15 @@ public final class EquationSystem {
     private void iterateEquations(Solution sol) {
         // For all equations, try to fix as many variables as possible.
         boolean solutionModified = true;
-        boolean removeEq;
         while (solutionModified) {
             solutionModified = false;
             for (BoundType type : BoundType.values()) {
-                MyHashSet<Equation> copyEqs = sol.getEqs(type).clone();
-                for (Equation eq : copyEqs) {
-                    removeEq = eq.computeNewValues(sol);
+                Iterator<Equation> iter = sol.getEqs(type).iterator();
+                while (iter.hasNext()) {
+                    Equation eq = iter.next();
+                    boolean removeEq = eq.computeNewValues(sol);
                     if (removeEq) {
-                        sol.getEqs(type).remove(eq);
+                        iter.remove();
                     }
                     solutionModified = solutionModified || removeEq;
                 }
@@ -989,9 +989,9 @@ public final class EquationSystem {
         UB, LB
     }
 
-    // --------
-    // BoundVar
-    // --------
+    // ---
+    // Var
+    // ---
 
     /**
      * Multiplicity variable class. Each variable has an unique pair of 
@@ -1381,8 +1381,7 @@ public final class EquationSystem {
          * solution.
          */
         ArrayList<Var> getOpenVars(Solution sol) {
-            ArrayList<Var> result =
-                new ArrayList<Var>(this.vars.size());
+            ArrayList<Var> result = new ArrayList<Var>(this.vars.size());
             for (Var var : this.vars) {
                 if (!sol.isSingleton(var)) {
                     result.add(var);
@@ -1503,9 +1502,9 @@ public final class EquationSystem {
 
         /** Total range of values. */
         final int bound;
-        /** Current minimum index in the range array. */
+        /** Current minimum index in the range. */
         int i;
-        /** Current maximum index in the range array. */
+        /** Current maximum index in the range. */
         int j;
 
         /** Basic constructor. Start the indices to cover the given range. */
