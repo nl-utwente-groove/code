@@ -185,7 +185,8 @@ class ShapeStore2 implements ShapeStore {
                         ec.add(factory.getNode(n));
                     }
                 }
-                EdgeSignature sig = new EdgeSignature(dir, node, label, ec);
+                EdgeSignature sig =
+                    factory.createEdgeSignature(dir, node, label, ec);
                 Multiplicity mult = (Multiplicity) records[i];
                 i++;
                 edgeMultMap.put(sig, mult);

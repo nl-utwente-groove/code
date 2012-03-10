@@ -211,6 +211,7 @@ class ShapeStore1 implements ShapeStore {
             this.multIndex = mult.getIndex();
         }
 
+        /** Converts this edge record to an edge signature. */
         public EdgeSignature getSig(EdgeMultDir dir, ShapeFactory factory,
                 char[] nodeEquiv) {
             EquivClass<ShapeNode> cell = new NodeEquivClass<ShapeNode>(factory);
@@ -219,10 +220,11 @@ class ShapeStore1 implements ShapeStore {
                     cell.add(factory.getNode(i));
                 }
             }
-            return new EdgeSignature(dir, factory.getNode(this.source),
-                this.label, cell);
+            return factory.createEdgeSignature(dir,
+                factory.getNode(this.source), this.label, cell);
         }
 
+        /** Reconstructs the multiplicity stored in this edge record. */
         public Multiplicity getMult() {
             return Multiplicity.getMultiplicity(this.multIndex,
                 MultKind.EDGE_MULT);

@@ -45,9 +45,13 @@ import groove.trans.HostNode;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 import groove.util.Duo;
+import groove.util.Pair;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -210,11 +214,14 @@ public final class Shape extends ShapeGraph {
             ShapeEdge edgeS = (ShapeEdge) edge;
             Multiplicity one = Multiplicity.getMultiplicity(1, 1, EDGE_MULT);
             for (EdgeMultDir direction : EdgeMultDir.values()) {
-                EdgeSignature es = this.getEdgeSignature(edgeS, direction);
-                Multiplicity mult = this.getEdgeSigMult(es);
-                if (mult.isZero()) {
-                    this.setEdgeSigMult(es, one);
-                }
+                EdgeSignatureSet edgeSigs = getEdgeSigSet(direction);
+                ShapeNode node = direction.incident(edgeS);
+                TypeLabel label = edge.label();
+                EquivClass<ShapeNode> ec =
+                    this.getEquivClassOf(direction.opposite(edgeS));
+                EdgeSignature es =
+                    getFactory().createEdgeSignature(direction, node, label, ec);
+                edgeSigs.put(es, one);
             }
         }
         return added;
@@ -631,7 +638,8 @@ public final class Shape extends ShapeGraph {
             TypeLabel label = edge.label();
             EquivClass<ShapeNode> ec =
                 this.getEquivClassOf(direction.opposite(edge));
-            result = new EdgeSignature(direction, node, label, ec);
+            result =
+                getFactory().createEdgeSignature(direction, node, label, ec);
         }
         return result;
     }
@@ -646,7 +654,8 @@ public final class Shape extends ShapeGraph {
         EdgeSignature result =
             maybeGetEdgeSignature(direction, node, label, ec);
         if (result == null) {
-            result = new EdgeSignature(direction, node, label, ec);
+            result =
+                getFactory().createEdgeSignature(direction, node, label, ec);
         }
         return result;
     }
@@ -659,7 +668,7 @@ public final class Shape extends ShapeGraph {
     public EdgeSignature maybeGetEdgeSignature(EdgeMultDir direction,
             ShapeNode node, TypeLabel label, EquivClass<ShapeNode> ec) {
         EdgeSignature result = null;
-        for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
+        for (EdgeSignature es : getEdgeSigSet(direction).keySet()) {
             if (es.getNode().equals(node) && es.getLabel().equals(label)
                 && es.hasSameEquivClass(ec)) {
                 result = es;
@@ -1087,24 +1096,10 @@ public final class Shape extends ShapeGraph {
         }
     }
 
-    /** Returns all signatures with the given equivalence class. */
-    private Set<EdgeSignature> getEdgeSignatures(EquivClass<ShapeNode> ec) {
-        Set<EdgeSignature> result = new MyHashSet<EdgeSignature>();
-        for (EdgeMultDir direction : EdgeMultDir.values()) {
-            for (EdgeSignature es : this.getEdgeMultMapKeys(direction)) {
-                if (es.hasSameEquivClass(ec)) {
-                    result.add(es);
-                }
-            }
-        }
-        return result;
-    }
-
     /**
      * Update all maps that use edge signatures that contained the old
      * equivalence class. The equivalence relation stays unchanged, i.e., the
      * old class is not removed and the new one is not added.
-     */
     private void addNewSingletonEc(EquivClass<ShapeNode> oldEc,
             EquivClass<ShapeNode> newEc) {
         for (EdgeSignature oldEs : this.getEdgeSignatures(oldEc)) {
@@ -1119,12 +1114,45 @@ public final class Shape extends ShapeGraph {
             }
         }
     }
+     */
+
+    /**
+     * Update all maps that use edge signatures that contained the old
+     * equivalence class. The equivalence relation stays unchanged, i.e., the
+     * old class is not removed and the new one is not added.
+     */
+    private void addNewSingletonEc(EquivClass<ShapeNode> oldEc,
+            EquivClass<ShapeNode> newEc) {
+        List<Pair<EdgeSignature,Multiplicity>> changes =
+            new ArrayList<Pair<EdgeSignature,Multiplicity>>();
+        for (EdgeMultDir direction : EdgeMultDir.values()) {
+            for (Map.Entry<EdgeSignature,Multiplicity> sigEntry : getEdgeSigSet(
+                direction).entrySet()) {
+                EdgeSignature oldEs = sigEntry.getKey();
+                if (!oldEs.hasSameEquivClass(oldEc)) {
+                    continue;
+                }
+                EdgeSignature newEs =
+                    getFactory().createEdgeSignature(oldEs.getDirection(),
+                        oldEs.getNode(), oldEs.getLabel(), newEc);
+                Multiplicity mult = sigEntry.getValue();
+                if (!mult.isZero()) {
+                    if (this.getEdgesFromSig(newEs).size() > 0) {
+                        changes.add(Pair.newPair(newEs, mult));
+                    }
+                }
+            }
+        }
+        for (Pair<EdgeSignature,Multiplicity> change : changes) {
+            this.setEdgeSigMultWithoutCheck(change.one(), change.two());
+        }
+    }
 
     /**
      * Update all maps that use edge signatures that contained the old
      * equivalence class. The equivalence relation is changed, i.e., the
      * old class is removed and the new one is added.
-     */
+     *
     private void replaceEc(EquivClass<ShapeNode> oldEc,
             EquivClass<ShapeNode> newEc) {
         // Update the equivalence relation.
@@ -1143,6 +1171,48 @@ public final class Shape extends ShapeGraph {
                 if (this.getEdgesFromSig(newEs).size() > 0) {
                     this.setEdgeSigMult(newEs, mult);
                 }
+            }
+        }
+    }
+
+    /**
+     * Update all maps that use edge signatures that contained the old
+     * equivalence class. The equivalence relation is changed, i.e., the
+     * old class is removed and the new one is added.
+     */
+    private void replaceEc(EquivClass<ShapeNode> oldEc,
+            EquivClass<ShapeNode> newEc) {
+        // Update the equivalence relation.
+        getEquivRelation().remove(oldEc);
+        getEquivRelation().add(newEc);
+        // Update all maps that use edge signatures that contained the old
+        // equivalence class.
+        for (EdgeMultDir dir : EdgeMultDir.values()) {
+            List<EdgeSignature> removed = new ArrayList<EdgeSignature>();
+            List<Pair<EdgeSignature,Multiplicity>> added =
+                new ArrayList<Pair<EdgeSignature,Multiplicity>>();
+            EdgeSignatureSet edgeSigs = getEdgeSigSet(dir);
+            for (Map.Entry<EdgeSignature,Multiplicity> sigEntry : edgeSigs.entrySet()) {
+                EdgeSignature oldEs = sigEntry.getKey();
+                if (!oldEs.hasSameEquivClass(oldEc)) {
+                    continue;
+                }
+                EdgeSignature newEs =
+                    getFactory().createEdgeSignature(dir, oldEs.getNode(),
+                        oldEs.getLabel(), newEc);
+                Multiplicity mult = sigEntry.getValue();
+                if (!mult.isZero()) {
+                    removed.add(oldEs);
+                    if (this.getEdgesFromSig(newEs).size() > 0) {
+                        added.add(Pair.newPair(newEs, mult));
+                    }
+                }
+            }
+            for (EdgeSignature remove : removed) {
+                edgeSigs.remove(remove);
+            }
+            for (Pair<EdgeSignature,Multiplicity> add : added) {
+                this.setEdgeSigMult(add.one(), add.two());
             }
         }
     }
