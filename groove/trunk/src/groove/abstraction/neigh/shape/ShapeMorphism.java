@@ -175,14 +175,11 @@ public final class ShapeMorphism extends HostGraphMorphism {
             Set<ShapeNode> esEcNodesS = this.getPreImages(esEcNodeT); // f^-1(C)
             for (ShapeNode esEcNodeS : esEcNodesS) {
                 EquivClass<ShapeNode> ecS = from.getEquivClassOf(esEcNodeS);
-                EdgeSignature esS;
-                if (createWhenNonExistent) {
-                    esS = from.getEdgeSignature(direction, nodeS, label, ecS);
-                } else {
-                    esS =
-                        from.maybeGetEdgeSignature(direction, nodeS, label, ecS);
-                }
-                if (esS != null) {
+                EdgeSignature esS =
+                    getFactory().createEdgeSignature(direction, nodeS, label,
+                        ecS);
+                if (createWhenNonExistent
+                    || from.getEdgeSigSet(direction).containsKey(esS)) {
                     result.add(esS);
                 }
             }

@@ -16,6 +16,8 @@
  */
 package groove.abstraction.neigh.shape;
 
+import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.trans.RuleToShapeMap;
 import groove.graph.Label;
 import groove.graph.TypeEdge;
@@ -106,6 +108,12 @@ public final class ShapeFactory extends HostFactory {
     @Override
     public RuleToHostMap createRuleToHostMap() {
         return new RuleToShapeMap(this);
+    }
+
+    /** Creates a normalised edge signature with the given parameters. */
+    public EdgeSignature createEdgeSignature(EdgeMultDir dir, ShapeNode node,
+            TypeLabel label, EquivClass<ShapeNode> ec) {
+        return new EdgeSignature(dir, node, label, ec);
     }
 
     // ------------------------------------------------------------------------

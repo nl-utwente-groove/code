@@ -44,7 +44,10 @@ public final class EdgeSignature {
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** Standard constructor that just fills in the object fields. */
+    /** 
+     * Standard constructor that just fills in the object fields,
+     * and  
+     */
     @SuppressWarnings("unchecked")
     public EdgeSignature(EdgeMultDir direction, ShapeNode node,
             TypeLabel label, EquivClass<? extends HostNode> equivClass) {
