@@ -1100,7 +1100,7 @@ public final class Materialisation {
         Set<EdgeSignature> preImgEs = new MyHashSet<EdgeSignature>();
         // We need to check for nodes that got disconnected...
         for (EdgeMultDir dir : EdgeMultDir.values()) {
-            for (Entry<EdgeSignature,Multiplicity> origEsEntry : origShape.getEdgeSigSet(
+            for (Entry<EdgeSignature,Multiplicity> origEsEntry : origShape.getEdgeMultMap(
                 dir).entrySet()) {
                 if (!origEsEntry.getValue().isZeroPlus()) {
                     EdgeSignature origEs = origEsEntry.getKey();

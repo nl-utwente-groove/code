@@ -267,9 +267,9 @@ public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         return dom.nodeCount() == cod.nodeCount()
             && dom.edgeCount() == cod.edgeCount()
             && dom.getEquivRelation().size() == cod.getEquivRelation().size()
-            && dom.getEdgeMultMapKeys(EdgeMultDir.OUTGOING).size() == cod.getEdgeMultMapKeys(
+            && dom.getEdgeSigSet(EdgeMultDir.OUTGOING).size() == cod.getEdgeSigSet(
                 EdgeMultDir.OUTGOING).size()
-            && dom.getEdgeMultMapKeys(EdgeMultDir.INCOMING).size() == cod.getEdgeMultMapKeys(
+            && dom.getEdgeSigSet(EdgeMultDir.INCOMING).size() == cod.getEdgeSigSet(
                 EdgeMultDir.INCOMING).size();
     }
 

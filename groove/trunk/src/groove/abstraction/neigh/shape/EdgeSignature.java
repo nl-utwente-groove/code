@@ -21,6 +21,9 @@ import groove.abstraction.neigh.equiv.EquivClass;
 import groove.graph.TypeLabel;
 import groove.trans.HostNode;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * An edge signature is composed by a direction, a node (n), a label (l),
  * and an equivalence class (C) and is used as the key for the outgoing and
@@ -46,7 +49,7 @@ public final class EdgeSignature {
 
     /** 
      * Standard constructor that just fills in the object fields,
-     * and  
+     * and retrieves the corresponding edges from the shape. 
      */
     @SuppressWarnings("unchecked")
     public EdgeSignature(EdgeMultDir direction, ShapeNode node,
@@ -113,13 +116,47 @@ public final class EdgeSignature {
     }
 
     /**
-     * Returns true if the edge signature contains the edge given as argument.
+     * Returns true if the edge signature is compatible
+     * with the edge.
+     * This is the case if the incident node equals this signature's 
+     * node, the label matches, and the opposite node is contained in the equivalence class.
      */
-    public boolean contains(ShapeEdge edge) {
+    public boolean mayContain(ShapeEdge edge) {
         ShapeNode incident = this.direction.incident(edge);
         ShapeNode opposite = this.direction.opposite(edge);
         return this.node.equals(incident) && this.label.equals(edge.label())
             && this.equivClass.contains(opposite);
+    }
+
+    /** Tests if there is at least one a shape that is compatible with this signature. */
+    public boolean hasEdges(ShapeGraph shape) {
+        boolean result = false;
+        boolean outgoing = this.direction == EdgeMultDir.OUTGOING;
+        for (ShapeNode opposite : getEquivClass()) {
+            ShapeNode source = outgoing ? this.node : opposite;
+            ShapeNode target = outgoing ? opposite : this.node;
+            ShapeEdge edge = shape.createEdge(source, this.label, target);
+            if (shape.containsEdge(edge)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /** Collects the edges in a shape that are compatible with this signature. */
+    public Set<ShapeEdge> findEdges(ShapeGraph shape) {
+        Set<ShapeEdge> result = new HashSet<ShapeEdge>();
+        boolean outgoing = this.direction == EdgeMultDir.OUTGOING;
+        for (ShapeNode opposite : getEquivClass()) {
+            ShapeNode source = outgoing ? this.node : opposite;
+            ShapeNode target = outgoing ? opposite : this.node;
+            ShapeEdge edge = shape.createEdge(source, this.label, target);
+            if (shape.containsEdge(edge)) {
+                result.add(edge);
+            }
+        }
+        return result;
     }
 
     /** Basic getter method. */

@@ -105,7 +105,7 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
             }
         }
         for (EdgeMultDir dir : EdgeMultDir.values()) {
-            for (EdgeSignature sig : shape.getEdgeSigSet(dir).keySet()) {
+            for (EdgeSignature sig : shape.getEdgeMultMap(dir).keySet()) {
                 @SuppressWarnings("unchecked")
                 int nHash = getNodeCert((N) sig.getNode()).hashCode();
                 int sigHash = sig.getLabel().hashCode();

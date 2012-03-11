@@ -59,7 +59,8 @@ class ShapeStore1 implements ShapeStore {
     /** Computes the flattened representation of an edge multiplicity map. */
     private EdgeRecord[] flattenEdgeSigSet(ShapeCache cache, EdgeMultDir dir,
             char[] nodeEquiv) {
-        EdgeSignatureSet multMap = cache.getEdgeSigSet(dir);
+        Map<EdgeSignature,Multiplicity> multMap =
+            cache.getEdgeSigStore(dir).getMultMap();
         EdgeRecord[] result = new EdgeRecord[multMap.size()];
         int ix = 0;
         for (Map.Entry<EdgeSignature,Multiplicity> multEntry : multMap.entrySet()) {
@@ -157,18 +158,17 @@ class ShapeStore1 implements ShapeStore {
     }
 
     private void setEdgeSigSets(ShapeCache cache) {
-        ShapeFactory factory = cache.getFactory();
-        Map<EdgeMultDir,EdgeSignatureSet> edgeMultMaps =
+        ShapeGraph shape = cache.getGraph();
+        Map<EdgeMultDir,EdgeSignatureStore> edgeMultMaps =
             cache.createEdgeSigSets();
         for (EdgeMultDir dir : EdgeMultDir.values()) {
-            EdgeSignatureSet edgeSigSet = edgeMultMaps.get(dir);
+            EdgeSignatureStore edgeSigSet = edgeMultMaps.get(dir);
             EdgeRecord[] records =
                 dir == EdgeMultDir.INCOMING ? this.inEdgeSigs
                         : this.outEdgeSigs;
             for (int i = 0; i < records.length; i++) {
                 EdgeRecord record = records[i];
-                edgeSigSet.put(
-                    record.getSig(dir, factory, this.nodeEquivArray),
+                edgeSigSet.setEdgeMult(record.getSig(shape, dir, this.nodeEquivArray),
                     record.getMult());
             }
         }
@@ -212,16 +212,17 @@ class ShapeStore1 implements ShapeStore {
         }
 
         /** Converts this edge record to an edge signature. */
-        public EdgeSignature getSig(EdgeMultDir dir, ShapeFactory factory,
+        public EdgeSignature getSig(ShapeGraph shape, EdgeMultDir dir,
                 char[] nodeEquiv) {
+            ShapeFactory factory = shape.getFactory();
             EquivClass<ShapeNode> cell = new NodeEquivClass<ShapeNode>(factory);
             for (int i = 0; i < nodeEquiv.length; i++) {
                 if (nodeEquiv[i] == this.targetEc) {
                     cell.add(factory.getNode(i));
                 }
             }
-            return factory.createEdgeSignature(dir,
-                factory.getNode(this.source), this.label, cell);
+            return shape.createEdgeSignature(dir, factory.getNode(this.source),
+                this.label, cell);
         }
 
         /** Reconstructs the multiplicity stored in this edge record. */

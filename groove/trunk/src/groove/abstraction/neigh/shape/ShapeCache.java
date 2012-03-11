@@ -48,8 +48,10 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
 
     void copyFrom(ShapeGraph original) {
         ShapeCache other = original.getCache();
-        getNodeSet().addAll(other.getNodeSet());
-        getEdgeSet().addAll(other.getEdgeSet());
+        this.nodeSet = createElementSet();
+        this.nodeSet.addAll(other.getNodeSet());
+        this.edgeSet = createElementSet();
+        this.edgeSet.addAll(other.getEdgeSet());
         // Clone the equivalence relation. A deep copy is used.
         if (other.equivRel != null) {
             this.equivRel = other.equivRel.clone();
@@ -61,7 +63,11 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
         if (other.edgeSigSets != null) {
             this.edgeSigSets = createEdgeSigSets();
             for (EdgeMultDir dir : EdgeMultDir.values()) {
-                this.edgeSigSets.put(dir, other.edgeSigSets.get(dir).clone());
+                EdgeSignatureStore store = this.edgeSigSets.get(dir);
+                for (Map.Entry<EdgeSignature,Multiplicity> entry : other.getEdgeSigStore(
+                    dir).getMultMap().entrySet()) {
+                    store.setEdgeMult(entry.getKey(), entry.getValue());
+                }
             }
         }
     }
@@ -168,7 +174,7 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
     /** Lazily creates and returns the edge multiplicity map of the underlying shape
      * in a given direction.
      */
-    EdgeSignatureSet getEdgeSigSet(EdgeMultDir dir) {
+    EdgeSignatureStore getEdgeSigStore(EdgeMultDir dir) {
         if (this.edgeSigSets == null) {
             ShapeStore store = getGraph().store;
             if (store == null) {
@@ -185,7 +191,7 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
      * Assigns the edge multiplicity maps.
      * @see ShapeStore#fill(ShapeCache) 
      */
-    void setEdgeSigSets(Map<EdgeMultDir,EdgeSignatureSet> edgeSigSets) {
+    void setEdgeSigSets(Map<EdgeMultDir,EdgeSignatureStore> edgeSigSets) {
         this.edgeSigSets = edgeSigSets;
     }
 
@@ -202,11 +208,11 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
         return new MyHashMap<ShapeNode,Multiplicity>();
     }
 
-    Map<EdgeMultDir,EdgeSignatureSet> createEdgeSigSets() {
-        Map<EdgeMultDir,EdgeSignatureSet> result =
-            new EnumMap<EdgeMultDir,EdgeSignatureSet>(EdgeMultDir.class);
+    Map<EdgeMultDir,EdgeSignatureStore> createEdgeSigSets() {
+        Map<EdgeMultDir,EdgeSignatureStore> result =
+            new EnumMap<EdgeMultDir,EdgeSignatureStore>(EdgeMultDir.class);
         for (EdgeMultDir dir : EdgeMultDir.values()) {
-            result.put(dir, new EdgeSignatureSet(getFactory()));
+            result.put(dir, getGraph().createEdgeSigStore());
         }
         return result;
     }
@@ -231,7 +237,7 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
     /**
      * Outgoing edge multiplicity map.
      */
-    private Map<EdgeMultDir,EdgeSignatureSet> edgeSigSets;
+    private Map<EdgeMultDir,EdgeSignatureStore> edgeSigSets;
 
     private final static ShapeStore STORE_PROTOTYPE = ShapeStore1.PROTOTYPE;
 

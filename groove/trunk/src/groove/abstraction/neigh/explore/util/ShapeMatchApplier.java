@@ -17,7 +17,6 @@
 package groove.abstraction.neigh.explore.util;
 
 import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
-import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.lts.AGTS;
 import groove.abstraction.neigh.lts.ShapeNextState;
 import groove.abstraction.neigh.lts.ShapeState;
@@ -33,8 +32,6 @@ import groove.lts.RuleTransition;
 import groove.trans.RuleEvent;
 import groove.util.Pair;
 import groove.util.Visitor;
-
-import java.io.File;
 
 /**
  * A version of a {@link MatchApplier} for abstract exploration.
@@ -108,40 +105,40 @@ public final class ShapeMatchApplier extends MatchApplier {
             ShapePreviewDialog.showShape(host);
         }
 
-        try {
-            // Transform the source state.
-            assert PreMatch.isValidPreMatch(host, origEvent);
-            // Visit all materialisations and apply them to the source graph
-            Visitor<Materialisation,RuleTransition> visitor =
-                new Visitor<Materialisation,RuleTransition>() {
-                    @Override
-                    protected boolean process(Materialisation mat) {
-                        RuleTransition trans =
-                            applyMaterialisation(source, match, mat);
-                        if (trans != null) {
-                            setResult(trans);
-                        }
-                        return true;
+        //        try {
+        // Transform the source state.
+        assert PreMatch.isValidPreMatch(host, origEvent);
+        // Visit all materialisations and apply them to the source graph
+        Visitor<Materialisation,RuleTransition> visitor =
+            new Visitor<Materialisation,RuleTransition>() {
+                @Override
+                protected boolean process(Materialisation mat) {
+                    RuleTransition trans =
+                        applyMaterialisation(source, match, mat);
+                    if (trans != null) {
+                        setResult(trans);
                     }
-                };
-            Materialisation.visitMaterialisations(host,
-                origEvent.getMatch(host), visitor);
-            result = visitor.getResult();
-        } catch (Throwable e) {
-            // Additional code for bug hunting.
-            System.err.println("\nFound a bug in the abstraction code!!!");
-            File file = new File(source.toString() + ".gxl");
-            ShapeGxl.getInstance().saveShape(host, file);
-            System.err.println(String.format(
-                "Dumped shape from state %s to help debugging.",
-                source.toString()));
-            System.err.println(origEvent.getMatch(host));
-            System.err.println();
-            // Raise the error again so it reaches the top level.
-            // throw e;
-            e.printStackTrace();
-            System.exit(1);
-        }
+                    return true;
+                }
+            };
+        Materialisation.visitMaterialisations(host, origEvent.getMatch(host),
+            visitor);
+        result = visitor.getResult();
+        //        } catch (Throwable e) {
+        //            // Additional code for bug hunting.
+        //            System.err.println("\nFound a bug in the abstraction code!!!");
+        //            File file = new File(source.toString() + ".gxl");
+        //            ShapeGxl.getInstance().saveShape(host, file);
+        //            System.err.println(String.format(
+        //                "Dumped shape from state %s to help debugging.",
+        //                source.toString()));
+        //            System.err.println(origEvent.getMatch(host));
+        //            System.err.println();
+        //            // Raise the error again so it reaches the top level.
+        //            // throw e;
+        //            e.printStackTrace();
+        //            System.exit(1);
+        //        }
 
         addTransitionReporter.stop();
         // Returns the last produced transition.

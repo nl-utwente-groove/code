@@ -167,7 +167,7 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
     private void createEdgeSigPorts() {
         Shape shape = this.getGraph();
         for (EdgeMultDir direction : EdgeMultDir.values()) {
-            for (EdgeSignature es : shape.getEdgeMultMapKeys(direction)) {
+            for (EdgeSignature es : shape.getEdgeSigSet(direction)) {
                 ShapeJVertex vertex =
                     (ShapeJVertex) this.getJCellForNode(es.getNode());
                 boolean alwaysMovable = shape.isEdgeSigUnique(es);

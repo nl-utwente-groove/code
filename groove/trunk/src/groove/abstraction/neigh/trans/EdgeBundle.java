@@ -227,7 +227,7 @@ public final class EdgeBundle {
     EdgeSignature maybeGetEdgeSignature(ShapeEdge edge) {
         EdgeSignature result = null;
         for (EdgeSignature splitEs : this.getSplitEsSet()) {
-            if (splitEs.contains(edge)) {
+            if (splitEs.mayContain(edge)) {
                 result = splitEs;
                 break;
             }
