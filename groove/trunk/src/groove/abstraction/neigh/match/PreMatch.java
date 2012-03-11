@@ -39,6 +39,7 @@ import groove.trans.RuleNode;
 import groove.util.Property;
 import groove.util.Visitor;
 
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -117,8 +118,9 @@ public final class PreMatch {
         // Check node multiplicities.
         boolean complyToNodeMult = true;
         // For all nodes in the image of the LHS.
+        Map<ShapeNode,Multiplicity> nodeMultMap = shape.getNodeMultMap();
         for (ShapeNode nodeS : map.nodeMapValueSet()) {
-            Multiplicity nSMult = shape.getNodeMult(nodeS);
+            Multiplicity nSMult = nodeMultMap.get(nodeS);
             Set<RuleNode> nodesG = map.getPreImages(nodeS);
             if (!Multiplicity.getNodeSetMult(nodesG).le(nSMult)) {
                 // Violation of node multiplicity.

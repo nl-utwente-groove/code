@@ -28,6 +28,7 @@ import groove.abstraction.neigh.equiv.NodeEquivClass;
 import groove.graph.TypeLabel;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,30 +50,40 @@ class ShapeStore2 implements ShapeStore {
         char[] nodeEquivArray = flattenNodeEquiv(cache);
         result.nodeEquivArray = nodeEquivArray;
         result.nodeMultArray = flattenNodeMultMap(cache);
-        result.inEdgeSigs = flattenEdgeSigSet(cache, INCOMING, nodeEquivArray);
-        result.outEdgeSigs = flattenEdgeSigSet(cache, OUTGOING, nodeEquivArray);
+        Map<EdgeMultDir,Object[]> edgeSigs =
+            flattenEdgeSigSet(cache, nodeEquivArray);
+        result.inEdgeSigs = edgeSigs.get(INCOMING);
+        result.outEdgeSigs = edgeSigs.get(OUTGOING);
         assert nodeEquivArray != null;
         return result;
     }
 
     /** Computes the flattened representation of an edge multiplicity map. */
-    private Object[] flattenEdgeSigSet(ShapeCache cache, EdgeMultDir dir,
+    private Map<EdgeMultDir,Object[]> flattenEdgeSigSet(ShapeCache cache,
             char[] nodeEquiv) {
-        Map<EdgeSignature,Multiplicity> sigSet =
-            cache.getEdgeSigStore(dir).getMultMap();
-        Object[] result = new Object[sigSet.size() * 4];
-        int ix = 0;
+        EdgeSignatureStore store = cache.getEdgeSigStore();
+        Map<EdgeMultDir,Object[]> result =
+            new EnumMap<Multiplicity.EdgeMultDir,Object[]>(EdgeMultDir.class);
+        for (EdgeMultDir dir : EdgeMultDir.values()) {
+            result.put(dir, new Object[store.getSigCount(dir) * 4]);
+        }
+        Map<EdgeSignature,Multiplicity> sigSet = store.getMultMap();
+        int[] ixs = new int[EdgeMultDir.values().length];
         for (Map.Entry<EdgeSignature,Multiplicity> multEntry : sigSet.entrySet()) {
             EdgeSignature es = multEntry.getKey();
-            result[ix] = es.getNode();
+            EdgeMultDir dir = es.getDirection();
+            Object[] array = result.get(dir);
+            int ix = ixs[dir.ordinal()];
+            array[ix] = es.getNode();
             ix++;
-            result[ix] = es.getLabel();
+            array[ix] = es.getLabel();
             ix++;
             int nodeNr = es.getEquivClass().iterator().next().getNumber();
-            result[ix] = getCanon(nodeEquiv[nodeNr]);
+            array[ix] = getCanon(nodeEquiv[nodeNr]);
             ix++;
-            result[ix] = multEntry.getValue();
+            array[ix] = multEntry.getValue();
             ix++;
+            ixs[dir.ordinal()] = ix;
         }
         return result;
     }
@@ -163,37 +174,35 @@ class ShapeStore2 implements ShapeStore {
     }
 
     private void setEdgeSigSets(ShapeCache cache) {
+        EdgeSignatureStore store = cache.getGraph().createEdgeSigStore();
+        addToSigStore(cache, this.inEdgeSigs, INCOMING, store);
+        addToSigStore(cache, this.outEdgeSigs, OUTGOING, store);
+        cache.setEdgeSigStore(store);
+    }
+
+    private void addToSigStore(ShapeCache cache, Object[] records,
+            EdgeMultDir dir, EdgeSignatureStore store) {
         ShapeFactory factory = cache.getFactory();
         char[] nodeEquivArray = this.nodeEquivArray;
-        Map<EdgeMultDir,EdgeSignatureStore> edgeSigSets =
-            cache.createEdgeSigStores();
-        for (EdgeMultDir dir : EdgeMultDir.values()) {
-            EdgeSignatureStore edgeMultMap = edgeSigSets.get(dir);
-            Object[] records =
-                dir == EdgeMultDir.INCOMING ? this.inEdgeSigs
-                        : this.outEdgeSigs;
-            for (int i = 0; i < records.length;) {
-                ShapeNode node = (ShapeNode) records[i];
-                i++;
-                TypeLabel label = (TypeLabel) records[i];
-                i++;
-                char targetEc = ((Character) records[i]).charValue();
-                i++;
-                EquivClass<ShapeNode> ec =
-                    new NodeEquivClass<ShapeNode>(factory);
-                for (int n = 0; n < nodeEquivArray.length; n++) {
-                    if (nodeEquivArray[n] == targetEc) {
-                        ec.add(factory.getNode(n));
-                    }
+        for (int i = 0; i < records.length;) {
+            ShapeNode node = (ShapeNode) records[i];
+            i++;
+            TypeLabel label = (TypeLabel) records[i];
+            i++;
+            char targetEc = ((Character) records[i]).charValue();
+            i++;
+            EquivClass<ShapeNode> ec = new NodeEquivClass<ShapeNode>(factory);
+            for (int n = 0; n < nodeEquivArray.length; n++) {
+                if (nodeEquivArray[n] == targetEc) {
+                    ec.add(factory.getNode(n));
                 }
-                EdgeSignature sig =
-                    cache.getGraph().createEdgeSignature(dir, node, label, ec);
-                Multiplicity mult = (Multiplicity) records[i];
-                i++;
-                edgeMultMap.setEdgeMult(sig, mult);
             }
+            EdgeSignature sig =
+                cache.getGraph().createEdgeSignature(dir, node, label, ec);
+            Multiplicity mult = (Multiplicity) records[i];
+            i++;
+            store.setEdgeMult(sig, mult);
         }
-        cache.setEdgeSigSets(edgeSigSets);
     }
 
     /** Flattened set of edges, filled when the shape is fixed. */

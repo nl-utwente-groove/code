@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.abstraction.neigh.Abstraction;
-import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.io.xml.ShapeGxl;
@@ -520,10 +519,8 @@ public class TestMaterialisation {
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
                 assertEquals(5, matShape.getEquivRelation().size());
-                for (EdgeMultDir direction : EdgeMultDir.values()) {
-                    for (EdgeSignature es : matShape.getEdgeSigSet(direction)) {
-                        assertTrue(matShape.getEdgeSigMult(es).isOne());
-                    }
+                for (EdgeSignature es : matShape.getEdgeSigSet()) {
+                    assertTrue(matShape.getEdgeSigMult(es).isOne());
                 }
             }
         }
@@ -575,10 +572,8 @@ public class TestMaterialisation {
             for (Materialisation mat : mats) {
                 Shape matShape = mat.getShape();
                 assertEquals(6, matShape.getEquivRelation().size());
-                for (EdgeMultDir direction : EdgeMultDir.values()) {
-                    for (EdgeSignature es : matShape.getEdgeSigSet(direction)) {
-                        assertTrue(matShape.getEdgeSigMult(es).isOne());
-                    }
+                for (EdgeSignature es : matShape.getEdgeSigSet()) {
+                    assertTrue(matShape.getEdgeSigMult(es).isOne());
                 }
             }
         }

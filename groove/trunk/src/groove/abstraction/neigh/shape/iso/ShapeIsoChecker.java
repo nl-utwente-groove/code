@@ -20,9 +20,11 @@ import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.NodeEquivClass;
+import groove.abstraction.neigh.shape.EdgeSignatureStore;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
+import groove.graph.EdgeRole;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.iso.IsoChecker;
@@ -30,6 +32,7 @@ import groove.trans.HostEdge;
 import groove.trans.HostNode;
 import groove.util.Pair;
 
+import java.util.Map;
 import java.util.Map.Entry;
 
 /**
@@ -205,13 +208,14 @@ public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
     private int checkIsomorphism(Shape dom, Shape cod,
             Morphism<ShapeNode,ShapeEdge> morphism) {
         int result = DOM_EQUALS_COD | DOM_SUBSUMES_COD | COD_SUBSUMES_DOM;
-
         // First check the node multiplicities.
+        Map<ShapeNode,Multiplicity> domMultMap = dom.getNodeMultMap();
+        Map<ShapeNode,Multiplicity> codMultMap = cod.getNodeMultMap();
         for (Entry<ShapeNode,ShapeNode> nodeEntry : morphism.nodeMap().entrySet()) {
             ShapeNode domNode = nodeEntry.getKey();
             ShapeNode codNode = nodeEntry.getValue();
-            Multiplicity domNMult = dom.getNodeMult(domNode);
-            Multiplicity codNMult = cod.getNodeMult(codNode);
+            Multiplicity domNMult = domMultMap.get(domNode);
+            Multiplicity codNMult = codMultMap.get(codNode);
             int comparison = this.compareMultiplicities(domNMult, codNMult);
             result = this.updateResult(result, comparison);
             if (result == NON_ISO) {
@@ -220,16 +224,23 @@ public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         }
 
         // Now check the edge multiplicities.
+        EdgeSignatureStore domStore = dom.getEdgeSigStore();
+        EdgeSignatureStore codStore = cod.getEdgeSigStore();
         for (Entry<ShapeEdge,ShapeEdge> edgeEntry : morphism.edgeMap().entrySet()) {
             ShapeEdge domEdge = edgeEntry.getKey();
             ShapeEdge codEdge = edgeEntry.getValue();
-            for (EdgeMultDir direction : EdgeMultDir.values()) {
-                Multiplicity domEMult = dom.getEdgeMult(domEdge, direction);
-                Multiplicity codEMult = cod.getEdgeMult(codEdge, direction);
-                int comparison = this.compareMultiplicities(domEMult, codEMult);
-                result = this.updateResult(result, comparison);
-                if (result == NON_ISO) {
-                    return NON_ISO;
+            if (domEdge.getRole() == EdgeRole.BINARY) {
+                for (EdgeMultDir direction : EdgeMultDir.values()) {
+                    Multiplicity domEMult =
+                        domStore.getMult(domEdge, direction);
+                    Multiplicity codEMult =
+                        codStore.getMult(codEdge, direction);
+                    int comparison =
+                        this.compareMultiplicities(domEMult, codEMult);
+                    result = this.updateResult(result, comparison);
+                    if (result == NON_ISO) {
+                        return NON_ISO;
+                    }
                 }
             }
         }
@@ -267,10 +278,7 @@ public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         return dom.nodeCount() == cod.nodeCount()
             && dom.edgeCount() == cod.edgeCount()
             && dom.getEquivRelation().size() == cod.getEquivRelation().size()
-            && dom.getEdgeSigSet(EdgeMultDir.OUTGOING).size() == cod.getEdgeSigSet(
-                EdgeMultDir.OUTGOING).size()
-            && dom.getEdgeSigSet(EdgeMultDir.INCOMING).size() == cod.getEdgeSigSet(
-                EdgeMultDir.INCOMING).size();
+            && dom.getEdgeSigSet().size() == cod.getEdgeSigSet().size();
     }
 
     /**
