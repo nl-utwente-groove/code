@@ -18,6 +18,7 @@ package groove.util;
 
 import java.util.AbstractSet;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -448,6 +449,56 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             testConsistent();
         }
         return result;
+    }
+
+    /** Returns an iterator over the bucket of all elements with a given hash code. */
+    @SuppressWarnings("unchecked")
+    public Iterator<T> get(int code) {
+        final int index = indexOf(code);
+        if (index < 0) {
+            return Collections.<T>emptySet().iterator();
+        } else if (allEqual()) {
+            int keyIndex = -this.tree[index] - 1;
+            return Collections.<T>singleton((T) this.keys[keyIndex]).iterator();
+        } else {
+            // iteratively go over the list of entries 
+            final Object[] keys = this.keys;
+            final int keyIndex = -this.tree[index] - 1;
+            return new Iterator<T>() {
+                @Override
+                public boolean hasNext() {
+                    if (this.next == null) {
+                        if (this.key instanceof MyListEntry) {
+                            MyListEntry<T> entry = (MyListEntry<T>) this.key;
+                            this.next = entry.getValue();
+                            this.key = keys[entry.getNext()];
+                        } else if (this.key != null) {
+                            this.next = (T) this.key;
+                            this.key = null;
+                        }
+                    }
+                    return this.next != null;
+                }
+
+                @Override
+                public T next() {
+                    hasNext();
+                    if (this.next == null) {
+                        throw new NoSuchElementException();
+                    } else {
+                        return this.next;
+                    }
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+
+                private T next;
+                private Object key = keys[keyIndex];
+            };
+        }
     }
 
     @Override

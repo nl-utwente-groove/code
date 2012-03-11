@@ -166,7 +166,7 @@ class ShapeStore2 implements ShapeStore {
         ShapeFactory factory = cache.getFactory();
         char[] nodeEquivArray = this.nodeEquivArray;
         Map<EdgeMultDir,EdgeSignatureStore> edgeSigSets =
-            cache.createEdgeSigSets();
+            cache.createEdgeSigStores();
         for (EdgeMultDir dir : EdgeMultDir.values()) {
             EdgeSignatureStore edgeMultMap = edgeSigSets.get(dir);
             Object[] records =

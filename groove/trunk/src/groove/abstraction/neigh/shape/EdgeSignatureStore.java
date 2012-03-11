@@ -46,16 +46,11 @@ public class EdgeSignatureStore {
     /** Inserts a new edge signature or changes the multiplicity of an existing signature. */
     public Multiplicity setEdgeMult(EdgeSignature key, Multiplicity value) {
         Multiplicity result = this.sig2MultMap.put(key, value);
-        // refresh the edges for the signature
-        this.sig2EdgeMap.put(key, key.findEdges(this.shape));
-        if (hasEdge2SigMap()) {
-            addToEdge2SigMap(key);
-        }
         if (result == null) {
             // a new signature; update the other maps
-            if (hasNode2SigMap()) {
-                addToNode2SigMap(key);
-            }
+            this.sig2EdgeMap.put(key, key.findEdges(this.shape));
+            addToEdge2SigMap(key);
+            addToNode2SigMap(key);
         }
         assert isConsistent();
         return result;
@@ -65,14 +60,34 @@ public class EdgeSignatureStore {
     public Multiplicity removeSig(EdgeSignature sig) {
         Multiplicity result = this.sig2MultMap.remove(sig);
         if (result != null) {
+            removeFromNode2SigMap(sig);
+            removeFromEdge2SigMap(sig);
             Set<ShapeEdge> edges = this.sig2EdgeMap.remove(sig);
             assert edges != null;
-            if (hasNode2SigMap()) {
-                getNode2SigMap().get(sig.getNode()).remove(sig);
-            }
-            if (hasEdge2SigMap()) {
-                getEdge2SigMap().keySet().removeAll(edges);
-            }
+        }
+        assert isConsistent() : "Inconsistent " + this;
+        return result;
+    }
+
+    /**
+     * Adds an edge, for a given direction.
+     * If no corresponding edge signature exists, adds that as well.
+     * Never changes the multiplicity of an existing edge signature.
+     * @return {@code true} if a new signature was added
+     */
+    public boolean addEdge(ShapeEdge edge, EdgeMultDir dir) {
+        EdgeSignature sig = this.shape.createEdgeSignature(dir, edge);
+        boolean result = !this.sig2MultMap.containsKey(sig);
+        addToEdge2SigMap(edge, sig);
+        if (result) {
+            // it's a new signature; update all other auxiliary structures
+            this.sig2MultMap.put(sig, Multiplicity.ONE_EDGE_MULT);
+            Set<ShapeEdge> edges = new HashSet<ShapeEdge>();
+            edges.add(edge);
+            this.sig2EdgeMap.put(sig, edges);
+            addToNode2SigMap(sig);
+        } else {
+            this.sig2EdgeMap.get(sig).add(edge);
         }
         assert isConsistent() : "Inconsistent " + this;
         return result;
@@ -156,7 +171,7 @@ public class EdgeSignatureStore {
 
     /** Returns the mapping from edge signatures to multiplicities. */
     public Map<EdgeSignature,Multiplicity> getMultMap() {
-        return Collections.unmodifiableMap(this.sig2MultMap);
+        return this.sig2MultMap;
     }
 
     /** Returns the edge signature corresponding to a given edge. */
@@ -170,6 +185,34 @@ public class EdgeSignatureStore {
         return "EdgeSignatureStore:\n  edge2SigMap=" + this.edge2SigMap
             + "\n  node2SigMap=" + this.node2SigMap + "\n  sig2MultMap="
             + this.sig2MultMap + "\n  sig2EdgeMap=" + this.sig2EdgeMap;
+    }
+
+    /** Copies all data structures from another store. */
+    public void copyFrom(EdgeSignatureStore other) {
+        this.sig2EdgeMap.clear();
+        for (Map.Entry<EdgeSignature,Set<ShapeEdge>> entry : other.sig2EdgeMap.entrySet()) {
+            this.sig2EdgeMap.put(entry.getKey(),
+                new HashSet<ShapeEdge>(entry.getValue()));
+        }
+        this.sig2MultMap.clear();
+        this.sig2MultMap.putAll(other.sig2MultMap);
+        if (other.edge2SigMap == null) {
+            this.edge2SigMap = null;
+        } else {
+            this.edge2SigMap =
+                new HashMap<ShapeEdge,EdgeSignature>(other.edge2SigMap);
+        }
+        if (other.node2SigMap == null) {
+            this.node2SigMap = null;
+        } else {
+            Map<ShapeNode,Set<EdgeSignature>> map =
+                new HashMap<ShapeNode,Set<EdgeSignature>>();
+            for (Map.Entry<ShapeNode,Set<EdgeSignature>> entry : other.node2SigMap.entrySet()) {
+                map.put(entry.getKey(),
+                    new HashSet<EdgeSignature>(entry.getValue()));
+            }
+            this.node2SigMap = map;
+        }
     }
 
     /** Tests if the edge-to-signature map has been initialised. */
@@ -189,13 +232,37 @@ public class EdgeSignatureStore {
     }
 
     /**
-     * Adds mappings from all edges corresponding to a given edge signature
-     * to the signature.
+     * Adds mappings from all edges corresponding to a given edge signature,
+     * if the map has been initialised.
      */
     private void addToEdge2SigMap(EdgeSignature sig) {
         Map<ShapeEdge,EdgeSignature> map = this.edge2SigMap;
-        for (ShapeEdge edge : getEdges(sig)) {
+        if (map != null) {
+            for (ShapeEdge edge : getEdges(sig)) {
+                map.put(edge, sig);
+            }
+        }
+    }
+
+    /**
+     * Adds mappings from one edge to a given edge signature,
+     * if the map has been initialised.
+     */
+    private void addToEdge2SigMap(ShapeEdge edge, EdgeSignature sig) {
+        Map<ShapeEdge,EdgeSignature> map = this.edge2SigMap;
+        if (map != null) {
             map.put(edge, sig);
+        }
+    }
+
+    /**
+     * Removes the mappings from edges to a given signature,
+     * if the map has been initialised.
+     */
+    private void removeFromEdge2SigMap(EdgeSignature sig) {
+        Map<ShapeEdge,EdgeSignature> map = this.edge2SigMap;
+        if (map != null) {
+            map.keySet().removeAll(getEdges(sig));
         }
     }
 
@@ -241,11 +308,6 @@ public class EdgeSignatureStore {
         return result;
     }
 
-    /** Tests if the node-to-signatures-map has been initialised. */
-    private boolean hasNode2SigMap() {
-        return this.node2SigMap != null;
-    }
-
     /** Returns the edge signature corresponding to a given edge. */
     private Map<ShapeNode,Set<EdgeSignature>> getNode2SigMap() {
         if (this.node2SigMap == null) {
@@ -259,12 +321,25 @@ public class EdgeSignatureStore {
 
     private void addToNode2SigMap(EdgeSignature key) {
         Map<ShapeNode,Set<EdgeSignature>> map = this.node2SigMap;
-        ShapeNode incident = key.getNode();
-        Set<EdgeSignature> nodeSigs = map.get(incident);
-        if (nodeSigs == null) {
-            map.put(incident, nodeSigs = new HashSet<EdgeSignature>());
+        if (map != null) {
+            ShapeNode incident = key.getNode();
+            Set<EdgeSignature> nodeSigs = map.get(incident);
+            if (nodeSigs == null) {
+                map.put(incident, nodeSigs = new HashSet<EdgeSignature>());
+            }
+            nodeSigs.add(key);
         }
-        nodeSigs.add(key);
+    }
+
+    /**
+     * Removes the mappings from edges to a given signature,
+     * if the map has been initialised.
+     */
+    private void removeFromNode2SigMap(EdgeSignature sig) {
+        Map<ShapeNode,Set<EdgeSignature>> map = this.node2SigMap;
+        if (map != null) {
+            map.get(sig.getNode()).remove(sig);
+        }
     }
 
     /** Mapping from edges to the corresponding edge signatures. */

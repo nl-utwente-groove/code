@@ -277,6 +277,16 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
         return getCache().getEquivRel();
     }
 
+    /**
+     * Returns the equivalence class of the given node. 
+     * Fails in an assertion if the given node is in the shape. 
+     */
+    public EquivClass<ShapeNode> getEquivClassOf(ShapeNode node) {
+        assert this.nodeSet().contains(node) : "Node " + node
+            + " is not in the shape!";
+        return getEquivRelation().getEquivClassOf(node);
+    }
+
     /** Returns the edge signature store for a given direction. */
     public EdgeSignatureStore getEdgeSigStore(EdgeMultDir dir) {
         return getCache().getEdgeSigStore(dir);
@@ -291,6 +301,15 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
     EdgeSignature createEdgeSignature(EdgeMultDir direction, ShapeNode node,
             TypeLabel label, EquivClass<ShapeNode> ec) {
         return new EdgeSignature(direction, node, label, ec);
+    }
+
+    /** Factory method for an edge signature covering a given shape edge. */
+    EdgeSignature createEdgeSignature(EdgeMultDir direction, ShapeEdge edge) {
+        ShapeNode node = direction.incident(edge);
+        TypeLabel label = edge.label();
+        EquivClass<ShapeNode> ec =
+            this.getEquivClassOf(direction.opposite(edge));
+        return createEdgeSignature(direction, node, label, ec);
     }
 
     /** Flattened representation of the shape graph, filled when the shape is fixed. */
