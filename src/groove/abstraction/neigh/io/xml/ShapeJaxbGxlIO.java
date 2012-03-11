@@ -22,6 +22,7 @@ import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.NodeEquivClass;
+import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeFactory;
@@ -235,7 +236,9 @@ public final class ShapeJaxbGxlIO extends
                     if (multStr != null) {
                         Multiplicity mult =
                             getMultiplicity(multStr, MultKind.EDGE_MULT);
-                        shape.setEdgeMult(edge, direction, mult);
+                        EdgeSignature es =
+                            shape.getEdgeSignature(edge, direction);
+                        shape.setEdgeSigMult(es, mult);
                     }
                 }
             }

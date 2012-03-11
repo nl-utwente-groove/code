@@ -160,7 +160,7 @@ class ShapeStore1 implements ShapeStore {
     private void setEdgeSigSets(ShapeCache cache) {
         ShapeGraph shape = cache.getGraph();
         Map<EdgeMultDir,EdgeSignatureStore> edgeMultMaps =
-            cache.createEdgeSigSets();
+            cache.createEdgeSigStores();
         for (EdgeMultDir dir : EdgeMultDir.values()) {
             EdgeSignatureStore edgeSigSet = edgeMultMaps.get(dir);
             EdgeRecord[] records =

@@ -37,9 +37,7 @@ import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
-import groove.util.Duo;
 import groove.util.Groove;
-import groove.util.Pair;
 import groove.view.FormatError;
 import groove.view.FormatException;
 
@@ -864,7 +862,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             } else {
                 for (TypeNode source : getSubtypes(edge.source())) {
                     for (TypeNode target : getSubtypes(edge.target())) {
-                        TypeEdge image = result.get(source, edge.label, target);
+                        TypeEdge image =
+                            result.get(source, edge.label(), target);
                         // override existing image if this edge is concrete
                         if (image == null || !edge.isAbstract()) {
                             result.put(source, target, edge);
@@ -1240,19 +1239,32 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         private final Set<TypeEdge> edges;
     }
 
-    private static class TypeEdgeKey extends Pair<Duo<TypeNode>,TypeLabel> {
-        TypeEdgeKey(TypeNode source, TypeLabel label, TypeNode target) {
-            super(Duo.newDuo(source, target), label);
-        }
-    }
-
-    private static class TypeEdgeMap extends HashMap<TypeEdgeKey,TypeEdge> {
+    private class TypeEdgeMap extends
+            HashMap<TypeLabel,Map<TypeNode,TypeEdge[]>> {
         void put(TypeNode source, TypeNode target, TypeEdge edge) {
-            put(new TypeEdgeKey(source, edge.label(), target), edge);
+            Map<TypeNode,TypeEdge[]> outEdgeMap = get(edge.label());
+            if (outEdgeMap == null) {
+                put(edge.label(), outEdgeMap =
+                    new HashMap<TypeNode,TypeEdge[]>());
+            }
+            TypeEdge[] targetEdges = outEdgeMap.get(source);
+            if (targetEdges == null) {
+                outEdgeMap.put(source, targetEdges =
+                    new TypeEdge[getFactory().getMaxNodeNr() + 1]);
+            }
+            targetEdges[target.getNumber()] = edge;
         }
 
         TypeEdge get(TypeNode source, TypeLabel label, TypeNode target) {
-            return get(new TypeEdgeKey(source, label, target));
+            TypeEdge result = null;
+            Map<TypeNode,TypeEdge[]> outEdgeMap = get(label);
+            if (outEdgeMap != null) {
+                TypeEdge[] targetEdges = outEdgeMap.get(source);
+                if (targetEdges != null) {
+                    result = targetEdges[target.getNumber()];
+                }
+            }
+            return result;
         }
     }
 }

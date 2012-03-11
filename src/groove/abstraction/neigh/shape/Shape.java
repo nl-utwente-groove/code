@@ -16,7 +16,6 @@
  */
 package groove.abstraction.neigh.shape;
 
-import static groove.abstraction.neigh.Multiplicity.ONE_EDGE_MULT;
 import static groove.abstraction.neigh.Multiplicity.ONE_NODE_MULT;
 import static groove.abstraction.neigh.Multiplicity.ZERO_EDGE_MULT;
 import static groove.abstraction.neigh.Multiplicity.ZERO_NODE_MULT;
@@ -166,18 +165,8 @@ public final class Shape extends ShapeGraph {
         if (added && edge.getRole() == BINARY) {
             ShapeEdge edgeS = (ShapeEdge) edge;
             for (EdgeMultDir direction : EdgeMultDir.values()) {
-                ShapeNode node = direction.incident(edgeS);
-                TypeLabel label = edge.label();
-                EquivClass<ShapeNode> ec =
-                    this.getEquivClassOf(direction.opposite(edgeS));
-                EdgeSignature es =
-                    createEdgeSignature(direction, node, label, ec);
                 EdgeSignatureStore store = getEdgeSigStore(direction);
-                // AR asks: it is not always the case that the signature
-                // is new (the assertion below fails), so how can it be
-                // correct to set the multiplicity to one?
-                // assert store.getMult(es) == null;
-                store.setEdgeMult(es, ONE_EDGE_MULT);
+                store.addEdge(edgeS, direction);
             }
         }
         return added;
@@ -456,9 +445,7 @@ public final class Shape extends ShapeGraph {
             ShapeNode tgtS = map.getNode(tgtG);
             TypeLabel labelS = edgeG.label();
             ShapeEdge edgeS = this.createEdge(srcS, labelS, tgtS);
-            // Call the super method because we will set the multiplicity maps
-            // later.
-            super.addEdge(edgeS);
+            addEdgeWithoutCheck(edgeS);
             // Update the abstraction morphism map.
             for (HostEdge eG : ecG) {
                 map.putEdge(eG, edgeS);
@@ -522,12 +509,14 @@ public final class Shape extends ShapeGraph {
     private void createEdgeMultMaps(ShapeNeighEquiv currGraphNeighEquiv,
             HostToShapeMap map, Shape origShape) {
         assert !this.isFixed();
-        // For all binary edges of the shape. (T)
-        for (ShapeEdge edgeT : this.binaryEdgeSet()) {
-            // For outgoing and incoming maps.
-            for (EdgeMultDir direction : EdgeMultDir.values()) {
+        // For outgoing and incoming maps.
+        for (EdgeMultDir direction : EdgeMultDir.values()) {
+            // For all binary edges of the shape. (T)
+            Map<EdgeSignature,Multiplicity> esTMap =
+                getEdgeSigStore(direction).getMultMap();
+            for (Map.Entry<EdgeSignature,Multiplicity> esTEntry : esTMap.entrySet()) {
                 // Get the edge signature.
-                EdgeSignature esT = this.getEdgeSignature(edgeT, direction);
+                EdgeSignature esT = esTEntry.getKey();
                 // Get an arbitrary node of the original shape (S) that was
                 // mapped to the node of the edge signature of T.
                 ShapeNode nodeS =
@@ -542,7 +531,7 @@ public final class Shape extends ShapeGraph {
                 // Make sure we are using the proper multiplicity values.
                 mult = widenMultRange(mult);
                 // Store the multiplicity in the proper multiplicity map.
-                this.setEdgeSigMult(esT, mult);
+                esTEntry.setValue(mult);
             }
         }
     }
@@ -579,11 +568,7 @@ public final class Shape extends ShapeGraph {
     public EdgeSignature getEdgeSignature(ShapeEdge edge, EdgeMultDir direction) {
         EdgeSignature result = getEdgeSigStore(direction).getSig(edge);
         if (result == null) {
-            ShapeNode node = direction.incident(edge);
-            TypeLabel label = edge.label();
-            EquivClass<ShapeNode> ec =
-                this.getEquivClassOf(direction.opposite(edge));
-            result = createEdgeSignature(direction, node, label, ec);
+            result = createEdgeSignature(direction, edge);
         }
         return result;
     }
@@ -621,40 +606,24 @@ public final class Shape extends ShapeGraph {
         }
     }
 
-    /** Sets the edge multiplicity. */
-    public void setEdgeMult(ShapeEdge edge, EdgeMultDir direction,
-            Multiplicity mult) {
-        assert !this.isFixed();
-        assert mult.isEdgeKind();
-        assert this.containsEdge(edge) : "Edge" + edge
-            + " is not in the shape!";
-        EdgeSignature es = this.getEdgeSignature(edge, direction);
-        this.setEdgeSigMult(es, mult);
-    }
-
     /** Sets the edge signature multiplicity. */
     public void setEdgeSigMult(EdgeSignature es, Multiplicity mult) {
         assert !this.isFixed();
         assert mult.isEdgeKind();
         assert this.containsNode(es.getNode());
         assert getEquivRelation().contains(es.getEquivClass());
-        this.setEdgeSigMultWithoutCheck(es, mult);
-    }
-
-    /**
-     * Sets the edge signature multiplicity without checking whether the shape
-     * consistency is preserved.
-     */
-    private void setEdgeSigMultWithoutCheck(EdgeSignature es, Multiplicity mult) {
-        EdgeMultDir direction = es.getDirection();
+        EdgeSignatureStore store = getEdgeSigStore(es.getDirection());
         if (mult.isZero()) {
             // Setting a multiplicity to zero is equivalent to
             // removing all edges in the signature from the shape.
-            for (ShapeEdge edge : new ArrayList<ShapeEdge>(getEdgesFromSig(es))) {
+            // collect edges to avoid CuncurrentModificationExceptions
+            Collection<ShapeEdge> toRemove =
+                new ArrayList<ShapeEdge>(store.getEdges(es));
+            for (ShapeEdge edge : toRemove) {
                 this.removeEdge(edge);
             }
         } else {
-            this.getEdgeSigStore(direction).setEdgeMult(es, mult);
+            store.setEdgeMult(es, mult);
         }
     }
 
@@ -699,16 +668,6 @@ public final class Shape extends ShapeGraph {
             accumulator = accumulator.add(edgeMult);
         }
         return accumulator;
-    }
-
-    /**
-     * Returns the equivalence class of the given node. 
-     * Fails in an assertion if the given node is in the shape. 
-     */
-    public EquivClass<ShapeNode> getEquivClassOf(ShapeNode node) {
-        assert this.nodeSet().contains(node) : "Node " + node
-            + " is not in the shape!";
-        return getEquivRelation().getEquivClassOf(node);
     }
 
     /** Creates a new equivalence class and adds the given node to it. */
@@ -1113,7 +1072,7 @@ public final class Shape extends ShapeGraph {
         newShape.createShapeEdges(sne.getEdgesEquivRel(), map);
         newShape.createEdgeMultMaps(sne, map, this);
         // Making node multiplicities more precise, when possible.
-        for (ShapeNode node : newShape.nodeSet()) {
+        nodeLoop: for (ShapeNode node : newShape.nodeSet()) {
             Multiplicity nodeMult = newShape.getNodeMult(node);
             if (nodeMult.isUnbounded()) {
                 for (EdgeMultDir direction : EdgeMultDir.values()) {
@@ -1124,6 +1083,7 @@ public final class Shape extends ShapeGraph {
                         if (oppMult.isOne() && newShape.isEdgeConcrete(edge)) {
                             // The node can only be concrete.
                             newShape.setNodeMult(node, ONE_NODE_MULT);
+                            continue nodeLoop;
                         }
                     }
                 }

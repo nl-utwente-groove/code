@@ -256,6 +256,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         TypeEdge type =
             this.typeFactory.getEdge(source.getType(), (TypeLabel) label,
                 target.getType(), false);
+        assert type != null;
         HostEdge edge = newEdge(source, type, target, getEdgeCount());
         return storeEdge(edge);
     }

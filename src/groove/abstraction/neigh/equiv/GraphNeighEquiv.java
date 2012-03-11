@@ -28,6 +28,7 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.util.TreeHashSet;
 
+import java.util.BitSet;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -110,20 +111,35 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
 
     /** Computes the initial equivalence classes, based on node labels. */
     private void computeInitialEquivClasses() {
-        // Map from node labels to equivalence classes.
-        Map<Set<TypeLabel>,EquivClass<HostNode>> labelsToClass =
-            new MyHashMap<Set<TypeLabel>,EquivClass<HostNode>>();
+        // Map from node label sets to equivalence classes.
+        Map<BitSet,EquivClass<HostNode>> labelsToClass =
+            new MyHashMap<BitSet,EquivClass<HostNode>>();
         // Get the set of labels to be used in the abstraction.
+        Map<TypeLabel,Integer> labelNrs = new HashMap<TypeLabel,Integer>();
+        // turn the abstract labels into a bitset
         Set<TypeLabel> absLabels = Parameters.getAbsLabels();
-
+        boolean abstractAll = absLabels.isEmpty();
         // Compute the equivalence classes.
+        BitSet[] nodeLabelStore =
+            new BitSet[this.graph.getFactory().getMaxNodeNr() + 1];
+        for (HostNode node : this.graph.nodeSet()) {
+            nodeLabelStore[node.getNumber()] = new BitSet();
+        }
+        for (HostEdge edge : this.graph.edgeSet()) {
+            TypeLabel label = edge.label();
+            if (!label.isBinary() && (abstractAll || absLabels.contains(label))) {
+                int nodeNr = edge.source().getNumber();
+                BitSet nodeLabels = nodeLabelStore[nodeNr];
+                nodeLabels.set(getLabelNr(labelNrs, label));
+            }
+        }
         for (HostNode node : this.graph.nodeSet()) {
             // Collect node labels.
-            Set<TypeLabel> nodeLabels = Util.getNodeLabels(this.graph, node);
+            BitSet nodeLabels = nodeLabelStore[node.getNumber()];
 
             EquivClass<HostNode> ec = null;
 
-            if (!absLabels.isEmpty() && !absLabels.containsAll(nodeLabels)) {
+            if (!abstractAll && nodeLabels.isEmpty()) {
                 // We have a node label that should not be grouped by the
                 // abstraction. This means that the node will be put in a
                 // singleton equivalence class.
@@ -146,6 +162,14 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
             ec.add(node);
         }
         this.addAll(labelsToClass.values());
+    }
+
+    private int getLabelNr(Map<TypeLabel,Integer> labelNrMap, TypeLabel label) {
+        Integer result = labelNrMap.get(label);
+        if (result == null) {
+            labelNrMap.put(label, result = labelNrMap.size());
+        }
+        return result;
     }
 
     /** Computes the next iteration of the equivalence relation. */
