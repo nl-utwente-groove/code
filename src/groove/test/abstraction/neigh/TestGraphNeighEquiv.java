@@ -19,7 +19,6 @@ package groove.test.abstraction.neigh;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.equiv.GraphNeighEquiv;
 import groove.trans.DefaultHostGraph;
@@ -47,7 +46,6 @@ public class TestGraphNeighEquiv {
     public static void setUp() {
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
-        Multiplicity.initMultStore();
     }
 
     @Test

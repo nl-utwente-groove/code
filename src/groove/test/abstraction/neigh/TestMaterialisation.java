@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.abstraction.neigh.Abstraction;
-import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
@@ -86,7 +85,6 @@ public class TestMaterialisation {
         Rule rule = grammar.getRule("test-mat-0a");
 
         Parameters.setNodeMultBound(2);
-        Multiplicity.initMultStore();
 
         Shape shape = Shape.createShape(graph);
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
@@ -103,7 +101,6 @@ public class TestMaterialisation {
         }
 
         Parameters.setNodeMultBound(1);
-        Multiplicity.initMultStore();
 
         shape = Shape.createShape(graph);
         preMatches = PreMatch.getPreMatches(shape, rule);
@@ -222,7 +219,6 @@ public class TestMaterialisation {
         }
 
         Parameters.setEdgeMultBound(2);
-        Multiplicity.initMultStore();
 
         shape = Shape.createShape(graph);
         preMatches = PreMatch.getPreMatches(shape, rule);
@@ -261,7 +257,6 @@ public class TestMaterialisation {
         Rule rule = grammar.getRule("test-mat-1c");
 
         Parameters.setEdgeMultBound(1);
-        Multiplicity.initMultStore();
 
         Shape shape = Shape.createShape(graph);
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
@@ -600,7 +595,6 @@ public class TestMaterialisation {
         Rule rule = grammar.getRule("test-mat-11");
 
         Parameters.setEdgeMultBound(2);
-        Multiplicity.initMultStore();
 
         Shape shape = Shape.createShape(graph);
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
@@ -630,7 +624,6 @@ public class TestMaterialisation {
 
         Parameters.setNodeMultBound(2);
         Parameters.setEdgeMultBound(2);
-        Multiplicity.initMultStore();
 
         Shape shape = Shape.createShape(graph);
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
@@ -653,7 +646,6 @@ public class TestMaterialisation {
     public void testMaterialisation13() {
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(2);
-        Multiplicity.initMultStore();
 
         File file = new File(DIRECTORY + "materialisation-test-13.gxl");
         Shape shape = marshaller.loadShape(file);
@@ -672,7 +664,6 @@ public class TestMaterialisation {
     public void testMaterialisation14() {
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(2);
-        Multiplicity.initMultStore();
 
         File file = new File(DIRECTORY + "materialisation-test-14.gxl");
         Shape shape = marshaller.loadShape(file);
@@ -699,7 +690,6 @@ public class TestMaterialisation {
 
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
-        Multiplicity.initMultStore();
 
         Shape shape = Shape.createShape(graph);
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);

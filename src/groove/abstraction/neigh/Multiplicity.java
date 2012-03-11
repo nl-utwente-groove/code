@@ -16,6 +16,8 @@
  */
 package groove.abstraction.neigh;
 
+import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
+import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Edge;
@@ -40,55 +42,37 @@ public final class Multiplicity {
     /** The \omega value, differs from all natural numbers. */
     public static final int OMEGA = Integer.MAX_VALUE;
     /** Multiplicity store per multiplicity kind. */
-    private static Multiplicity[][] GLOBAL_MULT_STORE =
+    private static final Multiplicity[][] GLOBAL_MULT_STORE =
         new Multiplicity[MultKind.values().length][];
     /**
      * Array holding the multiplicities per kind in a matrix indexed by
      * lower bound and (non-{@link #OMEGA}) upper bound.
      */
-    private static Multiplicity[][][] INDEXED_MULT_STORE =
+    private static final Multiplicity[][][] INDEXED_MULT_STORE =
         new Multiplicity[MultKind.values().length][][];
     /**
      * Array holding the {@link #OMEGA}-multiplicities per kind
      * in a indexed by lower bound.
      */
-    private static Multiplicity[][] OMEGA_MULT_STORE =
+    private static final Multiplicity[][] OMEGA_MULT_STORE =
         new Multiplicity[MultKind.values().length][];
 
-    // ------------------------------------------------------------------------
-    // Object Fields
-    // ------------------------------------------------------------------------
-
-    /** Multiplicity lower bound. */
-    private final int i;
-    /** Multiplicity upper bound. */
-    private final int j;
-    /** Multiplicity kind. */
-    private final MultKind kind;
-    /**
-     * Index of the multiplicity object in the store.
-     * Serves as a perfect hash.
-     */
-    private final char index;
-
-    // ------------------------------------------------------------------------
-    // Constructors
-    // ------------------------------------------------------------------------
-
-    /**
-     * Private constructor to avoid object creation.
-     * Use {@link #getMultiplicity(int, int, MultKind)} to retrieve an
-     * multiplicity from the store.
-     */
-    private Multiplicity(int i, int j, MultKind kind, char index) {
-        assert index >= 0;
-        assert isInN(i) && isInNOmega(j);
-        assert i <= j;
-        this.i = i;
-        this.j = j;
-        this.kind = kind;
-        this.index = index;
+    static {
+        initMultStore();
     }
+    /** The constant zero multiplicity for edges. */
+    public static final Multiplicity ZERO_EDGE_MULT =
+        Multiplicity.getMultiplicity(0, 0, EDGE_MULT);
+    /** The constant zero multiplicity for nodes. */
+    public static final Multiplicity ZERO_NODE_MULT =
+        Multiplicity.getMultiplicity(0, 0, NODE_MULT);
+
+    /** The constant singular multiplicity for edges. */
+    public static final Multiplicity ONE_EDGE_MULT =
+        Multiplicity.getMultiplicity(1, 1, EDGE_MULT);
+    /** The constant singular multiplicity for nodes. */
+    public static final Multiplicity ONE_NODE_MULT =
+        Multiplicity.getMultiplicity(1, 1, NODE_MULT);
 
     // ------------------------------------------------------------------------
     // Static Methods
@@ -137,11 +121,11 @@ public final class Multiplicity {
      * reused. This method must be called as a preparation for using any other
      * abstraction classes in this package.
      */
-    public static void initMultStore() {
+    private static void initMultStore() {
+        int b = Parameters.MAX_BOUND;
+        int cardinality = getCardinality(b);
         for (MultKind kind : MultKind.values()) {
-            // Get the maximum bound and create the store array.
-            int b = getBound(kind);
-            int cardinality = getCardinality(b);
+            // Get the maximum bound and create the store arrays
             Multiplicity[] globalStore = new Multiplicity[cardinality];
             Multiplicity[][] indexedStore = new Multiplicity[b + 2][b + 1];
             Multiplicity[] omegaStore = new Multiplicity[b + 2];
@@ -181,6 +165,7 @@ public final class Multiplicity {
         if (j == OMEGA) {
             result = OMEGA_MULT_STORE[kindIx][i];
         } else {
+            assert i <= j && j <= getBound(kind);
             result = INDEXED_MULT_STORE[kindIx][i][j];
         }
         assert result != null;
@@ -295,39 +280,50 @@ public final class Multiplicity {
     }
 
     // ------------------------------------------------------------------------
+    // Object Fields
+    // ------------------------------------------------------------------------
+
+    /** Multiplicity lower bound. */
+    private final int i;
+    /** Multiplicity upper bound. */
+    private final int j;
+    /** Multiplicity kind. */
+    private final MultKind kind;
+    /**
+     * Index of the multiplicity object in the store.
+     * Serves as a perfect hash.
+     */
+    private final char index;
+    /** The pre-calculated hash code. */
+    private final int hashCode;
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    /**
+     * Private constructor to avoid object creation.
+     * Use {@link #getMultiplicity(int, int, MultKind)} to retrieve an
+     * multiplicity from the store.
+     */
+    private Multiplicity(int i, int j, MultKind kind, char index) {
+        assert index >= 0;
+        assert isInN(i) && isInNOmega(j);
+        assert i <= j;
+        this.i = i;
+        this.j = j;
+        this.kind = kind;
+        this.index = index;
+        this.hashCode = super.hashCode();
+    }
+
+    // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
 
-    /** Equality of multiplicities comes down to object equality. */
-    @Override
-    public boolean equals(Object o) {
-        boolean result;
-        if (!(o instanceof Multiplicity)) {
-            result = false;
-        } else {
-            Multiplicity other = (Multiplicity) o;
-            result =
-                (this.kind == other.kind && this.i == other.i && this.j == other.j);
-        }
-        // Check for consistency between equals and hashCode.
-        assert (!result || this.hashCode() == o.hashCode());
-        return result;
-    }
-
     @Override
     public final int hashCode() {
-        int prime = 0;
-        switch (this.kind) {
-        case NODE_MULT:
-            prime = 31;
-            break;
-        case EDGE_MULT:
-            prime = 53;
-            break;
-        case EQSYS_MULT:
-            prime = 79;
-        }
-        return prime * this.index;
+        return this.hashCode;
     }
 
     @Override

@@ -18,7 +18,6 @@ package groove.abstraction.neigh.equiv;
 
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
-import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.MyHashMap;
 import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.Parameters;
@@ -64,10 +63,6 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     private EquivRelation<HostNode> previous;
     /** Temporary store. */
     private TreeHashSet<EdgeEquivData> store;
-
-    /** Global edge multiplicity of one. */
-    private final static Multiplicity EDGE_ONE_MULT =
-        Multiplicity.getMultiplicity(1, 1, MultKind.EDGE_MULT);
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -254,7 +249,8 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
                 NodeInfo sourceInfo = result.get(dir.incident(edge));
                 EquivClass<HostNode> targetEc =
                     nodeToCellMap.get(dir.opposite(edge));
-                sourceInfo.add(dir, edge.label(), targetEc, EDGE_ONE_MULT);
+                sourceInfo.add(dir, edge.label(), targetEc,
+                    Multiplicity.ONE_EDGE_MULT);
             }
         }
         return result;

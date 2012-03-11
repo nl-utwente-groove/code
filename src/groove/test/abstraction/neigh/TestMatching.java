@@ -19,7 +19,6 @@ package groove.test.abstraction.neigh;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import groove.abstraction.neigh.Abstraction;
-import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.match.PreMatch;
@@ -69,7 +68,6 @@ public class TestMatching {
     public void testPreMatch0() {
         Parameters.setNodeMultBound(3);
         Parameters.setEdgeMultBound(1);
-        Multiplicity.initMultStore();
         HostGraph graph = null;
         try {
             graph = view.getHostModel("shape-0").toResource();
@@ -86,7 +84,6 @@ public class TestMatching {
     public void testPreMatch1() {
         Parameters.setNodeMultBound(3);
         Parameters.setEdgeMultBound(1);
-        Multiplicity.initMultStore();
         HostGraph graph = null;
         try {
             graph = view.getHostModel("shape-0").toResource();
@@ -103,7 +100,6 @@ public class TestMatching {
     public void testPreMatch2() {
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
-        Multiplicity.initMultStore();
         HostGraph graph = null;
         try {
             graph = view.getHostModel("shape-1").toResource();
@@ -257,7 +253,6 @@ public class TestMatching {
         }
 
         Parameters.setEdgeMultBound(2);
-        Multiplicity.initMultStore();
 
         Shape shape4 = Shape.createShape(graph4);
         Rule rule = grammar.getRule("test-nac-4");
@@ -282,7 +277,6 @@ public class TestMatching {
 
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
-        Multiplicity.initMultStore();
 
         Rule rule = grammar.getRule("test-nac-5");
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
@@ -321,6 +315,5 @@ public class TestMatching {
     public static void cleanUp() {
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
-        Multiplicity.initMultStore();
     }
 }

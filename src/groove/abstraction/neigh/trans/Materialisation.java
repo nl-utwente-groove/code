@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.trans;
 
-import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
+import static groove.abstraction.neigh.Multiplicity.ONE_NODE_MULT;
 import groove.abstraction.neigh.Abstraction;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
@@ -577,11 +577,10 @@ public final class Materialisation {
 
     /** Checks if the image of the given map in the given shape is concrete. */
     static boolean hasConcreteMatch(Shape shape, RuleToShapeMap map) {
-        Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
         // The match was injective so we can use the values of the node map
         // directly, no need to call nodeMapValueSet().
         for (ShapeNode nodeS : map.nodeMap().values()) {
-            if (!shape.getNodeMult(nodeS).equals(one)) {
+            if (!shape.getNodeMult(nodeS).equals(ONE_NODE_MULT)) {
                 return false;
             }
         }
@@ -606,12 +605,11 @@ public final class Materialisation {
         // Check for items 3 and 4.
         boolean complyToNodeMult = true;
         boolean complyToEquivClass = true;
-        Multiplicity one = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
         // For all nodes in the image of the LHS.
         for (ShapeNode nodeS : this.match.nodeMapValueSet()) {
             // Item 3: check that all nodes in the image of the LHS have
             // multiplicity one.
-            if (!this.shape.getNodeMult(nodeS).equals(one)) {
+            if (!this.shape.getNodeMult(nodeS).equals(ONE_NODE_MULT)) {
                 complyToNodeMult = false;
                 break;
             }

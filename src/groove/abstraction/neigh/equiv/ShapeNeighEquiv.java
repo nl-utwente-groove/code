@@ -18,7 +18,6 @@ package groove.abstraction.neigh.equiv;
 
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
-import groove.abstraction.neigh.Multiplicity.MultKind;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
@@ -36,10 +35,6 @@ import java.util.Map;
  * @author Eduardo Zambon
  */
 public final class ShapeNeighEquiv extends GraphNeighEquiv {
-    /** Constant for the zero edge multiplicity. */
-    private static final Multiplicity ZERO_EDGE_MULT =
-        Multiplicity.getMultiplicity(0, 0, MultKind.EDGE_MULT);
-
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -86,6 +81,6 @@ public final class ShapeNeighEquiv extends GraphNeighEquiv {
         Map<EquivClass<HostNode>,Multiplicity> ecMap =
             getNodeToInfoMap().get(node).get(direction).get(label);
         Multiplicity result = ecMap == null ? null : ecMap.get(ec);
-        return result == null ? ZERO_EDGE_MULT : result;
+        return result == null ? Multiplicity.ZERO_EDGE_MULT : result;
     }
 }
