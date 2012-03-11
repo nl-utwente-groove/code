@@ -53,7 +53,6 @@ public class TestShape {
     public static void setUp() {
         Parameters.setNodeMultBound(1);
         Parameters.setEdgeMultBound(1);
-        Multiplicity.initMultStore();
     }
 
     @Test
@@ -91,7 +90,6 @@ public class TestShape {
 
         file = new File(DIRECTORY + "shape-build-test-3.gst");
         Parameters.setNodeMultBound(3);
-        Multiplicity.initMultStore();
         shape = createShape(file);
         assertEquals(1, shape.nodeSet().size());
         assertEquals(1, Util.getBinaryEdges(shape).size());
@@ -101,7 +99,6 @@ public class TestShape {
 
         file = new File(DIRECTORY + "shape-build-test-4.gst");
         Parameters.setNodeMultBound(1);
-        Multiplicity.initMultStore();
         shape = createShape(file);
         assertEquals(1, shape.nodeSet().size());
         assertEquals(1, Util.getBinaryEdges(shape).size());

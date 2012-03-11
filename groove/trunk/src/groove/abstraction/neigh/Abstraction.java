@@ -34,7 +34,6 @@ public final class Abstraction {
 
     /** Enters abstraction mode. */
     public static void initialise() {
-        Multiplicity.initMultStore();
         Rule.setAnchorFactory(NeighAnchorFactory.getInstance());
         // Make sure that the search engine is set to minimal mode. This is
         // needed when we have rules with NACs.

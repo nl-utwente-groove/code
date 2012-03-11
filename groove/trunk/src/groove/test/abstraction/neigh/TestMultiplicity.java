@@ -20,7 +20,6 @@ import static groove.abstraction.neigh.Multiplicity.OMEGA;
 import static groove.abstraction.neigh.Multiplicity.add;
 import static groove.abstraction.neigh.Multiplicity.approx;
 import static groove.abstraction.neigh.Multiplicity.getMultiplicity;
-import static groove.abstraction.neigh.Multiplicity.initMultStore;
 import static groove.abstraction.neigh.Multiplicity.scale;
 import static groove.abstraction.neigh.Multiplicity.sub;
 import static groove.abstraction.neigh.Multiplicity.times;
@@ -74,7 +73,6 @@ public class TestMultiplicity {
     @Test
     public void testApprox() {
         Parameters.setNodeMultBound(3);
-        initMultStore();
         Multiplicity twoThree = getMultiplicity(2, 3, NODE_MULT);
         Multiplicity twoPlus = getMultiplicity(2, OMEGA, NODE_MULT);
         Multiplicity fourPlus = getMultiplicity(4, OMEGA, NODE_MULT);
@@ -86,7 +84,6 @@ public class TestMultiplicity {
     @Test
     public void testScale() {
         Parameters.setNodeMultBound(2);
-        initMultStore();
         Multiplicity zero = getMultiplicity(0, 0, NODE_MULT);
         Multiplicity one = getMultiplicity(1, 1, NODE_MULT);
         Multiplicity two = getMultiplicity(2, 2, NODE_MULT);
@@ -101,7 +98,6 @@ public class TestMultiplicity {
     @Test
     public void testEquals() {
         Parameters.setNodeMultBound(2);
-        initMultStore();
         Multiplicity zeroNode = getMultiplicity(0, 0, NODE_MULT);
         Multiplicity oneNode = getMultiplicity(1, 1, NODE_MULT);
         Multiplicity zeroEdge = getMultiplicity(0, 0, EDGE_MULT);
@@ -112,7 +108,6 @@ public class TestMultiplicity {
     @Test
     public void testAdd() {
         Parameters.setNodeMultBound(1);
-        initMultStore();
         Multiplicity zero = getMultiplicity(0, 0, NODE_MULT);
         Multiplicity one = getMultiplicity(1, 1, NODE_MULT);
         Multiplicity twoPlus = getMultiplicity(2, OMEGA, NODE_MULT);
@@ -124,7 +119,6 @@ public class TestMultiplicity {
     @Test
     public void testSub() {
         Parameters.setNodeMultBound(2);
-        initMultStore();
         Multiplicity zero = getMultiplicity(0, 0, NODE_MULT);
         Multiplicity one = getMultiplicity(1, 1, NODE_MULT);
         Multiplicity zeroOne = getMultiplicity(0, 1, NODE_MULT);
@@ -143,7 +137,6 @@ public class TestMultiplicity {
     @Test
     public void testTimes() {
         Parameters.setNodeMultBound(1);
-        initMultStore();
         Multiplicity zeroN = getMultiplicity(0, 0, NODE_MULT);
         Multiplicity oneN = getMultiplicity(1, 1, NODE_MULT);
         Multiplicity twoPlusN = getMultiplicity(2, OMEGA, NODE_MULT);
@@ -164,7 +157,6 @@ public class TestMultiplicity {
     @Test
     public void testLe() {
         Parameters.setNodeMultBound(2);
-        initMultStore();
         Multiplicity one = getMultiplicity(1, 1, NODE_MULT);
         Multiplicity zeroOne = getMultiplicity(0, 1, NODE_MULT);
         Multiplicity onePlus = getMultiplicity(1, OMEGA, NODE_MULT);
@@ -180,7 +172,6 @@ public class TestMultiplicity {
     @Test
     public void testSubsumes() {
         Parameters.setNodeMultBound(2);
-        initMultStore();
         Multiplicity one = getMultiplicity(1, 1, NODE_MULT);
         Multiplicity zeroOne = getMultiplicity(0, 1, NODE_MULT);
         Multiplicity onePlus = getMultiplicity(1, OMEGA, NODE_MULT);

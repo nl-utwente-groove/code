@@ -16,6 +16,10 @@
  */
 package groove.abstraction.neigh.shape;
 
+import static groove.abstraction.neigh.Multiplicity.ONE_EDGE_MULT;
+import static groove.abstraction.neigh.Multiplicity.ONE_NODE_MULT;
+import static groove.abstraction.neigh.Multiplicity.ZERO_EDGE_MULT;
+import static groove.abstraction.neigh.Multiplicity.ZERO_NODE_MULT;
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
 import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
 import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
@@ -138,9 +142,7 @@ public final class Shape extends ShapeGraph {
         boolean added = super.addNode(node);
         if (added) {
             ShapeNode nodeS = (ShapeNode) node;
-            Multiplicity oneNode =
-                Multiplicity.getMultiplicity(1, 1, NODE_MULT);
-            this.setNodeMult(nodeS, oneNode);
+            this.setNodeMult(nodeS, ONE_NODE_MULT);
             this.addToNewEquivClass(nodeS);
         }
         return added;
@@ -163,8 +165,6 @@ public final class Shape extends ShapeGraph {
         boolean added = super.addEdgeWithoutCheck(edge);
         if (added && edge.getRole() == BINARY) {
             ShapeEdge edgeS = (ShapeEdge) edge;
-            Multiplicity oneEdge =
-                Multiplicity.getMultiplicity(1, 1, EDGE_MULT);
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 ShapeNode node = direction.incident(edgeS);
                 TypeLabel label = edge.label();
@@ -177,7 +177,7 @@ public final class Shape extends ShapeGraph {
                 // is new (the assertion below fails), so how can it be
                 // correct to set the multiplicity to one?
                 // assert store.getMult(es) == null;
-                store.setEdgeMult(es, oneEdge);
+                store.setEdgeMult(es, ONE_EDGE_MULT);
             }
         }
         return added;
@@ -822,7 +822,6 @@ public final class Shape extends ShapeGraph {
         }
 
         // Constant singleton node multiplicity
-        Multiplicity oneNode = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
         // Create a new shape node for each rule node.
         Iterator<RuleNode> iter = nodesR.iterator();
         for (int i = 0; i < copies; i++) {
@@ -830,7 +829,7 @@ public final class Shape extends ShapeGraph {
             ShapeNode newNode =
                 this.createNode(collectorNode.getType().label());
             // The new node is concrete so set its multiplicity to one.
-            this.setNodeMult(newNode, oneNode);
+            this.setNodeMult(newNode, ONE_NODE_MULT);
             // Copy the labels from the original node.
             this.copyUnaryEdges(collectorNode, newNode, nodeR, match);
             // Add the new node to a new equivalence class.
@@ -841,7 +840,8 @@ public final class Shape extends ShapeGraph {
 
         // Adjust the multiplicity of the original node.
         Multiplicity oldMult = this.getNodeMult(collectorNode);
-        Multiplicity newMult = oldMult.sub(Multiplicity.scale(oneNode, copies));
+        Multiplicity newMult =
+            oldMult.sub(Multiplicity.scale(ONE_NODE_MULT, copies));
         assert !newMult.isZero();
         this.setNodeMult(collectorNode, newMult);
 
@@ -1112,8 +1112,6 @@ public final class Shape extends ShapeGraph {
         newShape.createEquivRelation(sne.getPrevEquivRelation(), map);
         newShape.createShapeEdges(sne.getEdgesEquivRel(), map);
         newShape.createEdgeMultMaps(sne, map, this);
-        // Constant multiplicity for a single node
-        Multiplicity oneNode = Multiplicity.getMultiplicity(1, 1, NODE_MULT);
         // Making node multiplicities more precise, when possible.
         for (ShapeNode node : newShape.nodeSet()) {
             Multiplicity nodeMult = newShape.getNodeMult(node);
@@ -1125,7 +1123,7 @@ public final class Shape extends ShapeGraph {
                         Multiplicity oppMult = newShape.getNodeMult(opp);
                         if (oppMult.isOne() && newShape.isEdgeConcrete(edge)) {
                             // The node can only be concrete.
-                            newShape.setNodeMult(node, oneNode);
+                            newShape.setNodeMult(node, ONE_NODE_MULT);
                         }
                     }
                 }
@@ -1230,17 +1228,4 @@ public final class Shape extends ShapeGraph {
             return mult;
         }
     }
-
-    /** Constant edge multiplicity 0. */
-    private final static Multiplicity ZERO_EDGE_MULT =
-        Multiplicity.getMultiplicity(0, 0, EDGE_MULT);
-    /** Constant edge multiplicity 1. */
-    private final static Multiplicity ONE_EDGE_MULT =
-        Multiplicity.getMultiplicity(1, 1, EDGE_MULT);
-    /** Constant node multiplicity 0. */
-    private final static Multiplicity ZERO_NODE_MULT =
-        Multiplicity.getMultiplicity(0, 0, NODE_MULT);
-    /** Constant node multiplicity 1. */
-    private final static Multiplicity ONE_NODE_MULT =
-        Multiplicity.getMultiplicity(1, 1, NODE_MULT);
 }

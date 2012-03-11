@@ -31,6 +31,12 @@ public final class Parameters {
     // Static fields
     // ------------------------------------------------------------------------
 
+    /** 
+     * Maximum value to which the bounds can be set.
+     * This is used to determine the size of the global
+     * auxiliary data structures in {@link Multiplicity}.
+     */
+    public static final int MAX_BOUND = 10;
     /** Node multiplicity bound (\nu). Is a natural number. Defaults to 1. */
     private static int nodeMultBound = 1;
     /** Edge multiplicity bound (\mu). Is a natural number. Defaults to 1. */
@@ -77,12 +83,20 @@ public final class Parameters {
     /** Basic setter method. The bound given must be positive. */
     public static void setNodeMultBound(int nodeMultBound) {
         assert nodeMultBound > 0 : "Invalid node multiplicity bound.";
+        if (nodeMultBound > MAX_BOUND) {
+            throw new IllegalArgumentException(String.format(
+                "Node bound %d exceeds maximum %s", nodeMultBound, MAX_BOUND));
+        }
         Parameters.nodeMultBound = nodeMultBound;
     }
 
     /** Basic setter method. The bound given must be positive. */
     public static void setEdgeMultBound(int edgeMultBound) {
         assert edgeMultBound > 0 : "Invalid edge multiplicity bound.";
+        if (edgeMultBound > MAX_BOUND) {
+            throw new IllegalArgumentException(String.format(
+                "Edge bound %d exceeds maximum %s", edgeMultBound, MAX_BOUND));
+        }
         Parameters.edgeMultBound = edgeMultBound;
     }
 
