@@ -20,12 +20,14 @@ import static groove.graph.GraphRole.HOST;
 import static groove.graph.GraphRole.SHAPE;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.algebra.Algebra;
 import groove.graph.AbstractGraph;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
@@ -42,8 +44,6 @@ import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectParser;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,84 +73,48 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
     public boolean addNode(HostNode node) {
         boolean result;
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
-        result = getNodeSet().add((ShapeNode) node);
+        result = nodeSet().add((ShapeNode) node);
         return result;
-    }
-
-    /**
-     * Improved implementation taking advantage of the edge set.
-     */
-    @Override
-    public boolean removeNode(HostNode node) {
-        assert !isFixed() : "Trying to remove " + node
-            + " from unmodifiable graph";
-        boolean removed = getNodeSet().contains(node);
-        if (removed) {
-            Iterator<ShapeEdge> edgeIter = getEdgeSet().iterator();
-            while (edgeIter.hasNext()) {
-                ShapeEdge edge = edgeIter.next();
-                if (edge.source().equals(node) || edge.target().equals(node)) {
-                    edgeIter.remove();
-                }
-            }
-            removeNodeWithoutCheck(node);
-        }
-        return removed;
     }
 
     public boolean removeEdge(HostEdge edge) {
         assert !isFixed() : "Trying to remove " + edge
             + " from unmodifiable graph";
-        return getEdgeSet().remove(edge);
-    }
-
-    @Override
-    public boolean removeNodeSet(Collection<? extends HostNode> nodeSet) {
-        boolean result;
-        // first remove edges that depend on a node to be removed
-        Iterator<ShapeEdge> edgeIter = getEdgeSet().iterator();
-        while (edgeIter.hasNext()) {
-            ShapeEdge other = edgeIter.next();
-            if (nodeSet.contains(other.source())
-                || nodeSet.contains(other.target())) {
-                edgeIter.remove();
-            }
-        }
-        // now remove the nodes
-        result = removeNodeSetWithoutCheck(nodeSet);
-        return result;
+        return edgeSet().remove(edge);
     }
 
     // -------------------- PackageGraph methods ---------------------
 
     public boolean addEdgeWithoutCheck(HostEdge edge) {
+        assert !isFixed();
         assert isTypeCorrect(edge);
         boolean result;
-        result = getEdgeSet().add((ShapeEdge) edge);
+        result = edgeSet().add((ShapeEdge) edge);
         return result;
     }
 
     public boolean removeNodeWithoutCheck(HostNode node) {
+        assert !isFixed();
         assert isTypeCorrect(node);
         boolean result;
-        result = getNodeSet().remove(node);
+        result = nodeSet().remove(node);
         return result;
     }
 
     @Override
     public boolean removeNodeSetWithoutCheck(
             Collection<? extends HostNode> nodeSet) {
-        return getNodeSet().removeAll(nodeSet);
+        return nodeSet().removeAll(nodeSet);
     }
 
     // ------------- general methods (see AbstractGraph) ----------
 
-    public Set<? extends HostEdge> edgeSet() {
-        return Collections.unmodifiableSet(getEdgeSet());
+    public Set<ShapeEdge> edgeSet() {
+        return getCache().getEdgeSet();
     }
 
-    public Set<? extends HostNode> nodeSet() {
-        return Collections.unmodifiableSet(getNodeSet());
+    public Set<ShapeNode> nodeSet() {
+        return getCache().getNodeSet();
     }
 
     /**
@@ -161,6 +125,29 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
         ValueNode result = getFactory().createValueNode(algebra, value);
         addNode(result);
         return result;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Set<ShapeEdge> edgeSet(Node node) {
+        return (Set<ShapeEdge>) super.edgeSet(node);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Set<ShapeEdge> outEdgeSet(Node node) {
+        return (Set<ShapeEdge>) super.outEdgeSet(node);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Set<ShapeEdge> inEdgeSet(Node node) {
+        return (Set<ShapeEdge>) super.inEdgeSet(node);
+    }
+
+    @Override
+    public ShapeEdge createEdge(HostNode source, Label label, HostNode target) {
+        return (ShapeEdge) super.createEdge(source, label, target);
     }
 
     @Override
@@ -266,33 +253,44 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
         getEquivRelation().clear();
         getNodeMultMap().clear();
         for (EdgeMultDir dir : EdgeMultDir.values()) {
-            getEdgeSigSet(dir).clear();
+            getEdgeSigStore(dir).clear();
         }
     }
 
-    /** Retrieves the node set from the cache. */
-    Set<ShapeNode> getNodeSet() {
-        return getCache().getNodeSet();
-    }
-
-    /** Retrieves the edge set from the cache. */
-    public Set<ShapeEdge> getEdgeSet() {
-        return getCache().getEdgeSet();
-    }
-
-    /** Retrieves the edge set from the cache. */
+    /** Returns the node multiplicity map. */
     public Map<ShapeNode,Multiplicity> getNodeMultMap() {
         return getCache().getNodeMultMap();
     }
 
-    /** Retrieves the edge set from the cache. */
+    /** Returns the edge signature multiplicity map for a given direction. */
+    public Map<EdgeSignature,Multiplicity> getEdgeMultMap(EdgeMultDir dir) {
+        return getEdgeSigStore(dir).getMultMap();
+    }
+
+    /** Returns the set of all edge signatures for a given direction. */
+    public Set<EdgeSignature> getEdgeSigSet(EdgeMultDir dir) {
+        return getEdgeMultMap(dir).keySet();
+    }
+
+    /** Returns the node equivalence relation of the shape. */
     public EquivRelation<ShapeNode> getEquivRelation() {
         return getCache().getEquivRel();
     }
 
-    /** Retrieves the edge set from the cache. */
-    public EdgeSignatureSet getEdgeSigSet(EdgeMultDir dir) {
-        return getCache().getEdgeSigSet(dir);
+    /** Returns the edge signature store for a given direction. */
+    public EdgeSignatureStore getEdgeSigStore(EdgeMultDir dir) {
+        return getCache().getEdgeSigStore(dir);
+    }
+
+    /** Factory method for a given edge direction. */
+    EdgeSignatureStore createEdgeSigStore() {
+        return new EdgeSignatureStore(this);
+    }
+
+    /** Factory method for edge signatures based on this shape. */
+    EdgeSignature createEdgeSignature(EdgeMultDir direction, ShapeNode node,
+            TypeLabel label, EquivClass<ShapeNode> ec) {
+        return new EdgeSignature(direction, node, label, ec);
     }
 
     /** Flattened representation of the shape graph, filled when the shape is fixed. */

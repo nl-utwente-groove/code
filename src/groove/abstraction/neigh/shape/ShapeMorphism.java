@@ -176,10 +176,9 @@ public final class ShapeMorphism extends HostGraphMorphism {
             for (ShapeNode esEcNodeS : esEcNodesS) {
                 EquivClass<ShapeNode> ecS = from.getEquivClassOf(esEcNodeS);
                 EdgeSignature esS =
-                    getFactory().createEdgeSignature(direction, nodeS, label,
-                        ecS);
+                    from.createEdgeSignature(direction, nodeS, label, ecS);
                 if (createWhenNonExistent
-                    || from.getEdgeSigSet(direction).containsKey(esS)) {
+                    || from.getEdgeSigSet(direction).contains(esS)) {
                     result.add(esS);
                 }
             }
@@ -258,7 +257,7 @@ public final class ShapeMorphism extends HostGraphMorphism {
         if (complyToEquivClass && complyToNodeMult) {
             Set<EdgeSignature> esSS = new MyHashSet<EdgeSignature>();
             dirLoop: for (EdgeMultDir direction : EdgeMultDir.values()) {
-                for (EdgeSignature esT : to.getEdgeMultMapKeys(direction)) {
+                for (EdgeSignature esT : to.getEdgeSigSet(direction)) {
                     Multiplicity esTMult = to.getEdgeSigMult(esT);
                     Set<ShapeNode> nodesS = this.getPreImages(esT.getNode());
                     for (ShapeNode nodeS : nodesS) {
@@ -290,8 +289,8 @@ public final class ShapeMorphism extends HostGraphMorphism {
                 + ", Node mult test: " + complyToNodeMult
                 + ", Edge mult test: " + complyToEdgeMult);
             if (!java.awt.GraphicsEnvironment.isHeadless()) {
-                ShapePreviewDialog.showShape(from);
-                ShapePreviewDialog.showShape(to);
+                ShapePreviewDialog.showShape(from.clone());
+                ShapePreviewDialog.showShape(to.clone());
             }
         }
 
