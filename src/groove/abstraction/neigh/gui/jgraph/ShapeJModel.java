@@ -56,17 +56,14 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
     /** Prototype for creating new equivalence classes JCells. */
     private final EquivClassJCell ecJCellProt;
     /** Map from edge signatures to outgoing ports. */
-    private final Map<EdgeSignature,ShapeJPort> outEsMap;
-    /** Map from edge signatures to incoming ports. */
-    private final Map<EdgeSignature,ShapeJPort> inEsMap;
+    private final Map<EdgeSignature,ShapeJPort> esMap;
 
     /** Creates a new jModel with the given prototypes. */
     ShapeJModel(ShapeJVertex jVertexProt, ShapeJEdge jEdgeProt,
             EquivClassJCell ecJCellProt) {
         super(jVertexProt, jEdgeProt);
         this.ecJCellProt = ecJCellProt;
-        this.outEsMap = new MyHashMap<EdgeSignature,ShapeJPort>();
-        this.inEsMap = new MyHashMap<EdgeSignature,ShapeJPort>();
+        this.esMap = new MyHashMap<EdgeSignature,ShapeJPort>();
     }
 
     @Override
@@ -79,8 +76,7 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
         // Prepare the object fields.
         this.setVetoFireGraphChanged(true);
         this.parentMap = new ParentMap();
-        this.outEsMap.clear();
-        this.inEsMap.clear();
+        this.esMap.clear();
 
         // Ensure that the super class fields are also prepared.
         this.prepareLoad(graph);
@@ -127,33 +123,17 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
                 shape.getEdgeSignature(edge, EdgeMultDir.OUTGOING);
             EdgeSignature inEs =
                 shape.getEdgeSignature(edge, EdgeMultDir.INCOMING);
-            ShapeJPort srcPort = this.getPort(outEs, EdgeMultDir.OUTGOING);
-            ShapeJPort tgtPort = this.getPort(inEs, EdgeMultDir.INCOMING);
+            ShapeJPort srcPort = this.getPort(outEs);
+            ShapeJPort tgtPort = this.getPort(inEs);
             assert srcPort != null && tgtPort != null;
             this.connections.connect(jEdge, srcPort, tgtPort);
         }
         return jCell;
     }
 
-    /** Returns the proper port map accordingly to the given direction. */
-    private Map<EdgeSignature,ShapeJPort> getEsMap(EdgeMultDir direction) {
-        Map<EdgeSignature,ShapeJPort> result = null;
-        switch (direction) {
-        case OUTGOING:
-            result = this.outEsMap;
-            break;
-        case INCOMING:
-            result = this.inEsMap;
-            break;
-        default:
-            assert false;
-        }
-        return result;
-    }
-
     /** Returns the port mapped to the given edge signature. */
-    public ShapeJPort getPort(EdgeSignature es, EdgeMultDir direction) {
-        ShapeJPort result = this.getEsMap(direction).get(es);
+    public ShapeJPort getPort(EdgeSignature es) {
+        ShapeJPort result = this.esMap.get(es);
         assert result != null;
         return result;
     }
@@ -166,14 +146,12 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
 
     private void createEdgeSigPorts() {
         Shape shape = this.getGraph();
-        for (EdgeMultDir direction : EdgeMultDir.values()) {
-            for (EdgeSignature es : shape.getEdgeSigSet(direction)) {
-                ShapeJVertex vertex =
-                    (ShapeJVertex) this.getJCellForNode(es.getNode());
-                boolean alwaysMovable = shape.isEdgeSigUnique(es);
-                ShapeJPort port = new ShapeJPort(vertex, es, alwaysMovable);
-                this.getEsMap(direction).put(es, port);
-            }
+        for (EdgeSignature es : shape.getEdgeSigSet()) {
+            ShapeJVertex vertex =
+                (ShapeJVertex) this.getJCellForNode(es.getNode());
+            boolean alwaysMovable = shape.isEdgeSigUnique(es);
+            ShapeJPort port = new ShapeJPort(vertex, es, alwaysMovable);
+            this.esMap.put(es, port);
         }
     }
 

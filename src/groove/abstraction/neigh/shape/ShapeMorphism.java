@@ -18,8 +18,8 @@ package groove.abstraction.neigh.shape;
 
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
-import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.equiv.EquivClass;
+import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
 import groove.graph.Morphism;
 import groove.graph.Node;
@@ -28,6 +28,7 @@ import groove.trans.HostEdge;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -150,7 +151,7 @@ public final class ShapeMorphism extends HostGraphMorphism {
     }
 
     /**
-     * Returns the set of pre-images of the given edge signature in the 'from'
+     * Returns the multiplicity of pre-images of the given edge signature in the 'from'
      * shape. Only the pre-images of the nodes in the equivalence class of the
      * signature are considered, the node in the source signature is taken to
      * be the given 'nodeS'.
@@ -159,30 +160,36 @@ public final class ShapeMorphism extends HostGraphMorphism {
      * @param nodeS the node in the 'from' shape the is to used when looking
      *              for edge signatures.
      * @param esT the edge signature in the image of this morphism.
-     * @param createWhenNonExistent flag indicating if an edge signature object
-     *                              should be created if not found in the morphism.
-     * @param result the set of pre-images. The set is cleared at the beginning
-     *               of this method.
+     * @return the combined multiplicity of all signatures mapped into esT
      */
     // EZ says: this method is a bit expensive so maybe it might payoff to try
     // to improve its performance.
-    public void getPreImages(Shape from, ShapeNode nodeS, EdgeSignature esT,
-            boolean createWhenNonExistent, final Set<EdgeSignature> result) {
-        result.clear();
+    public Multiplicity getPreImagesMult(Shape from, ShapeNode nodeS,
+            EdgeSignature esT) {
+        Multiplicity result = Multiplicity.ZERO_EDGE_MULT;
         EdgeMultDir direction = esT.getDirection();
         TypeLabel label = esT.getLabel();
+        EdgeSignatureStore fromStore = from.getEdgeSigStore();
+        EquivRelation<ShapeNode> fromEquivRelation = from.getEquivRelation();
+        // first collect equivalence classes, to eliminate overlap
+        Set<EquivClass<ShapeNode>> ecSS = new HashSet<EquivClass<ShapeNode>>();
         for (ShapeNode esEcNodeT : esT.getEquivClass()) {
             Set<ShapeNode> esEcNodesS = this.getPreImages(esEcNodeT); // f^-1(C)
             for (ShapeNode esEcNodeS : esEcNodesS) {
-                EquivClass<ShapeNode> ecS = from.getEquivClassOf(esEcNodeS);
-                EdgeSignature esS =
-                    from.createEdgeSignature(direction, nodeS, label, ecS);
-                if (createWhenNonExistent
-                    || from.getEdgeSigSet(direction).contains(esS)) {
-                    result.add(esS);
+                ecSS.add(fromEquivRelation.getEquivClassOf(esEcNodeS));
+            }
+        }
+        // now sum the multiplicities
+        for (EquivClass<ShapeNode> ecS : ecSS) {
+            EdgeSignature esS = fromStore.getSig(direction, nodeS, label, ecS);
+            if (esS != null) {
+                Multiplicity esMult = fromStore.getMult(esS);
+                if (esMult != null) {
+                    result = result.add(esMult);
                 }
             }
         }
+        return result;
     }
 
     /** Returns an edge signature in the given target shape. */
@@ -255,20 +262,16 @@ public final class ShapeMorphism extends HostGraphMorphism {
         // Check for item 3.
         boolean complyToEdgeMult = true;
         if (complyToEquivClass && complyToNodeMult) {
-            Set<EdgeSignature> esSS = new MyHashSet<EdgeSignature>();
-            dirLoop: for (EdgeMultDir direction : EdgeMultDir.values()) {
-                for (EdgeSignature esT : to.getEdgeSigSet(direction)) {
-                    Multiplicity esTMult = to.getEdgeSigMult(esT);
-                    Set<ShapeNode> nodesS = this.getPreImages(esT.getNode());
-                    for (ShapeNode nodeS : nodesS) {
-                        this.getPreImages(from, nodeS, esT, true, esSS);
-                        Multiplicity sum = from.getEdgeSigSetMult(esSS);
-                        // EZ says: we need subsumption, not equality.
-                        //if (!esTMult.equals(sum)) {
-                        if (!esTMult.subsumes(sum)) {
-                            complyToEdgeMult = false;
-                            break dirLoop;
-                        }
+            dirLoop: for (EdgeSignature esT : to.getEdgeSigSet()) {
+                Multiplicity esTMult = to.getEdgeSigMult(esT);
+                Set<ShapeNode> nodesS = this.getPreImages(esT.getNode());
+                for (ShapeNode nodeS : nodesS) {
+                    Multiplicity sum = this.getPreImagesMult(from, nodeS, esT);
+                    // EZ says: we need subsumption, not equality.
+                    //if (!esTMult.equals(sum)) {
+                    if (!esTMult.subsumes(sum)) {
+                        complyToEdgeMult = false;
+                        break dirLoop;
                     }
                 }
             }

@@ -468,11 +468,12 @@ public final class Materialisation {
     void updateShapeMorphism() {
         // Remove nodes.
         Set<HostNode> nodesToRemove = new MyHashSet<HostNode>();
+        Set<ShapeNode> shapeNodes = this.shape.nodeSet();
+        Set<ShapeNode> originalNodes = this.originalShape.nodeSet();
         for (Entry<HostNode,HostNode> entry : this.morph.nodeMap().entrySet()) {
             HostNode key = entry.getKey();
             HostNode value = entry.getValue();
-            if (!this.shape.containsNode(key)
-                || !this.originalShape.containsNode(value)) {
+            if (!shapeNodes.contains(key) || !originalNodes.contains(value)) {
                 nodesToRemove.add(key);
             }
         }
@@ -481,11 +482,12 @@ public final class Materialisation {
         }
         // Remove edges.
         Set<HostEdge> edgesToRemove = new MyHashSet<HostEdge>();
+        Set<ShapeEdge> shapeEdges = this.shape.edgeSet();
+        Set<ShapeEdge> originalEdges = this.originalShape.edgeSet();
         for (Entry<HostEdge,HostEdge> entry : this.morph.edgeMap().entrySet()) {
             HostEdge key = entry.getKey();
             HostEdge value = entry.getValue();
-            if (!this.shape.containsEdge(key)
-                || !this.originalShape.containsEdge(value)) {
+            if (!shapeEdges.contains(key) || !originalEdges.contains(value)) {
                 edgesToRemove.add(key);
             }
         }
@@ -761,9 +763,11 @@ public final class Materialisation {
     private void prepareSolutions() {
         assert this.stage == 1;
         // Search for nodes in the original match image that have to be
-        // materialised. 
+        // materialised.
+        Map<ShapeNode,Multiplicity> originalMultMap =
+            this.originalShape.getNodeMultMap();
         for (ShapeNode nodeS : this.originalMatch.nodeMapValueSet()) {
-            if (this.originalShape.getNodeMult(nodeS).isCollector()) {
+            if (originalMultMap.get(nodeS).isCollector()) {
                 // We have a rule node that was matched to a collector
                 // node. We need to materialise this collector node.
                 this.shape.materialiseNode(this, nodeS);
@@ -1092,24 +1096,23 @@ public final class Materialisation {
         assert garbageNodes != null;
         garbageNodes.clear();
         Shape shape = this.shape;
-        Shape origShape = this.originalShape;
+        Map<EdgeSignature,Multiplicity> origEdgeMultMap =
+            this.originalShape.getEdgeMultMap();
         this.updateShapeMorphism();
+        // AR asks: why clone the morphism?
         ShapeMorphism morph = this.morph.clone();
-        Set<EdgeSignature> preImgEs = new MyHashSet<EdgeSignature>();
         // We need to check for nodes that got disconnected...
-        for (EdgeMultDir dir : EdgeMultDir.values()) {
-            for (Entry<EdgeSignature,Multiplicity> origEsEntry : origShape.getEdgeMultMap(
-                dir).entrySet()) {
-                if (!origEsEntry.getValue().isZeroPlus()) {
-                    EdgeSignature origEs = origEsEntry.getKey();
-                    for (ShapeNode node : morph.getPreImages(origEs.getNode())) {
-                        // We know that the original signature has edges.
-                        // Check if the pre-images also do.
-                        morph.getPreImages(shape, node, origEs, false, preImgEs);
-                        if (preImgEs.isEmpty()) {
-                            // The node got disconnected and therefore cannot exist.
-                            garbageNodes.add(node);
-                        }
+        for (Entry<EdgeSignature,Multiplicity> origEsEntry : origEdgeMultMap.entrySet()) {
+            if (!origEsEntry.getValue().isZeroPlus()) {
+                EdgeSignature origEs = origEsEntry.getKey();
+                for (ShapeNode node : morph.getPreImages(origEs.getNode())) {
+                    // We know that the original signature has edges.
+                    // Check if the pre-images also do.
+                    Multiplicity mult =
+                        morph.getPreImagesMult(shape, node, origEs);
+                    if (mult.isZero()) {
+                        // The node got disconnected and therefore cannot exist.
+                        garbageNodes.add(node);
                     }
                 }
             }

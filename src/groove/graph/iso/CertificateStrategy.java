@@ -16,7 +16,7 @@
  */
 package groove.graph.iso;
 
-import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
@@ -97,25 +97,24 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
     /** Computes an additional hash value for a shape graph. */
     private int computeShapeCertificate(Shape shape) {
         int result = 0;
+        EquivRelation<ShapeNode> er = shape.getEquivRelation();
         for (ShapeNode node : shape.nodeSet()) {
-            for (ShapeNode equivNode : shape.getEquivClassOf(node)) {
+            for (ShapeNode equivNode : er.getEquivClassOf(node)) {
                 @SuppressWarnings("unchecked")
                 N equivN = (N) equivNode;
                 result += getNodeCert(equivN).hashCode();
             }
         }
-        for (EdgeMultDir dir : EdgeMultDir.values()) {
-            for (EdgeSignature sig : shape.getEdgeMultMap(dir).keySet()) {
+        for (EdgeSignature sig : shape.getEdgeSigSet()) {
+            @SuppressWarnings("unchecked")
+            int nHash = getNodeCert((N) sig.getNode()).hashCode();
+            int sigHash = sig.getLabel().hashCode();
+            for (ShapeNode opposite : sig.getEquivClass()) {
                 @SuppressWarnings("unchecked")
-                int nHash = getNodeCert((N) sig.getNode()).hashCode();
-                int sigHash = sig.getLabel().hashCode();
-                for (ShapeNode opposite : sig.getEquivClass()) {
-                    @SuppressWarnings("unchecked")
-                    N oppositeN = (N) opposite;
-                    sigHash += getNodeCert(oppositeN).hashCode();
-                }
-                result += nHash * sigHash;
+                N oppositeN = (N) opposite;
+                sigHash += getNodeCert(oppositeN).hashCode();
             }
+            result += nHash * sigHash;
         }
         return result;
     }

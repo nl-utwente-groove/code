@@ -19,10 +19,10 @@ package groove.abstraction.neigh.equiv;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.MyHashMap;
-import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.Util;
 import groove.graph.TypeLabel;
+import groove.graph.TypeNode;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -123,7 +123,12 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         BitSet[] nodeLabelStore =
             new BitSet[this.graph.getFactory().getMaxNodeNr() + 1];
         for (HostNode node : this.graph.nodeSet()) {
-            nodeLabelStore[node.getNumber()] = new BitSet();
+            BitSet store = nodeLabelStore[node.getNumber()] = new BitSet();
+            TypeNode nodeType = node.getType();
+            if (!nodeType.isTopType()
+                && (abstractAll || absLabels.contains(nodeType.label()))) {
+                store.set(getLabelNr(labelNrs, nodeType.label()));
+            }
         }
         for (HostEdge edge : this.graph.edgeSet()) {
             TypeLabel label = edge.label();
@@ -296,49 +301,6 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
     /** Creates and returns a new node equivalence class object. */
     private NodeEquivClass<HostNode> createNodeEquivClass() {
         return new NodeEquivClass<HostNode>(this.graph.getFactory());
-    }
-
-    /**
-     * Returns true if the two given nodes are still equivalent in the next
-     * iteration. This method implements the second item of Def. 17 (see
-     * comment on the class definition, top of this file).
-     */
-    // EZ says: this method can certainly be optimized. In particular, an
-    // implementation for method prepareRefinement should be provided. This
-    // optimization is not needed for now because the only time this class is
-    // used is when constructing a shape from the start graph.
-    boolean areStillEquivalent(HostNode n0, HostNode n1) {
-        boolean equiv = true;
-        Set<HostEdge> intersectEdges = new MyHashSet<HostEdge>();
-        // For all labels.
-        labelLoop: for (TypeLabel label : this.binaryLabels) {
-            // For all equivalence classes.
-            for (EquivClass<HostNode> ec : this) {
-                Util.getIntersectEdges(this.graph, n0, ec, label,
-                    intersectEdges);
-                Multiplicity n0InterEc =
-                    Multiplicity.getEdgeSetMult(intersectEdges);
-                Util.getIntersectEdges(this.graph, n1, ec, label,
-                    intersectEdges);
-                Multiplicity n1InterEc =
-                    Multiplicity.getEdgeSetMult(intersectEdges);
-                Util.getIntersectEdges(this.graph, ec, n0, label,
-                    intersectEdges);
-                Multiplicity ecInterN0 =
-                    Multiplicity.getEdgeSetMult(intersectEdges);
-                Util.getIntersectEdges(this.graph, ec, n1, label,
-                    intersectEdges);
-                Multiplicity ecInterN1 =
-                    Multiplicity.getEdgeSetMult(intersectEdges);
-                equiv =
-                    equiv && n0InterEc.equals(n1InterEc)
-                        && ecInterN0.equals(ecInterN1);
-                if (!equiv) {
-                    break labelLoop;
-                }
-            }
-        }
-        return equiv;
     }
 
     /**

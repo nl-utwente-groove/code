@@ -252,9 +252,7 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
     public void clearStructuresForLoading() {
         getEquivRelation().clear();
         getNodeMultMap().clear();
-        for (EdgeMultDir dir : EdgeMultDir.values()) {
-            getEdgeSigStore(dir).clear();
-        }
+        getEdgeSigStore().clear();
     }
 
     /** Returns the node multiplicity map. */
@@ -263,13 +261,13 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
     }
 
     /** Returns the edge signature multiplicity map for a given direction. */
-    public Map<EdgeSignature,Multiplicity> getEdgeMultMap(EdgeMultDir dir) {
-        return getEdgeSigStore(dir).getMultMap();
+    public Map<EdgeSignature,Multiplicity> getEdgeMultMap() {
+        return getEdgeSigStore().getMultMap();
     }
 
     /** Returns the set of all edge signatures for a given direction. */
-    public Set<EdgeSignature> getEdgeSigSet(EdgeMultDir dir) {
-        return getEdgeMultMap(dir).keySet();
+    public Set<EdgeSignature> getEdgeSigSet() {
+        return getEdgeMultMap().keySet();
     }
 
     /** Returns the node equivalence relation of the shape. */
@@ -288,8 +286,8 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
     }
 
     /** Returns the edge signature store for a given direction. */
-    public EdgeSignatureStore getEdgeSigStore(EdgeMultDir dir) {
-        return getCache().getEdgeSigStore(dir);
+    public EdgeSignatureStore getEdgeSigStore() {
+        return getCache().getEdgeSigStore();
     }
 
     /** Factory method for a given edge direction. */
