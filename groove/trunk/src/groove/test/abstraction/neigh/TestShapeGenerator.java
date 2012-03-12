@@ -133,7 +133,7 @@ public class TestShapeGenerator {
         generator.start();
         AGTS gts = generator.getReducedGTS();
         assertEquals(8, gts.getStateCount());
-        assertEquals(37, gts.getTransitionCount());
+        assertEquals(42, gts.getTransitionCount());
     }
 
     @Test
