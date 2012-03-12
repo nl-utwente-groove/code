@@ -20,13 +20,12 @@ import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.MyHashSet;
 import groove.abstraction.neigh.Util;
-import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.shape.EdgeSignature;
+import groove.abstraction.neigh.shape.EdgeSignatureStore;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.abstraction.neigh.trans.RuleToShapeMap;
-import groove.graph.TypeLabel;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine.SearchMode;
 import groove.trans.Proof;
@@ -170,62 +169,88 @@ public final class PreMatch {
             RuleGraph lhs = match.getRule().lhs();
             Set<RuleEdge> intersectEdges = new MyHashSet<RuleEdge>();
             // For all binary labels.
-            outerLoop: for (TypeLabel label : Util.getBinaryLabels(shape)) {
-                // For all nodes of the LHS.
-                for (Entry<RuleNode,ShapeNode> entry : map.nodeMap().entrySet()) {
-                    RuleNode v = entry.getKey();
-                    ShapeNode pV = entry.getValue();
+            EdgeSignatureStore shapeStore = shape.getEdgeSigStore();
+            // For all nodes of the LHS.
+            outerLoop: for (Entry<RuleNode,ShapeNode> entry : map.nodeMap().entrySet()) {
+                RuleNode v = entry.getKey();
+                ShapeNode pV = entry.getValue();
 
-                    // For all outgoing edges from the image of v. Item 2.
-                    for (ShapeEdge e : shape.outEdgeSet(pV)) {
-                        if (!e.label().equals(label)) {
-                            continue;
-                        }
-                        ShapeNode w = e.target();
-                        Set<RuleNode> pInvW = map.getPreImages(w);
-                        RuleLabel ruleLabel = new RuleLabel(label);
-                        Util.getIntersectEdges(lhs, v, pInvW, ruleLabel,
-                            intersectEdges);
-                        Multiplicity leftMult =
-                            Multiplicity.getEdgeSetMult(intersectEdges);
-
-                        EquivClass<ShapeNode> ecW = shape.getEquivClassOf(w);
-                        EdgeSignature es =
-                            shape.getEdgeSignature(EdgeMultDir.OUTGOING, pV,
-                                label, ecW);
-                        Multiplicity rightMult = shape.getEdgeSigMult(es);
-
-                        if (!leftMult.le(rightMult)) {
-                            complyToEdgeMult = false;
-                            break outerLoop;
-                        }
+                // for all incoming and outgoing signatures of the node
+                for (EdgeMultDir dir : EdgeMultDir.values()) {
+                    Set<EdgeSignature> ess = shapeStore.getSigs(pV, dir);
+                    if (ess == null) {
+                        continue;
                     }
-
-                    // For all incoming edges from the image of v. Item 3.
-                    for (ShapeEdge e : shape.inEdgeSet(pV)) {
-                        if (!e.label().equals(label)) {
-                            continue;
-                        }
-                        ShapeNode w = e.source();
-                        Set<RuleNode> pInvW = map.getPreImages(w);
-                        RuleLabel ruleLabel = new RuleLabel(label);
-                        Util.getIntersectEdges(lhs, pInvW, v, ruleLabel,
-                            intersectEdges);
-                        Multiplicity leftMult =
-                            Multiplicity.getEdgeSetMult(intersectEdges);
-
-                        EquivClass<ShapeNode> ecW = shape.getEquivClassOf(w);
-                        EdgeSignature es =
-                            shape.getEdgeSignature(EdgeMultDir.INCOMING, pV,
-                                label, ecW);
-                        Multiplicity rightMult = shape.getEdgeSigMult(es);
-
-                        if (!leftMult.le(rightMult)) {
-                            complyToEdgeMult = false;
-                            break outerLoop;
+                    for (EdgeSignature es : ess) {
+                        Multiplicity rightMult = shapeStore.getMult(es);
+                        for (ShapeEdge e : shapeStore.getEdges(es)) {
+                            ShapeNode w = dir.opposite(e);
+                            Set<RuleNode> pInvW = map.getPreImages(w);
+                            RuleLabel ruleLabel = new RuleLabel(e.label());
+                            switch (dir) {
+                            case OUTGOING:
+                                Util.getIntersectEdges(lhs, v, pInvW,
+                                    ruleLabel, intersectEdges);
+                                break;
+                            case INCOMING:
+                                Util.getIntersectEdges(lhs, pInvW, v,
+                                    ruleLabel, intersectEdges);
+                            }
+                            Multiplicity leftMult =
+                                Multiplicity.getEdgeSetMult(intersectEdges);
+                            if (!leftMult.le(rightMult)) {
+                                complyToEdgeMult = false;
+                                break outerLoop;
+                            }
                         }
                     }
                 }
+                // AR says: the test below has been replaced by the one above 
+                //                // For all outgoing edges from the image of v. Item 2.
+                //                for (ShapeEdge e : shape.outEdgeSet(pV)) {
+                //                    TypeLabel label = e.label();
+                //                    if (!label.isBinary()) {
+                //                        continue;
+                //                    }
+                //                    ShapeNode w = e.target();
+                //                    Set<RuleNode> pInvW = map.getPreImages(w);
+                //                    RuleLabel ruleLabel = new RuleLabel(label);
+                //                    Util.getIntersectEdges(lhs, v, pInvW, ruleLabel,
+                //                        intersectEdges);
+                //                    Multiplicity leftMult =
+                //                        Multiplicity.getEdgeSetMult(intersectEdges);
+                //
+                //                    Multiplicity rightMult =
+                //                        shapeStore.getMult(e, EdgeMultDir.OUTGOING);
+                //
+                //                    if (!leftMult.le(rightMult)) {
+                //                        complyToEdgeMult = false;
+                //                        break outerLoop;
+                //                    }
+                //                }
+                //
+                //                // For all incoming edges from the image of v. Item 3.
+                //                for (ShapeEdge e : shape.inEdgeSet(pV)) {
+                //                    TypeLabel label = e.label();
+                //                    if (!label.isBinary()) {
+                //                        continue;
+                //                    }
+                //                    ShapeNode w = e.source();
+                //                    Set<RuleNode> pInvW = map.getPreImages(w);
+                //                    RuleLabel ruleLabel = new RuleLabel(label);
+                //                    Util.getIntersectEdges(lhs, pInvW, v, ruleLabel,
+                //                        intersectEdges);
+                //                    Multiplicity leftMult =
+                //                        Multiplicity.getEdgeSetMult(intersectEdges);
+                //
+                //                    Multiplicity rightMult =
+                //                        shapeStore.getMult(e, EdgeMultDir.INCOMING);
+                //
+                //                    if (!leftMult.le(rightMult)) {
+                //                        complyToEdgeMult = false;
+                //                        break outerLoop;
+                //                    }
+                //                }
             }
         }
 

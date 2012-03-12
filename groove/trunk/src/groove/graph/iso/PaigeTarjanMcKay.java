@@ -461,8 +461,14 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
         /**
          * Returns the current certificate value.
          */
-        int getValue() {
+        @Override
+        public int getValue() {
             return this.value;
+        }
+
+        @Override
+        public void modifyValue(int mod) {
+            this.value += mod;
         }
 
         /** Sets a new certificate value. */
@@ -716,8 +722,13 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
                 + this.label.hashCode() + ")]";
         }
 
-        final int getValue() {
+        final public int getValue() {
             return this.value;
+        }
+
+        @Override
+        public void modifyValue(int mod) {
+            // ignored
         }
 
         final MyNodeCert getSource() {

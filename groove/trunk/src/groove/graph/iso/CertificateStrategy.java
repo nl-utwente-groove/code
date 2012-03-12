@@ -16,12 +16,17 @@
  */
 package groove.graph.iso;
 
+import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.shape.EdgeSignature;
+import groove.abstraction.neigh.shape.EdgeSignatureStore;
 import groove.abstraction.neigh.shape.Shape;
+import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
+import groove.graph.EdgeRole;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
@@ -74,11 +79,6 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
         // check if the certificate has been computed before
         if (this.graphCertificate == 0) {
             computeCertificates();
-            if (getGraph() instanceof Shape) {
-                this.graphCertificate +=
-                    computeShapeCertificate((Shape) getGraph());
-            }
-
             if (this.graphCertificate == 0) {
                 this.graphCertificate = 1;
             }
@@ -94,33 +94,8 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
         return this.graphCertificate;
     }
 
-    /** Computes an additional hash value for a shape graph. */
-    private int computeShapeCertificate(Shape shape) {
-        int result = 0;
-        EquivRelation<ShapeNode> er = shape.getEquivRelation();
-        for (ShapeNode node : shape.nodeSet()) {
-            for (ShapeNode equivNode : er.getEquivClassOf(node)) {
-                @SuppressWarnings("unchecked")
-                N equivN = (N) equivNode;
-                result += getNodeCert(equivN).hashCode();
-            }
-        }
-        for (EdgeSignature sig : shape.getEdgeSigSet()) {
-            @SuppressWarnings("unchecked")
-            int nHash = getNodeCert((N) sig.getNode()).hashCode();
-            int sigHash = sig.getLabel().hashCode();
-            for (ShapeNode opposite : sig.getEquivClass()) {
-                @SuppressWarnings("unchecked")
-                N oppositeN = (N) opposite;
-                sigHash += getNodeCert(oppositeN).hashCode();
-            }
-            result += nHash * sigHash;
-        }
-        return result;
-    }
-
     /** Returns the node certificates calculated for the graph. */
-    public Certificate<N>[] getNodeCertificates() {
+    public ElementCertificate<N>[] getNodeCertificates() {
         if (this.nodeCerts == null) {
             computeCertificates();
         }
@@ -128,7 +103,7 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
     }
 
     /** Returns the edge certificates calculated for the graph. */
-    public Certificate<E>[] getEdgeCertificates() {
+    public ElementCertificate<E>[] getEdgeCertificates() {
         if (this.edgeCerts == null) {
             computeCertificates();
         }
@@ -141,6 +116,9 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
         computeCertReporter.start();
         initCertificates();
         iterateCertificates();
+        if (getGraph() instanceof Shape) {
+            processShapeCertificates((Shape) getGraph());
+        }
         computeCertReporter.stop();
     }
 
@@ -166,6 +144,54 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
         for (E edge : getGraph().edgeSet()) {
             initEdgeCert(edge);
         }
+    }
+
+    /** Computes an additional hash value for a shape graph. */
+    private void processShapeCertificates(Shape shape) {
+        int result = 0;
+        EquivRelation<ShapeNode> er = shape.getEquivRelation();
+        EdgeSignatureStore store = shape.getEdgeSigStore();
+        for (EquivClass<ShapeNode> ec : er) {
+            int ecHash = 0;
+            for (ShapeNode node : ec) {
+                @SuppressWarnings("unchecked")
+                N nodeN = (N) node;
+                ecHash += getNodeCert(nodeN).hashCode();
+            }
+            ecHash *= ecHash;
+            for (ShapeNode node : ec) {
+                @SuppressWarnings("unchecked")
+                N nodeN = (N) node;
+                getNodeCert(nodeN).modifyValue(ecHash);
+            }
+            result += ecHash;
+        }
+        Map<EdgeSignature,Integer> sigCertMap =
+            new HashMap<EdgeSignature,Integer>();
+        for (EdgeSignature sig : shape.getEdgeSigSet()) {
+            @SuppressWarnings("unchecked")
+            NodeCertificate<N> sigNodeCert = getNodeCert((N) sig.getNode());
+            int nHash = sigNodeCert.hashCode();
+            int sigHash = sig.getLabel().hashCode();
+            for (ShapeNode opposite : sig.getEquivClass()) {
+                @SuppressWarnings("unchecked")
+                N oppositeN = (N) opposite;
+                sigHash += getNodeCert(oppositeN).hashCode();
+            }
+            sigHash *= nHash;
+            sigCertMap.put(sig, sigHash);
+            result += sigHash;
+        }
+        for (ElementCertificate<E> edgeCert : getEdgeCertificates()) {
+            ShapeEdge edge = (ShapeEdge) edgeCert.getElement();
+            if (edge.getRole() == EdgeRole.BINARY) {
+                edgeCert.modifyValue(sigCertMap.get(store.getSig(edge,
+                    EdgeMultDir.OUTGOING)));
+                edgeCert.modifyValue(-sigCertMap.get(store.getSig(edge,
+                    EdgeMultDir.INCOMING)));
+            }
+        }
+        this.graphCertificate += result;
     }
 
     /**
@@ -270,11 +296,11 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
      * values, and then the node certificates using the current edge certificate
      * values.
      */
-    public Map<Element,Certificate<?>> getCertificateMap() {
+    public Map<Element,ElementCertificate<?>> getCertificateMap() {
         // check if the map has been computed before
         if (this.certificateMap == null) {
             getGraphCertificate();
-            this.certificateMap = new HashMap<Element,Certificate<?>>();
+            this.certificateMap = new HashMap<Element,ElementCertificate<?>>();
             // add the node certificates to the certificate map
             for (NodeCertificate<N> nodeCert : this.nodeCerts) {
                 this.certificateMap.put(nodeCert.getElement(), nodeCert);
@@ -381,7 +407,7 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
     /** The pre-computed graph certificate, if any. */
     long graphCertificate;
     /** The pre-computed certificate map, if any. */
-    Map<Element,Certificate<?>> certificateMap;
+    Map<Element,ElementCertificate<?>> certificateMap;
     /** The pre-computed node partition map, if any. */
     PartitionMap<N> nodePartitionMap;
     /** The pre-computed edge partition map, if any. */
@@ -454,24 +480,36 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
 
     /**
      * Type of the certificates constructed by the strategy. A value of this
-     * type represents a given graph element in an isomorphism-invariant way.
-     * Hence, equality of certificates does not imply equality of the
+     * type represents a part of the graph structure in an isomorphism-invariant 
+     * way. Hence, equality of certificates does not imply equality of the
      * corresponding graph elements.
      */
-    static public interface Certificate<EL extends Element> {
+    static public interface Certificate {
+        /** Returns the current value of the certificate. */
+        public int getValue();
+
+        /** Adds a further number to the certificate value. */
+        public void modifyValue(int mod);
+    }
+
+    /**
+     * Certificate representing a graph element
+     */
+    static public interface ElementCertificate<EL extends Element> extends
+            Certificate {
         /** Returns the element for which this is a certificate. */
         EL getElement();
     }
 
     /** Specialised certificate for nodes. */
     static public interface NodeCertificate<N extends Node> extends
-            Certificate<N> {
+            ElementCertificate<N> {
         // no added functionality
     }
 
     /** Specialised certificate for edges. */
     static public interface EdgeCertificate<N extends Node,E extends Edge>
-            extends Certificate<E> {
+            extends ElementCertificate<E> {
         // no added functionality
     }
 }

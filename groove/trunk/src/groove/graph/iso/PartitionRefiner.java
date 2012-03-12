@@ -371,7 +371,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
      * Superclass of graph element certificates.
      */
     public static abstract class MyCert<E extends Element> implements
-            CertificateStrategy.Certificate<E> {
+            CertificateStrategy.ElementCertificate<E> {
         /** Constructs a certificate for a given graph element. */
         MyCert(E element) {
             this.element = element;
@@ -409,6 +409,11 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
          */
         final public int getValue() {
             return this.value;
+        }
+
+        @Override
+        public void modifyValue(int mod) {
+            this.value += mod;
         }
 
         /**

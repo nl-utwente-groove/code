@@ -17,7 +17,7 @@
 package groove.graph.iso;
 
 import groove.graph.Element;
-import groove.graph.iso.CertificateStrategy.Certificate;
+import groove.graph.iso.CertificateStrategy.ElementCertificate;
 import groove.util.SmallCollection;
 
 import java.util.Collection;
@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public class PartitionMap<E extends Element> {
     /** Adds a pair of certificate and graph element to the partition map. */
-    public void add(Certificate<? extends E> certificate) {
+    public void add(ElementCertificate<? extends E> certificate) {
         E elem = certificate.getElement();
         // retrieve the image of the certificate, if any
         SmallCollection<E> oldPartition = this.partitionMap.get(certificate);
@@ -57,7 +57,7 @@ public class PartitionMap<E extends Element> {
      * @return an object of type {@link Element} or type {@link Collection}, or
      *         <code>null</code>
      */
-    public SmallCollection<E> get(Certificate<E> certificate) {
+    public SmallCollection<E> get(ElementCertificate<E> certificate) {
         return this.partitionMap.get(certificate);
     }
 
@@ -75,8 +75,8 @@ public class PartitionMap<E extends Element> {
     }
 
     /** The actual mapping. */
-    private final Map<Certificate<? extends E>,SmallCollection<E>> partitionMap =
-        new HashMap<Certificate<? extends E>,SmallCollection<E>>();
+    private final Map<ElementCertificate<? extends E>,SmallCollection<E>> partitionMap =
+        new HashMap<ElementCertificate<? extends E>,SmallCollection<E>>();
     /** Flag indicating if the partition map contains non-singleton images. */
     private boolean oneToOne = true;
 }
