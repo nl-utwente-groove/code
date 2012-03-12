@@ -122,7 +122,7 @@ public class TestShapeGenerator {
 
     @Test
     public void testFirewall() {
-        final String GRAMMAR = "junit/abstraction/firewall.gps";
+        final String GRAMMAR = "junit/abstraction/new-firewall-with-labels.gps";
         final String START_GRAPH = "start-2";
         ShapeGenerator generator;
 
@@ -132,16 +132,8 @@ public class TestShapeGenerator {
         generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
         generator.start();
         AGTS gts = generator.getReducedGTS();
-        assertEquals(24, gts.getStateCount());
-        assertEquals(102, gts.getTransitionCount());
-
-        Parameters.setNodeMultBound(2);
-        Parameters.setEdgeMultBound(2);
-        generator.explore();
-        generator.report();
-        gts = generator.getReducedGTS();
-        assertEquals(48, gts.getStateCount());
-        assertEquals(208, gts.getTransitionCount());
+        assertEquals(8, gts.getStateCount());
+        assertEquals(37, gts.getTransitionCount());
     }
 
     @Test
