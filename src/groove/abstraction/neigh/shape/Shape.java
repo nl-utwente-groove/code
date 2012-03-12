@@ -1086,23 +1086,6 @@ public final class Shape extends ShapeGraph {
         return newShape;
     }
 
-    /**
-     * Reduces the shape by removing all nodes with multiplicity 0+. The shape
-     * is modified by this method so make sure to clone it first if you want
-     * to preserve the original one.
-     */
-    public void reduce() {
-        Set<ShapeNode> toRemove = new MyHashSet<ShapeNode>();
-        for (ShapeNode node : this.nodeSet()) {
-            if (this.getNodeMult(node).isZeroPlus()) {
-                toRemove.add(node);
-            }
-        }
-        for (ShapeNode node : toRemove) {
-            this.removeNode(node);
-        }
-    }
-
     /** Returns true if the given node has no incident binary edges. */
     public boolean isUnconnected(ShapeNode node) {
         assert this.containsNode(node);
@@ -1128,16 +1111,6 @@ public final class Shape extends ShapeGraph {
             }
         }
         return true;
-    }
-
-    /** Returns true if the shape has an edge multiplicity different than 1. */
-    public boolean hasCollectorEdgeMults() {
-        for (Multiplicity mult : getEdgeMultMap().values()) {
-            if (mult.isCollector()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     // ------------------------------------------------------------------------
