@@ -189,7 +189,7 @@ public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
             } else {
                 // Keep trying.
                 morphism = isoChecker.getIsomorphism(domG, codG, state);
-                if (state.isPlanEmpty()) {
+                if (morphism == null || state.isPlanEmpty()) {
                     // We got the same morphism back. The check fails.
                     break;
                 }
