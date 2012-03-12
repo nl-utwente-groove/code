@@ -220,7 +220,7 @@ public class Bisimulator<N extends Node,E extends Edge> extends
      * Superclass of graph element certificates.
      */
     public static abstract class Certificate<EL extends Element> implements
-            CertificateStrategy.Certificate<EL> {
+            CertificateStrategy.ElementCertificate<EL> {
         /** Constructs a certificate for a given graph element. */
         Certificate(EL element) {
             this.element = element;
@@ -258,6 +258,11 @@ public class Bisimulator<N extends Node,E extends Edge> extends
          */
         public int getValue() {
             return this.value;
+        }
+
+        @Override
+        public void modifyValue(int mod) {
+            this.value += mod;
         }
 
         /**

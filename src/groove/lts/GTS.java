@@ -844,7 +844,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
                         } else if (node instanceof ValueNode) {
                             hashCode = node.hashCode();
                         } else {
-                            Certificate<?> parCert =
+                            Certificate parCert =
                                 certifier.getCertificateMap().get(node);
                             hashCode = parCert.hashCode();
                         }

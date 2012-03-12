@@ -19,6 +19,7 @@ package groove.abstraction.neigh.shape.iso;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
+import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.equiv.NodeEquivClass;
 import groove.abstraction.neigh.shape.EdgeSignatureStore;
 import groove.abstraction.neigh.shape.Shape;
@@ -248,13 +249,14 @@ public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         // Last, check the equivalence relation.
         EquivClass<ShapeNode> mappedCodEc =
             new NodeEquivClass<ShapeNode>(dom.getFactory());
+        EquivRelation<ShapeNode> codEr = cod.getEquivRelation();
         for (EquivClass<ShapeNode> domEc : dom.getEquivRelation()) {
             ShapeNode codNode = null;
             for (ShapeNode domNode : domEc) {
                 codNode = morphism.getNode(domNode);
                 mappedCodEc.add(codNode);
             }
-            EquivClass<ShapeNode> codEc = cod.getEquivClassOf(codNode);
+            EquivClass<ShapeNode> codEc = codEr.getEquivClassOf(codNode);
             // EZ says: we can used equality here because the node equivalence
             // classes are implemented as bit sets and their equals method is
             // as fast as computing a hash.

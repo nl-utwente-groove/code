@@ -384,6 +384,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         /**
          * Returns the current certificate value.
          */
+        @Override
         public final int getValue() {
             return this.value;
         }
@@ -391,7 +392,8 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         /**
          * Adds a certain value to {@link #nextValue}.
          */
-        void addNextValue(int value) {
+        @Override
+        public void modifyValue(int value) {
             this.nextValue += value;
         }
 
@@ -529,8 +531,14 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
                 + ")]";
         }
 
-        final int getValue() {
+        @Override
+        public final int getValue() {
             return this.value;
+        }
+
+        @Override
+        public void modifyValue(int mod) {
+            // ignore
         }
 
         final MyNodeCert<?,E> getSource() {
@@ -584,12 +592,12 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
 
         /** Updates the (next) value of the source certificate. */
         void updateSource() {
-            getSource().addNextValue(3 * computeValue());
+            getSource().modifyValue(3 * computeValue());
         }
 
         /** Updates the (next) value of the source certificate. */
         void updateTarget() {
-            getTarget().addNextValue(-5 * computeValue());
+            getTarget().modifyValue(-5 * computeValue());
         }
 
         /**
