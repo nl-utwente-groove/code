@@ -56,12 +56,14 @@ public class TypeNode implements Node, TypeElement {
     @Override
     public boolean equals(Object obj) {
         // only type nodes from the same type graph may be compared
-        assert getGraph() == ((TypeElement) obj).getGraph();
+        assert getGraph() == ((TypeElement) obj).getGraph()
+            || (isImported() && ((TypeNode) obj).isImported());
         boolean result = this == obj;
         // object equality should imply equal numbers and type labels
-        assert result || obj instanceof TypeEdge
-            || getNumber() != ((TypeNode) obj).getNumber()
-            && !label().equals(((TypeNode) obj).label());
+        assert !result
+            || !(obj instanceof TypeEdge)
+            || (getNumber() == ((TypeNode) obj).getNumber() && label().equals(
+                ((TypeNode) obj).label()));
         return result;
     }
 
