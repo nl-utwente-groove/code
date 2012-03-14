@@ -1541,8 +1541,9 @@ public final class EquationSystem {
          * the maximum index. Doesn't operate on the dual range.
          */
         void cutLow(int limit) {
-            if (this.i < limit && limit <= this.j) {
-                this.i = limit;
+            if (this.i < limit) {
+                // AR says: inserted a min here
+                this.i = Math.min(this.j, limit);
             }
         }
 
@@ -1551,8 +1552,9 @@ public final class EquationSystem {
          * the minimum index. Doesn't operate on the dual range.
          */
         void cutHigh(int limit) {
-            if (this.j > limit && limit >= this.i) {
-                this.j = limit;
+            if (this.j > limit) {
+                // AR says: inserted a max here
+                this.j = Math.max(this.i, limit);
             }
         }
 
@@ -1930,7 +1932,8 @@ public final class EquationSystem {
 
         @Override
         public boolean hasNext() {
-            return this.i <= this.value.bound;
+            // AR says: inserted a min here
+            return this.i <= Math.min(this.value.j, this.value.bound);
         }
 
         @Override
