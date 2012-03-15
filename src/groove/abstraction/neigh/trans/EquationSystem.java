@@ -1542,7 +1542,6 @@ public final class EquationSystem {
          */
         void cutLow(int limit) {
             if (this.i < limit) {
-                // AR says: inserted a min here
                 this.i = Math.min(this.j, limit);
             }
         }
@@ -1553,7 +1552,6 @@ public final class EquationSystem {
          */
         void cutHigh(int limit) {
             if (this.j > limit) {
-                // AR says: inserted a max here
                 this.j = Math.max(this.i, limit);
             }
         }
@@ -1932,7 +1930,6 @@ public final class EquationSystem {
 
         @Override
         public boolean hasNext() {
-            // AR says: inserted a min here
             return this.i <= Math.min(this.value.j, this.value.bound);
         }
 
