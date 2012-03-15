@@ -260,12 +260,13 @@ public final class Materialisation {
      */
     public static Set<Materialisation> getMaterialisations(Shape shape,
             Proof preMatch) {
-        Set<Materialisation> result;
+        Set<Materialisation> result = new MyHashSet<Materialisation>();
         Materialisation initialMat = new Materialisation(shape, preMatch);
         if (initialMat.isRuleModifying()) {
-            result = initialMat.getSolutions();
+            Visitor<Materialisation,?> collector = Visitor.newCollector(result);
+            initialMat.visitSolutions(collector);
+            collector.dispose();
         } else {
-            result = new MyHashSet<Materialisation>();
             result.add(initialMat);
         }
         return result;
@@ -733,20 +734,6 @@ public final class Materialisation {
         this.morph.putEdge(possibleEdge, origEdge);
     }
 
-    /** Computes and returns the set of materialisation objects. */
-    private Set<Materialisation> getSolutions() {
-        prepareSolutions();
-        ResultSet result = new ResultSet();
-        if (this.getBundles().isEmpty()) {
-            // Trivial case, no need to create an equation system.
-            result.add(this);
-        } else {
-            EquationSystem.newEqSys(this).solve(result);
-        }
-
-        return result;
-    }
-
     /** Visits the set of materialisation objects. */
     private void visitSolutions(Visitor<Materialisation,?> visitor) {
         prepareSolutions();
@@ -756,7 +743,7 @@ public final class Materialisation {
                 visitor.visit(this);
             }
         } else {
-            EquationSystem.newEqSys(this).visitSolutions(visitor);
+            Materialiser.newInstance(this).visitSolutions(visitor);
         }
     }
 
@@ -1167,33 +1154,6 @@ public final class Materialisation {
         assert isShapeMorphConsistent();
         assert getShape().isInvariantOK();
         return !violatesNACs();
-    }
-
-    // ------------------------------------------------------------------------
-    // Inner Classes
-    // ------------------------------------------------------------------------
-
-    // ---------
-    // ResultSet
-    // ---------
-
-    /**
-     * Set of materialisation results. Properly checks for consistency of the
-     * shape morphism before adding the materialisation. This is very useful
-     * to catch bugs in the materialisation process.
-     * 
-     * @author Eduardo Zambon
-     */
-    private static class ResultSet extends MyHashSet<Materialisation> {
-        @Override
-        public boolean add(Materialisation mat) {
-            if (mat.postProcess()) {
-                return super.add(mat);
-            } else {
-                // This materialisation violates some NAC, drop it.
-                return false;
-            }
-        }
     }
 
     /** Used for tests. */
