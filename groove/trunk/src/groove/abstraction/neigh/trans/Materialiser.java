@@ -373,7 +373,7 @@ public class Materialiser {
                             }
                         }
                     }
-                    this.eqSys.updateConstant(eqs, constMult.getLowerBound(),
+                    updateConstant(eqs, constMult.getLowerBound(),
                         constMult.getUpperBound());
                     this.eqSys.storeEquations(eqs);
                 }
@@ -382,11 +382,19 @@ public class Materialiser {
 
     }
 
+    /** Updates the constants in the given equations to the given values. */
+    public void updateConstant(Duo<Equation> eqs, int lbConst, int ubConst) {
+        Equation lbEq = eqs.one();
+        Equation ubEq = eqs.two();
+        lbEq.setConstant(lbConst);
+        ubEq.setConstant(ubConst);
+    }
+
     /**
      * Updates the given materialisation object using the given solution. Calls
      * the appropriate update method according to the stage.
      * 
-     * @return true if a next stage is necessary, false otherwise.
+    a     * @return true if a next stage is necessary, false otherwise.
      */
     private boolean updateMat(Materialisation mat, Solution sol) {
         boolean result = false;
@@ -543,9 +551,11 @@ public class Materialiser {
     private Duo<Equation> createEquations(int varsCount, int lbConst,
             int ubConst, ShapeNode node) {
         Equation lbEq =
-            new Equation(this.eqSys, BoundType.LB, varsCount, lbConst, node);
+            new Equation(BoundType.LB, varsCount, lbConst,
+                node);
         Equation ubEq =
-            new Equation(this.eqSys, BoundType.UB, varsCount, ubConst, node);
+            new Equation(BoundType.UB, varsCount, ubConst,
+                node);
         return new Duo<Equation>(lbEq, ubEq);
     }
 
