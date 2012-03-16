@@ -4,14 +4,13 @@ import static groove.abstraction.neigh.Multiplicity.OMEGA;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.abstraction.neigh.trans.EquationSystem.BoundType;
-import groove.abstraction.neigh.trans.EquationSystem.EquationBranchIterator;
 import groove.abstraction.neigh.trans.EquationSystem.Solution;
-import groove.abstraction.neigh.trans.EquationSystem.SolutionSet;
 import groove.abstraction.neigh.trans.EquationSystem.Var;
 import groove.util.Fixable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * A class to represent equations of the system. An equation has a type:
@@ -28,24 +27,17 @@ import java.util.Iterator;
  * useful), then the dual field is null.
  */
 final class Equation implements Fixable {
-
-    /**
-     * Comment for <code>newEquationSystem</code>
-     */
-    private final EquationSystem eqSys;
     /** Type of this equation. */
-    final BoundType type;
-    /** The upper bound of the allowed values. */
-    final int bound;
+    private final BoundType type;
     /** List of variables (type compatible with the equation). */
-    final ArrayList<Var> vars;
+    private final ArrayList<Var> vars;
     /** Constant value for this equation. */
-    int constant;
+    private int constant;
     /**
      * Special case: reference to a node that may become garbage in the
      * first stage, and thus affects the solution of the system.
      */
-    final ShapeNode node;
+    private final ShapeNode node;
     /**
      * The hash code of this equation. Once computed it cannot be 0.
      * Once it's different than 0, the equation is fixed and no
@@ -54,10 +46,7 @@ final class Equation implements Fixable {
     private int hashCode;
 
     /** Basic constructor. */
-    Equation(EquationSystem newEquationSystem, BoundType type,
-            int varsCount, int constant, ShapeNode node) {
-        this.eqSys = newEquationSystem;
-        this.bound = this.eqSys.bound;
+    Equation(BoundType type, int varsCount, int constant, ShapeNode node) {
         this.type = type;
         this.vars = new ArrayList<Var>(varsCount);
         this.constant = constant;
@@ -168,6 +157,43 @@ final class Equation implements Fixable {
     }
 
     /**
+     * Returns the value with respect to which the
+     * summed variables will be compared.
+     */
+    public int getConstant() {
+        return this.constant;
+    }
+
+    /**
+     * Sets the value with respect to which the
+     * summed variables will be compared.
+     */
+    public void setConstant(int constant) {
+        this.constant = constant;
+    }
+
+    /**
+     * @return Returns the type of the equation.
+     */
+    public BoundType getType() {
+        return this.type;
+    }
+
+    /**
+     * Returns the set of variables in this equation.
+     */
+    public List<Var> getVars() {
+        return this.vars;
+    }
+
+    /** Indicates if this is an empty equation, meaning that
+     * there are no variables. 
+     */
+    public boolean isEmpty() {
+        return this.vars.isEmpty();
+    }
+
+    /**
      * Returns true if this equation has one variable and no node reference.
      */
     boolean isTrivial() {
@@ -192,37 +218,15 @@ final class Equation implements Fixable {
         boolean result = false;
         switch (this.type) {
         case UB:
-            result = this.hasNode() || this.constant < this.getMaxRangeValue();
+            result = this.hasNode() || this.constant < OMEGA;
             break;
         case LB:
-            result = this.hasNode() || this.constant > this.getMinRangeValue();
+            result = this.hasNode() || this.constant > 0;
             break;
         default:
             assert false;
         }
         return result;
-    }
-
-    /** Returns the maximum value for the variables in the equation. */
-    int getMaxRangeValue() {
-        int result = -1;
-        switch (this.type) {
-        case UB:
-            result = OMEGA;
-            break;
-        case LB:
-            result = this.bound;
-            break;
-        default:
-            assert false;
-        }
-        assert result != -1;
-        return result;
-    }
-
-    /** Returns the minimum value for the variables in the equation. */
-    int getMinRangeValue() {
-        return 0;
     }
 
     /**
@@ -351,7 +355,7 @@ final class Equation implements Fixable {
      * Returns true if the equation has open variables for the given
      * solution.
      */
-    boolean hasOpenVars(Solution sol) {
+    public boolean hasOpenVars(Solution sol) {
         boolean result = false;
         for (Var var : this.vars) {
             if (!sol.isSingleton(var)) {
@@ -366,7 +370,7 @@ final class Equation implements Fixable {
      * Returns a list of equation variables that are open for the given
      * solution.
      */
-    ArrayList<Var> getOpenVars(Solution sol) {
+    public ArrayList<Var> getOpenVars(Solution sol) {
         ArrayList<Var> result = new ArrayList<Var>(this.vars.size());
         for (Var var : this.vars) {
             if (!sol.isSingleton(var)) {
@@ -379,7 +383,7 @@ final class Equation implements Fixable {
     /**
      * Returns the sum of all equation variables in the given solution.
      */
-    int getVarsSum(Solution sol) {
+    private int getVarsSum(Solution sol) {
         int result = 0;
         for (Var var : this.vars) {
             result = Multiplicity.add(result, sol.getBoundValue(var));
@@ -390,7 +394,7 @@ final class Equation implements Fixable {
     /**
      * Returns the sum of fixed equation variables in the given solution.
      */
-    int getFixedVarsSum(Solution sol) {
+    private int getFixedVarsSum(Solution sol) {
         int result = 0;
         for (Var var : this.vars) {
             if (sol.isSingleton(var)) {
@@ -404,7 +408,7 @@ final class Equation implements Fixable {
      * Returns the sum of the maximum values of the open equation variables
      * in the given solution.
      */
-    int getOpenVarsMaxSum(Solution sol) {
+    private int getOpenVarsMaxSum(Solution sol) {
         int result = 0;
         for (Var var : this.vars) {
             if (!sol.isSingleton(var)) {
@@ -434,51 +438,4 @@ final class Equation implements Fixable {
         return result;
     }
 
-    /**
-     * Branches the search space for new valid solutions. Branching is
-     * based on the open variables of this equation so, the less open
-     * variables we have, the better (less branching).
-     *  
-     * @param sol the solution to start with.
-     * @param partialSols set of all partial solutions computed so far,
-     *                    newly computed solutions that are not yet
-     *                    finished are put in this set. 
-     * @param finishedSols set of all finished solutions computed so far,
-     *                    newly computed solutions that are finished are
-     *                    put in this set. 
-     */
-    void getNewSolutions(Solution sol, SolutionSet partialSols,
-            SolutionSet finishedSols) {
-        assert !sol.isFinished();
-        assert sol.getEqs(this.type).contains(this);
-
-        sol.getEqs(this.type).remove(this);
-
-        if (this.isValidSolution(sol)) {
-            // The equation is already satisfied. Nothing to do.
-            if (sol.isFinished()) {
-                if (this.eqSys.isValid(sol)) {
-                    finishedSols.add(sol);
-                }
-            } else {
-                partialSols.add(sol);
-            }
-        } else {
-            // Iterate the solutions.
-            ArrayList<Var> openVars = this.getOpenVars(sol);
-            EquationBranchIterator iter =
-                new EquationSystem.EquationBranchIterator(this, sol,
-                    openVars);
-            while (iter.hasNext()) {
-                Solution newSol = iter.next();
-                if (newSol.isFinished()) {
-                    if (this.eqSys.isValid(newSol)) {
-                        finishedSols.add(newSol);
-                    }
-                } else {
-                    partialSols.add(newSol);
-                }
-            }
-        }
-    }
 }

@@ -83,7 +83,7 @@ public final class EquationSystem {
      * Range of values for the lower and upper bound variables. The ranges are
      * stored in the equation system and referenced in the solutions.
      */
-    int bound;
+    private final int bound;
     /** The number of multiplicity variables of the system. */
     private int varsCount;
 
@@ -159,6 +159,13 @@ public final class EquationSystem {
     }
 
     /**
+     * Returns the upper bound of the possible values of all variables.
+     */
+    public int getBound() {
+        return this.bound;
+    }
+
+    /**
      * Stores the given pair of equations in the appropriate sets. If the
      * equations have no variables or are not useful, they are discarded. An
      * equation is not useful, for example, if its constant is at the extremity
@@ -167,8 +174,8 @@ public final class EquationSystem {
     public void storeEquations(Duo<Equation> eqs) {
         Equation lbEq = eqs.one();
         Equation ubEq = eqs.two();
-        assert lbEq.vars.size() == ubEq.vars.size();
-        if (lbEq.vars.size() == 0) {
+        assert lbEq.getVars().size() == ubEq.getVars().size();
+        if (lbEq.isEmpty()) {
             // Empty equations. Nothing to do.
             return;
         }
@@ -302,7 +309,52 @@ public final class EquationSystem {
             } else {
                 // Default case for branching, pick an equation and branch.
                 Equation branchingEq = sol.getBestBranchingEquation();
-                branchingEq.getNewSolutions(sol, partialSols, finishedSols);
+                getNewSolutions(branchingEq, sol, partialSols, finishedSols);
+            }
+        }
+    }
+
+    /**
+     * Branches the search space for new valid solutions. Branching is
+     * based on the open variables of this equation so, the less open
+     * variables we have, the better (less branching).
+     *  
+     * @param sol the solution to start with.
+     * @param partialSols set of all partial solutions computed so far,
+     *                    newly computed solutions that are not yet
+     *                    finished are put in this set. 
+     * @param finishedSols set of all finished solutions computed so far,
+     *                    newly computed solutions that are finished are
+     *                    put in this set. 
+     */
+    void getNewSolutions(Equation eq, Solution sol, SolutionSet partialSols,
+            SolutionSet finishedSols) {
+        assert !sol.isFinished();
+        assert sol.getEqs(eq.getType()).contains(eq);
+
+        sol.getEqs(eq.getType()).remove(eq);
+
+        if (eq.isValidSolution(sol)) {
+            // The equation is already satisfied. Nothing to do.
+            if (sol.isFinished()) {
+                if (isValid(sol)) {
+                    finishedSols.add(sol);
+                }
+            } else {
+                partialSols.add(sol);
+            }
+        } else {
+            // Iterate the solutions.
+            EquationBranchIterator iter = new EquationBranchIterator(eq, sol);
+            while (iter.hasNext()) {
+                Solution newSol = iter.next();
+                if (newSol.isFinished()) {
+                    if (isValid(newSol)) {
+                        finishedSols.add(newSol);
+                    }
+                } else {
+                    partialSols.add(newSol);
+                }
             }
         }
     }
@@ -328,14 +380,6 @@ public final class EquationSystem {
                 }
             }
         }
-    }
-
-    /** Updates the constants in the given equations to the given values. */
-    public void updateConstant(Duo<Equation> eqs, int lbConst, int ubConst) {
-        Equation lbEq = eqs.one();
-        Equation ubEq = eqs.two();
-        lbEq.constant = lbConst;
-        ubEq.constant = ubConst;
     }
 
     /** Checks if the given solution satisfies all equations of the system. */
@@ -747,10 +791,10 @@ public final class EquationSystem {
             } else {
                 // Same number of open variables. Give preference to
                 // to the equation with best constant.
-                if (oldEq.type == BoundType.UB) {
-                    return newEq.constant < oldEq.constant;
+                if (oldEq.getType() == BoundType.UB) {
+                    return newEq.getConstant() < oldEq.getConstant();
                 } else { // oldEq.type == BoundType.LB
-                    return newEq.constant > oldEq.constant;
+                    return newEq.getConstant() > oldEq.getConstant();
                 }
             }
         }
@@ -1002,9 +1046,8 @@ public final class EquationSystem {
         final Equation eq;
 
         /** Default constructor. Pre-computes all solutions. */
-        EquationBranchIterator(Equation eq, Solution sol,
-                ArrayList<Var> openVars) {
-            super(sol, openVars);
+        EquationBranchIterator(Equation eq, Solution sol) {
+            super(sol, eq.getOpenVars(sol));
             this.eq = eq;
             this.computeAllSolutions();
         }
@@ -1020,7 +1063,7 @@ public final class EquationSystem {
                 newSol.cut(this.vars.get(i), iter.current());
                 i++;
             }
-            if (this.eq.type == BoundType.LB) {
+            if (this.eq.getType() == BoundType.LB) {
                 // Variables with zero or one values have to be handled
                 // in a special way.
                 for (Var openVar : this.vars) {
