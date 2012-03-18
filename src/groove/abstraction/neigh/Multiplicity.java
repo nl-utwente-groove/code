@@ -241,7 +241,10 @@ public final class Multiplicity {
         assert isInNOmega(i) && isInNOmega(j);
         assert i <= j;
         int b = getBound(kind);
-        if (i <= b) {
+        if (i < j && isUseThreeValues(kind)) {
+            i = 0;
+            j = OMEGA;
+        } else if (i <= b) {
             if (j <= b) {
                 // Do nothing. i and j are already set.
             } else { // i <= b && j > b .
@@ -253,6 +256,11 @@ public final class Multiplicity {
             j = OMEGA;
         }
         return getMultiplicity(i, j, kind);
+    }
+
+    /** Tests if a given multiplicity kind only has values 0, 1, 0+. */
+    private static boolean isUseThreeValues(MultKind kind) {
+        return kind != MultKind.EQSYS_MULT && Parameters.isUseThreeValues();
     }
 
     /** Scale the given multiplicity by the given factor. */
