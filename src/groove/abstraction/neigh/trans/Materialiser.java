@@ -27,14 +27,12 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.abstraction.neigh.trans.EquationSystem.BoundType;
-import groove.abstraction.neigh.trans.EquationSystem.Solution;
-import groove.abstraction.neigh.trans.EquationSystem.SolutionSet;
-import groove.abstraction.neigh.trans.EquationSystem.Var;
 import groove.util.Duo;
 import groove.util.Visitor;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -91,7 +89,7 @@ public class Materialiser {
      * This method resolves all non-determinism of the materialisation phase. 
      */
     public void solve(Set<Materialisation> result) {
-        SolutionSet finishedSols = computeSolutions();
+        Set<Solution> finishedSols = computeSolutions();
         // Create the return objects.
         for (Solution sol : finishedSols) {
             Materialisation mat;
@@ -116,7 +114,7 @@ public class Materialiser {
      * This method resolves all non-determinism of the materialisation phase. 
      */
     public void visitSolutions(Visitor<Materialisation,?> visitor) {
-        SolutionSet finishedSols = computeSolutions();
+        Set<Solution> finishedSols = computeSolutions();
         // Create the return objects.
         for (Solution sol : finishedSols) {
             Materialisation mat;
@@ -135,8 +133,8 @@ public class Materialiser {
         }
     }
 
-    private SolutionSet computeSolutions() {
-        SolutionSet result = this.eqSys.computeSolutions();
+    private Set<Solution> computeSolutions() {
+        Set<Solution> result = this.eqSys.computeSolutions();
         int finishedSolsSize = result.size();
         assert this.stage == 2 ? finishedSolsSize == 1 : true;
         if (WARN_BLOWUP && finishedSolsSize > MAX_SOLUTION_COUNT) {
@@ -188,42 +186,43 @@ public class Materialiser {
             Multiplicity nodeMult = shape.getNodeMult(bundle.node);
             Multiplicity edgeMult = bundle.origEsMult;
             Multiplicity constMult = nodeMult.times(edgeMult);
-            // ... create a pair of equations.
-            Duo<Equation> eqs;
-            if (mayHaveGarbageNodes && nodeMult.isZeroPlus()) {
-                eqs =
-                    this.createEquations(varsCount, constMult.getLowerBound(),
-                        constMult.getUpperBound(), bundle.node);
-            } else {
-                eqs =
-                    this.createEquations(varsCount, constMult.getLowerBound(),
-                        constMult.getUpperBound());
-            }
+            // Collect variables...
+            List<Duo<Var>> varList = new ArrayList<Duo<Var>>(varsCount);
             // For each split edge signature...
             for (EdgeSignature splitEs : bundle.getSplitEsSet()) {
                 // ...for each edge...
                 for (ShapeEdge edge : bundle.getSplitEsEdges(splitEs)) {
                     // ... create two bound variables.
                     Duo<Var> vars = retrieveBoundVars(edge);
-                    addVars(eqs, vars);
+                    varList.add(vars);
                     // Create additional trivial equations.
                     Duo<Equation> trivialEqs = null;
                     if (this.mat.isFixed(edge)) {
                         // Optimization 1:
                         // Create additional equations for the fixed edges.
-                        trivialEqs = this.createEquations(1, 1, 1);
+                        trivialEqs = this.createEquations(vars, 1, 1);
                     } else if (shape.areNodesConcrete(edge)) {
                         // Optimization 2:
                         // Create additional equations for edges with concrete nodes.
-                        trivialEqs = this.createEquations(1, 0, 1);
+                        trivialEqs = this.createEquations(vars, 0, 1);
                     }
                     if (trivialEqs != null) {
-                        addVars(trivialEqs, vars);
-                        this.eqSys.storeEquations(trivialEqs);
+                        this.eqSys.addEquations(trivialEqs);
                     }
                 }
             }
-            this.eqSys.storeEquations(eqs);
+            // ... create a pair of equations.
+            Duo<Equation> eqs;
+            if (mayHaveGarbageNodes && nodeMult.isZeroPlus()) {
+                eqs =
+                    this.createEquations(varList, constMult.getLowerBound(),
+                        constMult.getUpperBound(), bundle.node);
+            } else {
+                eqs =
+                    this.createEquations(varList, constMult.getLowerBound(),
+                        constMult.getUpperBound());
+            }
+            this.eqSys.addEquations(eqs);
         }
     }
 
@@ -249,15 +248,12 @@ public class Materialiser {
             for (EdgeBundle bundle : this.mat.getBundles(affectedNode)) {
                 // ... create one pair of equations.
                 int esCount = bundle.getSplitEsSet().size();
-                Duo<Equation> eqs =
-                    this.createEquations(esCount,
-                        bundle.origEsMult.getLowerBound(),
-                        bundle.origEsMult.getUpperBound());
+                List<Duo<Var>> varList = new ArrayList<Duo<Var>>(esCount);
                 // For each edge signature...
                 for (EdgeSignature es : bundle.getSplitEsSet()) {
                     // ... create a pair of variables.
                     Duo<Var> vars = retrieveBoundVars(es);
-                    addVars(eqs, vars);
+                    varList.add(vars);
                     Set<ShapeEdge> edges = bundle.getSplitEsEdges(es);
                     if (edges.size() == 1) {
                         // Special case. Fixed edge signatures.
@@ -265,13 +261,16 @@ public class Materialiser {
                         if (this.mat.isFixed(edge)
                             || bundle.isFixed(edge, bundle.direction, shape)) {
                             Duo<Equation> trivialEqs =
-                                this.createEquations(1, 1, 1);
-                            addVars(trivialEqs, vars);
-                            this.eqSys.storeEquations(trivialEqs);
+                                this.createEquations(vars, 1, 1);
+                            this.eqSys.addEquations(trivialEqs);
                         }
                     }
                 }
-                this.eqSys.storeEquations(eqs);
+                Duo<Equation> eqs =
+                    this.createEquations(varList,
+                        bundle.origEsMult.getLowerBound(),
+                        bundle.origEsMult.getUpperBound());
+                this.eqSys.addEquations(eqs);
             }
         }
     }
@@ -296,24 +295,24 @@ public class Materialiser {
             Multiplicity origMult = this.mat.getOrigNodeMult(origNode);
             Set<ShapeNode> splitNodes = nodeSplitMap.get(origNode);
             int varsCount = splitNodes.size() + 1;
-            // ... create one pair of equations.
-            Duo<Equation> eqs =
-                this.createEquations(varsCount, origMult.getLowerBound(),
-                    origMult.getUpperBound());
+            List<Duo<Var>> varList = new ArrayList<Duo<Var>>(varsCount);
             // ... create one pair of variables for the original node.
-            Duo<Var> vars;
             if (shape.containsNode(origNode)) {
-                vars = retrieveBoundVars(origNode);
-                addVars(eqs, vars);
+                Duo<Var> vars = retrieveBoundVars(origNode);
+                varList.add(vars);
             }
             for (ShapeNode splitNode : splitNodes) {
                 // ... create one pair of variables for each of the split nodes.
                 if (shape.containsNode(splitNode)) {
-                    vars = retrieveBoundVars(splitNode);
-                    addVars(eqs, vars);
+                    Duo<Var> vars = retrieveBoundVars(splitNode);
+                    varList.add(vars);
                 }
             }
-            this.eqSys.storeEquations(eqs);
+            // ... create one pair of equations.
+            Duo<Equation> eqs =
+                this.createEquations(varList, origMult.getLowerBound(),
+                    origMult.getUpperBound());
+            this.eqSys.addEquations(eqs);
         }
 
         // Optimization 1:
@@ -338,11 +337,10 @@ public class Materialiser {
                     // the signature multiplicity is more precise and cannot
                     // be used directly.
                     Multiplicity constMult = esMult.toNodeKind();
-                    // Create a new equation.
-                    Duo<Equation> eqs =
-                        this.createEquations(sigEdges.size(), 0, 0);
                     // Go over the edges of the signature and check if the
                     // opposite nodes have variables.
+                    List<Duo<Var>> varList =
+                        new ArrayList<Duo<Var>>(sigEdges.size());
                     edgeLoop: for (ShapeEdge edge : sigEdges) {
                         EdgeSignature oppEs =
                             shape.getEdgeSignature(edge, direction.reverse());
@@ -361,33 +359,28 @@ public class Materialiser {
                             Multiplicity oppMult = shape.getNodeMult(opposite);
                             constMult = constMult.sub(oppMult);
                         } else { // vars != null.
-                            addVars(eqs, vars);
+                            varList.add(vars);
                             // Check for a special case.
                             if (esMult.getUpperBound() == sigEdges.size()) {
                                 // This case implies that all opposite nodes must
                                 // be concrete.
                                 Duo<Equation> trivialEqs =
-                                    this.createEquations(1, 1, 1);
-                                addVars(trivialEqs, vars);
-                                this.eqSys.storeEquations(trivialEqs);
+                                    this.createEquations(
+                                        Collections.singletonList(vars), 1, 1);
+                                this.eqSys.addEquations(trivialEqs);
                             }
                         }
                     }
-                    updateConstant(eqs, constMult.getLowerBound(),
-                        constMult.getUpperBound());
-                    this.eqSys.storeEquations(eqs);
+                    // Create a new equation.
+                    Duo<Equation> eqs =
+                        this.createEquations(varList,
+                            constMult.getLowerBound(),
+                            constMult.getUpperBound());
+                    this.eqSys.addEquations(eqs);
                 }
             }
         }
 
-    }
-
-    /** Updates the constants in the given equations to the given values. */
-    public void updateConstant(Duo<Equation> eqs, int lbConst, int ubConst) {
-        Equation lbEq = eqs.one();
-        Equation ubEq = eqs.two();
-        lbEq.setConstant(lbConst);
-        ubEq.setConstant(ubConst);
     }
 
     /**
@@ -487,11 +480,12 @@ public class Materialiser {
     // See materialisation test case 11.
     private void collectGarbageNodes(Materialisation mat, Solution sol) {
         assert this.stage == 1;
-        if (sol.garbageNodes == null) {
+        Set<ShapeNode> garbageNodes = sol.getGarbageNodes();
+        if (garbageNodes == null) {
             return;
         }
         Shape shape = mat.getShape();
-        for (ShapeNode node : sol.garbageNodes) {
+        for (ShapeNode node : garbageNodes) {
             assert shape.getNodeMult(node).isZeroPlus();
             assert shape.isUnconnected(node);
             mat.removeUnconnectedNode(node);
@@ -538,9 +532,21 @@ public class Materialiser {
     }
 
     /** Creates and returns a pair of equations with the given constants. */
-    private Duo<Equation> createEquations(int varsCount, int lbConst,
+    private Duo<Equation> createEquations(Duo<Var> vars, int lbConst,
             int ubConst) {
-        return createEquations(varsCount, lbConst, ubConst, null);
+        Equation lbEq =
+            new Equation(Collections.singletonList(vars.one()), BoundType.LB,
+                lbConst, null);
+        Equation ubEq =
+            new Equation(Collections.singletonList(vars.two()), BoundType.UB,
+                ubConst, null);
+        return new Duo<Equation>(lbEq, ubEq);
+    }
+
+    /** Creates and returns a pair of equations with the given constants. */
+    private Duo<Equation> createEquations(List<Duo<Var>> vars, int lbConst,
+            int ubConst) {
+        return createEquations(vars, lbConst, ubConst, null);
     }
 
     /**
@@ -548,14 +554,16 @@ public class Materialiser {
      * a reference to a collector node. The node is used only in the
      * first stage.
      */
-    private Duo<Equation> createEquations(int varsCount, int lbConst,
+    private Duo<Equation> createEquations(List<Duo<Var>> varList, int lbConst,
             int ubConst, ShapeNode node) {
-        Equation lbEq =
-            new Equation(BoundType.LB, varsCount, lbConst,
-                node);
-        Equation ubEq =
-            new Equation(BoundType.UB, varsCount, ubConst,
-                node);
+        List<Var> lbVars = new ArrayList<Var>(varList.size());
+        List<Var> ubVars = new ArrayList<Var>(varList.size());
+        for (Duo<Var> varDuo : varList) {
+            lbVars.add(varDuo.one());
+            ubVars.add(varDuo.two());
+        }
+        Equation lbEq = new Equation(lbVars, BoundType.LB, lbConst, node);
+        Equation ubEq = new Equation(ubVars, BoundType.UB, ubConst, node);
         return new Duo<Equation>(lbEq, ubEq);
     }
 
@@ -643,11 +651,5 @@ public class Materialiser {
             assert false;
         }
         return kind;
-    }
-
-    /** Adds the given pair of variables to the given pair of equations. */
-    private static void addVars(Duo<Equation> eqs, Duo<Var> vars) {
-        eqs.one().addVar(vars.one());
-        eqs.two().addVar(vars.two());
     }
 }
