@@ -3,12 +3,10 @@ package groove.abstraction.neigh.trans;
 import static groove.abstraction.neigh.Multiplicity.OMEGA;
 import groove.abstraction.neigh.Multiplicity;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.abstraction.neigh.trans.EquationSystem.BoundType;
-import groove.abstraction.neigh.trans.EquationSystem.Solution;
-import groove.abstraction.neigh.trans.EquationSystem.Var;
 import groove.util.Fixable;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,9 +28,11 @@ final class Equation implements Fixable {
     /** Type of this equation. */
     private final BoundType type;
     /** List of variables (type compatible with the equation). */
-    private final ArrayList<Var> vars;
+    private final List<Var> vars;
+    /** Canonical structure representing the set of variables. */
+    private final BitSet varSet;
     /** Constant value for this equation. */
-    private int constant;
+    private final int constant;
     /**
      * Special case: reference to a node that may become garbage in the
      * first stage, and thus affects the solution of the system.
@@ -46,9 +46,13 @@ final class Equation implements Fixable {
     private int hashCode;
 
     /** Basic constructor. */
-    Equation(BoundType type, int varsCount, int constant, ShapeNode node) {
+    Equation(List<Var> vars, BoundType type, int constant, ShapeNode node) {
         this.type = type;
-        this.vars = new ArrayList<Var>(varsCount);
+        this.vars = vars;
+        this.varSet = new BitSet();
+        for (Var var : vars) {
+            this.varSet.set(var.getNumber());
+        }
         this.constant = constant;
         this.node = node;
         this.hashCode = 0;
@@ -103,14 +107,8 @@ final class Equation implements Fixable {
         int result = 1;
         result = prime * result + this.constant;
         result = prime * result + this.type.hashCode();
-        for (Var var : this.vars) {
-            // We can't multiply the result by prime here because this would
-            // make the hash dependent on the ordering of elements.
-            result += var.number;
-        }
-        // Multiply here. This probably least to a worst hash function, but
-        // nothing to do...
-        return result * prime;
+        result = prime * result + this.varSet.hashCode();
+        return result;
     }
 
     @Override
@@ -122,8 +120,7 @@ final class Equation implements Fixable {
             Equation eq = (Equation) o;
             result =
                 this.constant == eq.constant && this.type == eq.type
-                    && this.vars.containsAll(eq.vars)
-                    && eq.vars.containsAll(this.vars);
+                    && this.varSet.equals(eq.varSet);
         }
         return result;
     }
@@ -165,14 +162,6 @@ final class Equation implements Fixable {
     }
 
     /**
-     * Sets the value with respect to which the
-     * summed variables will be compared.
-     */
-    public void setConstant(int constant) {
-        this.constant = constant;
-    }
-
-    /**
      * @return Returns the type of the equation.
      */
     public BoundType getType() {
@@ -198,16 +187,6 @@ final class Equation implements Fixable {
      */
     boolean isTrivial() {
         return this.vars.size() == 1 && !this.hasNode();
-    }
-
-    /**
-     * Adds the given variable to this equation. Fails in an assertion if
-     * the variable type is not equal to the equation type. 
-     */
-    void addVar(Var var) {
-        assert !this.isFixed();
-        assert var.type == this.type;
-        this.vars.add(var);
     }
 
     /**
@@ -252,7 +231,7 @@ final class Equation implements Fixable {
         // EZ says: sorry for the multiple return points, but otherwise
         // the code becomes less readable...
 
-        int fixedVarsSum = this.getFixedVarsSum(sol);
+        int fixedVarsSum = sol.getSum(this.vars, true);
 
         if (!this.hasOpenVars(sol)) {
             if (this.hasNode() && fixedVarsSum == 0) {
@@ -381,30 +360,6 @@ final class Equation implements Fixable {
     }
 
     /**
-     * Returns the sum of all equation variables in the given solution.
-     */
-    private int getVarsSum(Solution sol) {
-        int result = 0;
-        for (Var var : this.vars) {
-            result = Multiplicity.add(result, sol.getBoundValue(var));
-        }
-        return result;
-    }
-
-    /**
-     * Returns the sum of fixed equation variables in the given solution.
-     */
-    private int getFixedVarsSum(Solution sol) {
-        int result = 0;
-        for (Var var : this.vars) {
-            if (sol.isSingleton(var)) {
-                result = Multiplicity.add(result, sol.getBoundValue(var));
-            }
-        }
-        return result;
-    }
-
-    /**
      * Returns the sum of the maximum values of the open equation variables
      * in the given solution.
      */
@@ -423,7 +378,7 @@ final class Equation implements Fixable {
      * Does not check the dual equation.
      */
     boolean isValidSolution(Solution sol) {
-        int sum = this.getVarsSum(sol);
+        int sum = sol.getSum(this.vars, false);
         boolean result = false;
         switch (this.type) {
         case LB:
