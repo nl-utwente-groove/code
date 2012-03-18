@@ -169,6 +169,10 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         this.addAll(labelsToClass.values());
     }
 
+    /**
+     * Returns the number of a type label, creating a fresh number 
+     * if the label was not yet in the map.
+     */
     private int getLabelNr(Map<TypeLabel,Integer> labelNrMap, TypeLabel label) {
         Integer result = labelNrMap.get(label);
         if (result == null) {
