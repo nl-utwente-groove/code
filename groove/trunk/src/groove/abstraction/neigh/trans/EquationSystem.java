@@ -41,6 +41,12 @@ import java.util.Set;
  * @author Eduardo Zambon
  */
 public final class EquationSystem {
+    /** 
+     * Flag to test out the behaviour of the materialisation
+     * in case 0..1 multiplicities in stage 1 are not expanded
+     * artificially.
+     */
+    private static final boolean ENABLE_ZERO_ONE_BRANCHES = false;
 
     // ------------------------------------------------------------------------
     // Static fields
@@ -253,7 +259,7 @@ public final class EquationSystem {
      * @return true if we can branch, false otherwise.
      */
     private boolean canBranchOnZeroOneValues(Solution sol) {
-        return this.stage == 1
+        return ENABLE_ZERO_ONE_BRANCHES && this.stage == 1
             && (sol.ubEqs.isEmpty() || sol.allEqsHaveNodes(sol.ubEqs))
             && sol.hasZeroOneVars();
     }
