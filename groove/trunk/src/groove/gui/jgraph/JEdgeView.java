@@ -553,7 +553,11 @@ public class JEdgeView extends EdgeView {
 
         @Override
         public void paint(Graphics g) {
-            super.paint(g);
+            try {
+                super.paint(g);
+            } catch (InternalError e) {
+                // this catches a nasty bug introduced in JRE 6.2x
+            }
 
             Graphics2D g2 = (Graphics2D) g;
             if (this.twoLines) {
