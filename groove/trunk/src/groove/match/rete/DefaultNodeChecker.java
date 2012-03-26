@@ -82,15 +82,23 @@ public class DefaultNodeChecker extends NodeChecker implements
      */
     public void receiveNode(HostNode node, Action action) {
         receiveNodeReporter.start();
-        if (!this.getOwner().isInOnDemandMode()) {
-            sendDownReceivedNode(node, action);
-        } else if ((action == Action.REMOVE)
-            && !this.ondemandBuffer.contains(node)) {
-            sendDownReceivedNode(node, action);
-        } else {
-            bufferReceivedNode(node, action);
+        if (checkType(node)) {
+            if (!this.getOwner().isInOnDemandMode()) {
+                sendDownReceivedNode(node, action);
+            } else if ((action == Action.REMOVE)
+                && !this.ondemandBuffer.contains(node)) {
+                sendDownReceivedNode(node, action);
+            } else {
+                bufferReceivedNode(node, action);
+            }
         }
         receiveNodeReporter.stop();
+    }
+
+    /** Tests if the type of a given node matches the type of 
+     * the node checker. */
+    private boolean checkType(HostNode image) {
+        return this.type.subsumes(image.getType(), this.sharpType);
     }
 
     private void sendDownReceivedNode(HostNode node, Action action) {

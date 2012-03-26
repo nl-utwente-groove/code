@@ -22,6 +22,7 @@ import groove.util.CacheReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -155,7 +156,21 @@ public class CompositeEvent extends
         if (!(obj instanceof CompositeEvent)) {
             return false;
         }
-        return Arrays.equals(this.eventArray, ((CompositeEvent) obj).eventArray);
+        // because the basic events might be differently ordered in the
+        // event arrays, we can't do a direct array comparison
+        BasicEvent[] myEvents = this.eventArray;
+        BasicEvent[] otherEvents = ((CompositeEvent) obj).eventArray;
+        if (myEvents.length != otherEvents.length) {
+            return false;
+        }
+        Set<BasicEvent> myEventSet =
+            new HashSet<BasicEvent>(Arrays.asList(myEvents));
+        for (int i = 0; i < otherEvents.length; i++) {
+            if (!myEventSet.contains(myEvents[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
