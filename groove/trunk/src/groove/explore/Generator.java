@@ -304,6 +304,14 @@ public class Generator extends CommandLineTool {
                     url =
                         new URL(url.toExternalForm() + "?"
                             + this.startStateName);
+                    // remove prefix grammar location
+                    if (this.startStateName.startsWith(this.grammarLocation)
+                        && this.startStateName.endsWith(".gst")) {
+                        this.startStateName =
+                            this.startStateName.substring(
+                                this.grammarLocation.length() + 1,
+                                this.startStateName.length() - 4);
+                    }
                 }
             } catch (MalformedURLException e) {
                 printError("Can't load grammar: " + e.getMessage(), false);
@@ -312,7 +320,12 @@ public class Generator extends CommandLineTool {
             // now we are guaranteed to have a URL
 
             try {
-                this.grammarModel = GrammarModel.newInstance(url);
+                if (this.startStateName == null) {
+                    this.grammarModel = GrammarModel.newInstance(url);
+                } else {
+                    this.grammarModel =
+                        GrammarModel.newTestInstance(url, this.startStateName);
+                }
                 this.grammarModel.getStore().addObserver(loadObserver);
             } catch (IOException exc) {
                 printError("Can't load grammar: " + exc.getMessage(), false);
