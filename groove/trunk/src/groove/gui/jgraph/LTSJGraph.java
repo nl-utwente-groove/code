@@ -257,10 +257,12 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         }
     }
 
+    /** Returns the current show/hide mode. */
     public boolean getShowHideMode() {
         return this.showHideMode;
     }
 
+    /** Toggles the current show/hide mode. */
     public void toggleShowHideMode() {
         this.showHideMode = !this.showHideMode;
     }
