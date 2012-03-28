@@ -57,6 +57,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
@@ -127,6 +128,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             result.add(getShowSupertypesButton());
             result.addSeparator();
             result.add(getShowAllLabelsButton());
+            result.add(getCollapseAllButton());
             // put the sub- and supertype buttons in a button group
             ButtonGroup modeButtonGroup = new ButtonGroup();
             modeButtonGroup.add(getShowSubtypesButton());
@@ -170,6 +172,18 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                 Options.createToggleButton(new ShowAllLabelsAction());
         }
         return this.showAllLabelsButton;
+    }
+
+    /**
+     * Returns the button for the collapse all action, lazily creating it
+     * first.
+     */
+    private JButton getCollapseAllButton() {
+        if (this.collapseAllButton == null) {
+            this.collapseAllButton =
+                Options.createButton(new CollapseAllAction());
+        }
+        return this.collapseAllButton;
     }
 
     /**
@@ -361,6 +375,18 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             }
         }
         this.jGraph.setSelectionCells(emphSet.toArray());
+    }
+
+    /** Collapses all labels of the tree at the top level. */
+    private void collapseTree() {
+        // temporarily remove this component as selection listener
+        removeTreeSelectionListener(this);
+        for (int i = 0; i < getRowCount(); i++) {
+            if (!isCollapsed(i)) {
+                collapseRow(i);
+            }
+        }
+        addTreeSelectionListener(this);
     }
 
     /**
@@ -659,6 +685,8 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     private JToggleButton showSupertypesButton;
     /** Button for setting the show all actions mode. */
     private JToggleButton showAllLabelsButton;
+    /** Button for collapsing the label tree. */
+    private JButton collapseAllButton;
 
     /**
      * Returns the icon for subtype or supertype mode, depending on the
@@ -928,6 +956,29 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             return isShowsAllLabels()
                     ? Options.SHOW_EXISTING_LABELS_ACTION_NAME
                     : Options.SHOW_ALL_LABELS_ACTION_NAME;
+        }
+    }
+
+    /**
+     * Action to collapse all nodes of the label tree.
+     */
+    private class CollapseAllAction extends AbstractAction {
+        public CollapseAllAction() {
+            super(null, Icons.COLLAPSE_ALL_ICON);
+            putValue(Action.SHORT_DESCRIPTION, computeName());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            collapseTree();
+        }
+
+        /**
+         * Returns the appropriate name for this action, based on the current
+         * value of {@link #isShowsAllLabels()}
+         */
+        private String computeName() {
+            return Options.COLLAPSE_ALL;
         }
     }
 
