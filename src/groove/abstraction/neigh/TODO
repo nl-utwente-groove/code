@@ -118,6 +118,8 @@ weak references to the shapes, since they can be reconstructed on demand.
 It would be nice also if we could come up with a notion of a "delta" for
 shapes, similar to what is there for graphs.
 
+UPDATE: Caches were implemented by Arend. Deltas most likely not coming...
+
 -------------------------------------------------------------------------------
 
 - Parallel execution of concrete and abstract exploration

@@ -30,6 +30,7 @@ import groove.graph.TypeNode;
 import groove.gui.LabelFilter.Entry;
 import groove.gui.LabelFilter.TypeEntry;
 import groove.gui.action.ActionStore;
+import groove.gui.action.CollapseAllAction;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
@@ -82,7 +83,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         TreeSelectionListener {
     /**
      * Constructs a label list associated with a given jgraph. A further
-     * parameter indicates if the label stree should support subtypes.
+     * parameter indicates if the label tree should support subtypes.
      * {@link #updateModel()} should be called before the list can be used.
      * @param jGraph the jgraph with which this list is to be associated
      * @param toolBar if {@code true}, the panel should have a tool bar
@@ -180,8 +181,9 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      */
     private JButton getCollapseAllButton() {
         if (this.collapseAllButton == null) {
-            this.collapseAllButton =
-                Options.createButton(new CollapseAllAction());
+            Action action = new CollapseAllAction(null, this);
+            action.setEnabled(true);
+            this.collapseAllButton = Options.createButton(action);
         }
         return this.collapseAllButton;
     }
@@ -375,18 +377,6 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             }
         }
         this.jGraph.setSelectionCells(emphSet.toArray());
-    }
-
-    /** Collapses all labels of the tree at the top level. */
-    private void collapseTree() {
-        // temporarily remove this component as selection listener
-        removeTreeSelectionListener(this);
-        for (int i = 0; i < getRowCount(); i++) {
-            if (!isCollapsed(i)) {
-                collapseRow(i);
-            }
-        }
-        addTreeSelectionListener(this);
     }
 
     /**
@@ -956,29 +946,6 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             return isShowsAllLabels()
                     ? Options.SHOW_EXISTING_LABELS_ACTION_NAME
                     : Options.SHOW_ALL_LABELS_ACTION_NAME;
-        }
-    }
-
-    /**
-     * Action to collapse all nodes of the label tree.
-     */
-    private class CollapseAllAction extends AbstractAction {
-        public CollapseAllAction() {
-            super(null, Icons.COLLAPSE_ALL_ICON);
-            putValue(Action.SHORT_DESCRIPTION, computeName());
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            collapseTree();
-        }
-
-        /**
-         * Returns the appropriate name for this action, based on the current
-         * value of {@link #isShowsAllLabels()}
-         */
-        private String computeName() {
-            return Options.COLLAPSE_ALL;
         }
     }
 

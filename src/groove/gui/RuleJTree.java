@@ -31,8 +31,8 @@ import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.RuleTransition;
 import groove.lts.MatchResult;
+import groove.lts.RuleTransition;
 import groove.trans.Action;
 import groove.trans.ResourceKind;
 import groove.trans.RuleName;
@@ -825,8 +825,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             } else {
                 MatchResult match = getResult();
                 if (match instanceof RuleTransition) {
-                    String state =
-                        ((RuleTransition) match).target().toString();
+                    String state = ((RuleTransition) match).target().toString();
                     result =
                         HTMLConverter.HTML_TAG.on("To "
                             + HTMLConverter.ITALIC_TAG.on(state));
@@ -889,4 +888,5 @@ public class RuleJTree extends JTree implements SimulatorListener {
             return this;
         }
     }
+
 }
