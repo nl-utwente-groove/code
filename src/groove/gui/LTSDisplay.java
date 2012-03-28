@@ -96,7 +96,7 @@ public class LTSDisplay extends Display {
     private JToggleButton hideLTSButton;
     private JToggleButton showLTSButton;
 
-    /*
+    /**
      * Returns the button for setting selection mode, lazily creating it first.
      */
     public JToggleButton getShowLTSButton() {
