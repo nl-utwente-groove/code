@@ -29,7 +29,11 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -346,12 +350,35 @@ public class FindReplaceDialog {
                     isSelected, cellHasFocus);
             }
         });
-        // EDUARDO: Pending: sort the list properly.
-        for (TypeLabel label : typeGraph.getLabels()) {
+        for (TypeLabel label : sortLabels(typeGraph.getLabels())) {
             if (!label.isDataType() && label != TypeLabel.NODE) {
                 result.addItem(label);
             }
         }
+        return result;
+    }
+
+    private List<TypeLabel> sortLabels(Set<TypeLabel> labels) {
+        List<TypeLabel> result = new ArrayList<TypeLabel>(labels.size());
+        List<TypeLabel> nodeTypes = new ArrayList<TypeLabel>();
+        List<TypeLabel> flags = new ArrayList<TypeLabel>();
+        List<TypeLabel> binary = new ArrayList<TypeLabel>();
+        for (TypeLabel label : labels) {
+            if (label.isNodeType()) {
+                nodeTypes.add(label);
+            } else if (label.isFlag()) {
+                flags.add(label);
+            } else {
+                assert label.isBinary();
+                binary.add(label);
+            }
+        }
+        Collections.sort(nodeTypes);
+        Collections.sort(flags);
+        Collections.sort(binary);
+        result.addAll(nodeTypes);
+        result.addAll(flags);
+        result.addAll(binary);
         return result;
     }
 
