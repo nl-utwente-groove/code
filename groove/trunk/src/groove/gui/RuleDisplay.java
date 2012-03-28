@@ -17,12 +17,15 @@
 package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
+import groove.gui.action.CollapseAllAction;
 import groove.lts.GraphState;
 import groove.trans.ResourceKind;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.util.Set;
 
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
@@ -50,9 +53,12 @@ final public class RuleDisplay extends ResourceDisplay {
     /** Creates a tool bar for the rule tree. */
     @Override
     protected JToolBar createListToolBar() {
-        JToolBar result = super.createListToolBar(7);
+        int separation = 7;
+        JToolBar result = super.createListToolBar(separation);
         result.add(getActions().getShiftPriorityAction(true));
         result.add(getActions().getShiftPriorityAction(false));
+        result.addSeparator(new Dimension(separation, 0));
+        result.add(getCollapseAllButton());
         return result;
     }
 
@@ -107,5 +113,19 @@ final public class RuleDisplay extends ResourceDisplay {
         }
     }
 
+    /**
+     * Returns the button for the collapse all action, lazily creating it
+     * first.
+     */
+    private JButton getCollapseAllButton() {
+        if (this.collapseAllButton == null) {
+            this.collapseAllButton =
+                Options.createButton(new CollapseAllAction(getSimulator(),
+                    (RuleJTree) getList()));
+        }
+        return this.collapseAllButton;
+    }
+
     private final JLabel statusLine = new JLabel(" ");
+    private JButton collapseAllButton;
 }
