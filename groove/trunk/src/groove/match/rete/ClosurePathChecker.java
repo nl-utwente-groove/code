@@ -81,7 +81,8 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         receiveNewIncomingMatch(source, newMatch);
     }
 
-    private void altReceiveLoopBackMatches(
+    // EZ says: commented out to avoid warning.
+    /*private void altReceiveLoopBackMatches(
             Collection<RetePathMatch> loopBackMatches) {
         List<RetePathMatch> resultingNewMatches =
             new LinkedList<RetePathMatch>();
@@ -104,7 +105,7 @@ public class ClosurePathChecker extends AbstractPathChecker implements
                 newMatch.addContainerCollection(this.rightMemory);
             }
         }
-    }
+    }*/
 
     private void receiveLoopBackMatches(
             Collection<RetePathMatch> loopBackMatches, int recursionCounter) {
