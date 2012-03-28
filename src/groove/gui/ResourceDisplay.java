@@ -118,6 +118,7 @@ public abstract class ResourceDisplay extends Display implements
         JToolBar result = Options.createToolBar();
         result.add(getNewAction());
         result.add(getEditAction());
+        result.add(getSaveAction());
         if (separation >= 0) {
             result.addSeparator(new Dimension(separation, 0));
         } else {

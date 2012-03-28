@@ -17,8 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * Action to save the resource in
- * an editor panel.
+ * Action to save the resource in an editor panel.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -177,14 +176,11 @@ public final class SaveAction extends SimulatorAction {
     public void refresh() {
         boolean enabled;
         ResourceKind resource = getResourceKind();
-        if (getEditor() == null) {
-            if (isForState()) {
-                enabled = getSimulatorModel().hasState();
-            } else {
-                enabled = getSimulatorModel().isSelected(resource);
-            }
+        if (isForState()) {
+            enabled = getSimulatorModel().hasState();
         } else {
-            enabled = this.saveAs || getEditor().isDirty();
+            enabled =
+                this.saveAs || (getEditor() != null && getEditor().isDirty());
         }
         setEnabled(enabled);
         String name =
