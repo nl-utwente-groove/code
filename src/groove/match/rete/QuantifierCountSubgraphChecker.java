@@ -64,6 +64,7 @@ public class QuantifierCountSubgraphChecker extends
      */
     protected ReteCountMatch dummyCountMatch = null;
 
+    /** The static mapping of a quantifier counter checker node. */
     protected QuantifierCountChecker countCheckerNode = null;
 
     /**
@@ -281,8 +282,7 @@ public class QuantifierCountSubgraphChecker extends
             for (int i = 0; i < leftTable.length; i++) {
                 LookupEntry leftEntry = leftTable[i];
                 LookupEntry rightEntry = rightTable[i];
-                this.leftAnchorLookup[rightEntry.getPos()] =
-                    leftEntry;
+                this.leftAnchorLookup[rightEntry.getPos()] = leftEntry;
             }
         }
 

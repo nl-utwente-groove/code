@@ -742,23 +742,6 @@ public class IsoChecker<N extends Node,E extends Edge> {
         return certifier.getNodePartitionCount();
     }
 
-    /**
-     * Tests if a given node map contains an entry consisting of a certain
-     * key and image. Adds the entry if the key is not in the map.
-     * @return {@code true} if the key is new or the image equals the
-     * given image; {@code false} if the key is mapped to a different image
-     */
-    private boolean checkNodeMap(Map<N,N> nodeMap, N key, N image) {
-        boolean result = true;
-        N oldImage = nodeMap.get(key);
-        if (oldImage == null) {
-            nodeMap.put(key, image);
-        } else {
-            result = oldImage.equals(image);
-        }
-        return result;
-    }
-
     /** 
      * Retrieve or construct a certifier for a give graph.
      * A parameter controls whether a certifier is always returned, or only

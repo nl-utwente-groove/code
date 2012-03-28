@@ -3,6 +3,7 @@ package groove.sts;
 import groove.lts.GraphTransition;
 import groove.lts.RuleTransition;
 
+@SuppressWarnings("all")
 public class InstantiatedSwitchRelation {
 
     private SwitchRelation relation;

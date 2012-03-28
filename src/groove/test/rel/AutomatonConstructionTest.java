@@ -48,6 +48,7 @@ import org.junit.Test;
  * @author Arend Rensink
  * @version $Revision $
  */
+@SuppressWarnings("unused")
 public class AutomatonConstructionTest {
     /** Directory with test files (relative to the project) */
     static public final String GRAMMAR = "junit/samples/regexpr";
