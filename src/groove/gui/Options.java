@@ -647,6 +647,10 @@ public class Options implements Cloneable {
      * Show supertypes action name
      */
     public static final String SHOW_SUPERTYPES_ACTION_NAME = "Show supertypes";
+    /**
+     * Collapse All action name
+     */
+    public static final String COLLAPSE_ALL = "Collapse All";
     /** Snap to grid action name */
     public static final String SNAP_TO_GRID_NAME = "Snap to grid";
     /** Search action name */
