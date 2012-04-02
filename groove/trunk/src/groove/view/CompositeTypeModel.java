@@ -144,7 +144,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             }
         }
         // get the labels from the external start graph
-        if (getGrammar().getStartGraphNames().isEmpty()) {
+        if (getGrammar().getStartGraphs().isEmpty()) {
             HostModel host = getGrammar().getStartGraphModel();
             if (host != null) {
                 result.addAll(host.getLabels());

@@ -59,7 +59,7 @@ public class AntWorld {
     private static void go(String grammarName, int rounds) {
         try {
             GrammarModel grammarView = Groove.loadGrammar(grammarName);
-            grammarView.setStartGraphName("start-" + rounds);
+            grammarView.localSetStartGraph("start-" + rounds);
             GraphGrammar grammar = grammarView.toGrammar();
             GTS gts = new GTS(grammar);
             gts.addLTSListener(getStatisticsListener());

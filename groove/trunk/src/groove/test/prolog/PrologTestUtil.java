@@ -75,8 +75,9 @@ public class PrologTestUtil {
         GrammarModel result = null;
         try {
             result =
-                GrammarModel.newTestInstance(
-                    new File(GRAMMAR_DIR, grammarName), startGraphName);
+                GrammarModel.newInstance(new File(GRAMMAR_DIR, grammarName),
+                    false);
+            result.localSetStartGraph(startGraphName);
         } catch (IOException exc) {
             throw new RuntimeException(exc);
         }

@@ -23,6 +23,7 @@ import groove.samples.calc.GraphCalculator;
 import groove.trans.GraphGrammar;
 import groove.util.Groove;
 import groove.view.FormatException;
+import groove.view.GrammarModel;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -57,8 +58,9 @@ public class CalculatorSample {
         try {
             String startGraphName = args[0];
             String targetGraphName = args[1];
-            GraphGrammar sample =
-                Groove.loadTestGrammar(GRAMMAR_NAME, startGraphName).toGrammar();
+            GrammarModel model = Groove.loadGrammar(GRAMMAR_NAME);
+            model.localSetStartGraph(startGraphName);
+            GraphGrammar sample = model.toGrammar();
             DefaultGraphCalculator calculator =
                 new DefaultGraphCalculator(sample);
             Collection<GraphState> result = calculator.getAll(RULE_NAME);
