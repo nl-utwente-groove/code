@@ -105,7 +105,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
 
     @Override
     public boolean isEnabled() {
-        return getGrammar() == null || getGrammar().isStartGraphName(getName());
+        return getGrammar() == null || getGrammar().isStartGraphComponent(getName());
     }
 
     /** 

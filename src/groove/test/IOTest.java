@@ -72,8 +72,8 @@ public class IOTest {
                 nodecount, edgecount);
             testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL,
                 nodecount, edgecount);
-            testControl(GrammarModel.newTestInstance(url, DEF_START),
-                DEF_START, DEF_CONTROL, nodecount, edgecount);
+            testControl(GrammarModel.newInstance(url), DEF_START, DEF_CONTROL,
+                nodecount, edgecount);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -85,8 +85,8 @@ public class IOTest {
         int nodecount = 12;
         int edgecount = 14;
         try {
-            testControl(Groove.loadTestGrammar(DIRECTORY, ALT_START),
-                ALT_START, DEF_CONTROL, nodecount, edgecount);
+            testControl(Groove.loadGrammar(DIRECTORY), ALT_START, DEF_CONTROL,
+                nodecount, edgecount);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -98,8 +98,7 @@ public class IOTest {
         int edgecount = 16;
         try {
             URL dir = Groove.toURL(new File(DIRECTORY));
-            GrammarModel grammarView =
-                GrammarModel.newTestInstance(dir, ALT_START);
+            GrammarModel grammarView = GrammarModel.newInstance(dir);
             testControl(grammarView, ALT_START, ALT_CONTROL, nodecount,
                 edgecount);
         } catch (IOException e) {
@@ -129,6 +128,9 @@ public class IOTest {
             // load time)
             SystemProperties properties = view.getProperties();
             properties.setControlName(controlName);
+
+            // and also set the start graph directly
+            view.localSetStartGraph(startName);
 
             // now instantiate the grammar
             GraphGrammar gg = view.toGrammar();

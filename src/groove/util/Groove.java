@@ -162,22 +162,6 @@ public class Groove {
     }
 
     /**
-     * Attempts to load in a graph grammar, for testing purposes, from a given
-     * <tt>.gps</tt> directory, and returns it. Adds the <tt>.gps</tt> extension
-     * if the file has no extension. Also explicitly sets an alternative start
-     * graph (instead of using the ones in grammar properties).
-     * @param dirname the name of the directory to load the graph grammar from
-     * @param altStartGraphName the name of the alternative start graph
-     * @throws IOException if <code>dirname</code> does not exist or is wrongly
-     *         formatted
-     */
-    static public GrammarModel loadTestGrammar(String dirname,
-            String altStartGraphName) throws IOException {
-        File dir = new File(GRAMMAR_FILTER.addExtension(dirname));
-        return GrammarModel.newTestInstance(dir, altStartGraphName);
-    }
-
-    /**
      * Gives the current time as a number-formatted string with given
      * parameters.
      * @param lossfactor the multiple of milliseconds by which time should be

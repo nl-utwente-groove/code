@@ -23,7 +23,6 @@ import groove.trans.ResourceKind;
 import groove.trans.SystemProperties;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
-import groove.view.GrammarModel.Manipulation;
 import groove.view.GraphBasedModel;
 import groove.view.ResourceModel;
 import groove.view.TextBasedModel;
@@ -67,7 +66,7 @@ public class SimulatorModel implements Cloneable {
                 getStore().deleteTexts(ResourceKind.CONTROL, names);
                 break;
             case HOST:
-                grammar.updateStartGraphNames(Manipulation.REMOVE, names);
+                grammar.removeStartGraphs(names);
                 getStore().deleteGraphs(ResourceKind.HOST, names);
                 break;
             case PROLOG:
@@ -108,7 +107,7 @@ public class SimulatorModel implements Cloneable {
                 result = oldName.equals(getGrammar().getControlName());
                 break;
             case HOST:
-                result = getGrammar().isStartGraphName(oldName);
+                result = getGrammar().isStartGraphComponent(oldName);
                 break;
             case RULE:
             case TYPE:
@@ -165,7 +164,7 @@ public class SimulatorModel implements Cloneable {
             getStore().putProperties(newProperties);
             break;
         case HOST:
-            getGrammar().updateStartGraphNames(Manipulation.TOGGLE, names);
+            getGrammar().toggleStartGraphs(names);
             break;
         case RULE:
             Collection<AspectGraph> newRules =
@@ -241,7 +240,7 @@ public class SimulatorModel implements Cloneable {
         SystemProperties properties = getGrammar().getProperties();
         switch (graph.getRole()) {
         case HOST:
-            result = getGrammar().isStartGraphName(name);
+            result = getGrammar().isStartGraphComponent(name);
             break;
         case RULE:
             result = GraphProperties.isEnabled(graph);
@@ -752,7 +751,7 @@ public class SimulatorModel implements Cloneable {
             changeState(null);
             changeMatch(null);
             changeExploration();
-            grammar.recomputeStartGraph(true);
+            grammar.reloadStartGraphs();
         }
         // restrict the selected resources to those that are (still)
         // in the grammar
@@ -918,7 +917,7 @@ public class SimulatorModel implements Cloneable {
                     name = "";
                 } else {
                     // the next best choice is an (arbitrary) start graph name
-                    Set<String> startNames = getGrammar().getStartGraphNames();
+                    Set<String> startNames = getGrammar().getStartGraphs();
                     if (startNames.size() > 0) {
                         name = startNames.iterator().next();
                     }

@@ -71,36 +71,16 @@ import java.util.TreeSet;
  */
 public class GrammarModel implements Observer {
     /**
-     * Constructs a grammar model from a rule system store, and explicitly sets
-     * the start graph to <code>altStartGraphName</code>. This alternative
-     * start graph is not saved in the grammar properties.
-     * Alternatively, if the <code>altStartGraphName</code> argument is
-     * <code>null</code>, then the start graph(s) are loaded from the
-     * grammar properties (and set to {@link Groove#DEFAULT_START_GRAPH_NAME}
-     * if no such property exists).
-     */
-    public GrammarModel(SystemStore store, String altStartGraphName) {
-        this.store = store;
-        for (ResourceKind resource : ResourceKind.all(false)) {
-            syncResource(resource);
-        }
-        this.startGraphNames = new HashSet<String>();
-        if (altStartGraphName != null) {
-            if (getResource(ResourceKind.HOST, altStartGraphName) != null) {
-                // use alternative start graph
-                this.startGraphNames.add(altStartGraphName);
-            }
-        } else {
-            recomputeStartGraph(false);
-        }
-    }
-
-    /**
      * Constructs a grammar model from a rule system store, using the start
      * graph(s) that are stored in the grammar properties.
      */
     public GrammarModel(SystemStore store) {
-        this(store, null);
+        this.store = store;
+        for (ResourceKind resource : ResourceKind.all(false)) {
+            syncResource(resource);
+        }
+        this.startGraphs = new HashSet<String>();
+        reloadStartGraphs(false);
     }
 
     /** Returns the name of the rule system. */
@@ -245,107 +225,107 @@ public class GrammarModel implements Observer {
      * Checks if the given (host graph) name is (a component of) the currently
      * selected start graph.  
      */
-    public boolean isStartGraphName(String name) {
-        return this.startGraphNames.contains(name);
+    public boolean isStartGraphComponent(String name) {
+        return this.startGraphs.contains(name);
     }
 
     /** Gets the names of the graphs that currently make up the start graph. */
-    public Set<String> getStartGraphNames() {
-        return Collections.unmodifiableSet(this.startGraphNames);
+    public Set<String> getStartGraphs() {
+        return Collections.unmodifiableSet(this.startGraphs);
     }
 
-    /** 
-     * Forces the start graph to be (re-)computed. The boolean flag indicates
-     * whether or not {@link #invalidate} should be called afterwards.
+    /**
+     * Loads or reloads the start graphs from the properties file. The boolean
+     * flag indicates whether or not {@link #invalidate} should be called
+     * afterwards.
      */
-    public void recomputeStartGraph(boolean invalidate) {
+    private void reloadStartGraphs(boolean invalidate) {
         // do nothing if there is an external start graph
         if (this.externalStartGraph) {
             return;
         }
         // else, reload names from property file
-        this.startGraphNames.clear();
+        this.startGraphs.clear();
         Set<String> startGraphNames = getProperties().getStartGraphNames();
         if (startGraphNames != null) {
-            // use start graphs from properties file
-            this.startGraphModel = null;
-            this.startGraphNames.addAll(startGraphNames);
+            this.startGraphs.addAll(startGraphNames);
         } else {
-            // else try to set start graph to the default
             if (getResource(ResourceKind.HOST, Groove.DEFAULT_START_GRAPH_NAME) != null) {
-                this.startGraphNames.add(Groove.DEFAULT_START_GRAPH_NAME);
+                this.startGraphs.add(Groove.DEFAULT_START_GRAPH_NAME);
             }
         }
+        // invalidate grammar if necessary
         if (invalidate) {
-            invalidate();
-        }
-    }
-
-    /** 
-     * Sets the currently enabled start graphs. The change is propagated to
-     * the system store, and can therefore result in an {@link IOException}.
-     */
-    public void setStartGraphNames(Set<String> names) throws IOException {
-        assert names != null;
-        if (!this.startGraphNames.equals(names)) {
-            this.startGraphNames.clear();
-            this.startGraphNames.addAll(names);
-            getProperties().setStartGraphNames(this.startGraphNames);
-            getStore().putProperties(getProperties());
             this.startGraphModel = null;
-            this.externalStartGraph = false;
             invalidate();
         }
     }
 
     /** 
-     * Sets a single currently enabled start graph, but does not propagate the
-     * property change to the system store.
+     * Loads or reloads the start graphs from the properties file, and
+     * recomputes the model associated with it.
      */
-    public void localSetStartGraphName(String name) {
-        if (name == null) {
+    public void reloadStartGraphs() {
+        reloadStartGraphs(true);
+    }
+
+    /** 
+     * Sets the start graphs, but does not change the associated grammar
+     * property in the system store.
+     * @see #localSetStartGraph
+     */
+    public void localSetStartGraphs(Set<String> names) {
+        if (names == null) {
             return;
         }
-        if (this.startGraphNames.size() == 1
-            && this.startGraphNames.contains(name)) {
-            return;
-        }
-        this.startGraphNames.clear();
-        this.startGraphNames.add(name);
-        getProperties().setStartGraphNames(this.startGraphNames);
+        this.startGraphs.clear();
+        this.startGraphs.addAll(names);
         this.startGraphModel = null;
         this.externalStartGraph = false;
         invalidate();
     }
 
-    /** Convenience alias for updateStartGraphNames(Manipulation.SET). */
-    public void setStartGraphName(String name) throws IOException {
-        updateStartGraphNames(Manipulation.SET, name);
+    /**
+     * Sets the start graphs to a single graph, but does not change the
+     * associated property in the system store.
+     * @see #localSetStartGraphs
+     */
+    public void localSetStartGraph(String name) {
+        if (name == null) {
+            return;
+        }
+        this.startGraphs.clear();
+        this.startGraphs.add(name);
+        this.startGraphModel = null;
+        this.externalStartGraph = false;
+        invalidate();
     }
 
-    /** 
-     * Manipulates the currently enabled start graphs. The change is propagated
-     * to the system store, and can therefore result in an {@link IOException}.
+    /**
+     * Removes the given names from the start graphs, and propagates the change
+     * to the grammar properties.
      */
-    public void updateStartGraphNames(Manipulation manipulation,
-            Set<String> names) throws IOException {
-        if (Manipulation.apply(this.startGraphNames, manipulation, names)) {
-            getProperties().setStartGraphNames(this.startGraphNames);
-            getStore().putProperties(getProperties());
-            this.startGraphModel = null;
-            this.externalStartGraph = false;
-            invalidate();
+    public void removeStartGraphs(Set<String> names) throws IOException {
+        if (names != null) {
+            if (this.startGraphs.removeAll(names)) {
+                this.startGraphModel = null;
+                this.externalStartGraph = false;
+                getProperties().setStartGraphNames(this.startGraphs);
+                getStore().putProperties(getProperties());
+                invalidate();
+            }
         }
     }
 
-    /** 
-     * Manipulates the currently enabled start graphs. The change is propagated
-     * to the system store, and can therefore result in an {@link IOException}.
+    /**
+     * Renames a start graph, and propagates the change to the grammar
+     * properties.
      */
-    public void updateStartGraphNames(Manipulation manipulation, String name)
+    public void renameStartGraph(String oldName, String newName)
         throws IOException {
-        if (Manipulation.apply(this.startGraphNames, manipulation, name)) {
-            getProperties().setStartGraphNames(this.startGraphNames);
+        if (this.startGraphs.remove(oldName)) {
+            this.startGraphs.add(newName);
+            getProperties().setStartGraphNames(this.startGraphs);
             getStore().putProperties(getProperties());
             this.startGraphModel = null;
             this.externalStartGraph = false;
@@ -354,17 +334,20 @@ public class GrammarModel implements Observer {
     }
 
     /**
-     * Renames one of the select start graphs. The change is propagated to the
-     * system store, and can therefore result in an {@link IOException}.
+     * Toggles the given names in the start graphs, and propagates the change
+     * to the grammar properties.
      */
-    public void renameStartGraph(String oldName, String newName)
-        throws IOException {
-        if (this.startGraphNames.remove(oldName)) {
-            this.startGraphNames.add(newName);
-            getProperties().setStartGraphNames(this.startGraphNames);
-            getStore().putProperties(getProperties());
+    public void toggleStartGraphs(Set<String> names) throws IOException {
+        if (names != null) {
+            for (String name : names) {
+                if (!this.startGraphs.remove(name)) {
+                    this.startGraphs.add(name);
+                }
+            }
             this.startGraphModel = null;
             this.externalStartGraph = false;
+            getProperties().setStartGraphNames(this.startGraphs);
+            getStore().putProperties(getProperties());
             invalidate();
         }
     }
@@ -376,8 +359,8 @@ public class GrammarModel implements Observer {
      */
 
     public HostModel getStartGraphModel() {
-        if (this.startGraphModel == null && !this.startGraphNames.isEmpty()) {
-            this.startGraphModel = combineGraphs(this.startGraphNames);
+        if (this.startGraphModel == null && !this.startGraphs.isEmpty()) {
+            this.startGraphModel = combineGraphs(this.startGraphs);
         }
         return this.startGraphModel;
     }
@@ -388,7 +371,6 @@ public class GrammarModel implements Observer {
      * @param startGraph the new start graph; may not be {@code null}
      * @throws IllegalArgumentException if <code>startGraph</code> does not have
      *         a graph role
-     * @see #setStartGraphNames
      */
     public HostModel setStartGraph(AspectGraph startGraph) {
         assert startGraph != null;
@@ -558,11 +540,11 @@ public class GrammarModel implements Observer {
         result.setProperties(getProperties());
         // set start graph
         if (getStartGraphModel() == null) {
-            if (this.startGraphNames.isEmpty()) {
+            if (this.startGraphs.isEmpty()) {
                 errors.add(new FormatError("No start graph set"));
             } else {
                 errors.add(new FormatError("Start graph '%s' cannot be loaded",
-                    this.startGraphNames));
+                    this.startGraphs));
             }
         } else {
             List<FormatError> startGraphErrors;
@@ -614,6 +596,7 @@ public class GrammarModel implements Observer {
     /**
      * Resets the {@link #grammar} and {@link #errors} objects, making sure that
      * they are regenerated at a next call of {@link #toGrammar()}.
+     * Also explicitly recomputes the start graph model.
      */
     private void invalidate() {
         this.modificationCount++;
@@ -746,7 +729,7 @@ public class GrammarModel implements Observer {
     /** Flag to indicate if the start graph is external. */
     private boolean externalStartGraph = false;
     /** Names of the host graphs that make up the current start graph. */
-    private final Set<String> startGraphNames;
+    private final Set<String> startGraphs;
     /** Possibly empty list of errors found in the conversion to a grammar. */
     private List<FormatError> errors;
     /** The graph grammar derived from the rule models. */
@@ -803,37 +786,6 @@ public class GrammarModel implements Observer {
         } catch (IOException exc) {
             return newInstance(new File(location), false);
         }
-    }
-
-    /**
-     * Creates an instance based on a given file, for testing purposes.
-     * @param file the file to load the grammar from
-     * @param altStartGraphName the host graph to be used as start graph 
-     * @throws IOException if an error occurred while creating the store
-     */
-    static public GrammarModel newTestInstance(File file,
-            String altStartGraphName) throws IOException {
-        SystemStore store = SystemStoreFactory.newStore(file, false);
-        store.reload();
-        GrammarModel result = store.toTestGrammarModel(altStartGraphName);
-        return result;
-    }
-
-    /**
-     * Creates an instance based on a store located at a given URL, for testing
-     * purposes.
-     * @param url the URL to load the grammar from
-     * @param altStartGraphName the host graph to be used as start graph 
-     * @throws IllegalArgumentException if no store can be created from the
-     *         given URL
-     * @throws IOException if a store can be created but not loaded
-     */
-    static public GrammarModel newTestInstance(URL url, String altStartGraphName)
-        throws IllegalArgumentException, IOException {
-        SystemStore store = SystemStoreFactory.newStore(url);
-        store.reload();
-        GrammarModel result = store.toTestGrammarModel(altStartGraphName);
-        return result;
     }
 
     // ========================================================================

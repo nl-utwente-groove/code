@@ -448,9 +448,11 @@ public class ReteNetworkTest extends TestCase {
     private GraphGrammar loadGrammar(String grammarName, String startGraphName) {
         GraphGrammar result = null;
         try {
-            result =
-                GrammarModel.newTestInstance(new File(INPUT_DIR, grammarName),
-                    startGraphName).toGrammar();
+            GrammarModel model =
+                GrammarModel.newInstance(new File(INPUT_DIR, grammarName),
+                    false);
+            model.localSetStartGraph(startGraphName);
+            result = model.toGrammar();
         } catch (IOException exc) {
             throw new RuntimeException(exc);
         } catch (FormatException ex) {

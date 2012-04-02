@@ -404,8 +404,9 @@ public class ExplorationTest {
     private GrammarModel loadGrammar(String grammarName, String startGraphName) {
         try {
             GrammarModel result =
-                GrammarModel.newTestInstance(new File(INPUT_DIR, grammarName),
-                    startGraphName);
+                GrammarModel.newInstance(new File(INPUT_DIR, grammarName),
+                    false);
+            result.localSetStartGraph(startGraphName);
             return result;
         } catch (IOException exc) {
             throw new RuntimeException(exc);

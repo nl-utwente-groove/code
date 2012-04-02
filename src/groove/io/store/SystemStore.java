@@ -185,19 +185,6 @@ abstract public class SystemStore extends UndoableEditSupport {
         return this.model;
     }
 
-    /**
-     * Returns a grammar model backed up by this store, for testing purposes
-     * only.
-     * @param altStartGraphName the host graph to be used as start graph
-     */
-    public GrammarModel toTestGrammarModel(String altStartGraphName) {
-        if (this.model == null) {
-            this.model = new GrammarModel(this, altStartGraphName);
-            addObserver(this.model);
-        }
-        return this.model;
-    }
-
     /** 
      * Adds an observer to the model.
      * The observer is notified of all {@link Edit} occurrences.

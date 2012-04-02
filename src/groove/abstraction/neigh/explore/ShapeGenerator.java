@@ -45,6 +45,7 @@ import groove.util.CommandLineTool;
 import groove.util.GenerateProgressMonitor;
 import groove.util.Groove;
 import groove.view.FormatException;
+import groove.view.GrammarModel;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -300,8 +301,9 @@ public final class ShapeGenerator extends CommandLineTool {
     /** Loads a grammar from a given grammar location and a start graph. */
     private void loadGrammar(String grammarFile, String startGraph) {
         try {
-            this.grammar =
-                Groove.loadTestGrammar(grammarFile, startGraph).toGrammar();
+            GrammarModel model = Groove.loadGrammar(grammarFile);
+            model.localSetStartGraph(startGraph);
+            this.grammar = model.toGrammar();
             this.grammar.setFixed();
         } catch (FormatException exc) {
             printError("Grammar format error: " + exc.getMessage(), false);

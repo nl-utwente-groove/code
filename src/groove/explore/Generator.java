@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -127,6 +128,7 @@ public class Generator extends CommandLineTool {
      */
     public Generator(List<String> argsList) {
         super(argsList);
+        this.startGraphs = new HashSet<String>();
 
         this.strategyOption =
             new TemplatedOption<Strategy>(
@@ -232,12 +234,21 @@ public class Generator extends CommandLineTool {
     }
 
     /**
-     * Sets the start graph to be used for state space generation.
-     * @param startGraphName the name of the start graph (without file name
-     *        extension)
+     * Adds an active start graph to be used for state space generation.
+     * Also processes the name, removing the extension and the leading
+     * grammar location.
+     * @param startGraphName the name of the start graph (as processed by the
+     *    command line)
      */
-    public void setStartGraph(String startGraphName) {
-        this.startStateName = startGraphName;
+    private void addStartGraph(String startGraphName) {
+        String name = startGraphName;
+        if (name.startsWith(this.grammarLocation)) {
+            name = name.substring(this.grammarLocation.length() + 1);
+        }
+        if (name.endsWith(".gst")) {
+            name = name.substring(0, name.length() - 4);
+        }
+        this.startGraphs.add(name);
     }
 
     /**
@@ -300,19 +311,14 @@ public class Generator extends CommandLineTool {
                 } else {
                     url = new URL(this.grammarLocation);
                 }
-                if (this.startStateName != null) {
+                /*
+                 * Disabled adding ?START_GRAPH_NAME to the URL. MdM.
+                 * MdM.
+                if (this.startGraphs != null) {
                     url =
-                        new URL(url.toExternalForm() + "?"
-                            + this.startStateName);
-                    // remove prefix grammar location
-                    if (this.startStateName.startsWith(this.grammarLocation)
-                        && this.startStateName.endsWith(".gst")) {
-                        this.startStateName =
-                            this.startStateName.substring(
-                                this.grammarLocation.length() + 1,
-                                this.startStateName.length() - 4);
-                    }
+                        new URL(url.toExternalForm() + "?" + this.startGraphs);
                 }
+                */
             } catch (MalformedURLException e) {
                 printError("Can't load grammar: " + e.getMessage(), false);
                 return null;
@@ -320,11 +326,11 @@ public class Generator extends CommandLineTool {
             // now we are guaranteed to have a URL
 
             try {
-                if (this.startStateName == null) {
+                if (this.startGraphs.isEmpty()) {
                     this.grammarModel = GrammarModel.newInstance(url);
                 } else {
-                    this.grammarModel =
-                        GrammarModel.newTestInstance(url, this.startStateName);
+                    this.grammarModel = GrammarModel.newInstance(url);
+                    this.grammarModel.localSetStartGraphs(this.startGraphs);
                 }
                 this.grammarModel.getStore().addObserver(loadObserver);
             } catch (IOException exc) {
@@ -364,8 +370,15 @@ public class Generator extends CommandLineTool {
         if (argsList.size() > 0) {
             setGrammarLocation(argsList.remove(0));
         }
-        if (argsList.size() > 0) {
-            setStartGraph(argsList.remove(0));
+        while (argsList.size() > 0) {
+            String arg = argsList.remove(0);
+            if (arg.startsWith(OPTIONS_PREFIX)) {
+                if (argsList.size() > 0) {
+                    argsList.remove(0);
+                }
+            } else {
+                addStartGraph(arg);
+            }
         }
         if (this.grammarLocation == null) {
             printError("No grammar location specified", true);
@@ -453,8 +466,7 @@ public class Generator extends CommandLineTool {
         if (getVerbosity() > LOW_VERBOSITY) {
             println("Grammar:\t" + this.grammarLocation);
             println("Start graph:\t"
-                + (this.startStateName == null ? "default"
-                        : this.startStateName));
+                + (this.startGraphs == null ? "default" : this.startGraphs));
             println("Exploration:\t" + getExploration().getIdentifier());
             println("Timestamp:\t" + this.invocationTime);
             print("\nProgress:\t");
@@ -630,9 +642,9 @@ public class Generator extends CommandLineTool {
         StringBuilder result =
             new StringBuilder(new File(
                 GRAMMAR_FILTER.stripExtension(this.grammarLocation)).getName());
-        if (this.startStateName != null) {
+        if (this.startGraphs != null) {
             result.append(START_STATE_SEPARATOR);
-            result.append(this.startStateName);
+            result.append(this.startGraphs);
         }
         return result.toString();
     }
@@ -674,8 +686,8 @@ public class Generator extends CommandLineTool {
 
     /** String describing the location where the grammar is to be found. */
     private String grammarLocation;
-    /** String describing the start graph within the grammar. */
-    private String startStateName;
+    /** The set of start graphs to be used in the grammar. May be empty. */
+    private final Set<String> startGraphs;
     /** The model of the graph grammar used for the generation. */
     private GrammarModel grammarModel;
 
