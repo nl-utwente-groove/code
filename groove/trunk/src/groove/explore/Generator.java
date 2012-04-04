@@ -45,10 +45,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
@@ -119,15 +117,15 @@ public class Generator extends CommandLineTool {
      * @return the generated transition system
      */
     static public GTS generate(String[] args) {
-        return new Generator(new LinkedList<String>(Arrays.asList(args))).start();
+        return new Generator(args).start();
     }
 
     /**
      * Constructs the generator. In particular, initializes the command line
      * option classes.
      */
-    public Generator(List<String> argsList) {
-        super(argsList);
+    public Generator(String... args) {
+        super(args);
         this.startGraphs = new HashSet<String>();
 
         this.strategyOption =

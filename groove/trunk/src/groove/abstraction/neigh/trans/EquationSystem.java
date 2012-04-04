@@ -46,7 +46,7 @@ public final class EquationSystem {
      * in case 0..1 multiplicities in stage 1 are not expanded
      * artificially.
      */
-    private static final boolean ENABLE_ZERO_ONE_BRANCHES = true;
+    public static boolean ENABLE_ZERO_ONE_BRANCHES = true;
 
     // ------------------------------------------------------------------------
     // Static fields

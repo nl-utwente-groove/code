@@ -21,9 +21,6 @@ import groove.graph.Graph;
 import groove.graph.Label;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +34,7 @@ public class GraphReporter extends CommandLineTool {
      * Constructs a new graph reporter with a given list of arguments. The
      * arguments consist of a list of options followed by a graph file name.
      */
-    private GraphReporter(List<String> args) {
+    private GraphReporter(String... args) {
         super(args);
     }
 
@@ -46,7 +43,7 @@ public class GraphReporter extends CommandLineTool {
      * exclusively be used to call {@link #getReport(Graph)}.
      */
     private GraphReporter() {
-        super(Collections.<String>emptyList());
+        super();
     }
 
     /** Starts the reporter, for the given list of arguments. */
@@ -122,7 +119,7 @@ public class GraphReporter extends CommandLineTool {
      * Starts a new graph reporter with the given arguments.
      */
     public static void main(String[] args) {
-        new GraphReporter(new LinkedList<String>(Arrays.asList(args))).start();
+        new GraphReporter(args).start();
     }
 
     /** Creates a fresh instance of a reporter. */

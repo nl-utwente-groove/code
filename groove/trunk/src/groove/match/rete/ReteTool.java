@@ -22,8 +22,6 @@ import groove.view.FormatException;
 import groove.view.GrammarModel;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -45,7 +43,7 @@ public class ReteTool extends CommandLineTool {
      * 
      * @param args The command-line arguments.
      */
-    public ReteTool(List<String> args) {
+    public ReteTool(String... args) {
         super(args);
         addOption(this.saveNetworkOption);
     }
@@ -97,7 +95,7 @@ public class ReteTool extends CommandLineTool {
      * @param args The command-line arguments.
      */
     public static void main(String[] args) {
-        new ReteTool(new LinkedList<String>(Arrays.asList(args))).start();
+        new ReteTool(args).start();
     }
 
     @Override

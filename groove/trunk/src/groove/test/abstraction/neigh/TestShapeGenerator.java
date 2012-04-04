@@ -21,10 +21,6 @@ import groove.abstraction.neigh.Parameters;
 import groove.abstraction.neigh.explore.ShapeGenerator;
 import groove.abstraction.neigh.lts.AGTS;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.junit.Test;
 
 /**
@@ -36,10 +32,9 @@ public class TestShapeGenerator {
     private static final int VERBOSITY = 0;
     private static final String STRATEGY = "shapedfs";
 
-    private List<String> getArgs(String grammar, String startGraph) {
-        String args[] =
-            {"-v", VERBOSITY + "", "-s", STRATEGY, grammar, startGraph};
-        return new LinkedList<String>(Arrays.asList(args));
+    private String[] getArgs(String grammar, String startGraph) {
+        return new String[] {"-v", VERBOSITY + "", "-s", STRATEGY, grammar,
+            startGraph};
     }
 
     @Test

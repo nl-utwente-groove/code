@@ -24,9 +24,6 @@ import groove.abstraction.neigh.lts.ShapeState;
 import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Test class used to check the consistency of state space collapsing under
@@ -40,9 +37,8 @@ public final class CollapsingAnalyser {
         "junit/abstraction/euler-counting.gps";
     private static final String startGraph = "start";
 
-    private static List<String> getArgs(String strategy) {
-        String args[] = {"-v", 1 + "", "-s", strategy, grammar, startGraph};
-        return new LinkedList<String>(Arrays.asList(args));
+    private static String[] getArgs(String strategy) {
+        return new String[] {"-v", 1 + "", "-s", strategy, grammar, startGraph};
     }
 
     private static boolean areExactlyEqual(ShapeState s, ShapeState t) {

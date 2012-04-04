@@ -45,8 +45,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -76,15 +74,15 @@ public class Imager extends CommandLineTool {
     /**
      * Constructs a new, command-line Imager.
      */
-    public Imager(List<String> args) {
-        this(args, false);
+    public Imager(String... args) {
+        this(false, args);
     }
 
     /**
      * Constructs a new imager, which may be GUI-based or command-line.
      * @param gui <tt>true</tt> if the imager should be GUI-based.
      */
-    public Imager(List<String> args, boolean gui) {
+    public Imager(boolean gui, String... args) {
         super(args);
         // force the LAF to be set
         groove.gui.Options.initLookAndFeel();
@@ -417,9 +415,9 @@ public class Imager extends CommandLineTool {
     public static void main(String[] args) {
         Imager imager;
         if (args.length == 0) {
-            new Imager(Collections.<String>emptyList(), true);
+            new Imager(true);
         } else {
-            imager = new Imager(new LinkedList<String>(Arrays.asList(args)));
+            imager = new Imager(args);
             imager.processArguments();
             imager.start();
         }
