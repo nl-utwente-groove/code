@@ -25,10 +25,6 @@ import groove.explore.StrategyValue;
 import groove.explore.encode.Serialized;
 import groove.lts.GTS;
 import groove.view.FormatException;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -71,11 +67,8 @@ public class LTLTest {
 
     /** Sets the GTS to a given grammar in the JUnit samples. */
     private void prepare(String grammarName) {
-        List<String> list = new ArrayList<String>();
-        list.add("-v");
-        list.add("0");
-        list.add("junit/samples/" + grammarName);
-        Generator generator = new Generator(list);
+        Generator generator =
+            new Generator("-v", "0", "junit/samples/" + grammarName);
         generator.start();
         this.gts = generator.getGTS();
     }

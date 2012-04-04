@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -88,8 +90,8 @@ public class CommandLineTool {
      * Constructs an instance of the tool, with a given list of command line
      * arguments.
      */
-    public CommandLineTool(List<String> args) {
-        this.args = args;
+    public CommandLineTool(String... args) {
+        this.args = new ArrayList<String>(Arrays.asList(args));
 
         this.outputOption = new OutputOption();
         this.verbosityOption = new VerbosityOption(this);

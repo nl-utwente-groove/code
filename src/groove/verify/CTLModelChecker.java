@@ -70,8 +70,8 @@ public class CTLModelChecker extends CommandLineTool {
      * @param genArgs the command line arguments for the generator.
      */
     public CTLModelChecker(List<String> checkerArgs, List<String> genArgs) {
-        super(checkerArgs);
-        this.genArgs = genArgs;
+        super(checkerArgs.toArray(new String[0]));
+        this.genArgs = genArgs.toArray(new String[0]);
         this.properties = new LinkedList<Formula>();
     }
 
@@ -215,7 +215,7 @@ public class CTLModelChecker extends CommandLineTool {
      */
     private Generator generator;
     /** The list of options to the generator. */
-    private List<String> genArgs = null;
+    private String[] genArgs = null;
     /**
      * The state space (with graphs as states) to be model-checked.
      */

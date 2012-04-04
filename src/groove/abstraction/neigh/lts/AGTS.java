@@ -95,7 +95,7 @@ public final class AGTS extends GTS {
         this.nextStateNr = 0;
         this.getRecord().setReuseEvents(Reuse.NONE);
         this.getRecord().setCheckIso(false);
-        this.getRecord().setCollapse(false);
+        //        this.getRecord().setCollapse(false);
     }
 
     // ------------------------------------------------------------------------

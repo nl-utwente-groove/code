@@ -48,8 +48,6 @@ import groove.view.FormatException;
 import groove.view.GrammarModel;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -90,7 +88,7 @@ public final class ShapeGenerator extends CommandLineTool {
     private ExplorationStatistics explorationStats;
     /** Flag that indicates the statistics should be printed. */
     private boolean isPrintStats;
-    /** Flag that indicates if we shoud go to reachability mode. */
+    /** Flag that indicates if we should go to reachability mode. */
     private boolean isReachability;
     /** Local references to the command line options. */
     private final TemplatedOption<Strategy> strategyOption;
@@ -107,8 +105,8 @@ public final class ShapeGenerator extends CommandLineTool {
      * Constructs the generator. In particular, initializes the command line
      * option classes.
      */
-    public ShapeGenerator(List<String> argsList) {
-        super(argsList);
+    public ShapeGenerator(String... args) {
+        super(args);
         this.strategyOption =
             new TemplatedOption<Strategy>(
                 "s",
@@ -413,7 +411,7 @@ public final class ShapeGenerator extends CommandLineTool {
      * @param args generator options, grammar and start graph name
      */
     public static void main(String[] args) {
-        new ShapeGenerator(new LinkedList<String>(Arrays.asList(args))).start();
+        new ShapeGenerator(args).start();
     }
 
     // ------------------------------------------------------------------------
