@@ -88,7 +88,7 @@ public class SwitchRelation {
      */
     public String toJSON(Location source, Location target) {
         return "{\"source\":" + source.toJSON() + ",\"gate\":\""
-            + this.gate.getStrippedLabel() + "\",\"target\":" + target.toJSON()
+            + this.gate.getLabel() + "\",\"target\":" + target.toJSON()
             + ",\"guard\":\"" + this.guard + "\",\"update\":\"" + this.update
             + "\"}";
     }

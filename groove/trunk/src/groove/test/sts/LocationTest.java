@@ -60,7 +60,7 @@ public class LocationTest extends TestCase {
         Assert.assertNotNull(this.l.getSwitchRelations());
         Assert.assertTrue(this.l.getSwitchRelations().size() == 1);
         Assert.assertEquals(this.l.getSwitchRelations().iterator().next(), sr);
-        Assert.assertEquals(this.l.getRelationTarget(sr), l2);
+        Assert.assertEquals(this.l.getRelationTargets(sr).iterator().next(), l2);
     }
 
     /**

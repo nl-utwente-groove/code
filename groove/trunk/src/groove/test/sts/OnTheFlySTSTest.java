@@ -22,6 +22,9 @@ import groove.sts.OnTheFlySTS;
 import groove.sts.STSException;
 import groove.sts.SwitchRelation;
 import groove.trans.HostGraph;
+
+import java.util.HashSet;
+
 import junit.framework.Assert;
 
 /**
@@ -64,7 +67,8 @@ public class OnTheFlySTSTest extends STSTest {
         this.onTheFlySTS.hostGraphToStartLocation(sourceGraph);
         try {
             SwitchRelation sr =
-                this.onTheFlySTS.ruleMatchToSwitchRelation(sourceGraph, match);
+                this.onTheFlySTS.ruleMatchToSwitchRelation(sourceGraph, match,
+                    new HashSet<SwitchRelation>());
 
             Assert.assertNotNull(sr);
             Assert.assertEquals(

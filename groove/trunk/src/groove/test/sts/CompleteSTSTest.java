@@ -18,6 +18,7 @@ package groove.test.sts;
 
 import groove.lts.MatchResult;
 import groove.sts.CompleteSTS;
+import groove.sts.Gate;
 import groove.sts.Location;
 import groove.sts.LocationVariable;
 import groove.sts.STSException;
@@ -28,6 +29,8 @@ import groove.view.FormatException;
 import groove.view.GrammarModel;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -79,7 +82,8 @@ public class CompleteSTSTest extends STSTest {
             this.completeSTS.hostGraphToStartLocation(graph);
             for (MatchResult next : createMatchSet(view)) {
                 try {
-                    this.completeSTS.ruleMatchToSwitchRelation(graph, next);
+                    this.completeSTS.ruleMatchToSwitchRelation(graph, next,
+                        new HashSet<SwitchRelation>());
                     Assert.fail("No STSException thrown.");
                 } catch (STSException e) {
                     Assert.assertFalse(e.getMessage().isEmpty());
@@ -105,12 +109,25 @@ public class CompleteSTSTest extends STSTest {
         this.completeSTS.hostGraphToStartLocation(sourceGraph);
         try {
             SwitchRelation sr =
-                this.completeSTS.ruleMatchToSwitchRelation(sourceGraph, match);
+                this.completeSTS.ruleMatchToSwitchRelation(sourceGraph, match,
+                    new HashSet<SwitchRelation>());
 
             Assert.assertNotNull(sr);
             Assert.assertEquals(
                 this.completeSTS.getSwitchRelation(SwitchRelation.getSwitchIdentifier(
                     sr.getGate(), sr.getGuard(), sr.getUpdate())), sr);
+
+            // Test with higher priority match
+            this.completeSTS.removeSwitchRelation(sr);
+            SwitchRelation higherPriorityRelation =
+                new SwitchRelation(new Gate("gate", new HashSet()), "x > 3", "");
+            Set<SwitchRelation> higherPriorityRelations =
+                new HashSet<SwitchRelation>();
+            higherPriorityRelations.add(higherPriorityRelation);
+            sr =
+                this.completeSTS.ruleMatchToSwitchRelation(sourceGraph, match,
+                    higherPriorityRelations);
+            Assert.assertTrue(sr.getGuard().endsWith("!(x > 3)"));
         } catch (STSException e) {
             Assert.fail(e.getMessage());
         }

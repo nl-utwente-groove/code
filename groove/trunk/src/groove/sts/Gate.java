@@ -53,12 +53,14 @@ public class Gate {
             type = "?";
         }
         String json =
-            "\"" + getStrippedLabel() + "\":{\"type\":\"" + type
-                + "\",\"iVars\":[";
+            "\"" + this.label + "\":{\"type\":\"" + type + "\",\"iVars\":[";
         for (Variable v : this.iVars) {
             json += "\"" + v.getLabel() + "\",";
         }
-        return json.substring(0, json.length() - 1) + "]}";
+        if (!this.iVars.isEmpty()) {
+            json = json.substring(0, json.length() - 1);
+        }
+        return json + "]}";
     }
 
     /**
