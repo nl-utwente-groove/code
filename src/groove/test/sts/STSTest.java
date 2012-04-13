@@ -8,6 +8,7 @@ import groove.lts.StartGraphState;
 import groove.sts.Location;
 import groove.sts.STS;
 import groove.sts.STSException;
+import groove.sts.SwitchRelation;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
@@ -19,6 +20,7 @@ import groove.view.GrammarModel;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -136,7 +138,8 @@ public abstract class STSTest extends TestCase {
             this.sts.hostGraphToStartLocation(graph);
             for (MatchResult next : createMatchSet(view)) {
                 try {
-                    this.sts.ruleMatchToSwitchRelation(graph, next);
+                    this.sts.ruleMatchToSwitchRelation(graph, next,
+                        new HashSet<SwitchRelation>());
                 } catch (STSException e) {
                     Assert.fail(e.getMessage());
                 }

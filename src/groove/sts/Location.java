@@ -1,6 +1,7 @@
 package groove.sts;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,7 +11,7 @@ import java.util.Set;
 public class Location {
 
     private String label;
-    private Map<SwitchRelation,Location> relations;
+    private Map<SwitchRelation,Set<Location>> relations;
 
     /**
      * Creates a new instance.
@@ -18,7 +19,7 @@ public class Location {
      */
     public Location(String label) {
         this.label = label;
-        this.relations = new HashMap<SwitchRelation,Location>();
+        this.relations = new HashMap<SwitchRelation,Set<Location>>();
     }
 
     /**
@@ -30,11 +31,11 @@ public class Location {
     }
 
     /**
-     * Gets the target Location of the Switch Relation.
+     * Gets the target Locations of the Switch Relation.
      * @param sr The Switch Relation.
      * @return The target Location of sr.
      */
-    public Location getRelationTarget(SwitchRelation sr) {
+    public Set<Location> getRelationTargets(SwitchRelation sr) {
         return this.relations.get(sr);
     }
 
@@ -44,7 +45,12 @@ public class Location {
      * @param l The target Location of sr.
      */
     public void addSwitchRelation(SwitchRelation sr, Location l) {
-        this.relations.put(sr, l);
+        Set<Location> set = this.relations.get(sr);
+        if (set == null) {
+            set = new HashSet<Location>();
+            this.relations.put(sr, set);
+        }
+        set.add(l);
     }
 
     /**

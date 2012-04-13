@@ -18,13 +18,10 @@ package groove.explore.strategy;
 
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.MatchResult;
-import groove.lts.RuleTransition;
+import groove.sts.CompleteSTS;
 import groove.sts.InstantiatedSwitchRelation;
 import groove.sts.Location;
 import groove.sts.OnTheFlySTS;
-import groove.sts.STS;
-import groove.sts.STSException;
 import groove.sts.SwitchRelation;
 
 import java.io.BufferedReader;
@@ -43,98 +40,51 @@ import java.util.Set;
  * to the remote server.
  * @author Vincent de Bruijn
  */
-public class RemoteStrategy extends AbstractStrategy {
+public class RemoteStrategy extends SymbolicStrategy {
 
     private String host;
-    private STS sts;
     private HttpURLConnection conn;
     private Writer out;
     private BufferedReader in;
-    private boolean useSymbolicStrategy = true;
-    private SymbolicStrategy symbolicStrategy;
+    private boolean onTheFlyExploration;
 
     /**
      * Sets the remote host.
-     * @param host
-     *            The remote host
+     * @param host The remote host
      */
     public void setHost(String host) {
         this.host = host;
     }
 
     /**
-     * Sets the use of the SymbolicStrategy. If the strategy is used, this
-     * exploration strategy will first explore the statespace and transmit an sts
-     * to the remote server. If the strategy is not used, the exploration strategy
-     * is obtained from the remote server.
-     * @param use
-     *            Whether the SymbolicStrategy should be used or not
+     * Sets on the fly model exploration to true. If this is called, the 
+     * exploration strategy is obtained from the remote server. Otherwise, this
+     * exploration strategy will first explore the statespace and transmit an
+     * sts to the remote server.
      */
-    public void setUseSymbolicStrategy(boolean use) {
-        this.useSymbolicStrategy = use;
+    public void useOnTheFlyExploration(boolean use) {
+        this.onTheFlyExploration = use;
+        if (use) {
+            connect();
+            setSTS(new OnTheFlySTS());
+        } else {
+            // Initiate the Breadth-First strategy
+            ClosingStrategy strategy = new BFSStrategy();
+            setStrategy(strategy);
+            setSTS(new CompleteSTS());
+        }
     }
 
     @Override
     public void prepare(GTS gts, GraphState startState) {
         super.prepare(gts, startState);
-
-        if (this.useSymbolicStrategy) {
-            this.symbolicStrategy = new SymbolicStrategy();
-            this.symbolicStrategy.prepare(gts, startState);
-        } else {
-            connect();
-            this.sts = new OnTheFlySTS();
-            this.sts.hostGraphToStartLocation(startState.getGraph());
-        }
-    }
-
-    @Override
-    public boolean next() {
-        if (getState() == null) {
-            return false;
-        } else if (this.useSymbolicStrategy) {
-            return this.symbolicStrategy.next();
-        } else {
-            // If the current location is new, determine its outgoing switch
-            // relations
-            Location current = this.sts.getCurrentLocation();
-            // Get current rule matches
-            for (MatchResult next : createMatchCollector().getMatchSet()) {
-                SwitchRelation sr = null;
-                try {
-                    sr =
-                        this.sts.ruleMatchToSwitchRelation(
-                            getState().getGraph(), next);
-                } catch (STSException e) {
-                    // TODO: handle this exception
-                    System.out.println(e.getStackTrace());
-                }
-                if (current.getRelationTarget(sr) == null) {
-                    RuleTransition transition =
-                        getMatchApplier().apply(getState(), next);
-                    Location l =
-                        this.sts.hostGraphToLocation(transition.target().getGraph());
-                    current.addSwitchRelation(sr, l);
-                }
-            }
-            return updateAtState();
-        }
     }
 
     @Override
     protected GraphState getNextState() {
-        Location current = this.sts.getCurrentLocation();
-        GraphState state = null;
-        if (this.useSymbolicStrategy) {
-            // Use the DfsStrategy to decide on the next state.
-            state = this.symbolicStrategy.getNextState();
-            if (state == null) {
-                connect();
-                send(this.symbolicStrategy.getSTS().toJSON());
-                disconnect();
-            }
-            return state;
-        } else {
+        if (this.onTheFlyExploration) {
+            Location current = this.sts.getCurrentLocation();
+            GraphState state = null;
             // Send the possible switch relations from the current location to
             // the remote server.
             Set<SwitchRelation> relations = current.getSwitchRelations();
@@ -145,16 +95,29 @@ public class RemoteStrategy extends AbstractStrategy {
             if (isr == null) {
                 disconnect();
             } else {
-                this.sts.toLocation(current.getRelationTarget(isr.getSwitchRelation()));
+                // cannot deal with being in multiple places at once yet.
+                Location l =
+                    current.getRelationTargets(isr.getSwitchRelation()).iterator().next();
+                this.sts.toLocation(l);
                 state = isr.getTransition().target();
             }
+            return state;
+        } else {
+            GraphState state = null;
+            // Use the strategy to decide on the next state.
+            state = this.strategy.getNextState();
+            if (state != null) {
+                this.sts.toLocation(this.sts.hostGraphToLocation(state.getGraph()));
+            } else {
+                send(getSTS().toJSON());
+            }
+            return state;
         }
-        return state;
     }
 
     /**
      * Creates the message to be sent to the remote server. Used when the
-     * DFSStrategy is not used.
+     * model exploration is done on the fly.
      * 
      * @param relations
      *            The possible switch relations from the current state.
@@ -230,12 +193,12 @@ public class RemoteStrategy extends AbstractStrategy {
         System.out.println("Sending JSON message...");
         System.out.println(message);
         try {
-            if (this.out == null) {
+            if (this.conn == null || this.out == null) {
+                connect();
                 this.out = new OutputStreamWriter(this.conn.getOutputStream());
             }
             this.out.write(message);
             this.out.flush();
-            this.conn.connect();
             if (this.conn.getResponseCode() != 200) {
                 this.in =
                     new BufferedReader(new InputStreamReader(
@@ -259,7 +222,8 @@ public class RemoteStrategy extends AbstractStrategy {
     }
 
     /**
-     * Get the response from the remote server.
+     * Get the response from the remote server. Only used in on-the-fly model
+     * generation.
      * 
      * @return The response is an InstantiatedSwitchRelation, representing the
      *         rule choice of the remote server

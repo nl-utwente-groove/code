@@ -20,37 +20,63 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
-import groove.sts.CompleteSTS;
 import groove.sts.Location;
 import groove.sts.STS;
 import groove.sts.STSException;
 import groove.sts.SwitchRelation;
-import groove.trans.Rule;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Explores the graph states using a given strategy and builds an STS 
- * from the GTS.
+ * from the GTS. The best result is obtained using a Point Algebra.
  * @author Vincent de Bruijn
  * @version $Revision $
  */
 public class SymbolicStrategy extends AbstractStrategy {
 
-    private BFSStrategy bfsStrategy;
-    private STS sts;
-    private Map<Rule,Rule> strippedRules;
+    /**
+     * The strategy this SymbolicStrategy will use.
+     */
+    protected ClosingStrategy strategy;
+    /**
+     * The STS this SymbolicStrategy will build.
+     */
+    protected STS sts;
 
     @Override
     public void prepare(GTS gts, GraphState startState) {
         super.prepare(gts, startState);
+        if (this.strategy != null) {
+            this.strategy.prepare(gts, startState);
+        }
+        if (this.sts == null) {
+            // throw exception
+        } else {
+            this.sts.hostGraphToStartLocation(startState.getGraph());
+        }
+    }
 
-        this.sts = new CompleteSTS();
-        this.sts.hostGraphToStartLocation(startState.getGraph());
+    /**
+     * Set the exploration strategy to use.
+     * @param strategy The strategy.
+     */
+    public void setStrategy(ClosingStrategy strategy) {
+        this.strategy = strategy;
+    }
 
-        // Initiate the Breadth-First strategy
-        this.bfsStrategy = new BFSStrategy();
-        this.bfsStrategy.prepare(gts, gts.startState());
+    /**
+     * Sets the sts to use.
+     * @param sts The sts.
+     */
+    public void setSTS(STS sts) {
+        this.sts = sts;
     }
 
     @Override
@@ -62,22 +88,44 @@ public class SymbolicStrategy extends AbstractStrategy {
         // relations
         Location current = this.sts.getCurrentLocation();
         // Get current rule matches
-        for (MatchResult next : createMatchCollector().getMatchSet()) {
-            SwitchRelation sr = null;
-            try {
-                sr =
-                    this.sts.ruleMatchToSwitchRelation(getState().getGraph(),
-                        next);
-            } catch (STSException e) {
-                // TODO: handle this exception
-                System.out.println(e.getStackTrace());
-            }
-            if (current.getRelationTarget(sr) == null) {
-                RuleTransition transition =
-                    getMatchApplier().apply(getState(), next);
-                Location l =
-                    this.sts.hostGraphToLocation(transition.target().getGraph());
-                current.addSwitchRelation(sr, l);
+        Collection<MatchResult> matchSet = createMatchCollector().getMatchSet();
+        if (!matchSet.isEmpty()) {
+            // Sort the matches in priority groups
+            List<Collection<MatchResult>> priorityGroups =
+                createPriorityGroups(matchSet);
+            Set<SwitchRelation> higherPriorityRelations =
+                new HashSet<SwitchRelation>();
+            Set<SwitchRelation> temp = new HashSet<SwitchRelation>();
+            boolean emptyGuard = false;
+            for (Collection<MatchResult> matches : priorityGroups) {
+                for (MatchResult next : matches) {
+                    SwitchRelation sr = null;
+                    try {
+                        sr =
+                            this.sts.ruleMatchToSwitchRelation(
+                                getState().getGraph(), next,
+                                higherPriorityRelations);
+                    } catch (STSException e) {
+                        // TODO: handle this exception
+                        System.out.println(e.getStackTrace());
+                    }
+                    if (sr.getGuard().isEmpty()) {
+                        emptyGuard = true;
+                    }
+                    temp.add(sr);
+                    RuleTransition transition =
+                        getMatchApplier().apply(getState(), next);
+                    Location l =
+                        this.sts.hostGraphToLocation(transition.target().getGraph());
+                    current.addSwitchRelation(sr, l);
+                }
+                if (emptyGuard) {
+                    // A higher priority rule is always applicable from the current location,
+                    // therefore the lower priority rules do not need to be checked.
+                    break;
+                }
+                higherPriorityRelations.addAll(temp);
+                temp.clear();
             }
         }
         return updateAtState();
@@ -94,12 +142,55 @@ public class SymbolicStrategy extends AbstractStrategy {
     @Override
     protected GraphState getNextState() {
         GraphState state = null;
-        // Use the BfsStrategy to decide on the next state.
-        state = this.bfsStrategy.getNextState();
-        /*if (state != null) {
+        // Use the strategy to decide on the next state.
+        state = this.strategy.getNextState();
+        if (state != null) {
             this.sts.toLocation(this.sts.hostGraphToLocation(state.getGraph()));
-        }*/
+        }
         return state;
+    }
+
+    /**
+     * Turns a collection of match results into a list of collections of match
+     * results, ordered by rule priority.
+     */
+    private List<Collection<MatchResult>> createPriorityGroups(
+            Collection<MatchResult> matches) {
+        List<MatchResult> sortedMatches = new ArrayList<MatchResult>(matches);
+        Collections.sort(sortedMatches, new PriorityComparator());
+        List<Collection<MatchResult>> priorityGroups =
+            new ArrayList<Collection<MatchResult>>();
+        int priority = sortedMatches.get(0).getEvent().getRule().getPriority();
+        Collection<MatchResult> current = new HashSet<MatchResult>();
+        for (MatchResult match : sortedMatches) {
+            if (match.getEvent().getRule().getPriority() != priority) {
+                priorityGroups.add(current);
+                current = new HashSet<MatchResult>();
+                priority = match.getEvent().getRule().getPriority();
+            }
+            current.add(match);
+        }
+        priorityGroups.add(current);
+        return priorityGroups;
+    }
+
+    /* Comparator for priority sorting. */
+    private class PriorityComparator implements Comparator<MatchResult> {
+
+        @Override
+        public int compare(MatchResult res1, MatchResult res2) {
+            return res2.getEvent().getRule().getPriority()
+                - res1.getEvent().getRule().getPriority();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Comparator<?>)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
     }
 
 }

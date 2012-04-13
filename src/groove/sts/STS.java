@@ -153,6 +153,14 @@ public abstract class STS {
     }
 
     /**
+     * Removes a switch relation from this sts.
+     */
+    public void removeSwitchRelation(SwitchRelation relation) {
+        this.switchRelationMap.remove(SwitchRelation.getSwitchIdentifier(
+            relation.getGate(), relation.getGuard(), relation.getUpdate()));
+    }
+
+    /**
      * Transforms the given graph to a location in this sts.
      * @param graph The graph to transform.
      * @return The location.
@@ -201,7 +209,8 @@ public abstract class STS {
      * @return The transformed SwitchRelation.
      */
     public SwitchRelation ruleMatchToSwitchRelation(HostGraph sourceGraph,
-            MatchResult match) throws STSException {
+            MatchResult match, Set<SwitchRelation> higherPriorityRelations)
+        throws STSException {
 
         RuleEvent event = match.getEvent();
 
@@ -217,14 +226,15 @@ public abstract class STS {
         createLocationVariables(event, sourceGraph, lVarMap);
 
         // Create the guard
-        String guard = createGuard(event, iVarMap, lVarMap);
+        String guard =
+            createGuard(event, iVarMap, lVarMap, higherPriorityRelations);
 
         // Create the update for this switch relation
         String update = createUpdate(event, iVarMap, lVarMap);
 
         // Create the gate and the switch relation
         Gate gate =
-            addGate(event.getRule().getFullName(),
+            addGate(event.getRule().getTransitionLabel(),
                 new HashSet<InteractionVariable>(iVarMap.values()));
         Object obj = SwitchRelation.getSwitchIdentifier(gate, guard, update);
         SwitchRelation switchRelation = this.switchRelationMap.get(obj);
@@ -262,7 +272,9 @@ public abstract class STS {
         json += "},\"relations\":[";
         for (Location l : this.locationMap.values()) {
             for (SwitchRelation r : l.getSwitchRelations()) {
-                json += r.toJSON(l, l.getRelationTarget(r)) + ",";
+                for (Location target : l.getRelationTargets(r)) {
+                    json += r.toJSON(l, target) + ",";
+                }
             }
         }
         json = json.substring(0, json.length() - 1) + "],\"gates\":{";
@@ -288,7 +300,8 @@ public abstract class STS {
      */
     protected String createGuard(RuleEvent event,
             Map<VariableNode,InteractionVariable> iVarMap,
-            Map<VariableNode,LocationVariable> lVarMap) {
+            Map<VariableNode,LocationVariable> lVarMap,
+            Set<SwitchRelation> higherPriorityRelations) {
 
         Rule rule = event.getRule();
         RuleGraph lhs = rule.lhs();
@@ -311,7 +324,17 @@ public abstract class STS {
         List<String> results =
             parseArgumentExpression(rule, lhs, iVarMap, lVarMap);
         for (String s : results) {
-            guard += s + " && ";
+            guard += " && " + s;
+        }
+        String combinedGuard = "";
+        for (SwitchRelation higherPriorityRelation : higherPriorityRelations) {
+            combinedGuard += higherPriorityRelation.getGuard() + " && ";
+        }
+        if (!combinedGuard.isEmpty()) {
+            guard +=
+                "&& !("
+                    + combinedGuard.substring(0, combinedGuard.length() - 4)
+                    + ")";
         }
         return guard;
     }
