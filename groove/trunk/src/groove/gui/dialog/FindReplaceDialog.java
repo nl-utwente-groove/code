@@ -150,17 +150,19 @@ public class FindReplaceDialog {
             if (result.equals(oldLabel)) {
                 throw new FormatException("Old and new labels coincide");
             } else if (this.typeGraph.isNodeType(oldLabel)
-                && result.isNodeType()) {
+                && this.typeGraph.isNodeType(result)) {
                 TypeNode oldType = this.typeGraph.getNode(oldLabel);
                 TypeNode newType = this.typeGraph.getNode(result);
-                if (this.typeGraph.isSubtype(oldType, newType)) {
-                    throw new FormatException(
-                        "New label '%s' is an existing supertype of '%s'",
-                        result, oldLabel);
-                } else if (this.typeGraph.isSubtype(newType, oldType)) {
-                    throw new FormatException(
-                        "New label '%s' is an existing subtype of '%s'",
-                        result, oldLabel);
+                if (newType != null) {
+                    if (this.typeGraph.isSubtype(oldType, newType)) {
+                        throw new FormatException(
+                            "New label '%s' is an existing supertype of '%s'",
+                            result, oldLabel);
+                    } else if (this.typeGraph.isSubtype(newType, oldType)) {
+                        throw new FormatException(
+                            "New label '%s' is an existing subtype of '%s'",
+                            result, oldLabel);
+                    }
                 }
             }
         } else {
