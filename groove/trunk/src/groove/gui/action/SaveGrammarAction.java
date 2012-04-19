@@ -51,10 +51,12 @@ public class SaveGrammarAction extends SimulatorAction {
                 getSimulatorModel().getStore().save(grammarFile, clearDir);
             GrammarModel newGrammar = newStore.toGrammarModel();
             if (getSimulatorModel().getGrammar().getStartGraphs().isEmpty()) {
-                // remember external start graph
+                // remember external start graph, if grammar has one
                 HostModel startGraph =
                     getSimulatorModel().getGrammar().getStartGraphModel();
-                newGrammar.setStartGraph(startGraph.getSource());
+                if (startGraph != null) {
+                    newGrammar.setStartGraph(startGraph.getSource());
+                }
             }
             getSimulatorModel().setGrammar(newGrammar);
             getSimulator().setTitle();
