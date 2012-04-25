@@ -81,31 +81,43 @@ public class CommandLineTool {
     /** Symbolic char constant. */
     static protected final char DASH = '-';
 
-    /** Local references to the output, verbosity and log options. **/
-    private final OutputOption outputOption;
-    private final VerbosityOption verbosityOption;
-    private final LogOption logOption;
+    /** Local reference to the output option. **/
+    protected final OutputOption outputOption;
+    /** Local reference to the verbosity option. **/
+    protected final VerbosityOption verbosityOption;
+    /** Local reference to the log option. **/
+    protected final LogOption logOption;
 
     /**
      * Constructs an instance of the tool, with a given list of command line
      * arguments.
      */
-    public CommandLineTool(String... args) {
+    public CommandLineTool(boolean addOptions, String... args) {
         this.args = new ArrayList<String>(Arrays.asList(args));
 
         this.outputOption = new OutputOption();
         this.verbosityOption = new VerbosityOption(this);
         this.logOption = new LogOption(this);
 
-        if (supportsOutputOption()) {
-            addOption(this.outputOption);
+        if (addOptions) {
+            if (supportsOutputOption()) {
+                addOption(this.outputOption);
+            }
+            if (supportsVerbosityOption()) {
+                addOption(this.verbosityOption);
+            }
+            if (supportsLogOption()) {
+                addOption(this.logOption);
+            }
         }
-        if (supportsVerbosityOption()) {
-            addOption(this.verbosityOption);
-        }
-        if (supportsLogOption()) {
-            addOption(this.logOption);
-        }
+    }
+
+    /**
+     * Constructs an instance of the tool, with a given list of command line
+     * arguments.
+     */
+    public CommandLineTool(String... args) {
+        this(true, args);
     }
 
     /**
@@ -565,7 +577,7 @@ public class CommandLineTool {
 
         public String[] getDescription() {
             return new String[] {"Save the result to '" + getParameterName()
-                + "' (GXL format, default extension .gxl)"};
+                + "' (default format GXL)"};
         }
 
         public String getParameterName() {
