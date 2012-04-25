@@ -547,7 +547,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     protected void fireUpdateState(GraphState state, Flag flag) {
         switch (flag) {
         case CLOSED:
-            if (state.getSchedule().isSuccess()) {
+            if (state.getSchedule().isSuccess() || hasFinalProperties(state)) {
                 setFinal(state);
             }
             this.closedStateCount++;
@@ -569,6 +569,18 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         for (GTSListener listener : getGraphListeners()) {
             listener.statusUpdate(this, state, flag);
         }
+    }
+
+    private boolean hasFinalProperties(GraphState state) {
+        boolean result = true;
+        for (RuleTransition trans : state.getTransitionSet()) {
+            if (trans.getCtrlTransition().getRule().isModifying()
+                || !trans.target().equals(state)) {
+                result = false;
+                break;
+            }
+        }
+        return result;
     }
 
     /**
