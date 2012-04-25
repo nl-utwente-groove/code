@@ -17,8 +17,6 @@
 package groove.explore;
 
 import static groove.io.FileType.GRAMMAR_FILTER;
-import static groove.io.FileType.STATE_FILTER;
-import groove.explore.encode.EncodedRuleMode;
 import groove.explore.encode.Serialized;
 import groove.explore.encode.TemplateList;
 import groove.explore.result.Acceptor;
@@ -26,12 +24,14 @@ import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationStatistics;
 import groove.graph.DefaultGraph;
 import groove.io.FileType;
+import groove.io.external.Exporter;
+import groove.io.external.format.ExternalFileFormat;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.util.CommandLineTool;
 import groove.util.GenerateProgressMonitor;
-import groove.util.GraphReporter;
 import groove.util.Groove;
 import groove.util.StoreCommandLineOption;
 import groove.view.FormatException;
@@ -48,11 +48,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * A class that takes care of loading in a rule system consisting of a set of
@@ -92,9 +90,8 @@ public class Generator extends CommandLineTool {
     private final TemplatedOption<Strategy> strategyOption;
     private final TemplatedOption<Acceptor> acceptorOption;
     private final ResultOption resultOption;
-    private final ScenarioOption scenarioOption;
 
-    private final FinalSaveOption finalSaveOption;
+    private final ResultSaveOption resultSaveOption;
 
     private final ExportSimulationOption exportSimulationOption;
     private final ExportSimulationFlagsOption exportSimulationFlagsOption;
@@ -125,7 +122,7 @@ public class Generator extends CommandLineTool {
      * option classes.
      */
     public Generator(String... args) {
-        super(args);
+        super(false, args);
         this.startGraphs = new HashSet<String>();
 
         this.strategyOption =
@@ -137,20 +134,21 @@ public class Generator extends CommandLineTool {
             new TemplatedOption<Acceptor>("a", "acc",
                 AcceptorEnumerator.newInstance());
         this.resultOption = new ResultOption();
-        this.scenarioOption = new ScenarioOption();
 
-        this.finalSaveOption = new FinalSaveOption();
+        this.resultSaveOption = new ResultSaveOption();
 
         this.exportSimulationOption = new ExportSimulationOption();
         this.exportSimulationFlagsOption = new ExportSimulationFlagsOption();
 
+        addOption(this.verbosityOption);
+        addOption(this.logOption);
         addOption(this.strategyOption);
         addOption(this.acceptorOption);
         addOption(this.resultOption);
-        addOption(this.scenarioOption);
-        addOption(this.finalSaveOption);
         addOption(this.exportSimulationOption);
         addOption(this.exportSimulationFlagsOption);
+        addOption(this.outputOption);
+        addOption(this.resultSaveOption);
 
         // clear the static field gts
         gts = null;
@@ -164,62 +162,17 @@ public class Generator extends CommandLineTool {
      */
     public GTS start() {
         processArguments();
-        verifyExportOptions();
-        verifyExplorationOptions();
         try {
             startLog();
             init();
-            Collection<? extends Object> result = generate();
+            generate();
             report();
-            exit(result);
+            exit();
             endLog();
         } catch (Exception e) {
             e.printStackTrace();
         }
         return gts;
-    }
-
-    /**
-     * Verifies that a valid combination of export simulation options has been
-     * specified. Aborts with an error message otherwise.
-     */
-    private void verifyExportOptions() {
-        // Local variables for the existence of the -e and -ef options.
-        boolean e = isOptionActive(this.exportSimulationOption);
-        boolean ef = isOptionActive(this.exportSimulationFlagsOption);
-
-        // Verify that -ef only occurs if -e also occurs.
-        if (ef && !e) {
-            printError("The -ef option may only be specified in conjunction "
-                + "with the -e option.", false);
-        }
-    }
-
-    /**
-     * Verifies that a valid combination of exploration options has been
-     * specified. Aborts with an error message otherwise.
-     * Also displays a warning message if the deprecated -x option is used.
-     */
-    private void verifyExplorationOptions() {
-        // Local variables for the existence of the -x, -s, -a and -r options.
-        boolean x = isOptionActive(this.scenarioOption);
-        boolean s = isOptionActive(this.strategyOption);
-        boolean a = isOptionActive(this.acceptorOption);
-        boolean r = isOptionActive(this.resultOption);
-
-        // Verify that -x only occurs when -s, -a and -r are all absent.
-        if (x && (s || a || r)) {
-            printError("The deprecated -x option may not be combined with the"
-                + "-s, -a and -r options.", false);
-        }
-
-        // Print a warning message when the deprecated -x feature is used.
-        if (x) {
-            System.err.println("Warning: the -x option has been deprecated, "
-                + "please use -s, -a and -r instead.");
-            System.err.println("Automatically replacing it with equivalent"
-                + " -s, -a and -r options.");
-        }
     }
 
     /**
@@ -405,10 +358,6 @@ public class Generator extends CommandLineTool {
             result = new Exploration();
         }
 
-        if (isOptionActive(this.scenarioOption)) {
-            return this.scenarioOption.getValue();
-        }
-
         Serialized strategy;
         if (isOptionActive(this.strategyOption)) {
             strategy = this.strategyOption.getValue();
@@ -434,19 +383,6 @@ public class Generator extends CommandLineTool {
     }
 
     /**
-     * Returns the prefix of the filename to save all final states. If
-     * <tt>null</tt>, final states will not be saved (default).
-     * @see FinalSaveOption
-     */
-    protected String getFinalSaveName() {
-        if (!isOptionActive(this.finalSaveOption)) {
-            return null;
-        } else {
-            return this.finalSaveOption.getValue();
-        }
-    }
-
-    /**
      * The initialisation phase of state space generation. Called from
      * <tt>{@link #start}</tt>.
      */
@@ -459,8 +395,7 @@ public class Generator extends CommandLineTool {
      * The processing phase of state space generation. Called from
      * <tt>{@link #start}</tt>.
      */
-    protected Collection<? extends Object> generate() {
-        Collection<? extends Object> result;
+    protected void generate() {
         if (getVerbosity() > LOW_VERBOSITY) {
             println("Grammar:\t" + this.grammarLocation);
             println("Start graph:\t"
@@ -478,10 +413,6 @@ public class Generator extends CommandLineTool {
                 + "valid for the loaded grammar.\n" + e.getMessage(), false);
         }
         this.explorationStats.stop();
-        result = getExploration().getLastResult().getValue();
-        exportSimulation();
-
-        return result;
     }
 
     /**
@@ -493,13 +424,12 @@ public class Generator extends CommandLineTool {
         boolean e = isOptionActive(this.exportSimulationOption);
         boolean ef = isOptionActive(this.exportSimulationFlagsOption);
 
-        // Do nothing if -e was not specified.
-        if (!e) {
-            return;
+        String path;
+        if (e) {
+            path = this.exportSimulationOption.getValue();
+        } else {
+            path = ".";
         }
-
-        // Compute the export path, which is the argument of the -e option.
-        String path = this.exportSimulationOption.getValue();
 
         // Compute the export simulation flags.
         ExportSimulationFlags flags;
@@ -515,22 +445,49 @@ public class Generator extends CommandLineTool {
                 flags.labelStartState, flags.labelOpenStates,
                 flags.exportStateNames);
 
-        // Compute the set of states to be exported separately.
-        Collection<? extends GraphState> export = new HashSet<GraphState>(0);
-        if (flags.exportFinalStates) {
-            export = getGTS().getFinalStates();
-        }
-        if (flags.exportAllStates) {
-            export = getGTS().nodeSet();
-        }
-
-        // Perform the export itself.
+        // Perform the export.
         try {
-            Groove.saveGraph(lts, path + "/lts" + FileType.GXL.getExtension());
-            for (GraphState state : export) {
-                String name = state.toString();
-                Groove.saveGraph(state.getGraph(), path + "/" + name
-                    + FileType.STATE.getExtension());
+            // Export GTS.
+            if (isOptionActive(this.outputOption)) {
+                String outFilename = getOutputFileName();
+                String ltsFilename;
+                if (outFilename == null) {
+                    ltsFilename = path + "/gts" + FileType.GXL.getExtension();
+                } else {
+                    ltsFilename = path + "/" + outFilename;
+                }
+                File ltsFile = new File(ltsFilename);
+                @SuppressWarnings("unchecked")
+                ExternalFileFormat<DefaultGraph> gtsEff =
+                    (ExternalFileFormat<DefaultGraph>) Exporter.getInstance().getAcceptingFormat(
+                        ltsFile);
+                if (gtsEff != null) {
+                    gtsEff.save(lts, ltsFile);
+                } else {
+                    Groove.saveGraph(lts, ltsFile);
+                }
+            }
+
+            // Export results.
+            if (isOptionActive(this.resultSaveOption)) {
+                ResultSave rs = this.resultSaveOption.getValue();
+                Collection<? extends GraphState> export =
+                    getExploration().getLastResult().getValue();
+                for (GraphState state : export) {
+                    String stateFilename =
+                        path + "/" + rs.prefix + state.getNumber() + rs.suffix
+                            + rs.type.getExtension();
+                    File stateFile = new File(stateFilename);
+                    @SuppressWarnings("unchecked")
+                    ExternalFileFormat<HostGraph> stateEff =
+                        (ExternalFileFormat<HostGraph>) Exporter.getInstance().getAcceptingFormat(
+                            stateFile);
+                    if (stateEff != null) {
+                        stateEff.save(state.getGraph(), stateFile);
+                    } else {
+                        Groove.saveGraph(state.getGraph(), stateFile);
+                    }
+                }
             }
         } catch (IOException exc) {
             exc.printStackTrace();
@@ -547,13 +504,6 @@ public class Generator extends CommandLineTool {
         String report = this.explorationStats.getReport();
         if (report.length() > 0) {
             println(report);
-        }
-
-        if (getVerbosity() > LOW_VERBOSITY) {
-            if (getOutputFileName() != null) {
-                println();
-                println("LTS stored in: \t" + getOutputFileName());
-            }
         }
         // transfer the garbage collector log (if any) to the log file (if any)
         if (isLogging()) {
@@ -579,6 +529,7 @@ public class Generator extends CommandLineTool {
                 }
             }
         }
+        exportSimulation();
     }
 
     /**
@@ -592,30 +543,8 @@ public class Generator extends CommandLineTool {
      * The finalisation phase of state space generation. Called from
      * <tt>{@link #start}</tt>.
      */
-    protected void exit(Collection<? extends Object> result) throws IOException {
-        if (getFinalSaveName() != null) {
-            if (result.isEmpty()) {
-                printlnMedium("No resulting graphs");
-            } else {
-                for (GraphState finalState : getGTS().getFinalStates()) {
-                    String outFileName = getFinalSaveName() + "-" + finalState;
-                    outFileName = STATE_FILTER.addExtension(outFileName);
-                    Groove.saveGraph(
-                        finalState.getGraph().toAspectMap().getAspectGraph(),
-                        outFileName);
-                }
-                printfMedium("Resulting graphs saved: %s%n",
-                    getGTS().getFinalStates());
-            }
-        }
-        if (getOutputFileName() != null) {
-            if (getVerbosity() == HIGH_VERBOSITY) {
-                print(GraphReporter.createInstance().getReport(getGTS()).toString());
-            }
-            DefaultGraph gtsGraph =
-                getGTS().toPlainGraph(true, true, true, false);
-            Groove.saveGraph(gtsGraph, getOutputFileName());
-        }
+    protected void exit() {
+        // Does nothing.
     }
 
     /**
@@ -714,7 +643,7 @@ public class Generator extends CommandLineTool {
         @Override
         public String[] getDescription() {
             return new String[] {"Export the simulation to the specified "
-                + "(absolute) path"};
+                + "path (default is grammar path)"};
         }
 
         @Override
@@ -730,25 +659,15 @@ public class Generator extends CommandLineTool {
      * 
      * @see ExportSimulationFlagsOption
      */
-    static public class ExportSimulationFlags {
-
+    static private class ExportSimulationFlags {
         /** Flag to indicate that the start state must be labeled. */
         public boolean labelStartState = false;
-
         /** Flag to indicate that the final states must be labeled. */
         public boolean labelFinalStates = false;
-
         /** Flag to indicate that the open states must be labeled. */
         public boolean labelOpenStates = false;
-
         /** Flag to indicate that the state names must be exported. */
         public boolean exportStateNames = false;
-
-        /** Flag to indicate that the final states must be exported. */
-        public boolean exportFinalStates = false;
-
-        /** Flag to indicate that all states must be exported. */
-        public boolean exportAllStates = false;
     }
 
     /**
@@ -771,16 +690,14 @@ public class Generator extends CommandLineTool {
 
         @Override
         public String[] getDescription() {
-            String[] desc = new String[7];
+            String[] desc = new String[5];
 
             desc[0] =
                 "Flags for the export simulation option. Legal flags are:";
             desc[1] = "  s - label start state";
             desc[2] = "  f - label final states";
             desc[3] = "  o - label open states";
-            desc[4] = "  N - export state names";
-            desc[5] = "  A - export all states (in separate files)";
-            desc[6] = "  F - export final states (in separate files)";
+            desc[4] = "  n - export state names";
             return desc;
         }
 
@@ -798,14 +715,8 @@ public class Generator extends CommandLineTool {
                 case 'o':
                     result.labelOpenStates = true;
                     break;
-                case 'N':
+                case 'n':
                     result.exportStateNames = true;
-                    break;
-                case 'A':
-                    result.exportAllStates = true;
-                    break;
-                case 'F':
-                    result.exportFinalStates = true;
                     break;
                 default:
                     throw new IllegalArgumentException("'"
@@ -817,33 +728,57 @@ public class Generator extends CommandLineTool {
         }
     }
 
+    static class ResultSave {
+        String prefix = "";
+        String suffix = "";
+        FileType type = FileType.GXL;
+    }
+
     /**
-     * The <code>FinalSaveOption</code> is the command line option for saving
+     * The <code>ResultSaveOption</code> is the command line option for saving
      * all final states in separate files. It is implemented by means of a
      * <code>StoreCommandLineOption</code> that stores a <code>String</code>
      * to indicate the names of the files to be written.
      * 
      * @see StoreCommandLineOption 
      */
-    protected static class FinalSaveOption extends
-            StoreCommandLineOption<String> {
+    protected static class ResultSaveOption extends
+            StoreCommandLineOption<ResultSave> {
 
         /** 
          * Default constructor. Defines '-f' to be the name of the command
          * line option, and 'file' to be the name of its argument.
          */
-        public FinalSaveOption() {
-            super("f", "file");
+        public ResultSaveOption() {
+            super("f", "a#b.e");
         }
 
         @Override
         public String[] getDescription() {
-            return new String[] {"Save all final states using 'file' + number as filenames"};
+            return new String[] {
+                "Save all result states using '" + getParameterName()
+                    + "' with # being state number.",
+                "Saving format is determined by extension 'e' (default is GXL)."};
         }
 
         @Override
-        public String parseParameter(String parameter) {
-            return parameter; // no parsing necessary
+        public ResultSave parseParameter(String parameter) {
+            ResultSave result = new ResultSave();
+            try {
+                String[] s = parameter.split("#");
+                result.prefix = s[0];
+                String[] t = s[1].split("\\.");
+                result.suffix = t[0];
+                for (FileType type : FileType.layoutless) {
+                    if (t[1].equals(type.getExtensionName())) {
+                        result.type = type;
+                        break;
+                    }
+                }
+            } catch (ArrayIndexOutOfBoundsException e) {
+                // Do nothing.
+            }
+            return result;
         }
     }
 
@@ -938,131 +873,6 @@ public class Generator extends CommandLineTool {
             } else {
                 return result;
             }
-        }
-    }
-
-    /**
-     * A <code>ScenarioOption</code> is a command line option with which a
-     * predefined combination of a strategy, acceptor and result can be
-     * specified. This option is provided for backwards compatibility only, and
-     * will always result in a 'deprecated feature' warning when used.
-     * It is implemented by means of a <code>StoreCommandLineOption</code>,
-     * which converts its argument to a <code>Serialized</code>.
-     */
-    protected static class ScenarioOption extends
-            StoreCommandLineOption<Exploration> {
-
-        /** 
-         * Default constructor. Defines '-x' to be the name of the command
-         * line option, and 'scenario' to be the name of its argument.
-         */
-        public ScenarioOption() {
-            super("x", "scenario");
-        }
-
-        /**
-         * As this is a deprecated option, no help is displayed for it (to
-         * encourage users to make use of the new options).
-         */
-        @Override
-        public String[] getDescription() {
-            return new String[0];
-        }
-
-        /**
-         * Removes keyword, plus a ':' separator, from the start of parameter.
-         * Throws an <code>IllegalArgumentException</code> if the ':' is not
-         * there, or if there are no characters behind it.
-         */
-        public String removeKeyword(String keyword, String parameter) {
-            if (parameter.length() <= keyword.length()) {
-                throw new IllegalArgumentException("':' expected after '"
-                    + keyword + "' in the -x option.");
-            }
-            if (parameter.length() == keyword.length() + 1) {
-                throw new IllegalArgumentException("Expected an argument"
-                    + " after '" + parameter + "' in the -x option.");
-            }
-            return parameter.substring(keyword.length() + 1);
-        }
-
-        /**
-         * Parse a textual rule option into the 'rule' and 'mode' arguments of
-         * a given <code>Serialized</code>.
-         */
-        public void setRuleArgument(Serialized serialized, String ruleArg) {
-            if (ruleArg.startsWith("!")) {
-                serialized.setArgument("mode", EncodedRuleMode.NEGATIVE);
-                serialized.setArgument("rule", ruleArg.substring(1));
-            } else {
-                serialized.setArgument("mode", EncodedRuleMode.NEGATIVE);
-                serialized.setArgument("rule", ruleArg);
-            }
-        }
-
-        @Override
-        public Exploration parseParameter(String parameter) {
-            Serialized strategy, acceptor;
-            String argValue;
-
-            // Convert the scenario's without arguments by means of a lookup
-            // in a fixed Map<String,String>.
-            Map<String,String> convTable = new TreeMap<String,String>();
-            convTable.put("barbed", "dfs");
-            convTable.put("branching", "bfs");
-            convTable.put("linear", "linear");
-            convTable.put("random", "random");
-            convTable.put("full", "bfs");
-            if (convTable.keySet().contains(parameter)) {
-                strategy = new Serialized(convTable.get(parameter));
-                acceptor = new Serialized("final");
-                return new Exploration(strategy, acceptor, 0);
-            }
-
-            // Convert the scenario 'node-bounded'. Its argument can be re-used
-            // without parsing or changing it.
-            if (parameter.startsWith("node-bounded")) {
-                strategy = new Serialized("cnbound");
-                argValue = removeKeyword("node-bounded", parameter);
-                strategy.setArgument("node-bound", argValue);
-                acceptor = new Serialized("final");
-                return new Exploration(strategy, acceptor, 0);
-            }
-
-            // Convert the scenario 'edge-bounded'. In its argument, all '='
-            // signs need to be replaced with '>'.
-            if (parameter.startsWith("edge-bounded")) {
-                strategy = new Serialized("cebound");
-                argValue =
-                    removeKeyword("edge-bounded", parameter).replaceAll("=",
-                        ">");
-                strategy.setArgument("edge-bound", argValue);
-                acceptor = new Serialized("final");
-                return new Exploration(strategy, acceptor, 0);
-            }
-
-            // Convert the scenario 'bounded'. In its argument, a possible
-            // leading '!' needs to be parsed too (see parseRuleArgument).
-            if (parameter.startsWith("bounded")) {
-                strategy = new Serialized("crule");
-                argValue = removeKeyword("bounded", parameter);
-                setRuleArgument(strategy, argValue);
-                acceptor = new Serialized("final");
-                return new Exploration(strategy, acceptor, 0);
-            }
-
-            // Convert the scenario 'invariant'. In its argument, a possible
-            // leading '!' needs to be parsed too (see parseRuleArgument).
-            if (parameter.startsWith("invariant")) {
-                strategy = new Serialized("bfs");
-                acceptor = new Serialized("inv");
-                argValue = removeKeyword("invariant", parameter);
-                setRuleArgument(acceptor, argValue);
-                return new Exploration(strategy, acceptor, 1);
-            }
-
-            throw new IllegalArgumentException("'" + parameter
-                + "' is not a legal value for the deprecated -x option.");
         }
     }
 

@@ -131,6 +131,10 @@ public enum FileType {
                 GXL.getExtension()));
     }
 
+    /** Enum of formats without layout. */
+    public static final EnumSet<FileType> layoutless = EnumSet.of(STATE, AUT,
+        COL, FSM);
+
     // Fields and methods.
 
     private final String extension;
