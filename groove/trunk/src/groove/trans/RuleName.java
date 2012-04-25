@@ -198,7 +198,92 @@ public class RuleName implements Comparable<RuleName> {
     }
 
     /**
-     * Character to separate constituent tokens.
+     * Character to separate constituent tokens (as String).
      */
     static public final String SEPARATOR = ".";
+    /**
+     * Character to separate constituent tokens.
+     */
+    static public final char SEPARATOR_CHAR = '.';
+
+    /**
+     * Helper method. Checks if the argument is allowed as the first character
+     * of a valid token name, which is the case if it is a letter. 
+     */
+    private static boolean isValidTokenStarter(char character) {
+        if (character >= 'a' && character <= 'z') {
+            return true;
+        }
+        if (character >= 'A' && character <= 'Z') {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Helper method. Checks if the argument is allowed as an inner character
+     * of a valid token name, which is the case if it conforms to:
+     *    ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-') 
+     */
+    private static boolean isValidTokenCharacter(char character) {
+        if (character >= 'a' && character <= 'z') {
+            return true;
+        }
+        if (character >= 'A' && character <= 'Z') {
+            return true;
+        }
+        if (character >= '0' && character <= '9') {
+            return true;
+        }
+        if (character == '_' || character == '-') {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Verification method to determine if an identifier is a valid (rule) name,
+     * which is the case if it conforms to the following grammar:
+     *    token:  ('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*
+     *    ID:     token('.' token)*
+     * The method returns {@link #PARSE_OK} if the id is valid, and a (short)
+     * parse error message otherwise. 
+     */
+    public static String isValid(String id) {
+        boolean first = true;
+        for (int i = 0; i < id.length(); i++) {
+            if (first) {
+                if (!isValidTokenStarter(id.charAt(i))) {
+                    if (i > 0 && id.charAt(i) == SEPARATOR_CHAR) {
+                        return "identifiers may not contain consecutive '.'";
+                    } else {
+                        return "identifiers must begin with a letter";
+                    }
+                } else {
+                    first = false;
+                }
+            } else {
+                if (!isValidTokenCharacter(id.charAt(i))) {
+                    if (id.charAt(i) == SEPARATOR_CHAR) {
+                        first = true;
+                    } else {
+                        return "'" + id.charAt(i)
+                            + "' is not allowed in identifiers";
+                    }
+                }
+            }
+        }
+        if (first) {
+            if (id.length() == 0) {
+                return "empty identifiers are not allowed";
+            } else {
+                return "identifiers may not end with '.'";
+            }
+        } else {
+            return PARSE_OK;
+        }
+    }
+
+    /** Constant for the success return value of {@link #isValid}. */
+    public static String PARSE_OK = "OK";
 }

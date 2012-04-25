@@ -16,6 +16,8 @@
  */
 package groove.gui.dialog;
 
+import groove.trans.RuleName;
+
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -114,9 +116,14 @@ abstract public class FreshNameDialog<Name> {
         boolean enabled = true;
         String errorText = " ";
         Name label = getChosenName();
-        if (label.toString().length() == 0) {
-            errorText = "Empty name is not allowed";
+        String parseResult = RuleName.isValid(label.toString());
+        if (!parseResult.equals(RuleName.PARSE_OK)) {
+            errorText = parseResult;
             enabled = false;
+            //        } else
+            //        if (label.toString().length() == 0) {
+            //            errorText = "Empty name is not allowed";
+            //            enabled = false;
         } else if (this.existingNames.contains(label)) {
             if (!this.suggestion.equals(label)) {
                 errorText = "Name already exists";
