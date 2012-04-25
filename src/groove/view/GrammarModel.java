@@ -38,6 +38,7 @@ import groove.trans.HostGraph;
 import groove.trans.Recipe;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
+import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.trans.SystemProperties.Key;
 import groove.util.Groove;
@@ -459,6 +460,16 @@ public class GrammarModel implements Observer {
                 this.errors.add(new FormatError(
                     "Error in prolog program '%s': %s", prologModel.getName(),
                     error, prologModel));
+            }
+        }
+        // check if all resource names are valid identifiers
+        for (ResourceKind kind : ResourceKind.all(false)) {
+            for (ResourceModel<?> model : getResourceSet(kind)) {
+                if (!RuleName.isValid(model.getName()).equals(RuleName.PARSE_OK)) {
+                    this.errors.add(new FormatError(kind.getName() + " name '"
+                        + model.getName() + "' " + "is an illegal identifier",
+                        model));
+                }
             }
         }
     }
