@@ -335,6 +335,23 @@ public class GrammarModel implements Observer {
     }
 
     /**
+     * Sets the start graphs to a single graph, and propagates the change to
+     * the grammar properties.
+     */
+    public void setStartGraph(String name) throws IOException {
+        if (name == null) {
+            return;
+        }
+        this.startGraphs.clear();
+        this.startGraphs.add(name);
+        getProperties().setStartGraphNames(this.startGraphs);
+        getStore().putProperties(getProperties());
+        this.startGraphModel = null;
+        this.externalStartGraph = false;
+        invalidate();
+    }
+
+    /**
      * Toggles the given names in the start graphs, and propagates the change
      * to the grammar properties.
      */

@@ -149,6 +149,25 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
+    /**
+     * Changes the enabling start graphs, by setting it to a single item.
+     * @param name the name of the host graph to be enabled uniquely
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the action failed due to an IO error
+     */
+    public boolean doEnableStartGraphUniquely(String name) throws IOException {
+        start();
+        boolean result = true;
+        try {
+            getGrammar().setStartGraph(name);
+            changeDisplay(DisplayKind.toDisplay(ResourceKind.HOST));
+            changeGrammar(result);
+        } finally {
+            finish();
+        }
+        return result;
+    }
+
     /** Enables a collection of named resources of a given kind. */
     private void setEnabled(ResourceKind kind, Set<String> names)
         throws IOException {
