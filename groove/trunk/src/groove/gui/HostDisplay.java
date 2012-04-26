@@ -16,10 +16,13 @@
  */
 package groove.gui;
 
+import groove.gui.action.EnableAction.UniqueEnableAction;
 import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
 
 import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
+import javax.swing.JToolBar;
 
 /**
  * Panel that holds the state display and host graph editors.
@@ -60,6 +63,28 @@ final public class HostDisplay extends ResourceDisplay {
         return this.tree;
     }
 
+    @Override
+    protected JToolBar createListToolBar(int separation) {
+        JToolBar result = super.createListToolBar(separation);
+        result.add(getUniqueEnableAction());
+        return result;
+    }
+
+    @Override
+    protected JPopupMenu createListPopupMenu(boolean overResource) {
+        JPopupMenu result = super.createListPopupMenu(overResource);
+        result.add(getUniqueEnableAction());
+        return result;
+    }
+
+    /** Lazily creates the action for uniquely enabling a host graph. */
+    protected final UniqueEnableAction getUniqueEnableAction() {
+        if (this.uniqueEnableAction == null) {
+            this.uniqueEnableAction = new UniqueEnableAction(getSimulator());
+        }
+        return this.uniqueEnableAction;
+    }
+
     private class MyResourceTree extends ResourceTree {
 
         public MyResourceTree() {
@@ -78,4 +103,7 @@ final public class HostDisplay extends ResourceDisplay {
             }
         }
     }
+
+    /** Action for uniquely enabling a host graph. */
+    private UniqueEnableAction uniqueEnableAction;
 }

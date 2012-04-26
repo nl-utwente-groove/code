@@ -19,7 +19,6 @@ package groove.gui;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.CancelEditAction;
 import groove.gui.action.CopyAction;
-import groove.gui.action.EnableAction.UniqueEnableAction;
 import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
 import groove.trans.ResourceKind;
@@ -61,7 +60,6 @@ public abstract class ResourceDisplay extends Display implements
      */
     public ResourceDisplay(Simulator simulator, ResourceKind resource) {
         super(simulator, DisplayKind.toDisplay(resource));
-        this.resource = resource;
     }
 
     /** 
@@ -99,9 +97,6 @@ public abstract class ResourceDisplay extends Display implements
             res.add(getRenameAction());
             res.addSeparator();
             res.add(getEnableAction());
-            if (this.resource == ResourceKind.HOST) {
-                res.add(getUniqueEnableAction());
-            }
         }
         return res;
     }
@@ -138,9 +133,6 @@ public abstract class ResourceDisplay extends Display implements
             result.addSeparator();
         }
         result.add(getEnableButton());
-        if (this.resource == ResourceKind.HOST) {
-            result.add(getUniqueEnableAction());
-        }
         return result;
     }
 
@@ -192,14 +184,6 @@ public abstract class ResourceDisplay extends Display implements
             this.enableButton.setText(null);
         }
         return this.enableButton;
-    }
-
-    /** Lazily creates the action for uniquely enabling a host graph. */
-    protected final UniqueEnableAction getUniqueEnableAction() {
-        if (this.uniqueEnableAction == null) {
-            this.uniqueEnableAction = new UniqueEnableAction(getSimulator());
-        }
-        return this.uniqueEnableAction;
     }
 
     /**
@@ -623,14 +607,10 @@ public abstract class ResourceDisplay extends Display implements
     private boolean listening;
     private MainTab mainTab;
 
-    /** The displayed resource kind. */
-    private final ResourceKind resource;
     /** Tool tip text for an enabled resource. */
     private String enabledText;
     /** Tool tip text for a disabled resource. */
     private String disabledText;
-    /** Action for uniquely enabling a host graph. */
-    private UniqueEnableAction uniqueEnableAction;
 
     class TabbedDisplayPanel extends JTabbedPane implements Panel {
         /** Constructs an instance of the panel. */
