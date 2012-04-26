@@ -58,4 +58,60 @@ public class EnableAction extends SimulatorAction {
         //        }
         setEnabled(enabled);
     }
+
+    // =======================================================================
+    // UniqueEnableAction
+    // =======================================================================
+
+    /** 
+     * Special enable action, only valid for host graphs, which not only
+     * enables the selected graph, but also disables all others.
+     */
+    public static class UniqueEnableAction extends EnableAction {
+
+        /** Constructs a new action. */
+        public UniqueEnableAction(Simulator simulator) {
+            super(simulator, ResourceKind.HOST);
+            putValue(NAME, this.ACTION_NAME);
+            putValue(SHORT_DESCRIPTION, this.HOVER_DESCRIPTION);
+        }
+
+        @Override
+        public void execute() {
+            String name = getSimulatorModel().getSelected(ResourceKind.HOST);
+            if (!getDisplay().saveEditor(name, true, false)) {
+                return;
+            }
+            try {
+                getSimulatorModel().doEnableStartGraphUniquely(name);
+            } catch (IOException exc) {
+                showErrorDialog(exc, "Error during %s enabling",
+                    getResourceKind().getDescription());
+            }
+        }
+
+        @Override
+        public void refresh() {
+            boolean enabled = false;
+            Set<String> names =
+                getSimulatorModel().getSelectSet(ResourceKind.HOST);
+            if (names.size() == 1) {
+                Set<String> start = getGrammarModel().getStartGraphs();
+                if (start.size() > 1) {
+                    enabled = true;
+                } else {
+                    enabled = !start.containsAll(names);
+                }
+            }
+            setEnabled(enabled);
+        }
+
+        /** Name of the action on the menu. */
+        private final String ACTION_NAME = "Enable This Graph Only";
+        /** Hover text for this action. */
+        private final String HOVER_DESCRIPTION =
+            "Enable this graph, and disable all other graphs";
+
+    }
+
 }
