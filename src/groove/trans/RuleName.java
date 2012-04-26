@@ -208,13 +208,17 @@ public class RuleName implements Comparable<RuleName> {
 
     /**
      * Helper method. Checks if the argument is allowed as the first character
-     * of a valid token name, which is the case if it is a letter. 
+     * of a valid token name, which is the case if it is a letter or an
+     * underscore. 
      */
     private static boolean isValidTokenStarter(char character) {
         if (character >= 'a' && character <= 'z') {
             return true;
         }
         if (character >= 'A' && character <= 'Z') {
+            return true;
+        }
+        if (character == '_') {
             return true;
         }
         return false;
@@ -244,7 +248,7 @@ public class RuleName implements Comparable<RuleName> {
     /**
      * Verification method to determine if an identifier is a valid (rule) name,
      * which is the case if it conforms to the following grammar:
-     *    token:  ('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*
+     *    token:  ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*
      *    ID:     token('.' token)*
      * The method returns {@link #PARSE_OK} if the id is valid, and a (short)
      * parse error message otherwise. 
@@ -257,7 +261,7 @@ public class RuleName implements Comparable<RuleName> {
                     if (i > 0 && id.charAt(i) == SEPARATOR_CHAR) {
                         return "identifiers may not contain consecutive '.'";
                     } else {
-                        return "identifiers must begin with a letter";
+                        return "identifiers must begin with a letter or '_'";
                     }
                 } else {
                     first = false;

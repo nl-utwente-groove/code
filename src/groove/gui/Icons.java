@@ -223,6 +223,9 @@ public final class Icons {
     public static final ImageIcon EDIT_STATE_ICON = createIcon("edit-S.gif");
     /** Enable action icon. */
     public static final ImageIcon ENABLE_ICON = createIcon("enable.gif");
+    /** Enable uniquely action icon. */
+    public static final ImageIcon ENABLE_UNIQUE_ICON =
+        createIcon("enable_unique.gif");
     /** Error icon. */
     public static final ImageIcon ERROR_ICON = createIcon("error.png");
     /** Export action icon. */

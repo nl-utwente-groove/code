@@ -100,7 +100,7 @@ public abstract class ResourceDisplay extends Display implements
             res.addSeparator();
             res.add(getEnableAction());
             if (this.resource == ResourceKind.HOST) {
-                res.add(new UniqueEnableAction(getSimulator()));
+                res.add(getUniqueEnableAction());
             }
         }
         return res;
@@ -138,6 +138,9 @@ public abstract class ResourceDisplay extends Display implements
             result.addSeparator();
         }
         result.add(getEnableButton());
+        if (this.resource == ResourceKind.HOST) {
+            result.add(getUniqueEnableAction());
+        }
         return result;
     }
 
@@ -189,6 +192,14 @@ public abstract class ResourceDisplay extends Display implements
             this.enableButton.setText(null);
         }
         return this.enableButton;
+    }
+
+    /** Lazily creates the action for uniquely enabling a host graph. */
+    protected final UniqueEnableAction getUniqueEnableAction() {
+        if (this.uniqueEnableAction == null) {
+            this.uniqueEnableAction = new UniqueEnableAction(getSimulator());
+        }
+        return this.uniqueEnableAction;
     }
 
     /**
@@ -618,6 +629,8 @@ public abstract class ResourceDisplay extends Display implements
     private String enabledText;
     /** Tool tip text for a disabled resource. */
     private String disabledText;
+    /** Action for uniquely enabling a host graph. */
+    private UniqueEnableAction uniqueEnableAction;
 
     class TabbedDisplayPanel extends JTabbedPane implements Panel {
         /** Constructs an instance of the panel. */

@@ -1,6 +1,7 @@
 package groove.gui.action;
 
 import groove.gui.EditType;
+import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.trans.ResourceKind;
@@ -8,6 +9,8 @@ import groove.view.ResourceModel;
 
 import java.io.IOException;
 import java.util.Set;
+
+import javax.swing.Action;
 
 /** Action to enable or disable resources. */
 public class EnableAction extends SimulatorAction {
@@ -74,6 +77,7 @@ public class EnableAction extends SimulatorAction {
             super(simulator, ResourceKind.HOST);
             putValue(NAME, this.ACTION_NAME);
             putValue(SHORT_DESCRIPTION, this.HOVER_DESCRIPTION);
+            putValue(Action.SMALL_ICON, Icons.ENABLE_UNIQUE_ICON);
         }
 
         @Override
