@@ -209,40 +209,126 @@ public class RuleName implements Comparable<RuleName> {
     /**
      * Helper method. Checks if the argument is allowed as the first character
      * of a valid token name, which is the case if it is a letter or an
-     * underscore. 
+     * underscore.
+     * The method also appends a legalized version of the character to the
+     * 'legal' string builder, and produces a parse error message in the
+     * 'error' string builder if necessary.
      */
-    private static boolean isValidTokenStarter(char character) {
-        if (character >= 'a' && character <= 'z') {
+    private static boolean isValidStarter(char character, boolean hasLegal,
+            StringBuilder legal, boolean hasError, StringBuilder error) {
+        if ((character >= 'a' && character <= 'z')
+            || (character >= 'A' && character <= 'Z') || (character == '_')) {
+            if (hasLegal) {
+                legal.append(character);
+            }
             return true;
+        } else {
+            if (hasLegal) {
+                legalize(character, legal);
+            }
+            if (hasError && error.length() == 0) {
+                error.append(PARSE_ERROR_START);
+            }
+            return false;
         }
-        if (character >= 'A' && character <= 'Z') {
-            return true;
-        }
-        if (character == '_') {
-            return true;
-        }
-        return false;
     }
 
     /**
      * Helper method. Checks if the argument is allowed as an inner character
      * of a valid token name, which is the case if it conforms to:
-     *    ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-') 
+     *    ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')
+     * The method also appends a legalized version of the character to the
+     * 'legal' string builder, and produces a parse error message in the
+     * 'error' string builder if necessary.
      */
-    private static boolean isValidTokenCharacter(char character) {
-        if (character >= 'a' && character <= 'z') {
+    private static boolean isValidCharacter(char character, boolean hasLegal,
+            StringBuilder legal, boolean hasError, StringBuilder error) {
+        if ((character >= 'a' && character <= 'z')
+            || (character >= 'A' && character <= 'Z')
+            || (character >= '0' && character <= '9') || (character == '_')
+            || (character == '-')) {
+            if (hasLegal) {
+                legal.append(character);
+            }
             return true;
+        } else {
+            if (hasLegal) {
+                legalize(character, legal);
+            }
+            if (hasError && error.length() == 0) {
+                error.append(PARSE_ERROR_ILLEGAL(character));
+            }
+            return false;
         }
-        if (character >= 'A' && character <= 'Z') {
-            return true;
+    }
+
+    /**
+     * Helper method. Produces a legal string for each illegal character.
+     */
+    private static void legalize(char character, StringBuilder result) {
+        switch (character) {
+        case '!':
+            result.append("_EXCL");
+            break;
+        case '@':
+            result.append("_AT");
+            break;
+        case '#':
+            result.append("_HASH");
+            break;
+        case '$':
+            result.append("_DOLL");
+            break;
+        case '%':
+            result.append("_PERC");
+            break;
+        case '^':
+            result.append("_HAT");
+            break;
+        case '&':
+            result.append("_AMP");
+            break;
+        case '*':
+            result.append("_STAR");
+            break;
+        case '(':
+            result.append("_LBRA");
+            break;
+        case ')':
+            result.append("_RBRA");
+            break;
+        case ' ':
+            result.append("_SPCE");
+            break;
+        case '+':
+            result.append("_PLUS");
+            break;
+        case '=':
+            result.append("_EQ");
+            break;
+        case '<':
+            result.append("_LT");
+            break;
+        case '>':
+            result.append("_GT");
+            break;
+        case ',':
+            result.append("_COMM");
+            break;
+        case '?':
+            result.append("_QSTN");
+            break;
+        case '-':
+            result.append("_-");
+            break;
+        default:
+            if (character >= '0' && character <= '9') {
+                result.append("_");
+                result.append(character);
+            } else {
+                result.append("_UNKN");
+            }
         }
-        if (character >= '0' && character <= '9') {
-            return true;
-        }
-        if (character == '_' || character == '-') {
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -250,44 +336,83 @@ public class RuleName implements Comparable<RuleName> {
      * which is the case if it conforms to the following grammar:
      *    token:  ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*
      *    ID:     token('.' token)*
-     * The method returns {@link #PARSE_OK} if the id is valid, and a (short)
-     * parse error message otherwise. 
+     * The method also appends a legalized version of the character to the
+     * 'legal' string builder, and produces a parse error message in the
+     * 'error' string builder if necessary.
      */
-    public static String isValid(String id) {
+    public static boolean isValid(String id, StringBuilder legal,
+            StringBuilder error) {
         boolean first = true;
+        boolean valid = true;
+        boolean hasLegal = legal != null;
+        boolean hasError = error != null;
         for (int i = 0; i < id.length(); i++) {
-            if (first) {
-                if (!isValidTokenStarter(id.charAt(i))) {
-                    if (i > 0 && id.charAt(i) == SEPARATOR_CHAR) {
-                        return "identifiers may not contain consecutive '.'";
+            if (id.charAt(i) == SEPARATOR_CHAR) {
+                valid = valid && !first;
+                if (first && hasError && error.length() == 0) {
+                    if (i == 0) {
+                        error.append(PARSE_ERROR_SEPARATOR_BEGIN);
                     } else {
-                        return "identifiers must begin with a letter or '_'";
+                        error.append(PARSE_ERROR_SEPARATOR_CONSECUTIVE);
                     }
-                } else {
-                    first = false;
+                }
+                first = true;
+                if (hasLegal) {
+                    legal.append(SEPARATOR_CHAR);
                 }
             } else {
-                if (!isValidTokenCharacter(id.charAt(i))) {
-                    if (id.charAt(i) == SEPARATOR_CHAR) {
-                        first = true;
-                    } else {
-                        return "'" + id.charAt(i)
-                            + "' is not allowed in identifiers";
-                    }
+                if (first) {
+                    valid =
+                        isValidStarter(id.charAt(i), hasLegal, legal, hasError,
+                            error) && valid;
+                } else {
+                    valid =
+                        isValidCharacter(id.charAt(i), hasLegal, legal,
+                            hasError, error) && valid;
                 }
+                first = false;
             }
         }
-        if (first) {
-            if (id.length() == 0) {
-                return "empty identifiers are not allowed";
-            } else {
-                return "identifiers may not end with '.'";
+        if (first && valid) {
+            if (hasError && error.length() == 0) {
+                if (id.length() == 0) {
+                    error.append(PARSE_ERROR_EMPTY);
+                } else {
+                    error.append(PARSE_ERROR_SEPARATOR_END);
+                }
             }
+            return false;
         } else {
-            return PARSE_OK;
+            return valid;
         }
     }
 
-    /** Constant for the success return value of {@link #isValid}. */
-    public static String PARSE_OK = "OK";
+    /** Constant for a parse error on the first character of an identifier. */
+    private static String PARSE_ERROR_START =
+        "identifiers must begin with a letter or '_'";
+
+    /** Method for a parse error on an illegal character. */
+    private static String PARSE_ERROR_ILLEGAL(char illegal) {
+        return "'" + illegal + "' " + PARSE_ERROR_ILLEGAL_TAIL;
+    }
+
+    /** Constant for the tail of a parse error on an illegal character. */
+    private static String PARSE_ERROR_ILLEGAL_TAIL =
+        "is not allowed in identifiers";
+
+    /** Constant for a parse error for empty strings. */
+    public static String PARSE_ERROR_EMPTY =
+        "empty identifiers are not allowed";
+
+    /** Constant for a parse error for strings that begin with a separator. */
+    public static String PARSE_ERROR_SEPARATOR_BEGIN =
+        "identifiers may not begin with a separator";
+
+    /** Constant for a parse error for strings that end with a separator. */
+    public static String PARSE_ERROR_SEPARATOR_END =
+        "identifiers may not end with a separator";
+
+    /** Constant for a parse error for strings with consecutive separators. */
+    public static String PARSE_ERROR_SEPARATOR_CONSECUTIVE =
+        "identifiers may not have consecutive separators";
 }

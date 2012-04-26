@@ -116,14 +116,10 @@ abstract public class FreshNameDialog<Name> {
         boolean enabled = true;
         String errorText = " ";
         Name label = getChosenName();
-        String parseResult = RuleName.isValid(label.toString());
-        if (!parseResult.equals(RuleName.PARSE_OK)) {
-            errorText = parseResult;
+        StringBuilder error = new StringBuilder();
+        if (!RuleName.isValid(label.toString(), null, error)) {
+            errorText = error.toString();
             enabled = false;
-            //        } else
-            //        if (label.toString().length() == 0) {
-            //            errorText = "Empty name is not allowed";
-            //            enabled = false;
         } else if (this.existingNames.contains(label)) {
             if (!this.suggestion.equals(label)) {
                 errorText = "Name already exists";
@@ -192,7 +188,7 @@ abstract public class FreshNameDialog<Name> {
     /** Returns the text field in which the user is to enter his input. */
     private JTextField getNameField() {
         if (this.nameField == null) {
-            this.nameField = new JTextField();
+            this.nameField = new JTextField(30);
             this.nameField.getDocument().addDocumentListener(
                 new OverlapListener());
             this.nameField.addActionListener(getNameFieldListener());

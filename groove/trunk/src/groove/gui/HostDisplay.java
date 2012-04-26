@@ -73,7 +73,9 @@ final public class HostDisplay extends ResourceDisplay {
     @Override
     protected JPopupMenu createListPopupMenu(boolean overResource) {
         JPopupMenu result = super.createListPopupMenu(overResource);
-        result.add(getUniqueEnableAction());
+        if (overResource) {
+            result.add(getUniqueEnableAction());
+        }
         return result;
     }
 

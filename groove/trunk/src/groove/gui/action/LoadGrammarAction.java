@@ -1,19 +1,27 @@
 package groove.gui.action;
 
+import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.VersionDialog;
 import groove.io.store.DefaultArchiveSystemStore;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
+import groove.trans.ResourceKind;
+import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Version;
 import groove.view.GrammarModel;
+import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /**
  * Action for loading a new rule system.
@@ -138,6 +146,13 @@ public class LoadGrammarAction extends SimulatorAction {
             newGrammarFile = null;
         }
         // store.reload(); - MdM - moved to version check code
+        if (Version.compareGrammarVersions(fileGrammarVersion,
+            Version.GRAMMAR_VERSION_3_1) == -1) {
+            boolean success = makeIdentifiersValid(store);
+            if (!success) {
+                return false;
+            }
+        }
         final GrammarModel grammar = store.toGrammarModel();
         getSimulatorModel().setGrammar(grammar);
         grammar.getProperties().setCurrentVersionProperties();
@@ -171,5 +186,69 @@ public class LoadGrammarAction extends SimulatorAction {
         } else {
             return selected;
         }
+    }
+
+    /**
+     * Changes all the resource names in the store that do not conform to the
+     * restrictions imposed by GrammarVersion 3.1. The changed names are
+     * hashed (but legal) versions of the old names.
+     * The user must confirm the rename if there are names to be changed.
+     */
+    private boolean makeIdentifiersValid(SystemStore store) throws IOException {
+        boolean confirmed = false;
+        String[] options = {"Continue", "Abort"};
+        // loop over all resource kinds
+        for (ResourceKind kind : ResourceKind.all(false)) {
+            Set<String> modifiedNames = new HashSet<String>();
+            // collect all resource names of this kind
+            Set<String> oldNames = new HashSet<String>();
+            if (kind.isGraphBased()) {
+                oldNames.addAll(store.getGraphs(kind).keySet());
+            } else {
+                oldNames.addAll(store.getTexts(kind).keySet());
+            }
+            // loop over all collected names
+            for (String name : oldNames) {
+                StringBuilder legal = new StringBuilder();
+                // check if name is valid
+                if (!RuleName.isValid(name, legal, null)) {
+                    // if not, ask confirmation from the user to continue
+                    if (!confirmed
+                        && JOptionPane.showOptionDialog(
+                            getFrame(),
+                            "Warning: the grammar contains resources with "
+                                + "invalid (since grammar version 3.1) names.\n"
+                                + "These will be renamed automatically.",
+                            "Warning: invalid identifiers",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.WARNING_MESSAGE, null, options,
+                            "Continue") != JOptionPane.OK_OPTION) {
+                        return false;
+                    }
+                    // user confirmed, rename resource
+                    confirmed = true;
+                    String newName = legal.toString();
+                    // make sure the modified name is fresh
+                    while (oldNames.contains(newName)
+                        || modifiedNames.contains(newName)) {
+                        newName = newName + "_";
+                    }
+                    modifiedNames.add(newName);
+                    // store old name in rule properties, if possible
+                    if (kind == ResourceKind.RULE) {
+                        AspectGraph rule = store.getGraphs(kind).get(name);
+                        GraphProperties properties =
+                            GraphInfo.getProperties(rule, true);
+                        if (properties != null
+                            && properties.getTransitionLabel() == null) {
+                            properties.setTransitionLabel(name);
+                        }
+                    }
+                    // do the actual rename 
+                    store.rename(kind, name, newName);
+                }
+            }
+        }
+        return true;
     }
 }
