@@ -482,7 +482,7 @@ public class GrammarModel implements Observer {
         // check if all resource names are valid identifiers
         for (ResourceKind kind : ResourceKind.all(false)) {
             for (ResourceModel<?> model : getResourceSet(kind)) {
-                if (!RuleName.isValid(model.getName()).equals(RuleName.PARSE_OK)) {
+                if (!RuleName.isValid(model.getName(), null, null)) {
                     this.errors.add(new FormatError(kind.getName() + " name '"
                         + model.getName() + "' " + "is an illegal identifier",
                         model));

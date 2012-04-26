@@ -98,7 +98,7 @@ public class Version {
      * @return the latest grammar version.
      */
     public static String getCurrentGrammarVersion() {
-        return GRAMMAR_VERSION_3_0;
+        return GRAMMAR_VERSION_3_1;
     }
 
     /**
@@ -168,6 +168,35 @@ public class Version {
         }
     }
 
+    /**
+     * Compare to arbitrary grammar versions, also looking at the non-major
+     * version numbers.
+     * @param version1 String of the form 0.0.0...
+     * @param version2 String of the form 0.0.0...
+     * @return 0 if versions are equal,
+     *         1 if version1 > version2,
+     *         -1 if version1 < version2
+     */
+    public static int compareGrammarVersions(String version1, String version2) {
+        String[] as1 = version1.split("\\.");
+        String[] as2 = version2.split("\\.");
+        for (int i = 0; i < Math.max(as1.length, as2.length); i++) {
+            int n1 = 0, n2 = 0;
+            if (i < as1.length) {
+                n1 = Integer.parseInt(as1[i]);
+            }
+            if (i < as2.length) {
+                n2 = Integer.parseInt(as2[i]);
+            }
+            if (n1 < n2) {
+                return -1;
+            } else if (n1 > n2) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+
     // Grammar Versions
     // IMPORTANT: Do not forget to create a proper FileFilterAction for the
     // save grammar as option.
@@ -187,5 +216,10 @@ public class Version {
      * This version integrated layout into the .gxl files.
      */
     public static final String GRAMMAR_VERSION_3_0 = "3.0";
+    /**
+     * This is the grammar version introduced with Groove version 4.5.0.
+     * This version added restrictions to the names of resources. 
+     */
+    public static final String GRAMMAR_VERSION_3_1 = "3.1";
 
 }
