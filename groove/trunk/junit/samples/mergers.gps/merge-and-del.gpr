@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="merge+del">
+    <graph edgemode="directed" edgeids="false" role="rule" id="merge-and-del">
         <node id="n77">
             <attr name="layout">
                 <string>240 83 18 18</string>
@@ -16,6 +16,11 @@
                 <string>130 84 18 18</string>
             </attr>
         </node>
+        <edge to="n77" from="n77">
+            <attr name="label">
+                <string>use:a</string>
+            </attr>
+        </edge>
         <edge to="n75" from="n77">
             <attr name="label">
                 <string>new:=</string>
@@ -28,17 +33,12 @@
         </edge>
         <edge to="n76" from="n76">
             <attr name="label">
-                <string>del:a</string>
+                <string>del:</string>
             </attr>
         </edge>
         <edge to="n76" from="n76">
             <attr name="label">
-                <string>del:</string>
-            </attr>
-        </edge>
-        <edge to="n77" from="n77">
-            <attr name="label">
-                <string>use:a</string>
+                <string>del:a</string>
             </attr>
         </edge>
     </graph>
