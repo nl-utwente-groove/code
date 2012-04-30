@@ -380,7 +380,7 @@ public final class AGTS extends GTS {
         private final boolean reachability;
 
         /** Default constructor, delegates to super class. */
-        ShapeStateSet(int collapse, boolean reachability) {
+        ShapeStateSet(CollapseMode collapse, boolean reachability) {
             super(collapse, ShapeIsoChecker.getInstance(true).downcast());
             this.reachability = reachability;
         }
@@ -391,8 +391,6 @@ public final class AGTS extends GTS {
          */
         @Override
         protected boolean areEqual(GraphState myState, GraphState otherState) {
-            assert this.collapse == COLLAPSE_ISO_STRONG;
-
             if (myState.getCtrlState() != otherState.getCtrlState()) {
                 return false;
             }
