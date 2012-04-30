@@ -24,7 +24,6 @@ import groove.trans.Condition.Op;
 import groove.trans.Proof;
 import groove.trans.RuleToHostMap;
 import groove.util.Fixable;
-import groove.util.HashBag;
 import groove.util.Property;
 import groove.util.Visitor;
 
@@ -103,9 +102,11 @@ public class TreeMatch implements Fixable {
     private Collection<TreeMatch> createSubMatches(Condition.Op op) {
         // the collection is a bag if the operator is conjunctive,
         // and a set if it is disjunctive
-        // Since the matches are unordered, for more efficient quality test
-        // the bag is a HashBag
-        return op.isConjunctive() ? new HashBag<TreeMatch>()
+        // Since the matches are unordered, for more efficient equality
+        // test a HashBag would be more appropriate, but this collapses
+        // matches to a canonical representative which upon union gives
+        // the wrong result.
+        return op.isConjunctive() ? new ArrayList<TreeMatch>()
                 : new HashSet<TreeMatch>();
     }
 
