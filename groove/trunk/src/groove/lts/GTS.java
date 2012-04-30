@@ -16,6 +16,9 @@
  */
 package groove.lts;
 
+import static groove.lts.GTS.CollapseMode.COLLAPSE_EQUAL;
+import static groove.lts.GTS.CollapseMode.COLLAPSE_ISO_STRONG;
+import static groove.lts.GTS.CollapseMode.COLLAPSE_NONE;
 import groove.control.CtrlState;
 import groove.explore.result.Result;
 import groove.graph.AbstractGraph;
@@ -409,16 +412,16 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      * determined by {@link SystemRecord#isCollapse()} and
      * {@link SystemRecord#isCheckIso()}.
      */
-    protected int getCollapse() {
-        int collapse;
+    protected CollapseMode getCollapse() {
+        CollapseMode result;
         if (!getRecord().isCollapse()) {
-            collapse = StateSet.COLLAPSE_NONE;
+            result = COLLAPSE_NONE;
         } else if (!getRecord().isCheckIso()) {
-            collapse = StateSet.COLLAPSE_EQUAL;
+            result = COLLAPSE_EQUAL;
         } else {
-            collapse = StateSet.COLLAPSE_ISO_STRONG;
+            result = COLLAPSE_ISO_STRONG;
         }
-        return collapse;
+        return result;
     }
 
     /**
@@ -774,7 +777,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     /** Specialised set implementation for storing states. */
     public static class StateSet extends TreeHashSet<GraphState> {
         /** Constructs a new, empty state set. */
-        public StateSet(int collapse, IsoChecker<HostNode,HostEdge> checker) {
+        public StateSet(CollapseMode collapse, IsoChecker<HostNode,HostEdge> checker) {
             super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION,
                 STATE_SET_ROOT_RESOLUTION);
             this.collapse = collapse;
@@ -872,35 +875,34 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         /** The isomorphism checker of the state set. */
         private final IsoChecker<HostNode,HostEdge> checker;
         /** The value of the collapse property. */
-        protected final int collapse;
+        protected final CollapseMode collapse;
+    }
 
+    /** Mode type for isomorphism collapsing. */
+    static protected enum CollapseMode {
         /**
-         * Value for the state collapse property indicating that no states
-         * should be collapsed.
+         * No states should be collapsed.
          */
-        static public final int COLLAPSE_NONE = 0;
+        COLLAPSE_NONE,
         /**
-         * Value for the state collapse property indicating that only states
-         * with equal graphs should be collapsed.
+         * Only states with equal graphs should be collapsed.
          */
-        static public final int COLLAPSE_EQUAL = 1;
+        COLLAPSE_EQUAL,
         /**
-         * Value for the state collapse property indicating that states with
-         * isomorphic graphs should be collapsed, where isomorphism is only
+         * Isomorphic graphs should be collapsed, where isomorphism is only
          * weakly tested. A weak isomorphism test could yield false negatives.
          * @see IsoChecker#isStrong()
          */
-        static public final int COLLAPSE_ISO_WEAK = 2;
+        COLLAPSE_ISO_WEAK,
         /**
-         * Value for the state collapse property indicating that states with
-         * isomorphic graphs should be collapsed, where isomorphism is strongly
+         * Isomorphic graphs should be collapsed, where isomorphism is strongly
          * tested. A strong isomorphism test is more costly than a weak one but
          * will never yield false negatives.
          * @see IsoChecker#isStrong()
          */
-        static public final int COLLAPSE_ISO_STRONG = 3;
+        COLLAPSE_ISO_STRONG;
     }
-
+    
     /** Set of states that only tests for state number as equality. */
     public static class NormalisedStateSet extends TreeHashSet<GraphState> {
         @Override
