@@ -37,16 +37,19 @@ public class CompositeEvent extends
         AbstractEvent<Rule,CompositeEvent.CompositeEventCache> {
     /**
      * Creates a composite event on the basis of a given (nonempty) constituent event set.
+     * @param record the system record from which this event was created; may be
+     * {@code null}.
      * @param rule the rule for which this is an event
      * @param eventSet ordered non-empty collection of constituent events. The
      *        order is assumed to be the prefix traversal order of the
      *        dependency tree of the events, meaning the the first element is
      *        the event corresponding to the top level of <code>rule</code>.
      */
-    public CompositeEvent(Rule rule, Collection<BasicEvent> eventSet,
-            Reuse reuse) {
+    public CompositeEvent(SystemRecord record, Rule rule,
+            Collection<BasicEvent> eventSet, Reuse reuse) {
         super(reference, rule);
         assert !eventSet.isEmpty();
+        this.record = record;
         this.reuse = reuse;
         this.eventArray = new BasicEvent[eventSet.size()];
         eventSet.toArray(this.eventArray);
@@ -90,7 +93,7 @@ public class CompositeEvent extends
     protected Proof extractProof(TreeMatch match) {
         Proof result = null;
         for (Proof proof : match.toProofSet()) {
-            if (proof.newEvent(null).equals(CompositeEvent.this)) {
+            if (proof.newEvent(this.record).equals(CompositeEvent.this)) {
                 result = proof;
                 break;
             }
@@ -158,6 +161,9 @@ public class CompositeEvent extends
         }
         // because the basic events might be differently ordered in the
         // event arrays, we can't do a direct array comparison
+        // moreover, if the degree of event reuse differs, we have to
+        // collect basic events with the least amount of reuse to avoid
+        // false negatives
         BasicEvent[] myEvents = this.eventArray;
         BasicEvent[] otherEvents = ((CompositeEvent) obj).eventArray;
         if (myEvents.length != otherEvents.length) {
@@ -166,7 +172,7 @@ public class CompositeEvent extends
         Set<BasicEvent> myEventSet =
             new HashSet<BasicEvent>(Arrays.asList(myEvents));
         for (int i = 0; i < otherEvents.length; i++) {
-            if (!myEventSet.contains(myEvents[i])) {
+            if (!myEventSet.contains(otherEvents[i])) {
                 return false;
             }
         }
@@ -197,6 +203,9 @@ public class CompositeEvent extends
         }
     }
 
+    /** Record from which to create new events. May be {@code null}. */
+    private final SystemRecord record;
+    /** Indicator of the reuse quality of this event. */
     private final Reuse reuse;
     /** The (non-empty) array of sub-events constituting this event. */
     final BasicEvent[] eventArray;

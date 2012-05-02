@@ -99,7 +99,8 @@ public class SystemRecord {
      */
     public RuleEvent createCompositeEvent(Rule rule,
             Collection<BasicEvent> eventSet) {
-        return normaliseEvent(new CompositeEvent(rule, eventSet, getReuse()));
+        return normaliseEvent(new CompositeEvent(this, rule, eventSet,
+            getReuse()));
     }
 
     /**

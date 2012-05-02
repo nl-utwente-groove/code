@@ -167,7 +167,7 @@ public class Proof {
     private RuleEvent createCompositeEvent(SystemRecord record,
             Collection<BasicEvent> eventSet) {
         if (record == null) {
-            return new CompositeEvent(getRule(), eventSet, Reuse.NONE);
+            return new CompositeEvent(record, getRule(), eventSet, Reuse.NONE);
         } else {
             return record.createCompositeEvent(getRule(), eventSet);
         }
