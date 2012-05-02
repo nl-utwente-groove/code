@@ -88,6 +88,12 @@ public interface RuleEvent extends Comparable<RuleEvent>, RuleTransitionStub,
      */
     public RuleApplication newApplication(HostGraph source);
 
+    /**
+     * Factory method to create an event from a proof, using this
+     * event's system record if there is one.
+     */
+    public RuleEvent createEvent(Proof proof);
+
     /** 
      * Event reuse mode.
      * The values are ordered in increasing event reuse.

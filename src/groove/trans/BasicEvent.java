@@ -186,6 +186,11 @@ final public class BasicEvent extends
         return new Proof(getRule().getCondition(), match.getPatternMap());
     }
 
+    @Override
+    public RuleEvent createEvent(Proof proof) {
+        return proof.newEvent(null);
+    }
+
     /**
      * Compares two events first on the basis of their rules, then
      * lexicographically on the basis of their anchor images.
