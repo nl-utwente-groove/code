@@ -718,6 +718,7 @@ public class ShowHideMenu extends JMenu {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
+            this.jgraph.getSimulatorModel().getTrace().clear();
             LTSJGraph jGraph = (LTSJGraph) this.jgraph;
             GraphState state = jGraph.getActiveState();
             this.trace = new ArrayList<GraphJCell>();
@@ -725,6 +726,8 @@ public class ShowHideMenu extends JMenu {
                 this.trace.add(jGraph.getModel().getJCellForNode(state));
                 this.trace.add(jGraph.getModel().getJCellForEdge(
                     (RuleTransition) state));
+                this.jgraph.getSimulatorModel().getTrace().add(
+                    (RuleTransition) state);
                 state = ((GraphNextState) state).source();
             }
             LTSJModel model = jGraph.getModel();

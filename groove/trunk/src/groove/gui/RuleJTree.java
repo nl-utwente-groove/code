@@ -828,7 +828,9 @@ public class RuleJTree extends JTree implements SimulatorListener {
                     String state = ((RuleTransition) match).target().toString();
                     result =
                         HTMLConverter.HTML_TAG.on("To "
-                            + HTMLConverter.ITALIC_TAG.on(state));
+                            + HTMLConverter.ITALIC_TAG.on(state)
+                            + (getSimulatorModel().getTrace().contains(match)
+                                    ? TRACE_SUFFIX : ""));
                 } else {
                     result = "Match " + this.nr;
                 }
@@ -840,9 +842,13 @@ public class RuleJTree extends JTree implements SimulatorListener {
         private final int nr;
     }
 
+    /** The suffix for a match that is in the selected trace. */
+    private static final String TRACE_SUFFIX = " "
+        + HTMLConverter.STRONG_TAG.on("(*)");
+
     /**
-     * Class to provide proper icons for directory nodes
-     */
+    * Class to provide proper icons for directory nodes
+    */
     private class MyTreeCellRenderer extends DefaultTreeCellRenderer {
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value,
