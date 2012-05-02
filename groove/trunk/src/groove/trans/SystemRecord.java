@@ -68,8 +68,8 @@ public class SystemRecord {
      * Returns an event for a given rule match. If {@link #getReuse()} is
      * set, events are stored internally and reused.
      */
-    public RuleEvent getEvent(Proof match) {
-        return match.newEvent(this);
+    public RuleEvent getEvent(Proof proof) {
+        return proof.newEvent(this);
     }
 
     /**

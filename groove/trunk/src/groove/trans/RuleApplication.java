@@ -81,8 +81,8 @@ public class RuleApplication implements DeltaApplier {
     private boolean testEvent(final RuleEvent event, HostGraph source) {
         final Property<Proof> proofContainsEvent = new Property<Proof>() {
             @Override
-            public boolean isSatisfied(Proof value) {
-                return value.newEvent(null).equals(event);
+            public boolean isSatisfied(Proof proof) {
+                return event.createEvent(proof).equals(event);
             }
         };
         final Finder<Proof> eventFinder = Visitor.newFinder(proofContainsEvent);

@@ -93,12 +93,17 @@ public class CompositeEvent extends
     protected Proof extractProof(TreeMatch match) {
         Proof result = null;
         for (Proof proof : match.toProofSet()) {
-            if (proof.newEvent(this.record).equals(CompositeEvent.this)) {
+            if (createEvent(proof).equals(CompositeEvent.this)) {
                 result = proof;
                 break;
             }
         }
         return result;
+    }
+
+    @Override
+    public RuleEvent createEvent(Proof proof) {
+        return proof.newEvent(this.record);
     }
 
     @Override

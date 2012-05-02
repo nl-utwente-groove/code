@@ -337,14 +337,18 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 Parameters parameters = new Parameters();
                 result.setSignature(parameters.getSignature(),
                     parameters.getHiddenPars());
-                try {
-                    result.setFixed();
-                    if (TO_RULE_DEBUG) {
-                        System.out.println("Constructed rule: " + result);
+                // only fix if there were no errors in the subconditions
+                // as otherwise there may be false positives in the global rule
+                if (errors.isEmpty()) {
+                    try {
+                        result.setFixed();
+                        if (TO_RULE_DEBUG) {
+                            System.out.println("Constructed rule: " + result);
+                        }
+                    } catch (FormatException exc) {
+                        result = null;
+                        errors.addAll(exc.getErrors());
                     }
-                } catch (FormatException exc) {
-                    result = null;
-                    errors.addAll(exc.getErrors());
                 }
             }
         }
