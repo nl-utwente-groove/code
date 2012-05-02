@@ -559,6 +559,7 @@ public class SimulatorModel implements Cloneable {
         if (changeGts(gts, false)) {
             changeState(gts == null ? null : gts.startState());
             changeMatch(null);
+            this.trace.clear();
         } else if (this.ltsListener.isChanged()) {
             this.ltsListener.clear();
             this.changes.add(Change.GTS);
@@ -671,6 +672,11 @@ public class SimulatorModel implements Cloneable {
     /** Returns the currently selected match result. */
     public final MatchResult getMatch() {
         return this.match;
+    }
+
+    /** Returns the currently selected trace. */
+    public final Set<RuleTransition> getTrace() {
+        return this.trace;
     }
 
     /** Returns the currently selected transition, if the selected match is
@@ -1175,6 +1181,8 @@ public class SimulatorModel implements Cloneable {
     private GraphState state;
     /** Currently selected match (event or transition). */
     private MatchResult match;
+    /** Currently selected trace (set of transitions). */
+    private final Set<RuleTransition> trace = new HashSet<RuleTransition>();
     /** Mapping from resource kinds to sets of selected resources of that kind. */
     private Map<ResourceKind,Set<String>> resources =
         new EnumMap<ResourceKind,Set<String>>(ResourceKind.class);
