@@ -88,13 +88,16 @@ public interface RuleEvent extends Comparable<RuleEvent>, RuleTransitionStub,
      */
     public RuleApplication newApplication(HostGraph source);
 
-    /** Event reuse mode. */
+    /** 
+     * Event reuse mode.
+     * The values are ordered in increasing event reuse.
+     */
     enum Reuse {
         /** No event or node reuse. */
         NONE,
-        /** Normal event and node reuse. */
-        EVENT,
         /** Aggressive node reuse, no event reuse. */
-        AGGRESSIVE;
+        AGGRESSIVE,
+        /** Normal event and node reuse. */
+        EVENT;
     }
 }

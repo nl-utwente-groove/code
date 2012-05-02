@@ -156,11 +156,15 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
         if (obj == this) {
             return true;
         }
-        if (getReuse() == EVENT) {
+        if (!(obj instanceof AbstractEvent)) {
             return false;
         }
-        if (obj instanceof RuleEvent) {
-            return equalsEvent((RuleEvent) obj);
+        AbstractEvent<?,?> other = (AbstractEvent<?,?>) obj;
+        if (getReuse() != EVENT) {
+            return equalsEvent(other);
+        }
+        if (other.getReuse() != EVENT) {
+            return other.equalsEvent(this);
         }
         return false;
     }
