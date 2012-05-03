@@ -26,6 +26,7 @@ import groove.lts.GraphState;
  * Testing whether the loss of transitions caused by not
  * testing the zero/one branches is semantically sound.
  */
+@SuppressWarnings("all")
 public class ZeroOneBranchTest {
     private static final String STRATEGY = "shapedfs";
 

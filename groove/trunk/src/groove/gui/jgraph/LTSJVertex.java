@@ -6,8 +6,7 @@ import groove.graph.Node;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.RuleTransitionLabel;
-import groove.lts.RuleTransition;
+import groove.lts.GraphTransition;
 
 import java.util.List;
 
@@ -137,9 +136,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     @Override
     public StringBuilder getLine(Edge edge) {
         String text =
-            getJGraph().isShowAnchors()
-                    ? RuleTransitionLabel.getAnchorText(((RuleTransition) edge).getEvent())
-                    : edge.label().text();
+            ((GraphTransition) edge).text(getJGraph().isShowAnchors());
         StringBuilder result = new StringBuilder(text);
         HTMLConverter.toHtml(result);
         return result;

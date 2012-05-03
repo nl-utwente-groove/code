@@ -93,9 +93,6 @@ public class LTSDisplay extends Display {
         getDisplayPanel().repaint();
     }
 
-    private JToggleButton hideLTSButton;
-    private JToggleButton showLTSButton;
-
     /**
      * Returns the button for setting selection mode, lazily creating it first.
      */
@@ -220,6 +217,8 @@ public class LTSDisplay extends Display {
     private StateTab stateTab;
     /** Window for the state tab when it is detached. */
     private DisplayWindow stateWindow;
+
+    private JToggleButton showLTSButton;
 
     private class LTSDisplayPanel extends JPanel implements Panel {
         public LTSDisplayPanel() {

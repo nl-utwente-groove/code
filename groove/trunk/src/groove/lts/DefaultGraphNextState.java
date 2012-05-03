@@ -64,6 +64,15 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         }
     }
 
+    @Override
+    public String text(boolean anchored) {
+        if (anchored) {
+            return RuleTransitionLabel.getAnchorText(getEvent());
+        } else {
+            return label().text();
+        }
+    }
+
     public RuleEvent getEvent() {
         return this.event;
     }
