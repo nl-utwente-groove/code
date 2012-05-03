@@ -35,6 +35,15 @@ public interface GraphTransition extends Edge {
     /** Overrides the method to specialise the result type. */
     ActionLabel label();
 
+    /**
+     * Returns the transition label text as shown in the transition
+     * system, taking into account whether anchors should be shown.
+     * @param anchored if {@code true}, anchors should be shown in 
+     * the transition label
+     * @return the text to be displayed in the transition system
+     */
+    String text(boolean anchored);
+
     /** Returns the action for which this is a transition. */
     public Action getAction();
 

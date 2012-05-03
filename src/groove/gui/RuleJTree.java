@@ -23,16 +23,12 @@ import static groove.gui.SimulatorModel.Change.RULE;
 import static groove.gui.SimulatorModel.Change.STATE;
 import groove.control.CtrlAut;
 import groove.explore.util.MatchSetCollector;
-import groove.graph.GraphInfo;
-import groove.graph.GraphProperties;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
-import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
-import groove.lts.RuleTransition;
 import groove.trans.Action;
 import groove.trans.ResourceKind;
 import groove.trans.RuleName;
@@ -377,7 +373,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                     gts.checkDiamonds()).getMatchSet());
             }
         }
-        refreshMatches(matches);
+        refreshMatches(state, matches);
         setEnabled(getGrammar() != null);
     }
 
@@ -403,7 +399,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * Refreshes the match nodes, based on a given match result set.
      * @param matches the set of matches used to create {@link MatchTreeNode}s
      */
-    private void refreshMatches(Collection<? extends MatchResult> matches) {
+    private void refreshMatches(GraphState state,
+            Collection<? extends MatchResult> matches) {
         // remove current matches
         for (MatchTreeNode matchNode : this.matchNodeMap.values()) {
             this.ruleDirectory.removeNodeFromParent(matchNode);
@@ -433,7 +430,10 @@ public class RuleJTree extends JTree implements SimulatorListener {
             assert ruleNode != null : String.format(
                 "Rule %s has no image in map %s", ruleName, this.ruleNodeMap);
             int nrOfMatches = ruleNode.getChildCount();
-            MatchTreeNode matchNode = new MatchTreeNode(nrOfMatches + 1, match);
+            MatchTreeNode matchNode =
+                new MatchTreeNode(state, match, nrOfMatches + 1,
+                    getSimulator().getOptions().isSelected(
+                        Options.SHOW_ANCHORS_OPTION));
             this.ruleDirectory.insertNodeInto(matchNode, ruleNode, nrOfMatches);
             expandPath(new TreePath(ruleNode.getPath()));
             this.matchNodeMap.put(match, matchNode);
@@ -568,7 +568,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 if (selectedNode instanceof MatchTreeNode) {
                     // selected tree node is a match (level 2 node)
                     MatchResult result =
-                        ((MatchTreeNode) selectedNode).getResult();
+                        ((MatchTreeNode) selectedNode).getMatch();
                     getSimulatorModel().setMatch(result);
                     break;
                 }
@@ -659,71 +659,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
     }
 
     /**
-     * Rule nodes (= level 1 nodes) of the directory
-     */
-    private static class RuleTreeNode extends DefaultMutableTreeNode {
-        /**
-         * Creates a new rule node based on a given rule name. The node can have
-         * children.
-         */
-        public RuleTreeNode(RuleModel rule) {
-            super(rule, true);
-        }
-
-        /**
-         * Convenience method to retrieve the user object as a rule name.
-         */
-        public RuleModel getRule() {
-            return (RuleModel) getUserObject();
-        }
-
-        /**
-         * To display, show child name only.
-         */
-        @Override
-        public String toString() {
-            return new RuleName(getRule().getName()).child();
-        }
-
-        /** Returns HTML-formatted tool tip text for this rule node. */
-        public String getToolTipText() {
-            StringBuilder result = new StringBuilder();
-            result.append("Rule ");
-            result.append(HTMLConverter.STRONG_TAG.on(getRule().getName()));
-            GraphProperties properties =
-                GraphInfo.getProperties(getRule().getSource(), false);
-            if (properties != null && !properties.isEmpty()) {
-                boolean hasProperties;
-                String remark = properties.getRemark();
-                if (remark != null) {
-                    result.append(": ");
-                    result.append(HTMLConverter.toHtml(remark));
-                    hasProperties = properties.size() > 1;
-                } else {
-                    hasProperties = true;
-                }
-                if (hasProperties) {
-                    for (String key : properties.getPropertyKeys()) {
-                        if (!GraphProperties.isSystemKey(key)
-                            && !key.equals(GraphProperties.REMARK_KEY)) {
-                            result.append(HTMLConverter.HTML_LINEBREAK);
-                            result.append(propertyToString(key,
-                                properties.getProperty(key)));
-                        }
-                    }
-                }
-            }
-            HTMLConverter.HTML_TAG.on(result);
-            return result.toString();
-        }
-
-        /** Returns an HTML-formatted string for a given key/value-pair. */
-        private String propertyToString(String key, String value) {
-            return "<b>" + key + "</b> = " + value;
-        }
-    }
-
-    /**
      * Transaction nodes (= level 1 nodes) of the directory
      */
     private static class ActionTreeNode extends DefaultMutableTreeNode {
@@ -782,69 +717,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
             return name().child();
         }
     }
-
-    /**
-     * Match nodes (= level 2 nodes) of the directory. Stores a
-     * <tt>Transition</tt> as user object.
-     */
-    private class MatchTreeNode extends DefaultMutableTreeNode {
-        /**
-         * Creates a new match node on the basis of a given number and the
-         * RuleMatch. The node cannot have children.
-         */
-        public MatchTreeNode(int nr, MatchResult result) {
-            super(result, false);
-            this.nr = nr;
-        }
-
-        /**
-         * Convenience method to return the underlying derivation edge.
-         */
-        public MatchResult getResult() {
-            return (MatchResult) getUserObject();
-        }
-
-        /**
-         * Object identity is good enough as a notion of equality.
-         */
-        @Override
-        public boolean equals(Object obj) {
-            return this == obj;
-        }
-
-        /**
-         * A description of this derivation edge in the rule directory. Returns
-         * <tt>"Match ??</tt>, where <tt>??</tt> is the node number.
-         */
-        @Override
-        public String toString() {
-            String result;
-            if (getSimulator().getOptions().isSelected(
-                Options.SHOW_ANCHORS_OPTION)) {
-                result = getResult().getEvent().getAnchorImageString();
-            } else {
-                MatchResult match = getResult();
-                if (match instanceof RuleTransition) {
-                    String state = ((RuleTransition) match).target().toString();
-                    result =
-                        HTMLConverter.HTML_TAG.on("To "
-                            + HTMLConverter.ITALIC_TAG.on(state)
-                            + (getSimulatorModel().getTrace().contains(match)
-                                    ? TRACE_SUFFIX : ""));
-                } else {
-                    result = "Match " + this.nr;
-                }
-            }
-            return result;
-        }
-
-        /** The number of this match, used in <tt>toString()</tt> */
-        private final int nr;
-    }
-
-    /** The suffix for a match that is in the selected trace. */
-    private static final String TRACE_SUFFIX = " "
-        + HTMLConverter.STRONG_TAG.on("(*)");
 
     /**
     * Class to provide proper icons for directory nodes

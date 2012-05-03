@@ -25,10 +25,10 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.lts.MatchResultSet;
-import groove.lts.RuleTransition;
 import groove.lts.StartGraphState;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
+import groove.view.GrammarModel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -74,6 +74,7 @@ public class StateList extends JTree implements SimulatorListener {
     protected StateList(Simulator simulator) {
         this.simulatorModel = simulator.getModel();
         this.actions = simulator.getActions();
+        this.options = simulator.getOptions();
         setEnabled(false);
         setBackground(JAttr.STATE_BACKGROUND);
         setLargeModel(true);
@@ -308,14 +309,18 @@ public class StateList extends JTree implements SimulatorListener {
             }
             events.add(match);
         }
+        GrammarModel grammar = getSimulatorModel().getGrammar();
+        boolean anchored = this.options.isSelected(Options.SHOW_ANCHORS_OPTION);
         for (Map.Entry<Rule,Set<MatchResult>> matchEntry : matchMap.entrySet()) {
-            RuleTreeNode ruleNode = new RuleTreeNode(matchEntry.getKey());
+            Rule rule = matchEntry.getKey();
+            RuleTreeNode ruleNode =
+                new RuleTreeNode(grammar.getRuleModel(rule.getFullName()));
             result.add(ruleNode);
             int count = 0;
             for (MatchResult trans : matchEntry.getValue()) {
                 count++;
                 MatchTreeNode transNode =
-                    new MatchTreeNode(state, trans, count);
+                    new MatchTreeNode(state, trans, count, anchored);
                 ruleNode.add(transNode);
             }
         }
@@ -440,6 +445,7 @@ public class StateList extends JTree implements SimulatorListener {
 
     private final SimulatorModel simulatorModel;
     private final ActionStore actions;
+    private final Options options;
     /** The fixed top node of the tree. */
     private final DefaultMutableTreeNode topNode = new DefaultMutableTreeNode(
         null, true);
@@ -452,6 +458,7 @@ public class StateList extends JTree implements SimulatorListener {
     private Queue<GraphState> expanded = new LinkedList<GraphState>();
     /** Flag indicating if listeners should be active. */
     private boolean listening;
+
     /** Number of nodes folded under a {@link RangeTreeNode}. */
     private static final int RANGE_SIZE = 100;
     /** Size of the queue of previously expanded nodes. */
@@ -539,78 +546,6 @@ public class StateList extends JTree implements SimulatorListener {
         }
 
         private final boolean expanded;
-    }
-
-    /**
-     * Tree node wrapping a rule event.
-     */
-    private static class RuleTreeNode extends DefaultMutableTreeNode {
-        /**
-         * Creates a new tree node based on a given rule event. The node cannot have
-         * children.
-         */
-        public RuleTreeNode(Rule rule) {
-            super(rule, true);
-        }
-
-        /**
-         * Convenience method to retrieve the user object as a rule event.
-         */
-        public Rule getRule() {
-            return (Rule) getUserObject();
-        }
-
-        @Override
-        public String toString() {
-            return getRule().getFullName();
-        }
-    }
-
-    /**
-     * Tree node wrapping a graph transition.
-     */
-    private static class MatchTreeNode extends DefaultMutableTreeNode {
-        /**
-         * Creates a new tree node based on a given graph transition. The node cannot have
-         * children.
-         */
-        public MatchTreeNode(GraphState source, MatchResult event, int nr) {
-            super(event, false);
-            this.source = source;
-            this.nr = nr;
-        }
-
-        /**
-         * Convenience method to retrieve the user object as a graph transition.
-         */
-        public MatchResult getMatch() {
-            return (MatchResult) getUserObject();
-        }
-
-        /**
-         * Returns the graph state for which this is a match.
-         */
-        public GraphState getSource() {
-            return this.source;
-        }
-
-        @Override
-        public String toString() {
-            String result;
-            MatchResult match = getMatch();
-            if (match instanceof RuleTransition) {
-                String state = ((RuleTransition) match).target().toString();
-                result =
-                    HTMLConverter.HTML_TAG.on("To "
-                        + HTMLConverter.ITALIC_TAG.on(state));
-            } else {
-                result = "Match " + this.nr;
-            }
-            return result;
-        }
-
-        private final GraphState source;
-        private final int nr;
     }
 
     /**
@@ -733,7 +668,7 @@ public class StateList extends JTree implements SimulatorListener {
                     Object[] nodes = getPathForRow(selectedRow).getPath();
                     for (int i = nodes.length - 1; i >= 0; i--) {
                         if (nodes[i] instanceof RuleTreeNode) {
-                            result.add(((RuleTreeNode) nodes[i]).getRule().getFullName());
+                            result.add(((RuleTreeNode) nodes[i]).getRule().getName());
                         }
                     }
                 }

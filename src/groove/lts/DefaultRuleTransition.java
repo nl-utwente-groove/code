@@ -69,6 +69,15 @@ public class DefaultRuleTransition extends
     }
 
     @Override
+    public String text(boolean anchored) {
+        if (anchored) {
+            return RuleTransitionLabel.getAnchorText(getEvent());
+        } else {
+            return label().text();
+        }
+    }
+
+    @Override
     public Rule getAction() {
         return getEvent().getRule();
     }
