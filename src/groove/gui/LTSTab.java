@@ -150,7 +150,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
     }
 
     /**
-    * It toggles the value of SHOW_LTS_OPTION 
+    * Toggles the value of SHOW_LTS_OPTION 
     */
     public void toggleShowLts() {
         this.display.getLtsJGraph().toggleShowHideMode();
@@ -170,6 +170,9 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
                 !this.display.getShowLTSButton().isSelected());
             this.display.getLtsJGraph().toggleShowHideMode();
             showHideLts();
+        }
+        if (getOptionValue(SHOW_LTS_OPTION)) {
+            super.refresh();
         }
     }
 
