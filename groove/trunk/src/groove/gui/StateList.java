@@ -34,6 +34,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -48,6 +50,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.Icon;
+import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
@@ -136,6 +139,20 @@ public class StateList extends JTree implements SimulatorListener {
         });
         addTreeSelectionListener(new StateSelectionListener());
         addMouseListener(new StateMouseListener());
+        JMenuItem showAnchorsOptionItem =
+            this.options.getItem(Options.SHOW_ANCHORS_OPTION);
+        if (showAnchorsOptionItem != null) {
+            // listen to the option controlling the rule anchor display
+            showAnchorsOptionItem.addItemListener(new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {
+                    if (suspendListening()) {
+                        SimulatorModel model = getSimulatorModel();
+                        refreshList(model.getGts(), model.getState());
+                        activateListening();
+                    }
+                }
+            });
+        }
         activateListening();
     }
 
