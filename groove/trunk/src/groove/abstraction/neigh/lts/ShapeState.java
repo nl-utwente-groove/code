@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.lts;
 
-import groove.abstraction.neigh.MyHashSet;
+import groove.abstraction.MyHashSet;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.control.CtrlState;

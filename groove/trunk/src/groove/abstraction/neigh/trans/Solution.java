@@ -1,8 +1,8 @@
 package groove.abstraction.neigh.trans;
 
-import groove.abstraction.neigh.Multiplicity;
-import groove.abstraction.neigh.Multiplicity.MultKind;
-import groove.abstraction.neigh.MyHashSet;
+import groove.abstraction.Multiplicity;
+import groove.abstraction.Multiplicity.MultKind;
+import groove.abstraction.MyHashSet;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.util.Duo;
 

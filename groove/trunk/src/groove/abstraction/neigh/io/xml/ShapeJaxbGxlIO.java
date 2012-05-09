@@ -16,9 +16,9 @@
  */
 package groove.abstraction.neigh.io.xml;
 
-import groove.abstraction.neigh.Multiplicity;
-import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
-import groove.abstraction.neigh.Multiplicity.MultKind;
+import groove.abstraction.Multiplicity;
+import groove.abstraction.Multiplicity.MultKind;
+import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.NodeEquivClass;

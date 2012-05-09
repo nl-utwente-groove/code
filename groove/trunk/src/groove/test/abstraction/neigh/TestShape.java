@@ -16,16 +16,16 @@
  */
 package groove.test.abstraction.neigh;
 
-import static groove.abstraction.neigh.Multiplicity.OMEGA;
-import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
-import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
-import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
-import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
+import static groove.abstraction.Multiplicity.OMEGA;
+import static groove.abstraction.Multiplicity.MultKind.EDGE_MULT;
+import static groove.abstraction.Multiplicity.MultKind.NODE_MULT;
+import static groove.abstraction.neigh.EdgeMultDir.INCOMING;
+import static groove.abstraction.neigh.EdgeMultDir.OUTGOING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import groove.abstraction.neigh.Multiplicity;
-import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
-import groove.abstraction.neigh.Parameters;
+import groove.abstraction.Multiplicity;
+import groove.abstraction.neigh.EdgeMultDir;
+import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
@@ -51,8 +51,8 @@ public class TestShape {
 
     @BeforeClass
     public static void setUp() {
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
     }
 
     @Test
@@ -89,7 +89,7 @@ public class TestShape {
         assertTrue(shape.getNodeMult(node).equals(twoPlus));
 
         file = new File(DIRECTORY + "shape-build-test-3.gst");
-        Parameters.setNodeMultBound(3);
+        NeighAbsParam.getInstance().setNodeMultBound(3);
         shape = createShape(file);
         assertEquals(1, shape.nodeSet().size());
         assertEquals(1, Util.getBinaryEdges(shape).size());
@@ -98,7 +98,7 @@ public class TestShape {
         assertTrue(shape.getNodeMult(node).equals(three));
 
         file = new File(DIRECTORY + "shape-build-test-4.gst");
-        Parameters.setNodeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
         shape = createShape(file);
         assertEquals(1, shape.nodeSet().size());
         assertEquals(1, Util.getBinaryEdges(shape).size());

@@ -1,6 +1,6 @@
 package groove.abstraction.neigh.shape;
 
-import groove.abstraction.neigh.MyHashMap;
+import groove.abstraction.MyHashMap;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.NodeEquivClass;
 import groove.graph.InversableElementMap;

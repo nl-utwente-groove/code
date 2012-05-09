@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.equiv;
 
-import groove.abstraction.neigh.MyHashSet;
+import groove.abstraction.MyHashSet;
 import groove.trans.HostEdge;
 
 /**

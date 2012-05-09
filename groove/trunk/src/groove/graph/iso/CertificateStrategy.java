@@ -16,7 +16,7 @@
  */
 package groove.graph.iso;
 
-import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.shape.EdgeSignature;

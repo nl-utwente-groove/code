@@ -17,6 +17,9 @@
 package groove.abstraction.neigh;
 
 import static groove.graph.EdgeRole.BINARY;
+import groove.abstraction.Multiplicity;
+import groove.abstraction.Multiplicity.MultKind;
+import groove.abstraction.MyHashSet;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.graph.Edge;
@@ -131,6 +134,24 @@ public final class Util {
                 result.add((E) outEdge);
             }
         }
+    }
+
+    /**
+     * Returns the multiplicity of the set of nodes given, bounded by the node
+     * multiplicity bound (\nu) set in the Parameters class. 
+     */
+    public static Multiplicity getNodeSetMult(Set<? extends Node> nodes) {
+        int setSize = nodes.size();
+        return Multiplicity.approx(setSize, setSize, MultKind.NODE_MULT);
+    }
+
+    /**
+     * Returns the multiplicity of the set of edges given, bounded by the edge
+     * multiplicity bound (\mu) set in the Parameters class. 
+     */
+    public static Multiplicity getEdgeSetMult(Set<? extends Edge> edges) {
+        int setSize = edges.size();
+        return Multiplicity.approx(setSize, setSize, MultKind.EDGE_MULT);
     }
 
 }

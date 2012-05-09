@@ -1,7 +1,7 @@
 package groove.abstraction.neigh.trans;
 
-import static groove.abstraction.neigh.Multiplicity.OMEGA;
-import groove.abstraction.neigh.Multiplicity;
+import static groove.abstraction.Multiplicity.OMEGA;
+import groove.abstraction.Multiplicity;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.util.Fixable;
 

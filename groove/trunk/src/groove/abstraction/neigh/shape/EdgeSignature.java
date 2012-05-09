@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.shape;
 
-import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.graph.TypeLabel;
 import groove.trans.HostNode;

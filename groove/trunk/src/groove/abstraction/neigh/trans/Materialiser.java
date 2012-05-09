@@ -16,12 +16,12 @@
  */
 package groove.abstraction.neigh.trans;
 
-import groove.abstraction.neigh.Multiplicity;
-import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
-import groove.abstraction.neigh.Multiplicity.MultKind;
-import groove.abstraction.neigh.MyHashMap;
-import groove.abstraction.neigh.MyHashSet;
-import groove.abstraction.neigh.Parameters;
+import groove.abstraction.Multiplicity;
+import groove.abstraction.Multiplicity.MultKind;
+import groove.abstraction.MyHashMap;
+import groove.abstraction.MyHashSet;
+import groove.abstraction.neigh.EdgeMultDir;
+import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
@@ -176,7 +176,7 @@ public class Materialiser {
         this.varEdgeMap = new ArrayList<ShapeEdge>();
 
         boolean mayHaveGarbageNodes =
-            Parameters.getNodeMultBound() < Parameters.getEdgeMultBound();
+            NeighAbsParam.getInstance().getNodeMultBound() < NeighAbsParam.getInstance().getEdgeMultBound();
         Shape shape = this.mat.getShape();
 
         // General case:

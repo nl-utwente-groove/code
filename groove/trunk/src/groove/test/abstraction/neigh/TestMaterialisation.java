@@ -19,8 +19,8 @@ package groove.test.abstraction.neigh;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import groove.abstraction.neigh.Abstraction;
-import groove.abstraction.neigh.Parameters;
+import groove.abstraction.neigh.NeighAbsParam;
+import groove.abstraction.neigh.NeighAbstraction;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.match.PreMatch;
@@ -60,7 +60,7 @@ public class TestMaterialisation {
 
     @BeforeClass
     public static void setUp() {
-        Abstraction.initialise();
+        NeighAbstraction.initialise();
         File file = new File(DIRECTORY);
         try {
             view = GrammarModel.newInstance(file, false);
@@ -83,7 +83,7 @@ public class TestMaterialisation {
         }
         Rule rule = grammar.getRule("test-mat-0a");
 
-        Parameters.setNodeMultBound(2);
+        NeighAbsParam.getInstance().setNodeMultBound(2);
 
         Shape shape = Shape.createShape(graph);
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
@@ -99,7 +99,7 @@ public class TestMaterialisation {
             }
         }
 
-        Parameters.setNodeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
 
         shape = Shape.createShape(graph);
         preMatches = PreMatch.getPreMatches(shape, rule);
@@ -217,7 +217,7 @@ public class TestMaterialisation {
             }
         }
 
-        Parameters.setEdgeMultBound(2);
+        NeighAbsParam.getInstance().setEdgeMultBound(2);
 
         shape = Shape.createShape(graph);
         preMatches = PreMatch.getPreMatches(shape, rule);
@@ -255,7 +255,7 @@ public class TestMaterialisation {
         }
         Rule rule = grammar.getRule("test-mat-1c");
 
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
 
         Shape shape = Shape.createShape(graph);
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
@@ -589,7 +589,7 @@ public class TestMaterialisation {
         }
         Rule rule = grammar.getRule("test-mat-11");
 
-        Parameters.setEdgeMultBound(2);
+        NeighAbsParam.getInstance().setEdgeMultBound(2);
 
         Shape shape = Shape.createShape(graph);
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
@@ -617,8 +617,8 @@ public class TestMaterialisation {
         }
         Rule rule = grammar.getRule("test-mat-12");
 
-        Parameters.setNodeMultBound(2);
-        Parameters.setEdgeMultBound(2);
+        NeighAbsParam.getInstance().setNodeMultBound(2);
+        NeighAbsParam.getInstance().setEdgeMultBound(2);
 
         Shape shape = Shape.createShape(graph);
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
@@ -639,8 +639,8 @@ public class TestMaterialisation {
 
     @Test
     public void testMaterialisation13() {
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(2);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(2);
 
         File file = new File(DIRECTORY + "materialisation-test-13.gxl");
         Shape shape = marshaller.loadShape(file);
@@ -657,8 +657,8 @@ public class TestMaterialisation {
 
     @Test
     public void testMaterialisation14() {
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(2);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(2);
 
         File file = new File(DIRECTORY + "materialisation-test-14.gxl");
         Shape shape = marshaller.loadShape(file);
@@ -683,8 +683,8 @@ public class TestMaterialisation {
         }
         Rule rule = grammar.getRule("add");
 
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
 
         Shape shape = Shape.createShape(graph);
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);

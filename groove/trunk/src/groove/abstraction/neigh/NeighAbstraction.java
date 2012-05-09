@@ -16,6 +16,8 @@
  */
 package groove.abstraction.neigh;
 
+import groove.abstraction.AbstractionKind;
+import groove.abstraction.Multiplicity;
 import groove.abstraction.neigh.match.ReverseMatcherStore;
 import groove.abstraction.neigh.trans.NeighAnchorFactory;
 import groove.match.MatcherFactory;
@@ -30,10 +32,11 @@ import groove.trans.Rule;
  * 
  * @author Eduardo Zambon
  */
-public final class Abstraction {
+public final class NeighAbstraction {
 
     /** Enters abstraction mode. */
     public static void initialise() {
+        Multiplicity.setAbstractionKind(AbstractionKind.NEIGH);
         Rule.setAnchorFactory(NeighAnchorFactory.getInstance());
         // Make sure that the search engine is set to minimal mode. This is
         // needed when we have rules with NACs.

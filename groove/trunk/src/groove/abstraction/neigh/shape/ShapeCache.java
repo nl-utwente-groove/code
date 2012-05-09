@@ -16,8 +16,8 @@
  */
 package groove.abstraction.neigh.shape;
 
-import groove.abstraction.neigh.Multiplicity;
-import groove.abstraction.neigh.MyHashMap;
+import groove.abstraction.Multiplicity;
+import groove.abstraction.MyHashMap;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.graph.GraphCache;
 import groove.trans.HostEdge;
