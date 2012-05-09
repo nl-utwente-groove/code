@@ -14,26 +14,31 @@
  *
  * $Id$
  */
-package groove.abstraction.neigh;
+package groove.abstraction;
 
-import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 
 /**
  * Used for debugging. Uncomment the proper lines to switch between a normal
- * hash map and a linked hash map, which provides deterministic iteration.
+ * hash set and a linked hash set, which provides deterministic iteration.
  */
-//public class MyHashMap<K,V> extends HashMap<K,V> {
-public class MyHashMap<K,V> extends LinkedHashMap<K,V> {
+//public class MyHashSet<T> extends HashSet<T> {
+public class MyHashSet<T> extends LinkedHashSet<T> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public MyHashMap<K,V> clone() {
-        return (MyHashMap<K,V>) super.clone();
+    public MyHashSet<T> clone() {
+        return (MyHashSet<T>) super.clone();
     }
 
     /** Default constructor. Delegates to super class. */
-    public MyHashMap() {
+    public MyHashSet() {
         super();
+    }
+
+    /** Creates a set with proper initial size. */
+    public MyHashSet(int size) {
+        super(size);
     }
 
 }

@@ -16,8 +16,8 @@
  */
 package groove.abstraction.neigh.gui.jgraph;
 
-import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
-import groove.abstraction.neigh.MyHashMap;
+import groove.abstraction.MyHashMap;
+import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;

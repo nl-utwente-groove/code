@@ -16,12 +16,12 @@
  */
 package groove.abstraction.neigh.shape;
 
-import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
-import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
-import groove.abstraction.neigh.Multiplicity;
-import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
-import groove.abstraction.neigh.Multiplicity.MultKind;
-import groove.abstraction.neigh.MyHashMap;
+import static groove.abstraction.neigh.EdgeMultDir.INCOMING;
+import static groove.abstraction.neigh.EdgeMultDir.OUTGOING;
+import groove.abstraction.Multiplicity;
+import groove.abstraction.Multiplicity.MultKind;
+import groove.abstraction.MyHashMap;
+import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.equiv.NodeEquivClass;
@@ -63,7 +63,7 @@ class ShapeStore2 implements ShapeStore {
             char[] nodeEquiv) {
         EdgeSignatureStore store = cache.getEdgeSigStore();
         Map<EdgeMultDir,Object[]> result =
-            new EnumMap<Multiplicity.EdgeMultDir,Object[]>(EdgeMultDir.class);
+            new EnumMap<EdgeMultDir,Object[]>(EdgeMultDir.class);
         for (EdgeMultDir dir : EdgeMultDir.values()) {
             result.put(dir, new Object[store.getSigCount(dir) * 4]);
         }

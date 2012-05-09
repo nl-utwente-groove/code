@@ -18,8 +18,8 @@ package groove.test.abstraction.neigh;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import groove.abstraction.neigh.Abstraction;
-import groove.abstraction.neigh.Parameters;
+import groove.abstraction.neigh.NeighAbsParam;
+import groove.abstraction.neigh.NeighAbstraction;
 import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.Shape;
@@ -52,7 +52,7 @@ public class TestMatching {
 
     @BeforeClass
     public static void setUp() {
-        Abstraction.initialise();
+        NeighAbstraction.initialise();
         File file = new File(DIRECTORY);
         try {
             view = GrammarModel.newInstance(file, false);
@@ -66,8 +66,8 @@ public class TestMatching {
 
     @Test
     public void testPreMatch0() {
-        Parameters.setNodeMultBound(3);
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(3);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
         HostGraph graph = null;
         try {
             graph = view.getHostModel("shape-0").toResource();
@@ -82,8 +82,8 @@ public class TestMatching {
 
     @Test
     public void testPreMatch1() {
-        Parameters.setNodeMultBound(3);
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(3);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
         HostGraph graph = null;
         try {
             graph = view.getHostModel("shape-0").toResource();
@@ -98,8 +98,8 @@ public class TestMatching {
 
     @Test
     public void testPreMatch2() {
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
         HostGraph graph = null;
         try {
             graph = view.getHostModel("shape-1").toResource();
@@ -252,7 +252,7 @@ public class TestMatching {
             e.printStackTrace();
         }
 
-        Parameters.setEdgeMultBound(2);
+        NeighAbsParam.getInstance().setEdgeMultBound(2);
 
         Shape shape4 = Shape.createShape(graph4);
         Rule rule = grammar.getRule("test-nac-4");
@@ -275,8 +275,8 @@ public class TestMatching {
             e.printStackTrace();
         }
 
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
 
         Rule rule = grammar.getRule("test-nac-5");
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
@@ -313,7 +313,7 @@ public class TestMatching {
 
     @AfterClass
     public static void cleanUp() {
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
     }
 }

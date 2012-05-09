@@ -14,18 +14,12 @@
  *
  * $Id$
  */
-package groove.abstraction.neigh;
+package groove.abstraction;
 
-import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
-import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
-import groove.abstraction.neigh.shape.ShapeEdge;
-import groove.abstraction.neigh.shape.ShapeNode;
-import groove.graph.Edge;
-import groove.graph.Node;
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
-
-import java.util.Set;
+import static groove.abstraction.Multiplicity.MultKind.EDGE_MULT;
+import static groove.abstraction.Multiplicity.MultKind.NODE_MULT;
+import groove.abstraction.neigh.NeighAbsParam;
+import groove.abstraction.pattern.PatternAbsParam;
 
 /**
  * A multiplicity is an interval on \Nat^\omega, closed on both lower and upper
@@ -39,17 +33,26 @@ public final class Multiplicity {
     // Static Fields
     // ------------------------------------------------------------------------
 
+    /** 
+     * Maximum value to which the bounds can be set. This is used to determine
+     * the size of the global auxiliary data structures.
+     */
+    public static final int MAX_BOUND = 4;
+
     /** The \omega value, differs from all natural numbers. */
     public static final int OMEGA = Integer.MAX_VALUE;
+
     /** Multiplicity store per multiplicity kind. */
     private static final Multiplicity[][] GLOBAL_MULT_STORE =
         new Multiplicity[MultKind.values().length][];
+
     /**
      * Array holding the multiplicities per kind in a matrix indexed by
      * lower bound and (non-{@link #OMEGA}) upper bound.
      */
     private static final Multiplicity[][][] INDEXED_MULT_STORE =
         new Multiplicity[MultKind.values().length][][];
+
     /**
      * Array holding the {@link #OMEGA}-multiplicities per kind
      * in a indexed by lower bound.
@@ -60,6 +63,9 @@ public final class Multiplicity {
     static {
         initMultStore();
     }
+
+    private static AbstractionKind currentAbstraction = AbstractionKind.NEIGH;
+
     /** The constant zero multiplicity for edges. */
     public static final Multiplicity ZERO_EDGE_MULT =
         Multiplicity.getMultiplicity(0, 0, EDGE_MULT);
@@ -78,19 +84,37 @@ public final class Multiplicity {
     // Static Methods
     // ------------------------------------------------------------------------
 
+    /** Sets the current abstraction kind to the one given. */
+    public static void setAbstractionKind(AbstractionKind absKind) {
+        currentAbstraction = absKind;
+    }
+
+    private static AbsParameters getSetAbsParameters() {
+        switch (currentAbstraction) {
+        case NEIGH:
+            return NeighAbsParam.getInstance();
+        case PATTERN:
+            return PatternAbsParam.getInstance();
+        default:
+            assert false;
+            return null;
+        }
+    }
+
     /** Returns the proper bound value for the given multiplicity kind. */
     public static int getBound(MultKind kind) {
         int bound = 0;
+        AbsParameters params = getSetAbsParameters();
         switch (kind) {
         case NODE_MULT:
-            bound = Parameters.getNodeMultBound();
+            bound = params.getNodeMultBound();
             break;
         case EDGE_MULT:
-            bound = Parameters.getEdgeMultBound();
+            bound = params.getEdgeMultBound();
             break;
         case EQSYS_MULT:
             bound =
-                ((Parameters.getNodeMultBound() + 1) * (Parameters.getEdgeMultBound() + 1)) - 1;
+                ((params.getNodeMultBound() + 1) * (params.getEdgeMultBound() + 1)) - 1;
             break;
         default:
             assert false;
@@ -122,7 +146,7 @@ public final class Multiplicity {
      * abstraction classes in this package.
      */
     private static void initMultStore() {
-        int b = Parameters.MAX_BOUND;
+        int b = MAX_BOUND;
         int cardinality = getCardinality(b);
         for (MultKind kind : MultKind.values()) {
             // Get the maximum bound and create the store arrays
@@ -260,31 +284,14 @@ public final class Multiplicity {
 
     /** Tests if a given multiplicity kind only has values 0, 1, 0+. */
     private static boolean isUseThreeValues(MultKind kind) {
-        return kind != MultKind.EQSYS_MULT && Parameters.isUseThreeValues();
+        return kind != MultKind.EQSYS_MULT
+            && getSetAbsParameters().isUseThreeValues();
     }
 
     /** Scale the given multiplicity by the given factor. */
     public static Multiplicity scale(Multiplicity mult, int factor) {
         assert factor >= 0;
         return approx(mult.i * factor, mult.j * factor, mult.kind);
-    }
-
-    /**
-     * Returns the multiplicity of the set of nodes given, bounded by the node
-     * multiplicity bound (\nu) set in the Parameters class. 
-     */
-    public static Multiplicity getNodeSetMult(Set<? extends Node> nodes) {
-        int setSize = nodes.size();
-        return approx(setSize, setSize, MultKind.NODE_MULT);
-    }
-
-    /**
-     * Returns the multiplicity of the set of edges given, bounded by the edge
-     * multiplicity bound (\mu) set in the Parameters class. 
-     */
-    public static Multiplicity getEdgeSetMult(Set<? extends Edge> edges) {
-        int setSize = edges.size();
-        return approx(setSize, setSize, MultKind.EDGE_MULT);
     }
 
     // ------------------------------------------------------------------------
@@ -456,14 +463,14 @@ public final class Multiplicity {
         return this.kind;
     }
 
-    // ------------------------------------------------------------------------
-    // Inner classes
-    // ------------------------------------------------------------------------
-
     /** Returns the index of this multiplicity value. */
     public char getIndex() {
         return this.index;
     }
+
+    // ------------------------------------------------------------------------
+    // Inner classes
+    // ------------------------------------------------------------------------
 
     /** Enumeration of multiplicity kinds. */
     public enum MultKind {
@@ -473,95 +480,6 @@ public final class Multiplicity {
         EDGE_MULT,
         /** Multiplicity used in equation systems. */
         EQSYS_MULT
-    }
-
-    /** Enumeration of edge multiplicity directions. */
-    public enum EdgeMultDir {
-        /** Outgoing edge multiplicity. */
-        OUTGOING {
-            @Override
-            public EdgeMultDir reverse() {
-                return INCOMING;
-            }
-
-            @Override
-            public ShapeNode incident(ShapeEdge edge) {
-                return edge.source();
-            }
-
-            @Override
-            public ShapeNode opposite(ShapeEdge edge) {
-                return edge.target();
-            }
-
-            @Override
-            public HostNode incident(HostEdge edge) {
-                return edge.source();
-            }
-
-            @Override
-            public HostNode opposite(HostEdge edge) {
-                return edge.target();
-            }
-        },
-        /** Incoming edge multiplicity. */
-        INCOMING {
-            @Override
-            public EdgeMultDir reverse() {
-                return OUTGOING;
-            }
-
-            @Override
-            public ShapeNode incident(ShapeEdge edge) {
-                return edge.target();
-            }
-
-            @Override
-            public ShapeNode opposite(ShapeEdge edge) {
-                return edge.source();
-            }
-
-            @Override
-            public HostNode incident(HostEdge edge) {
-                return edge.target();
-            }
-
-            @Override
-            public HostNode opposite(HostEdge edge) {
-                return edge.source();
-            }
-        };
-
-        /** Returns the reverse direction. */
-        abstract public EdgeMultDir reverse();
-
-        /**
-         * Returns the incident end of an edge according to this direction.
-         * @return the edge target if this is {@link #INCOMING},
-         *         the source if this is {@link #OUTGOING}
-         */
-        abstract public ShapeNode incident(ShapeEdge edge);
-
-        /**
-         * Returns the opposite end of an edge according to this direction.
-         * @return the edge source if this is {@link #INCOMING},
-         *         the target if this is {@link #OUTGOING}
-         */
-        abstract public ShapeNode opposite(ShapeEdge edge);
-
-        /**
-         * Returns the incident end of an edge according to this direction.
-         * @return the edge target if this is {@link #INCOMING},
-         *         the source if this is {@link #OUTGOING}
-         */
-        abstract public HostNode incident(HostEdge edge);
-
-        /**
-         * Returns the opposite end of an edge according to this direction.
-         * @return the edge source if this is {@link #INCOMING},
-         *         the target if this is {@link #OUTGOING}
-         */
-        abstract public HostNode opposite(HostEdge edge);
     }
 
 }

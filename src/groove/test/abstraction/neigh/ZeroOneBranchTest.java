@@ -16,7 +16,7 @@
  */
 package groove.test.abstraction.neigh;
 
-import groove.abstraction.neigh.Parameters;
+import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.explore.ShapeGenerator;
 import groove.abstraction.neigh.lts.AGTS;
 import groove.abstraction.neigh.trans.EquationSystem;
@@ -35,8 +35,8 @@ public class ZeroOneBranchTest {
         final String START_GRAPH = "start";
         ShapeGenerator generator;
         args = new String[] {"-v", "0", "-s", STRATEGY, GRAMMAR};
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
 
         generator = new ShapeGenerator(args);
         generator.start();

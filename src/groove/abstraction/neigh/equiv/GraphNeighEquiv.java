@@ -16,10 +16,10 @@
  */
 package groove.abstraction.neigh.equiv;
 
-import groove.abstraction.neigh.Multiplicity;
-import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
-import groove.abstraction.neigh.MyHashMap;
-import groove.abstraction.neigh.Parameters;
+import groove.abstraction.Multiplicity;
+import groove.abstraction.MyHashMap;
+import groove.abstraction.neigh.EdgeMultDir;
+import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.Util;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
@@ -117,7 +117,7 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         // Get the set of labels to be used in the abstraction.
         Map<TypeLabel,Integer> labelNrs = new HashMap<TypeLabel,Integer>();
         // turn the abstract labels into a bitset
-        Set<TypeLabel> absLabels = Parameters.getAbsLabels();
+        Set<TypeLabel> absLabels = NeighAbsParam.getInstance().getAbsLabels();
         boolean abstractAll = absLabels.isEmpty();
         // Compute the equivalence classes.
         BitSet[] nodeLabelStore =

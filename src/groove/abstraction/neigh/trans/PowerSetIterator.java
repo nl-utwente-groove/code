@@ -16,8 +16,8 @@
  */
 package groove.abstraction.neigh.trans;
 
-import groove.abstraction.neigh.MyHashMap;
-import groove.abstraction.neigh.MyHashSet;
+import groove.abstraction.MyHashMap;
+import groove.abstraction.MyHashSet;
 import groove.abstraction.neigh.shape.ShapeEdge;
 
 import java.util.Iterator;

@@ -16,21 +16,21 @@
  */
 package groove.test.abstraction.neigh;
 
-import static groove.abstraction.neigh.Multiplicity.OMEGA;
-import static groove.abstraction.neigh.Multiplicity.add;
-import static groove.abstraction.neigh.Multiplicity.approx;
-import static groove.abstraction.neigh.Multiplicity.getMultiplicity;
-import static groove.abstraction.neigh.Multiplicity.scale;
-import static groove.abstraction.neigh.Multiplicity.sub;
-import static groove.abstraction.neigh.Multiplicity.times;
-import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
-import static groove.abstraction.neigh.Multiplicity.MultKind.EQSYS_MULT;
-import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
+import static groove.abstraction.Multiplicity.OMEGA;
+import static groove.abstraction.Multiplicity.add;
+import static groove.abstraction.Multiplicity.approx;
+import static groove.abstraction.Multiplicity.getMultiplicity;
+import static groove.abstraction.Multiplicity.scale;
+import static groove.abstraction.Multiplicity.sub;
+import static groove.abstraction.Multiplicity.times;
+import static groove.abstraction.Multiplicity.MultKind.EDGE_MULT;
+import static groove.abstraction.Multiplicity.MultKind.EQSYS_MULT;
+import static groove.abstraction.Multiplicity.MultKind.NODE_MULT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import groove.abstraction.neigh.Multiplicity;
-import groove.abstraction.neigh.Parameters;
+import groove.abstraction.Multiplicity;
+import groove.abstraction.neigh.NeighAbsParam;
 
 import org.junit.Test;
 
@@ -72,7 +72,7 @@ public class TestMultiplicity {
 
     @Test
     public void testApprox() {
-        Parameters.setNodeMultBound(3);
+        NeighAbsParam.getInstance().setNodeMultBound(3);
         Multiplicity twoThree = getMultiplicity(2, 3, NODE_MULT);
         Multiplicity twoPlus = getMultiplicity(2, OMEGA, NODE_MULT);
         Multiplicity fourPlus = getMultiplicity(4, OMEGA, NODE_MULT);
@@ -83,7 +83,7 @@ public class TestMultiplicity {
 
     @Test
     public void testScale() {
-        Parameters.setNodeMultBound(2);
+        NeighAbsParam.getInstance().setNodeMultBound(2);
         Multiplicity zero = getMultiplicity(0, 0, NODE_MULT);
         Multiplicity one = getMultiplicity(1, 1, NODE_MULT);
         Multiplicity two = getMultiplicity(2, 2, NODE_MULT);
@@ -97,7 +97,7 @@ public class TestMultiplicity {
 
     @Test
     public void testEquals() {
-        Parameters.setNodeMultBound(2);
+        NeighAbsParam.getInstance().setNodeMultBound(2);
         Multiplicity zeroNode = getMultiplicity(0, 0, NODE_MULT);
         Multiplicity oneNode = getMultiplicity(1, 1, NODE_MULT);
         Multiplicity zeroEdge = getMultiplicity(0, 0, EDGE_MULT);
@@ -107,7 +107,7 @@ public class TestMultiplicity {
 
     @Test
     public void testAdd() {
-        Parameters.setNodeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
         Multiplicity zero = getMultiplicity(0, 0, NODE_MULT);
         Multiplicity one = getMultiplicity(1, 1, NODE_MULT);
         Multiplicity twoPlus = getMultiplicity(2, OMEGA, NODE_MULT);
@@ -118,7 +118,7 @@ public class TestMultiplicity {
 
     @Test
     public void testSub() {
-        Parameters.setNodeMultBound(2);
+        NeighAbsParam.getInstance().setNodeMultBound(2);
         Multiplicity zero = getMultiplicity(0, 0, NODE_MULT);
         Multiplicity one = getMultiplicity(1, 1, NODE_MULT);
         Multiplicity zeroOne = getMultiplicity(0, 1, NODE_MULT);
@@ -136,7 +136,7 @@ public class TestMultiplicity {
 
     @Test
     public void testTimes() {
-        Parameters.setNodeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
         Multiplicity zeroN = getMultiplicity(0, 0, NODE_MULT);
         Multiplicity oneN = getMultiplicity(1, 1, NODE_MULT);
         Multiplicity twoPlusN = getMultiplicity(2, OMEGA, NODE_MULT);
@@ -156,7 +156,7 @@ public class TestMultiplicity {
 
     @Test
     public void testLe() {
-        Parameters.setNodeMultBound(2);
+        NeighAbsParam.getInstance().setNodeMultBound(2);
         Multiplicity one = getMultiplicity(1, 1, NODE_MULT);
         Multiplicity zeroOne = getMultiplicity(0, 1, NODE_MULT);
         Multiplicity onePlus = getMultiplicity(1, OMEGA, NODE_MULT);
@@ -171,7 +171,7 @@ public class TestMultiplicity {
 
     @Test
     public void testSubsumes() {
-        Parameters.setNodeMultBound(2);
+        NeighAbsParam.getInstance().setNodeMultBound(2);
         Multiplicity one = getMultiplicity(1, 1, NODE_MULT);
         Multiplicity zeroOne = getMultiplicity(0, 1, NODE_MULT);
         Multiplicity onePlus = getMultiplicity(1, OMEGA, NODE_MULT);

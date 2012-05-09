@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.trans;
 
-import groove.abstraction.neigh.MyHashSet;
+import groove.abstraction.MyHashSet;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeFactory;
 import groove.abstraction.neigh.shape.ShapeNode;

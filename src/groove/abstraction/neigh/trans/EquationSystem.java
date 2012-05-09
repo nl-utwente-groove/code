@@ -16,10 +16,10 @@
  */
 package groove.abstraction.neigh.trans;
 
-import static groove.abstraction.neigh.Multiplicity.OMEGA;
-import groove.abstraction.neigh.Multiplicity;
-import groove.abstraction.neigh.Multiplicity.MultKind;
-import groove.abstraction.neigh.MyHashSet;
+import static groove.abstraction.Multiplicity.OMEGA;
+import groove.abstraction.Multiplicity;
+import groove.abstraction.Multiplicity.MultKind;
+import groove.abstraction.MyHashSet;
 import groove.util.Duo;
 
 import java.util.ArrayList;

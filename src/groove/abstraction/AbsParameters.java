@@ -14,39 +14,26 @@
  *
  * $Id$
  */
-package groove.abstraction.neigh;
+package groove.abstraction;
 
-import groove.graph.TypeLabel;
-
-import java.util.Set;
+import static groove.abstraction.Multiplicity.MAX_BOUND;
 
 /**
- * Class that stores the parameters of the abstraction.
+ * Class that stores some parameters of abstraction.
  * 
  * @author Eduardo Zambon
  */
-public final class Parameters {
+public abstract class AbsParameters {
 
     // ------------------------------------------------------------------------
-    // Static fields
+    // Object fields
     // ------------------------------------------------------------------------
 
-    /** 
-     * Maximum value to which the bounds can be set.
-     * This is used to determine the size of the global
-     * auxiliary data structures in {@link Multiplicity}.
-     */
-    public static final int MAX_BOUND = 10;
     /** Node multiplicity bound (\nu). Is a natural number. Defaults to 1. */
-    private static int nodeMultBound = 1;
+    private int nodeMultBound = 1;
     /** Edge multiplicity bound (\mu). Is a natural number. Defaults to 1. */
-    private static int edgeMultBound = 1;
-    /** The radius of the abstraction (i). Is a natural number. Defaults to 1. */
-    private static int absRadius = 1;
-    /**
-     * Labels to be used in the abstraction. Taken from the grammar properties.
-     */
-    private static Set<TypeLabel> absLabels = new MyHashSet<TypeLabel>();
+    private int edgeMultBound = 1;
+
     /**
      * Flag to indicate if only three values should be used for multiplicities.
      * This limit the multiplicity values to either 0, 1 or 0+. Setting this
@@ -54,72 +41,50 @@ public final class Parameters {
      * useful to limit the size of the abstract state space.
      * Defaults to false.
      */
-    private static boolean useThreeValues = false;
+    private boolean useThreeValues = false;
 
     // ------------------------------------------------------------------------
-    // Static methods
+    // Other methods
     // ------------------------------------------------------------------------
 
     /** Basic getter method. */
-    public static int getNodeMultBound() {
-        return nodeMultBound;
+    public int getNodeMultBound() {
+        return this.nodeMultBound;
     }
 
     /** Basic getter method. */
-    public static int getEdgeMultBound() {
-        return edgeMultBound;
+    public int getEdgeMultBound() {
+        return this.edgeMultBound;
     }
 
-    /** Basic getter method. */
-    public static int getAbsRadius() {
-        return absRadius;
-    }
-
-    /** Basic getter method. */
-    public static Set<TypeLabel> getAbsLabels() {
-        return absLabels;
+    /** Basic inspection method. */
+    public boolean isUseThreeValues() {
+        return this.useThreeValues;
     }
 
     /** Basic setter method. The bound given must be positive. */
-    public static void setNodeMultBound(int nodeMultBound) {
+    public void setNodeMultBound(int nodeMultBound) {
         assert nodeMultBound > 0 : "Invalid node multiplicity bound.";
         if (nodeMultBound > MAX_BOUND) {
             throw new IllegalArgumentException(String.format(
                 "Node bound %d exceeds maximum %s", nodeMultBound, MAX_BOUND));
         }
-        Parameters.nodeMultBound = nodeMultBound;
+        this.nodeMultBound = nodeMultBound;
     }
 
     /** Basic setter method. The bound given must be positive. */
-    public static void setEdgeMultBound(int edgeMultBound) {
+    public void setEdgeMultBound(int edgeMultBound) {
         assert edgeMultBound > 0 : "Invalid edge multiplicity bound.";
         if (edgeMultBound > MAX_BOUND) {
             throw new IllegalArgumentException(String.format(
                 "Edge bound %d exceeds maximum %s", edgeMultBound, MAX_BOUND));
         }
-        Parameters.edgeMultBound = edgeMultBound;
-    }
-
-    /** Basic setter method. The radius given must be positive. */
-    public static void setAbsRadius(int absRadius) {
-        assert absRadius == 1 : "Invalid abstraction radius. Current implementation only allows radius 1.";
-        Parameters.absRadius = absRadius;
+        this.edgeMultBound = edgeMultBound;
     }
 
     /** Basic setter method. */
-    public static void setAbsLabels(Set<TypeLabel> absLabels) {
-        Parameters.absLabels.clear();
-        Parameters.absLabels.addAll(absLabels);
-    }
-
-    /** Basic setter method. */
-    public static void setUseThreeValues(boolean useThreeValues) {
-        Parameters.useThreeValues = useThreeValues;
-    }
-
-    /** Basic inspection method. */
-    public static boolean isUseThreeValues() {
-        return useThreeValues;
+    public void setUseThreeValues(boolean useThreeValues) {
+        this.useThreeValues = useThreeValues;
     }
 
 }

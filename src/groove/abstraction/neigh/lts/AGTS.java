@@ -16,9 +16,9 @@
  */
 package groove.abstraction.neigh.lts;
 
-import groove.abstraction.neigh.MyHashMap;
-import groove.abstraction.neigh.MyHashSet;
-import groove.abstraction.neigh.Parameters;
+import groove.abstraction.MyHashMap;
+import groove.abstraction.MyHashSet;
+import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
 import groove.graph.GraphCache;
@@ -226,7 +226,7 @@ public final class AGTS extends GTS {
             }
         }
 
-        Parameters.setAbsLabels(absLabels);
+        NeighAbsParam.getInstance().setAbsLabels(absLabels);
     }
 
     /** Returns the number of states marked as subsumed. */

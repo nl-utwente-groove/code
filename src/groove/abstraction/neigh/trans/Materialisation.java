@@ -16,13 +16,13 @@
  */
 package groove.abstraction.neigh.trans;
 
-import static groove.abstraction.neigh.Multiplicity.ONE_NODE_MULT;
-import groove.abstraction.neigh.Abstraction;
-import groove.abstraction.neigh.Multiplicity;
-import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
-import groove.abstraction.neigh.MyHashMap;
-import groove.abstraction.neigh.MyHashSet;
-import groove.abstraction.neigh.Parameters;
+import static groove.abstraction.Multiplicity.ONE_NODE_MULT;
+import groove.abstraction.Multiplicity;
+import groove.abstraction.MyHashMap;
+import groove.abstraction.MyHashSet;
+import groove.abstraction.neigh.EdgeMultDir;
+import groove.abstraction.neigh.NeighAbsParam;
+import groove.abstraction.neigh.NeighAbstraction;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
@@ -653,11 +653,11 @@ public final class Materialisation {
                         Util.getIntersectEdges(this.shape, v, w, label,
                             intersectEdges);
                         Multiplicity vInterWMult =
-                            Multiplicity.getEdgeSetMult(intersectEdges);
+                            Util.getEdgeSetMult(intersectEdges);
                         Util.getIntersectEdges(this.shape, w, v, label,
                             intersectEdges);
                         Multiplicity wInterVMult =
-                            Multiplicity.getEdgeSetMult(intersectEdges);
+                            Util.getEdgeSetMult(intersectEdges);
                         if (!outMult.equals(vInterWMult)
                             || !inMult.equals(wInterVMult)) {
                             complyToEdgeMult = false;
@@ -1188,10 +1188,10 @@ public final class Materialisation {
 
     public static void main(String args[]) {
         String DIRECTORY = "junit/abstraction/temp.gps/";
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
-        Abstraction.initialise();
-        Parameters.setUseThreeValues(true);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setUseThreeValues(true);
+        NeighAbstraction.initialise();
 
         File file = new File(DIRECTORY + "error.gxl");
         File grammarFile = new File(DIRECTORY);

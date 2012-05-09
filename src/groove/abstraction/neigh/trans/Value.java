@@ -1,6 +1,6 @@
 package groove.abstraction.neigh.trans;
 
-import static groove.abstraction.neigh.Multiplicity.OMEGA;
+import static groove.abstraction.Multiplicity.OMEGA;
 
 /** Range of possible values for the variables. Used in the solutions. */
 final class Value {

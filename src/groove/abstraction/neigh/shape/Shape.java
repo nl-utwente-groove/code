@@ -16,18 +16,18 @@
  */
 package groove.abstraction.neigh.shape;
 
-import static groove.abstraction.neigh.Multiplicity.ONE_NODE_MULT;
-import static groove.abstraction.neigh.Multiplicity.ZERO_EDGE_MULT;
-import static groove.abstraction.neigh.Multiplicity.ZERO_NODE_MULT;
-import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.INCOMING;
-import static groove.abstraction.neigh.Multiplicity.EdgeMultDir.OUTGOING;
-import static groove.abstraction.neigh.Multiplicity.MultKind.EDGE_MULT;
-import static groove.abstraction.neigh.Multiplicity.MultKind.NODE_MULT;
+import static groove.abstraction.Multiplicity.ONE_NODE_MULT;
+import static groove.abstraction.Multiplicity.ZERO_EDGE_MULT;
+import static groove.abstraction.Multiplicity.ZERO_NODE_MULT;
+import static groove.abstraction.Multiplicity.MultKind.EDGE_MULT;
+import static groove.abstraction.Multiplicity.MultKind.NODE_MULT;
+import static groove.abstraction.neigh.EdgeMultDir.INCOMING;
+import static groove.abstraction.neigh.EdgeMultDir.OUTGOING;
 import static groove.graph.EdgeRole.BINARY;
-import groove.abstraction.neigh.Multiplicity;
-import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
-import groove.abstraction.neigh.MyHashSet;
-import groove.abstraction.neigh.Parameters;
+import groove.abstraction.Multiplicity;
+import groove.abstraction.MyHashSet;
+import groove.abstraction.neigh.EdgeMultDir;
+import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
@@ -1046,7 +1046,7 @@ public final class Shape extends ShapeGraph {
     public Shape normalise() {
         Shape newShape = newGraph(getName());
         HostToShapeMap map = new HostToShapeMap(this.getFactory());
-        int radius = Parameters.getAbsRadius();
+        int radius = NeighAbsParam.getInstance().getAbsRadius();
         // Compute the equivalence relation on this shape.
         ShapeNeighEquiv sne = new ShapeNeighEquiv(this, radius);
         // Now build the shape.
@@ -1115,7 +1115,7 @@ public final class Shape extends ShapeGraph {
             new Shape(graph.getName(),
                 ShapeFactory.newInstance(graph.getTypeGraph()));
         HostToShapeMap map = new HostToShapeMap(shape.getFactory());
-        int radius = Parameters.getAbsRadius();
+        int radius = NeighAbsParam.getInstance().getAbsRadius();
         // Compute the equivalence relation on the given graph.
         GraphNeighEquiv gne = new GraphNeighEquiv(graph, radius);
         // Now build the shape.

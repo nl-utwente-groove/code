@@ -14,27 +14,16 @@
  *
  * $Id$
  */
-package groove.test.abstraction.neigh;
-
-import groove.abstraction.neigh.NeighAbstraction;
-
-import org.junit.AfterClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+package groove.abstraction;
 
 /**
+ * Enumeration of abstraction methods.
+ * 
  * @author Eduardo Zambon
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({TestMultiplicity.class, TestGraphNeighEquiv.class,
-    TestShape.class, TestMatching.class, TestMaterialisation.class,
-    TestShapeIso.class, TestShapeGenerator.class})
-public class AllNeighAbstractionTests {
-
-    /** Reverts back to normal (non-abstract) mode. */
-    @AfterClass
-    public static void cleanUp() {
-        NeighAbstraction.terminate();
-    }
-
+public enum AbstractionKind {
+    /** Neighbourhood abstraction. */
+    NEIGH,
+    /** Pattern abstraction. */
+    PATTERN
 }

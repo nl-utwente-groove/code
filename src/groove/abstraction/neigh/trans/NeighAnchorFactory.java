@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.trans;
 
-import groove.abstraction.neigh.Parameters;
+import groove.abstraction.neigh.NeighAbsParam;
 import groove.trans.Anchor;
 import groove.trans.AnchorFactory;
 import groove.trans.Rule;
@@ -74,7 +74,7 @@ public final class NeighAnchorFactory implements AnchorFactory {
     public Anchor newAnchor(Rule rule) {
         // EZ says: for simplicity this method assumes that the abstraction
         // radius is one.
-        assert Parameters.getAbsRadius() == 1;
+        assert NeighAbsParam.getInstance().getAbsRadius() == 1;
         Anchor result = new Anchor();
         // List of nodes that need to be in a singleton equivalence class
         // after materialisation.

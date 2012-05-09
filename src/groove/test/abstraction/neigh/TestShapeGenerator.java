@@ -17,7 +17,7 @@
 package groove.test.abstraction.neigh;
 
 import static org.junit.Assert.assertEquals;
-import groove.abstraction.neigh.Parameters;
+import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.explore.ShapeGenerator;
 import groove.abstraction.neigh.lts.AGTS;
 
@@ -43,8 +43,8 @@ public class TestShapeGenerator {
         final String START_GRAPH = "start";
         ShapeGenerator generator;
 
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
 
         generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
         generator.start();
@@ -52,14 +52,14 @@ public class TestShapeGenerator {
         assertEquals(6, gts.getStateCount());
         assertEquals(11, gts.getTransitionCount());
 
-        Parameters.setNodeMultBound(2);
+        NeighAbsParam.getInstance().setNodeMultBound(2);
         generator.explore();
         generator.report();
         gts = generator.getReducedGTS();
         assertEquals(6, gts.getStateCount());
         assertEquals(11, gts.getTransitionCount());
 
-        Parameters.setNodeMultBound(3);
+        NeighAbsParam.getInstance().setNodeMultBound(3);
         generator.explore();
         generator.report();
         gts = generator.getReducedGTS();
@@ -73,8 +73,8 @@ public class TestShapeGenerator {
         final String START_GRAPH = "start";
         ShapeGenerator generator;
 
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
 
         generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
         generator.start();
@@ -89,8 +89,8 @@ public class TestShapeGenerator {
         final String START_GRAPH = "start";
         ShapeGenerator generator;
 
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
 
         generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
         generator.start();
@@ -105,8 +105,8 @@ public class TestShapeGenerator {
         final String START_GRAPH = "start";
         ShapeGenerator generator;
 
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
 
         generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
         generator.start();
@@ -121,8 +121,8 @@ public class TestShapeGenerator {
         final String START_GRAPH = "start-2";
         ShapeGenerator generator;
 
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
 
         generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
         generator.start();
@@ -137,8 +137,8 @@ public class TestShapeGenerator {
         final String START_GRAPH = "start";
         ShapeGenerator generator;
 
-        Parameters.setNodeMultBound(1);
-        Parameters.setEdgeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setEdgeMultBound(1);
 
         generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
         generator.start();

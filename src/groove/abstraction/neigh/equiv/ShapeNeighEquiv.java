@@ -16,8 +16,8 @@
  */
 package groove.abstraction.neigh.equiv;
 
-import groove.abstraction.neigh.Multiplicity;
-import groove.abstraction.neigh.Multiplicity.EdgeMultDir;
+import groove.abstraction.Multiplicity;
+import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;

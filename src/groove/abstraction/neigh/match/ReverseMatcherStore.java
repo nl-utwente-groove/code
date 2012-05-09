@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.match;
 
-import groove.abstraction.neigh.MyHashMap;
+import groove.abstraction.MyHashMap;
 import groove.match.Matcher;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine.SearchMode;

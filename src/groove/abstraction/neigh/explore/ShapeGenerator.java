@@ -16,9 +16,9 @@
  */
 package groove.abstraction.neigh.explore;
 
-import groove.abstraction.neigh.Abstraction;
-import groove.abstraction.neigh.Multiplicity.MultKind;
-import groove.abstraction.neigh.Parameters;
+import groove.abstraction.Multiplicity.MultKind;
+import groove.abstraction.neigh.NeighAbsParam;
+import groove.abstraction.neigh.NeighAbstraction;
 import groove.abstraction.neigh.lts.AGTS;
 import groove.explore.AcceptorEnumerator;
 import groove.explore.Exploration;
@@ -217,7 +217,7 @@ public final class ShapeGenerator extends CommandLineTool {
 
     /** Resets the generator. */
     private void reset() {
-        Abstraction.initialise();
+        NeighAbstraction.initialise();
         gts = null;
         this.reducedGTS = null;
         this.explorationStats = new ExplorationStatistics(getGTS());
@@ -258,9 +258,10 @@ public final class ShapeGenerator extends CommandLineTool {
                 + (this.startGraphName == null ? "default"
                         : this.startGraphName));
             println("Exploration:\t" + this.exploration.getIdentifier());
-            print("Node bound:\t" + Parameters.getNodeMultBound()
-                + "\tEdge bound:\t" + Parameters.getEdgeMultBound());
-            if (Parameters.isUseThreeValues()) {
+            NeighAbsParam params = NeighAbsParam.getInstance();
+            print("Node bound:\t" + params.getNodeMultBound()
+                + "\tEdge bound:\t" + params.getEdgeMultBound());
+            if (params.isUseThreeValues()) {
                 println("\tLIMITING MULTIPLICITIES TO 0, 1 and 0+");
             } else {
                 println();
@@ -492,10 +493,10 @@ public final class ShapeGenerator extends CommandLineTool {
             }
             switch (this.kind) {
             case NODE_MULT:
-                Parameters.setNodeMultBound(bound);
+                NeighAbsParam.getInstance().setNodeMultBound(bound);
                 break;
             case EDGE_MULT:
-                Parameters.setEdgeMultBound(bound);
+                NeighAbsParam.getInstance().setEdgeMultBound(bound);
                 break;
             default:
                 assert false;
@@ -567,7 +568,7 @@ public final class ShapeGenerator extends CommandLineTool {
 
         @Override
         public void parse(String parameter) {
-            Parameters.setUseThreeValues(true);
+            NeighAbsParam.getInstance().setUseThreeValues(true);
         }
 
     }
