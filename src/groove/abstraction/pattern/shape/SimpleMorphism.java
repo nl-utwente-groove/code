@@ -16,11 +16,16 @@
  */
 package groove.abstraction.pattern.shape;
 
+import groove.abstraction.MyHashMap;
+import groove.trans.HostNode;
 import groove.util.Fixable;
-import groove.view.FormatException;
+
+import java.util.Map;
 
 /**
- * EDUARDO: Comment this...
+ * Class representing morphisms between simple graphs. These morphisms are used
+ * as labels of pattern edges. The map is injective and not surjective on the
+ * target.
  * 
  * @author Eduardo Zambon
  */
@@ -29,18 +34,22 @@ public class SimpleMorphism implements Fixable {
     private final String name;
     private final TypeNode source;
     private final TypeNode target;
+    private final Map<HostNode,HostNode> nodeMap;
+    private final Map<HostNode,HostNode> inverseNodeMap;
     private boolean fixed;
 
-    /** EDUARDO: Comment this... */
+    /** Default constructor. */
     public SimpleMorphism(String name, TypeNode source, TypeNode target) {
         this.name = name;
         this.source = source;
         this.target = target;
+        this.nodeMap = new MyHashMap<HostNode,HostNode>();
+        this.inverseNodeMap = new MyHashMap<HostNode,HostNode>();
         this.fixed = false;
     }
 
     @Override
-    public void setFixed() throws FormatException {
+    public void setFixed() {
         this.fixed = true;
     }
 
@@ -56,18 +65,48 @@ public class SimpleMorphism implements Fixable {
         }
     }
 
-    /** EDUARDO: Comment this... */
+    @Override
+    public String toString() {
+        return this.getName() + ": " + this.nodeMap;
+    }
+
+    /** Basic getter method. */
     public String getName() {
         return this.name;
     }
 
-    /** EDUARDO: Comment this... */
+    /** Basic getter method. */
     public TypeNode getSource() {
         return this.source;
     }
 
-    /** EDUARDO: Comment this... */
+    /** Basic getter method. */
     public TypeNode getTarget() {
         return this.target;
+    }
+
+    /** Updates the morphism. */
+    public void putNode(HostNode source, HostNode target) {
+        assert !isFixed();
+        this.nodeMap.put(source, target);
+        this.inverseNodeMap.put(target, source);
+    }
+
+    /** Returns the non-null image of the given node in the morphism. */
+    public HostNode getImage(HostNode source) {
+        assert isFixed();
+        HostNode target = this.nodeMap.get(source);
+        assert target != null;
+        return target;
+    }
+
+    /**
+     * Returns the pre-image of the given node in the morphism. The returned
+     * result is a single element instead of a set because the morphism is
+     * injective. May return null if the node has no pre-image. 
+     */
+    public HostNode getPreImage(HostNode target) {
+        assert isFixed();
+        return this.inverseNodeMap.get(target);
     }
 }

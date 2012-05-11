@@ -16,30 +16,26 @@
  */
 package groove.abstraction.pattern.shape;
 
-import groove.graph.Edge;
-import groove.graph.EdgeRole;
-import groove.graph.Element;
-import groove.graph.Label;
-import groove.util.Fixable;
-import groove.view.FormatException;
+import groove.graph.DefaultLabel;
 
 /**
  * Pattern edge of a pattern type graph.
  * 
  * @author Eduardo Zambon
  */
-public final class TypeEdge implements Edge, TypeElement, Fixable {
+public final class TypeEdge extends AbstractPatternEdge<TypeNode> {
+
+    // ------------------------------------------------------------------------
+    // Static Fields
+    // ------------------------------------------------------------------------
+
+    /** Prefix for string representations. */
+    public static final String PREFIX = "m";
 
     // ------------------------------------------------------------------------
     // Object Fields
     // ------------------------------------------------------------------------
 
-    /** The number of this edge. */
-    private final int nr;
-    /** Source type node of this edge. */
-    private final TypeNode source;
-    /** Target type node of this edge. */
-    private final TypeNode target;
     /** The simple graph morphism between patterns of source and target nodes. */
     private final SimpleMorphism morph;
 
@@ -52,11 +48,9 @@ public final class TypeEdge implements Edge, TypeElement, Fixable {
      */
     public TypeEdge(int nr, TypeNode source, TypeNode target,
             SimpleMorphism morph) {
+        super(nr, source, DefaultLabel.createLabel(PREFIX + nr), target);
         assert morph.getSource().equals(source)
             && morph.getTarget().equals(target);
-        this.nr = nr;
-        this.source = source;
-        this.target = target;
         this.morph = morph;
     }
 
@@ -65,45 +59,7 @@ public final class TypeEdge implements Edge, TypeElement, Fixable {
     // ------------------------------------------------------------------------
 
     @Override
-    public int compareTo(Element obj) {
-        if (obj instanceof TypeNode) {
-            // for nodes, we just need to look at the source of this edge
-            int result = source().compareTo(obj);
-            // if the source equals the node, edges come later
-            if (result == 0) {
-                result++;
-            }
-            return result;
-        } else {
-            assert obj instanceof TypeEdge;
-            int otherNr = ((TypeEdge) obj).nr;
-            return (this.nr < otherNr ? -1 : (this.nr == otherNr ? 0 : 1));
-        }
-    }
-
-    @Override
-    public TypeNode source() {
-        return this.source;
-    }
-
-    @Override
-    public TypeNode target() {
-        return this.target;
-    }
-
-    @Override
-    public EdgeRole getRole() {
-        return EdgeRole.BINARY;
-    }
-
-    @Override
-    public String toString() {
-        return source().toString() + "--d" + this.nr + "-->"
-            + target().toString();
-    }
-
-    @Override
-    public void setFixed() throws FormatException {
+    public void setFixed() {
         getMorphism().setFixed();
     }
 
@@ -113,33 +69,17 @@ public final class TypeEdge implements Edge, TypeElement, Fixable {
     }
 
     @Override
-    public void testFixed(boolean fixed) {
-        if (isFixed() != fixed) {
-            throw new IllegalStateException();
-        }
+    protected String getToStringPrefix() {
+        return PREFIX;
     }
 
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
 
-    /** Returns the unique identifier of this edge. */
-    public int getNumber() {
-        return this.nr;
-    }
-
     /** Return the simple graph morphism associated with this edge. */
     public SimpleMorphism getMorphism() {
         return this.morph;
-    }
-
-    // ------------------------------------------------------------------------
-    // Unsupported methods
-    // ------------------------------------------------------------------------
-
-    @Override
-    public Label label() {
-        throw new UnsupportedOperationException();
     }
 
 }

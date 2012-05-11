@@ -16,39 +16,38 @@
  */
 package groove.abstraction.pattern.shape;
 
-import groove.trans.HostGraph;
-
 /**
- * Pattern node of a pattern type graph.
+ * Pattern edge of a pattern type graph.
  * 
  * @author Eduardo Zambon
  */
-public final class TypeNode extends AbstractPatternNode {
+public final class PatternEdge extends AbstractPatternEdge<PatternNode> {
 
     // ------------------------------------------------------------------------
     // Static Fields
     // ------------------------------------------------------------------------
 
     /** Prefix for string representations. */
-    public static final String PREFIX = "t";
+    public static final String PREFIX = "";
 
     // ------------------------------------------------------------------------
     // Object Fields
     // ------------------------------------------------------------------------
 
-    /** The simple graph pattern associated with this node. */
-    private final HostGraph pattern;
+    /** The type associated with this edge. */
+    private final TypeEdge type;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /** 
-     * Constructs a new type node, with the given number.
+     * Constructs a new type edge, with the given number, source and target.
      */
-    public TypeNode(int nr, HostGraph pattern) {
-        super(nr);
-        this.pattern = pattern;
+    public PatternEdge(int nr, PatternNode source, PatternNode target,
+            TypeEdge type) {
+        super(nr, source, type.label(), target);
+        this.type = type;
     }
 
     // ------------------------------------------------------------------------
@@ -57,12 +56,12 @@ public final class TypeNode extends AbstractPatternNode {
 
     @Override
     public void setFixed() {
-        getPattern().setFixed();
+        assert this.type.isFixed();
     }
 
     @Override
     public boolean isFixed() {
-        return getPattern().isFixed();
+        return this.type.isFixed();
     }
 
     @Override
@@ -70,13 +69,18 @@ public final class TypeNode extends AbstractPatternNode {
         return PREFIX;
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + ":" + this.type.toString();
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
 
-    /** Return the simple graph pattern associated with this node. */
-    public HostGraph getPattern() {
-        return this.pattern;
+    /** Return the type associated with this edge. */
+    public TypeEdge getType() {
+        return this.type;
     }
 
 }

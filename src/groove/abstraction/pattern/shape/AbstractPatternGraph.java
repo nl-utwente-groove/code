@@ -16,15 +16,19 @@
  */
 package groove.abstraction.pattern.shape;
 
-import groove.trans.HostGraph;
+import groove.graph.NodeSetEdgeSetGraph;
 
 /**
- * Simple graphs.
+ * Common implementation of pattern graphs.
  * 
  * @author Eduardo Zambon
  */
-public interface SimpleGraph extends HostGraph {
+public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E extends AbstractPatternEdge<N>>
+        extends NodeSetEdgeSetGraph<N,E> {
 
-    // Empty by design.
+    /** Default constructor. */
+    protected AbstractPatternGraph(String name) {
+        super(name);
+    }
 
 }
