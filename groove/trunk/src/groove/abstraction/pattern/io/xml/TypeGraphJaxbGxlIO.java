@@ -16,14 +16,16 @@
  */
 package groove.abstraction.pattern.io.xml;
 
+import groove.abstraction.MyHashMap;
+import groove.abstraction.pattern.shape.TypeEdge;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.abstraction.pattern.shape.TypeNode;
+import groove.trans.HostNode;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +39,7 @@ import de.gupro.gxl.gxl_1_0.GraphElementType;
 import de.gupro.gxl.gxl_1_0.GraphType;
 import de.gupro.gxl.gxl_1_0.GxlType;
 import de.gupro.gxl.gxl_1_0.NodeType;
+import de.gupro.gxl.gxl_1_0.TypeType;
 
 /**
  * Class to read pattern type graphs in GXL format, using JXB data binding.
@@ -49,12 +52,15 @@ public final class TypeGraphJaxbGxlIO {
     // Static fields
     // ------------------------------------------------------------------------
 
-    /** Attribute name for maximum node count. */
-    private static final String NODE_COUNT_ATTR_NAME = "nodecount";
-    /** Attribute name for maximum edge count. */
-    private static final String EDGE_COUNT_ATTR_NAME = "edgecount";
+    /** Attribute name for edge labels. */
+    static private final String LABEL_ATTR_NAME = "label";
     /** Role for GXL type graph. */
-    private static final String GXL_ROLE = "gxl_ptgraph";
+    private static final String GXL_T_ROLE = "gxl_ptgraph";
+    /** Role for GXL type graph. */
+    private static final String GXL_S_ROLE = "ptgraph";
+    /** Prefixes used in identities. */
+    private static final String NODE_ID_PREFIX = "p";
+    private static final String EDGE_ID_PREFIX = "d";
 
     private static final TypeGraphJaxbGxlIO instance = new TypeGraphJaxbGxlIO();
 
@@ -71,6 +77,27 @@ public final class TypeGraphJaxbGxlIO {
         return Integer.parseInt(id.substring(1));
     }
 
+    private static String getTypeString(TypeType type) {
+        return type.getOtherAttributes().values().iterator().next().substring(1);
+    }
+
+    private static boolean isNodeId(String id) {
+        return id.startsWith(NODE_ID_PREFIX);
+    }
+
+    private static boolean isEdgeId(String id) {
+        return id.startsWith(EDGE_ID_PREFIX);
+    }
+
+    private static String getAttrValue(String attrName, List<AttrType> attrs) {
+        for (AttrType attr : attrs) {
+            if (attr.getName().equals(attrName)) {
+                return attr.getString();
+            }
+        }
+        return null;
+    }
+
     // ------------------------------------------------------------------------
     // Object fields
     // ------------------------------------------------------------------------
@@ -79,6 +106,9 @@ public final class TypeGraphJaxbGxlIO {
     private JAXBContext context;
     /** Reusable unmarshaller. */
     private javax.xml.bind.Unmarshaller unmarshaller;
+    /** Auxiliary maps. */
+    private Map<String,TypeNode> nodeMap;
+    private Map<String,TypeEdge> edgeMap;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -93,11 +123,21 @@ public final class TypeGraphJaxbGxlIO {
         } catch (JAXBException e) {
             e.printStackTrace();
         }
+        this.nodeMap = null;
+        this.edgeMap = null;
     }
 
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
+
+    private TypeNode getTypeNode(String type) {
+        return this.nodeMap.get(type);
+    }
+
+    private TypeEdge getTypeEdge(String type) {
+        return this.edgeMap.get(type);
+    }
 
     /** Loads a pattern type graph from the given file. */
     public TypeGraph unmarshalTypeGraph(File file) throws IOException {
@@ -125,33 +165,21 @@ public final class TypeGraphJaxbGxlIO {
     }
 
     private TypeGraph readTypeGraph(GraphType gxlTypeGraph) {
-        assert gxlTypeGraph.getRole().equals(GXL_ROLE);
+        assert gxlTypeGraph.getRole().equals(GXL_T_ROLE);
         assert gxlTypeGraph.isEdgeids();
 
-        // Read the graph attributes so we can create the type graph object.
-        int maxNodeCount = 0;
-        int maxEdgeCount = 0;
-        List<AttrType> attrs = gxlTypeGraph.getAttr();
-        for (AttrType attr : attrs) {
-            if (attr.getName().equals(NODE_COUNT_ATTR_NAME)) {
-                maxNodeCount = attr.getInt().intValue();
-            } else if (attr.getName().equals(EDGE_COUNT_ATTR_NAME)) {
-                maxEdgeCount = attr.getInt().intValue();
-            }
-        }
-        assert maxNodeCount > 0 && maxEdgeCount > 0;
         String name = gxlTypeGraph.getId();
-
-        TypeGraph typeGraph = new TypeGraph(name, maxNodeCount, maxEdgeCount);
+        TypeGraph typeGraph = new TypeGraph(name);
 
         // Now read the nodes and edges. We assume a proper order to avoid
         // a second pass on the file.
-        Map<String,TypeNode> nodeMap = new HashMap<String,TypeNode>();
+        this.nodeMap = new MyHashMap<String,TypeNode>();
+        this.edgeMap = new MyHashMap<String,TypeEdge>();
         for (GraphElementType gxlElement : gxlTypeGraph.getNodeOrEdgeOrRel()) {
             if (gxlElement instanceof NodeType) {
                 String nodeId = gxlElement.getId();
                 TypeNode node = typeGraph.addNode(parseId(nodeId));
-                nodeMap.put(nodeId, node);
+                this.nodeMap.put(nodeId, node);
             }
 
             if (gxlElement instanceof EdgeType) {
@@ -159,9 +187,11 @@ public final class TypeGraphJaxbGxlIO {
                 String edgeId = edgeType.getId();
                 String srcId = ((NodeType) edgeType.getFrom()).getId();
                 String tgtId = ((NodeType) edgeType.getTo()).getId();
-                TypeNode source = nodeMap.get(srcId);
-                TypeNode target = nodeMap.get(tgtId);
-                typeGraph.addEdge(parseId(edgeId), source, target);
+                TypeNode source = getTypeNode(srcId);
+                TypeNode target = getTypeNode(tgtId);
+                TypeEdge edge =
+                    typeGraph.addEdge(parseId(edgeId), source, target);
+                this.edgeMap.put(edgeId, edge);
             }
         }
 
@@ -169,12 +199,45 @@ public final class TypeGraphJaxbGxlIO {
     }
 
     private void readSimpleGraphs(GraphType gxlSimpleGraph, TypeGraph typeGraph) {
-        // EDUARDO: Implement this...
+        assert gxlSimpleGraph.getRole().equals(GXL_S_ROLE);
+
+        Map<String,HostNode> snodeMap = new MyHashMap<String,HostNode>();
+        for (GraphElementType gxlElement : gxlSimpleGraph.getNodeOrEdgeOrRel()) {
+            String type = getTypeString(gxlElement.getType());
+            if (gxlElement instanceof NodeType) {
+                TypeNode typeNode = getTypeNode(type);
+                String snodeId = gxlElement.getId();
+                HostNode snode =
+                    typeNode.getPattern().addNode(parseId(snodeId));
+                snodeMap.put(snodeId, snode);
+            }
+
+            if (gxlElement instanceof EdgeType) {
+                EdgeType edgeType = (EdgeType) gxlElement;
+                String srcId = ((NodeType) edgeType.getFrom()).getId();
+                String tgtId = ((NodeType) edgeType.getTo()).getId();
+                HostNode source = snodeMap.get(srcId);
+                HostNode target = snodeMap.get(tgtId);
+                if (isNodeId(type)) {
+                    TypeNode typeNode = getTypeNode(type);
+                    String label =
+                        getAttrValue(LABEL_ATTR_NAME, gxlElement.getAttr());
+                    typeNode.getPattern().addEdge(source, label, target);
+                } else {
+                    assert isEdgeId(type);
+                    TypeEdge typeEdge = getTypeEdge(type);
+                    typeEdge.getMorphism().putNode(source, target);
+                }
+            }
+        }
+
+        typeGraph.setFixed();
     }
 
-    /** EDUARDO: Comment this... */
+    /** Test method. */
     public static void main(String args[]) {
-        File file = new File("/home/zambon/Temp/test.gxl");
+        File file =
+            new File("/home/zambon/Temp/grammars/pattern-list.gps/ptgraph.gxl");
         TypeGraph typeGraph = null;
         try {
             typeGraph = getInstance().unmarshalTypeGraph(file);

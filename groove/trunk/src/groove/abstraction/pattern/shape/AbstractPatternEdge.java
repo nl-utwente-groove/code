@@ -16,39 +16,36 @@
  */
 package groove.abstraction.pattern.shape;
 
-import groove.trans.HostGraph;
+import groove.graph.AbstractEdge;
+import groove.graph.DefaultLabel;
+import groove.graph.EdgeRole;
+import groove.util.Fixable;
 
 /**
- * Pattern node of a pattern type graph.
+ *  Common implementation of pattern edges of a pattern graph.
  * 
  * @author Eduardo Zambon
  */
-public final class TypeNode extends AbstractPatternNode {
-
-    // ------------------------------------------------------------------------
-    // Static Fields
-    // ------------------------------------------------------------------------
-
-    /** Prefix for string representations. */
-    public static final String PREFIX = "t";
+public abstract class AbstractPatternEdge<N extends AbstractPatternNode> extends
+        AbstractEdge<N,DefaultLabel> implements Fixable {
 
     // ------------------------------------------------------------------------
     // Object Fields
     // ------------------------------------------------------------------------
 
-    /** The simple graph pattern associated with this node. */
-    private final HostGraph pattern;
+    /** The number of this edge. */
+    private final int nr;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /** 
-     * Constructs a new type node, with the given number.
+     * Constructs a new pattern edge, with the given number, source and target.
      */
-    public TypeNode(int nr, HostGraph pattern) {
-        super(nr);
-        this.pattern = pattern;
+    public AbstractPatternEdge(int nr, N source, DefaultLabel label, N target) {
+        super(source, label, target);
+        this.nr = nr;
     }
 
     // ------------------------------------------------------------------------
@@ -56,27 +53,44 @@ public final class TypeNode extends AbstractPatternNode {
     // ------------------------------------------------------------------------
 
     @Override
-    public void setFixed() {
-        getPattern().setFixed();
+    public EdgeRole getRole() {
+        return EdgeRole.BINARY;
     }
 
     @Override
-    public boolean isFixed() {
-        return getPattern().isFixed();
+    public String toString() {
+        return source().toString() + "--" + getIdStr() + "-->"
+            + target().toString();
     }
 
     @Override
-    protected String getToStringPrefix() {
-        return PREFIX;
+    abstract public void setFixed();
+
+    @Override
+    abstract public boolean isFixed();
+
+    @Override
+    public void testFixed(boolean fixed) {
+        if (isFixed() != fixed) {
+            throw new IllegalStateException();
+        }
     }
 
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
 
-    /** Return the simple graph pattern associated with this node. */
-    public HostGraph getPattern() {
-        return this.pattern;
+    /** Returns the prefix for the {@link #toString()} methods. */
+    abstract protected String getToStringPrefix();
+
+    /** Returns the unique identifier of this edge. */
+    public int getNumber() {
+        return this.nr;
+    }
+
+    /** Returns the Id of this edge as a string. */
+    public String getIdStr() {
+        return getToStringPrefix() + this.nr;
     }
 
 }
