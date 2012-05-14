@@ -17,6 +17,7 @@
 package groove.abstraction.pattern.shape;
 
 import groove.graph.AbstractNode;
+import groove.trans.HostGraph;
 import groove.util.Fixable;
 
 /**
@@ -24,7 +25,8 @@ import groove.util.Fixable;
  * 
  * @author Eduardo Zambon
  */
-public abstract class AbstractPatternNode extends AbstractNode implements Fixable {
+public abstract class AbstractPatternNode extends AbstractNode implements
+        Fixable {
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -53,5 +55,15 @@ public abstract class AbstractPatternNode extends AbstractNode implements Fixabl
             throw new IllegalStateException();
         }
     }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    /** Returns the simple graph pattern associated with this node. */
+    abstract public HostGraph getPattern();
+
+    /** Returns the layer where this node should be placed. */
+    abstract public int getLayer();
 
 }

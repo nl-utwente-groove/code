@@ -16,6 +16,8 @@
  */
 package groove.abstraction.pattern.shape;
 
+import groove.trans.HostGraph;
+
 /**
  * Pattern node of a pattern graph.
  * 
@@ -71,6 +73,16 @@ public final class PatternNode extends AbstractPatternNode {
     @Override
     public String toString() {
         return super.toString() + ":" + this.type.toString();
+    }
+
+    @Override
+    public HostGraph getPattern() {
+        return this.type.getPattern();
+    }
+
+    @Override
+    public int getLayer() {
+        return this.type.getLayer();
     }
 
     // ------------------------------------------------------------------------

@@ -147,6 +147,8 @@ public final class TypeGraphJaxbGxlIO {
         // First graph should be the type structure.
         TypeGraph result = readTypeGraph(readGraphs.get(0));
         readSimpleGraphs(readGraphs.get(1), result);
+        assert result.isWellFormed();
+        assert !result.isCommuting();
         return result;
     }
 
@@ -234,16 +236,4 @@ public final class TypeGraphJaxbGxlIO {
         typeGraph.setFixed();
     }
 
-    /** Test method. */
-    public static void main(String args[]) {
-        File file =
-            new File("/home/zambon/Temp/grammars/pattern-list.gps/ptgraph.gxl");
-        TypeGraph typeGraph = null;
-        try {
-            typeGraph = getInstance().unmarshalTypeGraph(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println(typeGraph);
-    }
 }
