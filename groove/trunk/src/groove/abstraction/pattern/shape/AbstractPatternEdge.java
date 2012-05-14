@@ -26,8 +26,8 @@ import groove.util.Fixable;
  * 
  * @author Eduardo Zambon
  */
-public abstract class AbstractPatternEdge<N extends AbstractPatternNode> extends
-        AbstractEdge<N,DefaultLabel> implements Fixable {
+public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
+        extends AbstractEdge<N,DefaultLabel> implements Fixable {
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -82,6 +82,9 @@ public abstract class AbstractPatternEdge<N extends AbstractPatternNode> extends
 
     /** Returns the prefix for the {@link #toString()} methods. */
     abstract protected String getToStringPrefix();
+
+    /** Return the simple graph morphism associated with this edge. */
+    abstract public SimpleMorphism getMorphism();
 
     /** Returns the unique identifier of this edge. */
     public int getNumber() {

@@ -16,15 +16,20 @@
  */
 package groove.abstraction.pattern.shape;
 
+import static groove.abstraction.Multiplicity.ONE_EDGE_MULT;
+import static groove.abstraction.Multiplicity.ONE_NODE_MULT;
 import static groove.abstraction.Multiplicity.ZERO_EDGE_MULT;
 import static groove.abstraction.Multiplicity.ZERO_NODE_MULT;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.MyHashMap;
 import groove.graph.Edge;
+import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
+import groove.graph.Label;
 import groove.graph.Node;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Pattern shape.
@@ -64,8 +69,16 @@ public final class PatternShape extends
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Pattern shape: " + getName() + "\n");
-        sb.append("Nodes: " + nodeSet() + "\n");
-        sb.append("Edges: " + edgeSet() + "\n");
+        sb.append("Nodes: [");
+        for (PatternNode node : nodeSet()) {
+            sb.append(node.toString() + "(" + getMult(node) + "), ");
+        }
+        sb.replace(sb.length() - 2, sb.length(), "]\n");
+        sb.append("Edges: [");
+        for (PatternEdge edge : edgeSet()) {
+            sb.append(edge.toString() + "(" + getMult(edge) + "), ");
+        }
+        sb.replace(sb.length() - 2, sb.length(), "]\n");
         return sb.toString();
     }
 
@@ -82,6 +95,36 @@ public final class PatternShape extends
     @Override
     protected boolean isTypeCorrect(Edge edge) {
         return edge instanceof PatternEdge;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<PatternNode> nodeSet() {
+        return (Set<PatternNode>) super.nodeSet();
+    }
+
+    @Override
+    public boolean addNode(PatternNode node) {
+        boolean result = super.addNode(node);
+        if (result) {
+            addToLayer(node);
+            this.nodeMultMap.put(node, ONE_NODE_MULT);
+        }
+        return result;
+    }
+
+    @Override
+    public boolean addEdgeWithoutCheck(PatternEdge edge) {
+        boolean result = super.addEdgeWithoutCheck(edge);
+        if (result) {
+            this.edgeMultMap.put(edge, ONE_EDGE_MULT);
+        }
+        return result;
+    }
+
+    @Override
+    public PatternFactory getFactory() {
+        return this.type.getPatternFactory();
     }
 
     // ------------------------------------------------------------------------
@@ -103,6 +146,78 @@ public final class PatternShape extends
     /** Basic getter method. */
     public TypeGraph getTypeGraph() {
         return this.type;
+    }
+
+    /** Returns true if all elements have multiplicity one. */
+    public boolean isConcrete() {
+        for (Multiplicity mult : this.nodeMultMap.values()) {
+            if (!mult.isOne()) {
+                return false;
+            }
+        }
+        for (Multiplicity mult : this.edgeMultMap.values()) {
+            if (!mult.isOne()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // ------------------------------------------------------------------------
+    // Unsupported methods
+    // ------------------------------------------------------------------------
+
+    @Override
+    public Set<? extends PatternEdge> labelEdgeSet(Label label) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public GraphInfo<PatternNode,PatternEdge> getInfo() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected GraphInfo<PatternNode,PatternEdge> createInfo(GraphInfo<?,?> info) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public GraphInfo<PatternNode,PatternEdge> setInfo(GraphInfo<?,?> info) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected PatternEdge createEdge(PatternNode source, Label label,
+            PatternNode target) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public PatternNode addNode() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public PatternNode addNode(int nr) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public PatternEdge addEdge(PatternNode source, String label,
+            PatternNode target) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public PatternEdge addEdge(PatternNode source, Label label,
+            PatternNode target) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean mergeNodes(PatternNode from, PatternNode to) {
+        throw new UnsupportedOperationException();
     }
 
 }

@@ -16,6 +16,7 @@
  */
 package groove.abstraction.pattern.shape;
 
+import groove.abstraction.pattern.Util;
 import groove.trans.HostGraph;
 
 /**
@@ -38,6 +39,8 @@ public final class TypeNode extends AbstractPatternNode {
 
     /** The simple graph pattern associated with this node. */
     private final HostGraph pattern;
+    /** The layer for this node. */
+    private int layer;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -49,6 +52,7 @@ public final class TypeNode extends AbstractPatternNode {
     public TypeNode(int nr, HostGraph pattern) {
         super(nr);
         this.pattern = pattern;
+        this.layer = -1;
     }
 
     // ------------------------------------------------------------------------
@@ -70,13 +74,20 @@ public final class TypeNode extends AbstractPatternNode {
         return PREFIX;
     }
 
-    // ------------------------------------------------------------------------
-    // Other methods
-    // ------------------------------------------------------------------------
-
-    /** Return the simple graph pattern associated with this node. */
+    @Override
     public HostGraph getPattern() {
         return this.pattern;
+    }
+
+    @Override
+    public int getLayer() {
+        int result = this.layer;
+        if (result < 0) {
+            assert isFixed();
+            result = Util.getBinaryEdgesCount(this.pattern);
+            this.layer = result;
+        }
+        return result;
     }
 
 }

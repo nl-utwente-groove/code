@@ -28,7 +28,7 @@ public final class PatternEdge extends AbstractPatternEdge<PatternNode> {
     // ------------------------------------------------------------------------
 
     /** Prefix for string representations. */
-    public static final String PREFIX = "";
+    public static final String PREFIX = "d";
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -71,7 +71,15 @@ public final class PatternEdge extends AbstractPatternEdge<PatternNode> {
 
     @Override
     public String toString() {
-        return super.toString() + ":" + this.type.toString();
+        return PatternNode.PREFIX + this.source.getNumber() + "--"
+            + PatternEdge.PREFIX + getNumber() + ":" + TypeEdge.PREFIX
+            + this.type.getNumber() + "-->" + PatternNode.PREFIX
+            + this.target.getNumber();
+    }
+
+    @Override
+    public SimpleMorphism getMorphism() {
+        return getType().getMorphism();
     }
 
     // ------------------------------------------------------------------------

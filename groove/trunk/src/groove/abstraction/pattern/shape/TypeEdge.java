@@ -73,13 +73,8 @@ public final class TypeEdge extends AbstractPatternEdge<TypeNode> {
         return PREFIX;
     }
 
-    // ------------------------------------------------------------------------
-    // Other methods
-    // ------------------------------------------------------------------------
-
-    /** Return the simple graph morphism associated with this edge. */
+    @Override
     public SimpleMorphism getMorphism() {
         return this.morph;
     }
-
 }
