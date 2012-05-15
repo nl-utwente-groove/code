@@ -19,6 +19,7 @@ package groove.abstraction.pattern.shape;
 import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.EdgeRole;
+import groove.trans.HostNode;
 import groove.util.Fixable;
 
 /**
@@ -94,6 +95,30 @@ public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
     /** Returns the Id of this edge as a string. */
     public String getIdStr() {
         return getToStringPrefix() + this.nr;
+    }
+
+    /** Returns the non-null image of the given node in the morphism. */
+    public HostNode getImage(HostNode node) {
+        return getMorphism().getImage(node);
+    }
+
+    /**
+     * Returns the pre-image of the given node in the morphism. The returned
+     * result is a single element instead of a set because the morphism is
+     * injective. May return null if the node has no pre-image. 
+     */
+    public HostNode getPreImage(HostNode node) {
+        return getMorphism().getPreImage(node);
+    }
+
+    /** Returns true if the given node is the domain of the morphism. */
+    public boolean isDom(HostNode node) {
+        return getMorphism().isDom(node);
+    }
+
+    /** Returns true if the given node is the co-domain of the morphism. */
+    public boolean isCod(HostNode node) {
+        return getMorphism().isCod(node);
     }
 
 }

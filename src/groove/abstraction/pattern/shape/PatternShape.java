@@ -173,11 +173,6 @@ public final class PatternShape extends
     }
 
     @Override
-    public GraphInfo<PatternNode,PatternEdge> getInfo() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     protected GraphInfo<PatternNode,PatternEdge> createInfo(GraphInfo<?,?> info) {
         throw new UnsupportedOperationException();
     }

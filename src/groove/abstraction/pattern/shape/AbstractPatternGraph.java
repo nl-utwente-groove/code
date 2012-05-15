@@ -64,7 +64,7 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             if (Util.getBinaryEdgesCount(pattern) != 1) {
                 return false;
             }
-            HostEdge sEdge = Util.getBinaryEdges(pattern).iterator().next();
+            HostEdge sEdge = pNode.getSimpleEdge();
             @SuppressWarnings("unchecked")
             Set<HostNode> sNodes = (Set<HostNode>) pattern.nodeSet();
             Set<HostNode> edgeNodes = new MyHashSet<HostNode>();
@@ -137,16 +137,15 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             edges.addAll(sEdges);
         }
         for (E pEdge : inEdgeSet(pNode)) {
-            SimpleMorphism morph = pEdge.getMorphism();
             for (HostNode sNode : sNodes) {
-                if (morph.getPreImage(sNode) != null) {
+                if (pEdge.isCod(sNode)) {
                     nodes.remove(sNode);
                 }
             }
             if (sEdges != null) {
                 for (HostEdge sEdge : sEdges) {
-                    if (morph.getPreImage(sEdge.source()) != null
-                        && morph.getPreImage(sEdge.target()) != null) {
+                    if (pEdge.isCod(sEdge.source())
+                        && pEdge.isCod(sEdge.target())) {
                         edges.remove(sEdge);
                     }
                 }
@@ -162,6 +161,28 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
         if (this.depth < layer) {
             this.depth = layer;
         }
+    }
+
+    /** Returns the set of pattern edges that cover the given simple node. */
+    public Set<E> getCoveringEdges(N target, HostNode sNode) {
+        Set<E> result = new MyHashSet<E>();
+        for (E edge : inEdgeSet(target)) {
+            if (edge.isCod(sNode)) {
+                result.add(edge);
+            }
+        }
+        return result;
+    }
+
+    /** Returns the pattern edge that cover the given simple node. */
+    public E getCoveringEdge(N target, HostNode sNode) {
+        assert target.isEdgePattern();
+        for (E edge : inEdgeSet(target)) {
+            if (edge.isCod(sNode)) {
+                return edge;
+            }
+        }
+        return null;
     }
 
 }

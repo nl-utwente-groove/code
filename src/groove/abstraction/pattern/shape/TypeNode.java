@@ -90,4 +90,14 @@ public final class TypeNode extends AbstractPatternNode {
         return result;
     }
 
+    @Override
+    public boolean isNodePattern() {
+        return getLayer() == 0;
+    }
+
+    @Override
+    public boolean isEdgePattern() {
+        return getLayer() == 1;
+    }
+
 }

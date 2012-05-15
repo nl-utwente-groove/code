@@ -16,9 +16,15 @@
  */
 package groove.abstraction.pattern.shape;
 
+import groove.abstraction.pattern.Util;
 import groove.graph.AbstractNode;
+import groove.graph.TypeLabel;
+import groove.trans.HostEdge;
 import groove.trans.HostGraph;
+import groove.trans.HostNode;
 import groove.util.Fixable;
+
+import java.util.Set;
 
 /**
  * Common implementation of pattern nodes of a pattern graph.
@@ -65,5 +71,41 @@ public abstract class AbstractPatternNode extends AbstractNode implements
 
     /** Returns the layer where this node should be placed. */
     abstract public int getLayer();
+
+    /** Returns true if this pattern node is associated with a single node. */
+    abstract public boolean isNodePattern();
+
+    /** Returns true if this pattern node is associated with a edge node. */
+    abstract public boolean isEdgePattern();
+
+    /** Returns the single node associated with this pattern node. */
+    public HostNode getSimpleNode() {
+        assert isNodePattern();
+        return getPattern().nodeSet().iterator().next();
+    }
+
+    /** Returns the labels of the single node associated with this pattern node. */
+    public Set<TypeLabel> getNodeLabels() {
+        assert isNodePattern();
+        return Util.getNodeLabels(getPattern(), getSimpleNode());
+    }
+
+    /** Returns the single edge associated with this pattern node. */
+    public HostEdge getSimpleEdge() {
+        assert isEdgePattern();
+        return Util.getBinaryEdges(getPattern()).iterator().next();
+    }
+
+    /** Returns the source of the single edge associated with this pattern node. */
+    public HostNode getSource() {
+        assert isEdgePattern();
+        return getSimpleEdge().source();
+    }
+
+    /** Returns the target of the single edge associated with this pattern node. */
+    public HostNode getTarget() {
+        assert isEdgePattern();
+        return getSimpleEdge().target();
+    }
 
 }
