@@ -148,7 +148,6 @@ public final class TypeGraphJaxbGxlIO {
         TypeGraph result = readTypeGraph(readGraphs.get(0));
         readSimpleGraphs(readGraphs.get(1), result);
         assert result.isWellFormed();
-        assert !result.isCommuting();
         return result;
     }
 
@@ -203,23 +202,23 @@ public final class TypeGraphJaxbGxlIO {
     private void readSimpleGraphs(GraphType gxlSimpleGraph, TypeGraph typeGraph) {
         assert gxlSimpleGraph.getRole().equals(GXL_S_ROLE);
 
-        Map<String,HostNode> snodeMap = new MyHashMap<String,HostNode>();
+        Map<String,HostNode> sNodeMap = new MyHashMap<String,HostNode>();
         for (GraphElementType gxlElement : gxlSimpleGraph.getNodeOrEdgeOrRel()) {
             String type = getTypeString(gxlElement.getType());
             if (gxlElement instanceof NodeType) {
                 TypeNode typeNode = getTypeNode(type);
-                String snodeId = gxlElement.getId();
-                HostNode snode =
-                    typeNode.getPattern().addNode(parseId(snodeId));
-                snodeMap.put(snodeId, snode);
+                String sNodeId = gxlElement.getId();
+                HostNode sNode =
+                    typeNode.getPattern().addNode(parseId(sNodeId));
+                sNodeMap.put(sNodeId, sNode);
             }
 
             if (gxlElement instanceof EdgeType) {
                 EdgeType edgeType = (EdgeType) gxlElement;
                 String srcId = ((NodeType) edgeType.getFrom()).getId();
                 String tgtId = ((NodeType) edgeType.getTo()).getId();
-                HostNode source = snodeMap.get(srcId);
-                HostNode target = snodeMap.get(tgtId);
+                HostNode source = sNodeMap.get(srcId);
+                HostNode target = sNodeMap.get(tgtId);
                 if (isNodeId(type)) {
                     TypeNode typeNode = getTypeNode(type);
                     String label =

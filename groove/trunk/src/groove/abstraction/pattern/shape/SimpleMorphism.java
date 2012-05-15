@@ -109,4 +109,14 @@ public class SimpleMorphism implements Fixable {
         assert isFixed();
         return this.inverseNodeMap.get(target);
     }
+
+    /** Returns true if the given node is the domain of the morphism. */
+    public boolean isDom(HostNode node) {
+        return this.nodeMap.keySet().contains(node);
+    }
+
+    /** Returns true if the given node is the co-domain of the morphism. */
+    public boolean isCod(HostNode node) {
+        return this.nodeMap.values().contains(node);
+    }
 }

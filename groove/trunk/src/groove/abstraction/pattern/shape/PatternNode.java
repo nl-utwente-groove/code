@@ -85,6 +85,16 @@ public final class PatternNode extends AbstractPatternNode {
         return this.type.getLayer();
     }
 
+    @Override
+    public boolean isNodePattern() {
+        return this.type.isNodePattern();
+    }
+
+    @Override
+    public boolean isEdgePattern() {
+        return this.type.isNodePattern();
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
