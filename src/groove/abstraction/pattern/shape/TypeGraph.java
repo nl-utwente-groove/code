@@ -139,6 +139,24 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         return edge instanceof TypeEdge;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<TypeNode> nodeSet() {
+        return (Set<TypeNode>) super.nodeSet();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<TypeEdge> edgeSet() {
+        return (Set<TypeEdge>) super.edgeSet();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<TypeEdge> inEdgeSet(Node node) {
+        return (Set<TypeEdge>) super.inEdgeSet(node);
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
@@ -238,7 +256,15 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
 
     /** Computes the closure for the given pattern shape w.r.t. this type graph. */
     public void close(PatternShape pShape) {
-        // EDUARDO: Implement this...
+        // Iterate from layer 2 on.
+        for (int layer = 2; layer < depth(); layer++) {
+            // For each pattern of the layer.
+            for (TypeNode tNode : getLayerNodes(layer)) {
+                // Check if we can compose this new pattern type.
+                Set<TypeEdge> tEdges = inEdgeSet(tNode);
+                // EDUARDO: Finish this...
+            }
+        }
     }
 
     /** Returns the factory associated with this type graph. */

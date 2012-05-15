@@ -22,8 +22,10 @@ import groove.graph.NodeSetEdgeSetGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+import groove.util.Pair;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -91,8 +93,21 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
 
     /** Checks if this pattern graph is commuting. */
     public boolean isCommuting() {
-        // EDUARDO: Implement this...
-        return false;
+        // This method assumes that the pattern graph is well formed.
+        // Iterate from layer 2 on.
+        for (int layer = 2; layer <= depth(); layer++) {
+            // For each pattern node on this layer.
+            for (N pNode : getLayerNodes(layer)) {
+                // For each simple node in the pattern.
+                for (HostNode sNode : pNode.getPattern().nodeSet()) {
+                    Set<E> coverEdges = getCoveringEdges(pNode, sNode);
+                    if (!hasCommonAncestor(coverEdges, sNode)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     /** Returns the depth of this pattern graph. */
@@ -164,7 +179,7 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     }
 
     /** Returns the set of pattern edges that cover the given simple node. */
-    public Set<E> getCoveringEdges(N target, HostNode sNode) {
+    private Set<E> getCoveringEdges(N target, HostNode sNode) {
         Set<E> result = new MyHashSet<E>();
         for (E edge : inEdgeSet(target)) {
             if (edge.isCod(sNode)) {
@@ -175,7 +190,7 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     }
 
     /** Returns the pattern edge that cover the given simple node. */
-    public E getCoveringEdge(N target, HostNode sNode) {
+    protected E getCoveringEdge(N target, HostNode sNode) {
         assert target.isEdgePattern();
         for (E edge : inEdgeSet(target)) {
             if (edge.isCod(sNode)) {
@@ -185,4 +200,37 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
         return null;
     }
 
+    private boolean hasCommonAncestor(Set<E> coverEdges, HostNode sNode) {
+        return getCommonAncestor(coverEdges, sNode) != null;
+    }
+
+    private HostNode getCommonAncestor(Set<E> coverEdges, HostNode sNode) {
+        Set<HostNode> ancestors = new MyHashSet<HostNode>();
+        List<Pair<N,HostNode>> queue = new LinkedList<Pair<N,HostNode>>();
+        for (E coverEdge : coverEdges) {
+            HostNode preImage = coverEdge.getPreImage(sNode);
+            queue.add(new Pair<N,HostNode>(coverEdge.source(), preImage));
+            ancestors.add(preImage);
+        }
+        while (ancestors.size() > 1) {
+            Pair<N,HostNode> pair = queue.remove(0);
+            N pNode = pair.one();
+            HostNode ancestor = pair.two();
+            ancestors.remove(ancestor);
+            Set<E> newCoverEdges = getCoveringEdges(pNode, ancestor);
+            assert newCoverEdges.size() <= 1;
+            if (!newCoverEdges.isEmpty()) {
+                E newCoverEdge = newCoverEdges.iterator().next();
+                HostNode newAncestor = newCoverEdge.getPreImage(ancestor);
+                queue.add(new Pair<N,HostNode>(newCoverEdge.source(),
+                    newAncestor));
+                ancestors.add(newAncestor);
+            }
+        }
+        if (ancestors.size() == 1) {
+            return ancestors.iterator().next();
+        } else {
+            return null;
+        }
+    }
 }
