@@ -19,27 +19,28 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.view.GrammarModel;
 
 /**
- * The 'default exploration' action (class).
+ * Action for showing/hiding the LTS JGraph. 
  */
-public class ShowLTSAction extends SimulatorAction {
+public class ShowHideLTSAction extends SimulatorAction {
 
     /** Constructs a new action, for a given simulator. */
-    public ShowLTSAction(Simulator simulator, boolean animated) {
-        super(simulator, Options.SHOW_LTS_OPTION, Icons.HIDE_LTS_ICON);
-        setEnabled(true);
+    public ShowHideLTSAction(Simulator simulator, boolean animated) {
+        super(simulator, Options.HIDE_LTS_OPTION, Icons.HIDE_LTS_ICON);
     }
 
     @Override
     public void execute() {
-        getLtsDisplay().getLTSTab().toggleShowLts();
+        getLtsDisplay().getLTSTab().toggleShowHideLts();
     }
 
     @Override
     public void refresh() {
-        setEnabled(true);
-
+        GrammarModel grammar = getSimulatorModel().getGrammar();
+        setEnabled(grammar != null && grammar.getStartGraphModel() != null
+            && !grammar.hasErrors());
     }
 
 }

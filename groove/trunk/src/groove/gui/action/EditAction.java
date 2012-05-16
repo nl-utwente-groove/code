@@ -30,7 +30,8 @@ public class EditAction extends SimulatorAction {
     @Override
     public void refresh() {
         boolean enabled =
-            getSimulatorModel().isSelected(getResourceKind()) || isForState();
+            getGrammarModel() != null
+                && (getSimulatorModel().isSelected(getResourceKind()) || isForState());
         setEnabled(enabled);
         if (getResourceKind() == HOST) {
             String name =

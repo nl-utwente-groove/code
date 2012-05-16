@@ -279,7 +279,10 @@ public final class Icons {
     public static final ImageIcon HAND_CLOSED_ICON =
         createIcon("hand-closed.gif");
     /** Icon for hiding lts. */
-    public static final ImageIcon HIDE_LTS_ICON = createIcon("hide-lts.gif");
+    public static final ImageIcon HIDE_LTS_ICON = createIcon("hide-lts.png");
+    /** Icon for filtering the LTS. */
+    public static final ImageIcon FILTER_LTS_ICON =
+        createIcon("filter-lts.png");
     /** Import action icon. */
     public static final ImageIcon IMPORT_ICON = createIcon("import.gif");
     /** Icon for the layout action. */

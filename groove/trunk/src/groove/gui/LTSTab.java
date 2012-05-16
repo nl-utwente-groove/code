@@ -16,8 +16,8 @@
  */
 package groove.gui;
 
+import static groove.gui.Options.HIDE_LTS_OPTION;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
-import static groove.gui.Options.SHOW_LTS_OPTION;
 import static groove.gui.Options.SHOW_PARTIAL_GTS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.SimulatorModel.Change.GRAMMAR;
@@ -121,17 +121,29 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_STATE_IDS_OPTION);
         addRefreshListener(SHOW_PARTIAL_GTS_OPTION);
-        addShowHideListener();
+        addRefreshListener(HIDE_LTS_OPTION);
         getJGraph().addMouseListener(new MyMouseListener());
         getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, MATCH);
     }
 
     /**
-     * It draws lts or disables the lts tab depending on the value
-     * of SHOW_LTS_OPTION 
+    * Toggles the value of HIDE_LTS_OPTION 
+    */
+    public void toggleShowHideLts() {
+        boolean value = getOptionValue(HIDE_LTS_OPTION);
+        getOptions().setSelected(HIDE_LTS_OPTION, !value);
+    }
+
+    /**
+     * It handles the event coming from LTS hide/show checkbox in the view menu 
      */
-    public void showHideLts() {
-        if (getOptionValue(SHOW_LTS_OPTION)) {
+    @Override
+    protected void refresh() {
+        if (getOptionValue(HIDE_LTS_OPTION)) {
+            getJGraph().setEnabled(false);
+            getJGraph().setVisible(false);
+            getDisplay().getShowHideLTSButton().setSelected(true);
+        } else {
             LTSJModel ltsModel = null;
             ltsModel = getJGraph().newModel();
             GTS gts = getSimulatorModel().getGts();
@@ -143,43 +155,14 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
             }
             getJGraph().setVisible(true);
             getJGraph().setEnabled(true);
-        } else {
-            getJGraph().setEnabled(false);
-            getJGraph().setVisible(false);
-        }
-    }
-
-    /**
-    * Toggles the value of SHOW_LTS_OPTION 
-    */
-    public void toggleShowLts() {
-        this.display.getLtsJGraph().toggleShowHideMode();
-        getOptions().setSelected(SHOW_LTS_OPTION,
-            this.display.getLtsJGraph().getShowHideMode());
-        showHideLts();
-        return;
-    }
-
-    /**
-     * It handles the event coming from LTS hide/show checkbox in the view menu 
-     */
-    @Override
-    protected void refresh() {
-        if (getOptionValue(SHOW_LTS_OPTION) != this.display.getLtsJGraph().getShowHideMode()) {
-            this.display.getShowLTSButton().setSelected(
-                !this.display.getShowLTSButton().isSelected());
-            this.display.getLtsJGraph().toggleShowHideMode();
-            showHideLts();
-        }
-        if (getOptionValue(SHOW_LTS_OPTION)) {
-            super.refresh();
+            getDisplay().getShowHideLTSButton().setSelected(false);
         }
     }
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        if (source.getGts() != null && !getOptionValue(SHOW_LTS_OPTION)) {
+        if (source.getGts() != null && getOptionValue(HIDE_LTS_OPTION)) {
             return;
         }
         if (changes.contains(GTS) || changes.contains(GRAMMAR)) {

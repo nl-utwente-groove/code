@@ -28,7 +28,7 @@ public class CollapseAllAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getGrammarStore() != null);
+        setEnabled(this.tree.isEnabled());
     }
 
     private JTree tree;
