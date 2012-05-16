@@ -81,7 +81,7 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_STATE_IDS_OPTION);
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
         addCheckbox(SHOW_BIDIRECTIONAL_EDGES_OPTION);
-        addCheckbox(SHOW_LTS_OPTION);
+        addCheckbox(HIDE_LTS_OPTION);
         addBehaviour(DELETE_RESOURCE_OPTION, 2);
         addBehaviour(VERIFY_ALL_STATES_OPTION, 3);
     }
@@ -507,8 +507,8 @@ public class Options implements Cloneable {
     /** Goto start state action name */
     public static final String GOTO_START_STATE_ACTION_NAME =
         "Go to Start State";
-    /** Hide LTS */
-    public static final String HIDE_LTS_NAME = "Hide Show Final States";
+    /** Filter LTS */
+    public static final String FILTER_LTS_NAME = "Filter LTS";
     /** List atomic propositions action name */
     public static final String LIST_ATOMIC_PROPOSITIONS_ACTION_NAME =
         "List Atom. Prop.";
@@ -881,8 +881,8 @@ public class Options implements Cloneable {
         "Show bidirectional edges";
     /** Show node ids option */
     static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
-    /** Show lts option */
-    static public final String SHOW_LTS_OPTION = "Show LTS";
+    /** Hide LTS option */
+    static public final String HIDE_LTS_OPTION = "Hide LTS";
     /** Show the tab for control programs. */
     static public final String SHOW_CONTROL_TAB_OPTION =
         "Show control program tab";
@@ -927,7 +927,7 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_ASPECTS_OPTION, false);
         boolOptionDefaults.put(SHOW_VALUE_NODES_OPTION, false);
         boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);
-        boolOptionDefaults.put(SHOW_LTS_OPTION, true);
+        boolOptionDefaults.put(HIDE_LTS_OPTION, true);
         boolOptionDefaults.put(SHOW_BIDIRECTIONAL_EDGES_OPTION, true);
         intOptionDefaults.put(DELETE_RESOURCE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(VERIFY_ALL_STATES_OPTION, BehaviourOption.NEVER);

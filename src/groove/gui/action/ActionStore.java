@@ -293,30 +293,27 @@ public class ActionStore implements SimulatorListener {
     }
 
     /**
-     * Returns the 'default exploration' action that is associated with the
-     * simulator.
+     * Returns the filter LTS action that is associated with the simulator.
      */
-    public HideLTSAction getHideLTSAction() {
+    public FilterLTSAction getFilterLTSAction() {
         // lazily create the action
-        if (this.hideLTSAction == null) {
-            this.hideLTSAction = new HideLTSAction(this.simulator, true);
+        if (this.filterLTSAction == null) {
+            this.filterLTSAction = new FilterLTSAction(this.simulator, true);
         }
 
-        return this.hideLTSAction;
+        return this.filterLTSAction;
     }
 
     /**
-     * Returns the 'default exploration' action that is associated with the
+     * Returns the showing/hiding LTS action that is associated with the
      * simulator.
      */
-    public ShowLTSAction getShowLTSAction() {
-        // lazily create the action
-        if (this.showLTSAction == null) {
-            this.showLTSAction = new ShowLTSAction(this.simulator, true);
-            this.showLTSAction.setEnabled(true);
+    public ShowHideLTSAction getShowHideLTSAction() {
+        if (this.showHideLTSAction == null) {
+            this.showHideLTSAction =
+                new ShowHideLTSAction(this.simulator, true);
         }
-
-        return this.showLTSAction;
+        return this.showHideLTSAction;
     }
 
     /**
@@ -324,9 +321,9 @@ public class ActionStore implements SimulatorListener {
      */
     private ExploreAction exploreAction;
 
-    private HideLTSAction hideLTSAction;
+    private FilterLTSAction filterLTSAction;
 
-    private ShowLTSAction showLTSAction;
+    private ShowHideLTSAction showHideLTSAction;
 
     /**
      * Returns the exploration dialog action permanently associated with this

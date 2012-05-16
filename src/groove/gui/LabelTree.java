@@ -182,7 +182,6 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     private JButton getCollapseAllButton() {
         if (this.collapseAllButton == null) {
             Action action = new CollapseAllAction(null, this);
-            action.setEnabled(true);
             this.collapseAllButton = Options.createButton(action);
         }
         return this.collapseAllButton;
@@ -285,6 +284,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         getShowAllLabelsButton().setEnabled(enabled);
         getShowSubtypesButton().setEnabled(enabled);
         getShowSupertypesButton().setEnabled(enabled);
+        getCollapseAllButton().setEnabled(enabled);
         super.setEnabled(enabled);
     }
 

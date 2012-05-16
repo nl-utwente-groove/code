@@ -22,7 +22,7 @@ import static groove.gui.Options.OPTIONS_MENU_NAME;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
-import static groove.gui.Options.SHOW_LTS_OPTION;
+import static groove.gui.Options.HIDE_LTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_PARTIAL_GTS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
@@ -690,7 +690,7 @@ public class Simulator implements SimulatorListener {
         result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
         result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
         result.add(getOptions().getItem(SHOW_BIDIRECTIONAL_EDGES_OPTION));
-        result.add(getOptions().getItem(SHOW_LTS_OPTION));
+        result.add(getOptions().getItem(HIDE_LTS_OPTION));
         result.addSeparator();
         result.add(getOptions().getItem(DELETE_RESOURCE_OPTION));
         result.add(getOptions().getItem(VERIFY_ALL_STATES_OPTION));
@@ -704,24 +704,22 @@ public class Simulator implements SimulatorListener {
         JMenu result = new JMenu();
         result.setMnemonic(Options.EXPLORE_MENU_MNEMONIC);
         result.setText(Options.EXPLORE_MENU_NAME);
-        result.add(getActions().getBackAction());
-        result.add(getActions().getForwardAction());
+        result.add(getActions().getExplorationDialogAction());
         result.addSeparator();
-        // EDUARDO: Uncomment to enable abstraction.
-        result.add(getActions().getToggleExplorationStateAction());
         result.add(getActions().getStartSimulationAction());
         result.add(getActions().getApplyTransitionAction());
         result.add(getActions().getAnimateAction());
         result.add(getActions().getExploreAction());
         result.addSeparator();
+        result.add(getActions().getBackAction());
+        result.add(getActions().getForwardAction());
         result.add(getActions().getGotoStartStateAction());
         result.add(getActions().getGotoFinalStateAction());
-        result.add(getActions().getHideLTSAction());
         result.addSeparator();
-        result.add(getActions().getExplorationDialogAction());
-        result.add(getActions().getExplorationStatsDialogAction());
-        result.addSeparator();
+        result.add(getActions().getFilterLTSAction());
         result.add(getActions().getSaveLTSAsAction());
+        result.addSeparator();
+        result.add(getActions().getExplorationStatsDialogAction());
         return result;
     }
 

@@ -5,12 +5,12 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 
 /**
- * The 'default exploration' action (class).
+ * Action for filtering the LTS JGraph. 
  */
-public class HideLTSAction extends SimulatorAction {
+public class FilterLTSAction extends SimulatorAction {
     /** Constructs a new action, for a given simulator. */
-    public HideLTSAction(Simulator simulator, boolean animated) {
-        super(simulator, Options.HIDE_LTS_NAME, Icons.HIDE_LTS_ICON);
+    public FilterLTSAction(Simulator simulator, boolean animated) {
+        super(simulator, Options.FILTER_LTS_NAME, Icons.FILTER_LTS_ICON);
     }
 
     @Override
