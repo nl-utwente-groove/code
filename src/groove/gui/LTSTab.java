@@ -220,6 +220,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         super.setEnabled(enabled);
         getJGraph().getModeAction(SELECT_MODE).setEnabled(enabled);
         getJGraph().getModeAction(PAN_MODE).setEnabled(enabled);
+        getDisplay().getShowHideLTSButton().setEnabled(enabled);
         if (enabled) {
             getJGraph().getModeButton(SELECT_MODE).doClick();
         }
