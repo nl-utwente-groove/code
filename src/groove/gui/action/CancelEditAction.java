@@ -2,6 +2,7 @@ package groove.gui.action;
 
 import groove.gui.Icons;
 import groove.gui.Options;
+import groove.gui.ResourceTab;
 import groove.gui.Simulator;
 import groove.trans.ResourceKind;
 
@@ -18,8 +19,10 @@ public class CancelEditAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        getDisplay().saveEditor(
-            getSimulatorModel().getSelected(getResourceKind()), true, true);
+        ResourceTab editorTab = getDisplay().getSelectedEditor();
+        if (editorTab != null) {
+            editorTab.saveEditor(true, true);
+        }
     }
 
     @Override
