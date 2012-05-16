@@ -905,14 +905,18 @@ public class SimulatorModel implements Cloneable {
         return finish();
     }
 
-    /** Changes the selection of a given resource kind. */
+    /** 
+     * Changes the selection of a given resource kind.
+     */
     public final boolean doSelectSet(ResourceKind kind, Collection<String> names) {
         start();
         changeSelectedSet(kind, names);
         return finish();
     }
 
-    /** Changes the selected value of a given resource kind. */
+    /** 
+     * Changes the selected value of a given resource kind.
+     */
     private boolean changeSelected(ResourceKind kind, String name) {
         return changeSelectedSet(
             kind,

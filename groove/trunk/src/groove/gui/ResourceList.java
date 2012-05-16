@@ -258,7 +258,7 @@ public class ResourceList extends JList implements SimulatorListener {
         public void valueChanged(ListSelectionEvent e) {
             if (suspendListening()) {
                 getSimulatorModel().doSelectSet(getResourceKind(),
-                    (getSelectedNames()));
+                    getSelectedNames());
                 activateListening();
             }
         }
