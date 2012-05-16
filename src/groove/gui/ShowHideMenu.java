@@ -32,9 +32,7 @@ import groove.gui.jgraph.LTSJModel;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.HTMLConverter;
-import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.RuleTransition;
 import groove.rel.RegExpr;
 import groove.rel.RelationCalculator;
 import groove.rel.SupportedNodeRelation;
@@ -718,21 +716,12 @@ public class ShowHideMenu extends JMenu {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            this.jgraph.getSimulatorModel().getTrace().clear();
+            Set<GraphState> states = new HashSet<GraphState>();
             LTSJGraph jGraph = (LTSJGraph) this.jgraph;
-            GraphState state = jGraph.getActiveState();
-            this.trace = new ArrayList<GraphJCell>();
-            while (state instanceof GraphNextState) {
-                this.trace.add(jGraph.getModel().getJCellForNode(state));
-                this.trace.add(jGraph.getModel().getJCellForEdge(
-                    (RuleTransition) state));
-                this.jgraph.getSimulatorModel().getTrace().add(
-                    (RuleTransition) state);
-                state = ((GraphNextState) state).source();
-            }
+            states.add(jGraph.getActiveState());
+            this.trace = jGraph.findTraces(states);
             LTSJModel model = jGraph.getModel();
             if (model != null) {
-                this.trace.add(model.getJCellForNode(state));
                 super.actionPerformed(evt);
             }
         }
@@ -742,7 +731,7 @@ public class ShowHideMenu extends JMenu {
             return this.trace.contains(jCell);
         }
 
-        private ArrayList<GraphJCell> trace;
+        private Set<GraphJCell> trace;
     }
 
     /**

@@ -23,10 +23,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
-
 /**
  * Graph model adding a concept of active state and transition, with special
  * visual characteristics.
@@ -74,44 +70,6 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         }
     }
 
-    /** Toggles the visibility of the GTS. */
-    public void hideGTS() {
-        this.isHidden = !this.isHidden;
-        if (this.isHidden) {
-            GTS lts = getGraph();
-            for (GraphState state : lts.nodeSet()) {
-                ((LTSJCell) getJCellForNode(state)).setVisible(false);
-            }
-            Queue<GraphState> stateQueue = new LinkedList<GraphState>();
-            HashSet<GraphState> visited = new HashSet<GraphState>();
-            for (GraphState state : lts.getResultStates()) {
-                stateQueue.add(state);
-                visited.add(state);
-                ((LTSJCell) getJCellForNode(state)).setVisible(true);
-                while (!stateQueue.isEmpty()) {
-                    for (GraphTransition edge : lts.inEdgeSet(state)) {
-                        GraphState gstate = edge.source();
-                        if (visited.add(gstate)) {
-                            ((LTSJCell) getJCellForNode(gstate)).setVisible(true);
-                            if (gstate != lts.startState()) {
-                                stateQueue.add(gstate);
-                            }
-                        }
-                    }
-                    stateQueue.remove();
-                    state = stateQueue.peek();
-                }
-            }
-        } else {
-            for (GraphJCell ltsCell : getRoots()) {
-                if (ltsCell instanceof LTSJVertex) {
-                    ((LTSJCell) ltsCell).setVisible(true);
-                }
-
-            }
-        }
-    }
-
     /**
      * Reacts to a (node of edge) extension of the underlying Graph by mimicking
      * the change in the GraphModel. Can alse deal with NodeSet and EdgeSet
@@ -148,8 +106,6 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     }
 
     private boolean listening = true;
-
-    private boolean isHidden = false;
 
     /** Default name of an LTS model. */
     static public final String DEFAULT_LTS_NAME = "lts";

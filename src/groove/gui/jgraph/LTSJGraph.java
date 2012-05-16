@@ -25,6 +25,7 @@ import groove.gui.SetLayoutMenu;
 import groove.gui.Simulator;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
+import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.RuleTransition;
 import groove.util.Colors;
@@ -36,7 +37,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -253,6 +256,37 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         if (elem != null) {
             scrollTo(elem);
         }
+    }
+
+    /** Returns the traces from the given set of states to the start state. */
+    public Set<GraphJCell> findTraces(Collection<GraphState> states) {
+        Set<RuleTransition> simulatorTrace = getSimulatorModel().getTrace();
+        simulatorTrace.clear();
+        Set<GraphJCell> result = new HashSet<GraphJCell>();
+        LTSJModel model = getModel();
+        for (GraphState finalState : states) {
+            GraphState state = finalState;
+            while (state instanceof GraphNextState) {
+                result.add(model.getJCellForNode(state));
+                result.add(model.getJCellForEdge((RuleTransition) state));
+                simulatorTrace.add((RuleTransition) state);
+                state = ((GraphNextState) state).source();
+            }
+            result.add(model.getJCellForNode(state));
+        }
+        return result;
+    }
+
+    /** Filters the LTS. */
+    public void filterLTSFromResultStates() {
+        Set<GraphJCell> trace =
+            findTraces(getModel().getGraph().getResultStates());
+        for (Object element : getRoots()) {
+            LTSJCell jCell = (LTSJCell) element;
+            boolean visible = trace.contains(jCell);
+            jCell.setVisible(visible);
+        }
+        refreshAllCells();
     }
 
     /**
