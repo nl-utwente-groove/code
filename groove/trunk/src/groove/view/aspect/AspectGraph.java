@@ -469,7 +469,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
 
     /**
      * Adds the structure for a call expression
-     * @param source nod on which the expression occurs
+     * @param source node on which the expression occurs
      * @param call the call expression
      * @return the node representing the value of the expression
      */
@@ -515,7 +515,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 par.toDisplayString(), source);
         }
         AspectNode result = addNode();
-
+        AspectLabel parLabel =
+            parser.parse(AspectKind.PARAM_IN.getPrefix() + nr, getRole());
+        result.setAspects(parLabel);
+        AspectLabel typeLabel =
+            createLabel(AspectKind.toAspectKind(par.getType()));
+        result.setAspects(typeLabel);
         return result;
     }
 
