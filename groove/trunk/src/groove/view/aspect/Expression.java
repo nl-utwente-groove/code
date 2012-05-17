@@ -151,6 +151,9 @@ abstract public class Expression {
         String rest = outer.substring(pos + 1);
         switch (splitText.two().size()) {
         case 0:
+            if (rest.startsWith(PAR_PREFIX)) {
+                return parseAsPar(rest, signature);
+            }
             Constant constant = Algebras.getConstant(rest);
             if (constant == null) {
                 return parseAsField(rest, signature);
@@ -180,6 +183,18 @@ abstract public class Expression {
             }
         default:
             throw new FormatException("Can't parse '%s' as expression", text);
+        }
+    }
+
+    private static Expression parseAsPar(String text, SignatureKind type)
+        throws FormatException {
+        assert text.startsWith(PAR_PREFIX);
+        try {
+            int nr = Integer.parseInt(text.substring(1));
+            return new Par(type, nr);
+        } catch (NumberFormatException exc) {
+            throw new FormatException("%s is not a valid parameter expression",
+                text);
         }
     }
 
@@ -263,12 +278,13 @@ abstract public class Expression {
         return result;
     }
 
+    private static final String PAR_PREFIX = "$";
     private static final ExprParser parser = new ExprParser(
         ExprParser.PLACEHOLDER, new char[] {'\"'}, new char[] {'(', ')'});
 
     /** Field expression. */
     public static class Field extends Expression {
-        /** Constructs a call expression for a given operator. */
+        /** Constructs a field expression for a given field. */
         public Field(SignatureKind type, String owner, String field) {
             super(Kind.FIELD);
             this.type = type;
@@ -363,6 +379,78 @@ abstract public class Expression {
 
         private final String owner;
         private final String field;
+        private final SignatureKind type;
+    }
+
+    /** Parameter expression. */
+    public static class Par extends Expression {
+        /** Constructs a field expression for a given field. */
+        public Par(SignatureKind type, int nr) {
+            super(Kind.PAR);
+            this.type = type;
+            this.nr = nr;
+        }
+
+        /** Returns the identifier, if this is an identifier expression. */
+        public int getNumber() {
+            return this.nr;
+        }
+
+        /** 
+         * Returns the signature of this expression.
+         * The signature is {@code null} if the expression is an identifier.
+         */
+        @Override
+        public SignatureKind getType() {
+            return this.type;
+        }
+
+        /** Returns the string to be used by the GUI. */
+        @Override
+        public String toDisplayString(Precedence precedence) {
+            StringBuilder result = new StringBuilder();
+            result.append(PAR_PREFIX);
+            result.append(getNumber());
+            return result.toString();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!super.equals(obj)) {
+                return false;
+            }
+            Par other = (Par) obj;
+            return this.nr == other.nr;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = super.hashCode();
+            result = prime * result + this.nr;
+            return result;
+        }
+
+        @Override
+        String toString(boolean withType) {
+            StringBuilder result = new StringBuilder();
+            if (withType) {
+                result.append(getType());
+                result.append(AspectParser.SEPARATOR);
+            }
+            result.append(toDisplayString());
+            return result.toString();
+        }
+
+        @Override
+        public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+            return this;
+        }
+
+        private final int nr;
         private final SignatureKind type;
     }
 
@@ -569,6 +657,8 @@ abstract public class Expression {
         /** Data constant. */
         CONSTANT,
         /** Identifier. */
-        FIELD;
+        FIELD,
+        /** Parameter. */
+        PAR;
     }
 }

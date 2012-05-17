@@ -43,6 +43,7 @@ import groove.view.FormatException;
 import groove.view.aspect.Expression.Call;
 import groove.view.aspect.Expression.Const;
 import groove.view.aspect.Expression.Field;
+import groove.view.aspect.Expression.Par;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -374,6 +375,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             return addField(source, (Field) expr);
         case CALL:
             return addCall(source, (Call) expr);
+        case PAR:
+            return addPar(source, (Par) expr);
         default:
             assert false;
             return null;
@@ -494,6 +497,25 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 parser.parse(AspectKind.ARGUMENT.getPrefix() + i, getRole());
             addEdge(product, argLabel, argResult);
         }
+        return result;
+    }
+
+    /**
+     * Adds the structure for a par expression
+     * @param source node on which the expression occurs
+     * @param par the par expression
+     * @return the node representing the value of the expression
+     */
+    private AspectNode addPar(AspectNode source, Par par)
+        throws FormatException {
+        int nr = par.getNumber();
+        if (getRole() != RULE) {
+            throw new FormatException(
+                "Parameter expression '%s' only allowed in rules",
+                par.toDisplayString(), source);
+        }
+        AspectNode result = addNode();
+
         return result;
     }
 
