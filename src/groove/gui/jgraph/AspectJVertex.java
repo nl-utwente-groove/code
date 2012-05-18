@@ -535,9 +535,23 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         if (getJGraph().isShowValueNodes()) {
             return true;
         }
+        // data type nodes in type graphs should never be shown
+        if (getNode().getGraphRole() == GraphRole.TYPE) {
+            return false;
+        }
         // we are now sure that the underlying node has a data type;
-        // only variable nodes should be shown
-        return getNode().getGraphRole() != GraphRole.TYPE && !attr.hasContent();
+        // variable nodes should be shown
+        if (!attr.hasContent()) {
+            return true;
+        }
+        // any regular expression edge on the node makes it visible
+        for (Object jEdge : getPort().getEdges()) {
+            AspectEdge edge = ((AspectJEdge) jEdge).getEdge();
+            if (edge.getRuleLabel() != null && !edge.getRuleLabel().isAtom()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
