@@ -377,7 +377,14 @@ public class Condition implements Fixable {
                 && ((VariableNode) node).getConstant() == null
                 && !resolved.contains(node)) {
                 VariableNode varNode = (VariableNode) node;
-                if (!getPattern().inEdgeSet(node).isEmpty()) {
+                boolean isResolved = false;
+                for (RuleEdge inEdge : getPattern().inEdgeSet(node)) {
+                    if (!inEdge.label().isEmpty()) {
+                        isResolved = true;
+                        break;
+                    }
+                }
+                if (isResolved) {
                     resolved.add(varNode);
                 } else {
                     result.put(varNode, new ArrayList<Set<VariableNode>>());
