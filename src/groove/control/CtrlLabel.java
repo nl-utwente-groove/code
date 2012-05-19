@@ -64,6 +64,13 @@ public class CtrlLabel extends AbstractLabel {
 
     @Override
     public String text() {
+        if (this.text == null) {
+            this.text = computeText();
+        }
+        return this.text;
+    }
+
+    private String computeText() {
         StringBuilder result = new StringBuilder();
         result.append('t');
         result.append(getNumber());
@@ -90,6 +97,9 @@ public class CtrlLabel extends AbstractLabel {
         return result.toString();
     }
 
+    /** The text of the control label. */
+    private String text;
+
     /** Returns the rule wrapped into this label. */
     public final CtrlCall getCall() {
         return this.call;
@@ -113,6 +123,11 @@ public class CtrlLabel extends AbstractLabel {
         return this.start;
     }
 
+    /** 
+     * Flag indicating that this transition leaves a transient phase.
+     */
+    private final boolean start;
+
     /** Returns the name of the recipe of which this label is part, if any. */
     public Recipe getRecipe() {
         return this.recipe;
@@ -127,11 +142,6 @@ public class CtrlLabel extends AbstractLabel {
      * Name of the encompassing recipe, if any.
      */
     private final Recipe recipe;
-
-    /** 
-     * Flag indicating that this transition leaves a transient phase.
-     */
-    private final boolean start;
 
     /** Returns the label number. */
     public int getNumber() {
@@ -154,27 +164,47 @@ public class CtrlLabel extends AbstractLabel {
         }
         CtrlLabel other = (CtrlLabel) obj;
         return getNumber() - other.getNumber();
-        //        int result = getCall().toString().compareTo(other.getCall().toString());
-        //        if (result == 0) {
-        //            result = getGuard().compareTo(other.getGuard());
-        //        }
-        //        if (result == 0) {
-        //            int myRecipe = hasRecipe() ? 1 : 0;
-        //            int hisRecipe = other.hasRecipe() ? 1 : 0;
-        //            result = myRecipe - hisRecipe;
-        //            if (result == 0 && hasRecipe()) {
-        //                result = getRecipe().compareTo(other.getRecipe());
-        //            }
-        //        }
-        //        if (result == 0) {
-        //            int myStart = isStart() ? 1 : 0;
-        //            int hisStart = other.isStart() ? 1 : 0;
-        //            result = myStart - hisStart;
-        //        }
-        //        if (result == 0) {
-        //            result = getNumber() - other.getNumber();
-        //        }
-        //        return result;
+    }
+
+    @Override
+    protected int computeHashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + this.call.hashCode();
+        result = prime * result + this.guard.hashCode();
+        result =
+            prime * result
+                + ((this.recipe == null) ? 0 : this.recipe.hashCode());
+        result = prime * result + (this.start ? 1231 : 1237);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof CtrlLabel)) {
+            return false;
+        }
+        CtrlLabel other = (CtrlLabel) obj;
+        if (!this.call.equals(other.call)) {
+            return false;
+        }
+        if (!this.guard.equals(other.guard)) {
+            return false;
+        }
+        if (this.recipe == null) {
+            if (other.recipe != null) {
+                return false;
+            }
+        } else if (!this.recipe.equals(other.recipe)) {
+            return false;
+        }
+        if (this.start != other.start) {
+            return false;
+        }
+        return true;
     }
 
     /** 
