@@ -44,7 +44,7 @@ public class Recipe implements Action {
 
     @Override
     public String getLastName() {
-        return RuleName.getLastName(getFullName());
+        return QualName.getLastName(getFullName());
     }
 
     @Override

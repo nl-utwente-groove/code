@@ -18,9 +18,7 @@ package groove.gui;
 
 import groove.control.parse.CtrlDoc;
 import groove.gui.SimulatorModel.Change;
-import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
-import groove.view.GrammarModel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -160,21 +158,6 @@ final public class ControlDisplay extends ResourceDisplay {
             String selection = source.getSelected(ResourceKind.CONTROL);
             getDocPane().setBackground(selection == null ? null : Color.WHITE);
             activateListening();
-        }
-    }
-
-    /**
-     * Convenience method to return the current grammar view.
-     */
-    private GrammarModel getGrammar() {
-        return getSimulatorModel().getGrammar();
-    }
-
-    @Override
-    protected void decorateLabelText(String name, StringBuilder text) {
-        if (name.equals(getGrammar().getControlName())) {
-            HTMLConverter.STRONG_TAG.on(text);
-            HTMLConverter.HTML_TAG.on(text);
         }
     }
 

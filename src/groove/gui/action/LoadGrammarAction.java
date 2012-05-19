@@ -8,8 +8,8 @@ import groove.gui.dialog.VersionDialog;
 import groove.io.store.DefaultArchiveSystemStore;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
+import groove.trans.QualName;
 import groove.trans.ResourceKind;
-import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Version;
 import groove.view.GrammarModel;
@@ -211,7 +211,7 @@ public class LoadGrammarAction extends SimulatorAction {
             for (String name : oldNames) {
                 StringBuilder legal = new StringBuilder();
                 // check if name is valid
-                if (!RuleName.isValid(name, legal, null)) {
+                if (!QualName.isValid(name, legal, null)) {
                     // if not, ask confirmation from the user to continue
                     if (!confirmed
                         && JOptionPane.showOptionDialog(

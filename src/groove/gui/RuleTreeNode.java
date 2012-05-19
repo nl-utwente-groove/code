@@ -19,7 +19,6 @@ package groove.gui;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.io.HTMLConverter;
-import groove.trans.RuleName;
 import groove.view.RuleModel;
 
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -48,14 +47,14 @@ class RuleTreeNode extends DefaultMutableTreeNode {
      */
     @Override
     public String toString() {
-        return new RuleName(getRule().getName()).child();
+        return getRule().getLastName();
     }
 
     /** Returns HTML-formatted tool tip text for this rule node. */
     public String getToolTipText() {
         StringBuilder result = new StringBuilder();
         result.append("Rule ");
-        result.append(HTMLConverter.STRONG_TAG.on(getRule().getName()));
+        result.append(HTMLConverter.STRONG_TAG.on(getRule().getFullName()));
         GraphProperties properties =
             GraphInfo.getProperties(getRule().getSource(), false);
         if (properties != null && !properties.isEmpty()) {

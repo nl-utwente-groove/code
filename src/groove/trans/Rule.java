@@ -111,7 +111,7 @@ public class Rule implements Action, Fixable {
 
     /** Returns the name of this rule (which equals the name of the associated condition). */
     public String getLastName() {
-        return RuleName.getLastName(getFullName());
+        return QualName.getLastName(getFullName());
     }
 
     /** Returns the system properties. */

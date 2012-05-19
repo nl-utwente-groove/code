@@ -46,7 +46,7 @@ public class EncodedEnabledRule extends EncodedEnumeratedType<Rule> {
         TreeMap<String,String> enabledRules = new TreeMap<String,String>();
         for (ResourceModel<?> ruleModel : grammar.getResourceSet(ResourceKind.RULE)) {
             if (ruleModel.isEnabled()) {
-                String ruleName = ruleModel.getName();
+                String ruleName = ruleModel.getFullName();
                 enabledRules.put(ruleName, ruleName);
             }
         }

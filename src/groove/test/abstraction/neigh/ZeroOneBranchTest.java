@@ -30,9 +30,9 @@ import groove.lts.GraphState;
 public class ZeroOneBranchTest {
     private static final String STRATEGY = "shapedfs";
 
+    /** Starts the comparison. */
     public static void main(String[] args) {
         final String GRAMMAR = "junit/abstraction/euler-counting.gps";
-        final String START_GRAPH = "start";
         ShapeGenerator generator;
         args = new String[] {"-v", "0", "-s", STRATEGY, GRAMMAR};
         NeighAbsParam.getInstance().setNodeMultBound(1);

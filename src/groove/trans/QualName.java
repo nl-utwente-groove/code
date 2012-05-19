@@ -26,47 +26,47 @@ import groove.view.FormatException;
 import java.util.Arrays;
 
 /**
- * Representation of a structured rule name. A structured rule name is a rule
- * name consisting of a nonempty sequence of tokens, seperated by
- * <tt>SEPARATOR</tt> characters. Each individual token may be empty. The prefix
+ * Representation of a qualified name. A qualified name is a 
+ * name consisting of a nonempty sequence of tokens, separated by
+ * {@link #SEPARATOR} characters. Each individual token may be empty. The prefix
  * without the last token is called the parent (which is <tt>null</tt> if there
  * is only a single token); the last token is called the child.
  * 
  * @author Angela Lozano and Arend Rensink
- * @version $Revision$ $Date: 2008-01-30 09:32:37 $
+ * @version $Revision: 4083 $ $Date: 2008-01-30 09:32:37 $
  */
-public class RuleName implements Comparable<RuleName> {
+public class QualName implements Comparable<QualName> {
     /**
-     * Creates a new structured rule name, on the basis of a given
-     * <tt>String</tt>. <tt>SEPARATOR</tt> characters appearing in the proposed
+     * Creates a new qualified name, on the basis of a given string.
+     * {@link #SEPARATOR} characters appearing in the proposed
      * name will be interpreted as token separators.
-     * @param name the text of the new structured rule name (without enclosing
+     * @param name the text of the new qualified name (without enclosing
      *        characters)
      * @require <tt>name != null</tt>
      */
-    public RuleName(String name) {
+    public QualName(String name) {
         this.tokens = name.split("\\" + SEPARATOR);
         int lastSeparator = name.lastIndexOf(SEPARATOR);
         this.parent =
-            lastSeparator < 0 ? null : new RuleName(name.substring(0,
+            lastSeparator < 0 ? null : new QualName(name.substring(0,
                 lastSeparator));
         this.text = name;
     }
 
     /**
-     * Creates a new structured rule name, on the basis of a given parent name
-     * and child <tt>String</tt>. If the parent name is <tt>null</tt>, the
-     * resulting structured rule name consists of a single token (just the
+     * Creates a new qualified name, on the basis of a given parent name
+     * and child string. If the parent name is <tt>null</tt>, the
+     * resulting qualified name consists of a single token (just the
      * child).
-     * @param parent the parent structured rule name
-     * @param child the child rule name (without enclosing characters)
+     * @param parent the parent qualified name
+     * @param child the child name (without enclosing characters)
      * @throws FormatException if {@code child} contains forbidden symbols
      */
-    public RuleName(RuleName parent, String child) throws FormatException {
+    public QualName(QualName parent, String child) throws FormatException {
         if (child.contains(SEPARATOR)) {
             throw new FormatException(
-                "Rule name %s should not contain separator symbol %s", child,
-                SEPARATOR);
+                "Qualified name %s should not contain separator symbol %s",
+                child, SEPARATOR);
         }
         int parentSize = parent == null ? 0 : parent.size();
         this.tokens = new String[parentSize + 1];
@@ -97,7 +97,7 @@ public class RuleName implements Comparable<RuleName> {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        RuleName other = (RuleName) obj;
+        QualName other = (QualName) obj;
         if (!Arrays.equals(this.tokens, other.tokens)) {
             return false;
         }
@@ -110,7 +110,7 @@ public class RuleName implements Comparable<RuleName> {
     }
 
     @Override
-    public int compareTo(RuleName o) {
+    public int compareTo(QualName o) {
         int result = 0;
         int minSize = Math.max(size(), o.size());
         for (int i = 0; result == 0 && i < minSize; i++) {
@@ -123,7 +123,7 @@ public class RuleName implements Comparable<RuleName> {
     }
 
     /**
-     * Returns the token in this rule name at a specific instance
+     * Returns the token in this name at a specific instance
      * @param i the index at which the token is requested
      * @return the token at index <tt>i</tt>
      * @require <tt>0 <= i && i < size()</tt>
@@ -134,67 +134,84 @@ public class RuleName implements Comparable<RuleName> {
     }
 
     /**
-     * Indicates whether this structured rule name has a (nun-<tt>null</tt>)
+     * Indicates whether this qualified name has a (nun-<tt>null</tt>)
      * parent.
-     * @return <tt>true</tt> if this rule name has a (non-<tt>null</tt>) parent
-     * @ensure <tt>return == size()>1</tt>
+     * @return <tt>true</tt> if this name has a (non-<tt>null</tt>) parent
      */
     public boolean hasParent() {
         return this.parent != null;
     }
 
     /**
-     * Returns the number of tokens in the rule name.
-     * @return number of tokens in this rule name
-     * @ensure <tt>return > 0</tt>
+     * Returns the number of tokens in the qualified name.
+     * @return number of tokens in this qualified name
      */
     public int size() {
         return tokens().length;
     }
 
     /**
-     * Returns the last token of this rule name.
-     * @return the last token of the rule name
-     * @ensure <tt>return == get(size()-1)</tt>
+     * Returns the last token of this qualified name.
+     * @return the last token of the qualified name
      */
     public String child() {
         return tokens()[size() - 1];
     }
 
     /**
-     * Returns the parent rule name (all tokens except the last), or
-     * <tt>null</tt> if there is no parent rule name. There is no parent rule
-     * name iff the rule name consists of a single token only.
-     * @return the parent rule name
-     * @ensure <tt>return == null</tt> iff <tt>size() == 1</tt>
+     * Returns the parent qualified name (all tokens except the last), or
+     * <tt>null</tt> if there is no parent name. There is no parent 
+     * name iff the qualified name consists of a single token only.
+     * @return the parent qualified name
      */
-    public RuleName parent() {
+    public QualName parent() {
         return this.parent;
     }
 
     /**
-     * Returns the tokens in this structured rule name as an array of strings.
+     * Returns the tokens in this qualified name as an array of strings.
      */
     public String[] tokens() {
         return this.tokens;
     }
 
-    /** The parent rule name (may be {@code null}). */
-    private final RuleName parent;
-    /** The tokens of which this rule name consists. */
+    /** The parent qualified name (may be {@code null}). */
+    private final QualName parent;
+    /** The tokens of which this qualified name consists. */
     private final String[] tokens;
     /** The text returned by {@link #toString()}. */
     private final String text;
 
     /** Returns the last part of a qualified name. */
     public static String getLastName(String fullName) {
-        return new RuleName(fullName).child();
+        return new QualName(fullName).child();
     }
 
-    /** Returns the namespace of a qualified name. */
+    /** 
+     * Returns the namespace of a (non-empty) qualified name.
+     * The namespace is the qualified name minus its last component.
+     * If the name does not have components, the namespace is
+     * the empty string.
+     */
     public static String getParent(String fullName) {
-        RuleName parent = new RuleName(fullName).parent();
+        QualName parent = new QualName(fullName).parent();
         return parent == null ? "" : parent.toString();
+    }
+
+    /** Extends a given parent name with a child name.
+     * If the parent is empty, the result is identical to the child;
+     * otherwise, it consists of the concatenation of the two
+     * separated by {@link #SEPARATOR}.
+     * @param parent the parent name; may be {@code null} or empty
+     * @param child the child name, to be embedded in the parent
+     * @return the concatenation of parent and child
+     */
+    public static String extend(String parent, String child) {
+        if (parent == null || parent.isEmpty()) {
+            return child;
+        } else {
+            return parent + SEPARATOR + child;
+        }
     }
 
     /**
@@ -415,4 +432,5 @@ public class RuleName implements Comparable<RuleName> {
     /** Constant for a parse error for strings with consecutive separators. */
     public static String PARSE_ERROR_SEPARATOR_CONSECUTIVE =
         "identifiers may not have consecutive separators";
+
 }

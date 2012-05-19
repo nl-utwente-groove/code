@@ -18,11 +18,9 @@ package groove.view;
 
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
-import groove.control.CtrlLoader.Result;
 import groove.trans.Recipe;
 import groove.trans.ResourceKind;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -44,7 +42,7 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
 
     @Override
     public boolean isEnabled() {
-        return getName().equals(getGrammar().getControlName());
+        return getGrammar().getControlNames().contains(getFullName());
     }
 
     /**
@@ -56,11 +54,10 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
 
     @Override
     public CtrlAut compute() throws FormatException {
-        Result result =
-            parser.runString(getProgram(), getGrammar().getProperties(),
-                getGrammar().getRules());
-        this.recipes = new HashSet<Recipe>(result.two());
-        return result.one();
+        this.loader.init(getGrammar().getProperties().getAlgebraFamily(),
+            getGrammar().getRules());
+        this.loader.parse(getFullName(), getProgram());
+        return this.loader.getAutomaton();
     }
 
     /** Returns the set of recipes defined in the control program. */
@@ -85,7 +82,7 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
     }
 
     /** The control parser. */
-    private static final CtrlLoader parser = CtrlLoader.getInstance();
+    private final CtrlLoader loader = new CtrlLoader();
     /** The set of recipes found in the last computation of the control automaton. */
     private Set<Recipe> recipes;
 }

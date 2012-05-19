@@ -39,7 +39,7 @@ import java.util.TreeSet;
  * a default start graph.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 12:37:40 $
- * @see RuleName
+ * @see QualName
  * @see Rule
  */
 public class GraphGrammar {

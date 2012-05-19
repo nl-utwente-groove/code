@@ -282,7 +282,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             ResourceKind resource = getSelectedDisplay().getResourceKind();
             if (changes.contains(Change.toChange(resource))
                 && source.isSelected(resource)) {
-                changedTo = source.getResource(resource).getName();
+                changedTo = source.getResource(resource).getFullName();
             }
             if (changedTo == null) {
                 Display panel = this.displaysMap.get(source.getDisplay());

@@ -32,8 +32,8 @@ import groove.io.PriorityFileName;
 import groove.io.xml.DefaultGxl;
 import groove.io.xml.LayedOutXml;
 import groove.io.xml.Xml;
+import groove.trans.QualName;
 import groove.trans.ResourceKind;
-import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -210,13 +210,9 @@ public class DefaultFileSystemStore extends SystemStore {
         Set<String> activeNames = new TreeSet<String>();
         switch (kind) {
         case PROLOG:
-            activeNames.addAll(getProperties().getPrologNames());
-            break;
         case CONTROL:
-            String controlName = getProperties().getControlName();
-            if (controlName != null) {
-                activeNames.add(getProperties().getControlName());
-            }
+            activeNames.addAll(getProperties().getEnabledNames(kind));
+            break;
         }
         for (String name : names) {
             assert name != null;
@@ -235,10 +231,8 @@ public class DefaultFileSystemStore extends SystemStore {
             newProps = getProperties().clone();
             switch (kind) {
             case PROLOG:
-                newProps.setPrologNames(activeNames);
-                break;
             case CONTROL:
-                newProps.setControlName("");
+                newProps.setEnabledNames(kind, activeNames);
             }
             doPutProperties(newProps);
         }
@@ -281,21 +275,17 @@ public class DefaultFileSystemStore extends SystemStore {
         Set<String> activeNames = new TreeSet<String>();
         switch (kind) {
         case PROLOG:
-            activeNames.addAll(getProperties().getPrologNames());
-            break;
         case CONTROL:
-            activeNames.add(getProperties().getControlName());
+            activeNames.addAll(getProperties().getEnabledNames(kind));
         }
         if (activeNames.remove(oldName)) {
             oldProps = getProperties();
             newProps = getProperties().clone();
             switch (kind) {
             case PROLOG:
-                activeNames.add(newName);
-                newProps.setPrologNames(activeNames);
-                break;
             case CONTROL:
-                newProps.setControlName(newName);
+                activeNames.add(newName);
+                newProps.setEnabledNames(kind, activeNames);
             }
             doPutProperties(newProps);
         }
@@ -659,7 +649,7 @@ public class DefaultFileSystemStore extends SystemStore {
      * @throws FormatException if there is a rule name with an error
      */
     private void collectGraphs(ResourceKind kind, ExtensionFilter filter,
-            File path, RuleName pathName) throws IOException, FormatException {
+            File path, QualName pathName) throws IOException, FormatException {
 
         // find all files in the current path 
         File[] files = path.listFiles(filter);
@@ -677,8 +667,8 @@ public class DefaultFileSystemStore extends SystemStore {
             // recurse if the file is a directory
             if (file.isDirectory()) {
                 if (!file.getName().startsWith(".")) {
-                    RuleName extendedPathName =
-                        new RuleName(pathName, fileName);
+                    QualName extendedPathName =
+                        new QualName(pathName, fileName);
                     collectGraphs(kind, filter, file, extendedPathName);
                 }
                 continue;
@@ -686,7 +676,7 @@ public class DefaultFileSystemStore extends SystemStore {
 
             // read graph from file
             DefaultGraph plainGraph = this.marshaller.unmarshalGraph(file);
-            RuleName graphName = new RuleName(pathName, fileName);
+            QualName graphName = new QualName(pathName, fileName);
 
             // backwards compatibility: set role and name
             plainGraph.setRole(kind.getGraphRole());
@@ -808,7 +798,7 @@ public class DefaultFileSystemStore extends SystemStore {
         File basis = this.file;
         String shortName = name;
         if (kind == RULE || kind == HOST || kind == TYPE) {
-            RuleName ruleName = new RuleName(name);
+            QualName ruleName = new QualName(name);
             for (int i = 0; i < ruleName.size() - 1; i++) {
                 basis = new File(basis, ruleName.get(i));
                 basis.mkdir();
@@ -1159,19 +1149,13 @@ public class DefaultFileSystemStore extends SystemStore {
         public PutPropertiesEdit(SystemProperties oldProperties,
                 SystemProperties newProperties) {
             super(EditType.MODIFY, PROPERTIES);
-            if (!oldProperties.getPrologNames().equals(
-                newProperties.getPrologNames())) {
-                addChange(ResourceKind.PROLOG);
-            }
-            String oldControlName = oldProperties.getControlName();
-            String newControlName = newProperties.getControlName();
-            if (oldControlName == null ? newControlName != null
-                    : !oldControlName.equals(newControlName)) {
-                addChange(ResourceKind.CONTROL);
-            }
-            if (!oldProperties.getTypeNames().equals(
-                newProperties.getTypeNames())) {
-                addChange(ResourceKind.TYPE);
+            for (ResourceKind kind : EnumSet.of(ResourceKind.PROLOG,
+                ResourceKind.TYPE, ResourceKind.CONTROL)) {
+                Set<String> oldNames = oldProperties.getEnabledNames(kind);
+                Set<String> newNames = newProperties.getEnabledNames(kind);
+                if (!oldNames.equals(newNames)) {
+                    addChange(kind);
+                }
             }
             this.oldProperties = oldProperties;
             this.newProperties = newProperties;

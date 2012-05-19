@@ -26,6 +26,7 @@ import groove.view.FormatException;
 import groove.view.GrammarModel;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import org.junit.Test;
 
@@ -48,7 +49,7 @@ public class ControlAttributeParametersTest {
         try {
             GrammarModel sgv = Groove.loadGrammar(DIRECTORY);
             SystemProperties sp = sgv.getProperties();
-            sp.setControlName(control);
+            sp.setControlNames(Collections.singleton(control));
             GTS lts = new GTS(sgv.toGrammar());
 
             Exploration exploration = new Exploration();

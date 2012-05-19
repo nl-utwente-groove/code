@@ -37,8 +37,8 @@ import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.LayoutIO;
 import groove.io.xml.DefaultJaxbGxlIO;
+import groove.trans.QualName;
 import groove.trans.ResourceKind;
-import groove.trans.RuleName;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -490,16 +490,16 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      * @param restName The entry name to convert; non-null
      * @return The resulting rule name; non-null
      */
-    private RuleName createRuleName(String restName) {
+    private QualName createRuleName(String restName) {
         StringBuilder result = new StringBuilder();
         File nameAsFile = new File(RULE_FILTER.stripExtension(restName));
         result.append(nameAsFile.getName());
         while (nameAsFile.getParent() != null) {
             nameAsFile = nameAsFile.getParentFile();
-            result.insert(0, RuleName.SEPARATOR);
+            result.insert(0, QualName.SEPARATOR);
             result.insert(0, nameAsFile.getName());
         }
-        return new RuleName(result.toString());
+        return new QualName(result.toString());
     }
 
     /** Notifies the observers with a given string value. */

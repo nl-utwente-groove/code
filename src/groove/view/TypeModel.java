@@ -55,7 +55,8 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
 
     @Override
     public boolean isEnabled() {
-        return getGrammar().getProperties().getTypeNames().contains(getName());
+        return getGrammar().getProperties().getTypeNames().contains(
+            getFullName());
     }
 
     @Override
@@ -86,7 +87,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             throw new FormatException(getSource().getErrors());
         }
         Collection<FormatError> errors = createErrors();
-        TypeGraph result = new TypeGraph(getName());
+        TypeGraph result = new TypeGraph(getFullName());
         TypeFactory factory = result.getFactory();
         this.modelMap = new TypeModelMap(factory);
         // collect primitive type nodes

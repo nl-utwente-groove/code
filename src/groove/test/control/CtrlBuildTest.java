@@ -16,7 +16,6 @@
  */
 package groove.test.control;
 
-import static groove.io.FileType.CONTROL_FILTER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
@@ -36,6 +35,7 @@ import groove.trans.Rule;
 import groove.util.Groove;
 import groove.view.FormatException;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -52,7 +52,6 @@ public class CtrlBuildTest {
     private static final String GRAMMAR_DIR = "junit/samples/";
     private static final String CONTROL_DIR = "junit/control/";
 
-    private final CtrlLoader parser = CtrlLoader.getInstance();
     private GraphGrammar testGrammar;
     {
         try {
@@ -319,17 +318,17 @@ public class CtrlBuildTest {
 
     /** Builds a control automaton that should contain an error. */
     private void buildWrong(String program) {
-        buildWrong(program, false);
+        buildWrong(program, "dummy");
     }
 
     /** Builds a control automaton that should contain an error. */
-    private void buildWrong(String name, boolean file) {
+    private void buildWrong(String name, String program) {
         try {
             CtrlAut aut;
-            if (file) {
+            if (program == null) {
                 aut = buildFile(name);
             } else {
-                aut = buildString(name);
+                aut = buildString(name, program);
             }
             fail(String.format("%s builds without errors: %n%s%n", name,
                 aut.toString()));
@@ -341,14 +340,15 @@ public class CtrlBuildTest {
     }
 
     private CtrlAut buildCorrect(String name, int nodeCount, int edgeCount) {
-        return buildCorrect(name, false, nodeCount, edgeCount);
+        return buildCorrect("dummy", name, nodeCount, edgeCount);
     }
 
-    private CtrlAut buildCorrect(String name, boolean file, int nodeCount,
+    private CtrlAut buildCorrect(String name, String program, int nodeCount,
             int edgeCount) {
         CtrlAut result = null;
         try {
-            result = file ? buildFile(name) : buildString(name);
+            result =
+                program == null ? buildFile(name) : buildString(name, program);
             assertEquals(nodeCount, result.nodeCount());
             assertEquals(edgeCount, result.edgeCount());
         } catch (FormatException e) {
@@ -358,17 +358,15 @@ public class CtrlBuildTest {
     }
 
     /** Builds a control automaton from a file with a given name. */
-    private CtrlAut buildFile(String filename) throws FormatException {
+    private CtrlAut buildFile(String programName) throws FormatException {
         CtrlAut result = null;
         try {
             result =
-                this.parser.runFile(
-                    CONTROL_FILTER.addExtension(CONTROL_DIR + filename),
-                    this.testGrammar.getProperties(),
-                    this.testGrammar.getAllRules()).one();
+                CtrlLoader.run(this.testGrammar, programName, new File(
+                    CONTROL_DIR));
             if (DEBUG) {
-                System.out.printf("Control automaton for %s:%n%s%n", filename,
-                    result);
+                System.out.printf("Control automaton for %s:%n%s%n",
+                    programName, result);
             }
         } catch (IOException e) {
             fail(e.getMessage());
@@ -377,11 +375,10 @@ public class CtrlBuildTest {
     }
 
     /** Builds a control automaton from a given program. */
-    private CtrlAut buildString(String program) throws FormatException {
+    private CtrlAut buildString(String programName, String program)
+        throws FormatException {
         CtrlAut result = null;
-        result =
-            this.parser.runString(program, this.testGrammar.getProperties(),
-                this.testGrammar.getAllRules()).one();
+        result = CtrlLoader.run(this.testGrammar, programName, program);
         if (DEBUG) {
             System.out.printf("Control automaton for \'%s\':%n%s%n", program,
                 result);

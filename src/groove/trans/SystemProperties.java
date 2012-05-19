@@ -3,7 +3,6 @@ package groove.trans;
 import groove.algebra.AlgebraFamily;
 import groove.explore.Exploration;
 import groove.graph.TypeLabel;
-import groove.io.FileType;
 import groove.util.Fixable;
 import groove.util.Groove;
 import groove.util.Property;
@@ -16,8 +15,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -221,27 +220,6 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     /**
-     * Sets the control program name to a certain value.
-     * @param program the new control program name
-     */
-    public void setControlName(String program) {
-        setProperty(Key.CONTROL_NAMES, program);
-    }
-
-    /**
-     * Returns the control program name, or <code>null</code> if there
-     * is no name set.
-     */
-    public String getControlName() {
-        // for compatibility, strip the extension from the stored control name
-        String result = getProperty(Key.CONTROL_NAMES);
-        if (result != null) {
-            result = FileType.CONTROL_FILTER.stripExtension(result);
-        }
-        return stringOrNull(result);
-    }
-
-    /**
      * Sets the exploration strategy to a certain value.
      * @param strategy the new exploration strategy
      */
@@ -259,68 +237,89 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     /**
-     * Sets the type graph names property.
-     * @param types the list of type graphs that are in use.
+     * Sets the control program names to a certain value.
+     * @param programs the new control program names
      */
-    public void setPrologNames(Collection<String> types) {
-        setProperty(Key.PROLOG_NAMES,
-            Groove.toString(types.toArray(), "", "", " "));
+    public void setControlNames(Collection<String> programs) {
+        setEnabledNames(ResourceKind.CONTROL, programs);
     }
 
     /**
-     * Returns a list of type graph names that are in use.
+     * Returns the set of enabled control program names.
+     * @return the (possibly empty) list of enabled control program names
+     */
+    public Set<String> getControlNames() {
+        return getEnabledNames(ResourceKind.CONTROL);
+    }
+
+    /**
+     * Sets the type graph names property.
+     * @param programs the list of type graphs that are in use.
+     */
+    public void setPrologNames(Collection<String> programs) {
+        setEnabledNames(ResourceKind.PROLOG, programs);
+    }
+
+    /**
+     * Returns a list of prolog program names that are in use.
+     * @return the (possibly empty) list of enabled prolog program names
      */
     public Set<String> getPrologNames() {
-        String programs = getProperty(Key.PROLOG_NAMES);
-        if (programs == null || "".equals(programs)) {
-            return Collections.emptySet();
-        } else {
-            return new TreeSet<String>(Arrays.asList(programs.split("\\s")));
-        }
+        return getEnabledNames(ResourceKind.PROLOG);
     }
 
     /**
      * Sets the start graph names property.
-     * @param graphs the list of start graphs that are in use.
+     * @param graphs the (possibly empty) list of activated start graphs
      */
     public void setStartGraphNames(Collection<String> graphs) {
-        setProperty(Key.START_GRAPH_NAMES,
-            Groove.toString(graphs.toArray(), "", "", " "));
+        setEnabledNames(ResourceKind.HOST, graphs);
     }
 
     /**
      * Returns a list of start graph names that are in use.
-     * Returns <code>null</code> if the property does not exist.
+     * @return the (possibly empty) list of start graph names
      */
     public Set<String> getStartGraphNames() {
-        String graphs = getProperty(Key.START_GRAPH_NAMES);
-        if (graphs == null) {
-            return null;
-        } else if ("".equals(graphs)) {
-            return new HashSet<String>();
-        } else {
-            return new HashSet<String>(Arrays.asList(graphs.split("\\s")));
-        }
+        return getEnabledNames(ResourceKind.HOST);
     }
 
     /**
      * Sets the type graph names property.
-     * @param types the list of type graphs that are in use.
+     * @param types the (possibly empty) list of type graphs that are in use.
      */
     public void setTypeNames(Collection<String> types) {
-        setProperty(Key.TYPE_NAMES,
-            Groove.toString(types.toArray(), "", "", " "));
+        setEnabledNames(ResourceKind.TYPE, types);
     }
 
     /**
      * Returns a list of type graph names that are in use.
+     * @return the (possibly empty) list of activated type graphs
      */
     public Set<String> getTypeNames() {
-        String types = getProperty(Key.TYPE_NAMES);
-        if (types == null || "".equals(types)) {
+        return getEnabledNames(ResourceKind.TYPE);
+    }
+
+    /**
+     * Sets the enabled names property of a given resource kind.
+     * @param kind the resource kind to set the names for
+     * @param names the list of names of the enabled resources
+     */
+    public void setEnabledNames(ResourceKind kind, Collection<String> names) {
+        setProperty(resourceKeyMap.get(kind),
+            Groove.toString(names.toArray(), "", "", " "));
+    }
+
+    /**
+     * Returns a list of enabled resource names of a given kind.
+     * @param kind the queried resource kind
+     */
+    public Set<String> getEnabledNames(ResourceKind kind) {
+        String names = getProperty(resourceKeyMap.get(kind));
+        if (names == null || "".equals(names)) {
             return Collections.emptySet();
         } else {
-            return new TreeSet<String>(Arrays.asList(types.split("\\s")));
+            return new TreeSet<String>(Arrays.asList(names.split("\\s")));
         }
     }
 
@@ -642,6 +641,16 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     static public final SystemProperties DEFAULT_PROPERTIES = getInstance();
 
+    /** Mapping from resource kinds to corresponding property keys. */
+    static private final Map<ResourceKind,Key> resourceKeyMap =
+        new EnumMap<ResourceKind,SystemProperties.Key>(ResourceKind.class);
+    static {
+        resourceKeyMap.put(ResourceKind.TYPE, Key.TYPE_NAMES);
+        resourceKeyMap.put(ResourceKind.CONTROL, Key.CONTROL_NAMES);
+        resourceKeyMap.put(ResourceKind.PROLOG, Key.PROLOG_NAMES);
+        resourceKeyMap.put(ResourceKind.HOST, Key.START_GRAPH_NAMES);
+    }
+
     /**
      * Extends the {@link groove.util.Property.IsBoolean} class by also
      * allowing positive numerical values to stand for <code>true</code>, and
@@ -756,7 +765,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
          * Name of the active control program.
          */
         CONTROL_NAMES("controlProgram",
-                "Name of the control program (default: '%s')"),
+                "Space-separated list of enabled control programs"),
         /**
          * Space-separated list of active type graph names.
          */

@@ -46,7 +46,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Graph-based model of a host graph graph. Attribute values are represented
@@ -105,7 +104,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
 
     @Override
     public boolean isEnabled() {
-        return getGrammar() == null || getGrammar().isStartGraphComponent(getName());
+        return getGrammar() == null
+            || getGrammar().isStartGraphComponent(getFullName());
     }
 
     /** 
@@ -178,8 +178,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         if (debug) {
             GraphPreviewDialog.showGraph(normalSource);
         }
-        Set<FormatError> errors =
-            new TreeSet<FormatError>(normalSource.getErrors());
+        FormatErrorSet errors = new FormatErrorSet(normalSource.getErrors());
         DefaultHostGraph result = new DefaultHostGraph(normalSource.getName());
         // we need to record the model-to-resource element map for layout transfer
         HostModelMap elementMap = new HostModelMap(result.getFactory());

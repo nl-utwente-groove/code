@@ -30,6 +30,7 @@ import groove.view.GrammarModel;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 
 import org.junit.Test;
 
@@ -127,7 +128,9 @@ public class IOTest {
             // first set the control name directly (this is no longer done at
             // load time)
             SystemProperties properties = view.getProperties();
-            properties.setControlName(controlName);
+            if (controlName != null) {
+                properties.setControlNames(Collections.singleton(controlName));
+            }
 
             // and also set the start graph directly
             view.localSetStartGraph(startName);
@@ -136,8 +139,8 @@ public class IOTest {
             GraphGrammar gg = view.toGrammar();
 
             assertEquals(grammarName, gg.getName());
-            assertEquals(startName, view.getStartGraphModel().getName());
-            assertEquals(controlName, view.getActiveControlModel().getName());
+            assertEquals(startName, view.getStartGraphModel().getFullName());
+            //            assertEquals(controlName, gg.getCtrlAut().getName());
             assertEquals(rulecount, gg.getActions().size());
 
             GTS lts = new GTS(gg);

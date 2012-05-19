@@ -93,7 +93,7 @@ public class TypeCheckTest {
     /** Tests that a given rule has no errors. */
     private void testCorrect(ResourceModel<?> model) {
         String kindName = model.getKind().getName();
-        String modelName = model.getName();
+        String modelName = model.getFullName();
         try {
             model.toResource();
         } catch (NullPointerException e) {
@@ -106,7 +106,7 @@ public class TypeCheckTest {
     /** Tests that a given rule has errors. */
     private void testErroneous(ResourceModel<?> model) {
         String kindName = model.getKind().getName();
-        String modelName = model.getName();
+        String modelName = model.getFullName();
         try {
             model.toResource();
             Assert.fail(kindName + " " + modelName + " has no errors");
