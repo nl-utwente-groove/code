@@ -110,12 +110,14 @@ public class CtrlCall {
 
     @Override
     public int hashCode() {
+        int prime = 31;
         int result = getKind().hashCode();
+        result = prime * result + (isOmega() ? 1231 : 1237);
         if (getName() != null) {
-            result ^= getName().hashCode();
+            result = prime * result + getName().hashCode();
         }
         if (getArgs() != null) {
-            result ^= getArgs().hashCode();
+            result = prime * result + getArgs().hashCode();
         }
         return result;
     }
