@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="**/.svn/*" kind="src" path="resources"/>
+	<classpathentry excluding="**/.svn/*" kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/OSXAdapter.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4_8_2.jar"/>
+	<classpathentry kind="lib" path="lib/jgraph-5_13_0.jar" sourcepath="lib/src/jgraph-5.13.0.4-src.zip"/>
+	<classpathentry kind="lib" path="lib/emf-common-2_5_0.jar"/>
+	<classpathentry kind="lib" path="lib/emf-ecore-2_5_0.jar"/>
+	<classpathentry kind="lib" path="lib/emf-ecore-xmi-2_5_0.jar"/>
+	<classpathentry kind="lib" path="lib/epsgraphics-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-gxl-1_0.jar"/>
+	<classpathentry kind="lib" path="lib/rsyntaxtextarea.jar" sourcepath="lib/src/rsyntaxtextarea_1.5.1.zip"/>
+	<classpathentry kind="lib" path="lib/ltl2buchi-2010-12.jar" sourcepath="lib/src/ltl2buchi-2010-12.zip"/>
+	<classpathentry kind="lib" path="lib/gnuprologjava-0.2.6.jar" sourcepath="lib/src/gnuprologjava-0.2.6-src.zip"/>
+	<classpathentry kind="lib" path="lib/antlr-3.4-complete.jar" sourcepath="lib/src/antlrworks-1.4.2-src-only.zip"/>
+	<classpathentry kind="lib" path="lib/antlrworks-1.4.2.jar" sourcepath="lib/src/antlrworks-1.4.2-src-only.zip"/>
+	<classpathentry kind="lib" path="lib/jgoodies-looks-2.4.1.jar" sourcepath="lib/src/jgoodies-looks-2.4.1.zip"/>
+	<classpathentry kind="lib" path="lib/jgoodies-common-1.2.0.jar" sourcepath="lib/src/jgoodies-common-1.2.0.zip"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
