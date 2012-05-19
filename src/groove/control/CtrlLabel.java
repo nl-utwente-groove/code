@@ -169,7 +169,7 @@ public class CtrlLabel extends AbstractLabel {
     @Override
     protected int computeHashCode() {
         final int prime = 31;
-        int result = super.hashCode();
+        int result = 0;
         result = prime * result + this.call.hashCode();
         result = prime * result + this.guard.hashCode();
         result =
