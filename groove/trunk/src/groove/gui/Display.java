@@ -30,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
+import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 
 /**
@@ -102,7 +103,7 @@ abstract public class Display {
     abstract protected JToolBar createListToolBar();
 
     /** Returns the name list for this display. */
-    final protected JComponent getList() {
+    final protected JTree getList() {
         if (this.resourceList == null) {
             this.resourceList = createList();
         }
@@ -110,7 +111,7 @@ abstract public class Display {
     }
 
     /** Callback method to create the resource list. */
-    abstract protected JComponent createList();
+    abstract protected JTree createList();
 
     /** Resets the list to {@code null}, causing it to be recreated. */
     protected void resetList() {
@@ -168,7 +169,7 @@ abstract public class Display {
     /** Panel with the label list. */
     private ListPanel listPanel;
     /** Production system control program list. */
-    private JComponent resourceList;
+    private JTree resourceList;
     /** Toolbar for the {@link #listPanel}. */
     private JToolBar listToolBar;
 

@@ -31,7 +31,6 @@ import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -99,14 +98,9 @@ abstract public class GraphBasedModel<R> extends ResourceModel<R> {
      * @param map mapping from aspect elements to rule graph elements
      * @return the transferred errors
      */
-    final Collection<FormatError> transferErrors(
-            Collection<FormatError> errors, ElementMap<?,?,?,?> map) {
-        Map<Element,Element> inverseMap = getInverseMap(map);
-        Collection<FormatError> newErrors = createErrors();
-        for (FormatError error : errors) {
-            newErrors.add(error.transfer(inverseMap));
-        }
-        return newErrors;
+    final FormatErrorSet transferErrors(FormatErrorSet errors,
+            ElementMap<?,?,?,?> map) {
+        return errors.transfer(getInverseMap(map));
     }
 
     /** Convenience method to return the inverse of a given model map. */

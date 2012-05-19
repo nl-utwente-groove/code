@@ -51,11 +51,8 @@ public class PrologModel extends TextBasedModel<String> {
 
     @Override
     String compute() throws FormatException {
-        if (this.externalErrors.isEmpty()) {
-            return getProgram();
-        } else {
-            throw new FormatException(this.externalErrors);
-        }
+        this.externalErrors.throwException();
+        return getProgram();
     }
 
     /** List of Prolog formatting errors in this program. */

@@ -158,9 +158,11 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Returns the state and graph display shown on this panel. */
-    public HostDisplay getHostDisplay() {
+    public ResourceDisplay getHostDisplay() {
         if (this.stateDisplay == null) {
-            this.stateDisplay = new HostDisplay(this.simulator);
+            this.stateDisplay =
+                new ResourceDisplay(this.simulator, ResourceKind.HOST);
+            this.stateDisplay.installListeners();
         }
         return this.stateDisplay;
     }
@@ -174,9 +176,11 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Returns the type display shown on this panel. */
-    public TypeDisplay getTypeDisplay() {
+    public ResourceDisplay getTypeDisplay() {
         if (this.typeDisplay == null) {
-            this.typeDisplay = new TypeDisplay(this.simulator);
+            this.typeDisplay =
+                new ResourceDisplay(this.simulator, ResourceKind.TYPE);
+            this.typeDisplay.installListeners();
         }
         return this.typeDisplay;
     }
@@ -514,11 +518,11 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     private final Map<DisplayKind,DisplayWindow> detachedMap =
         new HashMap<DisplayKind,DisplayWindow>();
     /** The state tab shown on this panel. */
-    private HostDisplay stateDisplay;
+    private ResourceDisplay stateDisplay;
     /** The rule tab shown on this panel. */
     private RuleDisplay ruleDisplay;
     /** The type graph tab shown on this panel. */
-    private TypeDisplay typeDisplay;
+    private ResourceDisplay typeDisplay;
     /** LTS tab shown on this panel. */
     private LTSDisplay ltsDisplay;
     /** Prolog display panel. */

@@ -141,15 +141,11 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     @Override
     HostGraph compute() throws FormatException {
         this.algebraFamily = getFamily();
-        if (getSource().hasErrors()) {
-            throw new FormatException(getSource().getErrors());
-        }
+        getSource().getErrors().throwException();
         Pair<DefaultHostGraph,HostModelMap> modelPlusMap =
             computeModel(getSource());
         HostGraph result = modelPlusMap.one();
-        if (GraphInfo.hasErrors(result)) {
-            throw new FormatException(GraphInfo.getErrors(result));
-        }
+        GraphInfo.throwException(result);
         this.hostModelMap = modelPlusMap.two();
         this.typeMap = new TypeModelMap(result.getTypeGraph().getFactory());
         for (Map.Entry<AspectNode,HostNode> nodeEntry : this.hostModelMap.nodeMap().entrySet()) {

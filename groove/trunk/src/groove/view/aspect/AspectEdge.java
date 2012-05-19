@@ -46,11 +46,9 @@ import groove.trans.RuleLabel;
 import groove.util.ExprParser;
 import groove.util.Fixable;
 import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 import groove.view.aspect.AspectKind.NestedValue;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Edge enriched with aspect data. Aspect edge labels are interpreted as
@@ -71,12 +69,10 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         assert label.isFixed();
         if (!label.hasErrors() && label.isNodeOnly()) {
             if (label.getNodeOnlyAspect() == null) {
-                this.errors.add(new FormatError("Empty edge label not allowed",
-                    this));
+                this.errors.add("Empty edge label not allowed", this);
             } else {
-                this.errors.add(new FormatError(
-                    "Aspect %s not allowed in edge label",
-                    label.getNodeOnlyAspect(), this));
+                this.errors.add("Aspect %s not allowed in edge label",
+                    label.getNodeOnlyAspect(), this);
             }
         }
         for (FormatError error : label().getErrors()) {
@@ -145,7 +141,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     }
 
     @Override
-    public List<FormatError> getErrors() {
+    public FormatErrorSet getErrors() {
         setFixed();
         return this.errors;
     }
@@ -728,5 +724,5 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     /** Flag indicating if the edge is fixed. */
     private boolean fixed;
     /** List of syntax errors in this edge. */
-    private final List<FormatError> errors = new ArrayList<FormatError>();
+    private final FormatErrorSet errors = new FormatErrorSet();
 }

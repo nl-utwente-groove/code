@@ -45,6 +45,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
 
 /**
@@ -54,8 +55,7 @@ import javax.swing.border.EmptyBorder;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class ResourceDisplay extends Display implements
-        SimulatorListener {
+public class ResourceDisplay extends Display implements SimulatorListener {
     /**
      * Constructs a display, for a given simulator and resource kind.
      */
@@ -77,8 +77,14 @@ public abstract class ResourceDisplay extends Display implements
 
     /** Callback method to create the resource list. */
     @Override
-    protected JComponent createList() {
-        return new ResourceList(this);
+    protected JTree createList() {
+        return new ResourceTree(this);
+    }
+
+    @Override
+    protected void resetList() {
+        ((ResourceTree) getList()).suspendListeners();
+        super.resetList();
     }
 
     /** 

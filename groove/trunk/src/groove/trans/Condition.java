@@ -24,7 +24,7 @@ import groove.io.HTMLConverter;
 import groove.io.Util;
 import groove.match.SearchEngine.SearchMode;
 import groove.util.Fixable;
-import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -35,7 +35,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Type of conditions over graphs.
@@ -343,17 +342,14 @@ public class Condition implements Fixable {
      * @throws FormatException if the algebra part cannot be matched
      */
     private void testAlgebra() throws FormatException {
-        Set<FormatError> errors = new TreeSet<FormatError>();
+        FormatErrorSet errors = new FormatErrorSet();
         Map<VariableNode,List<Set<VariableNode>>> resolverMap =
             createResolvers();
         stabilise(resolverMap);
         for (RuleNode node : resolverMap.keySet()) {
-            errors.add(new FormatError(
-                "Variable node '%s' cannot always be assigned", node));
+            errors.add("Variable node '%s' cannot always be assigned", node);
         }
-        if (!errors.isEmpty()) {
-            throw new FormatException(errors);
-        }
+        errors.throwException();
     }
 
     /** 

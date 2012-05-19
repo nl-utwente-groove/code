@@ -1144,7 +1144,7 @@ public class DefaultFileSystemStore extends SystemStore {
         private final SystemProperties newProps;
     }
 
-    /** Edit consisting of the addition of a control program. */
+    /** Edit consisting of changing the grammar properties. */
     private class PutPropertiesEdit extends MyEdit {
         public PutPropertiesEdit(SystemProperties oldProperties,
                 SystemProperties newProperties) {

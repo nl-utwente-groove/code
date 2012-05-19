@@ -72,8 +72,8 @@ public class PreviewControlAction extends SimulatorAction {
                 (ControlModel) getSimulatorModel().getTextResource(
                     getResourceKind());
             result =
-                controlModel == null ? grammar.getCtrlAut()
-                        : controlModel.toResource();
+                controlModel == null || controlModel.isEnabled()
+                        ? grammar.getCtrlAut() : controlModel.toResource();
         }
         return result;
     }
