@@ -146,8 +146,10 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
         tokenMap.put("else", reservedWord);
         tokenMap.put("function", reservedWord);
         tokenMap.put("if", reservedWord);
+        tokenMap.put("import", reservedWord);
         tokenMap.put("or", reservedWord);
         tokenMap.put("other", reservedWord);
+        tokenMap.put("package", reservedWord);
         tokenMap.put("priority", reservedWord);
         tokenMap.put("recipe", reservedWord);
         tokenMap.put("try", reservedWord);
