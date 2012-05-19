@@ -1,0 +1,19 @@
+# Layout information for C:\local\eclipse\workspace\groove\junit\graphs\regexpr-test-graph.gxl
+# Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+v 2
+n n3 437 95 12 14 
+n n1 263 170 6 14 
+n n6 255 93 12 14 
+n n2 291 13 16 14 
+n n5 345 93 12 14 
+n n4 185 166 6 14 
+n n7 183 93 12 14 
+n n8 398 172 6 14 
+n n0 83 167 6 14 
+e n2 n7 "first" 500 0 305 22 191 24 194 102 11
+e n2 n3 "last" 500 0 305 22 449 21 448 104 11
