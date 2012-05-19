@@ -22,8 +22,8 @@ import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
 import groove.gui.list.ErrorListPanel;
 import groove.gui.list.ListPanel;
+import groove.trans.QualName;
 import groove.trans.ResourceKind;
-import groove.trans.RuleName;
 import groove.view.FormatError;
 import groove.view.ResourceModel;
 
@@ -150,7 +150,7 @@ abstract public class ResourceTab extends JPanel implements Tab {
      */
     @Override
     public String getTitle() {
-        return (isDirty() ? "*" : "") + new RuleName(getName()).child();
+        return (isDirty() ? "*" : "") + new QualName(getName()).child();
     }
 
     /** Returns the resource kind of this editor tab. */

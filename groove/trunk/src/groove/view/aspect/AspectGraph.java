@@ -39,6 +39,7 @@ import groove.graph.TypeLabel;
 import groove.gui.list.SearchResult;
 import groove.rel.RegExpr;
 import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 import groove.view.aspect.Expression.Call;
 import groove.view.aspect.Expression.Const;
@@ -46,7 +47,6 @@ import groove.view.aspect.Expression.Field;
 import groove.view.aspect.Expression.Par;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,15 +81,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * @return a possibly empty, non-<code>null</code> list of format errors in
      *         this aspect graph
      */
-    public List<FormatError> getErrors() {
-        List<FormatError> result;
-        if (getInfo() == null) {
-            result = Collections.<FormatError>emptyList();
-        } else {
+    public FormatErrorSet getErrors() {
+        FormatErrorSet result = new FormatErrorSet();
+        if (getInfo() != null && getInfo().getErrors() != null) {
             result = getInfo().getErrors();
-            if (result == null) {
-                result = Collections.<FormatError>emptyList();
-            }
         }
         return result;
     }
@@ -117,15 +112,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     }
 
     /** Sets the list of errors to a copy of a given list. */
-    private void addErrors(List<FormatError> errors) {
-        List<FormatError> newErrors = new ArrayList<FormatError>();
+    private void addErrors(FormatErrorSet errors) {
+        FormatErrorSet newErrors = new FormatErrorSet();
         if (GraphInfo.hasErrors(this)) {
             newErrors.addAll(GraphInfo.getErrors(this));
         }
         if (errors != null) {
             newErrors.addAll(errors);
         }
-        Collections.sort(newErrors);
         GraphInfo.setErrors(this, newErrors);
     }
 
@@ -163,7 +157,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             PlainToAspectMap elementMap) {
         GraphRole role = graph.getRole();
         AspectGraph result = new AspectGraph(graph.getName(), role);
-        List<FormatError> errors = new ArrayList<FormatError>();
+        FormatErrorSet errors = new FormatErrorSet();
         assert elementMap != null && elementMap.isEmpty();
         // first do the nodes;
         for (DefaultNode node : graph.nodeSet()) {
@@ -194,8 +188,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             elementMap.putEdge(edge, edgeImage);
             if (!edge.source().equals(edge.target())
                 && edgeImage.getRole() != EdgeRole.BINARY) {
-                errors.add(new FormatError("%s %s must be a node label",
-                    label.getRole().getDescription(true), label, edgeImage));
+                errors.add("%s %s must be a node label",
+                    label.getRole().getDescription(true), label, edgeImage);
             }
         }
         GraphInfo.transfer(graph, result, elementMap);
@@ -633,7 +627,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             return this;
         } else {
             GraphInfo.transfer(this, result, elementMap);
-            GraphInfo.setErrors(result, Collections.<FormatError>emptyList());
+            GraphInfo.setErrors(result, new FormatErrorSet());
             result.setFixed();
             return fromPlainGraph(result);
         }
@@ -694,7 +688,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             return this;
         } else {
             GraphInfo.transfer(this, result, elementMap);
-            GraphInfo.setErrors(result, Collections.<FormatError>emptyList());
+            GraphInfo.setErrors(result, new FormatErrorSet());
             result.setFixed();
             return fromPlainGraph(result);
         }
@@ -720,7 +714,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     public void setFixed() {
         if (!isFixed()) {
             // first fix the edges, then the nodes
-            List<FormatError> errors = new ArrayList<FormatError>();
+            FormatErrorSet errors = new FormatErrorSet();
             for (AspectEdge edge : edgeSet()) {
                 edge.setFixed();
                 errors.addAll(edge.getErrors());

@@ -18,11 +18,11 @@ package groove.gui;
 
 import static groove.gui.Options.DELETE_RESOURCE_OPTION;
 import static groove.gui.Options.HELP_MENU_NAME;
+import static groove.gui.Options.HIDE_LTS_OPTION;
 import static groove.gui.Options.OPTIONS_MENU_NAME;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
-import static groove.gui.Options.HIDE_LTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_PARTIAL_GTS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
@@ -47,6 +47,7 @@ import groove.gui.list.SearchResultListPanel;
 import groove.trans.ResourceKind;
 import groove.util.Groove;
 import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 import groove.view.GrammarModel;
 import groove.view.HostModel;
 
@@ -155,8 +156,7 @@ public class Simulator implements SimulatorListener {
             Set<Change> changes) {
         if (changes.contains(Change.GRAMMAR)) {
             setTitle();
-            List<FormatError> grammarErrors =
-                getModel().getGrammar().getErrors();
+            FormatErrorSet grammarErrors = getModel().getGrammar().getErrors();
             setErrors(grammarErrors);
         }
         if (changes.contains(Change.DISPLAY)) {
@@ -167,7 +167,7 @@ public class Simulator implements SimulatorListener {
     /**
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
-    private void setErrors(List<FormatError> grammarErrors) {
+    private void setErrors(FormatErrorSet grammarErrors) {
         getErrorListPanel().setEntries(grammarErrors);
         adjustListPanel();
     }
@@ -799,12 +799,7 @@ public class Simulator implements SimulatorListener {
             HostModel startGraph = grammar.getStartGraphModel();
             if (startGraph != null) {
                 title.append(TITLE_NAME_SEPARATOR);
-                title.append(startGraph.getName());
-            }
-            if (grammar.isUseControl()) {
-                title.append(" | ");
-                title.append(grammar.getControlName());
-
+                title.append(startGraph.getFullName());
             }
             if (!grammar.getStore().isModifiable()) {
                 title.append(" (read-only)");

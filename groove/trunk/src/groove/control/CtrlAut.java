@@ -25,7 +25,7 @@ import groove.trans.Recipe;
 import groove.trans.Rule;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
-import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 
 import java.util.AbstractSet;
@@ -68,7 +68,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
         super(name);
         this.startState = addState();
         this.finalState = addState();
-        GraphInfo.setErrors(this, new ArrayList<FormatError>());
+        GraphInfo.setErrors(this, new FormatErrorSet());
     }
 
     @Override
@@ -103,7 +103,25 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
 
     @Override
     public CtrlAut clone() {
-        return clone(null);
+        return clone(getName());
+    }
+
+    /** 
+     * Clones this automaton under a given name.
+     * @param name the name of the new automaton
+     */
+    public CtrlAut clone(String name) {
+        return clone(name, null);
+    }
+
+    /** 
+     * Clones this automaton, optionally making the intermediate states transient
+     * for a given recipe.
+     * @param recipe if not {@code null}, the new automaton is to be the body
+     * of a recipe with this name
+     */
+    public CtrlAut clone(Recipe recipe) {
+        return clone(recipe == null ? getName() : recipe.getFullName(), recipe);
     }
 
     /** 
@@ -111,9 +129,8 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
      * @param recipe if not {@code null}, the new automaton is to be the body
      * of a recipe with this name
      */
-    public CtrlAut clone(Recipe recipe) {
-        CtrlAut result =
-            newGraph(recipe == null ? getName() : recipe.getFullName());
+    private CtrlAut clone(String name, Recipe recipe) {
+        CtrlAut result = newGraph(name);
         CtrlMorphism morphism = new CtrlMorphism();
         morphism.putNode(getStart(), result.getStart());
         morphism.putNode(getFinal(), result.getFinal());

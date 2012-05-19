@@ -21,7 +21,7 @@ import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.trans.Recipe;
 import groove.trans.Rule;
-import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -137,9 +137,9 @@ public class CtrlState implements Node {
         CtrlTransition oldTrans =
             this.transitionMap.put(result.getRule(), result);
         if (oldTrans != null) {
-            FormatError error =
-                new FormatError("Nondeterminism for '%s'", result.getCall());
-            GraphInfo.addErrors(getAut(), Collections.singleton(error));
+            FormatErrorSet errors =
+                new FormatErrorSet("Nondeterminism for '%s'", result.getCall());
+            GraphInfo.addErrors(getAut(), errors);
         }
         if (result.hasRecipe()) {
             this.recipeCount++;

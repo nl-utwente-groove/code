@@ -24,8 +24,8 @@ import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.store.SystemStore;
+import groove.trans.QualName;
 import groove.trans.ResourceKind;
-import groove.trans.RuleName;
 import groove.util.Duo;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -439,11 +439,11 @@ public abstract class SimulatorAction extends AbstractAction implements
                 assert !pathFragments.isEmpty();
                 int i = pathFragments.size() - 1;
                 if (getResourceKind() == ResourceKind.RULE) {
-                    RuleName ruleName = new RuleName(pathFragments.get(i));
+                    QualName ruleName = new QualName(pathFragments.get(i));
                     for (i--; i >= 0; i--) {
                         try {
                             ruleName =
-                                new RuleName(ruleName, pathFragments.get(i));
+                                new QualName(ruleName, pathFragments.get(i));
                         } catch (FormatException e) {
                             throw new IOException("Malformed rule name " + diff);
                         }

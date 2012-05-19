@@ -19,9 +19,6 @@ package groove.view;
 import groove.util.Groove;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * General exception class signalling a format error found during a conversion
@@ -43,17 +40,7 @@ public class FormatException extends Exception {
      */
     public FormatException(String message, Object... parameters) {
         super(String.format(message, parameters));
-        this.errors = createMessageList();
-        this.errors.add(new FormatError(message, parameters));
-    }
-
-    /**
-     * Constructs a format exception from a given error and additional context info.
-     */
-    public FormatException(FormatError exc, Object... info) {
-        super(exc.toString());
-        this.errors = createMessageList();
-        this.errors.add(new FormatError(exc, info));
+        this.errors = new FormatErrorSet(message, parameters);
     }
 
     /**
@@ -61,12 +48,12 @@ public class FormatException extends Exception {
      * of the errors is determined by the set iterator.
      */
     public FormatException(Collection<?> errors) {
-        this.errors = createMessageList();
+        this.errors = new FormatErrorSet();
         for (Object error : errors) {
             if (error instanceof FormatError) {
                 this.errors.add((FormatError) error);
             } else {
-                this.errors.add(new FormatError(error.toString()));
+                this.errors.add(error.toString());
             }
         }
     }
@@ -84,13 +71,13 @@ public class FormatException extends Exception {
      */
     public void insert(FormatException prior) {
         if (prior != null) {
-            this.errors.addAll(0, prior.getErrors());
+            this.errors.addAll(prior.getErrors());
         }
     }
 
     /** Returns a list of error messages collected in this exception. */
-    public List<FormatError> getErrors() {
-        return Collections.unmodifiableList(this.errors);
+    public FormatErrorSet getErrors() {
+        return this.errors;
     }
 
     /** Combines the list of error messages collected in this exception. */
@@ -105,20 +92,13 @@ public class FormatException extends Exception {
      * @see FormatError#extend(Object...) 
      */
     public FormatException extend(Object par) {
-        List<FormatError> newErrors = createMessageList();
+        FormatErrorSet newErrors = new FormatErrorSet();
         for (FormatError error : getErrors()) {
             newErrors.add(error.extend(par));
         }
         return new FormatException(newErrors);
     }
 
-    /**
-     * Callback factory method for an empty list of error messages.
-     */
-    protected List<FormatError> createMessageList() {
-        return new LinkedList<FormatError>();
-    }
-
     /** List of error messages carried around by this exception. */
-    private final List<FormatError> errors;
+    private final FormatErrorSet errors;
 }

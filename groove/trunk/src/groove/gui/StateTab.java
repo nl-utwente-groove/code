@@ -422,7 +422,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
                     getSimulatorModel().getGrammar().getStartGraphModel();
                 if (startGraph != null) {
                     result.append("=");
-                    result.append(startGraph.getName());
+                    result.append(startGraph.getLastName());
                 }
             }
             MatchResult match = getSimulatorModel().getMatch();

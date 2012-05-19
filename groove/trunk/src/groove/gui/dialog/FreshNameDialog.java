@@ -16,7 +16,7 @@
  */
 package groove.gui.dialog;
 
-import groove.trans.RuleName;
+import groove.trans.QualName;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -117,7 +117,7 @@ abstract public class FreshNameDialog<Name> {
         String errorText = " ";
         Name label = getChosenName();
         StringBuilder error = new StringBuilder();
-        if (!RuleName.isValid(label.toString(), null, error)) {
+        if (!QualName.isValid(label.toString(), null, error)) {
             errorText = error.toString();
             enabled = false;
         } else if (this.existingNames.contains(label)) {

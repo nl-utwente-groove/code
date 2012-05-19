@@ -18,9 +18,6 @@ package groove.view;
 
 import groove.trans.ResourceKind;
 
-import java.util.Collections;
-import java.util.List;
-
 /**
  * View for prolog programs (which are just strings).
  * @author Arend Rensink
@@ -33,21 +30,22 @@ public class PrologModel extends TextBasedModel<String> {
      */
     public PrologModel(GrammarModel grammar, String name, String program) {
         super(grammar, ResourceKind.PROLOG, name, program);
-        this.externalErrors = Collections.emptyList();
+        this.externalErrors = new FormatErrorSet();
     }
 
     @Override
     public boolean isEnabled() {
-        return getGrammar().getProperties().getPrologNames().contains(getName());
+        return getGrammar().getProperties().getPrologNames().contains(
+            getFullName());
     }
 
     /** Clears the errors in this view. */
     public void clearErrors() {
-        this.externalErrors = Collections.emptyList();
+        this.externalErrors.clear();
     }
 
     /** Sets the errors in this view to a given list. */
-    public void setErrors(List<FormatError> errors) {
+    public void setErrors(FormatErrorSet errors) {
         this.externalErrors = errors;
     }
 
@@ -61,5 +59,5 @@ public class PrologModel extends TextBasedModel<String> {
     }
 
     /** List of Prolog formatting errors in this program. */
-    private List<FormatError> externalErrors;
+    private FormatErrorSet externalErrors;
 }

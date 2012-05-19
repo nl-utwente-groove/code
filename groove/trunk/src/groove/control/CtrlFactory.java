@@ -21,7 +21,7 @@ import groove.graph.GraphInfo;
 import groove.trans.Action;
 import groove.trans.Recipe;
 import groove.trans.Rule;
-import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -361,7 +361,7 @@ public class CtrlFactory {
     public CtrlAut buildDefault(Collection<? extends Action> actions)
         throws FormatException {
         CtrlAut result = new CtrlAut("control");
-        Set<FormatError> errors = new HashSet<FormatError>();
+        FormatErrorSet errors = new FormatErrorSet();
         Map<Integer,Set<Action>> priorityMap =
             new HashMap<Integer,Set<Action>>();
         Namespace namespace = new Namespace();
@@ -375,9 +375,9 @@ public class CtrlFactory {
                 }
             }
             if (needsInput) {
-                errors.add(new FormatError(
+                errors.add(
                     "Grammar needs explicit control for input action '%s'",
-                    action.getFullName()));
+                    action.getFullName());
                 continue;
             }
             if (action instanceof Rule) {

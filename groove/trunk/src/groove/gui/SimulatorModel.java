@@ -62,7 +62,9 @@ public class SimulatorModel implements Cloneable {
             GrammarModel grammar = getGrammar();
             switch (resource) {
             case CONTROL:
-                result = names.contains(grammar.getControlName());
+                Set<String> actives =
+                    new HashSet<String>(grammar.getControlNames());
+                result = actives.removeAll(names);
                 getStore().deleteTexts(ResourceKind.CONTROL, names);
                 break;
             case HOST:
@@ -104,7 +106,7 @@ public class SimulatorModel implements Cloneable {
         try {
             switch (resource) {
             case CONTROL:
-                result = oldName.equals(getGrammar().getControlName());
+                result = getGrammar().getControlNames().contains(oldName);
                 break;
             case HOST:
                 result = getGrammar().isStartGraphComponent(oldName);
@@ -171,17 +173,9 @@ public class SimulatorModel implements Cloneable {
     /** Enables a collection of named resources of a given kind. */
     private void setEnabled(ResourceKind kind, Set<String> names)
         throws IOException {
-        String name = names.iterator().next();
         SystemProperties oldProperties = getGrammar().getProperties();
         SystemProperties newProperties = oldProperties.clone();
         switch (kind) {
-        case CONTROL:
-            if (name.equals(oldProperties.getControlName())) {
-                name = "";
-            }
-            newProperties.setControlName(name);
-            getStore().putProperties(newProperties);
-            break;
         case HOST:
             getGrammar().toggleStartGraphs(names);
             break;
@@ -203,22 +197,15 @@ public class SimulatorModel implements Cloneable {
             break;
         case TYPE:
         case PROLOG:
-            List<String> actives = new ArrayList<String>();
-            if (kind == ResourceKind.TYPE) {
-                actives.addAll(newProperties.getTypeNames());
-            } else {
-                actives.addAll(newProperties.getPrologNames());
-            }
+        case CONTROL:
+            List<String> actives =
+                new ArrayList<String>(newProperties.getEnabledNames(kind));
             for (String typeName : names) {
                 if (!actives.remove(typeName)) {
                     actives.add(typeName);
                 }
             }
-            if (kind == ResourceKind.TYPE) {
-                newProperties.setTypeNames(actives);
-            } else {
-                newProperties.setPrologNames(actives);
-            }
+            newProperties.setEnabledNames(kind, actives);
             getStore().putProperties(newProperties);
             break;
         case PROPERTIES:
@@ -287,7 +274,7 @@ public class SimulatorModel implements Cloneable {
             GrammarModel grammar = getGrammar();
             boolean result =
                 kind != ResourceKind.CONTROL
-                    || name.equals(grammar.getControlName());
+                    || grammar.getControlNames().contains(name);
             getStore().putTexts(kind, Collections.singletonMap(name, program));
             changeGrammar(result);
             changeSelected(kind, name);
@@ -951,9 +938,6 @@ public class SimulatorModel implements Cloneable {
                         name = startNames.iterator().next();
                     }
                 }
-            } else if (resource == ResourceKind.CONTROL) {
-                // for control, the best choice is the active control program
-                name = getGrammar().getControlName();
             }
             if (name == null && !allNames.isEmpty()) {
                 // otherwise, just take the first existing name (if there is one)

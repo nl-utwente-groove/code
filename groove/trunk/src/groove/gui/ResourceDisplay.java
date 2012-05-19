@@ -21,6 +21,7 @@ import groove.gui.action.CancelEditAction;
 import groove.gui.action.CopyAction;
 import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
+import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
 import groove.view.ResourceModel;
@@ -571,7 +572,13 @@ public abstract class ResourceDisplay extends Display implements
      * @param text the text to be decorated
      */
     protected void decorateLabelText(String name, StringBuilder text) {
-        // empty
+        if (getResource(name).isEnabled()) {
+            HTMLConverter.STRONG_TAG.on(text);
+            HTMLConverter.HTML_TAG.on(text);
+        } else {
+            text.insert(0, "(");
+            text.append(")");
+        }
     }
 
     /** Index of the pain panel. This returns {@code 0} by default. */

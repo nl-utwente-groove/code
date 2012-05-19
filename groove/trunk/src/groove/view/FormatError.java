@@ -64,11 +64,11 @@ public class FormatError implements Comparable<FormatError>,
             this.resourceKind = ResourceKind.toResource(this.graph.getRole());
         } else if (par instanceof ControlModel) {
             this.control = (ControlModel) par;
-            this.resourceName = this.control.getName();
+            this.resourceName = this.control.getFullName();
             this.resourceKind = ResourceKind.CONTROL;
         } else if (par instanceof PrologModel) {
             this.prolog = (PrologModel) par;
-            this.resourceName = this.prolog.getName();
+            this.resourceName = this.prolog.getFullName();
             this.resourceKind = ResourceKind.PROLOG;
         } else if (par instanceof Element) {
             this.elements.add((Element) par);

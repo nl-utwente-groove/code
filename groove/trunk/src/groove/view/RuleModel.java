@@ -51,7 +51,6 @@ import groove.trans.RuleFactory;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleLabel;
-import groove.trans.RuleName;
 import groove.trans.RuleNode;
 import groove.trans.SystemProperties;
 import groove.util.DefaultFixable;
@@ -108,11 +107,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         graph.testFixed(true);
     }
 
-    @Override
-    public String getLastName() {
-        return new RuleName(getName()).child();
-    }
-
     /**
      * Returns the priority of the rule of which this is a model. Yields the same
      * result as <code>toRule().getPriority()</code>.
@@ -144,13 +138,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     Rule compute() throws FormatException {
         this.ruleFactory = RuleFactory.newInstance(getType());
         this.modelMap = new RuleModelMap(this.ruleFactory);
-        if (getSource().hasErrors()) {
-            throw new FormatException(getSource().getErrors());
-        }
+        getSource().getErrors().throwException();
         AspectGraph normalSource = getNormalSource();
-        if (normalSource.hasErrors()) {
-            throw new FormatException(normalSource.getErrors());
-        }
+        normalSource.getErrors().throwException();
         this.levelTree = new LevelTree(normalSource);
         this.modelMap.putAll(this.levelTree.getModelMap());
         this.typeMap = new TypeModelMap(getType().getFactory());
@@ -227,14 +217,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     public int compareTo(RuleModel o) {
         int result = getPriority() - o.getPriority();
         if (result == 0) {
-            result = getName().compareTo(o.getName());
+            result = getFullName().compareTo(o.getFullName());
         }
         return result;
     }
 
     @Override
     public String toString() {
-        return String.format("Rule model on '%s'", getName());
+        return String.format("Rule model on '%s'", getFullName());
     }
 
     /** Returns the (implicit or explicit) type graph of this grammar. */
@@ -278,7 +268,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
      */
     private Rule computeRule(LevelTree levelTree) throws FormatException {
         Rule result;
-        Collection<FormatError> errors = createErrors();
+        FormatErrorSet errors = createErrors();
         if (TO_RULE_DEBUG) {
             System.out.println("");
         }
@@ -696,7 +686,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          */
         private Index createIndex(Condition.Op operator, boolean positive,
                 AspectNode levelNode, Map<Index,List<Index>> levelTree) {
-            Index result = new Index(operator, positive, levelNode, getName());
+            Index result =
+                new Index(operator, positive, levelNode, getFullName());
             levelTree.put(result, new ArrayList<Index>());
             return result;
         }
@@ -718,7 +709,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         /** Constructs the stage 1 rule levels. */
         private SortedMap<Index,Level1> buildLevels1(SortedSet<Index> indexSet)
             throws FormatException {
-            Collection<FormatError> errors = createErrors();
+            FormatErrorSet errors = createErrors();
             // Set the parentage in tree preorder
             // Build the level data map,
             // in the tree-order of the indices
@@ -775,20 +766,17 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 LabelVar var = varEntry.getKey();
                 LabelVar oldVar = nameVarMap.put(var.getName(), var);
                 if (oldVar != null && !oldVar.equals(var)) {
-                    errors.add(new FormatError(
-                        "Duplicate variable '%s' for %s and %s labels", var,
-                        var.getKind().getDescription(false),
+                    errors.add("Duplicate variable '%s' for %s and %s labels",
+                        var, var.getKind().getDescription(false),
                         oldVar.getKind().getDescription(false),
                         varEntry.getValue().toArray(),
-                        modelVarMap.get(oldVar).toArray()));
+                        modelVarMap.get(oldVar).toArray());
                 }
             }
             for (Level1 level : result.values()) {
                 level.setFixed();
             }
-            if (!errors.isEmpty()) {
-                throw new FormatException(errors);
-            }
+            errors.throwException();
             return result;
         }
 
@@ -873,21 +861,19 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         private SortedMap<Index,Level2> buildLevels2(
                 SortedMap<Index,Level1> level1Map, RuleModelMap modelMap)
             throws FormatException {
-            SortedMap<Index,Level2> rersult = new TreeMap<Index,Level2>();
-            Collection<FormatError> errors = createErrors();
+            SortedMap<Index,Level2> result = new TreeMap<Index,Level2>();
+            FormatErrorSet errors = createErrors();
             for (Level1 level1 : level1Map.values()) {
                 try {
                     Index index = level1.getIndex();
                     Level2 level2 = new Level2(level1, modelMap);
-                    rersult.put(index, level2);
+                    result.put(index, level2);
                 } catch (FormatException e) {
                     errors.addAll(e.getErrors());
                 }
             }
-            if (!errors.isEmpty()) {
-                throw new FormatException(errors);
-            }
-            return rersult;
+            errors.throwException();
+            return result;
         }
 
         /** Constructs the level3 map. */
@@ -895,7 +881,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 SortedMap<Index,Level2> level2Map, RuleGraphMorphism typingMap)
             throws FormatException {
             SortedMap<Index,Level3> result = new TreeMap<Index,Level3>();
-            Collection<FormatError> errors = createErrors();
+            FormatErrorSet errors = createErrors();
             for (Level2 level2 : level2Map.values()) {
                 Index index = level2.getIndex();
                 Level3 parent =
@@ -903,9 +889,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 Level3 level3 = new Level3(level2, parent, typingMap);
                 result.put(index, level3);
             }
-            if (!errors.isEmpty()) {
-                throw new FormatException(errors);
-            }
+            errors.throwException();
             return result;
         }
 
@@ -1126,7 +1110,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
         @Override
         public String toString() {
-            return String.format("Rule %s, level %s, stage 1", getName(),
+            return String.format("Rule %s, level %s, stage 1", getFullName(),
                 getIndex());
         }
 
@@ -1195,10 +1179,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             this.modelMap = modelMap;
             this.isRule = index.isTopLevel();
             // initialise the rule data structures
-            this.lhs = createGraph(getName() + "-" + index + "-lhs");
-            this.mid = createGraph(getName() + "-" + index + "-mid");
-            this.rhs = createGraph(getName() + "-" + index + "-rhs");
-            Collection<FormatError> errors = createErrors();
+            this.lhs = createGraph(getFullName() + "-" + index + "-lhs");
+            this.mid = createGraph(getFullName() + "-" + index + "-mid");
+            this.rhs = createGraph(getFullName() + "-" + index + "-rhs");
+            FormatErrorSet errors = createErrors();
             try {
                 if (origin.matchCountNode != null) {
                     this.matchCountImage =
@@ -1217,9 +1201,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 }
             }
             // if there are errors in the node map, don't try mapping the edges
-            if (!errors.isEmpty()) {
-                throw new FormatException(errors);
-            }
+            errors.throwException();
             for (AspectEdge modelEdge : origin.modelEdges) {
                 try {
                     if (modelEdge.getKind() == CONNECT) {
@@ -1246,9 +1228,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             }
             checkAttributes(errors);
             checkVariables(errors);
-            if (!errors.isEmpty()) {
-                throw new FormatException(errors);
-            }
+            errors.throwException();
         }
 
         private void processVar(LabelVar modelVar) {
@@ -1393,7 +1373,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         /** Constructs the NACs for this rule. */
         private List<RuleGraph> computeNacs() throws FormatException {
             List<RuleGraph> result = new ArrayList<RuleGraph>();
-            Collection<FormatError> errors = createErrors();
             // add the nacs to the rule
             // find connected sets of NAC nodes, taking the
             // connection edges into account
@@ -1405,11 +1384,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 nac.addEdgeSet(cell.getEdges());
                 result.add(nac);
             }
-            if (errors.isEmpty()) {
-                return result;
-            } else {
-                throw new FormatException(errors);
-            }
+            return result;
         }
 
         /**
@@ -1514,7 +1489,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         /**
          * Checks if all product nodes have all their arguments.
          */
-        private void checkAttributes(Collection<FormatError> errors) {
+        private void checkAttributes(FormatErrorSet errors) {
             // check if product nodes have all their arguments (on this level)
             for (RuleNode prodNode : this.lhs.nodeSet()) {
                 if (!(prodNode instanceof OperatorNode)) {
@@ -1523,17 +1498,17 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 OperatorNode opNode = (OperatorNode) prodNode;
                 for (RuleNode argNode : opNode.getArguments()) {
                     if (!this.lhs.nodeSet().contains(argNode)) {
-                        errors.add(new FormatError(
+                        errors.add(
                             "Argument must occur on the level of the product node",
-                            opNode, argNode));
+                            opNode, argNode);
 
                     }
                 }
                 RuleNode opTarget = opNode.getTarget();
                 if (!this.lhs.nodeSet().contains(opTarget)) {
-                    errors.add(new FormatError(
+                    errors.add(
                         "Operation target must occur on the level of the product node",
-                        opNode, opTarget));
+                        opNode, opTarget);
 
                 }
             }
@@ -1542,7 +1517,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         /**
          * Checks if all label variables are bound
          */
-        private void checkVariables(Collection<FormatError> errors) {
+        private void checkVariables(FormatErrorSet errors) {
             Map<LabelVar,Set<RuleElement>> allVars =
                 new HashMap<LabelVar,Set<RuleElement>>();
             allVars.putAll(this.lhs.varMap());
@@ -1555,19 +1530,18 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 LabelVar var = varEntry.getKey();
                 LabelVar oldVar = varNames.put(var.getKey(), var);
                 if (oldVar != null && !oldVar.equals(var)) {
-                    errors.add(new FormatError(
-                        "Duplicate variable '%s' for %s and %s labels", var,
-                        var.getKind().getDescription(false),
+                    errors.add("Duplicate variable '%s' for %s and %s labels",
+                        var, var.getKind().getDescription(false),
                         oldVar.getKind().getDescription(false),
-                        varEntry.getValue().toArray()));
+                        varEntry.getValue().toArray());
                 }
             }
             allVars.keySet().removeAll(this.lhs.getBoundVars());
             allVars.keySet().removeAll(this.parentVars);
             for (Map.Entry<LabelVar,Set<RuleElement>> varEntry : allVars.entrySet()) {
                 LabelVar var = varEntry.getKey();
-                errors.add(new FormatError("Unassigned label variable %s", var,
-                    varEntry.getValue().toArray()));
+                errors.add("Unassigned label variable %s", var,
+                    varEntry.getValue().toArray());
             }
         }
 
@@ -1681,7 +1655,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
         @Override
         public String toString() {
-            return String.format("Rule %s, level %s, stage 2", getName(),
+            return String.format("Rule %s, level %s, stage 2", getFullName(),
                 getIndex());
         }
 
@@ -1755,11 +1729,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 Set<? extends TypeElement> lhsTypes = entry.getValue();
                 lhsTypes.removeAll(this.typeMap.getVarTypes(var));
                 if (!lhsTypes.isEmpty()) {
-                    this.errors.add(new FormatError(
+                    this.errors.add(
                         "Invalid %s type%s %s for creator variable %s",
                         var.getKind().getDescription(false),
-                        lhsTypes.size() == 1 ? "" : "s", Groove.toString(
-                            lhsTypes.toArray(), "", "", ", "), var));
+                        lhsTypes.size() == 1 ? "" : "s",
+                        Groove.toString(lhsTypes.toArray(), "", "", ", "), var);
                 }
             }
             // check for correct type specialisation
@@ -1772,15 +1746,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             } catch (FormatException exc) {
                 this.errors.addAll(transferErrors(exc.getErrors(), this.typeMap));
             }
-            if (!this.errors.isEmpty()) {
-                throw new FormatException(this.errors);
-            }
+            this.errors.throwException();
             for (RuleGraph nac : origin.nacs) {
                 this.nacs.add(toTypedGraph(nac, this.typeMap, null));
             }
-            if (!this.errors.isEmpty()) {
-                throw new FormatException(this.errors);
-            }
+            this.errors.throwException();
             for (Map.Entry<RuleNode,Color> colorEntry : origin.colorMap.entrySet()) {
                 this.colorMap.put(globalTypeMap.getNode(colorEntry.getKey()),
                     colorEntry.getValue());
@@ -1849,14 +1819,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          */
         private void checkTypeSpecialisation(Set<RuleNode> parentNodes,
                 RuleGraph lhs, RuleGraph rhs) throws FormatException {
-            Collection<FormatError> errors = createErrors();
+            FormatErrorSet errors = createErrors();
             for (RuleNode node : rhs.nodeSet()) {
                 TypeNode nodeType = node.getType();
                 if (nodeType != null && nodeType.isAbstract()
                     && !lhs.containsNode(node)) {
-                    errors.add(new FormatError(
-                        "Creation of abstract %s-edge not allowed",
-                        nodeType.label().text(), node));
+                    errors.add("Creation of abstract %s-edge not allowed",
+                        nodeType.label().text(), node);
                 }
             }
             // check for ambiguous mergers
@@ -1868,43 +1837,37 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     RuleNode target = edge.target();
                     TypeNode targetType = target.getType();
                     if (!source.isSharp()) {
-                        errors.add(new FormatError(
-                            "Merged %s-node must be sharply typed",
-                            sourceType.label().text(), source));
+                        errors.add("Merged %s-node must be sharply typed",
+                            sourceType.label().text(), source);
                     } else if (parentNodes.contains(source)
                         && !target.isSharp()) {
-                        errors.add(new FormatError(
+                        errors.add(
                             "Merged %s-node must be on same quantification level as merge target",
-                            sourceType.label().text(), source));
+                            sourceType.label().text(), source);
                     } else if (!getType().isSubtype(targetType, sourceType)) {
-                        errors.add(new FormatError(
-                            "Merged %s-node must be supertype of %s",
+                        errors.add("Merged %s-node must be supertype of %s",
                             sourceType.label().text(),
-                            targetType.label().text(), source));
+                            targetType.label().text(), source);
                     } else if (!target.isSharp()) {
                         if (!mergedNodes.add(edge.source())) {
-                            errors.add(new FormatError(
+                            errors.add(
                                 "%s-node is merged with two distinct non-sharp nodes",
-                                sourceType.label().text(), source));
+                                sourceType.label().text(), source);
                         }
                     } else if (source.getType().isDataType()) {
-                        errors.add(new FormatError(
-                            "Primitive %s-node can't be merged",
-                            sourceType.label().text(), source));
+                        errors.add("Primitive %s-node can't be merged",
+                            sourceType.label().text(), source);
                     }
                 } else {
                     TypeEdge edgeType = edge.getType();
                     if (edgeType != null && edgeType.isAbstract()
                         && !lhs.containsEdge(edge)) {
-                        errors.add(new FormatError(
-                            "Creation of abstract %s-edge not allowed",
-                            edgeType.label().text(), edge));
+                        errors.add("Creation of abstract %s-edge not allowed",
+                            edgeType.label().text(), edge);
                     }
                 }
             }
-            if (!errors.isEmpty()) {
-                throw new FormatException(errors);
-            }
+            errors.throwException();
         }
 
         /** Tests if a given RHS edge is a merger. */
@@ -1941,7 +1904,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         /** List of NAC graphs. */
         private final List<RuleGraph> nacs = new ArrayList<RuleGraph>();
         /** List of typing errors. */
-        private final Collection<FormatError> errors = createErrors();
+        private final FormatErrorSet errors = createErrors();
     }
 
     /**
@@ -1973,7 +1936,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          */
         public Condition computeFlatRule() throws FormatException {
             Condition result;
-            Collection<FormatError> errors = createErrors();
+            FormatErrorSet errors = createErrors();
             // the resulting rule
             result = createCondition(getRootGraph(), this.lhs);
             if (this.isRule) {
@@ -1989,11 +1952,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     errors.addAll(e.getErrors());
                 }
             }
-            if (errors.isEmpty()) {
-                return result;
-            } else {
-                throw new FormatException(errors);
-            }
+            errors.throwException();
+            return result;
         }
 
         /**
@@ -2025,7 +1985,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         private RuleGraph getIntersection(RuleGraph parentGraph,
                 RuleGraph myGraph) {
             RuleGraph result =
-                parentGraph.newGraph(getName() + "-" + getIndex() + "-root");
+                parentGraph.newGraph(getFullName() + "-" + getIndex() + "-root");
             for (RuleNode node : parentGraph.nodeSet()) {
                 if (myGraph.containsNode(node)) {
                     result.addNode(node);
@@ -2149,7 +2109,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
         @Override
         public String toString() {
-            return String.format("Rule %s, level %s, stage 4", getName(),
+            return String.format("Rule %s, level %s, stage 4", getFullName(),
                 getIndex());
         }
 
@@ -2180,7 +2140,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     private class Parameters {
         /** Initialises the internal data structures. */
         public Parameters() throws FormatException {
-            Collection<FormatError> errors = createErrors();
+            FormatErrorSet errors = createErrors();
             this.hiddenPars = new HashSet<RuleNode>();
             // Mapping from parameter position to parameter
             Map<Integer,CtrlPar.Var> parMap =
@@ -2216,9 +2176,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     }
                 }
             }
-            if (!errors.isEmpty()) {
-                throw new FormatException(errors);
-            }
+            errors.throwException();
             // construct the signature
             // test if parameters form a consecutive sequence
             Set<Integer> missingPars = new TreeSet<Integer>();

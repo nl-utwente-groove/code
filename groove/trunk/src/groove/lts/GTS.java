@@ -67,6 +67,8 @@ import java.util.Set;
  */
 public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         Cloneable {
+    /** Debug flag controlling whether states are compared for control location equality. */
+    protected final static boolean CHECK_CONTROL_LOCATION = true;
     /**
      * The number of transitions generated but not added (due to overlapping
      * existing transitions)
@@ -777,7 +779,8 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     /** Specialised set implementation for storing states. */
     public static class StateSet extends TreeHashSet<GraphState> {
         /** Constructs a new, empty state set. */
-        public StateSet(CollapseMode collapse, IsoChecker<HostNode,HostEdge> checker) {
+        public StateSet(CollapseMode collapse,
+                IsoChecker<HostNode,HostEdge> checker) {
             super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION,
                 STATE_SET_ROOT_RESOLUTION);
             this.collapse = collapse;
@@ -798,7 +801,8 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
             if (this.collapse == COLLAPSE_NONE) {
                 return myState == otherState;
             }
-            if (myState.getCtrlState() != otherState.getCtrlState()) {
+            if (CHECK_CONTROL_LOCATION
+                && myState.getCtrlState() != otherState.getCtrlState()) {
                 return false;
             }
             HostNode[] myBoundNodes = myState.getBoundNodes();
@@ -869,6 +873,9 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
                     }
                 }
             }
+            if (CHECK_CONTROL_LOCATION) {
+                result += System.identityHashCode(stateKey.getCtrlState());
+            }
             return result;
         }
 
@@ -902,7 +909,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
          */
         COLLAPSE_ISO_STRONG;
     }
-    
+
     /** Set of states that only tests for state number as equality. */
     public static class NormalisedStateSet extends TreeHashSet<GraphState> {
         @Override

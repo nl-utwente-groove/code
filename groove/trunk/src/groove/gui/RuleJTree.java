@@ -30,8 +30,8 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.trans.Action;
+import groove.trans.QualName;
 import groove.trans.ResourceKind;
-import groove.trans.RuleName;
 import groove.view.GrammarModel;
 import groove.view.ResourceModel;
 import groove.view.RuleModel;
@@ -139,8 +139,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
         List<TreePath> expandedPaths = new ArrayList<TreePath>();
         List<TreePath> selectedPaths = new ArrayList<TreePath>();
         for (Map.Entry<Integer,Set<RuleModel>> priorityEntry : priorityMap.entrySet()) {
-            Map<RuleName,DirectoryTreeNode> dirNodeMap =
-                new HashMap<RuleName,DirectoryTreeNode>();
+            Map<QualName,DirectoryTreeNode> dirNodeMap =
+                new HashMap<QualName,DirectoryTreeNode>();
             // if the rule system has multiple priorities, we want an extra
             // level of nodes
             if (priorityMap.size() > 1) {
@@ -149,10 +149,10 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 dirNodeMap.clear();
             }
             for (RuleModel ruleView : priorityEntry.getValue()) {
-                String ruleName = ruleView.getName();
+                String ruleName = ruleView.getFullName();
                 // recursively add parent directory nodes as required
                 DefaultMutableTreeNode parentNode =
-                    addParentNode(topNode, dirNodeMap, new RuleName(ruleName));
+                    addParentNode(topNode, dirNodeMap, new QualName(ruleName));
                 // create the rule node and register it
                 RuleTreeNode ruleNode = new RuleTreeNode(ruleView);
                 parentNode.add(ruleNode);
@@ -302,7 +302,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
     /** Collects all rule names corresponding to a given tree node or its children. */
     private void collectRules(TreeNode node, Set<String> result) {
         if (node instanceof RuleTreeNode) {
-            result.add(((RuleTreeNode) node).getRule().getName());
+            result.add(((RuleTreeNode) node).getRule().getFullName());
         } else if (node instanceof PriorityTreeNode
             || node instanceof DirectoryTreeNode) {
             for (int i = 0; i < node.getChildCount(); i++) {
@@ -336,8 +336,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
     /** Adds tree nodes for all levels of a structured rule name. */
     private DefaultMutableTreeNode addParentNode(
             DefaultMutableTreeNode topNode,
-            Map<RuleName,DirectoryTreeNode> dirNodeMap, RuleName ruleName) {
-        RuleName parent = ruleName.parent();
+            Map<QualName,DirectoryTreeNode> dirNodeMap, QualName ruleName) {
+        QualName parent = ruleName.parent();
         if (parent == null) {
             // there is no parent rule name; the parent node is the top node
             return topNode;
@@ -476,7 +476,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
         String result;
         if (value instanceof RuleTreeNode) {
             RuleModel ruleView = ((RuleTreeNode) value).getRule();
-            result = this.display.getLabelText(ruleView.getName());
+            result = this.display.getLabelText(ruleView.getFullName());
         } else {
             result =
                 super.convertValueToText(value, selected, expanded, leaf, row,
@@ -678,7 +678,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
 
         /** Text of this node as displayed in the rule tree. */
         public String getText() {
-            return new RuleName(getAction().getName()).child();
+            return new QualName(getAction().getName()).child();
         }
 
         /**
@@ -686,7 +686,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
          */
         @Override
         public String toString() {
-            return new RuleName(getAction().getName()).child();
+            return new QualName(getAction().getName()).child();
         }
     }
 
@@ -698,15 +698,15 @@ public class RuleJTree extends JTree implements SimulatorListener {
          * Creates a new rule node based on a given rule name. The node can have
          * children.
          */
-        public DirectoryTreeNode(RuleName name) {
+        public DirectoryTreeNode(QualName name) {
             super(name, true);
         }
 
         /**
          * Convenience method to retrieve the user object as a rule name.
          */
-        public RuleName name() {
-            return (RuleName) getUserObject();
+        public QualName name() {
+            return (QualName) getUserObject();
         }
 
         /**
@@ -741,7 +741,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 RuleTreeNode node = (RuleTreeNode) value;
                 tip = node.getToolTipText();
                 RuleDisplay display = RuleJTree.this.display;
-                String ruleName = node.getRule().getName();
+                String ruleName = node.getRule().getFullName();
                 icon = display.getListIcon(ruleName);
                 error = display.hasError(ruleName);
                 text = display.getLabelText(ruleName);

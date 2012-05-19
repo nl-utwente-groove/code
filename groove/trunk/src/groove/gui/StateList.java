@@ -685,7 +685,7 @@ public class StateList extends JTree implements SimulatorListener {
                     Object[] nodes = getPathForRow(selectedRow).getPath();
                     for (int i = nodes.length - 1; i >= 0; i--) {
                         if (nodes[i] instanceof RuleTreeNode) {
-                            result.add(((RuleTreeNode) nodes[i]).getRule().getName());
+                            result.add(((RuleTreeNode) nodes[i]).getRule().getFullName());
                         }
                     }
                 }

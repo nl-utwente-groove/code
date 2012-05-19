@@ -391,7 +391,8 @@ public final class AGTS extends GTS {
          */
         @Override
         protected boolean areEqual(GraphState myState, GraphState otherState) {
-            if (myState.getCtrlState() != otherState.getCtrlState()) {
+            if (CHECK_CONTROL_LOCATION
+                && myState.getCtrlState() != otherState.getCtrlState()) {
                 return false;
             }
 

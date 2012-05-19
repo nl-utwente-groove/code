@@ -38,7 +38,7 @@ import groove.io.LayoutIO;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.Version;
-import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 
 import java.awt.Rectangle;
@@ -46,7 +46,6 @@ import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,9 +101,9 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
             if (!Version.isKnownGxlVersion(GraphInfo.getVersion(graph))) {
                 GraphInfo.addErrors(
                     graph,
-                    Arrays.asList(new FormatError(
+                    new FormatErrorSet(
                         "GXL file format version '%s' is higher than supported version '%s'",
-                        GraphInfo.getVersion(graph), Version.GXL_VERSION)));
+                        GraphInfo.getVersion(graph), Version.GXL_VERSION));
             }
             return result;
         } finally {
