@@ -166,6 +166,9 @@ public class CtrlLabel extends AbstractLabel {
         return getNumber() - other.getNumber();
     }
 
+    /* The above equals and hashcode are correct in principle
+     * but they cause too much overhead in CtrlAut.normalise.
+     * As a consequence, normalisation does not minimise as much as it could
     @Override
     protected int computeHashCode() {
         final int prime = 31;
@@ -206,6 +209,7 @@ public class CtrlLabel extends AbstractLabel {
         }
         return true;
     }
+    */
 
     /** 
      * Returns a copy of this label in which the guard is

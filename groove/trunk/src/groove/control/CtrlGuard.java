@@ -16,8 +16,10 @@
  */
 package groove.control;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -58,6 +60,39 @@ public class CtrlGuard extends TreeSet<CtrlTransition> implements
             while (result == 0 && myIter.hasNext()) {
                 result = myIter.next().compareTo(hisIter.next());
             }
+        }
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof CtrlGuard)) {
+            return false;
+        }
+        CtrlGuard other = (CtrlGuard) obj;
+        if (size() != other.size()) {
+            return false;
+        }
+        Set<CtrlLabel> otherLabels = new HashSet<CtrlLabel>();
+        for (CtrlTransition trans : other) {
+            otherLabels.add(trans.label());
+        }
+        for (CtrlTransition trans : this) {
+            if (!otherLabels.contains(trans.label())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 0;
+        for (CtrlTransition trans : this) {
+            result += trans.label().hashCode();
         }
         return result;
     }
