@@ -419,6 +419,7 @@ public class CtrlFactory {
             }
             result = buildAlap(result);
         }
+        GraphInfo.throwException(result);
         result = result.normalise();
         result.setDefault();
         return result;

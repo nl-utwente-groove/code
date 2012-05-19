@@ -78,7 +78,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
 
     @Override
     public CtrlAut newGraph(String name) {
-        return new CtrlAut(getName());
+        return new CtrlAut(name);
     }
 
     @Override
@@ -126,6 +126,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
 
     /** 
      * Clones this automaton, optionally making the intermediate states transient.
+     * @param name the name of the new automaton
      * @param recipe if not {@code null}, the new automaton is to be the body
      * of a recipe with this name
      */
@@ -169,6 +170,9 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
             CtrlTransition newTrans =
                 newSource.addTransition(newLabel, newTarget);
             morphism.putEdge(trans, newTrans);
+        }
+        if (isDefault()) {
+            result.setDefault();
         }
         result.addErrors(this);
         return result;
@@ -353,61 +357,105 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
         }
         for (CtrlState i : nodeSet()) {
             for (CtrlState j : nodeSet()) {
-                if (i.getNumber() < j.getNumber()) {
-                    Set<CtrlState> ijPair =
-                        new HashSet<CtrlState>(Arrays.asList(i, j));
-                    Set<Set<CtrlState>> depSet = depMap.remove(ijPair);
-                    assert depSet != null;
-                    Map<CtrlLabel,CtrlTransition> iOutMap =
-                        getOutTransitions(i);
-                    Map<CtrlLabel,CtrlTransition> jOutMap =
-                        getOutTransitions(j);
-                    boolean distinct =
-                        i.isTransient() != j.isTransient()
-                            || !iOutMap.keySet().equals(jOutMap.keySet());
+                if (i.getNumber() >= j.getNumber()) {
+                    continue;
+                }
+                Set<CtrlState> ijPair =
+                    new HashSet<CtrlState>(Arrays.asList(i, j));
+                Set<Set<CtrlState>> depSet = depMap.remove(ijPair);
+                assert depSet != null;
+                // establish whether i and j are distinguishable states
+                boolean distinct = i.isTransient() != j.isTransient();
+                if (!distinct) {
+                    distinct = !i.getBoundVars().equals(j.getBoundVars());
+                }
+                if (!distinct) {
+                    Map<CtrlTransition,CtrlTransition> equivalence =
+                        computeEquivalence(i, j);
+                    distinct = equivalence == null;
                     if (!distinct) {
-                        for (Map.Entry<CtrlLabel,CtrlTransition> iOutEntry : iOutMap.entrySet()) {
-                            CtrlTransition iOut = iOutEntry.getValue();
-                            CtrlTransition jOut =
-                                jOutMap.get(iOutEntry.getKey());
-                            if (iOut.isStart() != jOut.isStart()) {
+                        // defer the distinctness test to the target states
+                        // of all outgoing transitions
+                        for (Map.Entry<CtrlTransition,CtrlTransition> entry : equivalence.entrySet()) {
+                            CtrlTransition iOut = entry.getKey();
+                            CtrlTransition jOut = entry.getValue();
+                            if (iOut.target() == jOut.target()) {
+                                continue;
+                            }
+                            Set<CtrlState> ijTargetPair =
+                                new HashSet<CtrlState>(Arrays.asList(
+                                    iOut.target(), jOut.target()));
+                            Set<Set<CtrlState>> ijTargetDep =
+                                depMap.get(ijTargetPair);
+                            if (ijTargetDep == null) {
                                 distinct = true;
                                 break;
-                            }
-                            if (iOut.target() != jOut.target()) {
-                                Set<CtrlState> ijTargetPair =
-                                    new HashSet<CtrlState>(Arrays.asList(
-                                        iOut.target(), jOut.target()));
-                                Set<Set<CtrlState>> ijTargetDep =
-                                    depMap.get(ijTargetPair);
-                                if (ijTargetDep == null) {
-                                    distinct = true;
-                                    break;
-                                } else {
-                                    ijTargetDep.addAll(depSet);
-                                }
+                            } else {
+                                ijTargetDep.addAll(depSet);
                             }
                         }
                     }
-                    if (distinct) {
-                        result.removeAll(depSet);
-                    }
+                }
+                if (distinct) {
+                    result.removeAll(depSet);
                 }
             }
         }
         return result;
     }
 
-    private Map<CtrlLabel,CtrlTransition> getOutTransitions(CtrlState s)
+    /** Computes a one-to-one mapping between the outgoing transitions
+     * of two control states. Return {@code null} if there is no such mapping.
+     */
+    private Map<CtrlTransition,CtrlTransition> computeEquivalence(CtrlState i,
+            CtrlState j) throws FormatException {
+        Map<CtrlTransition,CtrlTransition> result =
+            new HashMap<CtrlTransition,CtrlTransition>();
+        Map<CtrlCall,CtrlTransition> iOutMap = getOutTransitions(i);
+        Map<CtrlCall,CtrlTransition> jOutMap = getOutTransitions(j);
+        boolean distinct = !iOutMap.keySet().equals(jOutMap.keySet());
+        // build the result map, based on the control calls in the transitions
+        if (!distinct) {
+            for (Map.Entry<CtrlCall,CtrlTransition> iOutEntry : iOutMap.entrySet()) {
+                CtrlTransition iOut = iOutEntry.getValue();
+                CtrlTransition jOut = jOutMap.get(iOutEntry.getKey());
+                if (iOut.isStart() != jOut.isStart()) {
+                    distinct = true;
+                    break;
+                }
+                result.put(iOut, jOut);
+            }
+        }
+        // now check if the guards also coincide
+        if (!distinct) {
+            check: for (Map.Entry<CtrlTransition,CtrlTransition> entry : result.entrySet()) {
+                CtrlGuard iGuard = entry.getKey().getGuard();
+                CtrlGuard jGuard = entry.getValue().getGuard();
+                if (iGuard.size() != jGuard.size()) {
+                    distinct = true;
+                    break;
+                }
+                for (CtrlTransition iGuardElem : iGuard) {
+                    if (!jGuard.contains(result.get(iGuardElem))) {
+                        distinct = true;
+                        break check;
+                    }
+                }
+            }
+        }
+        return distinct ? null : result;
+    }
+
+    private Map<CtrlCall,CtrlTransition> getOutTransitions(CtrlState s)
         throws FormatException {
-        Map<CtrlLabel,CtrlTransition> result =
-            new HashMap<CtrlLabel,CtrlTransition>();
+        Map<CtrlCall,CtrlTransition> result =
+            new HashMap<CtrlCall,CtrlTransition>();
         for (CtrlTransition outTrans : s.getTransitions()) {
-            CtrlLabel label = outTrans.label();
-            CtrlTransition oldTrans = result.put(label, outTrans);
+            CtrlCall call = outTrans.getCall();
+            CtrlTransition oldTrans = result.put(call, outTrans);
             if (oldTrans != null) {
                 throw new FormatException(
-                    "State %s has multiple outgoing labels %s", s, label);
+                    "State %s has multiple outgoing calls %s", s, call);
             }
         }
         return result;
