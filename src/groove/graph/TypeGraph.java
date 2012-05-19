@@ -39,6 +39,7 @@ import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
 import groove.util.Groove;
 import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 
 import java.awt.Color;
@@ -54,7 +55,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * Extends a standard graph with some useful functionality for querying a type
@@ -240,7 +240,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     /** Checks if the graph satisfies the properties of a type graph. */
     public void test() throws FormatException {
-        Set<FormatError> errors = new TreeSet<FormatError>();
+        FormatErrorSet errors = new FormatErrorSet();
         // Set of edge labels occurring in the type graph
         Set<TypeLabel> edgeLabels = new HashSet<TypeLabel>();
         for (TypeEdge typeEdge : edgeSet()) {
@@ -250,9 +250,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 TypeLabel sourceType = source.label();
                 // check for outgoing edge types from data types
                 if (sourceType.isDataType()) {
-                    errors.add(new FormatError("Data type '%s' cannot have %s",
+                    errors.add("Data type '%s' cannot have %s",
                         sourceType.text(), typeLabel.isFlag() ? "flags"
-                                : "outgoing edges", source));
+                                : "outgoing edges", source);
                 }
                 edgeLabels.add(typeEdge.label());
             }
@@ -277,17 +277,14 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     }
                     if (hasCommonSubtype(edge1.source(), edge2.source())
                         && hasCommonSubtype(edge1.target(), edge2.target())) {
-                        errors.add(new FormatError(
-                            "Possible type confusion of %s-%ss",
+                        errors.add("Possible type confusion of %s-%ss",
                             edgeLabel.text(), edgeLabel.isFlag() ? "flag"
-                                    : "edge", edge1, edge2));
+                                    : "edge", edge1, edge2);
                     }
                 }
             }
         }
-        if (!errors.isEmpty()) {
-            throw new FormatException(errors);
-        }
+        errors.throwException();
     }
 
     @Override
@@ -415,7 +412,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         testFixed(true);
         RuleFactory ruleFactory = parentTyping.getFactory();
         RuleGraphMorphism result = new RuleGraphMorphism(ruleFactory);
-        Set<FormatError> errors = new TreeSet<FormatError>();
+        FormatErrorSet errors = new FormatErrorSet();
         // extract the variable types from the parent typing
         result.copyVarTyping(parentTyping);
         // extract additional node variable typing from the source edges
@@ -534,9 +531,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     matchingTypes));
             }
             if (image.getMatchingTypes().isEmpty()) {
-                errors.add(new FormatError("Inconsistent %s type %s",
+                errors.add("Inconsistent %s type %s",
                     image.label().getRole().getDescription(false),
-                    image.label(), varEdge));
+                    image.label(), varEdge);
             }
             result.putEdge(varEdge, image);
         }
@@ -549,9 +546,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 getTypeEdge(sourceImage.getType(), edgeLabel.getTypeLabel(),
                     targetImage.getType(), false);
             if (typeEdge == null) {
-                errors.add(new FormatError("%s-node has unknown %s-%s",
-                    sourceImage.getType(), edgeLabel,
-                    edge.getRole().getDescription(false), edge));
+                errors.add("%s-node has unknown %s-%s", sourceImage.getType(),
+                    edgeLabel, edge.getRole().getDescription(false), edge);
             } else {
                 result.putEdge(edge,
                     ruleFactory.createEdge(sourceImage, edgeLabel, targetImage));
@@ -587,17 +583,15 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     }
                 }
                 if (!fit) {
-                    errors.add(new FormatError(
-                        "No %s-path exists between %s and %s", checkLabel,
-                        sourceImage.getType(), targetImage.getType(), edge));
+                    errors.add("No %s-path exists between %s and %s",
+                        checkLabel, sourceImage.getType(),
+                        targetImage.getType(), edge);
                 }
             }
             result.putEdge(edge,
                 ruleFactory.createEdge(sourceImage, edgeLabel, targetImage));
         }
-        if (!errors.isEmpty()) {
-            throw new FormatException(errors);
-        }
+        errors.throwException();
         return result;
 
     }
@@ -722,7 +716,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         testFixed(true);
         HostFactory hostFactory = HostFactory.newInstance(this);
         HostGraphMorphism morphism = new HostGraphMorphism(hostFactory);
-        Set<FormatError> errors = new TreeSet<FormatError>();
+        FormatErrorSet errors = new FormatErrorSet();
         for (HostNode node : source.nodeSet()) {
             try {
                 HostNode image;
@@ -736,12 +730,11 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 } else {
                     List<HostEdge> nodeTypeEdges = detectNodeType(source, node);
                     if (nodeTypeEdges.isEmpty()) {
-                        errors.add(new FormatError("Untyped node", node));
+                        errors.add("Untyped node", node);
                         image = node;
                     } else if (nodeTypeEdges.size() > 1) {
-                        errors.add(new FormatError(
-                            "Multiple node types %s, %s", nodeTypeEdges.get(0),
-                            nodeTypeEdges.get(1), node));
+                        errors.add("Multiple node types %s, %s",
+                            nodeTypeEdges.get(0), nodeTypeEdges.get(1), node);
                         image = node;
                     } else {
                         HostEdge nodeTypeEdge = nodeTypeEdges.get(0);
@@ -787,21 +780,19 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             TypeEdge typeEdge =
                 getTypeEdge(sourceType, edgeType, targetType, false);
             if (typeEdge == null) {
-                errors.add(new FormatError("%s-node has unknown %s-%s",
-                    sourceType, edgeType.text(),
-                    edgeType.getRole().getDescription(false), edge.source()));
+                errors.add("%s-node has unknown %s-%s", sourceType,
+                    edgeType.text(), edgeType.getRole().getDescription(false),
+                    edge.source());
             } else if (typeEdge.isAbstract()) {
-                errors.add(new FormatError("%s-node has abstract %s-%s",
-                    sourceType, edgeType.text(),
-                    edgeType.getRole().getDescription(false), edge.source()));
+                errors.add("%s-node has abstract %s-%s", sourceType,
+                    edgeType.text(), edgeType.getRole().getDescription(false),
+                    edge.source());
             } else {
                 morphism.putEdge(edge,
                     hostFactory.createEdge(sourceImage, edgeType, targetImage));
             }
         }
-        if (!errors.isEmpty()) {
-            throw new FormatException(errors);
-        }
+        errors.throwException();
         return morphism;
     }
 

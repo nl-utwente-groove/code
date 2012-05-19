@@ -33,7 +33,6 @@ import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 
 import java.awt.Color;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -83,10 +82,8 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
 
     @Override
     TypeGraph compute() throws FormatException {
-        if (getSource().hasErrors()) {
-            throw new FormatException(getSource().getErrors());
-        }
-        Collection<FormatError> errors = createErrors();
+        getSource().getErrors().throwException();
+        FormatErrorSet errors = createErrors();
         TypeGraph result = new TypeGraph(getFullName());
         TypeFactory factory = result.getFactory();
         this.modelMap = new TypeModelMap(factory);
@@ -119,9 +116,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                 }
             }
         }
-        if (!errors.isEmpty()) {
-            throw new FormatException(errors);
-        }
+        errors.throwException();
         // check if there are untyped, non-virtual nodes
         Set<AspectNode> untypedNodes =
             new HashSet<AspectNode>(getSource().nodeSet());
@@ -139,8 +134,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             }
         }
         for (AspectNode untypedNode : untypedNodes) {
-            errors.add(new FormatError("Node '%s' has no type label",
-                untypedNode));
+            errors.add("Node '%s' has no type label", untypedNode);
         }
         // copy the edges from model to model
         for (AspectEdge modelEdge : getSource().edgeSet()) {

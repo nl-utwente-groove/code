@@ -142,7 +142,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * Indicates if a given jCell is currently being filtered from view. This is
+     * Indicates if a given graph element is currently being filtered from view. This is
      * the case if it is in the set of filtered labels.
      */
     public boolean isFiltering(Element jCellKey) {

@@ -26,6 +26,7 @@ import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.util.ExprParser;
 import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 
 import java.awt.Point;
@@ -38,7 +39,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +96,7 @@ public class LayoutIO {
             new BufferedReader(new InputStreamReader(in));
         LayoutMap<DefaultNode,DefaultEdge> result =
             new LayoutMap<DefaultNode,DefaultEdge>();
-        List<FormatError> errors = new ArrayList<FormatError>();
+        FormatErrorSet errors = new FormatErrorSet();
         try {
             int version = 1;
             // read in from the layout file until done
@@ -123,8 +123,7 @@ public class LayoutIO {
                     }
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
-                        errors.add(new FormatError(
-                            LAYOUT_FORMAT_ERROR + ": %s", error));
+                        errors.add(LAYOUT_FORMAT_ERROR + ": %s", error);
                     }
                 }
             }
@@ -132,11 +131,8 @@ public class LayoutIO {
             layoutReader.close();
             in.close();
         }
-        if (errors.isEmpty()) {
-            return result;
-        } else {
-            throw new FormatException(errors);
-        }
+        errors.throwException();
+        return result;
     }
 
     /**

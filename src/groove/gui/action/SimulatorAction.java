@@ -5,7 +5,6 @@ import groove.gui.BehaviourOption;
 import groove.gui.ControlDisplay;
 import groove.gui.DisplaysPanel;
 import groove.gui.EditType;
-import groove.gui.HostDisplay;
 import groove.gui.Icons;
 import groove.gui.LTSDisplay;
 import groove.gui.Options;
@@ -15,7 +14,6 @@ import groove.gui.ResourceDisplay;
 import groove.gui.RuleDisplay;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
-import groove.gui.TypeDisplay;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.FindReplaceDialog;
 import groove.gui.dialog.FreshNameDialog;
@@ -162,7 +160,7 @@ public abstract class SimulatorAction extends AbstractAction implements
     }
 
     /** Convenience method to retrieve the state panel of the simulator. */
-    protected final HostDisplay getHostDisplay() {
+    protected final ResourceDisplay getHostDisplay() {
         return getDisplaysPanel().getHostDisplay();
     }
 
@@ -172,7 +170,7 @@ public abstract class SimulatorAction extends AbstractAction implements
     }
 
     /** Convenience method to retrieve the type panel of the simulator. */
-    protected final TypeDisplay getTypeDisplay() {
+    protected final ResourceDisplay getTypeDisplay() {
         return getDisplaysPanel().getTypeDisplay();
     }
 

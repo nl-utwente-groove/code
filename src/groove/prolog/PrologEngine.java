@@ -28,14 +28,12 @@ import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.Interpreter.Goal;
 import gnu.prolog.vm.PrologException;
 import groove.prolog.util.TermConverter;
-import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -85,14 +83,12 @@ public class PrologEngine {
         this.interpreter = getEnvironment().createInterpreter();
         getEnvironment().runInitialization(this.interpreter);
 
-        if (!getEnvironment().getLoadingErrors().isEmpty()) {
-            List<FormatError> errors = new ArrayList<FormatError>();
-            for (PrologTextLoaderError error : getEnvironment().getLoadingErrors()) {
-                errors.add(new FormatError("%s", error.getMessage(),
-                    error.getLine(), error.getColumn()));
-            }
-            throw new FormatException(errors);
+        FormatErrorSet errors = new FormatErrorSet();
+        for (PrologTextLoaderError error : getEnvironment().getLoadingErrors()) {
+            errors.add("%s", error.getMessage(), error.getLine(),
+                error.getColumn());
         }
+        errors.throwException();
     }
 
     /**

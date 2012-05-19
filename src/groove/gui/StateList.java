@@ -676,7 +676,7 @@ public class StateList extends JTree implements SimulatorListener {
             }
         }
 
-        /** Returns the list of currently selected rule names. */
+        /** Returns the list of currently selected full rule names. */
         private Set<String> getSelectedRules() {
             Set<String> result = new HashSet<String>();
             int[] selectedRows = getSelectionRows();

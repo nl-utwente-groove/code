@@ -20,7 +20,7 @@ import groove.graph.AbstractLabel;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.TypeLabel;
-import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -261,7 +261,7 @@ public class AspectLabel extends AbstractLabel {
     /** Adds an error to the errors of this label. */
     void addError(String message, Object... args) {
         testFixed(false);
-        this.errors.add(new FormatError(message, args));
+        this.errors.add(message, args);
     }
 
     /** Indicates if there are any errors in this label. */
@@ -271,13 +271,13 @@ public class AspectLabel extends AbstractLabel {
     }
 
     /** Returns the (possibly empty) list of errors in this label. */
-    public List<FormatError> getErrors() {
+    public FormatErrorSet getErrors() {
         testFixed(true);
         return this.errors;
     }
 
     /** List of errors detected while building this label. */
-    private final List<FormatError> errors = new ArrayList<FormatError>();
+    private final FormatErrorSet errors = new FormatErrorSet();
     /** The set of all allowed nesting labels. */
     private static final Map<GraphRole,String> roleDescription =
         new EnumMap<GraphRole,String>(GraphRole.class);

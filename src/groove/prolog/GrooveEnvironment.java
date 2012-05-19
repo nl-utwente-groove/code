@@ -38,18 +38,16 @@ import groove.prolog.builtin.LtsPredicates;
 import groove.prolog.builtin.RulePredicates;
 import groove.prolog.builtin.TransPredicates;
 import groove.prolog.builtin.TypePredicates;
-import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -201,14 +199,12 @@ public class GrooveEnvironment extends Environment {
         }
         getModule().removePredicateListener(listener);
         this.userTags.addAll(listener.getPredicates());
-        if (!loaderState.getErrors().isEmpty()) {
-            List<FormatError> errors = new ArrayList<FormatError>();
-            for (PrologTextLoaderError error : loaderState.getErrors()) {
-                errors.add(new FormatError("%s", error.getMessage(),
-                    error.getLine(), error.getColumn()));
-            }
-            throw new FormatException(errors);
+        FormatErrorSet errors = new FormatErrorSet();
+        for (PrologTextLoaderError error : loaderState.getErrors()) {
+            errors.add("%s", error.getMessage(), error.getLine(),
+                error.getColumn());
         }
+        errors.throwException();
     }
 
     /**

@@ -19,12 +19,11 @@ package groove.trans;
 import groove.control.CtrlAut;
 import groove.graph.TypeGraph;
 import groove.prolog.GrooveEnvironment;
+import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -276,15 +275,13 @@ public class GraphGrammar {
      * {@link #setFixed()}.
      */
     public void testConsistent() throws FormatException {
-        List<String> errors = new ArrayList<String>();
+        FormatErrorSet errors = new FormatErrorSet();
         // collect the exceptions of the rules
         if (this.typeGraph == null) {
             errors.add(String.format("Labels and subtypes not initialised"));
         }
         // if any exception was encountered, throw it
-        if (!errors.isEmpty()) {
-            throw new FormatException(errors);
-        }
+        errors.throwException();
     }
 
     /**

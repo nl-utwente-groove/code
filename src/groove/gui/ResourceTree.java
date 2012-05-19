@@ -84,11 +84,11 @@ public class ResourceTree extends JTree implements SimulatorListener {
     private static final String SEPARATOR = ".";
 
     /** Creates an instance for a given simulator. */
-    public ResourceTree(ResourceDisplay parent, ResourceKind kind) {
+    public ResourceTree(ResourceDisplay parent) {
 
         // store parent display, resource kind and leaf icon
         this.parentDisplay = parent;
-        this.resourceKind = kind;
+        this.resourceKind = parent.getResourceKind();
         this.selectionListener = new MySelectionListener();
 
         // the following is the easiest way to ensure that changes in
@@ -103,7 +103,7 @@ public class ResourceTree extends JTree implements SimulatorListener {
 
         // set cell renderer
         MyTreeCellRenderer renderer = new MyTreeCellRenderer();
-        renderer.setLeafIcon(Icons.getListIcon(kind));
+        renderer.setLeafIcon(Icons.getListIcon(parent.getResourceKind()));
         setCellRenderer(renderer);
         getSelectionModel().setSelectionMode(
             TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
@@ -152,7 +152,6 @@ public class ResourceTree extends JTree implements SimulatorListener {
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-
         suspendListeners();
         if (changes.contains(GRAMMAR)) {
             // remember the visible and selected resources (+paths)
@@ -290,13 +289,6 @@ public class ResourceTree extends JTree implements SimulatorListener {
     // ========================================================================
 
     /**
-     * Creates the text to be displayed for a given resource.
-     */
-    public String getDisplayText(String fullName, String shortName) {
-        return shortName;
-    }
-
-    /**
      * Creates the tool tip text for a given resource.
      */
     public String getToolTip(String resourceName) {
@@ -346,6 +338,16 @@ public class ResourceTree extends JTree implements SimulatorListener {
     // ========================================================================
     // LOCAL CLASS - MyTreeCellRenderer
     // ========================================================================
+
+    @Override
+    public String convertValueToText(Object value, boolean selected,
+            boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        String result = value.toString();
+        if (value instanceof ResourceNode) {
+            result = this.parentDisplay.getLabelText(result);
+        }
+        return result;
+    }
 
     /**
      * Custom cell renderer, which properly sets fore- and background colours
@@ -513,19 +515,14 @@ public class ResourceTree extends JTree implements SimulatorListener {
      * corresponds to a resource.
      */
     public class ResourceNode extends DefaultMutableTreeNode {
-
-        // The (full) name of the resource.
-        private final String resourceName;
-
         /** Default constructor. */
-        public ResourceNode(String resourceName, String lastComponent) {
-            super(getDisplayText(resourceName, lastComponent), false);
-            this.resourceName = resourceName;
+        public ResourceNode(String resourceName) {
+            super(resourceName, false);
         }
 
         /** Getter for the resource name. */
         public String getResourceName() {
-            return this.resourceName;
+            return (String) getUserObject();
         }
     }
 
@@ -612,7 +609,7 @@ public class ResourceTree extends JTree implements SimulatorListener {
             }
             for (String resource : this.resources) {
                 String fullName = extendPath(path, resource);
-                ResourceNode leaf = new ResourceNode(fullName, resource);
+                ResourceNode leaf = new ResourceNode(fullName);
                 created.add(leaf);
                 root.add(leaf);
             }

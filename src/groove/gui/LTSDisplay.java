@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.JTree;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -71,7 +72,7 @@ public class LTSDisplay extends Display {
     }
 
     @Override
-    protected JComponent createList() {
+    protected JTree createList() {
         return new StateList(getSimulator());
     }
 

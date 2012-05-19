@@ -96,8 +96,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
         DefaultTreeCellRenderer renderer =
             (DefaultTreeCellRenderer) this.cellRenderer;
         renderer.setLeafIcon(Icons.GRAPH_MATCH_ICON);
-        renderer.setOpenIcon(Icons.RULE_LIST_ICON);
-        renderer.setClosedIcon(Icons.RULE_LIST_ICON);
         this.topDirectoryNode = new DefaultMutableTreeNode();
         this.ruleDirectory = new DefaultTreeModel(this.topDirectoryNode, true);
         setModel(this.ruleDirectory);
@@ -125,8 +123,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
     }
 
     /**
-     * Loads the j-tree with the data of the given (non-<code>null</code>)
-     * grammar.
+     * Loads the j-tree with the data of a given grammar.
+     * @param grammar the grammar to be loaded; non-{@code null}
      */
     private void loadGrammar(GrammarModel grammar) {
         setShowAnchorsOptionListener();
@@ -163,6 +161,9 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 }
                 this.ruleNodeMap.put(ruleView, ruleNode);
             }
+        }
+        for (TreePath path : expandedPaths) {
+            expandPath(path);
         }
         this.ruleDirectory.reload(this.topDirectoryNode);
         for (TreePath path : expandedPaths) {
@@ -719,8 +720,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
     }
 
     /**
-    * Class to provide proper icons for directory nodes
-    */
+     * Class to provide proper icons for directory nodes
+     */
     private class MyTreeCellRenderer extends DefaultTreeCellRenderer {
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -735,9 +736,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             Icon icon = null;
             String text = value.toString();
             String tip = null;
-            if (value instanceof DirectoryTreeNode) {
-                icon = Icons.GPS_FOLDER_ICON;
-            } else if (value instanceof RuleTreeNode) {
+            if (value instanceof RuleTreeNode) {
                 RuleTreeNode node = (RuleTreeNode) value;
                 tip = node.getToolTipText();
                 RuleDisplay display = RuleJTree.this.display;
@@ -751,7 +750,9 @@ public class RuleJTree extends JTree implements SimulatorListener {
             } else if (value instanceof MatchTreeNode) {
                 icon = Icons.GRAPH_MATCH_ICON;
             }
-            setIcon(icon);
+            if (icon != null) {
+                setIcon(icon);
+            }
             setText(text);
             setToolTipText(tip);
             setForeground(JAttr.getForeground(cellSelected, cellFocused, error));

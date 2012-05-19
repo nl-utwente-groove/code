@@ -34,8 +34,8 @@ import groove.rel.RegExpr.Star;
 import groove.rel.RegExpr.Wildcard;
 import groove.rel.RegExprTyper.Result;
 import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,7 +62,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
     public Result computeStar(Star expr, Result arg) {
         Result result = new Result().getUnion(arg).getClosure();
         if (!arg.isEmpty() && result.isEmpty()) {
-            result.addError(new FormatError("%s cannot be typed", expr));
+            result.addError("%s cannot be typed", expr);
         }
         return result;
     }
@@ -71,7 +71,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
     public Result computePlus(Plus expr, Result arg) {
         Result result = arg.getClosure();
         if (!arg.isEmpty() && result.isEmpty()) {
-            result.addError(new FormatError("%s cannot be typed", expr));
+            result.addError("%s cannot be typed", expr);
         }
         return result;
     }
@@ -89,7 +89,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
                 result = result.getThen(argList.get(i));
             }
             if (result.isEmpty()) {
-                result.addError(new FormatError("%s cannot be typed", expr));
+                result.addError("%s cannot be typed", expr);
             }
         }
         return result;
@@ -121,7 +121,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
             }
         }
         if (result.isEmpty()) {
-            result.addError(new FormatError("%s cannot be typed", expr));
+            result.addError("%s cannot be typed", expr);
         }
         return result;
     }
@@ -140,7 +140,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
             }
         }
         if (result.isEmpty()) {
-            result.addError(new FormatError("%s cannot be typed", expr));
+            result.addError("%s cannot be typed", expr);
         }
         return result;
     }
@@ -154,7 +154,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
             result = computeEdgeWildcard(expr);
         }
         if (result.isEmpty()) {
-            result.addError(new FormatError("%s cannot be typed", expr));
+            result.addError("%s cannot be typed", expr);
         }
         return result;
     }
@@ -373,8 +373,8 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         }
 
         /** Adds a format error to the errors stored in this relation. */
-        public void addError(FormatError error) {
-            this.errors.add(error);
+        public void addError(String message, Object... args) {
+            this.errors.add(message, args);
         }
 
         /** Adds a collection of format errors to the errors stored in this relation. */
@@ -383,7 +383,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         }
 
         /** Retrieves the errors stored in this relation. */
-        public List<FormatError> getErrors() {
+        public FormatErrorSet getErrors() {
             return this.errors;
         }
 
@@ -402,6 +402,6 @@ public class RegExprTyper implements RegExprCalculator<Result> {
 
         private final Map<TypeNode,Set<TypeNode>> map =
             new HashMap<TypeNode,Set<TypeNode>>();
-        private final List<FormatError> errors = new ArrayList<FormatError>();
+        private final FormatErrorSet errors = new FormatErrorSet();
     }
 }

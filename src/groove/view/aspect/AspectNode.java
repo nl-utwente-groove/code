@@ -36,6 +36,7 @@ import groove.graph.LabelPattern;
 import groove.graph.TypeLabel;
 import groove.util.Fixable;
 import groove.view.FormatError;
+import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -192,7 +193,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     }
 
     @Override
-    public List<FormatError> getErrors() {
+    public FormatErrorSet getErrors() {
         return this.errors;
     }
 
@@ -752,5 +753,5 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     /** The operator of an outgoing operator edge. */
     private AspectEdge operatorEdge;
     /** List of syntax errors in this node. */
-    private final List<FormatError> errors = new ArrayList<FormatError>();
+    private final FormatErrorSet errors = new FormatErrorSet();
 }
