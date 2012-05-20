@@ -173,7 +173,7 @@ public class CtrlFactory {
      * @param second the automaton to be executed second
      */
     public CtrlAut buildSeq(CtrlAut first, CtrlAut second) {
-        CtrlMorphism secondToFirstMap = copyStates(second, first, null);
+        CtrlMorphism secondToFirstMap = copyStates(second, first, false);
         // remove omega-transitions from first
         Set<CtrlTransition> firstOmega = removeOmegas(first);
         // copy transitions from second to first
@@ -295,12 +295,15 @@ public class CtrlFactory {
     private CtrlAut buildOr(CtrlAut first, CtrlAut second, CtrlGuard guard) {
         // if the guard is degenerate, the second automaton is unreachable
         if (guard != null) {
-            CtrlMorphism secondToFirstMap = copyStates(second, first, null);
+            CtrlMorphism secondToFirstMap = copyStates(second, first, true);
+            Map<CtrlState,CtrlState> stateMap = secondToFirstMap.nodeMap();
             // copy transitions from second to first
             for (CtrlState state : second.nodeSet()) {
-                boolean isInit = state.equals(second.getStart());
-                state.copyTransitions(secondToFirstMap.nodeMap(), isInit
-                        ? guard : null);
+                // only copy transitions if the source and target are not omega-only
+                if (!state.isOmegaOnly() || !stateMap.get(state).isOmegaOnly()) {
+                    boolean isInit = state.equals(second.getStart());
+                    state.copyTransitions(stateMap, isInit ? guard : null);
+                }
             }
         }
         first.addErrors(second);
@@ -312,20 +315,26 @@ public class CtrlFactory {
      * another, and returns the mapping from original to new states.
      * @param fromAut the automaton from which states are copied
      * @param toAut the automaton to which states are copied
-     * @param recipe optional recipe of which the copied states are part
+     * @param shareOmegaOnlyState if {@code true}, an attempt is made to
+     * have the omega-only states of the source automaton map to the omega-only
+     * states of the target automaton
      * @return a map from states in {@code fromAut} to new states in {@code toAut}
      */
     private CtrlMorphism copyStates(CtrlAut fromAut, CtrlAut toAut,
-            Recipe recipe) {
+            boolean shareOmegaOnlyState) {
         CtrlMorphism secondToFirstMap = new CtrlMorphism();
+        CtrlState toAutOmegaOnlyState = toAut.getOmegaOnlyState();
         for (CtrlState state : fromAut.nodeSet()) {
             CtrlState image;
             if (state.equals(fromAut.getStart())) {
                 image = toAut.getStart();
             } else if (state.equals(fromAut.getFinal())) {
                 image = toAut.getFinal();
+            } else if (shareOmegaOnlyState && state.isOmegaOnly()
+                && toAutOmegaOnlyState != null) {
+                image = toAutOmegaOnlyState;
             } else {
-                image = toAut.addState(state, recipe);
+                image = toAut.addState(state, null);
             }
             secondToFirstMap.putNode(state, image);
         }

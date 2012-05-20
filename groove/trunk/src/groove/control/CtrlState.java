@@ -182,6 +182,16 @@ public class CtrlState implements Node {
         return this.transitions;
     }
 
+    /** Indicates if this state currently only has a single unguarded outgoing omega-transition. */
+    public boolean isOmegaOnly() {
+        boolean result = false;
+        if (getTransitions().size() == 1) {
+            CtrlTransition trans = getTransitions().iterator().next();
+            result = trans.getCall().isOmega() && trans.getGuard().isEmpty();
+        }
+        return result;
+    }
+
     /** 
      * Returns the set of rule names of outgoing transitions, or
      * {@code null} if there is an outgoing omega transition. 
