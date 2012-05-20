@@ -257,6 +257,23 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
         return this.omegaTransitions;
     }
 
+    /**
+     * Returns a state in this automaton that only has an (unconditional)
+     * outgoing omega-transition, if there is any such state.
+     * @return a state with only an outgoing unguarded omega-transition;
+     * or {@code null} if there is no such state
+     */
+    public CtrlState getOmegaOnlyState() {
+        CtrlState result = null;
+        for (CtrlTransition omega : getOmegas()) {
+            if (omega.source().isOmegaOnly()) {
+                result = omega.source();
+                break;
+            }
+        }
+        return result;
+    }
+
     /** Returns the start state of the automaton. */
     public CtrlState getStart() {
         return this.startState;
