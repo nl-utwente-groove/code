@@ -19,7 +19,6 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.view.GrammarModel;
 
 /**
  * Action for showing/hiding the LTS JGraph. 
@@ -34,13 +33,6 @@ public class ShowHideLTSAction extends SimulatorAction {
     @Override
     public void execute() {
         getLtsDisplay().getLTSTab().toggleShowHideLts();
-    }
-
-    @Override
-    public void refresh() {
-        GrammarModel grammar = getSimulatorModel().getGrammar();
-        setEnabled(grammar != null && grammar.getStartGraphModel() != null
-            && !grammar.hasErrors());
     }
 
 }

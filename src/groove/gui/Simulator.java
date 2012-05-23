@@ -17,6 +17,7 @@
 package groove.gui;
 
 import static groove.gui.Options.DELETE_RESOURCE_OPTION;
+import static groove.gui.Options.FILTER_LTS_OPTION;
 import static groove.gui.Options.HELP_MENU_NAME;
 import static groove.gui.Options.HIDE_LTS_OPTION;
 import static groove.gui.Options.OPTIONS_MENU_NAME;
@@ -691,6 +692,7 @@ public class Simulator implements SimulatorListener {
         result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
         result.add(getOptions().getItem(SHOW_BIDIRECTIONAL_EDGES_OPTION));
         result.add(getOptions().getItem(HIDE_LTS_OPTION));
+        result.add(getOptions().getItem(FILTER_LTS_OPTION));
         result.addSeparator();
         result.add(getOptions().getItem(DELETE_RESOURCE_OPTION));
         result.add(getOptions().getItem(VERIFY_ALL_STATES_OPTION));

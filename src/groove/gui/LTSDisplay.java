@@ -95,7 +95,7 @@ public class LTSDisplay extends Display {
     }
 
     /**
-     * Returns the button for setting selection mode, lazily creating it first.
+     * Returns the button for showing/hiding the LTS, lazily creating it first.
      */
     public JToggleButton getShowHideLTSButton() {
         if (this.showLTSButton == null) {
@@ -103,6 +103,17 @@ public class LTSDisplay extends Display {
                 Options.createToggleButton(getActions().getShowHideLTSAction());
         }
         return this.showLTSButton;
+    }
+
+    /**
+     * Returns the button for filtering the LTS, lazily creating it first.
+     */
+    public JToggleButton getFilterLTSButton() {
+        if (this.filterLTSButton == null) {
+            this.filterLTSButton =
+                Options.createToggleButton(getActions().getFilterLTSAction());
+        }
+        return this.filterLTSButton;
     }
 
     private void fillToolBar(JToolBar result) {
@@ -122,7 +133,7 @@ public class LTSDisplay extends Display {
             result.add(getLtsJGraph().getModeButton(JGraphMode.PAN_MODE));
             result.addSeparator();
             result.add(getShowHideLTSButton());
-            result.add(getActions().getFilterLTSAction());
+            result.add(getFilterLTSButton());
         }
     }
 
@@ -218,6 +229,8 @@ public class LTSDisplay extends Display {
     private DisplayWindow stateWindow;
 
     private JToggleButton showLTSButton;
+
+    private JToggleButton filterLTSButton;
 
     private class LTSDisplayPanel extends JPanel implements Panel {
         public LTSDisplayPanel() {
