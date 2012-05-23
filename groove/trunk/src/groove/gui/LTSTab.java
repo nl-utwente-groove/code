@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import static groove.gui.Options.FILTER_LTS_OPTION;
 import static groove.gui.Options.HIDE_LTS_OPTION;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_PARTIAL_GTS_OPTION;
@@ -122,6 +123,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         addRefreshListener(SHOW_STATE_IDS_OPTION);
         addRefreshListener(SHOW_PARTIAL_GTS_OPTION);
         addRefreshListener(HIDE_LTS_OPTION);
+        addRefreshListener(FILTER_LTS_OPTION);
         getJGraph().addMouseListener(new MyMouseListener());
         getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, MATCH);
     }
@@ -132,6 +134,14 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
     public void toggleShowHideLts() {
         boolean value = getOptionValue(HIDE_LTS_OPTION);
         getOptions().setSelected(HIDE_LTS_OPTION, !value);
+    }
+
+    /**
+     * Toggles the value of FILTER_LTS_OPTION 
+     */
+    public void toggleFilterLts() {
+        boolean value = getOptionValue(FILTER_LTS_OPTION);
+        getOptions().setSelected(FILTER_LTS_OPTION, !value);
     }
 
     /**
@@ -221,6 +231,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         getJGraph().getModeAction(SELECT_MODE).setEnabled(enabled);
         getJGraph().getModeAction(PAN_MODE).setEnabled(enabled);
         getDisplay().getShowHideLTSButton().setEnabled(enabled);
+        getDisplay().getFilterLTSButton().setEnabled(enabled);
         if (enabled) {
             getJGraph().getModeButton(SELECT_MODE).doClick();
         }

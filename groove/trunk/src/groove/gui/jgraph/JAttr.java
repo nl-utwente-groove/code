@@ -225,6 +225,9 @@ public class JAttr {
     /** Default background for state panels. */
     public static final Color STATE_BACKGROUND = new Color(242, 250, 254);
 
+    /** Default background for LTS with filtering. */
+    public static final Color FILTER_BACKGROUND = new Color(230, 230, 255);
+
     /** The size of the rounded corners for rounded-rectangle vertices. */
     public static final int NORMAL_ARC_SIZE = 5;
 

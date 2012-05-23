@@ -287,6 +287,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
             jCell.setVisible(visible);
         }
         refreshAllCells();
+        setBackground(JAttr.FILTER_BACKGROUND);
     }
 
     /**
