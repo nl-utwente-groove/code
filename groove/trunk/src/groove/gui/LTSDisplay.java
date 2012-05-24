@@ -94,28 +94,6 @@ public class LTSDisplay extends Display {
         getDisplayPanel().repaint();
     }
 
-    /**
-     * Returns the button for showing/hiding the LTS, lazily creating it first.
-     */
-    public JToggleButton getShowHideLTSButton() {
-        if (this.showLTSButton == null) {
-            this.showLTSButton =
-                Options.createToggleButton(getActions().getShowHideLTSAction());
-        }
-        return this.showLTSButton;
-    }
-
-    /**
-     * Returns the button for filtering the LTS, lazily creating it first.
-     */
-    public JToggleButton getFilterLTSButton() {
-        if (this.filterLTSButton == null) {
-            this.filterLTSButton =
-                Options.createToggleButton(getActions().getFilterLTSAction());
-        }
-        return this.filterLTSButton;
-    }
-
     private void fillToolBar(JToolBar result) {
         result.removeAll();
         result.add(getActions().getExplorationDialogAction());
@@ -135,6 +113,32 @@ public class LTSDisplay extends Display {
             result.add(getShowHideLTSButton());
             result.add(getFilterLTSButton());
         }
+    }
+
+    private JToggleButton getShowHideLTSButton() {
+        if (this.showHideLTSButton == null) {
+            this.showHideLTSButton =
+                Options.createToggleButton(getActions().getShowHideLTSAction());
+        }
+        return this.showHideLTSButton;
+    }
+
+    /** Returns true if the LTS JGraph is hidden. */
+    public boolean isHiddingLts() {
+        return getShowHideLTSButton().isSelected();
+    }
+
+    private JToggleButton getFilterLTSButton() {
+        if (this.filterLTSButton == null) {
+            this.filterLTSButton =
+                Options.createToggleButton(getActions().getFilterLTSAction());
+        }
+        return this.filterLTSButton;
+    }
+
+    /** Returns true if the LTS JGraph is filtered. */
+    public boolean isFilteringLts() {
+        return getFilterLTSButton().isSelected();
     }
 
     /**
@@ -227,9 +231,8 @@ public class LTSDisplay extends Display {
     private StateTab stateTab;
     /** Window for the state tab when it is detached. */
     private DisplayWindow stateWindow;
-
-    private JToggleButton showLTSButton;
-
+    /** Toggle buttons */
+    private JToggleButton showHideLTSButton;
     private JToggleButton filterLTSButton;
 
     private class LTSDisplayPanel extends JPanel implements Panel {

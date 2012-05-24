@@ -81,8 +81,6 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_STATE_IDS_OPTION);
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
         addCheckbox(SHOW_BIDIRECTIONAL_EDGES_OPTION);
-        addCheckbox(HIDE_LTS_OPTION);
-        addCheckbox(FILTER_LTS_OPTION);
         addBehaviour(DELETE_RESOURCE_OPTION, 2);
         addBehaviour(VERIFY_ALL_STATES_OPTION, 3);
     }
@@ -498,6 +496,8 @@ public class Options implements Cloneable {
     public static final String EXPORT_TYPE_ACTION_NAME = "Export Type ...";
     /** Export label filter action name */
     public static final String FILTER_ACTION_NAME = "Filter labels";
+    /** Filter LTS action name */
+    public static final String FILTER_LTS_ACTION_NAME = "Filter LTS";
     /** Export type-based label filter action name */
     public static final String FILTER_TYPE_ACTION_NAME = "Filter type graph";
     /** Back action name */
@@ -508,8 +508,8 @@ public class Options implements Cloneable {
     /** Goto start state action name */
     public static final String GOTO_START_STATE_ACTION_NAME =
         "Go to Start State";
-    /** Filter LTS */
-    public static final String FILTER_LTS_NAME = "Filter LTS";
+    /** Hide LTS action name */
+    public static final String HIDE_LTS_ACTION_NAME = "Hide LTS";
     /** List atomic propositions action name */
     public static final String LIST_ATOMIC_PROPOSITIONS_ACTION_NAME =
         "List Atom. Prop.";
@@ -882,10 +882,6 @@ public class Options implements Cloneable {
         "Show bidirectional edges";
     /** Show node ids option */
     static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
-    /** Hide LTS option */
-    static public final String HIDE_LTS_OPTION = "Hide LTS";
-    /** Filter LTS option */
-    static public final String FILTER_LTS_OPTION = "Filter LTS";
     /** Show the tab for control programs. */
     static public final String SHOW_CONTROL_TAB_OPTION =
         "Show control program tab";
@@ -930,8 +926,6 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_ASPECTS_OPTION, false);
         boolOptionDefaults.put(SHOW_VALUE_NODES_OPTION, false);
         boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);
-        boolOptionDefaults.put(HIDE_LTS_OPTION, false);
-        boolOptionDefaults.put(FILTER_LTS_OPTION, false);
         boolOptionDefaults.put(SHOW_BIDIRECTIONAL_EDGES_OPTION, true);
         intOptionDefaults.put(DELETE_RESOURCE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(VERIFY_ALL_STATES_OPTION, BehaviourOption.NEVER);

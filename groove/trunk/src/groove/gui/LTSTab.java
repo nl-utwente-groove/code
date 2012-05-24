@@ -16,8 +16,6 @@
  */
 package groove.gui;
 
-import static groove.gui.Options.FILTER_LTS_OPTION;
-import static groove.gui.Options.HIDE_LTS_OPTION;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_PARTIAL_GTS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
@@ -122,38 +120,16 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_STATE_IDS_OPTION);
         addRefreshListener(SHOW_PARTIAL_GTS_OPTION);
-        addRefreshListener(HIDE_LTS_OPTION);
-        addRefreshListener(FILTER_LTS_OPTION);
         getJGraph().addMouseListener(new MyMouseListener());
         getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, MATCH);
     }
 
     /**
-    * Toggles the value of HIDE_LTS_OPTION 
-    */
+     * Toggles the state of the LTS display.
+     */
     public void toggleShowHideLts() {
-        boolean value = getOptionValue(HIDE_LTS_OPTION);
-        getOptions().setSelected(HIDE_LTS_OPTION, !value);
-    }
-
-    /**
-     * Toggles the value of FILTER_LTS_OPTION 
-     */
-    public void toggleFilterLts() {
-        boolean value = getOptionValue(FILTER_LTS_OPTION);
-        getOptions().setSelected(FILTER_LTS_OPTION, !value);
-    }
-
-    /**
-     * It handles the event coming from LTS hide/show checkbox in the view menu 
-     */
-    @Override
-    protected void refresh() {
-        if (getOptionValue(HIDE_LTS_OPTION)) {
-            getJGraph().setEnabled(false);
-            getJGraph().setVisible(false);
-            getDisplay().getShowHideLTSButton().setSelected(true);
-        } else {
+        if (!getDisplay().isHiddingLts()) {
+            // Switch to show mode.
             LTSJModel ltsModel = null;
             ltsModel = getJGraph().newModel();
             GTS gts = getSimulatorModel().getGts();
@@ -162,17 +138,28 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
                 setJModel(ltsModel);
                 getJGraph().freeze();
                 getJGraph().getLayouter().start(false);
+                getJGraph().setVisible(true);
+                getJGraph().setEnabled(true);
             }
-            getJGraph().setVisible(true);
-            getJGraph().setEnabled(true);
-            getDisplay().getShowHideLTSButton().setSelected(false);
+            toggleFilterLts();
+        } else {
+            // Hide the LTS.
+            getJGraph().setEnabled(false);
+            getJGraph().setVisible(false);
         }
+    }
+
+    /**
+     * Toggles the filtering of the LTS display.
+     */
+    public void toggleFilterLts() {
+        getJGraph().filterLTS(!getDisplay().isFilteringLts());
     }
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        if (source.getGts() != null && getOptionValue(HIDE_LTS_OPTION)) {
+        if (source.getGts() != null && getDisplay().isHiddingLts()) {
             return;
         }
         if (changes.contains(GTS) || changes.contains(GRAMMAR)) {
@@ -230,8 +217,6 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         super.setEnabled(enabled);
         getJGraph().getModeAction(SELECT_MODE).setEnabled(enabled);
         getJGraph().getModeAction(PAN_MODE).setEnabled(enabled);
-        getDisplay().getShowHideLTSButton().setEnabled(enabled);
-        getDisplay().getFilterLTSButton().setEnabled(enabled);
         if (enabled) {
             getJGraph().getModeButton(SELECT_MODE).doClick();
         }

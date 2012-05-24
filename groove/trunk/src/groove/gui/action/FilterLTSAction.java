@@ -9,13 +9,21 @@ import groove.gui.Simulator;
  */
 public class FilterLTSAction extends SimulatorAction {
     /** Constructs a new action, for a given simulator. */
-    public FilterLTSAction(Simulator simulator, boolean animated) {
-        super(simulator, Options.FILTER_LTS_NAME, Icons.FILTER_LTS_ICON);
+    public FilterLTSAction(Simulator simulator) {
+        super(simulator, Options.FILTER_LTS_ACTION_NAME, Icons.FILTER_LTS_ICON);
     }
 
     @Override
     public void execute() {
         getLtsDisplay().getLTSTab().toggleFilterLts();
+    }
+
+    @Override
+    public void refresh() {
+        boolean enabled =
+            getSimulatorModel().getGts() != null
+                && !getLtsDisplay().isHiddingLts();
+        setEnabled(enabled);
     }
 
 }
