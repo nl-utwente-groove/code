@@ -26,13 +26,21 @@ import groove.gui.Simulator;
 public class ShowHideLTSAction extends SimulatorAction {
 
     /** Constructs a new action, for a given simulator. */
-    public ShowHideLTSAction(Simulator simulator, boolean animated) {
-        super(simulator, Options.HIDE_LTS_OPTION, Icons.HIDE_LTS_ICON);
+    public ShowHideLTSAction(Simulator simulator) {
+        super(simulator, Options.HIDE_LTS_ACTION_NAME, Icons.HIDE_LTS_ICON);
     }
 
     @Override
     public void execute() {
         getLtsDisplay().getLTSTab().toggleShowHideLts();
+        getActions().getFilterLTSAction().setEnabled(
+            !getLtsDisplay().isHiddingLts());
+    }
+
+    @Override
+    public void refresh() {
+        boolean enabled = getSimulatorModel().getGts() != null;
+        setEnabled(enabled);
     }
 
 }

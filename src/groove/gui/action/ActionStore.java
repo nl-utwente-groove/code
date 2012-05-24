@@ -293,16 +293,9 @@ public class ActionStore implements SimulatorListener {
     }
 
     /**
-     * Returns the filter LTS action that is associated with the simulator.
+     * The 'default exploration' action (variable).
      */
-    public FilterLTSAction getFilterLTSAction() {
-        // lazily create the action
-        if (this.filterLTSAction == null) {
-            this.filterLTSAction = new FilterLTSAction(this.simulator, true);
-        }
-
-        return this.filterLTSAction;
-    }
+    private ExploreAction exploreAction;
 
     /**
      * Returns the showing/hiding LTS action that is associated with the
@@ -310,20 +303,22 @@ public class ActionStore implements SimulatorListener {
      */
     public ShowHideLTSAction getShowHideLTSAction() {
         if (this.showHideLTSAction == null) {
-            this.showHideLTSAction =
-                new ShowHideLTSAction(this.simulator, true);
+            this.showHideLTSAction = new ShowHideLTSAction(this.simulator);
         }
         return this.showHideLTSAction;
     }
 
-    /**
-     * The 'default exploration' action (variable).
-     */
-    private ExploreAction exploreAction;
+    private ShowHideLTSAction showHideLTSAction;
+
+    /** Returns the filter LTS action that is associated with the simulator. */
+    public FilterLTSAction getFilterLTSAction() {
+        if (this.filterLTSAction == null) {
+            this.filterLTSAction = new FilterLTSAction(this.simulator);
+        }
+        return this.filterLTSAction;
+    }
 
     private FilterLTSAction filterLTSAction;
-
-    private ShowHideLTSAction showHideLTSAction;
 
     /**
      * Returns the exploration dialog action permanently associated with this
@@ -888,5 +883,15 @@ public class ActionStore implements SimulatorListener {
             this.layoutDialogAction = new LayoutDialogAction(this.simulator);
         }
         return this.layoutDialogAction;
+    }
+
+    /** 
+     * Method to bypass the lazy initialisation of some actions that are not
+     * included in any menu of the simulator and therefore are not added to
+     * the refreshables list in time.
+     */
+    public void initialiseRemainingActions() {
+        getShowHideLTSAction();
+        getFilterLTSAction();
     }
 }

@@ -17,9 +17,7 @@
 package groove.gui;
 
 import static groove.gui.Options.DELETE_RESOURCE_OPTION;
-import static groove.gui.Options.FILTER_LTS_OPTION;
 import static groove.gui.Options.HELP_MENU_NAME;
-import static groove.gui.Options.HIDE_LTS_OPTION;
 import static groove.gui.Options.OPTIONS_MENU_NAME;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
@@ -100,6 +98,7 @@ public class Simulator implements SimulatorListener {
         this.undoManager = new SimulatorUndoManager(this);
         GraphPreviewDialog.setSimulator(this);
         getFrame();
+        this.actions.initialiseRemainingActions();
     }
 
     /**
@@ -691,8 +690,6 @@ public class Simulator implements SimulatorListener {
         result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
         result.add(getOptions().getItem(SHOW_UNFILTERED_EDGES_OPTION));
         result.add(getOptions().getItem(SHOW_BIDIRECTIONAL_EDGES_OPTION));
-        result.add(getOptions().getItem(HIDE_LTS_OPTION));
-        result.add(getOptions().getItem(FILTER_LTS_OPTION));
         result.addSeparator();
         result.add(getOptions().getItem(DELETE_RESOURCE_OPTION));
         result.add(getOptions().getItem(VERIFY_ALL_STATES_OPTION));
@@ -718,7 +715,6 @@ public class Simulator implements SimulatorListener {
         result.add(getActions().getGotoStartStateAction());
         result.add(getActions().getGotoFinalStateAction());
         result.addSeparator();
-        result.add(getActions().getFilterLTSAction());
         result.add(getActions().getSaveLTSAsAction());
         result.addSeparator();
         result.add(getActions().getExplorationStatsDialogAction());
