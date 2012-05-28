@@ -134,6 +134,7 @@ public class GrammarModel implements Observer {
 
     /** Returns a named resource model of a given kind. */
     public ResourceModel<?> getResource(ResourceKind kind, String name) {
+        assert name != null;
         return getResourceMap(kind).get(name);
     }
 

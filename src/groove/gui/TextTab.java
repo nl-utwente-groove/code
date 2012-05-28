@@ -92,7 +92,7 @@ final public class TextTab extends ResourceTab implements MainTab {
     protected JToolBar createToolBar() {
         JToolBar result = super.createToolBar();
         result.addSeparator();
-        result.add(createUndoButton());
+        result.add(getUndoButton());
         result.add(this.textArea.getRedoAction());
         result.addSeparator();
         result.add(this.textArea.getCopyAction());
@@ -206,18 +206,52 @@ final public class TextTab extends ResourceTab implements MainTab {
                 ? new PrologTokenMaker() : new CtrlTokenMaker();
     }
 
-    /** Creates and returns a Cancel button, for use on the tool bar. */
+    @Override
+    public void dispose() {
+        // the RTextArea's undo action is shared among all instances
+        // so we have to remove it explicitly from the button
+        getUndoButton().removeChangeListener(getDirtyListener());
+        getUndoButton().setAction(null);
+        super.dispose();
+    }
+
+    /** Creates and returns an undo button, for use on the tool bar. */
+    private JButton getUndoButton() {
+        if (this.undoButton == null) {
+            this.undoButton = createUndoButton();
+        }
+        return this.undoButton;
+    }
+
+    /** Creates and returns an undo button, for use on the tool bar. */
     private JButton createUndoButton() {
         JButton result = Options.createButton(this.textArea.getUndoAction());
-        result.addChangeListener(new ChangeListener() {
+        result.addChangeListener(getDirtyListener());
+        return result;
+    }
+
+    /** Returns the change listener in charge of updating the dirty status. */
+    ChangeListener getDirtyListener() {
+        if (this.dirtyListener == null) {
+            this.dirtyListener = createDirtyListener();
+        }
+        return this.dirtyListener;
+    }
+
+    /** Creates a change listener in charge of updating the dirty status. */
+    ChangeListener createDirtyListener() {
+        return new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 updateDirty();
             }
-        });
-        return result;
+        };
     }
 
+    /** The undo button associated with this tab. */
+    private JButton undoButton;
+    /** Change listener that updates the dirty status. */
+    private ChangeListener dirtyListener;
     /**
      * The associated text area.
      */
