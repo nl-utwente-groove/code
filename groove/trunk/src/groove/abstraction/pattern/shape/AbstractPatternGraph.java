@@ -18,6 +18,8 @@ package groove.abstraction.pattern.shape;
 
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.Util;
+import groove.graph.GraphInfo;
+import groove.graph.Label;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
@@ -25,6 +27,7 @@ import groove.trans.HostNode;
 import groove.util.Pair;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -37,10 +40,18 @@ import java.util.Set;
 public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E extends AbstractPatternEdge<N>>
         extends NodeSetEdgeSetGraph<N,E> {
 
+    // ------------------------------------------------------------------------
+    // Object Fields
+    // ------------------------------------------------------------------------
+
     /** Maximal depth of the graph. */
     protected int depth;
 
     private final List<Set<N>> layers;
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
 
     /** Default constructor. */
     protected AbstractPatternGraph(String name) {
@@ -49,14 +60,46 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
         this.layers = new ArrayList<Set<N>>();
     }
 
+    // ------------------------------------------------------------------------
+    // Overridden methods
+    // ------------------------------------------------------------------------
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Pattern graph: " + getName() + "\n");
+        sb.append("Nodes: [");
+        for (N node : nodeSet()) {
+            sb.append(node.toString() + ", ");
+        }
+        if (nodeSet().isEmpty()) {
+            sb.append("]\n");
+        } else {
+            sb.replace(sb.length() - 2, sb.length(), "]\n");
+        }
+        sb.append("Edges: [");
+        for (E edge : edgeSet()) {
+            sb.append(edge.toString() + ", ");
+        }
+        if (edgeSet().isEmpty()) {
+            sb.append("]\n");
+        } else {
+            sb.replace(sb.length() - 2, sb.length(), "]\n");
+        }
+        return sb.toString();
+    }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
     /** Checks if this pattern graph is well-formed. */
     public boolean isWellFormed() {
-        assert isFixed();
         // Check node layer.
         for (N pNode : getLayerNodes(0)) {
             HostGraph pattern = pNode.getPattern();
             if (pattern.nodeCount() != 1
-                && Util.getBinaryEdgesCount(pattern) == 0) {
+                || Util.getBinaryEdgesCount(pattern) != 0) {
                 return false;
             }
         }
@@ -66,16 +109,8 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             if (Util.getBinaryEdgesCount(pattern) != 1) {
                 return false;
             }
-            HostEdge sEdge = pNode.getSimpleEdge();
             @SuppressWarnings("unchecked")
             Set<HostNode> sNodes = (Set<HostNode>) pattern.nodeSet();
-            Set<HostNode> edgeNodes = new MyHashSet<HostNode>();
-            edgeNodes.add(sEdge.source());
-            edgeNodes.add(sEdge.target());
-            if (!sNodes.containsAll(edgeNodes)
-                || !edgeNodes.containsAll(sNodes)) {
-                return false;
-            }
             if (!isCovered(pNode, sNodes, null)) {
                 return false;
             }
@@ -94,7 +129,23 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     /** Checks if this pattern graph is commuting. */
     public boolean isCommuting() {
         // This method assumes that the pattern graph is well formed.
-        // Iterate from layer 2 on.
+        // First, check layer 1.
+        layerOneLoop: for (N pNode : getLayerNodes(1)) {
+            if (pNode.getSimpleEdge().isLoop()) {
+                // This is self-edge, nothing to do.
+                continue layerOneLoop;
+            }
+            HostNode sSrc = pNode.getSource();
+            HostNode sTgt = pNode.getTarget();
+            N pSrc = getCoveringEdge(pNode, sSrc).source();
+            N pTgt = getCoveringEdge(pNode, sTgt).source();
+            if (pSrc.equals(pTgt)) {
+                // We have a binary edge with both source and target nodes
+                // covered by the same node at layer 0.
+                return false;
+            }
+        }
+        // Now, iterate from layer 2 on.
         for (int layer = 2; layer <= depth(); layer++) {
             // For each pattern node on this layer.
             for (N pNode : getLayerNodes(layer)) {
@@ -118,22 +169,12 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     /** Returns the set of nodes for the given layer number. */
     public Set<N> getLayerNodes(int layer) {
         assert layer >= 0;
-        Set<N> result = null;
-        boolean create = false;
         if (layer >= this.layers.size()) {
-            create = true;
-        } else {
-            result = this.layers.get(layer);
-            if (result == null) {
-                create = true;
+            for (int i = this.layers.size(); i <= layer; i++) {
+                this.layers.add(i, new MyHashSet<N>());
             }
         }
-        if (create) {
-            result = new MyHashSet<N>();
-            this.layers.add(layer, result);
-        }
-        assert result != null;
-        return result;
+        return this.layers.get(layer);
     }
 
     @SuppressWarnings("unchecked")
@@ -170,31 +211,31 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     }
 
     /** Adds the given node to the appropriate layer. */
-    protected void addToLayer(N node) {
-        int layer = node.getLayer();
-        getLayerNodes(layer).add(node);
+    protected void addToLayer(N pNode) {
+        int layer = pNode.getLayer();
+        getLayerNodes(layer).add(pNode);
         if (this.depth < layer) {
             this.depth = layer;
         }
     }
 
     /** Returns the set of pattern edges that cover the given simple node. */
-    private Set<E> getCoveringEdges(N target, HostNode sNode) {
+    private Set<E> getCoveringEdges(N pNode, HostNode sNode) {
         Set<E> result = new MyHashSet<E>();
-        for (E edge : inEdgeSet(target)) {
-            if (edge.isCod(sNode)) {
-                result.add(edge);
+        for (E pEdge : inEdgeSet(pNode)) {
+            if (pEdge.isCod(sNode)) {
+                result.add(pEdge);
             }
         }
         return result;
     }
 
-    /** Returns the pattern edge that cover the given simple node. */
-    protected E getCoveringEdge(N target, HostNode sNode) {
-        assert target.isEdgePattern();
-        for (E edge : inEdgeSet(target)) {
-            if (edge.isCod(sNode)) {
-                return edge;
+    /** Returns the pattern edge that covers the given simple node. */
+    protected E getCoveringEdge(N pNode, HostNode sNode) {
+        assert pNode.isEdgePattern();
+        for (E pEdge : inEdgeSet(pNode)) {
+            if (pEdge.isCod(sNode)) {
+                return pEdge;
             }
         }
         return null;
@@ -227,10 +268,70 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
                 ancestors.add(newAncestor);
             }
         }
-        if (ancestors.size() == 1) {
+        if (ancestors.size() == 1 && queue.size() == 1) {
             return ancestors.iterator().next();
         } else {
             return null;
         }
     }
+
+    // ------------------------------------------------------------------------
+    // Unsupported methods
+    // ------------------------------------------------------------------------
+
+    @Override
+    public Set<? extends E> labelEdgeSet(Label label) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected GraphInfo<N,E> createInfo(GraphInfo<?,?> info) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public GraphInfo<N,E> setInfo(GraphInfo<?,?> info) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected E createEdge(N source, Label label, N target) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public N addNode() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public E addEdge(N source, String label, N target) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public E addEdge(N source, Label label, N target) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean addNodeSet(Collection<? extends N> nodeSet) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean addEdgeSet(Collection<? extends E> edgeSet) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean removeEdgeSet(Collection<? extends E> edgeSet) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean mergeNodes(N from, N to) {
+        throw new UnsupportedOperationException();
+    }
+
 }

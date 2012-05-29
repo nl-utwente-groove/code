@@ -54,6 +54,22 @@ public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
     // ------------------------------------------------------------------------
 
     @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof AbstractPatternEdge)) {
+            return false;
+        }
+        AbstractPatternEdge<?> other = (AbstractPatternEdge<?>) obj;
+        if (getNumber() != other.getNumber()) {
+            return false;
+        }
+        return source().equals(other.source())
+            && target().equals(other.target());
+    }
+
+    @Override
     public EdgeRole getRole() {
         return EdgeRole.BINARY;
     }

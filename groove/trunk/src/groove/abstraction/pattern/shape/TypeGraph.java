@@ -18,10 +18,15 @@ package groove.abstraction.pattern.shape;
 
 import groove.abstraction.MyHashMap;
 import groove.abstraction.pattern.Util;
+import groove.abstraction.pattern.match.Match;
+import groove.abstraction.pattern.match.Matcher;
+import groove.abstraction.pattern.match.MatcherFactory;
+import groove.abstraction.pattern.trans.PatternRule;
+import groove.abstraction.pattern.trans.PatternRuleApplication;
+import groove.abstraction.pattern.trans.RuleFactory;
+import groove.abstraction.pattern.trans.RuleNode;
 import groove.graph.Edge;
-import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.trans.DefaultHostGraph;
@@ -55,7 +60,9 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     // Object Fields
     // ------------------------------------------------------------------------
 
-    private final PatternFactory factory;
+    private final PatternFactory patternFactory;
+    private final RuleFactory ruleFactory;
+    private final Map<TypeNode,PatternRule> closureRules;
     private boolean fixed;
 
     // ------------------------------------------------------------------------
@@ -65,7 +72,9 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     /** Default constructor. */
     public TypeGraph(String name) {
         super(name);
-        this.factory = new PatternFactory(this);
+        this.patternFactory = new PatternFactory(this);
+        this.ruleFactory = new RuleFactory();
+        this.closureRules = new MyHashMap<TypeNode,PatternRule>();
         this.fixed = false;
     }
 
@@ -106,6 +115,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
             edge.setFixed();
         }
         computeLayers();
+        createClosureRules();
         this.fixed = true;
     }
 
@@ -191,20 +201,20 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
 
     private PatternNode createPatternNode(TypeNode type, PatternShape pShape) {
         if (pShape != null) {
-            return this.factory.createNode(type, pShape.nodeSet());
+            return getPatternFactory().createNode(type, pShape.nodeSet());
         } else {
-            return this.factory.createNode(type);
+            return getPatternFactory().createNode(type);
         }
     }
 
     private PatternEdge createPatternEdge(PatternNode source, TypeEdge type,
             PatternNode target) {
-        return this.factory.createEdge(source, type, target);
+        return getPatternFactory().createEdge(source, type, target);
     }
 
     /** Lifts the given simple graph to a pattern graph. */
     public PatternShape lift(HostGraph graph) {
-        PatternShape result = this.factory.newPatternShape();
+        PatternShape result = getPatternFactory().newPatternShape();
         Map<HostNode,PatternNode> nodeMap =
             new MyHashMap<HostNode,PatternNode>();
 
@@ -255,21 +265,36 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     }
 
     /** Computes the closure for the given pattern shape w.r.t. this type graph. */
-    public void close(PatternShape pShape) {
+    public void close(PatternGraph pGraph) {
         // Iterate from layer 2 on.
-        for (int layer = 2; layer < depth(); layer++) {
+        for (int layer = 2; layer <= depth(); layer++) {
             // For each pattern of the layer.
             for (TypeNode tNode : getLayerNodes(layer)) {
                 // Check if we can compose this new pattern type.
-                Set<TypeEdge> tEdges = inEdgeSet(tNode);
-                // EDUARDO: Finish this...
+                PatternRule pRule = getClosureRule(tNode);
+                Matcher matcher = MatcherFactory.instance().getMatcher(pRule);
+                for (Match match : matcher.findMatches(pGraph)) {
+                    // For each match we found we add a new pattern. We don't
+                    // have to recompute any matches after the transformation
+                    // because the dependency on patterns grows towards the
+                    // depth of the type graph. So no patterns of the same
+                    // layer can depend on each other.
+                    PatternRuleApplication app =
+                        new PatternRuleApplication(pGraph, match);
+                    app.transform(true);
+                }
             }
         }
     }
 
-    /** Returns the factory associated with this type graph. */
+    /** Returns the pattern factory associated with this type graph. */
     public PatternFactory getPatternFactory() {
-        return this.factory;
+        return this.patternFactory;
+    }
+
+    /** Returns the rule factory associated with this type graph. */
+    public RuleFactory getRuleFactory() {
+        return this.ruleFactory;
     }
 
     private List<HostNode> match(HostGraph graph, Set<TypeLabel> nodeLabels) {
@@ -291,6 +316,30 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         List<HostEdge> result = new ArrayList<HostEdge>();
         result.addAll(graph.labelEdgeSet(edgeLabel));
         Collections.sort(result);
+        return result;
+    }
+
+    private void createClosureRules() {
+        for (int layer = 0; layer <= depth(); layer++) {
+            for (TypeNode tNode : getLayerNodes(layer)) {
+                HostGraph pattern = tNode.getPattern();
+                PatternRule pRule =
+                    new PatternRule(pattern.getName(), this, true);
+                RuleNode rTgt = pRule.addCreatorNode(tNode);
+                for (TypeEdge tEdge : inEdgeSet(tNode)) {
+                    RuleNode rSrc =
+                        pRule.addRhsAsReader(getClosureRule(tEdge.source()));
+                    pRule.addCreatorEdge(rSrc, tEdge, rTgt);
+                }
+                pRule.fixCommutativity();
+                this.closureRules.put(tNode, pRule);
+            }
+        }
+    }
+
+    private PatternRule getClosureRule(TypeNode tNode) {
+        PatternRule result = this.closureRules.get(tNode);
+        assert result != null;
         return result;
     }
 
@@ -326,61 +375,6 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     @Override
     public boolean removeNodeSetWithoutCheck(
             Collection<? extends TypeNode> nodeSet) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Set<? extends TypeEdge> labelEdgeSet(Label label) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    protected GraphInfo<TypeNode,TypeEdge> createInfo(GraphInfo<?,?> info) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public GraphInfo<TypeNode,TypeEdge> setInfo(GraphInfo<?,?> info) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    protected TypeEdge createEdge(TypeNode source, Label label, TypeNode target) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public TypeNode addNode() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public TypeEdge addEdge(TypeNode source, String label, TypeNode target) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public TypeEdge addEdge(TypeNode source, Label label, TypeNode target) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean addNodeSet(Collection<? extends TypeNode> nodeSet) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean addEdgeSet(Collection<? extends TypeEdge> edgeSet) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean removeEdgeSet(Collection<? extends TypeEdge> edgeSet) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean mergeNodes(TypeNode from, TypeNode to) {
         throw new UnsupportedOperationException();
     }
 
