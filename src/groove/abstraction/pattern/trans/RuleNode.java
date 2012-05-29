@@ -14,23 +14,25 @@
  *
  * $Id$
  */
-package groove.abstraction.pattern.shape;
+package groove.abstraction.pattern.trans;
 
+import groove.abstraction.pattern.shape.AbstractPatternNode;
+import groove.abstraction.pattern.shape.TypeNode;
 import groove.trans.HostGraph;
 
 /**
- * Pattern node of a pattern graph.
+ * Pattern node of rules.
  * 
  * @author Eduardo Zambon
  */
-public final class PatternNode extends AbstractPatternNode {
+public final class RuleNode extends AbstractPatternNode {
 
     // ------------------------------------------------------------------------
     // Static Fields
     // ------------------------------------------------------------------------
 
     /** Prefix for string representations. */
-    public static final String PREFIX = "p";
+    public static final String PREFIX = "r";
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -46,7 +48,7 @@ public final class PatternNode extends AbstractPatternNode {
     /** 
      * Constructs a new pattern node, with the given number.
      */
-    public PatternNode(int nr, TypeNode type) {
+    public RuleNode(int nr, TypeNode type) {
         super(nr);
         this.type = type;
     }

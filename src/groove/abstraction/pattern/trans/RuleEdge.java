@@ -14,40 +14,42 @@
  *
  * $Id$
  */
-package groove.abstraction.pattern.shape;
+package groove.abstraction.pattern.trans;
 
-import groove.trans.HostGraph;
+import groove.abstraction.pattern.shape.AbstractPatternEdge;
+import groove.abstraction.pattern.shape.SimpleMorphism;
+import groove.abstraction.pattern.shape.TypeEdge;
 
 /**
- * Pattern node of a pattern graph.
+ * Pattern edge of rules.
  * 
  * @author Eduardo Zambon
  */
-public final class PatternNode extends AbstractPatternNode {
+public final class RuleEdge extends AbstractPatternEdge<RuleNode> {
 
     // ------------------------------------------------------------------------
     // Static Fields
     // ------------------------------------------------------------------------
 
     /** Prefix for string representations. */
-    public static final String PREFIX = "p";
+    public static final String PREFIX = "s";
 
     // ------------------------------------------------------------------------
     // Object Fields
     // ------------------------------------------------------------------------
 
-    /** The type associated with this node. */
-    private final TypeNode type;
+    /** The type associated with this edge. */
+    private final TypeEdge type;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /** 
-     * Constructs a new pattern node, with the given number.
+     * Constructs a new type edge, with the given number, source and target.
      */
-    public PatternNode(int nr, TypeNode type) {
-        super(nr);
+    public RuleEdge(int nr, RuleNode source, TypeEdge type, RuleNode target) {
+        super(nr, source, type.label(), target);
         this.type = type;
     }
 
@@ -72,35 +74,23 @@ public final class PatternNode extends AbstractPatternNode {
 
     @Override
     public String toString() {
-        return super.toString() + ":" + this.type.toString();
+        return RuleNode.PREFIX + this.source.getNumber() + "--"
+            + RuleEdge.PREFIX + getNumber() + ":" + TypeEdge.PREFIX
+            + this.type.getNumber() + "-->" + RuleNode.PREFIX
+            + this.target.getNumber();
     }
 
     @Override
-    public HostGraph getPattern() {
-        return this.type.getPattern();
-    }
-
-    @Override
-    public int getLayer() {
-        return this.type.getLayer();
-    }
-
-    @Override
-    public boolean isNodePattern() {
-        return this.type.isNodePattern();
-    }
-
-    @Override
-    public boolean isEdgePattern() {
-        return this.type.isEdgePattern();
+    public SimpleMorphism getMorphism() {
+        return getType().getMorphism();
     }
 
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
 
-    /** Return the type associated with this node. */
-    public TypeNode getType() {
+    /** Return the type associated with this edge. */
+    public TypeEdge getType() {
         return this.type;
     }
 
