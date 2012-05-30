@@ -16,6 +16,8 @@
  */
 package groove.io.external.util;
 
+import static groove.io.HTMLConverter.SUB_TAG;
+import static groove.io.HTMLConverter.SUPER_TAG;
 import static groove.io.HTMLConverter.toHtml;
 import static groove.view.aspect.AspectKind.DEFAULT;
 import static groove.view.aspect.AspectKind.PRODUCT;
@@ -876,21 +878,12 @@ public final class GraphToTikz {
         int font = HTMLConverter.removeFontTags(line);
         String aux = "";
         int i = line.indexOf(toHtml(Util.EXISTS));
-        if (i > -1) {
+        if (i >= 0) {
             this.result.append(line.substring(0, i));
-            String sub =
-                removeAllTags(line, HTMLConverter.SUB_TAG).substring(7);
-            if ("".equals(sub)) {
-                this.result.append(EXISTS_STR + "$");
-            } else {
-                this.result.append(EXISTS_STR + "_\\mathsf{" + sub + "}$");
-            }
-        } else if (line.indexOf(HTMLConverter.toHtml(Util.FORALL)) > -1) {
-            if (line.indexOf(HTMLConverter.SUPER_TAG.tagBegin) > -1) {
-                this.result.append(FORALLX_STR);
-            } else {
-                this.result.append(FORALL_STR);
-            }
+            appendQuantifierNodeInscription(true, line);
+        } else if ((i = line.indexOf(toHtml(Util.FORALL))) >= 0) {
+            this.result.append(line.substring(0, i));
+            appendQuantifierNodeInscription(false, line);
         } else {
             aux = line.toString();
         }
@@ -929,6 +922,33 @@ public final class GraphToTikz {
         }
 
         this.result.append(CRLF);
+    }
+
+    /**
+     * Scans the HTML string of a quantified node label and converts the tags to Tikz.
+     * @param exists if {@code true}, the quantifier is existential
+     * @param line the HTML string to be converted.
+     */
+    private void appendQuantifierNodeInscription(boolean exists,
+            StringBuilder line) {
+        // open math environment
+        this.result.append('$');
+        // find out if this is a ...x quantifier
+        boolean special = line.indexOf(SUPER_TAG.tagBegin) >= 0;
+        if (exists) {
+            this.result.append(special ? EXISTSX_STR : EXISTS_STR);
+        } else {
+            this.result.append(special ? FORALLX_STR : FORALL_STR);
+        }
+        // append subscript, if there is one
+        int subIx = line.indexOf(SUB_TAG.tagBegin);
+        if (subIx >= 0) {
+            line = line.replace(0, subIx, "");
+            String sub = removeAllTags(line, SUB_TAG);
+            this.result.append("_\\mathsf{" + sub + "}");
+        }
+        // close math environment
+        this.result.append('$');
     }
 
     /**
@@ -1458,9 +1478,10 @@ public final class GraphToTikz {
     private static final String BEGIN_NODE_LAB = " {\\ml{";
     private static final String END_NODE_LAB = "}};" + ENTER;
     private static final String EMPTY_NODE_LAB = "{};" + ENTER;
-    private static final String EXISTS_STR = "$\\exists";
-    private static final String FORALL_STR = "$\\forall$";
-    private static final String FORALLX_STR = "$\\forall^{>0}$";
+    private static final String EXISTS_STR = "\\exists";
+    private static final String EXISTSX_STR = "\\exists^{?}";
+    private static final String FORALL_STR = "\\forall";
+    private static final String FORALLX_STR = "\\forall^{>0}";
     private static final String ITALIC_STYLE = "\\textit{";
     private static final String BOLD_STYLE = "\\textbf{";
     private static final String BEGIN_EDGE = "\\path";
