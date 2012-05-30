@@ -46,13 +46,22 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
         this.type = type;
     }
 
+    /** Copying constructor. */
+    private PatternGraph(PatternGraph pGraph) {
+        this(pGraph.getName(), pGraph.getTypeGraph());
+        this.depth = pGraph.depth;
+        this.layers.addAll(pGraph.layers);
+        this.graphNodeSet.addAll(pGraph.graphNodeSet);
+        this.graphEdgeSet.addAll(pGraph.graphEdgeSet);
+    }
+
     // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
 
     @Override
     public GraphRole getRole() {
-        return GraphRole.NONE;
+        return GraphRole.HOST;
     }
 
     @Override
@@ -72,17 +81,13 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
     }
 
     @Override
-    public boolean addNode(PatternNode node) {
-        boolean result = super.addNode(node);
-        if (result) {
-            addToLayer(node);
-        }
-        return result;
+    public PatternFactory getFactory() {
+        return this.type.getPatternFactory();
     }
 
     @Override
-    public PatternFactory getFactory() {
-        return this.type.getPatternFactory();
+    public PatternGraph clone() {
+        return new PatternGraph(this);
     }
 
     // ------------------------------------------------------------------------

@@ -16,18 +16,61 @@
  */
 package groove.abstraction.pattern.match;
 
+import groove.abstraction.MyHashMap;
 import groove.abstraction.pattern.trans.PatternRule;
 
+import java.util.Map;
+
+/**
+ * Factory of matchers for pattern graph rules.
+ * 
+ * @author Eduardo Zambon
+ */
 public final class MatcherFactory {
 
+    // ------------------------------------------------------------------------
+    // Static fields
+    // ------------------------------------------------------------------------
+
+    /** The unique instance of this class. */
     private static final MatcherFactory instance = new MatcherFactory();
 
+    // ------------------------------------------------------------------------
+    // Static methods
+    // ------------------------------------------------------------------------
+
+    /** Returns the unique instance of this class. */
     public static MatcherFactory instance() {
         return instance;
     }
 
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
+
+    private final Map<PatternRule,Matcher> matcherMap;
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    /** Private constructor to avoid object creating. Use {@link #instance()}.*/
+    private MatcherFactory() {
+        this.matcherMap = new MyHashMap<PatternRule,Matcher>();
+    }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    /** Returns the matcher associated with the given rule. */
     public Matcher getMatcher(PatternRule pRule) {
-        return null;
+        Matcher result = this.matcherMap.get(pRule);
+        if (result == null) {
+            result = new Matcher(pRule);
+            this.matcherMap.put(pRule, result);
+        }
+        return result;
     }
 
 }

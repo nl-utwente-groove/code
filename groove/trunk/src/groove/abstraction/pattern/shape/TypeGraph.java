@@ -49,7 +49,7 @@ import java.util.Set;
 public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
 
     // ------------------------------------------------------------------------
-    // Static Fields
+    // Static fields
     // ------------------------------------------------------------------------
 
     /** Prototype simple graph used to create new patterns. */
@@ -57,7 +57,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         "protSGraph");
 
     // ------------------------------------------------------------------------
-    // Object Fields
+    // Object fields
     // ------------------------------------------------------------------------
 
     private final PatternFactory patternFactory;
@@ -165,6 +165,14 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     @Override
     public Set<TypeEdge> inEdgeSet(Node node) {
         return (Set<TypeEdge>) super.inEdgeSet(node);
+    }
+
+    @Override
+    public boolean addNode(TypeNode node) {
+        boolean result;
+        assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
+        result = this.graphNodeSet.add(node);
+        return result;
     }
 
     // ------------------------------------------------------------------------

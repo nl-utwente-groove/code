@@ -17,11 +17,25 @@
 package groove.abstraction.pattern.match;
 
 import groove.abstraction.pattern.shape.PatternGraph;
+import groove.abstraction.pattern.trans.PatternRule;
 
 import java.util.List;
 
+/**
+ * Matcher for pattern graph rules. 
+ * 
+ * @author Eduardo Zambon
+ */
 public final class Matcher {
 
+    private final PatternRule pRule;
+
+    /** Default constructor. */
+    public Matcher(PatternRule pRule) {
+        this.pRule = pRule;
+    }
+
+    /** Returns a list of all matches found on the given graph. */
     public List<Match> findMatches(PatternGraph pGraph) {
         return null;
     }

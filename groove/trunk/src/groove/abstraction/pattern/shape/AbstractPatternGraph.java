@@ -46,8 +46,8 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
 
     /** Maximal depth of the graph. */
     protected int depth;
-
-    private final List<Set<N>> layers;
+    /** Layers of pattern nodes. */
+    protected final List<Set<N>> layers;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -87,6 +87,24 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             sb.replace(sb.length() - 2, sb.length(), "]\n");
         }
         return sb.toString();
+    }
+
+    @Override
+    public boolean addNode(N node) {
+        boolean result = super.addNode(node);
+        if (result) {
+            addToLayer(node);
+        }
+        return result;
+    }
+
+    @Override
+    public boolean removeNode(N node) {
+        boolean result = super.removeNode(node);
+        if (result) {
+            removeFromLayer(node);
+        }
+        return result;
     }
 
     // ------------------------------------------------------------------------
@@ -219,8 +237,18 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
         }
     }
 
+    /** Removes the given node from the appropriate layer. */
+    private void removeFromLayer(N pNode) {
+        int layer = pNode.getLayer();
+        getLayerNodes(layer).remove(pNode);
+        while (getLayerNodes(layer).isEmpty() && layer >= 0) {
+            layer--;
+        }
+        this.depth = layer;
+    }
+
     /** Returns the set of pattern edges that cover the given simple node. */
-    private Set<E> getCoveringEdges(N pNode, HostNode sNode) {
+    public Set<E> getCoveringEdges(N pNode, HostNode sNode) {
         Set<E> result = new MyHashSet<E>();
         for (E pEdge : inEdgeSet(pNode)) {
             if (pEdge.isCod(sNode)) {
@@ -231,7 +259,7 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     }
 
     /** Returns the pattern edge that covers the given simple node. */
-    protected E getCoveringEdge(N pNode, HostNode sNode) {
+    public E getCoveringEdge(N pNode, HostNode sNode) {
         assert pNode.isEdgePattern();
         for (E pEdge : inEdgeSet(pNode)) {
             if (pEdge.isCod(sNode)) {
@@ -241,11 +269,21 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
         return null;
     }
 
-    private boolean hasCommonAncestor(Set<E> coverEdges, HostNode sNode) {
+    boolean hasCommonAncestor(Set<E> coverEdges, HostNode sNode) {
         return getCommonAncestor(coverEdges, sNode) != null;
     }
 
     private HostNode getCommonAncestor(Set<E> coverEdges, HostNode sNode) {
+        List<Pair<N,HostNode>> queue = getAncestors(coverEdges, sNode);
+        if (queue.size() == 1) {
+            return queue.get(0).two();
+        } else {
+            return null;
+        }
+    }
+
+    /** A list of possible ancestors for the given node. */
+    public List<Pair<N,HostNode>> getAncestors(Set<E> coverEdges, HostNode sNode) {
         Set<HostNode> ancestors = new MyHashSet<HostNode>();
         List<Pair<N,HostNode>> queue = new LinkedList<Pair<N,HostNode>>();
         for (E coverEdge : coverEdges) {
@@ -268,11 +306,7 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
                 ancestors.add(newAncestor);
             }
         }
-        if (ancestors.size() == 1 && queue.size() == 1) {
-            return ancestors.iterator().next();
-        } else {
-            return null;
-        }
+        return queue;
     }
 
     // ------------------------------------------------------------------------
@@ -333,5 +367,4 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     public boolean mergeNodes(N from, N to) {
         throw new UnsupportedOperationException();
     }
-
 }

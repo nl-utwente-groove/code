@@ -21,8 +21,13 @@ import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.TypeEdge;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.abstraction.pattern.shape.TypeNode;
+import groove.trans.HostNode;
+import groove.util.Pair;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -217,6 +222,7 @@ public final class PatternRule {
         return result.toArray(new RuleEdge[result.size()]);
     }
 
+    /** Makes the LHS and RHS commuting by merging nodes on layer 0. */
     public void fixCommutativity() {
         assert isClosure();
 
@@ -226,11 +232,41 @@ public final class PatternRule {
 
         RuleNode creatorNode =
             rhs().getLayerNodes(rhs().depth()).iterator().next();
+        Map<RuleNode,RuleNode> replacementMap =
+            new MyHashMap<RuleNode,RuleNode>();
+        // For each simple node in the pattern.
+        for (HostNode sNode : creatorNode.getPattern().nodeSet()) {
+            Set<RuleEdge> coverEdges =
+                rhs().getCoveringEdges(creatorNode, sNode);
+            List<Pair<RuleNode,HostNode>> ancestors =
+                rhs().getAncestors(coverEdges, sNode);
+            if (ancestors.size() > 1) {
+                Iterator<Pair<RuleNode,HostNode>> it = ancestors.iterator();
+                RuleNode toKeep = it.next().one();
+                while (it.hasNext()) {
+                    replacementMap.put(it.next().one(), toKeep);
+                }
+            }
+        }
+        // For each entry in the replacement map.
+        for (Entry<RuleNode,RuleNode> entry : replacementMap.entrySet()) {
+            mergeNodes(entry.getKey(), entry.getValue());
+        }
 
         assert lhs().isWellFormed();
         assert lhs().isCommuting();
         assert rhs().isWellFormed();
         assert rhs().isCommuting();
+    }
+
+    private void mergeNodes(RuleNode from, RuleNode to) {
+        assert from.isNodePattern();
+        assert to.isNodePattern();
+        for (RuleEdge rEdge : rhs().outEdgeSet(from)) {
+            addReaderEdge(to, rEdge.getType(), rEdge.target());
+        }
+        lhs().removeNode(from);
+        rhs().removeNode(from);
     }
 
 }

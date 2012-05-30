@@ -30,13 +30,23 @@ public final class PatternRuleApplication {
     private final PatternRule pRule;
     private final Match match;
 
+    /** Default constructor. */
     public PatternRuleApplication(PatternGraph pGraph, Match match) {
         this.pGraph = pGraph;
         this.match = match;
         this.pRule = match.getRule();
     }
 
+    /** Executes the rule application and returns the result. */
     public PatternGraph transform(boolean inPlace) {
-        return null;
+        if (inPlace) {
+            return transform(this.pGraph);
+        } else {
+            return transform(this.pGraph.clone());
+        }
+    }
+
+    private PatternGraph transform(PatternGraph host) {
+        return host;
     }
 }
