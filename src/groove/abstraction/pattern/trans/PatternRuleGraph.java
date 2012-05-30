@@ -31,13 +31,4 @@ public final class PatternRuleGraph extends
         super(name);
     }
 
-    @Override
-    public boolean addNode(RuleNode node) {
-        boolean result = super.addNode(node);
-        if (result) {
-            addToLayer(node);
-        }
-        return result;
-    }
-
 }

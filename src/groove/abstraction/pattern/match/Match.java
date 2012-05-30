@@ -17,17 +17,27 @@
 package groove.abstraction.pattern.match;
 
 import groove.abstraction.pattern.shape.PatternEdge;
-import groove.abstraction.pattern.shape.PatternGraphMorphism;
+import groove.abstraction.pattern.shape.PatternFactory;
 import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.trans.PatternRule;
-import groove.graph.ElementFactory;
+import groove.abstraction.pattern.trans.RuleEdge;
+import groove.abstraction.pattern.trans.RuleNode;
+import groove.graph.InversableElementMap;
 
-public final class Match extends PatternGraphMorphism {
+/**
+ * Match result of a pattern graph rule.
+ * 
+ * @author Eduardo Zambon
+ */
+public final class Match extends
+        InversableElementMap<RuleNode,RuleEdge,PatternNode,PatternEdge> {
 
-    public Match(ElementFactory<PatternNode,PatternEdge> factory) {
+    /** Default constructor. */
+    public Match(PatternFactory factory) {
         super(factory);
     }
 
+    /** Returns the rule matched in this object. */
     public PatternRule getRule() {
         return null;
     }
