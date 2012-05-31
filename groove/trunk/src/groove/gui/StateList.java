@@ -337,7 +337,8 @@ public class StateList extends JTree implements SimulatorListener {
             for (MatchResult trans : matchEntry.getValue()) {
                 count++;
                 MatchTreeNode transNode =
-                    new MatchTreeNode(state, trans, count, anchored);
+                    new MatchTreeNode(getSimulatorModel(), state, trans, count,
+                        anchored);
                 ruleNode.add(transNode);
             }
         }
