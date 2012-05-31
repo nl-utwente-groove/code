@@ -31,11 +31,12 @@ class MatchTreeNode extends DefaultMutableTreeNode {
      * Creates a new tree node based on a given graph transition. The node cannot have
      * children.
      */
-    public MatchTreeNode(GraphState source, MatchResult event, int nr,
-            boolean anchored) {
+    public MatchTreeNode(SimulatorModel model, GraphState source,
+            MatchResult event, int nr, boolean anchored) {
         super(event, false);
         this.source = source;
         this.nr = nr;
+        this.model = model;
         StringBuilder result = new StringBuilder();
         MatchResult match = getMatch();
         if (match instanceof RuleTransition) {
@@ -43,6 +44,9 @@ class MatchTreeNode extends DefaultMutableTreeNode {
             result.append(((RuleTransition) match).text(anchored));
             result.append(RIGHTARROW);
             result.append(HTMLConverter.ITALIC_TAG.on(state));
+            if (this.model.getTrace().contains(match)) {
+                result.append(TRACE_SUFFIX);
+            }
             HTMLConverter.HTML_TAG.on(result);
         } else {
             result.append("Match ");
@@ -70,9 +74,13 @@ class MatchTreeNode extends DefaultMutableTreeNode {
         return this.label;
     }
 
+    private final SimulatorModel model;
     private final GraphState source;
     private final int nr;
     private final String label;
     /** HTML representation of the right arrow. */
     private static final String RIGHTARROW = "-->";
+    /** The suffix for a match that is in the selected trace. */
+    private static final String TRACE_SUFFIX = " "
+        + HTMLConverter.STRONG_TAG.on("(*)");
 }

@@ -432,8 +432,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 "Rule %s has no image in map %s", ruleName, this.ruleNodeMap);
             int nrOfMatches = ruleNode.getChildCount();
             MatchTreeNode matchNode =
-                new MatchTreeNode(state, match, nrOfMatches + 1,
-                    getSimulator().getOptions().isSelected(
+                new MatchTreeNode(getSimulatorModel(), state, match,
+                    nrOfMatches + 1, getSimulator().getOptions().isSelected(
                         Options.SHOW_ANCHORS_OPTION));
             this.ruleDirectory.insertNodeInto(matchNode, ruleNode, nrOfMatches);
             expandPath(new TreePath(ruleNode.getPath()));
