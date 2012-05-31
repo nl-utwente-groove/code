@@ -17,7 +17,7 @@
 package groove.abstraction.pattern.match;
 
 import groove.abstraction.pattern.shape.PatternEdge;
-import groove.abstraction.pattern.shape.PatternFactory;
+import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.trans.PatternRule;
 import groove.abstraction.pattern.trans.RuleEdge;
@@ -32,14 +32,42 @@ import groove.graph.InversableElementMap;
 public final class Match extends
         InversableElementMap<RuleNode,RuleEdge,PatternNode,PatternEdge> {
 
+    private final PatternRule pRule;
+    private final PatternGraph pGraph;
+    private RuleNode bottomRNode;
+
     /** Default constructor. */
-    public Match(PatternFactory factory) {
-        super(factory);
+    public Match(PatternRule pRule, PatternGraph pGraph) {
+        super(pRule.getTypeGraph().getPatternFactory());
+        this.pRule = pRule;
+        this.pGraph = pGraph;
     }
 
     /** Returns the rule matched in this object. */
     public PatternRule getRule() {
-        return null;
+        return this.pRule;
+    }
+
+    /** Returns the pattern graph matched. */
+    public PatternGraph getGraph() {
+        return this.pGraph;
+    }
+
+    /** Sets the bottom search pattern match. */
+    public void setBottomMatch(RuleNode bottomRNode, PatternNode matchedPNode) {
+        this.bottomRNode = bottomRNode;
+        putNode(bottomRNode, matchedPNode);
+    }
+
+    /** Returns the bottom rule node matched. */
+    public RuleNode getBottom() {
+        return this.bottomRNode;
+    }
+
+    /** Returns true if the match is complete. */
+    public boolean isFinished() {
+        return nodeMap().keySet().containsAll(this.pRule.lhs().nodeSet())
+            && edgeMap().keySet().containsAll(this.pRule.lhs().edgeSet());
     }
 
 }

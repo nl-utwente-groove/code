@@ -162,6 +162,11 @@ public final class PatternRule {
         return this.type.getRuleFactory();
     }
 
+    /** Returns the pattern type graph associated with this rule. */
+    public TypeGraph getTypeGraph() {
+        return this.type;
+    }
+
     /** Basic getter method. */
     public RuleNode[] getEraserNodes() {
         if (this.eraserNodes == null) {

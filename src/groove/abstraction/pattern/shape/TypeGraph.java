@@ -207,9 +207,9 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         }
     }
 
-    private PatternNode createPatternNode(TypeNode type, PatternShape pShape) {
-        if (pShape != null) {
-            return getPatternFactory().createNode(type, pShape.nodeSet());
+    private PatternNode createPatternNode(TypeNode type, PatternGraph result) {
+        if (result != null) {
+            return getPatternFactory().createNode(type, result.nodeSet());
         } else {
             return getPatternFactory().createNode(type);
         }
@@ -221,8 +221,8 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     }
 
     /** Lifts the given simple graph to a pattern graph. */
-    public PatternShape lift(HostGraph graph) {
-        PatternShape result = getPatternFactory().newPatternShape();
+    public PatternGraph lift(HostGraph graph) {
+        PatternGraph result = getPatternFactory().newPatternGraph();
         Map<HostNode,PatternNode> nodeMap =
             new MyHashMap<HostNode,PatternNode>();
 
@@ -268,7 +268,6 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         close(result);
         assert result.isWellFormed();
         assert result.isCommuting();
-        assert result.isConcrete();
         return result;
     }
 

@@ -79,9 +79,9 @@ public final class PatternFactory implements
     // Other methods
     // ------------------------------------------------------------------------
 
-    /** Creates and returns an empty pattern shape. */
-    public PatternShape newPatternShape() {
-        return new PatternShape("", this.typeGraph);
+    /** Creates and returns an empty pattern graph. */
+    public PatternGraph newPatternGraph() {
+        return new PatternGraph("", this.typeGraph);
     }
 
     @Override

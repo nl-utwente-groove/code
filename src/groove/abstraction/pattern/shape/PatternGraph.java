@@ -80,6 +80,18 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
         return (Set<PatternNode>) super.nodeSet();
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<PatternEdge> edgeSet() {
+        return (Set<PatternEdge>) super.edgeSet();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<PatternEdge> inEdgeSet(Node node) {
+        return (Set<PatternEdge>) super.inEdgeSet(node);
+    }
+
     @Override
     public PatternFactory getFactory() {
         return this.type.getPatternFactory();
