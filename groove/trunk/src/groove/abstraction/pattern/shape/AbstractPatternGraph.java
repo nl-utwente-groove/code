@@ -67,7 +67,8 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Pattern graph: " + getName() + "\n");
+        sb.append("Pattern graph: " + getName() + " (depth = " + depth()
+            + ")\n");
         sb.append("Nodes: [");
         for (N node : nodeSet()) {
             sb.append(node.toString() + ", ");
@@ -241,10 +242,12 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     private void removeFromLayer(N pNode) {
         int layer = pNode.getLayer();
         getLayerNodes(layer).remove(pNode);
-        while (getLayerNodes(layer).isEmpty() && layer >= 0) {
-            layer--;
+        if (this.depth == layer) {
+            while (getLayerNodes(layer).isEmpty() && layer >= 0) {
+                layer--;
+            }
+            this.depth = layer;
         }
-        this.depth = layer;
     }
 
     /** Returns the set of pattern edges that cover the given simple node. */
@@ -301,9 +304,12 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             if (!newCoverEdges.isEmpty()) {
                 E newCoverEdge = newCoverEdges.iterator().next();
                 HostNode newAncestor = newCoverEdge.getPreImage(ancestor);
-                queue.add(new Pair<N,HostNode>(newCoverEdge.source(),
-                    newAncestor));
-                ancestors.add(newAncestor);
+                Pair<N,HostNode> newPair =
+                    new Pair<N,HostNode>(newCoverEdge.source(), newAncestor);
+                if (!queue.contains(newPair)) {
+                    queue.add(newPair);
+                    ancestors.add(newAncestor);
+                }
             }
         }
         return queue;
