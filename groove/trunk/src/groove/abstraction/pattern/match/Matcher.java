@@ -16,21 +16,19 @@
  */
 package groove.abstraction.pattern.match;
 
-import groove.abstraction.MyHashMap;
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.PatternEdge;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.trans.PatternRule;
-import groove.abstraction.pattern.trans.PatternRuleGraph;
 import groove.abstraction.pattern.trans.RuleEdge;
 import groove.abstraction.pattern.trans.RuleNode;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -40,100 +38,240 @@ import java.util.Set;
  */
 public final class Matcher {
 
-    private final PatternRule pRule;
+    /**
+     * A list of domain elements, in the order in which they are to be matched.
+     */
+    private final PatternSearchPlan plan;
+    /** The fixed search object. */
+    private final Search search;
+    /** Map from source graph nodes to (distinct) indices. */
+    private final Map<RuleNode,Integer> nodeIxMap;
+    /** Map from source graph edges to (distinct) indices. */
+    private final Map<RuleEdge,Integer> edgeIxMap;
+    /**
+     * Array of source graph nodes, which is the inverse of {@link #nodeIxMap}.
+     */
+    private RuleNode[] nodeKeys;
+    /**
+     * Array of source graph edges, which is the inverse of {@link #edgeIxMap}.
+     */
+    private RuleEdge[] edgeKeys;
 
     /** Default constructor. */
     public Matcher(PatternRule pRule) {
-        this.pRule = pRule;
+        this.plan = new PatternSearchPlan(pRule);
+        this.search = new Search();
+        this.nodeIxMap = new HashMap<RuleNode,Integer>();
+        this.edgeIxMap = new HashMap<RuleEdge,Integer>();
+        for (SearchItem item : this.plan) {
+            item.activate(this);
+        }
+        // Now create the inverse of the index maps.
+        this.nodeKeys = new RuleNode[this.nodeIxMap.size()];
+        for (Entry<RuleNode,Integer> nodeIxEntry : this.nodeIxMap.entrySet()) {
+            this.nodeKeys[nodeIxEntry.getValue()] = nodeIxEntry.getKey();
+        }
+        this.edgeKeys = new RuleEdge[this.edgeIxMap.size()];
+        for (Entry<RuleEdge,Integer> edgeIxEntry : this.edgeIxMap.entrySet()) {
+            this.edgeKeys[edgeIxEntry.getValue()] = edgeIxEntry.getKey();
+        }
     }
 
     /** Returns a list of all matches found on the given graph. */
     public List<Match> findMatches(PatternGraph pGraph) {
-        if (this.pRule.isClosure()) {
-            return findMatchesForClosureRule(pGraph);
-        } else {
-            return findMatchesForNormalRule(pGraph);
+        List<Match> result = new ArrayList<Match>();
+        this.search.initialise(pGraph);
+        while (this.search.find()) {
+            result.add(this.search.getMatch());
         }
+        return result;
     }
 
-    private List<Match> findMatchesForClosureRule(PatternGraph pGraph) {
-        assert this.pRule.isClosure();
-        List<Match> result = new ArrayList<Match>();
+    /**
+     * Indicates if a given node is already matched in this plan. This returns
+     * <code>true</code> if the node already has a result index. Callback method
+     * from search items, during activation.
+     */
+    boolean isNodeFound(RuleNode node) {
+        return this.nodeIxMap.get(node) != null;
+    }
 
-        PatternRuleGraph lhs = this.pRule.lhs();
-        Set<RuleNode> rNodes = lhs.getLayerNodes(lhs.depth());
-        Map<RuleNode,List<PatternNode>> candidateMap =
-            new MyHashMap<RuleNode,List<PatternNode>>();
-        for (RuleNode rNode : rNodes) {
-            List<PatternNode> candidates = new LinkedList<PatternNode>();
-            for (PatternNode pNode : pGraph.getLayerNodes(rNode.getLayer())) {
-                // Object equality is sufficient.
-                if (pNode.getType() == rNode.getType()) {
-                    candidates.add(pNode);
+    /**
+     * Indicates if a given edge is already matched in this plan. This returns
+     * <code>true</code> if the edge already has a result index. Callback method
+     * from search items, during activation.
+     */
+    boolean isEdgeFound(RuleEdge edge) {
+        return this.edgeIxMap.get(edge) != null;
+    }
+
+    /**
+     * Returns the index of a given node in the node index map. Adds an index
+     * for the node to the map if it was not yet there.
+     * @param node the node to be looked up
+     * @return an index for <code>node</code>
+     */
+    int getNodeIx(RuleNode node) {
+        Integer result = this.nodeIxMap.get(node);
+        if (result == null) {
+            this.nodeIxMap.put(node, result = this.nodeIxMap.size());
+        }
+        return result;
+    }
+
+    /**
+     * Returns the index of a given edge in the edge index map. Adds an index
+     * for the edge to the map if it was not yet there.
+     * @param edge the edge to be looked up
+     * @return an index for <code>edge</code>
+     */
+    int getEdgeIx(RuleEdge edge) {
+        Integer value = this.edgeIxMap.get(edge);
+        if (value == null) {
+            this.edgeIxMap.put(edge, value = this.edgeIxMap.size());
+        }
+        return value;
+    }
+
+    /**
+     * Class implementing an instantiation of the search plan algorithm for a
+     * given graph.
+     */
+    public final class Search {
+
+        /** Array of node images. */
+        private final PatternNode[] nodeImages;
+        /** Array of edge images. */
+        private final PatternEdge[] edgeImages;
+        /** Search stack. */
+        private final SearchItem.Record[] records;
+        /** Forward influences of the records. */
+        private final SearchItem.Record[][] influence;
+        /** Forward influence count of the records. */
+        private final int[] influenceCount;
+        /**
+         * The set of non-value nodes already used as images, used for the
+         * injectivity test.
+         */
+        private final Set<PatternNode> usedNodes;
+        /** The host graph of the search. */
+        private PatternGraph host;
+        /** Flag indicating that a solution has already been found. */
+        private boolean found;
+
+        /** Constructs a new search . */
+        Search() {
+            int planSize = Matcher.this.plan.size();
+            this.records = new SearchItem.Record[planSize];
+            this.nodeImages = new PatternNode[Matcher.this.nodeKeys.length];
+            this.edgeImages = new PatternEdge[Matcher.this.edgeKeys.length];
+            this.influence = new SearchItem.Record[planSize][];
+            this.influenceCount = new int[planSize];
+            this.usedNodes = new MyHashSet<PatternNode>();
+        }
+
+        /** Initialises the search for a pattern graph. */
+        void initialise(PatternGraph host) {
+            this.host = host;
+            this.usedNodes.clear();
+            for (int i = 0; i < this.records.length && this.records[i] != null; i++) {
+                this.records[i].initialise(host);
+            }
+            this.found = false;
+        }
+
+        /**
+         * Computes the next search result. If the method returns
+         * <code>true</code>, the result can be obtained by {@link #getMatch()}.
+         * @return <code>true</code> if there is a next result.
+         */
+        boolean find() {
+            final int planSize = Matcher.this.plan.size();
+            // If an image was found before, roll back the result
+            // until the last relevant search item.
+            int current;
+            if (this.found) {
+                current = planSize - 1;
+                SearchItem.Record currentRecord;
+                while (current >= 0
+                    && !(currentRecord = getRecord(current)).isRelevant()) {
+                    currentRecord.repeat();
+                    current--;
+                }
+            } else {
+                current = 0;
+            }
+            while (current < planSize) {
+                boolean success = getRecord(current).next();
+                if (success) {
+                    for (int i = 0; i < this.influenceCount[current]; i++) {
+                        this.influence[current][i].reset();
+                    }
+                    current++;
+                } else if (getRecord(current).isEmpty()) {
+                    // Go back to the last dependency to have any hope
+                    // of finding a match.
+                    int dependency = Matcher.this.plan.getDependency(current);
+                    for (current--; current > dependency; current--) {
+                        getRecord(current).repeat();
+                    }
+                } else {
+                    current--;
                 }
             }
-            candidateMap.put(rNode, candidates);
+            this.found = current == planSize;
+            return this.found;
         }
 
-        return result;
-    }
-
-    private List<Match> findMatchesForNormalRule(PatternGraph pGraph) {
-        assert !this.pRule.isClosure();
-        List<Match> result = new ArrayList<Match>();
-
-        // Since we have a normal rule there is only one pattern at the
-        // bottom of the LHS. This means that we only have to search for nodes
-        // of the type of this pattern and the number of such nodes is the
-        // number of matches we have.
-        PatternRuleGraph lhs = this.pRule.lhs();
-        Set<RuleNode> rNodes = lhs.getLayerNodes(lhs.depth());
-        assert rNodes.size() == 1;
-        RuleNode rNode = rNodes.iterator().next();
-        for (PatternNode pNode : pGraph.getLayerNodes(rNode.getLayer())) {
-            // Object equality is sufficient because we only have one type graph.
-            if (pNode.getType() == rNode.getType()) {
-                // We found a match.
-                Match match = new Match(this.pRule, pGraph);
-                match.setBottomMatch(rNode, pNode);
-                result.add(match);
+        /**
+         * Returns the currently active search item record.
+         * @param current the index of the requested record
+         */
+        private SearchItem.Record getRecord(int current) {
+            SearchItem.Record result = this.records[current];
+            if (result == null) {
+                SearchItem item = Matcher.this.plan.get(current);
+                // make a new record
+                result = item.createRecord(this);
+                result.initialise(this.host);
+                this.records[current] = result;
+                this.influence[current] =
+                    new SearchItem.Record[this.influence.length - current];
+                int dependency = Matcher.this.plan.getDependency(current);
+                assert dependency < current;
+                if (dependency >= 0) {
+                    this.influence[dependency][this.influenceCount[dependency]] =
+                        result;
+                    this.influenceCount[dependency]++;
+                }
             }
+            return result;
         }
-        // Now that the bottom of each match is set, complete each match.
-        completeMatches(result);
 
-        return result;
-    }
-
-    private void completeMatches(List<Match> matches) {
-        for (Match match : matches) {
-            completeMatch(match);
-        }
-    }
-
-    private void completeMatch(Match match) {
-        PatternRuleGraph lhs = this.pRule.lhs();
-        List<RuleNode> queue = new LinkedList<RuleNode>();
-        queue.add(match.getBottom());
-        while (!queue.isEmpty()) {
-            RuleNode rNode = queue.get(0);
-            PatternNode pNode = match.getNode(rNode);
-            Set<RuleEdge> rEdges = lhs.inEdgeSet(rNode);
-            Set<PatternEdge> pEdges = new MyHashSet<PatternEdge>();
-            pEdges.addAll(match.getGraph().inEdgeSet(pNode));
-            rEdgeLoop: for (RuleEdge rEdge : rEdges) {
-                Iterator<PatternEdge> it = pEdges.iterator();
-                while (it.hasNext()) {
-                    PatternEdge pEdge = it.next();
-                    if (pEdge.getType() == rEdge.getType()) {
-                        it.remove();
-                        match.putEdge(rEdge, pEdge);
-                        match.putNode(rEdge.source(), pEdge.source());
-                        continue rEdgeLoop;
+        /**
+         * Returns a copy of the search result, or <code>null</code> if the last
+         * invocation of {@link #find()} was not successful.
+         */
+        Match getMatch() {
+            Match result = null;
+            if (this.found) {
+                result = new Match(Matcher.this.plan.getRule(), this.host);
+                for (int i = 0; i < this.nodeImages.length; i++) {
+                    PatternNode image = this.nodeImages[i];
+                    if (image != null) {
+                        result.putNode(Matcher.this.nodeKeys[i], image);
                     }
                 }
+                for (int i = 0; i < this.edgeImages.length; i++) {
+                    PatternEdge image = this.edgeImages[i];
+                    if (image != null) {
+                        result.putEdge(Matcher.this.edgeKeys[i], image);
+                    }
+                }
+                assert result.isFinished();
             }
+            return result;
         }
-        assert match.isFinished();
     }
+
 }
