@@ -34,7 +34,6 @@ public final class Match extends
 
     private final PatternRule pRule;
     private final PatternGraph pGraph;
-    private RuleNode bottomRNode;
 
     /** Default constructor. */
     public Match(PatternRule pRule, PatternGraph pGraph) {
@@ -51,17 +50,6 @@ public final class Match extends
     /** Returns the pattern graph matched. */
     public PatternGraph getGraph() {
         return this.pGraph;
-    }
-
-    /** Sets the bottom search pattern match. */
-    public void setBottomMatch(RuleNode bottomRNode, PatternNode matchedPNode) {
-        this.bottomRNode = bottomRNode;
-        putNode(bottomRNode, matchedPNode);
-    }
-
-    /** Returns the bottom rule node matched. */
-    public RuleNode getBottom() {
-        return this.bottomRNode;
     }
 
     /** Returns true if the match is complete. */
