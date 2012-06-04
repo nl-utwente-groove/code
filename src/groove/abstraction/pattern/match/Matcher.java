@@ -60,7 +60,6 @@ public final class Matcher {
     /** Default constructor. */
     public Matcher(PatternRule pRule) {
         this.plan = new PatternSearchPlan(pRule);
-        this.search = new Search();
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
         this.edgeIxMap = new HashMap<RuleEdge,Integer>();
         for (SearchItem item : this.plan) {
@@ -75,6 +74,7 @@ public final class Matcher {
         for (Entry<RuleEdge,Integer> edgeIxEntry : this.edgeIxMap.entrySet()) {
             this.edgeKeys[edgeIxEntry.getValue()] = edgeIxEntry.getKey();
         }
+        this.search = new Search();
     }
 
     /** Returns a list of all matches found on the given graph. */
@@ -85,24 +85,6 @@ public final class Matcher {
             result.add(this.search.getMatch());
         }
         return result;
-    }
-
-    /**
-     * Indicates if a given node is already matched in this plan. This returns
-     * <code>true</code> if the node already has a result index. Callback method
-     * from search items, during activation.
-     */
-    boolean isNodeFound(RuleNode node) {
-        return this.nodeIxMap.get(node) != null;
-    }
-
-    /**
-     * Indicates if a given edge is already matched in this plan. This returns
-     * <code>true</code> if the edge already has a result index. Callback method
-     * from search items, during activation.
-     */
-    boolean isEdgeFound(RuleEdge edge) {
-        return this.edgeIxMap.get(edge) != null;
     }
 
     /**
@@ -174,6 +156,16 @@ public final class Matcher {
         void initialise(PatternGraph host) {
             this.host = host;
             this.usedNodes.clear();
+            // EDUARDO: Should we create a new object every time or reset this
+            // structure? What to do with influence and influenceCount?
+            // AR answers: there's no need to clear the images. Fields influence
+            // and influenceCount are static.
+            /*for (int i = 0; i < this.nodeImages.length; i++) {
+                this.nodeImages[i] = null;
+            }
+            for (int i = 0; i < this.edgeImages.length; i++) {
+                this.edgeImages[i] = null;
+            }*/
             for (int i = 0; i < this.records.length && this.records[i] != null; i++) {
                 this.records[i].initialise(host);
             }
@@ -271,6 +263,39 @@ public final class Matcher {
                 assert result.isFinished();
             }
             return result;
+        }
+
+        /** Sets the node image for the node key with a given index. */
+        final boolean putNode(int index, PatternNode image) {
+            PatternNode oldImage = this.nodeImages[index];
+            if (oldImage != null) {
+                boolean removed = this.usedNodes.remove(oldImage);
+                assert removed : String.format(
+                    "Node image %s not in used nodes %s", oldImage,
+                    this.usedNodes);
+            }
+            if (image != null && !this.usedNodes.add(image)) {
+                this.nodeImages[index] = null;
+                return false;
+            }
+            this.nodeImages[index] = image;
+            return true;
+        }
+
+        /** Sets the edge image for the edge key with a given index. */
+        final boolean putEdge(int index, PatternEdge image) {
+            this.edgeImages[index] = image;
+            return true;
+        }
+
+        /** Returns the current node image at a given index. */
+        final PatternNode getNode(int index) {
+            return this.nodeImages[index];
+        }
+
+        /** Returns the current edge image at a given index. */
+        final PatternEdge getEdge(int index) {
+            return this.edgeImages[index];
         }
     }
 

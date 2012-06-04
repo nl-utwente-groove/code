@@ -17,6 +17,7 @@
 package groove.abstraction.pattern.match;
 
 import groove.abstraction.pattern.match.Matcher.Search;
+import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.shape.TypeNode;
 import groove.abstraction.pattern.trans.RuleNode;
 
@@ -26,6 +27,8 @@ import java.util.Set;
 
 /**
  * A search item that searches an image for pattern node.
+ * This is a light version of NodeTypeSearchItem.
+ * 
  * @author Eduardo Zambon
  */
 public final class PatternNodeSearchItem extends SearchItem {
@@ -57,6 +60,11 @@ public final class PatternNodeSearchItem extends SearchItem {
         return this.boundNodes;
     }
 
+    @Override
+    public String toString() {
+        return String.format("Find node %s", this.node);
+    }
+
     /**
      * This implementation first attempts to compare node type labels, if
      * the other search item is also an {@link PatternNodeSearchItem}; otherwise,
@@ -77,7 +85,7 @@ public final class PatternNodeSearchItem extends SearchItem {
 
     @Override
     Record createRecord(Search search) {
-        return null;
+        return new PatternNodeSearchRecord(search, this.nodeIx);
     }
 
     /** This method returns the hash code of the node type as rating. */
@@ -94,6 +102,54 @@ public final class PatternNodeSearchItem extends SearchItem {
     /** Returns the node for which this item tests. */
     public RuleNode getNode() {
         return this.node;
+    }
+
+    /**
+     * Record of a pattern node search item, storing an iterator over the
+     * candidate images.
+     * @author Arend Rensink and Eduardo Zambon
+     */
+    private class PatternNodeSearchRecord extends AbstractRecord<PatternNode> {
+
+        /** The index of the source in the search. */
+        final int sourceIx;
+        /** Image found by the latest call to {@link #next()}, if any. */
+        PatternNode selected;
+
+        /**
+         * Creates a record based on a given search.
+         */
+        PatternNodeSearchRecord(Search search, int sourceIx) {
+            super(search);
+            this.sourceIx = sourceIx;
+        }
+
+        @Override
+        void init() {
+            this.imageIter = this.host.nodeSet().iterator();
+        }
+
+        @Override
+        boolean write(PatternNode image) {
+            boolean result = this.search.putNode(this.sourceIx, image);
+            if (result) {
+                this.selected = image;
+            }
+            return result;
+        }
+
+        @Override
+        void erase() {
+            this.search.putNode(this.sourceIx, null);
+            this.selected = null;
+        }
+
+        @Override
+        public String toString() {
+            return PatternNodeSearchItem.this.toString() + " = "
+                + this.selected;
+        }
+
     }
 
 }

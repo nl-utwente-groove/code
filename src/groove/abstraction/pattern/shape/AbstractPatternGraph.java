@@ -320,11 +320,6 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     // ------------------------------------------------------------------------
 
     @Override
-    public Set<? extends E> labelEdgeSet(Label label) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     protected GraphInfo<N,E> createInfo(GraphInfo<?,?> info) {
         throw new UnsupportedOperationException();
     }
