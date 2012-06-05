@@ -22,6 +22,7 @@ import groove.abstraction.pattern.shape.TypeEdge;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.abstraction.pattern.shape.TypeNode;
 import groove.trans.HostNode;
+import groove.trans.Rule;
 import groove.util.Pair;
 
 import java.util.Iterator;
@@ -43,6 +44,8 @@ public final class PatternRule {
 
     private final boolean closure;
 
+    private final boolean modifying;
+
     private final PatternRuleGraph lhs;
 
     private final PatternRuleGraph rhs;
@@ -55,13 +58,24 @@ public final class PatternRule {
     private RuleNode[] creatorNodes;
     private RuleEdge[] creatorEdges;
 
-    /** Basic constructor. */
-    public PatternRule(String name, TypeGraph type, boolean closure) {
+    /** Constructor for closure rules. */
+    public PatternRule(String name, TypeGraph type) {
         this.name = name;
         this.type = type;
-        this.closure = closure;
+        this.closure = true;
+        this.modifying = true;
         this.lhs = new PatternRuleGraph(name + "-lhs");
         this.rhs = new PatternRuleGraph(name + "-rhs");
+    }
+
+    /** Constructor that lifts a given simple rule to a pattern rule. */
+    public PatternRule(Rule sRule, TypeGraph type) {
+        this.name = sRule.getLastName();
+        this.type = type;
+        this.closure = false;
+        this.modifying = sRule.isModifying();
+        this.lhs = new PatternRuleGraph(this.name + "-lhs");
+        this.rhs = new PatternRuleGraph(this.name + "-rhs");
     }
 
     @Override
@@ -72,6 +86,11 @@ public final class PatternRule {
     /** Returns true if this is a special rule used for closure computation. */
     public boolean isClosure() {
         return this.closure;
+    }
+
+    /** Returns true if this rule can modify a host graph. */
+    public boolean isModifying() {
+        return this.modifying;
     }
 
     /** Returns the LHS of this rule. */
