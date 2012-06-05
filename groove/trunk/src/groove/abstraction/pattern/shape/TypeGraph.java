@@ -33,6 +33,7 @@ import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+import groove.trans.Rule;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -264,7 +265,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
             }
         }
 
-        // Compute the closure for the pattern shape we have so far.
+        // Compute the closure for the pattern graph we have so far.
         close(result);
         assert result.isWellFormed();
         assert result.isCommuting();
@@ -292,6 +293,12 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
                 }
             }
         }
+    }
+
+    /** Lifts the given simple rule to a pattern rule. */
+    public PatternRule lift(Rule sRule) {
+
+        return null;
     }
 
     /** Returns the pattern factory associated with this type graph. */
@@ -330,8 +337,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         for (int layer = 0; layer <= depth(); layer++) {
             for (TypeNode tNode : getLayerNodes(layer)) {
                 HostGraph pattern = tNode.getPattern();
-                PatternRule pRule =
-                    new PatternRule(pattern.getName(), this, true);
+                PatternRule pRule = new PatternRule(pattern.getName(), this);
                 RuleNode rTgt = pRule.addCreatorNode(tNode);
                 for (TypeEdge tEdge : inEdgeSet(tNode)) {
                     RuleNode rSrc =
