@@ -132,6 +132,14 @@ public abstract class SearchItem implements Comparable<SearchItem> {
         boolean isRelevant();
 
         /**
+         * Indicates if this search record is known to be successful no more
+         * than once in a row. That is, the record is singular if
+         * {@link #next()} will return <code>true</code> at most once before
+         * the next {@link #reset()}.
+         */
+        boolean isSingular();
+
+        /**
          * Indicates that (in the last search) there where no matches of
          * this record at all. This implies that the search can backtrack
          * to the most recent dependency of this item.
@@ -255,16 +263,136 @@ public abstract class SearchItem implements Comparable<SearchItem> {
     }
 
     /**
-     * Abstract implementation of a search item record expected to have more
-     * than one solution.
-     * @author Arend Rensink and Eduardo Zambon
+     * Search item record offering basic functionality for querying the
+     * underlying search and target.
      */
-    abstract class AbstractRecord<E> implements Record {
+    abstract class BasicRecord implements Record {
 
         /** The underlying search for this record. */
         final Search search;
         /** The host graph of this record.*/
         PatternGraph host;
+
+        /** Constructs a record for a given search. */
+        BasicRecord(Search search) {
+            this.search = search;
+        }
+
+        @Override
+        public void initialise(PatternGraph host) {
+            reset();
+            this.host = host;
+        }
+
+        @Override
+        final public boolean isRelevant() {
+            return SearchItem.this.isRelevant();
+        }
+    }
+
+    /**
+     * Record type for a search item known to yield at most one solution.
+     * @author Arend Rensink and Eduardo Zambon
+     * @version $Revision: 3291 $
+     */
+    abstract class SingularRecord extends BasicRecord {
+
+        /** The state of the search record. */
+        private State state;
+
+        /** Constructs an instance for a given search. */
+        SingularRecord(Search search) {
+            super(search);
+            this.state = State.START;
+        }
+
+        /** Always returns <code>true</code>. */
+        @Override
+        public final boolean isSingular() {
+            return true;
+        }
+
+        @Override
+        public final boolean isEmpty() {
+            return this.state == State.EMPTY;
+        }
+
+        public final boolean next() {
+            State nextState = null;
+            switch (this.state) {
+            case START:
+                nextState = find() ? State.FOUND : State.EMPTY;
+                break;
+            case FOUND:
+                erase();
+                nextState = State.FULL;
+                break;
+            case EMPTY:
+                // the state is unchanged
+                nextState = State.EMPTY;
+                break;
+            case FULL:
+                boolean result = write();
+                assert result;
+                nextState = State.FOUND;
+                break;
+            default:
+                assert false;
+            }
+            assert this.state.getNext().contains(nextState) : String.format(
+                "Illegal transition %s -next-> %s", this.state, nextState);
+            this.state = nextState;
+            return nextState.isWritten();
+        }
+
+        @Override
+        public final void repeat() {
+            if (this.state.isWritten()) {
+                erase();
+            }
+            this.state = this.state.getRepeat();
+        }
+
+        public final void reset() {
+            if (this.state.isWritten()) {
+                erase();
+            }
+            this.state = this.state.getReset();
+        }
+
+        /**
+         * Tries to find the unique solution and write it to the target map.
+         * This encapsulates {@link #write()}.
+         * @return <code>true</code> if finding and writing the solution was successful.
+         */
+        abstract boolean find();
+
+        /**
+         * Tries to write the previously found unique solution to the target map.
+         * @return <code>true</code> if setting the solution was successful.
+         */
+        abstract boolean write();
+
+        /**
+         * Erases the currently set solution from the target map.
+         */
+        abstract void erase();
+
+        @Override
+        public String toString() {
+            return String.format("%s: %b", SearchItem.this.toString(),
+                this.state.isWritten());
+        }
+
+    }
+
+    /**
+     * Abstract implementation of a search item record expected to have more
+     * than one solution.
+     * @author Arend Rensink and Eduardo Zambon
+     */
+    abstract class MultipleRecord<E> extends BasicRecord {
+
         /** An iterator over the images for the item. */
         Iterator<? extends E> imageIter;
         /** The previously found images. */
@@ -275,22 +403,23 @@ public abstract class SearchItem implements Comparable<SearchItem> {
         private State state;
 
         /** Constructs a record for a given search. */
-        AbstractRecord(Search search) {
-            this.search = search;
+        MultipleRecord(Search search) {
+            super(search);
             this.oldImages = new ArrayList<E>();
             this.oldImageIndex = 0;
             this.state = State.START;
+        }
+
+        /** This implementation returns <code>false</code>. */
+        @Override
+        public final boolean isSingular() {
+            return false;
         }
 
         @Override
         public void initialise(PatternGraph host) {
             reset();
             this.host = host;
-        }
-
-        @Override
-        public final boolean isRelevant() {
-            return SearchItem.this.isRelevant();
         }
 
         @Override
@@ -304,7 +433,7 @@ public abstract class SearchItem implements Comparable<SearchItem> {
          * until one is found for which {@link #write(Object)} is satisfied.
          * Calls {@link #reset()} if no such image is found.
          */
-        final public boolean next() {
+        public final boolean next() {
             State nextState;
             switch (this.state) {
             case EMPTY:

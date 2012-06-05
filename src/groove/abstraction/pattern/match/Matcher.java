@@ -88,6 +88,24 @@ public final class Matcher {
     }
 
     /**
+     * Indicates if a given node is already matched in this plan. This returns
+     * <code>true</code> if the node already has a result index. Callback method
+     * from search items, during activation.
+     */
+    boolean isNodeFound(RuleNode node) {
+        return this.nodeIxMap.get(node) != null;
+    }
+
+    /**
+     * Indicates if a given edge is already matched in this plan. This returns
+     * <code>true</code> if the edge already has a result index. Callback method
+     * from search items, during activation.
+     */
+    boolean isEdgeFound(RuleEdge edge) {
+        return this.edgeIxMap.get(edge) != null;
+    }
+
+    /**
      * Returns the index of a given node in the node index map. Adds an index
      * for the node to the map if it was not yet there.
      * @param node the node to be looked up
@@ -140,6 +158,8 @@ public final class Matcher {
         private PatternGraph host;
         /** Flag indicating that a solution has already been found. */
         private boolean found;
+        /** Index of the last search record known to be singular. */
+        private int lastSingular;
 
         /** Constructs a new search . */
         Search() {
@@ -156,7 +176,7 @@ public final class Matcher {
         void initialise(PatternGraph host) {
             this.host = host;
             this.usedNodes.clear();
-            // EDUARDO: Should we create a new object every time or reset this
+            // EZ asks: Should we create a new object every time or reset this
             // structure? What to do with influence and influenceCount?
             // AR answers: there's no need to clear the images. Fields influence
             // and influenceCount are static.
@@ -170,6 +190,7 @@ public final class Matcher {
                 this.records[i].initialise(host);
             }
             this.found = false;
+            this.lastSingular = -1;
         }
 
         /**
@@ -193,7 +214,7 @@ public final class Matcher {
             } else {
                 current = 0;
             }
-            while (current < planSize) {
+            while (current > this.lastSingular && current < planSize) {
                 boolean success = getRecord(current).next();
                 if (success) {
                     for (int i = 0; i < this.influenceCount[current]; i++) {
@@ -235,6 +256,9 @@ public final class Matcher {
                     this.influence[dependency][this.influenceCount[dependency]] =
                         result;
                     this.influenceCount[dependency]++;
+                }
+                if (this.lastSingular == current - 1 && result.isSingular()) {
+                    this.lastSingular++;
                 }
             }
             return result;

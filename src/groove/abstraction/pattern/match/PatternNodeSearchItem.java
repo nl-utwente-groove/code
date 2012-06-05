@@ -41,6 +41,8 @@ public final class PatternNodeSearchItem extends SearchItem {
     private final Set<RuleNode> boundNodes;
     /** The index of the source in the search. */
     private int nodeIx;
+    /** Indicates if the node is found before this item is invoked. */
+    boolean nodeFound;
 
     /**
      * Creates a search item for a given typed node.
@@ -84,8 +86,22 @@ public final class PatternNodeSearchItem extends SearchItem {
     }
 
     @Override
-    Record createRecord(Search search) {
-        return new PatternNodeSearchRecord(search, this.nodeIx);
+    public Record createRecord(Search search) {
+        if (this.nodeFound) {
+            return createSingularRecord(search);
+        } else {
+            return createMultipleRecord(search);
+        }
+    }
+
+    /** Creates a record for the case the image is singular. */
+    SingularRecord createSingularRecord(Search search) {
+        return new PatternNodeSingularRecord(search, this.nodeIx);
+    }
+
+    /** Creates a record for the case the image is not singular. */
+    MultipleRecord<PatternNode> createMultipleRecord(Search search) {
+        return new PatternNodeMultipleRecord(search, this.nodeIx);
     }
 
     /** This method returns the hash code of the node type as rating. */
@@ -96,6 +112,7 @@ public final class PatternNodeSearchItem extends SearchItem {
 
     @Override
     void activate(Matcher matcher) {
+        this.nodeFound = matcher.isNodeFound(this.node);
         this.nodeIx = matcher.getNodeIx(this.node);
     }
 
@@ -105,11 +122,53 @@ public final class PatternNodeSearchItem extends SearchItem {
     }
 
     /**
+     * Search record to be used if the node image is already found.
+     * @author Arend Rensink and Eduardo Zambon
+     */
+    private final class PatternNodeSingularRecord extends SingularRecord {
+
+        /** The index of the source in the search. */
+        private final int nodeIx;
+
+        /** Constructs an instance for a given search. */
+        public PatternNodeSingularRecord(Search search, int nodeIx) {
+            super(search);
+            this.nodeIx = nodeIx;
+        }
+
+        @Override
+        boolean find() {
+            return true;
+        }
+
+        @Override
+        boolean write() {
+            return true;
+        }
+
+        @Override
+        void erase() {
+            // Empty by design.
+        }
+
+        @Override
+        public String toString() {
+            return PatternNodeSearchItem.this.toString() + " = "
+                + computeImage();
+        }
+
+        /** Creates and returns the node image. */
+        private PatternNode computeImage() {
+            return this.search.getNode(this.nodeIx);
+        }
+    }
+
+    /**
      * Record of a pattern node search item, storing an iterator over the
      * candidate images.
      * @author Arend Rensink and Eduardo Zambon
      */
-    private class PatternNodeSearchRecord extends AbstractRecord<PatternNode> {
+    private class PatternNodeMultipleRecord extends MultipleRecord<PatternNode> {
 
         /** The index of the source in the search. */
         final int sourceIx;
@@ -119,7 +178,7 @@ public final class PatternNodeSearchItem extends SearchItem {
         /**
          * Creates a record based on a given search.
          */
-        PatternNodeSearchRecord(Search search, int sourceIx) {
+        PatternNodeMultipleRecord(Search search, int sourceIx) {
             super(search);
             this.sourceIx = sourceIx;
         }

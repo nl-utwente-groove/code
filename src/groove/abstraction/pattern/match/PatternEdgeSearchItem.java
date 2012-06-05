@@ -57,6 +57,10 @@ public final class PatternEdgeSearchItem extends SearchItem {
     private int sourceIx;
     /** The index of the target in the search. */
     private int targetIx;
+    /** Indicates if the source is found before this item is invoked. */
+    private boolean sourceFound;
+    /** Indicates if the target is found before this item is invoked. */
+    private boolean targetFound;
 
     /**
      * Creates a search item for a given binary edge.
@@ -121,8 +125,11 @@ public final class PatternEdgeSearchItem extends SearchItem {
 
     @Override
     Record createRecord(Search search) {
-        return new PatternEdgeSearchRecord(search, this.edgeIx, this.sourceIx,
-            this.targetIx);
+        if (this.sourceFound && this.targetFound) {
+            return createSingularRecord(search);
+        } else {
+            return createMultipleRecord(search);
+        }
     }
 
     /** This method returns the hash code of the edge type as rating. */
@@ -133,8 +140,11 @@ public final class PatternEdgeSearchItem extends SearchItem {
 
     @Override
     void activate(Matcher matcher) {
+        assert !matcher.isEdgeFound(this.edge);
         this.edgeIx = matcher.getEdgeIx(this.edge);
+        this.sourceFound = matcher.isNodeFound(this.source);
         this.sourceIx = matcher.getNodeIx(this.source);
+        this.targetFound = matcher.isNodeFound(this.target);
         this.targetIx = matcher.getNodeIx(this.target);
     }
 
@@ -143,6 +153,18 @@ public final class PatternEdgeSearchItem extends SearchItem {
      */
     public RuleEdge getEdge() {
         return this.edge;
+    }
+
+    /** Creates a record for the case the image is singular. */
+    SingularRecord createSingularRecord(Search search) {
+        return new PatternEdgeSingularRecord(search, this.edgeIx,
+            this.sourceIx, this.targetIx);
+    }
+
+    /** Creates a record for the case the image is not singular. */
+    MultipleRecord<PatternEdge> createMultipleRecord(Search search) {
+        return new PatternEdgeMultipleRecord(search, this.edgeIx,
+            this.sourceIx, this.targetIx, this.sourceFound, this.targetFound);
     }
 
     /** Tests if a given pattern edge type matches the search item. */
@@ -161,42 +183,130 @@ public final class PatternEdgeSearchItem extends SearchItem {
     }
 
     /**
+     * Search record to be used if the edge image is completely determined by
+     * the pre-matched ends.
+     * @author Arend Rensink and Eduardo Zambon
+     */
+    private final class PatternEdgeSingularRecord extends SingularRecord {
+
+        /** The index of the edge in the search. */
+        private final int edgeIx;
+        /** The index of the source in the search. */
+        private final int sourceIx;
+        /** The index of the target in the search. */
+        private final int targetIx;
+        /** The previously found edge, if the state is {@link SearchItem.State#FOUND} or {@link SearchItem.State#FULL}. */
+        private PatternEdge image;
+
+        /** Constructs an instance for a given search. */
+        public PatternEdgeSingularRecord(Search search, int edgeIx,
+                int sourceIx, int targetIx) {
+            super(search);
+            this.edgeIx = edgeIx;
+            this.sourceIx = sourceIx;
+            this.targetIx = targetIx;
+        }
+
+        @Override
+        boolean find() {
+            PatternEdge image = getEdgeImage();
+            assert image != null;
+            boolean result = isImageCorrect(image);
+            if (result) {
+                this.image = image;
+                write();
+            }
+            return result;
+        }
+
+        @Override
+        final boolean write() {
+            return this.search.putEdge(this.edgeIx, this.image);
+        }
+
+        @Override
+        void erase() {
+            this.search.putEdge(this.edgeIx, null);
+        }
+
+        /** Tests if the (uniquely determined) edge image can be used. */
+        boolean isImageCorrect(PatternEdge image) {
+            return this.host.containsEdge(image);
+        }
+
+        /**
+         * Creates and returns the edge image, as constructed from the available
+         * end node images.
+         */
+        private PatternEdge getEdgeImage() {
+            PatternNode sourceFind = this.search.getNode(this.sourceIx);
+            assert sourceFind != null : String.format(
+                "Source node of %s has not been found",
+                PatternEdgeSearchItem.this.edge);
+            PatternNode targetFind = this.search.getNode(this.targetIx);
+            assert targetFind != null : String.format(
+                "Target node of %s has not been found",
+                PatternEdgeSearchItem.this.edge);
+            return this.host.getFactory().createEdge(sourceFind, getType(),
+                targetFind);
+        }
+
+        /** Callback method to determine the label of the edge image. */
+        TypeEdge getType() {
+            return PatternEdgeSearchItem.this.type;
+        }
+
+        @Override
+        public String toString() {
+            return PatternEdgeSearchItem.this.toString() + " = "
+                + getEdgeImage();
+        }
+    }
+
+    /**
      * Record of a pattern edge search item, storing an iterator over the
      * candidate images.
      * @author Arend Rensink and Eduardo Zambon
      */
-    private class PatternEdgeSearchRecord extends AbstractRecord<PatternEdge> {
+    private final class PatternEdgeMultipleRecord extends
+            MultipleRecord<PatternEdge> {
 
         /** The index of the edge in the search. */
-        final int edgeIx;
+        private final int edgeIx;
         /** The index of the source in the search. */
-        final int sourceIx;
+        private final int sourceIx;
         /** The index of the target in the search. */
-        final int targetIx;
+        private final int targetIx;
+        /** Indicates if the source is found before this item is invoked. */
+        private final boolean sourceFound;
+        /** Indicates if the target is found before this item is invoked. */
+        private final boolean targetFound;
         /**
          * The pre-matched image for the edge source, if any. A value of
          * <code>null</code> means that no image is currently selected for the
          * source.
          */
-        PatternNode sourceFind;
+        private PatternNode sourceFind;
         /**
          * The pre-matched image for the edge target, if any. A value of
          * <code>null</code> means that no image is currently selected for the
          * target, or the target was pre-matched.
          */
-        PatternNode targetFind;
+        private PatternNode targetFind;
         /** Image found by the latest call to {@link #next()}, if any. */
-        PatternEdge selected;
+        private PatternEdge selected;
 
         /**
          * Creates a record based on a given search.
          */
-        PatternEdgeSearchRecord(Search search, int edgeIx, int sourceIx,
-                int targetIx) {
+        PatternEdgeMultipleRecord(Search search, int edgeIx, int sourceIx,
+                int targetIx, boolean sourceFound, boolean targetFound) {
             super(search);
             this.edgeIx = edgeIx;
             this.sourceIx = sourceIx;
             this.targetIx = targetIx;
+            this.sourceFound = sourceFound;
+            this.targetFound = targetFound;
             assert search.getEdge(edgeIx) == null : String.format(
                 "Edge %s already in %s", PatternEdgeSearchItem.this.edge,
                 search);
@@ -204,6 +314,22 @@ public final class PatternEdgeSearchItem extends SearchItem {
 
         @Override
         void init() {
+            if (this.sourceFound) {
+                this.sourceFind = this.search.getNode(this.sourceIx);
+                assert this.sourceFind != null : String.format(
+                    "Source node of %s not found",
+                    PatternEdgeSearchItem.this.edge);
+            }
+            if (this.targetFound) {
+                this.targetFind = this.search.getNode(this.targetIx);
+                assert this.targetFind != null : String.format(
+                    "Target node of %s not found",
+                    PatternEdgeSearchItem.this.edge);
+            }
+            initImages();
+        }
+
+        void initImages() {
             Set<? extends PatternEdge> result = null;
             Set<? extends PatternEdge> labelEdgeSet =
                 this.host.labelEdgeSet(PatternEdgeSearchItem.this.type.label());

@@ -18,7 +18,6 @@ package groove.abstraction.pattern.shape;
 
 import groove.abstraction.MyHashMap;
 import groove.abstraction.pattern.Util;
-import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
@@ -274,16 +273,12 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
 
     /** Computes the closure for the given pattern shape w.r.t. this type graph. */
     public void close(PatternGraph pGraph) {
-        PatternPreviewDialog.showPatternGraph(pGraph);
         // Iterate from layer 2 on.
         for (int layer = 2; layer <= depth(); layer++) {
             // For each pattern of the layer.
             for (TypeNode tNode : getLayerNodes(layer)) {
                 // Check if we can compose this new pattern type.
                 PatternRule pRule = getClosureRule(tNode);
-
-                PatternPreviewDialog.showPatternGraph(pRule.lhs());
-
                 Matcher matcher = MatcherFactory.instance().getMatcher(pRule);
                 for (Match match : matcher.findMatches(pGraph)) {
                     // For each match we found we add a new pattern. We don't
