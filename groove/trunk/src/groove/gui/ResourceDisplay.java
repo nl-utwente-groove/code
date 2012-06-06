@@ -20,6 +20,7 @@ import groove.gui.SimulatorModel.Change;
 import groove.gui.action.CancelEditAction;
 import groove.gui.action.CopyAction;
 import groove.gui.action.SaveAction;
+import groove.gui.action.SetStartGraphAction;
 import groove.gui.action.SimulatorAction;
 import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
@@ -125,7 +126,6 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         JToolBar result = Options.createToolBar();
         result.add(getNewAction());
         result.add(getEditAction());
-        result.add(getSaveAction());
         if (separation >= 0) {
             result.addSeparator(new Dimension(separation, 0));
         } else {
@@ -140,6 +140,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             result.addSeparator();
         }
         result.add(getEnableButton());
+        if (getResourceKind() == ResourceKind.HOST) {
+            result.add(getSetStartGraphAction());
+        }
         return result;
     }
 
@@ -181,6 +184,11 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     /** Returns the save action associated with this kind of resource. */
     protected final CancelEditAction getCancelEditAction() {
         return getActions().getCancelEditAction(getResourceKind());
+    }
+
+    /** Returns the set start graph action (only used for host graphs). */
+    protected final SetStartGraphAction getSetStartGraphAction() {
+        return getActions().getSetStartGraphAction();
     }
 
     /** Creates a toggle button wrapping the enable action of this display. */
