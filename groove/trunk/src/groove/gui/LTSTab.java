@@ -139,13 +139,13 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
                 getJGraph().freeze();
                 getJGraph().getLayouter().start(false);
                 getJGraph().setVisible(true);
-                getJGraph().setEnabled(true);
+                setEnabled(true);
             }
             toggleFilterLts();
         } else {
             // Hide the LTS.
-            getJGraph().setEnabled(false);
             getJGraph().setVisible(false);
+            setEnabled(false);
         }
     }
 

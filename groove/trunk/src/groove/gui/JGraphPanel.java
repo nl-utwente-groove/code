@@ -237,6 +237,8 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     @Override
     public void setEnabled(boolean enabled) {
         this.jGraph.setEnabled(enabled);
+        getScrollPane().getHorizontalScrollBar().setEnabled(enabled);
+        getScrollPane().getVerticalScrollBar().setEnabled(enabled);
         getLabelTree().setEnabled(enabled);
         if (getStatusBar() != null) {
             getStatusBar().setEnabled(enabled);
