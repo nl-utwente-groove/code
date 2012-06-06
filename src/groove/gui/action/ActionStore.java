@@ -809,6 +809,23 @@ public class ActionStore implements SimulatorListener {
     private ShiftPriorityAction lowerPriorityAction;
 
     /**
+     * The action to select a single start graph that is associated with the
+     * simulator.
+     */
+    private SetStartGraphAction setStartGraphAction;
+
+    /**
+     * Lazily creates and returns an instance of {@link SetStartGraphAction}.
+     */
+    public SetStartGraphAction getSetStartGraphAction() {
+        // lazily create the action
+        if (this.setStartGraphAction == null) {
+            this.setStartGraphAction = new SetStartGraphAction(this.simulator);
+        }
+        return this.setStartGraphAction;
+    }
+
+    /**
      * Lazily creates and returns an instance of
      * {@link StartSimulationAction}.
      */
