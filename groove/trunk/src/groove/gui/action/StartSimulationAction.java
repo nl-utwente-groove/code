@@ -19,6 +19,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.view.GrammarModel;
 
 import javax.swing.Action;
 
@@ -38,9 +39,8 @@ public class StartSimulationAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        boolean enabled =
-            getSimulatorModel().getGrammar() != null
-                && getSimulatorModel().getGrammar().getErrors().isEmpty();
-        setEnabled(enabled);
+        GrammarModel grammar = getSimulatorModel().getGrammar();
+        setEnabled(grammar != null && !grammar.hasErrors()
+            && grammar.hasRules());
     }
 }

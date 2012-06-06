@@ -3,6 +3,7 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.view.GrammarModel;
 
 import javax.swing.Action;
 
@@ -28,7 +29,9 @@ public class ApplyMatchAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        setEnabled(getSimulatorModel().hasState());
+        GrammarModel grammar = getSimulatorModel().getGrammar();
+        setEnabled(getSimulatorModel().hasState() && grammar != null
+            && !grammar.hasErrors() && grammar.hasRules());
         putValue(Action.SHORT_DESCRIPTION, getSimulatorModel().hasMatch()
                 ? Options.APPLY_MATCH_ACTION_NAME
                 : Options.EXPLORE_STATE_ACTION_NAME);
