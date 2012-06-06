@@ -130,18 +130,18 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
     public void toggleShowHideLts() {
         if (!getDisplay().isHiddingLts()) {
             // Switch to show mode.
-            LTSJModel ltsModel = null;
-            ltsModel = getJGraph().newModel();
+            LTSJModel ltsModel = getJGraph().newModel();
+            ltsModel.setFiltering(getDisplay().isFilteringLts());
             GTS gts = getSimulatorModel().getGts();
             if (gts != null) {
                 ltsModel.loadGraph(gts);
                 setJModel(ltsModel);
+                getJGraph().refreshFiltering();
                 getJGraph().freeze();
                 getJGraph().getLayouter().start(false);
                 getJGraph().setVisible(true);
                 setEnabled(true);
             }
-            toggleFilterLts();
         } else {
             // Hide the LTS.
             getJGraph().setVisible(false);
@@ -153,7 +153,19 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
      * Toggles the filtering of the LTS display.
      */
     public void toggleFilterLts() {
-        getJGraph().filterLTS(!getDisplay().isFilteringLts());
+        if (!getDisplay().isFilteringLts()) {
+            setEnabledBackground(JAttr.STATE_BACKGROUND);
+            getJModel().setFiltering(false);
+            getJGraph().refreshFiltering();
+            getJGraph().freeze();
+            getJGraph().getLayouter().start(false);
+            getJGraph().setVisible(true);
+        } else {
+            setEnabledBackground(JAttr.FILTER_BACKGROUND);
+            getJModel().setFiltering(true);
+            getJGraph().refreshFiltering();
+        }
+        setEnabled(true);
     }
 
     @Override
@@ -180,6 +192,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
                 LTSJModel ltsModel;
                 if (gts != oldModel.getGts()) {
                     ltsModel = getJGraph().newModel();
+                    ltsModel.setFiltering(getDisplay().isFilteringLts());
                     ltsModel.loadGraph(gts);
                     setJModel(ltsModel);
                 } else {
@@ -189,6 +202,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
                         ltsModel.loadGraph(gts);
                     }
                 }
+                getJGraph().refreshFiltering();
                 getJGraph().freeze();
                 getJGraph().getLayouter().start(false);
                 setEnabled(true);

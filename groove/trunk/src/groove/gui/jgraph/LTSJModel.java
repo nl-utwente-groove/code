@@ -105,7 +105,19 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         this.listening = true;
     }
 
+    /** Set the filtering flag of this model to the given value. */
+    public void setFiltering(boolean filtering) {
+        this.filtering = filtering;
+    }
+
+    /** Returns the filtering flag of this model. */
+    public boolean isFiltering() {
+        return this.filtering;
+    }
+
     private boolean listening = true;
+
+    private boolean filtering = false;
 
     /** Default name of an LTS model. */
     static public final String DEFAULT_LTS_NAME = "lts";
