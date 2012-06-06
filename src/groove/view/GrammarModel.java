@@ -497,6 +497,11 @@ public class GrammarModel implements Observer {
         return result;
     }
 
+    /** Checks if this grammar has rules (maybe with errors). */
+    public boolean hasRules() {
+        return !getResourceSet(RULE).isEmpty();
+    }
+
     /**
      * Computes a graph grammar from this model.
      * @throws FormatException if there are syntax errors in the model

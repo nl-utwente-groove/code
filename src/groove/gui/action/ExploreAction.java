@@ -130,7 +130,7 @@ public class ExploreAction extends SimulatorAction {
     public void refresh() {
         GrammarModel grammar = getSimulatorModel().getGrammar();
         setEnabled(grammar != null && grammar.getStartGraphModel() != null
-            && grammar.getErrors().isEmpty());
+            && !grammar.hasErrors() && grammar.hasRules());
         String toolTipText =
             HTMLConverter.HTML_TAG.on(String.format(
                 "%s (%s)",
