@@ -278,18 +278,21 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
     }
 
     /** Filters the LTS. */
-    public void filterLTS(boolean showAll) {
-        Set<GraphJCell> trace =
-            findTraces(getModel().getGraph().getResultStates());
-        for (Object element : getRoots()) {
-            LTSJCell jCell = (LTSJCell) element;
-            boolean visible =
-                showAll || trace.isEmpty() || trace.contains(jCell);
-            jCell.setVisible(visible);
+    public void refreshFiltering() {
+        if (getModel().isFiltering()) {
+            Set<GraphJCell> trace =
+                findTraces(getModel().getGraph().getResultStates());
+            for (Object element : getRoots()) {
+                LTSJCell jCell = (LTSJCell) element;
+                jCell.setVisible(trace.isEmpty() || trace.contains(jCell));
+            }
+        } else {
+            for (Object element : getRoots()) {
+                LTSJCell jCell = (LTSJCell) element;
+                jCell.setVisible(true);
+            }
         }
         refreshAllCells();
-        setBackground(showAll ? JAttr.STATE_BACKGROUND
-                : JAttr.FILTER_BACKGROUND);
     }
 
     /**
