@@ -16,10 +16,16 @@
  */
 package groove.abstraction.pattern.shape;
 
+import groove.abstraction.MyHashMap;
 import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Node;
+import groove.trans.DefaultHostGraph;
+import groove.trans.HostEdge;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -109,6 +115,33 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
     /** Basic getter method. */
     public TypeGraph getTypeGraph() {
         return this.type;
+    }
+
+    /** Returns the simple graph obtained with flattening this pattern graph. */
+    public HostGraph flat() {
+        assert isCommuting();
+        HostGraph result = new DefaultHostGraph(getName());
+        Map<PatternNode,HostNode> nodeMap =
+            new MyHashMap<PatternNode,HostNode>();
+        // Create the nodes in layer 0.
+        for (PatternNode pNode : getLayerNodes(0)) {
+            HostNode sNode = result.addNode();
+            nodeMap.put(pNode, sNode);
+            // Copy node labels.
+            for (HostEdge sEdge : pNode.getPattern().edgeSet()) {
+                result.addEdge(sNode, sEdge.label(), sNode);
+            }
+        }
+        // Create the edges in layer 1.
+        for (PatternNode pNode : getLayerNodes(1)) {
+            HostEdge sEdge = pNode.getSimpleEdge();
+            HostNode sSrc =
+                nodeMap.get(getCoveringEdge(pNode, sEdge.source()).source());
+            HostNode sTgt =
+                nodeMap.get(getCoveringEdge(pNode, sEdge.target()).source());
+            result.addEdge(sSrc, sEdge.label(), sTgt);
+        }
+        return result;
     }
 
 }
