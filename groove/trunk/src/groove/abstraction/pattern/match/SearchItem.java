@@ -75,6 +75,14 @@ public abstract class SearchItem implements Comparable<SearchItem> {
     abstract void activate(Matcher matcher);
 
     /**
+     * Returns the collection of nodes that should already be matched before
+     * this item should be scheduled.
+     */
+    public Collection<RuleNode> needsNodes() {
+        return Collections.emptySet();
+    }
+
+    /**
      * Returns the collection of nodes for which this search item will find a
      * matching when activated.
      */
