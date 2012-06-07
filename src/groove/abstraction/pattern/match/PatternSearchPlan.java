@@ -59,6 +59,7 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
         // Collection of direct dependencies of the new search item.
         int depend = -1;
         Set<RuleNode> usedNodes = new MyHashSet<RuleNode>();
+        usedNodes.addAll(e.needsNodes());
         usedNodes.addAll(e.bindsNodes());
         for (int i = 0; i < position; i++) {
             // Set a dependency if the item at position i binds a required node.
@@ -137,8 +138,8 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
      */
     private static final class PlanData implements Comparator<SearchItem> {
 
-        /** The rule LHS for which we develop the plan. */
-        private final PatternRuleGraph lhs;
+        /** The rule or which we develop the plan. */
+        private final PatternRule pRule;
         /** The set of nodes to be matched. */
         private final Set<RuleNode> remainingNodes;
         /** The set of edges to be matched. */
@@ -154,13 +155,12 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
          * system properties, and sets of already matched nodes and edges.
          */
         PlanData(PatternRule pRule) {
-            this.lhs = pRule.lhs();
+            this.pRule = pRule;
+            PatternRuleGraph lhs = this.pRule.lhs();
             // compute the set of remaining (unmatched) nodes
-            this.remainingNodes =
-                new LinkedHashSet<RuleNode>(this.lhs.nodeSet());
+            this.remainingNodes = new LinkedHashSet<RuleNode>(lhs.nodeSet());
             // compute the set of remaining (unmatched) edges and variables
-            this.remainingEdges =
-                new LinkedHashSet<RuleEdge>(this.lhs.edgeSet());
+            this.remainingEdges = new LinkedHashSet<RuleEdge>(lhs.edgeSet());
             this.comparators = computeComparators();
         }
 
@@ -232,6 +232,12 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
                 SearchItem nodeItem = createNodeSearchItem(node);
                 result.add(nodeItem);
             }
+            // Create a negated search item if we have a closure rule.
+            if (this.pRule.isClosure()) {
+                RuleEdge edge = this.pRule.getCreatorEdges()[0];
+                SearchItem negatedEdge = createNegatedSearchItem(edge);
+                result.add(negatedEdge);
+            }
             return result;
         }
 
@@ -247,6 +253,13 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
          */
         SearchItem createEdgeSearchItem(RuleEdge edge) {
             return new PatternEdgeSearchItem(edge);
+        }
+
+        /**
+         * Callback factory method for creating a negated search item.
+         */
+        SearchItem createNegatedSearchItem(RuleEdge edge) {
+            return new NegatedSearchItem(createEdgeSearchItem(edge));
         }
     }
 
@@ -308,6 +321,7 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
          * determining which one should be scheduled first. In order from worst
          * to best:
          * <ul>
+         * <li> {@link NegatedSearchItem}s
          * <li> {@link PatternNodeSearchItem}s
          * <li> {@link PatternEdgeSearchItem}s
          * </ul>
@@ -323,6 +337,11 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
         int getRating(SearchItem item) {
             int result = 0;
             Class<?> itemClass = item.getClass();
+
+            if (itemClass == NegatedSearchItem.class) {
+                return result;
+            }
+            result++;
             if (itemClass == PatternNodeSearchItem.class) {
                 return result;
             }
@@ -388,6 +407,12 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
          * Favours the item with the largest layer.
          */
         public int compare(SearchItem item1, SearchItem item2) {
+            if (item1 instanceof NegatedSearchItem) {
+                item1 = ((NegatedSearchItem) item1).inner;
+            }
+            if (item2 instanceof NegatedSearchItem) {
+                item2 = ((NegatedSearchItem) item2).inner;
+            }
             RuleNode node1 = null;
             RuleNode node2 = null;
             if (item1 instanceof PatternNodeSearchItem) {

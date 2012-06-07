@@ -143,9 +143,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
 
     /** Returns the node in the store with the given number. */
     public Node getNodeFromNr(int nr) {
-        Node node = this.nodes[nr];
-        assert node != null;
-        return node;
+        return this.nodes[nr];
     }
 
     /** Creates a label with the given text. */

@@ -33,7 +33,8 @@ public class FreeNumberDispenser implements Dispenser {
      */
     public FreeNumberDispenser(int numbers[]) {
         this.numbers = numbers;
-        this.curr = 0;
+        this.currIdx = 0;
+        this.lastVal = -1;
         Arrays.sort(this.numbers);
     }
 
@@ -58,16 +59,22 @@ public class FreeNumberDispenser implements Dispenser {
      * passed to the constructor. Or -1 if no free number can be found. 
      */
     public int getNext() {
-        int result = -1;
-        for (int i = this.curr; i < this.numbers.length; i++) {
-            if (result == this.numbers[i]) {
-                result++;
+        this.lastVal++;
+        if (this.currIdx < this.numbers.length
+            && this.lastVal != this.numbers[this.currIdx]) {
+            return this.lastVal;
+        } else {
+            do {
+                this.currIdx++;
+                this.lastVal++;
+            } while (this.currIdx < this.numbers.length
+                && this.lastVal == this.numbers[this.currIdx]);
+            if (this.currIdx < this.numbers.length) {
+                return this.lastVal;
             } else {
-                this.curr = i + 1;
-                break;
+                return -1;
             }
         }
-        return result;
     }
 
     /** Returns the highest number on the given array. */
@@ -82,5 +89,8 @@ public class FreeNumberDispenser implements Dispenser {
     /** The sorted array for which a new number is computed. */
     private final int numbers[];
     /** The current index to continue the search. */
-    private int curr;
+    private int currIdx;
+    /** The last returned value. */
+    private int lastVal;
+
 }

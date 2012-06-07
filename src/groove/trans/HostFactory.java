@@ -122,7 +122,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         while (freeNr != -1) {
             // We have a free number of a node that already exists in the store.
             // Retrieve this node and check if the type coincide.
-            result = getNode(freeNr);
+            result = retrieveNode(freeNr, typeNode);
             if (result.getType() == typeNode) {
                 // Yes, the types are the same. We are done.
                 return result;
@@ -142,6 +142,18 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         }
         // Nothing else to do, we need to create a new node.
         result = this.createNode(type);
+        return result;
+    }
+
+    /**
+     * Returns the node from the store with the given number. If the entry is
+     * empty a new node with the given number and type is created.
+     * */
+    private HostNode retrieveNode(int nodeNr, TypeNode type) {
+        HostNode result = (HostNode) getNodeFromNr(nodeNr);
+        if (result == null) {
+            result = createNode(nodeNr, type);
+        }
         return result;
     }
 
