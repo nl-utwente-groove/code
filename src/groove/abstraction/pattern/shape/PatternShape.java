@@ -46,10 +46,16 @@ public class PatternShape extends PatternGraph {
     // ------------------------------------------------------------------------
 
     /** Default constructor. */
-    public PatternShape(String name, TypeGraph type) {
-        super(name, type);
+    public PatternShape(PatternGraph pGraph) {
+        super(pGraph.getName(), pGraph.getTypeGraph());
         this.nodeMultMap = new MyHashMap<PatternNode,Multiplicity>();
         this.edgeMultMap = new MyHashMap<PatternEdge,Multiplicity>();
+        for (PatternNode pNode : pGraph.nodeSet()) {
+            addNode(pNode);
+        }
+        for (PatternEdge pEdge : pGraph.edgeSet()) {
+            addEdgeWithoutCheck(pEdge);
+        }
     }
 
     // ------------------------------------------------------------------------
