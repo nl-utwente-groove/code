@@ -17,7 +17,7 @@ package groove.util;
 import groove.graph.Node;
 
 import java.util.Arrays;
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * Dispenser that returns numbers not occurring in the given array.
@@ -38,12 +38,12 @@ public class FreeNumberDispenser implements Dispenser {
     }
 
     /** Creates the dispenser for the given set. The set is unchanged. */
-    public FreeNumberDispenser(Set<? extends Node> nodeSet) {
+    public FreeNumberDispenser(Collection<? extends Node> nodeSet) {
         this(getArray(nodeSet));
     }
 
     /** Creates an array with node numbers of the given set. */
-    private static int[] getArray(Set<? extends Node> nodeSet) {
+    private static int[] getArray(Collection<? extends Node> nodeSet) {
         int numbers[] = new int[nodeSet.size()];
         int i = 0;
         for (Node node : nodeSet) {
