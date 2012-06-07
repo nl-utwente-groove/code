@@ -24,7 +24,7 @@ import groove.trans.HostEdge;
 import groove.util.FreeNumberDispenser;
 import groove.util.TreeHashSet;
 
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * Factory for pattern graph elements.
@@ -140,7 +140,8 @@ public final class PatternFactory implements
      * consistency.
      * @see #createNode(TypeNode, FreeNumberDispenser)
      */
-    public PatternNode createNode(TypeNode type, Set<PatternNode> usedNodes) {
+    public PatternNode createNode(TypeNode type,
+            Collection<PatternNode> usedNodes) {
         FreeNumberDispenser dispenser = new FreeNumberDispenser(usedNodes);
         return this.createNode(type, dispenser);
     }

@@ -54,7 +54,6 @@ public final class PatternRule {
     private int maxEdgeNr;
 
     private RuleNode[] eraserNodes;
-    private RuleEdge[] eraserEdges;
     private RuleNode[] creatorNodes;
     private RuleEdge[] creatorEdges;
 
@@ -114,6 +113,20 @@ public final class PatternRule {
     public RuleEdge addCreatorEdge(RuleNode rSrc, TypeEdge tEdge, RuleNode rTgt) {
         RuleEdge result = createEdge(rSrc, tEdge, rTgt);
         addToRhs(result);
+        return result;
+    }
+
+    /** Creates and returns a new rule node of the given type and adds it to the LHS. */
+    public RuleNode addEraserNode(TypeNode tNode) {
+        RuleNode result = createNode(tNode);
+        addToLhs(result);
+        return result;
+    }
+
+    /** Creates and returns a new rule edge of the given type and adds it to the LHS. */
+    public RuleEdge addEraserEdge(RuleNode rSrc, TypeEdge tEdge, RuleNode rTgt) {
+        RuleEdge result = createEdge(rSrc, tEdge, rTgt);
+        addToLhs(result);
         return result;
     }
 
@@ -194,13 +207,8 @@ public final class PatternRule {
         return this.eraserNodes;
     }
 
-    /** Basic getter method. */
-    public RuleEdge[] getEraserEdges() {
-        if (this.eraserEdges == null) {
-            this.eraserEdges = computeEraserEdges();
-        }
-        return this.eraserEdges;
-    }
+    // EZ says: there is no method to get eraser edges. Edges are only removed
+    // because they are incident to nodes that are being removed.
 
     /** Basic getter method. */
     public RuleNode[] getCreatorNodes() {
@@ -223,13 +231,6 @@ public final class PatternRule {
         result.addAll(lhs().nodeSet());
         result.removeAll(rhs().nodeSet());
         return result.toArray(new RuleNode[result.size()]);
-    }
-
-    private RuleEdge[] computeEraserEdges() {
-        Set<RuleEdge> result = new MyHashSet<RuleEdge>();
-        result.addAll(lhs().edgeSet());
-        result.removeAll(rhs().edgeSet());
-        return result.toArray(new RuleEdge[result.size()]);
     }
 
     private RuleNode[] computeCreatorNodes() {
