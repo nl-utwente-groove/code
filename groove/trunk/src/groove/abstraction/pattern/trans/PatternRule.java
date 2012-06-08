@@ -40,6 +40,8 @@ public final class PatternRule {
 
     private final String name;
 
+    private final Rule sRule;
+
     private final TypeGraph type;
 
     private final boolean closure;
@@ -60,6 +62,7 @@ public final class PatternRule {
     /** Constructor for closure rules. */
     public PatternRule(String name, TypeGraph type) {
         this.name = name;
+        this.sRule = null;
         this.type = type;
         this.closure = true;
         this.modifying = true;
@@ -70,6 +73,7 @@ public final class PatternRule {
     /** Constructor that lifts a given simple rule to a pattern rule. */
     public PatternRule(Rule sRule, TypeGraph type) {
         this.name = sRule.getLastName();
+        this.sRule = sRule;
         this.type = type;
         this.closure = false;
         this.modifying = sRule.isModifying();
@@ -292,6 +296,16 @@ public final class PatternRule {
         }
         lhs().removeNode(from);
         rhs().removeNode(from);
+    }
+
+    /** Returns the simple rule out of which this pattern rule was created. */
+    public Rule getSimpleRule() {
+        return this.sRule;
+    }
+
+    /** Basic getter. */
+    public String getName() {
+        return this.name;
     }
 
 }
