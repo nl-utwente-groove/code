@@ -58,4 +58,9 @@ public final class Match extends
             && edgeMap().keySet().containsAll(this.pRule.lhs().edgeSet());
     }
 
+    @Override
+    public String toString() {
+        return "Match of " + this.pRule.getName() + ":\n" + super.toString();
+    }
+
 }

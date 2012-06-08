@@ -79,6 +79,11 @@ public final class PatternFactory implements
     // Other methods
     // ------------------------------------------------------------------------
 
+    @Override
+    public Morphism<PatternNode,PatternEdge> createMorphism() {
+        return new Morphism<PatternNode,PatternEdge>(this);
+    }
+
     /** Creates and returns an empty pattern graph. */
     public PatternGraph newPatternGraph() {
         return new PatternGraph("", this.typeGraph);
@@ -299,11 +304,6 @@ public final class PatternFactory implements
     @Override
     public PatternEdge createEdge(PatternNode source, Label label,
             PatternNode target) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Morphism<PatternNode,PatternEdge> createMorphism() {
         throw new UnsupportedOperationException();
     }
 
