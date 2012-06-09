@@ -247,7 +247,7 @@ public class AspectLabel extends AbstractLabel {
      * Calling this method fixes the label.
      * Guaranteed to be non-{@code null}.
      */
-    String getInnerText() {
+    public String getInnerText() {
         setFixed();
         return this.innerText;
     }

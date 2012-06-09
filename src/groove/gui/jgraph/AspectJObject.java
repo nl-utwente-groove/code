@@ -20,6 +20,7 @@ import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
+import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectLabel;
 
 import java.util.ArrayList;
@@ -99,10 +100,25 @@ public class AspectJObject extends ArrayList<String> {
     /**
      * Loads the user object collection from a given edge set.
      * 
-     * @param edgeSet the label set from which to load the user object
+     * @param edgeSet the edge set from which to load the user object
      */
     public void addEdges(Collection<AspectEdge> edgeSet) {
         for (AspectEdge edge : edgeSet) {
+            addEdge(edge);
+        }
+    }
+
+    /**
+     * Adds the label of a given edge to the user object.
+     * @param edge the edge from which to load the user object
+     */
+    private void addEdge(AspectEdge edge) {
+        if (edge.getKind() == AspectKind.REMARK) {
+            // Add remark prefixes to every line of the comment
+            for (String line : edge.label().getInnerText().split("\n")) {
+                add(AspectKind.REMARK.getPrefix() + line);
+            }
+        } else {
             add(edge.label().toString());
         }
     }
