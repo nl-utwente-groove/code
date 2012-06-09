@@ -442,28 +442,32 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
      * depending on an edge role.
      */
     private void addRoleIndicator(StringBuilder text, AspectKind edgeRole) {
+        text.insert(0, edgeRole.getDisplayPrefix());
         switch (edgeRole) {
         case ERASER:
-            text.insert(0, "- ");
             HTMLConverter.blue.on(text);
             break;
         case ADDER:
-            text.insert(0, "+! ");
             HTMLConverter.green.on(text);
             break;
         case LET:
             HTMLConverter.green.on(text);
             break;
         case CREATOR:
-            text.insert(0, "+ ");
             HTMLConverter.green.on(text);
             break;
         case EMBARGO:
-            text.insert(0, "! ");
             HTMLConverter.red.on(text);
             break;
         case REMARK:
-            text.insert(0, "// ");
+            // replace all newlines by // as well
+            String NEWLINE = HTMLConverter.HTML_LINEBREAK;
+            int lineStart = text.indexOf(NEWLINE);
+            while (lineStart >= 0) {
+                text.insert(lineStart + NEWLINE.length(),
+                    REMARK.getDisplayPrefix());
+                lineStart = text.indexOf(NEWLINE, lineStart + NEWLINE.length());
+            }
             HTMLConverter.remark.on(text);
             break;
         }
@@ -661,14 +665,33 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 edgeLabels.add(label);
             }
         }
+        this.aspect = node.getKind();
+        // collect remark edges
+        StringBuilder remarkText = new StringBuilder();
         // now process the edge labels
         for (AspectLabel label : edgeLabels) {
             AspectEdge edge = new AspectEdge(node, label, node);
             edge.setFixed();
+            if (edge.getAspect().getKind() == REMARK) {
+                if (remarkText.length() > 0) {
+                    remarkText.append('\n');
+                }
+                remarkText.append(label.getInnerText());
+            } else {
+                boolean added = addJVertexLabel(edge);
+                assert added;
+            }
+        }
+        // turn the collected remark text into a single edge
+        if (remarkText.length() > 0) {
+            remarkText.insert(0, REMARK.getPrefix());
+            AspectEdge edge =
+                new AspectEdge(node, parser.parse(remarkText.toString(), role),
+                    node);
+            edge.setFixed();
             boolean added = addJVertexLabel(edge);
             assert added;
         }
-        this.aspect = node.getKind();
         // attributes will be refreshed upon the call to setNodeFixed()
     }
 
