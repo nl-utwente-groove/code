@@ -27,26 +27,26 @@ import java.util.Set;
 import javax.swing.Action;
 
 /**
- * Action that enables a single host graph, and disables all others.
+ * Action that enables a single resource, and disables all others.
  */
-public class SetStartGraphAction extends SimulatorAction {
+public class EnableUniqueAction extends SimulatorAction {
 
     /** Constructs a new action. */
-    public SetStartGraphAction(Simulator simulator) {
-        super(simulator, EditType.ENABLE, ResourceKind.HOST);
-        putValue(NAME, this.ACTION_NAME);
-        putValue(SHORT_DESCRIPTION, this.HOVER_DESCRIPTION);
+    public EnableUniqueAction(Simulator simulator, ResourceKind kind) {
+        super(simulator, EditType.ENABLE, kind);
+        putValue(NAME, this.ACTION_NAME(kind));
+        putValue(SHORT_DESCRIPTION, HOVER_DESCRIPTION(kind));
         putValue(Action.SMALL_ICON, Icons.ENABLE_UNIQUE_ICON);
     }
 
     @Override
     public void execute() {
-        String name = getSimulatorModel().getSelected(ResourceKind.HOST);
+        String name = getSimulatorModel().getSelected(getResourceKind());
         if (!getDisplay().saveEditor(name, true, false)) {
             return;
         }
         try {
-            getSimulatorModel().doEnableStartGraphUniquely(name);
+            getSimulatorModel().doEnableUniquely(getResourceKind(), name);
         } catch (IOException exc) {
             showErrorDialog(exc, "Error during %s enabling",
                 getResourceKind().getDescription());
@@ -55,23 +55,27 @@ public class SetStartGraphAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        boolean enabled = false;
-        Set<String> names = getSimulatorModel().getSelectSet(ResourceKind.HOST);
-        if (names.size() == 1) {
-            Set<String> start = getGrammarModel().getStartGraphs();
-            if (start.size() > 1) {
-                enabled = true;
-            } else {
-                enabled = !start.containsAll(names);
-            }
+        Set<String> selected =
+            getSimulatorModel().getSelectSet(getResourceKind());
+        if (selected.size() == 1) {
+            Set<String> enabled =
+                getSimulatorModel().getGrammar().getProperties().getEnabledNames(
+                    getResourceKind());
+            setEnabled(!selected.equals(enabled));
+        } else {
+            setEnabled(false);
         }
-        setEnabled(enabled);
     }
 
     /** Name of the action on the menu. */
-    private final String ACTION_NAME = "Enable This Graph Only";
+    private final String ACTION_NAME(ResourceKind kind) {
+        return "Enable This " + kind.getName() + " Only";
+    }
+
     /** Hover text for this action. */
-    private final String HOVER_DESCRIPTION =
-        "Enable this graph, and disable all other graphs";
+    private final String HOVER_DESCRIPTION(ResourceKind kind) {
+        return "Enable this " + kind.getDescription() + ", and disable all "
+            + "other " + kind.getDescription() + "s";
+    }
 
 }

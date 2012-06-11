@@ -19,8 +19,8 @@ package groove.gui;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.CancelEditAction;
 import groove.gui.action.CopyAction;
+import groove.gui.action.EnableUniqueAction;
 import groove.gui.action.SaveAction;
-import groove.gui.action.SetStartGraphAction;
 import groove.gui.action.SimulatorAction;
 import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
@@ -140,8 +140,11 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             result.addSeparator();
         }
         result.add(getEnableButton());
-        if (getResourceKind() == ResourceKind.HOST) {
-            result.add(getSetStartGraphAction());
+        if (getResourceKind() == ResourceKind.HOST
+            || getResourceKind() == ResourceKind.TYPE
+            || getResourceKind() == ResourceKind.PROLOG
+            || getResourceKind() == ResourceKind.CONTROL) {
+            result.add(getEnableUniqueAction());
         }
         return result;
     }
@@ -186,9 +189,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         return getActions().getCancelEditAction(getResourceKind());
     }
 
-    /** Returns the set start graph action (only used for host graphs). */
-    protected final SetStartGraphAction getSetStartGraphAction() {
-        return getActions().getSetStartGraphAction();
+    /** Returns the enable unique action associated with this resource. */
+    protected final EnableUniqueAction getEnableUniqueAction() {
+        return getActions().getEnableUniqueAction(getResourceKind());
     }
 
     /** Creates a toggle button wrapping the enable action of this display. */

@@ -809,21 +809,19 @@ public class ActionStore implements SimulatorListener {
     private ShiftPriorityAction lowerPriorityAction;
 
     /**
-     * The action to select a single start graph that is associated with the
-     * simulator.
+     * Lazily creates and returns an instance of {@link EnableUniqueAction}.
      */
-    private SetStartGraphAction setStartGraphAction;
-
-    /**
-     * Lazily creates and returns an instance of {@link SetStartGraphAction}.
-     */
-    public SetStartGraphAction getSetStartGraphAction() {
-        // lazily create the action
-        if (this.setStartGraphAction == null) {
-            this.setStartGraphAction = new SetStartGraphAction(this.simulator);
+    public EnableUniqueAction getEnableUniqueAction(ResourceKind resource) {
+        EnableUniqueAction result = this.enableUniqueActionMap.get(resource);
+        if (result == null) {
+            result = new EnableUniqueAction(this.simulator, resource);
+            this.enableUniqueActionMap.put(resource, result);
         }
-        return this.setStartGraphAction;
+        return result;
     }
+
+    private final Map<ResourceKind,EnableUniqueAction> enableUniqueActionMap =
+        new EnumMap<ResourceKind,EnableUniqueAction>(ResourceKind.class);
 
     /**
      * Lazily creates and returns an instance of
