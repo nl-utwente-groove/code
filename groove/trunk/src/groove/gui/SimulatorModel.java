@@ -151,25 +151,6 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
-    /**
-     * Changes the enabling start graphs, by setting it to a single item.
-     * @param name the name of the host graph to be enabled uniquely
-     * @return {@code true} if the GTS was invalidated as a result of the action
-     * @throws IOException if the action failed due to an IO error
-     */
-    public boolean doEnableStartGraphUniquely(String name) throws IOException {
-        start();
-        boolean result = true;
-        try {
-            getGrammar().setStartGraph(name);
-            changeDisplay(DisplayKind.toDisplay(ResourceKind.HOST));
-            changeGrammar(result);
-        } finally {
-            finish();
-        }
-        return result;
-    }
-
     /** Enables a collection of named resources of a given kind. */
     private void setEnabled(ResourceKind kind, Set<String> names)
         throws IOException {
@@ -206,6 +187,49 @@ public class SimulatorModel implements Cloneable {
                 }
             }
             newProperties.setEnabledNames(kind, actives);
+            getStore().putProperties(newProperties);
+            break;
+        case PROPERTIES:
+        default:
+            assert false;
+        }
+    }
+
+    /**
+     * Enables a resource of a given kind, and disables all others.
+     * @param name the name of the resource to be enabled uniquely
+     * @return {@code true} if the GTS was invalidated as a result of the action
+     * @throws IOException if the action failed due to an IO error
+     */
+    public boolean doEnableUniquely(ResourceKind kind, String name)
+        throws IOException {
+        start();
+        boolean result = true;
+        try {
+            setEnabledUniquely(kind, name);
+            changeDisplay(DisplayKind.toDisplay(kind));
+            changeGrammar(result);
+        } finally {
+            finish();
+        }
+        return result;
+    }
+
+    /** Uniquely enables a named resource of a given kind. */
+    private void setEnabledUniquely(ResourceKind kind, String name)
+        throws IOException {
+        SystemProperties oldProperties = getGrammar().getProperties();
+        SystemProperties newProperties = oldProperties.clone();
+        switch (kind) {
+        case HOST:
+            getGrammar().setStartGraph(name);
+            break;
+        case TYPE:
+        case PROLOG:
+        case CONTROL:
+            Set<String> newEnabled = new HashSet<String>();
+            newEnabled.add(name);
+            newProperties.setEnabledNames(kind, newEnabled);
             getStore().putProperties(newProperties);
             break;
         case PROPERTIES:
