@@ -672,7 +672,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         for (AspectLabel label : edgeLabels) {
             AspectEdge edge = new AspectEdge(node, label, node);
             edge.setFixed();
-            if (edge.getAspect().getKind() == REMARK) {
+            if (edge.getAspect() != null
+                && edge.getAspect().getKind() == REMARK) {
                 if (remarkText.length() > 0) {
                     remarkText.append('\n');
                 }
