@@ -31,6 +31,7 @@ import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.trans.DefaultHostGraph;
+import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.Rule;
 
@@ -266,10 +267,15 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         // Now lift the nodes of layer 1.
         for (TypeNode tTgt : getLayerNodes(1)) {
             // For each edge pattern.
-            HostGraph pType = tTgt.getPattern();
-            TypeLabel edgeLabel = Util.getBinaryLabels(pType).iterator().next();
+            HostGraph pattern = tTgt.getPattern();
+            HostEdge edge = tTgt.getSimpleEdge();
+            Set<TypeLabel> srcLabels =
+                Util.getNodeLabels(pattern, edge.source());
+            Set<TypeLabel> tgtLabels =
+                Util.getNodeLabels(pattern, edge.target());
+            TypeLabel edgeLabel = edge.label();
             // For each matched edge in the simple graph.
-            for (Edge sEdge : match(graph, edgeLabel)) {
+            for (Edge sEdge : match(graph, srcLabels, edgeLabel, tgtLabels)) {
                 // Create a new pattern node.
                 PatternNode pTgt;
                 if (edgeMap != null) {
@@ -386,8 +392,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     private List<Node> match(Graph<?,?> graph, Set<TypeLabel> nodeLabels) {
         List<Node> result = new ArrayList<Node>(graph.nodeSet().size());
         for (Node node : graph.nodeSet()) {
-            Set<TypeLabel> other = Util.getNodeLabels(graph, node);
-            if (nodeLabels.containsAll(other) && other.containsAll(nodeLabels)) {
+            if (match(graph, node, nodeLabels)) {
                 result.add(node);
             }
         }
@@ -395,11 +400,23 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         return result;
     }
 
-    private List<Edge> match(Graph<?,?> graph, TypeLabel edgeLabel) {
+    private List<Edge> match(Graph<?,?> graph, Set<TypeLabel> srcLabels,
+            TypeLabel edgeLabel, Set<TypeLabel> tgtLabels) {
         List<Edge> result = new ArrayList<Edge>();
-        result.addAll(graph.labelEdgeSet(edgeLabel));
+        for (Edge edge : graph.labelEdgeSet(edgeLabel)) {
+            if ((srcLabels.isEmpty() || match(graph, edge.source(), srcLabels))
+                && (tgtLabels.isEmpty() || match(graph, edge.target(),
+                    tgtLabels))) {
+                result.add(edge);
+            }
+        }
         Collections.sort(result);
         return result;
+    }
+
+    private boolean match(Graph<?,?> graph, Node node, Set<TypeLabel> nodeLabels) {
+        Set<TypeLabel> other = Util.getNodeLabels(graph, node);
+        return nodeLabels.containsAll(other) && other.containsAll(nodeLabels);
     }
 
     private void createClosureRules() {
