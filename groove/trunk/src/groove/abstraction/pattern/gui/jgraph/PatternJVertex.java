@@ -20,6 +20,12 @@ import groove.abstraction.pattern.shape.AbstractPatternNode;
 import groove.graph.Node;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
+import groove.gui.jgraph.JAttr;
+
+import java.awt.geom.Rectangle2D;
+
+import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.GraphConstants;
 
 /**
  * Class that connects to the JGraph library for displaying pattern nodes.
@@ -32,6 +38,7 @@ public class PatternJVertex extends GraphJVertex {
     private PatternJVertex(PatternJGraph jGraph, PatternJModel jModel,
             AbstractPatternNode pNode) {
         super(jGraph, jModel, pNode);
+        setAttributes(createAttributes());
     }
 
     @Override
@@ -49,6 +56,31 @@ public class PatternJVertex extends GraphJVertex {
     /** Returns a prototype {@link PatternJVertex} for a given {@link PatternJGraph}. */
     public static PatternJVertex getPrototype(PatternJGraph jGraph) {
         return new PatternJVertex(jGraph, null, null);
+    }
+
+    /**
+     * Callback method for creating the core attributes.
+     * These might be modified by other parameters; don't call this
+     * method directly.
+     */
+    @Override
+    protected AttributeMap createAttributes() {
+        return DEFAULT_PNODE_ATTR;
+    }
+
+    /**
+     * The standard jgraph attributes used for representing equivalence classes.
+     */
+    public static final JAttr.AttributeMap DEFAULT_PNODE_ATTR;
+
+    static {
+        DEFAULT_PNODE_ATTR = new JAttr.AttributeMap();
+        GraphConstants.setBounds(DEFAULT_PNODE_ATTR, new Rectangle2D.Double(20,
+            20, 40, 20));
+        GraphConstants.setAutoSize(DEFAULT_PNODE_ATTR, true);
+        GraphConstants.setGroupOpaque(DEFAULT_PNODE_ATTR, true);
+        GraphConstants.setInset(DEFAULT_PNODE_ATTR, 8);
+        GraphConstants.setBorder(DEFAULT_PNODE_ATTR, JAttr.NESTED_BORDER);
     }
 
 }
