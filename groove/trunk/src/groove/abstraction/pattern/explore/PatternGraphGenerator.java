@@ -19,11 +19,15 @@ package groove.abstraction.pattern.explore;
 import groove.abstraction.pattern.PatternAbstraction;
 import groove.abstraction.pattern.explore.strategy.PatternDFSStrategy;
 import groove.abstraction.pattern.explore.strategy.PatternStrategy;
+import groove.abstraction.pattern.explore.util.TransSystemChecker;
 import groove.abstraction.pattern.io.xml.TypeGraphJaxbGxlIO;
 import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.abstraction.pattern.trans.PatternGraphGrammar;
 import groove.explore.Generator;
+import groove.explore.strategy.DFSStrategy;
+import groove.explore.strategy.Strategy;
+import groove.lts.GTS;
 import groove.trans.GraphGrammar;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
@@ -212,8 +216,16 @@ public class PatternGraphGenerator extends CommandLineTool {
 
     /** Writes output accordingly to options given to the generator. */
     public void report() {
-        printfMedium("States: %d / Transitions: %d\n", pgts.getStateCount(),
-            pgts.getTransitionCount());
+        GTS SGTS = exploreSimpleGrammar();
+        TransSystemChecker checker = new TransSystemChecker(getPGTS(), SGTS);
+        checker.report();
+    }
+
+    /** Writes output accordingly to options given to the generator. */
+    public boolean compareGTSs() {
+        GTS SGTS = exploreSimpleGrammar();
+        TransSystemChecker checker = new TransSystemChecker(getPGTS(), SGTS);
+        return checker.compare();
     }
 
     /**
@@ -248,6 +260,18 @@ public class PatternGraphGenerator extends CommandLineTool {
             printError("I/O error while loading grammar: " + exc.getMessage(),
                 false);
         }
+    }
+
+    private GTS exploreSimpleGrammar() {
+        GraphGrammar sGrammar = getGrammar().getSimpleGrammar();
+        GTS result = new GTS(sGrammar);
+        Strategy strategy = new DFSStrategy();
+        strategy.prepare(result);
+        // start working until done or nothing to do
+        while (strategy.next()) {
+            // Empty
+        }
+        return result;
     }
 
     // ------------------------------------------------------------------------

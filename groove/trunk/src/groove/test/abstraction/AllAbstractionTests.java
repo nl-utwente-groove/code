@@ -17,6 +17,7 @@
 package groove.test.abstraction;
 
 import groove.test.abstraction.neigh.AllNeighAbstractionTests;
+import groove.test.abstraction.pattern.AllPatternAbstractionTests;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -25,7 +26,8 @@ import org.junit.runners.Suite;
  * @author Eduardo Zambon
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({AllNeighAbstractionTests.class})
+@Suite.SuiteClasses({AllNeighAbstractionTests.class,
+    AllPatternAbstractionTests.class})
 public class AllAbstractionTests {
     // Empty by design.
 }

@@ -16,6 +16,7 @@
  */
 package groove.abstraction.pattern.lts;
 
+import groove.abstraction.pattern.match.Match;
 import groove.graph.AbstractLabel;
 import groove.lts.RuleTransitionLabel;
 
@@ -25,18 +26,45 @@ import groove.lts.RuleTransitionLabel;
 public class PatternTransitionLabel extends AbstractLabel {
 
     private final String text;
+    private final Match match;
 
     /** 
      * Constructs a new label on the basis of a given rule event and list
      * of created nodes.
      */
-    PatternTransitionLabel(String text) {
-        this.text = text;
+    PatternTransitionLabel(Match match) {
+        this.match = match;
+        this.text = match.getRule().getName();
     }
 
     @Override
     public String text() {
         return this.text;
+    }
+
+    @Override
+    protected int computeHashCode() {
+        final int prime = 31;
+        int result = super.computeHashCode();
+        result = prime * result + this.match.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        PatternTransitionLabel other = (PatternTransitionLabel) obj;
+        if (!this.text.equals(other.text)) {
+            return false;
+        } else if (!this.match.equals(other.match)) {
+            return false;
+        }
+        return true;
     }
 
 }

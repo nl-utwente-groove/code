@@ -101,4 +101,9 @@ public final class PatternGraphGrammar {
         return this.sGrammar.getCtrlAut();
     }
 
+    /** Returns the simple grammar from which this pattern grammar was created.*/
+    public GraphGrammar getSimpleGrammar() {
+        return this.sGrammar;
+    }
+
 }

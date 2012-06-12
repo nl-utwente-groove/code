@@ -25,6 +25,7 @@ import groove.graph.AbstractGraph;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.EdgeMultiplicityVerifier;
+import groove.graph.ElementFactory;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Node;
@@ -359,6 +360,12 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     }
 
     // ----------------------- OBJECT OVERRIDES ------------------------
+
+    /** The default is not to create any graph elements. */
+    @Override
+    public ElementFactory<GraphState,GraphTransition> getFactory() {
+        return new LTSFactory<GraphState,GraphTransition>(this);
+    }
 
     public Set<? extends GraphState> nodeSet() {
         if (this.nodeSet == null) {

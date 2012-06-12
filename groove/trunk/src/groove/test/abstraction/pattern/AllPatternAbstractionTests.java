@@ -14,20 +14,25 @@
  *
  * $Id$
  */
-package groove.abstraction.pattern.lts;
+package groove.test.abstraction.pattern;
 
-import groove.abstraction.pattern.match.Match;
-import groove.graph.AbstractEdge;
+import groove.abstraction.pattern.PatternAbstraction;
 
-/** Transitions occurring in a PGTS. */
-public class PatternGraphTransition extends
-        AbstractEdge<PatternState,PatternTransitionLabel> implements
-        PatternTransition {
+import org.junit.AfterClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-    /** Default constructor. */
-    public PatternGraphTransition(PatternState source, Match match,
-            PatternState target) {
-        super(source, new PatternTransitionLabel(match), target);
+/**
+ * @author Eduardo Zambon
+ */
+@RunWith(Suite.class)
+@Suite.SuiteClasses({TestPatternGraphGenerator.class})
+public class AllPatternAbstractionTests {
+
+    /** Reverts back to normal (non-abstract) mode. */
+    @AfterClass
+    public static void cleanUp() {
+        PatternAbstraction.terminate();
     }
 
 }

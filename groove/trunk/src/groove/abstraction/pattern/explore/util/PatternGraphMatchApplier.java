@@ -55,13 +55,12 @@ public class PatternGraphMatchApplier implements PatternRuleEventApplier {
         PatternGraph result = app.transform(false);
         PatternNextState newState =
             new PatternGraphNextState(result, (PatternGraphState) source,
-                this.pgts.getNextStateNr(), this.pgts, match.getRule());
+                this.pgts.getNextStateNr(), this.pgts, match);
         PatternState oldState = this.pgts.addState(newState);
         PatternTransition trans = null;
         if (oldState != null) {
             // The state was not added as an equivalent state existed.
-            trans =
-                new PatternGraphTransition(source, match.getRule(), oldState);
+            trans = new PatternGraphTransition(source, match, oldState);
         } else {
             // The state was added as a next-state.
             trans = newState;
