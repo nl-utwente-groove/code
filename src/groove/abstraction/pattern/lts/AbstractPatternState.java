@@ -16,14 +16,14 @@
  */
 package groove.abstraction.pattern.lts;
 
+import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.graph.Element;
 import groove.lts.AbstractGraphState;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 /**
  * See {@link AbstractGraphState}. 
@@ -37,7 +37,7 @@ public abstract class AbstractPatternState implements PatternState {
     /** Flag to indicated if the state has been closed. */
     private boolean closed;
     /** Set of outgoing transitions from this state. */
-    private List<PatternTransition> transitions;
+    private Set<PatternTransition> transitions;
 
     /**
      * Constructs a an abstract graph state.
@@ -46,7 +46,7 @@ public abstract class AbstractPatternState implements PatternState {
     public AbstractPatternState(int number) {
         assert number >= 0;
         this.nr = number;
-        this.transitions = new ArrayList<PatternTransition>();
+        this.transitions = new MyHashSet<PatternTransition>();
     }
 
     @Override
@@ -124,6 +124,11 @@ public abstract class AbstractPatternState implements PatternState {
     public boolean addTransition(PatternTransition transition) {
         this.transitions.add(transition);
         return true;
+    }
+
+    @Override
+    public final Set<PatternTransition> getTransitionSet() {
+        return this.transitions;
     }
 
 }

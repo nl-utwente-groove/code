@@ -385,14 +385,11 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
 
     private List<Node> match(Graph<?,?> graph, Set<TypeLabel> nodeLabels) {
         List<Node> result = new ArrayList<Node>(graph.nodeSet().size());
-        result.addAll(graph.nodeSet());
-        List<Node> aux = new ArrayList<Node>(graph.nodeSet().size());
-        for (TypeLabel label : nodeLabels) {
-            for (Edge sEdge : graph.labelEdgeSet(label)) {
-                aux.add(sEdge.source());
+        for (Node node : graph.nodeSet()) {
+            Set<TypeLabel> other = Util.getNodeLabels(graph, node);
+            if (nodeLabels.containsAll(other) && other.containsAll(nodeLabels)) {
+                result.add(node);
             }
-            result.retainAll(aux);
-            aux.clear();
         }
         Collections.sort(result);
         return result;

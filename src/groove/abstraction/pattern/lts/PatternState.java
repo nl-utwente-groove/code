@@ -22,6 +22,8 @@ import groove.control.CtrlState;
 import groove.graph.Node;
 import groove.lts.GraphState;
 
+import java.util.Set;
+
 /**
  * See {@link GraphState}. 
  */
@@ -65,5 +67,11 @@ public interface PatternState extends Node {
      *         <code>false</code> otherwise
      */
     public boolean addTransition(PatternTransition transition);
+
+    /**
+     * Returns an unmodifiable set view on the currently generated outgoing
+     * transitions starting in this state.
+     */
+    public Set<PatternTransition> getTransitionSet();
 
 }

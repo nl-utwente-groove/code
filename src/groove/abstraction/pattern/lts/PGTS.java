@@ -24,18 +24,25 @@ import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.trans.PatternGraphGrammar;
 import groove.control.CtrlState;
 import groove.graph.AbstractGraph;
+import groove.graph.DefaultGraph;
+import groove.graph.DefaultNode;
+import groove.graph.ElementFactory;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
+import groove.graph.Node;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.IsoChecker;
 import groove.lts.GTS;
+import groove.lts.LTSFactory;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
 import groove.util.TreeHashSet;
 
 import java.util.AbstractSet;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -178,6 +185,11 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
     }
 
     @Override
+    public Set<? extends PatternTransition> outEdgeSet(Node node) {
+        return ((PatternState) node).getTransitionSet();
+    }
+
+    @Override
     public Set<? extends PatternState> nodeSet() {
         return getStateSet();
     }
@@ -309,6 +321,30 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
         for (PGTSListener listener : getGraphListeners()) {
             listener.addUpdate(this, edge);
         }
+    }
+
+    /** The default is not to create any graph elements. */
+    @Override
+    public ElementFactory<PatternState,PatternTransition> getFactory() {
+        return new LTSFactory<PatternState,PatternTransition>(this);
+    }
+
+    /** 
+     * Exports the GTS to a plain graph representation.
+     */
+    public DefaultGraph toPlainGraph() {
+        DefaultGraph result = new DefaultGraph(getName());
+        Map<PatternState,DefaultNode> nodeMap =
+            new HashMap<PatternState,DefaultNode>();
+        for (PatternState state : nodeSet()) {
+            DefaultNode image = result.addNode(state.getNumber());
+            nodeMap.put(state, image);
+        }
+        for (PatternTransition transition : edgeSet()) {
+            result.addEdge(nodeMap.get(transition.source()),
+                transition.label().text(), nodeMap.get(transition.target()));
+        }
+        return result;
     }
 
     // ------------------------------------------------------------------------

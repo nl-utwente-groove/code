@@ -18,11 +18,14 @@ package groove.abstraction.pattern;
 
 import static groove.graph.EdgeRole.BINARY;
 import groove.abstraction.MyHashSet;
+import groove.graph.Edge;
 import groove.graph.EdgeRole;
+import groove.graph.Graph;
+import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
-import groove.trans.HostNode;
+import groove.trans.RuleEdge;
 
 import java.util.Set;
 
@@ -70,11 +73,17 @@ public final class Util {
     }
 
     /** Returns the set of labels used as node labels. */
-    public static Set<TypeLabel> getNodeLabels(HostGraph graph, HostNode node) {
+    public static Set<TypeLabel> getNodeLabels(Graph<?,?> graph, Node node) {
         Set<TypeLabel> nodeLabels = new MyHashSet<TypeLabel>();
-        for (HostEdge edge : graph.edgeSet(node)) {
+        for (Edge edge : graph.edgeSet(node)) {
             if (edge.getRole() != BINARY) {
-                nodeLabels.add(edge.label());
+                if (edge instanceof HostEdge) {
+                    nodeLabels.add(((HostEdge) edge).label());
+                } else if (edge instanceof RuleEdge) {
+                    nodeLabels.add(((RuleEdge) edge).getType().label());
+                } else {
+                    assert false;
+                }
             }
         }
         return nodeLabels;
