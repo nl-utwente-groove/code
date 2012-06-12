@@ -48,7 +48,7 @@ public class PatternJEdge extends GraphJEdge {
      * Returns a fresh {@link GraphJEdge} of the same type as this one. 
      */
     @Override
-    public GraphJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
+    public PatternJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
         assert edge instanceof AbstractPatternEdge<?>;
         return new PatternJEdge(getJGraph(), (PatternJModel) jModel,
             (AbstractPatternEdge<?>) edge);
@@ -58,4 +58,5 @@ public class PatternJEdge extends GraphJEdge {
     public static PatternJEdge getPrototype(PatternJGraph jGraph) {
         return new PatternJEdge(jGraph, null);
     }
+
 }
