@@ -22,6 +22,7 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.iso.IsoChecker;
+import groove.lts.AbstractGraphState;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.StartGraphState;
@@ -77,8 +78,10 @@ public final class TransSystemChecker {
             out.print("Transision systems are isomorphic. Checking states... ");
             for (PatternState pState : this.pgts.nodeSet()) {
                 HostGraph pGraph = pState.getGraph().flat();
-                GraphState newSState =
+                AbstractGraphState newSState =
                     new StartGraphState(this.sgts.getRecord(), pGraph);
+                // We need to copy the control state otherwise the IsoCheck fails.
+                newSState.setCtrlState(pState.getCtrlState());
                 GraphState oldSState = this.sgts.addState(newSState);
                 if (oldSState == null) {
                     out.println("FAILED!");

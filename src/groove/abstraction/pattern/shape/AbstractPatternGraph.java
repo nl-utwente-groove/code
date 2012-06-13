@@ -18,6 +18,7 @@ package groove.abstraction.pattern.shape;
 
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.Util;
+import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.trans.HostEdge;
@@ -105,6 +106,14 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             removeFromLayer(node);
         }
         return result;
+    }
+
+    @Override
+    public void setFixed() {
+        if (getInfo() == null) {
+            setInfo(new GraphInfo<N,E>());
+        }
+        super.setFixed();
     }
 
     // ------------------------------------------------------------------------
