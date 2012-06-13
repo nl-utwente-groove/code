@@ -18,7 +18,6 @@ package groove.abstraction.pattern.shape;
 
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.Util;
-import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.trans.HostEdge;
@@ -318,16 +317,6 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     // ------------------------------------------------------------------------
     // Unsupported methods
     // ------------------------------------------------------------------------
-
-    @Override
-    protected GraphInfo<N,E> createInfo(GraphInfo<?,?> info) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public GraphInfo<N,E> setInfo(GraphInfo<?,?> info) {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     protected E createEdge(N source, Label label, N target) {

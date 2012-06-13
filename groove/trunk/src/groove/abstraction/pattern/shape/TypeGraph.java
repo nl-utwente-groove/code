@@ -27,6 +27,7 @@ import groove.abstraction.pattern.trans.RuleFactory;
 import groove.abstraction.pattern.trans.RuleNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.TypeLabel;
@@ -117,6 +118,9 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         }
         computeLayers();
         createClosureRules();
+        if (getInfo() == null) {
+            setInfo(new GraphInfo<TypeNode,TypeEdge>());
+        }
         this.fixed = true;
     }
 

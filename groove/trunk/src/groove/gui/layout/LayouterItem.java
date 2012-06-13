@@ -16,8 +16,11 @@
  */
 package groove.gui.layout;
 
+import groove.abstraction.pattern.gui.jgraph.PatternJGraph;
+import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JPanel;
@@ -28,6 +31,7 @@ import com.jgraph.layout.JGraphLayout;
 /** Class representing elements of the layout menu. */
 public class LayouterItem implements Layouter {
 
+    private final LayoutKind kind;
     private final String actionName;
     private final JGraphLayout layout;
     private final GraphJGraph jGraph;
@@ -36,6 +40,7 @@ public class LayouterItem implements Layouter {
 
     /** Builds a prototype instance based on the given layout kind. */
     public LayouterItem(LayoutKind kind) {
+        this.kind = kind;
         this.actionName = kind.getDisplayString();
         this.layout = kind.getLayout();
         this.jGraph = null;
@@ -43,19 +48,21 @@ public class LayouterItem implements Layouter {
         this.panel = null;
     }
 
-    private LayouterItem(String actionName, JGraphLayout layout,
-            GraphJGraph jGraph, JGraphFacade facade) {
+    private LayouterItem(LayoutKind kind, String actionName,
+            JGraphLayout layout, GraphJGraph jGraph, JGraphFacade facade) {
+        this.kind = kind;
         this.actionName = actionName;
         this.layout = layout;
         this.jGraph = jGraph;
         this.facade = facade;
         this.panel = LayoutKind.createLayoutPanel(this);
+        adjustFacade();
     }
 
     @Override
     public Layouter newInstance(GraphJGraph jGraph) {
-        return new LayouterItem(this.actionName, this.layout, jGraph,
-            new JGraphFacade(jGraph));
+        return new LayouterItem(this.kind, this.actionName, this.layout,
+            jGraph, new JGraphFacade(jGraph));
     }
 
     @Override
@@ -75,12 +82,9 @@ public class LayouterItem implements Layouter {
 
     @Override
     public void start(boolean complete) {
-        this.jGraph.setLayouting(true);
-        this.jGraph.clearAllEdgePoints();
-        this.layout.run(this.facade);
-        Map<?,?> nested = this.facade.createNestedMap(true, true);
-        this.jGraph.getGraphLayoutCache().edit(nested);
-        this.jGraph.setLayouting(false);
+        prepareLayouting();
+        run();
+        finishLayouting();
     }
 
     @Override
@@ -96,6 +100,30 @@ public class LayouterItem implements Layouter {
     /** Basic getter method. */
     public JPanel getPanel() {
         return this.panel;
+    }
+
+    private void prepareLayouting() {
+        this.jGraph.setLayouting(true);
+        this.jGraph.clearAllEdgePoints();
+    }
+
+    private void run() {
+        this.layout.run(this.facade);
+        Map<?,?> nested = this.facade.createNestedMap(true, true);
+        this.jGraph.getGraphLayoutCache().edit(nested);
+    }
+
+    private void finishLayouting() {
+        this.jGraph.setLayouting(false);
+    }
+
+    private void adjustFacade() {
+        if (this.kind == LayoutKind.HIERARCHICAL
+            && this.jGraph instanceof PatternJGraph) {
+            List<GraphJCell> roots =
+                ((PatternJGraph) this.jGraph).getModel().getPatternRoots();
+            this.facade.setRoots(roots);
+        }
     }
 
 }

@@ -153,8 +153,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * the sake of efficiency.
      */
     public void loadGraph(Graph<N,E> graph) {
-        this.prepareLoad(graph);
-        // add nodes from Graph to GraphModel
+        prepareLoad(graph);
         prepareInsert();
         boolean merge = mergeBidirectionalEdges();
         for (N node : graph.nodeSet()) {
@@ -496,7 +495,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * generate a random position for any added j-vertex without layout
      * information.
      */
-    private int randomCoordinate() {
+    protected int randomCoordinate() {
         return randomGenerator.nextInt((this.nodeJCellMap.size() + this.edgeJCellMap.size()) * 5 + 1);
     }
 
@@ -518,17 +517,17 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     /**
      * Map from graph nodes to JGraph cells.
      */
-    private Map<N,GraphJVertex> nodeJCellMap = new HashMap<N,GraphJVertex>();
+    protected Map<N,GraphJVertex> nodeJCellMap = new HashMap<N,GraphJVertex>();
     /**
      * Map from graph edges to JGraph cells.
      */
-    private Map<E,GraphJCell> edgeJCellMap = new HashMap<E,GraphJCell>();
+    protected Map<E,GraphJCell> edgeJCellMap = new HashMap<E,GraphJCell>();
 
     /**
      * Mapping from graph nodes to JEdges for outgoing edges.
      * Used in the process of constructing a GraphJModel.
      */
-    private final Map<N,Set<GraphJEdge>> addedOutJEdges =
+    protected final Map<N,Set<GraphJEdge>> addedOutJEdges =
         new HashMap<N,Set<GraphJEdge>>();
     /**
      * Set of GraphModel cells. Used in the process of constructing a
@@ -547,11 +546,11 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     /**
      * Counter to provide the x-coordinate of fresh nodes with fresh values
      */
-    private transient int nodeX;
+    protected transient int nodeX;
     /**
      * Counter to provide the y-coordinate of fresh nodes with fresh values
      */
-    private transient int nodeY;
+    protected transient int nodeY;
 
     /** Random generator for coordinates of new nodes. */
     private static final Random randomGenerator = new Random();
