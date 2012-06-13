@@ -63,4 +63,21 @@ public class TestPatternGraphGenerator {
         assertTrue(generator.compareGTSs());
     }
 
+    @Test
+    public void testTrains() {
+        final String GRAMMAR = "junit/pattern/trains";
+        final String START_GRAPH = "start";
+        String typeGraph = "ptgraph.gxl";
+        PatternGraphGenerator generator;
+
+        generator =
+            new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
+        generator.processArguments();
+        generator.explore();
+        PGTS pgts = generator.getPGTS();
+        assertEquals(11, pgts.getStateCount());
+        assertEquals(12, pgts.getTransitionCount());
+        assertTrue(generator.compareGTSs());
+    }
+
 }
