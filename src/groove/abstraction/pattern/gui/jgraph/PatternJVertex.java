@@ -18,11 +18,13 @@ package groove.abstraction.pattern.gui.jgraph;
 
 import groove.abstraction.pattern.shape.AbstractPatternNode;
 import groove.graph.Node;
+import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JAttr;
 
-import java.awt.geom.Rectangle2D;
+import java.util.Collections;
+import java.util.List;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
@@ -38,7 +40,6 @@ public class PatternJVertex extends GraphJVertex {
     private PatternJVertex(PatternJGraph jGraph, PatternJModel jModel,
             AbstractPatternNode pNode) {
         super(jGraph, jModel, pNode);
-        setAttributes(createAttributes());
     }
 
     @Override
@@ -53,6 +54,17 @@ public class PatternJVertex extends GraphJVertex {
             (AbstractPatternNode) node);
     }
 
+    @Override
+    public String toString() {
+        return String.format("PatternJVertex %d with labels %s", getNumber(),
+            getKeys());
+    }
+
+    @Override
+    public List<StringBuilder> getLines() {
+        return Collections.emptyList();
+    }
+
     /** Returns a prototype {@link PatternJVertex} for a given {@link PatternJGraph}. */
     public static PatternJVertex getPrototype(PatternJGraph jGraph) {
         return new PatternJVertex(jGraph, null, null);
@@ -65,7 +77,7 @@ public class PatternJVertex extends GraphJVertex {
      */
     @Override
     protected AttributeMap createAttributes() {
-        return DEFAULT_PNODE_ATTR;
+        return DEFAULT_PNODE_ATTR.clone();
     }
 
     /**
@@ -74,13 +86,12 @@ public class PatternJVertex extends GraphJVertex {
     public static final JAttr.AttributeMap DEFAULT_PNODE_ATTR;
 
     static {
-        DEFAULT_PNODE_ATTR = new JAttr.AttributeMap();
-        GraphConstants.setBounds(DEFAULT_PNODE_ATTR, new Rectangle2D.Double(20,
-            20, 40, 20));
+        DEFAULT_PNODE_ATTR = GraphJGraph.DEFAULT_NODE_ATTR.clone();
+        DEFAULT_PNODE_ATTR.remove(GraphConstants.BACKGROUND);
         GraphConstants.setAutoSize(DEFAULT_PNODE_ATTR, true);
         GraphConstants.setGroupOpaque(DEFAULT_PNODE_ATTR, true);
         GraphConstants.setInset(DEFAULT_PNODE_ATTR, 8);
-        GraphConstants.setBorder(DEFAULT_PNODE_ATTR, JAttr.NESTED_BORDER);
+        GraphConstants.setDashPattern(DEFAULT_PNODE_ATTR, JAttr.NESTED_DASH);
     }
 
 }

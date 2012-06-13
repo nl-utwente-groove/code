@@ -21,6 +21,10 @@ import groove.graph.Edge;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
+import groove.gui.jgraph.JAttr;
+
+import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.GraphConstants;
 
 /**
  * Class that connects to the JGraph library for displaying pattern edges.
@@ -43,6 +47,11 @@ public class PatternJEdge extends GraphJEdge {
         return (PatternJGraph) super.getJGraph();
     }
 
+    @Override
+    public String toString() {
+        return String.format("PatternJEdge with labels %s", getKeys());
+    }
+
     /** 
      * Factory method, in case this object is used as a prototype.
      * Returns a fresh {@link GraphJEdge} of the same type as this one. 
@@ -57,6 +66,26 @@ public class PatternJEdge extends GraphJEdge {
     /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */
     public static PatternJEdge getPrototype(PatternJGraph jGraph) {
         return new PatternJEdge(jGraph, null);
+    }
+
+    /**
+     * Callback method for creating the core attributes.
+     * These might be modified by other parameters; don't call this
+     * method directly.
+     */
+    @Override
+    protected AttributeMap createAttributes() {
+        return DEFAULT_PEDGE_ATTR.clone();
+    }
+
+    /**
+     * The standard jgraph attributes used for representing equivalence classes.
+     */
+    public static final JAttr.AttributeMap DEFAULT_PEDGE_ATTR;
+
+    static {
+        DEFAULT_PEDGE_ATTR = GraphJGraph.DEFAULT_EDGE_ATTR.clone();
+        GraphConstants.setDashPattern(DEFAULT_PEDGE_ATTR, JAttr.NESTED_DASH);
     }
 
 }

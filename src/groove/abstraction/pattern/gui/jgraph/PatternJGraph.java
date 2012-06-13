@@ -22,7 +22,6 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJVertex;
-import groove.gui.jgraph.JCellViewFactory;
 
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
@@ -57,11 +56,6 @@ public final class PatternJGraph extends GraphJGraph {
     }
 
     @Override
-    protected JCellViewFactory createViewFactory() {
-        return new PatternJCellViewFactory(this);
-    }
-
-    @Override
     public boolean isShowLoopsAsNodeLabels() {
         return false;
     }
@@ -90,9 +84,8 @@ public final class PatternJGraph extends GraphJGraph {
             }
             GraphJCell jCell = (GraphJCell) jCellView.getCell();
             boolean typeCorrect =
-                vertex
-                        ? (jCell instanceof GraphJVertex || jCell instanceof PatternJVertex)
-                        : edge ? jCell instanceof GraphJEdge : true;
+                vertex ? (jCell instanceof GraphJVertex) : edge
+                        ? jCell instanceof GraphJEdge : true;
             if (typeCorrect && jCell instanceof PatternJVertex) {
                 // We have an equivalence class.
                 for (CellView childView : jCellView.getChildViews()) {
@@ -131,8 +124,10 @@ public final class PatternJGraph extends GraphJGraph {
      * Mouse listener that creates the popup menu and adds and deletes points on
      * appropriate events.
      */
+
     private class MyMouseListener extends MouseAdapter {
         /** Empty constructor wit the correct visibility. */
+
         MyMouseListener() {
             // empty
         }
@@ -145,7 +140,7 @@ public final class PatternJGraph extends GraphJGraph {
         @Override
         public void mouseReleased(MouseEvent evt) {
             maybeShowPopup(evt);
-            PatternJGraph.this.refresh();
+            PatternJGraph.this.refreshAllCells();
         }
     }
 
