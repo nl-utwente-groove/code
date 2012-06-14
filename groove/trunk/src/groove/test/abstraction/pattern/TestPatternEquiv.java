@@ -21,8 +21,7 @@ import groove.abstraction.pattern.io.xml.TypeGraphJaxbGxlIO;
 import groove.abstraction.pattern.shape.PatternEquivRel;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeGraph;
-import groove.abstraction.pattern.trans.PatternGraphGrammar;
-import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 
@@ -37,40 +36,59 @@ import org.junit.Test;
 @SuppressWarnings("all")
 public class TestPatternEquiv {
 
-    private static final int VERBOSITY = 0;
+    @Test
+    public void testEquiv0() {
+        final String GRAMMAR = "junit/pattern/pattern-list.gps/";
+        final String TYPE = "ptgraph.gxl";
 
-    private String[] getArgs(String grammar, String startGraph, String typeGraph) {
-        return new String[] {"-v", VERBOSITY + "", grammar, startGraph,
-            typeGraph};
+        TypeGraph typeGraph = loadTypeGraph(GRAMMAR + TYPE);
+        HostGraph sGraph = loadSimpleGraph(GRAMMAR, "start-5");
+        PatternShape pShape = new PatternShape(typeGraph.lift(sGraph));
+        PatternEquivRel peq = new PatternEquivRel(pShape);
+
+        assertEquals(10, peq.getNodeEquivRel().size());
+        assertEquals(10, peq.getEdgeEquivRel().size());
     }
 
     @Test
-    public void testEquivalence() {
+    public void testEquiv1() {
         final String GRAMMAR = "junit/pattern/equiv.gps/";
         final String TYPE = "ptgraph.gxl";
 
-        File grammarFile = new File(GRAMMAR);
-        File typeGraphFile = new File(GRAMMAR + TYPE);
+        TypeGraph typeGraph = loadTypeGraph(GRAMMAR + TYPE);
+        HostGraph sGraph = loadSimpleGraph(GRAMMAR, "start");
+        PatternShape pShape = new PatternShape(typeGraph.lift(sGraph));
+        PatternEquivRel peq = new PatternEquivRel(pShape);
+
+        assertEquals(9, peq.getNodeEquivRel().size());
+        assertEquals(8, peq.getEdgeEquivRel().size());
+    }
+
+    private TypeGraph loadTypeGraph(String typeGraphFileName) {
+        File typeGraphFile = new File(typeGraphFileName);
         TypeGraph typeGraph = null;
-        GraphGrammar sGrammar = null;
         try {
             typeGraph =
                 TypeGraphJaxbGxlIO.getInstance().unmarshalTypeGraph(
                     typeGraphFile);
-            sGrammar = GrammarModel.newInstance(grammarFile, false).toGrammar();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return typeGraph;
+    }
+
+    private HostGraph loadSimpleGraph(String grammarName, String hostGraphName) {
+        File grammarFile = new File(grammarName);
+        HostGraph sGraph = null;
+        try {
+            GrammarModel view = GrammarModel.newInstance(grammarFile, false);
+            sGraph = view.getHostModel(hostGraphName).toResource();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (FormatException e) {
             e.printStackTrace();
         }
-
-        PatternGraphGrammar pGrammar =
-            new PatternGraphGrammar(sGrammar, typeGraph);
-        PatternShape pShape = new PatternShape(pGrammar.getStartGraph());
-        PatternEquivRel peq = new PatternEquivRel(pShape);
-
-        assertEquals(9, peq.getNodeEquivRel().size());
-        assertEquals(8, peq.getEdgeEquivRel().size());
+        return sGraph;
     }
 
 }
