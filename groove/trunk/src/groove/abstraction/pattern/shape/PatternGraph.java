@@ -57,10 +57,10 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
         this(pGraph.getName(), pGraph.getTypeGraph());
         this.depth = pGraph.depth;
         for (PatternNode pNode : pGraph.nodeSet()) {
-            this.addNode(pNode);
+            addNode(pNode);
         }
         for (PatternEdge pEdge : pGraph.edgeSet()) {
-            this.addEdge(pEdge);
+            addEdge(pEdge);
         }
     }
 
