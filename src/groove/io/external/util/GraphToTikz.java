@@ -55,10 +55,12 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
@@ -519,14 +521,18 @@ public final class GraphToTikz {
                 this.jGraph.getSelectionModel().isCellSelected(vertex));
         }
 
+        Set<GraphJCell> consumedEdges = new HashSet<GraphJCell>();
         for (Edge edge : this.graph.edgeSet()) {
             JEdgeLayout layout = null;
             if (this.layoutMap != null) {
                 layout = this.layoutMap.getLayout(edge);
             }
             GraphJCell jCell = this.model.getJCellForEdge(edge);
-            this.appendTikzEdge(jCell, layout,
-                this.jGraph.getSelectionModel().isCellSelected(jCell));
+            if (!consumedEdges.contains(jCell)) {
+                this.appendTikzEdge(jCell, layout,
+                    this.jGraph.getSelectionModel().isCellSelected(jCell));
+                consumedEdges.add(jCell);
+            }
         }
 
         this.appendTikzFooter();
@@ -1094,6 +1100,8 @@ public final class GraphToTikz {
         AttributeMap attrMap = edge.getAttributes();
         if (GraphConstants.getLineEnd(attrMap) == GraphConstants.ARROW_NONE) {
             styles.setOne(styles.one() + ", " + UNDIRECTED_EDGE_STYLE);
+        } else if (edge.isBidirectional()) {
+            styles.setOne(styles.one() + ", " + BIDIRECTIONAL_EDGE_STYLE);
         }
 
         // Check if the edge has a special color.
@@ -1512,6 +1520,7 @@ public final class GraphToTikz {
     private static final String THIN_LABEL_STYLE = "thinlab";
     private static final String NODIFIED_EDGE_STYLE = "nodified";
     private static final String TYPE_NODE_STYLE = "type";
+    private static final String BIDIRECTIONAL_EDGE_STYLE = "bidir";
     private static final String ABS_NODE_STYLE = "absnode";
     private static final String ABS_EDGE_STYLE = "absedge";
     private static final String ABS_LABEL_STYLE = "abslab";
