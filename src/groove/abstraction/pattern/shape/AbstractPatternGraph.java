@@ -204,6 +204,15 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
         return this.layers.get(layer);
     }
 
+    /** Returns the set of edges incoming to the nodes in the given layer. */
+    public Set<E> getLayerEdges(int layer) {
+        Set<E> result = new MyHashSet<E>();
+        for (N pNode : getLayerNodes(layer)) {
+            result.addAll(inEdgeSet(pNode));
+        }
+        return result;
+    }
+
     @SuppressWarnings("unchecked")
     private boolean isCovered(N pNode) {
         HostGraph pattern = pNode.getPattern();
