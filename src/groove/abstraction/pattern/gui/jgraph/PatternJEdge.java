@@ -52,6 +52,11 @@ public class PatternJEdge extends GraphJEdge {
         return String.format("PatternJEdge with labels %s", getKeys());
     }
 
+    /*@Override
+    protected StringBuilder getLine(Edge edge) {
+        return new StringBuilder(((AbstractPatternEdge<?>) edge).getIdStr());
+    }*/
+
     /** 
      * Factory method, in case this object is used as a prototype.
      * Returns a fresh {@link GraphJEdge} of the same type as this one. 

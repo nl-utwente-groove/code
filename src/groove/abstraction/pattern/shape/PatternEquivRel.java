@@ -17,10 +17,12 @@
 package groove.abstraction.pattern.shape;
 
 import groove.abstraction.Multiplicity;
+import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.MyHashSet;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -32,15 +34,15 @@ public final class PatternEquivRel {
 
     private final PatternShape pShape;
     private final Map<PatternNode,NodeEquivClass> nodeToCellMap;
-    private final Map<PatternEdge,EdgeEquivClass> edgeToCellMap;
+    private final Map<PatternEdge,AuxEdgeEquivClass> edgeToCellMap;
     private final Set<NodeEquivClass> nodeRel;
-    private final Set<EdgeEquivClass> edgeRel;
+    private final Set<EdgeEquivClass> edgeRel; // Finer relation.
 
     /** Default constructor. */
     public PatternEquivRel(PatternShape pShape) {
         this.pShape = pShape;
         this.nodeToCellMap = new MyHashMap<PatternNode,NodeEquivClass>();
-        this.edgeToCellMap = new MyHashMap<PatternEdge,EdgeEquivClass>();
+        this.edgeToCellMap = new MyHashMap<PatternEdge,AuxEdgeEquivClass>();
         this.nodeRel = new MyHashSet<NodeEquivClass>();
         this.edgeRel = new MyHashSet<EdgeEquivClass>();
         compute();
@@ -69,6 +71,8 @@ public final class PatternEquivRel {
             if (nEc == null) {
                 nEc = new NodeEquivClass();
                 partition.put(nInfo, nEc);
+                // Compute the fine grained edge partition.
+                this.edgeRel.addAll(computeFinerEdgeRel(nInfo, nEc, pNode));
             }
             nEc.add(pNode);
             this.nodeToCellMap.put(pNode, nEc);
@@ -77,25 +81,24 @@ public final class PatternEquivRel {
     }
 
     private void computeEdgeEquiv(int layer) {
-        Map<EdgeInfo,EdgeEquivClass> partition =
-            new MyHashMap<EdgeInfo,EdgeEquivClass>();
+        Map<EdgeInfo,AuxEdgeEquivClass> partition =
+            new MyHashMap<EdgeInfo,AuxEdgeEquivClass>();
         for (PatternEdge pEdge : this.pShape.getLayerEdges(layer)) {
             EdgeInfo eInfo = computeEdgeInfo(pEdge);
-            EdgeEquivClass eEc = partition.get(eInfo);
+            AuxEdgeEquivClass eEc = partition.get(eInfo);
             if (eEc == null) {
-                eEc = new EdgeEquivClass();
+                eEc = new AuxEdgeEquivClass();
                 partition.put(eInfo, eEc);
             }
             eEc.add(pEdge);
             this.edgeToCellMap.put(pEdge, eEc);
         }
-        this.edgeRel.addAll(partition.values());
     }
 
     private NodeInfo computeNodeInfo(PatternNode pNode) {
         NodeInfo nInfo = new NodeInfo(pNode);
         for (PatternEdge pEdge : this.pShape.outEdgeSet(pNode)) {
-            EdgeEquivClass eEc = this.edgeToCellMap.get(pEdge);
+            AuxEdgeEquivClass eEc = this.edgeToCellMap.get(pEdge);
             assert eEc != null;
             if (!nInfo.containsKey(eEc)) {
                 nInfo.add(eEc, pNode);
@@ -104,32 +107,82 @@ public final class PatternEquivRel {
         return nInfo;
     }
 
+    private Set<EdgeEquivClass> computeFinerEdgeRel(NodeInfo nInfo,
+            NodeEquivClass sourceEc, PatternNode pNode) {
+        Set<EdgeEquivClass> result = new MyHashSet<EdgeEquivClass>();
+        for (Entry<AuxEdgeEquivClass,Multiplicity> entry : nInfo.entrySet()) {
+            PatternEdge pEdge = entry.getKey().iterator().next();
+            NodeEquivClass targetEc = this.nodeToCellMap.get(pEdge.target());
+            Multiplicity mult = entry.getValue();
+            EdgeEquivClass eEc =
+                new EdgeEquivClass(sourceEc, pEdge.getType(), targetEc, mult);
+            result.add(eEc);
+        }
+        return result;
+    }
+
     private EdgeInfo computeEdgeInfo(PatternEdge pEdge) {
         EdgeInfo eInfo = new EdgeInfo(pEdge);
         return eInfo;
     }
 
-    /** Basic getter. */
+    /** Returns the computed node equivalence relation. */
     public Set<NodeEquivClass> getNodeEquivRel() {
         return this.nodeRel;
     }
 
-    /** Basic getter. */
+    /**
+     * Returns the fine grained edge equivalence relation. This is the relation
+     * that we use to build pattern edges when constructing a canonical pattern
+     * shape.
+     * Note that the set objects do not actually have the edges that are part
+     * of the equivalence class, we just need the multiplicity.  
+     */
     public Set<EdgeEquivClass> getEdgeEquivRel() {
         return this.edgeRel;
     }
 
     /** Equivalence class of pattern nodes. */
     public static class NodeEquivClass extends MyHashSet<PatternNode> {
+
+        /** Returns the bounded multiplicity of this class. */
+        public Multiplicity getMult() {
+            int size = size();
+            return Multiplicity.approx(size, size, MultKind.NODE_MULT);
+        }
+
+    }
+
+    /** Equivalence class of pattern edges. This is the coarser relation. */
+    private static class AuxEdgeEquivClass extends MyHashSet<PatternEdge> {
         // Empty by design.
     }
 
-    /** Equivalence class of pattern edges. */
-    public static class EdgeEquivClass extends MyHashSet<PatternEdge> {
-        // Empty by design.
+    /** Equivalence class of pattern edges. This is the finer relation. */
+    public static class EdgeEquivClass {
+
+        final NodeEquivClass sourceEc;
+        final NodeEquivClass targetEc;
+        final TypeEdge typeEdge;
+        final Multiplicity mult;
+
+        EdgeEquivClass(NodeEquivClass sourceEc, TypeEdge typeEdge,
+                NodeEquivClass targetEc, Multiplicity mult) {
+            this.sourceEc = sourceEc;
+            this.targetEc = targetEc;
+            this.typeEdge = typeEdge;
+            this.mult = mult;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s--%s-->%s", this.sourceEc, this.mult,
+                this.targetEc);
+        }
     }
 
-    private class NodeInfo extends MyHashMap<EdgeEquivClass,Multiplicity> {
+    /** Information used to partition nodes. */
+    private class NodeInfo extends MyHashMap<AuxEdgeEquivClass,Multiplicity> {
 
         final TypeNode typeNode;
         int hashCode;
@@ -155,16 +208,16 @@ public final class PatternEquivRel {
             return this.hashCode() == other.hashCode();
         }
 
-        void add(EdgeEquivClass eec, PatternNode pNode) {
-            assert get(eec) == null;
+        void add(AuxEdgeEquivClass eEc, PatternNode pNode) {
+            assert get(eEc) == null;
             Multiplicity mult = Multiplicity.ZERO_EDGE_MULT;
             PatternShape pShape = PatternEquivRel.this.pShape;
-            for (PatternEdge pEdge : eec) {
+            for (PatternEdge pEdge : eEc) {
                 if (pShape.outEdgeSet(pNode).contains(pEdge)) {
                     mult = mult.add(pShape.getMult(pEdge));
                 }
             }
-            put(eec, mult);
+            put(eEc, mult);
         }
 
         @Override
@@ -175,6 +228,7 @@ public final class PatternEquivRel {
 
     }
 
+    /** Information used to partition edges. */
     private class EdgeInfo {
 
         final TypeEdge typeEdge;
