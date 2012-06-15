@@ -121,7 +121,7 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
     }
 
     /** Returns the simple graph obtained with flattening this pattern graph. */
-    public HostGraph flat() {
+    public HostGraph flatten() {
         assert isCommuting();
         HostGraph result = new DefaultHostGraph(getName());
         Map<PatternNode,HostNode> nodeMap =

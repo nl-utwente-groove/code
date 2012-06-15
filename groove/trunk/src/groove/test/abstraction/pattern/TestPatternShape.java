@@ -18,7 +18,6 @@ package groove.test.abstraction.pattern;
 
 import static org.junit.Assert.assertEquals;
 import groove.abstraction.pattern.io.xml.TypeGraphJaxbGxlIO;
-import groove.abstraction.pattern.shape.PatternEquivRel;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.trans.HostGraph;
@@ -34,34 +33,34 @@ import org.junit.Test;
  * @author Eduardo Zambon
  */
 @SuppressWarnings("all")
-public class TestPatternEquiv {
+public class TestPatternShape {
 
     @Test
-    public void testEquiv0() {
+    public void testNormalisation0() {
         final String GRAMMAR = "junit/pattern/pattern-list.gps/";
         final String TYPE = "ptgraph.gxl";
 
         TypeGraph typeGraph = loadTypeGraph(GRAMMAR + TYPE);
         HostGraph sGraph = loadSimpleGraph(GRAMMAR, "start-5");
         PatternShape pShape = new PatternShape(typeGraph.lift(sGraph));
-        PatternEquivRel peq = new PatternEquivRel(pShape);
+        PatternShape canShape = pShape.normalise();
 
-        assertEquals(10, peq.getNodeEquivRel().size());
-        assertEquals(12, peq.getEdgeEquivRel().size());
+        assertEquals(10, canShape.nodeCount());
+        assertEquals(12, canShape.edgeCount());
     }
 
     @Test
-    public void testEquiv1() {
+    public void testNormalisation1() {
         final String GRAMMAR = "junit/pattern/equiv.gps/";
         final String TYPE = "ptgraph.gxl";
 
         TypeGraph typeGraph = loadTypeGraph(GRAMMAR + TYPE);
         HostGraph sGraph = loadSimpleGraph(GRAMMAR, "start");
         PatternShape pShape = new PatternShape(typeGraph.lift(sGraph));
-        PatternEquivRel peq = new PatternEquivRel(pShape);
+        PatternShape canShape = pShape.normalise();
 
-        assertEquals(9, peq.getNodeEquivRel().size());
-        assertEquals(10, peq.getEdgeEquivRel().size());
+        assertEquals(9, canShape.nodeCount());
+        assertEquals(10, canShape.edgeCount());
     }
 
     private TypeGraph loadTypeGraph(String typeGraphFileName) {

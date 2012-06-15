@@ -77,7 +77,7 @@ public final class TransSystemChecker {
         if (gtsChecker.areIsomorphic(plainSGTS, plainPGTS)) {
             out.print("Transision systems are isomorphic. Checking states... ");
             for (PatternState pState : this.pgts.nodeSet()) {
-                HostGraph pGraph = pState.getGraph().flat();
+                HostGraph pGraph = pState.getGraph().flatten();
                 AbstractGraphState newSState =
                     new StartGraphState(this.sgts.getRecord(), pGraph);
                 // We need to copy the control state otherwise the IsoCheck fails.

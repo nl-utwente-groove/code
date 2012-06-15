@@ -22,6 +22,8 @@ import static groove.abstraction.Multiplicity.ZERO_EDGE_MULT;
 import static groove.abstraction.Multiplicity.ZERO_NODE_MULT;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.MyHashMap;
+import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
+import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
 import groove.graph.GraphRole;
 
 import java.util.Map;
@@ -45,7 +47,17 @@ public class PatternShape extends PatternGraph {
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** Default constructor. */
+    /** Default constructor. Creates an empty pattern shape. */
+    public PatternShape(String name, TypeGraph type) {
+        super(name, type);
+        this.nodeMultMap = new MyHashMap<PatternNode,Multiplicity>();
+        this.edgeMultMap = new MyHashMap<PatternEdge,Multiplicity>();
+    }
+
+    /**
+     * Constructs a pattern shape from the given pattern graph.
+     * Used only when computing the start state of a PSTS.
+     */
     public PatternShape(PatternGraph pGraph) {
         super(pGraph.getName(), pGraph.getTypeGraph());
         this.nodeMultMap = new MyHashMap<PatternNode,Multiplicity>();
@@ -126,19 +138,79 @@ public class PatternShape extends PatternGraph {
         return result == null ? ZERO_EDGE_MULT : result;
     }
 
-    /** Returns true if all elements have multiplicity one. */
-    public boolean isConcrete() {
-        for (Multiplicity mult : this.nodeMultMap.values()) {
-            if (!mult.isOne()) {
-                return false;
-            }
+    /**
+     * Sets the node multiplicity. If the multiplicity given is zero, then
+     * the node is removed from the shape.
+     */
+    public void setMult(PatternNode node, Multiplicity mult) {
+        assert !isFixed();
+        assert mult.isNodeKind();
+        assert containsNode(node) : "Node " + node + " is not in the shape!";
+        if (!mult.isZero()) {
+            this.nodeMultMap.put(node, mult);
+        } else {
+            // Setting a node multiplicity to zero is equivalent to removing
+            // the node from the shape.
+            removeNode(node);
         }
-        for (Multiplicity mult : this.edgeMultMap.values()) {
-            if (!mult.isOne()) {
-                return false;
-            }
+    }
+
+    /**
+     * Sets the edge multiplicity. If the multiplicity given is zero, then
+     * the edge is removed from the shape.
+     */
+    public void setMult(PatternEdge edge, Multiplicity mult) {
+        assert !isFixed();
+        assert mult.isEdgeKind();
+        assert containsEdge(edge) : "Edge " + edge + " is not in the shape!";
+        if (!mult.isZero()) {
+            this.edgeMultMap.put(edge, mult);
+        } else {
+            // Setting an edge multiplicity to zero is equivalent to removing
+            // the edge from the shape.
+            removeEdge(edge);
         }
-        return true;
+    }
+
+    /**
+     * Computes the canonical shape of this object.
+     * A new shape is returned and this object remains unchanged.
+     */
+    public PatternShape normalise() {
+        PatternEquivRel peq = new PatternEquivRel(this);
+        PatternShape result = new PatternShape(getName(), getTypeGraph());
+        Map<NodeEquivClass,PatternNode> ecToNodeMap =
+            new MyHashMap<NodeEquivClass,PatternNode>();
+
+        for (NodeEquivClass nEc : peq.getNodeEquivRel()) {
+            TypeNode nType = nEc.iterator().next().getType();
+            PatternNode newNode =
+                getFactory().createNode(nType, result.nodeSet());
+            result.addNode(newNode);
+            Multiplicity nMult = nEc.getMult();
+            if (!nMult.isOne()) {
+                result.setMult(newNode, nMult);
+            } // else nothing to do, the multiplicity was already set when
+              // the node was added.
+            ecToNodeMap.put(nEc, newNode);
+        }
+
+        for (EdgeEquivClass eEc : peq.getEdgeEquivRel()) {
+            // We already have the fine grained equivalence class.
+            PatternNode source = ecToNodeMap.get(eEc.sourceEc);
+            PatternNode target = ecToNodeMap.get(eEc.targetEc);
+            assert source != null && target != null;
+            PatternEdge newEdge =
+                getFactory().createEdge(source, eEc.typeEdge, target);
+            result.addEdge(newEdge);
+            Multiplicity eMult = eEc.mult;
+            if (!eMult.isOne()) {
+                result.setMult(newEdge, eMult);
+            } // else nothing to do, the multiplicity was already set when
+              // the edge was added.
+        }
+
+        return result;
     }
 
 }
