@@ -48,6 +48,7 @@ public final class MatcherFactory {
     // Object fields
     // ------------------------------------------------------------------------
 
+    private final Map<PatternRule,Matcher> injMatcherMap;
     private final Map<PatternRule,Matcher> matcherMap;
 
     // ------------------------------------------------------------------------
@@ -56,6 +57,7 @@ public final class MatcherFactory {
 
     /** Private constructor to avoid object creating. Use {@link #instance()}.*/
     private MatcherFactory() {
+        this.injMatcherMap = new MyHashMap<PatternRule,Matcher>();
         this.matcherMap = new MyHashMap<PatternRule,Matcher>();
     }
 
@@ -64,13 +66,22 @@ public final class MatcherFactory {
     // ------------------------------------------------------------------------
 
     /** Returns the matcher associated with the given rule. */
-    public Matcher getMatcher(PatternRule pRule) {
-        Matcher result = this.matcherMap.get(pRule);
+    public Matcher getMatcher(PatternRule pRule, boolean injective) {
+        Map<PatternRule,Matcher> map = getMap(injective);
+        Matcher result = map.get(pRule);
         if (result == null) {
-            result = new Matcher(pRule);
-            this.matcherMap.put(pRule, result);
+            result = new Matcher(pRule, injective);
+            map.put(pRule, result);
         }
         return result;
+    }
+
+    private Map<PatternRule,Matcher> getMap(boolean injective) {
+        if (injective) {
+            return this.injMatcherMap;
+        } else {
+            return this.matcherMap;
+        }
     }
 
 }

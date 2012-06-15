@@ -20,6 +20,10 @@ import static groove.abstraction.Multiplicity.MultKind.EDGE_MULT;
 import static groove.abstraction.Multiplicity.MultKind.NODE_MULT;
 import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.pattern.PatternAbsParam;
+import groove.graph.Edge;
+import groove.graph.Node;
+
+import java.util.Set;
 
 /**
  * A multiplicity is an interval on \Nat^\omega, closed on both lower and upper
@@ -202,6 +206,24 @@ public final class Multiplicity {
      */
     public static Multiplicity getMultiplicity(int index, MultKind kind) {
         return GLOBAL_MULT_STORE[kind.ordinal()][index];
+    }
+
+    /**
+     * Returns the multiplicity of the set of edges given, bounded by the edge
+     * multiplicity bound (\mu) set in the Parameters class. 
+     */
+    public static Multiplicity getEdgeSetMult(Set<? extends Edge> edges) {
+        int setSize = edges.size();
+        return approx(setSize, setSize, MultKind.EDGE_MULT);
+    }
+
+    /**
+     * Returns the multiplicity of the set of nodes given, bounded by the node
+     * multiplicity bound (\nu) set in the Parameters class. 
+     */
+    public static Multiplicity getNodeSetMult(Set<? extends Node> nodes) {
+        int setSize = nodes.size();
+        return approx(setSize, setSize, MultKind.NODE_MULT);
     }
 
     /**

@@ -17,7 +17,6 @@
 package groove.abstraction.pattern.shape;
 
 import groove.abstraction.Multiplicity;
-import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.MyHashSet;
 
@@ -147,8 +146,7 @@ public final class PatternEquivRel {
 
         /** Returns the bounded multiplicity of this class. */
         public Multiplicity getMult() {
-            int size = size();
-            return Multiplicity.approx(size, size, MultKind.NODE_MULT);
+            return Multiplicity.getNodeSetMult(this);
         }
 
     }

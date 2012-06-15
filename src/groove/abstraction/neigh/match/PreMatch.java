@@ -121,7 +121,7 @@ public final class PreMatch {
         for (ShapeNode nodeS : map.nodeMapValueSet()) {
             Multiplicity nSMult = nodeMultMap.get(nodeS);
             Set<RuleNode> nodesG = map.getPreImages(nodeS);
-            if (!Util.getNodeSetMult(nodesG).le(nSMult)) {
+            if (!Multiplicity.getNodeSetMult(nodesG).le(nSMult)) {
                 // Violation of node multiplicity.
                 complyToNodeMult = false;
                 break;
@@ -197,7 +197,7 @@ public final class PreMatch {
                                     ruleLabel, intersectEdges);
                             }
                             Multiplicity leftMult =
-                                Util.getEdgeSetMult(intersectEdges);
+                                Multiplicity.getEdgeSetMult(intersectEdges);
                             if (!leftMult.le(rightMult)) {
                                 complyToEdgeMult = false;
                                 break outerLoop;

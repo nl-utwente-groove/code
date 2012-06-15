@@ -27,7 +27,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({TestPatternGraphGenerator.class, TestPatternEquiv.class,
-    TestPatternShape.class})
+    TestPatternShape.class, TestMatching.class})
 public class AllPatternAbstractionTests {
 
     /** Reverts back to normal (non-abstract) mode. */
