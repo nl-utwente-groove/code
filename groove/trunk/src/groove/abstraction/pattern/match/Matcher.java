@@ -20,6 +20,7 @@ import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.PatternEdge;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternNode;
+import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.trans.PatternRule;
 import groove.abstraction.pattern.trans.RuleEdge;
 import groove.abstraction.pattern.trans.RuleNode;
@@ -38,6 +39,8 @@ import java.util.Set;
  */
 public final class Matcher {
 
+    /** Flag indicating that the matching should be injective. */
+    private final boolean injective;
     /**
      * A list of domain elements, in the order in which they are to be matched.
      */
@@ -58,8 +61,9 @@ public final class Matcher {
     private RuleEdge[] edgeKeys;
 
     /** Default constructor. */
-    public Matcher(PatternRule pRule) {
-        this.plan = new PatternSearchPlan(pRule);
+    public Matcher(PatternRule pRule, boolean injective) {
+        this.injective = injective;
+        this.plan = new PatternSearchPlan(pRule, injective);
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
         this.edgeIxMap = new HashMap<RuleEdge,Integer>();
         for (SearchItem item : this.plan) {
@@ -75,6 +79,11 @@ public final class Matcher {
             this.edgeKeys[edgeIxEntry.getValue()] = edgeIxEntry.getKey();
         }
         this.search = new Search();
+    }
+
+    /** Indicates if this matching is (to be) injective. */
+    private final boolean isInjective() {
+        return this.injective;
     }
 
     /** Returns a list of all matches found on the given graph. */
@@ -153,7 +162,7 @@ public final class Matcher {
          * The set of non-value nodes already used as images, used for the
          * injectivity test.
          */
-        private final Set<PatternNode> usedNodes;
+        private Set<PatternNode> usedNodes;
         /** The host graph of the search. */
         private PatternGraph host;
         /** Flag indicating that a solution has already been found. */
@@ -169,13 +178,26 @@ public final class Matcher {
             this.edgeImages = new PatternEdge[Matcher.this.edgeKeys.length];
             this.influence = new SearchItem.Record[planSize][];
             this.influenceCount = new int[planSize];
-            this.usedNodes = new MyHashSet<PatternNode>();
+        }
+
+        /**
+         * Returns the set of nodes already used as images. This is needed for
+         * the injectivity check, if any.
+         */
+        private Set<PatternNode> getUsedNodes() {
+            if (this.usedNodes == null) {
+                this.usedNodes = new MyHashSet<PatternNode>();
+            }
+            return this.usedNodes;
         }
 
         /** Initialises the search for a pattern graph. */
         void initialise(PatternGraph host) {
             this.host = host;
-            this.usedNodes.clear();
+            if (isInjective()) {
+                getUsedNodes().clear();
+            }
+
             // EZ asks: Should we create a new object every time or reset this
             // structure? What to do with influence and influenceCount?
             // AR answers: there's no need to clear the images. Fields influence
@@ -271,7 +293,7 @@ public final class Matcher {
         Match getMatch() {
             Match result = null;
             if (this.found) {
-                result = new Match(Matcher.this.plan.getRule(), this.host);
+                result = createEmptyMatch();
                 for (int i = 0; i < this.nodeImages.length; i++) {
                     PatternNode image = this.nodeImages[i];
                     if (image != null) {
@@ -285,40 +307,57 @@ public final class Matcher {
                     }
                 }
                 assert result.isFinished();
+                if (!result.isValid()) {
+                    // We have an invalid match, for instance a pre-match that
+                    // doesn't respect multiplicities.
+                    result = null;
+                }
             }
             return result;
         }
 
-        /** Sets the node image for the node key with a given index. */
-        final boolean putNode(int index, PatternNode image) {
-            PatternNode oldImage = this.nodeImages[index];
-            if (oldImage != null) {
-                boolean removed = this.usedNodes.remove(oldImage);
-                assert removed : String.format(
-                    "Node image %s not in used nodes %s", oldImage,
-                    this.usedNodes);
+        Match createEmptyMatch() {
+            // EZ says: I don't like this test but it's a fast hack...
+            if (this.host instanceof PatternShape) {
+                return new PreMatch(Matcher.this.plan.getRule(),
+                    (PatternShape) this.host);
+            } else {
+                return new Match(Matcher.this.plan.getRule(), this.host);
             }
-            if (image != null && !this.usedNodes.add(image)) {
-                this.nodeImages[index] = null;
-                return false;
+        }
+
+        /** Sets the node image for the node key with a given index. */
+        boolean putNode(int index, PatternNode image) {
+            if (isInjective()) {
+                PatternNode oldImage = this.nodeImages[index];
+                if (oldImage != null) {
+                    boolean removed = this.usedNodes.remove(oldImage);
+                    assert removed : String.format(
+                        "Node image %s not in used nodes %s", oldImage,
+                        this.usedNodes);
+                }
+                if (image != null && !this.usedNodes.add(image)) {
+                    this.nodeImages[index] = null;
+                    return false;
+                }
             }
             this.nodeImages[index] = image;
             return true;
         }
 
         /** Sets the edge image for the edge key with a given index. */
-        final boolean putEdge(int index, PatternEdge image) {
+        boolean putEdge(int index, PatternEdge image) {
             this.edgeImages[index] = image;
             return true;
         }
 
         /** Returns the current node image at a given index. */
-        final PatternNode getNode(int index) {
+        PatternNode getNode(int index) {
             return this.nodeImages[index];
         }
 
         /** Returns the current edge image at a given index. */
-        final PatternEdge getEdge(int index) {
+        PatternEdge getEdge(int index) {
             return this.edgeImages[index];
         }
     }

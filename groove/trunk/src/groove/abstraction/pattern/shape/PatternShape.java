@@ -122,6 +122,24 @@ public class PatternShape extends PatternGraph {
         return result;
     }
 
+    @Override
+    public boolean removeNodeWithoutCheck(PatternNode node) {
+        boolean result = super.removeNodeWithoutCheck(node);
+        if (result) {
+            this.nodeMultMap.remove(node);
+        }
+        return result;
+    }
+
+    @Override
+    public boolean removeEdge(PatternEdge edge) {
+        boolean result = super.removeEdge(edge);
+        if (result) {
+            this.edgeMultMap.remove(edge);
+        }
+        return result;
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------

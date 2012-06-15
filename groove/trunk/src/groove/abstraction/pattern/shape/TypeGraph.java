@@ -368,7 +368,8 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
             for (TypeNode tNode : getLayerNodes(layer)) {
                 // Check if we can compose this new pattern type.
                 PatternRule pRule = getClosureRule(tNode);
-                Matcher matcher = MatcherFactory.instance().getMatcher(pRule);
+                Matcher matcher =
+                    MatcherFactory.instance().getMatcher(pRule, true);
                 for (Match match : matcher.findMatches(pGraph)) {
                     // For each match we found we add a new pattern. We don't
                     // have to recompute any matches after the transformation

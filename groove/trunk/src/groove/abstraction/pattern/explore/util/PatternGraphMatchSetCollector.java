@@ -104,9 +104,15 @@ public class PatternGraphMatchSetCollector {
             final Collection<Match> result) {
         String ruleName = ctrlTrans.getRule().getLastName();
         PatternRule pRule = this.state.getPGTS().getGrammar().getRule(ruleName);
-        Matcher matcher = MatcherFactory.instance().getMatcher(pRule);
+        Matcher matcher =
+            MatcherFactory.instance().getMatcher(pRule, isInjective());
         List<Match> matches = matcher.findMatches(this.state.getGraph());
         result.addAll(matches);
         return !matches.isEmpty();
+    }
+
+    /** Matching should be injective or not. */
+    protected boolean isInjective() {
+        return true;
     }
 }

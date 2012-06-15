@@ -29,7 +29,7 @@ import groove.graph.InversableElementMap;
  * 
  * @author Eduardo Zambon
  */
-public final class Match extends
+public class Match extends
         InversableElementMap<RuleNode,RuleEdge,PatternNode,PatternEdge> {
 
     private final PatternRule pRule;
@@ -56,6 +56,11 @@ public final class Match extends
     public boolean isFinished() {
         return nodeMap().keySet().containsAll(this.pRule.lhs().nodeSet())
             && edgeMap().keySet().containsAll(this.pRule.lhs().edgeSet());
+    }
+
+    /** Returns true if this match is injective. */
+    public boolean isValid() {
+        return isInjective();
     }
 
     @Override

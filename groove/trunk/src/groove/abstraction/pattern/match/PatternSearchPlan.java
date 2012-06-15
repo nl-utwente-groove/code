@@ -43,10 +43,13 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
     private final PatternRule pRule;
     /** Direct dependencies of all search plan items. */
     private final List<Integer> dependencies;
+    /** Flag indicating that the search should be injective. */
+    private final boolean injective;
 
     /** Basic constructor. */
-    public PatternSearchPlan(PatternRule pRule) {
+    public PatternSearchPlan(PatternRule pRule, boolean injective) {
         this.pRule = pRule;
+        this.injective = injective;
         this.dependencies = new ArrayList<Integer>();
         computeSearchItems();
     }
@@ -68,18 +71,20 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
             }
         }
         // Add dependencies due to injective matching.
-        // Cumulative set of nodes bound by search items up to i.
-        Set<RuleNode> boundNodes = new MyHashSet<RuleNode>();
-        // For each item, whether it binds new nodes.
-        BitSet bindsNewNodes = new BitSet();
-        for (int i = 0; i <= position; i++) {
-            bindsNewNodes.set(i, boundNodes.addAll(get(i).bindsNodes()));
-        }
-        if (bindsNewNodes.get(position)) {
-            // The new item depends on all other items that bind new nodes.
-            for (int i = 0; i < position; i++) {
-                if (bindsNewNodes.get(i)) {
-                    depend = i;
+        if (this.injective) {
+            // Cumulative set of nodes bound by search items up to i.
+            Set<RuleNode> boundNodes = new MyHashSet<RuleNode>();
+            // For each item, whether it binds new nodes.
+            BitSet bindsNewNodes = new BitSet();
+            for (int i = 0; i <= position; i++) {
+                bindsNewNodes.set(i, boundNodes.addAll(get(i).bindsNodes()));
+            }
+            if (bindsNewNodes.get(position)) {
+                // The new item depends on all other items that bind new nodes.
+                for (int i = 0; i < position; i++) {
+                    if (bindsNewNodes.get(i)) {
+                        depend = i;
+                    }
                 }
             }
         }

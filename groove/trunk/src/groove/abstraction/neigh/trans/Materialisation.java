@@ -653,11 +653,11 @@ public final class Materialisation {
                         Util.getIntersectEdges(this.shape, v, w, label,
                             intersectEdges);
                         Multiplicity vInterWMult =
-                            Util.getEdgeSetMult(intersectEdges);
+                            Multiplicity.getEdgeSetMult(intersectEdges);
                         Util.getIntersectEdges(this.shape, w, v, label,
                             intersectEdges);
                         Multiplicity wInterVMult =
-                            Util.getEdgeSetMult(intersectEdges);
+                            Multiplicity.getEdgeSetMult(intersectEdges);
                         if (!outMult.equals(vInterWMult)
                             || !inMult.equals(wInterVMult)) {
                             complyToEdgeMult = false;
