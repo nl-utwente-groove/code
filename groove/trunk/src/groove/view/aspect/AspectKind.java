@@ -1028,8 +1028,8 @@ public enum AspectKind {
                     EnumSet.of(DEFAULT, REMARK, INT, BOOL, REAL, STRING,
                         ABSTRACT, IMPORT, COLOR, EDGE);
                 edgeKinds =
-                    EnumSet.of(INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE,
-                        MULT_IN, MULT_OUT, COMPOSITE);
+                    EnumSet.of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT,
+                        SUBTYPE, MULT_IN, MULT_OUT, COMPOSITE);
                 break;
             default:
                 assert !role.inGrammar();
