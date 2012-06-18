@@ -157,6 +157,14 @@ abstract public class AbstractAutomatonTest {
     }
 
     @Test
+    public void testConstruction() {
+        RegAut aut = createAutomaton("?|flag:?|type:?");
+        assertTrue(aut.toString() != null);
+        assertEquals(getTypeGraph().edgeSet(), aut.getAlphabet());
+        testError("!a");
+    }
+
+    @Test
     public void testEmptyAccepts() {
         RegAut aut = createAutomaton("=");
         assertTrue(aut.accepts(wordEmpty));
@@ -176,6 +184,12 @@ abstract public class AbstractAutomatonTest {
         assertFalse(aut.accepts(wordAA));
         assertFalse(aut.accepts(wordAB));
         assertFalse(aut.accepts(wordBA));
+        useLoadedTypeGraph = true;
+        aut = createAutomaton("A");
+        useLoadedTypeGraph = false;
+        if (aut instanceof SimpleNFA) {
+            assertFalse(aut.accepts(wordA));
+        }
     }
 
     @Test
@@ -590,6 +604,21 @@ abstract public class AbstractAutomatonTest {
             fail("Regular expression parse error: " + exc.getMessage());
         }
         return result;
+    }
+
+    /**
+     * Tests that a given expression cannot be used to create an automaton.
+     */
+    protected void testError(String regExpr) {
+        try {
+            RegExpr parsedRegExpr = RegExpr.parse(regExpr);
+            this.calculator.compute(parsedRegExpr, getTypeGraph());
+            fail(regExpr + " should not yield a valid automaton");
+        } catch (UnsupportedOperationException exc) {
+            // success
+        } catch (FormatException exc) {
+            fail(regExpr + " should not yield a valid automaton");
+        }
     }
 
     private static TypeGraph getTypeGraph() {

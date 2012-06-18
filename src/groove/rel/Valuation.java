@@ -33,11 +33,6 @@ public class Valuation extends LinkedHashMap<LabelVar,TypeElement> {
         super();
     }
 
-    /** Constructor for an initially empty valuation with a given capacity. */
-    public Valuation(int c) {
-        super(c);
-    }
-
     /** Constructor initialising the valuation to a given one. */
     public Valuation(Map<LabelVar,TypeElement> m) {
         super(m);

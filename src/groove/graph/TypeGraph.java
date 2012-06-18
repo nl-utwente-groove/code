@@ -1000,14 +1000,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         if (label.isWildcard()) {
             if (isNodeType(label) && !isImplicit()) {
                 result.addAll(nodeSet());
+                result.removeAll(getFactory().getDataTypes());
             } else {
-                if (label.isNodeType()) {
-                    for (TypeNode tn : nodeSet()) {
-                        if (!tn.isTopType()) {
-                            result.add(tn);
-                        }
-                    }
-                }
                 for (TypeEdge te : edgeSet()) {
                     if (te.getRole() == label.getRole()) {
                         result.add(te);

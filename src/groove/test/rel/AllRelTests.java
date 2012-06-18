@@ -25,7 +25,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({MatrixAutomatonTest.class, SimpleAutomatonTest.class,
-    DFATest.class})
+    DFATest.class, LabelVarTest.class, RegExprTest.class, ValuationTest.class})
 public class AllRelTests {
     // Empty by design.
 }
