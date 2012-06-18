@@ -1,4 +1,4 @@
-// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g 2012-05-19 20:38:06
+// $ANTLR 3.4 E:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g 2012-06-17 12:30:10
 
 package groove.control.parse;
 import groove.control.*;
@@ -313,7 +313,7 @@ public TreeAdaptor getTreeAdaptor() {
             if ( state.backtracking==0 ) { helper.checkEOF(EOF6_tree); }
 
             // AST REWRITE
-            // elements: stat, package_decl, function, import_decl, recipe
+            // elements: function, stat, recipe, package_decl, import_decl
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -503,7 +503,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( state.backtracking==0 ) { helper.setPackage((qual_name8!=null?((CommonTree)qual_name8.tree):null)); }
 
                     // AST REWRITE
-                    // elements: qual_name, PACKAGE
+                    // elements: PACKAGE, qual_name
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1443,7 +1443,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                             // AST REWRITE
-                            // elements: WHILE, stat, cond, stat
+                            // elements: stat, cond, WHILE, stat
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -1514,7 +1514,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                             // AST REWRITE
-                            // elements: UNTIL, stat, cond, stat
+                            // elements: stat, cond, stat, UNTIL
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -2822,7 +2822,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: arg_list, rule_name
+            // elements: rule_name, arg_list
             // token labels: 
             // rule labels: retval
             // token list labels: 

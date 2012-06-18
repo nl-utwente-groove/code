@@ -84,6 +84,9 @@ public interface RegAut extends Graph<RegNode,RegEdge> {
     Set<Result> getMatches(HostGraph graph, HostNode startImage,
             HostNode endImage);
 
+    /** Construct a new automaton, with a given start node, end node and type graph. */
+    RegAut newAutomaton(RegNode start, RegNode end, TypeGraph typeGraph);
+
     /**
      * Returns a relation consisting of pairs of nodes of a given graph between
      * which there is a path matching this automaton. If this automaton has
@@ -105,44 +108,8 @@ public interface RegAut extends Graph<RegNode,RegEdge> {
 
     /** Type of the automaton's match results. */
     class Result extends Duo<HostNode> {
-        public Result(HostNode one, HostNode two, Valuation valuation) {
+        public Result(HostNode one, HostNode two) {
             super(one, two);
-            this.valuation = valuation;
         }
-
-        /**
-         * Returns the valuation.
-         */
-        public Valuation getValuation() {
-            return this.valuation;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            boolean result = super.equals(obj);
-            if (result) {
-                Result other = (Result) obj;
-                if (this.valuation == null) {
-                    result = other.valuation == null;
-                } else {
-                    result = this.valuation.equals(other.valuation);
-                }
-            }
-            return result;
-        }
-
-        @Override
-        public int hashCode() {
-            return super.hashCode()
-                ^ (this.valuation == null ? 0 : this.valuation.hashCode());
-        }
-
-        @Override
-        public String toString() {
-            return "Result [one=" + one() + ", two=" + two() + ", valuation="
-                + this.valuation + "]";
-        }
-
-        private final Valuation valuation;
     }
 }

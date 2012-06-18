@@ -4,64 +4,37 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n4">
+            <attr name="layout">
+                <string>419 120 28 31</string>
+            </attr>
+        </node>
+        <node id="n3">
+            <attr name="layout">
+                <string>292 104 28 61</string>
+            </attr>
+        </node>
+        <node id="n2">
+            <attr name="layout">
+                <string>109 238 37 31</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>109 120 29 31</string>
+            </attr>
+        </node>
         <node id="n0">
             <attr name="layout">
                 <string>92 44 348 31</string>
             </attr>
         </node>
-        <node id="n1">
-            <attr name="layout">
-                <string>107 113 34 46</string>
-            </attr>
-        </node>
-        <node id="n2">
-            <attr name="layout">
-                <string>109 231 37 46</string>
-            </attr>
-        </node>
-        <node id="n3">
-            <attr name="layout">
-                <string>289 97 34 76</string>
-            </attr>
-        </node>
-        <node id="n4">
-            <attr name="layout">
-                <string>416 113 34 46</string>
-            </attr>
-        </node>
-        <edge to="n0" from="n0">
+        <edge to="n4" from="n4">
             <attr name="label">
-                <string>rem:</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>Type graph providing labels for AutomatonConstructionTest</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:A</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n1">
-            <attr name="label">
-                <string>a</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n1">
-            <attr name="label">
-                <string>b</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>type:A1</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n2">
-            <attr name="label">
-                <string>sub:</string>
+                <string>type:C</string>
             </attr>
         </edge>
         <edge to="n3" from="n3">
@@ -89,9 +62,39 @@
                 <string>c</string>
             </attr>
         </edge>
-        <edge to="n4" from="n4">
+        <edge to="n2" from="n2">
             <attr name="label">
-                <string>type:C</string>
+                <string>type:A1</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n2">
+            <attr name="label">
+                <string>sub:</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:A</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n1">
+            <attr name="label">
+                <string>a</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n1">
+            <attr name="label">
+                <string>b</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>rem:</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>rem:Type graph providing labels for DFATest</string>
             </attr>
         </edge>
     </graph>

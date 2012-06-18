@@ -84,11 +84,9 @@ public class RuleLabel extends AbstractLabel {
      */
     public String text() {
         String result;
+        result = getMatchExpr().toString();
         if (isAtom() || isSharp() || isWildcard()) {
-            result = getMatchExpr().toString();
             result = EdgeRole.parseLabel(result).two();
-        } else {
-            result = getMatchExpr().toString();
         }
         return result;
     }

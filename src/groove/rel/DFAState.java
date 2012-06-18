@@ -27,15 +27,14 @@ import java.util.Set;
 /**
  * State of a normalised finite automaton.
  */
-public class NormalState {
-    NormalState(int number, Set<RegNode> nodes, boolean initial, boolean isFinal) {
+public class DFAState {
+    DFAState(int number, Set<RegNode> nodes, boolean initial, boolean isFinal) {
         this.number = number;
         this.nodes = new HashSet<RegNode>(nodes);
         this.initial = initial;
         this.isFinal = isFinal;
-        for (Direction dir : Direction.all) {
-            this.labelSuccMap.put(dir, new HashMap<TypeLabel,NormalState>());
-            this.varSuccMap.put(dir, new HashMap<LabelVar,NormalState>());
+        for (Direction dir : Direction.values()) {
+            this.labelSuccMap.put(dir, new HashMap<TypeLabel,DFAState>());
         }
     }
 
@@ -54,15 +53,9 @@ public class NormalState {
         return this.nodes;
     }
 
-    /** Adds an outgoing labelled transition to another state. */
-    public void addSuccessor(Direction dir, TypeLabel label, NormalState succ) {
-        NormalState oldSucc = this.labelSuccMap.get(dir).put(label, succ);
-        assert oldSucc == null : "Overrides existing transition to " + oldSucc;
-    }
-
-    /** Adds an outgoing labelled transition to another state. */
-    public void addSuccessor(Direction dir, LabelVar var, NormalState succ) {
-        NormalState oldSucc = this.varSuccMap.get(dir).put(var, succ);
+    /** Adds an outgoing, concretely labelled transition to another state. */
+    public void addSuccessor(Direction dir, TypeLabel label, DFAState succ) {
+        DFAState oldSucc = this.labelSuccMap.get(dir).put(label, succ);
         assert oldSucc == null : "Overrides existing transition to " + oldSucc;
     }
 
@@ -72,13 +65,8 @@ public class NormalState {
     }
 
     /** Returns the label successor map of this state. */
-    public Map<Direction,Map<TypeLabel,NormalState>> getLabelMap() {
+    public Map<Direction,Map<TypeLabel,DFAState>> getLabelMap() {
         return this.labelSuccMap;
-    }
-
-    /** Returns the variable successor map of this state. */
-    public Map<Direction,Map<LabelVar,NormalState>> getVarMap() {
-        return this.varSuccMap;
     }
 
     @Override
@@ -94,9 +82,6 @@ public class NormalState {
     /** The set of nodes corresponding to an automaton state. */
     private final Set<RegNode> nodes;
     /** Mapping per direction from outgoing labels to successors states. */
-    private final Map<Direction,Map<TypeLabel,NormalState>> labelSuccMap =
-        new EnumMap<Direction,Map<TypeLabel,NormalState>>(Direction.class);
-    /** Mapping per direction from outgoing variables to successors states. */
-    private final Map<Direction,Map<LabelVar,NormalState>> varSuccMap =
-        new EnumMap<Direction,Map<LabelVar,NormalState>>(Direction.class);
+    private final Map<Direction,Map<TypeLabel,DFAState>> labelSuccMap =
+        new EnumMap<Direction,Map<TypeLabel,DFAState>>(Direction.class);
 }

@@ -18,7 +18,6 @@ package groove.graph;
 
 import static groove.graph.GraphRole.TYPE;
 import groove.algebra.Constant;
-import groove.algebra.SignatureKind;
 import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
@@ -46,7 +45,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1000,10 +998,21 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             label = label.getInvLabel();
         }
         if (label.isWildcard()) {
-            if (isNodeType(label)) {
+            if (isNodeType(label) && !isImplicit()) {
                 result.addAll(nodeSet());
             } else {
-                result.addAll(edgeSet());
+                if (label.isNodeType()) {
+                    for (TypeNode tn : nodeSet()) {
+                        if (!tn.isTopType()) {
+                            result.add(tn);
+                        }
+                    }
+                }
+                for (TypeEdge te : edgeSet()) {
+                    if (te.getRole() == label.getRole()) {
+                        result.add(te);
+                    }
+                }
             }
             label.getWildcardGuard().filter(result);
         } else if (label.isSharp()) {
@@ -1015,7 +1024,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         } else {
             assert label.isAtom();
             if (isNodeType(label) && !isImplicit()) {
-                result.addAll(getSubtypes(getNode(label)));
+                TypeNode tn = getNode(label);
+                if (tn != null) {
+                    result.addAll(getSubtypes(tn));
+                }
             } else {
                 result.addAll(labelEdgeSet(label.getTypeLabel()));
             }
@@ -1153,28 +1165,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     private TypeEdgeMap exactEdgeMap;
     /** Node-label-edge-map for type edges starting at supertypes. */
     private TypeEdgeMap superEdgeMap;
-
-    /** Creates an implicit type graph for a given set of labels. */
-    public static TypeGraph createImplicitType(Set<TypeLabel> labels) {
-        TypeGraph result = new TypeGraph("implicit type graph", true);
-        TypeFactory factory = result.getFactory();
-        TypeNode top = factory.getTopNode();
-        result.addNode(top);
-        for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {
-            result.addNode(factory.getDataType(sigKind));
-        }
-        for (TypeLabel label : labels) {
-            if (label.isBinary()) {
-                for (TypeNode target : result.nodeSet()) {
-                    result.addEdge(top, label, target);
-                }
-            } else {
-                result.addEdge(top, label, top);
-            }
-        }
-        result.setFixed();
-        return result;
-    }
 
     /** Class holding a mapping from type nodes to sets of type nodes. */
     private static class NodeTypeMap extends HashMap<TypeNode,Set<TypeNode>> {

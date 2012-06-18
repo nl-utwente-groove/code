@@ -16,6 +16,7 @@
  */
 package groove.rel;
 
+import groove.graph.ImplicitTypeGraph;
 import groove.graph.TypeGraph;
 import groove.rel.RegExpr.Atom;
 import groove.rel.RegExpr.Choice;
@@ -40,12 +41,28 @@ import java.util.List;
  * @version $Revision$
  */
 public class RegAutCalculator implements RegExprCalculator<RegAut> {
+    /** Creates an instance based on {@link MatrixAutomaton}. */
+    public RegAutCalculator() {
+        this(SimpleNFA.PROTOTYPE);
+    }
+
+    /** Creates an instance with a given prototype automaton. */
+    public RegAutCalculator(RegAut prototype) {
+        this.prototype = prototype;
+    }
+
     /**
-     * Applies this calculator to a given regular expression, fixes the
-     * resulting automaton and returns it.
-     * It is required that all the expression labels occur in the
-     * label store.
-     * @param typeGraph the label store for the automaton (non-{@code null})
+     * Calculates the automaton for a given regular expression, using the
+     * implicit type graph for the labels in the expression.
+     */
+    public RegAut compute(RegExpr expr) {
+        return compute(expr,
+            ImplicitTypeGraph.newInstance(expr.getTypeLabels()));
+    }
+
+    /**
+     * Calculates the automaton for a given regular expression and type graph.
+     * @param typeGraph the type graph for the automaton (non-{@code null})
      */
     public RegAut compute(RegExpr expr, TypeGraph typeGraph) {
         this.nodeDispenser.reset();
@@ -217,7 +234,8 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * identities (in the context of this calculator).
      */
     protected RegAut createAutomaton() {
-        return new MatrixAutomaton(createNode(), createNode(), this.typeGraph);
+        return this.prototype.newAutomaton(createNode(), createNode(),
+            this.typeGraph);
     }
 
     /**
@@ -243,6 +261,8 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
         return RegFactory.instance().createNode(this.nodeDispenser.getNext());
     }
 
+    /** Prototype automaton to create new automata from. */
+    private final RegAut prototype;
     /** Label store currently used to build automata. */
     private TypeGraph typeGraph;
     /** the dispenser for automaton node identities. */

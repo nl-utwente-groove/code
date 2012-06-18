@@ -22,6 +22,7 @@ import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
+import groove.graph.ImplicitTypeGraph;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
 import groove.gui.Options;
@@ -474,7 +475,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                     result = ((TypeModel) resourceModel).toResource();
                 } catch (FormatException e) {
                     result =
-                        TypeGraph.createImplicitType(resourceModel.getLabels());
+                        ImplicitTypeGraph.newInstance(resourceModel.getLabels());
                 }
             } else {
                 result = AspectJModel.this.grammar.getTypeGraph();

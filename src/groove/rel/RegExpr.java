@@ -1553,7 +1553,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             LabelVar var =
                 identifier == null ? new LabelVar(kind) : new LabelVar(
                     identifier, kind);
-            TypeGuard constraint = new TypeGuard(var, kind);
+            TypeGuard constraint = new TypeGuard(var);
             if (parameter != null) {
                 setConstraint(constraint, parameter);
             }

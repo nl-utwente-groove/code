@@ -52,18 +52,30 @@ import java.util.Set;
  */
 public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         implements RegAut {
+    private MatrixAutomaton() {
+        super("prototype");
+        this.start = null;
+        this.end = null;
+        this.typeGraph = null;
+    }
+
     /**
      * Creates an automaton with a given start and end node, which does not
      * accept the empty word.
      * The label store indicates which labels to expect (which is used
      * to predict the matching of wildcards).
      */
-    public MatrixAutomaton(RegNode start, RegNode end, TypeGraph typeGraph) {
+    private MatrixAutomaton(RegNode start, RegNode end, TypeGraph typeGraph) {
         super("automaton");
         this.start = start;
         this.end = end;
         this.typeGraph = typeGraph;
         assert typeGraph != null;
+    }
+
+    @Override
+    public RegAut newAutomaton(RegNode start, RegNode end, TypeGraph typeGraph) {
+        return new MatrixAutomaton(start, end, typeGraph);
     }
 
     /** 
@@ -199,7 +211,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         Map<Direction,Map<TypeLabel,Set<RegEdge>>[]> nodePosLabelEdgeMap =
             new EnumMap<Direction,Map<TypeLabel,Set<RegEdge>>[]>(
                 Direction.class);
-        for (Direction dir : Direction.all) {
+        for (Direction dir : Direction.values()) {
             nodeInvLabelEdgeMap.put(dir, new Map[indexedNodeCount]);
             nodePosLabelEdgeMap.put(dir, new Map[indexedNodeCount]);
         }
@@ -220,9 +232,9 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
             Map<Direction,Map<TypeLabel,Set<RegEdge>>[]> nodeLabelEdgeMap =
                 isInverse ? nodeInvLabelEdgeMap : nodePosLabelEdgeMap;
             for (TypeLabel derivedLabel : derivedLabels) {
-                for (Direction direction : Direction.all) {
+                for (Direction direction : Direction.values()) {
                     addToNodeLabelEdgeSetMap(nodeLabelEdgeMap.get(direction),
-                        direction.start(edge), derivedLabel, edge);
+                        direction.origin(edge), derivedLabel, edge);
                 }
                 if (edge.source() == getStartNode()) {
                     (isInverse ? initInvLabelSet : initPosLabelSet).add(derivedLabel);
@@ -238,7 +250,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
             new EnumMap<Direction,Map<TypeLabel,int[]>[]>(Direction.class);
         this.nodeInvLabelEdgeIndicesMap =
             new EnumMap<Direction,Map<TypeLabel,int[]>[]>(Direction.class);
-        for (Direction direction : Direction.all) {
+        for (Direction direction : Direction.values()) {
             Map<TypeLabel,int[]>[] posLabelEdgeIndices =
                 new Map[indexedNodeCount];
             Map<TypeLabel,int[]>[] invLabelEdgeIndices =
@@ -362,13 +374,18 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
     }
 
     private TypeEdge getLetter(String text) {
+        TypeEdge result = null;
         TypeLabel label = TypeLabel.createLabel(text);
         Set<? extends TypeEdge> letters = this.typeGraph.labelEdgeSet(label);
-        if (letters == null || letters.size() != 1) {
-            return null;
-        } else {
-            return letters.iterator().next();
+        if (letters != null) {
+            for (TypeEdge e : letters) {
+                if (e.target() == e.source()) {
+                    result = e;
+                    break;
+                }
+            }
         }
+        return result;
     }
 
     public Set<Result> getMatches(HostGraph graph, HostNode startImage,
@@ -748,6 +765,9 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                 TypeLabel.createLabel(kind, DUMMY_LABEL_TEXT));
         }
     }
+
+    /** Prototype automaton. */
+    public static final MatrixAutomaton PROTOTYPE = new MatrixAutomaton();
 
     /**
      * Class to encapsulate the algorithm used to compute the result of
@@ -1197,7 +1217,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                         : Collections.singleton(startImage);
             for (HostNode start : startImages) {
                 if (isAcceptsEmptyWord() && isAllowedResult(start)) {
-                    this.result.add(new Result(start, start, null));
+                    this.result.add(new Result(start, start));
                 }
                 Map<HostNode,Set<Valuation>> resultMap =
                     new MatchingComputation(this.startIndex, start, valuation).start();
@@ -1205,7 +1225,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                     HostNode resultKey = resultEntry.getKey();
                     if (isAllowedResult(resultKey)) {
                         if (hasVars()) {
-                            addRelated(start, resultKey, resultEntry.getValue());
+                            addRelated(start, resultKey);
                         } else {
                             addRelated(start, resultKey);
                         }
@@ -1312,41 +1332,40 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         protected boolean addRelated(HostNode startImage, HostNode endImage) {
             switch (this.direction) {
             case FORWARD:
-                return this.result.add(createResult(startImage, endImage, null));
+                return this.result.add(createResult(startImage, endImage));
             default:
-                return this.result.add(createResult(endImage, startImage, null));
+                return this.result.add(createResult(endImage, startImage));
             }
         }
 
-        /**
-         * Adds a set of edges to the result relation, with given pre- and
-         * post-images or swapped, depending on whether we do forward or
-         * backward matching, and labels containing wildcard name valuations.
-         */
-        protected boolean addRelated(HostNode startImage, HostNode endImage,
-                Set<Valuation> valuations) {
-            boolean res = false;
-            for (Valuation valuation : valuations) {
-                // Label label = new ValuationLabel(valuation);
-                Result edge;
-                switch (this.direction) {
-                case FORWARD:
-                    edge = createResult(startImage, endImage, valuation);
-                    break;
-                default:
-                    edge = createResult(endImage, startImage, valuation);
-                }
-                res |= this.result.add(edge);
-            }
-            return res;
-        }
+        //
+        //        /**
+        //         * Adds a set of edges to the result relation, with given pre- and
+        //         * post-images or swapped, depending on whether we do forward or
+        //         * backward matching, and labels containing wildcard name valuations.
+        //         */
+        //        protected boolean addRelated(HostNode startImage, HostNode endImage) {
+        //            boolean res = false;
+        //            for (Valuation valuation : valuations) {
+        //                // Label label = new ValuationLabel(valuation);
+        //                Result edge;
+        //                switch (this.direction) {
+        //                case FORWARD:
+        //                    edge = createResult(startImage, endImage);
+        //                    break;
+        //                default:
+        //                    edge = createResult(endImage, startImage);
+        //                }
+        //                res |= this.result.add(edge);
+        //            }
+        //            return res;
+        //        }
 
         /**
          * Callback factory method for a {@link RegAut.Result} object.
          */
-        Result createResult(HostNode source, HostNode target,
-                Valuation valuation) {
-            return new Result(source, target, valuation);
+        Result createResult(HostNode source, HostNode target) {
+            return new Result(source, target);
         }
 
         /** Cleans the array of auxiliary results. */
