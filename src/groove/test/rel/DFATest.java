@@ -16,13 +16,19 @@
  */
 package groove.test.rel;
 
+import static groove.rel.Direction.BACKWARD;
 import static groove.rel.Direction.FORWARD;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.graph.EdgeRole;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
 import groove.graph.TypeGraph;
+import groove.graph.TypeLabel;
+import groove.rel.DFA;
+import groove.rel.DFAState;
 import groove.rel.LabelVar;
 import groove.rel.RegAutCalculator;
 import groove.rel.RegExpr;
@@ -33,6 +39,8 @@ import groove.view.FormatException;
 import groove.view.GrammarModel;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -56,6 +64,7 @@ public class DFATest {
     private boolean useType;
     private LabelVar xVar;
     private TypeEdge bEdge;
+    private TypeLabel aLabel;
 
     /** Loads type graph. */
     @Before
@@ -68,6 +77,7 @@ public class DFATest {
             Set<? extends TypeEdge> bEdges =
                 this.type.labelEdgeSet(factory.createLabel("b"));
             this.bEdge = bEdges.iterator().next();
+            this.aLabel = TypeLabel.createLabel("a");
         } catch (FormatException e) {
             fail(e.getMessage());
         } catch (IOException e) {
@@ -149,6 +159,38 @@ public class DFATest {
         assertEquivalent("(a.b)*", "(a.b)+*", true);
         assertEquivalent("(a.b)*", "((a.b)*)+", true);
         assertEquivalent("(a.b)*", "(a.b)*|(a.b)+", true);
+    }
+
+    /** Additional construction test to exercise some of the other definitions. */
+    @Test
+    public void testConstruction() {
+        SimpleNFA a = createNFA("a.-a");
+        DFA forward = a.getDFA(FORWARD, null);
+        forward.isEquivalent(forward.toMinimised());
+        forward.toString();
+        DFAState state = forward.getStartState();
+        assertTrue(state.isInitial());
+        assertFalse(state.isFinal());
+        Map<TypeLabel,DFAState> succMap = state.getLabelMap().get(FORWARD);
+        Map<TypeLabel,DFAState> predMap = state.getLabelMap().get(BACKWARD);
+        assertEquals(Collections.singleton(this.aLabel), succMap.keySet());
+        assertTrue(predMap.isEmpty());
+        state = succMap.get(this.aLabel);
+        assertFalse(state.isInitial());
+        assertFalse(state.isFinal());
+        succMap = state.getLabelMap().get(FORWARD);
+        predMap = state.getLabelMap().get(BACKWARD);
+        assertTrue(succMap.isEmpty());
+        assertEquals(Collections.singleton(this.aLabel), predMap.keySet());
+        state = predMap.get(this.aLabel);
+        assertFalse(state.isInitial());
+        assertTrue(state.isFinal());
+        succMap = state.getLabelMap().get(FORWARD);
+        predMap = state.getLabelMap().get(BACKWARD);
+        assertTrue(succMap.isEmpty());
+        assertTrue(predMap.isEmpty());
+        DFA backward = a.getDFA(BACKWARD, null);
+        backward.isEquivalent(forward);
     }
 
     /**

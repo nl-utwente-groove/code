@@ -475,6 +475,7 @@ abstract public class AbstractAutomatonTest {
         assertEquals(results, aut.getMatches(testGraph, nC2, null));
         assertEquals(results, aut.getMatches(testGraph, nC2, null));
         results.clear();
+        assertEquals(results, aut.getMatches(testGraph, nC3, nC2));
         addRelated(results, nC2, nC3);
         assertEquals(results, aut.getMatches(testGraph, nC2, nC3));
     }
@@ -629,19 +630,10 @@ abstract public class AbstractAutomatonTest {
         return result;
     }
 
-    protected void addRelated(Set<Result> result, HostNode key, String[] ids,
-            HostNode image) {
-        result.add(new Result(key, image));
-    }
-
     protected static HostNode getNode(String selfLabel) {
         Collection<? extends HostEdge> edgeSet =
             testGraph.labelEdgeSet(TypeLabel.createBinaryLabel(selfLabel));
-        if (edgeSet == null || edgeSet.isEmpty()) {
-            return null;
-        } else {
-            return edgeSet.iterator().next().source();
-        }
+        return edgeSet.iterator().next().source();
     }
 
     private static void addRelated(Set<Result> results, HostNode one,
