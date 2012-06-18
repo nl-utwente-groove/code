@@ -36,27 +36,7 @@
                 <string>357 159 18 18</string>
             </attr>
         </node>
-        <edge to="n5" from="n5">
-            <attr name="label">
-                <string>2</string>
-            </attr>
-        </edge>
-        <edge to="n4" from="n1">
-            <attr name="label">
-                <string>val</string>
-            </attr>
-        </edge>
-        <edge to="n6" from="n6">
-            <attr name="label">
-                <string>3</string>
-            </attr>
-        </edge>
-        <edge to="n6" from="n3">
-            <attr name="label">
-                <string>val</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n1">
+        <edge to="n3" from="n2">
             <attr name="label">
                 <string>next</string>
             </attr>
@@ -66,14 +46,24 @@
                 <string>val</string>
             </attr>
         </edge>
+        <edge to="n4" from="n1">
+            <attr name="label">
+                <string>val</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n1">
+            <attr name="label">
+                <string>next</string>
+            </attr>
+        </edge>
+        <edge to="n5" from="n5">
+            <attr name="label">
+                <string>2</string>
+            </attr>
+        </edge>
         <edge to="n0" from="n0">
             <attr name="label">
                 <string>List</string>
-            </attr>
-        </edge>
-        <edge to="n4" from="n4">
-            <attr name="label">
-                <string>1</string>
             </attr>
         </edge>
         <edge to="n1" from="n0">
@@ -81,9 +71,19 @@
                 <string>next</string>
             </attr>
         </edge>
-        <edge to="n3" from="n2">
+        <edge to="n4" from="n4">
             <attr name="label">
-                <string>next</string>
+                <string>1</string>
+            </attr>
+        </edge>
+        <edge to="n6" from="n3">
+            <attr name="label">
+                <string>val</string>
+            </attr>
+        </edge>
+        <edge to="n6" from="n6">
+            <attr name="label">
+                <string>3</string>
             </attr>
         </edge>
     </graph>

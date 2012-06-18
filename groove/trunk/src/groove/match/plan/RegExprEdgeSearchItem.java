@@ -105,14 +105,15 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             this.targetIx = strategy.getNodeIx(this.target);
         }
         this.varIxMap = new HashMap<LabelVar,Integer>();
-        this.freshVars = new HashSet<LabelVar>();
+        //        this.freshVars = new HashSet<LabelVar>();
         this.prematchedVars = new HashSet<LabelVar>();
         for (LabelVar var : this.allVars) {
-            if (strategy.isVarFound(var)) {
-                this.prematchedVars.add(var);
-            } else {
-                this.freshVars.add(var);
-            }
+            assert strategy.isVarFound(var);
+            //            if (strategy.isVarFound(var)) {
+            this.prematchedVars.add(var);
+            //            } else {
+            //                this.freshVars.add(var);
+            //            }
             this.varIxMap.put(var, strategy.getVarIx(var));
         }
     }
@@ -122,7 +123,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             this.sourceFound || search.getNodeSeed(this.sourceIx) != null;
         boolean targetSingular =
             this.targetFound || search.getNodeSeed(this.targetIx) != null;
-        return sourceSingular && targetSingular && this.freshVars.isEmpty();
+        return sourceSingular && targetSingular;
     }
 
     SingularRecord createSingularRecord(Search search) {
@@ -181,8 +182,8 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     final Set<LabelVar> neededVars;
     /** The set of pre-matched variables. */
     Set<LabelVar> prematchedVars;
-    /** The set of bound variables that are not yet pre-matched. */
-    Set<LabelVar> freshVars;
+    //    /** The set of bound variables that are not yet pre-matched. */
+    //    Set<LabelVar> freshVars;
     /** Mapping from variables to the corresponding indices in the result. */
     Map<LabelVar,Integer> varIxMap;
 
@@ -332,24 +333,30 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                         }
                     }
                 }
-                if (result && !RegExprEdgeSearchItem.this.freshVars.isEmpty()) {
-                    Map<LabelVar,TypeElement> valuation = image.getValuation();
-                    for (LabelVar var : RegExprEdgeSearchItem.this.freshVars) {
-                        this.search.putVar(
-                            RegExprEdgeSearchItem.this.varIxMap.get(var),
-                            valuation.get(var));
-                    }
-                }
+                //                if (result && !RegExprEdgeSearchItem.this.freshVars.isEmpty()) {
+                //                    Map<LabelVar,TypeElement> valuation = image.getValuation();
+                //                    for (LabelVar var : RegExprEdgeSearchItem.this.freshVars) {
+                //                        this.search.putVar(
+                //                            RegExprEdgeSearchItem.this.varIxMap.get(var),
+                //                            valuation.get(var));
+                //                    }
+                //                }
             }
             return result;
         }
 
         @Override
         void erase() {
-            for (LabelVar var : RegExprEdgeSearchItem.this.freshVars) {
-                this.search.putVar(
-                    RegExprEdgeSearchItem.this.varIxMap.get(var), null);
+            if (this.sourceFind == null) {
+                this.search.putNode(this.sourceIx, null);
             }
+            if (this.targetFind == null) {
+                this.search.putNode(this.targetIx, null);
+            }
+            //            for (LabelVar var : RegExprEdgeSearchItem.this.freshVars) {
+            //                this.search.putVar(
+            //                    RegExprEdgeSearchItem.this.varIxMap.get(var), null);
+            //            }
         }
 
         /** Rolls back the image set for the source. */

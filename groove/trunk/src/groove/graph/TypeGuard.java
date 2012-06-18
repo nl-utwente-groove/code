@@ -35,15 +35,13 @@ import java.util.Set;
 public class TypeGuard extends Property<TypeElement> {
     /**
      * Constructs a new constraint.
-     * @param var the label variable associated with the constraint
-     * @param kind The kind of labels tested for; only labels of this type can ever satisfy the constraint
+     * @param var the label variable associated with the constraint; non-{@code null}
      */
-    public TypeGuard(LabelVar var, EdgeRole kind) {
+    public TypeGuard(LabelVar var) {
         this.var = var;
-        this.kind = kind;
     }
 
-    /** Returns the optional type variable associated with this guard. */
+    /** Returns the (non-{@code null}, possibly unnamed) type variable associated with this guard. */
     public LabelVar getVar() {
         return this.var;
     }
@@ -55,7 +53,7 @@ public class TypeGuard extends Property<TypeElement> {
 
     /** Returns the kind of labels accepted by this constraint. */
     public EdgeRole getKind() {
-        return this.kind;
+        return getVar().getKind();
     }
 
     /** 
@@ -67,7 +65,7 @@ public class TypeGuard extends Property<TypeElement> {
         this.textList = textList;
         this.labelSet = new HashSet<TypeLabel>();
         for (String text : textList) {
-            this.labelSet.add(TypeLabel.createLabel(this.kind, text));
+            this.labelSet.add(TypeLabel.createLabel(getKind(), text));
         }
         this.negated = negated;
     }
@@ -87,12 +85,12 @@ public class TypeGuard extends Property<TypeElement> {
         if (this.labelSet != null && this.labelSet.contains(oldLabel)) {
             int index = this.textList.indexOf(oldLabel.text());
             List<String> newTextList = new ArrayList<String>(this.textList);
-            if (newLabel.getRole() == this.kind) {
+            if (newLabel.getRole() == getKind()) {
                 newTextList.set(index, newLabel.text());
             } else {
                 newTextList.remove(index);
             }
-            result = new TypeGuard(this.var, this.kind);
+            result = new TypeGuard(this.var);
             result.setLabels(newTextList, this.negated);
         }
         return result;
@@ -116,7 +114,7 @@ public class TypeGuard extends Property<TypeElement> {
 
     @Override
     public boolean isSatisfied(TypeElement type) {
-        if (this.kind != ((type instanceof TypeNode) ? EdgeRole.NODE_TYPE
+        if (getKind() != ((type instanceof TypeNode) ? EdgeRole.NODE_TYPE
                 : ((TypeEdge) type).getRole())) {
             return false;
         }
@@ -154,7 +152,6 @@ public class TypeGuard extends Property<TypeElement> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + this.kind.hashCode();
         result =
             prime * result
                 + ((this.labelSet == null) ? 0 : this.labelSet.hashCode());
@@ -162,8 +159,7 @@ public class TypeGuard extends Property<TypeElement> {
         result =
             prime * result
                 + ((this.textList == null) ? 0 : this.textList.hashCode());
-        result =
-            prime * result + ((this.var == null) ? 0 : this.var.hashCode());
+        result = prime * result + this.var.hashCode();
         return result;
     }
 
@@ -176,9 +172,6 @@ public class TypeGuard extends Property<TypeElement> {
             return false;
         }
         TypeGuard other = (TypeGuard) obj;
-        if (this.kind != other.kind) {
-            return false;
-        }
         if (this.labelSet == null) {
             if (other.labelSet != null) {
                 return false;
@@ -196,11 +189,7 @@ public class TypeGuard extends Property<TypeElement> {
         } else if (!this.textList.equals(other.textList)) {
             return false;
         }
-        if (this.var == null) {
-            if (other.var != null) {
-                return false;
-            }
-        } else if (!this.var.equals(other.var)) {
+        if (!this.var.equals(other.var)) {
             return false;
         }
         return true;
@@ -208,8 +197,6 @@ public class TypeGuard extends Property<TypeElement> {
 
     /** The optional label variable associated with the constraint. */
     private final LabelVar var;
-    /** The type of label we are testing for. See {@link Label#getRole()} */
-    private final EdgeRole kind;
     /** The list of strings indicating the labels to be matched. */
     private List<String> textList;
     /** The set of labels to be tested for inclusion. */

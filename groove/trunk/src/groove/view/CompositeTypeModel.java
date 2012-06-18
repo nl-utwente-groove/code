@@ -3,6 +3,7 @@ package groove.view;
 import static groove.trans.ResourceKind.HOST;
 import static groove.trans.ResourceKind.RULE;
 import static groove.trans.ResourceKind.TYPE;
+import groove.graph.ImplicitTypeGraph;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
@@ -114,7 +115,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
      */
     private TypeGraph getImplicitTypeGraph() {
         if (this.implicitTypeGraph == null) {
-            this.implicitTypeGraph = TypeGraph.createImplicitType(getLabels());
+            this.implicitTypeGraph = ImplicitTypeGraph.newInstance(getLabels());
         }
         return this.implicitTypeGraph;
     }
