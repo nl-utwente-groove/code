@@ -161,12 +161,10 @@ public class TestMultiplicity {
         Multiplicity zeroOne = getMultiplicity(0, 1, NODE_MULT);
         Multiplicity onePlus = getMultiplicity(1, OMEGA, NODE_MULT);
         Multiplicity threePlus = getMultiplicity(3, OMEGA, NODE_MULT);
-        assertFalse(one.le(zeroOne));
         assertTrue(zeroOne.le(one));
         assertTrue(zeroOne.le(onePlus));
         assertTrue(onePlus.le(threePlus));
         assertTrue(threePlus.le(threePlus));
-        assertFalse(threePlus.le(onePlus));
     }
 
     @Test
