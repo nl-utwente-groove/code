@@ -114,7 +114,7 @@ public class LabelVar implements AnchorKey, Comparable<LabelVar> {
             return false;
         }
         LabelVar other = (LabelVar) obj;
-        if (this.kind != other.kind) {
+        if (getKind() != other.getKind()) {
             return false;
         }
         return getKey().equals(other.getKey());
@@ -122,17 +122,15 @@ public class LabelVar implements AnchorKey, Comparable<LabelVar> {
 
     @Override
     public int compareTo(LabelVar o) {
-        if (hasName()) {
-            if (o.hasName()) {
-                return getName().compareTo(o.getName());
-            } else {
-                return +1;
-            }
-        } else if (o.hasName()) {
-            return -1;
-        } else {
-            return this.nr - o.nr;
+        int result = getName().compareTo(o.getName());
+        if (result != 0) {
+            return result;
         }
+        result = getKind().compareTo(o.getKind());
+        if (result != 0) {
+            return result;
+        }
+        return this.nr - o.nr;
     }
 
     /** The number of the label variable; 0 unless the name is empty. */

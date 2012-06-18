@@ -118,15 +118,11 @@ public class DFATest {
         assertEmpty("?x[^b]", val, true);
         assertEquivalent("?", "a|b|c", true);
         assertEquivalent("flag:?", "flag:c|flag:d", true);
-        assertEquivalent("type:?",
-            "type:A|type:B|type:C|type:bool|type:int|type:string|type:real",
-            true);
+        assertEquivalent("type:?", "type:A|type:B|type:C", true);
         this.useType = false;
         assertEmpty("?", true);
         assertEmpty("flag:?", true);
-        assertEmpty("type:?", false);
-        assertEquivalent("type:?", "type:bool|type:int|type:string|type:real",
-            true);
+        assertEmpty("type:?", true);
         // tests for |
         assertEquivalent("a", "a|a", true);
         assertEquivalent("(a.b)|c", "c|(a.b)", true);
@@ -166,8 +162,8 @@ public class DFATest {
     public void testConstruction() {
         SimpleNFA a = createNFA("a.-a");
         DFA forward = a.getDFA(FORWARD, null);
-        forward.isEquivalent(forward.toMinimised());
-        forward.toString();
+        assertTrue(forward.isEquivalent(forward.toMinimised()));
+        assertTrue(forward.toString() != null);
         DFAState state = forward.getStartState();
         assertTrue(state.isInitial());
         assertFalse(state.isFinal());

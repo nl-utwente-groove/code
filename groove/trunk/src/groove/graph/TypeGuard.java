@@ -85,7 +85,8 @@ public class TypeGuard extends Property<TypeElement> {
         if (this.labelSet != null && this.labelSet.contains(oldLabel)) {
             int index = this.textList.indexOf(oldLabel.text());
             List<String> newTextList = new ArrayList<String>(this.textList);
-            if (newLabel.getRole() == getKind()) {
+            if (newLabel.getRole() == getKind()
+                && !this.labelSet.contains(newLabel)) {
                 newTextList.set(index, newLabel.text());
             } else {
                 newTextList.remove(index);
