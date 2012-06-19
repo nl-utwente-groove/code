@@ -77,4 +77,9 @@ public final class TypeEdge extends AbstractPatternEdge<TypeNode> {
     public SimpleMorphism getMorphism() {
         return this.morph;
     }
+
+    @Override
+    public String getPrintableLabel() {
+        return getIdStr();
+    }
 }

@@ -75,14 +75,18 @@ public final class RuleEdge extends AbstractPatternEdge<RuleNode> {
     @Override
     public String toString() {
         return RuleNode.PREFIX + this.source.getNumber() + "--"
-            + RuleEdge.PREFIX + getNumber() + ":" + TypeEdge.PREFIX
-            + this.type.getNumber() + "-->" + RuleNode.PREFIX
+            + getPrintableLabel() + "-->" + RuleNode.PREFIX
             + this.target.getNumber();
     }
 
     @Override
     public SimpleMorphism getMorphism() {
         return getType().getMorphism();
+    }
+
+    @Override
+    public String getPrintableLabel() {
+        return PREFIX + getNumber() + ":" + this.type.getIdStr();
     }
 
     // ------------------------------------------------------------------------

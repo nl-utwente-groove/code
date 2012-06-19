@@ -30,14 +30,14 @@ import java.util.List;
  * 
  * @author Eduardo Zambon
  */
-public final class PatternRuleApplication {
+public final class PatternGraphRuleApplication {
 
     private final PatternGraph pGraph;
     private final PatternRule pRule;
     private final Match match;
 
     /** Default constructor. */
-    public PatternRuleApplication(PatternGraph pGraph, Match match) {
+    public PatternGraphRuleApplication(PatternGraph pGraph, Match match) {
         this.pGraph = pGraph;
         this.match = match;
         this.pRule = match.getRule();

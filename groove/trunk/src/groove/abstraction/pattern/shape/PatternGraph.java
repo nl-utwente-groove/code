@@ -53,7 +53,7 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
     }
 
     /** Copying constructor. */
-    private PatternGraph(PatternGraph pGraph) {
+    protected PatternGraph(PatternGraph pGraph) {
         this(pGraph.getName(), pGraph.getTypeGraph());
         this.depth = pGraph.depth;
         for (PatternNode pNode : pGraph.nodeSet()) {

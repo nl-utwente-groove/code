@@ -72,14 +72,18 @@ public final class PatternEdge extends AbstractPatternEdge<PatternNode> {
     @Override
     public String toString() {
         return PatternNode.PREFIX + this.source.getNumber() + "--"
-            + PatternEdge.PREFIX + getNumber() + ":" + TypeEdge.PREFIX
-            + this.type.getNumber() + "-->" + PatternNode.PREFIX
+            + getPrintableLabel() + "-->" + PatternNode.PREFIX
             + this.target.getNumber();
     }
 
     @Override
     public SimpleMorphism getMorphism() {
         return getType().getMorphism();
+    }
+
+    @Override
+    public String getPrintableLabel() {
+        return PREFIX + getNumber() + ":" + this.type.getIdStr();
     }
 
     // ------------------------------------------------------------------------
