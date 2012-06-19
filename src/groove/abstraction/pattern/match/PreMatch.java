@@ -22,6 +22,7 @@ import groove.abstraction.pattern.shape.PatternEdge;
 import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.trans.PatternRule;
+import groove.abstraction.pattern.trans.PatternRuleGraph;
 import groove.abstraction.pattern.trans.RuleEdge;
 import groove.abstraction.pattern.trans.RuleNode;
 
@@ -50,6 +51,7 @@ public final class PreMatch extends Match {
     @Override
     public boolean isValid() {
         PatternShape pShape = getGraph();
+        PatternRuleGraph lhs = getRule().lhs();
 
         // Check node multiplicities.
         for (Entry<PatternNode,Set<RuleNode>> entry : getInverseNodeMap().entrySet()) {
@@ -64,24 +66,26 @@ public final class PreMatch extends Match {
 
         // Check edge multiplicities.
         for (Entry<PatternEdge,Set<RuleEdge>> entry : getInverseEdgeMap().entrySet()) {
-            PatternEdge pEdge = entry.getKey();
             // Edge multiplicity per source node.
-            Multiplicity eMult = pShape.getMult(pEdge);
-            // Number of copies of the source node.
-            Multiplicity srcMult = pShape.getMult(pEdge.source());
-            // Total number of edges we can have.
-            Multiplicity totalEMult = srcMult.times(eMult);
+            Multiplicity eMult = pShape.getMult(entry.getKey());
             // Multiplicity for rule edges.
-            int rEdgeCount = entry.getValue().size();
-            Multiplicity rMult =
-                Multiplicity.approx(rEdgeCount, rEdgeCount, MultKind.EQSYS_MULT);
-            if (!rMult.le(totalEMult)) {
-                // Violation of edge multiplicity.
-                return false;
+            for (RuleNode rNode : lhs.nodeSet()) {
+                int rEdgeCount = 0;
+                for (RuleEdge rEdge : entry.getValue()) {
+                    if (lhs.outEdgeSet(rNode).contains(rEdge)) {
+                        rEdgeCount++;
+                    }
+                }
+                Multiplicity rMult =
+                    Multiplicity.approx(rEdgeCount, rEdgeCount,
+                        MultKind.EDGE_MULT);
+                if (!rMult.le(eMult)) {
+                    // Violation of edge multiplicity.
+                    return false;
+                }
             }
         }
 
         return true;
     }
-
 }

@@ -22,7 +22,7 @@ import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
 import groove.abstraction.pattern.trans.PatternRule;
-import groove.abstraction.pattern.trans.PatternRuleApplication;
+import groove.abstraction.pattern.trans.PatternGraphRuleApplication;
 import groove.abstraction.pattern.trans.RuleFactory;
 import groove.abstraction.pattern.trans.RuleNode;
 import groove.graph.Edge;
@@ -376,8 +376,8 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
                     // because the dependency on patterns grows towards the
                     // depth of the type graph. So no patterns of the same
                     // layer can depend on each other.
-                    PatternRuleApplication app =
-                        new PatternRuleApplication(pGraph, match);
+                    PatternGraphRuleApplication app =
+                        new PatternGraphRuleApplication(pGraph, match);
                     app.transform(true);
                 }
             }

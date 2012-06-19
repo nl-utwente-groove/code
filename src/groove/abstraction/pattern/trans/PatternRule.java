@@ -56,6 +56,7 @@ public final class PatternRule {
     private int maxEdgeNr;
 
     private RuleNode[] eraserNodes;
+    private RuleEdge[] eraserEdges;
     private RuleNode[] creatorNodes;
     private RuleEdge[] creatorEdges;
 
@@ -211,8 +212,13 @@ public final class PatternRule {
         return this.eraserNodes;
     }
 
-    // EZ says: there is no method to get eraser edges. Edges are only removed
-    // because they are incident to nodes that are being removed.
+    /** Basic getter method. */
+    public RuleEdge[] getEraserEdges() {
+        if (this.eraserEdges == null) {
+            this.eraserEdges = computeEraserEdges();
+        }
+        return this.eraserEdges;
+    }
 
     /** Basic getter method. */
     public RuleNode[] getCreatorNodes() {
@@ -235,6 +241,13 @@ public final class PatternRule {
         result.addAll(lhs().nodeSet());
         result.removeAll(rhs().nodeSet());
         return result.toArray(new RuleNode[result.size()]);
+    }
+
+    private RuleEdge[] computeEraserEdges() {
+        Set<RuleEdge> result = new MyHashSet<RuleEdge>();
+        result.addAll(lhs().edgeSet());
+        result.removeAll(rhs().edgeSet());
+        return result.toArray(new RuleEdge[result.size()]);
     }
 
     private RuleNode[] computeCreatorNodes() {

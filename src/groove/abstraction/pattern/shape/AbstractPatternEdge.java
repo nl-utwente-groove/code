@@ -100,6 +100,9 @@ public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
     /** Returns the prefix for the {@link #toString()} methods. */
     abstract protected String getToStringPrefix();
 
+    /** Returns a string that can be used when displaying a jGraph. */
+    abstract public String getPrintableLabel();
+
     /** Return the simple graph morphism associated with this edge. */
     abstract public SimpleMorphism getMorphism();
 

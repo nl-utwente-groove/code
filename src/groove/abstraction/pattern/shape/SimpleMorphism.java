@@ -20,6 +20,7 @@ import groove.abstraction.MyHashMap;
 import groove.trans.HostNode;
 import groove.util.Fixable;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -117,6 +118,12 @@ public class SimpleMorphism implements Fixable {
 
     /** Returns true if the given node is the co-domain of the morphism. */
     public boolean isCod(HostNode node) {
+        this.nodeMap.values();
         return this.nodeMap.values().contains(node);
+    }
+
+    /** Returns the Co-domain of this morphism. */
+    public Collection<HostNode> getCod() {
+        return this.nodeMap.values();
     }
 }

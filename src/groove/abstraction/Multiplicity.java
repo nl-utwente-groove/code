@@ -316,6 +316,12 @@ public final class Multiplicity {
         return approx(mult.i * factor, mult.j * factor, mult.kind);
     }
 
+    /** Returns the maximum of the two given multiplicities. */
+    public static Multiplicity max(Multiplicity a, Multiplicity b) {
+        assert a.kind == b.kind;
+        return a.le(b) ? b : a;
+    }
+
     // ------------------------------------------------------------------------
     // Object Fields
     // ------------------------------------------------------------------------
@@ -475,7 +481,6 @@ public final class Multiplicity {
 
     /** Converts the multiplicity to a node kind. */
     public Multiplicity toNodeKind() {
-        assert this.isEdgeKind();
         return approx(this.i, this.j, MultKind.NODE_MULT);
     }
 

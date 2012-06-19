@@ -33,7 +33,7 @@ import java.util.Map;
  * 
  * @author Eduardo Zambon
  */
-public class PatternShape extends PatternGraph {
+public final class PatternShape extends PatternGraph {
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -59,15 +59,20 @@ public class PatternShape extends PatternGraph {
      * Used only when computing the start state of a PSTS.
      */
     public PatternShape(PatternGraph pGraph) {
-        super(pGraph.getName(), pGraph.getTypeGraph());
-        this.nodeMultMap = new MyHashMap<PatternNode,Multiplicity>();
-        this.edgeMultMap = new MyHashMap<PatternEdge,Multiplicity>();
+        this(pGraph.getName(), pGraph.getTypeGraph());
         for (PatternNode pNode : pGraph.nodeSet()) {
             addNode(pNode);
         }
         for (PatternEdge pEdge : pGraph.edgeSet()) {
             addEdgeWithoutCheck(pEdge);
         }
+    }
+
+    /** Copying constructor. */
+    private PatternShape(PatternShape pShape) {
+        this((PatternGraph) pShape);
+        this.nodeMultMap.putAll(pShape.nodeMultMap);
+        this.edgeMultMap.putAll(pShape.edgeMultMap);
     }
 
     // ------------------------------------------------------------------------
@@ -138,6 +143,17 @@ public class PatternShape extends PatternGraph {
             this.edgeMultMap.remove(edge);
         }
         return result;
+    }
+
+    @Override
+    protected void fireRemoveEdge(PatternEdge edge) {
+        super.fireRemoveEdge(edge);
+        this.edgeMultMap.remove(edge);
+    }
+
+    @Override
+    public PatternShape clone() {
+        return new PatternShape(this);
     }
 
     // ------------------------------------------------------------------------
