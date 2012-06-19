@@ -17,6 +17,9 @@
 package groove.abstraction.pattern.gui.jgraph;
 
 import groove.abstraction.pattern.shape.AbstractPatternNode;
+import groove.abstraction.pattern.shape.PatternNode;
+import groove.abstraction.pattern.shape.PatternShape;
+import groove.graph.Graph;
 import groove.graph.Node;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
@@ -63,6 +66,17 @@ public class PatternJVertex extends GraphJVertex {
     @Override
     public List<StringBuilder> getLines() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public String getAdornment() {
+        String result = getNode().toString();
+        Graph<?,?> graph = getJModel().getGraph();
+        if (graph instanceof PatternShape) {
+            PatternShape pShape = (PatternShape) graph;
+            result += "(" + pShape.getMult((PatternNode) getNode()) + ")";
+        }
+        return result;
     }
 
     /** Returns a prototype {@link PatternJVertex} for a given {@link PatternJGraph}. */
