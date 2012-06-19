@@ -142,11 +142,15 @@ public final class PatternEquivRel {
     }
 
     /** Equivalence class of pattern nodes. */
-    public static class NodeEquivClass extends MyHashSet<PatternNode> {
+    public class NodeEquivClass extends MyHashSet<PatternNode> {
 
         /** Returns the bounded multiplicity of this class. */
         public Multiplicity getMult() {
-            return Multiplicity.getNodeSetMult(this);
+            Multiplicity result = Multiplicity.ZERO_NODE_MULT;
+            for (PatternNode pNode : this) {
+                result = result.add(PatternEquivRel.this.pShape.getMult(pNode));
+            }
+            return result;
         }
 
     }
