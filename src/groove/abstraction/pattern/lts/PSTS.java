@@ -21,6 +21,7 @@ import groove.abstraction.pattern.explore.util.PatternShapeMatchApplier;
 import groove.abstraction.pattern.explore.util.PatternShapeMatchSetCollector;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternShape;
+import groove.abstraction.pattern.shape.iso.PatternShapeIsoChecker;
 import groove.abstraction.pattern.trans.PatternGraphGrammar;
 
 /**
@@ -54,6 +55,26 @@ public final class PSTS extends PGTS {
     protected PatternGraph createStartGraph(PatternGraph startGraph) {
         PatternGraph result = new PatternShape(startGraph);
         return result;
+    }
+
+    /** Callback factory method for a state set. */
+    /*@Override
+    protected StateSet createStateSet() {
+        return new ShapeStateSet();
+    }*/
+
+    // ------------------------------------------------------------------------
+    // Inner classes
+    // ------------------------------------------------------------------------
+
+    /** Class to store the states of the PSTS. */
+    private static final class ShapeStateSet extends PGTS.StateSet {
+
+        /** Default constructor, delegates to super class. */
+        ShapeStateSet() {
+            super(PatternShapeIsoChecker.getInstance());
+        }
+
     }
 
 }

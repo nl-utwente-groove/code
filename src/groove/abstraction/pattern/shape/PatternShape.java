@@ -26,6 +26,7 @@ import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
 import groove.graph.GraphRole;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -159,6 +160,16 @@ public final class PatternShape extends PatternGraph {
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
+
+    /** Returns an unmodifiable view of the node multiplicity map. */
+    public Map<PatternNode,Multiplicity> getNodeMultMap() {
+        return Collections.unmodifiableMap(this.nodeMultMap);
+    }
+
+    /** Returns an unmodifiable view of the edge multiplicity map. */
+    public Map<PatternEdge,Multiplicity> getEdgeMultMap() {
+        return Collections.unmodifiableMap(this.edgeMultMap);
+    }
 
     /** Returns the multiplicity of the given node. */
     public Multiplicity getMult(PatternNode node) {
