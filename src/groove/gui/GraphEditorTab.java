@@ -337,7 +337,10 @@ final public class GraphEditorTab extends ResourceTab implements
     @Override
     public void dispose() {
         super.dispose();
+        // unregister listeners
         getSnapToGridAction().removeSnapListener(this);
+        getJGraph().removeFromListeners();
+        getEditArea().dispose();
     }
 
     /** Initialises the graph selection listener and attributed graph listener. */

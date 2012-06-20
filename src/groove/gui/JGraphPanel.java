@@ -307,8 +307,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         }
         optionItem.addItemListener(listener);
         optionItem.addPropertyChangeListener(listener);
-        this.listeners.add(new Pair<JMenuItem,ItemListener>(optionItem,
-            listener));
+        this.listeners.add(Pair.newPair(optionItem, listener));
     }
 
     /**
@@ -316,8 +315,9 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      * {@link #addOptionListener(String, RefreshListener)}.
      */
     private void removeOptionListeners() {
-        for (Pair<JMenuItem,ItemListener> record : this.listeners) {
+        for (Pair<JMenuItem,RefreshListener> record : this.listeners) {
             record.one().removeItemListener(record.two());
+            record.one().removePropertyChangeListener(record.two());
         }
         this.listeners.clear();
     }
@@ -407,8 +407,8 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      */
     private final JLabel statusBar;
 
-    private final List<Pair<JMenuItem,ItemListener>> listeners =
-        new LinkedList<Pair<JMenuItem,ItemListener>>();
+    private final List<Pair<JMenuItem,RefreshListener>> listeners =
+        new LinkedList<Pair<JMenuItem,RefreshListener>>();
     /**
      * The scroll pane in which the JGraph is displayed.
      */

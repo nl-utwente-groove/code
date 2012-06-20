@@ -738,6 +738,14 @@ public class GraphJGraph extends org.jgraph.JGraph {
         removePropertyChangeListener(JGRAPH_MODE_PROPERTY, listener);
     }
 
+    /** Removes this {@link JGraph} from all its listeners,
+     * so as to avoid memory leaks. 
+     */
+    public void removeFromListeners() {
+        getActions().removeRefreshable(getExportAction());
+        this.exportAction = null;
+    }
+
     /**
      * Sets the JGraph mode to a new value.
      * Fires a property change event for {@link #JGRAPH_MODE_PROPERTY} if the
