@@ -16,7 +16,6 @@
  */
 package groove.abstraction.pattern.explore.strategy;
 
-import groove.abstraction.pattern.explore.util.PatternGraphMatchApplier;
 import groove.abstraction.pattern.explore.util.PatternGraphMatchSetCollector;
 import groove.abstraction.pattern.explore.util.PatternRuleEventApplier;
 import groove.abstraction.pattern.lts.PGTS;
@@ -35,8 +34,6 @@ public abstract class AbstractPatternStrategy implements PatternStrategy {
     private PGTS pgts;
     /** The state that will be explored by the next call of {@link #next()}. */
     private PatternState atState;
-    /** The state that will be explored by the next call of {@link #next()}. */
-    private PatternState lastState;
 
     @Override
     public final void prepare(PGTS pgts) {
@@ -75,11 +72,6 @@ public abstract class AbstractPatternStrategy implements PatternStrategy {
         return this.atState;
     }
 
-    @Override
-    public PatternState getLastState() {
-        return this.lastState;
-    }
-
     /**
      * Sets atState to the next state to be explored, as
      * returned by {@link #getNextState()}, or <code>null</code> if
@@ -90,8 +82,7 @@ public abstract class AbstractPatternStrategy implements PatternStrategy {
      * otherwise.
      * @see #getNextState()
      */
-    final protected boolean updateAtState() {
-        this.lastState = getState();
+    private boolean updateAtState() {
         this.atState = getNextState();
         return this.atState != null;
     }
@@ -106,34 +97,20 @@ public abstract class AbstractPatternStrategy implements PatternStrategy {
      */
     protected abstract PatternState getNextState();
 
-    /** 
-     * Closes a given state. 
-     * @param complete  indicates whether all outgoing transitions of the state have
-     * been explored.
-     */
-    protected void setClosed(PatternState state, boolean complete) {
-        state.setClosed(complete);
-    }
-
     /**
      * Returns a fresh match collector for this strategy, based on the current
      * state and related information.
      */
-    protected PatternGraphMatchSetCollector createMatchCollector() {
-        return new PatternGraphMatchSetCollector(getState());
+    private PatternGraphMatchSetCollector createMatchCollector() {
+        return getPGTS().createMatchCollector(getState());
     }
 
     /** Returns the match applier of this strategy. */
-    protected final PatternRuleEventApplier getMatchApplier() {
+    private PatternRuleEventApplier getMatchApplier() {
         if (this.applier == null) {
-            this.applier = createMatchApplier();
+            this.applier = getPGTS().createMatchApplier();
         }
         return this.applier;
-    }
-
-    /** Callback factory method for the match applier. */
-    protected PatternRuleEventApplier createMatchApplier() {
-        return new PatternGraphMatchApplier(this.pgts);
     }
 
 }

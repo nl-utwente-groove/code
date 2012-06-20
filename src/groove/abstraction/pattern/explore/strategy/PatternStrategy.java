@@ -47,7 +47,4 @@ public interface PatternStrategy {
     /** Returns the next state to be explored by the strategy. */
     public PatternState getState();
 
-    /** Returns the last state to be explored by the strategy. */
-    public PatternState getLastState();
-
 }

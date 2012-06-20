@@ -32,6 +32,7 @@ public class PatternGraphState extends AbstractPatternState {
             int number, PGTS pgts) {
         super(number);
         this.graph = graph;
+        this.graph.setName(toString());
         this.graph.setFixed();
         this.pgts = pgts;
         setCtrlState(ctrlState);
