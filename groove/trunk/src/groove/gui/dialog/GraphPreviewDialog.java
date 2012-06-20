@@ -12,9 +12,11 @@ import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJGraph.AttributeFactory;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.LTSJGraph;
+import groove.trans.HostGraph;
 import groove.trans.ResourceKind;
 import groove.verify.BuchiGraph;
 import groove.verify.BuchiLocation;
+import groove.view.aspect.AspectGraph;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -67,6 +69,7 @@ public class GraphPreviewDialog extends JDialog {
     @SuppressWarnings({"rawtypes", "unchecked"})
     protected GraphJGraph createJGraph() {
         GraphJGraph jGraph;
+        Graph<?,?> shownGraph = this.graph;
         switch (this.graph.getRole()) {
         case BUCHI:
             jGraph =
@@ -93,12 +96,20 @@ public class GraphPreviewDialog extends JDialog {
         case CTRL:
             jGraph = new CtrlJGraph(this.simulator);
             break;
+        case HOST:
         case TYPE:
         case RULE:
-        case HOST:
-            DisplayKind kind =
-                DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
-            jGraph = new AspectJGraph(this.simulator, kind, false);
+            if (this.graph instanceof HostGraph && this.simulator != null) {
+                shownGraph =
+                    ((HostGraph) this.graph).toAspectMap().getAspectGraph();
+            }
+            if (shownGraph instanceof AspectGraph) {
+                DisplayKind kind =
+                    DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
+                jGraph = new AspectJGraph(this.simulator, kind, false);
+            } else {
+                jGraph = new GraphJGraph(this.simulator, false);
+            }
             break;
         case LTS:
             jGraph = new LTSJGraph(this.simulator);
