@@ -112,6 +112,9 @@ public abstract class AbstractPatternState implements PatternState {
     @Override
     public final boolean setClosed(boolean finished) {
         this.closed = finished;
+        if (finished) {
+            getPGTS().notifyClosure(this);
+        }
         return finished;
     }
 

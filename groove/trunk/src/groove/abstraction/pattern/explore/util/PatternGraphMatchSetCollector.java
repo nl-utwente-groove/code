@@ -36,7 +36,7 @@ import java.util.List;
 public class PatternGraphMatchSetCollector {
 
     /** The host graph we are working on. */
-    protected final PatternState state;
+    private final PatternState state;
     /** The control state of the graph state, if any. */
     private final CtrlState ctrlState;
 
@@ -66,7 +66,7 @@ public class PatternGraphMatchSetCollector {
     /**
      * Returns the first rule of the state's control schedule.
      */
-    protected CtrlTransition firstCall() {
+    private CtrlTransition firstCall() {
         CtrlTransition result;
         CtrlSchedule schedule = this.ctrlState.getSchedule();
         this.state.setSchedule(schedule);
@@ -81,7 +81,7 @@ public class PatternGraphMatchSetCollector {
     /**
      * Increments the rule iterator, and returns the next rule.
      */
-    protected CtrlTransition nextCall(boolean matchFound) {
+    private CtrlTransition nextCall(boolean matchFound) {
         CtrlTransition result;
         CtrlSchedule schedule = this.state.getSchedule();
         if (schedule.isFinished()) {
@@ -100,7 +100,7 @@ public class PatternGraphMatchSetCollector {
     /**
      * Adds the matching events for a given rule into an existing set.
      */
-    protected boolean collectEvents(CtrlTransition ctrlTrans,
+    private boolean collectEvents(CtrlTransition ctrlTrans,
             final Collection<Match> result) {
         String ruleName = ctrlTrans.getRule().getLastName();
         PatternRule pRule = this.state.getPGTS().getGrammar().getRule(ruleName);

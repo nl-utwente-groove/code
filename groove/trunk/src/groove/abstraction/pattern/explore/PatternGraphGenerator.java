@@ -22,6 +22,9 @@ import groove.abstraction.pattern.explore.strategy.PatternStrategy;
 import groove.abstraction.pattern.explore.util.TransSystemChecker;
 import groove.abstraction.pattern.io.xml.TypeGraphJaxbGxlIO;
 import groove.abstraction.pattern.lts.PGTS;
+import groove.abstraction.pattern.lts.PGTSAdapter;
+import groove.abstraction.pattern.lts.PatternState;
+import groove.abstraction.pattern.lts.PatternTransition;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.abstraction.pattern.trans.PatternGraphGrammar;
 import groove.explore.Generator;
@@ -58,7 +61,7 @@ public class PatternGraphGenerator extends CommandLineTool {
      * profiling. The field is cleared in the constructor, so consecutive
      * Generator instances work as expected.
      */
-    private static PGTS pgts;
+    protected static PGTS pgts;
 
     // ------------------------------------------------------------------------
     // Object fields
@@ -204,6 +207,8 @@ public class PatternGraphGenerator extends CommandLineTool {
                 + (this.startGraphName == null ? "default"
                         : this.startGraphName));
             println("Type graph:\t" + this.typeGraphName);
+            print("\nProgress:\n\n");
+            getPGTS().addLTSListener(new GenerateProgressMonitor());
         }
 
         PatternStrategy strategy = new PatternDFSStrategy();
@@ -233,7 +238,7 @@ public class PatternGraphGenerator extends CommandLineTool {
      * lazily loaded in. The method throws an error and returns
      * <code>null</code> if the grammar could not be loaded.
      */
-    private PatternGraphGrammar getGrammar() {
+    protected PatternGraphGrammar getGrammar() {
         if (this.grammar == null) {
             loadGrammar(this.grammarLocation, this.startGraphName,
                 this.typeGraphName);
@@ -286,6 +291,65 @@ public class PatternGraphGenerator extends CommandLineTool {
      */
     public static void main(String[] args) {
         new PatternGraphGenerator(args).start();
+    }
+
+    // ------------------------------------------------------------------------
+    // Inner class
+    // ------------------------------------------------------------------------
+
+    /**
+     * Class that implements a visualisation of the progress of a GTS generation
+     * process. 
+     */
+    private class GenerateProgressMonitor extends PGTSAdapter {
+        /**
+         * Creates a monitor that reports on states and transitions generated.
+         */
+        public GenerateProgressMonitor() {
+            // empty
+        }
+
+        @Override
+        public void addUpdate(PGTS gts, PatternState state) {
+            if (gts.nodeCount() % UNIT == 0) {
+                System.out.print("s");
+                this.printed++;
+            }
+            endLine(gts);
+        }
+
+        @Override
+        public void addUpdate(PGTS gts, PatternTransition transition) {
+            if (gts.edgeCount() % UNIT == 0) {
+                System.out.print("t");
+                this.printed++;
+            }
+            endLine(gts);
+        }
+
+        private void endLine(PGTS gts) {
+            if (this.printed == WIDTH) {
+                int nodeCount = gts.nodeCount();
+                int edgeCount = gts.edgeCount();
+                int explorableCount = gts.openStateCount();
+                System.out.println(" " + nodeCount + "s (" + explorableCount
+                    + "x) " + edgeCount + "t ");
+                this.printed = 0;
+            }
+        }
+
+        /**
+         * The number of indications printed on the current line.
+         */
+        private int printed = 0;
+        /**
+         * The number of additions after which an indication is printed to screen.
+         */
+        static private final int UNIT = 100;
+        /**
+         * Number of indications on one line.
+         */
+        static private final int WIDTH = 100;
     }
 
 }

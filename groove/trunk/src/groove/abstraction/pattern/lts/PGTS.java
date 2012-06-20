@@ -17,6 +17,9 @@
 package groove.abstraction.pattern.lts;
 
 import groove.abstraction.MyHashSet;
+import groove.abstraction.pattern.explore.util.PatternGraphMatchApplier;
+import groove.abstraction.pattern.explore.util.PatternGraphMatchSetCollector;
+import groove.abstraction.pattern.explore.util.PatternRuleEventApplier;
 import groove.abstraction.pattern.shape.PatternEdge;
 import groove.abstraction.pattern.shape.PatternFactory;
 import groove.abstraction.pattern.shape.PatternGraph;
@@ -88,6 +91,8 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
     private TransitionSet transitionSet;
     /** The number of transitions in the GTS. */
     private int transitionCount = 0;
+    /** The number of closed states in the GTS. */
+    private int closedStateCount = 0;
 
     /**
      * Set of {@link PGTSListener} s to be identified of changes in this graph.
@@ -95,11 +100,9 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
      */
     private Set<PGTSListener> listeners = new MyHashSet<PGTSListener>();
 
-    /**
-     * Constructs a GTS from a (fixed) graph grammar.
-     */
+    /** Constructs a PGTS for the given grammar. */
     public PGTS(PatternGraphGrammar grammar) {
-        super(grammar.getName() + "-gts");
+        super(grammar.getName() + "-pgts");
         this.grammar = grammar;
     }
 
@@ -118,9 +121,7 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
      * The resulting graph will be used as start graph state.
      */
     protected PatternGraph createStartGraph(PatternGraph startGraph) {
-        PatternGraph result = startGraph.clone();
-        result.setFixed();
-        return result;
+        return startGraph.clone();
     }
 
     /** 
@@ -345,6 +346,27 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
                 transition.label().text(), nodeMap.get(transition.target()));
         }
         return result;
+    }
+
+    /** Callback factory method for the match applier. */
+    public PatternRuleEventApplier createMatchApplier() {
+        return new PatternGraphMatchApplier(this);
+    }
+
+    /** Returns a fresh match collector for the given state. */
+    public PatternGraphMatchSetCollector createMatchCollector(PatternState state) {
+        return new PatternGraphMatchSetCollector(state);
+    }
+
+    /** Returns the number of not fully explored states. */
+    public int openStateCount() {
+        return nodeCount() - this.closedStateCount;
+    }
+
+    /** Notify the GTS that the given state was closed. */
+    public void notifyClosure(PatternState state) {
+        assert state.isClosed();
+        this.closedStateCount++;
     }
 
     // ------------------------------------------------------------------------

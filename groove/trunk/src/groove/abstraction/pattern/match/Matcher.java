@@ -91,7 +91,15 @@ public final class Matcher {
         List<Match> result = new ArrayList<Match>();
         this.search.initialise(pGraph);
         while (this.search.find()) {
-            result.add(this.search.getMatch());
+            Match match = this.search.getMatch();
+            // EZ says: this deviates from the original matching implementation.
+            // It is possible for a match to be discarded after being found,
+            // for example, if we have a pre-match that violates multiplicities.
+            // In this case the call to getMatch fails and we have an null
+            // reference.
+            if (match != null) {
+                result.add(match);
+            }
         }
         return result;
     }
@@ -197,17 +205,14 @@ public final class Matcher {
             if (isInjective()) {
                 getUsedNodes().clear();
             }
-
-            // EZ asks: Should we create a new object every time or reset this
-            // structure? What to do with influence and influenceCount?
-            // AR answers: there's no need to clear the images. Fields influence
-            // and influenceCount are static.
-            /*for (int i = 0; i < this.nodeImages.length; i++) {
+            // EZ says: We are reusing the search object so we have to clear
+            // the images array to avoid garbage references.
+            for (int i = 0; i < this.nodeImages.length; i++) {
                 this.nodeImages[i] = null;
             }
             for (int i = 0; i < this.edgeImages.length; i++) {
                 this.edgeImages[i] = null;
-            }*/
+            }
             for (int i = 0; i < this.records.length && this.records[i] != null; i++) {
                 this.records[i].initialise(host);
             }
@@ -331,12 +336,12 @@ public final class Matcher {
             if (isInjective()) {
                 PatternNode oldImage = this.nodeImages[index];
                 if (oldImage != null) {
-                    boolean removed = this.usedNodes.remove(oldImage);
+                    boolean removed = getUsedNodes().remove(oldImage);
                     assert removed : String.format(
                         "Node image %s not in used nodes %s", oldImage,
                         this.usedNodes);
                 }
-                if (image != null && !this.usedNodes.add(image)) {
+                if (image != null && !getUsedNodes().add(image)) {
                     this.nodeImages[index] = null;
                     return false;
                 }
