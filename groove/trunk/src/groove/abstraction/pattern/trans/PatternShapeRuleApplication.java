@@ -25,6 +25,8 @@ import groove.abstraction.pattern.shape.PatternFactory;
 import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.shape.PatternShape;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -79,43 +81,65 @@ public final class PatternShapeRuleApplication {
     }
 
     private Map<PatternNode,Multiplicity> computeErasureMap(PatternShape host) {
-        Map<PatternNode,Multiplicity> diffMap =
+        Map<PatternNode,Multiplicity> result =
             new MyHashMap<PatternNode,Multiplicity>();
+        Map<PatternNode,List<Multiplicity>> diffMap =
+            new MyHashMap<PatternNode,List<Multiplicity>>();
 
         // First look at the pre-match to see what are the initial differences.
         for (RuleNode rNode : this.pRule.getEraserNodes()) {
             PatternNode pNode = this.match.getNode(rNode);
-            Multiplicity mult = diffMap.get(pNode);
-            if (mult != null) {
-                mult = mult.add(Multiplicity.ONE_NODE_MULT);
-            } else {
-                mult = Multiplicity.ONE_NODE_MULT;
+            List<Multiplicity> mults = diffMap.get(pNode);
+            if (mults == null) {
+                mults = new ArrayList<Multiplicity>();
             }
-            diffMap.put(pNode, mult);
+            mults.add(Multiplicity.ONE_NODE_MULT);
+            diffMap.put(pNode, mults);
         }
 
         // Now iterate over the layers from top to bottom and compute the
         // final differences.
         for (int layer = 0; layer <= host.depth(); layer++) {
-            for (PatternNode pNode : host.getLayerNodes(layer)) {
-                Multiplicity nDiff = diffMap.get(pNode);
-                if (nDiff != null) {
-                    // nDiff is already the maximum difference, compute the
-                    // maximum for the next layer.
-                    for (PatternEdge pEdge : host.outEdgeSet(pNode)) {
-                        Multiplicity eMult = host.getMult(pEdge);
-                        Multiplicity newDiff = nDiff.times(eMult).toNodeKind();
-                        Multiplicity oldDiff = diffMap.get(pEdge.target());
-                        if (oldDiff != null) {
-                            newDiff = Multiplicity.max(newDiff, oldDiff);
-                        }
-                        diffMap.put(pEdge.target(), newDiff);
+            nodeLoop: for (PatternNode pNode : host.getLayerNodes(layer)) {
+                List<Multiplicity> mults = diffMap.get(pNode);
+
+                if (mults == null) {
+                    // This node is node involved in the deletion;
+                    continue nodeLoop;
+                }
+
+                // We have to compute the final difference for this node.
+                Multiplicity nDiff = Multiplicity.ZERO_NODE_MULT;
+                if (layer == 0) {
+                    for (Multiplicity mult : mults) {
+                        nDiff = nDiff.add(mult);
                     }
+                } else {
+                    int lb = 0;
+                    int ub = 0;
+                    for (Multiplicity mult : mults) {
+                        lb = Math.max(lb, mult.getLowerBound());
+                        ub = Multiplicity.add(ub, mult.getUpperBound());
+                    }
+                    nDiff = Multiplicity.approx(lb, ub, MultKind.NODE_MULT);
+                }
+                result.put(pNode, nDiff);
+
+                // Propagate to the new layer.
+                for (PatternEdge pEdge : host.outEdgeSet(pNode)) {
+                    Multiplicity eMult = host.getMult(pEdge);
+                    Multiplicity totalDiff = nDiff.times(eMult).toNodeKind();
+                    List<Multiplicity> tgtMults = diffMap.get(pEdge.target());
+                    if (tgtMults == null) {
+                        tgtMults = new ArrayList<Multiplicity>();
+                    }
+                    tgtMults.add(totalDiff);
+                    diffMap.put(pEdge.target(), tgtMults);
                 }
             }
         }
 
-        return diffMap;
+        return result;
     }
 
     private void eraseEdges(PatternShape host) {

@@ -311,6 +311,29 @@ public final class PatternRule {
         rhs().removeNode(from);
     }
 
+    /**
+     * Simplifies the LHS by removing layer 0 nodes that are not part of a
+     * commuting diamond.
+     */
+    public void removeSpuriousNodes() {
+        assert isClosure();
+
+        if (rhs().depth() <= 1) {
+            return;
+        }
+
+        Set<RuleNode> toRemove = new MyHashSet<RuleNode>();
+        for (RuleNode rNode : lhs().getLayerNodes(0)) {
+            if (lhs().outEdgeSet(rNode).size() <= 1) {
+                toRemove.add(rNode);
+            }
+        }
+        for (RuleNode rNode : toRemove) {
+            lhs().removeNode(rNode);
+            rhs().removeNode(rNode);
+        }
+    }
+
     /** Returns the simple rule out of which this pattern rule was created. */
     public Rule getSimpleRule() {
         return this.sRule;
