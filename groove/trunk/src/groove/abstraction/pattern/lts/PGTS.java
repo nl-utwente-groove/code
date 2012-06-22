@@ -405,7 +405,7 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
     public static class StateSet extends TreeHashSet<PatternState> {
 
         /** The isomorphism checker of the state set. */
-        private final IsoChecker<PatternNode,PatternEdge> checker;
+        protected final IsoChecker<PatternNode,PatternEdge> checker;
 
         /** Constructs a new, empty state set. */
         public StateSet(IsoChecker<PatternNode,PatternEdge> checker) {
