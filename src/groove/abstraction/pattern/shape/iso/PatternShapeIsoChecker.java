@@ -41,16 +41,6 @@ public final class PatternShapeIsoChecker extends
     // Static fields
     // ------------------------------------------------------------------------
 
-    /**
-     * Flag that indicates whether to check for subsumption or not. Since this
-     * greatly improve the performance of exploration, the flag is on by
-     * default. It is left here in case subsumption needs to be turned off for
-     * debugging.
-     * 
-     * Bear in mind that the subsumption relation is NOT symmetric!
-     */
-    public static final boolean CHECK_SUBSUMPTION = true;
-
     // Return values for the comparisons.
     private static final int NON_ISO = 0x0;
     private static final int DOM_EQUALS_COD = 0x1;
@@ -116,17 +106,12 @@ public final class PatternShapeIsoChecker extends
     /**
      * Returns true if we can consider the shapes equal based on the given
      * result of the comparison.
-     * If the {@link #CHECK_SUBSUMPTION} flag is off then only the equality
-     * flag is checked. Otherwise, the shapes are also considered equal if the
+     * The shapes are also considered equal if the
      * co-domain subsumes the domain shape. This means that the new shape (in
      * the domain) will be collapsed under the old one (in the co-domain).
      */
     public boolean areEqual(int result) {
-        boolean equal = isDomEqualsCod(result);
-        if (CHECK_SUBSUMPTION) {
-            equal |= isCodSubsumesDom(result);
-        }
-        return equal;
+        return isDomEqualsCod(result) || isCodSubsumesDom(result);
     }
 
     /** See {@link #compareShapes(PatternShape, PatternShape)}. */
@@ -143,12 +128,10 @@ public final class PatternShapeIsoChecker extends
         if (!passBasicChecks(dom, cod)) {
             return result;
         }
-        PatternShapeIsoChecker isoChecker =
-            PatternShapeIsoChecker.getInstance();
         IsoChecker<PatternNode,PatternEdge>.IsoCheckerState state =
             new IsoCheckerState();
         Morphism<PatternNode,PatternEdge> morphism =
-            isoChecker.getIsomorphism(dom, cod, state);
+            getIsomorphism(dom, cod, state);
         int comparison = NON_ISO;
         while (morphism != null) {
             // We found an isomorphism between the graph structures.
@@ -161,7 +144,7 @@ public final class PatternShapeIsoChecker extends
                 break;
             } else {
                 // Keep trying.
-                morphism = isoChecker.getIsomorphism(dom, cod, state);
+                morphism = getIsomorphism(dom, cod, state);
                 if (morphism == null || state.isPlanEmpty()) {
                     // We got the same morphism back. The check fails.
                     break;
@@ -237,13 +220,11 @@ public final class PatternShapeIsoChecker extends
         if (domMult.equals(codMult)) {
             result |= DOM_EQUALS_COD;
         }
-        if (CHECK_SUBSUMPTION) {
-            if (domMult.subsumes(codMult)) {
-                result |= DOM_SUBSUMES_COD;
-            }
-            if (codMult.subsumes(domMult)) {
-                result |= COD_SUBSUMES_DOM;
-            }
+        if (domMult.subsumes(codMult)) {
+            result |= DOM_SUBSUMES_COD;
+        }
+        if (codMult.subsumes(domMult)) {
+            result |= COD_SUBSUMES_DOM;
         }
         return result;
     }
@@ -264,10 +245,7 @@ public final class PatternShapeIsoChecker extends
     public boolean areIsomorphic(Graph<PatternNode,PatternEdge> dom,
             Graph<PatternNode,PatternEdge> cod, PatternNode[] domNodes,
             PatternNode[] codNodes) {
-        if (domNodes != null || codNodes != null) {
-            throw new UnsupportedOperationException();
-        }
-        return areIsomorphic((PatternShape) dom, (PatternShape) cod);
+        throw new UnsupportedOperationException();
     }
 
     @Override

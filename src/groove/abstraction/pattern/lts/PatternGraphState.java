@@ -17,15 +17,26 @@
 package groove.abstraction.pattern.lts;
 
 import groove.abstraction.pattern.shape.PatternGraph;
+import groove.abstraction.pattern.shape.PatternShape;
 import groove.control.CtrlState;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** Top class for states of a PGTS. */
 public class PatternGraphState extends AbstractPatternState {
 
     /** The pattern graph associated with this state. */
-    private final PatternGraph graph;
+    private PatternGraph graph;
     /** The transition system this state belongs to. */
     private final PGTS pgts;
+    /** A (possible null) reference to a state that subsumes this one. */
+    private PatternState subsumptor;
+    /**
+     * Temporary list of possible subsumed states used when adding the state to
+     * the GTS.
+     */
+    private List<PatternState> subsumedStates;
 
     /** Default constructor. */
     public PatternGraphState(PatternGraph graph, CtrlState ctrlState,
@@ -46,6 +57,57 @@ public class PatternGraphState extends AbstractPatternState {
     @Override
     public PatternGraph getGraph() {
         return this.graph;
+    }
+
+    // Abstraction methods.
+
+    @Override
+    public boolean hasPatternShape() {
+        return this.graph instanceof PatternShape;
+    }
+
+    @Override
+    public PatternShape getShape() {
+        return (PatternShape) this.graph;
+    }
+
+    @Override
+    public boolean isSubsumed() {
+        return this.subsumptor != null;
+    }
+
+    @Override
+    public void addSubsumedState(PatternState subsumed) {
+        getSubsumedStates().add(subsumed);
+    }
+
+    @Override
+    public boolean setSubsumptor(PatternState subsumptor) {
+        if (this.subsumptor != null) {
+            return false;
+        } else {
+            this.subsumptor = subsumptor;
+            return true;
+        }
+    }
+
+    @Override
+    public int markSubsumedStates() {
+        int markCount = 0;
+        for (PatternState subsumed : getSubsumedStates()) {
+            if (subsumed.setSubsumptor(this)) {
+                markCount++;
+            }
+        }
+        this.subsumedStates = null;
+        return markCount;
+    }
+
+    private List<PatternState> getSubsumedStates() {
+        if (this.subsumedStates == null) {
+            this.subsumedStates = new ArrayList<PatternState>();
+        }
+        return this.subsumedStates;
     }
 
 }

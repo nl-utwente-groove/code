@@ -78,8 +78,12 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
     @Override
     public void report() {
         PrintStream out = System.out;
-        out.println(String.format("\nPSTS: states = %s / transitions = %s",
-            getPGTS().getStateCount(), getPGTS().getTransitionCount()));
+        PSTS psts = (PSTS) getPGTS();
+        out.println(String.format(
+            "\nPSTS: States: %d -- %d subsumed (%d discarded) / Transitions: %d (%d subsumed)\n",
+            psts.getStateCount(), psts.getSubsumedStatesCount(),
+            psts.openStateCount(), psts.getTransitionCount(),
+            psts.getSubsumedTransitionsCount()));
     }
 
     // ------------------------------------------------------------------------

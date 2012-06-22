@@ -17,6 +17,7 @@
 package groove.abstraction.pattern.lts;
 
 import groove.abstraction.pattern.shape.PatternGraph;
+import groove.abstraction.pattern.shape.PatternShape;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.graph.Node;
@@ -73,5 +74,36 @@ public interface PatternState extends Node {
      * transitions starting in this state.
      */
     public Set<PatternTransition> getTransitionSet();
+
+    // Abstraction methods.
+
+    /** Returns true if the graph stored in this state is a pattern shape. */
+    public boolean hasPatternShape();
+
+    /** Returns the pattern shape associated with this state. */
+    public PatternShape getShape();
+
+    /** Returns true if this state is subsumed by another. */
+    public boolean isSubsumed();
+
+    /**
+     * Adds the given state to the list of states possibly subsumed by this
+     * one.
+     */
+    public void addSubsumedState(PatternState subsumed);
+
+    /**
+     * Tries to set the subsumptor to the given state.
+     * Returns true is this state didn't already have a subsumptor.
+     */
+    public boolean setSubsumptor(PatternState subsumptor);
+
+    /**
+     * Goes over the list of possible subsumed states and mark them as such,
+     * trying to set this is state as their subsumptor. The list of possible
+     * subsumed states of this state is destroyed during this method call.
+     * Returns the number of states that were marked as subsumed.
+     */
+    public int markSubsumedStates();
 
 }

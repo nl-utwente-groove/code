@@ -26,8 +26,7 @@ import java.util.Stack;
  */
 public final class PatternDFSStrategy extends ClosingPatternStrategy {
 
-    private final Stack<PatternState> stack =
-        new Stack<PatternState>();
+    private final Stack<PatternState> stack = new Stack<PatternState>();
 
     @Override
     protected void putInPool(PatternState element) {
@@ -36,16 +35,24 @@ public final class PatternDFSStrategy extends ClosingPatternStrategy {
 
     @Override
     protected PatternState getFromPool() {
-        if (this.stack.isEmpty()) {
-            return null;
-        } else {
-            return this.stack.pop();
-        }
+        PatternState result;
+        do {
+            result = pop();
+        } while (result != null && result.isSubsumed());
+        return result;
     }
 
     @Override
     protected void clearPool() {
         this.stack.clear();
+    }
+
+    private PatternState pop() {
+        if (this.stack.isEmpty()) {
+            return null;
+        } else {
+            return this.stack.pop();
+        }
     }
 
 }
