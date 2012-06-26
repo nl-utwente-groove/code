@@ -35,7 +35,8 @@ import java.util.HashSet;
         CtrlTreeAdaptor treeAdaptor = new CtrlTreeAdaptor();
         setTreeAdaptor(treeAdaptor);
         setTreeNodeStream(treeAdaptor.createTreeNodeStream(tree));
-        return program().aut.clone(namespace.getFullName());
+        CtrlAut result = program().aut;
+        return result == null ? null : result.clone(namespace.getFullName());
     }
     
     public FormatErrorSet getErrors() {
