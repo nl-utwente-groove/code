@@ -33,7 +33,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -429,29 +429,17 @@ public abstract class SimulatorAction extends AbstractAction implements
             if (selectedPath.startsWith(grammarPath)) {
                 String diff = selectedPath.substring(grammarPath.length());
                 File pathDiff = new File(diff);
-                List<String> pathFragments = new ArrayList<String>();
+                List<String> pathFragments = new LinkedList<String>();
                 while (pathDiff.getName().length() > 0) {
-                    pathFragments.add(pathDiff.getName());
+                    pathFragments.add(0, pathDiff.getName());
                     pathDiff = pathDiff.getParentFile();
                 }
-                assert !pathFragments.isEmpty();
-                int i = pathFragments.size() - 1;
-                if (getResourceKind() == ResourceKind.RULE) {
-                    QualName ruleName = new QualName(pathFragments.get(i));
-                    for (i--; i >= 0; i--) {
-                        try {
-                            ruleName =
-                                new QualName(ruleName, pathFragments.get(i));
-                        } catch (FormatException e) {
-                            throw new IOException("Malformed rule name " + diff);
-                        }
-                    }
-                    name = ruleName.toString();
-                } else if (pathFragments.size() > 1) {
-                    throw new IOException(
-                        "Can't save to a grammar subdirectory");
-                } else {
-                    name = pathFragments.get(0);
+                try {
+                    name = new QualName(pathFragments).toString();
+                } catch (FormatException e) {
+                    throw new IOException(String.format(
+                        "Malformed %s name: %s",
+                        getResourceKind().getDescription(), e.getMessage()));
                 }
             }
         }

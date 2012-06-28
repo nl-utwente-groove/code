@@ -137,8 +137,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
         List<TreePath> expandedPaths = new ArrayList<TreePath>();
         List<TreePath> selectedPaths = new ArrayList<TreePath>();
         for (Map.Entry<Integer,Set<RuleModel>> priorityEntry : priorityMap.entrySet()) {
-            Map<QualName,DirectoryTreeNode> dirNodeMap =
-                new HashMap<QualName,DirectoryTreeNode>();
+            Map<String,DirectoryTreeNode> dirNodeMap =
+                new HashMap<String,DirectoryTreeNode>();
             // if the rule system has multiple priorities, we want an extra
             // level of nodes
             if (priorityMap.size() > 1) {
@@ -150,7 +150,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 String ruleName = ruleView.getFullName();
                 // recursively add parent directory nodes as required
                 DefaultMutableTreeNode parentNode =
-                    addParentNode(topNode, dirNodeMap, new QualName(ruleName));
+                    addParentNode(topNode, dirNodeMap,
+                        QualName.getParent(ruleName));
                 // create the rule node and register it
                 RuleTreeNode ruleNode = new RuleTreeNode(ruleView);
                 parentNode.add(ruleNode);
@@ -337,23 +338,24 @@ public class RuleJTree extends JTree implements SimulatorListener {
     /** Adds tree nodes for all levels of a structured rule name. */
     private DefaultMutableTreeNode addParentNode(
             DefaultMutableTreeNode topNode,
-            Map<QualName,DirectoryTreeNode> dirNodeMap, QualName ruleName) {
-        QualName parent = ruleName.parent();
-        if (parent == null) {
+            Map<String,DirectoryTreeNode> dirNodeMap, String parentName) {
+        //        QualName parent = ruleName.parent();
+        if (parentName.isEmpty()) {
             // there is no parent rule name; the parent node is the top node
             return topNode;
         } else {
             // there is a proper parent rule; look it up in the node map
-            DirectoryTreeNode result = dirNodeMap.get(parent);
+            DirectoryTreeNode result = dirNodeMap.get(parentName);
             if (result == null) {
                 // the parent node did not yet exist in the tree
                 // check recursively for the grandparent
                 DefaultMutableTreeNode grandParentNode =
-                    addParentNode(topNode, dirNodeMap, parent);
+                    addParentNode(topNode, dirNodeMap, parentName);
                 // make the parent node and register it
-                result = new DirectoryTreeNode(parent);
+                result =
+                    new DirectoryTreeNode(QualName.getLastName(parentName));
                 grandParentNode.add(result);
-                dirNodeMap.put(parent, result);
+                dirNodeMap.put(parentName, result);
             }
             return result;
         }
@@ -679,7 +681,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
 
         /** Text of this node as displayed in the rule tree. */
         public String getText() {
-            return new QualName(getAction().getName()).child();
+            return QualName.getLastName(getAction().getName());
         }
 
         /**
@@ -687,7 +689,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
          */
         @Override
         public String toString() {
-            return new QualName(getAction().getName()).child();
+            return getText();
         }
     }
 
@@ -696,18 +698,17 @@ public class RuleJTree extends JTree implements SimulatorListener {
      */
     private static class DirectoryTreeNode extends DefaultMutableTreeNode {
         /**
-         * Creates a new rule node based on a given rule name. The node can have
-         * children.
+         * Creates a new directory node with a given name.
          */
-        public DirectoryTreeNode(QualName name) {
+        public DirectoryTreeNode(String name) {
             super(name, true);
         }
 
         /**
          * Convenience method to retrieve the user object as a rule name.
          */
-        public QualName name() {
-            return (QualName) getUserObject();
+        public String name() {
+            return (String) getUserObject();
         }
 
         /**
@@ -715,7 +716,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
          */
         @Override
         public String toString() {
-            return name().child();
+            return name();
         }
     }
 

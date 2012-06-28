@@ -23,7 +23,9 @@ package groove.trans;
 import groove.util.Groove;
 import groove.view.FormatException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Representation of a qualified name. A qualified name is a 
@@ -37,6 +39,32 @@ import java.util.Arrays;
  */
 public class QualName implements Comparable<QualName> {
     /**
+     * Creates a new qualified name, on the basis of a given non-empty list of tokens.
+     * @param tokens the list of tokens for the qualified name
+     */
+    public QualName(List<String> tokens) throws FormatException {
+        if (tokens.isEmpty()) {
+            throw new FormatException("Name is empty");
+        }
+        this.tokens = new ArrayList<String>(tokens);
+        this.text =
+            Groove.toString(tokens.toArray(), "", "", SEPARATOR, SEPARATOR);
+        for (String token : this.tokens) {
+            StringBuilder error = new StringBuilder();
+            if (!isValid(token, null, error)) {
+                throw new FormatException(
+                    "Fragment %s of qualified name %s is not well-formed: %s",
+                    token, this.text, error.toString());
+            }
+        }
+        List<String> parentTokens = new ArrayList<String>(tokens);
+        parentTokens.remove(tokens.size() - 1);
+        this.parent =
+            Groove.toString(parentTokens.toArray(), "", "", SEPARATOR,
+                SEPARATOR);
+    }
+
+    /**
      * Creates a new qualified name, on the basis of a given string.
      * {@link #SEPARATOR} characters appearing in the proposed
      * name will be interpreted as token separators.
@@ -44,46 +72,13 @@ public class QualName implements Comparable<QualName> {
      *        characters)
      * @require <tt>name != null</tt>
      */
-    public QualName(String name) {
-        this.tokens = name.split("\\" + SEPARATOR);
-        int lastSeparator = name.lastIndexOf(SEPARATOR);
-        this.parent =
-            lastSeparator < 0 ? null : new QualName(name.substring(0,
-                lastSeparator));
-        this.text = name;
-    }
-
-    /**
-     * Creates a new qualified name, on the basis of a given parent name
-     * and child string. If the parent name is <tt>null</tt>, the
-     * resulting qualified name consists of a single token (just the
-     * child).
-     * @param parent the parent qualified name
-     * @param child the child name (without enclosing characters)
-     * @throws FormatException if {@code child} contains forbidden symbols
-     */
-    public QualName(QualName parent, String child) throws FormatException {
-        if (child.contains(SEPARATOR)) {
-            throw new FormatException(
-                "Qualified name %s should not contain separator symbol %s",
-                child, SEPARATOR);
-        }
-        int parentSize = parent == null ? 0 : parent.size();
-        this.tokens = new String[parentSize + 1];
-        if (parent != null) {
-            System.arraycopy(parent.tokens, 0, this.tokens, 0, parentSize);
-        }
-        this.tokens[this.tokens.length - 1] = child;
-        this.parent = parent;
-        this.text = Groove.toString(this.tokens, "", "", SEPARATOR, SEPARATOR);
+    public QualName(String name) throws FormatException {
+        this(Arrays.asList(name.split("\\" + SEPARATOR)));
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + Arrays.hashCode(this.tokens);
-        return result;
+        return tokens().hashCode();
     }
 
     @Override
@@ -98,7 +93,7 @@ public class QualName implements Comparable<QualName> {
             return false;
         }
         QualName other = (QualName) obj;
-        if (!Arrays.equals(this.tokens, other.tokens)) {
+        if (this.tokens.equals(other.tokens)) {
             return false;
         }
         return true;
@@ -130,7 +125,7 @@ public class QualName implements Comparable<QualName> {
      * @ensure </tt>return == tokens[i]</tt>
      */
     public String get(int i) {
-        return tokens()[i];
+        return tokens().get(i);
     }
 
     /**
@@ -147,7 +142,7 @@ public class QualName implements Comparable<QualName> {
      * @return number of tokens in this qualified name
      */
     public int size() {
-        return tokens().length;
+        return tokens().size();
     }
 
     /**
@@ -155,7 +150,7 @@ public class QualName implements Comparable<QualName> {
      * @return the last token of the qualified name
      */
     public String child() {
-        return tokens()[size() - 1];
+        return get(size() - 1);
     }
 
     /**
@@ -164,38 +159,54 @@ public class QualName implements Comparable<QualName> {
      * name iff the qualified name consists of a single token only.
      * @return the parent qualified name
      */
-    public QualName parent() {
+    public String parent() {
         return this.parent;
     }
 
     /**
      * Returns the tokens in this qualified name as an array of strings.
      */
-    public String[] tokens() {
+    public List<String> tokens() {
         return this.tokens;
     }
 
+    /** Extends a given qualified name with a child. */
+    public QualName extend(String child) throws FormatException {
+        List<String> newTokens = new ArrayList<String>(tokens());
+        newTokens.add(child);
+        return new QualName(newTokens);
+    }
+
     /** The parent qualified name (may be {@code null}). */
-    private final QualName parent;
+    private final String parent;
     /** The tokens of which this qualified name consists. */
-    private final String[] tokens;
+    private final List<String> tokens;
     /** The text returned by {@link #toString()}. */
     private final String text;
 
-    /** Returns the last part of a qualified name. */
+    /** Returns the last part of a well-formed qualified name. */
     public static String getLastName(String fullName) {
-        return new QualName(fullName).child();
+        try {
+            return new QualName(fullName).child();
+        } catch (FormatException e) {
+            assert false;
+            return null;
+        }
     }
 
     /** 
-     * Returns the namespace of a (non-empty) qualified name.
+     * Returns the namespace of a well-formed qualified name.
      * The namespace is the qualified name minus its last component.
      * If the name does not have components, the namespace is
      * the empty string.
      */
     public static String getParent(String fullName) {
-        QualName parent = new QualName(fullName).parent();
-        return parent == null ? "" : parent.toString();
+        try {
+            return new QualName(fullName).parent();
+        } catch (FormatException e) {
+            assert false;
+            return null;
+        }
     }
 
     /** Extends a given parent name with a child name.
@@ -211,6 +222,21 @@ public class QualName implements Comparable<QualName> {
             return child;
         } else {
             return parent + SEPARATOR + child;
+        }
+    }
+
+    /** Extends a given parent name with a child name.
+     * If the parent is {@code null}, the result is identical to the child.
+     * @param parent the parent name; may be {@code null}
+     * @param child the child name, to be embedded in the parent
+     * @return the concatenation of parent and child
+     */
+    public static QualName extend(QualName parent, String child)
+        throws FormatException {
+        if (parent == null) {
+            return new QualName(child);
+        } else {
+            return parent.extend(child);
         }
     }
 
@@ -285,55 +311,55 @@ public class QualName implements Comparable<QualName> {
     private static void legalize(char character, StringBuilder result) {
         switch (character) {
         case '!':
-            result.append("_EXCL");
+            result.append("_PLING_");
             break;
         case '@':
-            result.append("_AT");
+            result.append("_AT_");
             break;
         case '#':
-            result.append("_HASH");
+            result.append("_HASH_");
             break;
         case '$':
-            result.append("_DOLL");
+            result.append("_DOLL_");
             break;
         case '%':
-            result.append("_PERC");
+            result.append("_PERC_");
             break;
         case '^':
-            result.append("_HAT");
+            result.append("_HAT_");
             break;
         case '&':
-            result.append("_AMP");
+            result.append("_AMP_");
             break;
         case '*':
-            result.append("_STAR");
+            result.append("_STAR_");
             break;
         case '(':
-            result.append("_LBRA");
+            result.append("_LPAR_");
             break;
         case ')':
-            result.append("_RBRA");
+            result.append("_RPAR");
             break;
         case ' ':
-            result.append("_SPCE");
+            result.append("_SPACE_");
             break;
         case '+':
-            result.append("_PLUS");
+            result.append("_PLUS_");
             break;
         case '=':
-            result.append("_EQ");
+            result.append("_EQ_");
             break;
         case '<':
-            result.append("_LT");
+            result.append("_LT_");
             break;
         case '>':
-            result.append("_GT");
+            result.append("_GT_");
             break;
         case ',':
-            result.append("_COMM");
+            result.append("_COMMA_");
             break;
         case '?':
-            result.append("_QSTN");
+            result.append("_QUERY_");
             break;
         case '-':
             result.append("_-");
@@ -343,9 +369,14 @@ public class QualName implements Comparable<QualName> {
                 result.append("_");
                 result.append(character);
             } else {
-                result.append("_UNKN");
+                result.append("_UNKN_");
             }
         }
+    }
+
+    /** Tests if a given string is a well-formed qualified name. */
+    public static boolean isValid(String fullName) {
+        return isValid(fullName, null, null);
     }
 
     /**
