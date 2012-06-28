@@ -389,9 +389,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         graphMap.clear();
         for (Map.Entry<String,AspectGraph> entry : loadObjects(kind, file,
             graphs).entrySet()) {
-            String name =
-                kind == RULE ? createRuleName(entry.getKey()).toString()
-                        : entry.getKey();
+            String name = createQualName(entry.getKey()).toString();
             graphMap.put(name, entry.getValue());
         }
         if (kind == TYPE && this.properties != null) {
@@ -490,7 +488,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      * @param restName The entry name to convert; non-null
      * @return The resulting rule name; non-null
      */
-    private QualName createRuleName(String restName) {
+    private QualName createQualName(String restName) throws IOException {
         StringBuilder result = new StringBuilder();
         File nameAsFile = new File(RULE_FILTER.stripExtension(restName));
         result.append(nameAsFile.getName());
@@ -499,7 +497,11 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
             result.insert(0, QualName.SEPARATOR);
             result.insert(0, nameAsFile.getName());
         }
-        return new QualName(result.toString());
+        try {
+            return new QualName(result.toString());
+        } catch (FormatException e) {
+            throw new IOException(e.getMessage());
+        }
     }
 
     /** Notifies the observers with a given string value. */

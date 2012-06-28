@@ -18,9 +18,7 @@ package groove.io.store;
 
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.PROPERTIES_FILTER;
-import static groove.trans.ResourceKind.HOST;
 import static groove.trans.ResourceKind.PROPERTIES;
-import static groove.trans.ResourceKind.RULE;
 import static groove.trans.ResourceKind.TYPE;
 import groove.graph.DefaultGraph;
 import groove.graph.TypeLabel;
@@ -668,7 +666,7 @@ public class DefaultFileSystemStore extends SystemStore {
             if (file.isDirectory()) {
                 if (!file.getName().startsWith(".")) {
                     QualName extendedPathName =
-                        new QualName(pathName, fileName);
+                        QualName.extend(pathName, fileName);
                     collectGraphs(kind, filter, file, extendedPathName);
                 }
                 continue;
@@ -676,7 +674,7 @@ public class DefaultFileSystemStore extends SystemStore {
 
             // read graph from file
             DefaultGraph plainGraph = this.marshaller.unmarshalGraph(file);
-            QualName graphName = new QualName(pathName, fileName);
+            QualName graphName = QualName.extend(pathName, fileName);
 
             // backwards compatibility: set role and name
             plainGraph.setRole(kind.getGraphRole());
@@ -794,18 +792,19 @@ public class DefaultFileSystemStore extends SystemStore {
     /**
      * Creates a file name for a given resource kind.
      */
-    private File createFile(ResourceKind kind, String name) {
-        File basis = this.file;
-        String shortName = name;
-        if (kind == RULE || kind == HOST || kind == TYPE) {
-            QualName ruleName = new QualName(name);
-            for (int i = 0; i < ruleName.size() - 1; i++) {
-                basis = new File(basis, ruleName.get(i));
+    private File createFile(ResourceKind kind, String name) throws IOException {
+        try {
+            File basis = this.file;
+            QualName qualName = new QualName(name);
+            for (int i = 0; i < qualName.size() - 1; i++) {
+                basis = new File(basis, qualName.get(i));
                 basis.mkdir();
             }
-            shortName = ruleName.get(ruleName.size() - 1);
+            String shortName = qualName.child();
+            return new File(basis, kind.getFilter().addExtension(shortName));
+        } catch (FormatException e) {
+            throw new IOException(e.getMessage());
         }
-        return new File(basis, kind.getFilter().addExtension(shortName));
     }
 
     /** Posts the edit, and also notifies the observers. */

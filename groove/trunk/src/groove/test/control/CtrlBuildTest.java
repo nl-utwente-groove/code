@@ -318,7 +318,7 @@ public class CtrlBuildTest {
 
     /** Builds a control automaton that should contain an error. */
     private void buildWrong(String program) {
-        buildWrong(program, "dummy");
+        buildWrong("dummy", program);
     }
 
     /** Builds a control automaton that should contain an error. */

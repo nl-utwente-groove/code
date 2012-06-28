@@ -180,7 +180,8 @@ public final class SaveAction extends SimulatorAction {
             enabled = getSimulatorModel().hasState();
         } else {
             enabled =
-                this.saveAs || (getEditor() != null && getEditor().isDirty());
+                (this.saveAs && getSimulatorModel().getResource(resource) != null)
+                    || (getEditor() != null && getEditor().isDirty());
         }
         setEnabled(enabled);
         String name =

@@ -150,7 +150,7 @@ abstract public class ResourceTab extends JPanel implements Tab {
      */
     @Override
     public String getTitle() {
-        return (isDirty() ? "*" : "") + new QualName(getName()).child();
+        return (isDirty() ? "*" : "") + QualName.getLastName(getName());
     }
 
     /** Returns the resource kind of this editor tab. */
