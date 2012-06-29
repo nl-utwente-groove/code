@@ -16,6 +16,7 @@
  */
 package groove.abstraction.pattern.explore;
 
+import groove.abstraction.neigh.explore.ShapeGenerator;
 import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PSTS;
 import groove.explore.Generator;
@@ -24,6 +25,7 @@ import java.io.PrintStream;
 
 /**
  * Counterpart of {@link Generator} for pattern shape state space exploration.
+ * See also {@link ShapeGenerator}.
  * 
  * @author Eduardo Zambon
  */

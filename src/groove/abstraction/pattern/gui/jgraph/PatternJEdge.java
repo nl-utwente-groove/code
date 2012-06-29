@@ -36,14 +36,24 @@ import org.jgraph.graph.GraphConstants;
  */
 public class PatternJEdge extends GraphJEdge {
 
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    // Private constructor. Use the prototype.
     private PatternJEdge(PatternJGraph jGraph, PatternJModel jModel) {
         super(jGraph, jModel);
     }
 
+    // Private constructor. Use the prototype.
     private PatternJEdge(PatternJGraph jGraph, PatternJModel jModel,
             AbstractPatternEdge<?> pEdge) {
         super(jGraph, jModel, pEdge);
     }
+
+    // ------------------------------------------------------------------------
+    // Overridden methods
+    // ------------------------------------------------------------------------
 
     @Override
     public PatternJGraph getJGraph() {
@@ -78,11 +88,6 @@ public class PatternJEdge extends GraphJEdge {
             (AbstractPatternEdge<?>) edge);
     }
 
-    /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */
-    public static PatternJEdge getPrototype(PatternJGraph jGraph) {
-        return new PatternJEdge(jGraph, null);
-    }
-
     /**
      * Callback method for creating the core attributes.
      * These might be modified by other parameters; don't call this
@@ -93,10 +98,17 @@ public class PatternJEdge extends GraphJEdge {
         return DEFAULT_PEDGE_ATTR.clone();
     }
 
-    /**
-     * The standard jgraph attributes used for representing equivalence classes.
-     */
-    public static final JAttr.AttributeMap DEFAULT_PEDGE_ATTR;
+    // ------------------------------------------------------------------------
+    // Static methods and fields
+    // ------------------------------------------------------------------------
+
+    /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */
+    public static PatternJEdge getPrototype(PatternJGraph jGraph) {
+        return new PatternJEdge(jGraph, null);
+    }
+
+    /** The standard jgraph attributes used for representing pattern edges. */
+    private static final JAttr.AttributeMap DEFAULT_PEDGE_ATTR;
 
     static {
         DEFAULT_PEDGE_ATTR = GraphJGraph.DEFAULT_EDGE_ATTR.clone();

@@ -131,14 +131,6 @@ public final class TypeGraphJaxbGxlIO {
     // Other methods
     // ------------------------------------------------------------------------
 
-    private TypeNode getTypeNode(String type) {
-        return this.nodeMap.get(type);
-    }
-
-    private TypeEdge getTypeEdge(String type) {
-        return this.edgeMap.get(type);
-    }
-
     /** Loads a pattern type graph from the given file. */
     public TypeGraph unmarshalTypeGraph(File file) throws IOException {
         InputStream in = new FileInputStream(file);
@@ -149,6 +141,14 @@ public final class TypeGraphJaxbGxlIO {
         readSimpleGraphs(readGraphs.get(1), result);
         assert result.isWellFormed();
         return result;
+    }
+
+    private TypeNode getTypeNode(String type) {
+        return this.nodeMap.get(type);
+    }
+
+    private TypeEdge getTypeEdge(String type) {
+        return this.edgeMap.get(type);
     }
 
     private List<GraphType> unmarshal(InputStream inputStream)

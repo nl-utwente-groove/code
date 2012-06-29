@@ -89,15 +89,4 @@ public final class Util {
         return nodeLabels;
     }
 
-    /** Returns the label set of binary edges of the given graph */
-    public static Set<TypeLabel> getBinaryLabels(HostGraph graph) {
-        Set<TypeLabel> result = new MyHashSet<TypeLabel>();
-        for (HostEdge edge : graph.edgeSet()) {
-            if (edge.getRole() == BINARY) {
-                result.add(edge.label());
-            }
-        }
-        return result;
-    }
-
 }

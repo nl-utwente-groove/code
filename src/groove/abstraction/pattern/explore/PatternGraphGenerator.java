@@ -16,6 +16,7 @@
  */
 package groove.abstraction.pattern.explore;
 
+import groove.abstraction.neigh.explore.ShapeGenerator;
 import groove.abstraction.pattern.PatternAbstraction;
 import groove.abstraction.pattern.explore.strategy.PatternDFSStrategy;
 import groove.abstraction.pattern.explore.strategy.PatternStrategy;
@@ -43,6 +44,7 @@ import java.util.List;
 
 /**
  * Counterpart of {@link Generator} for pattern graph state space exploration.
+ * See also {@link ShapeGenerator}.
  * 
  * @author Eduardo Zambon
  */
@@ -267,6 +269,7 @@ public class PatternGraphGenerator extends CommandLineTool {
         }
     }
 
+    /** Explores the grammar using the normal simple graph method. */
     private GTS exploreSimpleGrammar() {
         GraphGrammar sGrammar = getGrammar().getSimpleGrammar();
         GTS result = new GTS(sGrammar);
@@ -300,6 +303,7 @@ public class PatternGraphGenerator extends CommandLineTool {
     /**
      * Class that implements a visualisation of the progress of a GTS generation
      * process. 
+     * See {@link GenerateProgressMonitor}
      */
     private class GenerateProgressMonitor extends PGTSAdapter {
         /**
@@ -338,17 +342,14 @@ public class PatternGraphGenerator extends CommandLineTool {
             }
         }
 
-        /**
-         * The number of indications printed on the current line.
-         */
+        /** The number of indications printed on the current line. */
         private int printed = 0;
         /**
-         * The number of additions after which an indication is printed to screen.
+         * The number of additions after which an indication is printed to
+         * screen.
          */
         static private final int UNIT = 100;
-        /**
-         * Number of indications on one line.
-         */
+        /** Number of indications on one line. */
         static private final int WIDTH = 100;
     }
 

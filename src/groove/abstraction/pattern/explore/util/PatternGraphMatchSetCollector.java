@@ -31,23 +31,35 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * Collector of rule matches over a pattern graph.
+ * 
  * See {@link MatchSetCollector}. 
  */
 public class PatternGraphMatchSetCollector {
+
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
 
     /** The host graph we are working on. */
     private final PatternState state;
     /** The control state of the graph state, if any. */
     private final CtrlState ctrlState;
 
-    /**
-     * Constructs a match collector for a given (start) state.
-     */
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    /** Constructs a match collector for the given state. */
     public PatternGraphMatchSetCollector(PatternState state) {
         this.state = state;
         this.ctrlState = state.getCtrlState();
         assert this.ctrlState != null;
     }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
 
     /**
      * Returns the set of matching events for the state passed in by the
@@ -63,9 +75,12 @@ public class PatternGraphMatchSetCollector {
         return result;
     }
 
-    /**
-     * Returns the first rule of the state's control schedule.
-     */
+    /** Matching should be injective or not. */
+    protected boolean isInjective() {
+        return true;
+    }
+
+    /** Returns the first rule of the state's control schedule. */
     private CtrlTransition firstCall() {
         CtrlTransition result;
         CtrlSchedule schedule = this.ctrlState.getSchedule();
@@ -78,9 +93,7 @@ public class PatternGraphMatchSetCollector {
         return result;
     }
 
-    /**
-     * Increments the rule iterator, and returns the next rule.
-     */
+    /** Increments the rule iterator, and returns the next rule. */
     private CtrlTransition nextCall(boolean matchFound) {
         CtrlTransition result;
         CtrlSchedule schedule = this.state.getSchedule();
@@ -97,9 +110,7 @@ public class PatternGraphMatchSetCollector {
         return result;
     }
 
-    /**
-     * Adds the matching events for a given rule into an existing set.
-     */
+    /** Adds the matching events for a given rule into an existing set. */
     private boolean collectEvents(CtrlTransition ctrlTrans,
             final Collection<Match> result) {
         String ruleName = ctrlTrans.getRule().getLastName();
@@ -111,8 +122,4 @@ public class PatternGraphMatchSetCollector {
         return !matches.isEmpty();
     }
 
-    /** Matching should be injective or not. */
-    protected boolean isInjective() {
-        return true;
-    }
 }

@@ -22,11 +22,22 @@ import groove.explore.strategy.DFSStrategy;
 import java.util.Stack;
 
 /**
+ * Depth-first exploration for pattern abstraction.
+ * 
  * See {@link DFSStrategy}.
  */
 public final class PatternDFSStrategy extends ClosingPatternStrategy {
 
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
+
+    /** Stack for the order in which states are to be explored. */
     private final Stack<PatternState> stack = new Stack<PatternState>();
+
+    // ------------------------------------------------------------------------
+    // Overridden methods
+    // ------------------------------------------------------------------------
 
     @Override
     protected void putInPool(PatternState element) {
@@ -47,6 +58,11 @@ public final class PatternDFSStrategy extends ClosingPatternStrategy {
         this.stack.clear();
     }
 
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    /** Pops the top element from the stack. */
     private PatternState pop() {
         if (this.stack.isEmpty()) {
             return null;

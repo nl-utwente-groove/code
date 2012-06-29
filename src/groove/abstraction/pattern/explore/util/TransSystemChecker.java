@@ -32,20 +32,35 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 
 /**
- * Analyser of transition systems. 
+ * Class that compares a simple graph transition system and a pattern graph
+ * one to see if they are equivalent.
  * 
  * @author Eduardo Zambon
  */
 public final class TransSystemChecker {
 
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
+
+    /** Pattern graph transition system. */
     private final PGTS pgts;
+    /** Simple graph transition system. */
     private final GTS sgts;
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
 
     /** Default constructor. */
     public TransSystemChecker(PGTS pgts, GTS sgts) {
         this.pgts = pgts;
         this.sgts = sgts;
     }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
 
     /** Prints the analysis to stout. */
     public void report() {
@@ -68,6 +83,14 @@ public final class TransSystemChecker {
         return compare(new PrintStream(nullStream));
     }
 
+    /**
+     * Compares the two transition system and prints the result of the
+     * comparison to the given stream.
+     * First the graph structure of both systems is checked. If the system are
+     * isomorphic then each of the states are compared for isomorphism as well.
+     * 
+     * @return true if the systems are equivalent, false otherwise.
+     */
     private boolean compare(PrintStream out) {
         DefaultGraph plainSGTS =
             this.sgts.toPlainGraph(false, false, false, false);
@@ -76,6 +99,10 @@ public final class TransSystemChecker {
             IsoChecker.getInstance(true);
         if (gtsChecker.areIsomorphic(plainSGTS, plainPGTS)) {
             out.print("Transision systems are isomorphic. Checking states... ");
+            // EZ says: for some reason that I can't recall right now the test
+            // fails if the try to use the isomorphism map for the
+            // transition systems, so don't change the code below to try to
+            // do that.
             for (PatternState pState : this.pgts.nodeSet()) {
                 HostGraph pGraph = pState.getGraph().flatten();
                 AbstractGraphState newSState =

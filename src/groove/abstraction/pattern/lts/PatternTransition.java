@@ -20,6 +20,8 @@ import groove.graph.Edge;
 import groove.lts.GraphTransition;
 
 /**
+ * Models a transition in a PGTS.
+ * 
  * See {@link GraphTransition}. 
  */
 public interface PatternTransition extends Edge {

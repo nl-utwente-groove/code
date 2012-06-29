@@ -19,9 +19,12 @@ package groove.abstraction.pattern.lts;
 import groove.lts.GTSAdapter;
 
 /**
+ * Default implementation of an PGTS listener that does nothing.
+ * 
  * See {@link GTSAdapter}.
  */
 public class PGTSAdapter implements PGTSListener {
+
     /** Provides an empty default implementation. */
     @Override
     public void addUpdate(PGTS gts, PatternState state) {

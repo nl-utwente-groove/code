@@ -31,6 +31,8 @@ import groove.abstraction.pattern.trans.PatternShapeRuleApplication;
 import groove.explore.util.MatchApplier;
 
 /**
+ * Match applier for pattern shape transformation.
+ * 
  * See {@link MatchApplier}. 
  */
 public class PatternShapeMatchApplier implements PatternRuleEventApplier {
@@ -51,17 +53,18 @@ public class PatternShapeMatchApplier implements PatternRuleEventApplier {
     /** The underlying PSTS. */
     private final PSTS psts;
 
-    /**
-     * Creates an applier for a given graph transition system.
-     */
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    /** Creates an applier for a given pattern transition system. */
     public PatternShapeMatchApplier(PSTS pgts) {
         this.psts = pgts;
     }
 
-    @Override
-    public PSTS getPGTS() {
-        return this.psts;
-    }
+    // ------------------------------------------------------------------------
+    // Overridden methods
+    // ------------------------------------------------------------------------
 
     @Override
     public void apply(PatternState source, Match match) {

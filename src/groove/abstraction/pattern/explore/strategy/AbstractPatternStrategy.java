@@ -24,9 +24,16 @@ import groove.abstraction.pattern.match.Match;
 import groove.explore.strategy.AbstractStrategy;
 
 /**
+ * Basic implementation of {@link PatternStrategy} interface with common
+ * functionality shared by all sub-classes.
+ * 
  * See {@link AbstractStrategy}. 
  */
 public abstract class AbstractPatternStrategy implements PatternStrategy {
+
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
 
     /** Match applier for the underlying GTS. */
     private PatternRuleEventApplier applier;
@@ -34,6 +41,10 @@ public abstract class AbstractPatternStrategy implements PatternStrategy {
     private PGTS pgts;
     /** The state that will be explored by the next call of {@link #next()}. */
     private PatternState atState;
+
+    // ------------------------------------------------------------------------
+    // Overridden methods
+    // ------------------------------------------------------------------------
 
     @Override
     public final void prepare(PGTS pgts) {
@@ -58,11 +69,6 @@ public abstract class AbstractPatternStrategy implements PatternStrategy {
         return updateAtState();
     }
 
-    /** Returns the graph transition system explored by the strategy. */
-    protected PGTS getPGTS() {
-        return this.pgts;
-    }
-
     /**
      * Returns the state that will be explored next. If <code>null</code>,
      * there is nothing left to explore. Is updated by {@link #getNextState()}.
@@ -70,6 +76,25 @@ public abstract class AbstractPatternStrategy implements PatternStrategy {
     @Override
     public PatternState getState() {
         return this.atState;
+    }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    /**
+     * Sets atState to the next state to be explored, or <code>null</code> if
+     * there are no more states to be explored. This is the place where
+     * satisfaction of the condition is to be tested. This method should be the
+     * only one who updates atState.
+     * @return {@code true} if there are more states to be explored, {@code false}
+     * otherwise.
+     */
+    protected abstract PatternState getNextState();
+
+    /** Returns the graph transition system explored by the strategy. */
+    protected PGTS getPGTS() {
+        return this.pgts;
     }
 
     /**
@@ -88,16 +113,6 @@ public abstract class AbstractPatternStrategy implements PatternStrategy {
     }
 
     /**
-     * Sets atState to the next state to be explored, or <code>null</code> if
-     * there are no more states to be explored. This is the place where
-     * satisfaction of the condition is to be tested. This method should be the
-     * only one who updates atState.
-     * @return {@code true} if there are more states to be explored, {@code false}
-     * otherwise.
-     */
-    protected abstract PatternState getNextState();
-
-    /**
      * Returns a fresh match collector for this strategy, based on the current
      * state and related information.
      */
@@ -105,7 +120,7 @@ public abstract class AbstractPatternStrategy implements PatternStrategy {
         return getPGTS().createMatchCollector(getState());
     }
 
-    /** Returns the match applier of this strategy. */
+    /** Returns the match applier of this strategy. (Lazy creation). */
     private PatternRuleEventApplier getMatchApplier() {
         if (this.applier == null) {
             this.applier = getPGTS().createMatchApplier();

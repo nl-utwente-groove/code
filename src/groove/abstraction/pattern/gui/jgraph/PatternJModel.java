@@ -46,11 +46,15 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.ParentMap;
 
 /**
- * A JGraph model for pattern shapes.
+ * A JGraph model for pattern graphs.
  * 
  * @author Eduardo Zambon
  */
 public class PatternJModel extends GraphJModel<Node,Edge> {
+
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
 
     /** Prototype for creating new pattern nodes. */
     private final PatternJVertex pJVertexProt;
@@ -58,23 +62,34 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
     private final PatternJEdge pJEdgeProt;
 
     /**
-     * Map from graph nodes to JGraph cells.
+     * Map from pattern graph nodes to JGraph cells.
      */
     private Map<Node,PatternJVertex> pNodeJCellMap =
         new HashMap<Node,PatternJVertex>();
     /**
-     * Map from graph edges to JGraph cells.
+     * Map from pattern graph edges to JGraph cells.
      */
     private Map<Edge,PatternJEdge> pEdgeJCellMap =
         new HashMap<Edge,PatternJEdge>();
 
     /**
-     * Map that stores the containment relation between equivalence classes
-     * and shape nodes.
+     * Map that stores the containment relation between simple graph elements
+     * and pattern nodes.
      */
     private ParentMap parentMap;
 
+    /**
+     * Factory to create simple graph elements. We can't reuse the elements
+     * from the patterns of pattern nodes because they all come from the type
+     * graph and thus we may have identity clashes. For example, different
+     * pattern nodes with the same pattern type will point to the same
+     * pattern (simple graph).
+     */
     private HostFactory hostFactory;
+
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
 
     /** Creates a new jModel with the given prototypes. */
     PatternJModel(GraphJVertex sJVertexProt, GraphJEdge sJEdgeProt,
@@ -84,17 +99,9 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
         this.pJEdgeProt = pJEdgeProt;
     }
 
-    /**
-     * Returns the root nodes of the pattern graph. This is NOT the same as
-     * the roots from the JModel.
-     */
-    public List<GraphJCell> getPatternRoots() {
-        List<GraphJCell> result = new ArrayList<GraphJCell>();
-        for (Node pNode : getGraph().getLayerNodes(0)) {
-            result.add(this.pNodeJCellMap.get(pNode));
-        }
-        return result;
-    }
+    // ------------------------------------------------------------------------
+    // Overridden methods
+    // ------------------------------------------------------------------------
 
     @Override
     public AbstractPatternGraph<?,?> getGraph() {
@@ -184,14 +191,50 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
         return jEdge;
     }
 
+    @Override
+    protected void prepareInsert() {
+        super.prepareInsert();
+        this.parentMap = new ParentMap();
+    }
+
+    @Override
+    protected void doInsert(boolean replace, boolean toBack) {
+        Object[] addedCells = this.addedJCells.toArray();
+        Object[] removedCells = replace ? getRoots().toArray() : null;
+        createEdit(addedCells, removedCells, null, this.connections,
+            this.parentMap, null).execute();
+        if (toBack) {
+            toBack(addedCells);
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    /**
+     * Returns the root nodes of the pattern graph. This is NOT the same as
+     * the roots from the JModel.
+     */
+    public List<GraphJCell> getPatternRoots() {
+        List<GraphJCell> result = new ArrayList<GraphJCell>();
+        for (Node pNode : getGraph().getLayerNodes(0)) {
+            result.add(this.pNodeJCellMap.get(pNode));
+        }
+        return result;
+    }
+
+    /** Returns true if the given node is a pattern graph node. */
     private boolean isPatternTyped(Node node) {
         return node instanceof AbstractPatternNode;
     }
 
+    /** Returns true if the given edge is a pattern graph edge. */
     private boolean isPatternTyped(Edge edge) {
         return edge instanceof AbstractPatternEdge<?>;
     }
 
+    /** Creates a new vertex for the given pattern node. */
     private PatternJVertex computeJVertex(AbstractPatternNode pNode) {
         PatternJVertex result = createJVertex(pNode);
         result.refreshAttributes();
@@ -213,6 +256,7 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
         return result;
     }
 
+    /** Creates the pattern elements of the given pattern node. */
     private void createPattern(AbstractPatternNode pNode,
             PatternJVertex pJVertex) {
         HostGraph pattern = pNode.getPattern();
@@ -233,6 +277,7 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
         }
     }
 
+    /** Creates a new jEdge for the given pattern edge. */
     private PatternJEdge computeJEdge(AbstractPatternEdge<?> pEdge) {
         PatternJEdge result = createJEdge(pEdge);
         result.setBidirectional(false);
@@ -244,7 +289,7 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
      * Factory method for jgraph nodes.
      * @param pNode graph node for which a corresponding j-node is to be created
      */
-    protected PatternJVertex createJVertex(AbstractPatternNode pNode) {
+    private PatternJVertex createJVertex(AbstractPatternNode pNode) {
         return this.pJVertexProt.newJVertex(this, pNode);
     }
 
@@ -254,25 +299,8 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
      * @param pEdge graph edge for which a corresponding JEdge is to be created;
      * may be {@code null} if there is initially no edge
      */
-    protected PatternJEdge createJEdge(AbstractPatternEdge<?> pEdge) {
+    private PatternJEdge createJEdge(AbstractPatternEdge<?> pEdge) {
         return this.pJEdgeProt.newJEdge(this, pEdge);
-    }
-
-    @Override
-    protected void prepareInsert() {
-        super.prepareInsert();
-        this.parentMap = new ParentMap();
-    }
-
-    @Override
-    protected void doInsert(boolean replace, boolean toBack) {
-        Object[] addedCells = this.addedJCells.toArray();
-        Object[] removedCells = replace ? getRoots().toArray() : null;
-        createEdit(addedCells, removedCells, null, this.connections,
-            this.parentMap, null).execute();
-        if (toBack) {
-            toBack(addedCells);
-        }
     }
 
 }
