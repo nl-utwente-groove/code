@@ -19,19 +19,22 @@ package groove.abstraction.pattern.lts;
 import groove.lts.GTSListener;
 
 /**
+ * A listener to certain types of PGTS updates.
+ * 
  * See {@link GTSListener}.
  */
 public interface PGTSListener {
+
     /**
-     * Signals that a state has been added to a given GTS.
-     * @param pgts the GTS that has been updated
+     * Signals that a state has been added to a given PGTS.
+     * @param pgts the PGTS that has been updated
      * @param state the state that has been added
      */
     void addUpdate(PGTS pgts, PatternState state);
 
     /**
-     * Signals that a transition has been added to a given GTS.
-     * @param pgts the GTS that has been updated
+     * Signals that a transition has been added to a given PGTS.
+     * @param pgts the PGTS that has been updated
      * @param transition the transition that has been added
      */
     void addUpdate(PGTS pgts, PatternTransition transition);

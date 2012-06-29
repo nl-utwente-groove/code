@@ -26,11 +26,20 @@ import groove.abstraction.pattern.lts.PatternState;
 public final class PatternShapeMatchSetCollector extends
         PatternGraphMatchSetCollector {
 
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
     /** Default constructor. */
     public PatternShapeMatchSetCollector(PatternState state) {
         super(state);
     }
 
+    // ------------------------------------------------------------------------
+    // Overridden methods
+    // ------------------------------------------------------------------------
+
+    /** Pre-matches cannot be injective. */
     @Override
     protected boolean isInjective() {
         return false;

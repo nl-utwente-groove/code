@@ -49,7 +49,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * See {@link GTS}. 
+ * Pattern Graph Transition System.
+ * 
+ * Complete re-implementation (AKA copy-paste :P) of the functionality in {@link GTS}. 
  */
 public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
 
@@ -81,21 +83,21 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
 
     /** The rule system generating this PGTS. */
     private final PatternGraphGrammar grammar;
-    /** The start state of this LTS. */
+    /** The start state of this PGTS. */
     protected PatternState startState;
-    /** Unique factory for host elements, associated with this GTS. */
+    /** Unique factory for host elements, associated with this PGTS. */
     private PatternFactory hostFactory;
-    /** The set of states of the GTS. */
+    /** The set of states of the PGTS. */
     private StateSet stateSet;
-    /** The set of transitions of the GTS. */
+    /** The set of transitions of the PGTS. */
     private TransitionSet transitionSet;
-    /** The number of transitions in the GTS. */
+    /** The number of transitions in the PGTS. */
     private int transitionCount = 0;
-    /** The number of closed states in the GTS. */
+    /** The number of closed states in the PGTS. */
     private int closedStateCount = 0;
 
     /**
-     * Set of {@link PGTSListener} s to be identified of changes in this graph.
+     * Set of {@link PGTSListener} s to be notified of changes in this graph.
      * Set to <tt>null</tt> when the graph is fixed.
      */
     private Set<PGTSListener> listeners = new MyHashSet<PGTSListener>();
@@ -330,9 +332,7 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
         return new LTSFactory<PatternState,PatternTransition>(this);
     }
 
-    /** 
-     * Exports the GTS to a plain graph representation.
-     */
+    /** Exports the GTS to a plain graph representation. */
     public DefaultGraph toPlainGraph() {
         DefaultGraph result = new DefaultGraph(getName());
         Map<PatternState,DefaultNode> nodeMap =

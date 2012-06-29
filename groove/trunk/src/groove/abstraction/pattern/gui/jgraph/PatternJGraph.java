@@ -30,17 +30,25 @@ import java.awt.event.MouseEvent;
 import org.jgraph.graph.CellView;
 
 /**
- * JGraph class for displaying pattern shapes. 
+ * JGraph class for displaying pattern graphs. 
  * 
  * @author Eduardo Zambon
  */
 public final class PatternJGraph extends GraphJGraph {
+
+    // ------------------------------------------------------------------------
+    // Constructor
+    // ------------------------------------------------------------------------
 
     /** Constructs an instance of the j-graph for a given simulator. */
     public PatternJGraph(Simulator simulator) {
         super(simulator, false);
         addMouseListener(new MyMouseListener());
     }
+
+    // ------------------------------------------------------------------------
+    // Overridden methods
+    // ------------------------------------------------------------------------
 
     /** Specialises the return type to a {@link PatternJModel}. */
     @Override
@@ -63,10 +71,15 @@ public final class PatternJGraph extends GraphJGraph {
     /** Callback method to create the label tree. */
     @Override
     protected LabelTree createLabelTree() {
+        // EZ says: ugly hack to keep things moving...
         // Create a pesky label tree...
         return new LabelTree(new GraphJGraph(null, false), false, false);
     }
 
+    /**
+     * We need this complicated method to be able to select the simple graph
+     * elements showing inside the pattern nodes.
+     */
     @Override
     protected GraphJCell getFirstCellForLocation(double x, double y,
             boolean vertex, boolean edge) {
@@ -120,14 +133,10 @@ public final class PatternJGraph extends GraphJGraph {
         return result;
     }
 
-    /**
-     * Mouse listener that creates the popup menu and adds and deletes points on
-     * appropriate events.
-     */
-
+    /** Mouse listener that refreshes the jGraph after every click. */
     private class MyMouseListener extends MouseAdapter {
-        /** Empty constructor wit the correct visibility. */
 
+        /** Empty constructor with the correct visibility. */
         MyMouseListener() {
             // empty
         }

@@ -26,11 +26,13 @@ import groove.lts.GraphState;
 import java.util.Set;
 
 /**
+ * Common interface of states that may occur in a PGTS or PSTS.
+ * 
  * See {@link GraphState}. 
  */
 public interface PatternState extends Node {
 
-    /** Returns the Graph Transition System of which this is a state. */
+    /** Returns the transition system of which this is a state. */
     public PGTS getPGTS();
 
     /** Returns the graph contained in this state. */
@@ -75,7 +77,16 @@ public interface PatternState extends Node {
      */
     public Set<PatternTransition> getTransitionSet();
 
-    // Abstraction methods.
+    // ------------------------------------------------------------------------
+    // Abstraction methods (to be used only with a PSTS)
+    // ------------------------------------------------------------------------
+
+    // EZ says: there are a few assertions in place to ensure that these
+    // methods are only called when appropriate but thread carefully nonetheless.
+    // I know this is bad design, but it saves on having lots of subclasses.
+    // Also, while it's nice to have a PGTS so we can check that pattern graph
+    // transformations behave like normal simple graph ones, we are actually
+    // interested in PSTSs only.
 
     /** Returns true if the graph stored in this state is a pattern shape. */
     public boolean hasPatternShape();

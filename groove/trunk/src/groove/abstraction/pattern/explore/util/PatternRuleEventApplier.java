@@ -16,24 +16,22 @@
  */
 package groove.abstraction.pattern.explore.util;
 
-import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PatternState;
 import groove.abstraction.pattern.match.Match;
 import groove.explore.util.RuleEventApplier;
 
 /**
+ * Common interface for match appliers of pattern graph and pattern shape
+ * transition systems.
+ * 
  * See {@link RuleEventApplier}.
  */
 public interface PatternRuleEventApplier {
-    /**
-     * Returns the underlying PGTS.
-     */
-    PGTS getPGTS();
 
     /**
-     * Adds a transition to the GTS, from a given source state and for a given
+     * Adds a transition to the PGTS, from a given source state and for a given
      * rule event. The event is assumed not to have been explored yet.
      */
-    public void apply(PatternState source, Match match);
+    void apply(PatternState source, Match match);
 
 }

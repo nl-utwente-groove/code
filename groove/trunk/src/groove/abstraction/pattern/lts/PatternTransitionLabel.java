@@ -21,6 +21,8 @@ import groove.graph.AbstractLabel;
 import groove.lts.RuleTransitionLabel;
 
 /**
+ * Class of labels that can appear on pattern rule transitions.
+ * 
  * See {@link RuleTransitionLabel}. 
  */
 public class PatternTransitionLabel extends AbstractLabel {
@@ -28,10 +30,7 @@ public class PatternTransitionLabel extends AbstractLabel {
     private final String text;
     private final Match match;
 
-    /** 
-     * Constructs a new label on the basis of a given rule event and list
-     * of created nodes.
-     */
+    /** Constructs a new label on the basis of a given match. */
     PatternTransitionLabel(Match match) {
         this.match = match;
         this.text = match.getRule().getName();

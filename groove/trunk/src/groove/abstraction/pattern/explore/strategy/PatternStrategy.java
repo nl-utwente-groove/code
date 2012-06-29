@@ -21,17 +21,16 @@ import groove.abstraction.pattern.lts.PatternState;
 import groove.explore.strategy.Strategy;
 
 /**
+ * Common interface of exploration strategies for pattern abstraction.
+ * 
  * See {@link Strategy}.
  */
 public interface PatternStrategy {
-    /**
-     * Sets the PGTS to be explored.
-     */
+
+    /** Sets the PGTS to be explored. */
     public void prepare(PGTS pgts);
 
-    /**
-     * Sets the PGTS and start state to be explored.
-     */
+    /** Sets the PGTS and start state to be explored. */
     public void prepare(PGTS gts, PatternState state);
 
     /**

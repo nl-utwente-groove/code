@@ -16,6 +16,7 @@
  */
 package groove.abstraction.pattern.lts;
 
+import groove.abstraction.neigh.lts.AGTS;
 import groove.abstraction.pattern.explore.util.PatternRuleEventApplier;
 import groove.abstraction.pattern.explore.util.PatternShapeMatchApplier;
 import groove.abstraction.pattern.explore.util.PatternShapeMatchSetCollector;
@@ -26,21 +27,35 @@ import groove.abstraction.pattern.trans.PatternGraphGrammar;
 
 /**
  * Pattern Shape Transition System.  
+ * See {@link AGTS} 
+ * 
  * @author Eduardo Zambon
  */
 public final class PSTS extends PGTS {
+
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
 
     /** Number of states marked as subsumed. */
     private int subsumedStatesCount;
     /** Number of transitions marked as subsumed. */
     private int subsumedTransitionsCount;
 
-    /** Constructs a PGTS for the given grammar. */
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    /** Constructs a PSTS for the given grammar. */
     public PSTS(PatternGraphGrammar grammar) {
         super(grammar);
         this.subsumedStatesCount = 0;
         this.subsumedTransitionsCount = 0;
     }
+
+    // ------------------------------------------------------------------------
+    // Overridden methods
+    // ------------------------------------------------------------------------
 
     /** Callback factory method for the match applier. */
     @Override
@@ -71,8 +86,8 @@ public final class PSTS extends PGTS {
     }
 
     /**
-     * Adds the given state to the abstract GTS. 
-     * The given state must be of type ShapeState or ShapeNextState.
+     * Adds the given state to the PSTS. 
+     * The given state must be have a pattern shape.
      * While trying to add the new state, subsumption is computed in both
      * directions. If the state is fresh, this method goes over the subsumed
      * states already stored and tries to update the subsumption relation.
@@ -92,6 +107,10 @@ public final class PSTS extends PGTS {
         }
         return result;
     }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
 
     /** Returns the number of states marked as subsumed. */
     public int getSubsumedStatesCount() {

@@ -39,11 +39,19 @@ import org.jgraph.graph.GraphConstants;
  */
 public class PatternJVertex extends GraphJVertex {
 
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
     // Private constructor. Use the prototype.
     private PatternJVertex(PatternJGraph jGraph, PatternJModel jModel,
             AbstractPatternNode pNode) {
         super(jGraph, jModel, pNode);
     }
+
+    // ------------------------------------------------------------------------
+    // Overridden methods
+    // ------------------------------------------------------------------------
 
     @Override
     public PatternJGraph getJGraph() {
@@ -79,11 +87,6 @@ public class PatternJVertex extends GraphJVertex {
         return result;
     }
 
-    /** Returns a prototype {@link PatternJVertex} for a given {@link PatternJGraph}. */
-    public static PatternJVertex getPrototype(PatternJGraph jGraph) {
-        return new PatternJVertex(jGraph, null, null);
-    }
-
     /**
      * Callback method for creating the core attributes.
      * These might be modified by other parameters; don't call this
@@ -94,10 +97,19 @@ public class PatternJVertex extends GraphJVertex {
         return DEFAULT_PNODE_ATTR.clone();
     }
 
+    // ------------------------------------------------------------------------
+    // Static methods and fields
+    // ------------------------------------------------------------------------
+
+    /** Returns a prototype {@link PatternJVertex} for a given {@link PatternJGraph}. */
+    public static PatternJVertex getPrototype(PatternJGraph jGraph) {
+        return new PatternJVertex(jGraph, null, null);
+    }
+
     /**
      * The standard jgraph attributes used for representing equivalence classes.
      */
-    public static final JAttr.AttributeMap DEFAULT_PNODE_ATTR;
+    private static final JAttr.AttributeMap DEFAULT_PNODE_ATTR;
 
     static {
         DEFAULT_PNODE_ATTR = GraphJGraph.DEFAULT_NODE_ATTR.clone();

@@ -34,7 +34,7 @@ import groove.gui.layout.LayouterItem;
  */
 public final class PatternPreviewDialog extends GraphPreviewDialog {
 
-    /** Constructs a new dialog, for a given shape. */
+    /** Constructs a new dialog, for a given pattern graph. */
     private PatternPreviewDialog(Simulator simulator,
             AbstractPatternGraph<?,?> pGraph) {
         super(simulator, pGraph);
@@ -42,14 +42,14 @@ public final class PatternPreviewDialog extends GraphPreviewDialog {
     }
 
     /**
-     * Creates a dialog for the given shape, and sets it to visible.
+     * Creates a dialog for the given pattern graph, and sets it to visible.
      */
     public static void showPatternGraph(AbstractPatternGraph<?,?> pGraph) {
         showPatternGraph(null, pGraph);
     }
 
     /**
-     * Creates a dialog for the given shape and (possibly {@code null}) 
+     * Creates a dialog for the given pattern graph and (possibly {@code null}) 
      * simulator, and sets it to visible.
      */
     public static void showPatternGraph(Simulator simulator,

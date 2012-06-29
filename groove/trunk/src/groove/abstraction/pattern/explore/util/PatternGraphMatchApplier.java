@@ -29,24 +29,31 @@ import groove.abstraction.pattern.trans.PatternGraphRuleApplication;
 import groove.explore.util.MatchApplier;
 
 /**
+ * Match applier for pattern graph transformation.
+ * 
  * See {@link MatchApplier}. 
  */
 public class PatternGraphMatchApplier implements PatternRuleEventApplier {
 
+    // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
+
     /** The underlying PGTS. */
     private final PGTS pgts;
 
-    /**
-     * Creates an applier for a given graph transition system.
-     */
+    // ------------------------------------------------------------------------
+    // Constructors
+    // ------------------------------------------------------------------------
+
+    /** Creates an applier for a given pattern graph transition system. */
     public PatternGraphMatchApplier(PGTS pgts) {
         this.pgts = pgts;
     }
 
-    @Override
-    public PGTS getPGTS() {
-        return this.pgts;
-    }
+    // ------------------------------------------------------------------------
+    // Overridden methods
+    // ------------------------------------------------------------------------
 
     @Override
     public void apply(PatternState source, Match match) {

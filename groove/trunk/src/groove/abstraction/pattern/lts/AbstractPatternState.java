@@ -26,6 +26,9 @@ import groove.lts.AbstractGraphState;
 import java.util.Set;
 
 /**
+ * Combination of graph and node functionality, used to store the state of a
+ * pattern graph transition system.
+ * 
  * See {@link AbstractGraphState}. 
  */
 public abstract class AbstractPatternState implements PatternState {
