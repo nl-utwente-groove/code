@@ -294,7 +294,7 @@ abstract public class AbstractLayouter implements Layouter {
             }
         }
         // do the following in the event dispatch thread
-        SwingUtilities.invokeLater(new Runnable() {
+        Runnable edit = new Runnable() {
             public void run() {
                 if (change.size() != 0) {
                     AbstractLayouter.this.jmodel.edit(change, null, null, null);
@@ -303,7 +303,13 @@ abstract public class AbstractLayouter implements Layouter {
                     //                    AbstractLayouter.this.jgraph.refresh();
                 }
             }
-        });
+        };
+        // do this now (if invoked from the event thread) or defer to event thread
+        if (SwingUtilities.isEventDispatchThread()) {
+            edit.run();
+        } else {
+            SwingUtilities.invokeLater(edit);
+        }
     }
 
     /**
