@@ -227,9 +227,15 @@ public class ExploreAction extends SimulatorAction {
      * Displays the number of lts states and transitions in the message
      * dialog.
      */
-    final void displayProgress(GTS gts) {
-        getStateCountLabel().setText("States: " + gts.nodeCount());
-        getTransitionCountLabel().setText("Transitions: " + gts.edgeCount());
+    final void displayProgress(final GTS gts) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                getStateCountLabel().setText("States: " + gts.nodeCount());
+                getTransitionCountLabel().setText(
+                    "Transitions: " + gts.edgeCount());
+            }
+        });
     }
 
     /** Slider for the animation speed. */
@@ -248,15 +254,16 @@ public class ExploreAction extends SimulatorAction {
         public void addUpdate(final GTS gts, final GraphState state) {
             displayProgress(gts);
             try {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        getSimulatorModel().setState(state);
-                        //Relayouting after each rule application in the animation mode
-                        //                        getSimulator().getDisplaysPanel().getLtsDisplay().getStateTab().getJGraph().getLayouter().start(
-                        //                            true);
-                    }
-                });
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
+                        public void run() {
+                            getSimulatorModel().setState(state);
+                        }
+                    });
+                } catch (InvocationTargetException e) {
+                    // do nothing
+                }
                 Thread.sleep(getPause());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -296,15 +303,10 @@ public class ExploreAction extends SimulatorAction {
 
         @Override
         public void start() {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    ExploreThread.super.start();
-                }
-            });
-            // make dialog visible
+            ExploreThread.super.start();
+            // start up the cancel dialog
             this.cancelDialog.setVisible(true);
-            // wait for the thread to return
+            // wait for the explore thread to finish
             try {
                 this.join();
             } catch (InterruptedException exc) {
@@ -340,21 +342,6 @@ public class ExploreAction extends SimulatorAction {
             gts.removeLTSListener(this.progressListener);
         }
 
-        private void disposeCancelDialog() {
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    @Override
-                    public void run() {
-                        ExploreThread.this.cancelDialog.dispose();
-                    }
-                });
-            } catch (InterruptedException e) {
-                // do nothing
-            } catch (InvocationTargetException e) {
-                // do nothing
-            }
-        }
-
         /**
          * Creates a modal dialog that will interrupt this thread, when the
          * cancel button is pressed.
@@ -378,6 +365,32 @@ public class ExploreAction extends SimulatorAction {
                 }
             });
             return result;
+        }
+
+        /** 
+         * Disposes the dialog that can cancel the exploration thread.
+         * May only be invoked from the exploration thread. 
+         */
+        private void disposeCancelDialog() {
+            assert !SwingUtilities.isEventDispatchThread();
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        ExploreThread.this.cancelDialog.dispose();
+                        // wait for the exploration thread to finish
+                        try {
+                            join();
+                        } catch (InterruptedException exc) {
+                            // thread is done
+                        }
+                    }
+                });
+            } catch (InterruptedException e) {
+                // do nothing
+            } catch (InvocationTargetException e) {
+                // do nothing
+            }
         }
 
         private JButton getCancelButton() {
