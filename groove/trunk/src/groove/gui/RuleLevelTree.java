@@ -24,7 +24,6 @@ import groove.view.RuleModel;
 import groove.view.RuleModel.Index;
 import groove.view.aspect.AspectElement;
 
-import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
@@ -69,8 +68,8 @@ public class RuleLevelTree extends CheckboxTree implements
                 this.rule = (RuleModel) jModel.getResourceModel();
             }
             boolean enabled = updateTree();
-            updateVisible();
-            setBackground(enabled ? Color.WHITE : null);
+            updateVisibleCells();
+            setEnabled(enabled);
         }
     }
 
@@ -117,6 +116,9 @@ public class RuleLevelTree extends CheckboxTree implements
         if (enabled) {
             for (Map.Entry<Index,Set<AspectElement>> levelEntry : levelTree.entrySet()) {
                 Index index = levelEntry.getKey();
+                if (!index.isTopLevel() && index.getLevelNode() == null) {
+                    continue;
+                }
                 LevelNode levelNode = new LevelNode(index);
                 if (index.isTopLevel()) {
                     getTopNode().add(levelNode);
@@ -150,7 +152,7 @@ public class RuleLevelTree extends CheckboxTree implements
     /** Updates the {@link #visibleSet} based on the currently selected
      * level nodes.
      */
-    private void updateVisible() {
+    private void updateVisibleCells() {
         this.visibleSet.clear();
         this.allCellSet.clear();
         for (LevelNode node : this.levelNodeMap.values()) {
@@ -243,7 +245,7 @@ public class RuleLevelTree extends CheckboxTree implements
         @Override
         public void setSelected(boolean selected) {
             this.selected = selected;
-            updateVisible();
+            updateVisibleCells();
         }
 
         @Override
