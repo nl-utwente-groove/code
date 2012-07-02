@@ -15,6 +15,9 @@ import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
@@ -196,10 +199,11 @@ final public class GraphTab extends ResourceTab implements MainTab {
             if (levelTree == null) {
                 result = labelPane;
             } else {
-                this.levelTree = levelTree;
-                JSplitPane splitPane =
+                final JPanel levelTreePanel = createLevelTreePanel(levelTree);
+                final JSplitPane splitPane =
                     new JSplitPane(JSplitPane.VERTICAL_SPLIT, labelPane,
-                        createLevelTreePanel(levelTree));
+                        levelTreePanel);
+                splitPane.setResizeWeight(0.75);
                 // deselect the level tree whenever the graph
                 // selection changes
                 getJGraph().addGraphSelectionListener(
@@ -209,14 +213,23 @@ final public class GraphTab extends ResourceTab implements MainTab {
                             levelTree.clearSelection();
                         }
                     });
+                levelTree.addPropertyChangeListener("enabled",
+                    new PropertyChangeListener() {
+                        @Override
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            boolean enabled = (Boolean) evt.getNewValue();
+                            levelTreePanel.setVisible(enabled);
+                            splitPane.resetToPreferredSizes();
+                        }
+                    });
                 result = splitPane;
             }
             return result;
         }
 
         /** Creates a panel for the rule level tree. */
-        private JPanel createLevelTreePanel(RuleLevelTree levelTree) {
-            JPanel result = new JPanel(new BorderLayout(), false);
+        private JPanel createLevelTreePanel(final RuleLevelTree levelTree) {
+            final JPanel result = new JPanel(new BorderLayout(), false);
             Box labelPaneTop = Box.createVerticalBox();
             JLabel labelPaneTitle =
                 new JLabel(" " + Options.RULE_TREE_PANE_TITLE + " ");
@@ -224,17 +237,19 @@ final public class GraphTab extends ResourceTab implements MainTab {
             labelPaneTop.add(labelPaneTitle);
             result.add(labelPaneTop, BorderLayout.NORTH);
             result.add(createLabelScrollPane(levelTree), BorderLayout.CENTER);
+            result.setPreferredSize(new Dimension(0, 70));
+            levelTree.addPropertyChangeListener("enabled",
+                new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        boolean enabled = (Boolean) evt.getNewValue();
+                        result.setVisible(enabled);
+                        if (enabled) {
+                            result.setSize(result.getPreferredSize());
+                        }
+                    }
+                });
             return result;
         }
-
-        @Override
-        public void setEnabled(boolean enabled) {
-            super.setEnabled(enabled);
-            if (this.levelTree != null) {
-                this.levelTree.setEnabled(enabled);
-            }
-        }
-
-        private RuleLevelTree levelTree;
     }
 }

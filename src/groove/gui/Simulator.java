@@ -52,7 +52,6 @@ import groove.view.HostModel;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -250,16 +249,7 @@ public class Simulator implements SimulatorListener {
                 new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel,
                     rightPanel);
 
-            JSplitPane contentPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT) {
-
-                @Override
-                public ActionListener getActionForKeyStroke(KeyStroke aKeyStroke) {
-                    ActionListener result =
-                        super.getActionForKeyStroke(aKeyStroke);
-                    return result;
-                }
-
-            };
+            JSplitPane contentPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
             contentPane.setTopComponent(splitPane);
             contentPane.setResizeWeight(0.8);
             contentPane.setDividerSize(0);
