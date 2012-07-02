@@ -378,12 +378,6 @@ public class ExploreAction extends SimulatorAction {
                     @Override
                     public void run() {
                         ExploreThread.this.cancelDialog.dispose();
-                        // wait for the exploration thread to finish
-                        try {
-                            join();
-                        } catch (InterruptedException exc) {
-                            // thread is done
-                        }
                     }
                 });
             } catch (InterruptedException e) {
