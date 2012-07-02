@@ -105,15 +105,10 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             this.targetIx = strategy.getNodeIx(this.target);
         }
         this.varIxMap = new HashMap<LabelVar,Integer>();
-        //        this.freshVars = new HashSet<LabelVar>();
         this.prematchedVars = new HashSet<LabelVar>();
         for (LabelVar var : this.allVars) {
             assert strategy.isVarFound(var);
-            //            if (strategy.isVarFound(var)) {
             this.prematchedVars.add(var);
-            //            } else {
-            //                this.freshVars.add(var);
-            //            }
             this.varIxMap.put(var, strategy.getVarIx(var));
         }
     }
@@ -182,8 +177,6 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     final Set<LabelVar> neededVars;
     /** The set of pre-matched variables. */
     Set<LabelVar> prematchedVars;
-    //    /** The set of bound variables that are not yet pre-matched. */
-    //    Set<LabelVar> freshVars;
     /** Mapping from variables to the corresponding indices in the result. */
     Map<LabelVar,Integer> varIxMap;
 
@@ -270,7 +263,6 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             this.targetFound = targetFound;
             assert RegExprEdgeSearchItem.this.varIxMap.keySet().containsAll(
                 RegExprEdgeSearchItem.this.neededVars);
-            this.valuation = new Valuation();
         }
 
         @Override
@@ -278,12 +270,6 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             super.initialise(host);
             this.sourcePreMatch = this.search.getNodeSeed(this.sourceIx);
             this.targetPreMatch = this.search.getNodeSeed(this.targetIx);
-            for (LabelVar var : RegExprEdgeSearchItem.this.prematchedVars) {
-                TypeElement image =
-                    this.search.getVarSeed(RegExprEdgeSearchItem.this.varIxMap.get(var));
-                assert image != null;
-                this.valuation.put(var, image);
-            }
         }
 
         /**
@@ -302,9 +288,16 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                 this.targetFind = this.search.getNode(this.targetIx);
                 assert this.targetFind != null : String.format("Target node not found");
             }
+            Valuation valuation = new Valuation();
+            for (LabelVar var : RegExprEdgeSearchItem.this.prematchedVars) {
+                TypeElement image =
+                    this.search.getVar(RegExprEdgeSearchItem.this.varIxMap.get(var));
+                assert image != null;
+                valuation.put(var, image);
+            }
             Set<RegAut.Result> matches =
                 RegExprEdgeSearchItem.this.labelAutomaton.getMatches(this.host,
-                    this.sourceFind, this.targetFind, this.valuation);
+                    this.sourceFind, this.targetFind, valuation);
             this.imageIter = matches.iterator();
         }
 
@@ -333,14 +326,6 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                         }
                     }
                 }
-                //                if (result && !RegExprEdgeSearchItem.this.freshVars.isEmpty()) {
-                //                    Map<LabelVar,TypeElement> valuation = image.getValuation();
-                //                    for (LabelVar var : RegExprEdgeSearchItem.this.freshVars) {
-                //                        this.search.putVar(
-                //                            RegExprEdgeSearchItem.this.varIxMap.get(var),
-                //                            valuation.get(var));
-                //                    }
-                //                }
             }
             return result;
         }
@@ -353,10 +338,6 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             if (this.targetFind == null) {
                 this.search.putNode(this.targetIx, null);
             }
-            //            for (LabelVar var : RegExprEdgeSearchItem.this.freshVars) {
-            //                this.search.putVar(
-            //                    RegExprEdgeSearchItem.this.varIxMap.get(var), null);
-            //            }
         }
 
         /** Rolls back the image set for the source. */
@@ -395,7 +376,5 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
          * target, or the target was pre-matched.
          */
         private HostNode targetFind;
-        /** Valuation of the label variables. */
-        private final Valuation valuation;
     }
 }
