@@ -93,7 +93,8 @@ public class CompositeEvent extends
     protected Proof extractProof(TreeMatch match) {
         Proof result = null;
         for (Proof proof : match.toProofSet()) {
-            if (createEvent(proof).equals(CompositeEvent.this)) {
+            RuleEvent proofEvent = createEvent(proof);
+            if (hashCode() == proofEvent.hashCode() && equals(proofEvent)) {
                 result = proof;
                 break;
             }
@@ -146,9 +147,10 @@ public class CompositeEvent extends
     @Override
     int computeEventHashCode() {
         int result = 1;
-        final int prime = 31;
+        // since the ordering of the sub-events may differ for equal events,
+        // we have to sum up their hashcodes
         for (int i = 0; i < this.eventArray.length; i++) {
-            result = prime * result + this.eventArray[i].hashCode();
+            result += this.eventArray[i].hashCode();
         }
         return result;
     }

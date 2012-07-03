@@ -166,6 +166,7 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
         if (other.getReuse() != EVENT) {
             return other.equalsEvent(this);
         }
+        assert !equalsEvent(other);
         return false;
     }
 
@@ -338,7 +339,8 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
 
     /** 
      * Extracts a proof corresponding to this event from a given match.
-     * @return a proof constructed from {@code match} whose events equals this one.
+     * @return a proof constructed from {@code match} whose events equals this one,
+     * or {@code null} if there is no such proof
      */
     abstract protected Proof extractProof(TreeMatch match);
 

@@ -139,12 +139,21 @@ final public class BasicEvent extends
      * {@link #equals(Object)}.
      */
     @Override
-    boolean equalsEvent(RuleEvent other) {
-        return this == other
-            || other instanceof BasicEvent
-            && getRule().equals(other.getRule())
-            && Arrays.equals(getAnchorImage(),
-                ((BasicEvent) other).getAnchorImage());
+    boolean equalsEvent(RuleEvent obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof BasicEvent)) {
+            return false;
+        }
+        BasicEvent other = (BasicEvent) obj;
+        if (!getRule().equals(obj.getRule())) {
+            return false;
+        }
+        if (!Arrays.equals(getAnchorImage(), other.getAnchorImage())) {
+            return false;
+        }
+        return true;
     }
 
     /**
