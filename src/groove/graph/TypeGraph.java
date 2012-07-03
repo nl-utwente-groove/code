@@ -540,12 +540,20 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             RuleLabel edgeLabel = edge.label();
             RuleNode sourceImage = result.getNode(edge.source());
             RuleNode targetImage = result.getNode(edge.target());
+            TypeNode sourceType = sourceImage.getType();
             TypeEdge typeEdge =
                 getTypeEdge(sourceImage.getType(), edgeLabel.getTypeLabel(),
                     targetImage.getType(), false);
             if (typeEdge == null) {
-                errors.add("%s-node has unknown %s-%s", sourceImage.getType(),
-                    edgeLabel, edge.getRole().getDescription(false), edge);
+                // if the source type is the top type, we must be in a 
+                // graph editor where a new edge label has been used and
+                // the graph has not yet been saved. This will be solved 
+                // upon saving, and the error is confusing, so dont't 
+                // throw it
+                if (!sourceType.isTopType()) {
+                    errors.add("%s-node has unknown %s-%s", sourceType,
+                        edgeLabel, edge.getRole().getDescription(false), edge);
+                }
             } else {
                 result.putEdge(edge,
                     ruleFactory.createEdge(sourceImage, edgeLabel, targetImage));
@@ -563,8 +571,15 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             RegExpr expr = checkLabel.getMatchExpr();
             Result typeResult = expr.apply(regExprTyper);
             if (typeResult.hasErrors()) {
-                for (FormatError error : typeResult.getErrors()) {
-                    errors.add(new FormatError(error, edge));
+                // if the source type is the top type, we must be in a 
+                // graph editor where a new edge label has been used and
+                // the graph has not yet been saved. This will be solved 
+                // upon saving, and the error is confusing, so dont't 
+                // throw it
+                if (!sourceImage.getType().isTopType()) {
+                    for (FormatError error : typeResult.getErrors()) {
+                        errors.add(new FormatError(error, edge));
+                    }
                 }
             } else {
                 // check if source and target type fit
@@ -778,9 +793,16 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             TypeEdge typeEdge =
                 getTypeEdge(sourceType, edgeType, targetType, false);
             if (typeEdge == null) {
-                errors.add("%s-node has unknown %s-%s", sourceType,
-                    edgeType.text(), edgeType.getRole().getDescription(false),
-                    edge.source());
+                // if the source type is the top type, we must be in a 
+                // graph editor where a new edge label has been used and
+                // the graph has not yet been saved. This will be solved 
+                // upon saving, and the error is confusing, so dont't 
+                // throw it
+                if (!sourceType.isTopType()) {
+                    errors.add("%s-node has unknown %s-%s", sourceType,
+                        edgeType.text(),
+                        edgeType.getRole().getDescription(false), edge.source());
+                }
             } else if (typeEdge.isAbstract()) {
                 errors.add("%s-node has abstract %s-%s", sourceType,
                     edgeType.text(), edgeType.getRole().getDescription(false),
