@@ -44,11 +44,13 @@ import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
 import groove.lts.StartGraphState;
 import groove.trans.HostEdge;
+import groove.trans.HostGraph;
 import groove.trans.HostGraph.HostToAspectMap;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.RuleApplication;
+import groove.trans.RuleEvent;
 import groove.trans.RuleNode;
 import groove.view.FormatError;
 import groove.view.GrammarModel;
@@ -303,8 +305,10 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
             if (source.getMatch() == null) {
                 clearSelectedMatch(true);
             } else {
-                selectMatch(source.getMatch().getEvent().getMatch(
-                    source.getState().getGraph()));
+                RuleEvent event = source.getMatch().getEvent();
+                HostGraph graph = source.getState().getGraph();
+                Proof proof = event.getMatch(graph);
+                selectMatch(proof);
             }
             refreshStatus();
         }
