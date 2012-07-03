@@ -350,7 +350,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 // the parent node did not yet exist in the tree
                 // check recursively for the grandparent
                 DefaultMutableTreeNode grandParentNode =
-                    addParentNode(topNode, dirNodeMap, parentName);
+                    addParentNode(topNode, dirNodeMap,
+                        QualName.getParent(parentName));
                 // make the parent node and register it
                 result =
                     new DirectoryTreeNode(QualName.getLastName(parentName));
