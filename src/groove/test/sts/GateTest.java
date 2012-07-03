@@ -49,22 +49,22 @@ public class GateTest extends TestCase {
         Set<InteractionVariable> s = new HashSet();
         s.add(new InteractionVariable("label", SignatureKind.INT));
         s.add(new InteractionVariable("lebal", SignatureKind.BOOL));
-        this.g1 = new Gate("ding?", s);
+        this.g1 = new Gate("?ding", s);
     }
 
     /**
      * Tests getLabel.
      */
     public void testGetLabel() {
-        Assert.assertEquals(this.g1.getLabel(), "ding?");
+        Assert.assertEquals(this.g1.getLabel(), "?ding");
     }
 
     /**
      * Tests equals.
      */
     public void testEquals() {
-        Gate g2 = new Gate("ble_fg!", new HashSet());
-        Gate g3 = new Gate("ding?", new HashSet());
+        Gate g2 = new Gate("!ble_fg", new HashSet());
+        Gate g3 = new Gate("?ding", new HashSet());
         Assert.assertTrue(this.g1.equals(this.g1));
         Assert.assertFalse(this.g1.equals(g2));
         Assert.assertTrue(this.g1.equals(g3));
@@ -90,7 +90,7 @@ public class GateTest extends TestCase {
      * Tests getStrippedLabel.
      */
     public void testGetStrippedLabel() {
-        Gate g2 = new Gate("ble_fg!", new HashSet());
+        Gate g2 = new Gate("!ble_fg", new HashSet());
         Assert.assertEquals(this.g1.getStrippedLabel(), "ding");
         Assert.assertEquals(g2.getStrippedLabel(), "ble_fg");
     }

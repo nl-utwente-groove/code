@@ -1,18 +1,28 @@
 package groove.test.sts;
 
-import groove.algebra.JavaIntAlgebra;
+import groove.algebra.IntPointAlgebra;
+import groove.algebra.SignatureKind;
 import groove.explore.util.MatchSetCollector;
+import groove.graph.TypeGraph;
+import groove.graph.TypeNode;
+import groove.graph.algebra.VariableNode;
 import groove.lts.GTS;
 import groove.lts.MatchResult;
 import groove.lts.StartGraphState;
+import groove.sts.Gate;
 import groove.sts.Location;
+import groove.sts.LocationVariable;
 import groove.sts.STS;
 import groove.sts.STSException;
 import groove.sts.SwitchRelation;
+import groove.trans.Condition;
+import groove.trans.Condition.Op;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+import groove.trans.Rule;
+import groove.trans.RuleGraph;
 import groove.trans.SystemRecord;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -21,6 +31,7 @@ import groove.view.GrammarModel;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -31,7 +42,7 @@ import junit.framework.TestCase;
  * @version $Revision $
  */
 @SuppressWarnings("all")
-public abstract class STSTest extends TestCase {
+public class STSTest extends TestCase {
 
     /** Location of the samples. */
     static protected final String INPUT_DIR = "junit/rules/sts";
@@ -59,8 +70,9 @@ public abstract class STSTest extends TestCase {
     /**
      * Sets up all Object needed for the tests
      */
-    @Override
     protected void setUp() {
+        this.sts = new STS();
+
         this.g1 = new DefaultHostGraph("g1");
         this.g2 = new DefaultHostGraph("g2");
         this.g3 = new DefaultHostGraph("g2");
@@ -68,7 +80,7 @@ public abstract class STSTest extends TestCase {
         this.n1[0] = this.g1.getFactory().createNode();
         this.n1[1] = this.g1.getFactory().createNode();
         this.n1[2] =
-            this.g1.getFactory().createValueNode(JavaIntAlgebra.instance, 0);
+            this.g1.getFactory().createValueNode(IntPointAlgebra.instance, 0);
 
         this.e1[0] =
             this.g1.getFactory().createEdge(this.n1[0], "a", this.n1[1]);
@@ -78,7 +90,7 @@ public abstract class STSTest extends TestCase {
         this.n2[0] = this.g2.getFactory().createNode();
         this.n2[1] = this.g2.getFactory().createNode();
         this.n2[2] =
-            this.g2.getFactory().createValueNode(JavaIntAlgebra.instance, 1);
+            this.g2.getFactory().createValueNode(IntPointAlgebra.instance, 0);
 
         this.e2[0] =
             this.g2.getFactory().createEdge(this.n2[0], "a", this.n2[1]);
@@ -88,7 +100,7 @@ public abstract class STSTest extends TestCase {
         this.n3[0] = this.g3.getFactory().createNode();
         this.n3[1] = this.g3.getFactory().createNode();
         this.n3[2] =
-            this.g3.getFactory().createValueNode(JavaIntAlgebra.instance, 0);
+            this.g3.getFactory().createValueNode(IntPointAlgebra.instance, 0);
 
         this.e3[0] =
             this.g3.getFactory().createEdge(this.n3[0], "a", this.n3[1]);
@@ -106,6 +118,50 @@ public abstract class STSTest extends TestCase {
             this.g2.addEdge(this.e2[i]);
             this.g3.addEdge(this.e3[i]);
         }
+    }
+
+    /**
+     * Tests hostGraphToStartLocation.
+     */
+    public void testHostGraphToStartLocation() {
+        Location l = this.sts.hostGraphToStartLocation(this.g2);
+        Assert.assertSame(this.sts.getCurrentLocation(), l);
+        Assert.assertSame(this.sts.getStartLocation(), l);
+
+        LocationVariable v = this.sts.getLocationVariable(this.e2[1]);
+        Assert.assertNotNull(v);
+    }
+
+    /**
+     * Tests STSException.
+     */
+    public void testSTSException() {
+        try {
+            GrammarModel view =
+                Groove.loadGrammar(INPUT_DIR + "/" + "exception");
+            HostGraph graph = view.getStartGraphModel().toHost();
+            this.sts.hostGraphToStartLocation(graph);
+            for (MatchResult next : createMatchSet(view)) {
+                try {
+                    this.sts.ruleMatchToSwitchRelation(graph, next,
+                        new HashSet<SwitchRelation>());
+                    Assert.fail("No STSException thrown.");
+                } catch (STSException e) {
+                    Assert.assertFalse(e.getMessage().isEmpty());
+                }
+            }
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        } catch (FormatException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    /**
+     * Tests the 'final' node in a model.
+     */
+    public void testFinalNode() {
+        test("testCase");
     }
 
     /** 
@@ -129,28 +185,18 @@ public abstract class STSTest extends TestCase {
     }
 
     /**
-     * Tests toJson.
+     * Tests getInteractionVariable.
      */
-    public void testToJson() {
-        try {
-            GrammarModel view = Groove.loadGrammar(INPUT_DIR + "/" + "updates");
-            HostGraph graph = view.getStartGraphModel().toHost();
-            this.sts.hostGraphToStartLocation(graph);
-            for (MatchResult next : createMatchSet(view)) {
-                try {
-                    this.sts.ruleMatchToSwitchRelation(graph, next,
-                        new HashSet<SwitchRelation>());
-                } catch (STSException e) {
-                    Assert.fail(e.getMessage());
-                }
-            }
-            String json = this.sts.toJSON();
-            // TODO: Test if json is well-formed
-        } catch (IOException e) {
-            Assert.fail(e.getMessage());
-        } catch (FormatException e) {
-            Assert.fail(e.getMessage());
-        }
+    public void testGetInteractionVariable() {
+        Rule r =
+            new Rule(new Condition("condition", Op.AND),
+                new RuleGraph("graph"), null);
+        VariableNode v =
+            new VariableNode(12, SignatureKind.INT, new TypeNode(1,
+                this.g1.edgeSet().iterator().next().label(), new TypeGraph(
+                    "type")));
+        this.sts.addInteractionVariable(v, r);
+        Assert.assertNotNull(this.sts.getInteractionVariable(v, r));
     }
 
     /**
@@ -171,7 +217,7 @@ public abstract class STSTest extends TestCase {
      * Tests ruleMatchToSwitchRelation for the rule matches in the given grammar.
      * @param grammarName The name of the grammar to test on.
      */
-    protected void test(String grammarName) {
+    private void test(String grammarName) {
         try {
             GrammarModel view =
                 Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
@@ -179,6 +225,7 @@ public abstract class STSTest extends TestCase {
             for (MatchResult next : createMatchSet(view)) {
                 testRuleMatchToSwitchRelation(graph, next);
             }
+            toJsonTest();
         } catch (IOException e) {
             Assert.fail(e.getMessage());
         } catch (FormatException e) {
@@ -186,16 +233,15 @@ public abstract class STSTest extends TestCase {
         }
     }
 
-    /**
-     * Tests ruleMatchToSwitchRelation.
-     */
-    protected abstract void testRuleMatchToSwitchRelation(
-            HostGraph sourceGraph, MatchResult match);
+    private void toJsonTest() {
+        String json = this.sts.toJSON();
+        // TODO: Test if json is well-formed
+    }
 
     /** 
      * Gets the first matchset for the given grammar for rule to switchrelation tests 
      */
-    protected Collection<MatchResult> createMatchSet(GrammarModel view) {
+    private Collection<MatchResult> createMatchSet(GrammarModel view) {
         try {
             HostGraph graph = view.getStartGraphModel().toHost();
             GTS gts =
@@ -207,5 +253,34 @@ public abstract class STSTest extends TestCase {
             Assert.fail(e.getMessage());
         }
         return null;
+    }
+
+    private void testRuleMatchToSwitchRelation(HostGraph sourceGraph,
+            MatchResult match) {
+        this.sts.hostGraphToStartLocation(sourceGraph);
+        try {
+            SwitchRelation sr =
+                this.sts.ruleMatchToSwitchRelation(sourceGraph, match,
+                    new HashSet<SwitchRelation>());
+
+            Assert.assertNotNull(sr);
+            Assert.assertEquals(
+                this.sts.getSwitchRelation(SwitchRelation.getSwitchIdentifier(
+                    sr.getGate(), sr.getGuard(), sr.getUpdate())), sr);
+
+            // Test with higher priority match
+            this.sts.removeSwitchRelation(sr);
+            SwitchRelation higherPriorityRelation =
+                new SwitchRelation(new Gate("gate", new HashSet()), "x > 3", "");
+            Set<SwitchRelation> higherPriorityRelations =
+                new HashSet<SwitchRelation>();
+            higherPriorityRelations.add(higherPriorityRelation);
+            sr =
+                this.sts.ruleMatchToSwitchRelation(sourceGraph, match,
+                    higherPriorityRelations);
+            Assert.assertTrue(sr.getGuard().contains("!(x > 3)"));
+        } catch (STSException e) {
+            Assert.fail(e.getMessage());
+        }
     }
 }

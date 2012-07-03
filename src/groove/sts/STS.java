@@ -1,26 +1,24 @@
 package groove.sts;
 
-import groove.algebra.Operator;
-import groove.algebra.SignatureKind;
 import groove.graph.EdgeRole;
-import groove.graph.Node;
-import groove.graph.algebra.OperatorNode;
+import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.lts.MatchResult;
 import groove.trans.AnchorKey;
+import groove.trans.Condition;
 import groove.trans.HostEdge;
-import groove.trans.HostFactory;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
 import groove.trans.RuleGraph;
+import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
+import groove.trans.RuleToHostMap;
 import groove.util.Pair;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,12 +31,12 @@ import java.util.Set;
  * 
  * @author Vincent de Bruijn
  */
-public abstract class STS {
+public class STS {
 
     /**
      * A mapping of generalized graphs to their corresponding location.
      */
-    protected Map<GeneralizedGraph,Location> locationMap;
+    protected Map<HostGraph,Location> locationMap;
     /**
      * A mapping of an identifier object to its corresponding switch relation.
      */
@@ -53,24 +51,61 @@ public abstract class STS {
      */
     protected Set<Gate> gates;
 
-    // The start location of this sts.
+    // The start location of this STS.
     private Location start;
-    // The location the sts is currently at.
+    // The location the STS is currently at.
     private Location current;
 
+    private final Map<Pair<Integer,TypeLabel>,LocationVariable> locationVariables;
+
+    // Singleton class for rule inspection methods
+    private RuleInspector ruleInspector;
+
     /**
-     * Initializes the attributes of this STS.
+     * Creates a new instance.
      */
-    protected void initialize() {
-        this.locationMap = new HashMap<GeneralizedGraph,Location>();
+    public STS() {
+        this.locationMap = new HashMap<HostGraph,Location>();
         this.switchRelationMap = new HashMap<Object,SwitchRelation>();
         this.gates = new HashSet<Gate>();
         this.interactionVariables =
             new HashMap<Pair<VariableNode,Rule>,InteractionVariable>();
+        this.locationVariables =
+            new HashMap<Pair<Integer,TypeLabel>,LocationVariable>();
+        this.ruleInspector = RuleInspector.getInstance();
     }
 
     /**
-     * Gets the current location of this sts.
+     * Gets the location variable represented by the given edge.
+     * 
+     * @param edge The edge by which the variable is represented.
+     * @return The location variable.
+     */
+    public LocationVariable getLocationVariable(HostEdge edge) {
+        return this.locationVariables.get(new Pair<Integer,TypeLabel>(
+            edge.source().getNumber(), edge.label()));
+    }
+
+    /**
+     * Adds a location variable to this STS.
+     * 
+     * @param edge The edge by which the variable is represented. Must have a
+     *            ValueNode as target.
+     * @param init The initial value of the variable.
+     * @return The location variable.
+     */
+    public LocationVariable addLocationVariable(HostEdge edge, Object init) {
+        ValueNode node = (ValueNode) edge.target();
+        String label = LocationVariable.createLocationVariableLabel(edge);
+        LocationVariable v =
+            new LocationVariable(label, node.getSignature(), init);
+        this.locationVariables.put(new Pair<Integer,TypeLabel>(
+            edge.source().getNumber(), edge.label()), v);
+        return v;
+    }
+
+    /**
+     * Gets the current location of this STS.
      * @return The current location.
      */
     public Location getCurrentLocation() {
@@ -78,7 +113,7 @@ public abstract class STS {
     }
 
     /**
-     * Gets the start location of this sts.
+     * Gets the start location of this STS.
      * @return The start location.
      */
     public Location getStartLocation() {
@@ -86,7 +121,15 @@ public abstract class STS {
     }
 
     /**
-     * Moves this sts to a given location.
+     * Get all the location variables in this STS.
+     * @return The location variables.
+     */
+    public Set<LocationVariable> getLocationVariables() {
+        return new HashSet<LocationVariable>(this.locationVariables.values());
+    }
+
+    /**
+     * Moves this STS to a given location.
      * @param l The location where to move to.
      */
     public void toLocation(Location l) {
@@ -115,7 +158,7 @@ public abstract class STS {
     }
 
     /**
-     * Sets the start location of this sts.
+     * Sets the start location of this STS.
      * @param start The start location.
      */
     public void setStartLocation(Location start) {
@@ -124,7 +167,7 @@ public abstract class STS {
     }
 
     /**
-     * Adds an interaction variable to this sts.
+     * Adds an interaction variable to this STS.
      * @param node The node by which the variable is represented.
      * @param rule The rule where the node is in.
      * @return The interaction variable.
@@ -153,7 +196,7 @@ public abstract class STS {
     }
 
     /**
-     * Removes a switch relation from this sts.
+     * Removes a switch relation from this STS.
      */
     public void removeSwitchRelation(SwitchRelation relation) {
         this.switchRelationMap.remove(SwitchRelation.getSwitchIdentifier(
@@ -161,12 +204,12 @@ public abstract class STS {
     }
 
     /**
-     * Transforms the given graph to a location in this sts.
+     * Transforms the given graph to a location in this STS.
      * @param graph The graph to transform.
      * @return The location.
      */
     public Location hostGraphToLocation(HostGraph graph) {
-        GeneralizedGraph locationGraph = generalize(graph);
+        GeneralizedGraph locationGraph = new GeneralizedGraph(graph);
         Location location = this.locationMap.get(locationGraph);
         if (location == null) {
             location = new Location("s" + this.locationMap.size());
@@ -176,30 +219,15 @@ public abstract class STS {
     }
 
     /**
-     * Creates interaction variables from a rule event.
-     * @param event The rule event.
-     * @param iVarMap A map of nodes to variables to populate.
-     * @throws STSException Inconsistencies in the model are reported by throwing an STSException.
+     * Transforms the given graph to starting location of this STS.
+     * @param graph The graph to transform.
+     * @return The start location.
      */
-    protected void createInteractionVariables(RuleEvent event,
-            Map<VariableNode,InteractionVariable> iVarMap) throws STSException {
-
-        Rule rule = event.getRule();
-
-        int end = rule.getSignature().size();
-        for (int i = 0; i < end; i++) {
-            int index = rule.getParBinding(i);
-            AnchorKey k = rule.getAnchor().get(index);
-            if (k instanceof VariableNode) {
-                VariableNode v = (VariableNode) k;
-                InteractionVariable iVar = addInteractionVariable(v, rule);
-                iVarMap.put(v, iVar);
-            } else {
-                // We don't allow non-variables to be parameters
-                throw new STSException("ERROR: non-variable node "
-                    + k.toString() + " listed as parameter");
-            }
-        }
+    public Location hostGraphToStartLocation(HostGraph graph) {
+        Location location = hostGraphToLocation(graph);
+        setStartLocation(location);
+        initializeLocationVariables(graph);
+        return location;
     }
 
     /**
@@ -214,20 +242,23 @@ public abstract class STS {
 
         RuleEvent event = match.getEvent();
 
-        // Find all interaction variables.
+        // Map variable nodes to interaction variables in the LHS of this rule
         // (datatype node labeled as parameter in lhs).
         Map<VariableNode,InteractionVariable> iVarMap =
             new HashMap<VariableNode,InteractionVariable>();
-        createInteractionVariables(event, iVarMap);
+        mapInteractionVariables(event, iVarMap);
 
-        // Map all location variables in the LHS of this rule
+        // Map variable nodes to location variables in the LHS of this rule
         Map<VariableNode,LocationVariable> lVarMap =
             new HashMap<VariableNode,LocationVariable>();
-        createLocationVariables(event, sourceGraph, lVarMap);
+        Map<VariableNode,LocationVariable> lValueMap =
+            new HashMap<VariableNode,LocationVariable>();
+        mapLocationVariables(event, sourceGraph, lVarMap, lValueMap);
 
         // Create the guard
         String guard =
-            createGuard(event, iVarMap, lVarMap, higherPriorityRelations);
+            createGuard(event, iVarMap, lVarMap, lValueMap,
+                higherPriorityRelations);
 
         // Create the update for this switch relation
         String update = createUpdate(event, iVarMap, lVarMap);
@@ -291,258 +322,23 @@ public abstract class STS {
         return json + "}}}";
     }
 
-    /**
-     * Creates the guard from a rule event.
-     * @param event The rule event.
-     * @param iVarMap A map of variable nodes to interaction variables. 
-     * @param lVarMap A map of variable nodes to location variables. 
-     * @return The created guard.
-     */
-    protected String createGuard(RuleEvent event,
-            Map<VariableNode,InteractionVariable> iVarMap,
-            Map<VariableNode,LocationVariable> lVarMap,
-            Set<SwitchRelation> higherPriorityRelations) {
-
-        Rule rule = event.getRule();
-        RuleGraph lhs = rule.lhs();
-
-        String guard = "";
-        for (VariableNode v : iVarMap.keySet()) {
-            guard +=
-                parseGuardExpression(rule, v, iVarMap.get(v), iVarMap, lVarMap);
-        }
-        for (VariableNode v : lVarMap.keySet()) {
-            if (!iVarMap.containsKey(v)) {
-                guard +=
-                    parseGuardExpression(rule, v, lVarMap.get(v), iVarMap,
-                        lVarMap);
-            }
-        }
-
-        // Do a one time check for expressions resulting in a known value,
-        // to allow operator node with variable arguments to true/false output
-        List<String> results =
-            parseArgumentExpression(rule, lhs, iVarMap, lVarMap);
-        for (String s : results) {
-            guard += " && " + s;
-        }
-        String combinedGuard = "";
-        for (SwitchRelation higherPriorityRelation : higherPriorityRelations) {
-            combinedGuard += higherPriorityRelation.getGuard() + " && ";
-        }
-        if (!combinedGuard.isEmpty()) {
-            guard +=
-                "&& !("
-                    + combinedGuard.substring(0, combinedGuard.length() - 4)
-                    + ")";
-        }
-        return guard;
-    }
+    // **************************
+    // Private methods start here
+    // **************************
 
     /**
-     * Parses the guard(s) for Variable v.
-     * @param rule The rule.
-     * @param vn The variable node.
-     * @param v The variable.
-     * @param iVarMap A map of variable nodes to interaction variables. 
-     * @param lVarMap A map of variable nodes to location variables. 
-     * @return The guard.
+     * Initializes the Location variables in the start graph.
+     * @param graph The start graph.
      */
-    protected String parseGuardExpression(Rule rule, VariableNode vn,
-            Variable v, Map<VariableNode,InteractionVariable> iVarMap,
-            Map<VariableNode,LocationVariable> lVarMap) {
-
-        RuleGraph lhs = rule.lhs();
-        String guard = "";
-        List<String> results =
-            parseAlgebraicExpression(rule, lhs, vn, iVarMap, lVarMap);
-        for (String s : results) {
-            guard += v.getLabel() + " == " + s + " && ";
-        }
-        results = parseBooleanExpression(rule, lhs, vn, iVarMap, lVarMap);
-        for (String s : results) {
-            guard += v.getLabel() + s + " && ";
-        }
-        if (!guard.isEmpty()) {
-            guard = guard.substring(0, guard.length() - 4);
-        }
-        return guard;
-    }
-
-    /**
-     * Parses an algebraic expression.
-     * @param rule The rule in which the expression is found.
-     * @param pattern The graph in which the expression is found.
-     * @param variableResult The VariableNode which is the result of the expression.
-     * @param iVarMap A map of variable nodes to interaction variables. 
-     * @param lVarMap A map of variable nodes to location variables. 
-     * @return All expressions found.
-     */
-    protected List<String> parseAlgebraicExpression(Rule rule,
-            RuleGraph pattern, VariableNode variableResult,
-            Map<VariableNode,InteractionVariable> iVarMap,
-            Map<VariableNode,LocationVariable> lVarMap) {
-
-        List<String> result = new ArrayList<String>();
-        for (RuleNode node : pattern.nodeSet()) {
-            if (node instanceof OperatorNode) {
-                OperatorNode opNode = (OperatorNode) node;
-                if (opNode.getTarget().equals(variableResult)) {
-                    List<VariableNode> arguments = opNode.getArguments();
-                    String[] subExpressions = new String[arguments.size()];
-                    for (int i = 0; i < arguments.size(); i++) {
-                        String newResult =
-                            parseExpression(rule, pattern, arguments.get(i),
-                                iVarMap, lVarMap);
-                        subExpressions[i] = newResult.toString();
-                    }
-                    Operator op = opNode.getOperator();
-                    result.add("(" + subExpressions[0] + op.getSymbol()
-                        + subExpressions[1] + ")");
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Parses an expression where the VariableNode is an argument of an
-     * OperatorNode.
-     * @param rule The rule in which the expression is found.
-     * @param pattern The graph in which the expression is found.
-     * @param iVarMap A map of variable nodes to interaction variables. 
-     * @param lVarMap A map of variable nodes to location variables. 
-     * @return All expressions found.
-     */
-    protected List<String> parseArgumentExpression(Rule rule,
-            RuleGraph pattern, Map<VariableNode,InteractionVariable> iVarMap,
-            Map<VariableNode,LocationVariable> lVarMap) {
-
-        List<String> result = new ArrayList<String>();
-        for (RuleNode node : pattern.nodeSet()) {
-            String value;
-            if (node instanceof OperatorNode) {
-                OperatorNode opNode = (OperatorNode) node;
-                if ((value = opNode.getTarget().getSymbol()) != null) {
-                    // opNode.getArguments().contains(variableResult) &&
-                    // getInteractionVariable(variableResult) != null
-                    // operatorNode refers to a node with a value
-                    List<VariableNode> arguments = opNode.getArguments();
-                    String[] subExpressions = new String[arguments.size()];
-                    for (int i = 0; i < arguments.size(); i++) {
-                        String newResult =
-                            parseExpression(rule, pattern, arguments.get(i),
-                                iVarMap, lVarMap);
-                        subExpressions[i] = newResult.toString();
-                    }
-                    Operator op = opNode.getOperator();
-                    String expr =
-                        ("(" + subExpressions[0] + " " + op.getSymbol() + " "
-                            + subExpressions[1] + ")");
-                    if (!op.getResultType().equals(SignatureKind.BOOL)) {
-                        expr = "(" + expr + "== " + value + ")";
-                    }
-                    result.add(expr);
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Parses a Boolean expression (edges with no operator node).
-     * @param rule The rule in which the expression is found.
-     * @param pattern The graph in which the expression is found.
-     * @param variableResult The VariableNode which is the result of the expression.
-     * @param iVarMap A map of variable nodes to interaction variables. 
-     * @param lVarMap A map of variable nodes to location variables. 
-     * @return All expressions found.
-     */
-    protected List<String> parseBooleanExpression(Rule rule, RuleGraph pattern,
-            VariableNode variableResult,
-            Map<VariableNode,InteractionVariable> iVarMap,
-            Map<VariableNode,LocationVariable> lVarMap) {
-
-        List<String> result = new ArrayList<String>();
-        for (RuleEdge e : pattern.inEdgeSet(variableResult)) {
-            if (isBooleanEdge(e)) {
-                String expr =
-                    parseExpression(rule, pattern, e.source(), iVarMap, lVarMap);
-                result.add(" " + getOperator(e.label().text()) + " " + expr);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Parses an expression in a rule.
-     * @param rule The rule in which the expression is found.
-     * @param pattern The graph in which the expression is found.
-     * @param resultValue The Node which is the result of the expression.
-     * @param iVarMap A map of variable nodes to interaction variables. 
-     * @param lVarMap A map of variable nodes to location variables. 
-     * @return The expression.
-     */
-    protected String parseExpression(Rule rule, RuleGraph pattern,
-            Node resultValue, Map<VariableNode,InteractionVariable> iVarMap,
-            Map<VariableNode,LocationVariable> lVarMap) {
-        VariableNode variableResult = (VariableNode) resultValue;
-        // Check if the expression is a primitive value
-        String symbol = variableResult.getSymbol();
-        if (symbol != null) {
-            return symbol;
-        }
-        // Check if the expression is a known interaction variable
-        InteractionVariable iVar = iVarMap.get(variableResult);
-        if (iVar != null) {
-            return iVar.getLabel();
-        }
-        // Check if the expression is a known location variable
-        Variable lVar = lVarMap.get(variableResult);
-        if (lVar != null) {
-            return lVar.getLabel();
-        }
-        // The expression has to be a complex expression.
-        List<String> result =
-            parseAlgebraicExpression(rule, pattern, variableResult, iVarMap,
-                lVarMap);
-        if (result.isEmpty()) {
-            return "";
-        } else {
-            return result.get(0);
-        }
-    }
-
-    /**
-     * Generalizes the given graph by stripping its data values.
-     * @param graph The graph to strip.
-     * @return A GeneralizedGraph representing the stripped graph.
-     */
-    protected GeneralizedGraph generalize(HostGraph graph) {
-        GeneralizedGraph generalizedGraph = new GeneralizedGraph(graph);
-        HostFactory factory = generalizedGraph.getFactory();
-        List<HostEdge> toRemove = new ArrayList<HostEdge>();
-        for (HostEdge edge : generalizedGraph.edgeSet()) {
+    private void initializeLocationVariables(HostGraph graph) {
+        for (HostEdge edge : graph.edgeSet()) {
             HostNode node = edge.target();
-            if (node.getType().isDataType()
-                && !isFinal(generalizedGraph, edge.source())) {
-                toRemove.add(edge);
+            if (node.getType().isDataType() && !isFinal(graph, edge.source())) {
+                ValueNode valueNode = (ValueNode) node;
+                addLocationVariable(edge,
+                    this.ruleInspector.getSymbol(valueNode.getSymbol()));
             }
         }
-        for (HostEdge edge : toRemove) {
-            ValueNode valueNode = (ValueNode) edge.target();
-            Object newValue = null;
-            newValue = Variable.getDefaultValue(valueNode.getSignature());
-
-            generalizedGraph.removeNode(valueNode);
-            generalizedGraph.removeEdge(edge);
-            ValueNode newNode =
-                factory.createValueNode(valueNode.getAlgebra(), newValue);
-            generalizedGraph.addNode(newNode);
-            generalizedGraph.addEdge(factory.createEdge(edge.source(),
-                edge.label(), newNode));
-        }
-        return generalizedGraph;
     }
 
     /**
@@ -552,7 +348,7 @@ public abstract class STS {
      * @param node The HostNode to check.
      * @return Whether node is final or not.
      */
-    protected boolean isFinal(HostGraph graph, HostNode node) {
+    private boolean isFinal(HostGraph graph, HostNode node) {
         for (HostEdge e : graph.edgeSet(node)) {
             if (e.getRole().equals(EdgeRole.FLAG)
                 && e.label().text().equals("final")) {
@@ -563,54 +359,162 @@ public abstract class STS {
     }
 
     /**
-     * Gets the correct operator for the switch relation guard/update syntax.
-     * @param operator The edge label.
-     * @return The correct operator.
+     * Checks whether the given HostNode is considered 'final', meaning it's
+     * connected data values do not change.
+     * @param graph The HostGraph to which the node belongs.
+     * @param node The HostNode to check.
+     * @return Whether node is final or not.
      */
-    protected String getOperator(String operator) {
-        if (operator == "=") {
-            return "==";
-        } else {
-            return operator;
+    private boolean isFinal(RuleGraph graph, RuleNode node) {
+        for (RuleEdge e : graph.edgeSet(node)) {
+            if (e.getRole().equals(EdgeRole.FLAG)
+                && e.label().text().equals("final")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Maps the rule variables to location variables in the source graph,
+     * using a rule event.
+     * @param event The rule event.
+     * @param sourceGraph The graph on which the event matches.
+     * @param lVarMap A map of nodes to variables to populate.
+     * @param lValueMap a map of nodes to constants to populate.
+     * @throws STSException Inconsistencies in the model are reported by throwing an STSException.
+     */
+    private void mapLocationVariables(RuleEvent event, HostGraph sourceGraph,
+            Map<VariableNode,LocationVariable> lVarMap,
+            Map<VariableNode,LocationVariable> lValueMap) throws STSException {
+
+        RuleGraph lhs = event.getRule().lhs();
+        RuleToHostMap ruleMap = event.getMatch(sourceGraph).getPatternMap();
+
+        for (RuleEdge le : lhs.edgeSet()) {
+            if (le.getType() != null && le.target() instanceof VariableNode) {
+                HostEdge hostEdge = ruleMap.mapEdge(le);
+                LocationVariable var = getLocationVariable(hostEdge);
+                if (var == null && !isFinal(sourceGraph, hostEdge.source())) {
+                    throw new STSException(
+                        "ERROR: Data edge found not mapped by any variable: "
+                            + hostEdge);
+                } else if (!lVarMap.containsKey(le.target())) {
+                    lVarMap.put((VariableNode) le.target(), var);
+                }
+            }
+        }
+        for (RuleNode node : lhs.nodeSet()) {
+            if (node instanceof VariableNode) {
+                VariableNode n = (VariableNode) node;
+                if (n.getConstant() != null) {
+                    for (RuleEdge re : lhs.inEdgeSet(node)) {
+                        HostEdge hostEdge = ruleMap.mapEdge(re);
+                        // It is possible that the rule edge has no image.
+                        // For example, = edges are in the LHS, but have no
+                        // image in the graph.
+                        if (hostEdge != null) {
+                            LocationVariable var =
+                                getLocationVariable(hostEdge);
+                            if (var != null) {
+                                lValueMap.put(n, var);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
     /**
-     * Tests if the edge is a boolean (= or !=) edge.
-     * @param edge The edge to test.
-     * @return Whether the edge is a boolean edge or not.
-     */
-    protected static boolean isBooleanEdge(RuleEdge edge) {
-        return edge.getType() == null;
-    }
-
-    // *****************
-    // ABSTRACT METHODS
-    // *****************
-
-    /**
-     * Get all the location variables in this STS.
-     * @return The location variables.
-     */
-    public abstract Set<LocationVariable> getLocationVariables();
-
-    /**
-     * Transforms the given graph to starting location of this sts.
-     * @param graph The graph to transform.
-     * @return The start location.
-     */
-    public abstract Location hostGraphToStartLocation(HostGraph graph);
-
-    /**
-     * Creates location variables from a rule event.
+     * Maps the rule variables to interaction variables in the source graph,
+     * using a rule event.
      * @param event The rule event.
-     * @param sourceGraph The graph on which the event matches.
-     * @param lVarMap A map of nodes to variables to populate.
+     * @param iVarMap A map of nodes to variables to populate.
      * @throws STSException Inconsistencies in the model are reported by throwing an STSException.
      */
-    protected abstract void createLocationVariables(RuleEvent event,
-            HostGraph sourceGraph, Map<VariableNode,LocationVariable> lVarMap)
-        throws STSException;
+    private void mapInteractionVariables(RuleEvent event,
+            Map<VariableNode,InteractionVariable> iVarMap) throws STSException {
+
+        Rule rule = event.getRule();
+
+        int end = rule.getSignature().size();
+        for (int i = 0; i < end; i++) {
+            int index = rule.getParBinding(i);
+            AnchorKey k = rule.getAnchor().get(index);
+            if (k instanceof VariableNode) {
+                VariableNode v = (VariableNode) k;
+                InteractionVariable iVar = addInteractionVariable(v, rule);
+                iVarMap.put(v, iVar);
+            } else {
+                // We don't allow non-variables to be parameters
+                throw new STSException("ERROR: non-variable node "
+                    + k.toString() + " listed as parameter");
+            }
+        }
+    }
+
+    /**
+     * Creates the guard from a rule event.
+     * @param event The rule event.
+     * @param iVarMap A map of variable nodes to interaction variables. 
+     * @param lVarMap A map of variable nodes to location variables. 
+     * @param lValueMap A map of constants to location variables.
+     * @return The created guard.
+     */
+    private String createGuard(RuleEvent event,
+            Map<VariableNode,InteractionVariable> iVarMap,
+            Map<VariableNode,LocationVariable> lVarMap,
+            Map<VariableNode,LocationVariable> lValueMap,
+            Set<SwitchRelation> higherPriorityRelations) {
+
+        Rule rule = event.getRule();
+        RuleGraph lhs = rule.lhs();
+
+        String guard = "";
+        for (VariableNode v : iVarMap.keySet()) {
+            guard +=
+                this.ruleInspector.parseGuardExpression(rule, v,
+                    iVarMap.get(v), iVarMap, lVarMap);
+        }
+        for (VariableNode v : lVarMap.keySet()) {
+            if (!iVarMap.containsKey(v)) {
+                guard +=
+                    this.ruleInspector.parseGuardExpression(rule, v,
+                        lVarMap.get(v), iVarMap, lVarMap);
+            }
+        }
+
+        if (!guard.isEmpty()) {
+            guard += " && ";
+        }
+        // Do a one time check for expressions resulting in a known value,
+        // to allow operator node with variable arguments to true/false output
+        List<String> results =
+            this.ruleInspector.parseArgumentExpression(rule, lhs, iVarMap,
+                lVarMap);
+        for (String s : results) {
+            guard += s + " && ";
+        }
+        String combinedGuard = "";
+        for (SwitchRelation higherPriorityRelation : higherPriorityRelations) {
+            combinedGuard += higherPriorityRelation.getGuard() + " && ";
+        }
+        if (!combinedGuard.isEmpty()) {
+            guard +=
+                "!(" + combinedGuard.substring(0, combinedGuard.length() - 4)
+                    + ") && ";
+        }
+        for (VariableNode v : lValueMap.keySet()) {
+            guard +=
+                lValueMap.get(v).getLabel() + " == "
+                    + this.ruleInspector.getSymbol(v.getSymbol()) + " && ";
+        }
+        if (guard.endsWith(" && ")) {
+            guard = guard.substring(0, guard.length() - 4);
+        }
+        return guard;
+    }
 
     /**
      * Creates the update from a rule event.
@@ -620,7 +524,71 @@ public abstract class STS {
      * @return The created update.
      * @throws STSException Inconsistencies in the model are reported by throwing an STSException.
      */
-    protected abstract String createUpdate(RuleEvent event,
+    private String createUpdate(RuleEvent event,
             Map<VariableNode,InteractionVariable> iVarMap,
-            Map<VariableNode,LocationVariable> lVarMap) throws STSException;
+            Map<VariableNode,LocationVariable> lVarMap) throws STSException {
+
+        Rule rule = event.getRule();
+        String name = rule.getFullName();
+        Condition nac = rule.getCondition();
+
+        String update = "";
+        // first find the location variables undergoing an update, by finding
+        // eraser edges to these variables
+        Map<Pair<RuleNode,RuleLabel>,RuleEdge> possibleUpdates =
+            new HashMap<Pair<RuleNode,RuleLabel>,RuleEdge>();
+        for (RuleEdge e : rule.getEraserEdges()) {
+            if (e.target().getType().isDataType()
+                && !isFinal(rule.lhs(), e.source())) {
+                possibleUpdates.put(
+                    new Pair<RuleNode,RuleLabel>(e.source(), e.label()), e);
+            }
+        }
+
+        for (RuleEdge creatorEdge : rule.getCreatorEdges()) {
+            if (creatorEdge.target().getType().isDataType()
+                && !isFinal(rule.lhs(), creatorEdge.source())) {
+                // A creator edge has been detected to a data node,
+                // this indicates an update for a location variable.
+                RuleEdge eraserEdge =
+                    possibleUpdates.remove(new Pair<RuleNode,RuleLabel>(
+                        creatorEdge.source(), creatorEdge.label()));
+                if (eraserEdge == null) {
+                    // Modeling constraint, updates have to be done in
+                    // eraser/creator pairs.
+                    throw new STSException(
+                        "ERROR: no eraser edge found for created location variable "
+                            + creatorEdge
+                            + "; location variables have to be declared in start location and reference must be deleted");
+                }
+                Variable var = lVarMap.get(eraserEdge.target());
+                if (var == null) {
+                    // Data nodes should always be a location variable.
+                    throw new STSException(
+                        "ERROR: no location variable found referenced by "
+                            + eraserEdge.target().toString()
+                            + " in the LHS or Condition of rule " + name);
+                }
+                RuleNode node = creatorEdge.target();
+                // Parse the resulting value. This can be a variable or an
+                // expression over variables and primitive data types.
+                String updateValue =
+                    this.ruleInspector.parseExpression(rule, nac.getPattern(),
+                        node, iVarMap, lVarMap);
+                if (updateValue.length() == 0) {
+                    // Update can't be empty. This should never happen.
+                    throw new STSException("ERROR: Update of " + var.toString()
+                        + " in rule " + rule.getFullName()
+                        + " is empty where it shouldn't be.");
+                }
+                update += var.getLabel() + " = " + updateValue + "; ";
+            }
+        }
+
+        if (!possibleUpdates.isEmpty()) {
+            throw new STSException("ERROR: eraser edge found without creator: "
+                + possibleUpdates.values().iterator().next());
+        }
+        return update;
+    }
 }

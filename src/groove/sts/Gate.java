@@ -53,7 +53,8 @@ public class Gate {
             type = "?";
         }
         String json =
-            "\"" + this.label + "\":{\"type\":\"" + type + "\",\"iVars\":[";
+            "\"" + getStrippedLabel() + "\":{\"type\":\"" + type
+                + "\",\"iVars\":[";
         for (Variable v : this.iVars) {
             json += "\"" + v.getLabel() + "\",";
         }
@@ -68,8 +69,8 @@ public class Gate {
      * @return The stripped label.
      */
     public String getStrippedLabel() {
-        if (this.label.endsWith("?") || this.label.endsWith("!")) {
-            return this.label.substring(0, this.label.length() - 1);
+        if (this.label.startsWith("?") || this.label.startsWith("!")) {
+            return this.label.substring(1, this.label.length());
         } else {
             return this.label;
         }
