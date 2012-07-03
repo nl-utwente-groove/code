@@ -7,9 +7,8 @@ import org.junit.runners.Suite;
  * @author Vincent de Bruijn
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({CompleteSTSTest.class, OnTheFlySTSTest.class,
-    GateTest.class, VariableTest.class, LocationTest.class,
-    SwitchRelationTest.class})
+@Suite.SuiteClasses({STSTest.class, GateTest.class, VariableTest.class,
+    LocationTest.class, SwitchRelationTest.class})
 public class AllSTSTests {
     // Empty by design
 }

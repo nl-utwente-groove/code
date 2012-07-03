@@ -50,19 +50,6 @@ public class SymbolicStrategy extends AbstractStrategy {
      */
     protected STS sts;
 
-    @Override
-    public void prepare(GTS gts, GraphState startState) {
-        super.prepare(gts, startState);
-        if (this.strategy != null) {
-            this.strategy.prepare(gts, startState);
-        }
-        if (this.sts == null) {
-            // throw exception
-        } else {
-            this.sts.hostGraphToStartLocation(startState.getGraph());
-        }
-    }
-
     /**
      * Set the exploration strategy to use.
      * @param strategy The strategy.
@@ -72,11 +59,30 @@ public class SymbolicStrategy extends AbstractStrategy {
     }
 
     /**
-     * Sets the sts to use.
-     * @param sts The sts.
+     * Getter for the STS this strategy is building.
+     * @return The STS.
      */
-    public void setSTS(STS sts) {
-        this.sts = sts;
+    public STS getSTS() {
+        return this.sts;
+    }
+
+    @Override
+    public void prepare(GTS gts, GraphState startState) {
+        super.prepare(gts, startState);
+        // Check if the point algebra is set. This should be moved to the hook
+        // in an upcoming feature
+        if (gts.getGrammar().getProperties().getAlgebraFamily() != "point") {
+            System.err.print("Grammar AlgebraFamily property should be point,"
+                + "if the SymbolicStrategy is used.");
+            return;
+        }
+
+        if (this.strategy == null) {
+            this.strategy = new BFSStrategy();
+        }
+        this.strategy.prepare(gts, startState);
+        this.sts = new STS();
+        this.sts.hostGraphToStartLocation(gts.getGrammar().getStartGraph());
     }
 
     @Override
@@ -107,7 +113,7 @@ public class SymbolicStrategy extends AbstractStrategy {
                                 higherPriorityRelations);
                     } catch (STSException e) {
                         // TODO: handle this exception
-                        System.out.println(e.getStackTrace());
+                        e.printStackTrace();
                     }
                     if (sr.getGuard().isEmpty()) {
                         emptyGuard = true;
@@ -129,14 +135,6 @@ public class SymbolicStrategy extends AbstractStrategy {
             }
         }
         return updateAtState();
-    }
-
-    /**
-     * Getter for the STS this strategy is building.
-     * @return The STS.
-     */
-    public STS getSTS() {
-        return this.sts;
     }
 
     @Override

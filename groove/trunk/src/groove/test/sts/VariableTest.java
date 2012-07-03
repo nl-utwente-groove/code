@@ -19,6 +19,7 @@ package groove.test.sts;
 import groove.algebra.SignatureKind;
 import groove.sts.InteractionVariable;
 import groove.sts.LocationVariable;
+import groove.sts.Variable;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
@@ -99,5 +100,23 @@ public class VariableTest extends TestCase {
      */
     public void testToJsonInInteractionVariable() {
         this.iVar.toJSON();
+    }
+
+    /** 
+     * Test getDefaultValue in Variable
+     */
+    public void testGetDefaultValue() {
+        Assert.assertEquals(
+            Variable.getDefaultValue(SignatureKind.INT).getClass(),
+            Integer.class);
+        Assert.assertEquals(
+            Variable.getDefaultValue(SignatureKind.REAL).getClass(),
+            Double.class);
+        Assert.assertEquals(
+            Variable.getDefaultValue(SignatureKind.BOOL).getClass(),
+            Boolean.class);
+        Assert.assertEquals(
+            Variable.getDefaultValue(SignatureKind.STRING).getClass(),
+            String.class);
     }
 }

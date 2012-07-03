@@ -5,7 +5,6 @@ import groove.abstraction.neigh.explore.strategy.ShapeDFSStrategy;
 import groove.explore.encode.EncodedBoundary;
 import groove.explore.encode.EncodedEdgeMap;
 import groove.explore.encode.EncodedEnabledRule;
-import groove.explore.encode.EncodedExplorationMode;
 import groove.explore.encode.EncodedHostName;
 import groove.explore.encode.EncodedInt;
 import groove.explore.encode.EncodedLtlProperty;
@@ -133,8 +132,7 @@ public enum StrategyValue implements ParsableValue {
             "This strategy is used for abstract state space exploration."),
     /** Remote strategy. */
     REMOTE("remote", "Remote Exploration",
-            "This strategy obtains the exploration strategy from and sends the"
-                + "result to a remote server.");
+            "This strategy sends the result as an STS to a remote server.");
 
     private StrategyValue(String keyword, String name, String description) {
         this.keyword = keyword;
@@ -356,18 +354,13 @@ public enum StrategyValue implements ParsableValue {
                 }
             };
         case REMOTE:
-            return new MyTemplate2<String,Boolean>(new PSequence(new PAll(
-                "host"), new POptional("!", "model exploration",
-                EncodedExplorationMode.POSITIVE,
-                EncodedExplorationMode.NEGATIVE)), "host",
-                new EncodedHostName(), "on-the-fly",
-                new EncodedExplorationMode()) {
+            return new MyTemplate1<String>(new PAll("host"), "host",
+                new EncodedHostName()) {
 
                 @Override
-                public Strategy create(String host, Boolean onTheFly) {
+                public Strategy create(String host) {
                     RemoteStrategy strategy = new RemoteStrategy();
                     strategy.setHost(host);
-                    strategy.useOnTheFlyExploration(onTheFly);
                     return strategy;
                 }
             };
