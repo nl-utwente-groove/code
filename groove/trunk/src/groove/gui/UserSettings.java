@@ -33,6 +33,7 @@ public class UserSettings {
     public static void applyUserSettings(Simulator simulator) {
         applyFrameSettings(simulator.getFrame());
         applyLocationSettings(simulator);
+        applyDisplaySettings(simulator);
     }
 
     /** Reads and applies previously stored settings. */
@@ -112,10 +113,34 @@ public class UserSettings {
         }
     }
 
+    private static void applyDisplaySettings(final Simulator simulator) {
+        String display = userPrefs.get(DISPLAY_KEY, "");
+        final DisplayKind kind =
+            display.isEmpty() ? null : DisplayKind.valueOf(display);
+        String ltsTab = userPrefs.get(SIMULATION_TAB_KEY, "");
+        final Integer tabIndex =
+            ltsTab.isEmpty() ? null : Integer.parseInt(ltsTab);
+        if (kind != null || tabIndex != null) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (kind != null) {
+                        simulator.getModel().setDisplay(kind);
+                    }
+                    if (tabIndex != null) {
+                        simulator.getDisplaysPanel().getLtsDisplay().getTabPane().setSelectedIndex(
+                            tabIndex);
+                    }
+                }
+            });
+        }
+    }
+
     /** Synchronises saved settings with the current ones. */
     public static void syncSettings(Simulator simulator) {
         syncFrameSettings(simulator.getFrame());
         syncLocationSettings(simulator);
+        syncDisplaySettings(simulator);
     }
 
     /** Synchronises saved settings with the current ones. */
@@ -139,10 +164,23 @@ public class UserSettings {
         userPrefs.put(LOCATION_KEY, location.toString());
     }
 
+    /** Persists the selected display. */
+    private static void syncDisplaySettings(Simulator simulator) {
+        Object display = simulator.getModel().getDisplay().name();
+        userPrefs.put(DISPLAY_KEY, display.toString());
+        Integer ltsTabIndex =
+            simulator.getDisplaysPanel().getLtsDisplay().getTabPane().getSelectedIndex();
+        userPrefs.put(SIMULATION_TAB_KEY, ltsTabIndex.toString());
+    }
+
     /** The persistently stored user preferences. */
     private static final Preferences userPrefs = Options.userPrefs;
     /** Key for the grammar location. */
     private static final String LOCATION_KEY = "Grammar location";
+    /** Key for the selected display. */
+    private static final String DISPLAY_KEY = "Selected display";
+    /** Key for the selected simulation tab. */
+    private static final String SIMULATION_TAB_KEY = "Selected simulation tab";
     static private final String SIM_MAX_KEY = "Simulator maximized";
     static private final String SIM_WIDTH_KEY = "Simulator width";
     static private final String SIM_HEIGHT_KEY = "Simulator height";
