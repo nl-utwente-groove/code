@@ -133,7 +133,7 @@ public class Simulator implements SimulatorListener {
         getActions().refreshActions();
         refreshMenuItems();
         getFrame().pack();
-        groove.gui.UserSettings.applyUserSettings(this.frame);
+        groove.gui.UserSettings.applyUserSettings(this);
         getFrame().setVisible(true);
     }
 
