@@ -129,15 +129,32 @@ public class ExploreAction extends SimulatorAction {
     @Override
     public void refresh() {
         GrammarModel grammar = getSimulatorModel().getGrammar();
-        setEnabled(grammar != null && grammar.getStartGraphModel() != null
-            && !grammar.hasErrors() && grammar.hasRules());
+        Exploration exploration = getSimulatorModel().getExploration();
+        boolean enabled =
+            grammar != null && grammar.getStartGraphModel() != null
+                && !grammar.hasErrors() && grammar.hasRules();
+        FormatException compatibilityError = null;
+        if (enabled) {
+            try {
+                exploration.test(grammar.toGrammar());
+            } catch (FormatException exc) {
+                compatibilityError = exc;
+                enabled = false;
+            }
+        }
+        setEnabled(enabled);
         String toolTipText =
-            HTMLConverter.HTML_TAG.on(String.format(
-                "%s (%s)",
+            String.format("%s (%s)",
                 this.animated ? Options.ANIMATE_ACTION_NAME
                         : Options.EXPLORE_ACTION_NAME,
-                HTMLConverter.STRONG_TAG.on(getSimulatorModel().getExploration().getIdentifier())));
-        putValue(Action.SHORT_DESCRIPTION, toolTipText);
+                HTMLConverter.STRONG_TAG.on(exploration.getIdentifier()));
+        if (compatibilityError != null) {
+            toolTipText +=
+                HTMLConverter.HTML_LINEBREAK
+                    + HTMLConverter.red.on(HTMLConverter.toHtml(compatibilityError.getMessage()));
+        }
+        putValue(Action.SHORT_DESCRIPTION,
+            HTMLConverter.HTML_TAG.on(toolTipText));
     }
 
     final boolean isAnimated() {

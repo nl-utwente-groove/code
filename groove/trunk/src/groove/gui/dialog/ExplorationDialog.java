@@ -30,6 +30,7 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
 import groove.gui.layout.SpringUtilities;
+import groove.io.HTMLConverter;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 
@@ -42,8 +43,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -84,12 +87,11 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
         + "The interruption condition is determined by the indicated "
         + "number of times that the acceptor succeeds." + "</HTML>";
     private static final String START_TOOLTIP =
-        "Restart with the customized exploration.";
+        "Restart with the customized exploration";
     private static final String DEFAULT_TOOLTIP =
-        "Set the currently selected exploration as the default for this grammar.";
-    private static final String EXPLORE_TOOLTIP = "<HTML>"
-        + "Run the customized exploration, and set it as the default."
-        + "</HTML>";
+        "Set the currently selected exploration as the default for this grammar";
+    private static final String EXPLORE_TOOLTIP =
+        "Run the customized exploration on the currently explored state space";
 
     /**
      * Color to be used for headers on the dialog.
@@ -191,6 +193,7 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
         add(dialogContent);
         pack();
         setLocationRelativeTo(owner);
+        this.buttons = createButtons();
         refreshButtons();
         setVisible(true);
     }
@@ -237,12 +240,19 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
             "<HTML><B>Invalid exploration.</B><BR> " + exc.getMessage(), exc).setVisible(true);
     }
 
-    /** Returns an exploration created on the basis of the current settings in this dialog. */
+    /** Returns an exploration created on the basis of the current settings in this dialog.
+     * @return the selected exploration strategy, or {@code null} if no
+     * coherent strategy is currently selected
+     */
     private Exploration createExploration() {
+        Exploration result = null;
         Serialized strategy = this.strategyEditor.getCurrentValue();
         Serialized acceptor = this.acceptorEditor.getCurrentValue();
-        int nrResults = this.resultPanel.getSelectedValue();
-        return new Exploration(strategy, acceptor, nrResults);
+        if (strategy != null && acceptor != null) {
+            int nrResults = this.resultPanel.getSelectedValue();
+            result = new Exploration(strategy, acceptor, nrResults);
+        }
+        return result;
     }
 
     /** Sets the currently selected exploration as the default for the
@@ -316,71 +326,98 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
     }
 
     private void refreshButtons() {
-        Serialized strategy = this.strategyEditor.getCurrentValue();
-        Serialized acceptor = this.acceptorEditor.getCurrentValue();
-        boolean enabled = strategy != null && acceptor != null;
-        getDefaultButton().setEnabled(enabled);
-        getStartButton().setEnabled(enabled);
-        getExploreButton().setEnabled(enabled);
+        Exploration exploration = createExploration();
+        for (RefreshButton button : this.buttons) {
+            button.refresh(exploration);
+        }
+    }
+
+    private List<RefreshButton> createButtons() {
+        List<RefreshButton> result = new ArrayList<RefreshButton>();
+        result.add(getDefaultButton());
+        result.add(getStartButton());
+        result.add(getExploreButton());
+        result.add(getCancelButton());
+        return result;
     }
 
     /** Initialises and returns the start button. */
-    private JButton getDefaultButton() {
+    private RefreshButton getDefaultButton() {
         if (this.defaultButton == null) {
             // Create the explore button (reference is needed when setting the
             // initial value of the (strategy/acceptor) editors.
-            this.defaultButton = new JButton(DEFAULT_COMMAND);
-            this.defaultButton.setToolTipText(DEFAULT_TOOLTIP);
-            this.defaultButton.addActionListener(new ActionListener() {
+            this.defaultButton = new RefreshButton(DEFAULT_COMMAND) {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void execute() {
                     setDefaultExploration();
                 }
-            });
+
+                @Override
+                public void refresh(Exploration exploration) {
+                    setEnabled(DEFAULT_TOOLTIP, exploration);
+                }
+            };
+            this.defaultButton.setToolTipText(DEFAULT_TOOLTIP);
         }
         return this.defaultButton;
     }
 
     /** Initialises and returns the start button. */
-    private JButton getStartButton() {
+    private RefreshButton getStartButton() {
         if (this.startButton == null) {
             // Create the explore button (reference is needed when setting the
             // initial value of the (strategy/acceptor) editors.
-            this.startButton = new JButton(START_COMMAND);
-            this.startButton.setToolTipText(START_TOOLTIP);
-            this.startButton.addActionListener(new ActionListener() {
+            this.startButton = new RefreshButton(START_COMMAND) {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void execute() {
                     startExploration();
                 }
-            });
+
+                @Override
+                public void refresh(Exploration exploration) {
+                    setEnabled(START_TOOLTIP, exploration);
+                }
+            };
         }
         return this.startButton;
     }
 
     /** Initialises and returns the explore button. */
-    private JButton getExploreButton() {
+    private RefreshButton getExploreButton() {
         if (this.exploreButton == null) {
             // Create the explore button (reference is needed when setting the
             // initial value of the (strategy/acceptor) editors.
-            this.exploreButton = new JButton(EXPLORE_COMMAND);
-            this.exploreButton.setToolTipText(EXPLORE_TOOLTIP);
-            this.exploreButton.addActionListener(createExploreListener());
-            GrammarModel grammar = getGrammar();
-            if (grammar == null || grammar.getStartGraphModel() == null) {
-                this.exploreButton.setEnabled(false);
-            }
+            this.exploreButton = new RefreshButton(EXPLORE_COMMAND) {
+                @Override
+                public void execute() {
+                    doExploration();
+                }
+
+                @Override
+                public void refresh(Exploration exploration) {
+                    setEnabled(EXPLORE_TOOLTIP, exploration);
+                }
+            };
         }
         return this.exploreButton;
     }
 
     /** Initialises and returns the cancel button. */
-    private JButton getCancelButton() {
+    private RefreshButton getCancelButton() {
         if (this.cancelButton == null) {
             // Create the explore button (reference is needed when setting the
             // initial value of the (strategy/acceptor) editors.
-            this.cancelButton = new JButton(CANCEL_COMMAND);
-            this.cancelButton.addActionListener(createCloseListener());
+            this.cancelButton = new RefreshButton(CANCEL_COMMAND) {
+                @Override
+                public void execute() {
+                    closeDialog();
+                }
+
+                @Override
+                public void refresh(Exploration exploration) {
+                    // do nothing
+                }
+            };
         }
         return this.cancelButton;
     }
@@ -398,12 +435,59 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
     private final EncodedTypeEditor<Strategy,Serialized> strategyEditor;
     private final EncodedTypeEditor<Acceptor,Serialized> acceptorEditor;
     private ResultPanel resultPanel;
-    private JButton defaultButton;
-    private JButton startButton;
-    private JButton exploreButton;
-    private JButton cancelButton;
+    private RefreshButton defaultButton;
+    private RefreshButton startButton;
+    private RefreshButton exploreButton;
+    private RefreshButton cancelButton;
+    private final List<RefreshButton> buttons;
     private final Simulator simulator;
     private final int oldDismissDelay;
+
+    /** Refreshable button class. */
+    private abstract class RefreshButton extends JButton {
+        /** Constructs a refreshable button with a given button text. */
+        public RefreshButton(String text) {
+            super(text);
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    execute();
+                }
+            });
+        }
+
+        /** Callback action invoked on button click. */
+        public abstract void execute();
+
+        /** Callback action allowing the button to refresh its status. */
+        public abstract void refresh(Exploration exploration);
+
+        /** Tests if the current grammar is compatible with a given exploration;
+         * if so, enables the button, if not, disables it and adds the error text
+         * to the tooltip.
+         * @param toolTipText bare tooltip text (without error)
+         * @param exploration the exploration strategy
+         */
+        protected void setEnabled(String toolTipText, Exploration exploration) {
+            GrammarModel grammar = getGrammar();
+            boolean enabled =
+                exploration != null && grammar != null
+                    && grammar.getStartGraphModel() != null;
+            StringBuilder toolTip = new StringBuilder(toolTipText);
+            if (enabled) {
+                try {
+                    exploration.test(grammar.toGrammar());
+                } catch (FormatException exc) {
+                    enabled = false;
+                    toolTip.append(HTMLConverter.HTML_LINEBREAK);
+                    toolTip.append(HTMLConverter.red.on(HTMLConverter.toHtml(new StringBuilder(
+                        exc.getMessage()))));
+                }
+            }
+            setEnabled(enabled);
+            setToolTipText(HTMLConverter.HTML_TAG.on(toolTip).toString());
+        }
+    }
 
     /*
      * <!--------------------------------------------------------------------->
