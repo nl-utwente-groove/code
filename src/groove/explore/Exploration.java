@@ -105,7 +105,10 @@ public class Exploration {
      */
     public Strategy getParsedStrategy(GraphGrammar grammar)
         throws FormatException {
-        return StrategyEnumerator.parseStrategy(grammar, this.strategy);
+        Strategy result =
+            StrategyEnumerator.parseStrategy(grammar, this.strategy);
+        result.checkCompatible(grammar);
+        return result;
     }
 
     /**
@@ -181,9 +184,10 @@ public class Exploration {
      * If this method does not throw an exception, then neither will {@link #play(GTS, GraphState)}.
      * @throws FormatException if the rule system is not compatible
      */
-    public void test(GraphGrammar rules) throws FormatException {
-        getParsedStrategy(rules);
-        getParsedAcceptor(rules);
+    public void test(GraphGrammar grammar) throws FormatException {
+        Strategy result = getParsedStrategy(grammar);
+        result.checkCompatible(grammar);
+        getParsedAcceptor(grammar);
     }
 
     /**

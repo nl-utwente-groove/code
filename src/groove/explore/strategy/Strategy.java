@@ -20,6 +20,8 @@ import groove.explore.result.Acceptor;
 import groove.explore.util.RuleEventApplier;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.trans.GraphGrammar;
+import groove.view.FormatException;
 
 /**
  * A strategy defines an order in which the states of a graph transition system
@@ -34,6 +36,14 @@ import groove.lts.GraphState;
  * transition system directly.
  */
 public interface Strategy {
+    /**
+     * Checks the strategy for compatibility with a given grammar. 
+     * This is a callback method that is invoked after the strategy has been 
+     * instantiated, but before it is applied. 
+     * @throws FormatException TODO
+     */
+    public void checkCompatible(GraphGrammar grammar) throws FormatException;
+
     /**
      * Sets the GTS to be explored. Also sets the exploration start state to the
      * GTS start state. Convenience method for

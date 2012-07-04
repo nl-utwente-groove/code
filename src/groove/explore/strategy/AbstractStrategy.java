@@ -24,7 +24,9 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.match.MatcherFactory;
+import groove.trans.GraphGrammar;
 import groove.trans.SystemRecord;
+import groove.view.FormatException;
 
 /**
  * A partial (abstract) implementation of a strategy.
@@ -32,6 +34,11 @@ import groove.trans.SystemRecord;
  * 
  */
 public abstract class AbstractStrategy implements Strategy {
+    @Override
+    public void checkCompatible(GraphGrammar grammar) throws FormatException {
+        // does nothing.
+    }
+
     final public void prepare(GTS gts) {
         this.prepare(gts, null);
     }
