@@ -830,12 +830,14 @@ public class GrammarModel implements Observer {
             double maxY = 0;
             for (AspectNode node : graph.nodeSet()) {
                 JVertexLayout layout = layoutMap.nodeMap().get(node);
-                maxX =
-                    Math.max(maxX, layout.getBounds().getX()
-                        + layout.getBounds().getWidth());
-                maxY =
-                    Math.max(maxY, layout.getBounds().getY()
-                        + layout.getBounds().getHeight());
+                if (layout != null) {
+                    maxX =
+                        Math.max(maxX, layout.getBounds().getX()
+                            + layout.getBounds().getWidth());
+                    maxY =
+                        Math.max(maxY, layout.getBounds().getY()
+                            + layout.getBounds().getHeight());
+                }
             }
             dimensions.add(new Point.Double(maxX, maxY));
             globalMaxX = Math.max(globalMaxX, maxX);
@@ -855,7 +857,7 @@ public class GrammarModel implements Observer {
         Iterator<String> iterator = names.iterator();
         result.append(iterator.next());
         while (iterator.hasNext()) {
-            result.append("+");
+            result.append("_");
             result.append(iterator.next());
         }
         AspectGraph combined =
