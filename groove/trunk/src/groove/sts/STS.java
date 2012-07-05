@@ -409,15 +409,17 @@ public class STS {
                 VariableNode n = (VariableNode) node;
                 if (n.getConstant() != null) {
                     for (RuleEdge re : lhs.inEdgeSet(node)) {
-                        HostEdge hostEdge = ruleMap.mapEdge(re);
-                        // It is possible that the rule edge has no image.
-                        // For example, = edges are in the LHS, but have no
-                        // image in the graph.
-                        if (hostEdge != null) {
-                            LocationVariable var =
-                                getLocationVariable(hostEdge);
-                            if (var != null) {
-                                lValueMap.put(n, var);
+                        if (re.label().isAtom() || re.label().isSharp()) {
+                            HostEdge hostEdge = ruleMap.mapEdge(re);
+                            // It is possible that the rule edge has no image.
+                            // For example, = edges are in the LHS, but have no
+                            // image in the graph.
+                            if (hostEdge != null) {
+                                LocationVariable var =
+                                    getLocationVariable(hostEdge);
+                                if (var != null) {
+                                    lValueMap.put(n, var);
+                                }
                             }
                         }
                     }
