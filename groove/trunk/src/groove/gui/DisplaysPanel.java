@@ -371,9 +371,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             new TabLabel(this, display, myKind.getTabIcon(), null);
         tabComponent.setFocusable(false);
         setTabComponentAt(index, tabComponent);
-        if (index == getSelectedIndex()) {
-            setTabEnabled(index, true);
-        }
+        setTabEnabled(index, index == getSelectedIndex());
     }
 
     /** Detaches a component (presumably shown as a tab) into its own window. */
