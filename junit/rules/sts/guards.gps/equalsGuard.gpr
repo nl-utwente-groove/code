@@ -7,14 +7,9 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n2">
+        <node id="n3">
             <attr name="layout">
-                <string>146 135 43 37</string>
-            </attr>
-        </node>
-        <node id="n1">
-            <attr name="layout">
-                <string>214 136 30 37</string>
+                <string>274 76 30 37</string>
             </attr>
         </node>
         <node id="n0">
@@ -22,24 +17,19 @@
                 <string>137 78 60 33</string>
             </attr>
         </node>
-        <node id="n3">
+        <node id="n1">
             <attr name="layout">
-                <string>274 76 30 37</string>
+                <string>267 136 30 37</string>
             </attr>
         </node>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>int:</string>
+        <node id="n2">
+            <attr name="layout">
+                <string>146 135 43 37</string>
             </attr>
-        </edge>
-        <edge to="n1" from="n2">
+        </node>
+        <edge to="n3" from="n3">
             <attr name="label">
-                <string>=</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>int:2</string>
+                <string>int:1</string>
             </attr>
         </edge>
         <edge to="n0" from="n0">
@@ -57,9 +47,19 @@
                 <string>y</string>
             </attr>
         </edge>
-        <edge to="n3" from="n3">
+        <edge to="n1" from="n1">
             <attr name="label">
-                <string>int:1</string>
+                <string>int:2</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n2">
+            <attr name="label">
+                <string>=</string>
             </attr>
         </edge>
     </graph>

@@ -1,11 +1,7 @@
 package groove.test.sts;
 
 import groove.algebra.IntPointAlgebra;
-import groove.algebra.SignatureKind;
 import groove.explore.util.MatchSetCollector;
-import groove.graph.TypeGraph;
-import groove.graph.TypeNode;
-import groove.graph.algebra.VariableNode;
 import groove.lts.GTS;
 import groove.lts.MatchResult;
 import groove.lts.StartGraphState;
@@ -15,14 +11,10 @@ import groove.sts.LocationVariable;
 import groove.sts.STS;
 import groove.sts.STSException;
 import groove.sts.SwitchRelation;
-import groove.trans.Condition;
-import groove.trans.Condition.Op;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.trans.Rule;
-import groove.trans.RuleGraph;
 import groove.trans.SystemRecord;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -182,21 +174,6 @@ public class STSTest extends TestCase {
         Location l = this.sts.hostGraphToLocation(this.g1);
         this.sts.toLocation(l);
         Assert.assertEquals(this.sts.getCurrentLocation(), l);
-    }
-
-    /**
-     * Tests getInteractionVariable.
-     */
-    public void testGetInteractionVariable() {
-        Rule r =
-            new Rule(new Condition("condition", Op.AND),
-                new RuleGraph("graph"), null);
-        VariableNode v =
-            new VariableNode(12, SignatureKind.INT, new TypeNode(1,
-                this.g1.edgeSet().iterator().next().label(), new TypeGraph(
-                    "type")));
-        this.sts.addInteractionVariable(v, r);
-        Assert.assertNotNull(this.sts.getInteractionVariable(v, r));
     }
 
     /**
