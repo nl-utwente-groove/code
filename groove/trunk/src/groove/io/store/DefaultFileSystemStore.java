@@ -26,7 +26,6 @@ import groove.gui.EditType;
 import groove.gui.Options;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
-import groove.io.PriorityFileName;
 import groove.io.xml.DefaultGxl;
 import groove.io.xml.LayedOutXml;
 import groove.io.xml.Xml;
@@ -34,6 +33,7 @@ import groove.trans.QualName;
 import groove.trans.ResourceKind;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 import groove.view.aspect.AspectGraph;
 
@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -629,82 +630,98 @@ public class DefaultFileSystemStore extends SystemStore {
     private void loadGraphs(ResourceKind kind, ExtensionFilter filter)
         throws IOException {
         getGraphMap(kind).clear();
+        Map<QualName,File> files;
         try {
-            collectGraphs(kind, filter, this.file, null);
+            // read in the text files
+            files = collectResources(kind, this.file, null);
         } catch (FormatException e) {
-            throw new IOException(e.getMessage());
+            throw new IOException(e.getMessage(), e);
         }
-    }
-
-    /**
-     * Loads all corresponding graph resources from both the current directory
-     * and all its subdirectories.
-     * @param kind the {@link ResourceKind} to load
-     * @param filter the {@link ExtensionFilter} of the resource
-     * @param path the current path
-     * @param pathName the name of the current path relative to the grammar
-     * @throws IOException if an error occurs while loading a rule graph
-     * @throws FormatException if there is a rule name with an error
-     */
-    private void collectGraphs(ResourceKind kind, ExtensionFilter filter,
-            File path, QualName pathName) throws IOException, FormatException {
-
-        // find all files in the current path 
-        File[] files = path.listFiles(filter);
-        if (files == null) {
-            throw new IOException(LOAD_ERROR + ": unable to get list of files"
-                + "in path " + path);
-        }
-
-        // process all files one by one
-        for (File file : files) {
-            // get name of file
-            String fileName =
-                new PriorityFileName(filter.stripExtension(file.getName())).getActualName();
-
-            // recurse if the file is a directory
-            if (file.isDirectory()) {
-                if (!file.getName().startsWith(".")) {
-                    QualName extendedPathName =
-                        QualName.extend(pathName, fileName);
-                    collectGraphs(kind, filter, file, extendedPathName);
-                }
-                continue;
-            }
-
+        for (Entry<QualName,File> fileEntry : files.entrySet()) {
             // read graph from file
-            DefaultGraph plainGraph = this.marshaller.unmarshalGraph(file);
-            QualName graphName = QualName.extend(pathName, fileName);
+            DefaultGraph plainGraph =
+                this.marshaller.unmarshalGraph(fileEntry.getValue());
 
             // backwards compatibility: set role and name
             plainGraph.setRole(kind.getGraphRole());
-            plainGraph.setName(graphName.toString());
+            plainGraph.setName(fileEntry.getKey().toString());
 
             // store graph in corresponding map
             AspectGraph graph = AspectGraph.newInstance(plainGraph);
             Object oldEntry =
-                getGraphMap(kind).put(graphName.toString(), graph);
+                getGraphMap(kind).put(fileEntry.getKey().toString(), graph);
             assert oldEntry == null : String.format("Duplicate %s name '%s'",
-                kind.getGraphRole(), graphName);
-
+                kind.getGraphRole(), fileEntry.getKey());
         }
     }
 
+    /**
+     * Collects all text resources from the {@link #file} directory with a given
+     * extension, and a given kind.
+     */
     private void loadTexts(ResourceKind kind, ExtensionFilter filter)
         throws IOException {
         getTextMap(kind).clear();
-        File[] files = this.file.listFiles(filter);
-        // read in the prolog files
-        for (File file : files) {
-            // check for overlapping rule and directory names
-            if (!file.isDirectory()) {
-                // read the program in as a single string
-                String program = groove.io.Util.readFileToString(file);
-                // insert the string into the control map
-                getTextMap(kind).put(filter.stripExtension(file.getName()),
-                    program);
+        Map<QualName,File> files;
+        try {
+            // read in the text files
+            files = collectResources(kind, this.file, null);
+        } catch (FormatException e) {
+            throw new IOException(e.getMessage(), e);
+        }
+        for (Entry<QualName,File> fileEntry : files.entrySet()) {
+            // read the file in as a single string
+            String program =
+                groove.io.Util.readFileToString(fileEntry.getValue());
+            // insert the string into the resource map
+            getTextMap(kind).put(fileEntry.getKey().toString(), program);
+        }
+    }
+
+    /**
+     * Find all corresponding resources from both the current directory
+     * and all its subdirectories.
+     * Filenames with embedded separators are automatically renamed to use subdirectories instead
+     * @param kind The kind of resource to load, with the {@link ExtensionFilter} of the resource
+     * @param path the current path
+     * @param pathName the name of the current path relative to the grammar
+     * @return The map of files and their qualified names matching the given filter, not including directories
+     * @throws IOException if an error occurs while trying to list the files
+     * @throws FormatException if there is a subdirectory name with an error
+     */
+    private Map<QualName,File> collectResources(ResourceKind kind, File path,
+            QualName pathName) throws IOException, FormatException {
+        Map<QualName,File> result = new HashMap<QualName,File>();
+        kind.getFilter();
+        // find all files in the current path 
+        File[] curfiles = path.listFiles(kind.getFilter());
+        if (curfiles == null) {
+            throw new IOException(LOAD_ERROR + ": unable to get list of files "
+                + "in path " + path);
+        }
+        // collect errors while loading files
+        FormatErrorSet errors = new FormatErrorSet();
+        // process all files one by one
+        for (File file : curfiles) {
+            // get qualified name of file
+            String fileName = kind.getFilter().stripExtension(file.getName());
+
+            int separatorPos = fileName.indexOf(QualName.SEPARATOR);
+            // File contains separator, must be renamed to use subdirectories instead
+            if (separatorPos > 0) {
+                errors.add("File name %s contains separator CHARACTER '%s'",
+                    file.getPath(), QualName.SEPARATOR);
+            } else if (separatorPos < 0) {
+                QualName qualFileName = QualName.extend(pathName, fileName);
+                if (file.isDirectory()) {
+                    result.putAll(collectResources(kind, file, qualFileName));
+                } else {
+                    result.put(qualFileName, file);
+                }
             }
         }
+        errors.throwException();
+        return result;
     }
 
     /**
