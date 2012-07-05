@@ -160,8 +160,14 @@ public class UserSettings {
 
     /** Persists the state of the simulator into the user preferences. */
     private static void syncLocationSettings(Simulator simulator) {
-        Object location = simulator.getModel().getStore().getLocation();
-        userPrefs.put(LOCATION_KEY, location.toString());
+        SimulatorModel model = simulator.getModel();
+        if (model != null) {
+            SystemStore store = model.getStore();
+            if (store != null) {
+                Object location = store.getLocation();
+                userPrefs.put(LOCATION_KEY, location.toString());
+            }
+        }
     }
 
     /** Persists the selected display. */
