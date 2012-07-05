@@ -94,9 +94,9 @@ public class QualName implements Comparable<QualName> {
         }
         QualName other = (QualName) obj;
         if (this.tokens.equals(other.tokens)) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     @Override
