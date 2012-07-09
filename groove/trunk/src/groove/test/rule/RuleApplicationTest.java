@@ -92,6 +92,12 @@ public class RuleApplicationTest {
         test("forallCount");
     }
 
+    /** Tests the rules in the forallCount grammar. */
+    @Test
+    public void testNodeIds() {
+        test("nodeids");
+    }
+
     /** Tests the rules in the existsOptional grammar. */
     @Test
     public void testExistsOptional() {

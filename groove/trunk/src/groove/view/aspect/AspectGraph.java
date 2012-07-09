@@ -407,13 +407,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         if (ownerName == null) {
             owner = source;
         } else {
-            owner = null;
-            for (AspectNode node : nodeSet()) {
-                if (node.hasId() && ownerName.equals(node.getId().getContent())) {
-                    owner = node;
-                    break;
-                }
-            }
+            owner = this.nodeIdMap.get(ownerName);
             if (owner == null) {
                 throw new FormatException("Unknown node identifier '%s'",
                     ownerName, source);
@@ -421,8 +415,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
         if (owner.getKind().isQuantifier()
             && !field.getField().equals(AspectKind.NestedValue.COUNT.toString())) {
-            throw new FormatException("Quantifier node does not have %s edge",
-                field.getField(), owner, source);
+            throw new FormatException(
+                "Quantifier node does not have '%s'-edge", field.getField(),
+                owner, source);
         }
         // look up the field
         AspectKind sigKind = AspectKind.toAspectKind(field.getType());
@@ -723,6 +718,19 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 node.setFixed();
                 errors.addAll(node.getErrors());
             }
+            // check for duplicate node identifiers
+            this.nodeIdMap = new HashMap<String,AspectNode>();
+            for (AspectNode node : nodeSet()) {
+                Aspect id = node.getId();
+                if (id != null) {
+                    String name = id.getContentString();
+                    AspectNode oldNode = this.nodeIdMap.put(name, node);
+                    if (oldNode != null) {
+                        errors.add("Duplicate node identifier %s", name, node,
+                            oldNode);
+                    }
+                }
+            }
             addErrors(errors);
             super.setFixed();
         }
@@ -749,6 +757,14 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         for (AspectEdge edge : edgeSet()) {
             AspectEdge edgeImage = map.mapEdge(edge);
             result.addEdge(edgeImage);
+        }
+        if (this.nodeIdMap != null) {
+            Map<String,AspectNode> newNodeIdMap =
+                new HashMap<String,AspectNode>();
+            for (Map.Entry<String,AspectNode> e : this.nodeIdMap.entrySet()) {
+                newNodeIdMap.put(e.getKey(), map.getNode(e.getValue()));
+            }
+            result.nodeIdMap = newNodeIdMap;
         }
         GraphInfo.transfer(this, result, null);
         result.addErrors(getErrors());
@@ -777,6 +793,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     private final GraphRole role;
     /** Flag indicating whether the graph is normal. */
     private boolean normal;
+    /** Mapping from node identifiers to nodes. */
+    private Map<String,AspectNode> nodeIdMap;
 
     /**
      * Creates an aspect graph from a given (plain) graph. Convenience method
