@@ -298,6 +298,9 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                 "Node aspect %s should not have quantifier name", value, this);
         } else {
             setAspect(value);
+            if (kind.isQuantifier() && value.getContent() != null) {
+                setId(value.getContentString());
+            }
         }
     }
 
@@ -556,12 +559,20 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         return this.param != null;
     }
 
+    /** Sets the identifier aspect from a string representation. */
+    private void setId(String id) throws FormatException {
+        Aspect idAspect =
+            AspectKind.ID.getAspect().newInstance(id, GraphRole.RULE);
+        setId(idAspect);
+    }
+
     /** Sets the identifier aspect of this node. */
     private void setId(Aspect id) throws FormatException {
         assert id.getKind() == ID : String.format(
             "Aspect %s is not an identifier", id);
         if (this.id != null) {
-            throw new FormatException("Duplicate node identifier");
+            throw new FormatException("Duplicate node identifiers %s and %s",
+                this.id.getClass(), id.getContent());
         }
         this.id = id;
     }

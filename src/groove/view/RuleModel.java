@@ -670,9 +670,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     metaNode,
                     result =
                         createIndex(operator, positive, metaNode, indexTree));
-                String name = metaNode.getLevelName();
-                if (name != null && name.length() > 0) {
-                    this.nameIndexMap.put(name, result);
+                Aspect id = metaNode.getId();
+                if (id != null) {
+                    String name = id.getContentString();
+                    Index oldIndex = this.nameIndexMap.put(name, result);
+                    assert oldIndex == null : String.format(
+                        "Duplicate quantifier name %s", name);
                 }
             }
             return result;

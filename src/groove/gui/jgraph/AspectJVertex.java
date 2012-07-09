@@ -277,22 +277,22 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             String id =
                 getNode().hasId()
                         ? ITALIC_TAG.on(getNode().getId().getContent()) : null;
+            boolean unshownId = id != null && !this.aspect.isQuantifier();
             for (AspectEdge edge : getJVertexLabels()) {
                 if (!isFiltered(edge)) {
                     StringBuilder line = getLine(edge);
-                    if (id != null) {
-                        if (edge.getDisplayLabel().isNodeType()) {
-                            line.insert(0, " : ");
-                            line.insert(0, id);
-                        } else {
-                            // we're not going to have any node types:
-                            // add the node id on a separate line
-                            result.add(new StringBuilder(id));
-                        }
-                        id = null;
+                    if (unshownId && edge.getDisplayLabel().isNodeType()) {
+                        line.insert(0, " : ");
+                        line.insert(0, id);
+                        unshownId = false;
                     }
                     result.add(line);
                 }
+            }
+            if (unshownId) {
+                // we're not going to have any node types:
+                // add the node id on a separate line
+                result.add(new StringBuilder(id));
             }
             for (AspectEdge edge : getExtraSelfEdges()) {
                 if (!isFiltered(edge)) {
@@ -361,6 +361,11 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
         if (this.aspect.isQuantifier()) {
             StringBuilder line = new StringBuilder();
+            Aspect id = getNode().getId();
+            if (id != null) {
+                line.append(HTMLConverter.ITALIC_TAG.on(id.getContent()));
+                line.append(" : ");
+            }
             switch (this.aspect) {
             case FORALL:
                 line.append(HTML_FORALL);
@@ -375,10 +380,6 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             case EXISTS_OPT:
                 line.append(HTML_EXISTS);
                 line.append(HTMLConverter.SUPER_TAG.on("?"));
-            }
-            String level = (String) getNode().getAspect().getContent();
-            if (level != null && level.length() != 0) {
-                line.append(HTMLConverter.SUB_TAG.on(level));
             }
             if (line.length() > 0) {
                 result.add(line);
