@@ -147,4 +147,15 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
         return result;
     }
 
+    /** Returns a fresh pattern node. The node is not added to the shape. */
+    public PatternNode createNode(TypeNode type) {
+        return getFactory().createNode(type, nodeSet());
+    }
+
+    /** Returns a fresh pattern edge. The edge is not added to the shape. */
+    public PatternEdge createEdge(PatternNode source, TypeEdge type,
+            PatternNode target) {
+        return getFactory().createEdge(source, type, target);
+    }
+
 }

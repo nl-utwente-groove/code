@@ -42,6 +42,14 @@ public class Match extends
         this.pGraph = pGraph;
     }
 
+    /** Copying constructor. */
+    private Match(Match match) {
+        super(match.getFactory());
+        this.pRule = match.pRule;
+        this.pGraph = match.pGraph;
+        putAll(match);
+    }
+
     /** Returns the rule matched in this object. */
     public PatternRule getRule() {
         return this.pRule;
@@ -66,6 +74,11 @@ public class Match extends
     @Override
     public String toString() {
         return "Match of " + this.pRule.getName() + ":\n" + super.toString();
+    }
+
+    @Override
+    public Match clone() {
+        return new Match(this);
     }
 
 }

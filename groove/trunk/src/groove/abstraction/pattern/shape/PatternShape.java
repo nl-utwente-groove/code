@@ -229,8 +229,7 @@ public final class PatternShape extends PatternGraph {
 
         for (NodeEquivClass nEc : peq.getNodeEquivRel()) {
             TypeNode nType = nEc.iterator().next().getType();
-            PatternNode newNode =
-                getFactory().createNode(nType, result.nodeSet());
+            PatternNode newNode = result.createNode(nType);
             result.addNode(newNode);
             Multiplicity nMult = nEc.getMult();
             if (!nMult.isOne()) {

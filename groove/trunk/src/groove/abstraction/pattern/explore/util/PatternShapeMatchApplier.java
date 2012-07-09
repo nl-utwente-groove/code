@@ -27,6 +27,8 @@ import groove.abstraction.pattern.lts.PatternTransition;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.PreMatch;
 import groove.abstraction.pattern.shape.PatternShape;
+import groove.abstraction.pattern.trans.MaterialisingRuleApplication;
+import groove.abstraction.pattern.trans.NonBranchingRuleApplication;
 import groove.abstraction.pattern.trans.PatternShapeRuleApplication;
 import groove.explore.util.MatchApplier;
 
@@ -56,7 +58,6 @@ public class PatternShapeMatchApplier implements PatternRuleEventApplier {
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
-
     /** Creates an applier for a given pattern transition system. */
     public PatternShapeMatchApplier(PSTS pgts) {
         this.psts = pgts;
@@ -76,38 +77,65 @@ public class PatternShapeMatchApplier implements PatternRuleEventApplier {
         }
 
         PatternShapeRuleApplication app =
-            new PatternShapeRuleApplication((PatternShape) source.getGraph(),
-                preMatch);
-        PatternShape result = app.transform().normalise();
-        PatternNextState newState =
-            new PatternGraphNextState(result, (PatternGraphState) source,
-                this.psts.getNextStateNr(), this.psts, preMatch);
-        PatternState oldState = this.psts.addState(newState);
-        PatternTransition trans = null;
-        if (oldState != null) {
-            // The state was not added as an equivalent state existed.
-            trans = new PatternGraphTransition(source, preMatch, oldState);
-            println("New transition: " + trans);
-        } else {
-            // The state was added as a next-state.
-            trans = newState;
-            println("New state: " + source + "--" + match.getRule().getName()
-                + "-->" + newState);
-            if (USE_GUI) {
-                PatternPreviewDialog.showPatternGraph(newState.getGraph());
+            createApplication((PatternShape) source.getGraph(), preMatch);
+
+        for (PatternShape result : app.transform()) {
+            result.normalise();
+            PatternNextState newState =
+                new PatternGraphNextState(result, (PatternGraphState) source,
+                    this.psts.getNextStateNr(), this.psts, preMatch);
+            PatternState oldState = this.psts.addState(newState);
+            PatternTransition trans = null;
+            if (oldState != null) {
+                // The state was not added as an equivalent state existed.
+                trans = new PatternGraphTransition(source, preMatch, oldState);
+                println("New transition: " + trans);
+            } else {
+                // The state was added as a next-state.
+                trans = newState;
+                println("New state: " + source + "--"
+                    + match.getRule().getName() + "-->" + newState);
+                if (USE_GUI) {
+                    PatternPreviewDialog.showPatternGraph(newState.getGraph());
+                }
             }
+            this.psts.addTransition(trans);
         }
-        this.psts.addTransition(trans);
     }
 
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
 
+    private PatternShapeRuleApplication createApplication(PatternShape pShape,
+            PreMatch preMatch) {
+        switch (this.psts.getApplicationMethod()) {
+        case MATERIALISATION:
+            return new MaterialisingRuleApplication(pShape, preMatch);
+        case NON_BRANCHING:
+            return new NonBranchingRuleApplication(pShape, preMatch);
+        default:
+            assert false;
+            return null;
+        }
+    }
+
     private void println(String s) {
         if (DEBUG) {
             System.out.println(s);
         }
+    }
+
+    // ------------------------------------------------------------------------
+    // Inner Classes
+    // ------------------------------------------------------------------------
+
+    /** Different kinds of rule application. */
+    public enum ApplicationMethod {
+        /** Computes the shape materialisation, branches. */
+        MATERIALISATION,
+        /** Less precise over-approximation that only modifies multiplicities. */
+        NON_BRANCHING
     }
 
 }
