@@ -312,6 +312,7 @@ public final class Matcher {
                     }
                 }
                 assert result.isFinished();
+                result.setFixed();
                 if (!result.isValid()) {
                     // We have an invalid match, for instance a pre-match that
                     // doesn't respect multiplicities.

@@ -17,9 +17,11 @@
 package groove.abstraction.pattern.explore;
 
 import groove.abstraction.neigh.explore.ShapeGenerator;
+import groove.abstraction.pattern.explore.util.PatternShapeMatchApplier.ApplicationMethod;
 import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PSTS;
 import groove.explore.Generator;
+import groove.util.CommandLineOption;
 
 import java.io.PrintStream;
 
@@ -40,6 +42,12 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
         "Usage: PatternShapeGenerator [options] <grammar> <start-graph-name> <type-graph-name>";
 
     // ------------------------------------------------------------------------
+    // Object fields
+    // ------------------------------------------------------------------------
+
+    private ApplicationMethod method = ApplicationMethod.MATERIALISATION;
+
+    // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
@@ -49,6 +57,7 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
      */
     public PatternShapeGenerator(String... args) {
         super(args);
+        addOption(new NonBranchOption());
     }
 
     // ------------------------------------------------------------------------
@@ -71,7 +80,7 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
     @Override
     public PGTS getPGTS() {
         if (pgts == null) {
-            pgts = new PSTS(getGrammar());
+            pgts = new PSTS(getGrammar(), this.method);
         }
         return pgts;
     }
@@ -89,6 +98,14 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
     }
 
     // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    private void setRuleApplicationMethod(ApplicationMethod method) {
+        this.method = method;
+    }
+
+    // ------------------------------------------------------------------------
     // Main method
     // ------------------------------------------------------------------------
 
@@ -100,6 +117,45 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
      */
     public static void main(String[] args) {
         new PatternShapeGenerator(args).start();
+    }
+
+    // ------------------------------------------------------------------------
+    // Inner classes
+    // ------------------------------------------------------------------------
+
+    /**
+     * Command line option to specify the use of three values of multiplicity
+     * only.
+     * 
+     * @author Eduardo Zambon
+     */
+    private class NonBranchOption implements CommandLineOption {
+
+        @Override
+        public String[] getDescription() {
+            return new String[] {"Avoids materialision by performing a less precise rule application."};
+        }
+
+        @Override
+        public String getParameterName() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return "b";
+        }
+
+        @Override
+        public boolean hasParameter() {
+            return false;
+        }
+
+        @Override
+        public void parse(String parameter) {
+            PatternShapeGenerator.this.setRuleApplicationMethod(ApplicationMethod.NON_BRANCHING);
+        }
+
     }
 
 }

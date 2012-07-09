@@ -101,10 +101,8 @@ public final class PatternGraphRuleApplication {
     }
 
     private void createNodes(PatternGraph host) {
-        PatternFactory factory = host.getFactory();
         for (RuleNode rNode : this.pRule.getCreatorNodes()) {
-            PatternNode newNode =
-                factory.createNode(rNode.getType(), host.nodeSet());
+            PatternNode newNode = host.createNode(rNode.getType());
             host.addNode(newNode);
             this.match.putNode(rNode, newNode);
         }
