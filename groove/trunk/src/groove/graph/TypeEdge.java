@@ -46,9 +46,19 @@ public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> implements
         return this.abstractType;
     }
 
+    /** Indicates if this edge type is composite. */
+    public final boolean isComposite() {
+        return this.iscomposite;
+    }
+
     /** Sets this edge type to abstract. */
     public final void setAbstract(boolean value) {
         this.abstractType = value;
+    }
+
+    /** Sets this edge type to composite. */
+    public final void setComposite(boolean value) {
+        this.iscomposite = value;
     }
 
     /**
@@ -126,6 +136,9 @@ public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> implements
 
     /** Flag indicating if this edge type is abstract. */
     private boolean abstractType;
+
+    /** Flag indicating if this edge type is composite. */
+    private boolean iscomposite;
 
     /** In multiplicity of the edge type, if any. */
     private Multiplicity inMult;
