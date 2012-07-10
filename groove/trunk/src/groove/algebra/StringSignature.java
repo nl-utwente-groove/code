@@ -33,7 +33,7 @@ import groove.view.FormatException;
  * @version $Revision $
  */
 @SuppressWarnings("hiding")
-public abstract class StringSignature<String,Bool> implements Signature {
+public abstract class StringSignature<String,Bool,Int> implements Signature {
     /** String concatenation. */
     @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
     @ToolTipHeader("String concatenation")
@@ -76,6 +76,19 @@ public abstract class StringSignature<String,Bool> implements Signature {
     @ToolTipBody("Yields TRUE if string %s equals string %s")
     @InfixSymbol(symbol = "==", precedence = EQUAL)
     public abstract Bool eq(String arg0, String arg1);
+
+    /** Inequality test. */
+    @ToolTipHeader("String equality test")
+    @Syntax("Q%s.LPAR.s1.COMMA.s2.RPAR")
+    @ToolTipBody("Yields TRUE if string %s does not equal string %s")
+    @InfixSymbol(symbol = "!=", precedence = EQUAL)
+    public abstract Bool neq(String arg0, String arg1);
+
+    /** Size function. */
+    @ToolTipHeader("Length function")
+    @Syntax("Q%s.LPAR.s.RPAR")
+    @ToolTipBody("Yields the number of characters in string %s")
+    public abstract Int length(String arg);
 
     /**
      * Tests if the string value is surrounded with double quotes.

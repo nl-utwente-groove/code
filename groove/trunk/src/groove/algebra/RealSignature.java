@@ -110,6 +110,13 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
     @InfixSymbol(symbol = "==", precedence = EQUAL)
     public abstract Bool eq(Real arg0, Real arg1);
 
+    /** Inequality test. */
+    @ToolTipHeader("Real number equality test")
+    @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
+    @ToolTipBody("Yields TRUE if real number %s does not equal real number %s")
+    @InfixSymbol(symbol = "!=", precedence = EQUAL)
+    public abstract Bool neq(Real arg0, Real arg1);
+
     /** Inversion. */
     @ToolTipHeader("Real inversion")
     @Syntax("Q%s.LPAR.r1.RPAR")

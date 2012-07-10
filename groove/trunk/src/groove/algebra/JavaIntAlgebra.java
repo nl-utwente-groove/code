@@ -46,6 +46,11 @@ public class JavaIntAlgebra extends IntSignature<Integer,Boolean,String>
     }
 
     @Override
+    public Boolean neq(Integer arg0, Integer arg1) {
+        return !arg0.equals(arg1);
+    }
+
+    @Override
     public Boolean ge(Integer arg0, Integer arg1) {
         return arg0 >= arg1;
     }

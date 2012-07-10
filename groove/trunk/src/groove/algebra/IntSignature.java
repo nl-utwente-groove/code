@@ -117,6 +117,13 @@ public abstract class IntSignature<Int,Bool,String> implements Signature {
     @InfixSymbol(symbol = "==", precedence = EQUAL)
     public abstract Bool eq(Int arg0, Int arg1);
 
+    /** Inequality test. */
+    @ToolTipHeader("Integer inequality test")
+    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
+    @ToolTipBody("Yields TRUE if integer %s does not equal integer %s")
+    @InfixSymbol(symbol = "!=", precedence = EQUAL)
+    public abstract Bool neq(Int arg0, Int arg1);
+
     /** Inversion. */
     @ToolTipHeader("Integer inversion")
     @Syntax("Q%s.LPAR.i1.RPAR")

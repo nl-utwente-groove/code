@@ -62,6 +62,11 @@ public class RealPointAlgebra extends RealSignature<Object,Object,Object>
     }
 
     @Override
+    public Object neq(Object arg0, Object arg1) {
+        return singleBool;
+    }
+
+    @Override
     public Object ge(Object arg0, Object arg1) {
         return singleBool;
     }
