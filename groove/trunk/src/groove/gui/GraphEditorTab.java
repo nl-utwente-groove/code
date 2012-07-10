@@ -113,7 +113,7 @@ final public class GraphEditorTab extends ResourceTab implements
 
     /** Sets a given graph as the model to be edited. */
     public void setGraph(AspectGraph graph) {
-        AspectJModel oldModel = getModel();
+        AspectJModel oldModel = getJModel();
         if (oldModel != null) {
             oldModel.addUndoableEditListener(getUndoManager());
             oldModel.addGraphModelListener(this);
@@ -133,7 +133,7 @@ final public class GraphEditorTab extends ResourceTab implements
 
     /** Returns the graph being edited. */
     public AspectGraph getGraph() {
-        return getModel().getGraph();
+        return getJModel().getGraph();
     }
 
     @Override
@@ -142,7 +142,7 @@ final public class GraphEditorTab extends ResourceTab implements
             @Override
             public void update(Observable o, Object arg) {
                 if (arg != null) {
-                    GraphJCell errorCell = getModel().getErrorMap().get(arg);
+                    GraphJCell errorCell = getJModel().getErrorMap().get(arg);
                     if (errorCell != null) {
                         getJGraph().setSelectionCell(errorCell);
                     }
@@ -221,7 +221,7 @@ final public class GraphEditorTab extends ResourceTab implements
                 newGraph.setFixed();
                 change(newGraph);
             } else {
-                getModel().loadViewErrors();
+                getJModel().loadViewErrors();
                 getJGraph().refresh();
             }
             updateStatus();
@@ -241,7 +241,7 @@ final public class GraphEditorTab extends ResourceTab implements
      * @param dirty the new modified status
      * @see #isDirty()
      */
-    private void setDirty(boolean dirty) {
+    public void setDirty(boolean dirty) {
         if (dirty) {
             // if the dirt count was negative, this cannot be
             // undone any more, so change to positive
@@ -265,7 +265,7 @@ final public class GraphEditorTab extends ResourceTab implements
     public void change(AspectGraph newGraph) {
         assert newGraph.getName().equals(getGraph().getName())
             && newGraph.getRole() == getGraph().getRole();
-        getModel().loadGraph(newGraph);
+        getJModel().loadGraph(newGraph);
         updateStatus();
     }
 
@@ -274,14 +274,14 @@ final public class GraphEditorTab extends ResourceTab implements
         AspectGraph newGraph = getGraph().clone();
         newGraph.setName(newName);
         newGraph.setFixed();
-        getModel().loadGraph(newGraph);
+        getJModel().loadGraph(newGraph);
         updateStatus();
         setName(newName);
     }
 
     @Override
     protected ResourceModel<?> getResource() {
-        return getModel().getResourceModel();
+        return getJModel().getResourceModel();
     }
 
     @Override
@@ -299,7 +299,7 @@ final public class GraphEditorTab extends ResourceTab implements
      * @return the j-model currently being edited, or <tt>null</tt> if no editor
      *         model is set.
      */
-    private AspectJModel getModel() {
+    public AspectJModel getJModel() {
         return getJGraph().getModel();
     }
 
@@ -326,7 +326,7 @@ final public class GraphEditorTab extends ResourceTab implements
         JGraphMode mode = getJGraph().getMode();
         if (mode == PREVIEW_MODE || evt.getOldValue() == PREVIEW_MODE) {
             this.refreshing = true;
-            getModel().syncGraph();
+            getJModel().syncGraph();
             getJGraph().setEditable(mode != PREVIEW_MODE);
             getJGraph().refreshAllCells();
             getJGraph().refresh();

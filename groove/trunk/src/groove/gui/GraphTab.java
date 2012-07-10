@@ -11,6 +11,7 @@ import groove.gui.dialog.GraphPreviewDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.GraphJModel;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
@@ -29,10 +30,13 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 
 import org.jgraph.JGraph;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
+import org.jgraph.graph.DefaultGraphModel.GraphModelEdit;
 
 /** Display tab component showing a graph-based resource. */
 final public class GraphTab extends ResourceTab implements MainTab {
@@ -168,7 +172,8 @@ final public class GraphTab extends ResourceTab implements MainTab {
 
     private final static boolean DEBUG = false;
 
-    private class GraphPanel extends JGraphPanel<AspectJGraph> {
+    private class GraphPanel extends JGraphPanel<AspectJGraph> implements
+            UndoableEditListener {
         /**
          * Constructs the instance of this tab for a given simulator and
          * resource kind.
@@ -178,6 +183,18 @@ final public class GraphTab extends ResourceTab implements MainTab {
             setFocusable(false);
             setEnabled(false);
             initialise();
+        }
+
+        @Override
+        public void setJModel(GraphJModel<?,?> jModel) {
+            GraphJModel<?,?> oldJModel = getJModel();
+            if (oldJModel != null) {
+                oldJModel.removeUndoableEditListener(this);
+            }
+            super.setJModel(jModel);
+            if (jModel != null) {
+                jModel.addUndoableEditListener(this);
+            }
         }
 
         @Override
@@ -250,6 +267,15 @@ final public class GraphTab extends ResourceTab implements MainTab {
                     }
                 });
             return result;
+        }
+
+        @Override
+        public void undoableEditHappened(UndoableEditEvent e) {
+            if (e.getEdit() instanceof GraphModelEdit) {
+                String name = GraphTab.this.getName();
+                getDisplay().startEditResource(name);
+                ((GraphEditorTab) getDisplay().getEditors().get(name)).setDirty(true);
+            }
         }
     }
 }
