@@ -28,6 +28,7 @@ import groove.graph.GraphRole;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Pattern shape.
@@ -181,6 +182,26 @@ public final class PatternShape extends PatternGraph {
     public Multiplicity getMult(PatternEdge edge) {
         Multiplicity result = this.edgeMultMap.get(edge);
         return result == null ? ZERO_EDGE_MULT : result;
+    }
+
+    /** Returns the bounded sum of the node multiplicities of the given set. */
+    Multiplicity getNodeSetMultSum(Set<PatternNode> nodes) {
+        Multiplicity accumulator = ZERO_NODE_MULT;
+        for (PatternNode node : nodes) {
+            Multiplicity nodeMult = this.nodeMultMap.get(node);
+            accumulator = accumulator.add(nodeMult);
+        }
+        return accumulator;
+    }
+
+    /** Returns the bounded sum of the edge multiplicities of the given set. */
+    Multiplicity getEdgeSetMultSum(Set<PatternEdge> edges) {
+        Multiplicity accumulator = ZERO_EDGE_MULT;
+        for (PatternEdge edge : edges) {
+            Multiplicity edgeMult = this.edgeMultMap.get(edge);
+            accumulator = accumulator.add(edgeMult);
+        }
+        return accumulator;
     }
 
     /**

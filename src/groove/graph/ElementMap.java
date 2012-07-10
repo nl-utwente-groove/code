@@ -81,8 +81,8 @@ public class ElementMap<SN extends Node,SE extends Edge,TN extends Node,TE exten
      * @return the old image for <code>key</code>, or <code>null</code> if
      *         there was none
      */
-    public TN putNode(SN key, TN layout) {
-        return this.nodeMap.put(key, layout);
+    public TN putNode(SN key, TN value) {
+        return this.nodeMap.put(key, value);
     }
 
     /**
@@ -90,8 +90,8 @@ public class ElementMap<SN extends Node,SE extends Edge,TN extends Node,TE exten
      * @return the old image for <code>key</code>, or <code>null</code> if
      *         there was none
      */
-    public TE putEdge(SE key, TE layout) {
-        return this.edgeMap.put(key, layout);
+    public TE putEdge(SE key, TE value) {
+        return this.edgeMap.put(key, value);
     }
 
     /**
