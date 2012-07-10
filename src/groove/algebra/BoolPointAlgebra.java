@@ -39,6 +39,11 @@ public class BoolPointAlgebra extends BoolSignature<Object> implements
     }
 
     @Override
+    public Object neq(Object arg0, Object arg1) {
+        return singleBool;
+    }
+
+    @Override
     public Object not(Object arg) {
         return singleBool;
     }

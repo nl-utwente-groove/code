@@ -44,6 +44,11 @@ public class BoolAlgebra extends BoolSignature<Boolean> implements
     }
 
     @Override
+    public Boolean neq(Boolean arg0, Boolean arg1) {
+        return !arg0.equals(arg1);
+    }
+
+    @Override
     public Boolean or(Boolean arg0, Boolean arg1) {
         return arg0 || arg1;
     }

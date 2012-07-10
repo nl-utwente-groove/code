@@ -59,6 +59,13 @@ public abstract class BoolSignature<Bool> implements Signature {
     @InfixSymbol(symbol = "==", precedence = EQUAL)
     public abstract Bool eq(Bool arg0, Bool arg1);
 
+    /** Inequality test. */
+    @ToolTipHeader("Boolean inequality test")
+    @Syntax("Q%s.LPAR.b1.COMMA.b2.RPAR")
+    @ToolTipBody("Yields TRUE if boolean %s is not equal to boolean %s")
+    @InfixSymbol(symbol = "!=", precedence = EQUAL)
+    public abstract Bool neq(Bool arg0, Bool arg1);
+
     @Override
     public SignatureKind getKind() {
         return SignatureKind.BOOL;

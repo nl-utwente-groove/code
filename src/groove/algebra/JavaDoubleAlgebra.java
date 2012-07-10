@@ -46,6 +46,11 @@ public class JavaDoubleAlgebra extends RealSignature<Double,Boolean,String>
     }
 
     @Override
+    public Boolean neq(Double arg0, Double arg1) {
+        return !approximatelyEquals(arg0, arg1);
+    }
+
+    @Override
     public Boolean ge(Double arg0, Double arg1) {
         return arg0 >= arg1 || approximatelyEquals(arg0, arg1);
     }

@@ -22,7 +22,7 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class StringPointAlgebra extends StringSignature<Object,Object>
+public class StringPointAlgebra extends StringSignature<Object,Object,Object>
         implements Algebra<Object> {
     /** Private constructor for the singleton instance. */
     private StringPointAlgebra() {
@@ -36,6 +36,11 @@ public class StringPointAlgebra extends StringSignature<Object,Object>
 
     @Override
     public Object eq(Object arg0, Object arg1) {
+        return singleBool;
+    }
+
+    @Override
+    public Object neq(Object arg0, Object arg1) {
         return singleBool;
     }
 
@@ -57,6 +62,11 @@ public class StringPointAlgebra extends StringSignature<Object,Object>
     @Override
     public Object lt(Object arg0, Object arg1) {
         return singleBool;
+    }
+
+    @Override
+    public Object length(Object arg) {
+        return singleInt;
     }
 
     public String getName() {
@@ -85,6 +95,8 @@ public class StringPointAlgebra extends StringSignature<Object,Object>
      * @see BoolPointAlgebra#singleBool
      */
     public static final String singleBool = BoolPointAlgebra.singleBool;
+    /** Point value of the string algebra. */
+    public static final String singleInt = IntPointAlgebra.singleInt;
     /** Point value of the string algebra. */
     public static final String singleString = "S";
     /** Singleton instance of this algebra. */

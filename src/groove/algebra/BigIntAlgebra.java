@@ -46,6 +46,11 @@ public class BigIntAlgebra extends IntSignature<BigInteger,Boolean,String>
     }
 
     @Override
+    public Boolean neq(BigInteger arg0, BigInteger arg1) {
+        return !arg0.equals(arg1);
+    }
+
+    @Override
     public Boolean ge(BigInteger arg0, BigInteger arg1) {
         return arg0.subtract(arg1).signum() >= 0;
     }

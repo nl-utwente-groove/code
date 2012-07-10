@@ -24,8 +24,8 @@ import groove.view.FormatException;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class StringAlgebra extends StringSignature<String,Boolean> implements
-        Algebra<String> {
+public class StringAlgebra extends StringSignature<String,Boolean,Integer>
+        implements Algebra<String> {
     /** Empty constructor for the singleton instance. */
     private StringAlgebra() {
         // empty
@@ -39,6 +39,11 @@ public class StringAlgebra extends StringSignature<String,Boolean> implements
     @Override
     public Boolean eq(String arg0, String arg1) {
         return arg0.equals(arg1);
+    }
+
+    @Override
+    public Boolean neq(String arg0, String arg1) {
+        return !arg0.equals(arg1);
     }
 
     @Override
@@ -59,6 +64,11 @@ public class StringAlgebra extends StringSignature<String,Boolean> implements
     @Override
     public Boolean lt(String arg0, String arg1) {
         return arg0.compareTo(arg1) < 0;
+    }
+
+    @Override
+    public Integer length(String arg) {
+        return arg.length();
     }
 
     public String getName() {
