@@ -17,12 +17,13 @@
 package groove.abstraction.pattern.trans;
 
 import groove.abstraction.Multiplicity;
-import groove.abstraction.MyHashMap;
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.PreMatch;
+import groove.abstraction.pattern.shape.PatternEdge;
 import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.shape.PatternShape;
+import groove.abstraction.pattern.shape.PatternShapeMorphism;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -85,8 +86,12 @@ public final class Materialisation {
      * The field is final but the match is modified by the materialisation.
      */
     private final Match match;
-
-    private final MyHashMap<PatternNode,PatternNode> nodeMatMap;
+    /**
+     * The morphism from the (partially) materialised shape into the original
+     * shape.
+     * The field is final but the morphism is modified by the materialisation.
+     */
+    private final PatternShapeMorphism morph;
 
     private final MyHashSet<PatternNode> matLayers[];
 
@@ -108,13 +113,15 @@ public final class Materialisation {
         if (isRuleModifying()) {
             this.shape = this.originalShape.clone();
             this.match = new Match(this.rule, this.shape);
-            this.nodeMatMap = new MyHashMap<PatternNode,PatternNode>();
+            this.morph =
+                PatternShapeMorphism.createIdentityMorphism(this.shape,
+                    this.originalShape);
             this.matLayers = new MyHashSet[this.shape.depth() + 1];
         } else { // The rule is not modifying.
             // Nothing to do, we just return immediately.
             this.shape = shape;
             this.match = preMatch;
-            this.nodeMatMap = null;
+            this.morph = null;
             this.matLayers = null;
         }
     }
@@ -133,7 +140,7 @@ public final class Materialisation {
         this.shape = mat.shape.clone();
         this.match = mat.match.clone();
         // Clone auxiliary structures when needed.
-        this.nodeMatMap = mat.nodeMatMap.clone();
+        this.morph = mat.morph.clone();
         this.matLayers = new MyHashSet[this.shape.depth() + 1];
         for (int layer = 0; layer <= this.shape.depth(); layer++) {
             if (mat.matLayers[layer] != null) {
@@ -183,6 +190,8 @@ public final class Materialisation {
         while (!toProcess.isEmpty()) {
             Materialisation mat = toProcess.pop();
             if (mat.isFinished()) {
+                // Check if we didn't do something wrong...
+                assert checkMorphism();
                 result.add(mat);
             } else {
                 mat.computeSolutions(toProcess);
@@ -191,28 +200,36 @@ public final class Materialisation {
     }
 
     private boolean isFinished() {
+        // EDUARDO: Implement this...
         return false;
     }
 
     private void computeSolutions(Stack<Materialisation> toProcess) {
-
+        // EDUARDO: Implement this...
     }
 
     private void prepareSolutions() {
-        for (int layer = this.rule.lhs().depth(); layer >= 0; layer--) {
-            for (RuleNode rNode : this.rule.lhs().getLayerNodes(layer)) {
+        PatternRuleGraph lhs = this.rule.lhs();
+        for (int layer = 0; layer <= lhs.depth(); layer++) {
+            // Materialise all nodes of the current layer.
+            for (RuleNode rNode : lhs.getLayerNodes(layer)) {
                 PatternNode origNode = this.preMatch.getNode(rNode);
                 materialiseNode(rNode, origNode);
+            }
+            // Materialise all incoming edges of the previous layer.
+            for (RuleEdge rEdge : lhs.getLayerEdges(layer)) {
+                PatternEdge origEdge = this.preMatch.getEdge(rEdge);
+                materialiseEdge(rEdge, origEdge);
             }
         }
     }
 
-    private PatternNode materialiseNode(RuleNode rNode, PatternNode origNode) {
+    private void materialiseNode(RuleNode rNode, PatternNode origNode) {
         Multiplicity origMult = this.shape.getMult(origNode);
         PatternNode newNode;
         if (origMult.isCollector()) {
             // Extract a copy.
-            newNode = this.shape.createNode(rNode.getType());
+            newNode = this.shape.createNode(origNode.getType());
             this.shape.addNode(newNode);
             addToMatLayer(newNode);
             // Adjust the original node multiplicity.
@@ -224,8 +241,26 @@ public final class Materialisation {
             newNode = origNode;
         }
         this.match.putNode(rNode, newNode);
-        this.nodeMatMap.put(newNode, origNode);
-        return newNode;
+        this.morph.putNode(newNode, origNode);
+    }
+
+    /**
+     * Pre-condition: source and target nodes of original edge are already
+     * materialised.
+     */
+    private void materialiseEdge(RuleEdge rEdge, PatternEdge origEdge) {
+        PatternNode newSrc = this.match.getNode(rEdge.source());
+        PatternNode newTgt = this.match.getNode(rEdge.target());
+        PatternEdge newEdge;
+        if (!newSrc.equals(origEdge.source())
+            && !newTgt.equals(origEdge.target())) {
+            newEdge = this.shape.createEdge(newSrc, origEdge.getType(), newTgt);
+            this.shape.addEdge(newEdge);
+        } else {
+            newEdge = origEdge;
+        }
+        this.match.putEdge(rEdge, newEdge);
+        this.morph.putEdge(newEdge, origEdge);
     }
 
     private void addToMatLayer(PatternNode newNode) {
@@ -234,6 +269,15 @@ public final class Materialisation {
             this.matLayers[layer] = new MyHashSet<PatternNode>();
         }
         this.matLayers[layer].add(newNode);
+    }
+
+    /**
+     * Returns true if the morphism from the materialised shape to the original
+     * one is consistent and valid.
+     */
+    private boolean checkMorphism() {
+        return this.morph.isConsistent(this.shape, this.originalShape)
+            && this.morph.isValid(this.shape, this.originalShape);
     }
 
 }
