@@ -17,7 +17,7 @@
 package groove.algebra;
 
 /** A constant symbol for a particular signature. */
-public class Constant {
+public class Constant implements Term {
     /**
      * Constructs a new constant from a given signature and 
      * constant symbol.
@@ -60,7 +60,7 @@ public class Constant {
         return getSignature() + ":" + getSymbol();
     }
 
-    /** Returns the signature name of this constant. */
+    @Override
     public final SignatureKind getSignature() {
         return this.signature;
     }

@@ -19,6 +19,8 @@ package groove.algebra;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -32,7 +34,30 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AlgebraFamily {
+public enum AlgebraFamily {
+    /** Default algebra family:
+     * {@link Integer} for {@code int}, 
+     * {@link Boolean} for {@code bool}, 
+     * {@link String} for {@code string}, 
+     * {@link Double} for {@code real}, 
+     */
+    DEFAULT("default", JavaIntAlgebra.instance, BoolAlgebra.instance,
+            StringAlgebra.instance, JavaDoubleAlgebra.instance),
+    /** Point algebra family: every sort has a single value. */
+    POINT("point", IntPointAlgebra.instance, BoolPointAlgebra.instance,
+            StringPointAlgebra.instance, RealPointAlgebra.instance),
+    /** High-precision algebra family:
+     * {@link BigInteger} for {@code int}, 
+     * {@link Boolean} for {@code bool}, 
+     * {@link String} for {@code string}, 
+     * {@link BigDecimal} for {@code real}, 
+     */
+    BIG("big", BigIntAlgebra.instance, BoolAlgebra.instance,
+            StringAlgebra.instance, BigDoubleAlgebra.instance),
+    /** Term algebra: symbolic representations for all values. */
+    TERM("term", TermIntAlgebra.instance, TermBoolAlgebra.instance,
+            TermStringAlgebra.instance, TermRealAlgebra.instance);
+
     /**
      * Constructs a new register, loaded with a given set of algebras.
      * @throws IllegalArgumentException if there is an algebra for which there
@@ -40,7 +65,7 @@ public class AlgebraFamily {
      *         signature
      * @throws IllegalStateException if there are signatures without algebras
      */
-    private AlgebraFamily(String name, Set<Algebra<?>> algebras)
+    private AlgebraFamily(String name, Algebra<?>... algebras)
         throws IllegalArgumentException, IllegalStateException {
         this.name = name;
         for (Algebra<?> algebra : algebras) {
@@ -202,21 +227,6 @@ public class AlgebraFamily {
         return new Operation(this, algebra, method);
     }
 
-    /**
-     * Since we have controlled creation of registers, two registers are equal
-     * if and only if they are the same.
-     */
-    @Override
-    public boolean equals(Object obj) {
-        return this == obj;
-    }
-
-    /** Returns the identity hash code for this object. */
-    @Override
-    public int hashCode() {
-        return System.identityHashCode(this);
-    }
-
     @Override
     public String toString() {
         return this.algebraMap.toString();
@@ -233,7 +243,7 @@ public class AlgebraFamily {
 
     /** Returns the algebra register with the family of default algebras. */
     static public AlgebraFamily getInstance() {
-        return defaultFamily;
+        return DEFAULT;
     }
 
     /**
@@ -244,45 +254,13 @@ public class AlgebraFamily {
         return result;
     }
 
-    /** Name of the default (Java) algebra family. */
-    static public final String DEFAULT_ALGEBRAS = "default";
-    /** Name of the point algebra family. */
-    static public final String POINT_ALGEBRAS = "point";
-    /** Name of the big algebra family. */
-    static public final String BIG_ALGEBRAS = "big";
-
-    /** The default algebra register. */
-    static private final AlgebraFamily defaultFamily;
-    /** The point algebra register. */
-    static private final AlgebraFamily pointFamily;
-    /** The big algebra register. */
-    static private final AlgebraFamily bigFamily;
-    /** Default algebra register. */
-    static private final Map<String,AlgebraFamily> familyMap;
+    /** Mapping from names to algebra families. */
+    private static Map<String,AlgebraFamily> familyMap =
+        new HashMap<String,AlgebraFamily>();
     static {
-        familyMap = new HashMap<String,AlgebraFamily>();
-        Set<Algebra<?>> defaultAlgebraFamily = new HashSet<Algebra<?>>();
-        defaultAlgebraFamily.add(JavaIntAlgebra.instance);
-        defaultAlgebraFamily.add(BoolAlgebra.instance);
-        defaultAlgebraFamily.add(StringAlgebra.instance);
-        defaultAlgebraFamily.add(JavaDoubleAlgebra.instance);
-        defaultFamily =
-            new AlgebraFamily(DEFAULT_ALGEBRAS, defaultAlgebraFamily);
-        familyMap.put(DEFAULT_ALGEBRAS, defaultFamily);
-        Set<Algebra<?>> pointAlgebraFamily = new HashSet<Algebra<?>>();
-        pointAlgebraFamily.add(IntPointAlgebra.instance);
-        pointAlgebraFamily.add(BoolPointAlgebra.instance);
-        pointAlgebraFamily.add(StringPointAlgebra.instance);
-        pointAlgebraFamily.add(RealPointAlgebra.instance);
-        pointFamily = new AlgebraFamily(POINT_ALGEBRAS, pointAlgebraFamily);
-        familyMap.put(POINT_ALGEBRAS, pointFamily);
-        Set<Algebra<?>> bigAlgebraFamily = new HashSet<Algebra<?>>();
-        bigAlgebraFamily.add(BigIntAlgebra.instance);
-        bigAlgebraFamily.add(BoolAlgebra.instance);
-        bigAlgebraFamily.add(StringAlgebra.instance);
-        bigAlgebraFamily.add(BigDoubleAlgebra.instance);
-        bigFamily = new AlgebraFamily(POINT_ALGEBRAS, bigAlgebraFamily);
-        familyMap.put(BIG_ALGEBRAS, bigFamily);
+        for (AlgebraFamily family : values()) {
+            familyMap.put(family.getName(), family);
+        }
     }
 
     /** Implementation of an algebra operation. */
