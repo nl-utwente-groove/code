@@ -204,7 +204,7 @@ public class Transform {
         typeNames.add("EcoreTypes");
         sp.setTypeNames(typeNames);
         if (mh.isBigAlgebra()) {
-            sp.setAlgebra(AlgebraFamily.BIG_ALGEBRAS);
+            sp.setAlgebra(AlgebraFamily.BIG.getName());
         }
         grammar.putProperties(sp);
 

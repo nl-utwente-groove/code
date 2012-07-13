@@ -332,12 +332,12 @@ public class SystemProperties extends java.util.Properties implements Fixable {
 
     /** 
      * Returns the selected algebra family.
-     * @return the selected algebra family, or {@link AlgebraFamily#DEFAULT_ALGEBRAS}
+     * @return the selected algebra family, or {@link AlgebraFamily#DEFAULT}
      * if none is selected. 
      */
     public String getAlgebraFamily() {
         String result = getProperty(Key.ALGEBRA);
-        return result == null ? AlgebraFamily.DEFAULT_ALGEBRAS : result;
+        return result == null ? AlgebraFamily.DEFAULT.getName() : result;
     }
 
     /**
@@ -869,9 +869,9 @@ public class SystemProperties extends java.util.Properties implements Fixable {
                 @Override
                 public Property<String> newInstance(String comment) {
                     return new Property.Choice<String>(comment,
-                        AlgebraFamily.DEFAULT_ALGEBRAS,
-                        AlgebraFamily.POINT_ALGEBRAS,
-                        AlgebraFamily.BIG_ALGEBRAS);
+                        AlgebraFamily.DEFAULT.getName(),
+                        AlgebraFamily.POINT.getName(),
+                        AlgebraFamily.BIG.getName());
                 }
             },
             EXPLORATION {
