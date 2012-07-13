@@ -31,6 +31,7 @@ import groove.prolog.util.TermConverter;
 import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashMap;
@@ -113,11 +114,15 @@ public class PrologEngine {
             Goal goal = this.interpreter.prepareGoal(goalTerm);
             this.currentResult = new InternalQueryResult(goal, term);
             this.currentResult.rawVars = readOpts.variableNames;
+            termReader.close();
             return next();
         } catch (ParseException e) {
             throw new FormatException("Parse error in Prolog program: %s",
                 e.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
     /**

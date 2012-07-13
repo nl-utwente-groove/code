@@ -856,6 +856,7 @@ public final class GraphToTikz {
             format = enclosePar(format);
         }
         s.append(f.format(Locale.US, format, adjX, adjY).toString());
+        f.close();
     }
 
     /**

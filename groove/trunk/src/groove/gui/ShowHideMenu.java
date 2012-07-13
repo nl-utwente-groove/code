@@ -665,6 +665,7 @@ public class ShowHideMenu extends JMenu {
                     BufferedReader in =
                         new BufferedReader(new FileReader(labelsFile));
                     if (!in.ready()) {
+                        in.close();
                         throw new IOException();
                     }
                     while ((fileLine = in.readLine()) != null) {
