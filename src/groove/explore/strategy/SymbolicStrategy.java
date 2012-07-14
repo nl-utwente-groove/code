@@ -16,6 +16,7 @@
  */
 package groove.explore.strategy;
 
+import groove.algebra.AlgebraFamily;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
@@ -71,7 +72,7 @@ public class SymbolicStrategy extends AbstractStrategy {
         super.prepare(gts, startState);
         // Check if the point algebra is set. This should be moved to the hook
         // in an upcoming feature
-        if (gts.getGrammar().getProperties().getAlgebraFamily() != "point") {
+        if (gts.getGrammar().getProperties().getAlgebraFamily() != AlgebraFamily.POINT) {
             System.err.print("Grammar AlgebraFamily property should be point,"
                 + "if the SymbolicStrategy is used.");
             return;

@@ -179,7 +179,7 @@ public class PlanSearchEngine extends SearchEngine {
                 this.remainingVars =
                     new LinkedHashSet<LabelVar>(graph.varSet());
                 this.algebraFamily =
-                    AlgebraFamily.getInstance(condition.getSystemProperties().getAlgebraFamily());
+                    condition.getSystemProperties().getAlgebraFamily();
             } else {
                 this.remainingNodes = null;
                 this.remainingEdges = null;

@@ -53,10 +53,9 @@ public class CtrlLoader {
      * @param algebraFamily name of the algebra family to compute constant data values
      * @param rules set of rules that can be invoked by the grammar
      */
-    public void init(String algebraFamily, Collection<Rule> rules) {
+    public void init(AlgebraFamily algebraFamily, Collection<Rule> rules) {
         this.family =
-            algebraFamily == null ? AlgebraFamily.getInstance()
-                    : AlgebraFamily.getInstance(algebraFamily);
+            algebraFamily == null ? AlgebraFamily.DEFAULT : algebraFamily;
         this.namespace = new Namespace();
         for (Rule rule : rules) {
             this.namespace.addRule(rule);

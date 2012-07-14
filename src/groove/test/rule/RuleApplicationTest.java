@@ -156,12 +156,13 @@ public class RuleApplicationTest {
      * graphs with all graphs named {@code startName-<i>j</i>}
      * (for <i>j</i> ranging from zero).
      */
-    private void test(GrammarModel grammarModel, String ruleName, String startName) {
+    private void test(GrammarModel grammarModel, String ruleName,
+            String startName) {
         try {
             grammarModel.localSetStartGraph(startName);
             List<HostGraph> results = new ArrayList<HostGraph>();
-            String familyName = grammarModel.getProperties().getAlgebraFamily();
-            AlgebraFamily family = AlgebraFamily.getInstance(familyName);
+            AlgebraFamily family =
+                grammarModel.getProperties().getAlgebraFamily();
             boolean cont = true;
             for (int j = 0; cont; j++) {
                 String resultName = startName + "-" + j;
@@ -176,8 +177,8 @@ public class RuleApplicationTest {
                 Assert.fail(String.format("Rule '%s' is currently disabled",
                     ruleName));
             }
-            test(grammarModel.getStartGraphModel().toHost().clone(family), rule,
-                results);
+            test(grammarModel.getStartGraphModel().toHost().clone(family),
+                rule, results);
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
         }
