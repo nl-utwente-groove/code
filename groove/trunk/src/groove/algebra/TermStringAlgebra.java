@@ -82,6 +82,11 @@ public class TermStringAlgebra extends StringSignature<Term,Term,Term>
         return NAME;
     }
 
+    @Override
+    public AlgebraFamily getFamily() {
+        return AlgebraFamily.TERM;
+    }
+
     public String getSymbol(Object value) {
         return ((Constant) value).getSymbol();
     }

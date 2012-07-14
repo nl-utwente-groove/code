@@ -57,6 +57,11 @@ public class BoolAlgebra extends BoolSignature<Boolean> implements
         return NAME;
     }
 
+    @Override
+    public AlgebraFamily getFamily() {
+        return AlgebraFamily.DEFAULT;
+    }
+
     public String getSymbol(Object value) {
         return value.toString();
     }

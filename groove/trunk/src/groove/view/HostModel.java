@@ -33,7 +33,6 @@ import groove.trans.HostFactory;
 import groove.trans.HostGraph;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
-import groove.trans.SystemProperties;
 import groove.util.Pair;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
@@ -109,19 +108,13 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     }
 
     /** 
-     * Extracts the algebra family from a (possibly {@code null}) properties
-     * object.
+     * The algebra is the term algebra at this point.
      */
     private AlgebraFamily getFamily() {
-        AlgebraFamily result;
-        SystemProperties properties =
-            getGrammar() == null ? null : getGrammar().getProperties();
-        if (properties == null) {
-            result = AlgebraFamily.getInstance();
-        } else {
-            result = AlgebraFamily.getInstance(properties.getAlgebraFamily());
-        }
-        return result;
+        // if there is a grammar involved, the real algebra family
+        // will be set only later
+        return getGrammar() == null ? AlgebraFamily.DEFAULT
+                : AlgebraFamily.TERM;
     }
 
     private AspectGraph getNormalSource() {
@@ -212,7 +205,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 // test against the type graph, if any
                 TypeGraph type = getGrammar().getTypeGraph();
                 HostGraphMorphism typing = type.analyzeHost(result);
-                result = typing.createImage(result.getName());
+                result =
+                    typing.createImage(result.getName(), AlgebraFamily.TERM);
                 HostModelMap newElementMap = elementMap.newMap();
                 for (Map.Entry<AspectNode,HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
                     HostNode typedNode = typing.getNode(nodeEntry.getValue());

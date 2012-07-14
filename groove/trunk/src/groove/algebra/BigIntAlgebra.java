@@ -129,6 +129,11 @@ public class BigIntAlgebra extends IntSignature<BigInteger,Boolean,String>
         return NAME;
     }
 
+    @Override
+    public AlgebraFamily getFamily() {
+        return AlgebraFamily.BIG;
+    }
+
     /** Name of the algebra. */
     public static final String NAME = "jint";
     /** Singleton instance of this algebra. */

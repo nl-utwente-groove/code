@@ -21,10 +21,10 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class BoolPointAlgebra extends BoolSignature<Object> implements
+public class PointBoolAlgebra extends BoolSignature<Object> implements
         Algebra<Object> {
     /** Private constructor for the singleton instance. */
-    private BoolPointAlgebra() {
+    private PointBoolAlgebra() {
         // empty
     }
 
@@ -57,6 +57,11 @@ public class BoolPointAlgebra extends BoolSignature<Object> implements
         return NAME;
     }
 
+    @Override
+    public AlgebraFamily getFamily() {
+        return AlgebraFamily.POINT;
+    }
+
     public String getSymbol(Object value) {
         return value.toString();
     }
@@ -75,5 +80,5 @@ public class BoolPointAlgebra extends BoolSignature<Object> implements
     /** Singleton object of this algebra. */
     public static final String singleBool = "true";
     /** Singleton instance of this algebra. */
-    public static final BoolPointAlgebra instance = new BoolPointAlgebra();
+    public static final PointBoolAlgebra instance = new PointBoolAlgebra();
 }

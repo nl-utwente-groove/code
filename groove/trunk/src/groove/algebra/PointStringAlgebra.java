@@ -18,14 +18,14 @@ package groove.algebra;
 
 /**
  * Implementation of strings consisting of a singleton value.
- * To be used in conjunction with {@link BoolPointAlgebra}.
+ * To be used in conjunction with {@link PointBoolAlgebra}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class StringPointAlgebra extends StringSignature<Object,Object,Object>
+public class PointStringAlgebra extends StringSignature<Object,Object,Object>
         implements Algebra<Object> {
     /** Private constructor for the singleton instance. */
-    private StringPointAlgebra() {
+    private PointStringAlgebra() {
         // empty
     }
 
@@ -73,6 +73,11 @@ public class StringPointAlgebra extends StringSignature<Object,Object,Object>
         return NAME;
     }
 
+    @Override
+    public AlgebraFamily getFamily() {
+        return AlgebraFamily.POINT;
+    }
+
     public String getSymbol(Object value) {
         return value.toString();
     }
@@ -92,13 +97,13 @@ public class StringPointAlgebra extends StringSignature<Object,Object,Object>
     /** 
      * Representation of the point value of the boolean algebra;
      * redefined literally to avoid class loading dependencies.
-     * @see BoolPointAlgebra#singleBool
+     * @see PointBoolAlgebra#singleBool
      */
-    public static final String singleBool = BoolPointAlgebra.singleBool;
+    public static final String singleBool = PointBoolAlgebra.singleBool;
     /** Point value of the string algebra. */
-    public static final String singleInt = IntPointAlgebra.singleInt;
+    public static final String singleInt = PointIntAlgebra.singleInt;
     /** Point value of the string algebra. */
     public static final String singleString = "S";
     /** Singleton instance of this algebra. */
-    public static final StringPointAlgebra instance = new StringPointAlgebra();
+    public static final PointStringAlgebra instance = new PointStringAlgebra();
 }

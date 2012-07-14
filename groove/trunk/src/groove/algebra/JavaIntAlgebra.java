@@ -129,6 +129,11 @@ public class JavaIntAlgebra extends IntSignature<Integer,Boolean,String>
         return NAME;
     }
 
+    @Override
+    public AlgebraFamily getFamily() {
+        return AlgebraFamily.DEFAULT;
+    }
+
     /** Name of the algebra. */
     public static final String NAME = "jint";
     /** Singleton instance of this algebra. */

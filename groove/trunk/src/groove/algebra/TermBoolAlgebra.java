@@ -62,8 +62,13 @@ public class TermBoolAlgebra extends BoolSignature<Term> implements
         return NAME;
     }
 
+    @Override
+    public AlgebraFamily getFamily() {
+        return AlgebraFamily.TERM;
+    }
+
     public String getSymbol(Object value) {
-        return value.toString();
+        return ((Constant) value).getSymbol();
     }
 
     public Constant getValueFromString(String constant) {

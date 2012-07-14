@@ -46,4 +46,11 @@ public interface Algebra<T> extends Signature {
      * @see #getKind()
      */
     String getName();
+
+    /**
+     * Returns the algebra family to which this algebra primarily belongs.
+     * Note that an algebra may belong to more than one family; in that case,
+     * {@link AlgebraFamily#DEFAULT} is returned in preference to other values.
+     */
+    AlgebraFamily getFamily();
 }
