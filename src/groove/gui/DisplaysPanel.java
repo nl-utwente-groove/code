@@ -256,13 +256,17 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         }
         if (changes.contains(Change.DISPLAY)) {
             if (!this.changingTabs) {
-                Display panel = this.displaysMap.get(source.getDisplay());
-                if (indexOfComponent(panel.getDisplayPanel()) >= 0) {
-                    setSelectedComponent(panel.getDisplayPanel());
+                Display display = this.displaysMap.get(source.getDisplay());
+                if (indexOfComponent(display.getDisplayPanel()) >= 0) {
+                    setSelectedComponent(display.getDisplayPanel());
                 } else {
                     DisplayWindow window =
                         this.detachedMap.get(source.getDisplay());
-                    window.toFront();
+                    if (window == null) {
+                        attach(display);
+                    } else {
+                        window.toFront();
+                    }
                 }
             }
             JPanel listPanel =

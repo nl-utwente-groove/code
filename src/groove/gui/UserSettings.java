@@ -174,9 +174,13 @@ public class UserSettings {
     private static void syncDisplaySettings(Simulator simulator) {
         Object display = simulator.getModel().getDisplay().name();
         userPrefs.put(DISPLAY_KEY, display.toString());
-        Integer ltsTabIndex =
+        int ltsTabIndex =
             simulator.getDisplaysPanel().getLtsDisplay().getTabPane().getSelectedIndex();
-        userPrefs.put(SIMULATION_TAB_KEY, ltsTabIndex.toString());
+        if (ltsTabIndex >= 0) {
+            userPrefs.put(SIMULATION_TAB_KEY, "" + ltsTabIndex);
+        } else {
+            userPrefs.remove(SIMULATION_TAB_KEY);
+        }
     }
 
     /** The persistently stored user preferences. */
