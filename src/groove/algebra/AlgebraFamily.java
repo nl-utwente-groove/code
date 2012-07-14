@@ -44,8 +44,8 @@ public enum AlgebraFamily {
     DEFAULT("default", JavaIntAlgebra.instance, BoolAlgebra.instance,
             StringAlgebra.instance, JavaDoubleAlgebra.instance),
     /** Point algebra family: every sort has a single value. */
-    POINT("point", IntPointAlgebra.instance, BoolPointAlgebra.instance,
-            StringPointAlgebra.instance, RealPointAlgebra.instance),
+    POINT("point", PointIntAlgebra.instance, PointBoolAlgebra.instance,
+            PointStringAlgebra.instance, PointRealAlgebra.instance),
     /** High-precision algebra family:
      * {@link BigInteger} for {@code int}, 
      * {@link Boolean} for {@code bool}, 

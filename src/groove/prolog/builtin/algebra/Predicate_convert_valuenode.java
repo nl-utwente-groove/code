@@ -27,12 +27,11 @@ import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.algebra.Algebra;
-import groove.algebra.BigDoubleAlgebra;
-import groove.algebra.BigIntAlgebra;
-import groove.algebra.JavaDoubleAlgebra;
-import groove.algebra.JavaIntAlgebra;
-import groove.algebra.StringAlgebra;
+import groove.algebra.Constant;
 import groove.graph.algebra.ValueNode;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * Predicate convert_valuenode(+ValueNode,?Atom)
@@ -45,20 +44,76 @@ public class Predicate_convert_valuenode extends AlgebraPrologCode {
         try {
             ValueNode node = getValueNode(args[0]);
 
-            Term result = null;
+            Term result;
             Algebra<?> alg = node.getAlgebra();
-            if (alg instanceof StringAlgebra) {
-                result = AtomTerm.get((String) node.getValue());
-            } else if (alg instanceof BigIntAlgebra
-                || alg instanceof JavaIntAlgebra) {
-                Integer val = (Integer) node.getValue();
-                result = IntegerTerm.get(val);
-            } else if (alg instanceof BigDoubleAlgebra
-                || alg instanceof JavaDoubleAlgebra) {
-                Double val = (Double) node.getValue();
-                result = new FloatTerm(val);
-            } else {
-                result = new JavaObjectTerm(node.getValue());
+            Object value = node.getValue();
+            switch (alg.getKind()) {
+            case BOOL:
+                result = new JavaObjectTerm(value);
+                break;
+            case INT:
+                Integer intValue;
+                switch (alg.getFamily()) {
+                case DEFAULT:
+                    intValue = (Integer) value;
+                    break;
+                case BIG:
+                    intValue = ((BigInteger) value).intValue();
+                    break;
+                case POINT:
+                    intValue = Integer.parseInt((String) value);
+                    break;
+                case TERM:
+                    intValue = Integer.parseInt(((Constant) value).getSymbol());
+                    break;
+                default:
+                    intValue = null;
+                    assert false;
+                }
+                result = IntegerTerm.get(intValue);
+                break;
+            case REAL:
+                Double realValue;
+                switch (alg.getFamily()) {
+                case DEFAULT:
+                    realValue = (Double) value;
+                    break;
+                case BIG:
+                    realValue = ((BigDecimal) value).doubleValue();
+                    break;
+                case POINT:
+                    realValue = Double.parseDouble((String) value);
+                    break;
+                case TERM:
+                    realValue =
+                        Double.parseDouble(((Constant) value).getSymbol());
+                    break;
+                default:
+                    realValue = null;
+                    assert false;
+                }
+                result = new FloatTerm(realValue);
+                break;
+            case STRING:
+                String stringValue;
+                switch (alg.getFamily()) {
+                case DEFAULT:
+                case BIG:
+                case POINT:
+                    stringValue = (String) value;
+                    break;
+                case TERM:
+                    stringValue = ((Constant) value).getSymbol();
+                    break;
+                default:
+                    stringValue = null;
+                    assert false;
+                }
+                result = AtomTerm.get(stringValue);
+                break;
+            default:
+                result = null;
+                assert false;
             }
             return interpreter.unify(args[1], result);
         } catch (Exception e) {

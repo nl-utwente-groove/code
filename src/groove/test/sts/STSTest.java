@@ -1,6 +1,6 @@
 package groove.test.sts;
 
-import groove.algebra.IntPointAlgebra;
+import groove.algebra.PointIntAlgebra;
 import groove.explore.util.MatchSetCollector;
 import groove.lts.GTS;
 import groove.lts.MatchResult;
@@ -72,7 +72,7 @@ public class STSTest extends TestCase {
         this.n1[0] = this.g1.getFactory().createNode();
         this.n1[1] = this.g1.getFactory().createNode();
         this.n1[2] =
-            this.g1.getFactory().createValueNode(IntPointAlgebra.instance, 0);
+            this.g1.getFactory().createValueNode(PointIntAlgebra.instance, 0);
 
         this.e1[0] =
             this.g1.getFactory().createEdge(this.n1[0], "a", this.n1[1]);
@@ -82,7 +82,7 @@ public class STSTest extends TestCase {
         this.n2[0] = this.g2.getFactory().createNode();
         this.n2[1] = this.g2.getFactory().createNode();
         this.n2[2] =
-            this.g2.getFactory().createValueNode(IntPointAlgebra.instance, 0);
+            this.g2.getFactory().createValueNode(PointIntAlgebra.instance, 0);
 
         this.e2[0] =
             this.g2.getFactory().createEdge(this.n2[0], "a", this.n2[1]);
@@ -92,7 +92,7 @@ public class STSTest extends TestCase {
         this.n3[0] = this.g3.getFactory().createNode();
         this.n3[1] = this.g3.getFactory().createNode();
         this.n3[2] =
-            this.g3.getFactory().createValueNode(IntPointAlgebra.instance, 0);
+            this.g3.getFactory().createValueNode(PointIntAlgebra.instance, 0);
 
         this.e3[0] =
             this.g3.getFactory().createEdge(this.n3[0], "a", this.n3[1]);

@@ -18,6 +18,7 @@ package groove.test.rule;
 
 import static groove.trans.ResourceKind.HOST;
 import static groove.trans.ResourceKind.RULE;
+import groove.algebra.AlgebraFamily;
 import groove.graph.iso.IsoChecker;
 import groove.io.FileType;
 import groove.match.TreeMatch;
@@ -155,24 +156,28 @@ public class RuleApplicationTest {
      * graphs with all graphs named {@code startName-<i>j</i>}
      * (for <i>j</i> ranging from zero).
      */
-    private void test(GrammarModel view, String ruleName, String startName) {
+    private void test(GrammarModel grammarModel, String ruleName, String startName) {
         try {
-            view.localSetStartGraph(startName);
+            grammarModel.localSetStartGraph(startName);
             List<HostGraph> results = new ArrayList<HostGraph>();
+            String familyName = grammarModel.getProperties().getAlgebraFamily();
+            AlgebraFamily family = AlgebraFamily.getInstance(familyName);
             boolean cont = true;
             for (int j = 0; cont; j++) {
                 String resultName = startName + "-" + j;
-                cont = view.getNames(HOST).contains(resultName);
+                cont = grammarModel.getNames(HOST).contains(resultName);
                 if (cont) {
-                    results.add(view.getHostModel(resultName).toResource());
+                    results.add(grammarModel.getHostModel(resultName).toResource().clone(
+                        family));
                 }
             }
-            Rule rule = view.toGrammar().getRule(ruleName);
+            Rule rule = grammarModel.toGrammar().getRule(ruleName);
             if (rule == null) {
                 Assert.fail(String.format("Rule '%s' is currently disabled",
                     ruleName));
             }
-            test(view.getStartGraphModel().toHost(), rule, results);
+            test(grammarModel.getStartGraphModel().toHost().clone(family), rule,
+                results);
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
         }

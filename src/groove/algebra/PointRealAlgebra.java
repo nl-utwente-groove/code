@@ -18,19 +18,24 @@ package groove.algebra;
 
 /**
  * Implementation of reals consisting of a singleton value.
- * To be used in conjunction with {@link BoolPointAlgebra} and {@link StringPointAlgebra}.
+ * To be used in conjunction with {@link PointBoolAlgebra} and {@link PointStringAlgebra}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RealPointAlgebra extends RealSignature<Object,Object,Object>
+public class PointRealAlgebra extends RealSignature<Object,Object,Object>
         implements Algebra<Object> {
     /** Private constructor for the singleton instance. */
-    private RealPointAlgebra() {
+    private PointRealAlgebra() {
         // empty
     }
 
     public String getName() {
         return NAME;
+    }
+
+    @Override
+    public AlgebraFamily getFamily() {
+        return AlgebraFamily.POINT;
     }
 
     public String getSymbol(Object value) {
@@ -121,17 +126,17 @@ public class RealPointAlgebra extends RealSignature<Object,Object,Object>
     /** 
      * Representation of the point value of the string algebra;
      * redefined literally to avoid class loading dependencies.
-     * @see StringPointAlgebra#singleString
+     * @see PointStringAlgebra#singleString
      */
-    public static final String singleString = StringPointAlgebra.singleString;
+    public static final String singleString = PointStringAlgebra.singleString;
     /** 
      * Representation of the point value of the boolean algebra;
      * redefined literally to avoid class loading dependencies.
-     * @see BoolPointAlgebra#singleBool
+     * @see PointBoolAlgebra#singleBool
      */
-    public static final String singleBool = BoolPointAlgebra.singleBool;
+    public static final String singleBool = PointBoolAlgebra.singleBool;
     /** Point value of the real algebra. */
     public static final String singleReal = "1.0";
     /** Singleton instance of this algebra. */
-    public static final RealPointAlgebra instance = new RealPointAlgebra();
+    public static final PointRealAlgebra instance = new PointRealAlgebra();
 }

@@ -18,6 +18,7 @@ package groove.trans;
 
 import static groove.graph.GraphRole.HOST;
 import groove.algebra.Algebra;
+import groove.algebra.AlgebraFamily;
 import groove.graph.Edge;
 import groove.graph.EdgeMultiplicityVerifier;
 import groove.graph.ElementMap;
@@ -49,25 +50,45 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
      * @param name name of the new host graph.
      */
     public DefaultHostGraph(String name) {
-        this(name, HostFactory.newInstance());
+        this(name, HostFactory.newInstance(), AlgebraFamily.DEFAULT);
     }
 
     /**
      * Constructs an empty host graph, with a given host factory.
      * @param name name of the new host graph
      */
-    public DefaultHostGraph(String name, HostFactory factory) {
+    public DefaultHostGraph(String name, HostFactory factory,
+            AlgebraFamily family) {
         super(name);
         assert factory != null;
         this.factory = factory;
+        this.family = family;
     }
 
     /**
      * Copies an existing host graph, including its element factory.
      */
-    public DefaultHostGraph(HostGraph graph) {
-        super(graph);
+    public DefaultHostGraph(HostGraph graph, AlgebraFamily family) {
+        super(graph.getName());
         this.factory = graph.getFactory();
+        this.family = family;
+        HostGraphMorphism morphism = getFactory().createMorphism();
+        for (HostNode sn : graph.nodeSet()) {
+            HostNode tn;
+            if (sn instanceof ValueNode) {
+                ValueNode vn = (ValueNode) sn;
+                tn =
+                    getFactory().createNodeFromString(
+                        family.getAlgebra(vn.getSignature()), vn.getSymbol());
+            } else {
+                tn = sn;
+            }
+            addNode(tn);
+            morphism.putNode(sn, tn);
+        }
+        for (HostEdge se : graph.edgeSet()) {
+            addEdge(morphism.mapEdge(se));
+        }
     }
 
     /** 
@@ -103,8 +124,18 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
     }
 
     @Override
+    public HostGraph clone(AlgebraFamily family) {
+        return new DefaultHostGraph(this, family);
+    }
+
+    @Override
+    public AlgebraFamily getFamily() {
+        return this.family;
+    }
+
+    @Override
     public DefaultHostGraph clone() {
-        return new DefaultHostGraph(this);
+        return new DefaultHostGraph(this, getFamily());
     }
 
     @Override
@@ -117,7 +148,8 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
      * Also makes sure the elements already in this graph are known to the factory. 
      */
     public DefaultHostGraph clone(HostFactory factory) {
-        DefaultHostGraph result = new DefaultHostGraph(getName(), factory);
+        DefaultHostGraph result =
+            new DefaultHostGraph(getName(), factory, getFamily());
         for (HostNode node : nodeSet()) {
             factory.addNode(node);
             result.addNode(node);
@@ -132,7 +164,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
 
     @Override
     public DefaultHostGraph newGraph(String name) {
-        return new DefaultHostGraph(getName(), getFactory());
+        return new DefaultHostGraph(getName(), getFactory(), getFamily());
     }
 
     @Override
@@ -157,7 +189,8 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
 
     @Override
     public HostGraph retype(TypeGraph typeGraph) throws FormatException {
-        HostGraph result = typeGraph.analyzeHost(this).createImage(getName());
+        HostGraph result =
+            typeGraph.analyzeHost(this).createImage(getName(), getFamily());
         EdgeMultiplicityVerifier.verifyMultiplicities(result, typeGraph);
         return result;
     }
@@ -199,4 +232,6 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
 
     /** The element factory of this host graph. */
     private final HostFactory factory;
+    /** The algebra family of this host graph. */
+    private final AlgebraFamily family;
 }

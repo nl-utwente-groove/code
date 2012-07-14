@@ -23,6 +23,7 @@ import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.algebra.Algebra;
+import groove.algebra.AlgebraFamily;
 import groove.graph.AbstractGraph;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
@@ -156,6 +157,16 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
         result.getCache().copyFrom(this);
         GraphInfo.transfer(this, result, null);
         return result;
+    }
+
+    @Override
+    public ShapeGraph clone(AlgebraFamily family) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public AlgebraFamily getFamily() {
+        throw new UnsupportedOperationException();
     }
 
     @Override

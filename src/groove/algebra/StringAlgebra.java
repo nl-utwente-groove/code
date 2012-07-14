@@ -75,6 +75,11 @@ public class StringAlgebra extends StringSignature<String,Boolean,Integer>
         return NAME;
     }
 
+    @Override
+    public AlgebraFamily getFamily() {
+        return AlgebraFamily.DEFAULT;
+    }
+
     public String getSymbol(Object value) {
         return ExprParser.toQuoted((String) value, ExprParser.DOUBLE_QUOTE_CHAR);
     }

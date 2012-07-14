@@ -18,7 +18,7 @@ package groove.algebra;
 
 /**
  * Implementation of reals consisting of a singleton value.
- * To be used in conjunction with {@link BoolPointAlgebra} and {@link StringPointAlgebra}.
+ * To be used in conjunction with {@link PointBoolAlgebra} and {@link PointStringAlgebra}.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -33,8 +33,13 @@ public class TermRealAlgebra extends RealSignature<Term,Term,Term> implements
         return NAME;
     }
 
+    @Override
+    public AlgebraFamily getFamily() {
+        return AlgebraFamily.TERM;
+    }
+
     public String getSymbol(Object value) {
-        return value.toString();
+        return ((Constant) value).getSymbol();
     }
 
     public Constant getValueFromString(String constant) {

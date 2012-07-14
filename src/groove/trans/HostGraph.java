@@ -17,6 +17,7 @@
 package groove.trans;
 
 import static groove.graph.GraphRole.HOST;
+import groove.algebra.AlgebraFamily;
 import groove.graph.ElementMap;
 import groove.graph.Graph;
 import groove.graph.TypeGraph;
@@ -40,8 +41,14 @@ public interface HostGraph extends Graph<HostNode,HostEdge>, DeltaTarget {
     @Override
     HostGraph clone();
 
+    /** Clones this host graph, while optionally changing the algebras. */
+    HostGraph clone(AlgebraFamily family);
+
     @Override
     HostFactory getFactory();
+
+    /** Returns the algebra family of this host graph. */
+    AlgebraFamily getFamily();
 
     /** Returns the type graph for this host graph, if any. */
     public TypeGraph getTypeGraph();
