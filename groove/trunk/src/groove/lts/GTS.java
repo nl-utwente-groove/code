@@ -123,8 +123,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      * The resulting graph will be used as start graph state.
      */
     protected HostGraph createStartGraph(HostGraph startGraph) {
-        AlgebraFamily family =
-            AlgebraFamily.getInstance(getGrammar().getProperties().getAlgebraFamily());
+        AlgebraFamily family = getGrammar().getProperties().getAlgebraFamily();
         HostGraph result = startGraph.clone(family);
         result.setFixed();
         return result;

@@ -326,8 +326,8 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     /**
      * Sets the algebra family to a given value.
      */
-    public void setAlgebra(String family) {
-        setProperty(Key.ALGEBRA, family);
+    public void setAlgebraFamily(AlgebraFamily family) {
+        setProperty(Key.ALGEBRA, family.getName());
     }
 
     /** 
@@ -335,9 +335,10 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * @return the selected algebra family, or {@link AlgebraFamily#DEFAULT}
      * if none is selected. 
      */
-    public String getAlgebraFamily() {
+    public AlgebraFamily getAlgebraFamily() {
         String result = getProperty(Key.ALGEBRA);
-        return result == null ? AlgebraFamily.DEFAULT.getName() : result;
+        return result == null ? AlgebraFamily.DEFAULT
+                : AlgebraFamily.getInstance(result);
     }
 
     /**
