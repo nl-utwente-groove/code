@@ -4,31 +4,29 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
         <node id="n1">
             <attr name="layout">
-                <string>199 262 34 46</string>
+                <string>198 261 36 48</string>
             </attr>
         </node>
         <node id="n0">
             <attr name="layout">
-                <string>195 170 34 46</string>
+                <string>194 169 36 48</string>
             </attr>
         </node>
         <node id="n2">
             <attr name="layout">
-                <string>327 126 34 61</string>
+                <string>316 124 56 64</string>
             </attr>
         </node>
         <node id="n3">
             <attr name="layout">
-                <string>325 218 34 46</string>
+                <string>324 209 36 64</string>
             </attr>
         </node>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>flag:0</string>
-            </attr>
-        </edge>
         <edge to="n1" from="n1">
             <attr name="label">
                 <string>type:A</string>
@@ -49,19 +47,24 @@
                 <string>a</string>
             </attr>
         </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>flag:1</string>
-            </attr>
-        </edge>
         <edge to="n2" from="n2">
             <attr name="label">
                 <string>type:B</string>
             </attr>
         </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>flag:_0</string>
+            </attr>
+        </edge>
         <edge to="n3" from="n3">
             <attr name="label">
                 <string>type:B</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>flag:_1</string>
             </attr>
         </edge>
     </graph>

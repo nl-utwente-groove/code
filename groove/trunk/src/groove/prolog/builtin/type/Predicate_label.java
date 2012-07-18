@@ -37,7 +37,7 @@ public class Predicate_label extends GraphPrologCode {
         if (args[0] instanceof AtomTerm) {
             try {
                 TypeLabel label =
-                    TypeLabel.createLabel(((AtomTerm) args[0]).value);
+                    TypeLabel.createLabelWithCheck(((AtomTerm) args[0]).value);
 
                 return interpreter.unify(new JavaObjectTerm(label), args[1]);
             } catch (Exception e) {

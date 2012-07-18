@@ -4,69 +4,52 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n2">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n1">
             <attr name="layout">
-                <string>229 217 34 61</string>
-            </attr>
-        </node>
-        <node id="n0">
-            <attr name="layout">
-                <string>228 136 34 61</string>
-            </attr>
-        </node>
-        <node id="n3">
-            <attr name="layout">
-                <string>235 42 34 61</string>
-            </attr>
-        </node>
-        <node id="n4">
-            <attr name="layout">
-                <string>67 116 34 46</string>
+                <string>223 306 56 64</string>
             </attr>
         </node>
         <node id="n6">
             <attr name="layout">
-                <string>382 143 34 46</string>
+                <string>381 142 36 48</string>
             </attr>
         </node>
-        <node id="n1">
+        <node id="n4">
             <attr name="layout">
-                <string>234 308 34 61</string>
+                <string>66 115 36 48</string>
             </attr>
         </node>
-        <edge to="n6" from="n2">
-            <attr name="label">
-                <string>c</string>
+        <node id="n3">
+            <attr name="layout">
+                <string>234 40 36 64</string>
             </attr>
-        </edge>
-        <edge to="n3" from="n3">
+        </node>
+        <node id="n0">
+            <attr name="layout">
+                <string>227 134 36 64</string>
+            </attr>
+        </node>
+        <node id="n2">
+            <attr name="layout">
+                <string>228 215 36 64</string>
+            </attr>
+        </node>
+        <edge to="n1" from="n1">
             <attr name="label">
                 <string>type:A</string>
             </attr>
         </edge>
-        <edge to="n6" from="n3">
+        <edge to="n1" from="n1">
             <attr name="label">
-                <string>c</string>
+                <string>flag:_2</string>
             </attr>
         </edge>
-        <edge to="n0" from="n0">
+        <edge to="n6" from="n6">
             <attr name="label">
-                <string>flag:3</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>flag:0</string>
-            </attr>
-        </edge>
-        <edge to="n4" from="n0">
-            <attr name="label">
-                <string>b</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>type:A</string>
+                <string>type:C</string>
             </attr>
         </edge>
         <edge to="n4" from="n4">
@@ -74,14 +57,19 @@
                 <string>type:B</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge to="n3" from="n3">
             <attr name="label">
-                <string>flag:2</string>
+                <string>type:A</string>
             </attr>
         </edge>
-        <edge to="n2" from="n2">
+        <edge to="n3" from="n3">
             <attr name="label">
-                <string>flag:1</string>
+                <string>flag:_0</string>
+            </attr>
+        </edge>
+        <edge to="n6" from="n3">
+            <attr name="label">
+                <string>c</string>
             </attr>
         </edge>
         <edge to="n4" from="n3">
@@ -89,9 +77,19 @@
                 <string>b</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge to="n0" from="n0">
             <attr name="label">
                 <string>type:A</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>flag:_3</string>
+            </attr>
+        </edge>
+        <edge to="n4" from="n0">
+            <attr name="label">
+                <string>b</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">
@@ -99,9 +97,14 @@
                 <string>type:A</string>
             </attr>
         </edge>
-        <edge to="n6" from="n6">
+        <edge to="n2" from="n2">
             <attr name="label">
-                <string>type:C</string>
+                <string>flag:_1</string>
+            </attr>
+        </edge>
+        <edge to="n6" from="n2">
+            <attr name="label">
+                <string>c</string>
             </attr>
         </edge>
     </graph>
