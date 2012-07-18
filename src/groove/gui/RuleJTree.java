@@ -46,6 +46,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -67,9 +69,12 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+
+import com.eekboom.utils.Strings;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
@@ -143,7 +148,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
             // level of nodes
             if (priorityMap.size() > 1) {
                 topNode = new PriorityTreeNode(priorityEntry.getKey());
-                this.topDirectoryNode.add(topNode);
+                //this.topDirectoryNode.add(topNode);
+                addSortedNode(this.topDirectoryNode, topNode);
                 dirNodeMap.clear();
             }
             for (RuleModel ruleView : priorityEntry.getValue()) {
@@ -154,7 +160,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
                         QualName.getParent(ruleName));
                 // create the rule node and register it
                 RuleTreeNode ruleNode = new RuleTreeNode(ruleView);
-                parentNode.add(ruleNode);
+                //parentNode.add(ruleNode);
+                addSortedNode(parentNode, ruleNode);
                 TreePath rulePath = new TreePath(ruleNode.getPath());
                 expandedPaths.add(rulePath);
                 if (selectedRules.contains(ruleName)) {
@@ -355,7 +362,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 // make the parent node and register it
                 result =
                     new DirectoryTreeNode(QualName.getLastName(parentName));
-                grandParentNode.add(result);
+                //grandParentNode.add(result);
+                addSortedNode(grandParentNode, result);
                 dirNodeMap.put(parentName, result);
             }
             return result;
@@ -487,6 +495,29 @@ public class RuleJTree extends JTree implements SimulatorListener {
                     hasFocus);
         }
         return result;
+    }
+
+    /**
+     * Insert child node into parent using a sorting based on the name of the child node (toString)
+     * Uses a natural ordering sort
+     * @param parent Node to add child to in a sorted order
+     * @param child Child node to insert.
+     */
+    private void addSortedNode(MutableTreeNode parent, MutableTreeNode child) {
+        Comparator<String> comparator = Strings.getNaturalComparator();
+        String childString = child.toString();
+        @SuppressWarnings("unchecked")
+        Enumeration<MutableTreeNode> enumParent = parent.children();
+        int index = 0;
+        while (enumParent.hasMoreElements()) {
+            MutableTreeNode nextChild = enumParent.nextElement();
+            int compare = comparator.compare(nextChild.toString(), childString);
+            if (compare > 0) {
+                break;
+            }
+            index++;
+        }
+        parent.insert(child, index);
     }
 
     /** Convenience method to retrieve the current grammar view. */
