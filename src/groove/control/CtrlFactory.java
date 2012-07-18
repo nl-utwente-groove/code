@@ -383,7 +383,8 @@ public class CtrlFactory {
         for (Action action : actions) {
             boolean needsInput = false;
             for (CtrlPar.Var var : action.getSignature()) {
-                if (var.isInOnly() && (var.getType().isNodeType() || !symbolic)) {
+                if (var.isInOnly()
+                    && (var.getType() == CtrlType.NODE || !symbolic)) {
                     needsInput = true;
                     break;
                 }

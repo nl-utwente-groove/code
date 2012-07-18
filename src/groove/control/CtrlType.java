@@ -18,10 +18,6 @@ package groove.control;
 
 import groove.algebra.SignatureKind;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Class encapsulating a control type.
  * A control type is either a node type or a data type.
@@ -29,26 +25,33 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlType {
+public enum CtrlType {
+    /** Node type. */
+    NODE,
+    /** Boolean type. */
+    BOOL(SignatureKind.BOOL),
+    /** Integer type. */
+    INT(SignatureKind.INT),
+    /** Real number type. */
+    REAL(SignatureKind.REAL),
+    /** String type. */
+    STRING(SignatureKind.STRING);
+
     /** Constructs a control data type from a given data signature. */
-    private CtrlType(String signature) {
+    private CtrlType() {
+        this.signature = null;
+        this.name = NODE_TYPE_NAME;
+    }
+
+    /** Constructs a control data type from a given data signature. */
+    private CtrlType(SignatureKind signature) {
         this.signature = signature;
+        this.name = signature.getName();
     }
 
     @Override
     public String toString() {
-        String result;
-        if (isNodeType()) {
-            result = "node";
-        } else {
-            result = getSignature();
-        }
-        return result;
-    }
-
-    /** Indicates if this control type is a node type. */
-    public boolean isNodeType() {
-        return this.signature == null;
+        return this.name;
     }
 
     /** 
@@ -56,57 +59,23 @@ public class CtrlType {
      * @return the data signature, or {@code null} if this type
      * is a node type.
      */
-    public String getSignature() {
+    public SignatureKind getSignature() {
         return this.signature;
     }
 
+    /** Name of this control type. */
+    private final String name;
     /** Data signature of this type, in case it is a data type. */
-    private final String signature;
-
-    /** Returns the node type instance. */
-    public static CtrlType getNodeType() {
-        return nodeTypeInstance;
-    }
+    private final SignatureKind signature;
 
     /** 
-     * Returns a data type instance for a given signature name.
+     * Returns a data type instance for a given signature.
      * @throws IllegalArgumentException if there is no signature with the given name 
      */
-    public static CtrlType getDataType(String name) {
-        CtrlType result = dataTypeMap.get(name);
-        if (result == null) {
-            throw new IllegalArgumentException(String.format(
-                "Unknown signature '%s'", name));
-        }
-        return result;
-    }
-
-    /**
-     * Returns a control type instance for a given type name.
-     * @param name the name of the control type; either {@value #NODE_TYPE_NAME} or a data type name.
-     */
-    public static CtrlType getType(String name) {
-        CtrlType result;
-        if (NODE_TYPE_NAME.equals(name)) {
-            result = getNodeType();
-        } else {
-            result = getDataType(name);
-        }
-        return result;
+    public static CtrlType getDataType(SignatureKind signature) {
+        return valueOf(signature.name());
     }
 
     /** The name of the node type. */
     static public final String NODE_TYPE_NAME = "node";
-    /** The singleton node type. */
-    private static final CtrlType nodeTypeInstance = new CtrlType(
-        NODE_TYPE_NAME);
-    /** Static mapping from data signatures to data types. */
-    private static final Map<String,CtrlType> dataTypeMap =
-        new HashMap<String,CtrlType>();
-    static {
-        // initialise the data type map
-        for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {
-            dataTypeMap.put(sigKind.getName(), new CtrlType(sigKind.getName()));
-        }
-    }
 }
