@@ -35,6 +35,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -51,9 +53,12 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+
+import com.eekboom.utils.Strings;
 
 /**
  * Panel that displays a tree of resources. Each resource is added by means of
@@ -294,15 +299,15 @@ public class ResourceTree extends JTree implements SimulatorListener {
     public String getToolTip(String resourceName) {
         StringBuilder result = new StringBuilder();
         switch (this.resourceKind) {
-        case HOST:
-            result.append("Host graph ");
-            break;
-        case RULE:
-            result.append("Rule ");
-            break;
-        case TYPE:
-            result.append("Type graph ");
-            break;
+            case HOST:
+                result.append("Host graph ");
+                break;
+            case RULE:
+                result.append("Rule ");
+                break;
+            case TYPE:
+                result.append("Type graph ");
+                break;
         }
         result.append(HTMLConverter.STRONG_TAG.on(resourceName));
         HTMLConverter.HTML_TAG.on(result);
@@ -333,6 +338,38 @@ public class ResourceTree extends JTree implements SimulatorListener {
      */
     public void mousePressed(TreeNode node, MouseEvent event) {
         // default - no user action
+    }
+
+    /**
+     * Insert child node into parent using a sorting based on the name of the child node (toString)
+     * Uses a natural ordering sort, with the exception of PathNodes, which have a higher priority.
+     * @param parent Node to add child to in a sorted order
+     * @param child Child node to insert.
+     */
+    private void addSortedNode(MutableTreeNode parent, MutableTreeNode child) {
+        Comparator<String> comparator = Strings.getNaturalComparator();
+        String childString = child.toString();
+        @SuppressWarnings("unchecked")
+        Enumeration<MutableTreeNode> enumParent = parent.children();
+        int index = 0;
+        while (enumParent.hasMoreElements()) {
+            MutableTreeNode nextChild = enumParent.nextElement();
+            // Special case: a PathNode always sorts before any other node
+            if (nextChild instanceof PathNode && !(child instanceof PathNode)) {
+                index++;
+                continue;
+            }
+            if (!(nextChild instanceof PathNode) && child instanceof PathNode) {
+                break;
+            }
+            int compare = comparator.compare(nextChild.toString(), childString);
+            if (compare > 0) {
+                break;
+            }
+            // Still higher priority, increment index and continue
+            index++;
+        }
+        parent.insert(child, index);
     }
 
     // ========================================================================
@@ -605,13 +642,15 @@ public class ResourceTree extends JTree implements SimulatorListener {
                 PathNode node = new PathNode(subpath, entry.getKey());
                 entry.getValue().store(node, subpath, created);
                 created.add(node);
-                root.add(node);
+                //root.add(node);
+                addSortedNode(root, node);
             }
             for (String resource : this.resources) {
                 String fullName = extendPath(path, resource);
                 ResourceNode leaf = new ResourceNode(fullName);
                 created.add(leaf);
-                root.add(leaf);
+                //root.add(leaf);
+                addSortedNode(root, leaf);
             }
         }
 
