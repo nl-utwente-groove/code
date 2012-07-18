@@ -32,6 +32,7 @@ import groove.lts.MatchResult;
 import groove.trans.Action;
 import groove.trans.QualName;
 import groove.trans.ResourceKind;
+import groove.util.Strings;
 import groove.view.GrammarModel;
 import groove.view.ResourceModel;
 import groove.view.RuleModel;
@@ -73,8 +74,6 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-
-import com.eekboom.utils.Strings;
 
 /**
  * Panel that displays a two-level directory of rules and matches.

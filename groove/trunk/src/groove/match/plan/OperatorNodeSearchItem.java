@@ -50,12 +50,12 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         this.arguments = node.getArguments();
         this.target = node.getTarget();
         this.neededNodes = new HashSet<RuleNode>(this.arguments);
-        if (this.target.getConstant() != null) {
+        if (this.target.hasConstant()) {
             this.boundNodes = Collections.<RuleNode>emptySet();
             this.neededNodes.add(this.target);
             this.value =
                 family.getValue(node.getOperator().getResultType(),
-                    this.target.getSymbol());
+                    this.target.getConstant().getSymbol());
         } else {
             this.boundNodes = Collections.<RuleNode>singleton(this.target);
             this.value = null;

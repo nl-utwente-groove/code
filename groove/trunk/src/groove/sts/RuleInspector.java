@@ -39,12 +39,11 @@ import java.util.Map;
  * @version $Revision $
  */
 public class RuleInspector {
-
     private static RuleInspector instance;
 
     // private constructor
     private RuleInspector() {
-
+        // empty
     }
 
     /**
@@ -74,9 +73,9 @@ public class RuleInspector {
         RuleGraph lhs = rule.lhs();
         String guard = "";
         // Check if the variable is a primitive value
-        String symbol = vn.getSymbol();
-        if (symbol != null) {
-            return v.getLabel() + " == " + getSymbol(symbol);
+        if (vn.hasConstant()) {
+            return v.getLabel() + " == "
+                + getSymbol(vn.getConstant().getSymbol());
         }
         List<String> results =
             parseAlgebraicExpression(rule, lhs, vn, iVarMap, lVarMap);
@@ -144,13 +143,13 @@ public class RuleInspector {
 
         List<String> result = new ArrayList<String>();
         for (RuleNode node : pattern.nodeSet()) {
-            String value;
             if (node instanceof OperatorNode) {
                 OperatorNode opNode = (OperatorNode) node;
-                if ((value = opNode.getTarget().getSymbol()) != null) {
+                if (opNode.getTarget().hasConstant()) {
                     // opNode.getArguments().contains(variableResult) &&
                     // getInteractionVariable(variableResult) != null
                     // operatorNode refers to a node with a value
+                    String value = opNode.getTarget().getConstant().getSymbol();
                     List<VariableNode> arguments = opNode.getArguments();
                     String[] subExpressions = new String[arguments.size()];
                     for (int i = 0; i < arguments.size(); i++) {
@@ -227,9 +226,8 @@ public class RuleInspector {
             Map<VariableNode,LocationVariable> lVarMap) {
         VariableNode variableResult = (VariableNode) resultValue;
         // Check if the expression is a primitive value
-        String symbol = variableResult.getSymbol();
-        if (symbol != null) {
-            return getSymbol(symbol);
+        if (variableResult.hasConstant()) {
+            return variableResult.getConstant().getSymbol();
         }
         // Check if the expression is a known interaction variable
         InteractionVariable iVar = iVarMap.get(variableResult);

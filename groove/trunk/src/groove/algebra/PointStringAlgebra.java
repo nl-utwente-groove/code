@@ -23,7 +23,7 @@ package groove.algebra;
  * @version $Revision $
  */
 public class PointStringAlgebra extends StringSignature<Object,Object,Object>
-        implements Algebra<Object> {
+        implements PointAlgebra<Object> {
     /** Private constructor for the singleton instance. */
     private PointStringAlgebra() {
         // empty
@@ -79,10 +79,15 @@ public class PointStringAlgebra extends StringSignature<Object,Object,Object>
     }
 
     public String getSymbol(Object value) {
-        return value.toString();
+        return singleStringSymbol;
     }
 
     public Object getValueFromString(String constant) {
+        return singleString;
+    }
+
+    @Override
+    public Object getPointValue() {
         return singleString;
     }
 
@@ -103,7 +108,9 @@ public class PointStringAlgebra extends StringSignature<Object,Object,Object>
     /** Point value of the string algebra. */
     public static final String singleInt = PointIntAlgebra.singleInt;
     /** Point value of the string algebra. */
-    public static final String singleString = "S";
+    public static final String singleString = "";
+    /** Symbolic representation of the single string value. */
+    private static final String singleStringSymbol = "\"\"";
     /** Singleton instance of this algebra. */
     public static final PointStringAlgebra instance = new PointStringAlgebra();
 }

@@ -16,9 +16,8 @@
  */
 package groove.trans;
 
-import groove.algebra.Constant;
 import groove.algebra.Operator;
-import groove.algebra.SignatureKind;
+import groove.algebra.Term;
 import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.TypeEdge;
@@ -52,19 +51,11 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
         return new DefaultRuleNode(nr, type, sharp, typeGuards);
     }
 
-    /** Creates a variable node for a given data signature, and with a given node number. */
-    public VariableNode createVariableNode(int nr, SignatureKind signature) {
-        assert signature != null;
+    /** Creates a variable node for a given algebra term, and with a given node number. */
+    public VariableNode createVariableNode(int nr, Term term) {
         updateMaxNodeNr(nr);
-        TypeNode type = this.typeFactory.getDataType(signature);
-        return new VariableNode(nr, signature, type);
-    }
-
-    /** Creates a variable node for a given data constant, and with a given node number. */
-    public VariableNode createVariableNode(int nr, Constant constant) {
-        updateMaxNodeNr(nr);
-        TypeNode type = this.typeFactory.getDataType(constant.getSignature());
-        return new VariableNode(nr, constant, type);
+        TypeNode type = this.typeFactory.getDataType(term.getSignature());
+        return new VariableNode(nr, term, type);
     }
 
     /** Creates an operator node for a given node number and arity. */

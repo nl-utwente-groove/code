@@ -25,6 +25,8 @@ import static groove.view.aspect.AspectKind.PARAM_IN;
 import static groove.view.aspect.AspectKind.PARAM_OUT;
 import static groove.view.aspect.AspectKind.PRODUCT;
 import groove.algebra.Constant;
+import groove.algebra.Term;
+import groove.algebra.Variable;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
@@ -1603,15 +1605,15 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             int nr = node.getNumber();
             if (nodeAttrKind.hasSignature()) {
                 Aspect nodeAttr = node.getAttrAspect();
+                Term term;
                 if (nodeAttr.hasContent()) {
-                    result =
-                        this.factory.createVariableNode(nr,
-                            (Constant) nodeAttr.getContent());
+                    term = (Constant) nodeAttr.getContent();
                 } else {
-                    result =
-                        this.factory.createVariableNode(nr,
+                    term =
+                        new Variable(VariableNode.TO_STRING_PREFIX + nr,
                             nodeAttrKind.getSignature());
                 }
+                result = this.factory.createVariableNode(nr, term);
             } else {
                 result = this.factory.createNode(nr);
             }

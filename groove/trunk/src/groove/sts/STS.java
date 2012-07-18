@@ -510,7 +510,8 @@ public class STS {
         for (VariableNode v : lValueMap.keySet()) {
             guard +=
                 lValueMap.get(v).getLabel() + " == "
-                    + this.ruleInspector.getSymbol(v.getSymbol()) + " && ";
+                    + this.ruleInspector.getSymbol(v.getConstant().getSymbol())
+                    + " && ";
         }
         if (guard.endsWith(" && ")) {
             guard = guard.substring(0, guard.length() - 4);
