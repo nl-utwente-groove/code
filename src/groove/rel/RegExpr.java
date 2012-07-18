@@ -523,7 +523,7 @@ abstract public class RegExpr { // implements VarSetSupport {
             default:
                 // default atoms
                 // skip any node type or flag prefix
-                text = TypeLabel.createLabel(text).text();
+                text = TypeLabel.createLabelWithCheck(text).text();
                 boolean correct = true;
                 int i;
                 for (i = 0; correct && i < text.length(); i++) {

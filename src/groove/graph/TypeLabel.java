@@ -86,6 +86,26 @@ public final class TypeLabel extends AbstractLabel {
     }
 
     /**
+     * Returns a default or node type label, depending on the prefix in the
+     * input string.
+     * @param prefixedText text of the label, possibly prefixed with a label
+     * kind
+     * @return a label with label type determined by the prefix
+     * @throws FormatException if {@code text} does not satisfy the constraints
+     * for labels
+     */
+    public static TypeLabel createLabelWithCheck(String prefixedText)
+        throws FormatException {
+        TypeLabel result = createLabel(prefixedText);
+        if (!result.isBinary() && !ExprParser.isIdentifier(result.text())) {
+            throw new FormatException(
+                "%s label '%s' is not a valid identifier",
+                result.getRole().getDescription(true), result.text());
+        }
+        return result;
+    }
+
+    /**
      * Returns the unique representative of a {@link TypeLabel} for a given
      * string. The string is used as-is, and is guaranteed to equal the text of
      * the resulting label. The returned label is binary.

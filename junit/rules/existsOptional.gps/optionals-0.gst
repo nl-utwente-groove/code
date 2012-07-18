@@ -7,44 +7,44 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n1">
+        <node id="n3">
             <attr name="layout">
-                <string>115 201 34 46</string>
+                <string>98 76 36 64</string>
             </attr>
         </node>
         <node id="n0">
             <attr name="layout">
-                <string>234 87 34 61</string>
+                <string>223 85 56 64</string>
             </attr>
         </node>
-        <node id="n3">
+        <node id="n1">
             <attr name="layout">
-                <string>99 85 34 46</string>
+                <string>114 200 36 48</string>
             </attr>
         </node>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>type:A</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>flag:_1</string>
+            </attr>
+        </edge>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>flag:0</string>
+                <string>type:A</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>flag:_0</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">
             <attr name="label">
                 <string>type:B</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>type:A</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>flag:1</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>type:A</string>
             </attr>
         </edge>
     </graph>

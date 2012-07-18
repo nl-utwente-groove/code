@@ -7,64 +7,49 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n2">
+        <node id="n1">
             <attr name="layout">
-                <string>131 201 29 46</string>
-            </attr>
-        </node>
-        <node id="n0">
-            <attr name="layout">
-                <string>129 124 29 46</string>
-            </attr>
-        </node>
-        <node id="n3">
-            <attr name="layout">
-                <string>222 201 28 31</string>
+                <string>-48 61 353 32</string>
             </attr>
         </node>
         <node id="n4">
             <attr name="layout">
-                <string>301 202 28 31</string>
+                <string>297 193 36 48</string>
             </attr>
         </node>
-        <node id="n1">
+        <node id="n3">
             <attr name="layout">
-                <string>113 62 31 31</string>
+                <string>218 192 36 48</string>
             </attr>
         </node>
-        <edge to="n3" from="n0">
-            <attr name="label">
-                <string>a</string>
+        <node id="n0">
+            <attr name="layout">
+                <string>125 115 36 64</string>
             </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>type:B</string>
+        </node>
+        <node id="n2">
+            <attr name="layout">
+                <string>117 192 56 64</string>
             </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>type:A</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>Creating an existng edge does not change the graphi</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n2">
-            <attr name="label">
-                <string>a</string>
-            </attr>
-        </edge>
+        </node>
         <edge to="n1" from="n1">
             <attr name="label">
                 <string>rem:</string>
             </attr>
         </edge>
-        <edge to="n2" from="n2">
+        <edge to="n1" from="n1">
             <attr name="label">
-                <string>flag:1</string>
+                <string>rem:Creating an existng edge does not change the graphi</string>
+            </attr>
+        </edge>
+        <edge to="n4" from="n4">
+            <attr name="label">
+                <string>type:C</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>type:B</string>
             </attr>
         </edge>
         <edge to="n4" from="n3">
@@ -74,17 +59,32 @@
         </edge>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>flag:0</string>
+                <string>type:A</string>
             </attr>
         </edge>
-        <edge to="n4" from="n4">
+        <edge to="n0" from="n0">
             <attr name="label">
-                <string>type:C</string>
+                <string>flag:_0</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n0">
+            <attr name="label">
+                <string>a</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">
             <attr name="label">
                 <string>type:A</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>flag:_1</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n2">
+            <attr name="label">
+                <string>a</string>
             </attr>
         </edge>
     </graph>

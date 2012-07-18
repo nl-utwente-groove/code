@@ -431,7 +431,7 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
             if (getLabelKind() == LITERAL) {
                 result = TypeLabel.createBinaryLabel(getInnerText());
             } else {
-                result = TypeLabel.createLabel(getInnerText());
+                result = TypeLabel.createLabelWithCheck(getInnerText());
             }
         } else {
             throw new FormatException(
