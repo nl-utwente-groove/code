@@ -91,7 +91,7 @@ public enum GraphRole {
     static public final Map<String,GraphRole> roles =
         new HashMap<String,GraphRole>();
     static {
-        for (GraphRole role : EnumSet.allOf(GraphRole.class)) {
+        for (GraphRole role : GraphRole.values()) {
             roles.put(role.toString(), role);
         }
     }

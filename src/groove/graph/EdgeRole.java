@@ -207,11 +207,10 @@ public enum EdgeRole {
     private static Map<String,String> nameToSymbolMap =
         new HashMap<String,String>();
     /** Array of edge roles, in the order of their indices. */
-    private static final EdgeRole[] rolesArray = new EdgeRole[EnumSet.allOf(
-        EdgeRole.class).size()];
+    private static final EdgeRole[] rolesArray = new EdgeRole[EdgeRole.values().length];
     static {
         int index = 0;
-        for (EdgeRole role : EnumSet.allOf(EdgeRole.class)) {
+        for (EdgeRole role : EdgeRole.values()) {
             indexMap.put(role, index);
             symbolToRoleMap.put(role.getName(), role);
             rolesArray[index] = role;

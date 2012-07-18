@@ -485,7 +485,7 @@ public class DefaultFileSystemStore extends SystemStore {
     private MyCompoundEdit doRelabel(TypeLabel oldLabel, TypeLabel newLabel)
         throws IOException {
         MyCompoundEdit result = new MyCompoundEdit(Options.REPLACE_ACTION_NAME);
-        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+        for (ResourceKind kind : ResourceKind.values()) {
             if (kind.isGraphBased()) {
                 List<AspectGraph> newGraphs =
                     new ArrayList<AspectGraph>(getGraphs(kind).size());
@@ -526,7 +526,7 @@ public class DefaultFileSystemStore extends SystemStore {
     private MyCompoundEdit doRenumber() throws IOException {
         MyCompoundEdit result =
             new MyCompoundEdit(Options.RENUMBER_ACTION_NAME);
-        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+        for (ResourceKind kind : ResourceKind.values()) {
             if (kind.isGraphBased()) {
                 List<AspectGraph> newGraphs =
                     new ArrayList<AspectGraph>(getGraphs(kind).size());
@@ -545,7 +545,7 @@ public class DefaultFileSystemStore extends SystemStore {
 
     @Override
     public void reload() throws IOException {
-        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+        for (ResourceKind kind : ResourceKind.values()) {
             if (kind == PROPERTIES) {
                 loadProperties();
             } else if (kind.isTextBased()) {

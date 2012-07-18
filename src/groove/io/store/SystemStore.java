@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -63,7 +62,7 @@ abstract public class SystemStore extends UndoableEditSupport {
     /** Checks if the store is empty. */
     public boolean isEmpty() {
         boolean result = true;
-        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+        for (ResourceKind kind : ResourceKind.values()) {
             if (kind == PROPERTIES) {
                 result = !this.hasSystemProperties();
             } else if (kind.isTextBased()) {
@@ -277,7 +276,7 @@ abstract public class SystemStore extends UndoableEditSupport {
                 new DefaultFileSystemStore(file, true);
             result.reload();
             // save properties
-            for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+            for (ResourceKind kind : ResourceKind.values()) {
                 if (kind == PROPERTIES) {
                     result.putProperties(store.getProperties());
                 } else if (kind.isTextBased()) {

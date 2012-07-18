@@ -28,7 +28,6 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.EnumSet;
 import java.util.EventObject;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -275,13 +274,13 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         /** The existing aspect prefixes. */
         private final static List<String> prefixes = new LinkedList<String>();
         static {
-            for (AspectKind aspectKind : EnumSet.allOf(AspectKind.class)) {
+            for (AspectKind aspectKind : AspectKind.values()) {
                 String prefix = aspectKind.getPrefix();
                 if (prefix.length() > 1) {
                     prefixes.add(prefix);
                 }
             }
-            for (EdgeRole edgeRole : EnumSet.allOf(EdgeRole.class)) {
+            for (EdgeRole edgeRole : EdgeRole.values()) {
                 String prefix = edgeRole.getPrefix();
                 if (prefix.length() > 1) {
                     prefixes.add(prefix);

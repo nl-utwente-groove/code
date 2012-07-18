@@ -45,7 +45,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -138,7 +137,7 @@ public class PlanSearchEngine extends SearchEngine {
         if (instance == null) {
             instance =
                 new EnumMap<SearchMode,PlanSearchEngine>(SearchMode.class);
-            for (SearchMode mode : EnumSet.allOf(SearchMode.class)) {
+            for (SearchMode mode : SearchMode.values()) {
                 instance.put(mode, new PlanSearchEngine(mode));
             }
         }

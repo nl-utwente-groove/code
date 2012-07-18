@@ -196,7 +196,7 @@ public class FormulaParser {
         new HashMap<Boolean,Map<String,String>>();
 
     static {
-        for (Token token : EnumSet.allOf(Token.class)) {
+        for (Token token : Token.values()) {
             symbolToTokenMap.put(token.getSymbol(), token);
             nameToTokenMap.put(token.name(), token);
             nameToSymbolMap.put(token.name(),
@@ -442,7 +442,7 @@ public class FormulaParser {
             new HashSet<Character>();
         // add all non-letter, non-parenthesis characters from the tokens to concChars
         static {
-            for (Token token : EnumSet.allOf(Token.class)) {
+            for (Token token : Token.values()) {
                 if (token != ATOM && token != LPAR && token != RPAR
                     && token != NOT
                     && !Character.isLetter(token.symbol.charAt(0))) {

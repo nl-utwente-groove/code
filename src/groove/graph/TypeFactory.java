@@ -6,7 +6,6 @@ import groove.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,7 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
     TypeFactory(TypeGraph typeGraph) {
         assert typeGraph == null || typeGraph.isEmpty();
         this.typeGraph = typeGraph;
-        for (SignatureKind sig : EnumSet.allOf(SignatureKind.class)) {
+        for (SignatureKind sig : SignatureKind.values()) {
             this.dataTypeMap.put(sig, createNode(TypeLabel.getLabel(sig)));
         }
         this.topNode = createNode(TypeLabel.NODE);
@@ -188,7 +187,7 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
     private final Map<EdgeRole,Map<String,TypeLabel>> labelMaps =
         new EnumMap<EdgeRole,Map<String,TypeLabel>>(EdgeRole.class);
     {
-        for (EdgeRole kind : EnumSet.allOf(EdgeRole.class)) {
+        for (EdgeRole kind : EdgeRole.values()) {
             this.labelMaps.put(kind, new HashMap<String,TypeLabel>());
         }
     }

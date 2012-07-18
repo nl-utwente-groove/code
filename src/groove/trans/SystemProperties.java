@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -627,7 +626,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     static {
         Map<String,Property<String>> defaultKeys =
             new LinkedHashMap<String,Property<String>>();
-        for (Key key : EnumSet.allOf(Key.class)) {
+        for (Key key : Key.values()) {
             defaultKeys.put(key.getText(), key.getProperty());
         }
         DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);

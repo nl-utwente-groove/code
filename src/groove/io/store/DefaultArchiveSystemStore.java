@@ -248,7 +248,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         // collect the relevant entries
         Map<ResourceKind,Map<String,ZipEntry>> zipEntryMap =
             new EnumMap<ResourceKind,Map<String,ZipEntry>>(ResourceKind.class);
-        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+        for (ResourceKind kind : ResourceKind.values()) {
             zipEntryMap.put(kind, new HashMap<String,ZipEntry>());
         }
         ZipEntry properties = null;
@@ -262,7 +262,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
                 String restName = entryName.substring(entryPrefixLength);
                 // find out the resource kind by testing the extension
                 ResourceKind kind = null;
-                for (ResourceKind tryKind : EnumSet.allOf(ResourceKind.class)) {
+                for (ResourceKind tryKind : ResourceKind.values()) {
                     if (restName.endsWith(tryKind.getFilter().getExtension())) {
                         kind = tryKind;
                         break;
@@ -299,7 +299,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         // now process the entries
         // first load the properties, as they are necessary for loading types
         loadProperties(zipFile, properties);
-        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+        for (ResourceKind kind : ResourceKind.values()) {
             if (kind.isTextBased()) {
                 loadTexts(kind, zipFile, zipEntryMap.get(kind));
             } else if (kind.isGraphBased()) {

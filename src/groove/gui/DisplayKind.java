@@ -4,7 +4,6 @@ import groove.graph.GraphRole;
 import groove.trans.ResourceKind;
 
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
@@ -79,7 +78,7 @@ public enum DisplayKind {
         new EnumMap<ResourceKind,DisplayKind>(ResourceKind.class);
 
     static {
-        for (DisplayKind kind : EnumSet.allOf(DisplayKind.class)) {
+        for (DisplayKind kind : DisplayKind.values()) {
             ResourceKind resource = kind.getResource();
             if (resource != null) {
                 resourceMap.put(resource, kind);

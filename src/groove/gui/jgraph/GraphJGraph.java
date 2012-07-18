@@ -55,7 +55,6 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -1114,7 +1113,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
         if (this.modeActionMap == null) {
             this.modeActionMap =
                 new EnumMap<JGraphMode,Action>(JGraphMode.class);
-            for (final JGraphMode any : EnumSet.allOf(JGraphMode.class)) {
+            for (final JGraphMode any : JGraphMode.values()) {
                 Action action =
                     new AbstractAction(any.getName(), any.getIcon()) {
                         @Override
@@ -1147,7 +1146,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
             this.modeButtonMap =
                 new EnumMap<JGraphMode,JToggleButton>(JGraphMode.class);
             ButtonGroup modeButtonGroup = new ButtonGroup();
-            for (JGraphMode any : EnumSet.allOf(JGraphMode.class)) {
+            for (JGraphMode any : JGraphMode.values()) {
                 JToggleButton button = new JToggleButton(getModeAction(any));
                 Options.setLAF(button);
                 button.setToolTipText(any.getName());

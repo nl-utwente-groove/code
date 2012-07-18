@@ -942,7 +942,7 @@ public enum AspectKind {
 
     static {
         // initialise the aspect kind map
-        for (AspectKind kind : EnumSet.allOf(AspectKind.class)) {
+        for (AspectKind kind : AspectKind.values()) {
             AspectKind oldKind = kindMap.put(kind.toString(), kind);
             assert oldKind == null;
             tokenMap.put(kind.name(), kind.getName());
@@ -952,7 +952,7 @@ public enum AspectKind {
             }
         }
         // initialise the nested value map
-        for (NestedValue value : EnumSet.allOf(NestedValue.class)) {
+        for (NestedValue value : NestedValue.values()) {
             NestedValue oldValue = nestedValueMap.put(value.toString(), value);
             assert oldValue == null;
             tokenMap.put(value.name(), value.toString());
@@ -1002,7 +1002,7 @@ public enum AspectKind {
         new EnumMap<GraphRole,Set<AspectKind>>(GraphRole.class);
 
     static {
-        for (GraphRole role : EnumSet.allOf(GraphRole.class)) {
+        for (GraphRole role : GraphRole.values()) {
             Set<AspectKind> nodeKinds, edgeKinds;
             switch (role) {
             case HOST:

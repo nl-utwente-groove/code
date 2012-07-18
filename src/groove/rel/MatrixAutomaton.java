@@ -38,7 +38,6 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -760,7 +759,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
     private static final Map<EdgeRole,TypeLabel> DUMMY_LABELS =
         new EnumMap<EdgeRole,TypeLabel>(EdgeRole.class);
     static {
-        for (EdgeRole kind : EnumSet.allOf(EdgeRole.class)) {
+        for (EdgeRole kind : EdgeRole.values()) {
             DUMMY_LABELS.put(kind,
                 TypeLabel.createLabel(kind, DUMMY_LABEL_TEXT));
         }

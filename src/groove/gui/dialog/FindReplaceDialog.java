@@ -31,7 +31,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -388,7 +387,7 @@ public class FindReplaceDialog {
     private JComboBox getNewTypeCombobox() {
         if (this.newTypeChoice == null) {
             final JComboBox result = this.newTypeChoice = new JComboBox();
-            for (EdgeRole kind : EnumSet.allOf(EdgeRole.class)) {
+            for (EdgeRole kind : EdgeRole.values()) {
                 result.addItem(kind.getDescription(true));
             }
             result.setSelectedIndex(EdgeRole.getIndex(getOldLabel().getRole()));
