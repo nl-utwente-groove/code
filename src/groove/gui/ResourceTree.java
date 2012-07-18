@@ -27,6 +27,7 @@ import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
 import groove.lts.GraphState;
 import groove.trans.ResourceKind;
+import groove.util.Strings;
 import groove.view.GrammarModel;
 
 import java.awt.Color;
@@ -57,8 +58,6 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-
-import com.eekboom.utils.Strings;
 
 /**
  * Panel that displays a tree of resources. Each resource is added by means of
@@ -299,15 +298,15 @@ public class ResourceTree extends JTree implements SimulatorListener {
     public String getToolTip(String resourceName) {
         StringBuilder result = new StringBuilder();
         switch (this.resourceKind) {
-            case HOST:
-                result.append("Host graph ");
-                break;
-            case RULE:
-                result.append("Rule ");
-                break;
-            case TYPE:
-                result.append("Type graph ");
-                break;
+        case HOST:
+            result.append("Host graph ");
+            break;
+        case RULE:
+            result.append("Rule ");
+            break;
+        case TYPE:
+            result.append("Type graph ");
+            break;
         }
         result.append(HTMLConverter.STRONG_TAG.on(resourceName));
         HTMLConverter.HTML_TAG.on(result);

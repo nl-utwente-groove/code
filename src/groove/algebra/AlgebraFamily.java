@@ -126,13 +126,44 @@ public enum AlgebraFamily {
         return getAlgebra(signature).getValueFromString(constant);
     }
 
+    /** Indicates if this algebra family can assign definite values to variables. */
+    public boolean hasVariableValues() {
+        return this == POINT;
+    }
+
     /** 
-     * Returns the value for a given constant.
+     * Returns the value for a given variable.
+     * This is only possible for algebras in which a variable has a single,
+     * well-defined value.
+     * @param signature the signature of which this is a constant
+     * @param variable the variable to be assigned
      * @return the value {@code constant} (in the appropriate algebra)
      * @see #getAlgebraFor(String)
      */
-    public Object getValue(Constant constant) {
-        return getValue(constant.getSignature(), constant.getSymbol());
+    public Object getValue(SignatureKind signature, Variable variable) {
+        if (this == POINT) {
+            return ((PointAlgebra<?>) getAlgebra(signature)).getPointValue();
+        } else {
+            throw new UnsupportedOperationException(String.format(
+                "Algebra family %s cannot assign value to variable %s",
+                getName(), variable.getName()));
+        }
+    }
+
+    /** 
+     * Returns the value for a given term.
+     * @return the value {@code term} (in the appropriate algebra)
+     */
+    public Object getValue(Term term) {
+        if (term instanceof Constant) {
+            return getValue(term.getSignature(), ((Constant) term).getSymbol());
+        } else if (term instanceof Variable) {
+            assert this == POINT;
+            return getValue(term.getSignature(), (Variable) term);
+        } else {
+            assert false;
+            return null;
+        }
     }
 
     /**

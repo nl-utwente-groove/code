@@ -22,7 +22,7 @@ package groove.algebra;
  * @version $Revision $
  */
 public class PointBoolAlgebra extends BoolSignature<Object> implements
-        Algebra<Object> {
+        PointAlgebra<Object> {
     /** Private constructor for the singleton instance. */
     private PointBoolAlgebra() {
         // empty
@@ -64,6 +64,11 @@ public class PointBoolAlgebra extends BoolSignature<Object> implements
 
     public String getSymbol(Object value) {
         return value.toString();
+    }
+
+    @Override
+    public Object getPointValue() {
+        return singleBool;
     }
 
     public Object getValueFromString(String constant) {

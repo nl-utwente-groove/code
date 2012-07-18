@@ -41,7 +41,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         this.node = node;
         this.boundNodes = Collections.<RuleNode>singleton(node);
         this.algebra = family.getAlgebra(node.getSignature());
-        this.value = this.algebra.getValueFromString(node.getSymbol());
+        this.value = family.getValue(node.getTerm());
     }
 
     public ValueNodeRecord createRecord(
@@ -89,7 +89,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     final VariableNode node;
     /** The algebra family in which the value is to be created. */
     final Algebra<?> algebra;
-    /** Representation of the constant in the appropriate algebra representaton. */
+    /** Representation of the constant in the appropriate algebra representation. */
     final Object value;
     /** The index of the value node (in the result. */
     int nodeIx;
@@ -111,7 +111,8 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         public void initialise(HostGraph host) {
             super.initialise(host);
             this.image =
-                host.getFactory().createValueNode(ValueNodeSearchItem.this.algebra,
+                host.getFactory().createValueNode(
+                    ValueNodeSearchItem.this.algebra,
                     ValueNodeSearchItem.this.value);
         }
 

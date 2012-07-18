@@ -719,15 +719,9 @@ public class ReteNetwork {
 
             if (n instanceof VariableNode) {
                 VariableNode vn = (VariableNode) n;
-                if (vn.getConstant() != null) {
-                    result.nodeMap().put(n,
-                        rfact.createVariableNode(maxNodeNr++, vn.getConstant()));
+                result.nodeMap().put(n,
+                    rfact.createVariableNode(maxNodeNr++, vn.getTerm()));
 
-                } else {
-                    result.nodeMap().put(
-                        n,
-                        rfact.createVariableNode(maxNodeNr++, vn.getSignature()));
-                }
             } else {
                 DefaultRuleNode dn = (DefaultRuleNode) n;
                 result.nodeMap().put(

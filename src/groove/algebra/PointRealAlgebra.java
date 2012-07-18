@@ -23,7 +23,7 @@ package groove.algebra;
  * @version $Revision $
  */
 public class PointRealAlgebra extends RealSignature<Object,Object,Object>
-        implements Algebra<Object> {
+        implements PointAlgebra<Object> {
     /** Private constructor for the singleton instance. */
     private PointRealAlgebra() {
         // empty
@@ -40,6 +40,11 @@ public class PointRealAlgebra extends RealSignature<Object,Object,Object>
 
     public String getSymbol(Object value) {
         return value.toString();
+    }
+
+    @Override
+    public Object getPointValue() {
+        return singleReal;
     }
 
     public Object getValueFromString(String constant) {

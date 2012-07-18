@@ -17,7 +17,6 @@
 package groove.graph;
 
 import static groove.graph.GraphRole.TYPE;
-import groove.algebra.Constant;
 import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
@@ -437,16 +436,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     continue;
                 } else if (node instanceof VariableNode) {
                     VariableNode varNode = (VariableNode) node;
-                    Constant constant = varNode.getConstant();
-                    if (constant == null) {
-                        image =
-                            ruleFactory.createVariableNode(varNode.getNumber(),
-                                varNode.getSignature());
-                    } else {
-                        image =
-                            ruleFactory.createVariableNode(varNode.getNumber(),
-                                constant);
-                    }
+                    image =
+                        ruleFactory.createVariableNode(varNode.getNumber(),
+                            varNode.getTerm());
                     // check if the type graph actually has the primitive type
                     if (!nodeSet().contains(image.getType())) {
                         throw new FormatException(

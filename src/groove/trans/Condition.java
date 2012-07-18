@@ -421,7 +421,7 @@ public class Condition implements Fixable {
                     // collect the argument nodes
                     Set<VariableNode> resolver = new HashSet<VariableNode>();
                     for (VariableNode arg : opNode.getArguments()) {
-                        if (arg.getSymbol() == null) {
+                        if (!arg.hasConstant()) {
                             resolver.add(arg);
                         }
                     }

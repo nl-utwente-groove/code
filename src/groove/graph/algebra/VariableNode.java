@@ -18,6 +18,8 @@ package groove.graph.algebra;
 
 import groove.algebra.Constant;
 import groove.algebra.SignatureKind;
+import groove.algebra.Term;
+import groove.algebra.Variable;
 import groove.graph.AbstractNode;
 import groove.graph.TypeGuard;
 import groove.graph.TypeNode;
@@ -42,8 +44,7 @@ public class VariableNode extends AbstractNode implements RuleNode, AnchorKey {
     public VariableNode(int nr, SignatureKind signature, TypeNode type) {
         super(nr);
         assert signature != null;
-        this.signature = signature;
-        this.constant = null;
+        this.term = new Variable(super.toString(), signature);
         assert type != null;
         this.type = type;
     }
@@ -51,10 +52,9 @@ public class VariableNode extends AbstractNode implements RuleNode, AnchorKey {
     /**
      * Constructs a (numbered) constant variable node.
      */
-    public VariableNode(int nr, Constant constant, TypeNode type) {
+    public VariableNode(int nr, Term term, TypeNode type) {
         super(nr);
-        this.signature = constant.getSignature();
-        this.constant = constant;
+        this.term = term;
         assert type != null;
         this.type = type;
     }
@@ -90,25 +90,42 @@ public class VariableNode extends AbstractNode implements RuleNode, AnchorKey {
     }
 
     /**
-     * Method returning the (non-{@code null}) signature to which the variable node
+     * Returns the (non-{@code null}) signature to which the variable node
      * belongs.
      */
     public SignatureKind getSignature() {
-        return this.signature;
+        return this.term.getSignature();
     }
 
     /**
-     * Method returning the (possibly null) constant symbol of the variable node.
+     * Indicates if this variable node has an associate constant.
+     * If it does not have a constant, it has a variable.
      */
-    public String getSymbol() {
-        return this.constant == null ? null : this.constant.getSymbol();
+    public boolean hasConstant() {
+        return this.term instanceof Constant;
     }
 
     /**
-     * Method returning the (possibly null) constant of the variable node.
+     * Returns the term wrapped in this variable node.
+     */
+    public Term getTerm() {
+        return this.term;
+    }
+
+    /**
+     * Returns the constant of the variable node 
+     * if its wrapped term is a constant; otherwise returns {@code null}.
      */
     public Constant getConstant() {
-        return this.constant;
+        return hasConstant() ? (Constant) getTerm() : null;
+    }
+
+    /**
+     * Returns the variable of the variable node 
+     * if its wrapped term is a constant; otherwise returns {@code null}.
+     */
+    public Variable getVariable() {
+        return (getTerm() instanceof Variable) ? null : (Variable) getTerm();
     }
 
     @Override
@@ -143,10 +160,8 @@ public class VariableNode extends AbstractNode implements RuleNode, AnchorKey {
 
     /** The type of this variable node. */
     private final TypeNode type;
-    /** The signature name of this variable node, if any. */
-    private final SignatureKind signature;
-    /** Optional constant symbol. */
-    private final Constant constant;
+    /** Term (constant or variable) associated with this variable node. */
+    private final Term term;
 
     /** returns the string preceding the node number in the default variable node id. */
     static public final String TO_STRING_PREFIX = "x";

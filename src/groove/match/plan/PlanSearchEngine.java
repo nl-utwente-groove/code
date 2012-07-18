@@ -365,7 +365,8 @@ public class PlanSearchEngine extends SearchEngine {
                 AbstractSearchItem nodeItem = createNodeSearchItem(node);
                 if (nodeItem != null) {
                     assert !(node instanceof VariableNode)
-                        || ((VariableNode) node).getConstant() != null
+                        || ((VariableNode) node).hasConstant()
+                        || this.algebraFamily.hasVariableValues()
                         || seed.nodeSet().contains(node) : String.format(
                         "Variable node '%s' should be among anchors %s", node,
                         seed);
@@ -455,7 +456,8 @@ public class PlanSearchEngine extends SearchEngine {
             AbstractSearchItem result = null;
             if (node instanceof VariableNode) {
                 assert this.searchMode == NORMAL;
-                if (((VariableNode) node).getConstant() != null) {
+                if (((VariableNode) node).hasConstant()
+                    || this.algebraFamily.hasVariableValues()) {
                     result =
                         new ValueNodeSearchItem((VariableNode) node,
                             this.algebraFamily);
