@@ -169,16 +169,18 @@ public class GraphGrammar {
         priorityRuleSet.add(action);
         this.actions.add(action);
         // add the rule to the map
-        if (action instanceof Rule) {
+        switch (action.getKind()) {
+        case RULE:
             Rule rule = (Rule) action;
             this.nameRuleMap.put(ruleName, rule);
             this.allRules.add(rule);
-        } else {
+            break;
+        case RECIPE:
             Recipe recipe = (Recipe) action;
             this.nameRecipeMap.put(ruleName, recipe);
-            for (Rule rule : recipe.getBody().getRules()) {
-                rule.setPartial();
-                this.allRules.add(rule);
+            for (Rule subRule : recipe.getBody().getRules()) {
+                subRule.setPartial();
+                this.allRules.add(subRule);
             }
         }
     }
@@ -201,10 +203,20 @@ public class GraphGrammar {
      * @see #testConsistent()
      */
     public void setFixed() throws FormatException {
-        testConsistent();
-        for (Rule rule : getAllRules()) {
-            rule.setFixed();
+        FormatErrorSet errors = new FormatErrorSet();
+        try {
+            testConsistent();
+        } catch (FormatException exc) {
+            errors.addAll(exc.getErrors());
         }
+        for (Rule rule : getAllRules()) {
+            try {
+                rule.setFixed();
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
+            }
+        }
+        errors.throwException();
         getStartGraph().setFixed();
         this.fixed = true;
     }
@@ -276,12 +288,8 @@ public class GraphGrammar {
      */
     public void testConsistent() throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
-        // collect the exceptions of the rules
-        if (this.typeGraph == null) {
-            errors.add(String.format("Labels and subtypes not initialised"));
-        }
-        // if any exception was encountered, throw it
-        errors.throwException();
+        // at the moment, nothing is checked
+        errors.throwException(); // if any exception was encountered, throw it
     }
 
     /**

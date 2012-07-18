@@ -16,6 +16,7 @@
  */
 package groove.trans;
 
+import groove.algebra.AlgebraFamily;
 import groove.control.CtrlPar.Var;
 import groove.graph.TypeGraph;
 import groove.graph.algebra.OperatorNode;
@@ -284,7 +285,9 @@ public class Condition implements Fixable {
             this.fixed = true;
             if (hasPattern()) {
                 getPattern().setFixed();
-                testAlgebra();
+                if (!getSystemProperties().getAlgebraFamily().supportsSymbolic()) {
+                    checkResolution();
+                }
                 if (getRule() != null) {
                     getRule().setFixed();
                 }
@@ -341,13 +344,15 @@ public class Condition implements Fixable {
      * time of the condition.
      * @throws FormatException if the algebra part cannot be matched
      */
-    private void testAlgebra() throws FormatException {
+    public void checkResolution() throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
         Map<VariableNode,List<Set<VariableNode>>> resolverMap =
             createResolvers();
         stabilise(resolverMap);
         for (RuleNode node : resolverMap.keySet()) {
-            errors.add("Variable node '%s' cannot always be assigned", node);
+            errors.add(
+                "Variable node '%s' cannot always be assigned (use %s algebra for symbolic exploration)",
+                node, AlgebraFamily.POINT.getName());
         }
         errors.throwException();
     }
@@ -357,7 +362,7 @@ public class Condition implements Fixable {
      * Each resolver is a set of variables that all have to be resolved in order
      * for the key to be resolved.
      */
-    Map<VariableNode,List<Set<VariableNode>>> createResolvers() {
+    private Map<VariableNode,List<Set<VariableNode>>> createResolvers() {
         Map<VariableNode,List<Set<VariableNode>>> result =
             new HashMap<VariableNode,List<Set<VariableNode>>>();
         // Set of variable nodes already found to have been resolved

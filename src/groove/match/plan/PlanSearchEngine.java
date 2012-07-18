@@ -232,6 +232,12 @@ public class PlanSearchEngine extends SearchEngine {
                 notifyObservers(bestItem);
                 items.remove(bestItem);
             }
+            assert this.remainingEdges.isEmpty() : String.format(
+                "Unmatched edges %s", this.remainingEdges);
+            assert this.remainingNodes.isEmpty() : String.format(
+                "Unmatched nodes %s", this.remainingNodes);
+            assert this.remainingVars.isEmpty() : String.format(
+                "Unmatched variables %s", this.remainingVars);
             return result;
         }
 
@@ -296,9 +302,7 @@ public class PlanSearchEngine extends SearchEngine {
                 item = createNegatedSearchItem(edgeSearchItem);
             } else {
                 if (!this.condition.isInjective()) {
-                    item =
-                        createEqualitySearchItem(embargoEdge.source(),
-                            embargoEdge.target(), false);
+                    item = new EqualitySearchItem(embargoEdge, false);
                 }
             }
             return item;
@@ -366,7 +370,7 @@ public class PlanSearchEngine extends SearchEngine {
                 if (nodeItem != null) {
                     assert !(node instanceof VariableNode)
                         || ((VariableNode) node).hasConstant()
-                        || this.algebraFamily.hasVariableValues()
+                        || this.algebraFamily.supportsSymbolic()
                         || seed.nodeSet().contains(node) : String.format(
                         "Variable node '%s' should be among anchors %s", node,
                         seed);
@@ -429,7 +433,7 @@ public class PlanSearchEngine extends SearchEngine {
             RuleNode source = edge.source();
             RegExpr negOperand = label.getNegOperand();
             if (negOperand instanceof RegExpr.Empty) {
-                result = createEqualitySearchItem(source, target, false);
+                result = new EqualitySearchItem(edge, false);
             } else if (negOperand != null) {
                 RuleEdge negatedEdge =
                     this.condition.getFactory().createEdge(source,
@@ -440,7 +444,7 @@ public class PlanSearchEngine extends SearchEngine {
                 assert !this.typeGraph.isNodeType(edge);
                 result = new VarEdgeSearchItem(edge);
             } else if (label.isEmpty()) {
-                result = new EqualitySearchItem(source, target, true);
+                result = new EqualitySearchItem(edge, true);
             } else if (label.isSharp() || label.isAtom()) {
                 result = new Edge2SearchItem(edge);
             } else {
@@ -457,7 +461,7 @@ public class PlanSearchEngine extends SearchEngine {
             if (node instanceof VariableNode) {
                 assert this.searchMode == NORMAL;
                 if (((VariableNode) node).hasConstant()
-                    || this.algebraFamily.hasVariableValues()) {
+                    || this.algebraFamily.supportsSymbolic()) {
                     result =
                         new ValueNodeSearchItem((VariableNode) node,
                             this.algebraFamily);
@@ -483,19 +487,6 @@ public class PlanSearchEngine extends SearchEngine {
          */
         protected NegatedSearchItem createNegatedSearchItem(SearchItem inner) {
             return new NegatedSearchItem(inner);
-        }
-
-        /**
-         * Callback factory method for an equality search item.
-         * @param node1 the first node to be compared
-         * @param node2 the second node to be compared
-         * @param equals if {@code true}, the images of {@code node1} and 
-         * {@code node2} should be equal, otherwise they should be distinct
-         * @return an instance of {@link EqualitySearchItem}
-         */
-        protected EqualitySearchItem createEqualitySearchItem(RuleNode node1,
-                RuleNode node2, boolean equals) {
-            return new EqualitySearchItem(node1, node2, equals);
         }
 
         /**

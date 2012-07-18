@@ -16,6 +16,7 @@
  */
 package groove.control;
 
+import groove.algebra.AlgebraFamily;
 import groove.control.parse.Namespace;
 import groove.graph.GraphInfo;
 import groove.trans.Action;
@@ -366,9 +367,13 @@ public class CtrlFactory {
         return createLabel(CtrlCall.OMEGA);
     }
 
-    /** Builds the default control automaton for a set of actions. */
-    public CtrlAut buildDefault(Collection<? extends Action> actions)
-        throws FormatException {
+    /** 
+     * Builds the default control automaton for a set of actions. 
+     * @param symbolic if {@code true}, the automaton will be used for symbolic exploration,
+     *  which means that input parameters can be matched even in the default automaton
+     */
+    public CtrlAut buildDefault(Collection<? extends Action> actions,
+            boolean symbolic) throws FormatException {
         CtrlAut result = new CtrlAut("control");
         FormatErrorSet errors = new FormatErrorSet();
         Map<Integer,Set<Action>> priorityMap =
@@ -378,20 +383,23 @@ public class CtrlFactory {
         for (Action action : actions) {
             boolean needsInput = false;
             for (CtrlPar.Var var : action.getSignature()) {
-                if (var.isInOnly()) {
+                if (var.isInOnly() && (var.getType().isNodeType() || !symbolic)) {
                     needsInput = true;
                     break;
                 }
             }
             if (needsInput) {
                 errors.add(
-                    "Grammar needs explicit control for input action '%s'",
-                    action.getFullName());
+                    "Error in %s %s: input parameters require explicit control (use %s algebra for symbolic exploration)",
+                    action.getKind(), action.getFullName(),
+                    AlgebraFamily.POINT.getName(), action);
                 continue;
             }
-            if (action instanceof Rule) {
+            switch (action.getKind()) {
+            case RULE:
                 namespace.addRule((Rule) action);
-            } else {
+                break;
+            case RECIPE:
                 namespace.addRecipe(action.getFullName(), action.getPriority(),
                     action.getSignature(), null);
                 namespace.addBody(action.getFullName(),

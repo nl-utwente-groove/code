@@ -18,7 +18,6 @@ package groove.control;
 
 import groove.control.CtrlPar.Var;
 import groove.trans.Action;
-import groove.trans.Recipe;
 import groove.trans.Rule;
 import groove.util.Groove;
 
@@ -66,9 +65,12 @@ public class CtrlCall {
         this.name = rule.getFullName();
         this.args = args;
         this.rule = rule;
-        assert ruleInputSatisfied();
+        // the following assertion has been removed since in symbolic
+        // exploration it is actually OK not to provide values for input parameters
+        //        assert ruleInputSatisfied();
     }
 
+    @SuppressWarnings("unused")
     private boolean ruleInputSatisfied() {
         for (int i = 0; i < this.rule.getSignature().size(); i++) {
             Var var = this.rule.getSignature().get(i);
@@ -276,11 +278,14 @@ public class CtrlCall {
      * depending on the actual action object.
      */
     public static Kind getKind(Action action) {
-        if (action instanceof Rule) {
+        switch (action.getKind()) {
+        case RULE:
             return Kind.RULE;
-        } else {
-            assert action instanceof Recipe;
+        case RECIPE:
             return Kind.RECIPE;
+        default:
+            assert false;
+            return null;
         }
     }
 

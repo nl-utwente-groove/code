@@ -159,7 +159,9 @@ public class CtrlLoader {
         }
         errors.throwException();
         if (result == null) {
-            result = CtrlFactory.instance().buildDefault(getActions());
+            result =
+                CtrlFactory.instance().buildDefault(getActions(),
+                    this.family.supportsSymbolic());
         } else {
             result = result.normalise();
             GraphInfo.throwException(result);

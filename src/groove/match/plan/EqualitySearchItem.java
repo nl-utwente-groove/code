@@ -17,9 +17,11 @@
 package groove.match.plan;
 
 import groove.match.plan.PlanSearchStrategy.Search;
+import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 
 /**
@@ -32,22 +34,28 @@ public class EqualitySearchItem extends AbstractSearchItem {
      * Constructs an equality test item, which checks for the (in)equality of the
      * match found so far. That is, the item will match if and only if two given
      * nodes are matched to the same or to distinct nodes.
-     * @param node1 the first node that should be matched injectively
-     * @param node2 the second node that should be matched injectively
+     * @param edge the edge of which the end nodes should be matched injectively
      * @param equals flag that indicates if the node images should be equal or distinct
      */
-    public EqualitySearchItem(RuleNode node1, RuleNode node2, boolean equals) {
-        this.node1 = node1;
-        this.node2 = node2;
+    public EqualitySearchItem(RuleEdge edge, boolean equals) {
+        assert edge.label().isEmpty();
+        this.node1 = edge.source();
+        this.node2 = edge.target();
         this.equals = equals;
         this.neededNodes = new HashSet<RuleNode>();
-        this.neededNodes.add(node1);
-        this.neededNodes.add(node2);
+        this.neededNodes.add(this.node1);
+        this.neededNodes.add(this.node2);
+        this.boundEdges = Collections.singleton(edge);
     }
 
     public EqualityRecord createRecord(
             groove.match.plan.PlanSearchStrategy.Search matcher) {
         return new EqualityRecord(matcher);
+    }
+
+    @Override
+    public Collection<? extends RuleEdge> bindsEdges() {
+        return this.boundEdges;
     }
 
     /**
@@ -93,6 +101,8 @@ public class EqualitySearchItem extends AbstractSearchItem {
      * should be equal; otherwise, they should be distinct.
      */
     final boolean equals;
+    /** Collection consisting of the equality edge. */
+    private final Collection<RuleEdge> boundEdges;
     /** Collection consisting of <code>node1</code> and <code>node2</code>. */
     private final Collection<RuleNode> neededNodes;
     /** Node index (in the result) of {@link #node1}. */

@@ -21,7 +21,6 @@ import static groove.trans.ResourceKind.RULE;
 import groove.algebra.AlgebraFamily;
 import groove.graph.iso.IsoChecker;
 import groove.io.FileType;
-import groove.match.TreeMatch;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -103,6 +102,12 @@ public class RuleApplicationTest {
     @Test
     public void testExistsOptional() {
         test("existsOptional");
+    }
+
+    /** Tests the rules in the pointMatching grammar. */
+    @Test
+    public void testPointMatching() {
+        test("pointMatching");
     }
 
     /** Collection of regression tests. */
@@ -191,14 +196,9 @@ public class RuleApplicationTest {
     private void test(HostGraph start, Rule rule, List<HostGraph> results) {
         IsoChecker<HostNode,HostEdge> checker = IsoChecker.getInstance(true);
         BitSet found = new BitSet();
-        Set<TreeMatch> matches =
-            new HashSet<TreeMatch>(rule.getMatcher().findAll(start,
-                start.getFactory().createRuleToHostMap()));
         Set<RuleEvent> eventSet = new HashSet<RuleEvent>();
-        for (TreeMatch match : matches) {
-            for (Proof proof : match.toProofSet()) {
-                eventSet.add(proof.newEvent(null));
-            }
+        for (Proof proof : rule.getAllMatches(start, null)) {
+            eventSet.add(proof.newEvent(null));
         }
         for (RuleEvent event : eventSet) {
             HostGraph target = new RuleApplication(event, start).getTarget();

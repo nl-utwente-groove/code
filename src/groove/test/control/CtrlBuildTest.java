@@ -94,7 +94,7 @@ public class CtrlBuildTest {
         try {
             aut =
                 CtrlFactory.instance().buildDefault(
-                    this.prioGrammar.getActions());
+                    this.prioGrammar.getActions(), false);
         } catch (FormatException e) {
             fail();
         }

@@ -29,7 +29,6 @@ import groove.trans.RuleNode;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -49,15 +48,16 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         this.operation = family.getOperation(node.getOperator());
         this.arguments = node.getArguments();
         this.target = node.getTarget();
+        this.boundNodes = new HashSet<RuleNode>();
+        this.boundNodes.add(node);
         this.neededNodes = new HashSet<RuleNode>(this.arguments);
         if (this.target.hasConstant()) {
-            this.boundNodes = Collections.<RuleNode>emptySet();
             this.neededNodes.add(this.target);
             this.value =
                 family.getValue(node.getOperator().getResultType(),
                     this.target.getConstant().getSymbol());
         } else {
-            this.boundNodes = Collections.<RuleNode>singleton(this.target);
+            this.boundNodes.add(this.target);
             this.value = null;
         }
     }

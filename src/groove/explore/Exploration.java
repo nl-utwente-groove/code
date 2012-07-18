@@ -26,6 +26,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
 import groove.util.Reporter;
+import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 
 /**
@@ -185,9 +186,19 @@ public class Exploration {
      * @throws FormatException if the rule system is not compatible
      */
     public void test(GraphGrammar grammar) throws FormatException {
-        Strategy result = getParsedStrategy(grammar);
-        result.checkCompatible(grammar);
-        getParsedAcceptor(grammar);
+        FormatErrorSet errors = new FormatErrorSet();
+        try {
+            Strategy result = getParsedStrategy(grammar);
+            result.checkCompatible(grammar);
+        } catch (FormatException exc) {
+            errors.addAll(exc.getErrors());
+        }
+        try {
+            getParsedAcceptor(grammar);
+        } catch (FormatException exc) {
+            errors.addAll(exc.getErrors());
+        }
+        errors.throwException();
     }
 
     /**
