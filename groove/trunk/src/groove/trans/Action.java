@@ -43,6 +43,9 @@ public interface Action extends Comparable<Action> {
     /** Returns the signature of the action. */
     public List<Var> getSignature();
 
+    /** Returns the action kind of this action. */
+    public Kind getKind();
+
     /**
      * A comparator for priorities, encoded as {@link Integer} objects. This
      * implementation orders priorities from high to low.
@@ -73,9 +76,24 @@ public interface Action extends Comparable<Action> {
             }
 
         };
+
     /**
      * The lowest rule priority, which is also the default value if no explicit
      * priority is given.
      */
     public static final int DEFAULT_PRIORITY = 0;
+
+    /** Enumeration of the kind of actions. */
+    public static enum Kind {
+        /** Recipe kind, represented by {@link Recipe}.*/
+        RECIPE,
+        /** Recipe kind, represented by {@link Recipe}.*/
+        RULE;
+
+        /** Returns the lower case version of the name. */
+        @Override
+        public String toString() {
+            return name().toLowerCase();
+        }
+    }
 }

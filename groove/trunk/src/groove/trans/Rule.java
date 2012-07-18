@@ -16,6 +16,7 @@
  */
 package groove.trans;
 
+import groove.algebra.AlgebraFamily;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlType;
@@ -392,6 +393,11 @@ public class Rule implements Action, Fixable {
         return this.condition.isGround() && getMatch(host, null) != null;
     }
 
+    @Override
+    public Kind getKind() {
+        return Kind.RULE;
+    }
+
     /**
      * Returns a match of this condition into a given host graph, given a
      * matching of the root graph.
@@ -687,6 +693,16 @@ public class Rule implements Action, Fixable {
                 message = "Rule should not be fixed";
             }
             throw new IllegalStateException(message);
+        }
+    }
+
+    /** 
+     * Checks this rule for compatibility with a chosen algebra.
+     * Called before starting an exploration.
+     */
+    public void checkCombatible(AlgebraFamily family) throws FormatException {
+        if (!family.supportsSymbolic()) {
+            getCondition().checkResolution();
         }
     }
 

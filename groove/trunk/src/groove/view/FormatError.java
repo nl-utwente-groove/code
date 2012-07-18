@@ -18,6 +18,7 @@ package groove.view;
 
 import groove.graph.Element;
 import groove.gui.list.ListPanel.SelectableListEntry;
+import groove.trans.Action;
 import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 
@@ -78,6 +79,9 @@ public class FormatError implements Comparable<FormatError>,
             for (Object subpar : (Object[]) par) {
                 addContext(subpar);
             }
+        } else if (par instanceof Action) {
+            this.resourceName = ((Action) par).getFullName();
+            this.resourceKind = ResourceKind.RULE;
         }
     }
 

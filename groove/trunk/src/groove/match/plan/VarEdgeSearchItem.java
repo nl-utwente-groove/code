@@ -21,9 +21,9 @@ import groove.graph.TypeElement;
 import groove.graph.TypeGuard;
 import groove.match.plan.PlanSearchStrategy.Search;
 import groove.rel.LabelVar;
-import groove.trans.RuleEdge;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
+import groove.trans.RuleEdge;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -45,8 +45,14 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         this.guard = edge.label().getWildcardGuard();
         this.var = this.guard.getVar();
         this.boundVars = Collections.singleton(this.var);
+        this.boundEdges = Collections.singleton(edge);
         assert this.var != null : String.format(
             "Edge %s is not a variable edge", edge);
+    }
+
+    @Override
+    public Collection<? extends RuleEdge> bindsEdges() {
+        return this.boundEdges;
     }
 
     /**
@@ -94,6 +100,8 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 
     /** The variable bound in the wildcard (not <code>null</code>). */
     private final LabelVar var;
+    /** Singleton set consisting of the matched edge. */
+    private final Collection<RuleEdge> boundEdges;
     /** Singleton set consisting of <code>var</code>. */
     private final Collection<LabelVar> boundVars;
     /** The index of {@link #var} in the result. */

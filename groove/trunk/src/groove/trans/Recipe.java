@@ -74,6 +74,11 @@ public class Recipe implements Action {
         return this.sig;
     }
 
+    @Override
+    public Kind getKind() {
+        return Kind.RECIPE;
+    }
+
     /**
      * Compares two actions on the basis of their names.
      */

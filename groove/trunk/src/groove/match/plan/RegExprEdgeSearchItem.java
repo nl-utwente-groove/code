@@ -15,6 +15,7 @@ import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -36,6 +37,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         this.source = edge.source();
         this.target = edge.target();
         this.selfEdge = this.source == this.target;
+        this.boundEdges = Collections.singleton(edge);
         this.boundNodes = new HashSet<RuleNode>();
         this.boundNodes.add(edge.source());
         this.boundNodes.add(edge.target());
@@ -85,6 +87,12 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     /** Returns the regular expression on the edge. */
     public RegExpr getEdgeExpr() {
         return this.edgeExpr;
+    }
+
+    /** This implementation returns the empty set. */
+    @Override
+    public Collection<? extends RuleEdge> bindsEdges() {
+        return this.boundEdges;
     }
 
     /** This implementation returns the empty set. */
@@ -148,6 +156,8 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
      * Flag indicating that the regular edge is a self-edge.
      */
     final boolean selfEdge;
+    /** The matched edge. */
+    private final Set<RuleEdge> boundEdges;
     /** The set of end nodes of this edge. */
     private final Set<RuleNode> boundNodes;
 

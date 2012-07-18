@@ -127,7 +127,7 @@ public enum AlgebraFamily {
     }
 
     /** Indicates if this algebra family can assign definite values to variables. */
-    public boolean hasVariableValues() {
+    public boolean supportsSymbolic() {
         return this == POINT;
     }
 
