@@ -321,9 +321,9 @@ public class CtrlHelper {
     CtrlType checkType(CtrlTree typeTree) {
         CtrlType result;
         if (typeTree.getType() == CtrlChecker.NODE) {
-            result = CtrlType.getNodeType();
+            result = CtrlType.NODE;
         } else {
-            result = CtrlType.getDataType(typeTree.getText());
+            result = CtrlType.valueOf(typeTree.getText().toUpperCase());
         }
         typeTree.setCtrlType(result);
         return result;

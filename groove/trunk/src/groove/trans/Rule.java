@@ -309,8 +309,7 @@ public class Rule implements Action, Fixable {
                 this.condition.getRoot().addNode(parNode);
             }
             String parName = "arg" + i;
-            String parTypeName = sig.get(i).getType().toString();
-            CtrlType parType = CtrlType.getType(parTypeName);
+            CtrlType parType = sig.get(i).getType();
             CtrlVar var = new CtrlVar(parName, parType);
             CtrlPar.Var par;
             boolean inOnly = sig.get(i).isInOnly();
