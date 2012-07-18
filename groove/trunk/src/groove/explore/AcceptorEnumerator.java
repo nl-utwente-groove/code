@@ -23,8 +23,6 @@ import groove.explore.result.Acceptor;
 import groove.trans.GraphGrammar;
 import groove.view.FormatException;
 
-import java.util.EnumSet;
-
 /**
  * <!=========================================================================>
  * AcceptorEnumerator enumerates all acceptors that are available in GROOVE.
@@ -42,7 +40,7 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
      */
     private AcceptorEnumerator() {
         super("acceptor", ACCEPTOR_TOOLTIP);
-        for (AcceptorValue value : EnumSet.allOf(AcceptorValue.class)) {
+        for (AcceptorValue value : AcceptorValue.values()) {
             Template<Acceptor> template = value.getTemplate();
             addTemplate(template);
         }

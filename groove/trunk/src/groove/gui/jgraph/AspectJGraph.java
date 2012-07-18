@@ -47,7 +47,6 @@ import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -507,7 +506,7 @@ final public class AspectJGraph extends GraphJGraph {
         new EnumMap<AspectKind,JAttr.AttributeMap>(AspectKind.class);
 
     static {
-        for (AspectKind aspect : EnumSet.allOf(AspectKind.class)) {
+        for (AspectKind aspect : AspectKind.values()) {
             /** Object to collect the attributes. */
             JAttr v = new JAttr();
             switch (aspect) {

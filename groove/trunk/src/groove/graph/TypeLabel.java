@@ -23,7 +23,6 @@ import groove.util.ExprParser;
 import groove.view.FormatException;
 
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.Map;
 
 /**
@@ -184,7 +183,7 @@ public final class TypeLabel extends AbstractLabel {
     static private final Map<SignatureKind,TypeLabel> sigLabelMap =
         new EnumMap<SignatureKind,TypeLabel>(SignatureKind.class);
     static {
-        for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {
+        for (SignatureKind sigKind : SignatureKind.values()) {
             sigLabelMap.put(sigKind, new TypeLabel(sigKind.getName(),
                 EdgeRole.NODE_TYPE));
         }

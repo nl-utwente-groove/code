@@ -22,7 +22,6 @@ import groove.graph.TypeLabel;
 import groove.view.FormatException;
 import groove.view.aspect.AspectKind.ContentKind;
 
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -206,7 +205,7 @@ public class Aspect {
         new HashMap<String,Aspect>();
 
     static {
-        for (AspectKind kind : EnumSet.allOf(AspectKind.class)) {
+        for (AspectKind kind : AspectKind.values()) {
             aspectNameMap.put(kind.getName(), kind.getAspect());
         }
     }

@@ -144,7 +144,7 @@ public enum ResourceKind {
     private static Map<GraphRole,ResourceKind> roleKindMap =
         new EnumMap<GraphRole,ResourceKind>(GraphRole.class);
     static {
-        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+        for (ResourceKind kind : ResourceKind.values()) {
             if (kind.isGraphBased()) {
                 roleKindMap.put(kind.getGraphRole(), kind);
             }

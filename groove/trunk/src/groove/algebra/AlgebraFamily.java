@@ -22,7 +22,6 @@ import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -95,7 +94,7 @@ public enum AlgebraFamily {
      *         some signature.
      */
     private void checkCompleteness() throws IllegalStateException {
-        for (SignatureKind sigKind : EnumSet.allOf(SignatureKind.class)) {
+        for (SignatureKind sigKind : SignatureKind.values()) {
             if (!this.algebraMap.containsKey(sigKind)) {
                 throw new IllegalStateException(String.format(
                     "Implementation of signature '%s' is missing", sigKind));

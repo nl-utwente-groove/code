@@ -17,7 +17,6 @@
 package groove.algebra;
 
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -69,7 +68,7 @@ public enum SignatureKind {
         new HashMap<String,SignatureKind>();
 
     static {
-        for (SignatureKind kind : EnumSet.allOf(SignatureKind.class)) {
+        for (SignatureKind kind : SignatureKind.values()) {
             sigKindMap.put(kind.getName(), kind);
         }
     }

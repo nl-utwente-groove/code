@@ -853,7 +853,7 @@ public class SimulatorModel implements Cloneable {
     /** Returns a list of search results for the given label. */
     public final List<SearchResult> searchLabel(TypeLabel label) {
         List<SearchResult> searchResults = new ArrayList<SearchResult>();
-        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+        for (ResourceKind kind : ResourceKind.values()) {
             if (!kind.isGraphBased()) {
                 continue;
             }
@@ -1099,7 +1099,7 @@ public class SimulatorModel implements Cloneable {
      */
     public void addListener(SimulatorListener listener, Change... changes) {
         if (changes.length == 0) {
-            changes = EnumSet.allOf(Change.class).toArray(new Change[0]);
+            changes = Change.values();
         }
         for (Change change : changes) {
             List<SimulatorListener> listeners = this.listeners.get(change);
@@ -1117,7 +1117,7 @@ public class SimulatorModel implements Cloneable {
      */
     public void removeListener(SimulatorListener listener, Change... changes) {
         if (changes.length == 0) {
-            changes = EnumSet.allOf(Change.class).toArray(new Change[0]);
+            changes = Change.values();
         }
         for (Change change : changes) {
             this.listeners.get(change).remove(listener);
@@ -1224,7 +1224,7 @@ public class SimulatorModel implements Cloneable {
     private final Map<Change,List<SimulatorListener>> listeners =
         new EnumMap<Change,List<SimulatorListener>>(Change.class);
     { // initialise the listener map to empty listener lists
-        for (Change change : EnumSet.allOf(Change.class)) {
+        for (Change change : Change.values()) {
             this.listeners.put(change, new ArrayList<SimulatorListener>());
         }
     }
@@ -1330,7 +1330,7 @@ public class SimulatorModel implements Cloneable {
             new EnumMap<ResourceKind,Change>(ResourceKind.class);
 
         static {
-            for (Change change : EnumSet.allOf(Change.class)) {
+            for (Change change : Change.values()) {
                 ResourceKind resource = change.getResourceKind();
                 if (resource != null) {
                     resourceToChangeMap.put(resource, change);

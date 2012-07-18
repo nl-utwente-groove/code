@@ -21,7 +21,6 @@ import groove.view.aspect.AspectGraph;
 import java.awt.Color;
 import java.awt.Point;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -175,7 +174,7 @@ public class GraphPreviewDialog extends JDialog {
     private static Map<GraphRole,Set<String>> recentPreviews =
         new EnumMap<GraphRole,Set<String>>(GraphRole.class);
     static {
-        for (GraphRole role : EnumSet.allOf(GraphRole.class)) {
+        for (GraphRole role : GraphRole.values()) {
             recentPreviews.put(role, new HashSet<String>());
         }
     }

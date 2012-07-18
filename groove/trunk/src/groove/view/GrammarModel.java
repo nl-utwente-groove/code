@@ -52,7 +52,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -708,7 +707,7 @@ public class GrammarModel implements Observer {
         new EnumMap<ResourceKind,SortedMap<String,ResourceModel<?>>>(
             ResourceKind.class);
     {
-        for (ResourceKind kind : EnumSet.allOf(ResourceKind.class)) {
+        for (ResourceKind kind : ResourceKind.values()) {
             this.resourceMap.put(kind, new TreeMap<String,ResourceModel<?>>());
         }
     }

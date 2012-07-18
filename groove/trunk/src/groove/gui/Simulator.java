@@ -57,7 +57,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -437,7 +436,7 @@ public class Simulator implements SimulatorListener {
         result.addSeparator();
 
         JMenu newMenu = new JMenu(Options.NEW_MENU_NAME);
-        for (ResourceKind resource : EnumSet.allOf(ResourceKind.class)) {
+        for (ResourceKind resource : ResourceKind.values()) {
             if (resource != ResourceKind.PROPERTIES) {
                 newMenu.add(this.actions.getNewAction(resource));
             }
