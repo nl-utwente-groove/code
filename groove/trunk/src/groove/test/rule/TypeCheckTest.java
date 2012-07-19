@@ -61,6 +61,12 @@ public class TypeCheckTest {
         test("wildcards");
     }
 
+    /** Tests expression typing. */
+    @Test
+    public void testExpressions() {
+        test("expressions");
+    }
+
     /** Tests for regression. */
     @Test
     public void testRegression() {
