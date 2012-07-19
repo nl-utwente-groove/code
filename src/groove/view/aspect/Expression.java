@@ -120,12 +120,13 @@ abstract public class Expression {
     /**
      * Attempts to parse a given string as an expression.
      * @param text the string that is to be parsed as expression
-     * @param type the expected type; if {@code null}, the type must be inferred
+     * @param expectedType the expected type; if {@code null}, the type must be inferred
      * @return the resulting expression
      * @throws FormatException if the input string contains syntax errors
      */
-    public static Expression parse(String text, SignatureKind type)
+    public static Expression parse(String text, SignatureKind expectedType)
         throws FormatException {
+        Expression result;
         if (text.length() == 0) {
             throw new FormatException(
                 "Empty string cannot be parsed as expression");
@@ -135,36 +136,33 @@ abstract public class Expression {
         // find the signature
         int pos = outer.indexOf(AspectParser.SEPARATOR);
         String sigName;
-        SignatureKind signature = type;
+        SignatureKind declaredType = expectedType;
         if (pos >= 0) {
             sigName = outer.substring(0, pos);
-            signature = SignatureKind.getKind(sigName);
-            if (signature == null) {
+            declaredType = SignatureKind.getKind(sigName);
+            if (declaredType == null) {
                 throw new FormatException("Unknown signature '%s'", sigName);
-            }
-            if (type != null && signature != type) {
-                throw new FormatException(
-                    "Declared type %s differs from inferred type %s",
-                    signature, type);
             }
         }
         String rest = outer.substring(pos + 1);
         switch (splitText.two().size()) {
         case 0:
+            // the text does not have brackets or quotes
             if (rest.startsWith(PAR_PREFIX)) {
-                return parseAsPar(rest, signature);
+                return parseAsPar(rest, declaredType);
             }
             Constant constant = Algebras.getConstant(rest);
             if (constant == null) {
-                return parseAsField(rest, signature);
-            } else if (signature != null
-                && constant.getSignature() != signature) {
+                return parseAsField(rest, declaredType);
+            } else if (declaredType != null
+                && constant.getSignature() != declaredType) {
                 throw new FormatException(
-                    "Declared type %s differs from constant type %s",
-                    signature, constant.getSignature());
+                    "Declared type %s differs from actual constant type %s",
+                    declaredType, constant.getSignature());
             } else {
-                return new Const(constant);
+                result = new Const(constant);
             }
+            break;
         case 1:
             if (rest.charAt(rest.length() - 1) != ExprParser.PLACEHOLDER) {
                 throw new FormatException("Can't parse '%s' as expression",
@@ -172,18 +170,32 @@ abstract public class Expression {
             }
             String two = splitText.two().get(0);
             if (two.charAt(0) == '\"') {
+                // double quoted: must be a string constant
                 if (rest.length() > 1) {
                     throw new FormatException("Can't parse '%s' as expression",
                         text);
                 }
-                return new Const(Algebras.getConstant(two));
+                if (declaredType != null
+                    && declaredType != SignatureKind.STRING) {
+                    throw new FormatException(
+                        "Declared type %s differs from actual constant type %s",
+                        declaredType, SignatureKind.STRING);
+                }
+                result = new Const(Algebras.getConstant(two));
             } else {
                 String operatorName = rest.substring(0, rest.length() - 1);
-                return parseAsOperator(operatorName, two, signature);
+                result = parseAsOperator(operatorName, two, declaredType);
             }
+            break;
         default:
             throw new FormatException("Can't parse '%s' as expression", text);
         }
+        if (expectedType != null && result.getType() != expectedType) {
+            throw new FormatException(
+                "Actual type %s differs from expected type %s",
+                result.getType(), expectedType);
+        }
+        return result;
     }
 
     private static Expression parseAsPar(String text, SignatureKind type)
