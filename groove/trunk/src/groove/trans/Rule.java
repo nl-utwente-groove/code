@@ -135,21 +135,6 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * Indicates if this rule has a confluence property. If this method returns
-     * <code>true</code>, this means the rule can be applied only once, to an
-     * arbitrary match.
-     */
-    public boolean isConfluent() {
-        return this.ruleProperties.isConfluent();
-    }
-
-    /** Sets the confluence of this rule. */
-    public void setConfluent(boolean confluent) {
-        testFixed(false);
-        this.ruleProperties.setConfluent(confluent);
-    }
-
-    /**
      * Sets the parent rule of this rule, together with the nesting level and
      * the co-root map.
      * @param parent the parent rule for this rule

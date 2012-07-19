@@ -151,15 +151,6 @@ public class PredicateTests {
         success("rule_name('rule-a')");
         success("rule_name('rule-b')");
 
-        // Assert that all enabled rule names can be checked
-        // succ("rule_enabled('rule-a')");
-        // succ("rule_enabled('rule-b')");
-        // fail("rule_enabled('rule-disabled')");
-
-        // Assert that confluent rule names can be checked
-        success("rule_confluent('rule-confluent')");
-        failure("rule_confluent('rule-a')");
-
         // Assert that rules can be retrieved
         success("rule_name(N), rule(N,R), is_rule(R)");
 
@@ -175,24 +166,6 @@ public class PredicateTests {
         success("rule_name(N), rule(N,R), rule_priority(R,0)");
         success("rule_name(N), rule(N,R), rule_priority(R,1)");
         failure("rule_name(N), rule(N,R), rule_priority(R,2)");
-    }
-
-    /**
-     * Test the derived rule predicates
-     */
-    @Test
-    public void testRuleDerived() {
-        // Test enabled_rule_name
-        // succ("enabled_rule_name(R), rule_enabled(R)");
-
-        // Test confluent_rule_name
-        success("confluent_rule_name(R), rule_confluent(R)");
-
-        // Test enabled_rule
-        // succ("enabled_rule(R), rule(N,R), rule_enabled(N)");
-
-        // Test confluent_rule
-        success("confluent_rule(R), rule(N,R), rule_confluent(N)");
     }
 
     /**

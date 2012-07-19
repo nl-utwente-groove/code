@@ -16,9 +16,9 @@
  */
 package groove.prolog.builtin;
 
-import groove.annotation.ToolTipPars;
 import groove.annotation.Signature;
 import groove.annotation.ToolTipBody;
+import groove.annotation.ToolTipPars;
 
 /** Rule-based GROOVE Prolog predicates.
  * Documentation reading guide:
@@ -37,11 +37,6 @@ public class RulePredicates extends GroovePredicates {
     @Signature({"RuleName", "Rule", "+?", "?+"})
     public void rule_2() {
         s(":-build_in(rule/2,'groove.prolog.builtin.rule.Predicate_rule').");
-    }
-
-    @Signature({"RuleName", "+"})
-    public void rule_confluent_1() {
-        s(":-build_in(rule_confluent/1,'groove.prolog.builtin.rule.Predicate_rule_confluent').");
     }
 
     @ToolTipBody("Tests if the argument is a JavaObjectTerm with a Rule")
@@ -76,13 +71,4 @@ public class RulePredicates extends GroovePredicates {
         s(":-build_in(rule_rhs/2, 'groove.prolog.builtin.rule.Predicate_rule_rhs').");
     }
 
-    @Signature({"RuleName", "+"})
-    public void confluent_rule_name_1() {
-        s("confluent_rule_name(RN) :- rule_name(RN), rule_confluent(RN).");
-    }
-
-    @Signature({"Rule", "?"})
-    public void confluent_rule_1() {
-        s("confluent_rule(R) :- confluent_rule_name(RN), rule(RN,R).");
-    }
 }

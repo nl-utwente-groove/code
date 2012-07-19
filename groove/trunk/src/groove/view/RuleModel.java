@@ -127,15 +127,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         return GraphProperties.getFormatString(getSource());
     }
 
-    /**
-     * Indicates whether the rule is marked as locally confluent. If the rule is
-     * marked as such, only match will be chosen among this and all other
-     * locally confluent rules.
-     */
-    public boolean isConfluent() {
-        return GraphProperties.isConfluent(getSource());
-    }
-
     @Override
     Rule compute() throws FormatException {
         this.ruleFactory = RuleFactory.newInstance(getType());
@@ -322,7 +313,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             result = conditionTree.firstEntry().getValue().getRule();
             if (result != null) {
                 result.setPriority(getPriority());
-                result.setConfluent(isConfluent());
                 result.setTransitionLabel(getTransitionLabel());
                 result.setFormatString(getFormatString());
                 result.setCheckDangling(getSystemProperties().isCheckDangling());
