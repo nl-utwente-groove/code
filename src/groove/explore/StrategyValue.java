@@ -34,7 +34,6 @@ import groove.explore.strategy.BoundedLtlStrategy;
 import groove.explore.strategy.BoundedPocketLtlStrategy;
 import groove.explore.strategy.ConditionalBFSStrategy;
 import groove.explore.strategy.DFSStrategy;
-import groove.explore.strategy.LinearConfluentRules;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.LtlStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
@@ -85,11 +84,6 @@ public enum StrategyValue implements ParsableValue {
     RETE_RANDOM("reterandom", "Rete Random Linear Exploration",
             "This strategy chooses one transition from each open state. "
                 + "The transition is chosen randomly."),
-    /** Confluent strategy. */
-    CONFLUENT("confluent", "Linear Confluent Exploration",
-            "This strategy generates all possible transitions from each open "
-                + "state, but only takes one transition of each pair of "
-                + "transitions that have been marked as confluent."),
     /** Rule conditional strategy. */
     CONDITIONAL("crule", "Conditional Exploration (Rule Condition)",
             "This strategy performs a conditional breadth-first exploration. "
@@ -229,14 +223,6 @@ public enum StrategyValue implements ParsableValue {
                 @Override
                 public Strategy create() {
                     return new RandomLinearStrategy();
-                }
-            };
-
-        case CONFLUENT:
-            return new MyTemplate0() {
-                @Override
-                public Strategy create() {
-                    return new LinearConfluentRules();
                 }
             };
 

@@ -171,43 +171,6 @@ public class GraphProperties extends Properties {
     }
 
     /**
-    * Returns the confluency status stored in this properties object, if any.
-    * The status is stored under key {@link #CONFLUENT_KEY}.
-    * @return The stored confluency status, or <code>false</code> if there is
-    *         none
-    */
-    public boolean isConfluent() {
-        String result = getProperty(CONFLUENT_KEY);
-        if (result == null) {
-            return false;
-        } else {
-            return Boolean.parseBoolean(result);
-        }
-    }
-
-    /**
-     * Sets the confluency status in this property object. The status is stored
-     * under key {@link #CONFLUENT_KEY}.
-     * @param confluent the confluency status to be stored
-     * @return the previously stored status, or <code>false</code> if there was
-     *         none
-     */
-    public boolean setConfluent(boolean confluent) {
-        String result;
-        // if the new value is false (the default value), remove the key instead
-        if (!confluent) {
-            result = (String) remove(CONFLUENT_KEY);
-        } else {
-            result = (String) super.setProperty(CONFLUENT_KEY, "" + confluent);
-        }
-        if (result == null) {
-            return false;
-        } else {
-            return Boolean.parseBoolean(result);
-        }
-    }
-
-    /**
      * Retrieves the {@link #REMARK_KEY} value in this properties object.
      * @return the current value for {@link #REMARK_KEY}; may be
      *         <code>null</code>
@@ -324,8 +287,6 @@ public class GraphProperties extends Properties {
             return Integer.toString(Action.DEFAULT_PRIORITY);
         } else if (key.equals(ENABLED_KEY)) {
             return Boolean.toString(true);
-        } else if (key.equals(CONFLUENT_KEY)) {
-            return Boolean.toString(false);
         } else {
             return "";
         }
@@ -361,21 +322,6 @@ public class GraphProperties extends Properties {
             return true;
         } else {
             return properties.isEnabled();
-        }
-    }
-
-    /**
-     * Returns the confluency property from a given graph. The property is
-     * stored under {@link #CONFLUENT_KEY}. Yields <code>false</code> if the
-     * graph has no properties.
-     * @see #isConfluent()
-     */
-    static public boolean isConfluent(Graph<?,?> graph) {
-        GraphProperties properties = GraphInfo.getProperties(graph, false);
-        if (properties == null) {
-            return false;
-        } else {
-            return properties.isConfluent();
         }
     }
 
@@ -468,11 +414,6 @@ public class GraphProperties extends Properties {
      */
     static public final String REMARK_KEY = "remark";
     /**
-     * Rule confluency key. The corresponding value should be a boolean.
-     */
-    static public final String CONFLUENT_KEY = "confluent";
-
-    /**
      * Format string for stdout.
      */
     static public final String FORMAT_KEY = "printFormat";
@@ -551,23 +492,6 @@ public class GraphProperties extends Properties {
             @Override
             public String getComment() {
                 return "Disabled rules are never evaluated";
-            }
-        });
-        defaultKeys.put(CONFLUENT_KEY, new Property<String>() {
-            @Override
-            public boolean isSatisfied(String value) {
-                return value.equals("" + true) || value.equals("" + false);
-            }
-
-            @Override
-            public String getDescription() {
-                return "a boolean indicating if the rule is confluent";
-            }
-
-            @Override
-            public String getComment() {
-                return "Confluent rules have the same effect, regardless of "
-                    + "their matching";
             }
         });
         defaultKeys.put(TRANSITION_LABEL_KEY, new Property<String>() {
