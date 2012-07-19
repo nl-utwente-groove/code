@@ -38,7 +38,8 @@ public class EqualitySearchItem extends AbstractSearchItem {
      * @param equals flag that indicates if the node images should be equal or distinct
      */
     public EqualitySearchItem(RuleEdge edge, boolean equals) {
-        assert edge.label().isEmpty();
+        assert edge.label().isEmpty() || edge.label().isNeg()
+            && edge.label().getNegOperand().isEmpty();
         this.node1 = edge.source();
         this.node2 = edge.target();
         this.equals = equals;
