@@ -205,10 +205,19 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     }
 
     /** Returns the set of edges incoming to the nodes in the given layer. */
-    public Set<E> getLayerEdges(int layer) {
+    public Set<E> getLayerInEdges(int layer) {
         Set<E> result = new MyHashSet<E>();
         for (N pNode : getLayerNodes(layer)) {
             result.addAll(inEdgeSet(pNode));
+        }
+        return result;
+    }
+
+    /** Returns the set of edges outgoing from the nodes in the given layer. */
+    public Set<E> getLayerOutEdges(int layer) {
+        Set<E> result = new MyHashSet<E>();
+        for (N pNode : getLayerNodes(layer)) {
+            result.addAll(outEdgeSet(pNode));
         }
         return result;
     }
