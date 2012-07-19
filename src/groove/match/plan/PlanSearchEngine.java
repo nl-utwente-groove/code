@@ -439,6 +439,7 @@ public class PlanSearchEngine extends SearchEngine {
                         negOperand.toLabel(), target);
                 result =
                     createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
+                this.remainingEdges.remove(edge);
             } else if (label.getWildcardGuard() != null) {
                 assert !this.typeGraph.isNodeType(edge);
                 result = new VarEdgeSearchItem(edge);
