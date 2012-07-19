@@ -82,7 +82,7 @@ public final class PatternEquivRel {
     private void computeEdgeEquiv(int layer) {
         Map<EdgeInfo,AuxEdgeEquivClass> partition =
             new MyHashMap<EdgeInfo,AuxEdgeEquivClass>();
-        for (PatternEdge pEdge : this.pShape.getLayerEdges(layer)) {
+        for (PatternEdge pEdge : this.pShape.getLayerInEdges(layer)) {
             EdgeInfo eInfo = computeEdgeInfo(pEdge);
             AuxEdgeEquivClass eEc = partition.get(eInfo);
             if (eEc == null) {
