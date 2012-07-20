@@ -94,7 +94,6 @@ public class TestMaterialisation {
         try {
             sHost = view.getHostModel(HOST).toResource();
             sRule = view.getRuleModel(RULE).toResource();
-
             pTGraph =
                 TypeGraphJaxbGxlIO.getInstance().unmarshalTypeGraph(
                     new File(TYPE_GRAPH));
