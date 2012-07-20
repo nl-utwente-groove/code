@@ -26,7 +26,6 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Pattern graph.
@@ -81,24 +80,6 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
     @Override
     protected boolean isTypeCorrect(Edge edge) {
         return edge instanceof PatternEdge;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<PatternNode> nodeSet() {
-        return (Set<PatternNode>) super.nodeSet();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<PatternEdge> edgeSet() {
-        return (Set<PatternEdge>) super.edgeSet();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<PatternEdge> inEdgeSet(Node node) {
-        return (Set<PatternEdge>) super.inEdgeSet(node);
     }
 
     @Override

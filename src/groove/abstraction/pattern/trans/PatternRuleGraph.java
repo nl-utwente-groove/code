@@ -17,9 +17,6 @@
 package groove.abstraction.pattern.trans;
 
 import groove.abstraction.pattern.shape.AbstractPatternGraph;
-import groove.graph.Node;
-
-import java.util.Set;
 
 /**
  * Pattern graphs that compose rules.
@@ -32,24 +29,6 @@ public final class PatternRuleGraph extends
     /** Default constructor. */
     public PatternRuleGraph(String name) {
         super(name);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<RuleNode> nodeSet() {
-        return (Set<RuleNode>) super.nodeSet();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<RuleEdge> edgeSet() {
-        return (Set<RuleEdge>) super.edgeSet();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<RuleEdge> inEdgeSet(Node node) {
-        return (Set<RuleEdge>) super.inEdgeSet(node);
     }
 
 }

@@ -154,24 +154,6 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         return edge instanceof TypeEdge;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<TypeNode> nodeSet() {
-        return (Set<TypeNode>) super.nodeSet();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<TypeEdge> edgeSet() {
-        return (Set<TypeEdge>) super.edgeSet();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<TypeEdge> inEdgeSet(Node node) {
-        return (Set<TypeEdge>) super.inEdgeSet(node);
-    }
-
     @Override
     public boolean addNode(TypeNode node) {
         boolean result;

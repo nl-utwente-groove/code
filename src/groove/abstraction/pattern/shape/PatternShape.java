@@ -26,7 +26,9 @@ import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
 import groove.graph.GraphRole;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -276,6 +278,63 @@ public final class PatternShape extends PatternGraph {
         }
 
         return result;
+    }
+
+    /**
+     * Returns the pattern edge outgoing from the given node, with the proper
+     * given type, or <code>null</code> if no such edge exists. 
+     */
+    public PatternEdge getOutEdgeWithType(PatternNode node, TypeEdge edgeType) {
+        for (PatternEdge outEdge : outEdgeSet(node)) {
+            // We assume the same pattern type graph is always used so object
+            // equality is sufficient.
+            if (outEdge.getType() == edgeType) {
+                return outEdge;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns true if there exists an pattern edge outgoing from the given 
+     * node, with the proper given type. 
+     */
+    public boolean hasOutEdgeWithType(PatternNode node, TypeEdge edgeType) {
+        return getOutEdgeWithType(node, edgeType) != null;
+    }
+
+    /**
+     * Returns a list of pattern edges incoming into the given node, with the
+     * proper given type.
+     */
+    public List<PatternEdge> getInEdgesWithType(PatternNode node,
+            TypeEdge edgeType) {
+        Set<PatternEdge> inEdgeSet = inEdgeSet(node);
+        ArrayList<PatternEdge> result =
+            new ArrayList<PatternEdge>(inEdgeSet.size());
+        for (PatternEdge inEdge : inEdgeSet) {
+            if (inEdge.getType() == edgeType) {
+                result.add(inEdge);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns true if the given node is uniquely covered by the incoming edge
+     * morphisms. Uniqueness corresponds to the absence of distinct incoming
+     * edges of the same type. While this is condition is always satisfied in
+     * pattern graphs, in pattern shapes it may be falsified due to pattern
+     * collapsing.  
+     */
+    public boolean isUniquelyCovered(PatternNode node) {
+        // Check the type graph for the incoming types.
+        for (TypeEdge edgeType : getTypeGraph().inEdgeSet(node.getType())) {
+            if (getInEdgesWithType(node, edgeType).size() != 1) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

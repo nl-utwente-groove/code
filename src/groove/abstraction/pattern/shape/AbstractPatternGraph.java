@@ -20,6 +20,7 @@ import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.Util;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
+import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
@@ -63,6 +64,36 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<N> nodeSet() {
+        return (Set<N>) super.nodeSet();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<E> edgeSet() {
+        return (Set<E>) super.edgeSet();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<E> edgeSet(Node node) {
+        return (Set<E>) super.edgeSet(node);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<E> outEdgeSet(Node node) {
+        return (Set<E>) super.outEdgeSet(node);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<E> inEdgeSet(Node node) {
+        return (Set<E>) super.inEdgeSet(node);
+    }
 
     @Override
     public String toString() {
@@ -339,6 +370,15 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             }
         }
         return queue;
+    }
+
+    /** Returns the set of successor patterns of the given pattern node. */
+    public Set<N> getSuccessors(N pNode) {
+        Set<N> successors = new MyHashSet<N>();
+        for (E outEdge : outEdgeSet(pNode)) {
+            successors.add(outEdge.target());
+        }
+        return successors;
     }
 
     // ------------------------------------------------------------------------
