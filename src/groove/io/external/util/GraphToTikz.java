@@ -1044,10 +1044,10 @@ public final class GraphToTikz {
         if (edge instanceof CtrlJEdge) {
             this.getControlEdgeStyles((CtrlJEdge) edge, styles);
         }
-
+        AspectEdge aspectEdge =
+            edge instanceof AspectJEdge ? ((AspectJEdge) edge).getEdge() : null;
         AspectKind edgeKind =
-            edge instanceof AspectJEdge
-                    ? ((AspectJEdge) edge).getEdge().getKind() : DEFAULT;
+            aspectEdge == null ? DEFAULT : aspectEdge.getKind();
         switch (edgeKind) {
         case ERASER:
             styles.setOne(ERASER_EDGE_STYLE);
@@ -1079,10 +1079,13 @@ public final class GraphToTikz {
             styles.setTwo(BASIC_LABEL_STYLE);
             break;
         default:
-            styles.setOne(BASIC_EDGE_STYLE);
+            if (aspectEdge != null && aspectEdge.isComposite()) {
+                styles.setOne(COMPOSITE_EDGE_STYLE);
+            } else {
+                styles.setOne(BASIC_EDGE_STYLE);
+            }
             styles.setTwo(BASIC_LABEL_STYLE);
         }
-
         if (edge.isGrayedOut()) {
             styles.setOne(THIN_EDGE_STYLE);
             styles.setTwo(THIN_LABEL_STYLE);
@@ -1520,6 +1523,7 @@ public final class GraphToTikz {
     private static final String THIN_EDGE_STYLE = "thinedge";
     private static final String THIN_LABEL_STYLE = "thinlab";
     private static final String NODIFIED_EDGE_STYLE = "nodified";
+    private static final String COMPOSITE_EDGE_STYLE = "partedge";
     private static final String TYPE_NODE_STYLE = "type";
     private static final String BIDIRECTIONAL_EDGE_STYLE = "bidir";
     private static final String ABS_NODE_STYLE = "absnode";
