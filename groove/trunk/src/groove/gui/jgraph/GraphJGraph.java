@@ -225,6 +225,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
             result = ((JEdgeView) value).getCell().getText();
         } else if (value instanceof GraphJCell) {
             result = ((GraphJCell) value).getText();
+        } else if (value == null) {
+            result = "";
         } else {
             result = value.toString();
         }

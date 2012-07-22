@@ -409,13 +409,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         }
         if (edge != null) {
             if (edge.getInMult() != null || edge.getOutMult() != null) {
-                String inMult =
-                    edge.getInMult() == null ? "" : edge.getInMult().toString();
-                String outMult =
-                    edge.getOutMult() == null ? ""
-                            : edge.getOutMult().toString();
-                GraphConstants.setExtraLabels(result, new Object[] {outMult,
-                    inMult});
+                GraphConstants.setExtraLabels(result,
+                    new Object[] {edge.getOutMult(), edge.getInMult()});
                 Point2D[] labelPositions =
                     {new Point2D.Double(IN_MULT_DIST, MULT_X),
                         new Point2D.Double(OUT_MULT_DIST, MULT_X)};

@@ -26,6 +26,7 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
+import groove.graph.Multiplicity;
 import groove.graph.Node;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJVertex;
@@ -626,10 +627,7 @@ public final class GraphToTikz {
             // Node Coordinates.
             if (layout != null) {
                 this.result.append(encloseSpace(AT_KEYWORD));
-                Rectangle2D bounds = layout.getBounds();
-                double x = bounds.getCenterX();
-                double y = bounds.getCenterY();
-                this.appendPoint(x, y, true);
+                this.appendPoint(getCenterPoint(layout.getBounds()));
             }
 
             // Node Labels.
@@ -833,8 +831,9 @@ public final class GraphToTikz {
         this.appendPoint(x, y, true, this.result);
     }
 
-    private void appendPoint(double x, double y, boolean usePar) {
-        this.appendPoint(x, y, usePar, this.result);
+    /** Computes and returns the centre point of a rectangle. */
+    private Point2D getCenterPoint(Rectangle2D bounds) {
+        return new Point2D.Double(bounds.getCenterX(), bounds.getCenterY());
     }
 
     /**
@@ -1143,6 +1142,7 @@ public final class GraphToTikz {
         this.appendSourceNode(srcVertex, tgtVertex);
         this.result.append(encloseSpace(DOUBLE_DASH));
         this.appendEdgeLabelInPath(edge, labStyle);
+        this.appendMultiplicities(edge);
         this.appendTargetNode(srcVertex, tgtVertex);
         this.result.append(END_EDGE);
     }
@@ -1167,37 +1167,34 @@ public final class GraphToTikz {
             this.appendSourceNode(srcVertex, tgtVertex);
             this.result.append(encloseSpace(connection));
             this.appendTargetNode(srcVertex, tgtVertex);
-            this.result.append(END_PATH);
-            this.appendEdgeLabel(edge, layout, labStyle, points);
-            this.result.append(END_EDGE);
-            return;
-        }
+        } else {
+            int firstPoint = 1;
+            int lastPoint = points.size() - 2;
 
-        int firstPoint = 1;
-        int lastPoint = points.size() - 2;
-
-        this.appendNode(srcVertex, points.get(firstPoint));
-        this.result.append(encloseSpace(connection));
-        // Intermediate points
-        for (int i = firstPoint; i <= lastPoint; i++) {
-            this.appendPoint(points, i);
-            // When using the MANHATTAN style sometimes we cannot use the ANGLE
-            // routing when going from the last point to the node because the
-            // arrow will be in the wrong direction.
-            // We test this condition here.
-            if (i == lastPoint && connection.equals(ANGLE)
-                && this.isHorizontalOrVertical(points, i, tgtVertex)) {
-                // We are in this special case, use straight routing.
-                this.result.append(encloseSpace(DOUBLE_DASH));
-            } else {
-                // A normal case, just use the provided connection string.
-                this.result.append(encloseSpace(connection));
+            this.appendNode(srcVertex, points.get(firstPoint));
+            this.result.append(encloseSpace(connection));
+            // Intermediate points
+            for (int i = firstPoint; i <= lastPoint; i++) {
+                this.appendPoint(points, i);
+                // When using the MANHATTAN style sometimes we cannot use the ANGLE
+                // routing when going from the last point to the node because the
+                // arrow will be in the wrong direction.
+                // We test this condition here.
+                if (i == lastPoint && connection.equals(ANGLE)
+                    && this.isHorizontalOrVertical(points, i, tgtVertex)) {
+                    // We are in this special case, use straight routing.
+                    this.result.append(encloseSpace(DOUBLE_DASH));
+                } else {
+                    // A normal case, just use the provided connection string.
+                    this.result.append(encloseSpace(connection));
+                }
             }
+            this.appendNode(tgtVertex, points.get(lastPoint));
         }
-        this.appendNode(tgtVertex, points.get(lastPoint));
         this.result.append(END_PATH);
         this.appendEdgeLabel(edge, layout, labStyle, points);
         this.result.append(END_EDGE);
+        this.appendMultiplicities(edge, points);
     }
 
     /**
@@ -1319,6 +1316,7 @@ public final class GraphToTikz {
         this.result.append(END_PATH);
         this.appendEdgeLabel(edge, layout, labStyle, points);
         this.result.append(END_EDGE);
+        this.appendMultiplicities(edge, points);
     }
 
     /**
@@ -1438,6 +1436,66 @@ public final class GraphToTikz {
         }
     }
 
+    /**
+     * Places the multiplicities (if any) along an edge, aligned to the left, 
+     * at the "very near end" and "very near start" positions.
+     */
+    private void appendMultiplicities(GraphJEdge edge) {
+        Object[] multLabels =
+            GraphConstants.getExtraLabels(edge.getAttributes());
+        if (multLabels != null) {
+            assert multLabels.length == 2;
+            Multiplicity outMult = (Multiplicity) multLabels[0];
+            Multiplicity inMult = (Multiplicity) multLabels[1];
+            if (outMult != null) {
+                this.result.append(" ");
+                this.result.append(NODE);
+                this.result.append(encloseBrack(OUT_MULT_LABEL_STYLE));
+                this.result.append(encloseCurly(outMult.toString()));
+            }
+            if (inMult != null) {
+                this.result.append(" ");
+                this.result.append(NODE);
+                this.result.append(encloseBrack(IN_MULT_LABEL_STYLE));
+                this.result.append(encloseCurly(inMult.toString()));
+            }
+        }
+    }
+
+    /**
+     * Creates extra paths to place the multiplicities.
+     */
+    private void appendMultiplicities(GraphJEdge edge, List<Point2D> points) {
+        Object[] multLabels =
+            GraphConstants.getExtraLabels(edge.getAttributes());
+        if (multLabels != null) {
+            assert multLabels.length == 2;
+            Multiplicity outMult = (Multiplicity) multLabels[0];
+            Multiplicity inMult = (Multiplicity) multLabels[1];
+            Point2D[] multLabelPos =
+                GraphConstants.getExtraLabelPositions(edge.getAttributes());
+            assert multLabelPos.length == 2;
+            if (outMult != null) {
+                appendMultiplicity(outMult, multLabelPos[0], points);
+            }
+            if (inMult != null) {
+                appendMultiplicity(inMult, multLabelPos[1], points);
+            }
+        }
+    }
+
+    private void appendMultiplicity(Multiplicity mult, Point2D pos,
+            List<Point2D> points) {
+        Point2D inMultPos = convertRelativeLabelPositionToAbsolute(pos, points);
+        // Extra path for the label position.
+        this.result.append(BEGIN_NODE);
+        this.result.append(encloseBrack(BASIC_LABEL_STYLE));
+        this.result.append(encloseSpace(AT_KEYWORD));
+        this.appendPoint(inMultPos);
+        this.result.append(encloseCurly(mult.toString()));
+        this.result.append(END_EDGE);
+    }
+
     /** Appends the edge label along the path that is being drawn. */
     private void appendEdgeLabelInPath(GraphJEdge edge, String labStyle) {
         if (!labStyle.equals(INHERITANCE_LABEL_STYLE) && hasNonEmptyLabel(edge)) {
@@ -1547,6 +1605,8 @@ public final class GraphToTikz {
     private static final String FINAL_NODE_STYLE = "final";
     private static final String START_NODE_STYLE = "start";
     private static final String OPEN_NODE_STYLE = "open";
+    private static final String IN_MULT_LABEL_STYLE = "inmultlab";
+    private static final String OUT_MULT_LABEL_STYLE = "outmultlab";
     private static final String BOLD_LINE = "bold";
     private static final String ULTRA_BOLD_LINE = "ultrabold";
     private static final String DOUBLE_DASH = "--";
