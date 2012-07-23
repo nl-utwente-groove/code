@@ -79,11 +79,12 @@ public class PatternShapeMatchApplier implements PatternRuleEventApplier {
         PatternShapeRuleApplication app =
             createApplication((PatternShape) source.getGraph(), preMatch);
 
-        for (PatternShape result : app.transform()) {
-            result.normalise();
+        for (PatternShape transShape : app.transform()) {
+            PatternShape normShape = transShape.normalise();
             PatternNextState newState =
-                new PatternGraphNextState(result, (PatternGraphState) source,
-                    this.psts.getNextStateNr(), this.psts, preMatch);
+                new PatternGraphNextState(normShape,
+                    (PatternGraphState) source, this.psts.getNextStateNr(),
+                    this.psts, preMatch);
             PatternState oldState = this.psts.addState(newState);
             PatternTransition trans = null;
             if (oldState != null) {
