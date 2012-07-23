@@ -22,8 +22,10 @@ import static groove.abstraction.Multiplicity.ZERO_EDGE_MULT;
 import static groove.abstraction.Multiplicity.ZERO_NODE_MULT;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.MyHashMap;
+import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
+import groove.abstraction.pattern.trans.CombinatorialIterator;
 import groove.graph.GraphRole;
 
 import java.util.ArrayList;
@@ -335,6 +337,33 @@ public final class PatternShape extends PatternGraph {
             }
         }
         return true;
+    }
+
+    /** Returns all possible coverages for the given node. */
+    public Set<Set<PatternEdge>> getCoveragePossibilities(PatternNode node,
+            TypeEdge excludeType) {
+        Map<TypeEdge,Set<PatternEdge>> typeMap =
+            new MyHashMap<TypeEdge,Set<PatternEdge>>();
+        for (PatternEdge inEdge : inEdgeSet(node)) {
+            TypeEdge type = inEdge.getType();
+            if (type != excludeType) {
+                Set<PatternEdge> typeSet = typeMap.get(type);
+                if (typeSet == null) {
+                    typeSet = new MyHashSet<PatternEdge>();
+                    typeMap.put(type, typeSet);
+                }
+                typeSet.add(inEdge);
+            }
+        }
+        Set<Set<PatternEdge>> result = new MyHashSet<Set<PatternEdge>>();
+        result.addAll(typeMap.values());
+        CombinatorialIterator<PatternEdge> iter =
+            new CombinatorialIterator<PatternEdge>(result);
+        result.clear();
+        while (iter.hasNext()) {
+            result.add(iter.next());
+        }
+        return result;
     }
 
 }

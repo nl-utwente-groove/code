@@ -36,6 +36,7 @@ import groove.view.GrammarModel;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.BeforeClass;
@@ -69,6 +70,20 @@ public class TestMaterialisation {
         testSingleResult(0, 9, 10);
     }
 
+    @Test
+    public void testMaterialisation1() {
+        int nodeCount[] = {11, 12};
+        int edgeCount[] = {12, 14};
+        testMultipleResults(1, nodeCount, edgeCount);
+    }
+
+    @Test
+    public void testMaterialisation2() {
+        int nodeCount[] = {12, 11};
+        int edgeCount[] = {14, 12};
+        testMultipleResults(2, nodeCount, edgeCount);
+    }
+
     private void testSingleResult(int testNumber, int nodeCount, int edgeCount) {
         loadTest(testNumber);
         Matcher matcher = MatcherFactory.instance().getMatcher(pRule, false);
@@ -82,6 +97,27 @@ public class TestMaterialisation {
         PatternShape matShape = mat.getShape();
         assertEquals(nodeCount, matShape.nodeCount());
         assertEquals(edgeCount, matShape.edgeCount());
+    }
+
+    private void testMultipleResults(int testNumber, int nodeCount[],
+            int edgeCount[]) {
+        assert nodeCount.length == edgeCount.length;
+        int size = nodeCount.length;
+        loadTest(testNumber);
+        Matcher matcher = MatcherFactory.instance().getMatcher(pRule, false);
+        List<Match> matches = matcher.findMatches(pShape);
+        assertEquals(1, matches.size());
+        PreMatch preMatch = (PreMatch) matches.get(0);
+        Collection<Materialisation> mats =
+            Materialisation.getMaterialisations(pShape, preMatch);
+        assertEquals(size, mats.size());
+        Iterator<Materialisation> iter = mats.iterator();
+        for (int i = 0; i < size; i++) {
+            Materialisation mat = iter.next();
+            PatternShape matShape = mat.getShape();
+            assertEquals(nodeCount[i], matShape.nodeCount());
+            assertEquals(edgeCount[i], matShape.edgeCount());
+        }
     }
 
     private void loadTest(int testNumber) {

@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -140,11 +141,13 @@ public final class Materialisation {
         this.originalShape = mat.originalShape;
         this.preMatch = mat.preMatch;
         this.rule = mat.rule;
-        // Clone the shape and the match.
+        // No need to clone the match either because the materialisation of the
+        // match is deterministic.
+        this.match = mat.match;
+        // Clone the shape and the morphism.
         this.shape = mat.shape.clone();
-        this.match = mat.match.clone();
-        // Clone auxiliary structures when needed.
         this.morph = mat.morph.clone();
+        // Clone auxiliary structures when needed.
         this.queue = new LinkedList<MatStep>();
         for (MatStep matStep : mat.queue) {
             this.queue.add(matStep.clone());
@@ -243,18 +246,12 @@ public final class Materialisation {
         PatternNode newNode;
         if (origMult.isCollector()) {
             // Extract a copy.
-            newNode = this.shape.createNode(origNode.getType());
-            this.shape.addNode(newNode);
-            // Adjust the original node multiplicity.
-            Multiplicity adjustedMult =
-                origMult.sub(Multiplicity.ONE_NODE_MULT);
-            this.shape.setMult(origNode, adjustedMult);
+            newNode = extractNode(origNode);
         } else {
             // The original node is already concrete.
             newNode = origNode;
         }
         this.match.putNode(rNode, newNode);
-        this.morph.putNode(newNode, origNode);
     }
 
     /**
@@ -271,7 +268,7 @@ public final class Materialisation {
         assert this.shape.getMult(newSrc).isOne();
         assert this.shape.getMult(newTgt).isOne();
 
-        Multiplicity origMult = this.originalShape.getMult(origEdge);
+        Multiplicity origMult = this.shape.getMult(origEdge);
         PatternEdge newEdge;
 
         // Possibly create a new edge.
@@ -321,25 +318,23 @@ public final class Materialisation {
             || this.match.containsNodeValue(newNode);
     }
 
-    /*private boolean isMaterialised(PatternEdge newEdge) {
-        PatternEdge origEdge = this.morph.getEdge(newEdge);
-        return !newEdge.equals(origEdge)
-            || this.match.containsEdgeValue(newEdge);
-    }*/
-
     private void computeSteps() {
         for (int layer = 0; layer <= this.shape.depth(); layer++) {
             for (PatternNode newNode : this.shape.getLayerNodes(layer)) {
-                computeNodeAdjustments(newNode);
+                computeSteps(newNode);
             }
         }
     }
 
-    private void computeNodeAdjustments(PatternNode newNode) {
+    private void computeSteps(PatternNode newNode) {
         if (!isMaterialised(newNode)) {
             return;
         }
+        createRouteOutEdgeSteps(newNode);
+        createMaterialiseTargetSteps(newNode);
+    }
 
+    private void createRouteOutEdgeSteps(PatternNode newNode) {
         // Check if there are outgoing edges missing for the new node.
         PatternNode origNode = this.morph.getNode(newNode);
         Set<PatternEdge> origOutEdges = this.originalShape.outEdgeSet(origNode);
@@ -347,19 +342,21 @@ public final class Materialisation {
             TypeEdge edgeType = origOutEdge.getType();
             if (!this.shape.hasOutEdgeWithType(newNode, edgeType)) {
                 MatStep matStep =
-                    new MatStep(StepKind.ROUTE_OUT_EDGE, newNode, edgeType,
+                    new MatStep(StepKind.ROUTE_OUT_EDGE, newNode, origOutEdge,
                         origOutEdge.target());
                 this.queue.add(matStep);
             }
         }
+    }
 
+    private void createMaterialiseTargetSteps(PatternNode newNode) {
         // Check if the existing outgoing edges for the new node lead to
         // non-unique coverage.
         for (PatternEdge newOutEdge : this.shape.outEdgeSet(newNode)) {
             if (!this.shape.isUniquelyCovered(newOutEdge.target())) {
                 MatStep matStep =
-                    new MatStep(StepKind.MAT_TARGET, newNode,
-                        newOutEdge.getType(), newOutEdge.target());
+                    new MatStep(StepKind.MAT_TARGET, newNode, newOutEdge,
+                        newOutEdge.target());
                 this.queue.add(matStep);
             }
         }
@@ -368,8 +365,10 @@ public final class Materialisation {
     private void executeStep(MatStep matStep, Stack<Materialisation> toProcess) {
         switch (matStep.kind) {
         case ROUTE_OUT_EDGE:
+            routeOutgoingEdge(matStep, toProcess);
             break;
         case ROUTE_IN_EDGE:
+            routeIncomingEdge(matStep, toProcess);
             break;
         case MAT_TARGET:
             materialiseTarget(matStep, toProcess);
@@ -377,30 +376,165 @@ public final class Materialisation {
         default:
             assert false;
         }
-        toProcess.add(this);
+    }
+
+    private Set<PatternNode> computePossibleTargets(PatternNode origTgt,
+            TypeEdge edgeType) {
+        Set<PatternNode> result = new MyHashSet<PatternNode>();
+        // Iterate over the morphism to see the elements that we materialised.
+        // We can't look at the reverse map because it fixes the morphism.
+        for (Entry<PatternNode,PatternNode> entry : this.morph.nodeMap().entrySet()) {
+            PatternNode newNode = entry.getKey();
+            PatternNode origNode = entry.getValue();
+            if (origNode.equals(origTgt)) {
+                int size =
+                    this.shape.getInEdgesWithType(newNode, edgeType).size();
+                // The new node is a possible target if it doesn't have another
+                // incoming edge of the same type.
+                if (size == 0 || this.shape.getMult(newNode).isCollector()) {
+                    result.add(newNode);
+                }
+            }
+        }
+        return result;
+    }
+
+    private void routeOutgoingEdge(MatStep matStep,
+            Stack<Materialisation> toProcess) {
+        assert matStep.kind == StepKind.ROUTE_OUT_EDGE;
+
+        PatternNode newSrc = matStep.source;
+        PatternNode origTgt = matStep.target;
+        PatternEdge origEdge = matStep.edge;
+        TypeEdge type = matStep.type;
+
+        // Create new materialisation steps.
+        Set<PatternNode> possibleTargets =
+            computePossibleTargets(origTgt, type);
+        for (PatternNode newTgt : possibleTargets) {
+            Materialisation mat;
+            if (possibleTargets.size() == 1) {
+                mat = this;
+            } else {
+                mat = this.clone();
+            }
+            // Create a new edge.
+            PatternEdge newEdge = mat.shape.createEdge(newSrc, type, newTgt);
+            mat.shape.addEdge(newEdge);
+            mat.morph.putEdge(newEdge, origEdge);
+            if (mat.shape.getMult(newTgt).isCollector()
+                && mat.isEnvironment(newSrc)) {
+                // The new target is a collector node. Either we are fine and
+                // can just route the edge or we need to materialise the target.
+                mat.createMaterialiseTargetSteps(newSrc);
+            }
+
+            // Push the new materialisation object into the stack.
+            toProcess.push(mat);
+        }
+    }
+
+    private void routeIncomingEdge(MatStep matStep,
+            Stack<Materialisation> toProcess) {
+        assert matStep.kind == StepKind.ROUTE_IN_EDGE;
+
+        PatternEdge origEdge = matStep.edge;
+        PatternNode newTgt = matStep.target;
+        assert this.shape.getMult(newTgt).isOne();
+
+        PatternNode origSrc = origEdge.source();
+        if (this.shape.getMult(origSrc).isOne()) {
+            // No materialisation needed, just route the edge.
+            reRouteEdge(origEdge, origSrc, newTgt);
+        } else {
+            // We need to materialise the source.
+            PatternNode newSrc = extractNode(origSrc);
+            reRouteEdge(origEdge, newSrc, newTgt);
+            createRouteOutEdgeSteps(newSrc);
+        }
+        // This step is deterministic.
+        toProcess.push(this);
     }
 
     private void materialiseTarget(MatStep matStep,
             Stack<Materialisation> toProcess) {
         assert matStep.kind == StepKind.MAT_TARGET;
 
-        PatternNode src = matStep.source;
+        PatternNode newSrc = matStep.source;
+        PatternEdge origEdge = matStep.edge;
         TypeEdge type = matStep.type;
         PatternNode origTgt = matStep.target;
+        assert origEdge.source().equals(newSrc);
+        assert origEdge.target().equals(origTgt);
+
         Multiplicity origMult = this.shape.getMult(origTgt);
         assert origMult.isCollector();
+        assert this.shape.getMult(newSrc).isOne();
 
-        PatternNode newTgt = this.shape.createNode(origTgt.getType());
-        this.shape.addNode(newTgt);
-        this.morph.putNode(newTgt, origTgt);
+        PatternNode newTgt = extractNode(origTgt);
+        reRouteEdge(origEdge, newSrc, newTgt);
+
+        // Create new materialisation steps.
+        Set<Set<PatternEdge>> coverageSet =
+            this.shape.getCoveragePossibilities(origTgt, type);
+        for (Set<PatternEdge> coverage : coverageSet) {
+            Materialisation mat;
+            if (coverageSet.size() == 1) {
+                mat = this;
+            } else {
+                mat = this.clone();
+            }
+            for (PatternEdge inEdge : coverage) {
+                MatStep newStep =
+                    new MatStep(StepKind.ROUTE_IN_EDGE, null, inEdge, newTgt);
+                mat.queue.add(newStep);
+            }
+            // Push the new materialisation object into the stack.
+            toProcess.push(mat);
+        }
+    }
+
+    private PatternNode extractNode(PatternNode origNode) {
+        Multiplicity origMult = this.shape.getMult(origNode);
+        assert origMult.isCollector();
+        PatternNode newNode = this.shape.createNode(origNode.getType());
+        this.shape.addNode(newNode);
+        // Adjust the original node multiplicity.
         Multiplicity adjustedMult = origMult.sub(Multiplicity.ONE_NODE_MULT);
-        this.shape.setMult(origTgt, adjustedMult);
+        this.shape.setMult(origNode, adjustedMult);
+        this.morph.putNode(newNode, origNode);
+        return newNode;
+    }
 
-        PatternEdge newEdge = this.shape.createEdge(src, type, newTgt);
+    private void reRouteEdge(PatternEdge origEdge, PatternNode source,
+            PatternNode target) {
+        PatternEdge newEdge =
+            this.shape.createEdge(source, origEdge.getType(), target);
         this.shape.addEdge(newEdge);
-        this.morph.putEdge(newEdge,
-            this.shape.getOutEdgeWithType(this.morph.getNode(src), type));
+        this.morph.putEdge(newEdge, this.morph.getEdge(origEdge));
+        if (origEdge.source().equals(source)) {
+            assert this.shape.getMult(source).isOne();
+            // Remove the original edge.
+            this.shape.removeEdge(origEdge);
+            this.morph.removeEdge(origEdge);
+        }
+    }
 
+    /** Returns true if the given node is in the environment graph. */
+    private boolean isEnvironment(PatternNode pNode) {
+        List<PatternNode> toTest = new LinkedList<PatternNode>();
+        toTest.add(pNode);
+        while (!toTest.isEmpty()) {
+            PatternNode node = toTest.remove(0);
+            if (this.match.containsNodeValue(node)) {
+                return true;
+            } else {
+                for (PatternEdge inEdge : this.shape.inEdgeSet(node)) {
+                    toTest.add(inEdge.target());
+                }
+            }
+        }
+        return false;
     }
 
     /** Returns true if the materialisation is valid. */
@@ -468,15 +602,17 @@ public final class Materialisation {
     private static class MatStep {
 
         final StepKind kind;
+        final PatternEdge edge;
         final PatternNode source;
         final TypeEdge type;
         final PatternNode target;
 
-        MatStep(StepKind kind, PatternNode source, TypeEdge type,
+        MatStep(StepKind kind, PatternNode source, PatternEdge edge,
                 PatternNode target) {
             this.kind = kind;
+            this.edge = edge;
             this.source = source;
-            this.type = type;
+            this.type = edge.getType();
             this.target = target;
         }
 
@@ -491,8 +627,8 @@ public final class Materialisation {
 
         @Override
         public String toString() {
-            return this.kind + ": " + this.source + "--" + this.type.getIdStr()
-                + "-->" + this.target;
+            return this.kind + ": (" + this.edge + ", " + this.source + ", "
+                + this.target + ")";
         }
 
     }
