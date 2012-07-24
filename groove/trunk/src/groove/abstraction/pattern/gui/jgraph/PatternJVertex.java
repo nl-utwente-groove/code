@@ -78,11 +78,12 @@ public class PatternJVertex extends GraphJVertex {
 
     @Override
     public String getAdornment() {
-        String result = getNode().toString();
+        PatternNode node = (PatternNode) getNode();
+        String result = node.getAdornment();
         Graph<?,?> graph = getJModel().getGraph();
         if (graph instanceof PatternShape) {
             PatternShape pShape = (PatternShape) graph;
-            result += "(" + pShape.getMult((PatternNode) getNode()) + ")";
+            result += "(" + pShape.getMult(node) + ")";
         }
         return result;
     }

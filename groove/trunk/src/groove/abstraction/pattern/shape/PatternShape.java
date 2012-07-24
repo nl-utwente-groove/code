@@ -279,7 +279,27 @@ public final class PatternShape extends PatternGraph {
               // the edge was added.
         }
 
+        // EZ says: sometimes we can make the shape more precise.
+        result.improvePrecision();
+
         return result;
+    }
+
+    private void improvePrecision() {
+        for (int layer = 1; layer <= depth(); layer++) {
+            for (PatternNode node : getLayerNodes(layer)) {
+                if (getMult(node).isCollector() && isUniquelyCovered(node)) {
+                    // If any of the ancestors is concrete then this node
+                    // must also be concrete.
+                    for (PatternEdge inEdge : inEdgeSet(node)) {
+                        if (getMult(inEdge).isOne()
+                            && getMult(inEdge.source()).isOne()) {
+                            setMult(node, Multiplicity.ONE_NODE_MULT);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
