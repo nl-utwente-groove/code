@@ -17,6 +17,7 @@
 package groove.abstraction.pattern.explore;
 
 import groove.abstraction.neigh.explore.ShapeGenerator;
+import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.explore.util.PatternShapeMatchApplier.ApplicationMethod;
 import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PSTS;
@@ -58,6 +59,7 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
     public PatternShapeGenerator(String... args) {
         super(args);
         addOption(new NonBranchOption());
+        addOption(new ThreeMultValOption());
     }
 
     // ------------------------------------------------------------------------
@@ -154,6 +156,41 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
         @Override
         public void parse(String parameter) {
             PatternShapeGenerator.this.setRuleApplicationMethod(ApplicationMethod.NON_BRANCHING);
+        }
+
+    }
+
+    /**
+     * Command line option to specify the use of three values of multiplicity
+     * only.
+     * 
+     * @author Eduardo Zambon
+     */
+    private class ThreeMultValOption implements CommandLineOption {
+
+        @Override
+        public String[] getDescription() {
+            return new String[] {"Limit the possible multiplicity values to three: 0, 1, or 0+."};
+        }
+
+        @Override
+        public String getParameterName() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return "t";
+        }
+
+        @Override
+        public boolean hasParameter() {
+            return false;
+        }
+
+        @Override
+        public void parse(String parameter) {
+            PatternAbsParam.getInstance().setUseThreeValues(true);
         }
 
     }
