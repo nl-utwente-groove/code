@@ -286,19 +286,30 @@ public final class Multiplicity {
     public static Multiplicity approx(int i, int j, MultKind kind) {
         assert isInNOmega(i) && isInNOmega(j);
         assert i <= j;
+
+        if (isUseThreeValues(kind)) {
+            return approxToThreeValues(i, j, kind);
+        }
+
         int b = getBound(kind);
-        if (i < j && isUseThreeValues(kind)) {
-            i = 0;
-            j = OMEGA;
-        } else if (i <= b) {
-            if (j <= b) {
-                // Do nothing. i and j are already set.
-            } else { // i <= b && j > b .
-                // i is set.
-                j = OMEGA;
-            }
-        } else { // i > b.
+        if (i > b) {
             i = b + 1;
+            j = OMEGA;
+        } else if (j > b) {
+            // i is set.
+            j = OMEGA;
+        }// else: do nothing since i and j are already within the bound.
+
+        return getMultiplicity(i, j, kind);
+    }
+
+    /**
+     * Approximates the interval formed by the given values to either zero, one,
+     * or 0+.
+     */
+    private static Multiplicity approxToThreeValues(int i, int j, MultKind kind) {
+        if (i != j || i > 1) {
+            i = 0;
             j = OMEGA;
         }
         return getMultiplicity(i, j, kind);
