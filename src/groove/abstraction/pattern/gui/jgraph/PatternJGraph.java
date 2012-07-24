@@ -16,18 +16,27 @@
  */
 package groove.abstraction.pattern.gui.jgraph;
 
+import groove.abstraction.MyHashSet;
 import groove.gui.LabelTree;
 import groove.gui.Simulator;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJVertex;
+import groove.gui.layout.AbstractLayouter;
+import groove.gui.layout.Layouter;
 
-import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.jgraph.graph.CellView;
+import javax.swing.SwingConstants;
+
+import com.jgraph.layout.JGraphFacade;
+import com.jgraph.layout.hierarchical.JGraphHierarchicalLayout;
+import com.jgraph.layout.tree.JGraphCompactTreeLayout;
 
 /**
  * JGraph class for displaying pattern graphs. 
@@ -80,7 +89,7 @@ public final class PatternJGraph extends GraphJGraph {
      * We need this complicated method to be able to select the simple graph
      * elements showing inside the pattern nodes.
      */
-    @Override
+    /*@Override
     protected GraphJCell getFirstCellForLocation(double x, double y,
             boolean vertex, boolean edge) {
         x /= this.scale;
@@ -131,6 +140,11 @@ public final class PatternJGraph extends GraphJGraph {
         GraphJCell result =
             vertexOrEdgeResult == null ? ecResult : vertexOrEdgeResult;
         return result;
+    }*/
+
+    /** Creates and returns a special layouter for pattern graphs. */
+    public Layouter createLayouter() {
+        return new MyLayouter();
     }
 
     /** Mouse listener that refreshes the jGraph after every click. */
@@ -142,14 +156,81 @@ public final class PatternJGraph extends GraphJGraph {
         }
 
         @Override
-        public void mousePressed(MouseEvent evt) {
-            maybeShowPopup(evt);
+        public void mouseReleased(MouseEvent evt) {
+            refreshAllCells();
+        }
+    }
+
+    private class MyLayouter extends AbstractLayouter {
+
+        JGraphFacade facade;
+
+        MyLayouter() {
+            super("PatternJGraph Layouter");
+        }
+
+        MyLayouter(String name, PatternJGraph jgraph) {
+            super(name, jgraph);
         }
 
         @Override
-        public void mouseReleased(MouseEvent evt) {
-            maybeShowPopup(evt);
-            PatternJGraph.this.refreshAllCells();
+        public Layouter newInstance(GraphJGraph jgraph) {
+            return new MyLayouter(this.name, (PatternJGraph) jgraph);
+        }
+
+        @Override
+        public void start(boolean complete) {
+            prepareLayouting();
+            run();
+            finishLayouting();
+        }
+
+        @Override
+        public void stop() {
+            // Empty by design.
+        }
+
+        PatternJGraph getJGraph() {
+            return (PatternJGraph) this.jgraph;
+        }
+
+        void prepareLayouting() {
+            getJGraph().setLayouting(true);
+            this.facade = new JGraphFacade(getJGraph());
+        }
+
+        void run() {
+            JGraphCompactTreeLayout tLayout = new JGraphCompactTreeLayout();
+            tLayout.setOrientation(SwingConstants.WEST);
+
+            for (List<GraphJCell> roots : getJGraph().getModel().getReverseParentMap().values()) {
+                this.facade.setRoots(roots);
+                Set<GraphJVertex> verticesFilter =
+                    new MyHashSet<GraphJVertex>();
+                for (GraphJCell jCell : roots) {
+                    if (jCell instanceof GraphJVertex) {
+                        verticesFilter.add((GraphJVertex) jCell);
+                    }
+                }
+                this.facade.setVerticesFilter(verticesFilter);
+                this.facade.findTreeRoots();
+                tLayout.run(this.facade);
+            }
+
+            this.facade.setVerticesFilter(null);
+            List<GraphJCell> roots = getJGraph().getModel().getPatternRoots();
+            this.facade.setRoots(roots);
+            this.facade.setIgnoresCellsInGroups(true);
+            JGraphHierarchicalLayout hLayout = new JGraphHierarchicalLayout();
+            hLayout.setLayoutFromSinks(false);
+            hLayout.run(this.facade);
+        }
+
+        private void finishLayouting() {
+            Map<?,?> nested = this.facade.createNestedMap(true, true);
+            getJGraph().getGraphLayoutCache().edit(nested);
+            getJGraph().setLayouting(false);
+            getJGraph().refreshAllCells();
         }
     }
 
