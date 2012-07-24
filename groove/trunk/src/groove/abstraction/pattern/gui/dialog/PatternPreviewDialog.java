@@ -24,8 +24,7 @@ import groove.graph.Graph;
 import groove.graph.Node;
 import groove.gui.Simulator;
 import groove.gui.dialog.GraphPreviewDialog;
-import groove.gui.layout.LayoutKind;
-import groove.gui.layout.LayouterItem;
+import groove.gui.layout.Layouter;
 
 /**
  * Dialog for displaying pattern graphs.
@@ -64,8 +63,7 @@ public final class PatternPreviewDialog extends GraphPreviewDialog {
         PatternJModel model = jGraph.newModel();
         model.loadGraph((Graph<Node,Edge>) this.graph);
         jGraph.setModel(model);
-        LayouterItem layouter =
-            LayoutKind.getLayouterItemProto(LayoutKind.HIERARCHICAL);
+        Layouter layouter = jGraph.createLayouter();
         jGraph.setLayouter(layouter);
         jGraph.doGraphLayout();
         return jGraph;

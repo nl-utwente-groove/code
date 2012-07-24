@@ -78,6 +78,8 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
      */
     private ParentMap parentMap;
 
+    private Map<PatternJVertex,List<GraphJCell>> reverseParentMap;
+
     /**
      * Factory to create simple graph elements. We can't reuse the elements
      * from the patterns of pattern nodes because they all come from the type
@@ -195,6 +197,8 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
     protected void prepareInsert() {
         super.prepareInsert();
         this.parentMap = new ParentMap();
+        this.reverseParentMap =
+            new MyHashMap<PatternJVertex,List<GraphJCell>>();
     }
 
     @Override
@@ -222,6 +226,11 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
             result.add(this.pNodeJCellMap.get(pNode));
         }
         return result;
+    }
+
+    /** Basic getter. */
+    public Map<PatternJVertex,List<GraphJCell>> getReverseParentMap() {
+        return this.reverseParentMap;
     }
 
     /** Returns true if the given node is a pattern graph node. */
@@ -266,6 +275,7 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
             nodeMap.put(sNode, newSNode);
             GraphJVertex sJVertex = addNode(newSNode);
             this.parentMap.addEntry(sJVertex, pJVertex);
+            addToReverseMap(pJVertex, sJVertex);
         }
         for (HostEdge sEdge : pattern.edgeSet()) {
             HostNode source = nodeMap.get(sEdge.source());
@@ -274,7 +284,17 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
                 this.hostFactory.createEdge(source, sEdge.label(), target);
             GraphJCell sJEdge = addEdge(newSEdge, false);
             this.parentMap.addEntry(sJEdge, pJVertex);
+            addToReverseMap(pJVertex, sJEdge);
         }
+    }
+
+    private void addToReverseMap(PatternJVertex pJVertex, GraphJCell jCell) {
+        List<GraphJCell> cells = this.reverseParentMap.get(pJVertex);
+        if (cells == null) {
+            cells = new ArrayList<GraphJCell>();
+            this.reverseParentMap.put(pJVertex, cells);
+        }
+        cells.add(jCell);
     }
 
     /** Creates a new jEdge for the given pattern edge. */

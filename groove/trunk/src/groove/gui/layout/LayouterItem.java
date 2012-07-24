@@ -16,11 +16,8 @@
  */
 package groove.gui.layout;
 
-import groove.abstraction.pattern.gui.jgraph.PatternJGraph;
-import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.JPanel;
@@ -56,7 +53,6 @@ public class LayouterItem implements Layouter {
         this.jGraph = jGraph;
         this.facade = facade;
         this.panel = LayoutKind.createLayoutPanel(this);
-        adjustFacade();
     }
 
     @Override
@@ -115,15 +111,6 @@ public class LayouterItem implements Layouter {
 
     private void finishLayouting() {
         this.jGraph.setLayouting(false);
-    }
-
-    private void adjustFacade() {
-        if (this.kind == LayoutKind.HIERARCHICAL
-            && this.jGraph instanceof PatternJGraph) {
-            List<GraphJCell> roots =
-                ((PatternJGraph) this.jGraph).getModel().getPatternRoots();
-            this.facade.setRoots(roots);
-        }
     }
 
 }
