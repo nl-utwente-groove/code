@@ -104,9 +104,4 @@ public final class PatternNode extends AbstractPatternNode {
         return this.type;
     }
 
-    /** String to be used when displaying the node in graphical mode.*/
-    public String getAdornment() {
-        return super.toString();
-    }
-
 }

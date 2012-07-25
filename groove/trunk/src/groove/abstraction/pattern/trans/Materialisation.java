@@ -28,6 +28,7 @@ import groove.abstraction.pattern.shape.TypeEdge;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -160,8 +161,7 @@ public final class Materialisation {
 
     @Override
     public String toString() {
-        return "Materialisation:\n" + this.shape + "Match: " + this.match
-            + "\n";
+        return "\nMaterialisation:\n" + this.shape + "Queue: " + this.queue;
     }
 
     @Override
@@ -195,6 +195,7 @@ public final class Materialisation {
         while (!toProcess.isEmpty()) {
             Materialisation mat = toProcess.pop();
             if (mat.isFinished()) {
+                //PatternPreviewDialog.showPatternGraph(mat.shape);
                 assert mat.isValid();
                 result.add(mat);
             } else {
@@ -357,7 +358,9 @@ public final class Materialisation {
                 MatStep matStep =
                     new MatStep(StepKind.MAT_TARGET, newNode, newOutEdge,
                         newOutEdge.target());
-                this.queue.add(matStep);
+                //this.queue.add(matStep);
+                // These steps go into the front of the queue.
+                this.queue.add(0, matStep);
             }
         }
     }
@@ -428,9 +431,21 @@ public final class Materialisation {
                 // can just route the edge or we need to materialise the target.
                 mat.createMaterialiseTargetSteps(newSrc);
             }
+            mat.removeRouteInEdgeStep(newTgt, type);
 
             // Push the new materialisation object into the stack.
             toProcess.push(mat);
+        }
+    }
+
+    private void removeRouteInEdgeStep(PatternNode target, TypeEdge type) {
+        Iterator<MatStep> iter = this.queue.iterator();
+        while (iter.hasNext()) {
+            MatStep matStep = iter.next();
+            if (matStep.kind == StepKind.ROUTE_IN_EDGE
+                && matStep.target.equals(target) && matStep.type == type) {
+                iter.remove();
+            }
         }
     }
 
@@ -616,13 +631,17 @@ public final class Materialisation {
             this.target = target;
         }
 
+        MatStep(MatStep step) {
+            this.kind = step.kind;
+            this.edge = step.edge;
+            this.source = step.source;
+            this.type = step.type;
+            this.target = step.target;
+        }
+
         @Override
         public MatStep clone() {
-            try {
-                return (MatStep) super.clone();
-            } catch (CloneNotSupportedException e) {
-                return null;
-            }
+            return new MatStep(this);
         }
 
         @Override
