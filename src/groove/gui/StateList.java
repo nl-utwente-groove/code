@@ -424,6 +424,12 @@ public class StateList extends JTree implements SimulatorListener {
         return result;
     }
 
+    /** 
+     * Retrieves the child of a given parent node that is
+     * a number tree node with a given number, if any.
+     * @return the correctly numbered child, or {@code null} if there 
+     * is none such
+     */
     private NumberedTreeNode find(TreeNode parent, int number) {
         NumberedTreeNode result = null;
         int lower = 0;
@@ -433,12 +439,12 @@ public class StateList extends JTree implements SimulatorListener {
             int mid = (lower + upper) / 2;
             result = (NumberedTreeNode) parent.getChildAt(mid);
             int resultNumber = result.getNumber();
-            if (resultNumber < number) {
+            if (result.contains(number)) {
+                found = true;
+            } else if (resultNumber < number) {
                 lower = mid + 1;
             } else if (resultNumber > number) {
                 upper = mid - 1;
-            } else {
-                found = true;
             }
         }
         return found ? result : null;
@@ -492,6 +498,9 @@ public class StateList extends JTree implements SimulatorListener {
 
         /** Returns the number. */
         abstract public int getNumber();
+
+        /** Indicates if a given number satisfies the constraints of this node. */
+        abstract public boolean contains(int number);
     }
 
     /**
@@ -513,6 +522,14 @@ public class StateList extends JTree implements SimulatorListener {
             return (Integer) getUserObject();
         }
 
+        /**
+         * Convenience method to retrieve the lower bound of the range.
+         */
+        public int getUpper() {
+            return Math.min(getLower() + RANGE_SIZE,
+                StateList.this.states.length) - 1;
+        }
+
         @Override
         public int getNumber() {
             return getLower();
@@ -520,10 +537,12 @@ public class StateList extends JTree implements SimulatorListener {
 
         @Override
         public String toString() {
-            int lower = getLower();
-            int upper =
-                Math.min(lower + RANGE_SIZE, StateList.this.states.length) - 1;
-            return "[" + lower + ".." + upper + "]";
+            return "[" + getLower() + ".." + getUpper() + "]";
+        }
+
+        @Override
+        public boolean contains(int number) {
+            return getLower() <= number && getUpper() >= number;
         }
     }
 
@@ -543,6 +562,11 @@ public class StateList extends JTree implements SimulatorListener {
         @Override
         public int getNumber() {
             return getState().getNumber();
+        }
+
+        @Override
+        public boolean contains(int number) {
+            return getNumber() == number;
         }
 
         /**
