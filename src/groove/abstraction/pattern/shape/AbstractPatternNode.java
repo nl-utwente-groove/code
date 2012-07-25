@@ -108,4 +108,8 @@ public abstract class AbstractPatternNode extends AbstractNode implements
         return getSimpleEdge().target();
     }
 
+    /** String to be used when displaying the node in graphical mode.*/
+    public String getAdornment() {
+        return super.toString();
+    }
 }
