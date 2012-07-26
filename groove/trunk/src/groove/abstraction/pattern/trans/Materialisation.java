@@ -17,6 +17,7 @@
 package groove.abstraction.pattern.trans;
 
 import groove.abstraction.Multiplicity;
+import groove.abstraction.MyHashMap;
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.PreMatch;
@@ -25,12 +26,15 @@ import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.PatternShapeMorphism;
 import groove.abstraction.pattern.shape.TypeEdge;
+import groove.abstraction.pattern.shape.TypeNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
@@ -98,10 +102,16 @@ public final class Materialisation {
      * The field is final but the morphism is modified by the materialisation.
      */
     private final PatternShapeMorphism morph;
-    /**
-     * The queue of materialisation steps to be performed.
-     */
-    private final List<MatStep> queue;
+
+    private final List<PatternNode> downTraversal;
+
+    private final List<PatternNode> upTraversal;
+
+    private final Map<TypeEdge,Set<PatternNode>> danglingOut;
+
+    private final Map<TypeEdge,Set<PatternNode>> danglingIn;
+
+    private int nextLayer;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -117,19 +127,26 @@ public final class Materialisation {
         this.originalShape = shape;
         this.preMatch = preMatch;
         this.rule = preMatch.getRule();
+        this.nextLayer = 0;
         if (isRuleModifying()) {
             this.shape = this.originalShape.clone();
             this.match = new Match(this.rule, this.shape);
             this.morph =
                 PatternShapeMorphism.createIdentityMorphism(this.shape,
                     this.originalShape);
-            this.queue = new LinkedList<MatStep>();
+            this.downTraversal = new MySortedList(true);
+            this.upTraversal = new MySortedList(false);
+            this.danglingOut = new MyHashMap<TypeEdge,Set<PatternNode>>();
+            this.danglingIn = new MyHashMap<TypeEdge,Set<PatternNode>>();
         } else { // The rule is not modifying.
             // Nothing to do, we just return immediately.
             this.shape = shape;
             this.match = preMatch;
             this.morph = null;
-            this.queue = null;
+            this.downTraversal = null;
+            this.upTraversal = null;
+            this.danglingOut = null;
+            this.danglingIn = null;
         }
     }
 
@@ -148,11 +165,12 @@ public final class Materialisation {
         // Clone the shape and the morphism.
         this.shape = mat.shape.clone();
         this.morph = mat.morph.clone();
-        // Clone auxiliary structures when needed.
-        this.queue = new LinkedList<MatStep>();
-        for (MatStep matStep : mat.queue) {
-            this.queue.add(matStep.clone());
-        }
+        // Clone auxiliary structures.
+        this.nextLayer = mat.nextLayer;
+        this.downTraversal = cloneTraversalList(mat.downTraversal, true);
+        this.upTraversal = cloneTraversalList(mat.upTraversal, false);
+        this.danglingOut = cloneDanglingMap(mat.danglingOut);
+        this.danglingIn = cloneDanglingMap(mat.danglingIn);
     }
 
     // ------------------------------------------------------------------------
@@ -161,7 +179,8 @@ public final class Materialisation {
 
     @Override
     public String toString() {
-        return "\nMaterialisation:\n" + this.shape + "Queue: " + this.queue;
+        return "\nMaterialisation:\n" + this.shape + "Down: "
+            + this.downTraversal + "\nUp: " + this.upTraversal;
     }
 
     @Override
@@ -173,20 +192,9 @@ public final class Materialisation {
     // Other methods
     // ------------------------------------------------------------------------
 
-    /** Basic inspection method. */
-    private boolean isRuleModifying() {
-        return this.rule.isModifying();
-    }
-
-    /** Basic getter method. */
-    public PatternShape getShape() {
-        return this.shape;
-    }
-
-    /** Basic getter method. */
-    public Match getMatch() {
-        return this.match;
-    }
+    // ---------
+    // Main loop
+    // ---------
 
     private void getSolutions(Collection<Materialisation> result) {
         prepareSolutions();
@@ -195,7 +203,6 @@ public final class Materialisation {
         while (!toProcess.isEmpty()) {
             Materialisation mat = toProcess.pop();
             if (mat.isFinished()) {
-                //PatternPreviewDialog.showPatternGraph(mat.shape);
                 assert mat.isValid();
                 result.add(mat);
             } else {
@@ -204,23 +211,13 @@ public final class Materialisation {
         }
     }
 
-    private boolean isFinished() {
-        return this.queue.isEmpty();
-    }
-
-    private void computeSolutions(Stack<Materialisation> toProcess) {
-        assert !isFinished();
-        MatStep matStep = this.queue.remove(0);
-        executeStep(matStep, toProcess);
-    }
-
     private void prepareSolutions() {
-        materialiseInitialNodes();
-        materialiseInitialEdges();
-        computeSteps();
+        materialiseNodeImages();
+        materialiseEdgeImages();
+        computeTraversals();
     }
 
-    private void materialiseInitialNodes() {
+    private void materialiseNodeImages() {
         PatternRuleGraph lhs = this.rule.lhs();
         for (int layer = 0; layer <= lhs.depth(); layer++) {
             // Materialise all nodes of the current layer.
@@ -231,7 +228,7 @@ public final class Materialisation {
         }
     }
 
-    private void materialiseInitialEdges() {
+    private void materialiseEdgeImages() {
         PatternRuleGraph lhs = this.rule.lhs();
         for (int layer = 0; layer < lhs.depth(); layer++) {
             // Materialise all outgoing edges of the current layer.
@@ -243,74 +240,124 @@ public final class Materialisation {
     }
 
     private void materialiseNode(RuleNode rNode, PatternNode origNode) {
-        Multiplicity origMult = this.originalShape.getMult(origNode);
+        PatternNode newNode = extractNode(origNode);
+        this.match.putNode(rNode, newNode);
+    }
+
+    private void materialiseEdge(RuleEdge rEdge, PatternEdge origEdge) {
+        PatternNode newSrc = this.match.getNode(rEdge.source());
+        PatternNode newTgt = this.match.getNode(rEdge.target());
+        PatternEdge newEdge = extractEdge(origEdge, newSrc, newTgt);
+        this.match.putEdge(rEdge, newEdge);
+    }
+
+    private PatternNode extractNode(PatternNode origNode) {
+        // There are two cases:
+        // - if the original node is already concrete then we just return it.
+        // - if the original node is a collector then we extract a copy.
         PatternNode newNode;
+        Multiplicity origMult = this.shape.getMult(origNode);
         if (origMult.isCollector()) {
             // Extract a copy.
-            newNode = extractNode(origNode);
+            newNode = createNode(origNode.getType());
+            // Adjust the original node multiplicity.
+            Multiplicity adjustedMult =
+                origMult.sub(Multiplicity.ONE_NODE_MULT);
+            this.shape.setMult(origNode, adjustedMult);
+            this.morph.putNode(newNode, origNode);
         } else {
             // The original node is already concrete.
             newNode = origNode;
         }
-        this.match.putNode(rNode, newNode);
+        return newNode;
     }
 
-    /**
-     * Pre-condition: source and target nodes of original edge are already
-     * materialised.
-     */
-    private void materialiseEdge(RuleEdge rEdge, PatternEdge origEdge) {
-        PatternNode origSrc = origEdge.source();
-        PatternNode newSrc = this.match.getNode(rEdge.source());
-        PatternNode origTgt = origEdge.target();
-        PatternNode newTgt = this.match.getNode(rEdge.target());
-
-        // The new end nodes must be concrete.
+    /** Pre-condition: new source node is concrete. */
+    private PatternEdge extractEdge(PatternEdge origEdge, PatternNode newSrc,
+            PatternNode newTgt) {
+        // The new source must always be concrete.
         assert this.shape.getMult(newSrc).isOne();
-        assert this.shape.getMult(newTgt).isOne();
+
+        PatternNode origSrc = origEdge.source();
+        PatternNode origTgt = origEdge.target();
+        boolean sameSrc = origSrc.equals(newSrc);
+        boolean sameTgt = origTgt.equals(newTgt);
 
         Multiplicity origMult = this.shape.getMult(origEdge);
+        Multiplicity adjustedMult = origMult.sub(Multiplicity.ONE_EDGE_MULT);
+        TypeEdge edgeType = origEdge.getType();
         PatternEdge newEdge;
 
-        // Possibly create a new edge.
-        if (newSrc.equals(origSrc) && newTgt.equals(origTgt)) {
+        // There are four cases.
+        if (sameSrc && sameTgt) {
             // The source and target nodes remained unchanged. This means that
-            // the original edge must be concrete.
+            // the original edge and the new target must be concrete.
+            assert this.shape.getMult(newTgt).isOne();
             assert origMult.isOne();
             newEdge = origEdge;
         } else {
-            // We have to create a new edge outgoing from the new source.
-            newEdge = this.shape.createEdge(newSrc, origEdge.getType(), newTgt);
-            // Add this new edge with multiplicity one.
-            this.shape.addEdge(newEdge);
-            // Compute the adjusted multiplicity.
-            Multiplicity adjustedMult =
-                origMult.sub(Multiplicity.ONE_EDGE_MULT);
-            // Check if we need to duplicate some edges.
-            if (newSrc.equals(origSrc)) { // newTgt != origTgt
+            // In all other cases we need to create a new edge.
+            newEdge = createEdge(newSrc, edgeType, newTgt);
+            if (sameSrc && !sameTgt) {
                 // Same source node with new target. Since the source is
                 // concrete we need to adjust the multiplicity of the original
                 // edge that goes to the original target node to account for
                 // the newly materialised edge.
+                assert this.shape.getMult(newTgt).isOne();
                 this.shape.setMult(origEdge, adjustedMult);
-            } else { // newSrc != origSrc
-                assert !newTgt.equals(origTgt);
+                if (adjustedMult.isZero()) {
+                    // The original edge is gone so we have to remove it from
+                    // the morphism.
+                    this.morph.removeEdge(origEdge);
+                }
+            } else if (!sameSrc && sameTgt) {
+                // Different source with same target node. Since the source is
+                // concrete we need to copy the full multiplicity of the
+                // original edge.
+                this.shape.setMult(newEdge, origMult);
+            } else { // !sameSrc && !sameTgt
                 // If the adjusted multiplicity is not zero, we need to create
                 // a new edge from the new source to the original target.
+                assert this.shape.getMult(newTgt).isOne();
                 if (!adjustedMult.isZero()) {
                     PatternEdge remainderEdge =
-                        this.shape.createEdge(newSrc, origEdge.getType(),
-                            origTgt);
-                    this.shape.addEdge(remainderEdge);
+                        createEdge(newSrc, edgeType, origTgt);
                     this.shape.setMult(remainderEdge, adjustedMult);
                     this.morph.putEdge(remainderEdge, origEdge);
                 }
             }
         }
 
-        // Update the morphisms.
-        this.match.putEdge(rEdge, newEdge);
         this.morph.putEdge(newEdge, origEdge);
+        return newEdge;
+    }
+
+    private PatternNode createNode(TypeNode type) {
+        PatternNode newNode = this.shape.createNode(type);
+        this.shape.addNode(newNode);
+        return newNode;
+    }
+
+    private PatternEdge createEdge(PatternNode source, TypeEdge type,
+            PatternNode target) {
+        PatternEdge newEdge = this.shape.createEdge(source, type, target);
+        this.shape.addEdge(newEdge);
+        return newEdge;
+    }
+
+    private void computeTraversals() {
+        for (PatternNode newNode : this.shape.getLayerNodes(this.nextLayer)) {
+            computeTraversal(newNode);
+        }
+        this.nextLayer++;
+    }
+
+    private void computeTraversal(PatternNode newNode) {
+        if (!isMaterialised(newNode)) {
+            return;
+        }
+        computeUpTraversal(newNode);
+        computeDownTraversal(newNode);
     }
 
     private boolean isMaterialised(PatternNode newNode) {
@@ -319,220 +366,190 @@ public final class Materialisation {
             || this.match.containsNodeValue(newNode);
     }
 
-    private void computeSteps() {
-        for (int layer = 0; layer <= this.shape.depth(); layer++) {
-            for (PatternNode newNode : this.shape.getLayerNodes(layer)) {
-                computeSteps(newNode);
+    private void computeUpTraversal(PatternNode newNode) {
+        // Check if there are outgoing edges missing for the new node.
+        PatternNode origNode = this.morph.getNode(newNode);
+        Set<PatternEdge> origInEdges = this.originalShape.inEdgeSet(origNode);
+        for (PatternEdge origInEdge : origInEdges) {
+            TypeEdge edgeType = origInEdge.getType();
+            if (!this.shape.hasInEdgeWithType(newNode, edgeType)) {
+                addToDanglingIn(edgeType, newNode);
+                addToUpTraversal(newNode);
             }
         }
     }
 
-    private void computeSteps(PatternNode newNode) {
-        if (!isMaterialised(newNode)) {
-            return;
-        }
-        createRouteOutEdgeSteps(newNode);
-        createMaterialiseTargetSteps(newNode);
-    }
-
-    private void createRouteOutEdgeSteps(PatternNode newNode) {
+    private void computeDownTraversal(PatternNode newNode) {
         // Check if there are outgoing edges missing for the new node.
         PatternNode origNode = this.morph.getNode(newNode);
         Set<PatternEdge> origOutEdges = this.originalShape.outEdgeSet(origNode);
         for (PatternEdge origOutEdge : origOutEdges) {
             TypeEdge edgeType = origOutEdge.getType();
             if (!this.shape.hasOutEdgeWithType(newNode, edgeType)) {
-                MatStep matStep =
-                    new MatStep(StepKind.ROUTE_OUT_EDGE, newNode, origOutEdge,
-                        origOutEdge.target());
-                this.queue.add(matStep);
+                addToDanglingOut(edgeType, newNode);
+                addToDownTraversal(newNode);
             }
         }
-    }
-
-    private void createMaterialiseTargetSteps(PatternNode newNode) {
         // Check if the existing outgoing edges for the new node lead to
         // non-unique coverage.
         for (PatternEdge newOutEdge : this.shape.outEdgeSet(newNode)) {
             if (!this.shape.isUniquelyCovered(newOutEdge.target())) {
-                MatStep matStep =
-                    new MatStep(StepKind.MAT_TARGET, newNode, newOutEdge,
-                        newOutEdge.target());
-                //this.queue.add(matStep);
-                // These steps go into the front of the queue.
-                this.queue.add(0, matStep);
+                addToDanglingOut(newOutEdge.getType(), newNode);
+                addToDownTraversal(newNode);
             }
         }
     }
 
-    private void executeStep(MatStep matStep, Stack<Materialisation> toProcess) {
-        switch (matStep.kind) {
-        case ROUTE_OUT_EDGE:
-            routeOutgoingEdge(matStep, toProcess);
-            break;
-        case ROUTE_IN_EDGE:
-            routeIncomingEdge(matStep, toProcess);
-            break;
-        case MAT_TARGET:
-            materialiseTarget(matStep, toProcess);
-            break;
-        default:
-            assert false;
+    private void computeSolutions(Stack<Materialisation> toProcess) {
+        assert !isFinished();
+        if (!this.upTraversal.isEmpty()) {
+            traverseUp(toProcess);
+        } else if (!this.downTraversal.isEmpty()) {
+            traverseDown(toProcess);
+        } else { // Go down one layer.
+            computeTraversals();
+            toProcess.push(this);
         }
     }
 
-    private Set<PatternNode> computePossibleTargets(PatternNode origTgt,
-            TypeEdge edgeType) {
-        Set<PatternNode> result = new MyHashSet<PatternNode>();
-        // Iterate over the morphism to see the elements that we materialised.
-        // We can't look at the reverse map because it fixes the morphism.
-        for (Entry<PatternNode,PatternNode> entry : this.morph.nodeMap().entrySet()) {
-            PatternNode newNode = entry.getKey();
-            PatternNode origNode = entry.getValue();
-            if (origNode.equals(origTgt)) {
-                int size =
-                    this.shape.getInEdgesWithType(newNode, edgeType).size();
-                // The new node is a possible target if it doesn't have another
-                // incoming edge of the same type.
-                if (size == 0 || this.shape.getMult(newNode).isCollector()) {
-                    result.add(newNode);
-                }
+    private boolean isFinished() {
+        return this.nextLayer > this.shape.depth();
+    }
+
+    private void traverseUp(Stack<Materialisation> toProcess) {
+        assert !this.upTraversal.isEmpty();
+
+        PatternNode newTgt = this.upTraversal.get(0);
+        PatternEdge missingOrigEdge = getMissingInEdge(newTgt);
+
+        if (missingOrigEdge == null) {
+            // No edge is missing. We're done.
+            this.upTraversal.remove(0);
+            toProcess.push(this);
+            return;
+        }
+
+        TypeEdge edgeType = missingOrigEdge.getType();
+
+        List<PatternNode> possibleSources = new ArrayList<PatternNode>();
+        possibleSources.addAll(getDanglingOut(edgeType));
+        Map<PatternNode,PatternEdge> auxMap =
+            new MyHashMap<PatternNode,PatternEdge>();
+        // We may have more than one incoming edge with the same type.
+        // This means that we have to consider all as possible sources.
+        for (PatternEdge inEdge : this.shape.getInEdgesWithType(
+            missingOrigEdge.target(), edgeType)) {
+            possibleSources.add(inEdge.source());
+            auxMap.put(inEdge.source(), inEdge);
+        }
+
+        // For each possible source we have to branch the search.
+        for (PatternNode possibleSource : possibleSources) {
+            // Check if we need to clone the materialisation.
+            Materialisation mat;
+            if (possibleSources.size() == 1) {
+                mat = this;
+            } else {
+                mat = this.clone();
             }
+            PatternEdge origEdge = auxMap.get(possibleSource);
+            if (origEdge == null) {
+                origEdge = missingOrigEdge;
+            }
+            PatternNode newSrc = possibleSource;
+            // Check if we need to materialise the source.
+            if (mat.shape.getMult(possibleSource).isCollector()) {
+                newSrc = mat.extractNode(possibleSource);
+                mat.computeTraversal(newSrc);
+            }
+            // Create a new edge.
+            mat.extractEdge(origEdge, newSrc, newTgt);
+            // The new edge nodes are no longer dangling w.r.t. this edge type.
+            mat.getDanglingOut(edgeType).remove(newSrc);
+            mat.getDanglingIn(edgeType).remove(newTgt);
+            // Push the new materialisation object into the stack.
+            toProcess.push(mat);
         }
-        return result;
     }
 
-    private void routeOutgoingEdge(MatStep matStep,
-            Stack<Materialisation> toProcess) {
-        assert matStep.kind == StepKind.ROUTE_OUT_EDGE;
+    private void traverseDown(Stack<Materialisation> toProcess) {
+        assert this.upTraversal.isEmpty();
+        assert !this.downTraversal.isEmpty();
 
-        PatternNode newSrc = matStep.source;
-        PatternNode origTgt = matStep.target;
-        PatternEdge origEdge = matStep.edge;
-        TypeEdge type = matStep.type;
+        PatternNode newSrc = this.downTraversal.get(0);
+        PatternEdge origEdge = getMissingOutEdge(newSrc);
 
-        // Create new materialisation steps.
-        Set<PatternNode> possibleTargets =
-            computePossibleTargets(origTgt, type);
-        for (PatternNode newTgt : possibleTargets) {
+        if (origEdge == null) {
+            // No edge is missing. We're done.
+            this.downTraversal.remove(0);
+            toProcess.push(this);
+            return;
+        }
+
+        TypeEdge edgeType = origEdge.getType();
+        PatternNode origTgt = origEdge.target();
+        Set<PatternNode> danglingSet = getDanglingIn(edgeType);
+        List<PatternNode> possibleTargets =
+            new ArrayList<PatternNode>(danglingSet.size() + 1);
+        possibleTargets.addAll(danglingSet);
+        possibleTargets.add(origTgt);
+
+        // For each possible target we have to branch the search.
+        for (PatternNode possibleTarget : possibleTargets) {
+            // Check if we need to clone the materialisation.
             Materialisation mat;
             if (possibleTargets.size() == 1) {
                 mat = this;
             } else {
                 mat = this.clone();
             }
-            // Create a new edge.
-            PatternEdge newEdge = mat.shape.createEdge(newSrc, type, newTgt);
-            mat.shape.addEdge(newEdge);
-            mat.morph.putEdge(newEdge, origEdge);
-            if (mat.shape.getMult(newTgt).isCollector()
+            PatternNode newTgt = possibleTarget;
+            // Check if we need to materialise the target.
+            if (possibleTarget.equals(origTgt)
+                && mat.shape.getMult(origTgt).isCollector()
                 && mat.isEnvironment(newSrc)) {
-                // The new target is a collector node. Either we are fine and
-                // can just route the edge or we need to materialise the target.
-                mat.createMaterialiseTargetSteps(newSrc);
+                // Yes, we do.
+                newTgt = mat.extractNode(origTgt);
+                // Update the maps.
+                mat.computeTraversal(newTgt);
             }
-            mat.removeRouteInEdgeStep(newTgt, type);
-
+            // Create a new edge.
+            mat.extractEdge(origEdge, newSrc, newTgt);
+            // The new edge nodes are no longer dangling w.r.t. this edge type.
+            mat.getDanglingOut(edgeType).remove(newSrc);
+            mat.getDanglingIn(edgeType).remove(newTgt);
             // Push the new materialisation object into the stack.
             toProcess.push(mat);
         }
     }
 
-    private void removeRouteInEdgeStep(PatternNode target, TypeEdge type) {
-        Iterator<MatStep> iter = this.queue.iterator();
-        while (iter.hasNext()) {
-            MatStep matStep = iter.next();
-            if (matStep.kind == StepKind.ROUTE_IN_EDGE
-                && matStep.target.equals(target) && matStep.type == type) {
-                iter.remove();
+    private PatternEdge getMissingOutEdge(PatternNode newSrc) {
+        PatternNode origSrc = this.morph.getNode(newSrc);
+        Set<PatternEdge> origEdges = this.originalShape.outEdgeSet(origSrc);
+        for (PatternEdge origEdge : origEdges) {
+            if (!this.shape.hasOutEdgeWithType(newSrc, origEdge.getType())) {
+                return origEdge;
             }
         }
-    }
-
-    private void routeIncomingEdge(MatStep matStep,
-            Stack<Materialisation> toProcess) {
-        assert matStep.kind == StepKind.ROUTE_IN_EDGE;
-
-        PatternEdge origEdge = matStep.edge;
-        PatternNode newTgt = matStep.target;
-        assert this.shape.getMult(newTgt).isOne();
-
-        PatternNode origSrc = origEdge.source();
-        if (this.shape.getMult(origSrc).isOne()) {
-            // No materialisation needed, just route the edge.
-            reRouteEdge(origEdge, origSrc, newTgt);
-        } else {
-            // We need to materialise the source.
-            PatternNode newSrc = extractNode(origSrc);
-            reRouteEdge(origEdge, newSrc, newTgt);
-            createRouteOutEdgeSteps(newSrc);
-        }
-        // This step is deterministic.
-        toProcess.push(this);
-    }
-
-    private void materialiseTarget(MatStep matStep,
-            Stack<Materialisation> toProcess) {
-        assert matStep.kind == StepKind.MAT_TARGET;
-
-        PatternNode newSrc = matStep.source;
-        PatternEdge origEdge = matStep.edge;
-        TypeEdge type = matStep.type;
-        PatternNode origTgt = matStep.target;
-        assert origEdge.source().equals(newSrc);
-        assert origEdge.target().equals(origTgt);
-
-        Multiplicity origMult = this.shape.getMult(origTgt);
-        assert origMult.isCollector();
-        assert this.shape.getMult(newSrc).isOne();
-
-        PatternNode newTgt = extractNode(origTgt);
-        reRouteEdge(origEdge, newSrc, newTgt);
-
-        // Create new materialisation steps.
-        Set<Set<PatternEdge>> coverageSet =
-            this.shape.getCoveragePossibilities(origTgt, type);
-        for (Set<PatternEdge> coverage : coverageSet) {
-            Materialisation mat;
-            if (coverageSet.size() == 1) {
-                mat = this;
-            } else {
-                mat = this.clone();
+        if (isEnvironment(newSrc)) {
+            for (PatternEdge newOutEdge : this.shape.outEdgeSet(newSrc)) {
+                if (!this.shape.isUniquelyCovered(newOutEdge.target())) {
+                    return newOutEdge;
+                }
             }
-            for (PatternEdge inEdge : coverage) {
-                MatStep newStep =
-                    new MatStep(StepKind.ROUTE_IN_EDGE, null, inEdge, newTgt);
-                mat.queue.add(newStep);
+        }
+        return null;
+    }
+
+    private PatternEdge getMissingInEdge(PatternNode newTgt) {
+        PatternNode origTgt = this.morph.getNode(newTgt);
+        Set<PatternEdge> origEdges = this.originalShape.inEdgeSet(origTgt);
+        for (PatternEdge origEdge : origEdges) {
+            if (!this.shape.hasInEdgeWithType(newTgt, origEdge.getType())) {
+                return origEdge;
             }
-            // Push the new materialisation object into the stack.
-            toProcess.push(mat);
         }
-    }
-
-    private PatternNode extractNode(PatternNode origNode) {
-        Multiplicity origMult = this.shape.getMult(origNode);
-        assert origMult.isCollector();
-        PatternNode newNode = this.shape.createNode(origNode.getType());
-        this.shape.addNode(newNode);
-        // Adjust the original node multiplicity.
-        Multiplicity adjustedMult = origMult.sub(Multiplicity.ONE_NODE_MULT);
-        this.shape.setMult(origNode, adjustedMult);
-        this.morph.putNode(newNode, origNode);
-        return newNode;
-    }
-
-    private void reRouteEdge(PatternEdge origEdge, PatternNode source,
-            PatternNode target) {
-        PatternEdge newEdge =
-            this.shape.createEdge(source, origEdge.getType(), target);
-        this.shape.addEdge(newEdge);
-        this.morph.putEdge(newEdge, this.morph.getEdge(origEdge));
-        if (origEdge.source().equals(source)) {
-            assert this.shape.getMult(source).isOne();
-            // Remove the original edge.
-            this.shape.removeEdge(origEdge);
-            this.morph.removeEdge(origEdge);
-        }
+        return null;
     }
 
     /** Returns true if the given node is in the environment graph. */
@@ -552,10 +569,116 @@ public final class Materialisation {
         return false;
     }
 
+    // ------------------------------------------------------------------------
+    // Auxiliary methods
+    // ------------------------------------------------------------------------
+
+    private List<PatternNode> cloneTraversalList(List<PatternNode> other,
+            boolean ascending) {
+        List<PatternNode> result = new MySortedList(ascending);
+        result.addAll(other);
+        return result;
+    }
+
+    private Map<TypeEdge,Set<PatternNode>> cloneDanglingMap(
+            Map<TypeEdge,Set<PatternNode>> other) {
+        Map<TypeEdge,Set<PatternNode>> result =
+            new MyHashMap<TypeEdge,Set<PatternNode>>();
+        for (Entry<TypeEdge,Set<PatternNode>> entry : other.entrySet()) {
+            Set<PatternNode> set = new MyHashSet<PatternNode>();
+            set.addAll(entry.getValue());
+            result.put(entry.getKey(), set);
+        }
+        return result;
+    }
+
+    private void addToDanglingOut(TypeEdge edgeType, PatternNode newNode) {
+        addToDanglingSet(this.danglingOut, edgeType, newNode);
+    }
+
+    private void addToDanglingIn(TypeEdge edgeType, PatternNode newNode) {
+        addToDanglingSet(this.danglingIn, edgeType, newNode);
+    }
+
+    private void addToDanglingSet(Map<TypeEdge,Set<PatternNode>> map,
+            TypeEdge edgeType, PatternNode newNode) {
+        Set<PatternNode> set = map.get(edgeType);
+        if (set == null) {
+            set = new MyHashSet<PatternNode>();
+            map.put(edgeType, set);
+        }
+        set.add(newNode);
+    }
+
+    private Set<PatternNode> getDanglingOut(TypeEdge edgeType) {
+        return getDanglingSet(this.danglingOut, edgeType);
+    }
+
+    private Set<PatternNode> getDanglingIn(TypeEdge edgeType) {
+        return getDanglingSet(this.danglingIn, edgeType);
+    }
+
+    private Set<PatternNode> getDanglingSet(Map<TypeEdge,Set<PatternNode>> map,
+            TypeEdge edgeType) {
+        Set<PatternNode> set = map.get(edgeType);
+        if (set == null) {
+            set = Collections.emptySet();
+        }
+        return set;
+    }
+
+    private void addToUpTraversal(PatternNode newNode) {
+        this.upTraversal.add(newNode);
+    }
+
+    private void addToDownTraversal(PatternNode newNode) {
+        this.downTraversal.add(newNode);
+    }
+
+    // ------------------------------------------------------------------------
+    // Basic interfacing methods
+    // ------------------------------------------------------------------------
+
+    /** Basic inspection method. */
+    private boolean isRuleModifying() {
+        return this.rule.isModifying();
+    }
+
+    /** Basic getter method. */
+    public PatternShape getShape() {
+        return this.shape;
+    }
+
+    /** Basic getter method. */
+    public Match getMatch() {
+        return this.match;
+    }
+
+    // ------------------------------------------------------------------------
+    // Consistency check methods
+    // ------------------------------------------------------------------------
+
     /** Returns true if the materialisation is valid. */
     private boolean isValid() {
-        return isMorphConsistent() && isMorphValid() && isMatchConcrete()
-            && isEnvironmentUniquelyCovered();
+        return areMapsEmpty() && isMorphConsistent() && isMorphValid()
+            && isMatchConcrete() && isEnvironmentUniquelyCovered();
+    }
+
+    private boolean areMapsEmpty() {
+        if (!this.upTraversal.isEmpty() || !this.downTraversal.isEmpty()) {
+            return false;
+        }
+        for (Set<PatternNode> set : this.danglingOut.values()) {
+            if (!set.isEmpty()) {
+                return false;
+            }
+        }
+        for (Set<PatternNode> set : this.danglingIn.values()) {
+            if (!set.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean isMorphConsistent() {
@@ -610,44 +733,58 @@ public final class Materialisation {
     // Inner classes
     // ------------------------------------------------------------------------
 
-    private enum StepKind {
-        ROUTE_OUT_EDGE, ROUTE_IN_EDGE, MAT_TARGET
-    }
+    private static class MySortedList extends LinkedList<PatternNode> {
 
-    private static class MatStep {
+        final boolean ascending;
 
-        final StepKind kind;
-        final PatternEdge edge;
-        final PatternNode source;
-        final TypeEdge type;
-        final PatternNode target;
-
-        MatStep(StepKind kind, PatternNode source, PatternEdge edge,
-                PatternNode target) {
-            this.kind = kind;
-            this.edge = edge;
-            this.source = source;
-            this.type = edge.getType();
-            this.target = target;
-        }
-
-        MatStep(MatStep step) {
-            this.kind = step.kind;
-            this.edge = step.edge;
-            this.source = step.source;
-            this.type = step.type;
-            this.target = step.target;
+        MySortedList(boolean ascending) {
+            this.ascending = ascending;
         }
 
         @Override
-        public MatStep clone() {
-            return new MatStep(this);
+        public boolean add(PatternNode node) {
+            int index = 0;
+            Iterator<PatternNode> iter = iterator();
+            while (iter.hasNext()) {
+                PatternNode other = iter.next();
+                int result = compare(node, other);
+                if (result == 0) {
+                    index = -1;
+                    break;
+                } else if (result > 0) {
+                    break;
+                } else { // result < 0
+                    index++;
+                }
+            }
+            if (index >= 0) {
+                super.add(index, node);
+                return true;
+            } else {
+                return false;
+            }
         }
 
-        @Override
-        public String toString() {
-            return this.kind + ": (" + this.edge + ", " + this.source + ", "
-                + this.target + ")";
+        int compare(PatternNode n0, PatternNode n1) {
+            // n0 < n1 => -1
+            // n0 = n1 =>  0
+            // n0 > n1 =>  1
+            if (n0.getNumber() == n1.getNumber()) {
+                return 0;
+            }
+            if (this.ascending) {
+                if (n0.getLayer() <= n1.getLayer()) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            } else { // descending layers.
+                if (n0.getLayer() >= n1.getLayer()) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            }
         }
 
     }

@@ -105,11 +105,13 @@ public final class PatternShapeMorphism extends
     private Map<PatternNode,Set<PatternEdge>> getPreImagesMap(PatternEdge edge) {
         Map<PatternNode,Set<PatternEdge>> result =
             new MyHashMap<PatternNode,Set<PatternEdge>>();
-        for (PatternNode newNode : getPreImages(edge.source())) {
-            result.put(newNode, new MyHashSet<PatternEdge>());
-        }
         for (PatternEdge newEdge : getPreImages(edge)) {
-            result.get(newEdge.source()).add(newEdge);
+            Set<PatternEdge> edgeSet = result.get(newEdge.source());
+            if (edgeSet == null) {
+                edgeSet = new MyHashSet<PatternEdge>();
+                result.put(newEdge.source(), edgeSet);
+            }
+            edgeSet.add(newEdge);
         }
         return result;
     }
