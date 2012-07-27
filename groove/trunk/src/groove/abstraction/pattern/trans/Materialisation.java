@@ -19,6 +19,7 @@ package groove.abstraction.pattern.trans;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.MyHashSet;
+import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.PreMatch;
 import groove.abstraction.pattern.shape.PatternEdge;
@@ -45,6 +46,8 @@ import java.util.Stack;
  * @author Eduardo Zambon
  */
 public final class Materialisation {
+
+    private static final boolean USE_GUI = false;
 
     // ------------------------------------------------------------------------
     // Static methods
@@ -111,8 +114,6 @@ public final class Materialisation {
 
     private final Map<TypeEdge,Set<PatternNode>> danglingIn;
 
-    private int nextLayer;
-
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
@@ -127,7 +128,6 @@ public final class Materialisation {
         this.originalShape = shape;
         this.preMatch = preMatch;
         this.rule = preMatch.getRule();
-        this.nextLayer = 0;
         if (isRuleModifying()) {
             this.shape = this.originalShape.clone();
             this.match = new Match(this.rule, this.shape);
@@ -166,7 +166,6 @@ public final class Materialisation {
         this.shape = mat.shape.clone();
         this.morph = mat.morph.clone();
         // Clone auxiliary structures.
-        this.nextLayer = mat.nextLayer;
         this.downTraversal = cloneTraversalList(mat.downTraversal, true);
         this.upTraversal = cloneTraversalList(mat.upTraversal, false);
         this.danglingOut = cloneDanglingMap(mat.danglingOut);
@@ -203,8 +202,10 @@ public final class Materialisation {
         while (!toProcess.isEmpty()) {
             Materialisation mat = toProcess.pop();
             if (mat.isFinished()) {
+                //PatternPreviewDialog.showPatternGraph(mat.shape);
                 assert mat.isValid();
                 result.add(mat);
+                System.out.println(result.size());
             } else {
                 mat.computeSolutions(toProcess);
             }
@@ -305,11 +306,6 @@ public final class Materialisation {
                 // the newly materialised edge.
                 assert this.shape.getMult(newTgt).isOne();
                 this.shape.setMult(origEdge, adjustedMult);
-                if (adjustedMult.isZero()) {
-                    // The original edge is gone so we have to remove it from
-                    // the morphism.
-                    this.morph.removeEdge(origEdge);
-                }
             } else if (!sameSrc && sameTgt) {
                 // Different source with same target node. Since the source is
                 // concrete we need to copy the full multiplicity of the
@@ -328,7 +324,18 @@ public final class Materialisation {
             }
         }
 
+        // Adjust the morphism.
+        PatternEdge oldOrigEdge = origEdge;
+        if (!this.originalShape.containsEdge(origEdge)) {
+            origEdge = this.morph.getEdge(origEdge);
+        }
+        if (!this.shape.containsEdge(oldOrigEdge)) {
+            // The original edge is gone so we have to remove it from
+            // the morphism.
+            this.morph.removeEdge(oldOrigEdge);
+        }
         this.morph.putEdge(newEdge, origEdge);
+
         return newEdge;
     }
 
@@ -346,10 +353,11 @@ public final class Materialisation {
     }
 
     private void computeTraversals() {
-        for (PatternNode newNode : this.shape.getLayerNodes(this.nextLayer)) {
-            computeTraversal(newNode);
+        for (int layer = 0; layer <= this.shape.depth(); layer++) {
+            for (PatternNode newNode : this.shape.getLayerNodes(layer)) {
+                computeTraversal(newNode);
+            }
         }
-        this.nextLayer++;
     }
 
     private void computeTraversal(PatternNode newNode) {
@@ -406,14 +414,11 @@ public final class Materialisation {
             traverseUp(toProcess);
         } else if (!this.downTraversal.isEmpty()) {
             traverseDown(toProcess);
-        } else { // Go down one layer.
-            computeTraversals();
-            toProcess.push(this);
         }
     }
 
     private boolean isFinished() {
-        return this.nextLayer > this.shape.depth();
+        return this.upTraversal.isEmpty() && this.downTraversal.isEmpty();
     }
 
     private void traverseUp(Stack<Materialisation> toProcess) {
@@ -429,6 +434,10 @@ public final class Materialisation {
             return;
         }
 
+        if (USE_GUI) {
+            PatternPreviewDialog.showPatternGraph(this.shape);
+        }
+
         TypeEdge edgeType = missingOrigEdge.getType();
 
         List<PatternNode> possibleSources = new ArrayList<PatternNode>();
@@ -442,6 +451,8 @@ public final class Materialisation {
             possibleSources.add(inEdge.source());
             auxMap.put(inEdge.source(), inEdge);
         }
+
+        filterSourcesByCommutativity(possibleSources, newTgt, edgeType);
 
         // For each possible source we have to branch the search.
         for (PatternNode possibleSource : possibleSources) {
@@ -484,6 +495,10 @@ public final class Materialisation {
             this.downTraversal.remove(0);
             toProcess.push(this);
             return;
+        }
+
+        if (USE_GUI) {
+            PatternPreviewDialog.showPatternGraph(this.shape);
         }
 
         TypeEdge edgeType = origEdge.getType();
@@ -562,11 +577,25 @@ public final class Materialisation {
                 return true;
             } else {
                 for (PatternEdge inEdge : this.shape.inEdgeSet(node)) {
-                    toTest.add(inEdge.target());
+                    toTest.add(inEdge.source());
                 }
             }
         }
         return false;
+    }
+
+    void filterSourcesByCommutativity(List<PatternNode> sources,
+            PatternNode target, TypeEdge edgeType) {
+        Iterator<PatternNode> iter = sources.iterator();
+        while (iter.hasNext()) {
+            PatternNode source = iter.next();
+            //if (!this.shape.getMult(source).isCollector()) {
+            if (!this.shape.isNewEdgeCommuting(source, edgeType, target)) {
+                iter.remove();
+                System.out.println("Removed: " + source);
+            }
+            //}
+        }
     }
 
     // ------------------------------------------------------------------------

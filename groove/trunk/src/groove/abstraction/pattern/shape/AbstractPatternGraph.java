@@ -342,6 +342,15 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
         }
     }
 
+    public N getCommonPatternNode(Set<E> coverEdges, HostNode sNode) {
+        List<Pair<N,HostNode>> queue = getAncestors(coverEdges, sNode);
+        if (queue.size() == 1) {
+            return queue.get(0).one();
+        } else {
+            return null;
+        }
+    }
+
     /** A list of possible ancestors for the given node. */
     public List<Pair<N,HostNode>> getAncestors(Set<E> coverEdges, HostNode sNode) {
         Set<HostNode> ancestors = new MyHashSet<HostNode>();
@@ -357,9 +366,18 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             HostNode ancestor = pair.two();
             ancestors.remove(ancestor);
             Set<E> newCoverEdges = getCoveringEdges(pNode, ancestor);
-            assert newCoverEdges.size() <= 1;
+            /*assert newCoverEdges.size() <= 1;
             if (!newCoverEdges.isEmpty()) {
                 E newCoverEdge = newCoverEdges.iterator().next();
+                HostNode newAncestor = newCoverEdge.getPreImage(ancestor);
+                Pair<N,HostNode> newPair =
+                    new Pair<N,HostNode>(newCoverEdge.source(), newAncestor);
+                if (!queue.contains(newPair)) {
+                    queue.add(newPair);
+                    ancestors.add(newAncestor);
+                }
+            }*/
+            for (E newCoverEdge : newCoverEdges) {
                 HostNode newAncestor = newCoverEdge.getPreImage(ancestor);
                 Pair<N,HostNode> newPair =
                     new Pair<N,HostNode>(newCoverEdge.source(), newAncestor);

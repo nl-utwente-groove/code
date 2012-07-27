@@ -22,9 +22,12 @@ import static groove.abstraction.Multiplicity.ZERO_EDGE_MULT;
 import static groove.abstraction.Multiplicity.ZERO_NODE_MULT;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.MyHashMap;
+import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
 import groove.graph.GraphRole;
+import groove.trans.HostNode;
+import groove.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -365,4 +368,31 @@ public final class PatternShape extends PatternGraph {
         return true;
     }
 
+    /** Checks if the addition of a new edge preserves commutativity. */
+    public boolean isNewEdgeCommuting(PatternNode source, TypeEdge edgeType,
+            PatternNode target) {
+        if (target.getLayer() == 1) {
+            return true;
+        }
+        // EDUARDO: Fix this FSCKIN' method!
+        PatternEdge newEdge = createEdge(source, edgeType, target);
+        Set<PatternEdge> singletonSet = Collections.singleton(newEdge);
+        Set<PatternNode> ancestors = new MyHashSet<PatternNode>();
+        for (HostNode sNode : target.getPattern().nodeSet()) {
+            if (!edgeType.isCod(sNode)) {
+                continue;
+            }
+            ancestors.clear();
+            for (Pair<PatternNode,HostNode> pair : getAncestors(singletonSet,
+                sNode)) {
+                ancestors.add(pair.one());
+            }
+            Set<PatternEdge> coverEdges = getCoveringEdges(target, sNode);
+            PatternNode other = getCommonPatternNode(coverEdges, sNode);
+            if (other != null && !ancestors.contains(other)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
