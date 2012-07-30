@@ -359,17 +359,20 @@ public final class Materialisation {
     }
 
     private void computeTraversal(PatternNode newNode) {
-        if (!isMaterialised(newNode)) {
+        if (!shouldTraverse(newNode)) {
             return;
         }
         computeUpTraversal(newNode);
         computeDownTraversal(newNode);
     }
 
+    private boolean shouldTraverse(PatternNode newNode) {
+        return isMaterialised(newNode) || isEnvironment(newNode);
+    }
+
     private boolean isMaterialised(PatternNode newNode) {
         PatternNode origNode = this.morph.getNode(newNode);
-        return !newNode.equals(origNode)
-            || this.match.containsNodeValue(newNode);
+        return !newNode.equals(origNode);
     }
 
     private void computeUpTraversal(PatternNode newNode) {
@@ -400,7 +403,6 @@ public final class Materialisation {
         // non-unique coverage.
         for (PatternEdge newOutEdge : this.shape.outEdgeSet(newNode)) {
             if (!this.shape.isUniquelyCovered(newOutEdge.target())) {
-                addToDanglingOut(newOutEdge.getType(), newNode);
                 addToDownTraversal(newNode);
             }
         }
@@ -446,11 +448,15 @@ public final class Materialisation {
         // This means that we have to consider all as possible sources.
         for (PatternEdge inEdge : this.shape.getInEdgesWithType(
             missingOrigEdge.target(), edgeType)) {
-            possibleSources.add(inEdge.source());
-            auxMap.put(inEdge.source(), inEdge);
+            PatternNode source = inEdge.source();
+            if (!possibleSources.contains(source)) {
+                possibleSources.add(source);
+                auxMap.put(source, inEdge);
+            }
         }
 
         filterSourcesByCommutativity(possibleSources, newTgt, edgeType);
+        //assert !possibleSources.isEmpty();
 
         // For each possible source we have to branch the search.
         for (PatternNode possibleSource : possibleSources) {
