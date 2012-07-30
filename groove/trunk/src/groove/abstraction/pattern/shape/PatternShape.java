@@ -427,7 +427,11 @@ public final class PatternShape extends PatternGraph {
 
     /** Checks if the given nodes are the end points of a path. */
     private boolean isSuccessor(PatternNode ancestor, PatternNode successor) {
-        assert ancestor.getLayer() < successor.getLayer();
+        assert ancestor.getLayer() <= successor.getLayer();
+        if (ancestor.getLayer() == successor.getLayer()) {
+            // Silly case, no need to create a stack.
+            return ancestor == successor;
+        }
         Stack<PatternNode> stack = new Stack<PatternNode>();
         for (PatternEdge outEdge : outEdgeSet(ancestor)) {
             stack.add(outEdge.target());

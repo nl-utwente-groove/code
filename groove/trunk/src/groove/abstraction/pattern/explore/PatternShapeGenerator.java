@@ -19,7 +19,6 @@ package groove.abstraction.pattern.explore;
 import groove.abstraction.neigh.explore.ShapeGenerator;
 import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.explore.util.PatternShapeMatchApplier.ApplicationMethod;
-import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PSTS;
 import groove.explore.Generator;
 import groove.util.CommandLineOption;
@@ -80,18 +79,18 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
      * @see #getGrammar()
      */
     @Override
-    public PGTS getPGTS() {
+    public PSTS getPGTS() {
         if (pgts == null) {
             pgts = new PSTS(getGrammar(), this.method);
         }
-        return pgts;
+        return (PSTS) pgts;
     }
 
     /** Writes output accordingly to options given to the generator. */
     @Override
     public void report() {
         PrintStream out = System.out;
-        PSTS psts = (PSTS) getPGTS();
+        PSTS psts = getPGTS();
         out.println(String.format(
             "\nPSTS: States: %d -- %d subsumed (%d discarded) / Transitions: %d (%d subsumed)\n",
             psts.getStateCount(), psts.getSubsumedStatesCount(),

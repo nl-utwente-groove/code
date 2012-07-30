@@ -78,7 +78,7 @@ public final class PSTS extends PGTS {
      */
     @Override
     protected PatternGraph createStartGraph(PatternGraph startGraph) {
-        PatternGraph result = new PatternShape(startGraph);
+        PatternGraph result = new PatternShape(startGraph).normalise();
         return result;
     }
 
