@@ -430,6 +430,26 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         return result;
     }
 
+    /** Returns the type node object with the given number. */
+    public TypeNode getTypeNodeByNumber(int typeNr) {
+        for (TypeNode tNode : nodeSet()) {
+            if (tNode.getNumber() == typeNr) {
+                return tNode;
+            }
+        }
+        return null;
+    }
+
+    /** Returns the type edge object with the given number. */
+    public TypeEdge getTypeEdgeByNumber(int typeNr) {
+        for (TypeEdge tEdge : edgeSet()) {
+            if (tEdge.getNumber() == typeNr) {
+                return tEdge;
+            }
+        }
+        return null;
+    }
+
     // ------------------------------------------------------------------------
     // Unsupported methods
     // ------------------------------------------------------------------------

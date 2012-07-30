@@ -16,67 +16,81 @@
  */
 package groove.abstraction.pattern.io.xml;
 
+import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeGraph;
+import groove.view.FormatException;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
- * Class to load pattern type graphs from GXL files.
+ * Class to convert pattern shapes to GXL format and back.
  * 
  * @author Eduardo Zambon
  */
-public final class TypeGraphGxl {
-
-    // ------------------------------------------------------------------------
-    // Static fields
-    // ------------------------------------------------------------------------
-
-    private static final TypeGraphGxl instance = new TypeGraphGxl();
-
-    // ------------------------------------------------------------------------
-    // Static methods
-    // ------------------------------------------------------------------------
-
-    /** Returns the singleton instance of this class. */
-    public static TypeGraphGxl getInstance() {
-        return instance;
-    }
+public final class PatternShapeGxl {
 
     // ------------------------------------------------------------------------
     // Object fields
     // ------------------------------------------------------------------------
 
     /** Marshaller/unmarshaller. */
-    private final TypeGraphJaxbGxlIO io;
+    private final PatternShapeJaxbGxlIO io;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    private TypeGraphGxl() {
+    /** Default constructor. */
+    public PatternShapeGxl(TypeGraph typeGraph) {
         // Private to avoid object creation. Use getInstance() method.
-        this.io = TypeGraphJaxbGxlIO.getInstance();
+        this.io = new PatternShapeJaxbGxlIO(typeGraph);
     }
 
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
 
-    /** Loads a pattern type graph from the given file. */
-    public TypeGraph unmarshalTypeGraph(File file) throws IOException {
-        return this.io.unmarshalTypeGraph(file);
+    /** Loads a pattern shape graph from the given file. */
+    public PatternShape unmarshalPatternShape(File file) throws IOException {
+        InputStream in = new FileInputStream(file);
+        try {
+            return (PatternShape) this.io.loadGraph(in);
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    /** Tries to load a pattern type graph from the given file. May return null. */
-    public TypeGraph loadTypeGraph(File file) {
-        TypeGraph result = null;
+    /** Tries to load a pattern shape graph from the given file. May return null. */
+    public PatternShape loadPatternShape(File file) {
+        PatternShape result = null;
         try {
-            result = unmarshalTypeGraph(file);
+            result = unmarshalPatternShape(file);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return result;
+    }
+
+    /** Saves the given shape into the given file. */
+    public void marshalPatternShape(PatternShape shape, File file)
+        throws IOException {
+        OutputStream out = new FileOutputStream(file);
+        this.io.saveGraph(shape, out);
+    }
+
+    /** Tries to save the given shape to the given file. May fail silently. */
+    public void saveShape(PatternShape shape, File file) {
+        try {
+            marshalPatternShape(shape, file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

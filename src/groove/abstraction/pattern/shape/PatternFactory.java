@@ -119,7 +119,7 @@ public final class PatternFactory implements
      * equality.
      * @param nr the number of the new node
      */
-    private PatternNode createNode(int nr, TypeNode type) {
+    public PatternNode createNode(int nr, TypeNode type) {
         PatternNode result;
         assert nr >= 0;
         if (nr >= this.maxNodeNr || this.nodes[nr] == null) {
