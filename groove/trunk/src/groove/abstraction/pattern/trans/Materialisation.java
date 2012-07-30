@@ -202,10 +202,8 @@ public final class Materialisation {
         while (!toProcess.isEmpty()) {
             Materialisation mat = toProcess.pop();
             if (mat.isFinished()) {
-                //PatternPreviewDialog.showPatternGraph(mat.shape);
                 assert mat.isValid();
                 result.add(mat);
-                System.out.println(result.size());
             } else {
                 mat.computeSolutions(toProcess);
             }
@@ -589,12 +587,9 @@ public final class Materialisation {
         Iterator<PatternNode> iter = sources.iterator();
         while (iter.hasNext()) {
             PatternNode source = iter.next();
-            //if (!this.shape.getMult(source).isCollector()) {
             if (!this.shape.isNewEdgeCommuting(source, edgeType, target)) {
                 iter.remove();
-                System.out.println("Removed: " + source);
             }
-            //}
         }
     }
 
