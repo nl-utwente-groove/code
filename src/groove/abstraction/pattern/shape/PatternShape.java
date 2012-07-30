@@ -22,18 +22,17 @@ import static groove.abstraction.Multiplicity.ZERO_EDGE_MULT;
 import static groove.abstraction.Multiplicity.ZERO_NODE_MULT;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.MyHashMap;
-import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
 import groove.graph.GraphRole;
 import groove.trans.HostNode;
-import groove.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * Pattern shape.
@@ -371,28 +370,78 @@ public final class PatternShape extends PatternGraph {
     /** Checks if the addition of a new edge preserves commutativity. */
     public boolean isNewEdgeCommuting(PatternNode source, TypeEdge edgeType,
             PatternNode target) {
+        assert target.getLayer() != 0;
+        assert !hasInEdgeWithType(target, edgeType);
         if (target.getLayer() == 1) {
+            // Nothing to check for layer 1...
             return true;
         }
-        // EDUARDO: Fix this FSCKIN' method!
-        PatternEdge newEdge = createEdge(source, edgeType, target);
-        Set<PatternEdge> singletonSet = Collections.singleton(newEdge);
-        Set<PatternNode> ancestors = new MyHashSet<PatternNode>();
+        // Special case: the source is already covering a pattern in the
+        // target.
+        for (PatternEdge inEdge : inEdgeSet(target)) {
+            if (inEdge.source() == source) {
+                return false;
+            }
+        }
         for (HostNode sNode : target.getPattern().nodeSet()) {
             if (!edgeType.isCod(sNode)) {
+                // The simple node is not in the image of the new edge we
+                // want to create, so it cannot interfere with commutativity.
                 continue;
             }
-            ancestors.clear();
-            for (Pair<PatternNode,HostNode> pair : getAncestors(singletonSet,
-                sNode)) {
-                ancestors.add(pair.one());
+            PatternNode ancestor = getAncestorPatternNode(target, sNode);
+            if (ancestor == target) {
+                // We are still constructing the coverage for the target
+                // pattern, so there is no conflict.
+                continue;
             }
-            Set<PatternEdge> coverEdges = getCoveringEdges(target, sNode);
-            PatternNode other = getCommonPatternNode(coverEdges, sNode);
-            if (other != null && !ancestors.contains(other)) {
+            // Check if the source is a possible successor.
+            if (!isSuccessor(ancestor, source)) {
                 return false;
             }
         }
         return true;
+    }
+
+    /** Returns the common ancestor of the given simple node, if any. */
+    private PatternNode getAncestorPatternNode(PatternNode target,
+            HostNode sNode) {
+        // We assume we are in the concrete part of the shape, so we only have
+        // one choice when traversing up. Or, more precisely, we may have
+        // several paths to chose from, but the choice is irrelevant since it
+        // will lead to a single common ancestor.
+        PatternNode ancestor = null;
+        while (target != null) {
+            assert getMult(target).isOne();
+            PatternEdge coveringEdge = getCoveringEdge(target, sNode);
+            if (coveringEdge != null) {
+                sNode = coveringEdge.getPreImage(sNode);
+                target = coveringEdge.source();
+            } else {
+                ancestor = target;
+                target = null;
+            }
+        }
+        return ancestor;
+    }
+
+    /** Checks if the given nodes are the end points of a path. */
+    private boolean isSuccessor(PatternNode ancestor, PatternNode successor) {
+        assert ancestor.getLayer() < successor.getLayer();
+        Stack<PatternNode> stack = new Stack<PatternNode>();
+        for (PatternEdge outEdge : outEdgeSet(ancestor)) {
+            stack.add(outEdge.target());
+        }
+        while (!stack.isEmpty()) {
+            PatternNode top = stack.pop();
+            if (top.getLayer() < successor.getLayer()) {
+                for (PatternEdge outEdge : outEdgeSet(top)) {
+                    stack.add(outEdge.target());
+                }
+            } else if (top == successor) {
+                return true;
+            }
+        }
+        return false;
     }
 }

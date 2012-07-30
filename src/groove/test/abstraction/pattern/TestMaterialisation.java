@@ -84,6 +84,17 @@ public class TestMaterialisation {
         testMultipleResults(2, nodeCount, edgeCount);
     }
 
+    @Test
+    public void testMaterialisation3() {
+        int nodeCount[] =
+            {15, 18, 19, 20, 21, 21, 22, 21, 21, 21, 22, 21, 21, 22, 22, 22,
+                23, 22, 20, 21, 21, 22, 21, 12};
+        int edgeCount[] =
+            {20, 24, 26, 28, 30, 30, 32, 30, 30, 30, 32, 30, 30, 32, 32, 32,
+                34, 32, 28, 30, 30, 32, 30, 16};
+        testMultipleResults(3, nodeCount, edgeCount);
+    }
+
     private void testSingleResult(int testNumber, int nodeCount, int edgeCount) {
         loadTest(testNumber);
         Matcher matcher = MatcherFactory.instance().getMatcher(pRule, false);

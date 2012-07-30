@@ -320,7 +320,6 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
 
     /** Returns the pattern edge that covers the given simple node. */
     public E getCoveringEdge(N pNode, HostNode sNode) {
-        assert pNode.isEdgePattern();
         for (E pEdge : inEdgeSet(pNode)) {
             if (pEdge.isCod(sNode)) {
                 return pEdge;
@@ -329,23 +328,15 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
         return null;
     }
 
-    boolean hasCommonAncestor(Set<E> coverEdges, HostNode sNode) {
+    private boolean hasCommonAncestor(Set<E> coverEdges, HostNode sNode) {
         return getCommonAncestor(coverEdges, sNode) != null;
     }
 
+    /** Returns the common ancestor of the given simple node, if any. */
     private HostNode getCommonAncestor(Set<E> coverEdges, HostNode sNode) {
         List<Pair<N,HostNode>> queue = getAncestors(coverEdges, sNode);
         if (queue.size() == 1) {
             return queue.get(0).two();
-        } else {
-            return null;
-        }
-    }
-
-    public N getCommonPatternNode(Set<E> coverEdges, HostNode sNode) {
-        List<Pair<N,HostNode>> queue = getAncestors(coverEdges, sNode);
-        if (queue.size() == 1) {
-            return queue.get(0).one();
         } else {
             return null;
         }
@@ -366,17 +357,6 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             HostNode ancestor = pair.two();
             ancestors.remove(ancestor);
             Set<E> newCoverEdges = getCoveringEdges(pNode, ancestor);
-            /*assert newCoverEdges.size() <= 1;
-            if (!newCoverEdges.isEmpty()) {
-                E newCoverEdge = newCoverEdges.iterator().next();
-                HostNode newAncestor = newCoverEdge.getPreImage(ancestor);
-                Pair<N,HostNode> newPair =
-                    new Pair<N,HostNode>(newCoverEdge.source(), newAncestor);
-                if (!queue.contains(newPair)) {
-                    queue.add(newPair);
-                    ancestors.add(newAncestor);
-                }
-            }*/
             for (E newCoverEdge : newCoverEdges) {
                 HostNode newAncestor = newCoverEdge.getPreImage(ancestor);
                 Pair<N,HostNode> newPair =
