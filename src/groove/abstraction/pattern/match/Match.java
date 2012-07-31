@@ -37,7 +37,7 @@ public class Match extends
 
     /** Default constructor. */
     public Match(PatternRule pRule, PatternGraph pGraph) {
-        super(pRule.getTypeGraph().getPatternFactory());
+        super(pGraph.getFactory());
         this.pRule = pRule;
         this.pGraph = pGraph;
     }

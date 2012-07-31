@@ -194,18 +194,18 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         }
     }
 
-    private PatternNode createPatternNode(TypeNode type) {
-        return getPatternFactory().createNode(type);
+    private PatternNode createPatternNode(PatternGraph pGraph, TypeNode type) {
+        return pGraph.getFactory().createNode(type);
     }
 
-    private PatternNode createPatternNode(TypeNode type,
+    private PatternNode createPatternNode(PatternGraph pGraph, TypeNode type,
             Collection<PatternNode> used) {
-        return getPatternFactory().createNode(type, used);
+        return pGraph.getFactory().createNode(type, used);
     }
 
-    private PatternEdge createPatternEdge(PatternNode source, TypeEdge type,
-            PatternNode target) {
-        return getPatternFactory().createEdge(source, type, target);
+    private PatternEdge createPatternEdge(PatternGraph pGraph,
+            PatternNode source, TypeEdge type, PatternNode target) {
+        return pGraph.getFactory().createEdge(source, type, target);
     }
 
     /** Lifts the given simple graph to a pattern graph. */
@@ -243,7 +243,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
                 // Create a new pattern node.
                 PatternNode pNode = nodeMap.get(sNode);
                 if (pNode == null) {
-                    pNode = createPatternNode(tNode, nodeMap.values());
+                    pNode = createPatternNode(result, tNode, nodeMap.values());
                     nodeMap.put(sNode, pNode);
                 }
                 result.addNode(pNode);
@@ -267,23 +267,25 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
                 if (edgeMap != null) {
                     pTgt = edgeMap.get(sEdge);
                     if (pTgt == null) {
-                        pTgt = createPatternNode(tTgt, edgeMap.values());
+                        pTgt =
+                            createPatternNode(result, tTgt, edgeMap.values());
                         edgeMap.put(sEdge, pTgt);
                     }
                 } else {
-                    pTgt = createPatternNode(tTgt);
+                    pTgt = createPatternNode(result, tTgt);
                 }
                 result.addNode(pTgt);
                 // Find source pattern node and pattern edge type.
                 PatternNode pSrc = nodeMap.get(sEdge.source());
                 TypeEdge tEdge = getCoveringEdge(tTgt, pTgt.getSource());
-                PatternEdge pEdge = createPatternEdge(pSrc, tEdge, pTgt);
+                PatternEdge pEdge =
+                    createPatternEdge(result, pSrc, tEdge, pTgt);
                 result.addEdge(pEdge);
                 // Now repeat for the target of the simple edge.
                 if (!sEdge.source().equals(sEdge.target())) {
                     pSrc = nodeMap.get(sEdge.target());
                     tEdge = getCoveringEdge(tTgt, pTgt.getTarget());
-                    pEdge = createPatternEdge(pSrc, tEdge, pTgt);
+                    pEdge = createPatternEdge(result, pSrc, tEdge, pTgt);
                     result.addEdge(pEdge);
                 }
             }
@@ -293,8 +295,9 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     /** Lifts the given simple rule to a pattern rule. */
     public PatternRule lift(Rule sRule) {
         // First we lift the simple rule to pattern graphs...
-        PatternGraph liftedLhs = getPatternFactory().newPatternGraph();
-        PatternGraph liftedRhs = getPatternFactory().newPatternGraph();
+        PatternFactory liftingFactory = new PatternFactory(this);
+        PatternGraph liftedLhs = liftingFactory.newPatternGraph();
+        PatternGraph liftedRhs = liftingFactory.newPatternGraph();
         Map<Node,PatternNode> nodeMap = new MyHashMap<Node,PatternNode>();
         Map<Edge,PatternNode> edgeMap = new MyHashMap<Edge,PatternNode>();
         lift(sRule.lhs(), liftedLhs, nodeMap, edgeMap);
