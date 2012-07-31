@@ -103,7 +103,7 @@ public final class PatternFactory implements
 
     /** Factory method to retrieve a node with a given number. */
     private PatternNode getNode(int nr) {
-        assert nr >= 0 && nr < this.maxNodeNr;
+        assert nr >= 0 && nr < this.nodes.length;
         PatternNode result = this.nodes[nr];
         assert result != null;
         return result;
@@ -173,7 +173,7 @@ public final class PatternFactory implements
         while (freeNr != -1) {
             // We have a free number of a node that already exists in the store.
             // Retrieve this node and check if the type coincide.
-            result = getNode(freeNr);
+            result = retrieveNode(freeNr, type);
             if (result.getType() == type) {
                 // Yes, the types are the same. We are done.
                 return result;
@@ -192,7 +192,19 @@ public final class PatternFactory implements
             }
         }
         // Nothing else to do, we need to create a new node.
-        result = this.createNode(type);
+        result = createNode(type);
+        return result;
+    }
+
+    /**
+     * Returns the node from the store with the given number. If the entry is
+     * empty a new node with the given number and type is created.
+     * */
+    private PatternNode retrieveNode(int nodeNr, TypeNode type) {
+        PatternNode result = this.nodes[nodeNr];
+        if (result == null) {
+            result = createNode(nodeNr, type);
+        }
         return result;
     }
 
@@ -222,7 +234,7 @@ public final class PatternFactory implements
         }
         if (this.nodes[nr] == null) {
             this.nodes[nr] = node;
-            this.maxNodeNr = nr;
+            this.maxNodeNr = Math.max(this.maxNodeNr, nr);
             return true;
         } else {
             return false;

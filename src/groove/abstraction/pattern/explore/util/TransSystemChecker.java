@@ -100,7 +100,7 @@ public final class TransSystemChecker {
         if (gtsChecker.areIsomorphic(plainSGTS, plainPGTS)) {
             out.print("Transision systems are isomorphic. Checking states... ");
             // EZ says: for some reason that I can't recall right now the test
-            // fails if the try to use the isomorphism map for the
+            // fails if we try to use the isomorphism map for the
             // transition systems, so don't change the code below to try to
             // do that.
             for (PatternState pState : this.pgts.nodeSet()) {

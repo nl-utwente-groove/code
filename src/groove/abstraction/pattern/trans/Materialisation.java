@@ -47,6 +47,7 @@ import java.util.Stack;
  */
 public final class Materialisation {
 
+    private static final boolean WARN_DROPPED = false;
     private static final boolean USE_GUI = false;
 
     // ------------------------------------------------------------------------
@@ -456,7 +457,9 @@ public final class Materialisation {
         }
 
         filterSourcesByCommutativity(possibleSources, newTgt, edgeType);
-        //assert !possibleSources.isEmpty();
+        if (WARN_DROPPED && possibleSources.isEmpty()) {
+            System.out.println("Materialisation dropped: non-commuting.");
+        }
 
         // For each possible source we have to branch the search.
         for (PatternNode possibleSource : possibleSources) {
