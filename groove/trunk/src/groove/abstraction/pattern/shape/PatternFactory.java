@@ -84,9 +84,9 @@ public final class PatternFactory implements
         return new Morphism<PatternNode,PatternEdge>(this);
     }
 
-    /** Creates and returns an empty pattern graph. */
+    /** Creates and returns an empty pattern graph associated with this factory. */
     public PatternGraph newPatternGraph() {
-        return new PatternGraph("", this.typeGraph);
+        return new PatternGraph(this.typeGraph, this);
     }
 
     @Override

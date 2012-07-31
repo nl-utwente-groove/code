@@ -40,15 +40,29 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
 
     /** Associated type graph. */
     private final TypeGraph type;
+    private final PatternFactory factory;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
-    /** Default constructor. */
-    public PatternGraph(String name, TypeGraph type) {
+    /** Private constructor. Used to initialise the fields. */
+    private PatternGraph(String name, TypeGraph type, PatternFactory factory) {
         super(name);
         this.type = type;
+        this.factory = factory;
+    }
+
+    /** Default constructor. Uses the factory of the type graph. */
+    PatternGraph(String name, TypeGraph type) {
+        super(name);
+        this.type = type;
+        this.factory = type.getPatternFactory();
+    }
+
+    /** Factory constructor. Used when a factory creates a new graph. */
+    PatternGraph(TypeGraph type, PatternFactory factory) {
+        this("", type, factory);
     }
 
     /** Copying constructor. */
@@ -84,7 +98,7 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
 
     @Override
     public PatternFactory getFactory() {
-        return this.type.getPatternFactory();
+        return this.factory;
     }
 
     @Override
