@@ -65,13 +65,23 @@ public class TestPatternShapeGenerator {
         psts = generator.getPGTS();
         assertEquals(8, psts.getStateCount());
         assertEquals(16, psts.getTransitionCount());
+
+        typeGraph = "ptgraph-larger.gxl";
+        generator =
+            new PatternShapeGenerator(getArgsWithThreeValue(GRAMMAR,
+                START_GRAPH, typeGraph));
+        generator.processArguments();
+        generator.explore();
+        psts = generator.getPGTS();
+        assertEquals(14, psts.getStateCount());
+        assertEquals(29, psts.getTransitionCount());
     }
 
     @Test
     public void testCircList0() {
         final String GRAMMAR = "junit/pattern/match-test";
         final String START_GRAPH = "start-5";
-        String typeGraph = "ptgraph.gxl";
+        final String typeGraph = "ptgraph.gxl";
         PatternShapeGenerator generator =
             new PatternShapeGenerator(getArgsWithThreeValue(GRAMMAR,
                 START_GRAPH, typeGraph));
