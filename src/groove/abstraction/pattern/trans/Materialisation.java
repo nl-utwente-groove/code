@@ -22,12 +22,15 @@ import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.PreMatch;
+import groove.abstraction.pattern.shape.AbstractPatternGraph;
 import groove.abstraction.pattern.shape.PatternEdge;
+import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.PatternShapeMorphism;
 import groove.abstraction.pattern.shape.TypeEdge;
 import groove.abstraction.pattern.shape.TypeNode;
+import groove.trans.HostNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,7 +50,6 @@ import java.util.Stack;
  */
 public final class Materialisation {
 
-    private static final boolean WARN_DROPPED = false;
     private static final boolean USE_GUI = false;
 
     // ------------------------------------------------------------------------
@@ -456,11 +458,6 @@ public final class Materialisation {
             }
         }
 
-        filterSourcesByCommutativity(possibleSources, newTgt, edgeType);
-        if (WARN_DROPPED && possibleSources.isEmpty()) {
-            System.out.println("Materialisation dropped: non-commuting.");
-        }
-
         // For each possible source we have to branch the search.
         for (PatternNode possibleSource : possibleSources) {
             // Check if we need to clone the materialisation.
@@ -486,7 +483,18 @@ public final class Materialisation {
             mat.getDanglingOut(edgeType).remove(newSrc);
             mat.getDanglingIn(edgeType).remove(newTgt);
             // Push the new materialisation object into the stack.
-            toProcess.push(mat);
+            if (mat.isConcretePartCommuting(true)) {
+                toProcess.push(mat);
+                // EZ says: this is a obvious point for refactoring to get some
+                // performance gain. Instead of cloning the materialisations,
+                // adding the new edge, testing for commutativity and dropping
+                // the offending materialisations, it would be much better if
+                // we could filter the set of possible sources such that only
+                // commuting shapes are produced. Previous versions of this
+                // method tried to do that, but it turns out that it is quite
+                // tricky to test for commutativity before adding the new edge,
+                // thus we stick to an inefficient implementation for now... 
+            }
         }
     }
 
@@ -541,6 +549,7 @@ public final class Materialisation {
             mat.getDanglingOut(edgeType).remove(newSrc);
             mat.getDanglingIn(edgeType).remove(newTgt);
             // Push the new materialisation object into the stack.
+            assert mat.isConcretePartCommuting(true);
             toProcess.push(mat);
         }
     }
@@ -589,17 +598,6 @@ public final class Materialisation {
             }
         }
         return false;
-    }
-
-    void filterSourcesByCommutativity(List<PatternNode> sources,
-            PatternNode target, TypeEdge edgeType) {
-        Iterator<PatternNode> iter = sources.iterator();
-        while (iter.hasNext()) {
-            PatternNode source = iter.next();
-            if (!this.shape.isNewEdgeCommuting(source, edgeType, target)) {
-                iter.remove();
-            }
-        }
     }
 
     // ------------------------------------------------------------------------
@@ -694,7 +692,8 @@ public final class Materialisation {
     /** Returns true if the materialisation is valid. */
     private boolean isValid() {
         return areMapsEmpty() && isMorphConsistent() && isMorphValid()
-            && isMatchConcrete() && isEnvironmentUniquelyCovered();
+            && isMatchConcrete() && isEnvironmentCorrect()
+            && isConcretePartCommuting(false);
     }
 
     private boolean areMapsEmpty() {
@@ -741,21 +740,77 @@ public final class Materialisation {
         return true;
     }
 
-    private boolean isEnvironmentUniquelyCovered() {
-        Set<PatternNode> nextLayer = new MyHashSet<PatternNode>();
-        for (RuleNode rNode : this.rule.lhs().getLayerNodes(0)) {
-            PatternNode pNode = this.match.getNode(rNode);
-            assert pNode != null;
-            nextLayer.addAll(this.shape.getSuccessors(pNode));
+    private boolean isEnvironmentCorrect() {
+        return isEnvironmentUniquelyCovered(getEnvironmentGraph());
+    }
+
+    private boolean isEnvironmentUniquelyCovered(PatternGraph envGraph) {
+        for (PatternNode pNode : envGraph.nodeSet()) {
+            if (!this.shape.isUniquelyCovered(pNode)) {
+                return false;
+            }
         }
-        while (!nextLayer.isEmpty()) {
-            Set<PatternNode> toTest = nextLayer;
-            nextLayer = new MyHashSet<PatternNode>();
-            for (PatternNode pNode : toTest) {
-                if (this.shape.isUniquelyCovered(pNode)) {
-                    nextLayer.addAll(this.shape.getSuccessors(pNode));
-                } else {
+        return true;
+    }
+
+    private PatternGraph getEnvironmentGraph() {
+        PatternGraph result = this.shape.getFactory().newPatternGraph();
+        for (RuleNode rNode : this.rule.lhs().getLayerNodes(0)) {
+            result.addNode(this.match.getNode(rNode));
+        }
+        for (int layer = 0; layer <= this.shape.depth(); layer++) {
+            for (PatternNode pNode : result.getLayerNodes(layer)) {
+                for (PatternEdge outEdge : this.shape.outEdgeSet(pNode)) {
+                    result.addNode(outEdge.target());
+                    result.addEdgeWithoutCheck(outEdge);
+                }
+            }
+        }
+        return result;
+    }
+
+    /** @see AbstractPatternGraph#isCommuting() */
+    private boolean isConcretePartCommuting(boolean acceptNonWellFormed) {
+        // First, check layer 1.
+        for (PatternNode pNode : this.shape.getLayerNodes(1)) {
+            if (!this.shape.getMult(pNode).isOne()
+                || pNode.getSimpleEdge().isLoop()) {
+                // This edge is a collector or a self-edge, nothing to do.
+                continue;
+            }
+            HostNode sSrc = pNode.getSource();
+            HostNode sTgt = pNode.getTarget();
+            PatternEdge pEdgeSrc = this.shape.getCoveringEdge(pNode, sSrc);
+            PatternEdge pEdgeTgt = this.shape.getCoveringEdge(pNode, sTgt);
+            if (pEdgeSrc != null && pEdgeTgt != null) {
+                PatternNode pSrc = pEdgeSrc.source();
+                PatternNode pTgt = pEdgeTgt.source();
+                if (pSrc.equals(pTgt)) {
+                    // We have a binary edge with both source and target nodes
+                    // covered by the same node at layer 0.
                     return false;
+                }
+            } else if (!acceptNonWellFormed) {
+                return false;
+            }
+
+        }
+        // Now, iterate from layer 2 on.
+        for (int layer = 2; layer <= this.shape.depth(); layer++) {
+            // For each pattern node on this layer.
+            pNodeLoop: for (PatternNode pNode : this.shape.getLayerNodes(layer)) {
+                if (!this.shape.getMult(pNode).isOne()) {
+                    continue pNodeLoop;
+                }
+                // For each simple node in the pattern.
+                for (HostNode sNode : pNode.getPattern().nodeSet()) {
+                    int ancestorCount =
+                        this.shape.getAncestors(pNode, sNode).size();
+                    if (ancestorCount > 1) {
+                        return false;
+                    } else if (ancestorCount == 0 && !acceptNonWellFormed) {
+                        return false;
+                    }
                 }
             }
         }

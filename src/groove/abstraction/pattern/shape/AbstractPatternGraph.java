@@ -26,6 +26,7 @@ import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.util.Pair;
+import groove.util.UnmodifiableSetView;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -188,10 +189,10 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     public boolean isCommuting() {
         // This method assumes that the pattern graph is well formed.
         // First, check layer 1.
-        layerOneLoop: for (N pNode : getLayerNodes(1)) {
+        for (N pNode : getLayerNodes(1)) {
             if (pNode.getSimpleEdge().isLoop()) {
                 // This is self-edge, nothing to do.
-                continue layerOneLoop;
+                continue;
             }
             HostNode sSrc = pNode.getSource();
             HostNode sTgt = pNode.getTarget();
@@ -209,8 +210,7 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             for (N pNode : getLayerNodes(layer)) {
                 // For each simple node in the pattern.
                 for (HostNode sNode : pNode.getPattern().nodeSet()) {
-                    Set<E> coverEdges = getCoveringEdges(pNode, sNode);
-                    if (!hasCommonAncestor(coverEdges, sNode)) {
+                    if (!hasCommonAncestor(pNode, sNode)) {
                         return false;
                     }
                 }
@@ -308,18 +308,22 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     }
 
     /** Returns the set of pattern edges that cover the given simple node. */
-    public Set<E> getCoveringEdges(N pNode, HostNode sNode) {
-        Set<E> result = new MyHashSet<E>();
-        for (E pEdge : inEdgeSet(pNode)) {
-            if (pEdge.isCod(sNode)) {
-                result.add(pEdge);
+    private Set<E> getCoveringEdges(N pNode, final HostNode sNode) {
+        return new UnmodifiableSetView<E>(inEdgeSet(pNode)) {
+            @Override
+            public boolean approves(Object obj) {
+                if (!(obj instanceof AbstractPatternEdge<?>)) {
+                    return false;
+                }
+                AbstractPatternEdge<?> pEdge = (AbstractPatternEdge<?>) obj;
+                return pEdge.isCod(sNode);
             }
-        }
-        return result;
+        };
     }
 
     /** Returns the pattern edge that covers the given simple node. */
     public E getCoveringEdge(N pNode, HostNode sNode) {
+        assert pNode.getLayer() == 1;
         for (E pEdge : inEdgeSet(pNode)) {
             if (pEdge.isCod(sNode)) {
                 return pEdge;
@@ -328,55 +332,51 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
         return null;
     }
 
-    private boolean hasCommonAncestor(Set<E> coverEdges, HostNode sNode) {
-        return getCommonAncestor(coverEdges, sNode) != null;
+    /**
+     * Checks if the given simple node (from the given pattern node) has a
+     * single common ancestor.
+     */
+    private boolean hasCommonAncestor(N pNode, HostNode sNode) {
+        return getAncestors(pNode, sNode).size() == 1;
     }
 
-    /** Returns the common ancestor of the given simple node, if any. */
-    private HostNode getCommonAncestor(Set<E> coverEdges, HostNode sNode) {
-        List<Pair<N,HostNode>> queue = getAncestors(coverEdges, sNode);
-        if (queue.size() == 1) {
-            return queue.get(0).two();
-        } else {
-            return null;
-        }
-    }
-
-    /** A list of possible ancestors for the given node. */
-    public List<Pair<N,HostNode>> getAncestors(Set<E> coverEdges, HostNode sNode) {
-        Set<HostNode> ancestors = new MyHashSet<HostNode>();
+    /**
+     * Returns a list of ancestors for the given simple node (from the given
+     * pattern node).
+     */
+    public Set<N> getAncestors(N pNode, HostNode sNode) {
+        Set<N> result = new MyHashSet<N>();
         List<Pair<N,HostNode>> queue = new LinkedList<Pair<N,HostNode>>();
-        for (E coverEdge : coverEdges) {
-            HostNode preImage = coverEdge.getPreImage(sNode);
-            queue.add(new Pair<N,HostNode>(coverEdge.source(), preImage));
-            ancestors.add(preImage);
+        Set<E> coveringEdges = getCoveringEdges(pNode, sNode);
+        for (E pEdge : coveringEdges) {
+            N pN = pEdge.source();
+            if (pN.getLayer() == 0) {
+                result.add(pN);
+            } else {
+                HostNode sN = pEdge.getPreImage(sNode);
+                queue.add(new Pair<N,HostNode>(pN, sN));
+            }
         }
-        while (ancestors.size() > 1) {
+        while (!queue.isEmpty()) {
             Pair<N,HostNode> pair = queue.remove(0);
-            N pNode = pair.one();
-            HostNode ancestor = pair.two();
-            ancestors.remove(ancestor);
-            Set<E> newCoverEdges = getCoveringEdges(pNode, ancestor);
-            for (E newCoverEdge : newCoverEdges) {
-                HostNode newAncestor = newCoverEdge.getPreImage(ancestor);
-                Pair<N,HostNode> newPair =
-                    new Pair<N,HostNode>(newCoverEdge.source(), newAncestor);
-                if (!queue.contains(newPair)) {
-                    queue.add(newPair);
-                    ancestors.add(newAncestor);
+            N pN = pair.one();
+            HostNode sN = pair.two();
+            coveringEdges = getCoveringEdges(pN, sN);
+            for (E pEdge : coveringEdges) {
+                N newPN = pEdge.source();
+                if (newPN.getLayer() == 0) {
+                    result.add(newPN);
+                } else {
+                    HostNode newSN = pEdge.getPreImage(sN);
+                    Pair<N,HostNode> newPair =
+                        new Pair<N,HostNode>(newPN, newSN);
+                    if (!queue.contains(newPair)) {
+                        queue.add(newPair);
+                    }
                 }
             }
         }
-        return queue;
-    }
-
-    /** Returns the set of successor patterns of the given pattern node. */
-    public Set<N> getSuccessors(N pNode) {
-        Set<N> successors = new MyHashSet<N>();
-        for (E outEdge : outEdgeSet(pNode)) {
-            successors.add(outEdge.target());
-        }
-        return successors;
+        return result;
     }
 
     // ------------------------------------------------------------------------

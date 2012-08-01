@@ -79,7 +79,7 @@ public class TestPatternShapeGenerator {
         generator.explore();
         PGTS pgts = generator.getPGTS();
         assertEquals(40, pgts.getStateCount());
-        assertEquals(3095, pgts.getTransitionCount());
+        assertEquals(589, pgts.getTransitionCount());
     }
 
 }
