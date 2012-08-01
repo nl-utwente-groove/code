@@ -23,10 +23,8 @@ import groove.abstraction.pattern.shape.TypeGraph;
 import groove.abstraction.pattern.shape.TypeNode;
 import groove.trans.HostNode;
 import groove.trans.Rule;
-import groove.util.Pair;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -278,15 +276,12 @@ public final class PatternRule {
             new MyHashMap<RuleNode,RuleNode>();
         // For each simple node in the pattern.
         for (HostNode sNode : creatorNode.getPattern().nodeSet()) {
-            Set<RuleEdge> coverEdges =
-                rhs().getCoveringEdges(creatorNode, sNode);
-            List<Pair<RuleNode,HostNode>> ancestors =
-                rhs().getAncestors(coverEdges, sNode);
+            Set<RuleNode> ancestors = rhs().getAncestors(creatorNode, sNode);
             if (ancestors.size() > 1) {
-                Iterator<Pair<RuleNode,HostNode>> it = ancestors.iterator();
-                RuleNode toKeep = it.next().one();
+                Iterator<RuleNode> it = ancestors.iterator();
+                RuleNode toKeep = it.next();
                 while (it.hasNext()) {
-                    replacementMap.put(it.next().one(), toKeep);
+                    replacementMap.put(it.next(), toKeep);
                 }
             }
         }
