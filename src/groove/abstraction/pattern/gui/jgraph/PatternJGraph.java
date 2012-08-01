@@ -72,11 +72,6 @@ public final class PatternJGraph extends GraphJGraph {
             PatternJEdge.getPrototype(this));
     }
 
-    @Override
-    public boolean isShowLoopsAsNodeLabels() {
-        return false;
-    }
-
     /** Callback method to create the label tree. */
     @Override
     protected LabelTree createLabelTree() {
