@@ -22,7 +22,6 @@ import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.PreMatch;
-import groove.abstraction.pattern.shape.AbstractPatternGraph;
 import groove.abstraction.pattern.shape.PatternEdge;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternNode;
@@ -458,6 +457,8 @@ public final class Materialisation {
             }
         }
 
+        filterSourcesByCommutativity(possibleSources, newTgt, edgeType);
+
         // For each possible source we have to branch the search.
         for (PatternNode possibleSource : possibleSources) {
             // Check if we need to clone the materialisation.
@@ -483,18 +484,8 @@ public final class Materialisation {
             mat.getDanglingOut(edgeType).remove(newSrc);
             mat.getDanglingIn(edgeType).remove(newTgt);
             // Push the new materialisation object into the stack.
-            if (mat.isConcretePartCommuting(true)) {
-                toProcess.push(mat);
-                // EZ says: this is a obvious point for refactoring to get some
-                // performance gain. Instead of cloning the materialisations,
-                // adding the new edge, testing for commutativity and dropping
-                // the offending materialisations, it would be much better if
-                // we could filter the set of possible sources such that only
-                // commuting shapes are produced. Previous versions of this
-                // method tried to do that, but it turns out that it is quite
-                // tricky to test for commutativity before adding the new edge,
-                // thus we stick to an inefficient implementation for now... 
-            }
+            assert mat.isConcretePartCommuting(true);
+            toProcess.push(mat);
         }
     }
 
@@ -577,7 +568,16 @@ public final class Materialisation {
         Set<PatternEdge> origEdges = this.originalShape.inEdgeSet(origTgt);
         for (PatternEdge origEdge : origEdges) {
             if (!this.shape.hasInEdgeWithType(newTgt, origEdge.getType())) {
-                return origEdge;
+                if (newTgt.getLayer() == 1) {
+                    return origEdge;
+                }// else:
+                 // Make sure that the returned edge has an intersection with
+                 // some other incoming edge. This in turn ensures that we are
+                 // building the coverage for the target from connected parts,
+                 // which leads to less non-determinism.
+                if (this.shape.hasIntersection(newTgt, origEdge.getType())) {
+                    return origEdge;
+                }
             }
         }
         return null;
@@ -769,52 +769,68 @@ public final class Materialisation {
         return result;
     }
 
-    /** @see AbstractPatternGraph#isCommuting() */
     private boolean isConcretePartCommuting(boolean acceptNonWellFormed) {
-        // First, check layer 1.
-        for (PatternNode pNode : this.shape.getLayerNodes(1)) {
-            if (!this.shape.getMult(pNode).isOne()
-                || pNode.getSimpleEdge().isLoop()) {
-                // This edge is a collector or a self-edge, nothing to do.
-                continue;
+        return this.shape.isConcretePartCommuting(acceptNonWellFormed);
+    }
+
+    private void filterSourcesByCommutativity(List<PatternNode> sources,
+            PatternNode target, TypeEdge edgeType) {
+        Iterator<PatternNode> iter = sources.iterator();
+        while (iter.hasNext()) {
+            PatternNode source = iter.next();
+            if (!isNewEdgeCommuting(source, edgeType, target)) {
+                iter.remove();
             }
-            HostNode sSrc = pNode.getSource();
-            HostNode sTgt = pNode.getTarget();
-            PatternEdge pEdgeSrc = this.shape.getCoveringEdge(pNode, sSrc);
-            PatternEdge pEdgeTgt = this.shape.getCoveringEdge(pNode, sTgt);
-            if (pEdgeSrc != null && pEdgeTgt != null) {
-                PatternNode pSrc = pEdgeSrc.source();
-                PatternNode pTgt = pEdgeTgt.source();
-                if (pSrc.equals(pTgt)) {
-                    // We have a binary edge with both source and target nodes
-                    // covered by the same node at layer 0.
-                    return false;
-                }
-            } else if (!acceptNonWellFormed) {
+        }
+    }
+
+    /** Checks if the addition of a new edge preserves commutativity. */
+    private boolean isNewEdgeCommuting(PatternNode source, TypeEdge edgeType,
+            PatternNode target) {
+        assert target.getLayer() != 0;
+        assert !this.shape.hasInEdgeWithType(target, edgeType);
+        assert this.shape.getMult(target).isOne();
+
+        PatternEdge newEdge = this.shape.createEdge(source, edgeType, target);
+        this.shape.addEdge(newEdge);
+        boolean commuting = isConcretePartCommuting(true);
+        this.shape.removeEdge(newEdge);
+
+        if (commuting || !this.shape.getMult(source).isCollector()) {
+            return commuting;
+        }
+
+        // else: the shape is not commuting but the source is a collector node
+        // so maybe we can materialise a copy in a way that the shape becomes
+        // commuting.
+        boolean emptyIntersection = true;
+        for (PatternEdge inEdge : this.shape.inEdgeSet(target)) {
+            // Special case: the source is already covering a pattern in the
+            // target.
+            if (inEdge.source() == source) {
                 return false;
             }
-
-        }
-        // Now, iterate from layer 2 on.
-        for (int layer = 2; layer <= this.shape.depth(); layer++) {
-            // For each pattern node on this layer.
-            pNodeLoop: for (PatternNode pNode : this.shape.getLayerNodes(layer)) {
-                if (!this.shape.getMult(pNode).isOne()) {
-                    continue pNodeLoop;
-                }
-                // For each simple node in the pattern.
-                for (HostNode sNode : pNode.getPattern().nodeSet()) {
-                    int ancestorCount =
-                        this.shape.getAncestors(pNode, sNode).size();
-                    if (ancestorCount > 1) {
-                        return false;
-                    } else if (ancestorCount == 0 && !acceptNonWellFormed) {
+            PatternNode pNode1 = source;
+            PatternNode pNode2 = inEdge.source();
+            for (HostNode sNode : target.getPattern().nodeSet()) {
+                if (edgeType.isCod(sNode) && inEdge.isCod(sNode)) {
+                    emptyIntersection = false;
+                    // We have an intersection of morphisms on the simple node.
+                    HostNode sNode1 = edgeType.getPreImage(sNode);
+                    HostNode sNode2 = inEdge.getPreImage(sNode);
+                    if (!this.shape.haveCommonAncestor(pNode1, sNode1, pNode2,
+                        sNode2)) {
                         return false;
                     }
                 }
             }
+
         }
-        return true;
+        if (emptyIntersection) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     // ------------------------------------------------------------------------

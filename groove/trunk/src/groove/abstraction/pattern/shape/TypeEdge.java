@@ -82,4 +82,5 @@ public final class TypeEdge extends AbstractPatternEdge<TypeNode> {
     public String getPrintableLabel() {
         return getIdStr();
     }
+
 }

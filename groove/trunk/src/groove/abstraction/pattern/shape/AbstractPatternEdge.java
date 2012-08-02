@@ -140,4 +140,17 @@ public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
         return getMorphism().isCod(node);
     }
 
+    /**
+     * Returns true if the co-domain of the type edge given intersects with
+     * the co-domain of this edge.
+     */
+    public boolean intersects(AbstractPatternEdge<N> other) {
+        for (HostNode sNode : getMorphism().getCod()) {
+            if (other.isCod(sNode)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

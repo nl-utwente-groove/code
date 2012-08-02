@@ -118,7 +118,6 @@ public class SimpleMorphism implements Fixable {
 
     /** Returns true if the given node is the co-domain of the morphism. */
     public boolean isCod(HostNode node) {
-        this.nodeMap.values();
         return this.nodeMap.values().contains(node);
     }
 
