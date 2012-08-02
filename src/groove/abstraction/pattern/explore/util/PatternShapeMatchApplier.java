@@ -32,6 +32,8 @@ import groove.abstraction.pattern.trans.NonBranchingRuleApplication;
 import groove.abstraction.pattern.trans.PatternShapeRuleApplication;
 import groove.explore.util.MatchApplier;
 
+import java.util.Collection;
+
 /**
  * Match applier for pattern shape transformation.
  * 
@@ -78,8 +80,11 @@ public class PatternShapeMatchApplier implements PatternRuleEventApplier {
 
         PatternShapeRuleApplication app =
             createApplication((PatternShape) source.getGraph(), preMatch);
+        Collection<PatternShape> transShapes = app.transform();
+        // We must have at least one materialisation for each pre-match;
+        assert !transShapes.isEmpty();
 
-        for (PatternShape transShape : app.transform()) {
+        for (PatternShape transShape : transShapes) {
             PatternShape normShape = transShape.normalise();
             PatternNextState newState =
                 new PatternGraphNextState(normShape,

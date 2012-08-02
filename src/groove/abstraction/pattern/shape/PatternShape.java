@@ -25,6 +25,7 @@ import groove.abstraction.MyHashMap;
 import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
 import groove.graph.GraphRole;
+import groove.trans.HostNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -280,21 +281,38 @@ public final class PatternShape extends PatternGraph {
         // EZ says: sometimes we can make the shape more precise.
         result.improvePrecision();
 
+        assert result.isConcretePartCommuting(false);
         return result;
     }
 
     private void improvePrecision() {
-        for (int layer = 1; layer <= depth(); layer++) {
-            for (PatternNode node : getLayerNodes(layer)) {
-                if (getMult(node).isCollector() && isUniquelyCovered(node)) {
-                    // If any of the ancestors is concrete then this node
-                    // must also be concrete.
-                    for (PatternEdge inEdge : inEdgeSet(node)) {
-                        if (getMult(inEdge).isOne()
-                            && getMult(inEdge.source()).isOne()) {
-                            setMult(node, Multiplicity.ONE_NODE_MULT);
-                        }
-                    }
+        // Look only for layer 1.
+        for (PatternNode pNode : getLayerNodes(1)) {
+            Multiplicity origMult = getMult(pNode);
+            if (!origMult.isCollector() || !isUniquelyCovered(pNode)) {
+                continue;
+            }
+
+            PatternEdge eSrc = getCoveringEdge(pNode, pNode.getSource());
+            PatternEdge eTgt = getCoveringEdge(pNode, pNode.getTarget());
+            PatternNode pSrc = eSrc.source();
+            PatternNode pTgt = eTgt.source();
+
+            if (pNode.getSimpleEdge().isLoop()) {
+                assert pSrc.equals(pTgt) && eSrc.equals(eTgt);
+                if (getMult(pSrc).isOne()) {
+                    assert getMult(eSrc).isOne();
+                    assert origMult.subsumes(ONE_NODE_MULT);
+                    setMult(pNode, ONE_NODE_MULT);
+                }
+            } else {
+                // Binary simple edge.
+                if (getMult(eSrc).isOne() && getMult(pSrc).isOne()
+                    && getMult(eTgt).isOne() && getMult(pTgt).isOne()
+                    && !pSrc.equals(pTgt)) {
+                    // The node can only be concrete.
+                    assert origMult.subsumes(ONE_NODE_MULT);
+                    setMult(pNode, ONE_NODE_MULT);
                 }
             }
         }
@@ -349,6 +367,19 @@ public final class PatternShape extends PatternGraph {
     }
 
     /**
+     * Returns true if the co-domain of the type edge given intersects with
+     * the co-domain of some other edge incoming into the given node.
+     */
+    public boolean hasIntersection(PatternNode node, TypeEdge edgeType) {
+        for (PatternEdge inEdge : inEdgeSet(node)) {
+            if (edgeType.intersects(inEdge.getType())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns true if the given node is uniquely covered by the incoming edge
      * morphisms. Uniqueness corresponds to the absence of distinct incoming
      * edges of the same type. While this is condition is always satisfied in
@@ -360,6 +391,52 @@ public final class PatternShape extends PatternGraph {
         for (TypeEdge edgeType : getTypeGraph().inEdgeSet(node.getType())) {
             if (getInEdgesWithType(node, edgeType).size() != 1) {
                 return false;
+            }
+        }
+        return true;
+    }
+
+    /** @see AbstractPatternGraph#isCommuting() */
+    public boolean isConcretePartCommuting(boolean acceptNonWellFormed) {
+        // First, check layer 1.
+        for (PatternNode pNode : getLayerNodes(1)) {
+            if (!getMult(pNode).isOne() || pNode.getSimpleEdge().isLoop()) {
+                // This edge is a collector or a self-edge, nothing to do.
+                continue;
+            }
+            HostNode sSrc = pNode.getSource();
+            HostNode sTgt = pNode.getTarget();
+            PatternEdge pEdgeSrc = getCoveringEdge(pNode, sSrc);
+            PatternEdge pEdgeTgt = getCoveringEdge(pNode, sTgt);
+            if (pEdgeSrc != null && pEdgeTgt != null) {
+                PatternNode pSrc = pEdgeSrc.source();
+                PatternNode pTgt = pEdgeTgt.source();
+                if (pSrc.equals(pTgt)) {
+                    // We have a binary edge with both source and target nodes
+                    // covered by the same node at layer 0.
+                    return false;
+                }
+            } else if (!acceptNonWellFormed) {
+                return false;
+            }
+
+        }
+        // Now, iterate from layer 2 on.
+        for (int layer = 2; layer <= depth(); layer++) {
+            // For each pattern node on this layer.
+            pNodeLoop: for (PatternNode pNode : getLayerNodes(layer)) {
+                if (!getMult(pNode).isOne()) {
+                    continue pNodeLoop;
+                }
+                // For each simple node in the pattern.
+                for (HostNode sNode : pNode.getPattern().nodeSet()) {
+                    int ancestorCount = getAncestors(pNode, sNode).size();
+                    if (ancestorCount > 1) {
+                        return false;
+                    } else if (ancestorCount == 0 && !acceptNonWellFormed) {
+                        return false;
+                    }
+                }
             }
         }
         return true;

@@ -379,6 +379,22 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
         return result;
     }
 
+    /**
+     * Returns true if there are two paths ending at the given nodes with a
+     * single common ancestor.
+     */
+    public boolean haveCommonAncestor(N pNode1, HostNode sNode1, N pNode2,
+            HostNode sNode2) {
+        Set<N> ancestors1 = getAncestors(pNode1, sNode1);
+        Set<N> ancestors2 = getAncestors(pNode2, sNode2);
+        for (N ancestor1 : ancestors1) {
+            if (ancestors2.contains(ancestor1)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // ------------------------------------------------------------------------
     // Unsupported methods
     // ------------------------------------------------------------------------

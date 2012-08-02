@@ -73,8 +73,8 @@ public class TestPatternShapeGenerator {
         generator.processArguments();
         generator.explore();
         psts = generator.getPGTS();
-        assertEquals(14, psts.getStateCount());
-        assertEquals(29, psts.getTransitionCount());
+        assertEquals(15, psts.getStateCount());
+        assertEquals(31, psts.getTransitionCount());
     }
 
     @Test
