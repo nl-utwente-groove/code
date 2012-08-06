@@ -375,7 +375,8 @@ public final class PatternEdgeSearchItem extends SearchItem {
             return true;
         }
 
-        boolean writeSourceImage(PatternEdge image) {
+        /** Tries to write the source image of the given edge. */
+        private boolean writeSourceImage(PatternEdge image) {
             PatternNode imageSource = image.source();
             if (this.sourceFind == null) {
                 eraseTargetImage();
@@ -391,7 +392,8 @@ public final class PatternEdgeSearchItem extends SearchItem {
             return true;
         }
 
-        boolean writeTargetImage(PatternEdge image) {
+        /** Tries to write the target image of the given edge. */
+        private boolean writeTargetImage(PatternEdge image) {
             PatternNode imageTarget = image.target();
             if (this.targetFind == null) {
                 if (!checkTargetType(imageTarget)) {

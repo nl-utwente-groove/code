@@ -388,6 +388,24 @@ class Edge2SearchItem extends AbstractSearchItem {
             if (!checkEdgeType(image)) {
                 return false;
             }
+            if (!writeSourceImage(image)) {
+                return false;
+            }
+            if (!writeTargetImage(image)) {
+                eraseSourceImage();
+                return false;
+            }
+            if (!this.search.putEdge(this.edgeIx, image)) {
+                eraseSourceImage();
+                eraseTargetImage();
+                return false;
+            }
+            this.selected = image;
+            return true;
+        }
+
+        /** Tries to write the source image of the given edge. */
+        private boolean writeSourceImage(HostEdge image) {
             HostNode imageSource = image.source();
             if (this.sourceFind == null) {
                 // maybe the prospective source image was used as
@@ -402,9 +420,14 @@ class Edge2SearchItem extends AbstractSearchItem {
             } else if (imageSource != this.sourceFind) {
                 return false;
             }
+            return true;
+        }
+
+        /** Tries to write the target image of the given edge. */
+        private boolean writeTargetImage(HostEdge image) {
             HostNode imageTarget = image.target();
             if (Edge2SearchItem.this.selfEdge) {
-                if (imageTarget != imageSource) {
+                if (imageTarget != image.source()) {
                     return false;
                 }
             } else {
@@ -419,10 +442,6 @@ class Edge2SearchItem extends AbstractSearchItem {
                     return false;
                 }
             }
-            if (!this.search.putEdge(this.edgeIx, image)) {
-                return false;
-            }
-            this.selected = image;
             return true;
         }
 
