@@ -168,9 +168,7 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             if (Util.getBinaryEdgesCount(pattern) != 1) {
                 return false;
             }
-            @SuppressWarnings("unchecked")
-            Set<HostNode> sNodes = (Set<HostNode>) pattern.nodeSet();
-            if (!isCovered(pNode, sNodes, null)) {
+            if (!isCovered(pNode)) {
                 return false;
             }
         }
@@ -253,11 +251,17 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
         return result;
     }
 
+    /** Checks if the given node is properly covered. */
     @SuppressWarnings("unchecked")
-    private boolean isCovered(N pNode) {
+    protected boolean isCovered(N pNode) {
         HostGraph pattern = pNode.getPattern();
-        return isCovered(pNode, (Set<HostNode>) pattern.nodeSet(),
-            Util.getBinaryEdges(pattern));
+        Set<HostEdge> sEdges;
+        if (pNode.getLayer() == 1) {
+            sEdges = null;
+        } else {
+            sEdges = Util.getBinaryEdges(pattern);
+        }
+        return isCovered(pNode, (Set<HostNode>) pattern.nodeSet(), sEdges);
     }
 
     private boolean isCovered(N pNode, Set<HostNode> sNodes,

@@ -442,4 +442,28 @@ public final class PatternShape extends PatternGraph {
         return true;
     }
 
+    /**
+     * Removes collector nodes that cannot exist because they no longer have
+     * proper coverage.
+     */
+    public void removeGarbageCollectorNodes() {
+        List<PatternNode> toRemove = new ArrayList<PatternNode>();
+        for (int layer = 1; layer <= depth(); layer++) {
+            toRemove.clear();
+            for (PatternNode pNode : getLayerNodes(layer)) {
+                Multiplicity mult = getMult(pNode);
+                if (!mult.isCollector()) {
+                    continue;
+                }
+                if (!isCovered(pNode)) {
+                    assert mult.isZeroPlus();
+                    toRemove.add(pNode);
+                }
+            }
+            for (PatternNode pNode : toRemove) {
+                removeNode(pNode);
+            }
+        }
+    }
+
 }
