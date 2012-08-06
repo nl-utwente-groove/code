@@ -50,7 +50,8 @@ public final class MaterialisingRuleApplication implements
         return result;
     }
 
-    private PatternShape applyMatch(Materialisation mat) {
+    /** Executes the rule application for the given materialisation. */
+    public static PatternShape applyMatch(Materialisation mat) {
         PatternGraphRuleApplication app =
             new PatternGraphRuleApplication(mat.getShape(), mat.getMatch());
         return (PatternShape) app.transform(true);
