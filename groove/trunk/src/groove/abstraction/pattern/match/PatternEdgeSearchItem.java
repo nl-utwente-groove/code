@@ -359,6 +359,23 @@ public final class PatternEdgeSearchItem extends SearchItem {
             if (!checkEdgeType(image)) {
                 return false;
             }
+            if (!writeSourceImage(image)) {
+                return false;
+            }
+            if (!writeTargetImage(image)) {
+                eraseSourceImage();
+                return false;
+            }
+            if (!this.search.putEdge(this.edgeIx, image)) {
+                eraseSourceImage();
+                eraseTargetImage();
+                return false;
+            }
+            this.selected = image;
+            return true;
+        }
+
+        boolean writeSourceImage(PatternEdge image) {
             PatternNode imageSource = image.source();
             if (this.sourceFind == null) {
                 eraseTargetImage();
@@ -371,6 +388,10 @@ public final class PatternEdgeSearchItem extends SearchItem {
             } else if (imageSource != this.sourceFind) {
                 return false;
             }
+            return true;
+        }
+
+        boolean writeTargetImage(PatternEdge image) {
             PatternNode imageTarget = image.target();
             if (this.targetFind == null) {
                 if (!checkTargetType(imageTarget)) {
@@ -382,10 +403,6 @@ public final class PatternEdgeSearchItem extends SearchItem {
             } else if (imageTarget != this.targetFind) {
                 return false;
             }
-            if (!this.search.putEdge(this.edgeIx, image)) {
-                return false;
-            }
-            this.selected = image;
             return true;
         }
 
