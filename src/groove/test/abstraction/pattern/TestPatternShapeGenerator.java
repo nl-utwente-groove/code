@@ -92,4 +92,19 @@ public class TestPatternShapeGenerator {
         assertEquals(589, pgts.getTransitionCount());
     }
 
+    @Test
+    public void testCircList1() {
+        final String GRAMMAR = "junit/pattern/circ-list-4";
+        final String START_GRAPH = "start";
+        final String typeGraph = "ptgraph.gxl";
+        PatternShapeGenerator generator =
+            new PatternShapeGenerator(getArgsWithThreeValue(GRAMMAR,
+                START_GRAPH, typeGraph));
+        generator.processArguments();
+        generator.explore();
+        PGTS pgts = generator.getPGTS();
+        assertEquals(101, pgts.getStateCount());
+        assertEquals(655, pgts.getTransitionCount());
+    }
+
 }
