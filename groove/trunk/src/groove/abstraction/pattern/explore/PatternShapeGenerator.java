@@ -57,7 +57,6 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
      */
     public PatternShapeGenerator(String... args) {
         super(args);
-        addOption(new NonBranchOption());
         addOption(new ThreeMultValOption());
     }
 
@@ -123,41 +122,6 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
     // ------------------------------------------------------------------------
     // Inner classes
     // ------------------------------------------------------------------------
-
-    /**
-     * Command line option to specify the use of three values of multiplicity
-     * only.
-     * 
-     * @author Eduardo Zambon
-     */
-    private class NonBranchOption implements CommandLineOption {
-
-        @Override
-        public String[] getDescription() {
-            return new String[] {"Avoids materialision by performing a less precise rule application."};
-        }
-
-        @Override
-        public String getParameterName() {
-            return null;
-        }
-
-        @Override
-        public String getName() {
-            return "b";
-        }
-
-        @Override
-        public boolean hasParameter() {
-            return false;
-        }
-
-        @Override
-        public void parse(String parameter) {
-            PatternShapeGenerator.this.setRuleApplicationMethod(ApplicationMethod.NON_BRANCHING);
-        }
-
-    }
 
     /**
      * Command line option to specify the use of three values of multiplicity
