@@ -205,6 +205,8 @@ public final class Materialisation {
             Materialisation mat = toProcess.pop();
             if (mat.isFinished()) {
                 assert mat.isValid();
+                mat.shape.removeGarbageCollectorNodes();
+                assert mat.shape.isWellFormed();
                 result.add(mat);
             } else {
                 mat.computeSolutions(toProcess);
