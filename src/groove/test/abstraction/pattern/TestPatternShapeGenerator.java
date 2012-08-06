@@ -107,4 +107,19 @@ public class TestPatternShapeGenerator {
         assertEquals(655, pgts.getTransitionCount());
     }
 
+    @Test
+    public void testEuler1() {
+        final String GRAMMAR = "junit/pattern/euler-1";
+        final String START_GRAPH = "start";
+        final String typeGraph = "ptgraph.gxl";
+        PatternShapeGenerator generator =
+            new PatternShapeGenerator(getArgsWithThreeValue(GRAMMAR,
+                START_GRAPH, typeGraph));
+        generator.processArguments();
+        generator.explore();
+        PGTS pgts = generator.getPGTS();
+        assertEquals(11, pgts.getStateCount());
+        assertEquals(19, pgts.getTransitionCount());
+    }
+
 }
