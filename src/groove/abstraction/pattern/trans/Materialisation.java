@@ -342,16 +342,12 @@ public final class Materialisation {
         return newEdge;
     }
 
-    /**
-     * Pre-condition: new source node is concrete and the original
-     * target is collector.
-     */
+    /** Pre-condition: new source node is concrete. */
     private PatternEdge extractEdgeWithCollectorTarget(PatternEdge origEdge,
             PatternNode newSrc, PatternNode newTgt) {
         PatternNode origTgt = origEdge.target();
 
         assert this.shape.getMult(newSrc).isOne();
-        assert this.shape.getMult(origTgt).isCollector();
         assert !newTgt.equals(origTgt);
 
         Multiplicity origMult = this.shape.getMult(origEdge);
@@ -388,7 +384,6 @@ public final class Materialisation {
             PatternNode newSrc, PatternNode newTgt) {
         PatternNode origSrc = origEdge.source();
 
-        assert this.shape.getMult(origSrc).isCollector();
         assert !newSrc.equals(origSrc);
         assert this.shape.getMult(newSrc).isOne();
 

@@ -70,11 +70,11 @@ public class PatternGraphGenerator extends CommandLineTool {
     // ------------------------------------------------------------------------
 
     /** String describing the location where the grammar is to be found. */
-    private String grammarLocation;
+    protected String grammarLocation;
     /** String describing the start graph within the grammar. */
-    private String startGraphName;
+    protected String startGraphName;
     /** String describing the type graph within the grammar. */
-    private String typeGraphName;
+    protected String typeGraphName;
     /** The graph grammar used for the generation. */
     private PatternGraphGrammar grammar;
 
@@ -169,7 +169,7 @@ public class PatternGraphGenerator extends CommandLineTool {
     }
 
     /** Resets the generator. */
-    private void reset() {
+    protected void reset() {
         PatternAbstraction.initialise();
         pgts = null;
     }
@@ -201,7 +201,17 @@ public class PatternGraphGenerator extends CommandLineTool {
      */
     public void explore() {
         reset();
+        prelude();
+        PatternStrategy strategy = new PatternDFSStrategy();
+        strategy.prepare(getPGTS());
+        // start working until done or nothing to do
+        while (strategy.next()) {
+            // Empty
+        }
+    }
 
+    /** Writes an exploration prelude to stdout. */
+    protected void prelude() {
         if (getVerbosity() > LOW_VERBOSITY) {
             println("\n======================================================\n");
             println("Grammar:\t" + this.grammarLocation);
@@ -210,15 +220,13 @@ public class PatternGraphGenerator extends CommandLineTool {
                         : this.startGraphName));
             println("Type graph:\t" + this.typeGraphName);
             print("\nProgress:\n\n");
-            getPGTS().addLTSListener(new GenerateProgressMonitor());
+            addProgressMonitor();
         }
+    }
 
-        PatternStrategy strategy = new PatternDFSStrategy();
-        strategy.prepare(getPGTS());
-        // start working until done or nothing to do
-        while (strategy.next()) {
-            // Empty
-        }
+    /** Adds a progress monitor as a listener. */
+    protected void addProgressMonitor() {
+        getPGTS().addLTSListener(new GenerateProgressMonitor());
     }
 
     /** Writes output accordingly to options given to the generator. */
