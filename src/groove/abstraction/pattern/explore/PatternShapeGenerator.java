@@ -98,14 +98,6 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
     }
 
     // ------------------------------------------------------------------------
-    // Other methods
-    // ------------------------------------------------------------------------
-
-    private void setRuleApplicationMethod(ApplicationMethod method) {
-        this.method = method;
-    }
-
-    // ------------------------------------------------------------------------
     // Main method
     // ------------------------------------------------------------------------
 

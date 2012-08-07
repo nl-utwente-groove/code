@@ -17,10 +17,12 @@
 package groove.test.abstraction.pattern;
 
 import static org.junit.Assert.assertEquals;
+import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.explore.PatternShapeGenerator;
 import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PSTS;
 
+import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -40,6 +42,11 @@ public class TestPatternShapeGenerator {
             String typeGraph) {
         return new String[] {"-v", VERBOSITY + "", "-t", grammar, startGraph,
             typeGraph};
+    }
+
+    @After
+    public void restoreMultiplicitySettings() {
+        PatternAbsParam.getInstance().setUseThreeValues(false);
     }
 
     @Test
@@ -87,9 +94,9 @@ public class TestPatternShapeGenerator {
                 START_GRAPH, typeGraph));
         generator.processArguments();
         generator.explore();
-        PGTS pgts = generator.getPGTS();
-        assertEquals(40, pgts.getStateCount());
-        assertEquals(589, pgts.getTransitionCount());
+        PGTS psts = generator.getPGTS();
+        assertEquals(40, psts.getStateCount());
+        assertEquals(589, psts.getTransitionCount());
     }
 
     @Test
@@ -102,9 +109,32 @@ public class TestPatternShapeGenerator {
                 START_GRAPH, typeGraph));
         generator.processArguments();
         generator.explore();
-        PGTS pgts = generator.getPGTS();
-        assertEquals(101, pgts.getStateCount());
-        assertEquals(655, pgts.getTransitionCount());
+        PGTS psts = generator.getPGTS();
+        assertEquals(101, psts.getStateCount());
+        assertEquals(655, psts.getTransitionCount());
+    }
+
+    @Test
+    public void testEuler0() {
+        final String GRAMMAR = "junit/pattern/euler-0";
+        final String START_GRAPH = "start";
+        final String typeGraph = "ptgraph-0.gxl";
+        PatternShapeGenerator generator =
+            new PatternShapeGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
+        generator.processArguments();
+        generator.explore();
+        PGTS psts = generator.getPGTS();
+        assertEquals(22, psts.getStateCount());
+        assertEquals(42, psts.getTransitionCount());
+
+        generator =
+            new PatternShapeGenerator(getArgsWithThreeValue(GRAMMAR,
+                START_GRAPH, typeGraph));
+        generator.processArguments();
+        generator.explore();
+        psts = generator.getPGTS();
+        assertEquals(16, psts.getStateCount());
+        assertEquals(22, psts.getTransitionCount());
     }
 
     @Test
@@ -117,9 +147,9 @@ public class TestPatternShapeGenerator {
                 START_GRAPH, typeGraph));
         generator.processArguments();
         generator.explore();
-        PGTS pgts = generator.getPGTS();
-        assertEquals(11, pgts.getStateCount());
-        assertEquals(19, pgts.getTransitionCount());
+        PGTS psts = generator.getPGTS();
+        assertEquals(11, psts.getStateCount());
+        assertEquals(19, psts.getTransitionCount());
     }
 
 }
