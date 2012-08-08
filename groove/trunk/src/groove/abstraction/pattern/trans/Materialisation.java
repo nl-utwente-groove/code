@@ -549,10 +549,19 @@ public final class Materialisation {
             if (mat.shape.getMult(possibleSource).isCollector()) {
                 // Yes, we do.
                 newSrc = mat.extractNode(possibleSource);
-                mat.extractEdgeWithCollectorSource(origEdge, newSrc, newTgt);
                 mat.computeTraversal(newSrc);
+            }
+            if (mat.shape.getMult(newTgt).isCollector()) {
+                // EZ says: object equality is sufficient.
+                if (newSrc != possibleSource) {
+                    // Special case: both source and target are collectors.
+                    mat.extractEdgeWithCollectorSource(origEdge, newSrc, newTgt);
+                } else {
+                    // The source is concrete by the target is not.
+                    mat.extractEdgeWithCollectorTarget(origEdge, newSrc, newTgt);
+                }
             } else {
-                // No, just create a new edge.
+                // Normal edge extraction.
                 mat.extractEdge(origEdge, newSrc, newTgt);
             }
             // The new edge nodes are no longer dangling w.r.t. this edge type.
@@ -563,6 +572,17 @@ public final class Materialisation {
             toProcess.push(mat);
         }
     }
+
+    /* // Check if we need to materialise the source.
+        if (mat.shape.getMult(possibleSource).isCollector()) {
+            // Yes, we do.
+            newSrc = mat.extractNode(possibleSource);
+            mat.extractEdgeWithCollectorSource(origEdge, newSrc, newTgt);
+            mat.computeTraversal(newSrc);
+        } else {
+            // No, just create a new edge.
+            mat.extractEdge(origEdge, newSrc, newTgt);
+        }*/
 
     private void traverseDown(Stack<Materialisation> toProcess) {
         assert this.upTraversal.isEmpty();
