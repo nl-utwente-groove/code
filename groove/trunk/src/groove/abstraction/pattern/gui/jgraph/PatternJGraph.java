@@ -199,7 +199,6 @@ public final class PatternJGraph extends GraphJGraph {
             tLayout.setOrientation(SwingConstants.WEST);
 
             for (List<GraphJCell> roots : getJGraph().getModel().getReverseParentMap().values()) {
-                this.facade.setRoots(roots);
                 Set<GraphJVertex> verticesFilter =
                     new MyHashSet<GraphJVertex>();
                 for (GraphJCell jCell : roots) {

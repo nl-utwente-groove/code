@@ -190,6 +190,15 @@ public final class PatternNodeSearchItem extends SearchItem {
 
         @Override
         boolean write(PatternNode image) {
+            // EZ says: this test differs from the original search plan
+            // implementation. Since we are in a typed setting, nodes have a
+            // proper type, so we have to make sure that the image is type 
+            // compatible with the rule node.
+            if (getNode().getType() != image.getType()) {
+                return false;
+            } // else: type is OK, give the image to the search to see if it
+              // is accepted. This may fail if, for example, injectivity is
+              // violated.
             boolean result = this.search.putNode(this.sourceIx, image);
             if (result) {
                 this.selected = image;
