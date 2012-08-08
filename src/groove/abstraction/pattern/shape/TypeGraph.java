@@ -421,7 +421,6 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
                     pRule.addCreatorEdge(rSrc, tEdge, rTgt);
                 }
                 pRule.fixCommutativity();
-                pRule.removeSpuriousNodes();
                 this.closureRules.put(tNode, pRule);
             }
         }
