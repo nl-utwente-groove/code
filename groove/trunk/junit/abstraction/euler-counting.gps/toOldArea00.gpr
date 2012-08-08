@@ -27,9 +27,39 @@
                 <string>191 167 59 31</string>
             </attr>
         </node>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>type:Area</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>del:even</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>new:odd</string>
+            </attr>
+        </edge>
         <edge to="n1" from="n1">
             <attr name="label">
-                <string>del:flag:even</string>
+                <string>del:even</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:Area</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>new:odd</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n0">
+            <attr name="label">
+                <string>del:here</string>
             </attr>
         </edge>
         <edge to="n0" from="n0">
@@ -37,24 +67,9 @@
                 <string>type:Euler</string>
             </attr>
         </edge>
-        <edge to="n2" from="n2">
+        <edge to="n2" from="n0">
             <attr name="label">
-                <string>new:flag:odd</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n3">
-            <attr name="label">
-                <string>end</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>type:Area</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>type:Bridge</string>
+                <string>new:here</string>
             </attr>
         </edge>
         <edge to="n3" from="n3">
@@ -67,29 +82,14 @@
                 <string>end</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge to="n3" from="n3">
             <attr name="label">
-                <string>new:flag:odd</string>
+                <string>type:Bridge</string>
             </attr>
         </edge>
-        <edge to="n2" from="n0">
+        <edge to="n2" from="n3">
             <attr name="label">
-                <string>new:here</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n0">
-            <attr name="label">
-                <string>del:here</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>del:flag:even</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:Area</string>
+                <string>end</string>
             </attr>
         </edge>
     </graph>

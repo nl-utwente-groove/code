@@ -137,14 +137,14 @@ public class TestShapeGenerator {
         final String START_GRAPH = "start";
         ShapeGenerator generator;
 
-        NeighAbsParam.getInstance().setNodeMultBound(1);
+        NeighAbsParam.getInstance().setNodeMultBound(2);
         NeighAbsParam.getInstance().setEdgeMultBound(1);
 
         generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
         generator.start();
         AGTS gts = generator.getReducedGTS();
-        assertEquals(152, gts.getStateCount());
-        assertEquals(618, gts.getTransitionCount());
+        assertEquals(36, gts.getStateCount());
+        assertEquals(64, gts.getTransitionCount());
     }
 
 }

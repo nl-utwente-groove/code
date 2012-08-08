@@ -24,12 +24,27 @@
         </node>
         <edge to="n2" from="n2">
             <attr name="label">
+                <string>edge:&quot;&quot;</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
                 <string>type:Bridge</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge to="n1" from="n2">
             <attr name="label">
-                <string>flag:odd</string>
+                <string>end</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n0">
+            <attr name="label">
+                <string>here</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>home</string>
             </attr>
         </edge>
         <edge to="n0" from="n0">
@@ -39,17 +54,12 @@
         </edge>
         <edge to="n1" from="n1">
             <attr name="label">
-                <string>flag:start</string>
+                <string>start</string>
             </attr>
         </edge>
-        <edge to="n2" from="n2">
+        <edge to="n1" from="n1">
             <attr name="label">
-                <string>edge:&quot;&quot;</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>flag:home</string>
+                <string>even</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">
@@ -57,19 +67,9 @@
                 <string>type:Area</string>
             </attr>
         </edge>
-        <edge to="n1" from="n0">
-            <attr name="label">
-                <string>here</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n2">
-            <attr name="label">
-                <string>end</string>
-            </attr>
-        </edge>
         <edge to="n1" from="n1">
             <attr name="label">
-                <string>flag:even</string>
+                <string>odd</string>
             </attr>
         </edge>
     </graph>

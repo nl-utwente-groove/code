@@ -19,27 +19,27 @@
         </node>
         <edge to="n0" from="n0">
             <attr name="label">
+                <string>even</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>start</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
                 <string>type:Area</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>flag:even</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>flag:start</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:Euler</string>
             </attr>
         </edge>
         <edge to="n0" from="n1">
             <attr name="label">
                 <string>here</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:Euler</string>
             </attr>
         </edge>
     </graph>

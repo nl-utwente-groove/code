@@ -4,6 +4,9 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
         <node id="n7">
             <attr name="layout">
                 <string>75 131 48 46</string>
@@ -79,59 +82,19 @@
                 <string>type:Area</string>
             </attr>
         </edge>
-        <edge to="n6" from="n6">
+        <edge to="n7" from="n7">
             <attr name="label">
-                <string>type:Bridge</string>
-            </attr>
-        </edge>
-        <edge to="n10" from="n10">
-            <attr name="label">
-                <string>type:Bridge</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>flag:odd</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n13">
-            <attr name="label">
-                <string>end</string>
-            </attr>
-        </edge>
-        <edge to="n7" from="n8">
-            <attr name="label">
-                <string>end</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n4">
-            <attr name="label">
-                <string>end</string>
+                <string>even</string>
             </attr>
         </edge>
         <edge to="n9" from="n9">
             <attr name="label">
-                <string>flag:odd</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:Euler</string>
-            </attr>
-        </edge>
-        <edge to="n9" from="n10">
-            <attr name="label">
-                <string>end</string>
+                <string>odd</string>
             </attr>
         </edge>
         <edge to="n9" from="n9">
             <attr name="label">
                 <string>type:Area</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n2">
-            <attr name="label">
-                <string>end</string>
             </attr>
         </edge>
         <edge to="n3" from="n2">
@@ -139,42 +102,47 @@
                 <string>end</string>
             </attr>
         </edge>
-        <edge to="n0" from="n12">
+        <edge to="n0" from="n2">
             <attr name="label">
                 <string>end</string>
             </attr>
         </edge>
-        <edge to="n3" from="n11">
-            <attr name="label">
-                <string>end</string>
-            </attr>
-        </edge>
-        <edge to="n8" from="n8">
+        <edge to="n2" from="n2">
             <attr name="label">
                 <string>type:Bridge</string>
             </attr>
         </edge>
-        <edge to="n11" from="n11">
-            <attr name="label">
-                <string>type:Bridge</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n10">
-            <attr name="label">
-                <string>end</string>
-            </attr>
-        </edge>
-        <edge to="n13" from="n13">
-            <attr name="label">
-                <string>type:Bridge</string>
-            </attr>
-        </edge>
-        <edge to="n5" from="n5">
+        <edge to="n0" from="n0">
             <attr name="label">
                 <string>type:Area</string>
             </attr>
         </edge>
-        <edge to="n9" from="n8">
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>odd</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:Euler</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>home</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>type:Area</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>even</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n13">
             <attr name="label">
                 <string>end</string>
             </attr>
@@ -184,34 +152,14 @@
                 <string>end</string>
             </attr>
         </edge>
-        <edge to="n12" from="n12">
+        <edge to="n13" from="n13">
             <attr name="label">
                 <string>type:Bridge</string>
             </attr>
         </edge>
-        <edge to="n4" from="n4">
+        <edge to="n6" from="n6">
             <attr name="label">
                 <string>type:Bridge</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>type:Bridge</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>type:Area</string>
-            </attr>
-        </edge>
-        <edge to="n5" from="n6">
-            <attr name="label">
-                <string>end</string>
-            </attr>
-        </edge>
-        <edge to="n5" from="n5">
-            <attr name="label">
-                <string>flag:even</string>
             </attr>
         </edge>
         <edge to="n7" from="n6">
@@ -219,27 +167,52 @@
                 <string>end</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>flag:home</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>type:Area</string>
-            </attr>
-        </edge>
-        <edge to="n7" from="n11">
+        <edge to="n5" from="n6">
             <attr name="label">
                 <string>end</string>
             </attr>
         </edge>
-        <edge to="n3" from="n3">
+        <edge to="n12" from="n12">
             <attr name="label">
-                <string>flag:even</string>
+                <string>type:Bridge</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n12">
+            <attr name="label">
+                <string>end</string>
             </attr>
         </edge>
         <edge to="n7" from="n12">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n10">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+        </edge>
+        <edge to="n10" from="n10">
+            <attr name="label">
+                <string>type:Bridge</string>
+            </attr>
+        </edge>
+        <edge to="n9" from="n10">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+        </edge>
+        <edge to="n11" from="n11">
+            <attr name="label">
+                <string>type:Bridge</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n11">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+        </edge>
+        <edge to="n7" from="n11">
             <attr name="label">
                 <string>end</string>
             </attr>
@@ -249,9 +222,39 @@
                 <string>end</string>
             </attr>
         </edge>
-        <edge to="n7" from="n7">
+        <edge to="n3" from="n4">
             <attr name="label">
-                <string>flag:even</string>
+                <string>end</string>
+            </attr>
+        </edge>
+        <edge to="n4" from="n4">
+            <attr name="label">
+                <string>type:Bridge</string>
+            </attr>
+        </edge>
+        <edge to="n7" from="n8">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+        </edge>
+        <edge to="n8" from="n8">
+            <attr name="label">
+                <string>type:Bridge</string>
+            </attr>
+        </edge>
+        <edge to="n9" from="n8">
+            <attr name="label">
+                <string>end</string>
+            </attr>
+        </edge>
+        <edge to="n5" from="n5">
+            <attr name="label">
+                <string>type:Area</string>
+            </attr>
+        </edge>
+        <edge to="n5" from="n5">
+            <attr name="label">
+                <string>even</string>
             </attr>
         </edge>
     </graph>
