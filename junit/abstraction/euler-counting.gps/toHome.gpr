@@ -17,14 +17,9 @@
                 <string>91 75 63 46</string>
             </attr>
         </node>
-        <edge to="n0" from="n0">
+        <edge to="n1" from="n1">
             <attr name="label">
-                <string>type:Euler</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>new:flag:home</string>
+                <string>type:Area</string>
             </attr>
         </edge>
         <edge to="n1" from="n0">
@@ -32,9 +27,14 @@
                 <string>del:here</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge to="n0" from="n0">
             <attr name="label">
-                <string>type:Area</string>
+                <string>type:Euler</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>new:home</string>
             </attr>
         </edge>
     </graph>
