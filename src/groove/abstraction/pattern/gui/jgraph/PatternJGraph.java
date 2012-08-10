@@ -156,9 +156,11 @@ public final class PatternJGraph extends GraphJGraph {
         }
     }
 
-    private class MyLayouter extends AbstractLayouter {
+    private static class MyLayouter extends AbstractLayouter {
 
         JGraphFacade facade;
+        JGraphCompactTreeLayout treeLayout;
+        LineLayout lineLayout;
 
         MyLayouter() {
             super("PatternJGraph Layouter");
@@ -192,25 +194,17 @@ public final class PatternJGraph extends GraphJGraph {
         void prepareLayouting() {
             getJGraph().setLayouting(true);
             this.facade = new JGraphFacade(getJGraph());
+            this.treeLayout = new JGraphCompactTreeLayout();
+            this.treeLayout.setOrientation(SwingConstants.WEST);
+            this.lineLayout = new LineLayout();
         }
 
         void run() {
-            JGraphCompactTreeLayout tLayout = new JGraphCompactTreeLayout();
-            tLayout.setOrientation(SwingConstants.WEST);
-
+            // First layout each individual pattern.
             for (List<GraphJCell> roots : getJGraph().getModel().getReverseParentMap().values()) {
-                Set<GraphJVertex> verticesFilter =
-                    new MyHashSet<GraphJVertex>();
-                for (GraphJCell jCell : roots) {
-                    if (jCell instanceof GraphJVertex) {
-                        verticesFilter.add((GraphJVertex) jCell);
-                    }
-                }
-                this.facade.setVerticesFilter(verticesFilter);
-                this.facade.findTreeRoots();
-                tLayout.run(this.facade);
+                layoutPattern(roots);
             }
-
+            // The layout the pattern graph structure.
             this.facade.setVerticesFilter(null);
             List<GraphJCell> roots = getJGraph().getModel().getPatternRoots();
             this.facade.setRoots(roots);
@@ -220,11 +214,39 @@ public final class PatternJGraph extends GraphJGraph {
             hLayout.run(this.facade);
         }
 
-        private void finishLayouting() {
+        void layoutPattern(List<GraphJCell> roots) {
+            Set<GraphJVertex> verticesFilter = new MyHashSet<GraphJVertex>();
+            for (GraphJCell jCell : roots) {
+                if (jCell instanceof GraphJVertex) {
+                    verticesFilter.add((GraphJVertex) jCell);
+                }
+            }
+            if (this.lineLayout == null) {
+                this.facade.setVerticesFilter(verticesFilter);
+                this.facade.findTreeRoots();
+                this.treeLayout.run(this.facade);
+            } else {
+                this.lineLayout.run(this.facade, verticesFilter);
+            }
+        }
+
+        void finishLayouting() {
             Map<?,?> nested = this.facade.createNestedMap(true, true);
             getJGraph().getGraphLayoutCache().edit(nested);
             getJGraph().setLayouting(false);
             getJGraph().refreshAllCells();
+        }
+    }
+
+    private static class LineLayout {
+        void run(JGraphFacade facade, Set<GraphJVertex> vertices) {
+            int x = 0;
+            int y = 0;
+            int hSpace = 70;
+            for (GraphJVertex vertex : vertices) {
+                facade.setLocation(vertex, x, y);
+                x += hSpace;
+            }
         }
     }
 

@@ -41,8 +41,6 @@ public final class PatternNodeSearchItem extends SearchItem {
     private final Set<RuleNode> boundNodes;
     /** The index of the source in the search. */
     private int nodeIx;
-    /** Indicates if the node is found before this item is invoked. */
-    boolean nodeFound;
 
     /**
      * Creates a search item for a given typed node.
@@ -87,16 +85,7 @@ public final class PatternNodeSearchItem extends SearchItem {
 
     @Override
     public Record createRecord(Search search) {
-        if (this.nodeFound) {
-            return createSingularRecord(search);
-        } else {
-            return createMultipleRecord(search);
-        }
-    }
-
-    /** Creates a record for the case the image is singular. */
-    SingularRecord createSingularRecord(Search search) {
-        return new PatternNodeSingularRecord(search, this.nodeIx);
+        return createMultipleRecord(search);
     }
 
     /** Creates a record for the case the image is not singular. */
@@ -112,7 +101,6 @@ public final class PatternNodeSearchItem extends SearchItem {
 
     @Override
     void activate(Matcher matcher) {
-        this.nodeFound = matcher.isNodeFound(this.node);
         this.nodeIx = matcher.getNodeIx(this.node);
     }
 
@@ -121,46 +109,8 @@ public final class PatternNodeSearchItem extends SearchItem {
         return this.node;
     }
 
-    /**
-     * Search record to be used if the node image is already found.
-     * @author Arend Rensink and Eduardo Zambon
-     */
-    private final class PatternNodeSingularRecord extends SingularRecord {
-
-        /** The index of the source in the search. */
-        private final int nodeIx;
-
-        /** Constructs an instance for a given search. */
-        public PatternNodeSingularRecord(Search search, int nodeIx) {
-            super(search);
-            this.nodeIx = nodeIx;
-        }
-
-        @Override
-        boolean find() {
-            return true;
-        }
-
-        @Override
-        boolean write() {
-            return true;
-        }
-
-        @Override
-        void erase() {
-            // Empty by design.
-        }
-
-        @Override
-        public String toString() {
-            return PatternNodeSearchItem.this.toString() + " = "
-                + computeImage();
-        }
-
-        /** Creates and returns the node image. */
-        private PatternNode computeImage() {
-            return this.search.getNode(this.nodeIx);
-        }
+    private TypeNode getType() {
+        return this.type;
     }
 
     /**
@@ -194,7 +144,7 @@ public final class PatternNodeSearchItem extends SearchItem {
             // implementation. Since we are in a typed setting, nodes have a
             // proper type, so we have to make sure that the image is type 
             // compatible with the rule node.
-            if (getNode().getType() != image.getType()) {
+            if (getType() != image.getType()) {
                 return false;
             } // else: type is OK, give the image to the search to see if it
               // is accepted. This may fail if, for example, injectivity is
