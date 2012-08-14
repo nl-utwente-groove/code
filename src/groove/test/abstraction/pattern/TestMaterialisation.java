@@ -18,6 +18,7 @@ package groove.test.abstraction.pattern;
 
 import static org.junit.Assert.assertEquals;
 import groove.abstraction.pattern.PatternAbstraction;
+import groove.abstraction.pattern.io.xml.PatternShapeGxl;
 import groove.abstraction.pattern.io.xml.TypeGraphJaxbGxlIO;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.Matcher;
@@ -67,32 +68,38 @@ public class TestMaterialisation {
 
     @Test
     public void testMaterialisation0() {
-        testSingleResult(0, 9, 10);
+        testSingleResult(0, 9, 10, false);
     }
 
     @Test
     public void testMaterialisation1() {
         int nodeCount[] = {11, 12};
         int edgeCount[] = {12, 14};
-        testMultipleResults(1, nodeCount, edgeCount);
+        testMultipleResults(1, nodeCount, edgeCount, false);
     }
 
     @Test
     public void testMaterialisation2() {
         int nodeCount[] = {12, 11};
         int edgeCount[] = {14, 12};
-        testMultipleResults(2, nodeCount, edgeCount);
+        testMultipleResults(2, nodeCount, edgeCount, false);
     }
 
     @Test
     public void testMaterialisation3() {
         int nodeCount[] = {15, 18, 20, 21, 12};
         int edgeCount[] = {20, 24, 28, 30, 16};
-        testMultipleResults(3, nodeCount, edgeCount);
+        testMultipleResults(3, nodeCount, edgeCount, false);
     }
 
-    private void testSingleResult(int testNumber, int nodeCount, int edgeCount) {
-        loadTest(testNumber);
+    @Test
+    public void testMaterialisation4() {
+        testSingleResult(4, 11, 10, true);
+    }
+
+    private void testSingleResult(int testNumber, int nodeCount, int edgeCount,
+            boolean hostIsShape) {
+        loadTest(testNumber, hostIsShape);
         Matcher matcher = MatcherFactory.instance().getMatcher(pRule, false);
         List<Match> matches = matcher.findMatches(pShape);
         assertEquals(1, matches.size());
@@ -107,10 +114,10 @@ public class TestMaterialisation {
     }
 
     private void testMultipleResults(int testNumber, int nodeCount[],
-            int edgeCount[]) {
+            int edgeCount[], boolean hostIsShape) {
         assert nodeCount.length == edgeCount.length;
         int size = nodeCount.length;
-        loadTest(testNumber);
+        loadTest(testNumber, hostIsShape);
         Matcher matcher = MatcherFactory.instance().getMatcher(pRule, false);
         List<Match> matches = matcher.findMatches(pShape);
         assertEquals(1, matches.size());
@@ -127,15 +134,17 @@ public class TestMaterialisation {
         }
     }
 
-    private void loadTest(int testNumber) {
+    private void loadTest(int testNumber, boolean hostIsShape) {
         final String TYPE_GRAPH = DIRECTORY + "ptgraph-" + testNumber + ".gxl";
-        final String HOST = "host-" + testNumber;
+        final String HOST = "host-" + testNumber + (hostIsShape ? ".gxl" : "");
         final String RULE = "rule-" + testNumber;
 
         HostGraph sHost = null;
         Rule sRule = null;
         try {
-            sHost = view.getHostModel(HOST).toResource();
+            if (!hostIsShape) {
+                sHost = view.getHostModel(HOST).toResource();
+            }
             sRule = view.getRuleModel(RULE).toResource();
             pTGraph =
                 TypeGraphJaxbGxlIO.getInstance().unmarshalTypeGraph(
@@ -146,10 +155,17 @@ public class TestMaterialisation {
             e.printStackTrace();
         }
 
-        PatternGraph pHost = pTGraph.lift(sHost);
-        pShape = new PatternShape(pHost).normalise();
-        pShape.setFixed();
         pRule = pTGraph.lift(sRule);
+
+        if (!hostIsShape) {
+            PatternGraph pHost = pTGraph.lift(sHost);
+            pShape = new PatternShape(pHost).normalise();
+        } else {
+            PatternShapeGxl gxl = new PatternShapeGxl(pTGraph);
+            File file = new File(DIRECTORY + HOST);
+            pShape = gxl.loadPatternShape(file);
+        }
+        pShape.setFixed();
     }
 
 }

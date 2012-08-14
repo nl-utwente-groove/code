@@ -127,14 +127,14 @@ public class TestPatternShapeGenerator {
         assertEquals(22, psts.getStateCount());
         assertEquals(48, psts.getTransitionCount());
 
-        PatternAbsParam.getInstance().setNodeMultBound(2);
+        /*PatternAbsParam.getInstance().setNodeMultBound(2);
         generator =
             new PatternShapeGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
         generator.processArguments();
         generator.explore();
         psts = generator.getPGTS();
         assertEquals(33, psts.getStateCount());
-        assertEquals(72, psts.getTransitionCount());
+        assertEquals(72, psts.getTransitionCount());*/
 
         generator =
             new PatternShapeGenerator(getArgsWithThreeValue(GRAMMAR,
