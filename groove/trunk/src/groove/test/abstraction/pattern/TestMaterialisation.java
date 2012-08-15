@@ -17,6 +17,7 @@
 package groove.test.abstraction.pattern;
 
 import static org.junit.Assert.assertEquals;
+import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.PatternAbstraction;
 import groove.abstraction.pattern.io.xml.PatternShapeGxl;
 import groove.abstraction.pattern.io.xml.TypeGraphJaxbGxlIO;
@@ -95,6 +96,13 @@ public class TestMaterialisation {
     @Test
     public void testMaterialisation4() {
         testSingleResult(4, 11, 10, true);
+    }
+
+    @Test
+    public void testMaterialisation5() {
+        PatternAbsParam.getInstance().setNodeMultBound(2);
+        testSingleResult(5, 11, 10, true);
+        PatternAbsParam.getInstance().setNodeMultBound(1);
     }
 
     private void testSingleResult(int testNumber, int nodeCount, int edgeCount,
