@@ -23,7 +23,6 @@ import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.PreMatch;
 import groove.abstraction.pattern.shape.PatternEdge;
-import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.PatternShapeMorphism;
@@ -296,8 +295,8 @@ public final class Materialisation {
 
         // There are four cases.
         if (sameSrc && sameTgt) {
-            // The source and target nodes remained unchanged. Just make sure
-            // the multiplicities are consistent.
+            // The source and target nodes remained unchanged. Just return the
+            // original edge.
             newEdge = origEdge;
         } else {
             // In all other cases we need to create a new edge.
@@ -773,32 +772,19 @@ public final class Materialisation {
     }
 
     private boolean isEnvironmentCorrect() {
-        return isEnvironmentUniquelyCovered(getEnvironmentGraph());
-    }
-
-    private boolean isEnvironmentUniquelyCovered(PatternGraph envGraph) {
-        for (PatternNode pNode : envGraph.nodeSet()) {
-            if (!this.shape.isUniquelyCovered(pNode)) {
+        // Compute the nodes for the environment graph.
+        List<PatternNode> toTraverse = new ArrayList<PatternNode>();
+        for (RuleNode rNode : this.rule.lhs().getLayerNodes(0)) {
+            toTraverse.add(this.match.getNode(rNode));
+        }
+        Set<PatternNode> envNodes = this.shape.getDownwardTraversal(toTraverse);
+        // Check if each node of the environment graph is uniquely covered.
+        for (PatternNode envNode : envNodes) {
+            if (!this.shape.isUniquelyCovered(envNode)) {
                 return false;
             }
         }
         return true;
-    }
-
-    private PatternGraph getEnvironmentGraph() {
-        PatternGraph result = this.shape.getFactory().newPatternGraph();
-        for (RuleNode rNode : this.rule.lhs().getLayerNodes(0)) {
-            result.addNode(this.match.getNode(rNode));
-        }
-        for (int layer = 0; layer <= this.shape.depth(); layer++) {
-            for (PatternNode pNode : result.getLayerNodes(layer)) {
-                for (PatternEdge outEdge : this.shape.outEdgeSet(pNode)) {
-                    result.addNode(outEdge.target());
-                    result.addEdgeWithoutCheck(outEdge);
-                }
-            }
-        }
-        return result;
     }
 
     private boolean isConcretePartCommuting(boolean acceptNonWellFormed) {

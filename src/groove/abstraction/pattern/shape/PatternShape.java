@@ -26,6 +26,7 @@ import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
 import groove.graph.GraphRole;
 import groove.trans.HostNode;
+import groove.util.UnmodifiableSetView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -279,12 +280,16 @@ public final class PatternShape extends PatternGraph {
         }
 
         // EZ says: sometimes we can make the shape more precise.
+        // EDUARDO: This seems an ugly hack... Can't we get rid of this?
+        // We should try to prevent the wrong configuration to appear in the
+        // first place...
         result.improvePrecision();
 
         assert result.isConcretePartCommuting(false);
         return result;
     }
 
+    // EDUARDO: This is an ugly hack... Can't we get rid of this?
     private void improvePrecision() {
         // Look only for layer 1.
         for (PatternNode pNode : getLayerNodes(1)) {
@@ -345,17 +350,18 @@ public final class PatternShape extends PatternGraph {
      * Returns a list of pattern edges incoming into the given node, with the
      * proper given type.
      */
-    public List<PatternEdge> getInEdgesWithType(PatternNode node,
-            TypeEdge edgeType) {
-        Set<PatternEdge> inEdgeSet = inEdgeSet(node);
-        ArrayList<PatternEdge> result =
-            new ArrayList<PatternEdge>(inEdgeSet.size());
-        for (PatternEdge inEdge : inEdgeSet) {
-            if (inEdge.getType() == edgeType) {
-                result.add(inEdge);
+    public Set<PatternEdge> getInEdgesWithType(PatternNode node,
+            final TypeEdge edgeType) {
+        return new UnmodifiableSetView<PatternEdge>(inEdgeSet(node)) {
+            @Override
+            public boolean approves(Object obj) {
+                if (!(obj instanceof PatternEdge)) {
+                    return false;
+                }
+                PatternEdge pEdge = (PatternEdge) obj;
+                return pEdge.getType() == edgeType;
             }
-        }
-        return result;
+        };
     }
 
     /**
@@ -446,6 +452,7 @@ public final class PatternShape extends PatternGraph {
      * Removes collector nodes that cannot exist because they no longer have
      * proper coverage.
      */
+    // EDUARDO: This seems an ugly hack... Can't we get rid of this?
     public void removeGarbageCollectorNodes() {
         List<PatternNode> toRemove = new ArrayList<PatternNode>();
         for (int layer = 1; layer <= depth(); layer++) {

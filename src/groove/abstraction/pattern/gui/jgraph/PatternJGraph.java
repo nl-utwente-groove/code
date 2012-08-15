@@ -80,63 +80,6 @@ public final class PatternJGraph extends GraphJGraph {
         return new LabelTree(new GraphJGraph(null, false), false, false);
     }
 
-    /**
-     * We need this complicated method to be able to select the simple graph
-     * elements showing inside the pattern nodes.
-     */
-    /*@Override
-    protected GraphJCell getFirstCellForLocation(double x, double y,
-            boolean vertex, boolean edge) {
-        x /= this.scale;
-        y /= this.scale;
-        GraphJCell vertexOrEdgeResult = null;
-        GraphJCell ecResult = null;
-        Rectangle xyArea = new Rectangle((int) (x - 2), (int) (y - 2), 4, 4);
-        // iterate over the roots and query the visible ones
-        CellView[] viewRoots = this.graphLayoutCache.getRoots();
-        outerLoop: for (int i = viewRoots.length - 1; i >= 0; i--) {
-            CellView jCellView = viewRoots[i];
-            if (!(jCellView.getCell() instanceof GraphJCell)) {
-                continue outerLoop;
-            }
-            GraphJCell jCell = (GraphJCell) jCellView.getCell();
-            boolean typeCorrect =
-                vertex ? (jCell instanceof GraphJVertex) : edge
-                        ? jCell instanceof GraphJEdge : true;
-            if (typeCorrect && jCell instanceof PatternJVertex) {
-                // We have an equivalence class.
-                for (CellView childView : jCellView.getChildViews()) {
-                    // Check proximity with all nodes inside.
-                    GraphJCell jCellChild = (GraphJCell) childView.getCell();
-                    if (typeCorrect && !jCellChild.isGrayedOut()) {
-                        // Now see if this child is sufficiently close to the point.
-                        if (childView.intersects(this, xyArea)) {
-                            vertexOrEdgeResult = jCellChild;
-                            break outerLoop;
-                        }
-                    }
-                }
-                // Failed, check intersection with the equivalence class.
-                if (jCellView.intersects(this, xyArea)) {
-                    // We found a class with an intersection.
-                    ecResult = jCell;
-                    continue outerLoop;
-                }
-            }
-            if (typeCorrect && !jCell.isGrayedOut()) {
-                // We are interested in edges and this jCell is an edge.
-                if (jCellView.intersects(this, xyArea)) {
-                    // We found our edge.
-                    vertexOrEdgeResult = jCell;
-                    break outerLoop;
-                }
-            }
-        }
-        GraphJCell result =
-            vertexOrEdgeResult == null ? ecResult : vertexOrEdgeResult;
-        return result;
-    }*/
-
     /** Creates and returns a special layouter for pattern graphs. */
     public Layouter createLayouter() {
         return new MyLayouter();

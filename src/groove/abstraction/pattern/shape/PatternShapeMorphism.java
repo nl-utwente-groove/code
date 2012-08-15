@@ -103,6 +103,7 @@ public final class PatternShapeMorphism extends
 
     /** Returns a set of outgoing edges grouped per source node. */
     private Map<PatternNode,Set<PatternEdge>> getPreImagesMap(PatternEdge edge) {
+        // EZ says: this method is inefficient but it is only used in assertions.
         Map<PatternNode,Set<PatternEdge>> result =
             new MyHashMap<PatternNode,Set<PatternEdge>>();
         for (PatternEdge newEdge : getPreImages(edge)) {
@@ -135,6 +136,7 @@ public final class PatternShapeMorphism extends
 
     /** Implements the conditions of a subsumption pattern shape morphism. */
     public boolean isValid(PatternShape from, PatternShape to) {
+        // EZ says: this method is inefficient but it is only used in assertions.
         // Check node multiplicities.
         for (PatternNode nodeT : to.nodeSet()) {
             Multiplicity nodeTMult = to.getMult(nodeT);

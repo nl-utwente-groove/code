@@ -24,6 +24,7 @@ import groove.abstraction.pattern.shape.PatternNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Application of a matched pattern graph transformation rule.
@@ -77,27 +78,13 @@ public final class PatternGraphRuleApplication {
         }
     }
 
-    private List<PatternNode> computeErasedNodes(PatternGraph host) {
-        List<PatternNode> result =
-            new ArrayList<PatternNode>(host.nodeSet().size());
-        List<PatternNode> toTraverse =
-            new ArrayList<PatternNode>(host.nodeSet().size());
+    private Set<PatternNode> computeErasedNodes(PatternGraph host) {
+        List<PatternNode> toTraverse = new ArrayList<PatternNode>();
         // The initial list of nodes to be deleted comes from the match.
         for (RuleNode rNode : this.pRule.getEraserNodes()) {
             toTraverse.add(this.match.getNode(rNode));
         }
-        // Now find the deletion cone.
-        while (!toTraverse.isEmpty()) {
-            PatternNode delNode = toTraverse.remove(toTraverse.size() - 1);
-            if (!result.contains(delNode)) {
-                // Only traverse outgoing edges.
-                for (PatternEdge edge : host.outEdgeSet(delNode)) {
-                    toTraverse.add(edge.target());
-                }
-                result.add(delNode);
-            }
-        }
-        return result;
+        return host.getDownwardTraversal(toTraverse);
     }
 
     private void createNodes(PatternGraph host) {

@@ -26,6 +26,7 @@ import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.RuleEdge;
+import groove.util.UnmodifiableSetView;
 
 import java.util.Set;
 
@@ -63,16 +64,23 @@ public final class Util {
 
     /** Returns the set of binary edges of the given graph. */
     public static Set<HostEdge> getBinaryEdges(HostGraph graph) {
-        Set<HostEdge> result = new MyHashSet<HostEdge>();
-        for (HostEdge edge : graph.edgeSet()) {
-            if (edge.getRole() == EdgeRole.BINARY) {
-                result.add(edge);
+        return new UnmodifiableSetView<HostEdge>(graph.edgeSet()) {
+            @Override
+            public boolean approves(Object obj) {
+                if (!(obj instanceof HostEdge)) {
+                    return false;
+                }
+                HostEdge edge = (HostEdge) obj;
+                return edge.getRole() == EdgeRole.BINARY;
             }
-        }
-        return result;
+        };
     }
 
     /** Returns the set of labels used as node labels. */
+    // EZ says: this method is only used when lifting simple graphs, thus it
+    // doesn't impact performance much. It is not a good idea to try to use
+    // an UnmodifiableSetView because we need to check for containment in the
+    // returned set which would be inefficient.
     public static Set<TypeLabel> getNodeLabels(Graph<?,?> graph, Node node) {
         Set<TypeLabel> nodeLabels = new MyHashSet<TypeLabel>();
         for (Edge edge : graph.edgeSet(node)) {
