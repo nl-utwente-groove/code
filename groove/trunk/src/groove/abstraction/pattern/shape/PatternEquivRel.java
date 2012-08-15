@@ -29,6 +29,7 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon
  */
+// EZ says: maybe the code in this class can be optimised...
 public final class PatternEquivRel {
 
     private final PatternShape pShape;
@@ -36,12 +37,16 @@ public final class PatternEquivRel {
     private final Map<PatternEdge,AuxEdgeEquivClass> edgeToCellMap;
     private final Set<NodeEquivClass> nodeRel;
     private final Set<EdgeEquivClass> edgeRel; // Finer relation.
+    private final Map<NodeInfo,NodeEquivClass> nodePartition;
+    private final Map<EdgeInfo,AuxEdgeEquivClass> edgePartition;
 
     /** Default constructor. */
     public PatternEquivRel(PatternShape pShape) {
         this.pShape = pShape;
         this.nodeToCellMap = new MyHashMap<PatternNode,NodeEquivClass>();
         this.edgeToCellMap = new MyHashMap<PatternEdge,AuxEdgeEquivClass>();
+        this.nodePartition = new MyHashMap<NodeInfo,NodeEquivClass>();
+        this.edgePartition = new MyHashMap<EdgeInfo,AuxEdgeEquivClass>();
         this.nodeRel = new MyHashSet<NodeEquivClass>();
         this.edgeRel = new MyHashSet<EdgeEquivClass>();
         compute();
@@ -62,32 +67,30 @@ public final class PatternEquivRel {
     }
 
     private void computeNodeEquiv(int layer) {
-        Map<NodeInfo,NodeEquivClass> partition =
-            new MyHashMap<NodeInfo,NodeEquivClass>();
+        this.nodePartition.clear();
         for (PatternNode pNode : this.pShape.getLayerNodes(layer)) {
             NodeInfo nInfo = computeNodeInfo(pNode);
-            NodeEquivClass nEc = partition.get(nInfo);
+            NodeEquivClass nEc = this.nodePartition.get(nInfo);
             if (nEc == null) {
                 nEc = new NodeEquivClass();
-                partition.put(nInfo, nEc);
+                this.nodePartition.put(nInfo, nEc);
                 // Compute the fine grained edge partition.
                 this.edgeRel.addAll(computeFinerEdgeRel(nInfo, nEc, pNode));
             }
             nEc.add(pNode);
             this.nodeToCellMap.put(pNode, nEc);
         }
-        this.nodeRel.addAll(partition.values());
+        this.nodeRel.addAll(this.nodePartition.values());
     }
 
     private void computeEdgeEquiv(int layer) {
-        Map<EdgeInfo,AuxEdgeEquivClass> partition =
-            new MyHashMap<EdgeInfo,AuxEdgeEquivClass>();
+        this.edgePartition.clear();
         for (PatternEdge pEdge : this.pShape.getLayerInEdges(layer)) {
             EdgeInfo eInfo = computeEdgeInfo(pEdge);
-            AuxEdgeEquivClass eEc = partition.get(eInfo);
+            AuxEdgeEquivClass eEc = this.edgePartition.get(eInfo);
             if (eEc == null) {
                 eEc = new AuxEdgeEquivClass();
-                partition.put(eInfo, eEc);
+                this.edgePartition.put(eInfo, eEc);
             }
             eEc.add(pEdge);
             this.edgeToCellMap.put(pEdge, eEc);

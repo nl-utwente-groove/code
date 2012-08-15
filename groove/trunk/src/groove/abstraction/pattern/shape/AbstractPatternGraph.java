@@ -327,7 +327,7 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
 
     /** Returns the pattern edge that covers the given simple node. */
     public E getCoveringEdge(N pNode, HostNode sNode) {
-        assert pNode.getLayer() == 1;
+        assert pNode.isEdgePattern();
         for (E pEdge : inEdgeSet(pNode)) {
             if (pEdge.isCod(sNode)) {
                 return pEdge;
@@ -397,6 +397,24 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             }
         }
         return false;
+    }
+
+    /**
+     * Returns the set of pattern nodes that are reachable from the ones given
+     * on the list. Elements of the list are also included in the result set. 
+     */
+    public Set<N> getDownwardTraversal(List<N> toTraverse) {
+        Set<N> result = new MyHashSet<N>();
+        while (!toTraverse.isEmpty()) {
+            N node = toTraverse.remove(toTraverse.size() - 1);
+            if (!result.contains(node)) {
+                for (E edge : outEdgeSet(node)) {
+                    toTraverse.add(edge.target());
+                }
+                result.add(node);
+            }
+        }
+        return result;
     }
 
     // ------------------------------------------------------------------------
