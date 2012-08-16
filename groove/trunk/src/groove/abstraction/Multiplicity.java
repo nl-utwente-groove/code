@@ -175,7 +175,7 @@ public final class Multiplicity {
             }
 
             // Make sure the store is completely filled.
-            assert index == getCardinality(b);
+            assert index == cardinality;
             int kindIx = kind.ordinal();
             GLOBAL_MULT_STORE[kindIx] = globalStore;
             INDEXED_MULT_STORE[kindIx] = indexedStore;
