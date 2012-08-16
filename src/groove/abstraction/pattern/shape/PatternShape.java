@@ -21,6 +21,7 @@ import static groove.abstraction.Multiplicity.ONE_NODE_MULT;
 import static groove.abstraction.Multiplicity.ZERO_EDGE_MULT;
 import static groove.abstraction.Multiplicity.ZERO_NODE_MULT;
 import groove.abstraction.Multiplicity;
+import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
@@ -440,6 +441,34 @@ public final class PatternShape extends PatternGraph {
                     if (ancestorCount > 1) {
                         return false;
                     } else if (ancestorCount == 0 && !acceptNonWellFormed) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Checks if the multiplicities in the shape make sense. */
+    // EZ says: this is a debug method, don't remove it...
+    public boolean areMultiplicitiesConsistent() {
+        for (int layer = 1; layer <= depth(); layer++) {
+            for (PatternNode target : getLayerNodes(layer)) {
+                Multiplicity tgtMult = getMult(target);
+                for (TypeEdge typeEdge : getTypeGraph().inEdgeSet(
+                    target.getType())) {
+                    Multiplicity acc =
+                        Multiplicity.getMultiplicity(0, 0, MultKind.EQSYS_MULT);
+                    Set<PatternEdge> inEdges =
+                        getInEdgesWithType(target, typeEdge);
+                    for (PatternEdge inEdge : inEdges) {
+                        Multiplicity srcMult = getMult(inEdge.source());
+                        Multiplicity edgeMult = getMult(inEdge);
+                        acc = acc.add(srcMult.times(edgeMult));
+                    }
+                    Multiplicity sum = acc.toNodeKind();
+                    //if (!tgtMult.subsumes(sum)) {
+                    if (!sum.le(tgtMult)) {
                         return false;
                     }
                 }

@@ -119,6 +119,8 @@ public class TestPatternShapeGenerator {
         final String GRAMMAR = "junit/pattern/euler-0";
         final String START_GRAPH = "start";
         final String typeGraph = "ptgraph-0.gxl";
+        PatternAbsParam.getInstance().setNodeMultBound(1);
+        PatternAbsParam.getInstance().setEdgeMultBound(1);
         PatternShapeGenerator generator =
             new PatternShapeGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
         generator.processArguments();
@@ -128,6 +130,7 @@ public class TestPatternShapeGenerator {
         assertEquals(48, psts.getTransitionCount());
 
         PatternAbsParam.getInstance().setNodeMultBound(2);
+        PatternAbsParam.getInstance().setEdgeMultBound(1);
         generator =
             new PatternShapeGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
         generator.processArguments();
@@ -135,6 +138,26 @@ public class TestPatternShapeGenerator {
         psts = generator.getPGTS();
         assertEquals(36, psts.getStateCount());
         assertEquals(72, psts.getTransitionCount());
+
+        PatternAbsParam.getInstance().setNodeMultBound(1);
+        PatternAbsParam.getInstance().setEdgeMultBound(2);
+        generator =
+            new PatternShapeGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
+        generator.processArguments();
+        generator.explore();
+        psts = generator.getPGTS();
+        assertEquals(104, psts.getStateCount());
+        assertEquals(265, psts.getTransitionCount());
+
+        PatternAbsParam.getInstance().setNodeMultBound(2);
+        PatternAbsParam.getInstance().setEdgeMultBound(2);
+        generator =
+            new PatternShapeGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
+        generator.processArguments();
+        generator.explore();
+        psts = generator.getPGTS();
+        assertEquals(202, psts.getStateCount());
+        assertEquals(525, psts.getTransitionCount());
 
         generator =
             new PatternShapeGenerator(getArgsWithThreeValue(GRAMMAR,

@@ -17,8 +17,10 @@
 package groove.abstraction.pattern.trans;
 
 import groove.abstraction.Multiplicity;
+import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.MyHashSet;
+import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.PreMatch;
@@ -71,6 +73,52 @@ public final class Materialisation {
             result.add(initialMat);
         }
         return result;
+    }
+
+    private static Multiplicity times(Multiplicity nodeMult,
+            Multiplicity edgeMult) {
+        return nodeMult.times(edgeMult).toNodeKind();
+    }
+
+    // EZ says: sorry for the horrible code, but this method needs to be
+    // efficient, both in time and memory.
+    private static Multiplicity computeSourceMult(Multiplicity tgtMult,
+            Multiplicity edgeMult) {
+        MultKind kind = MultKind.NODE_MULT;
+        Multiplicity result;
+
+        if (PatternAbsParam.getInstance().isUseThreeValues()) {
+            // Source multiplicity can only be either 1 or 0+.
+            result = Multiplicity.ONE_NODE_MULT;
+            if (times(result, edgeMult).equals(tgtMult)) {
+                return result;
+            }
+            result = Multiplicity.getMultiplicity(0, Multiplicity.OMEGA, kind);
+            if (times(result, edgeMult).equals(tgtMult)) {
+                return result;
+            }
+            assert false;
+            return null;
+        }
+
+        int b = PatternAbsParam.getInstance().getNodeMultBound();
+        // First try the concrete values.
+        for (int i = 1; i <= b; i++) {
+            result = Multiplicity.getMultiplicity(i, i, kind);
+            if (times(result, edgeMult).equals(tgtMult)) {
+                return result;
+            }
+        }
+        // OK, it didn't work, so try the omega values.
+        for (int i = 0; i <= b + 1; i++) {
+            result = Multiplicity.getMultiplicity(i, Multiplicity.OMEGA, kind);
+            if (times(result, edgeMult).equals(tgtMult)) {
+                return result;
+            }
+        }
+
+        assert false;
+        return null;
     }
 
     // ------------------------------------------------------------------------
@@ -249,7 +297,9 @@ public final class Materialisation {
     private void materialiseEdge(RuleEdge rEdge, PatternEdge origEdge) {
         PatternNode newSrc = this.match.getNode(rEdge.source());
         PatternNode newTgt = this.match.getNode(rEdge.target());
-        PatternEdge newEdge = extractEdge(origEdge, newSrc, newTgt);
+        PatternEdge newEdge =
+            extractEdge(origEdge, newSrc, newTgt, Multiplicity.ONE_EDGE_MULT,
+                true);
         this.match.putEdge(rEdge, newEdge);
     }
 
@@ -278,58 +328,38 @@ public final class Materialisation {
     }
 
     private PatternEdge extractEdge(PatternEdge origEdge, PatternNode newSrc,
-            PatternNode newTgt) {
+            PatternNode newTgt, Multiplicity newEdgeMult, boolean keepOrigEdge) {
         PatternNode origSrc = origEdge.source();
         PatternNode origTgt = origEdge.target();
         boolean sameSrc = origSrc.equals(newSrc);
         boolean sameTgt = origTgt.equals(newTgt);
 
-        Multiplicity newSrcMult = this.shape.getMult(newSrc);
-        Multiplicity newTgtMult = this.shape.getMult(newTgt);
-
-        assert !(newTgtMult.isOne() && newSrcMult.isCollector());
-
         Multiplicity origEdgeMult = this.shape.getMult(origEdge);
         TypeEdge edgeType = origEdge.getType();
         PatternEdge newEdge;
 
-        // There are four cases.
         if (sameSrc && sameTgt) {
             // The source and target nodes remained unchanged. Just return the
             // original edge.
+            assert origEdgeMult.isOne() && newEdgeMult.isOne();
             newEdge = origEdge;
         } else {
             // In all other cases we need to create a new edge.
             newEdge = createEdge(newSrc, edgeType, newTgt);
-            Multiplicity newEdgeMult = newTgtMult.toEdgeKind();
-            Multiplicity adjustedOrigEdgeMult;
-            // We have to be careful here because subtraction is imprecise.
-            if (origEdgeMult == newEdgeMult) {
-                adjustedOrigEdgeMult = Multiplicity.ZERO_EDGE_MULT;
-            } else {
-                adjustedOrigEdgeMult = origEdgeMult.sub(newEdgeMult);
-            }
+            this.shape.setMult(newEdge, newEdgeMult);
+            // Check the remaining cases.
             if (sameSrc && !sameTgt) {
-                // Same source node with new target. We need to adjust the
+                // Same source node with new target. Maybe we need to adjust the
                 // multiplicity of the original edge that goes to the original
                 // target node to account for the newly materialised edge.
-                this.shape.setMult(newEdge, newEdgeMult);
-                this.shape.setMult(origEdge, adjustedOrigEdgeMult);
-            } else if (!sameSrc && sameTgt) {
-                // Different source with same target node. We need to copy the
-                // full multiplicity of the original edge.
-                assert newTgtMult.isCollector();
-                this.shape.setMult(newEdge, origEdgeMult);
-            } else { // !sameSrc && !sameTgt
-                // If the adjusted multiplicity is not zero, we need to create
-                // a new edge from the new source to the original target.
-                if (!adjustedOrigEdgeMult.isZero()) {
-                    PatternEdge remainderEdge =
-                        createEdge(newSrc, edgeType, origTgt);
-                    this.shape.setMult(remainderEdge, adjustedOrigEdgeMult);
-                    this.morph.putEdge(remainderEdge, origEdge);
+                if (keepOrigEdge) {
+                    Multiplicity adjustedOrigEdgeMult =
+                        origEdgeMult.sub(newEdgeMult);
+                    this.shape.setMult(origEdge, adjustedOrigEdgeMult);
+                } else {
+                    // We we explicitly told to remove the original edge.
+                    this.shape.removeEdge(origEdge);
                 }
-                this.shape.setMult(newEdge, newEdgeMult);
             }
         }
 
@@ -453,6 +483,7 @@ public final class Materialisation {
         }
 
         TypeEdge edgeType = missingOrigEdge.getType();
+        Multiplicity newTgtMult = this.shape.getMult(newTgt);
 
         // Find possible sources.
         Set<PatternNode> possibleSources = new MyHashSet<PatternNode>();
@@ -490,24 +521,48 @@ public final class Materialisation {
                 mat = this.clone();
             }
             PatternEdge origEdge = srcToOrigEdgeMap.get(possibleSource);
+            Multiplicity origEdgeMult = mat.shape.getMult(origEdge);
             PatternNode newSrc = possibleSource;
-            // Check if we need to materialise the source.
+            Multiplicity newEdgeMult;
+            boolean wasSrcMaterialised = false;
+            boolean createRemainderEdge = false;
+            boolean keepOrigEdge = true;
+            // Check if we need to materialise the source and other special cases.
             if (mat.shape.getMult(possibleSource).isCollector()) {
-                Multiplicity origEdgeMult = mat.shape.getMult(origEdge);
-                Multiplicity newTgtMult = mat.shape.getMult(newTgt);
                 Multiplicity newSrcMult;
                 if (newTgtMult.isOne()) {
                     newSrcMult = Multiplicity.ONE_NODE_MULT;
-                } else if (origEdgeMult.isOne()) {
-                    newSrcMult = newTgtMult;
+                    newEdgeMult = Multiplicity.ONE_EDGE_MULT;
+                    createRemainderEdge = true;
                 } else {
-                    newSrcMult = Multiplicity.ONE_NODE_MULT;
+                    newSrcMult = computeSourceMult(newTgtMult, origEdgeMult);
+                    newEdgeMult = origEdgeMult;
                 }
                 newSrc = mat.extractNode(possibleSource, newSrcMult);
-                mat.computeTraversal(newSrc);
+                wasSrcMaterialised = true;
+            } else { // The source is a concrete node.
+                if (newTgtMult.isOne()) {
+                    newEdgeMult = Multiplicity.ONE_EDGE_MULT;
+                } else {
+                    newEdgeMult = origEdgeMult;
+                    keepOrigEdge = false;
+                }
             }
             // Create the new edge.
-            mat.extractEdge(origEdge, newSrc, newTgt);
+            mat.extractEdge(origEdge, newSrc, newTgt, newEdgeMult, keepOrigEdge);
+            Multiplicity adjustedOrigEdgeMult = origEdgeMult.sub(newEdgeMult);
+            // Check for special cases.
+            if (createRemainderEdge) {
+                if (!adjustedOrigEdgeMult.isZero()) {
+                    PatternEdge remainderEdge =
+                        mat.createEdge(newSrc, edgeType, origEdge.target());
+                    mat.shape.setMult(remainderEdge, adjustedOrigEdgeMult);
+                    mat.morph.putEdge(remainderEdge, origEdge);
+                }
+            }
+            if (wasSrcMaterialised) {
+                mat.computeTraversal(newSrc);
+            }
             // The new edge nodes are no longer dangling w.r.t. this edge type.
             mat.getDanglingOut(edgeType).remove(newSrc);
             mat.getDanglingIn(edgeType).remove(newTgt);
@@ -536,8 +591,11 @@ public final class Materialisation {
             PatternPreviewDialog.showPatternGraph(this.shape);
         }
 
+        Multiplicity origEdgeMult = this.shape.getMult(origEdge);
+        Multiplicity newSrcMult = this.shape.getMult(newSrc);
         TypeEdge edgeType = origEdge.getType();
         PatternNode origTgt = origEdge.target();
+
         Set<PatternNode> danglingSet = getDanglingIn(edgeType);
         List<PatternNode> possibleTargets =
             new ArrayList<PatternNode>(danglingSet.size() + 1);
@@ -558,14 +616,14 @@ public final class Materialisation {
             if (isSrcEnvironment && possibleTarget.equals(origTgt)
                 && !mat.shape.isUniquelyCovered(possibleTarget)) {
                 // Yes, we do.
-                assert mat.shape.getMult(possibleTarget).isCollector();
-                Multiplicity origEdgeMult = mat.shape.getMult(origEdge);
-                newTgt =
-                    mat.extractNode(possibleTarget, origEdgeMult.toNodeKind());
+                Multiplicity newTgtMult = times(newSrcMult, origEdgeMult);
+                newTgt = mat.extractNode(possibleTarget, newTgtMult);
+                mat.extractEdge(origEdge, newSrc, newTgt, origEdgeMult, false);
                 mat.computeTraversal(newTgt);
+            } else {
+                // Create the new edge.
+                mat.extractEdge(origEdge, newSrc, newTgt, origEdgeMult, true);
             }
-            // Create the new edge.
-            mat.extractEdge(origEdge, newSrc, newTgt);
             // The new edge nodes are no longer dangling w.r.t. this edge type.
             mat.getDanglingOut(edgeType).remove(newSrc);
             mat.getDanglingIn(edgeType).remove(newTgt);
