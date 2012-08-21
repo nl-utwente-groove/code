@@ -234,6 +234,18 @@ public final class PatternRule {
         return this.creatorEdges;
     }
 
+    /** Returns true if the given node is an eraser. */
+    public boolean isEraser(RuleNode rNode) {
+        return lhs().nodeSet().contains(rNode)
+            && !rhs().nodeSet().contains(rNode);
+    }
+
+    /** Returns true if the given node is a creator. */
+    public boolean isCreator(RuleNode rNode) {
+        return !lhs().nodeSet().contains(rNode)
+            && rhs().nodeSet().contains(rNode);
+    }
+
     private RuleNode[] computeEraserNodes() {
         Set<RuleNode> result = new MyHashSet<RuleNode>();
         result.addAll(lhs().nodeSet());

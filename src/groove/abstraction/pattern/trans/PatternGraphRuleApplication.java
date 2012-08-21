@@ -44,6 +44,13 @@ public final class PatternGraphRuleApplication {
         this.pRule = match.getRule();
     }
 
+    /** Special method for computing the closure. */
+    public void transformWithClosureRule() {
+        assert this.pRule.isClosure();
+        createNodes(this.pGraph);
+        createEdges(this.pGraph);
+    }
+
     /** Executes the rule application and returns the result. */
     public PatternGraph transform(boolean inPlace) {
         if (!this.pRule.isModifying()) {
@@ -58,6 +65,7 @@ public final class PatternGraphRuleApplication {
 
     /** Transforms and returns the given pattern graph.*/
     private PatternGraph transform(PatternGraph host) {
+        assert !this.pRule.isClosure();
         // Pattern graphs are a particular graph in a sense that no pattern
         // edges can be erased without removing also the source or target
         // pattern nodes. This means that we need only to delete pattern nodes
@@ -65,10 +73,8 @@ public final class PatternGraphRuleApplication {
         eraseNodes(host);
         createNodes(host);
         createEdges(host);
-        if (!this.pRule.isClosure()) {
-            // This is a normal rule application. Close the transformed graph.
-            this.pRule.getTypeGraph().close(host);
-        } // else do nothing otherwise we have an infinite recursion.
+        // This is a normal rule application. Close the transformed graph.
+        this.pRule.getTypeGraph().close(host);
         return host;
     }
 

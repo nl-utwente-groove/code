@@ -417,6 +417,24 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
         return result;
     }
 
+    /** Returns the set of ancestors of the given node from the edge layer.*/
+    public Set<N> getEdgeLayerAncestors(N node) {
+        assert node.getLayer() > 1;
+        Set<N> result = new MyHashSet<N>();
+        List<E> toTraverse = new LinkedList<E>();
+        toTraverse.addAll(inEdgeSet(node));
+        while (!toTraverse.isEmpty()) {
+            E edge = toTraverse.remove(0);
+            N source = edge.source();
+            if (source.getLayer() == 1) {
+                result.add(source);
+            } else {
+                toTraverse.addAll(inEdgeSet(source));
+            }
+        }
+        return result;
+    }
+
     // ------------------------------------------------------------------------
     // Unsupported methods
     // ------------------------------------------------------------------------
