@@ -301,45 +301,107 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         Map<Node,PatternNode> nodeMap = new MyHashMap<Node,PatternNode>();
         Map<Edge,PatternNode> edgeMap = new MyHashMap<Edge,PatternNode>();
         lift(sRule.lhs(), liftedLhs, nodeMap, edgeMap);
-        lift(sRule.rhs(), liftedRhs, nodeMap, edgeMap);
         close(liftedLhs);
+        lift(sRule.rhs(), liftedRhs, nodeMap, edgeMap);
         close(liftedRhs);
 
         // ...then we properly fill the pattern rule object.
         PatternRule pRule = new PatternRule(sRule, this);
         Map<PatternNode,RuleNode> ruleMap =
             new MyHashMap<PatternNode,RuleNode>();
+        Map<PatternNode,RuleNode> auxMap =
+            new MyHashMap<PatternNode,RuleNode>();
+
         // Add nodes to the rule.
-        for (PatternNode pNode : liftedLhs.nodeSet()) {
-            RuleNode rNode;
-            if (liftedRhs.nodeSet().contains(pNode)) {
-                rNode = pRule.addReaderNode(pNode.getType());
-            } else {
-                rNode = pRule.addEraserNode(pNode.getType());
-            }
-            ruleMap.put(pNode, rNode);
-        }
-        for (PatternNode pNode : liftedRhs.nodeSet()) {
-            if (!liftedLhs.nodeSet().contains(pNode)) {
-                RuleNode rNode = pRule.addCreatorNode(pNode.getType());
+        // First handle nodes from layers 0 and 1.
+        for (int layer = 0; layer <= 1; layer++) {
+            // LHS
+            for (PatternNode pNode : liftedLhs.getLayerNodes(layer)) {
+                RuleNode rNode;
+                if (liftedRhs.nodeSet().contains(pNode)) {
+                    rNode = pRule.addReaderNode(pNode.getType());
+                } else {
+                    rNode = pRule.addEraserNode(pNode.getType());
+                }
                 ruleMap.put(pNode, rNode);
             }
+            // RHS
+            for (PatternNode pNode : liftedRhs.getLayerNodes(layer)) {
+                if (!liftedLhs.nodeSet().contains(pNode)) {
+                    RuleNode rNode = pRule.addCreatorNode(pNode.getType());
+                    ruleMap.put(pNode, rNode);
+                }
+            }
         }
+        // Now handle the remaining layers.
+        int maxLayer = Math.max(liftedLhs.depth(), liftedRhs.depth());
+        for (int layer = 2; layer <= maxLayer; layer++) {
+            // LHS
+            for (PatternNode lhsNode : liftedLhs.getLayerNodes(layer)) {
+                RuleNode rNode;
+                Set<PatternNode> lhsAncestors =
+                    liftedLhs.getEdgeLayerAncestors(lhsNode);
+                boolean isEraser = true;
+                rhsLoop: for (PatternNode rhsNode : liftedRhs.getLayerNodes(layer)) {
+                    Set<PatternNode> rhsAncestors =
+                        liftedRhs.getEdgeLayerAncestors(rhsNode);
+                    if (rhsAncestors.containsAll(lhsAncestors)
+                        && lhsAncestors.containsAll(rhsAncestors)) {
+                        isEraser = false;
+                        break rhsLoop;
+                    }
+                }
+                if (isEraser) {
+                    rNode = pRule.addEraserNode(lhsNode.getType());
+                } else {
+                    rNode = pRule.addReaderNode(lhsNode.getType());
+                }
+                ruleMap.put(lhsNode, rNode);
+            }
+            // RHS
+            for (PatternNode rhsNode : liftedRhs.getLayerNodes(layer)) {
+                RuleNode rNode;
+                Set<PatternNode> rhsAncestors =
+                    liftedRhs.getEdgeLayerAncestors(rhsNode);
+                boolean isCreator = true;
+                lhsLoop: for (PatternNode lhsNode : liftedLhs.getLayerNodes(layer)) {
+                    Set<PatternNode> lhsAncestors =
+                        liftedLhs.getEdgeLayerAncestors(lhsNode);
+                    if (lhsAncestors.containsAll(rhsAncestors)
+                        && rhsAncestors.containsAll(lhsAncestors)) {
+                        isCreator = false;
+                        break lhsLoop;
+                    }
+                }
+                if (isCreator) {
+                    rNode = pRule.addCreatorNode(rhsNode.getType());
+                    auxMap.put(rhsNode, rNode);
+                }
+            }
+        }
+
         // Add edges to the rule.
         for (PatternEdge pEdge : liftedLhs.edgeSet()) {
             RuleNode rSrc = ruleMap.get(pEdge.source());
             RuleNode rTgt = ruleMap.get(pEdge.target());
-            if (liftedRhs.edgeSet().contains(pEdge)) {
-                pRule.addReaderEdge(rSrc, pEdge.getType(), rTgt);
-            } else {
+            if (pRule.isEraser(rSrc) || pRule.isEraser(rTgt)) {
                 pRule.addEraserEdge(rSrc, pEdge.getType(), rTgt);
+            } else {
+                pRule.addReaderEdge(rSrc, pEdge.getType(), rTgt);
             }
         }
         for (PatternEdge pEdge : liftedRhs.edgeSet()) {
-            if (!liftedLhs.edgeSet().contains(pEdge)) {
-                pRule.addCreatorEdge(ruleMap.get(pEdge.source()),
-                    pEdge.getType(), ruleMap.get(pEdge.target()));
+            RuleNode rSrc = auxMap.get(pEdge.source());
+            if (rSrc == null) {
+                rSrc = ruleMap.get(pEdge.source());
             }
+            RuleNode rTgt = auxMap.get(pEdge.target());
+            if (rTgt == null) {
+                rTgt = ruleMap.get(pEdge.target());
+            }
+            if (pRule.isCreator(rSrc) || pRule.isCreator(rTgt)) {
+                pRule.addCreatorEdge(rSrc, pEdge.getType(), rTgt);
+            }// else: do nothing since reader edges were already added.
         }
 
         return pRule;
@@ -363,7 +425,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
                     // layer can depend on each other.
                     PatternGraphRuleApplication app =
                         new PatternGraphRuleApplication(pGraph, match);
-                    app.transform(true);
+                    app.transformWithClosureRule();
                 }
             }
         }
