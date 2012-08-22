@@ -468,7 +468,7 @@ public final class Materialisation {
     private void traverseUp(Stack<Materialisation> toProcess) {
         assert !this.upTraversal.isEmpty();
 
-        PatternNode newTgt = this.upTraversal.get(0);
+        final PatternNode newTgt = this.upTraversal.get(0);
         PatternEdge missingOrigEdge = getMissingInEdge(newTgt);
 
         if (missingOrigEdge == null) {
@@ -483,7 +483,6 @@ public final class Materialisation {
         }
 
         TypeEdge edgeType = missingOrigEdge.getType();
-        Multiplicity newTgtMult = this.shape.getMult(newTgt);
 
         // Find possible sources.
         Set<PatternNode> possibleSources = new MyHashSet<PatternNode>();
@@ -523,46 +522,10 @@ public final class Materialisation {
             PatternEdge origEdge = srcToOrigEdgeMap.get(possibleSource);
             Multiplicity origEdgeMult = mat.shape.getMult(origEdge);
             PatternNode newSrc = possibleSource;
-            Multiplicity newEdgeMult;
-            boolean wasSrcMaterialised = false;
-            boolean createRemainderEdge = false;
-            boolean keepOrigEdge = true;
-            // Check if we need to materialise the source and other special cases.
-            if (mat.shape.getMult(possibleSource).isCollector()) {
-                Multiplicity newSrcMult;
-                if (newTgtMult.isOne()) {
-                    newSrcMult = Multiplicity.ONE_NODE_MULT;
-                    newEdgeMult = Multiplicity.ONE_EDGE_MULT;
-                    createRemainderEdge = true;
-                } else {
-                    newSrcMult = computeSourceMult(newTgtMult, origEdgeMult);
-                    newEdgeMult = origEdgeMult;
-                }
-                newSrc = mat.extractNode(possibleSource, newSrcMult);
-                wasSrcMaterialised = true;
-            } else { // The source is a concrete node.
-                if (newTgtMult.isOne()) {
-                    newEdgeMult = Multiplicity.ONE_EDGE_MULT;
-                } else {
-                    newEdgeMult = origEdgeMult;
-                    //keepOrigEdge = false;
-                }
-            }
-            // Create the new edge.
-            mat.extractEdge(origEdge, newSrc, newTgt, newEdgeMult, keepOrigEdge);
-            Multiplicity adjustedOrigEdgeMult = origEdgeMult.sub(newEdgeMult);
-            // Check for special cases.
-            if (createRemainderEdge) {
-                if (!adjustedOrigEdgeMult.isZero()) {
-                    PatternEdge remainderEdge =
-                        mat.createEdge(newSrc, edgeType, origEdge.target());
-                    mat.shape.setMult(remainderEdge, adjustedOrigEdgeMult);
-                    mat.morph.putEdge(remainderEdge, origEdge);
-                }
-            }
-            if (wasSrcMaterialised) {
-                mat.computeTraversal(newSrc);
-            }
+            // The hard part is done in another method.
+            // Sometimes we have to extract another node from the source,
+            // hence the returning of a node in the method call.
+            newSrc = mat.traverseUp(origEdge, origEdgeMult, newSrc, newTgt);
             // The new edge nodes are no longer dangling w.r.t. this edge type.
             mat.getDanglingOut(edgeType).remove(newSrc);
             mat.getDanglingIn(edgeType).remove(newTgt);
@@ -572,11 +535,55 @@ public final class Materialisation {
         }
     }
 
+    private PatternNode traverseUp(PatternEdge origEdge,
+            Multiplicity origEdgeMult, PatternNode newSrc, PatternNode newTgt) {
+        Multiplicity newTgtMult = this.shape.getMult(newTgt);
+        Multiplicity newEdgeMult;
+        boolean wasSrcMaterialised = false;
+        boolean createRemainderEdge = false;
+        // Check if we need to materialise the source and other special cases.
+        if (this.shape.getMult(newSrc).isCollector()) {
+            Multiplicity newSrcMult;
+            if (newTgtMult.isOne()) {
+                newSrcMult = Multiplicity.ONE_NODE_MULT;
+                newEdgeMult = Multiplicity.ONE_EDGE_MULT;
+                createRemainderEdge = true;
+            } else {
+                newSrcMult = computeSourceMult(newTgtMult, origEdgeMult);
+                newEdgeMult = origEdgeMult;
+            }
+            newSrc = extractNode(newSrc, newSrcMult);
+            wasSrcMaterialised = true;
+        } else { // The source is a concrete node.
+            if (newTgtMult.isOne()) {
+                newEdgeMult = Multiplicity.ONE_EDGE_MULT;
+            } else {
+                newEdgeMult = origEdgeMult;
+            }
+        }
+        // Create the new edge.
+        extractEdge(origEdge, newSrc, newTgt, newEdgeMult, true);
+        Multiplicity adjustedOrigEdgeMult = origEdgeMult.sub(newEdgeMult);
+        // Check for special cases.
+        if (createRemainderEdge) {
+            if (!adjustedOrigEdgeMult.isZero()) {
+                PatternEdge remainderEdge =
+                    createEdge(newSrc, origEdge.getType(), origEdge.target());
+                this.shape.setMult(remainderEdge, adjustedOrigEdgeMult);
+                this.morph.putEdge(remainderEdge, origEdge);
+            }
+        }
+        if (wasSrcMaterialised) {
+            computeTraversal(newSrc);
+        }
+        return newSrc;
+    }
+
     private void traverseDown(Stack<Materialisation> toProcess) {
         assert this.upTraversal.isEmpty();
         assert !this.downTraversal.isEmpty();
 
-        PatternNode newSrc = this.downTraversal.get(0);
+        final PatternNode newSrc = this.downTraversal.get(0);
         boolean isSrcEnvironment = isEnvironment(newSrc);
         PatternEdge origEdge = getMissingOutEdge(newSrc, isSrcEnvironment);
 
