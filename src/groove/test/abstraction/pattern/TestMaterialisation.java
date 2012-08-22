@@ -76,21 +76,21 @@ public class TestMaterialisation {
     public void testMaterialisation1() {
         int nodeCount[] = {11, 12};
         int edgeCount[] = {12, 14};
-        testMultipleResults(1, nodeCount, edgeCount, false);
+        testMultipleResults(1, 1, nodeCount, edgeCount, false);
     }
 
     @Test
     public void testMaterialisation2() {
         int nodeCount[] = {12, 11};
         int edgeCount[] = {14, 12};
-        testMultipleResults(2, nodeCount, edgeCount, false);
+        testMultipleResults(2, 1, nodeCount, edgeCount, false);
     }
 
     @Test
     public void testMaterialisation3() {
         int nodeCount[] = {15, 18, 20, 21, 12};
         int edgeCount[] = {20, 24, 28, 30, 16};
-        testMultipleResults(3, nodeCount, edgeCount, false);
+        testMultipleResults(3, 1, nodeCount, edgeCount, false);
     }
 
     @Test
@@ -103,6 +103,13 @@ public class TestMaterialisation {
         PatternAbsParam.getInstance().setNodeMultBound(2);
         testSingleResult(5, 11, 10, true);
         PatternAbsParam.getInstance().setNodeMultBound(1);
+    }
+
+    @Test
+    public void testMaterialisation6() {
+        int nodeCount[] = {14, 11};
+        int edgeCount[] = {16, 12};
+        testMultipleResults(6, 2, nodeCount, edgeCount, false);
     }
 
     private void testSingleResult(int testNumber, int nodeCount, int edgeCount,
@@ -121,24 +128,26 @@ public class TestMaterialisation {
         assertEquals(edgeCount, matShape.edgeCount());
     }
 
-    private void testMultipleResults(int testNumber, int nodeCount[],
-            int edgeCount[], boolean hostIsShape) {
+    private void testMultipleResults(int testNumber, int matchCount,
+            int nodeCount[], int edgeCount[], boolean hostIsShape) {
         assert nodeCount.length == edgeCount.length;
         int size = nodeCount.length;
         loadTest(testNumber, hostIsShape);
         Matcher matcher = MatcherFactory.instance().getMatcher(pRule, false);
         List<Match> matches = matcher.findMatches(pShape);
-        assertEquals(1, matches.size());
-        PreMatch preMatch = (PreMatch) matches.get(0);
-        Collection<Materialisation> mats =
-            Materialisation.getMaterialisations(pShape, preMatch);
-        assertEquals(size, mats.size());
-        Iterator<Materialisation> iter = mats.iterator();
-        for (int i = 0; i < size; i++) {
-            Materialisation mat = iter.next();
-            PatternShape matShape = mat.getShape();
-            assertEquals(nodeCount[i], matShape.nodeCount());
-            assertEquals(edgeCount[i], matShape.edgeCount());
+        assertEquals(matchCount, matches.size());
+        int i = 0;
+        for (Match preMatch : matches) {
+            Collection<Materialisation> mats =
+                Materialisation.getMaterialisations(pShape, (PreMatch) preMatch);
+            Iterator<Materialisation> iter = mats.iterator();
+            while (iter.hasNext()) {
+                Materialisation mat = iter.next();
+                PatternShape matShape = mat.getShape();
+                assertEquals(nodeCount[i], matShape.nodeCount());
+                assertEquals(edgeCount[i], matShape.edgeCount());
+                i++;
+            }
         }
     }
 
