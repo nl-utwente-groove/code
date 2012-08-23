@@ -599,9 +599,10 @@ public final class Materialisation {
         }
 
         Multiplicity origEdgeMult = this.shape.getMult(origEdge);
+        if (origEdgeMult.isZero()) {
+            origEdgeMult = this.originalShape.getMult(origEdge);
+        }
         Multiplicity newSrcMult = this.shape.getMult(newSrc);
-        // The new source must be concrete.
-        assert newSrcMult.isOne();
         TypeEdge edgeType = origEdge.getType();
 
         Set<PatternNode> danglingSet = getDanglingIn(edgeType);
@@ -624,8 +625,8 @@ public final class Materialisation {
             // Sometimes we have to extract another node from the target,
             // hence the returning of a node in the method call.
             newTgt =
-                mat.traverseDown(origEdge, origEdgeMult, newSrc, newTgt,
-                    isSrcEnvironment);
+                mat.traverseDown(origEdge, origEdgeMult, newSrc, newSrcMult,
+                    newTgt, isSrcEnvironment);
             // The new edge nodes are no longer dangling w.r.t. this edge type.
             mat.getDanglingOut(edgeType).remove(newSrc);
             mat.getDanglingIn(edgeType).remove(newTgt);
@@ -636,7 +637,8 @@ public final class Materialisation {
     }
 
     private PatternNode traverseDown(PatternEdge origEdge,
-            Multiplicity origEdgeMult, PatternNode newSrc, PatternNode newTgt,
+            Multiplicity origEdgeMult, PatternNode newSrc,
+            Multiplicity newSrcMult, PatternNode newTgt,
             boolean isSrcEnvironment) {
         if (!isSrcEnvironment) {
             // The source is not part of the environment, this means we don't
@@ -646,48 +648,44 @@ public final class Materialisation {
         }
 
         // else: the source is part of the environment.
-        Multiplicity newTgtMult = this.shape.getMult(newTgt);
-        if (newTgtMult.isOne()) {
-            // Both source and target are concrete, this means that the new
-            // edge can only be concrete as well.
-            // Re-route the original edge to the new target.
-            extractEdge(origEdge, newSrc, newTgt, Multiplicity.ONE_EDGE_MULT,
-                false);
+        boolean isTgtUniquelyCovered = this.shape.isUniquelyCovered(newTgt);
+        int origEdgeTypeCountInTgt =
+            this.shape.getInEdgesWithType(newTgt, origEdge.getType()).size();
+
+        if (isTgtUniquelyCovered && origEdgeTypeCountInTgt == 0) {
+            // The target is uniquely covered and there is no incoming edge
+            // with the same type of the original edge, this means that when
+            // we create a new edge the target is still going to be uniquely
+            // covered.
+            extractEdge(origEdge, newSrc, newTgt, origEdgeMult, true);
             return newTgt;
         }
 
-        // else: the target is not concrete and source is part of environment.
-        if (origEdgeMult.isOne()) {
-            // Extract a new node.
-            newTgt = extractNode(newTgt, Multiplicity.ONE_NODE_MULT);
-            // Re-route the original edge to the new target.
-            extractEdge(origEdge, newSrc, newTgt, Multiplicity.ONE_EDGE_MULT,
-                false);
+        if ((isTgtUniquelyCovered && origEdgeTypeCountInTgt > 0)
+            || (!isTgtUniquelyCovered && origEdgeMult.isOne())
+            || (!isTgtUniquelyCovered && origEdgeTypeCountInTgt > 1)) {
+            // The original edge is not unique in the target. This means we
+            // have to split the target and only connect the source to
+            // the newly created node.
+            boolean keepOrigEdge =
+                isTgtUniquelyCovered && origEdgeTypeCountInTgt > 0;
+            Multiplicity newTgtMult =
+                newSrcMult.times(origEdgeMult).toNodeKind();
+            newTgt = extractNode(newTgt, newTgtMult);
+            // Create a new edge to the new target.
+            extractEdge(origEdge, newSrc, newTgt, origEdgeMult, keepOrigEdge);
             // Make sure the new node will get properly connected later. 
             computeTraversal(newTgt);
             return newTgt;
         }
 
-        // else: the original edge is not concrete, nor is the target and the
-        // source is part of environment.
-        Set<PatternEdge> inEdgesWithOrigEdgeType =
-            this.shape.getInEdgesWithType(newTgt, origEdge.getType());
-        if (inEdgesWithOrigEdgeType.size() > 1) {
-            // The original edge was not unique in the target. This means
-            // we have to split the target and only connect the source to
-            // the newly created node.
-            newTgt = extractNode(newTgt, origEdgeMult.toNodeKind());
-            extractEdge(origEdge, newSrc, newTgt, origEdgeMult, false);
-            computeTraversal(newTgt);
-            return newTgt;
-        }
-
-        // else: the original edge is unique in the target, plus other conditions.
+        // else: !isTgtUniquelyCovered && origEdgeMult != 1 
         return splitTargetToUniqueCovers(origEdge, origEdgeMult, newSrc, newTgt);
     }
 
     private PatternNode splitTargetToUniqueCovers(PatternEdge origEdge,
             Multiplicity origEdgeMult, PatternNode newSrc, PatternNode newTgt) {
+        assert !origEdgeMult.isOne();
         Set<TypeEdge> edgeTypes = new MyHashSet<TypeEdge>();
         edgeTypes.addAll(this.shape.getTypeGraph().inEdgeSet(newTgt.getType()));
         edgeTypes.remove(origEdge.getType());
@@ -706,13 +704,13 @@ public final class Materialisation {
             PatternNode otherSrc = inEdge.source();
             Multiplicity otherSrcMult = this.shape.getMult(otherSrc);
             if (i < copies) {
-                newTgt = extractNode(newTgt, otherSrcMult);
-                extractEdge(inEdge, otherSrc, newTgt, inEdgeMult, false);
-                extractEdge(origEdge, newSrc, newTgt, origEdgeMult, true);
-                computeTraversal(newTgt);
+                PatternNode splitTgt = extractNode(newTgt, otherSrcMult);
+                extractEdge(inEdge, otherSrc, splitTgt, inEdgeMult, false);
+                extractEdge(origEdge, newSrc, splitTgt, origEdgeMult, true);
+                computeTraversal(splitTgt);
             } else {
                 this.shape.setMult(newTgt, otherSrcMult);
-                if (otherSrcMult.isOne()) {
+                if (otherSrcMult.isOne() && this.shape.containsEdge(origEdge)) {
                     this.shape.setMult(origEdge, Multiplicity.ONE_EDGE_MULT);
                 }
             }

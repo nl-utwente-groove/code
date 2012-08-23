@@ -396,7 +396,7 @@ public final class PatternShape extends PatternGraph {
     public boolean isUniquelyCovered(PatternNode node) {
         // Check the type graph for the incoming types.
         for (TypeEdge edgeType : getTypeGraph().inEdgeSet(node.getType())) {
-            if (getInEdgesWithType(node, edgeType).size() != 1) {
+            if (getInEdgesWithType(node, edgeType).size() > 1) {
                 return false;
             }
         }
