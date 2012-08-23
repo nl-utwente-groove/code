@@ -80,8 +80,8 @@ public class TestPatternShapeGenerator {
         generator.processArguments();
         generator.explore();
         psts = generator.getPGTS();
-        assertEquals(15, psts.getStateCount());
-        assertEquals(31, psts.getTransitionCount());
+        assertEquals(14, psts.getStateCount());
+        assertEquals(29, psts.getTransitionCount());
     }
 
     @Test
@@ -110,8 +110,8 @@ public class TestPatternShapeGenerator {
         generator.processArguments();
         generator.explore();
         PGTS psts = generator.getPGTS();
-        assertEquals(101, psts.getStateCount());
-        assertEquals(655, psts.getTransitionCount());
+        assertEquals(60, psts.getStateCount());
+        assertEquals(393, psts.getTransitionCount());
     }
 
     @Test
@@ -126,8 +126,8 @@ public class TestPatternShapeGenerator {
         generator.processArguments();
         generator.explore();
         PGTS psts = generator.getPGTS();
-        assertEquals(22, psts.getStateCount());
-        assertEquals(48, psts.getTransitionCount());
+        assertEquals(30, psts.getStateCount());
+        assertEquals(63, psts.getTransitionCount());
 
         PatternAbsParam.getInstance().setNodeMultBound(2);
         PatternAbsParam.getInstance().setEdgeMultBound(1);
@@ -136,8 +136,8 @@ public class TestPatternShapeGenerator {
         generator.processArguments();
         generator.explore();
         psts = generator.getPGTS();
-        assertEquals(36, psts.getStateCount());
-        assertEquals(72, psts.getTransitionCount());
+        assertEquals(50, psts.getStateCount());
+        assertEquals(98, psts.getTransitionCount());
 
         PatternAbsParam.getInstance().setNodeMultBound(1);
         PatternAbsParam.getInstance().setEdgeMultBound(2);
@@ -146,10 +146,10 @@ public class TestPatternShapeGenerator {
         generator.processArguments();
         generator.explore();
         psts = generator.getPGTS();
-        assertEquals(104, psts.getStateCount());
-        assertEquals(265, psts.getTransitionCount());
+        assertEquals(155, psts.getStateCount());
+        assertEquals(428, psts.getTransitionCount());
 
-        PatternAbsParam.getInstance().setNodeMultBound(2);
+        /*PatternAbsParam.getInstance().setNodeMultBound(2);
         PatternAbsParam.getInstance().setEdgeMultBound(2);
         generator =
             new PatternShapeGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
@@ -157,7 +157,7 @@ public class TestPatternShapeGenerator {
         generator.explore();
         psts = generator.getPGTS();
         assertEquals(202, psts.getStateCount());
-        assertEquals(525, psts.getTransitionCount());
+        assertEquals(525, psts.getTransitionCount());*/
 
         generator =
             new PatternShapeGenerator(getArgsWithThreeValue(GRAMMAR,

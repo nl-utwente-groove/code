@@ -23,6 +23,7 @@ import static groove.abstraction.Multiplicity.ZERO_NODE_MULT;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.MyHashMap;
+import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
 import groove.graph.GraphRole;
@@ -280,48 +281,7 @@ public final class PatternShape extends PatternGraph {
               // the edge was added.
         }
 
-        // EZ says: sometimes we can make the shape more precise.
-        // EDUARDO: This seems an ugly hack... Can't we get rid of this?
-        // We should try to prevent the wrong configuration to appear in the
-        // first place...
-        result.improvePrecision();
-
-        assert result.isConcretePartCommuting(false);
         return result;
-    }
-
-    // EDUARDO: This is an ugly hack... Can't we get rid of this?
-    private void improvePrecision() {
-        // Look only for layer 1.
-        for (PatternNode pNode : getLayerNodes(1)) {
-            Multiplicity origMult = getMult(pNode);
-            if (!origMult.isCollector() || !isUniquelyCovered(pNode)) {
-                continue;
-            }
-
-            PatternEdge eSrc = getCoveringEdge(pNode, pNode.getSource());
-            PatternEdge eTgt = getCoveringEdge(pNode, pNode.getTarget());
-            PatternNode pSrc = eSrc.source();
-            PatternNode pTgt = eTgt.source();
-
-            if (pNode.getSimpleEdge().isLoop()) {
-                assert pSrc.equals(pTgt) && eSrc.equals(eTgt);
-                if (getMult(pSrc).isOne()) {
-                    assert getMult(eSrc).isOne();
-                    assert origMult.subsumes(ONE_NODE_MULT);
-                    setMult(pNode, ONE_NODE_MULT);
-                }
-            } else {
-                // Binary simple edge.
-                if (getMult(eSrc).isOne() && getMult(pSrc).isOne()
-                    && getMult(eTgt).isOne() && getMult(pTgt).isOne()
-                    && !pSrc.equals(pTgt)) {
-                    // The node can only be concrete.
-                    assert origMult.subsumes(ONE_NODE_MULT);
-                    setMult(pNode, ONE_NODE_MULT);
-                }
-            }
-        }
     }
 
     /**
@@ -449,8 +409,65 @@ public final class PatternShape extends PatternGraph {
         return true;
     }
 
+    /** Makes the multiplicities more precise when possible. */
+    public void improvePrecision() {
+        // First traverse down.
+        for (int layer = 1; layer <= depth(); layer++) {
+            for (PatternNode tgt : getLayerNodes(layer)) {
+                Multiplicity tgtMult = getMult(tgt);
+                if (!tgtMult.isCollector() || !isUniquelyCovered(tgt)) {
+                    continue;
+                }
+                for (PatternEdge inEdge : inEdgeSet(tgt)) {
+                    Multiplicity srcMult = getMult(inEdge.source());
+                    Multiplicity edgeMult = getMult(inEdge);
+                    Multiplicity expectedTgtMult =
+                        srcMult.times(edgeMult).toNodeKind();
+                    if (expectedTgtMult != tgtMult
+                        && tgtMult.subsumes(expectedTgtMult)) {
+                        tgtMult = expectedTgtMult;
+                    }
+                }
+                this.setMult(tgt, tgtMult);
+            }
+        }
+        // Now traverse up and adjust multiplicities when possible.
+        Set<PatternNode> toRemove = new MyHashSet<PatternNode>();
+        for (int layer = depth(); layer >= 1; layer--) {
+            for (PatternNode tgt : getLayerNodes(layer)) {
+                Multiplicity tgtMult = getMult(tgt);
+                for (PatternEdge inEdge : inEdgeSet(tgt)) {
+                    PatternNode src = inEdge.source();
+                    Multiplicity srcMult = getMult(src);
+                    Multiplicity edgeMult = getMult(inEdge);
+                    if (edgeMult.isOne()) {
+                        if (srcMult != tgtMult && srcMult.subsumes(tgtMult)) {
+                            setMult(src, tgtMult);
+                        }
+                    } else if (srcMult.isOne()) {
+                        Multiplicity newEdgeMult = tgtMult.toEdgeKind();
+                        if (edgeMult != newEdgeMult
+                            && edgeMult.subsumes(newEdgeMult)) {
+                            setMult(inEdge, newEdgeMult);
+                        }
+                    } else { // source and edge are collectors.
+                        if (tgtMult.isOne()) {
+                            // This is an invalid configuration.
+                            // Remove the source.
+                            //assert srcMult.isZeroPlus();
+                            toRemove.add(src);
+                        }
+                    }
+                }
+            }
+            for (PatternNode invalidSrc : toRemove) {
+                removeNode(invalidSrc);
+            }
+            toRemove.clear();
+        }
+    }
+
     /** Checks if the multiplicities in the shape make sense. */
-    // EZ says: this is a debug method, don't remove it...
     public boolean areMultiplicitiesConsistent() {
         for (int layer = 1; layer <= depth(); layer++) {
             for (PatternNode target : getLayerNodes(layer)) {
@@ -478,21 +495,15 @@ public final class PatternShape extends PatternGraph {
     }
 
     /**
-     * Removes collector nodes that cannot exist because they no longer have
+     * Removes nodes that cannot exist because they no longer have
      * proper coverage.
      */
-    // EDUARDO: This seems an ugly hack... Can't we get rid of this?
-    public void removeGarbageCollectorNodes() {
+    public void removeUncoveredNodes() {
         List<PatternNode> toRemove = new ArrayList<PatternNode>();
         for (int layer = 1; layer <= depth(); layer++) {
             toRemove.clear();
             for (PatternNode pNode : getLayerNodes(layer)) {
-                Multiplicity mult = getMult(pNode);
-                if (!mult.isCollector()) {
-                    continue;
-                }
                 if (!isCovered(pNode)) {
-                    assert mult.isZeroPlus();
                     toRemove.add(pNode);
                 }
             }
