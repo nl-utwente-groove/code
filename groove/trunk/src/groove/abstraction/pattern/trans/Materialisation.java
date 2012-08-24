@@ -252,11 +252,12 @@ public final class Materialisation {
             Materialisation mat = toProcess.pop();
             if (mat.isFinished()) {
                 assert mat.isValid();
-                mat.shape.improvePrecision();
                 mat.shape.removeUncoveredNodes();
                 assert mat.shape.isWellFormed();
-                assert mat.shape.areMultiplicitiesConsistent();
-                result.add(mat);
+                mat.shape.improvePrecision();
+                if (mat.shape.isAdmissable(false)) {
+                    result.add(mat);
+                }
             } else {
                 mat.computeSolutions(toProcess);
             }
@@ -533,7 +534,9 @@ public final class Materialisation {
             mat.getDanglingIn(edgeType).remove(newTgt);
             // Push the new materialisation object into the stack.
             assert mat.isConcretePartCommuting(true);
-            toProcess.push(mat);
+            if (mat.shape.isAdmissable(true)) {
+                toProcess.push(mat);
+            }
         }
     }
 
@@ -634,7 +637,9 @@ public final class Materialisation {
             mat.getDanglingIn(edgeType).remove(newTgt);
             // Push the new materialisation object into the stack.
             assert mat.isConcretePartCommuting(true);
-            toProcess.push(mat);
+            if (mat.shape.isAdmissable(true)) {
+                toProcess.push(mat);
+            }
         }
     }
 

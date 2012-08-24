@@ -23,7 +23,6 @@ import static groove.abstraction.Multiplicity.ZERO_NODE_MULT;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.MyHashMap;
-import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
 import groove.graph.GraphRole;
@@ -432,7 +431,6 @@ public final class PatternShape extends PatternGraph {
             }
         }
         // Now traverse up and adjust multiplicities when possible.
-        Set<PatternNode> toRemove = new MyHashSet<PatternNode>();
         for (int layer = depth(); layer >= 1; layer--) {
             for (PatternNode tgt : getLayerNodes(layer)) {
                 Multiplicity tgtMult = getMult(tgt);
@@ -440,35 +438,30 @@ public final class PatternShape extends PatternGraph {
                     PatternNode src = inEdge.source();
                     Multiplicity srcMult = getMult(src);
                     Multiplicity edgeMult = getMult(inEdge);
-                    if (edgeMult.isOne()) {
-                        if (srcMult != tgtMult && srcMult.subsumes(tgtMult)) {
-                            setMult(src, tgtMult);
+                    if (srcMult.isOne()) {
+                        // The source is concrete so the edge multiplicity
+                        // must match the target.
+                        Multiplicity expectedEdgeMult = tgtMult.toEdgeKind();
+                        if (expectedEdgeMult != edgeMult
+                            && edgeMult.subsumes(expectedEdgeMult)) {
+                            setMult(inEdge, expectedEdgeMult);
                         }
-                    } else if (srcMult.isOne()) {
-                        Multiplicity newEdgeMult = tgtMult.toEdgeKind();
-                        if (edgeMult != newEdgeMult
-                            && edgeMult.subsumes(newEdgeMult)) {
-                            setMult(inEdge, newEdgeMult);
-                        }
-                    } else { // source and edge are collectors.
-                        if (tgtMult.isOne()) {
-                            // This is an invalid configuration.
-                            // Remove the source.
-                            //assert srcMult.isZeroPlus();
-                            toRemove.add(src);
+                    } else { // the source is a collector.
+                        // Check if we can improve the precision of the source.
+                        Multiplicity expectedSrcMult =
+                            tgtMult.times(edgeMult).toNodeKind();
+                        if (expectedSrcMult != srcMult
+                            && srcMult.subsumes(expectedSrcMult)) {
+                            setMult(src, expectedSrcMult);
                         }
                     }
                 }
             }
-            for (PatternNode invalidSrc : toRemove) {
-                removeNode(invalidSrc);
-            }
-            toRemove.clear();
         }
     }
 
     /** Checks if the multiplicities in the shape make sense. */
-    public boolean areMultiplicitiesConsistent() {
+    public boolean isAdmissable(boolean acceptNonWellFormed) {
         for (int layer = 1; layer <= depth(); layer++) {
             for (PatternNode target : getLayerNodes(layer)) {
                 Multiplicity tgtMult = getMult(target);
@@ -484,8 +477,8 @@ public final class PatternShape extends PatternGraph {
                         acc = acc.add(srcMult.times(edgeMult));
                     }
                     Multiplicity sum = acc.toNodeKind();
-                    //if (!tgtMult.subsumes(sum)) {
-                    if (!sum.le(tgtMult)) {
+                    if (!tgtMult.subsumes(sum)
+                        && (!acceptNonWellFormed || !sum.isZero())) {
                         return false;
                     }
                 }
@@ -504,6 +497,7 @@ public final class PatternShape extends PatternGraph {
             toRemove.clear();
             for (PatternNode pNode : getLayerNodes(layer)) {
                 if (!isCovered(pNode)) {
+                    assert getMult(pNode).isZeroPlus();
                     toRemove.add(pNode);
                 }
             }

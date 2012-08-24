@@ -41,7 +41,7 @@ public final class Multiplicity {
      * Maximum value to which the bounds can be set. This is used to determine
      * the size of the global auxiliary data structures.
      */
-    public static final int MAX_BOUND = 5;
+    public static final int MAX_BOUND = 8;
 
     /** The \omega value, differs from all natural numbers. */
     public static final int OMEGA = Integer.MAX_VALUE;
