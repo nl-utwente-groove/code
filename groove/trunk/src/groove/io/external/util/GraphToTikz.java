@@ -139,10 +139,10 @@ public final class GraphToTikz {
             result.replace(i, i + LEFT_SQUARE.length(), "[");
             i = result.indexOf(LEFT_SQUARE);
         }
-        i = result.indexOf(RIGHT_SQUARE);
+        i = result.indexOf(TEX_RIGHT_SQUARE);
         while (i > -1) {
-            result.replace(i, i + RIGHT_SQUARE.length(), "]");
-            i = result.indexOf(RIGHT_SQUARE);
+            result.replace(i, i + TEX_RIGHT_SQUARE.length(), "]");
+            i = result.indexOf(TEX_RIGHT_SQUARE);
         }
         return result.toString();
     }
@@ -199,53 +199,59 @@ public final class GraphToTikz {
                     result.append("&#");
                     i++;
                 } else { // It's not.
-                    result.append(AMP);
+                    result.append(TEX_AMP);
                 }
                 break;
             case '$':
-                result.append(DOLLAR);
+                result.append(TEX_DOLLAR);
                 break;
             case '#':
-                result.append(NUMBER);
+                result.append(TEX_HASH);
                 break;
             case '|':
-                result.append(VERT_BAR);
+                result.append(TEX_VERT_BAR);
                 break;
             case '%':
-                result.append(PERCENT);
+                result.append(TEX_PERCENT);
                 break;
             case '_':
-                result.append(UNDERSCORE);
+                result.append(TEX_UNDERSCORE);
                 break;
             case '{':
-                result.append(LEFT_CURLY);
+                result.append(TEX_LEFT_CURLY);
                 break;
             case '}':
-                result.append(RIGHT_CURLY);
+                result.append(TEX_RIGHT_CURLY);
                 break;
             case '[':
                 result.append(LEFT_SQUARE);
                 break;
             case ']':
-                result.append(RIGHT_SQUARE);
+                result.append(TEX_RIGHT_SQUARE);
                 break;
             case '^':
-                result.append(CIRCUNFLEX);
+                result.append(TEX_CIRCONFLEX);
                 break;
             case '~':
-                result.append(TILDE);
+                result.append(TEX_TILDE);
                 break;
             case '+':
-                result.append(PLUS);
+                result.append(TEX_PLUS);
                 break;
             case '-':
-                result.append(MINUS);
+                result.append(TEX_MINUS);
+                break;
+            case '>':
+                result.append(TEX_GT);
+                break;
+            case '<':
+                result.append(TEX_LT);
                 break;
             case '\\':
-                result.append(BACKSLASH);
+                result.append(TEX_BACKSLASH);
                 break;
             case Util.LC_PI:
-                result.append(PI);
+                result.append(TEX_PI);
                 break;
             default:
                 result.append(c);
@@ -270,24 +276,24 @@ public final class GraphToTikz {
      * @return the line with converted characters, if any.
      */
     private static StringBuilder convertInscriptedHtml(StringBuilder line) {
-        replaceInline(line, toHtml(Util.LC_PI), PI);
-        replaceInline(line, toHtml(GT), GT);
-        replaceInline(line, toHtml(FORWARDSLASH), FORWARDSLASH);
-        replaceInline(line, toHtml(LT), LT);
+        replaceInline(line, Util.LC_PI);
+        replaceInline(line, '<');
+        replaceInline(line, '>');
+        replaceInline(line, '/');
         return line;
     }
 
     /**
-     * Replaces all occurrences of the HTML tag in the given line.
+     * Replaces all occurrences of a HTML character by the actual character.
      * @param line the line to be operated on.
-     * @param html the tag to be replaced.
-     * @param tikz the string to replace the tag with.
+     * @param c the character to be replaced.
      */
-    private static void replaceInline(StringBuilder line, String html,
-            String tikz) {
+    private static void replaceInline(StringBuilder line, char c) {
+        String html = toHtml(c);
+        String text = "" + c;
         int i = line.indexOf(html);
         while (i != -1) {
-            line.replace(i, i + html.length(), tikz);
+            line.replace(i, i + html.length(), text);
             i = line.indexOf(html);
         }
     }
@@ -879,9 +885,9 @@ public final class GraphToTikz {
      */
     private void appendNodeInscription(StringBuilder htmlLine) {
         int color = HTMLConverter.removeColorTags(htmlLine);
+        int font = HTMLConverter.removeFontTags(htmlLine);
         StringBuilder line =
-            convertInscriptedHtml(escapeSpecialChars(htmlLine));
-        int font = HTMLConverter.removeFontTags(line);
+            escapeSpecialChars(convertInscriptedHtml(htmlLine));
         String aux = "";
         int i = line.indexOf(toHtml(Util.EXISTS));
         if (i >= 0) {
@@ -1614,25 +1620,24 @@ public final class GraphToTikz {
     private static final String BEGIN_CONTROLS = ".. controls ";
     private static final String END_CONTROLS = " .. ";
     private static final String AND = " and ";
-    private static final String AMP = "\\&";
-    private static final String DOLLAR = "\\$";
-    private static final String NUMBER = "\\#";
-    private static final String PERCENT = "\\%";
-    private static final String UNDERSCORE = "\\_";
-    private static final String LEFT_CURLY = "\\{";
-    private static final String RIGHT_CURLY = "\\}";
+    private static final String TEX_AMP = "\\&";
+    private static final String TEX_DOLLAR = "\\$";
+    private static final String TEX_HASH = "\\#";
+    private static final String TEX_PERCENT = "\\%";
+    private static final String TEX_UNDERSCORE = "\\_";
+    private static final String TEX_LEFT_CURLY = "\\{";
+    private static final String TEX_RIGHT_CURLY = "\\}";
     private static final String LEFT_SQUARE = "$[$";
-    private static final String RIGHT_SQUARE = "$]$";
-    private static final String CIRCUNFLEX = "\\^{}";
-    private static final String PLUS = "$+$";
-    private static final String MINUS = "$-$";
-    private static final String TILDE = "\\~{}";
-    private static final String VERT_BAR = "$|$";
-    private static final String BACKSLASH = "$\\backslash$";
-    private static final String PI = "$\\pi$";
-    private static final String GT = ">";
-    private static final String LT = "<";
-    private static final String FORWARDSLASH = "/";
+    private static final String TEX_RIGHT_SQUARE = "$]$";
+    private static final String TEX_CIRCONFLEX = "\\^{}";
+    private static final String TEX_PLUS = "$+$";
+    private static final String TEX_MINUS = "$-$";
+    private static final String TEX_TILDE = "\\~{}";
+    private static final String TEX_VERT_BAR = "$|$";
+    private static final String TEX_BACKSLASH = "$\\backslash$";
+    private static final String TEX_PI = "$\\pi$";
+    private static final String TEX_GT = "$>$";
+    private static final String TEX_LT = "$<$";
     private static final String NORTH = ".north -| ";
     private static final String SOUTH = ".south -| ";
     private static final String EAST = ".east |- ";

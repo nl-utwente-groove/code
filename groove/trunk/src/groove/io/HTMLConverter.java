@@ -53,27 +53,24 @@ public class HTMLConverter {
     static public StringBuilder toHtml(StringBuilder text) {
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
+            String html = null;
             switch (c) {
             case '/':
-                text.replace(i, i + 1, "&#47;");
-                i += 4;
-                break;
             case '<':
-                text.replace(i, i + 1, "&lt;");
-                i += 3;
-                break;
             case '>':
-                text.replace(i, i + 1, "&gt;");
-                i += 3;
+                html = toHtml(c);
                 break;
             case '\n':
-                text.replace(i, i + 1, HTML_LINEBREAK);
-                i += HTML_LINEBREAK.length() - 1;
+                html = HTML_LINEBREAK;
                 break;
             default:
                 if (c > 0xFF) {
-                    text.replace(i, i + 1, toHtml(c));
+                    html = toHtml(c);
                 }
+            }
+            if (html != null) {
+                text.replace(i, i + 1, html);
+                i += html.length() - 1;
             }
         }
         return text;
