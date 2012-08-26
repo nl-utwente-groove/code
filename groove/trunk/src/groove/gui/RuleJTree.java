@@ -147,8 +147,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             // level of nodes
             if (priorityMap.size() > 1) {
                 topNode = new PriorityTreeNode(priorityEntry.getKey());
-                //this.topDirectoryNode.add(topNode);
-                addSortedNode(this.topDirectoryNode, topNode);
+                this.topDirectoryNode.add(topNode);
                 dirNodeMap.clear();
             }
             for (RuleModel ruleView : priorityEntry.getValue()) {
@@ -159,7 +158,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
                         QualName.getParent(ruleName));
                 // create the rule node and register it
                 RuleTreeNode ruleNode = new RuleTreeNode(ruleView);
-                //parentNode.add(ruleNode);
                 addSortedNode(parentNode, ruleNode);
                 TreePath rulePath = new TreePath(ruleNode.getPath());
                 expandedPaths.add(rulePath);
@@ -361,7 +359,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 // make the parent node and register it
                 result =
                     new DirectoryTreeNode(QualName.getLastName(parentName));
-                //grandParentNode.add(result);
                 addSortedNode(grandParentNode, result);
                 dirNodeMap.put(parentName, result);
             }
