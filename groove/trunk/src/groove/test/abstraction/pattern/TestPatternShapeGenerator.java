@@ -164,14 +164,14 @@ public class TestPatternShapeGenerator {
         assertEquals(202, psts.getStateCount());
         assertEquals(525, psts.getTransitionCount());*/
 
-        /*generator =
+        generator =
             new PatternShapeGenerator(getArgsWithThreeValue(GRAMMAR,
                 START_GRAPH, typeGraph));
         generator.processArguments();
         generator.explore();
         psts = generator.getPGTS();
         assertEquals(16, psts.getStateCount());
-        assertEquals(24, psts.getTransitionCount());*/
+        assertEquals(22, psts.getTransitionCount());
     }
 
     @Test

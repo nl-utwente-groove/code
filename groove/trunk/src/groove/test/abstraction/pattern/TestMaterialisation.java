@@ -123,6 +123,11 @@ public class TestMaterialisation {
         testSingleResult(7, 12, 12, true);
     }
 
+    @Test
+    public void testMaterialisation8() {
+        testSingleResult(8, 17, 18, true);
+    }
+
     private void testSingleResult(int testNumber, int nodeCount, int edgeCount,
             boolean hostIsShape) {
         loadTest(testNumber, hostIsShape);
