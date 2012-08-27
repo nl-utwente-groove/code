@@ -255,9 +255,8 @@ public final class Materialisation {
                 mat.shape.removeUncoveredNodes();
                 assert mat.shape.isWellFormed();
                 mat.shape.improvePrecision();
-                if (mat.shape.isAdmissable(false)) {
-                    result.add(mat);
-                }
+                assert mat.shape.isAdmissable(false);
+                result.add(mat);
             } else {
                 mat.computeSolutions(toProcess);
             }
@@ -309,24 +308,25 @@ public final class Materialisation {
     private PatternNode extractNode(PatternNode origNode,
             Multiplicity newNodeMult) {
         // There are two cases:
-        // - if the original node is already concrete then we just return it.
+        // - if the original node has a multiplicity smaller then the wanted
+        //   multiplicity then we just return it.
         // - if the original node is a collector then we extract a copy.
         PatternNode newNode;
         Multiplicity origMult = this.shape.getMult(origNode);
-        if (origMult.isCollector()) {
+        Multiplicity adjustedMult = origMult.sub(newNodeMult);
+        if (origMult.isCollector() && !adjustedMult.isZero()) {
             // Extract a copy.
             newNode = createNode(origNode.getType());
+            this.shape.setMult(newNode, newNodeMult);
             // Adjust the original node multiplicity.
-            assert newNodeMult.le(origMult);
-            Multiplicity adjustedMult = origMult.sub(newNodeMult);
             this.shape.setMult(origNode, adjustedMult);
             this.morph.putNode(newNode, origNode);
         } else {
-            // The original node is already concrete.
-            assert newNodeMult.isOne();
+            // We can't extract a node because it will make the original one
+            // disappear. This is bad because then we would lose the edges as
+            // well.
             newNode = origNode;
         }
-        this.shape.setMult(newNode, newNodeMult);
         return newNode;
     }
 
@@ -554,8 +554,16 @@ public final class Materialisation {
                 newEdgeMult = Multiplicity.ONE_EDGE_MULT;
                 createRemainderEdge = true;
             } else {
-                newSrcMult = computeSourceMult(newTgtMult, origEdgeMult);
-                newEdgeMult = origEdgeMult;
+                // The target is a collector.
+                if (hasSharedConcreteAncestor(newTgt)) {
+                    newSrcMult = newTgtMult;
+                    newEdgeMult = Multiplicity.ONE_EDGE_MULT;
+                    createRemainderEdge = true;
+                } else {
+                    assert false;
+                    newSrcMult = computeSourceMult(newTgtMult, origEdgeMult);
+                    newEdgeMult = origEdgeMult;
+                }
             }
             newSrc = extractNode(newSrc, newSrcMult);
             wasSrcMaterialised = true;
@@ -582,6 +590,18 @@ public final class Materialisation {
             computeTraversal(newSrc);
         }
         return newSrc;
+    }
+
+    private boolean hasSharedConcreteAncestor(PatternNode tgt) {
+        Set<PatternEdge> inEdges = this.shape.inEdgeSet(tgt);
+        assert inEdges.size() == 1;
+        PatternEdge inEdge = inEdges.iterator().next();
+        if (this.shape.getMult(inEdge.source()).isOne()
+            && this.shape.getMult(inEdge).isCollector()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private void traverseDown(Stack<Materialisation> toProcess) {
@@ -707,16 +727,17 @@ public final class Materialisation {
         for (int i = 0; i <= copies; i++) {
             PatternEdge inEdge = iter.next();
             Multiplicity inEdgeMult = this.shape.getMult(inEdge);
-            assert inEdgeMult.isOne();
             PatternNode otherSrc = inEdge.source();
             Multiplicity otherSrcMult = this.shape.getMult(otherSrc);
+            Multiplicity newTgtMult =
+                otherSrcMult.times(inEdgeMult).toNodeKind();
             if (i < copies) {
-                PatternNode splitTgt = extractNode(newTgt, otherSrcMult);
+                PatternNode splitTgt = extractNode(newTgt, newTgtMult);
                 extractEdge(inEdge, otherSrc, splitTgt, inEdgeMult, false);
                 extractEdge(origEdge, newSrc, splitTgt, origEdgeMult, true);
                 computeTraversal(splitTgt);
             } else {
-                this.shape.setMult(newTgt, otherSrcMult);
+                this.shape.setMult(newTgt, newTgtMult);
                 if (otherSrcMult.isOne() && this.shape.containsEdge(origEdge)) {
                     this.shape.setMult(origEdge, Multiplicity.ONE_EDGE_MULT);
                 }

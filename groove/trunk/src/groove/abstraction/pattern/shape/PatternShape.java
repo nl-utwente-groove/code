@@ -23,6 +23,7 @@ import static groove.abstraction.Multiplicity.ZERO_NODE_MULT;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.MyHashMap;
+import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
 import groove.graph.GraphRole;
@@ -462,6 +463,8 @@ public final class PatternShape extends PatternGraph {
 
     /** Checks if the multiplicities in the shape make sense. */
     public boolean isAdmissable(boolean acceptNonWellFormed) {
+        final int n = PatternAbsParam.getInstance().getNodeMultBound();
+        final int e = PatternAbsParam.getInstance().getEdgeMultBound();
         for (int layer = 1; layer <= depth(); layer++) {
             for (PatternNode target : getLayerNodes(layer)) {
                 Multiplicity tgtMult = getMult(target);
@@ -477,9 +480,19 @@ public final class PatternShape extends PatternGraph {
                         acc = acc.add(srcMult.times(edgeMult));
                     }
                     Multiplicity sum = acc.toNodeKind();
-                    if (!tgtMult.subsumes(sum)
-                        && (!acceptNonWellFormed || !sum.isZero())) {
-                        return false;
+                    if (!tgtMult.subsumes(sum)) {
+                        // Check for the special case when n > e. In this case
+                        // we might have for example tgtMult = 2 and sum = 2+.
+                        // This is still correct, there's no way to make these
+                        // multiplicities more precise since the bounds are
+                        // different.
+                        if (n > e) {
+                            if (!tgtMult.ge(sum)) {
+                                return false;
+                            }
+                        } else if (!acceptNonWellFormed || !sum.isZero()) {
+                            return false;
+                        }
                     }
                 }
             }
