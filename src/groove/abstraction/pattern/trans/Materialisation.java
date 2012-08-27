@@ -206,10 +206,11 @@ public final class Materialisation {
             Materialisation mat = toProcess.pop();
             if (mat.isFinished()) {
                 assert mat.isValid();
-                mat.shape.removeUncoveredNodes();
-                assert mat.shape.isWellFormed();
                 mat.shape.improvePrecision();
                 assert mat.isAdmissable(false);
+                assert mat.isMorphValid();
+                mat.shape.removeUncoveredNodes();
+                assert mat.shape.isWellFormed();
                 result.add(mat);
             } else {
                 mat.computeSolutions(toProcess);
@@ -847,7 +848,8 @@ public final class Materialisation {
 
     /** Returns true if the materialisation is valid. */
     private boolean isValid() {
-        return areMapsEmpty() && isMorphConsistent() && isMorphValid()
+        return areMapsEmpty()
+            && isMorphConsistent() // && isMorphValid()
             && isMatchConcrete() && isEnvironmentCorrect()
             && isConcretePartCommuting(false);
     }
