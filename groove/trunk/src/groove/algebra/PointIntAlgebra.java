@@ -57,6 +57,11 @@ public class PointIntAlgebra extends IntSignature<Object,Object,Object>
     }
 
     @Override
+    public Object abs(Object arg) {
+        return singleInt;
+    }
+
+    @Override
     public Object add(Object arg0, Object arg1) {
         return singleInt;
     }

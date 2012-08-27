@@ -57,6 +57,11 @@ public class PointRealAlgebra extends RealSignature<Object,Object,Object>
     }
 
     @Override
+    public Object abs(Object arg) {
+        return singleReal;
+    }
+
+    @Override
     public Object add(Object arg0, Object arg1) {
         return singleReal;
     }

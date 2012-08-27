@@ -31,6 +31,11 @@ public class BigIntAlgebra extends IntSignature<BigInteger,Boolean,String>
     }
 
     @Override
+    public BigInteger abs(BigInteger arg) {
+        return arg.abs();
+    }
+
+    @Override
     public BigInteger add(BigInteger arg0, BigInteger arg1) {
         return arg0.add(arg1);
     }
