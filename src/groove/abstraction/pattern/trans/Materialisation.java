@@ -17,8 +17,10 @@
 package groove.abstraction.pattern.trans;
 
 import groove.abstraction.Multiplicity;
+import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.MyHashSet;
+import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.PreMatch;
@@ -207,7 +209,7 @@ public final class Materialisation {
                 mat.shape.removeUncoveredNodes();
                 assert mat.shape.isWellFormed();
                 mat.shape.improvePrecision();
-                assert mat.shape.isAdmissable(false);
+                assert mat.isAdmissable(false);
                 result.add(mat);
             } else {
                 mat.computeSolutions(toProcess);
@@ -272,6 +274,10 @@ public final class Materialisation {
             this.shape.setMult(newNode, newNodeMult);
             // Adjust the original node multiplicity.
             this.shape.setMult(origNode, adjustedMult);
+            // Adjust the morphism.
+            if (!this.originalShape.containsNode(origNode)) {
+                origNode = this.morph.getNode(origNode);
+            }
             this.morph.putNode(newNode, origNode);
         } else {
             // We can't extract a node because it will make the original one
@@ -424,7 +430,7 @@ public final class Materialisation {
         assert !this.upTraversal.isEmpty();
 
         final PatternNode newTgt = this.upTraversal.get(0);
-        PatternEdge missingOrigEdge = getMissingInEdge(newTgt);
+        final PatternEdge missingOrigEdge = getMissingInEdge(newTgt);
 
         if (missingOrigEdge == null) {
             // No edge is missing. We're done.
@@ -437,11 +443,12 @@ public final class Materialisation {
             PatternPreviewDialog.showPatternGraph(this.shape);
         }
 
-        TypeEdge edgeType = missingOrigEdge.getType();
+        final Multiplicity newTgtMult = this.shape.getMult(newTgt);
+        final TypeEdge edgeType = missingOrigEdge.getType();
 
         // Find possible sources.
-        Set<PatternNode> possibleSources = new MyHashSet<PatternNode>();
-        Map<PatternNode,PatternEdge> srcToOrigEdgeMap =
+        final Set<PatternNode> possibleSources = new MyHashSet<PatternNode>();
+        final Map<PatternNode,PatternEdge> srcToOrigEdgeMap =
             new MyHashMap<PatternNode,PatternEdge>();
         for (PatternNode possibleSource : getDanglingOut(edgeType)) {
             possibleSources.add(possibleSource);
@@ -466,13 +473,18 @@ public final class Materialisation {
         filterSourcesByCommutativity(possibleSources, newTgt, edgeType);
 
         // For each possible source we have to branch the search.
+        int srcCount = possibleSources.size();
+        boolean clone = srcCount > 1 && !newTgtMult.isCollector();
+        int i = 1;
+        boolean last;
         for (PatternNode possibleSource : possibleSources) {
+            last = i == srcCount;
             // Check if we need to clone the materialisation.
             Materialisation mat;
-            if (possibleSources.size() == 1) {
-                mat = this;
-            } else {
+            if (clone) {
                 mat = this.clone();
+            } else {
+                mat = this;
             }
             PatternEdge origEdge = srcToOrigEdgeMap.get(possibleSource);
             Multiplicity origEdgeMult = mat.shape.getMult(origEdge);
@@ -483,18 +495,20 @@ public final class Materialisation {
             newSrc = mat.traverseUp(origEdge, origEdgeMult, newSrc, newTgt);
             // The new edge nodes are no longer dangling w.r.t. this edge type.
             mat.getDanglingOut(edgeType).remove(newSrc);
-            mat.getDanglingIn(edgeType).remove(newTgt);
-            // Push the new materialisation object into the stack.
-            assert mat.isConcretePartCommuting(true);
-            if (mat.shape.isAdmissable(true)) {
+            if (clone || last) {
+                mat.getDanglingIn(edgeType).remove(newTgt);
+                // Push the new materialisation object into the stack.
+                assert mat.isConcretePartCommuting(true);
+                assert mat.isAdmissable(true);
                 toProcess.push(mat);
             }
+            i++;
         }
     }
 
     private PatternNode traverseUp(PatternEdge origEdge,
             Multiplicity origEdgeMult, PatternNode newSrc, PatternNode newTgt) {
-        Multiplicity newTgtMult = this.shape.getMult(newTgt);
+        final Multiplicity newTgtMult = this.shape.getMult(newTgt);
         Multiplicity newEdgeMult;
         boolean wasSrcMaterialised = false;
         // Check if we need to materialise the source and other special cases.
@@ -525,7 +539,7 @@ public final class Materialisation {
                 PatternEdge remainderEdge =
                     createEdge(newSrc, origEdge.getType(), origEdge.target());
                 this.shape.setMult(remainderEdge, adjustedOrigEdgeMult);
-                this.morph.putEdge(remainderEdge, origEdge);
+                adjustMorphism(remainderEdge, origEdge);
             }
             computeTraversal(newSrc);
         }
@@ -537,8 +551,9 @@ public final class Materialisation {
         assert !this.downTraversal.isEmpty();
 
         final PatternNode newSrc = this.downTraversal.get(0);
-        boolean isSrcEnvironment = isEnvironment(newSrc);
-        PatternEdge origEdge = getMissingOutEdge(newSrc, isSrcEnvironment);
+        final boolean isSrcEnvironment = isEnvironment(newSrc);
+        final PatternEdge origEdge =
+            getMissingOutEdge(newSrc, isSrcEnvironment);
 
         if (origEdge == null) {
             // No edge is missing. We're done.
@@ -555,11 +570,11 @@ public final class Materialisation {
         if (origEdgeMult.isZero()) {
             origEdgeMult = this.originalShape.getMult(origEdge);
         }
-        Multiplicity newSrcMult = this.shape.getMult(newSrc);
-        TypeEdge edgeType = origEdge.getType();
+        final Multiplicity newSrcMult = this.shape.getMult(newSrc);
+        final TypeEdge edgeType = origEdge.getType();
 
-        Set<PatternNode> danglingSet = getDanglingIn(edgeType);
-        List<PatternNode> possibleTargets =
+        final Set<PatternNode> danglingSet = getDanglingIn(edgeType);
+        final List<PatternNode> possibleTargets =
             new ArrayList<PatternNode>(danglingSet.size() + 1);
         possibleTargets.addAll(danglingSet);
         possibleTargets.add(origEdge.target());
@@ -585,9 +600,8 @@ public final class Materialisation {
             mat.getDanglingIn(edgeType).remove(newTgt);
             // Push the new materialisation object into the stack.
             assert mat.isConcretePartCommuting(true);
-            if (mat.shape.isAdmissable(true)) {
-                toProcess.push(mat);
-            }
+            assert mat.isAdmissable(true);
+            toProcess.push(mat);
         }
     }
 
@@ -691,6 +705,18 @@ public final class Materialisation {
             }
         }
         return null;
+    }
+
+    private PatternEdge getMissingOutEdge(PatternNode newSrc,
+            TypeEdge edgeType, PatternNode tgt) {
+        PatternNode origSrc = this.morph.getNode(newSrc);
+        PatternEdge origEdge =
+            this.originalShape.getOutEdgeWithType(origSrc, edgeType);
+        if (origEdge.target().equals(tgt)) {
+            return origEdge;
+        } else {
+            return null;
+        }
     }
 
     private PatternEdge getMissingInEdge(PatternNode newTgt) {
@@ -947,6 +973,67 @@ public final class Materialisation {
         } else {
             return true;
         }
+    }
+
+    /** Checks if the multiplicities in the shape make sense. */
+    private boolean isAdmissable(boolean acceptNonWellFormed) {
+        final int n = PatternAbsParam.getInstance().getNodeMultBound();
+        final int e = PatternAbsParam.getInstance().getEdgeMultBound();
+        final boolean nGtE = n > e;
+        for (int layer = 1; layer <= this.shape.depth(); layer++) {
+            for (PatternNode target : this.shape.getLayerNodes(layer)) {
+                if (!isAdmissable(target, acceptNonWellFormed, nGtE)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean isAdmissable(PatternNode tgt, boolean acceptNonWellFormed,
+            boolean nGtE) {
+        Multiplicity tgtMult = this.shape.getMult(tgt);
+        for (TypeEdge typeEdge : this.shape.getTypeGraph().inEdgeSet(
+            tgt.getType())) {
+            Multiplicity acc =
+                Multiplicity.getMultiplicity(0, 0, MultKind.EQSYS_MULT);
+
+            // Sum the multiplicities of the already existing incoming edges.
+            for (PatternEdge inEdge : this.shape.getInEdgesWithType(tgt,
+                typeEdge)) {
+                Multiplicity srcMult = this.shape.getMult(inEdge.source());
+                Multiplicity edgeMult = this.shape.getMult(inEdge);
+                acc = acc.add(srcMult.times(edgeMult));
+            }
+
+            // We also need to consider the dangling edges.
+            srcLoop: for (PatternNode src : getDanglingOut(typeEdge)) {
+                if (!this.downTraversal.contains(src)) {
+                    continue srcLoop;
+                }
+                PatternEdge inEdge = getMissingOutEdge(src, typeEdge, tgt);
+                Multiplicity srcMult = this.shape.getMult(src);
+                Multiplicity edgeMult = this.shape.getMult(inEdge);
+                acc = acc.add(srcMult.times(edgeMult));
+            }
+
+            Multiplicity sum = acc.toNodeKind();
+            if (!tgtMult.subsumes(sum)) {
+                // Check for the special case when n > e. In this case
+                // we might have for example tgtMult = 2 and sum = 2+.
+                // This is still correct, there's no way to make these
+                // multiplicities more precise since the bounds are
+                // different.
+                if (nGtE) {
+                    if (!tgtMult.ge(sum)) {
+                        return false;
+                    }
+                } else if (!acceptNonWellFormed || !sum.isZero()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     // ------------------------------------------------------------------------
