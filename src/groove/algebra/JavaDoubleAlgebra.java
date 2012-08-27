@@ -31,6 +31,11 @@ public class JavaDoubleAlgebra extends RealSignature<Double,Boolean,String>
     }
 
     @Override
+    public Double abs(Double arg) {
+        return Math.abs(arg);
+    }
+
+    @Override
     public Double add(Double arg0, Double arg1) {
         return arg0 + arg1;
     }

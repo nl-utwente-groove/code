@@ -35,26 +35,18 @@ import java.math.BigInteger;
  */
 @SuppressWarnings("hiding")
 public abstract class IntSignature<Int,Bool,String> implements Signature {
+    /** Absolute value of an integer. */
+    @Syntax("Q%s.LPAR.i.RPAR")
+    @ToolTipHeader("Absolute integer value")
+    @ToolTipBody("Returns the absolute value of %s")
+    public abstract Int abs(Int arg);
+
     /** Addition of two integers. */
     @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
     @ToolTipHeader("Integer addition")
     @ToolTipBody("Returns the sum of %s and %s")
     @InfixSymbol(symbol = "+", precedence = ADD)
     public abstract Int add(Int arg0, Int arg1);
-
-    /** Subtraction of two integers. */
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipHeader("Integer subtraction")
-    @ToolTipBody("Returns the difference between %s and %s")
-    @InfixSymbol(symbol = "-", precedence = ADD)
-    public abstract Int sub(Int arg0, Int arg1);
-
-    /** Multiplication of two integers. */
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipHeader("Integer multiplication")
-    @ToolTipBody("Returns the product of %s and %s")
-    @InfixSymbol(symbol = "*", precedence = MULT)
-    public abstract Int mul(Int arg0, Int arg1);
 
     /** Division of two integers. */
     @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
@@ -63,45 +55,12 @@ public abstract class IntSignature<Int,Bool,String> implements Signature {
     @InfixSymbol(symbol = "/", precedence = MULT)
     public abstract Int div(Int arg0, Int arg1);
 
-    /** Modulo of two integers. */
+    /** Equality test. */
+    @ToolTipHeader("Integer equality test")
     @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipHeader("Modulo")
-    @ToolTipBody("Returns the remainder after dividing %s by %s")
-    @InfixSymbol(symbol = "%", precedence = MULT)
-    public abstract Int mod(Int arg0, Int arg1);
-
-    /** Minimum of two integers. */
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipHeader("Integer minimum")
-    @ToolTipBody("Returns the minimum of %s and %s")
-    public abstract Int min(Int arg0, Int arg1);
-
-    /** Maximum of two integers. */
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipHeader("Integer minimum")
-    @ToolTipBody("Returns the maximum of %s and %s")
-    public abstract Int max(Int arg0, Int arg1);
-
-    /** Lesser-than comparison. */
-    @ToolTipHeader("Integer lesser-than test")
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipBody("Yields TRUE if integer %s is properly smaller than integer %s")
-    @InfixSymbol(symbol = "<", precedence = COMPARE)
-    public abstract Bool lt(Int arg0, Int arg1);
-
-    /** Lesser-or-equal comparison. */
-    @ToolTipHeader("Integer lesser-or-equal test")
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipBody("Yields TRUE if integer %s is smaller than integer %s")
-    @InfixSymbol(symbol = "<=", precedence = COMPARE)
-    public abstract Bool le(Int arg0, Int arg1);
-
-    /** Greater-than comparison. */
-    @ToolTipHeader("Integer greater-than test")
-    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipBody("Yields TRUE if integer %2$s is properly larger than integer %1$s")
-    @InfixSymbol(symbol = ">", precedence = COMPARE)
-    public abstract Bool gt(Int arg0, Int arg1);
+    @ToolTipBody("Yields TRUE if integer %s equals integer %s")
+    @InfixSymbol(symbol = "==", precedence = EQUAL)
+    public abstract Bool eq(Int arg0, Int arg1);
 
     /** Greater-or-equal comparison. */
     @ToolTipHeader("Integer greater-or-equal test")
@@ -110,12 +69,52 @@ public abstract class IntSignature<Int,Bool,String> implements Signature {
     @InfixSymbol(symbol = ">=", precedence = COMPARE)
     public abstract Bool ge(Int arg0, Int arg1);
 
-    /** Equality test. */
-    @ToolTipHeader("Integer equality test")
+    /** Greater-than comparison. */
+    @ToolTipHeader("Integer greater-than test")
     @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipBody("Yields TRUE if integer %s equals integer %s")
-    @InfixSymbol(symbol = "==", precedence = EQUAL)
-    public abstract Bool eq(Int arg0, Int arg1);
+    @ToolTipBody("Yields TRUE if integer %2$s is properly larger than integer %1$s")
+    @InfixSymbol(symbol = ">", precedence = COMPARE)
+    public abstract Bool gt(Int arg0, Int arg1);
+
+    /** Lesser-or-equal comparison. */
+    @ToolTipHeader("Integer lesser-or-equal test")
+    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
+    @ToolTipBody("Yields TRUE if integer %s is smaller than integer %s")
+    @InfixSymbol(symbol = "<=", precedence = COMPARE)
+    public abstract Bool le(Int arg0, Int arg1);
+
+    /** Lesser-than comparison. */
+    @ToolTipHeader("Integer lesser-than test")
+    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
+    @ToolTipBody("Yields TRUE if integer %s is properly smaller than integer %s")
+    @InfixSymbol(symbol = "<", precedence = COMPARE)
+    public abstract Bool lt(Int arg0, Int arg1);
+
+    /** Maximum of two integers. */
+    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
+    @ToolTipHeader("Integer minimum")
+    @ToolTipBody("Returns the maximum of %s and %s")
+    public abstract Int max(Int arg0, Int arg1);
+
+    /** Minimum of two integers. */
+    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
+    @ToolTipHeader("Integer minimum")
+    @ToolTipBody("Returns the minimum of %s and %s")
+    public abstract Int min(Int arg0, Int arg1);
+
+    /** Modulo of two integers. */
+    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
+    @ToolTipHeader("Modulo")
+    @ToolTipBody("Returns the remainder after dividing %s by %s")
+    @InfixSymbol(symbol = "%", precedence = MULT)
+    public abstract Int mod(Int arg0, Int arg1);
+
+    /** Multiplication of two integers. */
+    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
+    @ToolTipHeader("Integer multiplication")
+    @ToolTipBody("Returns the product of %s and %s")
+    @InfixSymbol(symbol = "*", precedence = MULT)
+    public abstract Int mul(Int arg0, Int arg1);
 
     /** Inequality test. */
     @ToolTipHeader("Integer inequality test")
@@ -130,6 +129,13 @@ public abstract class IntSignature<Int,Bool,String> implements Signature {
     @ToolTipBody("Yields the inverse of %s")
     @PrefixSymbol(symbol = "-")
     public abstract Int neg(Int arg);
+
+    /** Subtraction of two integers. */
+    @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
+    @ToolTipHeader("Integer subtraction")
+    @ToolTipBody("Returns the difference between %s and %s")
+    @InfixSymbol(symbol = "-", precedence = ADD)
+    public abstract Int sub(Int arg0, Int arg1);
 
     /** String representation. */
     @ToolTipHeader("Integer-to-string conversion")

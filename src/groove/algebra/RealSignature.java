@@ -35,6 +35,12 @@ import java.math.BigDecimal;
  */
 @SuppressWarnings("hiding")
 public abstract class RealSignature<Real,Bool,String> implements Signature {
+    /** Absolute value of a real number. */
+    @Syntax("Q%s.LPAR.i.RPAR")
+    @ToolTipHeader("Absolute value")
+    @ToolTipBody("Returns the absolute value of %s")
+    public abstract Real abs(Real arg);
+
     /** Addition of two real numbers. */
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
     @ToolTipHeader("Real number addition")

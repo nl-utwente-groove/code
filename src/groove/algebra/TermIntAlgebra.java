@@ -52,6 +52,12 @@ public class TermIntAlgebra extends IntSignature<Term,Term,Term> implements
     }
 
     @Override
+    public Term abs(Term arg) {
+        // for now, only constants are supported
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Term add(Term arg0, Term arg1) {
         // for now, only constants are supported
         throw new UnsupportedOperationException();

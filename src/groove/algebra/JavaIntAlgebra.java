@@ -31,6 +31,11 @@ public class JavaIntAlgebra extends IntSignature<Integer,Boolean,String>
     }
 
     @Override
+    public Integer abs(Integer arg) {
+        return Math.abs(arg);
+    }
+
+    @Override
     public Integer add(Integer arg0, Integer arg1) {
         return arg0 + arg1;
     }

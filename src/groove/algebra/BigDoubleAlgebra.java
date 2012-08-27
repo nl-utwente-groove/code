@@ -33,6 +33,11 @@ public class BigDoubleAlgebra extends RealSignature<BigDecimal,Boolean,String>
     }
 
     @Override
+    public BigDecimal abs(BigDecimal arg) {
+        return arg.abs();
+    }
+
+    @Override
     public BigDecimal add(BigDecimal arg0, BigDecimal arg1) {
         return arg0.add(arg1);
     }
