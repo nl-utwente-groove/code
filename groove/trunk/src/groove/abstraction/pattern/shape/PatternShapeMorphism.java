@@ -146,8 +146,8 @@ public final class PatternShapeMorphism extends
             // This is due to the loss of precision when subtracting.
             // For example, 3+ - 2+ = 0+ but then 2+ + 0+ = 2+ which is NOT
             // subsumed by 3+! However, 2+ <= 3+ holds.
-            //if (!nodeTMult.subsumes(sum)) {
-            if (!sum.le(nodeTMult)) {
+            if (!nodeTMult.subsumes(sum)) {
+                //if (!sum.le(nodeTMult)) {
                 return false;
             }
         }
@@ -157,8 +157,8 @@ public final class PatternShapeMorphism extends
             for (Set<PatternEdge> edgesS : getPreImagesMap(edgeT).values()) {
                 Multiplicity sum = from.getEdgeSetMultSum(edgesS);
                 // EZ says: see comment above.
-                //if (!edgeTMult.subsumes(sum)) {
-                if (!sum.le(edgeTMult)) {
+                if (!edgeTMult.subsumes(sum)) {
+                    //if (!sum.le(edgeTMult)) {
                     return false;
                 }
             }
