@@ -17,10 +17,8 @@
 package groove.abstraction.pattern.trans;
 
 import groove.abstraction.Multiplicity;
-import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.MyHashSet;
-import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.PreMatch;
@@ -73,52 +71,6 @@ public final class Materialisation {
             result.add(initialMat);
         }
         return result;
-    }
-
-    private static Multiplicity times(Multiplicity nodeMult,
-            Multiplicity edgeMult) {
-        return nodeMult.times(edgeMult).toNodeKind();
-    }
-
-    // EZ says: sorry for the horrible code, but this method needs to be
-    // efficient, both in time and memory.
-    private static Multiplicity computeSourceMult(Multiplicity tgtMult,
-            Multiplicity edgeMult) {
-        MultKind kind = MultKind.NODE_MULT;
-        Multiplicity result;
-
-        if (PatternAbsParam.getInstance().isUseThreeValues()) {
-            // Source multiplicity can only be either 1 or 0+.
-            result = Multiplicity.ONE_NODE_MULT;
-            if (times(result, edgeMult).equals(tgtMult)) {
-                return result;
-            }
-            result = Multiplicity.getMultiplicity(0, Multiplicity.OMEGA, kind);
-            if (times(result, edgeMult).equals(tgtMult)) {
-                return result;
-            }
-            assert false;
-            return null;
-        }
-
-        int b = PatternAbsParam.getInstance().getNodeMultBound();
-        // First try the concrete values.
-        for (int i = 1; i <= b; i++) {
-            result = Multiplicity.getMultiplicity(i, i, kind);
-            if (times(result, edgeMult).equals(tgtMult)) {
-                return result;
-            }
-        }
-        // OK, it didn't work, so try the omega values.
-        for (int i = 0; i <= b + 1; i++) {
-            result = Multiplicity.getMultiplicity(i, Multiplicity.OMEGA, kind);
-            if (times(result, edgeMult).equals(tgtMult)) {
-                return result;
-            }
-        }
-
-        assert false;
-        return null;
     }
 
     // ------------------------------------------------------------------------
@@ -545,25 +497,15 @@ public final class Materialisation {
         Multiplicity newTgtMult = this.shape.getMult(newTgt);
         Multiplicity newEdgeMult;
         boolean wasSrcMaterialised = false;
-        boolean createRemainderEdge = false;
         // Check if we need to materialise the source and other special cases.
         if (this.shape.getMult(newSrc).isCollector()) {
             Multiplicity newSrcMult;
             if (newTgtMult.isOne()) {
                 newSrcMult = Multiplicity.ONE_NODE_MULT;
                 newEdgeMult = Multiplicity.ONE_EDGE_MULT;
-                createRemainderEdge = true;
             } else {
-                // The target is a collector.
-                if (hasSharedConcreteAncestor(newTgt)) {
-                    newSrcMult = newTgtMult;
-                    newEdgeMult = Multiplicity.ONE_EDGE_MULT;
-                    createRemainderEdge = true;
-                } else {
-                    assert false;
-                    newSrcMult = computeSourceMult(newTgtMult, origEdgeMult);
-                    newEdgeMult = origEdgeMult;
-                }
+                newSrcMult = newTgtMult;
+                newEdgeMult = Multiplicity.ONE_EDGE_MULT;
             }
             newSrc = extractNode(newSrc, newSrcMult);
             wasSrcMaterialised = true;
@@ -578,30 +520,16 @@ public final class Materialisation {
         extractEdge(origEdge, newSrc, newTgt, newEdgeMult, true);
         Multiplicity adjustedOrigEdgeMult = origEdgeMult.sub(newEdgeMult);
         // Check for special cases.
-        if (createRemainderEdge) {
+        if (wasSrcMaterialised) {
             if (!adjustedOrigEdgeMult.isZero()) {
                 PatternEdge remainderEdge =
                     createEdge(newSrc, origEdge.getType(), origEdge.target());
                 this.shape.setMult(remainderEdge, adjustedOrigEdgeMult);
                 this.morph.putEdge(remainderEdge, origEdge);
             }
-        }
-        if (wasSrcMaterialised) {
             computeTraversal(newSrc);
         }
         return newSrc;
-    }
-
-    private boolean hasSharedConcreteAncestor(PatternNode tgt) {
-        Set<PatternEdge> inEdges = this.shape.inEdgeSet(tgt);
-        assert inEdges.size() == 1;
-        PatternEdge inEdge = inEdges.iterator().next();
-        if (this.shape.getMult(inEdge.source()).isOne()
-            && this.shape.getMult(inEdge).isCollector()) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     private void traverseDown(Stack<Materialisation> toProcess) {
