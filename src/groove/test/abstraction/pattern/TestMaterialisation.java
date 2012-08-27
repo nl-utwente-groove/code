@@ -38,9 +38,9 @@ import groove.view.GrammarModel;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -65,6 +65,13 @@ public class TestMaterialisation {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @After
+    public void restoreMultiplicitySettings() {
+        PatternAbsParam.getInstance().setUseThreeValues(false);
+        PatternAbsParam.getInstance().setNodeMultBound(1);
+        PatternAbsParam.getInstance().setEdgeMultBound(1);
     }
 
     @Test
@@ -95,14 +102,13 @@ public class TestMaterialisation {
 
     @Test
     public void testMaterialisation4() {
-        testSingleResult(4, 11, 10, true);
+        testSingleResult(4, 11, 11, true);
     }
 
     @Test
     public void testMaterialisation5() {
         PatternAbsParam.getInstance().setNodeMultBound(2);
-        testSingleResult(5, 11, 10, true);
-        PatternAbsParam.getInstance().setNodeMultBound(1);
+        testSingleResult(5, 10, 10, true);
     }
 
     @Test
@@ -110,6 +116,11 @@ public class TestMaterialisation {
         int nodeCount[] = {14, 11};
         int edgeCount[] = {16, 12};
         testMultipleResults(6, 2, nodeCount, edgeCount, false);
+    }
+
+    @Test
+    public void testMaterialisation7() {
+        testSingleResult(7, 12, 12, true);
     }
 
     private void testSingleResult(int testNumber, int nodeCount, int edgeCount,
@@ -140,9 +151,7 @@ public class TestMaterialisation {
         for (Match preMatch : matches) {
             Collection<Materialisation> mats =
                 Materialisation.getMaterialisations(pShape, (PreMatch) preMatch);
-            Iterator<Materialisation> iter = mats.iterator();
-            while (iter.hasNext()) {
-                Materialisation mat = iter.next();
+            for (Materialisation mat : mats) {
                 PatternShape matShape = mat.getShape();
                 assertEquals(nodeCount[i], matShape.nodeCount());
                 assertEquals(edgeCount[i], matShape.edgeCount());

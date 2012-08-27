@@ -478,6 +478,12 @@ public final class Multiplicity {
         return this.j <= other.j;
     }
 
+    /** Returns true if this multiplicity is greater or equal than the other. */
+    public boolean ge(Multiplicity other) {
+        assert this.kind == other.kind;
+        return this.i >= other.i;
+    }
+
     /** Returns true if this multiplicity subsumes the other. */
     public boolean subsumes(Multiplicity other) {
         assert this.kind == other.kind;
