@@ -465,8 +465,6 @@ public final class Materialisation {
             if (possibleSources.add(possibleSource)) {
                 // We didn't see this source yet.
                 srcToOrigEdgeMap.put(possibleSource, inEdge);
-            } else {
-                assert inEdge.equals(missingOrigEdge);
             }
         }
 
@@ -475,7 +473,7 @@ public final class Materialisation {
 
         // For each possible source we have to branch the search.
         int srcCount = possibleSources.size();
-        boolean clone = srcCount > 1 && !newTgtMult.isCollector();
+        boolean clone = srcCount > 1 && newTgtMult.isOne();
         int i = 1;
         boolean last;
         for (PatternNode possibleSource : possibleSources) {
@@ -493,7 +491,9 @@ public final class Materialisation {
             // The hard part is done in another method.
             // Sometimes we have to extract another node from the source,
             // hence the returning of a node in the method call.
-            newSrc = mat.traverseUp(origEdge, origEdgeMult, newSrc, newTgt);
+            newSrc =
+                mat.traverseUp(origEdge, origEdgeMult, newSrc, newTgt,
+                    newTgtMult);
             // The new edge nodes are no longer dangling w.r.t. this edge type.
             mat.getDanglingOut(edgeType).remove(newSrc);
             if (clone || last) {
@@ -508,8 +508,8 @@ public final class Materialisation {
     }
 
     private PatternNode traverseUp(PatternEdge origEdge,
-            Multiplicity origEdgeMult, PatternNode newSrc, PatternNode newTgt) {
-        final Multiplicity newTgtMult = this.shape.getMult(newTgt);
+            Multiplicity origEdgeMult, PatternNode newSrc, PatternNode newTgt,
+            Multiplicity newTgtMult) {
         Multiplicity newEdgeMult;
         boolean wasSrcMaterialised = false;
         // Check if we need to materialise the source and other special cases.
@@ -584,10 +584,10 @@ public final class Materialisation {
         for (PatternNode possibleTarget : possibleTargets) {
             // Check if we need to clone the materialisation.
             Materialisation mat;
-            if (possibleTargets.size() == 1) {
-                mat = this;
-            } else {
+            if (possibleTargets.size() > 1) {
                 mat = this.clone();
+            } else {
+                mat = this;
             }
             PatternNode newTgt = possibleTarget;
             // The hard part is done in another method.
@@ -618,48 +618,71 @@ public final class Materialisation {
         }
 
         // else: the source is part of the environment.
+        // The target node has to have unique coverage.
         boolean isTgtUniquelyCovered = this.shape.isUniquelyCovered(newTgt);
         int origEdgeTypeCountInTgt =
             this.shape.getInEdgesWithType(newTgt, origEdge.getType()).size();
 
-        if (isTgtUniquelyCovered && origEdgeTypeCountInTgt == 0) {
-            // The target is uniquely covered and there is no incoming edge
-            // with the same type of the original edge, this means that when
-            // we create a new edge the target is still going to be uniquely
-            // covered.
-            extractEdge(origEdge, newSrc, newTgt, origEdgeMult, true);
-            return newTgt;
-        }
+        // At this point we are sure that:
+        // 1) There already exists at least one incoming edge at the target
+        //    with the same type that we want to add. This follows from the
+        //    fact that upward traversal has priority over downward traversal.
+        //    This means that when we are traversing down the target is already
+        //    covered.
+        // 2) If the target is uniquely covered then it follows that there is
+        //    exactly one incoming edge of the same type.
+        assert (isTgtUniquelyCovered && origEdgeTypeCountInTgt == 1)
+            || !isTgtUniquelyCovered;
 
-        if ((isTgtUniquelyCovered && origEdgeTypeCountInTgt > 0)
-            || (!isTgtUniquelyCovered && origEdgeMult.isOne())
-            || (!isTgtUniquelyCovered && origEdgeTypeCountInTgt > 1)) {
-            // The original edge is not unique in the target. This means we
-            // have to split the target and only connect the source to
-            // the newly created node.
-            boolean keepOrigEdge =
-                isTgtUniquelyCovered && origEdgeTypeCountInTgt > 0;
+        // We have to test if we have to extract a new copy from the target
+        // or if we need to split the target in several parts.
+        // We extract a copy from the target if:
+        // A) The target is uniquely covered. Since there already exists an
+        //    incoming edge of the same type we want to add, we can't add the
+        //    edge right away because then the coverage would no longer be unique.
+        // B) The target is not uniquely covered and (one of) the cause for
+        //    non-uniqueness comes from the edge type we are working on. In this
+        //    case we want to ignore all the others incoming edge of the same
+        //    type by extracting a new target and routing our new edge there.
+        //    If there were other edge type also not unique this is not a
+        //    problem: the new extracted node will be have an incomplete
+        //    coverage and so we'll have to traverse up and choose the other
+        //    sources.
+        // C) The target is not uniquely covered and there is only one incoming
+        //    edge of the type we want to create and the edge multiplicity is
+        //    one. This case is similar to the previous one, we'll extract a
+        //    new target to route the new edge and ignore the other existing one.
+        boolean extractNewTgt =
+            isTgtUniquelyCovered || origEdgeTypeCountInTgt > 1
+                || origEdgeMult.isOne();
+
+        if (extractNewTgt) {
+            // Extract the new target.
             Multiplicity newTgtMult =
                 newSrcMult.times(origEdgeMult).toNodeKind();
             newTgt = extractNode(newTgt, newTgtMult);
             // Create a new edge to the new target.
-            extractEdge(origEdge, newSrc, newTgt, origEdgeMult, keepOrigEdge);
+            extractEdge(origEdge, newSrc, newTgt, origEdgeMult,
+                isTgtUniquelyCovered);
             // Make sure the new node will get properly connected later. 
             computeTraversal(newTgt);
             return newTgt;
         }
 
-        // else: !isTgtUniquelyCovered && origEdgeMult != 1 
+        // else:    !isTgtUniquelyCovered
+        //       && origEdgeTypeCountInTgt == 1
+        //       && origEdgeMult != 1 
         return splitTargetToUniqueCovers(origEdge, origEdgeMult, newSrc, newTgt);
     }
 
+    // EDUARDO: Implement this method correctly.
     private PatternNode splitTargetToUniqueCovers(PatternEdge origEdge,
             Multiplicity origEdgeMult, PatternNode newSrc, PatternNode newTgt) {
         assert !origEdgeMult.isOne();
         Set<TypeEdge> edgeTypes = new MyHashSet<TypeEdge>();
         edgeTypes.addAll(this.shape.getTypeGraph().inEdgeSet(newTgt.getType()));
         edgeTypes.remove(origEdge.getType());
-        // We only know how to handle this case.
+        // For now we only try to handle this case.
         assert edgeTypes.size() == 1;
         TypeEdge nonUniqueEdgeType = edgeTypes.iterator().next();
         Set<PatternEdge> inEdges = new MyHashSet<PatternEdge>();
@@ -698,16 +721,25 @@ public final class Materialisation {
                 return origEdge;
             }
         }
+        // If we reach this point it means the source node has all outgoing
+        // edges that it should. But...
         if (isSrcEnvironment) {
+            // ...if the source is part of the environment graph then we have
+            // to check if all targets are uniquely covered.
             for (PatternEdge newOutEdge : this.shape.outEdgeSet(newSrc)) {
                 if (!this.shape.isUniquelyCovered(newOutEdge.target())) {
                     return newOutEdge;
                 }
             }
         }
+        // There are no missing outgoing edges.
         return null;
     }
 
+    /**
+     * Special method used only in assertions. Returns an edge outgoing from the
+     * given source with the given type and target node. 
+     */
     private PatternEdge getMissingOutEdge(PatternNode newSrc,
             TypeEdge edgeType, PatternNode tgt) {
         PatternNode origSrc = this.morph.getNode(newSrc);
@@ -733,14 +765,21 @@ public final class Materialisation {
                  // building the coverage for the target from connected parts,
                  // which leads to less non-determinism.
                 if (this.shape.hasIntersection(newTgt, origEdge.getType())) {
+                    // Note that a materialised node always starts with at least
+                    // one incoming edge so eventually this test will hold for
+                    // one of the missing incoming edges.
                     return origEdge;
                 }
             }
         }
+        // The target is fully covered so there is no missing edge.
         return null;
     }
 
     /** Returns true if the given node is in the environment graph. */
+    // EZ says: this is probably a good candidate method for optimization.
+    // Instead of traversing the shape all the time we could keep a set of nodes
+    // that are part of the environment.
     private boolean isEnvironment(PatternNode pNode) {
         List<PatternNode> toTest = new LinkedList<PatternNode>();
         toTest.add(pNode);
@@ -970,11 +1009,7 @@ public final class Materialisation {
             }
 
         }
-        if (emptyIntersection) {
-            return false;
-        } else {
-            return true;
-        }
+        return !emptyIntersection;
     }
 
     /** Checks if the multiplicities in the shape make sense. */
@@ -992,6 +1027,7 @@ public final class Materialisation {
         return true;
     }
 
+    // EDUARDO: Probably refactor this method...
     private boolean isAdmissable(PatternNode tgt, boolean acceptNonWellFormed,
             boolean nGtE) {
         Multiplicity tgtMult = this.shape.getMult(tgt);
