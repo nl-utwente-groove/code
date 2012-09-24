@@ -151,7 +151,7 @@ public class PointIntAlgebra extends IntSignature<Object,Object,Object>
      */
     public static final String singleBool = PointBoolAlgebra.singleBool;
     /** Point value of the int algebra. */
-    public static final String singleInt = "1";
+    public static final String singleInt = "0";
     /** Singleton instance of this algebra. */
     public static final PointIntAlgebra instance = new PointIntAlgebra();
 }
