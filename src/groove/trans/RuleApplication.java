@@ -348,7 +348,6 @@ public class RuleApplication implements DeltaApplier {
                 }
                 removeNode(target, mergedElem);
             }
-            eraseIsolatedValueNodes(target);
         }
     }
 
