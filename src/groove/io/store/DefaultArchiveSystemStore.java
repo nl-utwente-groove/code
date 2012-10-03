@@ -23,7 +23,6 @@ import static groove.io.FileType.PROPERTIES_FILTER;
 import static groove.io.FileType.RULE_FILTER;
 import static groove.io.FileType.ZIP_FILTER;
 import static groove.trans.ResourceKind.PROPERTIES;
-import static groove.trans.ResourceKind.RULE;
 import static groove.trans.ResourceKind.TYPE;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
@@ -286,9 +285,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
                             LAYOUT_FILTER.stripExtension(restName);
                         this.layoutEntryMap.put(objectName, entry);
                     }
-                } else if (kind == RULE
-                    || new File(restName).getParent() == null) {
-                    // only look at lower directories in case of rules
+                } else {
                     Object oldEntry =
                         zipEntryMap.get(kind).put(restName, entry);
                     assert oldEntry == null : String.format(
@@ -443,7 +440,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
                  * graph.
                  */
                 plainGraph.setRole(kind.getGraphRole());
-                plainGraph.setName(graphName);
+                plainGraph.setName(createQualName(graphName).toString());
                 addLayout(file, graphEntry.getKey(), plainGraph,
                     plainGraphAndMap.two());
                 AspectGraph graph = AspectGraph.newInstance(plainGraph);
