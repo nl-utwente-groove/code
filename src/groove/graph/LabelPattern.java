@@ -80,7 +80,13 @@ public class LabelPattern {
      * string with a list of values.
      */
     public String getLabel(Object... values) {
-        return String.format(getFormat(), values);
+        String result;
+        try {
+            result = String.format(getFormat(), values);
+        } catch (IllegalFormatException exc) {
+            result = getFormat();
+        }
+        return result;
     }
 
     /** 
@@ -92,7 +98,7 @@ public class LabelPattern {
         for (HostEdge outEdge : host.outEdgeSet(source)) {
             Integer position = this.argPositions.get(outEdge.label().text());
             if (position != null && outEdge.target() instanceof ValueNode) {
-                values[position] = ((ValueNode) outEdge.target()).getValue();
+                values[position] = ((ValueNode) outEdge.target()).getSymbol();
             }
         }
         return getLabel(values);
