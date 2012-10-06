@@ -467,7 +467,8 @@ public class LabelFilter extends Observable {
 
         @Override
         public int hashCode() {
-            return this.label.hashCode();
+            return this.label.getRole().hashCode()
+                ^ this.label.text().hashCode();
         }
 
         @Override
@@ -481,8 +482,14 @@ public class LabelFilter extends Observable {
             if (!(obj instanceof LabelEntry)) {
                 return false;
             }
-            LabelEntry other = (LabelEntry) obj;
-            return this.label.equals(other.label);
+            Label otherLabel = ((LabelEntry) obj).getLabel();
+            if (getLabel().getRole() != otherLabel.getRole()) {
+                return false;
+            }
+            if (!getLabel().text().equals(otherLabel.text())) {
+                return false;
+            }
+            return true;
         }
 
         @Override
