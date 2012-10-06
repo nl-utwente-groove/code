@@ -578,8 +578,8 @@ public enum AspectKind {
             b.add("Declares the node type to be a nodified edge,");
             b.add("meaning that it will not be displayed as a node.");
             b.add("Instead, the incoming edges will be labelled by expanding %s");
-            b.add("with the concrete values of the %s list");
-            p.add("String format, with parameter syntax as in String.format");
+            b.add("with string representations of the concrete values of the %s list");
+            p.add("Label format, with parameter syntax as in <tt>String.format</tt>");
             p.add("Comma-separated list of attribute field names");
             break;
 
