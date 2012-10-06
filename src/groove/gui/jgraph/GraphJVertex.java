@@ -224,10 +224,15 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
                 result.add(key);
             }
         }
-        if (result.isEmpty()) {
+        if (result.isEmpty() && hasNodeKey()) {
             result.add(getNodeKey());
         }
         return result;
+    }
+
+    /** Tests if this vertex has a special key standing only for the node. */
+    private boolean hasNodeKey() {
+        return getNodeKey() != null;
     }
 
     /** Returns the key associated with the node itself. */
