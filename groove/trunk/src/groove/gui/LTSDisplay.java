@@ -124,7 +124,7 @@ public class LTSDisplay extends Display {
     }
 
     /** Returns true if the LTS JGraph is hidden. */
-    public boolean isHiddingLts() {
+    public boolean isHidingLts() {
         return getShowHideLTSButton().isSelected();
     }
 
