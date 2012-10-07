@@ -246,12 +246,16 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             this.jModel.removeGraphModelListener(this);
         }
         this.jModel = getJGraph().getModel();
-        if (this.typeGraph != getTypeGraph()) {
+        // determine if we want to reuse the entries in the filter
+        boolean reuse =
+            (getJGraph() instanceof AspectJGraph)
+                && this.typeGraph == getTypeGraph();
+        if (reuse) {
+            getFilter().clearJCells();
+        } else {
             this.typeGraph = getTypeGraph();
             getFilter().clear(
                 this.typeGraph == null || this.typeGraph.isImplicit());
-        } else {
-            getFilter().clearJCells();
         }
         if (this.jModel == null) {
             getFilter().clear(true);
