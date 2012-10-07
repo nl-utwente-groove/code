@@ -41,6 +41,11 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
         return (GraphState) super.getNode();
     }
 
+    @Override
+    protected Node getNodeKey() {
+        return null;
+    }
+
     /** A state is also visible if it is open, final, or the start state. */
     @Override
     public boolean isVisible() {

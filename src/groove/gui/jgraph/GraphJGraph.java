@@ -521,25 +521,26 @@ public class GraphJGraph extends org.jgraph.JGraph {
     @Override
     public void setModel(GraphModel model) {
         if (model == null || model instanceof GraphJModel<?,?>) {
-            GraphJModel<?,?> jModel = (GraphJModel<?,?>) model;
-            if (getModel() != null) {
+            GraphJModel<?,?> oldJModel = getModel();
+            GraphJModel<?,?> newJModel = (GraphJModel<?,?>) model;
+            if (oldJModel != null) {
                 if (this.layouter != null) {
                     this.layouter.stop();
                 }
                 // if we don't clear the selection, the old selection
                 // gives trouble when setting the model
                 clearSelection();
-                getModel().removeGraphModelListener(getCancelEditListener());
+                oldJModel.removeGraphModelListener(getCancelEditListener());
             }
-            super.setModel(jModel);
-            if (jModel != null) {
-                setName(jModel.getName());
+            super.setModel(newJModel);
+            if (newJModel != null) {
+                setName(newJModel.getName());
             }
-            if (model != null && this.layouter != null) {
+            if (newJModel != null && this.layouter != null) {
                 int layoutCount = freeze();
                 if (layoutCount > 0) {
                     Layouter layouter =
-                        layoutCount == jModel.getRootCount() ? this.layouter
+                        layoutCount == newJModel.getRootCount() ? this.layouter
                                 : this.incrementalLayouter;
                     layouter.start(false);
                     final Timer timer = new Timer();
@@ -553,10 +554,12 @@ public class GraphJGraph extends org.jgraph.JGraph {
                         }
                     }, MAX_LAYOUT_DURATION);
                 }
-                model.addGraphModelListener(getCancelEditListener());
             }
-            setEnabled(model != null);
-            if (model != null && getActions() != null) {
+            if (newJModel != null) {
+                newJModel.addGraphModelListener(getCancelEditListener());
+            }
+            setEnabled(newJModel != null);
+            if (newJModel != null && getActions() != null) {
                 // create the popup menu to create and activate the actions therein
                 createPopupMenu(null);
             }
