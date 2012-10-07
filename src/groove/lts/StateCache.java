@@ -197,7 +197,7 @@ public class StateCache {
         DeltaHostGraph result;
         if (frozenGraph != null) {
             result =
-                this.graphFactory.newGraph(this.state.toString(), frozenGraph,
+                this.graphFactory.newGraph(getState().toString(), frozenGraph,
                     this.record.getFactory());
         } else if (!(this.state instanceof GraphNextState)) {
             throw new IllegalStateException(

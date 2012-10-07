@@ -25,7 +25,6 @@ import groove.graph.Element;
 import groove.graph.Morphism;
 import groove.graph.iso.IsoChecker;
 import groove.trans.AbstractEvent;
-import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostGraphMorphism;
@@ -210,8 +209,8 @@ public class DefaultRuleTransition extends
         RuleApplication appl = getEvent().newApplication(source().getGraph());
         HostGraphMorphism result = appl.getMorphism();
         if (isSymmetry()) {
-            HostGraph derivedTarget = new DefaultHostGraph(appl.getTarget());
-            HostGraph realTarget = new DefaultHostGraph(target().getGraph());
+            HostGraph derivedTarget = appl.getTarget().clone();//new DefaultHostGraph(appl.getTarget());
+            HostGraph realTarget = target().getGraph().clone();//new DefaultHostGraph(target().getGraph());
             final Morphism<HostNode,HostEdge> iso =
                 IsoChecker.<HostNode,HostEdge>getInstance(true).getIsomorphism(
                     derivedTarget, realTarget);

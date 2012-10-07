@@ -36,8 +36,6 @@ import java.util.Set;
 
 /**
  * Factory class for host graph elements.
- * Because the factory also creates value nodes, it needs
- * an algebra family to do so.
  * It is important that all states in a GTS share their host factory,
  * as otherwise node numbers may conflict or overlap.
  * @author Arend Rensink

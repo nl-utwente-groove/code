@@ -58,10 +58,9 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
      *        copied from one graph to the next; otherwise, they will be reused
      */
     private DeltaHostGraph(String name, HostElement[] delta,
-            HostFactory factory, AlgebraFamily family, boolean copyData) {
+            HostFactory factory, boolean copyData) {
         super(name);
         this.factory = factory;
-        this.family = family;
         this.basis = null;
         this.copyData = copyData;
         this.delta = new FrozenDeltaApplier(delta);
@@ -77,11 +76,10 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
      *        copied from one graph to the next; otherwise, they will be reused
      */
     private DeltaHostGraph(String name, final DeltaHostGraph basis,
-            final DeltaApplier delta, AlgebraFamily family, boolean copyData) {
+            final DeltaApplier delta, boolean copyData) {
         super(name);
         this.basis = basis;
         this.factory = basis.getFactory();
-        this.family = family;
         this.copyData = copyData;
         if (delta == null || delta instanceof StoredDeltaApplier) {
             this.delta = (StoredDeltaApplier) delta;
@@ -110,17 +108,12 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
         return HOST;
     }
 
-    @Override
-    public AlgebraFamily getFamily() {
-        return this.family;
-    }
-
     /**
      * Since the result should be modifiable, returns a {@link DefaultHostGraph}.
      */
     @Override
     public DefaultHostGraph clone() {
-        return new DefaultHostGraph(this, this.family);
+        return new DefaultHostGraph(this, null);
     }
 
     @Override
@@ -132,7 +125,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
      * Since the result should be modifiable, returns a {@link DefaultHostGraph}.
      */
     public HostGraph newGraph(String name) {
-        return new DefaultHostGraph(name, getFactory(), getFamily());
+        return new DefaultHostGraph(name, getFactory());
     }
 
     /** 
@@ -141,8 +134,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
      */
     public DeltaHostGraph newGraph(String name, DeltaHostGraph graph,
             DeltaApplier applier) {
-        return new DeltaHostGraph(name, graph, applier, this.family,
-            this.copyData);
+        return new DeltaHostGraph(name, graph, applier, this.copyData);
     }
 
     /** Creates a new delta graph from a given element array. 
@@ -150,8 +142,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
      */
     public DeltaHostGraph newGraph(String name, HostElement[] elements,
             HostFactory factory) {
-        return new DeltaHostGraph(name, elements, factory, this.family,
-            this.copyData);
+        return new DeltaHostGraph(name, elements, factory, this.copyData);
     }
 
     /**
@@ -494,8 +485,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
 
     @Override
     public HostGraph retype(TypeGraph typeGraph) throws FormatException {
-        HostGraph result =
-            typeGraph.analyzeHost(this).createImage(getName(), getFamily());
+        HostGraph result = typeGraph.analyzeHost(this).createImage(getName());
         EdgeMultiplicityVerifier.verifyMultiplicities(result, typeGraph);
         return result;
     }
@@ -507,8 +497,6 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
 
     /** The element factory of this host graph. */
     private HostFactory factory;
-    /** The algebra family of this host graph. */
-    private final AlgebraFamily family;
     /** The fixed (possibly <code>null</code> basis of this graph. */
     DeltaHostGraph basis;
     /** The fixed delta of this graph. */
@@ -542,12 +530,10 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
     static private final boolean ALIAS_SETS = true;
     /** Factory instance of this class, in which data is copied. */
     static private final DeltaHostGraph copyInstance = new DeltaHostGraph(
-        "copy prototype", (HostElement[]) null, null, AlgebraFamily.DEFAULT,
-        true);
+        "copy prototype", (HostElement[]) null, null, true);
     /** Factory instance of this class, in which data is aliased. */
     static private final DeltaHostGraph swingInstance = new DeltaHostGraph(
-        "swing prototype", (HostElement[]) null, null, AlgebraFamily.DEFAULT,
-        false);
+        "swing prototype", (HostElement[]) null, null, false);
 
     /**
      * Returns a fixed factory instance of the {@link DeltaHostGraph} class,
@@ -617,8 +603,6 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
         /**
          * Adds an edge to all maps stored in this target,
          * if they are not {@code null}.
-         * A second parameter determines if the set sets
-         * in the map should be copied upon modification.
          */
         final boolean addEdge(HostEdge edge, boolean refreshSource,
                 boolean refreshTarget, boolean refreshLabel) {

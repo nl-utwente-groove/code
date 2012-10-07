@@ -206,7 +206,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 TypeGraph type = getGrammar().getTypeGraph();
                 HostGraphMorphism typing = type.analyzeHost(result);
                 result =
-                    typing.createImage(result.getName(), AlgebraFamily.TERM);
+                    typing.createImage(result.getName());
                 HostModelMap newElementMap = elementMap.newMap();
                 for (Map.Entry<AspectNode,HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
                     HostNode typedNode = typing.getNode(nodeEntry.getValue());

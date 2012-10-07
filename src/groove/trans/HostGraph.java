@@ -47,9 +47,6 @@ public interface HostGraph extends Graph<HostNode,HostEdge>, DeltaTarget {
     @Override
     HostFactory getFactory();
 
-    /** Returns the algebra family of this host graph. */
-    AlgebraFamily getFamily();
-
     /** Returns the type graph for this host graph, if any. */
     public TypeGraph getTypeGraph();
 

@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-import groove.algebra.AlgebraFamily;
 import groove.graph.Morphism;
 
 /**
@@ -57,11 +56,10 @@ public class HostGraphMorphism extends Morphism<HostNode,HostEdge> {
         return (HostGraphMorphism) super.inverseThen(other);
     }
 
-    /** Creates a host graph consisting precisely of the node and edge images in this morphism. 
-     * @param family TODO*/
-    public DefaultHostGraph createImage(String name, AlgebraFamily family) {
+    /** Creates a host graph consisting precisely of the node and edge images in this morphism. */
+    public DefaultHostGraph createImage(String name) {
         DefaultHostGraph result =
-            new DefaultHostGraph(name, getFactory(), family);
+            new DefaultHostGraph(name, getFactory());
         result.addNodeSet(nodeMap().values());
         result.addEdgeSet(edgeMap().values());
         return result;

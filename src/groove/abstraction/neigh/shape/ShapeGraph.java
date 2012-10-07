@@ -165,11 +165,6 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
     }
 
     @Override
-    public AlgebraFamily getFamily() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public GraphRole getRole() {
         return SHAPE;
     }
