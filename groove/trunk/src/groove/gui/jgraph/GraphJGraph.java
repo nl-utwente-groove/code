@@ -342,11 +342,21 @@ public class GraphJGraph extends org.jgraph.JGraph {
                     if (!jCell.isVisible()) {
                         invisibleCells.add(jCell);
                         getSelectionModel().removeSelectionCell(jCell);
+                        // test context for visibility
                         if (jCell instanceof GraphJVertex) {
                             for (Object edge : ((GraphJVertex) jCell).getPort().getEdges()) {
-                                if (!((GraphJEdge) edge).isVisible()) {
-                                    invisibleCells.add((GraphJEdge) edge);
+                                GraphJEdge jEdge = (GraphJEdge) edge;
+                                if (!jEdge.isVisible()) {
+                                    invisibleCells.add(jEdge);
                                 }
+                            }
+                        } else if (jCell instanceof GraphJEdge) {
+                            GraphJEdge jEdge = (GraphJEdge) jCell;
+                            if (!jEdge.getSourceVertex().isVisible()) {
+                                invisibleCells.add(jEdge.getSourceVertex());
+                            }
+                            if (!jEdge.getTargetVertex().isVisible()) {
+                                invisibleCells.add(jEdge.getTargetVertex());
                             }
                         }
                     } else {
@@ -359,9 +369,18 @@ public class GraphJGraph extends org.jgraph.JGraph {
                         visibleCells.add(jCell);
                         if (jCell instanceof GraphJVertex) {
                             for (Object edge : ((GraphJVertex) jCell).getPort().getEdges()) {
-                                if (((GraphJEdge) edge).isVisible()) {
-                                    visibleCells.add((GraphJEdge) edge);
+                                GraphJEdge jEdge = (GraphJEdge) edge;
+                                if (jEdge.isVisible()) {
+                                    visibleCells.add(jEdge);
                                 }
+                            }
+                        } else if (jCell instanceof GraphJEdge) {
+                            GraphJEdge jEdge = (GraphJEdge) jCell;
+                            if (jEdge.getSourceVertex().isVisible()) {
+                                visibleCells.add(jEdge.getSourceVertex());
+                            }
+                            if (jEdge.getTargetVertex().isVisible()) {
+                                visibleCells.add(jEdge.getTargetVertex());
                             }
                         }
                     }
