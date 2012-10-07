@@ -50,19 +50,17 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
      * @param name name of the new host graph.
      */
     public DefaultHostGraph(String name) {
-        this(name, HostFactory.newInstance(), AlgebraFamily.DEFAULT);
+        this(name, HostFactory.newInstance());
     }
 
     /**
      * Constructs an empty host graph, with a given host factory.
      * @param name name of the new host graph
      */
-    public DefaultHostGraph(String name, HostFactory factory,
-            AlgebraFamily family) {
+    public DefaultHostGraph(String name, HostFactory factory) {
         super(name);
         assert factory != null;
         this.factory = factory;
-        this.family = family;
     }
 
     /**
@@ -71,11 +69,10 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
     public DefaultHostGraph(HostGraph graph, AlgebraFamily family) {
         super(graph.getName());
         this.factory = graph.getFactory();
-        this.family = family;
         HostGraphMorphism morphism = getFactory().createMorphism();
         for (HostNode sn : graph.nodeSet()) {
             HostNode tn;
-            if (sn instanceof ValueNode) {
+            if (sn instanceof ValueNode && family != null) {
                 ValueNode vn = (ValueNode) sn;
                 tn =
                     getFactory().createNodeFromString(
@@ -129,13 +126,8 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
     }
 
     @Override
-    public AlgebraFamily getFamily() {
-        return this.family;
-    }
-
-    @Override
     public DefaultHostGraph clone() {
-        return new DefaultHostGraph(this, getFamily());
+        return new DefaultHostGraph(this, null);
     }
 
     @Override
@@ -148,8 +140,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
      * Also makes sure the elements already in this graph are known to the factory. 
      */
     public DefaultHostGraph clone(HostFactory factory) {
-        DefaultHostGraph result =
-            new DefaultHostGraph(getName(), factory, getFamily());
+        DefaultHostGraph result = new DefaultHostGraph(getName(), factory);
         for (HostNode node : nodeSet()) {
             factory.addNode(node);
             result.addNode(node);
@@ -164,7 +155,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
 
     @Override
     public DefaultHostGraph newGraph(String name) {
-        return new DefaultHostGraph(getName(), getFactory(), getFamily());
+        return new DefaultHostGraph(getName(), getFactory());
     }
 
     @Override
@@ -189,8 +180,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
 
     @Override
     public HostGraph retype(TypeGraph typeGraph) throws FormatException {
-        HostGraph result =
-            typeGraph.analyzeHost(this).createImage(getName(), getFamily());
+        HostGraph result = typeGraph.analyzeHost(this).createImage(getName());
         EdgeMultiplicityVerifier.verifyMultiplicities(result, typeGraph);
         return result;
     }
@@ -232,6 +222,4 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
 
     /** The element factory of this host graph. */
     private final HostFactory factory;
-    /** The algebra family of this host graph. */
-    private final AlgebraFamily family;
 }
