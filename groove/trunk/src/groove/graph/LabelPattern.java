@@ -78,15 +78,11 @@ public class LabelPattern {
     /** 
      * Returns the label text constructed by instantiating the format
      * string with a list of values.
+     * @throws IllegalFormatException if the format cannot be instantiated
+     * correctly with the given parameters
      */
     public String getLabel(Object... values) {
-        String result;
-        try {
-            result = String.format(getFormat(), values);
-        } catch (IllegalFormatException exc) {
-            result = getFormat();
-        }
-        return result;
+        return String.format(getFormat(), values);
     }
 
     /** 
