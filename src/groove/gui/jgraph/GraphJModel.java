@@ -371,10 +371,10 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         // verification
         GraphJVertex sourceNode = getJCellForNode(source);
         assert sourceNode != null : "No vertex for source node of " + edge;
-        GraphJVertex targetPort = getJCellForNode(target);
-        assert targetPort != null : "No vertex for target node of " + edge;
+        GraphJVertex targetNode = getJCellForNode(target);
+        assert targetNode != null : "No vertex for target node of " + edge;
         this.connections.connect(jEdge, sourceNode.getPort(),
-            targetPort.getPort());
+            targetNode.getPort());
         return jEdge;
     }
 

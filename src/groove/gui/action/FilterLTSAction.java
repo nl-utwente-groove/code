@@ -22,7 +22,7 @@ public class FilterLTSAction extends SimulatorAction {
     public void refresh() {
         boolean enabled =
             getSimulatorModel().getGts() != null
-                && !getLtsDisplay().isHiddingLts();
+                && !getLtsDisplay().isHidingLts();
         setEnabled(enabled);
     }
 

@@ -128,7 +128,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
      * Toggles the state of the LTS display.
      */
     public void toggleShowHideLts() {
-        if (!getDisplay().isHiddingLts()) {
+        if (!getDisplay().isHidingLts()) {
             // Switch to show mode.
             LTSJModel ltsModel = getJGraph().newModel();
             ltsModel.setFiltering(getDisplay().isFilteringLts());
@@ -145,6 +145,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
         } else {
             // Hide the LTS.
             getJGraph().setVisible(false);
+            getJGraph().setModel(null);
             setEnabled(false);
         }
     }
@@ -171,9 +172,6 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        if (source.getGts() != null && getDisplay().isHiddingLts()) {
-            return;
-        }
         if (changes.contains(GTS) || changes.contains(GRAMMAR)) {
             GTS gts = source.getGts();
             if (gts == null) {
@@ -188,7 +186,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
                         }
                     }
                 });
-            } else {
+            } else if (!getDisplay().isHidingLts()) {
                 LTSJModel ltsModel;
                 if (gts != oldModel.getGts()) {
                     ltsModel = getJGraph().newModel();
