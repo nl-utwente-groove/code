@@ -84,7 +84,7 @@ public class LabelPatternTest {
         graphInstanceTest("No pars", "\"No pars\"", graph, n1);
         graphInstanceTest("One par: 11", "\"One par: %s\",i1", graph, n1);
         graphInstanceTest("One par: null", "\"One par: %s\",i3", graph, n1);
-        graphInstanceTest("One par: text", "\"One par: %s\",s", graph, n1);
+        graphInstanceTest("One par: \"text\"", "\"One par: %s\",s", graph, n1);
         graphInstanceTest("Two pars: 22-11", "\"Two pars: %2$s-%1$s\",i1,i2",
             graph, n1);
     }
