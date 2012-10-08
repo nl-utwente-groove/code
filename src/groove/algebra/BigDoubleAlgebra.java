@@ -142,7 +142,8 @@ public class BigDoubleAlgebra extends RealSignature<BigDecimal,Boolean,String>
 
     /** Tests if two numbers are equal up to {@link #TOLERANCE}. */
     public static boolean approximatelyEquals(BigDecimal d1, BigDecimal d2) {
-        return d1.subtract(d2).abs().doubleValue() < (d1.abs().doubleValue() + d2.abs().doubleValue())
+        return d1.subtract(d2).abs().doubleValue() < (d1.abs().doubleValue()
+            + d2.abs().doubleValue() + TOLERANCE)
             * TOLERANCE;
     }
 
