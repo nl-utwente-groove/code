@@ -16,6 +16,7 @@
  */
 package groove.view;
 
+import static groove.trans.ResourceKind.CONTROL;
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
 import groove.trans.Action;
@@ -56,7 +57,7 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
         }
         this.loader.init(getGrammar().getProperties().getAlgebraFamily(),
             getGrammar().getRules());
-        for (String controlName : getGrammar().getControlNames()) {
+        for (String controlName : getGrammar().getActiveNames(CONTROL)) {
             ControlModel controlModel =
                 getGrammar().getControlModel(controlName);
             if (controlModel == null) {

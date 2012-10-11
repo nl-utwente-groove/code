@@ -56,36 +56,26 @@ public class SimulatorModel implements Cloneable {
      */
     public void doDelete(ResourceKind resource, Set<String> names)
         throws IOException {
-        boolean result = false;
         start();
         try {
-            GrammarModel grammar = getGrammar();
+            boolean change =
+                new HashSet<String>(names).removeAll(getGrammar().getActiveNames(
+                    resource));
             switch (resource) {
             case CONTROL:
-                Set<String> actives =
-                    new HashSet<String>(grammar.getControlNames());
-                result = actives.removeAll(names);
-                getStore().deleteTexts(ResourceKind.CONTROL, names);
+            case PROLOG:
+                getStore().deleteTexts(resource, names);
                 break;
             case HOST:
-                grammar.removeStartGraphs(names);
-                getStore().deleteGraphs(ResourceKind.HOST, names);
-                break;
-            case PROLOG:
-                getStore().deleteTexts(ResourceKind.PROLOG, names);
-                break;
             case RULE:
             case TYPE:
-                for (AspectGraph oldGraph : getStore().deleteGraphs(resource,
-                    names)) {
-                    result |= isEnabled(oldGraph);
-                }
+                getStore().deleteGraphs(resource, names);
                 break;
             case PROPERTIES:
             default:
                 assert false;
             }
-            changeGrammar(result);
+            changeGrammar(change);
         } finally {
             finish();
         }
@@ -104,26 +94,11 @@ public class SimulatorModel implements Cloneable {
         boolean result = false;
         start();
         try {
-            switch (resource) {
-            case CONTROL:
-                result = getGrammar().getControlNames().contains(oldName);
-                break;
-            case HOST:
-                result = getGrammar().isStartGraphComponent(oldName);
-                break;
-            case RULE:
-            case TYPE:
-                result =
-                    getGrammar().getResource(resource, oldName).isEnabled();
-                break;
-            }
+            result = getGrammar().getActiveNames(resource).contains(oldName);
             getStore().rename(resource, oldName, newName);
             changeSelected(resource, newName);
             changeGrammar(result);
             changeDisplay(DisplayKind.toDisplay(resource));
-            if (resource == ResourceKind.HOST) {
-                getGrammar().renameStartGraph(oldName, newName);
-            }
         } finally {
             finish();
         }
@@ -154,12 +129,7 @@ public class SimulatorModel implements Cloneable {
     /** Enables a collection of named resources of a given kind. */
     private void setEnabled(ResourceKind kind, Set<String> names)
         throws IOException {
-        SystemProperties oldProperties = getGrammar().getProperties();
-        SystemProperties newProperties = oldProperties.clone();
         switch (kind) {
-        case HOST:
-            getGrammar().toggleStartGraphs(names);
-            break;
         case RULE:
             Collection<AspectGraph> newRules =
                 new ArrayList<AspectGraph>(names.size());
@@ -176,17 +146,20 @@ public class SimulatorModel implements Cloneable {
             }
             getStore().putGraphs(ResourceKind.RULE, newRules);
             break;
+        case HOST:
         case TYPE:
         case PROLOG:
         case CONTROL:
+            SystemProperties newProperties =
+                getGrammar().getProperties().clone();
             List<String> actives =
-                new ArrayList<String>(newProperties.getEnabledNames(kind));
+                new ArrayList<String>(newProperties.getActiveNames(kind));
             for (String typeName : names) {
                 if (!actives.remove(typeName)) {
                     actives.add(typeName);
                 }
             }
-            newProperties.setEnabledNames(kind, actives);
+            newProperties.setActiveNames(kind, actives);
             getStore().putProperties(newProperties);
             break;
         case PROPERTIES:
@@ -218,18 +191,14 @@ public class SimulatorModel implements Cloneable {
     /** Uniquely enables a named resource of a given kind. */
     private void setEnabledUniquely(ResourceKind kind, String name)
         throws IOException {
-        SystemProperties oldProperties = getGrammar().getProperties();
-        SystemProperties newProperties = oldProperties.clone();
         switch (kind) {
         case HOST:
-            getGrammar().setStartGraph(name);
-            break;
         case TYPE:
         case PROLOG:
         case CONTROL:
-            Set<String> newEnabled = new HashSet<String>();
-            newEnabled.add(name);
-            newProperties.setEnabledNames(kind, newEnabled);
+            SystemProperties newProperties =
+                getGrammar().getProperties().clone();
+            newProperties.setActiveNames(kind, Collections.singleton(name));
             getStore().putProperties(newProperties);
             break;
         case PROPERTIES:
@@ -265,23 +234,9 @@ public class SimulatorModel implements Cloneable {
 
     /** Tests if a given aspect graph corresponds to an enabled resource. */
     private boolean isEnabled(AspectGraph graph) {
-        boolean result = false;
-        String name = graph.getName();
-        SystemProperties properties = getGrammar().getProperties();
-        switch (graph.getRole()) {
-        case HOST:
-            result = getGrammar().isStartGraphComponent(name);
-            break;
-        case RULE:
-            result = GraphProperties.isEnabled(graph);
-            break;
-        case TYPE:
-            result = properties.getTypeNames().contains(name);
-            break;
-        default:
-            assert false;
-        }
-        return result;
+        ResourceKind kind = ResourceKind.toResource(graph.getRole());
+        assert kind != null;
+        return getGrammar().getActiveNames(kind).contains(graph.getName());
     }
 
     /**
@@ -296,9 +251,7 @@ public class SimulatorModel implements Cloneable {
         start();
         try {
             GrammarModel grammar = getGrammar();
-            boolean result =
-                kind != ResourceKind.CONTROL
-                    || grammar.getControlNames().contains(name);
+            boolean result = grammar.getActiveNames(kind).contains(name);
             getStore().putTexts(kind, Collections.singletonMap(name, program));
             changeGrammar(result);
             changeSelected(kind, name);
@@ -787,7 +740,6 @@ public class SimulatorModel implements Cloneable {
             changeState(null);
             changeMatch(null);
             changeExploration();
-            grammar.reloadStartGraphs();
         }
         // restrict the selected resources to those that are (still)
         // in the grammar
@@ -949,21 +901,12 @@ public class SimulatorModel implements Cloneable {
         if (newSelection.isEmpty() && getGrammar() != null) {
             String name = null;
             // find the best choice of name
-            if (resource == ResourceKind.HOST) {
-                // for a host graph, the best choice is the current state
-                // to select that, set the name to a non-existent one;
-                // this will be filtered out later
-                if (hasState()) {
-                    name = "";
-                } else {
-                    // the next best choice is an (arbitrary) start graph name
-                    Set<String> startNames = getGrammar().getStartGraphs();
-                    if (startNames.size() > 0) {
-                        name = startNames.iterator().next();
-                    }
-                }
+            Set<String> activeNames = getGrammar().getActiveNames(resource);
+            if (!activeNames.isEmpty()) {
+                // take the first active name (if there is one)
+                newSelection.add(activeNames.iterator().next());
             }
-            if (name == null && !allNames.isEmpty()) {
+            if (newSelection.isEmpty() && !allNames.isEmpty()) {
                 // otherwise, just take the first existing name (if there is one)
                 name = allNames.iterator().next();
             }

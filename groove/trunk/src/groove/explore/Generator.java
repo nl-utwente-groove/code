@@ -30,6 +30,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
+import groove.trans.ResourceKind;
 import groove.util.CommandLineTool;
 import groove.util.GenerateProgressMonitor;
 import groove.util.Groove;
@@ -46,11 +47,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Set;
 
 /**
  * A class that takes care of loading in a rule system consisting of a set of
@@ -123,7 +122,7 @@ public class Generator extends CommandLineTool {
      */
     public Generator(String... args) {
         super(false, args);
-        this.startGraphs = new HashSet<String>();
+        this.startGraphs = new ArrayList<String>();
 
         this.strategyOption =
             new TemplatedOption<Strategy>(
@@ -281,7 +280,8 @@ public class Generator extends CommandLineTool {
                     this.grammarModel = GrammarModel.newInstance(url);
                 } else {
                     this.grammarModel = GrammarModel.newInstance(url);
-                    this.grammarModel.localSetStartGraphs(this.startGraphs);
+                    this.grammarModel.setLocalActiveNames(ResourceKind.HOST,
+                        this.startGraphs);
                 }
                 this.grammarModel.getStore().addObserver(loadObserver);
             } catch (IOException exc) {
@@ -614,7 +614,7 @@ public class Generator extends CommandLineTool {
     /** String describing the location where the grammar is to be found. */
     private String grammarLocation;
     /** The set of start graphs to be used in the grammar. May be empty. */
-    private final Set<String> startGraphs;
+    private final List<String> startGraphs;
     /** The model of the graph grammar used for the generation. */
     private GrammarModel grammarModel;
 

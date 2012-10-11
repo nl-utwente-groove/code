@@ -21,7 +21,6 @@ import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
-import groove.view.ResourceModel;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -44,11 +43,8 @@ public class EncodedEnabledRule extends EncodedEnumeratedType<Rule> {
         // Filter the rules that are enabled, and add them one by one to a
         // a sorted map.
         TreeMap<String,String> enabledRules = new TreeMap<String,String>();
-        for (ResourceModel<?> ruleModel : grammar.getResourceSet(ResourceKind.RULE)) {
-            if (ruleModel.isEnabled()) {
-                String ruleName = ruleModel.getFullName();
-                enabledRules.put(ruleName, ruleName);
-            }
+        for (String ruleName : grammar.getActiveNames(ResourceKind.RULE)) {
+            enabledRules.put(ruleName, ruleName);
         }
 
         // Return the sorted map. 

@@ -109,6 +109,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         graph.testFixed(true);
     }
 
+    @Override
+    public boolean isEnabled() {
+        return GraphProperties.isEnabled(getSource());
+    }
+
     /**
      * Returns the priority of the rule of which this is a model. Yields the same
      * result as <code>toRule().getPriority()</code>.

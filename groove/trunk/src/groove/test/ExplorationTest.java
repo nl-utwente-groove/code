@@ -25,6 +25,7 @@ import groove.explore.encode.Serialized;
 import groove.lts.GTS;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
+import groove.trans.ResourceKind;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -406,7 +407,9 @@ public class ExplorationTest {
             GrammarModel result =
                 GrammarModel.newInstance(new File(INPUT_DIR, grammarName),
                     false);
-            result.localSetStartGraph(startGraphName);
+            if (startGraphName != null) {
+                result.setLocalActiveNames(ResourceKind.HOST, startGraphName);
+            }
             return result;
         } catch (IOException exc) {
             throw new RuntimeException(exc);

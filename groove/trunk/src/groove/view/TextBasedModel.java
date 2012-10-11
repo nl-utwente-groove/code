@@ -17,14 +17,12 @@
 package groove.view;
 
 import groove.trans.ResourceKind;
-import groove.view.aspect.AspectGraph;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
 /**
- * General interface for resource models constructed from an
- * {@link AspectGraph}.
+ * General interface for resource models constructed from a flat text.
  * @author Arend Rensink
  * @version $Revision $
  */

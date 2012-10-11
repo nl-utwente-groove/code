@@ -164,7 +164,7 @@ public class RuleApplicationTest {
     private void test(GrammarModel grammarModel, String ruleName,
             String startName) {
         try {
-            grammarModel.localSetStartGraph(startName);
+            grammarModel.setLocalActiveNames(HOST, startName);
             List<HostGraph> results = new ArrayList<HostGraph>();
             AlgebraFamily family =
                 grammarModel.getProperties().getAlgebraFamily();

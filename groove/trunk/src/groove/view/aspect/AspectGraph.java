@@ -36,6 +36,8 @@ import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.TypeLabel;
+import groove.gui.layout.JVertexLayout;
+import groove.gui.layout.LayoutMap;
 import groove.gui.list.SearchResult;
 import groove.rel.RegExpr;
 import groove.view.FormatError;
@@ -46,7 +48,10 @@ import groove.view.aspect.Expression.Const;
 import groove.view.aspect.Expression.Field;
 import groove.view.aspect.Expression.Par;
 
+import java.awt.Point;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -832,6 +837,119 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     /** Creates an empty, fixed aspect graph, with a given graph role. */
     public static AspectGraph emptyGraph(GraphRole role) {
         return emptyGraph("", role);
+    }
+
+    /** 
+     * Merges a given set of graphs into a single graph.
+     * Nodes with the same {@link AspectKind#ID} value are merged,
+     * all other nodes are kept distinct.
+     * The merged graph is layed out by placing the original graphs next to one another.
+     * @return a merged aspect graph or {@code null} if the set of input graphs is empty
+     */
+    public static AspectGraph mergeGraphs(Collection<AspectGraph> graphs) {
+        if (graphs.size() == 0) {
+            return null;
+        }
+        // Compute name and layout boundaries
+        StringBuilder name = new StringBuilder();
+        List<Point.Double> dimensions = new ArrayList<Point.Double>();
+        double globalMaxX = 0;
+        double globalMaxY = 0;
+        for (AspectGraph graph : graphs) {
+            assert graph.getRole() == HOST;
+            if (name.length() != 0) {
+                name.append("_");
+            }
+            name.append(graph.getName());
+            // compute dimensions of this graph
+            double maxX = 0;
+            double maxY = 0;
+            LayoutMap<AspectNode,AspectEdge> layoutMap =
+                GraphInfo.getLayoutMap(graph);
+            if (layoutMap != null) {
+                for (AspectNode node : graph.nodeSet()) {
+                    JVertexLayout layout = layoutMap.nodeMap().get(node);
+                    if (layout != null) {
+                        Rectangle2D b = layout.getBounds();
+                        maxX = Math.max(maxX, b.getX() + b.getWidth());
+                        maxY = Math.max(maxY, b.getY() + b.getHeight());
+                    }
+                }
+            }
+            dimensions.add(new Point.Double(maxX, maxY));
+            globalMaxX = Math.max(globalMaxX, maxX);
+            globalMaxY = Math.max(globalMaxY, maxY);
+        }
+        // construct the result graph
+        AspectGraph result = new AspectGraph(name.toString(), HOST);
+        LayoutMap<AspectNode,AspectEdge> newLayoutMap =
+            new LayoutMap<AspectNode,AspectEdge>();
+        FormatErrorSet newErrors = new FormatErrorSet();
+        // Local bookkeeping.
+        int nodeNr = 0;
+        int index = 0;
+        double offsetX = 0;
+        double offsetY = 0;
+        Map<AspectNode,AspectNode> nodeMap =
+            new HashMap<AspectNode,AspectNode>();
+        Map<String,AspectNode> sharedNodes = new HashMap<String,AspectNode>();
+
+        // Copy the graphs one by one into the combined graph
+        for (AspectGraph graph : graphs) {
+            nodeMap.clear();
+            LayoutMap<AspectNode,AspectEdge> oldLayoutMap =
+                GraphInfo.getLayoutMap(graph);
+            // Copy the nodes
+            for (AspectNode node : graph.nodeSet()) {
+                AspectNode fresh = null;
+                if (node.getId() != null) {
+                    String id = node.getId().getContentString();
+                    if (sharedNodes.containsKey(id)) {
+                        nodeMap.put(node, sharedNodes.get(id));
+                    } else {
+                        fresh = node.clone(nodeNr++);
+                        sharedNodes.put(id, fresh);
+                    }
+                } else {
+                    fresh = node.clone(nodeNr++);
+                }
+                if (fresh != null) {
+                    newLayoutMap.copyNodeWithOffset(fresh, node, oldLayoutMap,
+                        offsetX, offsetY);
+                    nodeMap.put(node, fresh);
+                    result.addNode(fresh);
+                }
+            }
+            // Copy the edges
+            for (AspectEdge edge : graph.edgeSet()) {
+                AspectEdge fresh =
+                    new AspectEdge(nodeMap.get(edge.source()), edge.label(),
+                        nodeMap.get(edge.target()));
+                newLayoutMap.copyEdgeWithOffset(fresh, edge, oldLayoutMap,
+                    offsetX, offsetY);
+                result.addEdge(fresh);
+            }
+            // Copy the errors
+            FormatErrorSet oldErrors = GraphInfo.getErrors(graph);
+            if (oldErrors != null) {
+                for (FormatError oldError : oldErrors) {
+                    newErrors.add("Error in start graph %s: %s", name, oldError);
+                }
+            }
+            // Move the offsets
+            if (globalMaxX > globalMaxY) {
+                offsetY = offsetY + dimensions.get(index).getY() + 50;
+            } else {
+                offsetX = offsetX + dimensions.get(index).getX() + 50;
+            }
+            index++;
+        }
+
+        // Finalise combined graph.
+        GraphInfo.setLayoutMap(result, newLayoutMap);
+        GraphInfo.setErrors(result, newErrors);
+        result.setFixed();
+        return result;
     }
 
     /**

@@ -59,7 +59,7 @@ public class EnableUniqueAction extends SimulatorAction {
             getSimulatorModel().getSelectSet(getResourceKind());
         if (selected.size() == 1) {
             Set<String> enabled =
-                getSimulatorModel().getGrammar().getProperties().getEnabledNames(
+                getSimulatorModel().getGrammar().getActiveNames(
                     getResourceKind());
             setEnabled(!selected.equals(enabled));
         } else {

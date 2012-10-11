@@ -24,11 +24,9 @@ import static groove.trans.ResourceKind.TYPE;
 import groove.control.CtrlAut;
 import groove.explore.Exploration;
 import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
-import groove.graph.TypeNode;
-import groove.gui.layout.JVertexLayout;
-import groove.gui.layout.LayoutMap;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.prolog.GrooveEnvironment;
@@ -40,27 +38,22 @@ import groove.trans.Rule;
 import groove.trans.SystemProperties;
 import groove.trans.SystemProperties.Key;
 import groove.util.Groove;
-import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
-import groove.view.aspect.AspectNode;
 
-import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -77,8 +70,6 @@ public class GrammarModel implements Observer {
         for (ResourceKind resource : ResourceKind.all(false)) {
             syncResource(resource);
         }
-        this.startGraphs = new HashSet<String>();
-        reloadStartGraphs(false);
     }
 
     /** Returns the name of the rule system. */
@@ -138,22 +129,48 @@ public class GrammarModel implements Observer {
     }
 
     /**
-     * Returns the control model associated with a given (named) control program.
-     * @param name the name of the control program to return the model of;
-     * @return the corresponding control program model, or <code>null</code> if
-     *         no program by that name exists
+     * Returns the set of resource names of the active resources of a given kind.
+     * These are the names stored as active, but can be overridden locally in
+     * the grammar model.
+     * @see #setLocalActiveNames(ResourceKind, Collection)
      */
-    public ControlModel getControlModel(String name) {
-        return (ControlModel) getResource(CONTROL, name);
+    public Set<String> getActiveNames(ResourceKind kind) {
+        // first check for locally stored names
+        Set<String> result = this.localActiveNamesMap.get(kind);
+        if (result == null) {
+            // if there are none, check for active names in the store
+            result = this.storedActiveNamesMap.get(kind);
+            if (result.isEmpty() && this.defaultActiveNameMap.containsKey(kind)) {
+                // if the stored active names are empty but there is a default name
+                // use it if a resource with that name exists
+                String defaultName = this.defaultActiveNameMap.get(kind);
+                if (defaultName != null && getNames(kind).contains(defaultName)) {
+                    result.add(defaultName);
+                }
+            }
+        }
+        result.retainAll(getNames(kind));
+        return Collections.unmodifiableSet(result);
     }
 
-    /**
-     * Returns the name of the control program to be used if control is 
-     * enabled, or {@code null} otherwise. This is taken
-     * from the system properties.
+    /** 
+     * Convenience method for calling {@link #setLocalActiveNames(ResourceKind, Collection)}.
      */
-    public Set<String> getControlNames() {
-        return getProperties().getControlNames();
+    public void setLocalActiveNames(ResourceKind kind, String... names) {
+        setLocalActiveNames(kind, Arrays.asList(names));
+    }
+
+    /** 
+     * Locally sets the active names of a given resource kind in the grammar model.
+     * This overrides (but does not change) the stored names.
+     * @param kind the kind for which to set the active names
+     * @param names non-{@code null} set of active names
+     * @see #getActiveNames(ResourceKind)
+     */
+    public void setLocalActiveNames(ResourceKind kind, Collection<String> names) {
+        assert names != null && !names.isEmpty();
+        this.localActiveNamesMap.put(kind, new TreeSet<String>(names));
+        invalidate();
     }
 
     /**
@@ -163,6 +180,16 @@ public class GrammarModel implements Observer {
      */
     public HostModel getHostModel(String name) {
         return (HostModel) getResourceMap(HOST).get(name);
+    }
+
+    /**
+     * Returns the control model associated with a given (named) control program.
+     * @param name the name of the control program to return the model of;
+     * @return the corresponding control program model, or <code>null</code> if
+     *         no program by that name exists
+     */
+    public ControlModel getControlModel(String name) {
+        return (ControlModel) getResource(CONTROL, name);
     }
 
     /**
@@ -222,162 +249,22 @@ public class GrammarModel implements Observer {
     }
 
     /**
-     * Checks if the given (host graph) name is (a component of) the currently
-     * selected start graph.  
-     */
-    public boolean isStartGraphComponent(String name) {
-        return this.startGraphs.contains(name);
-    }
-
-    /** Gets the names of the graphs that currently make up the start graph. */
-    public Set<String> getStartGraphs() {
-        return Collections.unmodifiableSet(this.startGraphs);
-    }
-
-    /**
-     * Loads or reloads the start graphs from the properties file. The boolean
-     * flag indicates whether or not {@link #invalidate} should be called
-     * afterwards.
-     */
-    private void reloadStartGraphs(boolean invalidate) {
-        // do nothing if there is an external start graph
-        if (this.externalStartGraph) {
-            return;
-        }
-        // else, reload names from property file
-        this.startGraphs.clear();
-        Set<String> startGraphNames = getProperties().getStartGraphNames();
-        if (!startGraphNames.isEmpty()) {
-            this.startGraphs.addAll(startGraphNames);
-        } else {
-            if (getResource(ResourceKind.HOST, Groove.DEFAULT_START_GRAPH_NAME) != null) {
-                this.startGraphs.add(Groove.DEFAULT_START_GRAPH_NAME);
-            }
-        }
-        // invalidate grammar if necessary
-        if (invalidate) {
-            this.startGraphModel = null;
-            invalidate();
-        }
-    }
-
-    /** 
-     * Loads or reloads the start graphs from the properties file, and
-     * recomputes the model associated with it.
-     */
-    public void reloadStartGraphs() {
-        reloadStartGraphs(true);
-    }
-
-    /** 
-     * Sets the start graphs, but does not change the associated grammar
-     * property in the system store.
-     * @see #localSetStartGraph
-     */
-    public void localSetStartGraphs(Set<String> names) {
-        if (names == null) {
-            return;
-        }
-        this.startGraphs.clear();
-        this.startGraphs.addAll(names);
-        this.startGraphModel = null;
-        this.externalStartGraph = false;
-        invalidate();
-    }
-
-    /**
-     * Sets the start graphs to a single graph, but does not change the
-     * associated property in the system store.
-     * @see #localSetStartGraphs
-     */
-    public void localSetStartGraph(String name) {
-        if (name == null) {
-            return;
-        }
-        this.startGraphs.clear();
-        this.startGraphs.add(name);
-        this.startGraphModel = null;
-        this.externalStartGraph = false;
-        invalidate();
-    }
-
-    /**
-     * Removes the given names from the start graphs, and propagates the change
-     * to the grammar properties.
-     */
-    public void removeStartGraphs(Set<String> names) throws IOException {
-        if (names != null) {
-            if (this.startGraphs.removeAll(names)) {
-                this.startGraphModel = null;
-                this.externalStartGraph = false;
-                getProperties().setStartGraphNames(this.startGraphs);
-                getStore().putProperties(getProperties());
-                invalidate();
-            }
-        }
-    }
-
-    /**
-     * Renames a start graph, and propagates the change to the grammar
-     * properties.
-     */
-    public void renameStartGraph(String oldName, String newName)
-        throws IOException {
-        if (this.startGraphs.remove(oldName)) {
-            this.startGraphs.add(newName);
-            getProperties().setStartGraphNames(this.startGraphs);
-            getStore().putProperties(getProperties());
-            this.startGraphModel = null;
-            this.externalStartGraph = false;
-            invalidate();
-        }
-    }
-
-    /**
-     * Sets the start graphs to a single graph, and propagates the change to
-     * the grammar properties.
-     */
-    public void setStartGraph(String name) throws IOException {
-        if (name == null) {
-            return;
-        }
-        this.startGraphs.clear();
-        this.startGraphs.add(name);
-        getProperties().setStartGraphNames(this.startGraphs);
-        getStore().putProperties(getProperties());
-        this.startGraphModel = null;
-        this.externalStartGraph = false;
-        invalidate();
-    }
-
-    /**
-     * Toggles the given names in the start graphs, and propagates the change
-     * to the grammar properties.
-     */
-    public void toggleStartGraphs(Set<String> names) throws IOException {
-        if (names != null) {
-            for (String name : names) {
-                if (!this.startGraphs.remove(name)) {
-                    this.startGraphs.add(name);
-                }
-            }
-            this.startGraphModel = null;
-            this.externalStartGraph = false;
-            getProperties().setStartGraphNames(this.startGraphs);
-            getStore().putProperties(getProperties());
-            invalidate();
-        }
-    }
-
-    /**
      * Returns the start graph of this grammar model.
      * @return the start graph model, or <code>null</code> if no start graph is
      *         set.
      */
 
     public HostModel getStartGraphModel() {
-        if (this.startGraphModel == null && !this.startGraphs.isEmpty()) {
-            this.startGraphModel = combineGraphs(this.startGraphs);
+        if (this.startGraphModel == null) {
+            TreeMap<String,AspectGraph> graphMap =
+                new TreeMap<String,AspectGraph>();
+            for (String name : getActiveNames(HOST)) {
+                graphMap.put(name, getStore().getGraphs(HOST).get(name));
+            }
+            AspectGraph startGraph = AspectGraph.mergeGraphs(graphMap.values());
+            if (startGraph != null) {
+                this.startGraphModel = new HostModel(this, startGraph);
+            }
         }
         return this.startGraphModel;
     }
@@ -389,16 +276,15 @@ public class GrammarModel implements Observer {
      * @throws IllegalArgumentException if <code>startGraph</code> does not have
      *         a graph role
      */
-    public HostModel setStartGraph(AspectGraph startGraph) {
+    public void setStartGraph(AspectGraph startGraph) {
         assert startGraph != null;
         if (startGraph.getRole() != GraphRole.HOST) {
             throw new IllegalArgumentException(String.format(
                 "Prospective start graph '%s' is not a graph", startGraph));
         }
         this.startGraphModel = new HostModel(this, startGraph);
-        this.externalStartGraph = true;
+        this.isExternalStartGraphModel = true;
         invalidate();
-        return this.startGraphModel;
     }
 
     /** Collects and returns the permanent errors of the rule models. */
@@ -535,11 +421,11 @@ public class GrammarModel implements Observer {
         result.setProperties(getProperties());
         // set start graph
         if (getStartGraphModel() == null) {
-            if (this.startGraphs.isEmpty()) {
+            Set<String> startGraphNames = getActiveNames(HOST);
+            if (startGraphNames.isEmpty()) {
                 errors.add("No start graph set");
             } else {
-                errors.add("Start graph '%s' cannot be loaded",
-                    this.startGraphs);
+                errors.add("Start graph '%s' cannot be loaded", startGraphNames);
             }
         } else {
             FormatErrorSet startGraphErrors;
@@ -594,7 +480,9 @@ public class GrammarModel implements Observer {
         this.modificationCount++;
         this.grammar = null;
         this.errors = null;
-        getStartGraphModel(); // recompute start graph model, if necessary
+        if (!this.isExternalStartGraphModel) {
+            this.startGraphModel = null;
+        }
     }
 
     @Override
@@ -608,10 +496,10 @@ public class GrammarModel implements Observer {
 
     /**
      * Synchronises the resources in the grammar model with the underlying store.
-     * @param resource the kind of resources to be synchronised
+     * @param kind the kind of resources to be synchronised
      */
-    private void syncResource(ResourceKind resource) {
-        switch (resource) {
+    private void syncResource(ResourceKind kind) {
+        switch (kind) {
         case PROLOG:
             this.prologEnvironment = null;
             break;
@@ -619,21 +507,33 @@ public class GrammarModel implements Observer {
             return;
         }
         // update the set of resource models
-        Map<String,ResourceModel<?>> modelMap = this.resourceMap.get(resource);
+        Map<String,ResourceModel<?>> modelMap = this.resourceMap.get(kind);
         Map<String,? extends Object> sourceMap;
-        if (resource.isGraphBased()) {
-            sourceMap = getStore().getGraphs(resource);
+        if (kind.isGraphBased()) {
+            sourceMap = getStore().getGraphs(kind);
         } else {
-            sourceMap = getStore().getTexts(resource);
+            sourceMap = getStore().getTexts(kind);
         }
         // restrict the resources to those whose names are in the store
         modelMap.keySet().retainAll(sourceMap.keySet());
+        // update the active names set
+        Set<String> activeNames = this.storedActiveNamesMap.get(kind);
+        activeNames.clear();
+        if (kind != RULE) {
+            activeNames.addAll(getProperties().getActiveNames(kind));
+        }
         // now synchronise the models with the sources in the store
         for (Map.Entry<String,? extends Object> sourceEntry : sourceMap.entrySet()) {
             String name = sourceEntry.getKey();
+            Object source = sourceEntry.getValue();
             ResourceModel<?> model = modelMap.get(name);
-            if (model == null || model.getSource() != sourceEntry.getValue()) {
-                modelMap.put(name, createModel(resource, name));
+            if (model == null || model.getSource() != source) {
+                modelMap.put(name, createModel(kind, name));
+                // collect the active rules
+                if (kind == RULE
+                    && GraphProperties.isEnabled((AspectGraph) source)) {
+                    activeNames.add(name);
+                }
             }
         }
     }
@@ -706,28 +606,50 @@ public class GrammarModel implements Observer {
     private final Map<ResourceKind,SortedMap<String,ResourceModel<?>>> resourceMap =
         new EnumMap<ResourceKind,SortedMap<String,ResourceModel<?>>>(
             ResourceKind.class);
+    /**
+     * Mapping from resource kinds to sets of names of active resources of that kind.
+     * For {@link ResourceKind#RULE} this is determined by inspecting the active rules;
+     * for all other resources, it is stored in the grammar properties.
+     * @see #localActiveNamesMap
+     */
+    private final Map<ResourceKind,SortedSet<String>> storedActiveNamesMap =
+        new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
+    /**
+     * Mapping from resource kinds to sets of names of active resources of that kind.
+     * Where non-{@code null}, the values in this map override the {@link #storedActiveNamesMap}.
+     */
+    private final Map<ResourceKind,SortedSet<String>> localActiveNamesMap =
+        new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
+    /** 
+     * Mapping specifying a default name per resource kind. The default name is
+     * used when no active names are stored or set locally.
+     * @see #storedActiveNamesMap
+     * @see #defaultActiveNameMap
+     */
+    private final Map<ResourceKind,String> defaultActiveNameMap =
+        new EnumMap<ResourceKind,String>(ResourceKind.class);
     {
         for (ResourceKind kind : ResourceKind.values()) {
             this.resourceMap.put(kind, new TreeMap<String,ResourceModel<?>>());
+            this.storedActiveNamesMap.put(kind, new TreeSet<String>());
         }
+        this.defaultActiveNameMap.put(HOST, Groove.DEFAULT_START_GRAPH_NAME);
     }
 
     /** The store backing this model. */
     private final SystemStore store;
     /** Counter of the number of invalidations of the grammar. */
     private int modificationCount;
-    /** The start graph of the grammar. */
-    private HostModel startGraphModel;
     /** Flag to indicate if the start graph is external. */
-    private boolean externalStartGraph = false;
-    /** Names of the host graphs that make up the current start graph. */
-    private final Set<String> startGraphs;
+    private boolean isExternalStartGraphModel = false;
     /** Possibly empty list of errors found in the conversion to a grammar. */
     private FormatErrorSet errors;
     /** The graph grammar derived from the rule models. */
     private GraphGrammar grammar;
     /** The prolog environment derived from the system store. */
     private GrooveEnvironment prologEnvironment;
+    /** The start graph of the grammar. */
+    private HostModel startGraphModel;
     /** The type model composed from the individual elements. */
     private CompositeTypeModel typeModel;
     /** The control model composed from the individual control programs. */
@@ -780,157 +702,6 @@ public class GrammarModel implements Observer {
         } catch (IOException exc) {
             return newInstance(new File(location), false);
         }
-    }
-
-    // ========================================================================
-    // AUXILIARIES FOR COMBINING/MAINTAINING START GRAPHS
-    // ========================================================================
-
-    /**
-     * Computes the union of multiple selected start graphs.
-     */
-    private HostModel combineGraphs(Set<String> unsortedNames) {
-
-        // Do not compute if errors exist in grammar.
-        if (hasErrors()) {
-            return null;
-        }
-
-        // Sort the names.
-        TreeSet<String> names = new TreeSet<String>(unsortedNames);
-
-        // Get the host models, and compute their layout boundaries.
-        List<HostModel> hostModels = new ArrayList<HostModel>();
-        List<Point.Double> dimensions = new ArrayList<Point.Double>();
-        double globalMaxX = 0;
-        double globalMaxY = 0;
-        int nr_names = names.size();
-        for (String name : names) {
-            ResourceModel<?> model = getResource(ResourceKind.HOST, name);
-            if (model == null) {
-                String msg = "Start graph '" + name + "' does not exist.";
-                this.errors.add(new FormatError(msg));
-                continue;
-            }
-            if (model.hasErrors()) {
-                String msg = "Start graph '" + name + "' has errors.";
-                this.errors.add(new FormatError(msg, model.getSource()));
-                continue;
-            }
-            HostModel hostModel = (HostModel) model;
-            hostModels.add(hostModel);
-            AspectGraph graph = hostModel.getSource();
-            if (nr_names < 2) {
-                continue; // don't compute layout if 0 or 1 graphs are enabled
-            }
-            LayoutMap<AspectNode,AspectEdge> layoutMap =
-                graph.getInfo().getLayoutMap();
-            double maxX = 0;
-            double maxY = 0;
-            for (AspectNode node : graph.nodeSet()) {
-                JVertexLayout layout = layoutMap.nodeMap().get(node);
-                if (layout != null) {
-                    maxX =
-                        Math.max(maxX, layout.getBounds().getX()
-                            + layout.getBounds().getWidth());
-                    maxY =
-                        Math.max(maxY, layout.getBounds().getY()
-                            + layout.getBounds().getHeight());
-                }
-            }
-            dimensions.add(new Point.Double(maxX, maxY));
-            globalMaxX = Math.max(globalMaxX, maxX);
-            globalMaxY = Math.max(globalMaxY, maxY);
-        }
-
-        // Do not combine if errors exist, or only 0 or 1 graphs are enabled.
-        if (hasErrors() || nr_names == 0) {
-            return null;
-        }
-        if (nr_names == 1) {
-            return hostModels.iterator().next();
-        }
-
-        // Create the combined graph.
-        StringBuilder result = new StringBuilder();
-        Iterator<String> iterator = names.iterator();
-        result.append(iterator.next());
-        while (iterator.hasNext()) {
-            result.append("_");
-            result.append(iterator.next());
-        }
-        AspectGraph combined =
-            new AspectGraph(result.toString(), GraphRole.HOST);
-        LayoutMap<AspectNode,AspectEdge> layoutMap =
-            new LayoutMap<AspectNode,AspectEdge>();
-
-        // Local bookkeeping.
-        int nodeNr = 0;
-        int index = 0;
-        double offsetX = 0;
-        double offsetY = 0;
-        Map<AspectNode,AspectNode> nodeMap =
-            new HashMap<AspectNode,AspectNode>();
-        Map<String,AspectNode> sharedNodes = new HashMap<String,AspectNode>();
-        Map<String,TypeNode> sharedTypes = new HashMap<String,TypeNode>();
-
-        // Copy the graphs one by one into the combined graph.
-        for (HostModel hostModel : hostModels) {
-            AspectGraph graph = hostModel.getSource();
-            nodeMap.clear();
-            // Copy the nodes.
-            for (AspectNode node : graph.nodeSet()) {
-                AspectNode fresh;
-                if (node.getId() != null) {
-                    String id = node.getId().getContentString();
-                    TypeNode myType =
-                        hostModel.getTypeMap().nodeMap().get(node);
-                    if (sharedNodes.containsKey(id)) {
-                        if (!sharedTypes.get(id).equals(myType)) {
-                            this.errors.add(new FormatError(
-                                "Cannot merge start graphs: node identity '"
-                                    + id + "' is used with different types ["
-                                    + myType.toString() + " and "
-                                    + sharedTypes.get(id) + "]."));
-                            return null;
-                        }
-                        nodeMap.put(node, sharedNodes.get(id));
-                        continue;
-                    } else {
-                        fresh = node.clone(nodeNr++);
-                        sharedNodes.put(id, fresh);
-                        sharedTypes.put(id, myType);
-                    }
-                } else {
-                    fresh = node.clone(nodeNr++);
-                }
-                layoutMap.copyNodeWithOffset(fresh, node,
-                    graph.getInfo().getLayoutMap(), offsetX, offsetY);
-                nodeMap.put(node, fresh);
-                combined.addNode(fresh);
-            }
-            // Copy the edges.
-            for (AspectEdge edge : graph.edgeSet()) {
-                AspectEdge fresh =
-                    new AspectEdge(nodeMap.get(edge.source()), edge.label(),
-                        nodeMap.get(edge.target()));
-                layoutMap.copyEdgeWithOffset(fresh, edge,
-                    graph.getInfo().getLayoutMap(), offsetX, offsetY);
-                combined.addEdge(fresh);
-            }
-            // Move the offsets.
-            if (globalMaxX > globalMaxY) {
-                offsetY = offsetY + dimensions.get(index).getY() + 50;
-            } else {
-                offsetX = offsetX + dimensions.get(index).getX() + 50;
-            }
-            index++;
-        }
-
-        // Finalize combined graph.
-        GraphInfo.setLayoutMap(combined, layoutMap);
-        combined.setFixed();
-        return new HostModel(this, combined);
     }
 
     // ========================================================================

@@ -20,7 +20,6 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
-import groove.graph.GraphProperties;
 import groove.graph.Node;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
@@ -52,11 +51,6 @@ abstract public class GraphBasedModel<R> extends ResourceModel<R> {
         super(grammar, ResourceKind.toResource(source.getRole()),
             source.getName());
         this.source = source;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return GraphProperties.isEnabled(getSource());
     }
 
     /**

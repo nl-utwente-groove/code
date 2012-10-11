@@ -79,9 +79,13 @@ abstract public class ResourceModel<R> {
 
     /** 
      * Indicates if this resource is currently enabled for use in the grammar.
-     * Enabledness means different things for different resource kinds.
+     * For non-composite resource models, this is the case if and only if
+     * the name is active in the grammar.
      */
-    abstract public boolean isEnabled();
+    public boolean isEnabled() {
+        return getGrammar() == null
+            || getGrammar().getActiveNames(getKind()).contains(getFullName());
+    }
 
     /**
      * Constructs the resource from the model. This can only be successful if there are no

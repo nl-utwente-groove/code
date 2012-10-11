@@ -23,6 +23,7 @@ import groove.match.rete.ReteNetworkNode;
 import groove.match.rete.ReteSearchEngine;
 import groove.match.rete.ReteSimpleMatch;
 import groove.trans.GraphGrammar;
+import groove.trans.ResourceKind;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 
@@ -451,7 +452,7 @@ public class ReteNetworkTest extends TestCase {
             GrammarModel model =
                 GrammarModel.newInstance(new File(INPUT_DIR, grammarName),
                     false);
-            model.localSetStartGraph(startGraphName);
+            model.setLocalActiveNames(ResourceKind.HOST, startGraphName);
             result = model.toGrammar();
         } catch (IOException exc) {
             throw new RuntimeException(exc);

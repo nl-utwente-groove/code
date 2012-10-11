@@ -19,7 +19,6 @@ package groove.io.store;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.PROPERTIES_FILTER;
 import static groove.trans.ResourceKind.PROPERTIES;
-import static groove.trans.ResourceKind.TYPE;
 import groove.graph.DefaultGraph;
 import groove.graph.TypeLabel;
 import groove.gui.EditType;
@@ -206,13 +205,8 @@ public class DefaultFileSystemStore extends SystemStore {
         testInit();
         Map<String,String> oldTexts = new HashMap<String,String>();
         boolean activeChanged = false;
-        Set<String> activeNames = new TreeSet<String>();
-        switch (kind) {
-        case PROLOG:
-        case CONTROL:
-            activeNames.addAll(getProperties().getEnabledNames(kind));
-            break;
-        }
+        Set<String> activeNames =
+            new TreeSet<String>(getProperties().getActiveNames(kind));
         for (String name : names) {
             assert name != null;
             String text = getTextMap(kind).remove(name);
@@ -228,11 +222,7 @@ public class DefaultFileSystemStore extends SystemStore {
         if (activeChanged) {
             oldProps = getProperties();
             newProps = getProperties().clone();
-            switch (kind) {
-            case PROLOG:
-            case CONTROL:
-                newProps.setEnabledNames(kind, activeNames);
-            }
+            newProps.setActiveNames(kind, activeNames);
             doPutProperties(newProps);
         }
         return new TextBasedEdit(kind, EditType.DELETE, oldTexts,
@@ -271,21 +261,13 @@ public class DefaultFileSystemStore extends SystemStore {
         // check if this affects the system properties
         SystemProperties oldProps = null;
         SystemProperties newProps = null;
-        Set<String> activeNames = new TreeSet<String>();
-        switch (kind) {
-        case PROLOG:
-        case CONTROL:
-            activeNames.addAll(getProperties().getEnabledNames(kind));
-        }
+        Set<String> activeNames =
+            new TreeSet<String>(getProperties().getActiveNames(kind));
         if (activeNames.remove(oldName)) {
             oldProps = getProperties();
             newProps = getProperties().clone();
-            switch (kind) {
-            case PROLOG:
-            case CONTROL:
-                activeNames.add(newName);
-                newProps.setEnabledNames(kind, activeNames);
-            }
+            activeNames.add(newName);
+            newProps.setActiveNames(kind, activeNames);
             doPutProperties(newProps);
         }
         return new TextBasedEdit(kind, EditType.RENAME, oldTexts, newTexts,
@@ -313,14 +295,13 @@ public class DefaultFileSystemStore extends SystemStore {
         // change the properties if there is a change in the enabled types
         SystemProperties oldProps = null;
         SystemProperties newProps = null;
-        Set<String> typeNames = getProperties().getTypeNames();
-        if (kind == TYPE && typeNames.contains(oldName)) {
+        Set<String> activeNames =
+            new TreeSet<String>(getProperties().getActiveNames(kind));
+        if (activeNames.remove(oldName)) {
             oldProps = getProperties();
-            typeNames = new TreeSet<String>(typeNames);
-            typeNames.remove(oldName);
-            typeNames.add(newName);
             newProps = oldProps.clone();
-            newProps.setTypeNames(typeNames);
+            activeNames.add(newName);
+            newProps.setActiveNames(kind, activeNames);
             doPutProperties(newProps);
         }
         return new GraphBasedEdit(kind, EditType.RENAME,
@@ -407,10 +388,9 @@ public class DefaultFileSystemStore extends SystemStore {
         testInit();
         List<AspectGraph> deletedGraphs =
             new ArrayList<AspectGraph>(names.size());
-        Set<String> typeNames =
-            kind == TYPE ? new TreeSet<String>(getProperties().getTypeNames())
-                    : Collections.<String>emptySet();
-        boolean typesChanged = false;
+        Set<String> activeNames =
+            new TreeSet<String>(getProperties().getActiveNames(kind));
+        boolean activeChanged = false;
         for (String name : names) {
             AspectGraph graph = getGraphMap(kind).remove(name);
             assert graph != null;
@@ -418,14 +398,14 @@ public class DefaultFileSystemStore extends SystemStore {
             this.marshaller.deleteGraph(oldFile);
             deleteEmptyDirectories(oldFile.getParentFile());
             deletedGraphs.add(graph);
-            typesChanged |= typeNames.remove(name);
+            activeChanged |= activeNames.remove(name);
         }
         SystemProperties oldProps = null;
         SystemProperties newProps = null;
-        if (typesChanged) {
+        if (activeChanged) {
             oldProps = getProperties();
             newProps = getProperties().clone();
-            newProps.setTypeNames(typeNames);
+            newProps.setActiveNames(kind, activeNames);
             doPutProperties(newProps);
         }
         return new GraphBasedEdit(kind, EditType.DELETE, deletedGraphs,
@@ -1166,9 +1146,9 @@ public class DefaultFileSystemStore extends SystemStore {
                 SystemProperties newProperties) {
             super(EditType.MODIFY, PROPERTIES);
             for (ResourceKind kind : EnumSet.of(ResourceKind.PROLOG,
-                ResourceKind.TYPE, ResourceKind.CONTROL)) {
-                Set<String> oldNames = oldProperties.getEnabledNames(kind);
-                Set<String> newNames = newProperties.getEnabledNames(kind);
+                ResourceKind.TYPE, ResourceKind.HOST, ResourceKind.CONTROL)) {
+                Set<String> oldNames = oldProperties.getActiveNames(kind);
+                Set<String> newNames = newProperties.getActiveNames(kind);
                 if (!oldNames.equals(newNames)) {
                     addChange(kind);
                 }
