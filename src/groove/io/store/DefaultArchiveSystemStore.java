@@ -389,9 +389,11 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
             String name = createQualName(entry.getKey()).toString();
             graphMap.put(name, entry.getValue());
         }
+        // set the type graphs themselves to active, if for those graphs whose name
+        // is in the active type list of the grammar properties
         if (kind == TYPE && this.properties != null) {
             // enable the active types listed in the system properties
-            Set<String> enabledTypes = this.properties.getTypeNames();
+            Set<String> enabledTypes = this.properties.getActiveNames(kind);
             for (String enabledType : enabledTypes) {
                 GraphInfo.getProperties(graphMap.get(enabledType), true).setEnabled(
                     true);

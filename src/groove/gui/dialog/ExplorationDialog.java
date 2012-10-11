@@ -471,8 +471,7 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
         protected void setEnabled(String toolTipText, Exploration exploration) {
             GrammarModel grammar = getGrammar();
             boolean enabled =
-                exploration != null && grammar != null
-                    && grammar.getStartGraphModel() != null;
+                exploration != null && grammar != null && !grammar.hasErrors();
             StringBuilder toolTip = new StringBuilder(toolTipText);
             if (enabled) {
                 try {

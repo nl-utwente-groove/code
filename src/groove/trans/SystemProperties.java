@@ -236,84 +236,23 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     /**
-     * Sets the control program names to a certain value.
-     * @param programs the new control program names
-     */
-    public void setControlNames(Collection<String> programs) {
-        setEnabledNames(ResourceKind.CONTROL, programs);
-    }
-
-    /**
-     * Returns the set of enabled control program names.
-     * @return the (possibly empty) list of enabled control program names
-     */
-    public Set<String> getControlNames() {
-        return getEnabledNames(ResourceKind.CONTROL);
-    }
-
-    /**
-     * Sets the type graph names property.
-     * @param programs the list of type graphs that are in use.
-     */
-    public void setPrologNames(Collection<String> programs) {
-        setEnabledNames(ResourceKind.PROLOG, programs);
-    }
-
-    /**
-     * Returns a list of prolog program names that are in use.
-     * @return the (possibly empty) list of enabled prolog program names
-     */
-    public Set<String> getPrologNames() {
-        return getEnabledNames(ResourceKind.PROLOG);
-    }
-
-    /**
-     * Sets the start graph names property.
-     * @param graphs the (possibly empty) list of activated start graphs
-     */
-    public void setStartGraphNames(Collection<String> graphs) {
-        setEnabledNames(ResourceKind.HOST, graphs);
-    }
-
-    /**
-     * Returns a list of start graph names that are in use.
-     * @return the (possibly empty) list of start graph names
-     */
-    public Set<String> getStartGraphNames() {
-        return getEnabledNames(ResourceKind.HOST);
-    }
-
-    /**
-     * Sets the type graph names property.
-     * @param types the (possibly empty) list of type graphs that are in use.
-     */
-    public void setTypeNames(Collection<String> types) {
-        setEnabledNames(ResourceKind.TYPE, types);
-    }
-
-    /**
-     * Returns a list of type graph names that are in use.
-     * @return the (possibly empty) list of activated type graphs
-     */
-    public Set<String> getTypeNames() {
-        return getEnabledNames(ResourceKind.TYPE);
-    }
-
-    /**
-     * Sets the enabled names property of a given resource kind.
+     * Sets the active names property of a given resource kind.
      * @param kind the resource kind to set the names for
-     * @param names the list of names of the enabled resources
+     * @param names the (non-{@code null}, but possible empty) list of names of the active resources
      */
-    public void setEnabledNames(ResourceKind kind, Collection<String> names) {
+    public void setActiveNames(ResourceKind kind, Collection<String> names) {
+        assert kind != ResourceKind.RULE;
         setProperty(resourceKeyMap.get(kind),
             Groove.toString(names.toArray(), "", "", " "));
     }
 
     /**
-     * Returns a list of enabled resource names of a given kind.
+     * Returns a list of active resource names of a given kind.
      * @param kind the queried resource kind
+     * @return a (non-{@code null}, but possibly empty) set of active names
      */
-    public Set<String> getEnabledNames(ResourceKind kind) {
+    public Set<String> getActiveNames(ResourceKind kind) {
+        assert kind != ResourceKind.RULE;
         String names = getProperty(resourceKeyMap.get(kind));
         if (names == null || "".equals(names)) {
             return Collections.emptySet();

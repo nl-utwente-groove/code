@@ -56,14 +56,13 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         TypeGraph result = null;
         FormatErrorSet errors = createErrors();
         this.typeModelMap.clear();
-        for (ResourceModel<?> typeModel : getGrammar().getResourceSet(TYPE)) {
-            if (typeModel.isEnabled()) {
-                this.typeModelMap.put(typeModel.getFullName(),
-                    (TypeModel) typeModel);
-                for (FormatError error : typeModel.getErrors()) {
-                    errors.add("Error in type '%s': %s",
-                        typeModel.getFullName(), error, typeModel.getSource());
-                }
+        for (String activeTypeName : getGrammar().getActiveNames(TYPE)) {
+            ResourceModel<?> typeModel =
+                getGrammar().getResource(TYPE, activeTypeName);
+            this.typeModelMap.put(activeTypeName, (TypeModel) typeModel);
+            for (FormatError error : typeModel.getErrors()) {
+                errors.add("Error in type '%s': %s", activeTypeName, error,
+                    typeModel.getSource());
             }
         }
         errors.throwException();
@@ -139,11 +138,9 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             }
         }
         // get the labels from the external start graph
-        if (getGrammar().getStartGraphs().isEmpty()) {
-            HostModel host = getGrammar().getStartGraphModel();
-            if (host != null) {
-                result.addAll(host.getLabels());
-            }
+        HostModel host = getGrammar().getStartGraphModel();
+        if (host != null) {
+            result.addAll(host.getLabels());
         }
         return result;
     }

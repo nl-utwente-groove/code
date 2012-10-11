@@ -202,7 +202,7 @@ public class Transform {
         List<String> typeNames = new Vector<String>();
         typeNames.add(modelName);
         typeNames.add("EcoreTypes");
-        sp.setTypeNames(typeNames);
+        sp.setActiveNames(ResourceKind.TYPE, typeNames);
         if (mh.isBigAlgebra()) {
             sp.setAlgebraFamily(AlgebraFamily.BIG);
         }

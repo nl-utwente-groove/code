@@ -33,6 +33,7 @@ import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.trans.GraphGrammar;
+import groove.trans.ResourceKind;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -261,7 +262,7 @@ public class PatternGraphGenerator extends CommandLineTool {
             String typeGraph) {
         try {
             GrammarModel model = Groove.loadGrammar(grammarFile);
-            model.localSetStartGraph(startGraph);
+            model.setLocalActiveNames(ResourceKind.HOST, startGraph);
             GraphGrammar sGrammar = model.toGrammar();
             sGrammar.setFixed();
             File typeGraphFile = new File(grammarFile + ".gps/" + typeGraph);

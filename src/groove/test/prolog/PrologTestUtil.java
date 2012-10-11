@@ -22,6 +22,7 @@ import groove.prolog.GrooveState;
 import groove.prolog.PrologEngine;
 import groove.prolog.QueryResult;
 import groove.prolog.QueryReturnValue;
+import groove.trans.ResourceKind;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 
@@ -77,7 +78,7 @@ public class PrologTestUtil {
             result =
                 GrammarModel.newInstance(new File(GRAMMAR_DIR, grammarName),
                     false);
-            result.localSetStartGraph(startGraphName);
+            result.setLocalActiveNames(ResourceKind.HOST, startGraphName);
         } catch (IOException exc) {
             throw new RuntimeException(exc);
         }

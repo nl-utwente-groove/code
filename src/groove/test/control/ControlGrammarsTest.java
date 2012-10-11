@@ -20,13 +20,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import groove.explore.Exploration;
 import groove.lts.GTS;
-import groove.trans.SystemProperties;
+import groove.trans.ResourceKind;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 
 import java.io.IOException;
-import java.util.Collections;
 
 import org.junit.Test;
 
@@ -49,8 +48,7 @@ public class ControlGrammarsTest {
             int controlTransitions, int expectedNodes, int expectedEdges) {
         try {
             GrammarModel sgv = Groove.loadGrammar(DIRECTORY);
-            SystemProperties sp = sgv.getProperties();
-            sp.setControlNames(Collections.singleton(control));
+            sgv.setLocalActiveNames(ResourceKind.CONTROL, control);
             GTS lts = new GTS(sgv.toGrammar());
 
             Exploration exploration = new Exploration();

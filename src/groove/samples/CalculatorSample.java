@@ -21,6 +21,7 @@ import groove.lts.GraphState;
 import groove.samples.calc.DefaultGraphCalculator;
 import groove.samples.calc.GraphCalculator;
 import groove.trans.GraphGrammar;
+import groove.trans.ResourceKind;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -59,7 +60,7 @@ public class CalculatorSample {
             String startGraphName = args[0];
             String targetGraphName = args[1];
             GrammarModel model = Groove.loadGrammar(GRAMMAR_NAME);
-            model.localSetStartGraph(startGraphName);
+            model.setLocalActiveNames(ResourceKind.HOST, startGraphName);
             GraphGrammar sample = model.toGrammar();
             DefaultGraphCalculator calculator =
                 new DefaultGraphCalculator(sample);

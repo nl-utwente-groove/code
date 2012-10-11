@@ -101,12 +101,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         return this.labelSet;
     }
 
-    @Override
-    public boolean isEnabled() {
-        return getGrammar() == null
-            || getGrammar().isStartGraphComponent(getFullName());
-    }
-
     /** 
      * The algebra is the term algebra at this point.
      */
@@ -205,8 +199,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 // test against the type graph, if any
                 TypeGraph type = getGrammar().getTypeGraph();
                 HostGraphMorphism typing = type.analyzeHost(result);
-                result =
-                    typing.createImage(result.getName());
+                result = typing.createImage(result.getName());
                 HostModelMap newElementMap = elementMap.newMap();
                 for (Map.Entry<AspectNode,HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
                     HostNode typedNode = typing.getNode(nodeEntry.getValue());

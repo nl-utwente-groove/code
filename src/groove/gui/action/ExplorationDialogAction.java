@@ -22,7 +22,7 @@ public class ExplorationDialogAction extends SimulatorAction {
     @Override
     public void refresh() {
         GrammarModel grammar = getSimulatorModel().getGrammar();
-        setEnabled(grammar != null && grammar.getStartGraphModel() != null
-            && !grammar.hasErrors() && grammar.hasRules());
+        setEnabled(grammar != null && !grammar.hasErrors()
+            && grammar.hasRules());
     }
 }

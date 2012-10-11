@@ -1,5 +1,6 @@
 package groove.gui.action;
 
+import static groove.trans.ResourceKind.HOST;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.store.SystemStore;
@@ -49,11 +50,11 @@ public class SaveGrammarAction extends SimulatorAction {
         if (getDisplaysPanel().saveAllEditors(false)) {
             SystemStore newStore =
                 getSimulatorModel().getStore().save(grammarFile, clearDir);
+            GrammarModel oldGrammar = getSimulatorModel().getGrammar();
             GrammarModel newGrammar = newStore.toGrammarModel();
-            if (getSimulatorModel().getGrammar().getStartGraphs().isEmpty()) {
+            if (oldGrammar.getActiveNames(HOST).isEmpty()) {
                 // remember external start graph, if grammar has one
-                HostModel startGraph =
-                    getSimulatorModel().getGrammar().getStartGraphModel();
+                HostModel startGraph = oldGrammar.getStartGraphModel();
                 if (startGraph != null) {
                     newGrammar.setStartGraph(startGraph.getSource());
                 }

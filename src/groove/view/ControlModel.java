@@ -40,11 +40,6 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
         super(grammar, ResourceKind.CONTROL, name, program);
     }
 
-    @Override
-    public boolean isEnabled() {
-        return getGrammar().getControlNames().contains(getFullName());
-    }
-
     /**
      * Returns the control automaton for a given grammar. 
      */

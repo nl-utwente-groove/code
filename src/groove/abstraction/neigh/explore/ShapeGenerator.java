@@ -37,6 +37,7 @@ import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.trans.GraphGrammar;
+import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleNode;
@@ -301,7 +302,7 @@ public final class ShapeGenerator extends CommandLineTool {
     private void loadGrammar(String grammarFile, String startGraph) {
         try {
             GrammarModel model = Groove.loadGrammar(grammarFile);
-            model.localSetStartGraph(startGraph);
+            model.setLocalActiveNames(ResourceKind.HOST, startGraph);
             this.grammar = model.toGrammar();
             this.grammar.setFixed();
         } catch (FormatException exc) {

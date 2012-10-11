@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 import groove.explore.Exploration;
 import groove.lts.GTS;
 import groove.trans.GraphGrammar;
-import groove.trans.SystemProperties;
+import groove.trans.ResourceKind;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -30,7 +30,6 @@ import groove.view.GrammarModel;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
 
 import org.junit.Test;
 
@@ -125,15 +124,9 @@ public class IOTest {
             String startName, String controlName, int rulecount, int nodeCount,
             int edgeCount) {
         try {
-            // first set the control name directly (this is no longer done at
-            // load time)
-            SystemProperties properties = view.getProperties();
-            if (controlName != null) {
-                properties.setControlNames(Collections.singleton(controlName));
-            }
-
             // and also set the start graph directly
-            view.localSetStartGraph(startName);
+            view.setLocalActiveNames(ResourceKind.CONTROL, controlName);
+            view.setLocalActiveNames(ResourceKind.HOST, startName);
 
             // now instantiate the grammar
             GraphGrammar gg = view.toGrammar();

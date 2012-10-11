@@ -33,12 +33,6 @@ public class PrologModel extends TextBasedModel<String> {
         this.externalErrors = new FormatErrorSet();
     }
 
-    @Override
-    public boolean isEnabled() {
-        return getGrammar().getProperties().getPrologNames().contains(
-            getFullName());
-    }
-
     /** Clears the errors in this view. */
     public void clearErrors() {
         this.externalErrors.clear();

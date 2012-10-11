@@ -53,12 +53,6 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
     }
 
     @Override
-    public boolean isEnabled() {
-        return getGrammar().getProperties().getTypeNames().contains(
-            getFullName());
-    }
-
-    @Override
     public TypeModelMap getMap() {
         synchronise();
         return this.modelMap;
