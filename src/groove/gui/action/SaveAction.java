@@ -197,11 +197,13 @@ public final class SaveAction extends SimulatorAction {
     }
 
     private boolean isForState() {
-        return getDisplaysPanel().getSelectedDisplay() == getLtsDisplay();
+        return getDisplaysPanel().getSelectedDisplay() == getLtsDisplay()
+            && getLtsDisplay().isActive();
     }
 
     private boolean isForPrologProgram() {
-        return getDisplaysPanel().getSelectedDisplay() == getPrologDisplay();
+        return getDisplaysPanel().getSelectedDisplay() == getPrologDisplay()
+            && getPrologDisplay().isActive();
     }
 
     private boolean endsInGarbage(String text) {
