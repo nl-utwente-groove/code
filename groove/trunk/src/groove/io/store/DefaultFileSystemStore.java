@@ -179,8 +179,31 @@ public class DefaultFileSystemStore extends SystemStore {
                 oldTexts.put(name, oldText);
             }
         }
+        SystemProperties oldProps = getProperties();
+        SystemProperties newProps =
+            doEnableDefaultName(kind, newTexts.keySet());
         return new TextBasedEdit(kind, oldTexts.isEmpty() ? EditType.CREATE
-                : EditType.MODIFY, oldTexts, newTexts, null, null);
+                : EditType.MODIFY, oldTexts, newTexts, oldProps, newProps);
+    }
+
+    /**
+     * Edits the system properties by setting the default name of a given 
+     * resource kind as active name, if a resource with that name is added
+     * and no resource of that kind is currently active.
+     * @return the new stored) properties, or {@code null} if no change was made 
+     */
+    private SystemProperties doEnableDefaultName(ResourceKind kind,
+            Set<String> newNames) throws IOException {
+        SystemProperties result = null;
+        String defaultName = kind.getDefaultName();
+        if (defaultName != null
+            && getProperties().getActiveNames(kind).isEmpty()
+            && newNames.contains(defaultName)) {
+            result = getProperties().clone();
+            result.setActiveNames(kind, Collections.singleton(defaultName));
+            doPutProperties(result);
+        }
+        return result;
     }
 
     @Override
@@ -350,11 +373,13 @@ public class DefaultFileSystemStore extends SystemStore {
     private GraphBasedEdit doPutGraphs(ResourceKind kind,
             Collection<AspectGraph> newGraphs) throws IOException {
         testInit();
+        Set<String> newNames = new HashSet<String>();
         // if we're relabelling, it may be that there are already graphs
         // under the names of the new ones
         Set<AspectGraph> oldGraphs = new HashSet<AspectGraph>();
         for (AspectGraph newGraph : newGraphs) {
             String name = newGraph.getName();
+            newNames.add(name);
             this.marshaller.marshalGraph(newGraph.toPlainGraph(),
                 createFile(kind, name));
             AspectGraph oldGraph = getGraphMap(kind).put(name, newGraph);
@@ -362,8 +387,10 @@ public class DefaultFileSystemStore extends SystemStore {
                 oldGraphs.add(oldGraph);
             }
         }
+        SystemProperties oldProps = getProperties();
+        SystemProperties newProps = doEnableDefaultName(kind, newNames);
         return new GraphBasedEdit(kind, oldGraphs.isEmpty() ? EditType.CREATE
-                : EditType.MODIFY, oldGraphs, newGraphs, null, null);
+                : EditType.MODIFY, oldGraphs, newGraphs, oldProps, newProps);
     }
 
     @Override
@@ -1007,9 +1034,12 @@ public class DefaultFileSystemStore extends SystemStore {
             super(type, kind);
             this.oldTexts = oldTexts;
             this.newTexts = newTexts;
-            this.oldProps = oldProps;
             this.newProps = newProps;
-            if (oldProps != null) {
+            // properties only changed if newProps is non-null
+            if (newProps == null) {
+                this.oldProps = null;
+            } else {
+                this.oldProps = oldProps;
                 addChange(PROPERTIES);
             }
         }
@@ -1078,9 +1108,12 @@ public class DefaultFileSystemStore extends SystemStore {
             super(type, kind);
             this.oldGraphs = oldGraphs;
             this.newGraphs = newGraphs;
-            this.oldProps = oldProps;
             this.newProps = newProps;
-            if (oldProps != null) {
+            // properties only changed if newProps is non-null
+            if (newProps == null) {
+                this.oldProps = null;
+            } else {
+                this.oldProps = oldProps;
                 addChange(PROPERTIES);
             }
         }

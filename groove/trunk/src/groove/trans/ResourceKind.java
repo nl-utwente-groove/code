@@ -19,6 +19,7 @@ package groove.trans;
 import groove.graph.GraphRole;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
+import groove.util.Groove;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -32,32 +33,37 @@ import java.util.Set;
  */
 public enum ResourceKind {
     /** Host graph resources; in other words, potential start graphs of the grammar. */
-    HOST("Graph", "host graph", GraphRole.HOST, FileType.STATE_FILTER),
+    HOST("Graph", "host graph", GraphRole.HOST, FileType.STATE_FILTER,
+            Groove.DEFAULT_START_GRAPH_NAME),
     /** Transformation rule resources. */
-    RULE("Rule", "rule", GraphRole.RULE, FileType.RULE_FILTER),
+    RULE("Rule", "rule", GraphRole.RULE, FileType.RULE_FILTER, null),
     /** Type graph resources. */
-    TYPE("Type", "type graph", GraphRole.TYPE, FileType.TYPE_FILTER),
+    TYPE("Type", "type graph", GraphRole.TYPE, FileType.TYPE_FILTER,
+            Groove.DEFAULT_TYPE_NAME),
     /**
      * Control program resources.
      */
-    CONTROL("Control", "control program", FileType.CONTROL_FILTER),
+    CONTROL("Control", "control program", FileType.CONTROL_FILTER, null),
     /** Prolog program resources. */
-    PROLOG("Prolog", "prolog program", FileType.PROLOG_FILTER),
+    PROLOG("Prolog", "prolog program", FileType.PROLOG_FILTER, null),
     /** Grammar properties resource. */
-    PROPERTIES("Properties", "grammar properties", FileType.PROPERTIES_FILTER);
+    PROPERTIES("Properties", "grammar properties", FileType.PROPERTIES_FILTER,
+            Groove.PROPERTY_NAME);
 
     /** Constructs a value with no corresponding graph role. */
-    private ResourceKind(String name, String description, ExtensionFilter filter) {
-        this(name, description, GraphRole.NONE, filter);
+    private ResourceKind(String name, String description,
+            ExtensionFilter filter, String defaultName) {
+        this(name, description, GraphRole.NONE, filter, defaultName);
     }
 
     /** Constructs a value with a given graph role. */
     private ResourceKind(String name, String description, GraphRole graphRole,
-            ExtensionFilter filter) {
+            ExtensionFilter filter, String defaultName) {
         this.graphRole = graphRole;
         this.description = description;
         this.name = name;
         this.filter = filter;
+        this.defaultName = defaultName;
     }
 
     /** Returns the graph role associated with this resource kind, 
@@ -91,6 +97,13 @@ public enum ResourceKind {
         return this.name;
     }
 
+    /** Returns the default name of a resource of this kind, if any.
+     * @return a default name, of {@code null} if there is no default
+     */
+    public String getDefaultName() {
+        return this.defaultName;
+    }
+
     /**
      * Returns a short description of this resource kind,
      * starting with lowercase.
@@ -114,6 +127,8 @@ public enum ResourceKind {
     private final String description;
     /** File filter for this resource kind. */
     private final ExtensionFilter filter;
+    /** Default name of this resource kind, if any. */
+    private final String defaultName;
 
     /** 
      * Returns the resource kind of a given graph role or {@code null}
