@@ -19,6 +19,7 @@ package groove.io.store;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.PROPERTIES_FILTER;
 import static groove.trans.ResourceKind.PROPERTIES;
+import static groove.trans.ResourceKind.RULE;
 import groove.graph.DefaultGraph;
 import groove.graph.TypeLabel;
 import groove.gui.EditType;
@@ -318,14 +319,16 @@ public class DefaultFileSystemStore extends SystemStore {
         // change the properties if there is a change in the enabled types
         SystemProperties oldProps = null;
         SystemProperties newProps = null;
-        Set<String> activeNames =
-            new TreeSet<String>(getProperties().getActiveNames(kind));
-        if (activeNames.remove(oldName)) {
-            oldProps = getProperties();
-            newProps = oldProps.clone();
-            activeNames.add(newName);
-            newProps.setActiveNames(kind, activeNames);
-            doPutProperties(newProps);
+        if (kind != RULE) {
+            Set<String> activeNames =
+                new TreeSet<String>(getProperties().getActiveNames(kind));
+            if (activeNames.remove(oldName)) {
+                oldProps = getProperties();
+                newProps = oldProps.clone();
+                activeNames.add(newName);
+                newProps.setActiveNames(kind, activeNames);
+                doPutProperties(newProps);
+            }
         }
         return new GraphBasedEdit(kind, EditType.RENAME,
             Collections.singleton(oldGraph), Collections.singleton(newGraph),
@@ -416,7 +419,8 @@ public class DefaultFileSystemStore extends SystemStore {
         List<AspectGraph> deletedGraphs =
             new ArrayList<AspectGraph>(names.size());
         Set<String> activeNames =
-            new TreeSet<String>(getProperties().getActiveNames(kind));
+            kind == RULE ? null : new TreeSet<String>(
+                getProperties().getActiveNames(kind));
         boolean activeChanged = false;
         for (String name : names) {
             AspectGraph graph = getGraphMap(kind).remove(name);
@@ -425,7 +429,7 @@ public class DefaultFileSystemStore extends SystemStore {
             this.marshaller.deleteGraph(oldFile);
             deleteEmptyDirectories(oldFile.getParentFile());
             deletedGraphs.add(graph);
-            activeChanged |= activeNames.remove(name);
+            activeChanged |= activeNames != null && activeNames.remove(name);
         }
         SystemProperties oldProps = null;
         SystemProperties newProps = null;

@@ -22,7 +22,9 @@ import groove.view.GrammarModel;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Window;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -52,6 +54,15 @@ abstract public class Display {
             this.displayPanel = createDisplayPanel();
         }
         return this.displayPanel;
+    }
+
+    /** Tests if this display is part of an active top-level window. */
+    public boolean isActive() {
+        Container top = getDisplayPanel().getParent();
+        while (top != null && top.getParent() != null) {
+            top = top.getParent();
+        }
+        return (top instanceof Window) && ((Window) top).isActive();
     }
 
     /** 

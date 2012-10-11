@@ -43,7 +43,8 @@ public class EditAction extends SimulatorAction {
     }
 
     private boolean isForState() {
-        return getDisplaysPanel().getSelectedDisplay() == getLtsDisplay();
+        return getDisplaysPanel().getSelectedDisplay() == getLtsDisplay()
+            && getLtsDisplay().isActive();
     }
 
     private final EditStateAction editStateAction;
