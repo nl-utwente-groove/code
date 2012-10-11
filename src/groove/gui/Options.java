@@ -19,7 +19,6 @@ package groove.gui;
 import groove.gui.jgraph.JAttr;
 import groove.trans.ResourceKind;
 import groove.util.ExprParser;
-import groove.util.Groove;
 import groove.view.FormatException;
 
 import java.awt.Font;
@@ -303,14 +302,8 @@ public class Options implements Cloneable {
      * a given type.
      */
     public static String getNewResourceName(ResourceKind resource) {
-        String result;
-        if (resource == ResourceKind.CONTROL) {
-            result = Groove.DEFAULT_CONTROL_NAME;
-        } else if (resource == ResourceKind.HOST) {
-            result = Groove.DEFAULT_START_GRAPH_NAME;
-        } else if (resource == ResourceKind.TYPE) {
-            result = Groove.DEFAULT_TYPE_NAME;
-        } else {
+        String result = resource.getDefaultName();
+        if (result == null) {
             result = "new" + resource.getName();
         }
         return result;

@@ -37,7 +37,6 @@ import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.trans.SystemProperties;
 import groove.trans.SystemProperties.Key;
-import groove.util.Groove;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -140,14 +139,6 @@ public class GrammarModel implements Observer {
         if (result == null) {
             // if there are none, check for active names in the store
             result = this.storedActiveNamesMap.get(kind);
-            if (result.isEmpty() && this.defaultActiveNameMap.containsKey(kind)) {
-                // if the stored active names are empty but there is a default name
-                // use it if a resource with that name exists
-                String defaultName = this.defaultActiveNameMap.get(kind);
-                if (defaultName != null && getNames(kind).contains(defaultName)) {
-                    result.add(defaultName);
-                }
-            }
         }
         result.retainAll(getNames(kind));
         return Collections.unmodifiableSet(result);
@@ -620,20 +611,11 @@ public class GrammarModel implements Observer {
      */
     private final Map<ResourceKind,SortedSet<String>> localActiveNamesMap =
         new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
-    /** 
-     * Mapping specifying a default name per resource kind. The default name is
-     * used when no active names are stored or set locally.
-     * @see #storedActiveNamesMap
-     * @see #defaultActiveNameMap
-     */
-    private final Map<ResourceKind,String> defaultActiveNameMap =
-        new EnumMap<ResourceKind,String>(ResourceKind.class);
     {
         for (ResourceKind kind : ResourceKind.values()) {
             this.resourceMap.put(kind, new TreeMap<String,ResourceModel<?>>());
             this.storedActiveNamesMap.put(kind, new TreeSet<String>());
         }
-        this.defaultActiveNameMap.put(HOST, Groove.DEFAULT_START_GRAPH_NAME);
     }
 
     /** The store backing this model. */
