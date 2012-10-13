@@ -259,7 +259,7 @@ abstract public class AbstractGraphState extends
     }
 
     @Override
-    public boolean isTransient() {
+    final public boolean isTransient() {
         return getSchedule().isTransient();
     }
 

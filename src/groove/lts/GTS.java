@@ -589,13 +589,21 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         }
     }
 
+    /**
+     * Tests if a state is present and has no modifying outgoing transitions to
+     * a present state.
+     */
     private boolean hasFinalProperties(GraphState state) {
-        boolean result = true;
-        for (RuleTransition trans : state.getTransitionSet()) {
-            if (trans.getCtrlTransition().getRule().isModifying()
-                || !trans.target().equals(state)) {
-                result = false;
-                break;
+        boolean result = state.isPresent();
+        if (result) {
+            for (RuleTransition trans : state.getTransitionSet()) {
+                if (trans.target().isPresent()) {
+                    if (trans.getCtrlTransition().getRule().isModifying()
+                        || !trans.target().equals(state)) {
+                        result = false;
+                        break;
+                    }
+                }
             }
         }
         return result;

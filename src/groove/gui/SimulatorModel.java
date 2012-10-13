@@ -217,13 +217,9 @@ public class SimulatorModel implements Cloneable {
         throws IOException {
         start();
         try {
+            getStore().putGraphs(kind, Collections.singleton(newGraph));
             boolean result = isEnabled(newGraph);
-            Collection<AspectGraph> oldGraphs =
-                getStore().putGraphs(kind, Collections.singleton(newGraph));
-            for (AspectGraph oldGraph : oldGraphs) {
-                result |= isEnabled(oldGraph);
-            }
-            changeGrammar(result);
+            changeGrammar(isEnabled(newGraph));
             changeSelected(kind, newGraph.getName());
             changeDisplay(DisplayKind.toDisplay(kind));
             return result;
