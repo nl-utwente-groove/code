@@ -191,7 +191,11 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     @Override
     public String getText() {
         String result = null;
-        if (isNodeEdgeIn()) {
+        // if both source and target nodes are nodified, 
+        // test for source node first
+        if (isNodeEdgeOut()) {
+            result = "";
+        } else if (isNodeEdgeIn()) {
             LabelPattern pattern =
                 ((AspectJVertex) getTargetVertex()).getEdgeLabelPattern();
             @SuppressWarnings({"unchecked", "rawtypes"})
@@ -206,8 +210,6 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
             } catch (FormatException e) {
                 // assert false;
             }
-        } else if (isNodeEdgeOut()) {
-            result = "";
         } else {
             result = super.getText();
         }
@@ -401,11 +403,11 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
             GraphConstants.setBeginSize(result, 15);
             GraphConstants.setLineBegin(result, GraphConstants.ARROW_DIAMOND);
         }
-        if (edge != null && isNodeEdgeIn()) {
-            GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
-        }
         if (edge != null && isBidirectional()) {
             GraphConstants.setLineBegin(result, GraphConstants.ARROW_CLASSIC);
+        } else if (edge != null && isNodeEdgeIn()) {
+            // only remove outgoing arrow point if the edge is not bidirectional
+            GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
         }
         if (edge != null) {
             if (edge.getInMult() != null || edge.getOutMult() != null) {
