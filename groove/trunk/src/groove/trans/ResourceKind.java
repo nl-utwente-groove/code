@@ -43,7 +43,8 @@ public enum ResourceKind {
     /**
      * Control program resources.
      */
-    CONTROL("Control", "control program", FileType.CONTROL_FILTER, null),
+    CONTROL("Control", "control program", FileType.CONTROL_FILTER,
+            Groove.DEFAULT_CONTROL_NAME),
     /** Prolog program resources. */
     PROLOG("Prolog", "prolog program", FileType.PROLOG_FILTER, null),
     /** Grammar properties resource. */

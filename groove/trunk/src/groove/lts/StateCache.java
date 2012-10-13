@@ -46,6 +46,7 @@ public class StateCache {
      */
     StateCache(AbstractGraphState state) {
         this.state = state;
+        this.present = !state.isTransient();
         this.record = state.getRecord();
         this.freezeGraphs = this.record.isCollapse();
         this.graphFactory =

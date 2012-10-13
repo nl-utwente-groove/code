@@ -16,10 +16,10 @@ public class StartGraphState extends AbstractGraphState {
      */
     public StartGraphState(SystemRecord record, HostGraph graph) {
         super(StateReference.newInstance(record), 0);
-        setFrozenGraph(getCache().computeFrozenGraph(graph));
-        this.graph = getCache().getGraph();
         CtrlAut ctrlAut = record.getGrammar().getCtrlAut();
         setCtrlState(ctrlAut.getStart());
+        setFrozenGraph(getCache().computeFrozenGraph(graph));
+        this.graph = getCache().getGraph();
     }
 
     @Override
