@@ -54,9 +54,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     /** Creates a j-edge on the basis of a given (aspectual) edge. */
     public AspectJEdge(AspectJGraph jGraph, AspectJModel jModel, AspectEdge edge) {
         super(jGraph, jModel, edge);
-        this.jModelTracker =
-            jModel == null ? ChangeCount.DUMMY_TRACKER
-                    : jModel.getModCount().createTracker();
+        resetTracker();
         setUserObject(null);
         this.aspect = edge.getKind();
         this.errors.addAll(edge.getErrors());
@@ -273,7 +271,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
      * if the model has been modified in the meantime.
      */
     private void updateCachedValues() {
-        if (this.jModelTracker.isStale()) {
+        if (this.keys == null || this.jModelTracker.isStale()) {
             this.keys = computeKeys();
             this.lines = computeLines();
         }

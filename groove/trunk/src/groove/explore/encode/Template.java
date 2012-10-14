@@ -307,6 +307,22 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
                     value.getArgument(argName));
             }
         }
+
+        @Override
+        public void addTemplateListener(TemplateListener listener) {
+            super.addTemplateListener(listener);
+            for (EncodedTypeEditor<?,?> editor : this.editors.values()) {
+                editor.addTemplateListener(listener);
+            }
+        }
+
+        @Override
+        public void removeTemplateListener(TemplateListener listener) {
+            for (EncodedTypeEditor<?,?> editor : this.editors.values()) {
+                editor.removeTemplateListener(listener);
+            }
+            super.removeTemplateListener(listener);
+        }
     }
 
     /**

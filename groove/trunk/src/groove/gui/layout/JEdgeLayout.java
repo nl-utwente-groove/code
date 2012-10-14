@@ -50,10 +50,14 @@ public class JEdgeLayout implements JCellLayout {
             points.add(new Point());
         } else {
             for (Object p : attrPoints) {
+                Point2D point = null;
                 if (p instanceof Point2D) {
-                    points.add((Point2D) p);
+                    point = (Point2D) p;
                 } else if (p instanceof PortView) {
-                    points.add(((PortView) p).getLocation());
+                    point = ((PortView) p).getLocation();
+                }
+                if (point != null) {
+                    points.add(point);
                 }
             }
         }

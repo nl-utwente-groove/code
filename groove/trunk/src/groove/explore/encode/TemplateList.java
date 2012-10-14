@@ -62,8 +62,6 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
     private final String typeIdentifier;
     /** The tool tip string. */
     private final String typeToolTip;
-    /** List of listeners connected to this list */
-    private ArrayList<TemplateListListener> listeners;
     /** Mask for the subset of templates that are available in the editor. */
     private Set<? extends ParsableValue> mask;
 
@@ -75,7 +73,6 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         this.templates = new ArrayList<Template<A>>(15);
         this.typeIdentifier = typeIdentifier;
         this.typeToolTip = typeToolTip;
-        this.listeners = new ArrayList<TemplateListListener>();
     }
 
     /**
@@ -107,21 +104,6 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             boolean fresh = this.templates.add(template);
             assert fresh;
         }
-    }
-
-    /**
-     * Adds a listener, which will be invoked each time the selected
-     * Template changes in the created editor.
-     */
-    public void addListener(TemplateListListener listener) {
-        this.listeners.add(listener);
-    }
-
-    /**
-     * Removes a listener.
-     */
-    public void removeListener(TemplateListListener listener) {
-        this.listeners.remove(listener);
     }
 
     /**
@@ -293,9 +275,23 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
             String selectedKeyword = this.templateKeywords.get(selectedIndex);
             CardLayout cards = (CardLayout) (this.infoPanel.getLayout());
             cards.show(this.infoPanel, selectedKeyword);
-            for (TemplateListListener listener : TemplateList.this.listeners) {
-                listener.selectionChanged();
+            notifyTemplateListeners();
+        }
+
+        @Override
+        public void addTemplateListener(TemplateListener listener) {
+            super.addTemplateListener(listener);
+            for (EncodedTypeEditor<?,?> editor : this.editors.values()) {
+                editor.addTemplateListener(listener);
             }
+        }
+
+        @Override
+        public void removeTemplateListener(TemplateListener listener) {
+            for (EncodedTypeEditor<?,?> editor : this.editors.values()) {
+                editor.removeTemplateListener(listener);
+            }
+            super.removeTemplateListener(listener);
         }
 
         @Override
@@ -319,19 +315,5 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
                 cards.show(this.infoPanel, value.getKeyword());
             }
         }
-    }
-
-    /**
-     * <!--------------------------------------------------------------------->
-     * A TemplateListListener describes an interface for objects that need to
-     * react to changes on the editor that is created by the TemplateList. 
-     * <!--------------------------------------------------------------------->
-     */
-    public interface TemplateListListener {
-        /**
-         * Invoked whenever a new Template is selected, either by the user
-         * or by setCurrentValue (which calls the ActionListener implicitly).
-         */
-        public void selectionChanged();
     }
 }

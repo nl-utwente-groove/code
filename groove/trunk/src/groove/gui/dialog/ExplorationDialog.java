@@ -23,7 +23,7 @@ import groove.explore.StrategyEnumerator;
 import groove.explore.StrategyValue;
 import groove.explore.encode.EncodedTypeEditor;
 import groove.explore.encode.Serialized;
-import groove.explore.encode.TemplateList.TemplateListListener;
+import groove.explore.encode.TemplateListener;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.gui.Options;
@@ -72,7 +72,7 @@ import javax.swing.ToolTipManager;
  * <!=========================================================================>
  * @author Maarten de Mol
  */
-public class ExplorationDialog extends JDialog implements TemplateListListener {
+public class ExplorationDialog extends JDialog implements TemplateListener {
 
     private static final String DEFAULT_COMMAND = "Set Default";
     private static final String START_COMMAND = "Start";
@@ -175,8 +175,9 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
         this.strategyEditor.setCurrentValue(defaultStrategy);
         this.acceptorEditor.setCurrentValue(defaultAcceptor);
 
-        strategyEnumerator.addListener(this);
-        acceptorEnumerator.addListener(this);
+        this.strategyEditor.addTemplateListener(this);
+        this.acceptorEditor.addTemplateListener(this);
+
         // Create the different components and add them to the content panel.
         JPanel selectors = new JPanel(new SpringLayout());
         selectors.add(this.strategyEditor);
@@ -321,7 +322,7 @@ public class ExplorationDialog extends JDialog implements TemplateListListener {
      * selected acceptor (keyword).
      */
     @Override
-    public void selectionChanged() {
+    public void templateEdited() {
         refreshButtons();
     }
 
