@@ -196,6 +196,8 @@ public class LayoutIO {
                 if (!JAttr.isLineStyle(lineStyle)) {
                     lineStyle = JAttr.DEFAULT_LINE_STYLE;
                 }
+                correctPoints(points, layoutMap.getLayout(source),
+                    layoutMap.getLayout(target));
             }
             Point2D labelPosition =
                 calculateLabelPosition(toPoint(parts, 4), points, version,
@@ -209,10 +211,28 @@ public class LayoutIO {
         return edge;
     }
 
+    /** Checks if the source and target point lie within the source and target nodes,
+     * and corrects the points if this is not the case.
+     * Fix for SF Bug #3562111.
+     */
+    public static void correctPoints(List<Point2D> points,
+            JVertexLayout sourceLayout, JVertexLayout targetLayout) {
+        correctPoint(points, 0, sourceLayout);
+        correctPoint(points, points.size() - 1, targetLayout);
+    }
+
+    private static void correctPoint(List<Point2D> points, int i,
+            JVertexLayout layout) {
+        Rectangle2D bounds = layout.getBounds();
+        if (!bounds.contains(points.get(i))) {
+            points.set(i,
+                new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()));
+        }
+    }
+
     /**
      * Calculates the label position according to the version of the layout
      * file.
-     * @param isLoop flag indicating that the onderlying edge is a loop
      */
     public static Point2D calculateLabelPosition(Point2D label,
             List<Point2D> points, int version, boolean isLoop) {
