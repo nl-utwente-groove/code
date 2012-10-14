@@ -87,11 +87,13 @@ abstract public class SystemStore extends UndoableEditSupport {
      * Adds or replaces a set of graph-based resources in the store.
      * @param kind the kind of resource affected
      * @param graphs the resources to be added or replaced
+     * @param layout flag indicating that this is a layout change only,
+     * which should be propagated as {@link EditType#LAYOUT}.
      * @return old (replaced) resources
      * @throws IOException if an error occurred while storing the rule
      */
     abstract public Collection<AspectGraph> putGraphs(ResourceKind kind,
-            Collection<AspectGraph> graphs) throws IOException;
+            Collection<AspectGraph> graphs, boolean layout) throws IOException;
 
     /**
      * Deletes a set of graph-based resources from the store.
@@ -282,7 +284,8 @@ abstract public class SystemStore extends UndoableEditSupport {
                 } else if (kind.isTextBased()) {
                     result.putTexts(kind, store.getTexts(kind));
                 } else {
-                    result.putGraphs(kind, store.getGraphs(kind).values());
+                    result.putGraphs(kind, store.getGraphs(kind).values(),
+                        false);
                 }
             }
             if (newFile != null) {

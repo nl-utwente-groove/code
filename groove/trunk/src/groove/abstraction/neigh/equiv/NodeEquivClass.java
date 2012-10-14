@@ -67,8 +67,12 @@ public final class NodeEquivClass<T extends HostNode> extends BitSet implements
     // ------------------------------------------------------------------------
 
     @Override
-    public void setFixed() {
-        this.fixed = true;
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
+            this.fixed = true;
+        }
+        return result;
     }
 
     @Override

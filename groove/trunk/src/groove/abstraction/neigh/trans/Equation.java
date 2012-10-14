@@ -126,8 +126,12 @@ final class Equation implements Fixable {
     }
 
     @Override
-    public void setFixed() {
-        this.hashCode();
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
+            this.hashCode();
+        }
+        return result;
     }
 
     @Override

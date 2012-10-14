@@ -176,7 +176,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
 
     @Override
     public Collection<AspectGraph> putGraphs(ResourceKind kind,
-            Collection<AspectGraph> graphs) throws IOException {
+            Collection<AspectGraph> graphs, boolean layout) throws IOException {
         throw createImmutable();
     }
 

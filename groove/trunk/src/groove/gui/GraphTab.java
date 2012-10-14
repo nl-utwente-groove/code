@@ -19,6 +19,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
@@ -120,7 +121,9 @@ final public class GraphTab extends ResourceTab implements MainTab {
                     GraphPreviewDialog.showGraph(graph.normalise(null));
                 }
                 this.jModelMap.put(name, jModel = getJGraph().newModel());
-                jModel.loadGraph(graph);
+                AspectGraph graphClone = graph.clone();
+                graphClone.setFixed();
+                jModel.loadGraph(graphClone);
             }
         }
         if (jModel == null) {
@@ -272,9 +275,12 @@ final public class GraphTab extends ResourceTab implements MainTab {
         @Override
         public void undoableEditHappened(UndoableEditEvent e) {
             if (e.getEdit() instanceof GraphModelEdit) {
-                String name = GraphTab.this.getName();
-                getDisplay().startEditResource(name);
-                ((GraphEditorTab) getDisplay().getEditors().get(name)).setDirty(true);
+                try {
+                    getSimulatorModel().doAddGraph(getResourceKind(),
+                        getGraph(), true);
+                } catch (IOException e1) {
+                    // do nothing
+                }
             }
         }
     }

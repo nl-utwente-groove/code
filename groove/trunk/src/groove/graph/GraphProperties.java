@@ -18,7 +18,9 @@ package groove.graph;
 
 import groove.trans.Action;
 import groove.trans.Rule;
+import groove.util.DefaultFixable;
 import groove.util.ExprParser;
+import groove.util.Fixable;
 import groove.util.ListComparator;
 import groove.util.Property;
 
@@ -37,7 +39,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphProperties extends Properties {
+public class GraphProperties extends Properties implements Fixable {
     /** Constructs an empty properties object. */
     public GraphProperties() {
         // empty
@@ -269,6 +271,7 @@ public class GraphProperties extends Properties {
 
     @Override
     public Object setProperty(String key, String value) {
+        testFixed(false);
         Object oldValue;
         if (!isSystemKey(key) && getDefaultValue(key).equals(value)) {
             oldValue = remove(key);
@@ -277,6 +280,24 @@ public class GraphProperties extends Properties {
         }
         return oldValue;
     }
+
+    @Override
+    public boolean setFixed() {
+        return this.fixable.setFixed();
+    }
+
+    @Override
+    public boolean isFixed() {
+        return this.fixable.isFixed();
+    }
+
+    @Override
+    public void testFixed(boolean fixed) {
+        this.fixable.testFixed(fixed);
+    }
+
+    /** Object to delegate the fixable functionality. */
+    private final DefaultFixable fixable = new DefaultFixable();
 
     /**
      * @param key the key of the property.

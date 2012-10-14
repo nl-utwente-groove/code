@@ -711,8 +711,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     }
 
     @Override
-    public void setFixed() {
-        if (!isFixed()) {
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
             // first fix the edges, then the nodes
             FormatErrorSet errors = new FormatErrorSet();
             for (AspectEdge edge : edgeSet()) {
@@ -739,6 +740,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             addErrors(errors);
             super.setFixed();
         }
+        return result;
     }
 
     @Override

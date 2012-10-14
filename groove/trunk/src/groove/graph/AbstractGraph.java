@@ -149,6 +149,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
     }
 
     public GraphInfo<N,E> setInfo(GraphInfo<?,?> info) {
+        assert !isFixed();
         return this.graphInfo = (info == null ? null : createInfo(info));
     }
 
@@ -158,13 +159,18 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
     }
 
     @Override
-    public void setFixed() {
-        if (!isFixed()) {
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
             setCacheCollectable();
+            if (getInfo() != null) {
+                getInfo().setFixed();
+            }
             if (GATHER_STATISTICS) {
                 modifiableGraphCount--;
             }
         }
+        return result;
     }
 
     @Override

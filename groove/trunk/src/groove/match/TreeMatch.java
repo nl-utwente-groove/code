@@ -449,8 +449,12 @@ public class TreeMatch implements Fixable {
     }
 
     @Override
-    public void setFixed() {
-        hashCode();
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
+            hashCode();
+        }
+        return result;
     }
 
     @Override

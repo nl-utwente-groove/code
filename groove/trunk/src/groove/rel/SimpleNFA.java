@@ -125,13 +125,16 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements
     }
 
     @Override
-    public void setFixed() {
-        super.setFixed();
-        // when the graph is fixed, we can initialise the auxiliary structures.
-        for (Direction dir : Direction.values()) {
-            this.dfas.put(dir, new HashMap<List<TypeLabel>,DFA>());
+    public boolean setFixed() {
+        boolean result = super.setFixed();
+        if (result) {
+            // when the graph is fixed, we can initialise the auxiliary structures.
+            for (Direction dir : Direction.values()) {
+                this.dfas.put(dir, new HashMap<List<TypeLabel>,DFA>());
+            }
+            this.labelVars = computeLabelVars();
         }
-        this.labelVars = computeLabelVars();
+        return result;
     }
 
     /** 

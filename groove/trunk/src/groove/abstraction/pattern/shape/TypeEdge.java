@@ -59,8 +59,8 @@ public final class TypeEdge extends AbstractPatternEdge<TypeNode> {
     // ------------------------------------------------------------------------
 
     @Override
-    public void setFixed() {
-        getMorphism().setFixed();
+    public boolean setFixed() {
+        return getMorphism().setFixed();
     }
 
     @Override

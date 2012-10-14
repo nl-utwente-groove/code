@@ -50,7 +50,7 @@ public abstract class AbstractPatternNode extends AbstractNode implements
     // ------------------------------------------------------------------------
 
     @Override
-    abstract public void setFixed();
+    abstract public boolean setFixed();
 
     @Override
     abstract public boolean isFixed();

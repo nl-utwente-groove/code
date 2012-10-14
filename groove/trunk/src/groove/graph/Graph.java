@@ -137,7 +137,7 @@ public interface Graph<N extends Node,E extends Edge> extends Fixable {
      * @ensure <tt>isFixed()</tt>
      * @see #isFixed()
      */
-    void setFixed();
+    boolean setFixed();
 
     /**
      * Returns an information object with additional information about this

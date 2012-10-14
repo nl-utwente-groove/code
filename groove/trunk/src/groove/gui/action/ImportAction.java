@@ -70,7 +70,7 @@ public class ImportAction extends SimulatorAction {
         String name = graph.getName();
         if (getGrammarModel().getResource(kind, name) == null
             || confirmOverwrite(kind, name)) {
-            result = getSimulatorModel().doAddGraph(kind, graph);
+            result = getSimulatorModel().doAddGraph(kind, graph, false);
         }
         return result;
     }

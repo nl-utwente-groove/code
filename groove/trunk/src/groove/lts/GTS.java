@@ -597,7 +597,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         boolean result = state.isPresent();
         if (result) {
             for (RuleTransition trans : state.getTransitionSet()) {
-                if (trans.target().isPresent()) {
+                if (!trans.target().isAbsent()) {
                     if (trans.getCtrlTransition().getRule().isModifying()
                         || !trans.target().equals(state)) {
                         result = false;

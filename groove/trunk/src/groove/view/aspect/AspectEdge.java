@@ -87,13 +87,15 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
     }
 
     @Override
-    public void setFixed() {
-        if (!isFixed()) {
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
             this.fixed = true;
             if (!hasErrors()) {
                 setAspectsFixed();
             }
         }
+        return result;
     }
 
     @Override

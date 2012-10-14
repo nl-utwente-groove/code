@@ -413,12 +413,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         }
 
         @Override
-        public void setFixed() {
-            // if the index is null, this is the top level node
-            if (this.index == null) {
+        public boolean setFixed() {
+            boolean result = super.setFixed();
+            if (result && this.index == null) {
                 this.index = Collections.emptyList();
             }
-            super.setFixed();
+            return result;
         }
 
         /** Returns the parent level of this tree index.

@@ -58,8 +58,9 @@ public final class RuleEdge extends AbstractPatternEdge<RuleNode> {
     // ------------------------------------------------------------------------
 
     @Override
-    public void setFixed() {
+    public boolean setFixed() {
         assert this.type.isFixed();
+        return false;
     }
 
     @Override

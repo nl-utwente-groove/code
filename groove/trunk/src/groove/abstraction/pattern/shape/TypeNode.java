@@ -60,8 +60,8 @@ public final class TypeNode extends AbstractPatternNode {
     // ------------------------------------------------------------------------
 
     @Override
-    public void setFixed() {
-        getPattern().setFixed();
+    public boolean setFixed() {
+        return getPattern().setFixed();
     }
 
     @Override

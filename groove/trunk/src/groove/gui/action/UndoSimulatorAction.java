@@ -1,11 +1,13 @@
 package groove.gui.action;
 
+import groove.gui.EditType;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.gui.SimulatorUndoManager;
+import groove.io.store.SystemStore;
 
 import javax.swing.Action;
-import javax.swing.undo.UndoManager;
 
 /**
  * Action for undoing an edit to the grammar.
@@ -22,8 +24,9 @@ public class UndoSimulatorAction extends SimulatorAction {
 
     @Override
     public void execute() {
+        SystemStore.Edit edit = this.undoManager.editToBeUndone();
         this.undoManager.undo();
-        getSimulatorModel().synchronize();
+        getSimulatorModel().synchronize(edit.getType() != EditType.LAYOUT);
     }
 
     @Override
@@ -37,5 +40,5 @@ public class UndoSimulatorAction extends SimulatorAction {
         }
     }
 
-    private final UndoManager undoManager;
+    private final SimulatorUndoManager undoManager;
 }

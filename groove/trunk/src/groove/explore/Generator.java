@@ -276,13 +276,14 @@ public class Generator extends CommandLineTool {
             // now we are guaranteed to have a URL
 
             try {
+                List<String> startGraphNames =
+                    new ArrayList<String>(this.startGraphs);
                 if (this.startGraphs.isEmpty()) {
-                    this.grammarModel = GrammarModel.newInstance(url);
-                } else {
-                    this.grammarModel = GrammarModel.newInstance(url);
-                    this.grammarModel.setLocalActiveNames(ResourceKind.HOST,
-                        this.startGraphs);
+                    startGraphNames.add(Groove.DEFAULT_START_GRAPH_NAME);
                 }
+                this.grammarModel = GrammarModel.newInstance(url);
+                this.grammarModel.setLocalActiveNames(ResourceKind.HOST,
+                    startGraphNames);
                 this.grammarModel.getStore().addObserver(loadObserver);
             } catch (IOException exc) {
                 printError("Can't load grammar: " + exc.getMessage(), false);

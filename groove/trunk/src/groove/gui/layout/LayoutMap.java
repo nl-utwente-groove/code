@@ -25,6 +25,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,14 +44,12 @@ import org.jgraph.graph.VertexView;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class LayoutMap<N extends Node,E extends Edge> {
+public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
     /**
-     * Tests if a given object is a jgraph vertex, a jgraph vertex view or a
-     * groove node.
+     * Constructs an empty, non-fixed layout map
      */
-    public static boolean isNode(Object key) {
-        return (key instanceof DefaultGraphCell && !(key instanceof DefaultEdge))
-            || (key instanceof VertexView) || (key instanceof Node);
+    public LayoutMap() {
+        // explicit empty constructor
     }
 
     /** Retrieves the layout information for a given node. */
@@ -65,114 +64,12 @@ public class LayoutMap<N extends Node,E extends Edge> {
 
     /** Specialises the return type. */
     public Map<N,JVertexLayout> nodeMap() {
-        return this.nodeMap;
+        return Collections.unmodifiableMap(this.nodeMap);
     }
 
     /** Specialises the return type. */
     public Map<E,JEdgeLayout> edgeMap() {
-        return this.edgeMap;
-    }
-
-    /**
-     * Turns a relative label position into an absolute label position.
-     */
-    static public Point toAbsPosition(List<Point> points, Point relPosition) {
-        Rectangle bounds = toBounds(points);
-        Point source = points.get(0);
-        Point target = points.get(points.size() - 1);
-        bounds.add(target);
-        int unit = GraphConstants.PERMILLE;
-        int x0 = bounds.x;
-        int xdir = 1;
-        if (source.x > target.x) {
-            x0 += bounds.width;
-            xdir = -1;
-        }
-        int y0 = bounds.y;
-        int ydir = 1;
-        if (source.y > target.y) {
-            y0 += bounds.height;
-            ydir = -1;
-        }
-        int x = x0 + xdir * (bounds.width * relPosition.x / unit);
-        int y = y0 + ydir * (bounds.height * relPosition.y / unit);
-        return new Point(x, y);
-    }
-
-    /**
-     * Converts a list of points to the minimal rectangle containing all of
-     * them.
-     */
-    static public Rectangle toBounds(List<Point> points) {
-        Rectangle bounds = new Rectangle();
-        for (Point point : points) {
-            bounds.add(point);
-        }
-        return bounds;
-
-    }
-
-    /**
-     * Turns an absolute label position into a relative label position.
-     */
-    static public Point toRelPosition(List<Point> points, Point absPosition) {
-        Rectangle bounds = toBounds(points);
-        Point source = points.get(0);
-        Point target = points.get(points.size() - 1);
-        bounds.add(target);
-        int unit = GraphConstants.PERMILLE;
-        int x0 = bounds.x;
-        if (source.x > target.x) {
-            x0 += bounds.width;
-        }
-        int y0 = bounds.y;
-        if (source.y > target.y) {
-            y0 += bounds.height;
-        }
-        int x = Math.abs(x0 - absPosition.x) * unit / bounds.width;
-        int y = Math.abs(y0 - absPosition.y) * unit / bounds.height;
-        return new Point(x, y);
-    }
-
-    /** Main method to test the functionality of this class. */
-    static public void main(String[] args) {
-        List<Point> points = new LinkedList<Point>();
-        Point relPosition1 = new Point(100, 900);
-        Point relPosition2 = new Point(1200, 50);
-        points.add(new Point(100, 200));
-        points.add(new Point(150, 50));
-        testLabelPosition(points, JCellLayout.defaultLabelPosition);
-        testLabelPosition(points, relPosition1);
-        testLabelPosition(points, relPosition2);
-        points.add(new Point(221, 100));
-        testLabelPosition(points, JCellLayout.defaultLabelPosition);
-        testLabelPosition(points, relPosition1);
-        testLabelPosition(points, relPosition2);
-        points.add(new Point(0, 150));
-        testLabelPosition(points, JCellLayout.defaultLabelPosition);
-        testLabelPosition(points, relPosition1);
-        testLabelPosition(points, relPosition2);
-        points.add(new Point(50, 0));
-        testLabelPosition(points, JCellLayout.defaultLabelPosition);
-        testLabelPosition(points, relPosition1);
-        testLabelPosition(points, relPosition2);
-    }
-
-    static private void testLabelPosition(List<Point> points, Point relPosition) {
-        System.out.print("Abs, rel, abs: ");
-        Point absPosition = toAbsPosition(points, relPosition);
-        System.out.print("" + absPosition + " ");
-        relPosition = toRelPosition(points, absPosition);
-        System.out.print("" + relPosition + " ");
-        absPosition = toAbsPosition(points, relPosition);
-        System.out.println(absPosition);
-    }
-
-    /**
-     * Constructs an empty layout map
-     */
-    public LayoutMap() {
-        // explicit empty constructor
+        return Collections.unmodifiableMap(this.edgeMap);
     }
 
     /**
@@ -277,8 +174,17 @@ public class LayoutMap<N extends Node,E extends Edge> {
         putEdge(key, JEdgeLayout.newInstance(jAttr));
     }
 
+    /** Fills this layout map with the content of another. */
+    public void fill(LayoutMap<? extends N,? extends E> other) {
+        this.nodeMap.clear();
+        this.nodeMap.putAll(other.nodeMap());
+        this.edgeMap.clear();
+        this.edgeMap.putAll(other.edgeMap());
+    }
+
     /**
      * Composes the inverse of a given element map in front of this layout map.
+     * The result is not fixed.
      */
     public <OtherN extends Node,OtherE extends Edge> LayoutMap<OtherN,OtherE> afterInverse(
             ElementMap<N,E,OtherN,OtherE> other) {
@@ -298,6 +204,14 @@ public class LayoutMap<N extends Node,E extends Edge> {
         return result;
     }
 
+    @Override
+    public LayoutMap<N,E> clone() {
+        LayoutMap<N,E> result = newInstance();
+        result.nodeMap.putAll(nodeMap());
+        result.edgeMap.putAll(edgeMap());
+        return result;
+    }
+
     /**
      * Specialises the return type of the super method to {@link LayoutMap}.
      */
@@ -309,4 +223,108 @@ public class LayoutMap<N extends Node,E extends Edge> {
     private final Map<N,JVertexLayout> nodeMap = new HashMap<N,JVertexLayout>();
     /** Mapping from edge keys to <tt>ET</tt>s. */
     private final Map<E,JEdgeLayout> edgeMap = new HashMap<E,JEdgeLayout>();
+
+    /**
+     * Tests if a given object is a jgraph vertex, a jgraph vertex view or a
+     * groove node.
+     */
+    public static boolean isNode(Object key) {
+        return (key instanceof DefaultGraphCell && !(key instanceof DefaultEdge))
+            || (key instanceof VertexView) || (key instanceof Node);
+    }
+
+    /**
+     * Turns a relative label position into an absolute label position.
+     */
+    static public Point toAbsPosition(List<Point> points, Point relPosition) {
+        Rectangle bounds = toBounds(points);
+        Point source = points.get(0);
+        Point target = points.get(points.size() - 1);
+        bounds.add(target);
+        int unit = GraphConstants.PERMILLE;
+        int x0 = bounds.x;
+        int xdir = 1;
+        if (source.x > target.x) {
+            x0 += bounds.width;
+            xdir = -1;
+        }
+        int y0 = bounds.y;
+        int ydir = 1;
+        if (source.y > target.y) {
+            y0 += bounds.height;
+            ydir = -1;
+        }
+        int x = x0 + xdir * (bounds.width * relPosition.x / unit);
+        int y = y0 + ydir * (bounds.height * relPosition.y / unit);
+        return new Point(x, y);
+    }
+
+    /**
+     * Converts a list of points to the minimal rectangle containing all of
+     * them.
+     */
+    static public Rectangle toBounds(List<Point> points) {
+        Rectangle bounds = new Rectangle();
+        for (Point point : points) {
+            bounds.add(point);
+        }
+        return bounds;
+
+    }
+
+    /**
+     * Turns an absolute label position into a relative label position.
+     */
+    static public Point toRelPosition(List<Point> points, Point absPosition) {
+        Rectangle bounds = toBounds(points);
+        Point source = points.get(0);
+        Point target = points.get(points.size() - 1);
+        bounds.add(target);
+        int unit = GraphConstants.PERMILLE;
+        int x0 = bounds.x;
+        if (source.x > target.x) {
+            x0 += bounds.width;
+        }
+        int y0 = bounds.y;
+        if (source.y > target.y) {
+            y0 += bounds.height;
+        }
+        int x = Math.abs(x0 - absPosition.x) * unit / bounds.width;
+        int y = Math.abs(y0 - absPosition.y) * unit / bounds.height;
+        return new Point(x, y);
+    }
+
+    /** Main method to test the functionality of this class. */
+    static public void main(String[] args) {
+        List<Point> points = new LinkedList<Point>();
+        Point relPosition1 = new Point(100, 900);
+        Point relPosition2 = new Point(1200, 50);
+        points.add(new Point(100, 200));
+        points.add(new Point(150, 50));
+        testLabelPosition(points, JCellLayout.defaultLabelPosition);
+        testLabelPosition(points, relPosition1);
+        testLabelPosition(points, relPosition2);
+        points.add(new Point(221, 100));
+        testLabelPosition(points, JCellLayout.defaultLabelPosition);
+        testLabelPosition(points, relPosition1);
+        testLabelPosition(points, relPosition2);
+        points.add(new Point(0, 150));
+        testLabelPosition(points, JCellLayout.defaultLabelPosition);
+        testLabelPosition(points, relPosition1);
+        testLabelPosition(points, relPosition2);
+        points.add(new Point(50, 0));
+        testLabelPosition(points, JCellLayout.defaultLabelPosition);
+        testLabelPosition(points, relPosition1);
+        testLabelPosition(points, relPosition2);
+    }
+
+    static private void testLabelPosition(List<Point> points, Point relPosition) {
+        System.out.print("Abs, rel, abs: ");
+        Point absPosition = toAbsPosition(points, relPosition);
+        System.out.print("" + absPosition + " ");
+        relPosition = toRelPosition(points, absPosition);
+        System.out.print("" + relPosition + " ");
+        absPosition = toAbsPosition(points, relPosition);
+        System.out.println(absPosition);
+    }
 }

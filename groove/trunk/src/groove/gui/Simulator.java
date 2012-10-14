@@ -76,7 +76,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
-import javax.swing.undo.UndoManager;
 
 import apple.dts.samplecode.osxadapter.OSXAdapter;
 
@@ -868,12 +867,12 @@ public class Simulator implements SimulatorListener {
     private List<RefreshableMenuItem> menuItems;
 
     /** Returns the undo manager of this simulator. */
-    public final UndoManager getUndoManager() {
+    public final SimulatorUndoManager getUndoManager() {
         return this.undoManager;
     }
 
     /** The undo manager of this simulator. */
-    private final UndoManager undoManager;
+    private final SimulatorUndoManager undoManager;
 
     /**
      * Starts a simulator, optionally setting the graph production system and

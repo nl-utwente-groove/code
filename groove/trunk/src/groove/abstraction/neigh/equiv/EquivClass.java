@@ -33,7 +33,7 @@ public interface EquivClass<T extends HostElement> extends Fixable,
         Iterable<T>, Set<T> {
 
     /** Fixes the equivalence class to avoid modifications. */
-    public void setFixed();
+    public boolean setFixed();
 
     /** Returns true if this equivalence class has just one element. */
     public boolean isSingleton();

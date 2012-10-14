@@ -86,7 +86,7 @@ public final class SaveAction extends SimulatorAction {
         boolean result = false;
         ResourceKind resource = ResourceKind.toResource(graph.getRole());
         try {
-            getSimulatorModel().doAddGraph(resource, graph);
+            getSimulatorModel().doAddGraph(resource, graph, false);
             result = true;
         } catch (IOException exc) {
             showErrorDialog(exc, "Error while saving %s '%s'",

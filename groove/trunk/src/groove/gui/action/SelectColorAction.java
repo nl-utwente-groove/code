@@ -144,7 +144,7 @@ public class SelectColorAction extends SimulatorAction implements
             if (newTypeGraph != typeGraph) {
                 try {
                     getSimulatorModel().doAddGraph(ResourceKind.TYPE,
-                        newTypeGraph);
+                        newTypeGraph, false);
                 } catch (IOException exc) {
                     showErrorDialog(exc, String.format(
                         "Error while saving type graph '%s'",

@@ -59,9 +59,13 @@ public class Pair<T,U> implements Fixable {
     }
 
     @Override
-    public void setFixed() {
-        // the pair is fixed by computing the hash code.
-        hashCode();
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
+            // the pair is fixed by computing the hash code.
+            hashCode();
+        }
+        return result;
     }
 
     @Override

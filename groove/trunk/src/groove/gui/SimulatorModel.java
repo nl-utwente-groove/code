@@ -144,7 +144,7 @@ public class SimulatorModel implements Cloneable {
                 newRule.setFixed();
                 newRules.add(newRule);
             }
-            getStore().putGraphs(ResourceKind.RULE, newRules);
+            getStore().putGraphs(ResourceKind.RULE, newRules, false);
             break;
         case HOST:
         case TYPE:
@@ -208,21 +208,27 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Adds a given graph-based resource resources in this grammar
-     * @param newGraph the new host graph
+     * Adds a given graph-based resource to this grammar
+     * @param newGraph the new resource
+     * @param layout flag indicating that this is a layout change only,
+     * which should not result in a complete refresh
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the add action failed
      */
-    public boolean doAddGraph(ResourceKind kind, AspectGraph newGraph)
-        throws IOException {
+    public boolean doAddGraph(ResourceKind kind, AspectGraph newGraph,
+            boolean layout) throws IOException {
         start();
         try {
-            getStore().putGraphs(kind, Collections.singleton(newGraph));
-            boolean result = isEnabled(newGraph);
-            changeGrammar(isEnabled(newGraph));
-            changeSelected(kind, newGraph.getName());
-            changeDisplay(DisplayKind.toDisplay(kind));
-            return result;
+            getStore().putGraphs(kind, Collections.singleton(newGraph), layout);
+            if (layout) {
+                return false;
+            } else {
+                boolean result = isEnabled(newGraph);
+                changeGrammar(result);
+                changeSelected(kind, newGraph.getName());
+                changeDisplay(DisplayKind.toDisplay(kind));
+                return result;
+            }
         } finally {
             finish();
         }
@@ -279,7 +285,7 @@ public class SimulatorModel implements Cloneable {
             newGraphs.add(newGraph);
         }
         try {
-            getStore().putGraphs(resource, newGraphs);
+            getStore().putGraphs(resource, newGraphs, false);
             changeGrammar(true);
             changeDisplay(DisplayKind.toDisplay(resource));
             return true;
@@ -820,9 +826,9 @@ public class SimulatorModel implements Cloneable {
      * Should be called after any change in the grammar view or
      * underlying store.
      */
-    public final void synchronize() {
+    public final void synchronize(boolean reset) {
         start();
-        changeGrammar(true);
+        changeGrammar(reset);
         finish();
     }
 

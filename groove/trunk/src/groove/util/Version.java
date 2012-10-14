@@ -98,7 +98,7 @@ public class Version {
      * @return the latest grammar version.
      */
     public static String getCurrentGrammarVersion() {
-        return GRAMMAR_VERSION_3_1;
+        return GRAMMAR_VERSION_3_2;
     }
 
     /**
@@ -221,5 +221,11 @@ public class Version {
      * This version added restrictions to the names of resources. 
      */
     public static final String GRAMMAR_VERSION_3_1 = "3.1";
+    /**
+     * This is the grammar version introduced with Groove version 4.5.3.
+     * From this version onward, the start graph name must be set explicitly
+     * in the grammar properties. 
+     */
+    public static final String GRAMMAR_VERSION_3_2 = "3.2";
 
 }

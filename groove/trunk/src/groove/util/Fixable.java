@@ -29,10 +29,11 @@ import groove.view.FormatException;
 public interface Fixable {
     /**
      * Sets the object to fixed.
+     * @return {@code true} if the fixed state was changed as a result of this call
      * @throws FormatException if the object is found to be inconsistent in some
      *         way.
      */
-    void setFixed() throws FormatException;
+    boolean setFixed() throws FormatException;
 
     /**
      * Indicates if the object is fixed, i.e., {@link #setFixed()} has been

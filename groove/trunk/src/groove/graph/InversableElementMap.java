@@ -42,10 +42,14 @@ public class InversableElementMap<SN extends Node,SE extends Edge,TN extends Nod
     }
 
     @Override
-    public void setFixed() {
-        // Fixing is the same as computing the inverse map.
-        this.getInverseNodeMap();
-        this.getInverseEdgeMap();
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
+            // Fixing is the same as computing the inverse map.
+            this.getInverseNodeMap();
+            this.getInverseEdgeMap();
+        }
+        return result;
     }
 
     @Override
