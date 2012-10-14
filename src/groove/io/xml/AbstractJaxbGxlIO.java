@@ -415,6 +415,9 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
                         if (!JAttr.isLineStyle(lineStyle)) {
                             lineStyle = JAttr.DEFAULT_LINE_STYLE;
                         }
+                        LayoutIO.correctPoints(points,
+                            layoutMap.getLayout(sourceNode),
+                            layoutMap.getLayout(targetNode));
                         Point2D labelPosition =
                             LayoutIO.calculateLabelPosition(
                                 LayoutIO.toPoint(parts, 0), points,
