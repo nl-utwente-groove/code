@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <graph edgemode="directed" edgeids="true" role="gxl_ptgraph" id="ptgraph">
+    <node id="p0"  />
+    <node id="p1"  />
+    <node id="p2"  />
+    <edge id="d0"  from="p0" to="p1" />
+    <edge id="d1"  from="p0" to="p1" />
+    <edge id="d2"  from="p1" to="p2" />
+    <edge id="d3"  from="p1" to="p2" />
+  </graph>
+
+  <graph edgemode="directed" edgeids="false" role="ptgraph" id="start">
+    <node id="n0">
+      <type xlink:href="#p0" />
+    </node>
+    <node id="n1">
+      <type xlink:href="#p1" />
+    </node>
+    <node id="n2">
+      <type xlink:href="#p1" />
+    </node>
+    <node id="n3">
+      <type xlink:href="#p2" />
+    </node>
+    <node id="n4">
+      <type xlink:href="#p2" />
+    </node>
+    <node id="n5">
+      <type xlink:href="#p2" />
+    </node>
+
+    <edge from="n1" to="n2">
+      <type xlink:href="#p1" />
+      <attr name="label">
+        <string>n</string>
+      </attr>
+    </edge>
+    <edge from="n3" to="n4">
+      <type xlink:href="#p2" />
+      <attr name="label">
+      <string>n</string>
+    </attr>
+    </edge>
+    <edge from="n4" to="n5">
+      <type xlink:href="#p2" />
+      <attr name="label">
+      <string>n</string>
+    </attr>
+    </edge>
+
+    <edge from="n0" to="n1">
+      <type xlink:href="#d0" />
+    </edge>
+    <edge from="n0" to="n2">
+      <type xlink:href="#d1" />
+    </edge>
+    <edge from="n1" to="n3">
+      <type xlink:href="#d2" />
+    </edge>
+    <edge from="n2" to="n4">
+      <type xlink:href="#d2" />
+    </edge>
+    <edge from="n1" to="n4">
+      <type xlink:href="#d3" />
+    </edge>
+    <edge from="n2" to="n5">
+      <type xlink:href="#d3" />
+    </edge>
+  </graph>
+</gxl>
