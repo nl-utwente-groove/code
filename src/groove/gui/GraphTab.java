@@ -121,9 +121,7 @@ final public class GraphTab extends ResourceTab implements MainTab {
                     GraphPreviewDialog.showGraph(graph.normalise(null));
                 }
                 this.jModelMap.put(name, jModel = getJGraph().newModel());
-                AspectGraph graphClone = graph.clone();
-                graphClone.setFixed();
-                jModel.loadGraph(graphClone);
+                loadGraphIntoJModel(jModel, graph);
             }
         }
         if (jModel == null) {
@@ -134,6 +132,13 @@ final public class GraphTab extends ResourceTab implements MainTab {
         getTabLabel().setTitle(name);
         updateErrors();
         return jModel != null;
+    }
+
+    /** Clones the graph with the given name, if any, and loads the clone into the model. */
+    private void loadGraphIntoJModel(AspectJModel jModel, AspectGraph graph) {
+        AspectGraph graphClone = graph.clone();
+        graphClone.setFixed();
+        jModel.loadGraph(graphClone);
     }
 
     public boolean removeResource(String name) {
@@ -278,6 +283,7 @@ final public class GraphTab extends ResourceTab implements MainTab {
                 try {
                     getSimulatorModel().doAddGraph(getResourceKind(),
                         getGraph(), true);
+                    loadGraphIntoJModel(GraphTab.this.getJModel(), getGraph());
                 } catch (IOException e1) {
                     // do nothing
                 }

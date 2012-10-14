@@ -19,6 +19,7 @@ package groove.explore.encode;
 import groove.view.GrammarModel;
 
 import java.awt.LayoutManager;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
@@ -39,6 +40,7 @@ public abstract class EncodedTypeEditor<A,B> extends JPanel {
     public EncodedTypeEditor(GrammarModel grammar, LayoutManager layout) {
         super(layout);
         this.grammar = grammar;
+        this.listeners = new ArrayList<TemplateListener>();
     }
 
     /**
@@ -61,5 +63,32 @@ public abstract class EncodedTypeEditor<A,B> extends JPanel {
         return this.grammar;
     }
 
+    /**
+     * Adds a listener, which will be invoked each time the selected
+     * Template changes in the created editor.
+     */
+    public void addTemplateListener(TemplateListener listener) {
+        this.listeners.add(listener);
+    }
+
+    /**
+     * Removes a listener.
+     */
+    public void removeTemplateListener(TemplateListener listener) {
+        this.listeners.remove(listener);
+    }
+
+    /** 
+     * Notifies all registered {@link TemplateListener}s
+     * by invoking {@link TemplateListener#templateEdited()}.
+     */
+    protected void notifyTemplateListeners() {
+        for (TemplateListener listener : this.listeners) {
+            listener.templateEdited();
+        }
+    }
+
     private final GrammarModel grammar;
+    /** List of listeners connected to this list */
+    private final ArrayList<TemplateListener> listeners;
 }

@@ -23,6 +23,8 @@ import groove.view.GrammarModel;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  * A <code>StringEditor</code> is an editor for a String value which implements
@@ -51,6 +53,22 @@ public class StringEditor<A> extends EncodedTypeEditor<A,String> {
         }
         this.editor = new JTextField(initValue, nrColumns);
         this.editor.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
+        this.editor.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                notifyTemplateListeners();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                notifyTemplateListeners();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                notifyTemplateListeners();
+            }
+        });
         this.syntax = syntax;
         setBackground(ExplorationDialog.INFO_BG_COLOR);
         refresh();

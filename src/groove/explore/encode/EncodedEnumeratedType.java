@@ -20,6 +20,8 @@ import groove.gui.dialog.ExplorationDialog;
 import groove.view.GrammarModel;
 
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Map;
 
 import javax.swing.JComboBox;
@@ -71,6 +73,12 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
             // MdM - line below causes selector not to appear at all
             // this.selector.setMinimumSize(new Dimension(50, 20));
             this.selector.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
+            this.selector.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    notifyTemplateListeners();
+                }
+            });
             this.keys = new String[options.size()];
             this.nrKeys = 0;
             if (this.nrKeys == 0) {

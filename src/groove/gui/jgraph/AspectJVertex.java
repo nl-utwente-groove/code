@@ -244,7 +244,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
      * if the model has been modified in the meantime.
      */
     private void updateCachedValues() {
-        if (this.jModelTracker.isStale()) {
+        if (this.keys == null || this.jModelTracker.isStale()) {
             this.keys = computeKeys();
             this.lines = computeLines();
         }
