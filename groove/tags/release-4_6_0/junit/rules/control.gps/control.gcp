@@ -1,4 +1,0 @@
-recipe r() {
-  sub.rule;
-  sub.rule;
-}
