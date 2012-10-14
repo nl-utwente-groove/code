@@ -17,11 +17,13 @@
 package groove.graph;
 
 import groove.gui.layout.LayoutMap;
+import groove.util.DefaultFixable;
 import groove.util.Version;
 import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +33,8 @@ import java.util.Map;
  * @author Harmen Kastenberg
  * @version $Revision: 4089 $ $Date: 2008-01-30 09:32:57 $
  */
-public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
+public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
+        implements Cloneable {
     /** Constructs a copy of an existing information object. */
     public GraphInfo(GraphInfo<?,?> info) {
         this.data = new HashMap<String,Object>(info.getData());
@@ -40,6 +43,7 @@ public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
     /** Constructs an empty information object. */
     public GraphInfo() {
         this.data = new HashMap<String,Object>();
+        this.data.put(LAYOUT_KEY, new LayoutMap<N,E>());
     }
 
     /**
@@ -104,18 +108,9 @@ public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
     }
 
     /**
-     * Tests if this info object contains a layout map (with key
-     * {@link #LAYOUT_KEY}).
-     * @see #getLayoutMap()
-     */
-    public boolean hasLayoutMap() {
-        return this.data.containsKey(LAYOUT_KEY);
-    }
-
-    /**
      * Returns the layout map (with key {@link #LAYOUT_KEY}) in this info
-     * object, if any.
-     * @see #setLayoutMap(LayoutMap)
+     * object. Note that the layout map is always non-{@code null} and modifiable
+     * @return the (non-{@code null}, modifiable) layout map
      */
     @SuppressWarnings("unchecked")
     public LayoutMap<N,E> getLayoutMap() {
@@ -127,8 +122,8 @@ public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
      * certain value.
      * @see #getLayoutMap()
      */
-    public void setLayoutMap(LayoutMap<? extends Node,? extends Edge> layoutMap) {
-        this.data.put(LAYOUT_KEY, layoutMap);
+    public void setLayoutMap(LayoutMap<? extends N,? extends E> layoutMap) {
+        getLayoutMap().fill(layoutMap);
     }
 
     /** Tests if this info object has a value for the {@link #PROPERTIES_KEY}. */
@@ -184,13 +179,35 @@ public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
      * Copies another graph info object into this one, overwriting all existing
      * keys but preserving those that are not overwritten.
      */
-    public void load(GraphInfo<?,?> other) {
-        this.data.putAll(other.getData());
-        // copy the properties object
-        if (other.hasProperties()) {
-            this.data.put(PROPERTIES_KEY,
-                new GraphProperties(other.getProperties(false)));
+    public void load(GraphInfo<N,E> other) {
+        for (Map.Entry<String,Object> e : other.getData().entrySet()) {
+            String key = e.getKey();
+            Object value = e.getValue();
+            if (key.equals(PROPERTIES_KEY)) {
+                // clone (and do not share) the properties object
+                value = new GraphProperties((GraphProperties) value);
+            } else if (key.equals(LAYOUT_KEY)) {
+                // clone (and do not share) the layout map
+                LayoutMap<N,E> myLayoutMap = getLayoutMap();
+                @SuppressWarnings("unchecked")
+                LayoutMap<N,E> otherLayoutMap = (LayoutMap<N,E>) value;
+                myLayoutMap.fill(otherLayoutMap);
+                value = myLayoutMap;
+            }
+            this.data.put(key, value);
         }
+    }
+
+    @Override
+    public boolean setFixed() {
+        boolean result = super.setFixed();
+        if (result) {
+            if (hasProperties()) {
+                getProperties(false).setFixed();
+            }
+            this.data = Collections.unmodifiableMap(this.data);
+        }
+        return result;
     }
 
     @Override
@@ -213,7 +230,7 @@ public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
     /**
      * Map for the internally stored data.
      */
-    private final Map<String,Object> data;
+    private Map<String,Object> data;
 
     /**
      * Convenience method to retrieve a {@link GraphInfo} object form a given
@@ -314,16 +331,8 @@ public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
     }
 
     /**
-     * Convenience method to test if a graph contains layout information.
-     */
-    public static <N extends Node,E extends Edge> boolean hasLayoutMap(
-            Graph<N,E> graph) {
-        GraphInfo<N,E> graphInfo = graph.getInfo();
-        return graphInfo != null && graphInfo.hasLayoutMap();
-    }
-
-    /**
      * Convenience method to retrieve the layout map from a graph.
+     * @return the layout map; non-{@code null} if the graph has an info object
      */
     public static <N extends Node,E extends Edge> LayoutMap<N,E> getLayoutMap(
             Graph<?,?> graph) {
@@ -341,9 +350,7 @@ public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
      */
     public static <N extends Node,E extends Edge> void setLayoutMap(
             Graph<N,E> graph, LayoutMap<N,E> layoutMap) {
-        if (layoutMap != null) {
-            getInfo(graph, true).setLayoutMap(layoutMap);
-        }
+        getInfo(graph, true).setLayoutMap(layoutMap);
     }
 
     /**
@@ -420,9 +427,7 @@ public class GraphInfo<N extends Node,E extends Edge> implements Cloneable {
             if (elementMap != null) {
                 // modify the layout map using the element map
                 LayoutMap<N1,E1> sourceLayoutMap = sourceInfo.getLayoutMap();
-                if (sourceLayoutMap != null) {
-                    targetInfo.setLayoutMap(sourceLayoutMap.afterInverse(elementMap));
-                }
+                targetInfo.setLayoutMap(sourceLayoutMap.afterInverse(elementMap));
                 FormatErrorSet sourceErrors = sourceInfo.getErrors();
                 if (sourceErrors != null) {
                     targetInfo.setErrors(sourceErrors.transfer(

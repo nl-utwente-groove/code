@@ -286,71 +286,74 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     }
 
     @Override
-    public void setFixed() {
-        super.setFixed();
-        // build edge subtype map and fill them reflexively
-        for (TypeEdge edge : edgeSet()) {
-            Set<TypeEdge> subtypes = new HashSet<TypeEdge>();
-            subtypes.add(edge);
-            this.edgeSubtypeMap.put(edge, subtypes);
-            Set<TypeEdge> supertypes = new HashSet<TypeEdge>();
-            supertypes.add(edge);
-            this.edgeSupertypeMap.put(edge, supertypes);
-        }
-        // add the relations from abstract edge types to subtypes and back
-        for (TypeEdge edge : edgeSet()) {
-            Set<TypeEdge> subtypes = this.edgeSubtypeMap.get(edge);
-            if (edge.isAbstract()) {
-                Set<TypeNode> sourceSubnodes =
-                    this.nodeSubtypeMap.get(edge.source());
-                Set<TypeNode> targetSubnodes =
-                    this.nodeSubtypeMap.get(edge.target());
-                for (TypeEdge subEdge : labelEdgeSet(edge.label)) {
-                    if (sourceSubnodes.contains(subEdge.source())
-                        && targetSubnodes.contains(subEdge.target())) {
-                        subtypes.add(subEdge);
-                        this.edgeSupertypeMap.get(subEdge).add(edge);
+    public boolean setFixed() {
+        boolean result = super.setFixed();
+        if (result) {
+            // build edge subtype map and fill them reflexively
+            for (TypeEdge edge : edgeSet()) {
+                Set<TypeEdge> subtypes = new HashSet<TypeEdge>();
+                subtypes.add(edge);
+                this.edgeSubtypeMap.put(edge, subtypes);
+                Set<TypeEdge> supertypes = new HashSet<TypeEdge>();
+                supertypes.add(edge);
+                this.edgeSupertypeMap.put(edge, supertypes);
+            }
+            // add the relations from abstract edge types to subtypes and back
+            for (TypeEdge edge : edgeSet()) {
+                Set<TypeEdge> subtypes = this.edgeSubtypeMap.get(edge);
+                if (edge.isAbstract()) {
+                    Set<TypeNode> sourceSubnodes =
+                        this.nodeSubtypeMap.get(edge.source());
+                    Set<TypeNode> targetSubnodes =
+                        this.nodeSubtypeMap.get(edge.target());
+                    for (TypeEdge subEdge : labelEdgeSet(edge.label)) {
+                        if (sourceSubnodes.contains(subEdge.source())
+                            && targetSubnodes.contains(subEdge.target())) {
+                            subtypes.add(subEdge);
+                            this.edgeSupertypeMap.get(subEdge).add(edge);
+                        }
+                    }
+                }
+            }
+            // propagate colours and edge patterns to subtypes
+            for (TypeNode node : nodeSet()) {
+                // propagate colours
+                Color nodeColour = node.getColor();
+                if (nodeColour != null) {
+                    Set<TypeNode> propagatees =
+                        new HashSet<TypeNode>(this.nodeSubtypeMap.get(node));
+                    propagatees.remove(node);
+                    while (!propagatees.isEmpty()) {
+                        Iterator<TypeNode> subNodeIter = propagatees.iterator();
+                        TypeNode subNode = subNodeIter.next();
+                        subNodeIter.remove();
+                        if (subNode.getColor() == null) {
+                            subNode.setColor(nodeColour);
+                        } else {
+                            propagatees.removeAll(this.nodeSubtypeMap.get(subNode));
+                        }
+                    }
+                }
+                // propagate label patterns
+                LabelPattern nodePattern = node.getLabelPattern();
+                if (nodePattern != null) {
+                    Set<TypeNode> propagatees =
+                        new HashSet<TypeNode>(this.nodeSubtypeMap.get(node));
+                    propagatees.remove(node);
+                    while (!propagatees.isEmpty()) {
+                        Iterator<TypeNode> subNodeIter = propagatees.iterator();
+                        TypeNode subNode = subNodeIter.next();
+                        subNodeIter.remove();
+                        if (subNode.getLabelPattern() == null) {
+                            subNode.setLabelPattern(nodePattern);
+                        } else {
+                            propagatees.removeAll(this.nodeSubtypeMap.get(subNode));
+                        }
                     }
                 }
             }
         }
-        // propagate colours and edge patterns to subtypes
-        for (TypeNode node : nodeSet()) {
-            // propagate colours
-            Color nodeColour = node.getColor();
-            if (nodeColour != null) {
-                Set<TypeNode> propagatees =
-                    new HashSet<TypeNode>(this.nodeSubtypeMap.get(node));
-                propagatees.remove(node);
-                while (!propagatees.isEmpty()) {
-                    Iterator<TypeNode> subNodeIter = propagatees.iterator();
-                    TypeNode subNode = subNodeIter.next();
-                    subNodeIter.remove();
-                    if (subNode.getColor() == null) {
-                        subNode.setColor(nodeColour);
-                    } else {
-                        propagatees.removeAll(this.nodeSubtypeMap.get(subNode));
-                    }
-                }
-            }
-            // propagate label patterns
-            LabelPattern nodePattern = node.getLabelPattern();
-            if (nodePattern != null) {
-                Set<TypeNode> propagatees =
-                    new HashSet<TypeNode>(this.nodeSubtypeMap.get(node));
-                propagatees.remove(node);
-                while (!propagatees.isEmpty()) {
-                    Iterator<TypeNode> subNodeIter = propagatees.iterator();
-                    TypeNode subNode = subNodeIter.next();
-                    subNodeIter.remove();
-                    if (subNode.getLabelPattern() == null) {
-                        subNode.setLabelPattern(nodePattern);
-                    } else {
-                        propagatees.removeAll(this.nodeSubtypeMap.get(subNode));
-                    }
-                }
-            }
-        }
+        return result;
     }
 
     @Override

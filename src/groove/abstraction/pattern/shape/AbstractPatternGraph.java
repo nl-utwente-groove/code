@@ -141,11 +141,15 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     }
 
     @Override
-    public void setFixed() {
-        if (getInfo() == null) {
-            setInfo(new GraphInfo<N,E>());
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
+            if (getInfo() == null) {
+                setInfo(new GraphInfo<N,E>());
+            }
+            super.setFixed();
         }
-        super.setFixed();
+        return result;
     }
 
     // ------------------------------------------------------------------------

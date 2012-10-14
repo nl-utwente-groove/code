@@ -13,7 +13,9 @@ public enum EditType {
     /** Modification of a resource. */
     MODIFY("Edit"),
     /** Enabling or disabling of a resource. */
-    ENABLE("Enable");
+    ENABLE("Enable"),
+    /** Layout change. */
+    LAYOUT("Layout");
 
     private EditType(String name) {
         this.name = name;

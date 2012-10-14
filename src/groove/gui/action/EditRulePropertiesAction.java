@@ -64,7 +64,7 @@ public class EditRulePropertiesAction extends SimulatorAction {
             GraphInfo.setProperties(newGraph, editedProperties);
             newGraph.setFixed();
             try {
-                getSimulatorModel().doAddGraph(RULE, newGraph);
+                getSimulatorModel().doAddGraph(RULE, newGraph, false);
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while modifying rule '%s'",
                     rule.getName());

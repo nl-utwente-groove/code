@@ -50,8 +50,12 @@ public class SimpleMorphism implements Fixable {
     }
 
     @Override
-    public void setFixed() {
-        this.fixed = true;
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
+            this.fixed = true;
+        }
+        return result;
     }
 
     @Override

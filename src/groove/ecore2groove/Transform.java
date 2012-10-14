@@ -195,7 +195,8 @@ public class Transform {
             grammar.deleteGraphs(ResourceKind.TYPE,
                 Collections.singleton(graphName));
         }
-        grammar.putGraphs(ResourceKind.TYPE, Arrays.asList(atg, ecoreatg));
+        grammar.putGraphs(ResourceKind.TYPE, Arrays.asList(atg, ecoreatg),
+            false);
 
         // Set grammar properties
         SystemProperties sp = new SystemProperties();
@@ -243,7 +244,7 @@ public class Transform {
 
             number++;
         }
-        grammar.putGraphs(ResourceKind.RULE, rules);
+        grammar.putGraphs(ResourceKind.RULE, rules, true);
         System.out.println("Stored constraint rules: " + number + " ("
             + (new Date().getTime() - start) + " ms)");
 
@@ -271,7 +272,7 @@ public class Transform {
             aig.getInfo().setFile(f + File.separator + instanceName);
             graphs.add(aig);
         }
-        grammar.putGraphs(ResourceKind.HOST, graphs);
+        grammar.putGraphs(ResourceKind.HOST, graphs, true);
 
         System.out.println("\nTotal: " + (new Date().getTime() - total) + " ms");
     }

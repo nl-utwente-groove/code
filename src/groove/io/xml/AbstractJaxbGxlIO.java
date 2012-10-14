@@ -122,9 +122,6 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
 
     /** Adds a layout attribute to a gxlNode. */
     private void layout(LayoutMap<?,?> map, Node node, NodeType gxl) {
-        if (map == null) {
-            return;
-        }
         JVertexLayout layout = map.nodeMap().get(node);
         if (layout == null) {
             return;
@@ -192,10 +189,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
         Map<Edge,EdgeType> edgeMap = new HashMap<Edge,EdgeType>();
 
         // get the layout map
-        LayoutMap<?,?> layoutMap = null;
-        if (GraphInfo.hasLayoutMap(graph)) {
-            layoutMap = GraphInfo.getLayoutMap(graph);
-        }
+        LayoutMap<?,?> layoutMap = GraphInfo.getLayoutMap(graph);
 
         for (Node node : graph.nodeSet()) {
             // create an xml element for this node
@@ -404,7 +398,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
                 E edge = createEdge(sourceNode, label, targetNode);
                 edgeMap.put((EdgeType) gxlElement, edge);
 
-                // Save the layout.
+                // Extract the layout.
                 String layout = getAttrValue(LAYOUT_ATTR_NAME, attrs, context);
                 if (layout != null) {
                     String[] parts = layout.split(" ");

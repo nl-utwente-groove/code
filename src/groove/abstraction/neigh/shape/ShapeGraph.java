@@ -235,9 +235,13 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
     }
 
     @Override
-    public void setFixed() {
-        getCache().flatten();
-        super.setFixed();
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
+            getCache().flatten();
+            super.setFixed();
+        }
+        return result;
     }
 
     @Override

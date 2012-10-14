@@ -3,6 +3,7 @@ package groove.gui;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.action.SimulatorAction;
+import groove.io.store.SystemStore;
 
 import java.util.Set;
 
@@ -12,8 +13,9 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 
 /** Manager for undo actions to the graph grammar view. */
-final class SimulatorUndoManager extends UndoManager implements
+final public class SimulatorUndoManager extends UndoManager implements
         SimulatorListener {
+    /** Creates an undo manager for the given simulator. */
     public SimulatorUndoManager(Simulator simulator) {
         this.actions = simulator.getActions();
         simulator.getModel().addListener(this);
@@ -41,6 +43,16 @@ final class SimulatorUndoManager extends UndoManager implements
     public synchronized void undo() throws CannotUndoException {
         super.undo();
         refreshActions();
+    }
+
+    @Override
+    public SystemStore.Edit editToBeUndone() {
+        return (SystemStore.Edit) super.editToBeUndone();
+    }
+
+    @Override
+    public SystemStore.Edit editToBeRedone() {
+        return (SystemStore.Edit) super.editToBeRedone();
     }
 
     @Override

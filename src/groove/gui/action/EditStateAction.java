@@ -26,7 +26,7 @@ public class EditStateAction extends SimulatorAction {
         if (newGraphName != null) {
             final AspectGraph newGraph = graph.rename(newGraphName);
             try {
-                getSimulatorModel().doAddGraph(getResourceKind(), newGraph);
+                getSimulatorModel().doAddGraph(getResourceKind(), newGraph, false);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

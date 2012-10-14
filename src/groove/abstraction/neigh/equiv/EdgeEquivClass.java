@@ -104,8 +104,12 @@ public final class EdgeEquivClass<T extends HostEdge> extends MyHashSet<T>
     }
 
     @Override
-    public void setFixed() {
-        this.hashCode();
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
+            this.hashCode();
+        }
+        return result;
     }
 
     @Override

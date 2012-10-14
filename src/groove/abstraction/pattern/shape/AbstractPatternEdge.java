@@ -81,7 +81,7 @@ public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
     }
 
     @Override
-    abstract public void setFixed();
+    abstract public boolean setFixed();
 
     @Override
     abstract public boolean isFixed();

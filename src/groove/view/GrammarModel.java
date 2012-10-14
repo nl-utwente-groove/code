@@ -27,6 +27,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
+import groove.gui.EditType;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.prolog.GrooveEnvironment;
@@ -37,6 +38,8 @@ import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.trans.SystemProperties;
 import groove.trans.SystemProperties.Key;
+import groove.util.Groove;
+import groove.util.Version;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -66,6 +69,13 @@ public class GrammarModel implements Observer {
      */
     public GrammarModel(SystemStore store) {
         this.store = store;
+        String grammarVersion = store.getProperties().getGrammarVersion();
+        boolean noActiveStartGraphs =
+            store.getProperties().getActiveNames(HOST).isEmpty();
+        if (Version.compareGrammarVersions(grammarVersion,
+            Version.GRAMMAR_VERSION_3_2) < 0 && noActiveStartGraphs) {
+            setLocalActiveNames(HOST, Groove.DEFAULT_START_GRAPH_NAME);
+        }
         for (ResourceKind resource : ResourceKind.all(false)) {
             syncResource(resource);
         }
@@ -162,6 +172,11 @@ public class GrammarModel implements Observer {
         assert names != null && !names.isEmpty();
         this.localActiveNamesMap.put(kind, new TreeSet<String>(names));
         invalidate();
+    }
+
+    /** Removes the locally set active names of a given resource kind. */
+    public void resetLocalActiveNames(ResourceKind kind) {
+        this.localActiveNamesMap.remove(kind);
     }
 
     /**
@@ -477,12 +492,15 @@ public class GrammarModel implements Observer {
     }
 
     @Override
-    public void update(Observable source, Object edit) {
-        Set<ResourceKind> change = ((SystemStore.Edit) edit).getChange();
-        for (ResourceKind resource : change) {
-            syncResource(resource);
+    public void update(Observable source, Object obj) {
+        SystemStore.Edit edit = (SystemStore.Edit) obj;
+        if (edit.getType() != EditType.LAYOUT) {
+            Set<ResourceKind> change = edit.getChange();
+            for (ResourceKind resource : change) {
+                syncResource(resource);
+            }
+            invalidate();
         }
-        invalidate();
     }
 
     /**
@@ -507,11 +525,10 @@ public class GrammarModel implements Observer {
         }
         // restrict the resources to those whose names are in the store
         modelMap.keySet().retainAll(sourceMap.keySet());
-        // update the active names set
-        Set<String> activeNames = this.storedActiveNamesMap.get(kind);
-        activeNames.clear();
+        // collect the new active names
+        SortedSet<String> newActiveNames = new TreeSet<String>();
         if (kind != RULE) {
-            activeNames.addAll(getProperties().getActiveNames(kind));
+            newActiveNames.addAll(getProperties().getActiveNames(kind));
         }
         // now synchronise the models with the sources in the store
         for (Map.Entry<String,? extends Object> sourceEntry : sourceMap.entrySet()) {
@@ -523,9 +540,16 @@ public class GrammarModel implements Observer {
                 // collect the active rules
                 if (kind == RULE
                     && GraphProperties.isEnabled((AspectGraph) source)) {
-                    activeNames.add(name);
+                    newActiveNames.add(name);
                 }
             }
+        }
+        // update the active names set
+        Set<String> oldActiveNames = this.storedActiveNamesMap.get(kind);
+        if (!oldActiveNames.equals(newActiveNames)) {
+            oldActiveNames.clear();
+            oldActiveNames.addAll(newActiveNames);
+            resetLocalActiveNames(kind);
         }
     }
 

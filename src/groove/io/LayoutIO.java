@@ -456,6 +456,8 @@ public class LayoutIO {
 
     /**
      * Converts pairs of elements of a string array to a list of points.
+     * @param s array containing string representations of coordinates
+     * @param i index from which the string array will be converted to points
      */
     public static List<Point2D> toPoints(String[] s, int i) {
         List<Point2D> result = new LinkedList<Point2D>();

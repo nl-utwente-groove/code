@@ -636,8 +636,9 @@ public class Rule implements Action, Fixable {
      * {@link SystemProperties#isRhsAsNac()}.
      */
     @Override
-    public void setFixed() throws FormatException {
-        if (!this.fixed && !this.fixing) {
+    public boolean setFixed() throws FormatException {
+        boolean result = !isFixed();
+        if (result && !this.fixing) {
             this.fixing = true;
             this.fixed = true;
             getCondition().setFixed();
@@ -652,6 +653,7 @@ public class Rule implements Action, Fixable {
             }
             this.fixing = false;
         }
+        return result;
     }
 
     @Override

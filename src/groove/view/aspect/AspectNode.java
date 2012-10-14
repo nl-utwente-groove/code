@@ -92,8 +92,9 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     }
 
     @Override
-    public void setFixed() {
-        if (!isFixed()) {
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
             this.allFixed = true;
             try {
                 checkAspects();
@@ -104,6 +105,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                 addErrors(exc.getErrors());
             }
         }
+        return result;
     }
 
     /**

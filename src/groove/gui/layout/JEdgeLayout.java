@@ -105,19 +105,6 @@ public class JEdgeLayout implements JCellLayout {
     }
 
     /**
-     * Constructs an edge layout with a given list of intermediate points, a
-     * given label position and unspecified line style.
-     * @param points the list of intermediate points
-     * @param labelPosition the label position
-     * @ensure <code>getPoints().equals(points)</code> and
-     *         <code>getLabelPosition().equals(labelPosition)</code> and
-     *         <code>isDefaultLineStyle(getLineStyle())</code>
-     */
-    public JEdgeLayout(List<Point2D> points, Point labelPosition) {
-        this(points, labelPosition, JAttr.DEFAULT_LINE_STYLE);
-    }
-
-    /**
      * Returns an unmodifiable list of points of this edge. The points include
      * the source and target node. Returns <code>null</code> if the edge
      * simply runs from source to target node.

@@ -67,11 +67,12 @@ public class AspectLabel extends AbstractLabel {
     }
 
     @Override
-    public void setFixed() {
-        if (this.innerText == null) {
+    public boolean setFixed() {
+        boolean result = super.setFixed();
+        if (result && this.innerText == null) {
             this.innerText = "";
         }
-        super.setFixed();
+        return result;
     }
 
     /**

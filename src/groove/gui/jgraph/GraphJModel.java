@@ -170,8 +170,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      */
     protected void prepareLoad(Graph<N,E> graph) {
         this.graph = graph;
-        LayoutMap<N,E> layoutMap = GraphInfo.getLayoutMap(graph);
-        this.layoutMap = layoutMap == null ? new LayoutMap<N,E>() : layoutMap;
+        this.loading = true;
+        this.layoutMap = GraphInfo.getInfo(graph, true).getLayoutMap();
         this.nodeJCellMap.clear();
         this.edgeJCellMap.clear();
     }
@@ -220,11 +220,6 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     @SuppressWarnings("unchecked")
     public void synchroniseLayout(GraphJCell jCell) {
         LayoutMap<N,E> currentLayout = GraphInfo.getLayoutMap(getGraph());
-        // create the layout map if it does not yet exist
-        if (currentLayout == null) {
-            currentLayout = new LayoutMap<N,E>();
-            GraphInfo.setLayoutMap((Graph<N,E>) getGraph(), currentLayout);
-        }
         if (jCell instanceof GraphJEdge) {
             for (Edge edge : ((GraphJEdge) jCell).getEdges()) {
                 currentLayout.putEdge((E) edge, jCell.getAttributes());
@@ -255,10 +250,14 @@ public class GraphJModel<N extends Node,E extends Edge> extends
 
     @Override
     protected void fireGraphChanged(Object source, GraphModelChange edit) {
-        for (Object jCell : edit.getChanged()) {
-            if (jCell instanceof GraphJCell) {
-                GraphJCell graphJCell = (GraphJCell) jCell;
-                synchroniseLayout(graphJCell);
+        if (!this.loading) {
+            // if we're loading, the layout is actually taken from the graph
+            // so no synchronisation is necessary
+            for (Object jCell : edit.getChanged()) {
+                if (jCell instanceof GraphJCell) {
+                    GraphJCell graphJCell = (GraphJCell) jCell;
+                    synchroniseLayout(graphJCell);
+                }
             }
         }
         if (!vetoFireGraphChanged()) {
@@ -488,6 +487,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
             // new edges should be behind the nodes
             toBack(addedCells);
         }
+        this.loading = false;
     }
 
     /**
@@ -514,6 +514,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * layed out graph.
      */
     private LayoutMap<N,E> layoutMap;
+    /** Flag that indicates we're in the process of loading a graph. */
+    private boolean loading;
     /**
      * Map from graph nodes to JGraph cells.
      */

@@ -233,9 +233,12 @@ public final class Shape extends ShapeGraph {
     }
 
     @Override
-    public void setFixed() {
-        super.setFixed();
-        getEquivRelation().setFixed();
+    public boolean setFixed() {
+        boolean result = super.setFixed();
+        if (result) {
+            getEquivRelation().setFixed();
+        }
+        return result;
     }
 
     // ------------------------------------------------------------------------

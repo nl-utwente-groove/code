@@ -16,6 +16,7 @@ t * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  */
 package groove.io.store;
 
+import static groove.gui.EditType.LAYOUT;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.PROPERTIES_FILTER;
 import static groove.trans.ResourceKind.PROPERTIES;
@@ -57,6 +58,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.undo.AbstractUndoableEdit;
@@ -353,14 +355,20 @@ public class DefaultFileSystemStore extends SystemStore {
     @Override
     public Map<String,AspectGraph> getGraphs(ResourceKind kind) {
         testInit();
+        Map<String,AspectGraph> result = new TreeMap<String,AspectGraph>();
+        for (Map.Entry<String,AspectGraph> e : getGraphMap(kind).entrySet()) {
+            AspectGraph g = e.getValue().clone();
+            g.setFixed();
+            result.put(e.getKey(), g);
+        }
         return Collections.unmodifiableMap(getGraphMap(kind));
     }
 
     @Override
     public Collection<AspectGraph> putGraphs(ResourceKind kind,
-            Collection<AspectGraph> graphs) throws IOException {
+            Collection<AspectGraph> graphs, boolean layout) throws IOException {
         Collection<AspectGraph> result = Collections.emptySet();
-        GraphBasedEdit edit = doPutGraphs(kind, graphs);
+        GraphBasedEdit edit = doPutGraphs(kind, graphs, layout);
         if (edit != null) {
             edit.checkAndSetVersion();
             postEdit(edit);
@@ -370,11 +378,14 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     /**
-     * Implements the functionality of {@link #putGraphs(ResourceKind, Collection)}. Returns
+     * Implements the functionality of {@link #putGraphs(ResourceKind, Collection, boolean)}. Returns
      * an undoable edit wrapping this functionality.
+     * @param layout flag indicating that this is a layout change only,
+     * which should be propagated as {@link EditType#LAYOUT}.
      */
     private GraphBasedEdit doPutGraphs(ResourceKind kind,
-            Collection<AspectGraph> newGraphs) throws IOException {
+            Collection<AspectGraph> newGraphs, boolean layout)
+        throws IOException {
         testInit();
         Set<String> newNames = new HashSet<String>();
         // if we're relabelling, it may be that there are already graphs
@@ -392,8 +403,16 @@ public class DefaultFileSystemStore extends SystemStore {
         }
         SystemProperties oldProps = getProperties();
         SystemProperties newProps = doEnableDefaultName(kind, newNames);
-        return new GraphBasedEdit(kind, oldGraphs.isEmpty() ? EditType.CREATE
-                : EditType.MODIFY, oldGraphs, newGraphs, oldProps, newProps);
+        EditType type;
+        if (oldGraphs.isEmpty()) {
+            type = EditType.CREATE;
+        } else if (layout) {
+            type = EditType.LAYOUT;
+        } else {
+            type = EditType.MODIFY;
+        }
+        return new GraphBasedEdit(kind, type, oldGraphs, newGraphs, oldProps,
+            newProps);
     }
 
     @Override
@@ -506,7 +525,7 @@ public class DefaultFileSystemStore extends SystemStore {
                         newGraphs.add(newGraph);
                     }
                 }
-                result.addEdit(doPutGraphs(kind, newGraphs));
+                result.addEdit(doPutGraphs(kind, newGraphs, false));
             }
         }
         SystemProperties newProperties =
@@ -547,7 +566,7 @@ public class DefaultFileSystemStore extends SystemStore {
                         newGraphs.add(newGraph);
                     }
                 }
-                result.addEdit(doPutGraphs(kind, newGraphs));
+                result.addEdit(doPutGraphs(kind, newGraphs, false));
             }
         }
         result.end();
@@ -1136,11 +1155,14 @@ public class DefaultFileSystemStore extends SystemStore {
         public void redo() throws CannotRedoException {
             super.redo();
             try {
-                doDeleteGraphs(getResourceKind(), getNames(this.oldGraphs));
-                if (this.newProps != null) {
-                    doPutProperties(this.newProps);
+                boolean layout = getType() == LAYOUT;
+                if (!layout) {
+                    doDeleteGraphs(getResourceKind(), getNames(this.oldGraphs));
+                    if (this.newProps != null) {
+                        doPutProperties(this.newProps);
+                    }
                 }
-                doPutGraphs(getResourceKind(), this.newGraphs);
+                doPutGraphs(getResourceKind(), this.newGraphs, layout);
             } catch (IOException exc) {
                 throw new CannotRedoException();
             }
@@ -1151,11 +1173,14 @@ public class DefaultFileSystemStore extends SystemStore {
         public void undo() throws CannotUndoException {
             super.undo();
             try {
-                doDeleteGraphs(getResourceKind(), getNames(this.newGraphs));
-                if (this.oldProps != null) {
-                    doPutProperties(this.oldProps);
+                boolean layout = getType() == LAYOUT;
+                if (!layout) {
+                    doDeleteGraphs(getResourceKind(), getNames(this.newGraphs));
+                    if (this.oldProps != null) {
+                        doPutProperties(this.oldProps);
+                    }
                 }
-                doPutGraphs(getResourceKind(), this.oldGraphs);
+                doPutGraphs(getResourceKind(), this.oldGraphs, layout);
             } catch (IOException exc) {
                 throw new CannotUndoException();
             }

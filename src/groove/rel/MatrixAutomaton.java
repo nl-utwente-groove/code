@@ -126,12 +126,15 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
     }
 
     @Override
-    public void setFixed() {
-        super.setFixed();
-        // when the graph is fixed, we can initialise the auxiliary structures.
-        initNodeEdgeIndices();
-        initNodeLabelEdgeMaps();
-        initVarSets();
+    public boolean setFixed() {
+        boolean result = super.setFixed();
+        if (result) {
+            // when the graph is fixed, we can initialise the auxiliary structures.
+            initNodeEdgeIndices();
+            initNodeLabelEdgeMaps();
+            initVarSets();
+        }
+        return result;
     }
 
     @Override

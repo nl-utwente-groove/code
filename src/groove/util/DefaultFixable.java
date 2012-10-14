@@ -22,19 +22,12 @@ package groove.util;
  * @version $Revision $
  */
 public class DefaultFixable implements Fixable {
-    /**
-     * Freezes the properties object, after which changing any properties
-     * becomes illegal.
-     */
-    public void setFixed() {
+    public boolean setFixed() {
+        boolean result = !isFixed();
         this.fixed = true;
+        return result;
     }
 
-    /**
-     * Indicates if the properties are fixed. If so, any attempt to modify any
-     * of the properties will result in an {@link IllegalStateException}.
-     * @return <code>true</code> if the properties are fixed.
-     */
     public boolean isFixed() {
         return this.fixed;
     }

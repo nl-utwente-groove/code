@@ -276,8 +276,9 @@ public class Condition implements Fixable {
     }
 
     /** Fixes this condition and all its subconditions. */
-    public void setFixed() throws FormatException {
-        if (!isFixed() && !this.fixing) {
+    public boolean setFixed() throws FormatException {
+        boolean result = !isFixed();
+        if (result && !this.fixing) {
             this.fixing = true;
             for (Condition subCondition : getSubConditions()) {
                 subCondition.testFixed(true);
@@ -294,6 +295,7 @@ public class Condition implements Fixable {
             }
             this.fixing = false;
         }
+        return result;
     }
 
     @Override

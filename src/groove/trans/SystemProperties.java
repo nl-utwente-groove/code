@@ -491,8 +491,10 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * Freezes the properties object, after which changing any properties
      * becomes illegal.
      */
-    public void setFixed() {
+    public boolean setFixed() {
+        boolean result = !isFixed();
         this.fixed = true;
+        return result;
     }
 
     /**

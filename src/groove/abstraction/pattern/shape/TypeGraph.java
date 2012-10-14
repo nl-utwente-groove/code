@@ -108,20 +108,23 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     }
 
     @Override
-    public void setFixed() {
-        assert !isFixed();
-        for (TypeNode node : this.nodeSet()) {
-            node.setFixed();
+    public boolean setFixed() {
+        boolean result = !isFixed();
+        if (result) {
+            for (TypeNode node : this.nodeSet()) {
+                node.setFixed();
+            }
+            for (TypeEdge edge : this.edgeSet()) {
+                edge.setFixed();
+            }
+            computeLayers();
+            createClosureRules();
+            if (getInfo() == null) {
+                setInfo(new GraphInfo<TypeNode,TypeEdge>());
+            }
+            this.fixed = true;
         }
-        for (TypeEdge edge : this.edgeSet()) {
-            edge.setFixed();
-        }
-        computeLayers();
-        createClosureRules();
-        if (getInfo() == null) {
-            setInfo(new GraphInfo<TypeNode,TypeEdge>());
-        }
-        this.fixed = true;
+        return result;
     }
 
     @Override

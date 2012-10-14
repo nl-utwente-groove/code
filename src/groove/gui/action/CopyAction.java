@@ -44,7 +44,7 @@ public class CopyAction extends SimulatorAction {
                 getGrammarStore().getGraphs(resourceKind).get(oldName);
             AspectGraph newHost = host.rename(newName);
             try {
-                getSimulatorModel().doAddGraph(resourceKind, newHost);
+                getSimulatorModel().doAddGraph(resourceKind, newHost, false);
                 result = true;
             } catch (IOException exc) {
                 showErrorDialog(exc, String.format(
