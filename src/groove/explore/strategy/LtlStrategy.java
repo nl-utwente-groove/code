@@ -322,7 +322,7 @@ public class LtlStrategy extends AbstractStrategy {
         Strategy explore = new ExploreStateStrategy();
         if (getGTS().isOpen(state)) {
             explore.prepare(getGTS(), state);
-            explore.next();
+            explore.play();
         }
     }
 
