@@ -22,6 +22,7 @@ import groove.explore.result.CycleAcceptor;
 import groove.explore.result.Result;
 import groove.explore.strategy.LtlStrategy;
 import groove.explore.strategy.Strategy;
+import groove.explore.strategy.Strategy.Halter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
@@ -216,7 +217,7 @@ public class Exploration {
         Strategy parsedStrategy = getParsedStrategy(grammar);
 
         // parse the acceptor
-        Acceptor parsedAcceptor = getParsedAcceptor(grammar);
+        final Acceptor parsedAcceptor = getParsedAcceptor(grammar);
 
         // initialize acceptor and GTS
         parsedAcceptor.setResult(new Result(this.nrResults));
@@ -225,14 +226,13 @@ public class Exploration {
         // initialize profiling and prepare graph listener
         playReporter.start();
         parsedStrategy.addGTSListener(parsedAcceptor);
-        this.interrupted = false;
-
-        // start working until done or nothing to do
-        while (!this.interrupted && !parsedAcceptor.getResult().done()
-            && parsedStrategy.next()) {
-            this.interrupted = Thread.currentThread().isInterrupted();
-        }
-
+        parsedStrategy.play(new Halter() {
+            @Override
+            public boolean halt() {
+                return parsedAcceptor.getResult().done();
+            }
+        });
+        this.interrupted = parsedStrategy.isInterrupted();
         // remove graph listener and stop profiling       
         parsedStrategy.removeGTSListener(parsedAcceptor);
         playReporter.stop();

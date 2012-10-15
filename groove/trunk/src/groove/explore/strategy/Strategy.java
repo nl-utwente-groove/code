@@ -40,7 +40,8 @@ public interface Strategy {
      * Checks the strategy for compatibility with a given grammar. 
      * This is a callback method that is invoked after the strategy has been 
      * instantiated, but before it is applied. 
-     * @throws FormatException TODO
+     * If the method returns normally, the grammar is compatible
+     * @throws FormatException if a compatibility error is found
      */
     public void checkCompatible(GraphGrammar grammar) throws FormatException;
 
@@ -54,7 +55,7 @@ public interface Strategy {
 
     /**
      * Sets the GTS and start state to be explored. This is done in preparation
-     * to a call of {@link #next()}.
+     * to a call of {@link #play()}.
      * It is assumed that the state (if not {@code null} is already in the GTS.
      * @param gts the GTS to be explored
      * @param state the start state for the exploration; if <code>null</code>,
@@ -62,20 +63,22 @@ public interface Strategy {
      */
     public void prepare(GTS gts, GraphState state);
 
-    /**
-     * Executes one step of the strategy.
-     * @return false if the strategy is completed, <code>true</code>
-     *         otherwise.
-     * @require The previous call of this method, if any, returned
-     *          <code>true</code>. Otherwise, the behaviour is not
-     *          guaranteed.
+    /** 
+     * Plays out this strategy, until a halting condition kicks in, 
+     * the thread is interrupted or exploration is done.
+     * @param halter halting condition invoked after each state exploration;
+     * ignored if {@code null} 
      */
-    public boolean next();
+    public void play(Halter halter);
 
-    /** Returns the next state to be explored by the strategy. */
-    public GraphState getState();
+    /** Plays out this strategy, until the thread is interrupted or exploration is done. */
+    public void play();
 
-    /** Returns the last state to be explored by the strategy. */
+    /** Signals if the last invocation of {@link #play} finished because the thread was interrupted. */
+    public boolean isInterrupted();
+
+    /** Returns the last state explored by the last invocation of {@link #play}. 
+     */
     public GraphState getLastState();
 
     /**
@@ -87,4 +90,10 @@ public interface Strategy {
      * Removes an acceptor from the strategy.
      */
     public void removeGTSListener(Acceptor listener);
+
+    /** Interface for a halting condition on exploration. */
+    public interface Halter {
+        /** Callback method to determine whether exploration should halt. */
+        public boolean halt();
+    }
 }

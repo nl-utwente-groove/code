@@ -50,7 +50,46 @@ public abstract class AbstractStrategy implements Strategy {
         MatcherFactory.instance().setDefaultEngine();
     }
 
-    public boolean next() {
+    @Override
+    final public void play(Halter halter) {
+        this.interrupted = false;
+        while ((halter == null || !halter.halt()) && next()
+            && !testInterrupted()) {
+            // do nothing
+        }
+    }
+
+    @Override
+    final public void play() {
+        play(null);
+    }
+
+    @Override
+    final public boolean isInterrupted() {
+        return this.interrupted;
+    }
+
+    /** 
+     * Tests if the thread has been interrupted, and stores the
+     * result.
+     */
+    final protected boolean testInterrupted() {
+        boolean result = !this.interrupted;
+        if (!result) {
+            result = this.interrupted = Thread.currentThread().isInterrupted();
+        }
+        return result;
+    }
+
+    /**
+     * Executes one step of the strategy.
+     * @return false if the strategy is completed, <code>true</code>
+     *         otherwise.
+     * @require The previous call of this method, if any, returned
+     *          <code>true</code>. Otherwise, the behaviour is not
+     *          guaranteed.
+     */
+    protected boolean next() {
         if (getState() == null) {
             return false;
         }
@@ -73,7 +112,7 @@ public abstract class AbstractStrategy implements Strategy {
      * Returns the state that will be explored next. If <code>null</code>,
      * there is nothing left to explore. Is updated by {@link #getNextState()}.
      */
-    public GraphState getState() {
+    protected GraphState getState() {
         return this.atState;
     }
 
@@ -83,11 +122,9 @@ public abstract class AbstractStrategy implements Strategy {
     }
 
     /**
-     * Sets atState to the next state to be explored, as
-     * returned by {@link #getNextState()}, or <code>null</code> if
-     * there are no more states to be explored. This is the place where
-     * satisfaction of the condition is to be tested. This method should be the
-     * only one who updates atState.
+     * Callback method to set the next state to be explored (which itself is 
+     * determined by a call to {@link #getNextState()}), if any. This method
+     * should be the only one who updates atState.
      * @return {@code true} if there are more states to be explored, {@code false}
      * otherwise.
      * @see #getNextState()
@@ -99,23 +136,11 @@ public abstract class AbstractStrategy implements Strategy {
     }
 
     /**
-     * Sets atState to the next state to be explored, or <code>null</code> if
-     * there are no more states to be explored. This is the place where
-     * satisfaction of the condition is to be tested. This method should be the
-     * only one who updates atState.
-     * @return {@code true} if there are more states to be explored, {@code false}
-     * otherwise.
+     * Callback method to determine the next state to be explored. This is the place where
+     * satisfaction of the condition is to be tested.
+     * @return The next state to be explored, or {@code null} if exploration is done.
      */
     protected abstract GraphState getNextState();
-
-    /** 
-     * Closes a given state. 
-     * @param complete  indicates whether all outgoing transitions of the state have
-     * been explored.
-     */
-    protected void setClosed(GraphState state, boolean complete) {
-        state.setClosed(complete);
-    }
 
     /**
      * Returns a fresh match collector for this strategy, based on the current
@@ -124,11 +149,6 @@ public abstract class AbstractStrategy implements Strategy {
     protected MatchSetCollector createMatchCollector() {
         return new MatchSetCollector(getState(), getRecord(),
             getGTS().checkDiamonds());
-    }
-
-    /** Sets the match applier of this strategy. */
-    public void setMatchApplier(RuleEventApplier applier) {
-        this.applier = applier;
     }
 
     /** Returns the match applier of this strategy. */
@@ -144,10 +164,12 @@ public abstract class AbstractStrategy implements Strategy {
         return new MatchApplier(this.gts);
     }
 
+    @Override
     public void addGTSListener(Acceptor listener) {
         getGTS().addLTSListener(listener);
     }
 
+    @Override
     public void removeGTSListener(Acceptor listener) {
         getGTS().removeLTSListener(listener);
     }
@@ -157,6 +179,8 @@ public abstract class AbstractStrategy implements Strategy {
         return getGTS().getRecord();
     }
 
+    /** Flag indicating that the last invocation of {@link #play} was interrupted. */
+    private boolean interrupted;
     /**
      * Match applier for the underlying GTS.
      */

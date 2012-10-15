@@ -284,10 +284,7 @@ public class PatternGraphGenerator extends CommandLineTool {
         GTS result = new GTS(sGrammar);
         Strategy strategy = new DFSStrategy();
         strategy.prepare(result);
-        // start working until done or nothing to do
-        while (strategy.next()) {
-            // Empty
-        }
+        strategy.play();
         return result;
     }
 
