@@ -19,11 +19,14 @@ package groove.view;
 import static groove.trans.ResourceKind.CONTROL;
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
+import groove.graph.GraphInfo;
 import groove.trans.Action;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -57,7 +60,8 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
         }
         this.loader.init(getGrammar().getProperties().getAlgebraFamily(),
             getGrammar().getRules());
-        for (String controlName : getGrammar().getActiveNames(CONTROL)) {
+        Collection<String> controlNames = getGrammar().getActiveNames(CONTROL);
+        for (String controlName : controlNames) {
             ControlModel controlModel =
                 getGrammar().getControlModel(controlName);
             if (controlModel == null) {
@@ -74,7 +78,41 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
             }
         }
         errors.throwException();
-        return this.loader.getAutomaton();
+        CtrlAut result = null;
+        List<String> programNames = new ArrayList<String>();
+        for (String controlName : controlNames) {
+            try {
+                CtrlAut aut = this.loader.buildAutomaton(controlName);
+                if (aut != null) {
+                    result = aut;
+                    programNames.add(controlName);
+                }
+            } catch (FormatException exc) {
+                ControlModel controlModel =
+                    getGrammar().getControlModel(controlName);
+                for (FormatError error : exc.getErrors()) {
+                    errors.add("Error in control program '%s': %s",
+                        controlName, error, controlModel);
+                }
+            }
+        }
+        if (programNames.size() > 1) {
+            errors.add("Duplicate control programs %s", programNames);
+        }
+        try {
+            if (result == null) {
+                result = this.loader.buildDefaultAutomaton();
+            } else {
+                result = result.normalise();
+            }
+        } catch (FormatException e) {
+            errors.addAll(e.getErrors());
+        }
+        if (GraphInfo.hasErrors(result)) {
+            errors.addAll(GraphInfo.getErrors(result));
+        }
+        errors.throwException();
+        return result;
     }
 
     /** Returns the set of all top-level actions of the enabled control programs. */
