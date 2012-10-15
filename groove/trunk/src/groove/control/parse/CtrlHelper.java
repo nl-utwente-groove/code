@@ -21,6 +21,7 @@ import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlCall.Kind;
 import groove.control.CtrlPar;
+import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
@@ -557,20 +558,27 @@ public class CtrlHelper {
      */
     boolean checkRecipeBody(CtrlTree actionTree, String name, CtrlAut aut) {
         boolean result = true;
+        for (CtrlState state : aut.nodeSet()) {
+            if (state.isTransient()) {
+                emitErrorMessage(actionTree,
+                    "Recipe '%s' contains a nested recipe call to '%s'", name,
+                    state.getRecipe());
+            }
+        }
         for (CtrlTransition omegaTrans : aut.getOmegas()) {
             if (omegaTrans.source() == aut.getStart()) {
-                emitErrorMessage(actionTree,
-                    "Recipe '%s' should not have empty behaviour", name);
+                emitErrorMessage(actionTree, "Recipe '%s' has empty behaviour",
+                    name);
                 result = false;
                 break;
             }
         }
         if (aut.getOmegas().isEmpty()) {
-            emitErrorMessage(actionTree, "Recipe '%s' must terminate", name);
+            emitErrorMessage(actionTree, "Recipe '%s' does not terminate", name);
             result = false;
         } else if (!aut.isEndDeterministic()) {
             emitErrorMessage(actionTree,
-                "Recipe '%s' must terminate deterministically", name);
+                "Recipe '%s' does not terminate deterministically", name);
             result = false;
         }
         return result;

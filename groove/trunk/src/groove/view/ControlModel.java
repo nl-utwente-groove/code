@@ -18,6 +18,7 @@ package groove.view;
 
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
+import groove.graph.GraphInfo;
 import groove.trans.Recipe;
 import groove.trans.ResourceKind;
 
@@ -52,7 +53,14 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
         this.loader.init(getGrammar().getProperties().getAlgebraFamily(),
             getGrammar().getRules());
         this.loader.parse(getFullName(), getProgram());
-        return this.loader.getAutomaton();
+        CtrlAut result = this.loader.buildAutomaton(getFullName());
+        if (result == null) {
+            result = this.loader.buildDefaultAutomaton();
+        } else {
+            GraphInfo.throwException(result);
+            result = result.normalise();
+        }
+        return result;
     }
 
     /** Returns the set of recipes defined in the control program. */

@@ -383,6 +383,9 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
                 assert depSet != null;
                 // establish whether i and j are distinguishable states
                 boolean distinct = i.isTransient() != j.isTransient();
+                if (!distinct && i.isTransient()) {
+                    distinct = !i.getRecipe().equals(j.getRecipe());
+                }
                 if (!distinct) {
                     distinct = !i.getBoundVars().equals(j.getBoundVars());
                 }

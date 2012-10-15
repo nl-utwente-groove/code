@@ -419,8 +419,9 @@ public class GrammarModel implements Observer {
         }
         // set control
         CtrlAut control = getControlModel().toResource();
-        if (result.hasMultiplePriorities() && !control.isDefault()) {
-            errors.add("Disable either rule priorities or the explicit control programs");
+        if (result.hasMultiplePriorities()
+            && !getActiveNames(CONTROL).isEmpty()) {
+            errors.add("Rule priorities and explicit control cannot be used simultaneously");
         }
         result.setCtrlAut(control);
         // set properties
