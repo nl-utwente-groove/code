@@ -74,7 +74,7 @@ public abstract class AbstractStrategy implements Strategy {
      * result.
      */
     final protected boolean testInterrupted() {
-        boolean result = !this.interrupted;
+        boolean result = this.interrupted;
         if (!result) {
             result = this.interrupted = Thread.currentThread().isInterrupted();
         }
