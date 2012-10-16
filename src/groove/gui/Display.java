@@ -114,7 +114,7 @@ abstract public class Display {
     abstract protected JToolBar createListToolBar();
 
     /** Returns the name list for this display. */
-    final protected JTree getList() {
+    public JTree getList() {
         if (this.resourceList == null) {
             this.resourceList = createList();
         }

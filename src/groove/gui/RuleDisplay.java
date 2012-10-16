@@ -28,7 +28,6 @@ import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
-import javax.swing.JTree;
 
 /**
  * Panel that holds the rule panel and rule graph editors.
@@ -62,11 +61,16 @@ final public class RuleDisplay extends ResourceDisplay {
         return result;
     }
 
+    @Override
+    public RuleJTree getList() {
+        return (RuleJTree) super.getList();
+    }
+
     /**
      * Returns the tree of rules and matches displayed in the simulator.
      */
     @Override
-    public JTree createList() {
+    public RuleJTree createList() {
         return new RuleJTree(this);
     }
 
@@ -79,7 +83,7 @@ final public class RuleDisplay extends ResourceDisplay {
 
     @Override
     protected void resetList() {
-        ((RuleJTree) getList()).dispose();
+        getList().dispose();
         super.resetList();
     }
 

@@ -382,7 +382,7 @@ public final class Materialisation {
     }
 
     private void computeUpTraversal(PatternNode newNode) {
-        // Check if there are outgoing edges missing for the new node.
+        // Check if there are incoming edges missing for the new node.
         PatternNode origNode = this.morph.getNode(newNode);
         Set<PatternEdge> origInEdges = this.originalShape.inEdgeSet(origNode);
         for (PatternEdge origInEdge : origInEdges) {
