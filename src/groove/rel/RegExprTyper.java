@@ -39,7 +39,6 @@ import groove.view.FormatErrorSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -216,7 +215,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
     public static class Result {
         /** Creates an empty relation. */
         public Result() {
-            // empty
+            this.size = 0;
         }
 
         /** Creates a complete relation over a given set of nodes. */
@@ -224,6 +223,11 @@ public class RegExprTyper implements RegExprCalculator<Result> {
             for (TypeNode node : universe) {
                 add(node, universe);
             }
+        }
+
+        /** Returns the number of pairs in the relation. */
+        public int getSize() {
+            return this.size;
         }
 
         /** Indicates if this is an empty relation. */
@@ -237,21 +241,28 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         }
 
         /** Adds a pair to the relation. */
-        public void add(TypeNode left, TypeNode right) {
+        public boolean add(TypeNode left, TypeNode right) {
             Set<TypeNode> current = this.map.get(left);
             if (current == null) {
                 this.map.put(left, current = new HashSet<TypeNode>());
             }
-            current.add(right);
+            boolean result = current.add(right);
+            if (result) {
+                this.size++;
+            }
+            return result;
         }
 
         /** Adds a set of pairs to the relation. */
-        public void add(TypeNode left, Collection<? extends TypeNode> right) {
+        public boolean add(TypeNode left, Collection<? extends TypeNode> right) {
             Set<TypeNode> current = this.map.get(left);
             if (current == null) {
                 this.map.put(left, current = new HashSet<TypeNode>());
             }
+            int currentSize = current.size();
             current.addAll(right);
+            this.size += current.size() - currentSize;
+            return current.size() > currentSize;
         }
 
         /** Returns the inverse of this relation. */
@@ -315,36 +326,26 @@ public class RegExprTyper implements RegExprCalculator<Result> {
             return result;
         }
 
-        /** 
-         * Intersects this relation with another.
-         * @return {@code true} if this relation was changed as a result 
-         */
-        private boolean intersect(Result other) {
-            boolean result = false;
-            Iterator<Map.Entry<TypeNode,Set<TypeNode>>> entryIter =
-                this.map.entrySet().iterator();
-            while (entryIter.hasNext()) {
-                Map.Entry<TypeNode,Set<TypeNode>> entry = entryIter.next();
-                TypeNode left = entry.getKey();
-                Set<TypeNode> otherRight = other.getAll(left);
-                if (otherRight != null) {
-                    Set<TypeNode> right = entry.getValue();
-                    result |= right.retainAll(otherRight);
-                    if (right.isEmpty()) {
-                        entryIter.remove();
-                    }
-                }
+        /** Returns the limit of the intersection of this relation with itself. */
+        public Result getClosure() {
+            Result result = this;
+            int oldSize = 0;
+            int newSize = result.getSize();
+            while (newSize > oldSize) {
+                result = result.getThen(this);
+                result.union(this);
+                oldSize = newSize;
+                newSize = result.getSize();
             }
             return result;
         }
 
-        /** Returns the limit of the intersection of this relation with itself. */
-        public Result getClosure() {
-            Result result = this;
-            do {
-                result = result.getThen(this);
-            } while (result.intersect(this) && !result.isEmpty());
-            return result;
+        /** 
+         * Intersects this relation with another.
+         * @return {@code true} if this relation was changed as a result 
+         */
+        private boolean union(Result other) {
+            return other.copyTo(this);
         }
 
         @Override
@@ -393,13 +394,16 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         }
 
         /** Copies this relation (including the errors) into another. */
-        private void copyTo(Result other) {
+        private boolean copyTo(Result other) {
+            boolean result = false;
             for (Map.Entry<TypeNode,Set<TypeNode>> entry : this.map.entrySet()) {
-                other.add(entry.getKey(), entry.getValue());
+                result |= other.add(entry.getKey(), entry.getValue());
             }
             other.addErrors(getErrors());
+            return result;
         }
 
+        private int size;
         private final Map<TypeNode,Set<TypeNode>> map =
             new HashMap<TypeNode,Set<TypeNode>>();
         private final FormatErrorSet errors = new FormatErrorSet();
