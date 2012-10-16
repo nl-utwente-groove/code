@@ -16,6 +16,8 @@
  */
 package groove.control;
 
+import groove.trans.Rule;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,24 +25,44 @@ import java.util.Set;
 /** Sequence of control transitions to be tried out from a control state. */
 public class CtrlSchedule {
     /**
-     * Constructs an initially empty schedule. 
+     * Constructs an untried schedule. 
+     * @param state control state on which this schedule is based
+     * @param trans transition to be tried at this point of the schedule; may be {@code null}
+     * @param previous set of control transitions tried out before this schedule was reached
      * @param isTransient if {@code true}, the schedule is part of a transaction
+     * @param success if {@code true}, this schedule represents a success state
      */
     public CtrlSchedule(CtrlState state, CtrlTransition trans,
-            Set<CtrlTransition> tried, boolean success, boolean isTransient) {
+            Set<CtrlTransition> previous, boolean success, boolean isTransient) {
         this.state = state;
         this.trans = trans;
-        if (trans != null) {
-            this.triedCalls = null;
-        } else {
-            this.triedCalls = new HashSet<CtrlCall>();
-            for (CtrlTransition triedTrans : tried) {
-                tried.add(triedTrans);
-            }
+        this.previousCalls = null;//new HashSet<CtrlCall>();
+        this.previousRules = new HashSet<Rule>();
+        for (CtrlTransition triedTrans : previous) {
+            CtrlCall call = triedTrans.getCall();
+            //this.previousCalls.add(call);
+            this.previousRules.add(call.getRule());
         }
         this.success = success;
         assert !isTransient || state.isTransient();
         this.isTransient = isTransient;
+        this.tried = false;
+    }
+
+    /**
+     * Constructs a tried version of a given schedule.
+     */
+    private CtrlSchedule(CtrlSchedule origin) {
+        this.state = origin.state;
+        this.trans = origin.trans;
+        CtrlCall call = this.trans.getCall();
+        this.previousCalls = new HashSet<CtrlCall>(origin.previousCalls);
+        this.previousCalls.add(call);
+        this.previousRules = new HashSet<Rule>(origin.previousRules);
+        this.previousRules.add(call.getRule());
+        this.success = origin.success;
+        this.isTransient = origin.isTransient;
+        this.tried = true;
     }
 
     /** Indicates if this node signals the end of the schedule. */
@@ -60,6 +82,23 @@ public class CtrlSchedule {
         return this.isTransient;
     }
 
+    /**
+     * Indicates if {@link #getTransition()} has already been tried out,
+     * but the result has not yet been registered.
+     */
+    public boolean isTried() {
+        return this.tried;
+    }
+
+    /** Returns a tried version of this schedule. */
+    public CtrlSchedule getTriedSchedule() {
+        assert !isTried();
+        if (this.triedSchedule == null) {
+            this.triedSchedule = new CtrlSchedule(this);
+        }
+        return this.triedSchedule;
+    }
+
     /** Returns the currently scheduled transition.
      * May be {@code null} if this is the end of the schedule.
       */
@@ -73,13 +112,23 @@ public class CtrlSchedule {
     }
 
     /**
-     * Returns the set of control calls that has been tried at this point
-     * of the schedule, provided the schedule is finished
+     * Returns the set of control calls that have been tried at this point
+     * of the schedule.
+     * @return a set of tried control calls
+     */
+    public Set<CtrlCall> getPreviousCalls() {
+        return this.previousCalls;
+    }
+
+    /**
+     * Returns the set of rules that have been tried at this point
+     * of the schedule.
+     * These are the rules occurring in {@link #getPreviousCalls()}
      * @return a set of tried control calls, or {@code null} if {@link #isFinished()} 
      * yields {@code false}.
      */
-    public Set<CtrlCall> getTriedCalls() {
-        return this.triedCalls;
+    public Set<Rule> getPreviousRules() {
+        return this.previousRules;
     }
 
     /** Sets the success and failure schedules. */
@@ -149,9 +198,16 @@ public class CtrlSchedule {
     /** The transition at this node of the schedule. */
     private final CtrlTransition trans;
     /** The set of calls that have been tried when this point of the schedule is reached.
-     * Only filled in if {@link #isFinished()} is satisfied.
      */
-    private final Set<CtrlCall> triedCalls;
+    private final Set<CtrlCall> previousCalls;
+    /** The set of rules that have been tried when this point of the schedule is reached.
+     */
+    private final Set<Rule> previousRules;
+    /** 
+     * Flag indicating that {@link #trans} was already tried out (but the result
+     * has not yet been registered).
+     */
+    private final boolean tried;
     /** Next schedule node in case {@link #trans} succeeds. */
     private CtrlSchedule succNext;
     /** Next schedule node in case {@link #trans} fails. */
@@ -162,4 +218,6 @@ public class CtrlSchedule {
      * Flag indicating if this schedule is part of a transaction.
      */
     private final boolean isTransient;
+    /** Tried version of this schedule (if this schedule is untried). */
+    private CtrlSchedule triedSchedule;
 }
