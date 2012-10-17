@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.control.CtrlSchedule;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
 import groove.trans.HostEdge;
@@ -44,7 +45,7 @@ public class StateCache {
     /**
      * Constructs a cache for a given state.
      */
-    StateCache(AbstractGraphState state) {
+    protected StateCache(AbstractGraphState state) {
         this.state = state;
         this.present = !state.isTransient();
         this.record = state.getRecord();
@@ -54,12 +55,13 @@ public class StateCache {
     }
 
     /** Adds a transition stub to the data structures stored in this cache. */
-    boolean addTransition(RuleTransition transition) {
-        boolean result = getStubSet().add(transition.toStub());
+    boolean addTransition(RuleTransition trans) {
+        boolean result = getStubSet().add(trans.toStub());
         if (result && this.transitionMap != null) {
-            this.transitionMap.put(transition.getEvent(), transition);
+            this.transitionMap.put(trans.getEvent(), trans);
         }
-        addChild(transition.target(), new GTS.NormalisedStateSet());
+        this.matches.remove(trans);
+        addChild(trans.target(), new GTS.NormalisedStateSet());
         return result;
     }
 
@@ -288,6 +290,7 @@ public class StateCache {
         for (RuleTransitionStub stub : getStubSet()) {
             RuleTransition trans = stub.toTransition(this.state);
             result.put(trans.getEvent(), trans);
+            this.matches.add(trans);
         }
         return result;
     }
@@ -348,6 +351,147 @@ public class StateCache {
     }
 
     /**
+     * Returns all matches of the state, insofar they can be determined
+     * without cooking any currently uncooked successor states. 
+     * @return set of matches; includes outgoing transitions where possible
+     */
+    MatchResultSet getAllMatches() {
+        if (this.matches == null) {
+            this.matches = new MatchResultSet();
+        }
+        if (getState().isClosed()) {
+            // we're recomputing the matches for a closed state
+            // all matches have resulted in outgoing transitions; use those
+            this.matches.addAll(getTransitionMap().values());
+        } else {
+            // try all schedules as long as this is possible
+            while (trySchedule()) {
+                // do nothing
+            }
+        }
+        return this.matches;
+    }
+
+    /**
+     * Returns the matches of the state since the last call of {@link #getAllMatches()}
+     * or {@link #getNextMatches()}, insofar they can be determined
+     * without cooking any currently uncooked successor states. 
+     * @return set of matches
+     */
+    MatchResultSet getNextMatches() {
+        MatchResultSet result;
+        if (this.matches == null) {
+            result = getAllMatches();
+        } else {
+            result = new MatchResultSet();
+            // try all schedules as long as this is possible
+            while (trySchedule()) {
+                result.addAll(this.latestMatches);
+            }
+        }
+        return result;
+    }
+
+    /** Returns the first match of the state. */
+    MatchResult getMatch() {
+        MatchResult result = null;
+        if (getState().isClosed()) {
+            // take the first outgoing transition, if any
+            if (!getTransitionMap().isEmpty()) {
+                result =
+                    getTransitionMap().entrySet().iterator().next().getValue();
+            }
+        } else {
+            // compute matches insofar necessary and feasible
+            if (this.matches == null) {
+                this.matches = new MatchResultSet();
+            }
+            while (this.matches.isEmpty() && trySchedule()) {
+                // do nothing
+            }
+            // return the first match if there is one
+            if (!this.matches.isEmpty()) {
+                result = this.matches.iterator().next();
+            }
+        }
+        return result;
+    }
+
+    private boolean trySchedule() {
+        boolean result = false;
+        CtrlSchedule schedule = getState().getSchedule();
+        if (schedule.isFinished()) {
+            this.latestMatches = EMPTY_MATCH_SET;
+        } else {
+            result = !schedule.isTried();
+            if (!result) {
+                // the schedule has been tried and has yielded matches; 
+                // now see if at least one match has resulted
+                // in a transition to a present state, or all matches
+                // have resulted in transitions to absent states
+                boolean allAbsent = true;
+                boolean somePresent = false;
+                for (MatchResult m : this.latestMatches) {
+                    RuleTransition t = getTransitionMap().get(m.getEvent());
+                    if (t != null) {
+                        GraphState target = t.target();
+                        if (target.isPresent()) {
+                            somePresent = true;
+                            break;
+                        }
+                        allAbsent &= target.isAbsent();
+                    }
+                }
+                result = somePresent || allAbsent;
+                if (result) {
+                    // yes, there is a present outgoing transition
+                    // or all outgoing transitions are absent
+                    getState().setSchedule(schedule.next(somePresent));
+                }
+            }
+            if (result) {
+                this.latestMatches = getMatchCollector().computeMatches();
+                CtrlSchedule nextSchedule;
+                if (this.latestMatches.isEmpty()) {
+                    // no transitions will be generated
+                    nextSchedule = schedule.next(false);
+                } else if (schedule.next(true) == schedule.next(false)) {
+                    // it does not matter whether a transition is generated or not
+                    nextSchedule = schedule.next(false);
+                } else if (schedule.isTransient()
+                    || !schedule.getTransition().target().isTransient()) {
+                    // the control transition is atomic
+                    // so the existence of a match guarantees the existence of a transition
+                    nextSchedule = schedule.next(true);
+                } else {
+                    nextSchedule = schedule.getTriedSchedule();
+                }
+                getState().setSchedule(nextSchedule);
+                this.matches.addAll(this.latestMatches);
+            }
+        }
+        return result;
+    }
+
+    private MatchCollector getMatchCollector() {
+        if (this.matcher == null) {
+            this.matcher = createMatchCollector();
+        }
+        return this.matcher;
+    }
+
+    /** Factory method for the match collector. */
+    protected MatchCollector createMatchCollector() {
+        return new MatchCollector(getState());
+    }
+
+    /** Strategy object used to find the matches. */
+    private MatchCollector matcher;
+    /** The matches found so far for this state. */
+    private MatchResultSet matches;
+    /** The matches found during the latest call to {@link #trySchedule()}. */
+    private MatchResultSet latestMatches;
+    /**
      * The set of outgoing transitions computed for the underlying graph.
      */
     private Set<RuleTransitionStub> stubSet;
@@ -387,4 +531,6 @@ public class StateCache {
      * The depth of the graph above which the underlying graph will be frozen.
      */
     static private final int FREEZE_BOUND = 10;
+    /** Unique empty match set. */
+    static private final MatchResultSet EMPTY_MATCH_SET = new MatchResultSet();
 }

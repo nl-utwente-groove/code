@@ -16,7 +16,6 @@
  */
 package groove.explore.strategy;
 
-import groove.explore.util.MatchSetCollector;
 import groove.lts.MatchResult;
 
 import java.util.ArrayList;
@@ -51,11 +50,9 @@ public class ReteRandomLinearStrategy extends ReteLinearStrategy {
     /** This implementation returns a random element from the set of all matches. */
     @Override
     protected MatchResult getMatch() {
-        MatchSetCollector collector = createMatchCollector();
         // collect all matches
-        List<MatchResult> matches = new ArrayList<MatchResult>();
-        collector.collectMatchSet(matches);
-
+        List<MatchResult> matches =
+            new ArrayList<MatchResult>(getState().getAllMatches());
         // select a random match
         int matchCount = matches.size();
         if (matchCount == 0) {

@@ -48,14 +48,13 @@ public class ReteStrategy extends AbstractStrategy {
             return false;
         }
 
-        Collection<MatchResult> ruleMatches =
-            createMatchCollector().getMatchSet();
+        Collection<? extends MatchResult> ruleMatches =
+            getState().getAllMatches();
         Collection<GraphState> outTransitions =
             new ArrayList<GraphState>(ruleMatches.size());
 
         for (MatchResult nextMatch : ruleMatches) {
-            RuleTransition trans =
-                getMatchApplier().apply(getState(), nextMatch);
+            RuleTransition trans = getState().applyMatch(nextMatch);
             outTransitions.add(trans.target());
         }
 

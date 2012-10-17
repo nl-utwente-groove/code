@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.explore.util.MatchSetCollector;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
@@ -24,7 +23,6 @@ import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
-import groove.lts.MatchResultSet;
 import groove.lts.StartGraphState;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
@@ -317,7 +315,10 @@ public class StateList extends JTree implements SimulatorListener {
         StateTreeNode result = new StateTreeNode(state, isExpanded);
         Map<Rule,Set<MatchResult>> matchMap =
             new TreeMap<Rule,Set<MatchResult>>();
-        for (MatchResult match : getMatches(state)) {
+        Collection<MatchResult> matches = new ArrayList<MatchResult>();
+        matches.addAll(state.getTransitionSet());
+        matches.addAll(state.getAllMatches());
+        for (MatchResult match : matches) {
             Rule rule = match.getEvent().getRule();
             Set<MatchResult> events = matchMap.get(rule);
             if (events == null) {
@@ -341,21 +342,6 @@ public class StateList extends JTree implements SimulatorListener {
                         anchored);
                 ruleNode.add(transNode);
             }
-        }
-        return result;
-    }
-
-    /**
-     * Refreshes the selection in the tree, based on the current state of the
-     * Simulator.
-     */
-    private Collection<? extends MatchResult> getMatches(GraphState state) {
-        MatchResultSet result = new MatchResultSet();
-        result.addAll(state.getTransitionSet());
-        if (!state.isClosed()) {
-            GTS gts = state.getGTS();
-            result.addAll(new MatchSetCollector(state, gts.getRecord(),
-                gts.checkDiamonds()).getMatchSet());
         }
         return result;
     }

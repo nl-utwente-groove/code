@@ -23,9 +23,7 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleEvent;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -76,13 +74,7 @@ public interface GraphState extends Node {
      * Retrieves an outgoing transition with a given event, if it exists. Yields
      * <code>null</code> otherwise.
      */
-    public RuleTransitionStub getOutStub(RuleEvent prime);
-
-    /**
-     * Returns an iterator over the current set of outgoing transitions starting
-     * in this state, as {@link RuleTransition}s.
-     */
-    public Iterator<RuleTransition> getTransitionIter();
+    public RuleTransitionStub getOutStub(RuleEvent event);
 
     /**
      * Returns an unmodifiable set view on the currently generated outgoing
@@ -91,29 +83,43 @@ public interface GraphState extends Node {
     public Set<RuleTransition> getTransitionSet();
 
     /**
-     * Returns an unmodifiable map from rules to the 
-     * currently generated outgoing transitions.
-     */
-    public Map<RuleEvent,RuleTransition> getTransitionMap();
-
-    /**
-     * Returns (a copy of) the set of next states reachable from this state,
-     * according to the currently generated outgoing transitions.
-     */
-    public Collection<? extends GraphState> getNextStateSet();
-
-    /**
      * Adds an outgoing transition to this state, if it is not yet there.
      * @return <code>true</code> if the transition was added,
      *         <code>false</code> otherwise
      */
     public boolean addTransition(RuleTransition transition);
 
-    /**
-     * Tests if a certain transition is among the currently generated outgoing
-     * transitions of this state.
+    /** 
+     * Returns the first match found for this state, insofar one can currently
+     * be computed.
      */
-    public boolean containsTransition(RuleTransition transition);
+    public MatchResult getMatch();
+
+    /** 
+     * Returns the set of all match results for this state, insofar they can 
+     * currently be computed. Wherever they exist, the match results are given in
+     * the form of outgoing transitions.
+     * @see #getNextMatches()
+     */
+    public List<MatchResult> getAllMatches();
+
+    /** 
+     * Returns the set of all match results that can be computed from the 
+     * previous call of {@link #getAllMatches()} or {@link #getNextMatches()}.
+     * New results may arise if the successor states of an outgoing transient
+     * transition have all been cooked. 
+     * Wherever they exist, the match results are given in
+     * the form of outgoing transitions.
+     * @see #getAllMatches()
+     */
+    public List<MatchResult> getNextMatches();
+
+    /** Applies a rule match to this state.
+     * This typically results in the addition of a new outgoing transition.
+     * @param match the match to be applied
+     * @return the added transition, if any
+     */
+    public RuleTransition applyMatch(MatchResult match);
 
     /**
      * Returns a list of values for the bound variables of

@@ -22,11 +22,9 @@ import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.RULE;
 import static groove.gui.SimulatorModel.Change.STATE;
 import groove.control.CtrlAut;
-import groove.explore.util.MatchSetCollector;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
-import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.trans.Action;
@@ -375,11 +373,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             new TreeSet<MatchResult>(MatchResult.COMPARATOR);
         if (state != null) {
             matches.addAll(state.getTransitionSet());
-            if (!state.isClosed()) {
-                GTS gts = state.getGTS();
-                matches.addAll(new MatchSetCollector(state, gts.getRecord(),
-                    gts.checkDiamonds()).getMatchSet());
-            }
+            matches.addAll(state.getAllMatches());
         }
         refreshMatches(state, matches);
         setEnabled(getGrammar() != null);

@@ -16,13 +16,9 @@
  */
 package groove.abstraction.neigh.explore.strategy;
 
-import groove.abstraction.neigh.explore.util.ShapeMatchApplier;
-import groove.abstraction.neigh.explore.util.ShapeMatchSetCollector;
 import groove.abstraction.neigh.lts.AGTS;
 import groove.abstraction.neigh.lts.ShapeState;
 import groove.explore.strategy.DFSStrategy;
-import groove.explore.util.MatchSetCollector;
-import groove.explore.util.RuleEventApplier;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 
@@ -38,29 +34,12 @@ import groove.lts.GraphState;
  * @author Eduardo Zambon
  */
 public final class ShapeDFSStrategy extends DFSStrategy {
-
     /** Delegates to super.*/
     @Override
     public void prepare(GTS gts, GraphState state) {
         assert gts instanceof AGTS;
         assert state instanceof ShapeState || state == null;
         super.prepare(gts, state);
-    }
-
-    /** Returns the match applier of this strategy. */
-    @Override
-    protected RuleEventApplier createMatchApplier() {
-        return new ShapeMatchApplier((AGTS) this.getGTS());
-    }
-
-    /**
-     * Returns a fresh match collector for this strategy, based on the current
-     * state and related information.
-     */
-    @Override
-    protected MatchSetCollector createMatchCollector() {
-        return new ShapeMatchSetCollector((ShapeState) getState(), getRecord(),
-            getGTS().checkDiamonds());
     }
 
     @Override
@@ -71,5 +50,4 @@ public final class ShapeDFSStrategy extends DFSStrategy {
         } while (result != null && result.isSubsumed());
         return result;
     }
-
 }

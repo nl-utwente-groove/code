@@ -64,9 +64,9 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition,
     public HostNode[] getAddedNodes();
 
     /**
-     * Returns the matching of the LHS into the source graph.
+     * Returns the proof of the matching of the LHS into the source graph.
      */
-    public Proof getMatch();
+    public Proof getProof();
 
     /**
      * Returns the (partial) morphism from the source to the target graph.

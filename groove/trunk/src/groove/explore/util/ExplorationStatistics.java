@@ -26,6 +26,8 @@ import groove.lts.GTSAdapter;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.MatchApplier;
+import groove.lts.MatchCollector;
 import groove.trans.HostFactory;
 import groove.trans.Rule;
 import groove.trans.SystemRecord;
@@ -211,7 +213,7 @@ public class ExplorationStatistics {
     /** Gives some statistics regarding the generated transitions. */
     private void reportTransitionStatistics() {
         printf("\n\tTransitions:\n\t\tReused:\t\t%d%n",
-            MatchSetCollector.getEventReuse());
+            MatchCollector.getEventReuse());
         printf("\t\tConfluent:\t%d%n", MatchApplier.getConfluentDiamondCount());
         printf("\t\tEvents:\t\t%d%n", SystemRecord.getEventCount());
         printf("\tCoanchor reuse:\t%d/%d%n", HostFactory.getNormaliseGain(),

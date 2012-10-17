@@ -18,13 +18,13 @@ package groove.abstraction.pattern.explore.util;
 
 import groove.abstraction.pattern.lts.PatternState;
 import groove.abstraction.pattern.match.Match;
-import groove.explore.util.RuleEventApplier;
+import groove.lts.MatchApplier;
 
 /**
  * Common interface for match appliers of pattern graph and pattern shape
  * transition systems.
  * 
- * See {@link RuleEventApplier}.
+ * See {@link MatchApplier}.
  */
 public interface PatternRuleEventApplier {
 

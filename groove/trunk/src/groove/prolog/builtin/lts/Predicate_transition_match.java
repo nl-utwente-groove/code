@@ -33,7 +33,7 @@ public class Predicate_transition_match extends LtsPrologCode {
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         RuleTransition transition = getTransition(args[0]);
-        Term result = new JavaObjectTerm(transition.getMatch());
+        Term result = new JavaObjectTerm(transition.getProof());
         return interpreter.unify(args[1], result);
     }
 }

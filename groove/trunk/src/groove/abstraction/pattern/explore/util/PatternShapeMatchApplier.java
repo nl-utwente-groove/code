@@ -30,7 +30,7 @@ import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.trans.MaterialisingRuleApplication;
 import groove.abstraction.pattern.trans.NonBranchingRuleApplication;
 import groove.abstraction.pattern.trans.PatternShapeRuleApplication;
-import groove.explore.util.MatchApplier;
+import groove.lts.MatchApplier;
 
 import java.util.Collection;
 

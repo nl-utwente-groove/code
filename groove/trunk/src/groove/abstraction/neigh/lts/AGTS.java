@@ -29,6 +29,7 @@ import groove.graph.TypeNode;
 import groove.lts.ActionLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.MatchApplier;
 import groove.lts.RuleTransition;
 import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
@@ -373,6 +374,11 @@ public final class AGTS extends GTS {
     // ------------------------------------------------------------------------
     // Inner classes
     // ------------------------------------------------------------------------
+
+    @Override
+    protected MatchApplier createMatchApplier() {
+        return new ShapeMatchApplier(this);
+    }
 
     /** Class to store the states of the GTS. */
     private static final class ShapeStateSet extends GTS.StateSet {

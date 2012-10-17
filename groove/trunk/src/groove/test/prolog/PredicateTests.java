@@ -363,9 +363,12 @@ public class PredicateTests {
     private boolean test(String predicate) {
         try {
             GTS gts = getGTS();
-            return PrologTestUtil.test(new GrooveState(gts.getGrammar(), gts,
-                gts.startState(),
-                gts.startState().getTransitionIter().next().getEvent()),
+            return PrologTestUtil.test(
+                new GrooveState(
+                    gts.getGrammar(),
+                    gts,
+                    gts.startState(),
+                    gts.startState().getTransitionSet().iterator().next().getEvent()),
                 predicate);
         } catch (Exception e) {
             fail(e.getMessage());

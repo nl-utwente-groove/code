@@ -105,7 +105,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * This implementation reconstructs the matching using the rule, the anchor
      * images, and the basis graph.
      */
-    public Proof getMatch() {
+    public Proof getProof() {
         return getEvent().getMatch(source().getGraph());
     }
 

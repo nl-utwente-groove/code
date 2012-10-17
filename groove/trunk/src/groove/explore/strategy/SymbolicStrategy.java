@@ -95,16 +95,16 @@ public class SymbolicStrategy extends AbstractStrategy {
         // relations
         Location current = this.sts.getCurrentLocation();
         // Get current rule matches
-        Collection<MatchResult> matchSet = createMatchCollector().getMatchSet();
+        Collection<? extends MatchResult> matchSet = getState().getAllMatches();
         if (!matchSet.isEmpty()) {
             // Sort the matches in priority groups
-            List<Collection<MatchResult>> priorityGroups =
+            List<Collection<? extends MatchResult>> priorityGroups =
                 createPriorityGroups(matchSet);
             Set<SwitchRelation> higherPriorityRelations =
                 new HashSet<SwitchRelation>();
             Set<SwitchRelation> temp = new HashSet<SwitchRelation>();
             boolean emptyGuard = false;
-            for (Collection<MatchResult> matches : priorityGroups) {
+            for (Collection<? extends MatchResult> matches : priorityGroups) {
                 for (MatchResult next : matches) {
                     SwitchRelation sr = null;
                     try {
@@ -120,8 +120,7 @@ public class SymbolicStrategy extends AbstractStrategy {
                         emptyGuard = true;
                     }
                     temp.add(sr);
-                    RuleTransition transition =
-                        getMatchApplier().apply(getState(), next);
+                    RuleTransition transition = getState().applyMatch(next);
                     Location l =
                         this.sts.hostGraphToLocation(transition.target().getGraph());
                     current.addSwitchRelation(sr, l);
@@ -153,12 +152,12 @@ public class SymbolicStrategy extends AbstractStrategy {
      * Turns a collection of match results into a list of collections of match
      * results, ordered by rule priority.
      */
-    private List<Collection<MatchResult>> createPriorityGroups(
-            Collection<MatchResult> matches) {
+    private List<Collection<? extends MatchResult>> createPriorityGroups(
+            Collection<? extends MatchResult> matches) {
         List<MatchResult> sortedMatches = new ArrayList<MatchResult>(matches);
         Collections.sort(sortedMatches, new PriorityComparator());
-        List<Collection<MatchResult>> priorityGroups =
-            new ArrayList<Collection<MatchResult>>();
+        List<Collection<? extends MatchResult>> priorityGroups =
+            new ArrayList<Collection<? extends MatchResult>>();
         int priority = sortedMatches.get(0).getEvent().getRule().getPriority();
         Collection<MatchResult> current = new HashSet<MatchResult>();
         for (MatchResult match : sortedMatches) {

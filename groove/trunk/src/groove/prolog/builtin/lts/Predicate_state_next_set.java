@@ -23,7 +23,11 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.lts.GraphState;
+import groove.lts.RuleTransition;
 import groove.prolog.util.PrologUtils;
+import groove.util.TransformCollection;
+
+import java.util.Collection;
 
 /**
  * Predicate state_next_set(+State,?StateSet)
@@ -34,8 +38,16 @@ public class Predicate_state_next_set extends LtsPrologCode {
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         GraphState graphState = getGraphState(args[0]);
+        Collection<GraphState> nextStateSet =
+            new TransformCollection<RuleTransition,GraphState>(
+                graphState.getTransitionSet()) {
+                @Override
+                protected GraphState toOuter(RuleTransition key) {
+                    return key.target();
+                }
+            };
         Term resultSet =
-            CompoundTerm.getList(PrologUtils.createJOTlist(graphState.getNextStateSet()));
+            CompoundTerm.getList(PrologUtils.createJOTlist(nextStateSet));
         return interpreter.unify(args[1], resultSet);
     }
 }

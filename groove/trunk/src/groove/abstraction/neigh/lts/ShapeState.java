@@ -16,19 +16,23 @@
  */
 package groove.abstraction.neigh.lts;
 
-import groove.abstraction.MyHashSet;
+import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.control.CtrlState;
 import groove.lts.AbstractGraphState;
 import groove.lts.ActionLabel;
 import groove.lts.GraphState;
+import groove.lts.MatchCollector;
+import groove.lts.MatchResultSet;
 import groove.lts.RuleTransition;
 import groove.lts.RuleTransitionStub;
 import groove.lts.StateCache;
 import groove.lts.StateReference;
 import groove.trans.HostElement;
 import groove.trans.HostNode;
+import groove.trans.Proof;
+import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.CacheReference;
@@ -36,8 +40,6 @@ import groove.util.CacheReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -68,8 +70,6 @@ public class ShapeState extends AbstractGraphState {
      * the GTS.
      */
     private ArrayList<ShapeState> subsumedStates;
-    /** Set of successor states. Computed lazily. */
-    private Set<ShapeState> nextStates;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -115,11 +115,6 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public Iterator<RuleTransition> getTransitionIter() {
-        return this.transitions.iterator();
-    }
-
-    @Override
     public Set<RuleTransition> getTransitionSet() {
         return new HashSet<RuleTransition>(this.transitions);
     }
@@ -138,29 +133,8 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public boolean containsTransition(RuleTransition transition) {
-        return this.transitions.contains(transition);
-    }
-
-    @Override
     public ShapeNode[] getBoundNodes() {
         return EMPTY_NODE_ARRAY;
-    }
-
-    @Override
-    public Collection<ShapeState> getNextStateSet() {
-        if (this.nextStates != null) {
-            return this.nextStates;
-        } else {
-            Set<ShapeState> result = new MyHashSet<ShapeState>();
-            for (RuleTransition transition : this.transitions) {
-                result.add((ShapeState) transition.target());
-            }
-            if (this.isClosed()) {
-                this.nextStates = result;
-            }
-            return result;
-        }
     }
 
     // ------------------------------------------------------------------------
@@ -255,7 +229,7 @@ public class ShapeState extends AbstractGraphState {
     // ------------------------------------------------------------------------
 
     @Override
-    public RuleTransitionStub getOutStub(RuleEvent prime) {
+    public RuleTransitionStub getOutStub(RuleEvent event) {
         throw new UnsupportedOperationException();
     }
 
@@ -282,8 +256,39 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public Map<RuleEvent,RuleTransition> getTransitionMap() {
-        throw new UnsupportedOperationException();
+    protected StateCache createCache() {
+        return new ShapeStateCache();
     }
 
+    private class ShapeStateCache extends StateCache {
+        /** Default constructor. */
+        ShapeStateCache() {
+            super(ShapeState.this);
+        }
+
+        @Override
+        protected MatchCollector createMatchCollector() {
+            return new ShapeMatchSetCollector();
+        }
+    }
+
+    private class ShapeMatchSetCollector extends MatchCollector {
+        /**
+         * Constructs a match collector for this shape.
+         */
+        public ShapeMatchSetCollector() {
+            super(ShapeState.this);
+        }
+
+        @Override
+        public MatchResultSet computeMatches() {
+            final MatchResultSet result = new MatchResultSet();
+            Rule rule = ShapeState.this.getSchedule().getTransition().getRule();
+            for (Proof preMatch : PreMatch.getPreMatches(
+                ShapeState.this.getGraph(), rule)) {
+                result.add(getRecord().getEvent(preMatch));
+            }
+            return result;
+        }
+    }
 }

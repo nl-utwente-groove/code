@@ -3,8 +3,6 @@ package groove.gui;
 import groove.explore.Exploration;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExplorationStatistics;
-import groove.explore.util.MatchApplier;
-import groove.explore.util.RuleEventApplier;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.TypeLabel;
@@ -440,7 +438,7 @@ public class SimulatorModel implements Cloneable {
         start();
         RuleTransition trans = getTransition();
         if (trans == null) {
-            trans = getEventApplier().apply(getState(), getMatch().getEvent());
+            trans = getState().applyMatch(getMatch());
         }
         if (trans != null) {
             changeGts();
@@ -1174,22 +1172,6 @@ public class SimulatorModel implements Cloneable {
         }
     }
     private final MyLTSListener ltsListener = new MyLTSListener();
-
-    /**
-     * Returns the state generator for the current GTS, if any.
-     */
-    private RuleEventApplier getEventApplier() {
-        GTS gts = getGts();
-        if (this.eventApplier == null || this.eventApplier.getGTS() != gts) {
-            if (gts != null) {
-                this.eventApplier = new MatchApplier(gts);
-            }
-        }
-        return this.eventApplier;
-    }
-
-    /** The rule event applier for the current GTS. */
-    private RuleEventApplier eventApplier;
 
     /**
      * @return the explore-strategy for exploring a single state

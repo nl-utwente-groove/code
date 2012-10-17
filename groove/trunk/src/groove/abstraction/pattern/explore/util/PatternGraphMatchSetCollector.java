@@ -25,15 +25,12 @@ import groove.abstraction.pattern.trans.PatternRule;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
-import groove.explore.util.MatchSetCollector;
 
 import java.util.Collection;
 import java.util.List;
 
 /**
  * Collector of rule matches over a pattern graph.
- * 
- * See {@link MatchSetCollector}. 
  */
 public class PatternGraphMatchSetCollector {
 
