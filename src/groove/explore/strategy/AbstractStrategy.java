@@ -17,9 +17,6 @@
 package groove.explore.strategy;
 
 import groove.explore.result.Acceptor;
-import groove.explore.util.MatchApplier;
-import groove.explore.util.MatchSetCollector;
-import groove.explore.util.RuleEventApplier;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
@@ -45,7 +42,6 @@ public abstract class AbstractStrategy implements Strategy {
 
     public void prepare(GTS gts, GraphState state) {
         this.gts = gts;
-        this.applier = null;
         this.atState = state == null ? gts.startState() : state;
         MatcherFactory.instance().setDefaultEngine();
     }
@@ -93,8 +89,8 @@ public abstract class AbstractStrategy implements Strategy {
         if (getState() == null) {
             return false;
         }
-        for (MatchResult next : createMatchCollector().getMatchSet()) {
-            getMatchApplier().apply(getState(), next);
+        for (MatchResult next : getState().getAllMatches()) {
+            getState().applyMatch(next);
         }
         getState().setClosed(true);
         return updateAtState();
@@ -142,28 +138,6 @@ public abstract class AbstractStrategy implements Strategy {
      */
     protected abstract GraphState getNextState();
 
-    /**
-     * Returns a fresh match collector for this strategy, based on the current
-     * state and related information.
-     */
-    protected MatchSetCollector createMatchCollector() {
-        return new MatchSetCollector(getState(), getRecord(),
-            getGTS().checkDiamonds());
-    }
-
-    /** Returns the match applier of this strategy. */
-    protected final RuleEventApplier getMatchApplier() {
-        if (this.applier == null) {
-            this.applier = createMatchApplier();
-        }
-        return this.applier;
-    }
-
-    /** Callback factory method for the match applier. */
-    protected RuleEventApplier createMatchApplier() {
-        return new MatchApplier(this.gts);
-    }
-
     @Override
     public void addGTSListener(Acceptor listener) {
         getGTS().addLTSListener(listener);
@@ -181,10 +155,6 @@ public abstract class AbstractStrategy implements Strategy {
 
     /** Flag indicating that the last invocation of {@link #play} was interrupted. */
     private boolean interrupted;
-    /**
-     * Match applier for the underlying GTS.
-     */
-    private RuleEventApplier applier;
     /** The graph transition system explored by the strategy. */
     private GTS gts;
     /** The state that will be explored by the next call of {@link #next()}. */

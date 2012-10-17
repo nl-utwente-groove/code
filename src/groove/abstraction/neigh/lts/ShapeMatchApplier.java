@@ -14,19 +14,15 @@
  * 
  * $Id: AbstrStateGenerator.java,v 1.4 2008-02-05 13:28:29 rensink Exp $
  */
-package groove.abstraction.neigh.explore.util;
+package groove.abstraction.neigh.lts;
 
 import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
-import groove.abstraction.neigh.lts.AGTS;
-import groove.abstraction.neigh.lts.ShapeNextState;
-import groove.abstraction.neigh.lts.ShapeState;
-import groove.abstraction.neigh.lts.ShapeTransition;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.trans.Materialisation;
 import groove.abstraction.neigh.trans.NeighAnchorFactory;
-import groove.explore.util.MatchApplier;
 import groove.lts.GraphState;
+import groove.lts.MatchApplier;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
 import groove.trans.RuleEvent;

@@ -107,6 +107,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         this.record = new SystemRecord(this);
         this.postErrors = new HashMap<GraphState,Set<PostApplicationError>>();
         this.verifier = new EdgeMultiplicityVerifier(grammar.getTypeGraph());
+        this.matchApplier = createMatchApplier();
     }
 
     /** Initialises the start state and corresponding host factory. */
@@ -710,6 +711,16 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         this.viewTransient = viewTransient;
     }
 
+    /** Returns the match applier associated with this GTS. */
+    public MatchApplier getMatchApplier() {
+        return this.matchApplier;
+    }
+
+    /** Factory method for the match applier. */
+    protected MatchApplier createMatchApplier() {
+        return new MatchApplier(this);
+    }
+
     /**
      * The start state of this LTS.
      * @invariant <tt>nodeSet().contains(startState)</tt>
@@ -742,6 +753,8 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
 
     /** The system record for this GTS. */
     private final SystemRecord record;
+    /** The match applier associated with this GTS. */
+    private final MatchApplier matchApplier;
     /**
      * The number of closed states in the GTS.
      */

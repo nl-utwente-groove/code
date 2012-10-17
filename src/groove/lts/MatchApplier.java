@@ -14,19 +14,10 @@
  * 
  * $Id: StateGenerator.java,v 1.32 2008/03/04 14:48:00 kastenberg Exp $
  */
-package groove.explore.util;
+package groove.lts;
 
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
-import groove.lts.AbstractGraphState;
-import groove.lts.DefaultGraphNextState;
-import groove.lts.DefaultRuleTransition;
-import groove.lts.GTS;
-import groove.lts.GraphNextState;
-import groove.lts.GraphState;
-import groove.lts.MatchResult;
-import groove.lts.RuleTransition;
-import groove.lts.RuleTransitionStub;
 import groove.trans.CompositeEvent;
 import groove.trans.HostNode;
 import groove.trans.MergeMap;
@@ -44,7 +35,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class MatchApplier implements RuleEventApplier {
+public class MatchApplier {
     /**
      * Creates an applier for a given graph transition system.
      */

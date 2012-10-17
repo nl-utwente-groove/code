@@ -57,7 +57,7 @@ public class LinearStrategy extends AbstractStrategy {
         }
         MatchResult match = getMatch();
         if (match != null) {
-            getMatchApplier().apply(getState(), match);
+            getState().applyMatch(match);
             if (closeExit()) {
                 getState().setClosed(false);
             }
@@ -69,7 +69,7 @@ public class LinearStrategy extends AbstractStrategy {
 
     /** Callback method to return the single next match. */
     protected MatchResult getMatch() {
-        return createMatchCollector().getMatch();
+        return getState().getMatch();
     }
 
     @Override

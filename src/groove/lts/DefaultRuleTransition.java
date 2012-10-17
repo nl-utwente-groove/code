@@ -126,7 +126,7 @@ public class DefaultRuleTransition extends
         }
     }
 
-    public Proof getMatch() {
+    public Proof getProof() {
         return getEvent().getMatch(source().getGraph());
     }
 

@@ -1,7 +1,6 @@
 package groove.test.sts;
 
 import groove.algebra.PointIntAlgebra;
-import groove.explore.util.MatchSetCollector;
 import groove.lts.GTS;
 import groove.lts.MatchResult;
 import groove.lts.StartGraphState;
@@ -218,14 +217,14 @@ public class STSTest extends TestCase {
     /** 
      * Gets the first matchset for the given grammar for rule to switchrelation tests 
      */
-    private Collection<MatchResult> createMatchSet(GrammarModel view) {
+    private Collection<? extends MatchResult> createMatchSet(GrammarModel view) {
         try {
             HostGraph graph = view.getStartGraphModel().toHost();
             GTS gts =
                 new GTS(view.getStartGraphModel().getGrammar().toGrammar());
             SystemRecord record = new SystemRecord(gts);
             StartGraphState state = new StartGraphState(record, graph);
-            return new MatchSetCollector(state, record, gts.checkDiamonds()).getMatchSet();
+            return state.getAllMatches();
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
         }

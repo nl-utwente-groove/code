@@ -67,9 +67,9 @@ public class ReteLinearStrategy extends AbstractStrategy {
             return false;
         }
 
-        MatchResult event = getMatch();
-        if (event != null) {
-            getMatchApplier().apply(getState(), event);
+        MatchResult match = getMatch();
+        if (match != null) {
+            getState().applyMatch(match);
             if (closeExit()) {
                 getState().setClosed(false);
             }
@@ -82,7 +82,7 @@ public class ReteLinearStrategy extends AbstractStrategy {
 
     /** Callback method to return the single next match. */
     protected MatchResult getMatch() {
-        return createMatchCollector().getMatch();
+        return getState().getMatch();
     }
 
     @Override

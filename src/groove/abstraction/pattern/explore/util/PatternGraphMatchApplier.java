@@ -26,7 +26,7 @@ import groove.abstraction.pattern.lts.PatternTransition;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.trans.PatternGraphRuleApplication;
-import groove.explore.util.MatchApplier;
+import groove.lts.MatchApplier;
 
 /**
  * Match applier for pattern graph transformation.

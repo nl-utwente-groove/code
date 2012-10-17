@@ -30,13 +30,13 @@ import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
-import groove.util.TransformIterator;
 import groove.util.TransformSet;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -63,18 +63,6 @@ abstract public class AbstractGraphState extends
         return getRecord().getGTS();
     }
 
-    public Iterator<RuleTransition> getTransitionIter() {
-        // the iterator is created as a transformation of the iterator on the
-        // stored OutGraphTransitions.
-        return new TransformIterator<RuleTransitionStub,RuleTransition>(
-            getTransitionStubIter()) {
-            @Override
-            public RuleTransition toOuter(RuleTransitionStub obj) {
-                return obj.toTransition(AbstractGraphState.this);
-            }
-        };
-    }
-
     public Set<RuleTransition> getTransitionSet() {
         return new TransformSet<RuleTransitionStub,RuleTransition>(
             getCachedTransitionStubs()) {
@@ -99,35 +87,8 @@ abstract public class AbstractGraphState extends
         };
     }
 
-    public boolean containsTransition(RuleTransition transition) {
-        return transition.source().equals(this)
-            && getCachedTransitionStubs().contains(
-                createTransitionStub(transition.getEvent(),
-                    transition.getAddedNodes(), transition.target()));
-    }
-
-    @Override
-    public Map<RuleEvent,RuleTransition> getTransitionMap() {
-        return getCache().getTransitionMap();
-    }
-
-    /**
-     * Add an outgoing transition to this state, if it is not yet there. Returns
-     * the {@link RuleTransition} that was added, or <code>null</code> if no
-     * new transition was added.
-     */
     public boolean addTransition(RuleTransition transition) {
         return getCache().addTransition(transition);
-    }
-
-    public Collection<? extends GraphState> getNextStateSet() {
-        return new TransformSet<RuleTransitionStub,GraphState>(
-            getCachedTransitionStubs()) {
-            @Override
-            public GraphState toOuter(RuleTransitionStub stub) {
-                return stub.getTarget(AbstractGraphState.this);
-            }
-        };
     }
 
     public RuleTransitionStub getOutStub(RuleEvent event) {
@@ -219,6 +180,26 @@ abstract public class AbstractGraphState extends
                 new RuleTransitionStub[outTransitionSet.size()];
             outTransitionSet.toArray(this.transitionStubs);
         }
+    }
+
+    @Override
+    public List<MatchResult> getAllMatches() {
+        return new ArrayList<MatchResult>(getCache().getAllMatches());
+    }
+
+    @Override
+    public List<MatchResult> getNextMatches() {
+        return new ArrayList<MatchResult>(getCache().getNextMatches());
+    }
+
+    @Override
+    public MatchResult getMatch() {
+        return getCache().getMatch();
+    }
+
+    @Override
+    public RuleTransition applyMatch(MatchResult match) {
+        return getGTS().getMatchApplier().apply(this, match);
     }
 
     public boolean isClosed() {

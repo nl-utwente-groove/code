@@ -36,11 +36,11 @@ public class CtrlSchedule {
             Set<CtrlTransition> previous, boolean success, boolean isTransient) {
         this.state = state;
         this.trans = trans;
-        this.previousCalls = null;//new HashSet<CtrlCall>();
+        this.previousCalls = new HashSet<CtrlCall>();
         this.previousRules = new HashSet<Rule>();
         for (CtrlTransition triedTrans : previous) {
             CtrlCall call = triedTrans.getCall();
-            //this.previousCalls.add(call);
+            this.previousCalls.add(call);
             this.previousRules.add(call.getRule());
         }
         this.success = success;

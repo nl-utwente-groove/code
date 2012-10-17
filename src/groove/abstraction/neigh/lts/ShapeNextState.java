@@ -124,8 +124,8 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public Proof getMatch() {
-        return this.transition.getMatch();
+    public Proof getProof() {
+        return this.transition.getProof();
     }
 
     @Override
