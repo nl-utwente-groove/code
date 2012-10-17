@@ -317,7 +317,7 @@ public class StateList extends JTree implements SimulatorListener {
             new TreeMap<Rule,Set<MatchResult>>();
         Collection<MatchResult> matches = new ArrayList<MatchResult>();
         matches.addAll(state.getTransitionSet());
-        matches.addAll(state.getAllMatches());
+        matches.addAll(state.getMatches());
         for (MatchResult match : matches) {
             Rule rule = match.getEvent().getRule();
             Set<MatchResult> events = matchMap.get(rule);

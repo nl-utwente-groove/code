@@ -99,20 +99,8 @@ public interface GraphState extends Node {
      * Returns the set of all match results for this state, insofar they can 
      * currently be computed. Wherever they exist, the match results are given in
      * the form of outgoing transitions.
-     * @see #getNextMatches()
      */
-    public List<MatchResult> getAllMatches();
-
-    /** 
-     * Returns the set of all match results that can be computed from the 
-     * previous call of {@link #getAllMatches()} or {@link #getNextMatches()}.
-     * New results may arise if the successor states of an outgoing transient
-     * transition have all been cooked. 
-     * Wherever they exist, the match results are given in
-     * the form of outgoing transitions.
-     * @see #getAllMatches()
-     */
-    public List<MatchResult> getNextMatches();
+    public List<MatchResult> getMatches();
 
     /** Applies a rule match to this state.
      * This typically results in the addition of a new outgoing transition.

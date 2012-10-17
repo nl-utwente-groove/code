@@ -16,8 +16,6 @@
  */
 package groove.control;
 
-import groove.trans.Rule;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,11 +35,11 @@ public class CtrlSchedule {
         this.state = state;
         this.trans = trans;
         this.previousCalls = new HashSet<CtrlCall>();
-        this.previousRules = new HashSet<Rule>();
+        this.previousRules = new HashSet<String>();
         for (CtrlTransition triedTrans : previous) {
             CtrlCall call = triedTrans.getCall();
             this.previousCalls.add(call);
-            this.previousRules.add(call.getRule());
+            this.previousRules.add(call.getRule().getFullName());
         }
         this.success = success;
         assert !isTransient || state.isTransient();
@@ -58,8 +56,8 @@ public class CtrlSchedule {
         CtrlCall call = this.trans.getCall();
         this.previousCalls = new HashSet<CtrlCall>(origin.previousCalls);
         this.previousCalls.add(call);
-        this.previousRules = new HashSet<Rule>(origin.previousRules);
-        this.previousRules.add(call.getRule());
+        this.previousRules = new HashSet<String>(origin.previousRules);
+        this.previousRules.add(call.getRule().getFullName());
         this.success = origin.success;
         this.isTransient = origin.isTransient;
         this.tried = true;
@@ -127,7 +125,7 @@ public class CtrlSchedule {
      * @return a set of tried control calls, or {@code null} if {@link #isFinished()} 
      * yields {@code false}.
      */
-    public Set<Rule> getPreviousRules() {
+    public Set<String> getPreviousRules() {
         return this.previousRules;
     }
 
@@ -202,7 +200,7 @@ public class CtrlSchedule {
     private final Set<CtrlCall> previousCalls;
     /** The set of rules that have been tried when this point of the schedule is reached.
      */
-    private final Set<Rule> previousRules;
+    private final Set<String> previousRules;
     /** 
      * Flag indicating that {@link #trans} was already tried out (but the result
      * has not yet been registered).

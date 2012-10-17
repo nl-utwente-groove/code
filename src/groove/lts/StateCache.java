@@ -355,7 +355,7 @@ public class StateCache {
      * without cooking any currently uncooked successor states. 
      * @return set of matches; includes outgoing transitions where possible
      */
-    MatchResultSet getAllMatches() {
+    MatchResultSet getMatches() {
         if (this.matches == null) {
             this.matches = new MatchResultSet();
         }
@@ -370,26 +370,6 @@ public class StateCache {
             }
         }
         return this.matches;
-    }
-
-    /**
-     * Returns the matches of the state since the last call of {@link #getAllMatches()}
-     * or {@link #getNextMatches()}, insofar they can be determined
-     * without cooking any currently uncooked successor states. 
-     * @return set of matches
-     */
-    MatchResultSet getNextMatches() {
-        MatchResultSet result;
-        if (this.matches == null) {
-            result = getAllMatches();
-        } else {
-            result = new MatchResultSet();
-            // try all schedules as long as this is possible
-            while (trySchedule()) {
-                result.addAll(this.latestMatches);
-            }
-        }
-        return result;
     }
 
     /** Returns the first match of the state. */

@@ -89,7 +89,7 @@ public abstract class AbstractStrategy implements Strategy {
         if (getState() == null) {
             return false;
         }
-        for (MatchResult next : getState().getAllMatches()) {
+        for (MatchResult next : getState().getMatches()) {
             getState().applyMatch(next);
         }
         getState().setClosed(true);
