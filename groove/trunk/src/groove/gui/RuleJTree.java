@@ -45,6 +45,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -373,7 +374,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             new TreeSet<MatchResult>(MatchResult.COMPARATOR);
         if (state != null) {
             matches.addAll(state.getTransitionSet());
-            matches.addAll(state.getAllMatches());
+            matches.addAll(state.getMatches());
         }
         refreshMatches(state, matches);
         setEnabled(getGrammar() != null);
@@ -409,16 +410,19 @@ public class RuleJTree extends JTree implements SimulatorListener {
         }
         // clean up current match node map
         this.clearMatchMaps();
-        // expand all rule nodes and subsequently collapse all directory nodes
-        for (DefaultMutableTreeNode nextNode : this.ruleNodeMap.values()) {
-            if (!(nextNode instanceof DirectoryTreeNode)) {
-                expandPath(new TreePath(nextNode.getPath()));
-            }
+        // set the tried status of the rules
+        Set<String> triedRules =
+            state == null ? Collections.<String>emptySet()
+                    : state.getSchedule().getPreviousRules();
+        for (RuleTreeNode nextNode : this.ruleNodeMap.values()) {
+            nextNode.setTried(triedRules.contains(nextNode.getRule().getFullName()));
         }
-        for (DefaultMutableTreeNode nextNode : this.ruleNodeMap.values()) {
-            if (nextNode instanceof DirectoryTreeNode) {
-                collapsePath(new TreePath(nextNode.getPath()));
-            }
+        // expand all rule nodes and subsequently collapse all directory nodes
+        for (RuleTreeNode nextNode : this.ruleNodeMap.values()) {
+            expandPath(new TreePath(nextNode.getPath()));
+        }
+        for (RuleTreeNode nextNode : this.ruleNodeMap.values()) {
+            collapsePath(new TreePath(nextNode.getPath()));
         }
         // recollect the match results so that they are ordered according to the
         // rule events
@@ -759,6 +763,10 @@ public class RuleJTree extends JTree implements SimulatorListener {
             Icon icon = null;
             String text = value.toString();
             String tip = null;
+            Color foreground =
+                JAttr.getForeground(cellSelected, cellFocused, error);
+            Color background =
+                JAttr.getBackground(cellSelected, cellFocused, error);
             if (value instanceof RuleTreeNode) {
                 RuleTreeNode node = (RuleTreeNode) value;
                 tip = node.getToolTipText();
@@ -767,6 +775,9 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 icon = display.getListIcon(ruleName);
                 error = display.hasError(ruleName);
                 text = display.getLabelText(ruleName);
+                if (!((RuleTreeNode) value).isTried()) {
+                    foreground = transparent(foreground);
+                }
             } else if (value instanceof ActionTreeNode) {
                 icon = Icons.ACTION_LIST_ICON;
                 text = ((ActionTreeNode) value).getText();
@@ -778,9 +789,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             }
             setText(text);
             setToolTipText(tip);
-            setForeground(JAttr.getForeground(cellSelected, cellFocused, error));
-            Color background =
-                JAttr.getBackground(cellSelected, cellFocused, error);
+            setForeground(foreground);
             if (cellSelected) {
                 setBackgroundSelectionColor(background);
             } else {
@@ -788,6 +797,11 @@ public class RuleJTree extends JTree implements SimulatorListener {
             }
             setOpaque(false);
             return this;
+        }
+
+        /** Returns a transparent version of a given colour. */
+        private Color transparent(Color c) {
+            return new Color(c.getRed(), c.getGreen(), c.getBlue(), 125);
         }
     }
 

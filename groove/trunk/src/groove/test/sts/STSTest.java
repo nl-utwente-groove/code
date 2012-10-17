@@ -224,7 +224,7 @@ public class STSTest extends TestCase {
                 new GTS(view.getStartGraphModel().getGrammar().toGrammar());
             SystemRecord record = new SystemRecord(gts);
             StartGraphState state = new StartGraphState(record, graph);
-            return state.getAllMatches();
+            return state.getMatches();
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
         }

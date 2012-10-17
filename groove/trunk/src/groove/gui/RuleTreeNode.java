@@ -33,6 +33,7 @@ class RuleTreeNode extends DefaultMutableTreeNode {
      */
     public RuleTreeNode(RuleModel rule) {
         super(rule, true);
+        this.tried = true;
     }
 
     /**
@@ -86,4 +87,17 @@ class RuleTreeNode extends DefaultMutableTreeNode {
     private String propertyToString(String key, String value) {
         return "<b>" + key + "</b> = " + value;
     }
+
+    /** Indicates if the rule wrapped by this node has been tried on the current state. */
+    public boolean isTried() {
+        return this.tried;
+    }
+
+    /** Sets the tried state of the rule wrapped by this node. */
+    public void setTried(boolean tried) {
+        this.tried = tried;
+    }
+
+    /** Flag indicating whether the rule has been tried on the displayed state. */
+    private boolean tried;
 }

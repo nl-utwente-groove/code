@@ -49,7 +49,7 @@ public class ReteStrategy extends AbstractStrategy {
         }
 
         Collection<? extends MatchResult> ruleMatches =
-            getState().getAllMatches();
+            getState().getMatches();
         Collection<GraphState> outTransitions =
             new ArrayList<GraphState>(ruleMatches.size());
 

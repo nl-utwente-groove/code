@@ -183,13 +183,8 @@ abstract public class AbstractGraphState extends
     }
 
     @Override
-    public List<MatchResult> getAllMatches() {
-        return new ArrayList<MatchResult>(getCache().getAllMatches());
-    }
-
-    @Override
-    public List<MatchResult> getNextMatches() {
-        return new ArrayList<MatchResult>(getCache().getNextMatches());
+    public List<MatchResult> getMatches() {
+        return new ArrayList<MatchResult>(getCache().getMatches());
     }
 
     @Override

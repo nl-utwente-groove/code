@@ -52,7 +52,7 @@ public class RandomLinearStrategy extends LinearStrategy {
     protected MatchResult getMatch() {
         // collect all matches
         List<MatchResult> matches =
-            new ArrayList<MatchResult>(getState().getAllMatches());
+            new ArrayList<MatchResult>(getState().getMatches());
         // select a random match
         int matchCount = matches.size();
         if (matchCount == 0) {

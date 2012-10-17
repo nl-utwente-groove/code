@@ -95,7 +95,7 @@ public class SymbolicStrategy extends AbstractStrategy {
         // relations
         Location current = this.sts.getCurrentLocation();
         // Get current rule matches
-        Collection<? extends MatchResult> matchSet = getState().getAllMatches();
+        Collection<? extends MatchResult> matchSet = getState().getMatches();
         if (!matchSet.isEmpty()) {
             // Sort the matches in priority groups
             List<Collection<? extends MatchResult>> priorityGroups =
