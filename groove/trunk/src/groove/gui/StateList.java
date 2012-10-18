@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import static groove.trans.ResourceKind.RULE;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
@@ -26,7 +27,9 @@ import groove.lts.MatchResult;
 import groove.lts.StartGraphState;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
+import groove.trans.RuleEvent;
 import groove.view.GrammarModel;
+import groove.view.RuleModel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -51,6 +54,7 @@ import javax.swing.Icon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.ToolTipManager;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -88,6 +92,7 @@ public class StateList extends JTree implements SimulatorListener {
             TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         this.setCellRenderer(new StateCellRenderer());
         installListeners();
+        ToolTipManager.sharedInstance().registerComponent(this);
     }
 
     @Override
@@ -217,7 +222,8 @@ public class StateList extends JTree implements SimulatorListener {
                 setEnabled(source.hasGts());
                 refreshList(source.getGts(), oldModel.getState());
             }
-            refreshSelection(source.getState(), source.getMatch());
+            RuleModel ruleModel = (RuleModel) source.getResource(RULE);
+            refreshSelection(source.getState(), ruleModel, source.getMatch());
             activateListening();
         }
     }
@@ -334,7 +340,7 @@ public class StateList extends JTree implements SimulatorListener {
         for (Map.Entry<Rule,Set<MatchResult>> matchEntry : matchMap.entrySet()) {
             Rule rule = matchEntry.getKey();
             RuleTreeNode ruleNode =
-                new RuleTreeNode(grammar.getRuleModel(rule.getFullName()));
+                new RuleTreeNode(null, grammar.getRuleModel(rule.getFullName()));
             result.add(ruleNode);
             int count = 0;
             for (MatchResult trans : matchEntry.getValue()) {
@@ -351,7 +357,8 @@ public class StateList extends JTree implements SimulatorListener {
     /**
      * Changes the selection to a given state.
      */
-    private void refreshSelection(GraphState state, MatchResult match) {
+    private void refreshSelection(GraphState state, RuleModel ruleModel,
+            MatchResult match) {
         if (state != null) {
             StateTreeNode stateNode = getStateNode(state);
             if (stateNode != null) {
@@ -363,13 +370,13 @@ public class StateList extends JTree implements SimulatorListener {
                     for (int i = 0; i < stateNode.getChildCount(); i++) {
                         RuleTreeNode ruleNode =
                             (RuleTreeNode) stateNode.getChildAt(i);
-                        if (ruleNode.getRule().equals(
-                            match.getEvent().getRule())) {
+                        if (ruleNode.getRule().equals(ruleModel)) {
+                            RuleEvent event = match.getEvent();
                             for (int m = 0; m < ruleNode.getChildCount(); m++) {
                                 MatchTreeNode matchNode =
                                     (MatchTreeNode) ruleNode.getChildAt(m);
                                 if (matchNode.getMatch().getEvent().equals(
-                                    match.getEvent())) {
+                                    event)) {
                                     selectPath = createPath(matchNode);
                                     break;
                                 }
@@ -477,11 +484,10 @@ public class StateList extends JTree implements SimulatorListener {
     private static final int MAX_EXPANDED = 2;
 
     /** Tree node with a number that allows a binary search. */
-    abstract static private class NumberedTreeNode extends
-            DefaultMutableTreeNode {
+    abstract static private class NumberedTreeNode extends DisplayTreeNode {
         /** Creates a tree node with a given user object. */
         protected NumberedTreeNode(Object userObject) {
-            super(userObject, true);
+            super(null, userObject, true);
         }
 
         /** Returns the number. */
@@ -524,7 +530,7 @@ public class StateList extends JTree implements SimulatorListener {
         }
 
         @Override
-        public String toString() {
+        public String getText() {
             return "[" + getLower() + ".." + getUpper() + "]";
         }
 
@@ -570,9 +576,25 @@ public class StateList extends JTree implements SimulatorListener {
         }
 
         @Override
-        public String toString() {
+        public String getText() {
             return HTMLConverter.HTML_TAG.on("State "
                 + HTMLConverter.ITALIC_TAG.on(getState().toString()));
+        }
+
+        @Override
+        public Icon getIcon() {
+            GraphState state = getState();
+            if (state instanceof StartGraphState) {
+                return Icons.STATE_START_ICON;
+            } else if (state.getGTS().isResult(state)) {
+                return Icons.STATE_RESULT_ICON;
+            } else if (state.getGTS().isFinal(state)) {
+                return Icons.STATE_FINAL_ICON;
+            } else if (state.isClosed()) {
+                return Icons.STATE_CLOSED_ICON;
+            } else {
+                return Icons.STATE_OPEN_ICON;
+            }
         }
 
         private final boolean expanded;
@@ -723,16 +745,22 @@ public class StateList extends JTree implements SimulatorListener {
                 super.getTreeCellRendererComponent(tree, value, cellSelected,
                     expanded, leaf, row, false);
             Icon icon = null;
-            if (value instanceof StateTreeNode) {
-                icon = getIcon(((StateTreeNode) value).getState());
-            } else if (value instanceof RuleTreeNode) {
-                icon = Icons.RULE_LIST_ICON;
-            } else if (value instanceof MatchTreeNode) {
-                icon = Icons.GRAPH_MATCH_ICON;
+            String tip = null;
+            String text = value.toString();
+            boolean enabled = true;
+            if (value instanceof DisplayTreeNode) {
+                DisplayTreeNode node = (DisplayTreeNode) value;
+                tip = node.getTip();
+                icon = node.getIcon();
+                text = node.getText();
+                enabled = node.isEnabled();
             }
             setIcon(icon);
-            setText(value.toString());
-            setForeground(JAttr.getForeground(cellSelected, cellFocused, false));
+            setText(text);
+            setToolTipText(tip);
+            Color foreground =
+                JAttr.getForeground(cellSelected, cellFocused, false);
+            setForeground(enabled ? foreground : transparent(foreground));
             Color background =
                 JAttr.getBackground(cellSelected, cellFocused, false);
             if (background == Color.WHITE) {
@@ -747,18 +775,9 @@ public class StateList extends JTree implements SimulatorListener {
             return result;
         }
 
-        private Icon getIcon(GraphState state) {
-            if (state instanceof StartGraphState) {
-                return Icons.STATE_START_ICON;
-            } else if (getSimulatorModel().getGts().isResult(state)) {
-                return Icons.STATE_RESULT_ICON;
-            } else if (getSimulatorModel().getGts().isFinal(state)) {
-                return Icons.STATE_FINAL_ICON;
-            } else if (state.isClosed()) {
-                return Icons.STATE_CLOSED_ICON;
-            } else {
-                return Icons.STATE_OPEN_ICON;
-            }
+        /** Returns a transparent version of a given colour. */
+        private Color transparent(Color c) {
+            return new Color(c.getRed(), c.getGreen(), c.getBlue(), 125);
         }
     }
 }

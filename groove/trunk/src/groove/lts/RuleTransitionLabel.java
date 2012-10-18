@@ -57,6 +57,15 @@ public class RuleTransitionLabel extends AbstractLabel implements ActionLabel {
 
     @Override
     public String text() {
+        return text(false);
+    }
+
+    /** Returns the label text, with optionally the rule parameters
+     * replaced by anchor images.
+     * @param anchored if {@code true}, the anchor images are used
+     * instead of the rule parameters
+     */
+    public String text(boolean anchored) {
         StringBuilder result = new StringBuilder();
         boolean brackets =
             getAction().getSystemProperties().isShowTransitionBrackets();
@@ -67,7 +76,8 @@ public class RuleTransitionLabel extends AbstractLabel implements ActionLabel {
             result.append(this.recipe);
             result.append('/');
         }
-        result.append(((AbstractEvent<?,?>) this.event).getLabelText(this.addedNodes));
+        result.append(((AbstractEvent<?,?>) this.event).getLabelText(
+            this.addedNodes, anchored));
         if (brackets) {
             result.append(END_CHAR);
         }
@@ -116,23 +126,12 @@ public class RuleTransitionLabel extends AbstractLabel implements ActionLabel {
     private final Recipe recipe;
 
     /** 
-     * Returns a label text consisting of the anchors, rather than
-     * the rule parameters.
+     * Returns the label text for the rule label consisting of a given source state
+     * and event. Optionally, the rule parameters are replaced by anchor images.
      */
-    public static final String getAnchorText(RuleEvent event) {
-        StringBuilder result = new StringBuilder();
-        Rule rule = event.getRule();
-        boolean brackets =
-            rule.getSystemProperties().isShowTransitionBrackets();
-        if (brackets) {
-            result.append(BEGIN_CHAR);
-        }
-        result.append(rule.getTransitionLabel());
-        result.append(event.getAnchorImageString());
-        if (brackets) {
-            result.append(END_CHAR);
-        }
-        return result.toString();
+    public static final String text(GraphState source, RuleEvent event,
+            boolean anchored) {
+        return createLabel(source, event, null).text(anchored);
     }
 
     /** 
