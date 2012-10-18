@@ -94,9 +94,10 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
     // ------------------------------------------------------------------------
 
     /** Creates a new jModel with the given prototypes. */
-    PatternJModel(GraphJVertex sJVertexProt, GraphJEdge sJEdgeProt,
-            PatternJVertex pJVertexProt, PatternJEdge pJEdgeProt) {
-        super(sJVertexProt, sJEdgeProt);
+    PatternJModel(PatternJGraph jGraph, GraphJVertex sJVertexProt,
+            GraphJEdge sJEdgeProt, PatternJVertex pJVertexProt,
+            PatternJEdge pJEdgeProt) {
+        super(jGraph, sJVertexProt, sJEdgeProt);
         this.pJVertexProt = pJVertexProt;
         this.pJEdgeProt = pJEdgeProt;
     }

@@ -47,15 +47,16 @@ import org.jgraph.graph.GraphConstants;
  */
 public class AspectJVertex extends GraphJVertex implements AspectJCell {
     /** Creates a j-vertex on the basis of a given (aspectual) node. */
-    public AspectJVertex(AspectJGraph jGraph, AspectJModel jModel,
-            AspectNode node) {
-        super(jGraph, jModel, node);
+    public AspectJVertex(AspectJModel jModel, AspectNode node) {
+        super(jModel, node);
         setUserObject(null);
         if (node != null) {
             this.aspect = node.getKind();
             this.errors.addAll(node.getErrors());
         }
-        resetTracker();
+        if (jModel != null) {
+            resetTracker();
+        }
     }
 
     @Override
@@ -86,11 +87,13 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     /** Clears the errors and the aspect, in addition to calling the super method. */
     @Override
-    void reset(Node node) {
-        super.reset(node);
+    void reset(GraphJModel<?,?> jModel, Node node) {
+        assert jModel instanceof AspectJModel;
+        super.reset(jModel, node);
         this.errors.clear();
         clearExtraErrors();
         this.aspect = AspectKind.DEFAULT;
+        resetTracker();
     }
 
     @Override
@@ -104,8 +107,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     @Override
     public AspectJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
-        return new AspectJVertex(getJGraph(), (AspectJModel) jModel,
-            (AspectNode) node);
+        return new AspectJVertex((AspectJModel) jModel, (AspectNode) node);
     }
 
     @Override
@@ -651,9 +653,9 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     @Override
-    public void loadFromUserObject(GraphRole role) {
+    public void loadFromUserObject(AspectJModel jModel, GraphRole role) {
         AspectNode node = new AspectNode(getNode().getNumber(), role);
-        reset(node);
+        reset(jModel, node);
         AspectParser parser = AspectParser.getInstance();
         List<AspectLabel> edgeLabels = new ArrayList<AspectLabel>();
         for (String text : getUserObject()) {
@@ -744,7 +746,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     /** Returns a prototype {@link AspectJVertex} for a given {@link AspectJGraph}. */
     public static AspectJVertex getPrototype(AspectJGraph jGraph) {
-        return new AspectJVertex(jGraph, null, null);
+        return new AspectJVertex(null, null);
     }
 
     static private final String ASSIGN_TEXT = " = ";

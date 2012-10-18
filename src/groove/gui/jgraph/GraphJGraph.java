@@ -613,8 +613,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
      * instance for this JGraph.
      */
     public GraphJModel<?,?> newModel() {
-        return new GraphJModel<Node,Edge>(GraphJVertex.getPrototype(this),
-            GraphJEdge.getPrototype(this));
+        return new GraphJModel<Node,Edge>(this,
+            GraphJVertex.getPrototype(this), GraphJEdge.getPrototype(this));
     }
 
     /**
@@ -1502,7 +1502,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
 
         @Override
         public GraphJModel<?,?> newModel() {
-            return new GraphJModel<Node,Edge>(this.jVertexPrototype,
+            return new GraphJModel<Node,Edge>(this, this.jVertexPrototype,
                 this.jEdgePrototype);
         }
 
@@ -1516,7 +1516,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
              * Creates a new instance.
              */
             public AttrJVertex(GraphJModel<?,?> jModel, Node node) {
-                super(AttrJGraph.this, jModel, node);
+                super(jModel, node);
             }
 
             @Override
@@ -1543,14 +1543,14 @@ public class GraphJGraph extends org.jgraph.JGraph {
              * Constructor for a prototype.
              */
             private AttrJEdge(GraphJModel<?,?> jModel) {
-                super(AttrJGraph.this, jModel);
+                super(jModel);
             }
 
             /**
              * Creates a new instance.
              */
             public AttrJEdge(GraphJModel<?,?> jModel, Edge edge) {
-                super(AttrJGraph.this, jModel, edge);
+                super(jModel, edge);
             }
 
             @Override

@@ -19,8 +19,8 @@ public class CtrlJVertex extends GraphJVertex {
      * Creates a new instance for a given node (required to be a
      * {@link CtrlState}) in an LTS model.
      */
-    CtrlJVertex(CtrlJGraph jGraph, GraphJModel<?,?> jModel, CtrlState node) {
-        super(jGraph, jModel, node);
+    CtrlJVertex(GraphJModel<?,?> jModel, CtrlState node) {
+        super(jModel, node);
     }
 
     @Override
@@ -30,7 +30,7 @@ public class CtrlJVertex extends GraphJVertex {
 
     @Override
     public GraphJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
-        return new CtrlJVertex(getJGraph(), jModel, (CtrlState) node);
+        return new CtrlJVertex(jModel, (CtrlState) node);
     }
 
     @Override
@@ -102,6 +102,6 @@ public class CtrlJVertex extends GraphJVertex {
 
     /** Returns a prototype {@link CtrlJVertex} for a given {@link CtrlJGraph}. */
     public static CtrlJVertex getPrototype(CtrlJGraph jGraph) {
-        return new CtrlJVertex(jGraph, null, null);
+        return new CtrlJVertex(null, null);
     }
 }

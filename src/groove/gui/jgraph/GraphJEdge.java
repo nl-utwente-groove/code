@@ -44,8 +44,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /**
      * Constructs an uninitialised model edge.
      */
-    protected GraphJEdge(GraphJGraph jGraph, GraphJModel<?,?> jModel) {
-        this.jGraph = jGraph;
+    protected GraphJEdge(GraphJModel<?,?> jModel) {
         this.jModel = jModel;
     }
 
@@ -53,8 +52,8 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      * Constructs a model edge based on a graph edge.
      * @param edge the underlying graph edge of this model edge.
      */
-    protected GraphJEdge(GraphJGraph jGraph, GraphJModel<?,?> jModel, Edge edge) {
-        this(jGraph, jModel);
+    protected GraphJEdge(GraphJModel<?,?> jModel, Edge edge) {
+        this(jModel);
         this.source = edge.source();
         this.target = edge.target();
         this.edges.add(edge);
@@ -62,7 +61,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
 
     @Override
     public GraphJGraph getJGraph() {
-        return this.jGraph;
+        return getJModel().getJGraph();
     }
 
     @Override
@@ -93,8 +92,10 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /** 
      * Clears the set of graph edges wrapped in this JEdge,
      * and sets the source and target node from the source and target JVertex. 
+     * @param jModel TODO
      */
-    void reset() {
+    void reset(AspectJModel jModel) {
+        this.jModel = jModel;
         this.edges.clear();
         this.source = null;
         this.target = null;
@@ -143,7 +144,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
      * Returns a fresh {@link GraphJEdge} of the same type as this one. 
      */
     public GraphJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
-        return new GraphJEdge(getJGraph(), jModel, edge);
+        return new GraphJEdge(jModel, edge);
     }
 
     /**
@@ -393,10 +394,8 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
     /** Set of graph edges mapped to this JEdge. */
     private Set<Edge> edges = new TreeSet<Edge>();
 
-    /** The fixed jGraph that displays this edge. */
-    private final GraphJGraph jGraph;
     /** The fixed jModel to which this edge belongs. */
-    private final GraphJModel<?,?> jModel;
+    private GraphJModel<?,?> jModel;
     private boolean layoutable;
     private boolean grayedOut;
 
@@ -405,7 +404,7 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
 
     /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */
     public static GraphJEdge getPrototype(GraphJGraph jGraph) {
-        return new GraphJEdge(jGraph, null);
+        return new GraphJEdge(null);
     }
 
     /**

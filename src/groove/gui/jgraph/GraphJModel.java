@@ -53,16 +53,22 @@ import org.jgraph.graph.GraphConstants;
 public class GraphJModel<N extends Node,E extends Edge> extends
         DefaultGraphModel {
     /**
-     * Creates a new GraphJModel instance on top of a given Graph, with given
+     * Creates a new GraphJModel instance on top of a given GraphJGraph, with given
      * node and edge attributes, and an indication whether self-edges should be
      * displayed as node labels. The node and edge attribute maps are cloned.
      * @param jVertexProt prototype object for JVertices of this model
      * @param jEdgeProt prototype object for JEdges of this model
-     * @require graph != null, nodeAttr != null, edgeAttr != null;
      */
-    protected GraphJModel(GraphJVertex jVertexProt, GraphJEdge jEdgeProt) {
+    protected GraphJModel(GraphJGraph jGraph, GraphJVertex jVertexProt,
+            GraphJEdge jEdgeProt) {
+        this.jGraph = jGraph;
         this.jVertexProt = jVertexProt;
         this.jEdgeProt = jEdgeProt;
+    }
+
+    /** Returns the JGraph in which this model belongs. */
+    public GraphJGraph getJGraph() {
+        return this.jGraph;
     }
 
     /** Specialises the type to a list of {@link GraphJCell}s. */
@@ -503,6 +509,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     protected final GraphJEdge jEdgeProt;
     /** Prototype object for {@link GraphJVertex}s. */
     protected final GraphJVertex jVertexProt;
+    /** The JGraph to which this model belongs. */
+    private final GraphJGraph jGraph;
     /**
      * The underlying Graph of this GraphModel.
      * @invariant graph != null

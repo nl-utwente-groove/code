@@ -44,8 +44,9 @@ public interface AspectJCell extends GraphJCell {
 
     /**
      * Resets the cell's nodes and edges from the user object.
+     * @param jModel TODO
      */
-    void loadFromUserObject(GraphRole role);
+    void loadFromUserObject(AspectJModel jModel, GraphRole role);
 
     /** 
      * Clears the extra errors in this cell.

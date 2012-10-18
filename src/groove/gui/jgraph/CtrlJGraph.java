@@ -64,7 +64,7 @@ public class CtrlJGraph extends GraphJGraph {
 
     @Override
     public GraphJModel<CtrlState,CtrlTransition> newModel() {
-        return new GraphJModel<CtrlState,CtrlTransition>(
+        return new GraphJModel<CtrlState,CtrlTransition>(this,
             CtrlJVertex.getPrototype(this), CtrlJEdge.getPrototype(this));
     }
 

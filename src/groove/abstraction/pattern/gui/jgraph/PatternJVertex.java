@@ -44,9 +44,8 @@ public class PatternJVertex extends GraphJVertex {
     // ------------------------------------------------------------------------
 
     // Private constructor. Use the prototype.
-    private PatternJVertex(PatternJGraph jGraph, PatternJModel jModel,
-            AbstractPatternNode pNode) {
-        super(jGraph, jModel, pNode);
+    private PatternJVertex(PatternJModel jModel, AbstractPatternNode pNode) {
+        super(jModel, pNode);
     }
 
     // ------------------------------------------------------------------------
@@ -61,8 +60,7 @@ public class PatternJVertex extends GraphJVertex {
     @Override
     public PatternJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
         assert node instanceof AbstractPatternNode;
-        return new PatternJVertex(getJGraph(), (PatternJModel) jModel,
-            (AbstractPatternNode) node);
+        return new PatternJVertex((PatternJModel) jModel, (AbstractPatternNode) node);
     }
 
     @Override
@@ -104,7 +102,7 @@ public class PatternJVertex extends GraphJVertex {
 
     /** Returns a prototype {@link PatternJVertex} for a given {@link PatternJGraph}. */
     public static PatternJVertex getPrototype(PatternJGraph jGraph) {
-        return new PatternJVertex(jGraph, null, null);
+        return new PatternJVertex(null, null);
     }
 
     /**

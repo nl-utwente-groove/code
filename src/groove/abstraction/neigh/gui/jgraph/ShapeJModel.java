@@ -59,9 +59,9 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
     private final Map<EdgeSignature,ShapeJPort> esMap;
 
     /** Creates a new jModel with the given prototypes. */
-    ShapeJModel(ShapeJVertex jVertexProt, ShapeJEdge jEdgeProt,
-            EquivClassJCell ecJCellProt) {
-        super(jVertexProt, jEdgeProt);
+    ShapeJModel(ShapeJGraph jGraph, ShapeJVertex jVertexProt,
+            ShapeJEdge jEdgeProt, EquivClassJCell ecJCellProt) {
+        super(jGraph, jVertexProt, jEdgeProt);
         this.ecJCellProt = ecJCellProt;
         this.esMap = new MyHashMap<EdgeSignature,ShapeJPort>();
     }

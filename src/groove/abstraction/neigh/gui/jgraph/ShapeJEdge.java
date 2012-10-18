@@ -36,12 +36,12 @@ public class ShapeJEdge extends GraphJEdge {
     private boolean mainSrc;
     private boolean mainTgt;
 
-    private ShapeJEdge(ShapeJGraph jGraph, ShapeJModel jModel) {
-        super(jGraph, jModel);
+    private ShapeJEdge(ShapeJModel jModel) {
+        super(jModel);
     }
 
-    private ShapeJEdge(ShapeJGraph jGraph, ShapeJModel jModel, ShapeEdge edge) {
-        super(jGraph, jModel, edge);
+    private ShapeJEdge(ShapeJModel jModel, ShapeEdge edge) {
+        super(jModel, edge);
         this.mainSrc = false;
         this.mainTgt = false;
     }
@@ -58,8 +58,7 @@ public class ShapeJEdge extends GraphJEdge {
     @Override
     public GraphJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
         assert edge instanceof ShapeEdge;
-        return new ShapeJEdge(getJGraph(), (ShapeJModel) jModel,
-            (ShapeEdge) edge);
+        return new ShapeJEdge((ShapeJModel) jModel, (ShapeEdge) edge);
     }
 
     /** Toggles the mainSrc flag. */
@@ -90,6 +89,6 @@ public class ShapeJEdge extends GraphJEdge {
 
     /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */
     public static ShapeJEdge getPrototype(ShapeJGraph jGraph) {
-        return new ShapeJEdge(jGraph, null);
+        return new ShapeJEdge(null);
     }
 }

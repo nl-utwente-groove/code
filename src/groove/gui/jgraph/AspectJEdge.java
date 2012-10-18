@@ -41,19 +41,20 @@ import org.jgraph.graph.GraphConstants;
 public class AspectJEdge extends GraphJEdge implements AspectJCell {
     /** 
      * Creates an uninitialised instance.
-     * @param jGraph the {@link GraphJGraph} in which this JEdge will be used.
      */
-    public AspectJEdge(AspectJGraph jGraph, AspectJModel jModel) {
-        super(jGraph, jModel);
+    public AspectJEdge(AspectJModel jModel) {
+        super(jModel);
         setUserObject(null);
         this.aspect = DEFAULT;
-        resetTracker();
-        refreshAttributes();
+        if (jModel != null) {
+            resetTracker();
+            refreshAttributes();
+        }
     }
 
     /** Creates a j-edge on the basis of a given (aspectual) edge. */
-    public AspectJEdge(AspectJGraph jGraph, AspectJModel jModel, AspectEdge edge) {
-        super(jGraph, jModel, edge);
+    public AspectJEdge(AspectJModel jModel, AspectEdge edge) {
+        super(jModel, edge);
         resetTracker();
         setUserObject(null);
         this.aspect = edge.getKind();
@@ -110,11 +111,12 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     /** Clears the errors and the aspect, in addition to calling the super method. */
     @Override
-    void reset() {
-        super.reset();
+    void reset(AspectJModel jModel) {
+        super.reset(jModel);
         this.errors.clear();
         clearExtraErrors();
         this.aspect = DEFAULT;
+        resetTracker();
     }
 
     @Override
@@ -129,10 +131,9 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     @Override
     public AspectJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
         if (edge == null) {
-            return new AspectJEdge(getJGraph(), (AspectJModel) jModel);
+            return new AspectJEdge((AspectJModel) jModel);
         } else {
-            return new AspectJEdge(getJGraph(), (AspectJModel) jModel,
-                (AspectEdge) edge);
+            return new AspectJEdge((AspectJModel) jModel, (AspectEdge) edge);
         }
     }
 
@@ -449,8 +450,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     }
 
     @Override
-    public void loadFromUserObject(GraphRole role) {
-        reset();
+    public void loadFromUserObject(AspectJModel jModel, GraphRole role) {
+        reset(jModel);
         AspectParser parser = AspectParser.getInstance();
         for (String text : getUserObject()) {
             AspectLabel label = parser.parse(text, role);
@@ -512,7 +513,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     /** Returns a prototype {@link AspectJEdge} for a given {@link AspectJGraph}. */
     public static AspectJEdge getPrototype(AspectJGraph jGraph) {
-        return new AspectJEdge(jGraph, null);
+        return new AspectJEdge(null);
     }
 
     /** Permille fractional distance of in multiplicity label from source node. */

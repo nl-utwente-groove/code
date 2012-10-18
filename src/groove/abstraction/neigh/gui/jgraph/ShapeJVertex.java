@@ -38,8 +38,8 @@ import java.util.List;
 public class ShapeJVertex extends GraphJVertex {
 
     // Private constructor. Use the prototype.
-    private ShapeJVertex(ShapeJGraph jGraph, ShapeJModel jModel, ShapeNode node) {
-        super(jGraph, jModel, node);
+    private ShapeJVertex(ShapeJModel jModel, ShapeNode node) {
+        super(jModel, node);
         // Remove the default port that was added by the super constructor.
         this.remove(0);
     }
@@ -56,8 +56,7 @@ public class ShapeJVertex extends GraphJVertex {
 
     @Override
     public ShapeJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
-        return new ShapeJVertex(getJGraph(), (ShapeJModel) jModel,
-            (ShapeNode) node);
+        return new ShapeJVertex((ShapeJModel) jModel, (ShapeNode) node);
     }
 
     @Override
@@ -94,7 +93,7 @@ public class ShapeJVertex extends GraphJVertex {
 
     /** Returns a prototype {@link ShapeJVertex} for a given {@link ShapeJGraph}. */
     public static ShapeJVertex getPrototype(ShapeJGraph jGraph) {
-        return new ShapeJVertex(jGraph, null, null);
+        return new ShapeJVertex(null, null);
     }
 
 }

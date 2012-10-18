@@ -20,8 +20,8 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
      * Creates a new instance for a given node (required to be a
      * {@link GraphState}) in an LTS model.
      */
-    LTSJVertex(LTSJGraph jGraph, LTSJModel jModel, GraphState node) {
-        super(jGraph, jModel, node);
+    LTSJVertex(LTSJModel jModel, GraphState node) {
+        super(jModel, node);
         this.visible = true;
     }
 
@@ -32,8 +32,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
 
     @Override
     public LTSJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
-        return new LTSJVertex(getJGraph(), (LTSJModel) jModel,
-            (GraphState) node);
+        return new LTSJVertex((LTSJModel) jModel, (GraphState) node);
     }
 
     @Override
@@ -210,6 +209,6 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
 
     /** Returns a prototype {@link LTSJVertex} for a given {@link LTSJGraph}. */
     public static LTSJVertex getPrototype(LTSJGraph jGraph) {
-        return new LTSJVertex(jGraph, null, null);
+        return new LTSJVertex(null, null);
     }
 }
