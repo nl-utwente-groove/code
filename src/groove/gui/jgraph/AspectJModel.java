@@ -279,7 +279,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         if (this.beingEdited || getGraph().getRole() != GraphRole.HOST) {
             return false;
         } else {
-            return this.jVertexProt.getJGraph().getOptionValue(
+            return getJGraph().getOptionValue(
                 Options.SHOW_BIDIRECTIONAL_EDGES_OPTION);
         }
     }
