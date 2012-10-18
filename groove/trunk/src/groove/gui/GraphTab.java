@@ -281,6 +281,7 @@ final public class GraphTab extends ResourceTab implements MainTab {
         public void undoableEditHappened(UndoableEditEvent e) {
             if (e.getEdit() instanceof GraphModelEdit) {
                 try {
+                    GraphTab.this.getJModel().syncGraph();
                     getSimulatorModel().doAddGraph(getResourceKind(),
                         getGraph(), true);
                     loadGraphIntoJModel(GraphTab.this.getJModel(), getGraph());
