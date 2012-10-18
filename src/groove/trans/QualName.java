@@ -49,6 +49,18 @@ public class QualName implements Comparable<QualName> {
         this.tokens = new ArrayList<String>(tokens);
         this.text =
             Groove.toString(tokens.toArray(), "", "", SEPARATOR, SEPARATOR);
+        List<String> parentTokens = new ArrayList<String>(tokens);
+        parentTokens.remove(tokens.size() - 1);
+        this.parent =
+            Groove.toString(parentTokens.toArray(), "", "", SEPARATOR,
+                SEPARATOR);
+    }
+
+    /** 
+     * Tests whether this name is valid, i.e., contains only allowed
+     * characters, and throws an appropriate exception otherwise.
+     */
+    public void testValid() throws FormatException {
         for (String token : this.tokens) {
             StringBuilder error = new StringBuilder();
             if (!isValid(token, null, error)) {
@@ -57,11 +69,6 @@ public class QualName implements Comparable<QualName> {
                     token, this.text, error.toString());
             }
         }
-        List<String> parentTokens = new ArrayList<String>(tokens);
-        parentTokens.remove(tokens.size() - 1);
-        this.parent =
-            Groove.toString(parentTokens.toArray(), "", "", SEPARATOR,
-                SEPARATOR);
     }
 
     /**

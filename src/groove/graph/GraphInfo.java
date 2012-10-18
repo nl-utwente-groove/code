@@ -38,6 +38,7 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
     /** Constructs a copy of an existing information object. */
     public GraphInfo(GraphInfo<?,?> info) {
         this.data = new HashMap<String,Object>(info.getData());
+        this.data.put(PROPERTIES_KEY, new GraphProperties());
     }
 
     /** Constructs an empty information object. */
@@ -126,43 +127,26 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
         getLayoutMap().fill(layoutMap);
     }
 
-    /** Tests if this info object has a value for the {@link #PROPERTIES_KEY}. */
-    public boolean hasProperties() {
-        return this.data.get(PROPERTIES_KEY) != null;
-    }
-
     /**
      * Returns the graph properties map associated with the graph (key
-     * {@link #PROPERTIES_KEY}). The parameter indicates if the map should be
-     * created in case it is not yet there.
-     * @param create if <code>true</code> and this data object does not contain
-     *        properties, create and return an empty properties object
+     * {@link #PROPERTIES_KEY}).
      * @return a property map, or <code>null</code>
      * @see #setProperties(GraphProperties)
      */
-    public GraphProperties getProperties(boolean create) {
-        GraphProperties result =
-            (GraphProperties) this.data.get(PROPERTIES_KEY);
-        if (create && result == null) {
-            result = new GraphProperties();
-            this.data.put(PROPERTIES_KEY, result);
-        }
-        return result;
+    public GraphProperties getProperties() {
+        return (GraphProperties) this.data.get(PROPERTIES_KEY);
     }
 
     /**
      * Copies the properties in a given map to this info object (key
      * {@link #PROPERTIES_KEY}).
-     * @see #getProperties(boolean)
+     * @see #getProperties()
      */
     public void setProperties(GraphProperties properties) {
-        GraphProperties currentProperties = getProperties(properties != null);
-        if (currentProperties != null) {
-            currentProperties.clear();
-            if (properties != null) {
-                currentProperties.putAll(properties);
-            }
-        }
+        testFixed(false);
+        GraphProperties props = getProperties();
+        props.clear();
+        props.putAll(properties);
     }
 
     /**
@@ -202,9 +186,7 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
     public boolean setFixed() {
         boolean result = super.setFixed();
         if (result) {
-            if (hasProperties()) {
-                getProperties(false).setFixed();
-            }
+            getProperties().setFixed();
             this.data = Collections.unmodifiableMap(this.data);
         }
         return result;
@@ -355,10 +337,11 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
 
     /**
      * Convenience method to retrieve the properties map from a graph, creating
-     * it is necessary if any.
+     * it is necessary.
      * @param graph the graph to retrieve the properties from
      * @param create if <code>true</code>, the properties map (and so the info
-     *        object itself) should be created if not yet there
+     *        object itself) should be created if not yet there. Note that this
+     *        is only allowed if the graph is not yet fixed!
      * @return the properties map of <code>graph</code>, or <code>null</code>
      */
     public static <N extends Node,E extends Edge> GraphProperties getProperties(
@@ -367,8 +350,27 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
         if (graphInfo == null) {
             return null;
         } else {
-            return graphInfo.getProperties(create);
+            return graphInfo.getProperties();
         }
+    }
+
+    /**
+     * Convenience method to clone the properties map from a graph, creating
+     * it if necessary.
+     * @param graph the graph to retrieve the properties from
+     * @return a clone of the properties map of <code>graph</code>, or a fresh properties
+     * object if the graph has none 
+     */
+    public static <N extends Node,E extends Edge> GraphProperties cloneProperties(
+            Graph<N,E> graph) {
+        GraphProperties result;
+        GraphInfo<N,E> graphInfo = getInfo(graph, false);
+        if (graphInfo == null) {
+            result = new GraphProperties();
+        } else {
+            result = graphInfo.getProperties().clone();
+        }
+        return result;
     }
 
     /**
@@ -380,19 +382,6 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
         if (properties != null) {
             assert !graph.isFixed();
             getInfo(graph, true).setProperties(properties);
-        }
-    }
-
-    /**
-     * Convenience method to set the version of a graph.
-     * @see Version#GXL_VERSION
-     */
-    public static void setVersion(Graph<?,?> graph, String version) {
-        GraphProperties properties =
-            getProperties(graph, version.length() != 0);
-        if (properties != null) {
-            assert !graph.isFixed();
-            properties.setVersion(version);
         }
     }
 
@@ -435,12 +424,9 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
                 }
             }
             // copy rather than clone the graph properties
-            GraphProperties properties = sourceInfo.getProperties(false);
-
-            if (properties != null) {
-                assert !target.isFixed();
-                target.getInfo().newProperties(properties);
-            }
+            GraphProperties properties = sourceInfo.getProperties();
+            assert !target.isFixed();
+            targetInfo.newProperties(properties);
         }
     }
 

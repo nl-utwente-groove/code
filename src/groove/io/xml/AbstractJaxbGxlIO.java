@@ -248,23 +248,21 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
             gxlGraph.setRole(graph.getRole().toString());
             // add the graph attributes, if any
             List<AttrType> graphAttrs = gxlGraph.getAttr();
-            GraphProperties properties = info.getProperties(false);
-            if (properties != null) {
-                for (Map.Entry<Object,Object> entry : properties.entrySet()) {
-                    // EZ: Removed this conversion because it causes problems
-                    // with rule properties keys.
-                    // String attrName = ((String) entry.getKey()).toLowerCase();
-                    AttrType attr = this.factory.createAttrType();
-                    attr.setName((String) entry.getKey());
-                    attr.setString((String) entry.getValue());
-                    graphAttrs.add(attr);
-                }
-                // Add version info
+            GraphProperties properties = info.getProperties();
+            for (Map.Entry<Object,Object> entry : properties.entrySet()) {
+                // EZ: Removed this conversion because it causes problems
+                // with rule properties keys.
+                // String attrName = ((String) entry.getKey()).toLowerCase();
                 AttrType attr = this.factory.createAttrType();
-                attr.setName(GraphProperties.VERSION_KEY);
-                attr.setString(Version.GXL_VERSION);
+                attr.setName((String) entry.getKey());
+                attr.setString((String) entry.getValue());
                 graphAttrs.add(attr);
             }
+            // Add version info
+            AttrType attr = this.factory.createAttrType();
+            attr.setName(GraphProperties.VERSION_KEY);
+            attr.setString(Version.GXL_VERSION);
+            graphAttrs.add(attr);
         }
         // Maybe there are some additional structure that we want to store.
         this.storeAdditionalStructure(graph, gxlGraph, nodeMap, edgeMap);

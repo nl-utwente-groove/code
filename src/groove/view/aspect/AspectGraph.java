@@ -69,7 +69,6 @@ import java.util.TreeSet;
  * @version $Revision $
  */
 public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
-
     /**
      * Creates an empty graph, with a given name and graph role.
      */
@@ -78,6 +77,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         assert graphRole.inGrammar();
         this.role = graphRole;
         this.normal = true;
+        // make sure the properties object is initialised
+        GraphInfo.getInfo(this, true);
     }
 
     /**

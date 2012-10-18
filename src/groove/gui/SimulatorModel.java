@@ -134,8 +134,7 @@ public class SimulatorModel implements Cloneable {
             for (String ruleName : names) {
                 AspectGraph oldRule =
                     getStore().getGraphs(ResourceKind.RULE).get(ruleName);
-                GraphProperties properties =
-                    GraphInfo.getProperties(oldRule, true).clone();
+                GraphProperties properties = GraphInfo.cloneProperties(oldRule);
                 properties.setEnabled(!properties.isEnabled());
                 AspectGraph newRule = oldRule.clone();
                 GraphInfo.setProperties(newRule, properties);

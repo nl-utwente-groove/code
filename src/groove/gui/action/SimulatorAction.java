@@ -435,7 +435,9 @@ public abstract class SimulatorAction extends AbstractAction implements
                     pathDiff = pathDiff.getParentFile();
                 }
                 try {
-                    name = new QualName(pathFragments).toString();
+                    QualName qualName = new QualName(pathFragments);
+                    qualName.testValid();
+                    name = qualName.toString();
                 } catch (FormatException e) {
                     throw new IOException(String.format(
                         "Malformed %s name: %s",

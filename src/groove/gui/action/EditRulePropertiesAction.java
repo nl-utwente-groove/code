@@ -47,8 +47,7 @@ public class EditRulePropertiesAction extends SimulatorAction {
         AspectGraph rule =
             getSimulatorModel().getGraphResource(RULE).getSource();
         // Associated rule properties.
-        GraphProperties properties =
-            GraphInfo.getProperties(rule, true).clone();
+        GraphProperties properties = GraphInfo.cloneProperties(rule);
 
         PropertiesDialog dialog =
             new PropertiesDialog(properties, GraphProperties.DEFAULT_USER_KEYS,
