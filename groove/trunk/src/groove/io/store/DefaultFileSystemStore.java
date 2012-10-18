@@ -173,18 +173,20 @@ public class DefaultFileSystemStore extends SystemStore {
             Map<String,String> newTexts) throws IOException {
         testInit();
         Map<String,String> oldTexts = new HashMap<String,String>();
+        Set<String> newNames = new HashSet<String>();
         for (Map.Entry<String,String> entry : newTexts.entrySet()) {
             String name = entry.getKey();
             String newText = entry.getValue();
             saveText(kind, name, newText);
             String oldText = getTextMap(kind).put(name, newText);
-            if (oldText != null) {
+            if (oldText == null) {
+                newNames.add(name);
+            } else {
                 oldTexts.put(name, oldText);
             }
         }
         SystemProperties oldProps = getProperties();
-        SystemProperties newProps =
-            doEnableDefaultName(kind, newTexts.keySet());
+        SystemProperties newProps = doEnableDefaultName(kind, newNames);
         return new TextBasedEdit(kind, oldTexts.isEmpty() ? EditType.CREATE
                 : EditType.MODIFY, oldTexts, newTexts, oldProps, newProps);
     }
@@ -393,11 +395,12 @@ public class DefaultFileSystemStore extends SystemStore {
         Set<AspectGraph> oldGraphs = new HashSet<AspectGraph>();
         for (AspectGraph newGraph : newGraphs) {
             String name = newGraph.getName();
-            newNames.add(name);
             this.marshaller.marshalGraph(newGraph.toPlainGraph(),
                 createFile(kind, name));
             AspectGraph oldGraph = getGraphMap(kind).put(name, newGraph);
-            if (oldGraph != null) {
+            if (oldGraph == null) {
+                newNames.add(name);
+            } else {
                 oldGraphs.add(oldGraph);
             }
         }

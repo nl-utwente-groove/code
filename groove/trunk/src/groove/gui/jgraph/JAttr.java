@@ -117,9 +117,8 @@ public class JAttr {
         if (lineColour != null) {
             GraphConstants.setLineColor(result, lineColour);
         }
-        if (this.font != null) {
-            GraphConstants.setFont(result, this.font);
-        }
+        GraphConstants.setFont(result, this.font == null ? DEFAULT_FONT
+                : this.font);
         GraphConstants.setLineWidth(result, this.linewidth);
         if (this.inset != 0) {
             GraphConstants.setInset(result, this.inset);
