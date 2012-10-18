@@ -111,7 +111,7 @@ final public class AspectJGraph extends GraphJGraph {
         GrammarModel grammar =
             getSimulatorModel() == null ? null
                     : getSimulatorModel().getGrammar();
-        return new AspectJModel(AspectJVertex.getPrototype(this),
+        return new AspectJModel(this, AspectJVertex.getPrototype(this),
             AspectJEdge.getPrototype(this), grammar);
     }
 

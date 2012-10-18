@@ -65,9 +65,9 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     /** 
      * Creates an new model, initially without a graph loaded.
      */
-    AspectJModel(AspectJVertex jVertexProt, AspectJEdge jEdgeProt,
-            GrammarModel grammar) {
-        super(jVertexProt, jEdgeProt);
+    AspectJModel(AspectJGraph jGraph, AspectJVertex jVertexProt,
+            AspectJEdge jEdgeProt, GrammarModel grammar) {
+        super(jGraph, jVertexProt, jEdgeProt);
         assert grammar != null;
         this.grammar = grammar;
     }
@@ -75,11 +75,16 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     /** 
      * Constructor for cloning only.
      */
-    private AspectJModel(GraphJVertex jVertexProt, GraphJEdge jEdgeProt,
-            GrammarModel grammar) {
-        super(jVertexProt, jEdgeProt);
+    private AspectJModel(AspectJGraph jGraph, GraphJVertex jVertexProt,
+            GraphJEdge jEdgeProt, GrammarModel grammar) {
+        super(jGraph, jVertexProt, jEdgeProt);
         assert grammar != null;
         this.grammar = grammar;
+    }
+
+    @Override
+    public AspectJGraph getJGraph() {
+        return (AspectJGraph) super.getJGraph();
     }
 
     /** Specialises the type to a list of {@link GraphJCell}s. */
@@ -132,7 +137,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      */
     public AspectJModel cloneWithNewGraph(Graph<AspectNode,AspectEdge> graph) {
         AspectJModel result =
-            new AspectJModel(this.jVertexProt, this.jEdgeProt, this.grammar);
+            new AspectJModel(getJGraph(), this.jVertexProt, this.jEdgeProt,
+                this.grammar);
         result.beingEdited = this.beingEdited;
         result.loadGraph(graph);
         return result;
@@ -160,7 +166,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         for (GraphJCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex) {
                 AspectJVertex jVertex = (AspectJVertex) jCell;
-                jVertex.loadFromUserObject(role);
+                jVertex.loadFromUserObject(this, role);
                 graph.addNode(jVertex.getNode());
                 nodeJVertexMap.put(jVertex.getNode(), jVertex);
                 for (AspectEdge edge : jVertex.getJVertexLabels()) {
@@ -173,7 +179,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         for (GraphJCell jCell : getRoots()) {
             if (jCell instanceof AspectJEdge) {
                 AspectJEdge jEdge = (AspectJEdge) jCell;
-                jEdge.loadFromUserObject(role);
+                jEdge.loadFromUserObject(this, role);
                 AttributeMap edgeAttr = jEdge.getAttributes();
                 boolean attrIsDefault =
                     JEdgeLayout.newInstance(edgeAttr).isDefault();
@@ -314,7 +320,9 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         collectNodeNrs();
         for (Object cell : result.values()) {
             if (cell instanceof AspectJVertex) {
-                ((AspectJVertex) cell).reset(createAspectNode());
+                ((AspectJVertex) cell).reset(this, createAspectNode());
+            } else if (cell instanceof AspectJEdge) {
+                ((AspectJEdge) cell).reset(this);
             }
         }
         resetNodeNrs();

@@ -52,7 +52,7 @@ public final class ShapeJGraph extends GraphJGraph {
 
     @Override
     public ShapeJModel newModel() {
-        return new ShapeJModel(ShapeJVertex.getPrototype(this),
+        return new ShapeJModel(this, ShapeJVertex.getPrototype(this),
             ShapeJEdge.getPrototype(this), EquivClassJCell.getPrototype(this));
     }
 

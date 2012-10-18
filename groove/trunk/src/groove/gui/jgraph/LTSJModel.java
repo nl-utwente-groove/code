@@ -32,8 +32,8 @@ import groove.lts.GraphTransition;
 final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         implements GTSListener {
     /** Creates a new model from a given LTS and set of display options. */
-    LTSJModel(LTSJVertex jVertexProt, LTSJEdge jEdgeProt) {
-        super(jVertexProt, jEdgeProt);
+    LTSJModel(LTSJGraph jGraph, LTSJVertex jVertexProt, LTSJEdge jEdgeProt) {
+        super(jGraph, jVertexProt, jEdgeProt);
     }
 
     /** Specialises the return type. */

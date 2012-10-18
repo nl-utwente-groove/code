@@ -67,7 +67,7 @@ public final class PatternJGraph extends GraphJGraph {
 
     @Override
     public PatternJModel newModel() {
-        return new PatternJModel(GraphJVertex.getPrototype(this),
+        return new PatternJModel(this, GraphJVertex.getPrototype(this),
             GraphJEdge.getPrototype(this), PatternJVertex.getPrototype(this),
             PatternJEdge.getPrototype(this));
     }

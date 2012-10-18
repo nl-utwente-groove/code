@@ -46,14 +46,11 @@ import org.jgraph.graph.GraphConstants;
 public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     /**
      * Constructs a model node on top of a graph node.
-     * @param jGraph the {@link GraphJGraph} in which this vertex exists
      * @param node the underlying graph node for this model node. Note that this
      *        may be null.
      * @ensure getUserObject() == node, labels().isEmpty()
      */
-    protected GraphJVertex(GraphJGraph jGraph, GraphJModel<?,?> jModel,
-            Node node) {
-        this.jGraph = jGraph;
+    protected GraphJVertex(GraphJModel<?,?> jModel, Node node) {
         this.jModel = jModel;
         add(new DefaultPort());
         this.node = node;
@@ -61,7 +58,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
 
     @Override
     public GraphJGraph getJGraph() {
-        return this.jGraph;
+        return getJModel().getJGraph();
     }
 
     @Override
@@ -73,7 +70,8 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * Sets the node wrapped in this GraphJVertex<?,?> to a new one,
      * and clears the set of self-edges. 
      */
-    void reset(Node node) {
+    void reset(GraphJModel<?,?> jModel, Node node) {
+        this.jModel = jModel;
         this.node = node;
         this.jVertexLabels.clear();
     }
@@ -93,7 +91,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      * Returns a fresh {@link GraphJEdge} of the same type as this one. 
      */
     public GraphJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
-        return new GraphJVertex(getJGraph(), jModel, node);
+        return new GraphJVertex(jModel, node);
     }
 
     /**
@@ -385,10 +383,8 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         return null;
     }
 
-    /** The fixed jGraph on which this jVertex is displayed. */
-    private final GraphJGraph jGraph;
     /** The fixed jModel to which this jVertex belongs. */
-    private final GraphJModel<?,?> jModel;
+    private GraphJModel<?,?> jModel;
     private boolean layoutable;
     private boolean grayedOut;
     /** Explicitly set foreground colour. */
@@ -400,6 +396,6 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
 
     /** Returns a prototype {@link GraphJVertex} for a given {@link GraphJGraph}. */
     public static GraphJVertex getPrototype(GraphJGraph jGraph) {
-        return new GraphJVertex(jGraph, null, null);
+        return new GraphJVertex(null, null);
     }
 }

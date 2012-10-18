@@ -78,7 +78,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
 
     @Override
     public LTSJModel newModel() {
-        return new LTSJModel(LTSJVertex.getPrototype(this),
+        return new LTSJModel(this, LTSJVertex.getPrototype(this),
             LTSJEdge.getPrototype(this));
     }
 

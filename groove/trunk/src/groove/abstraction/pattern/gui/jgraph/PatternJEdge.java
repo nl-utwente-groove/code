@@ -41,14 +41,13 @@ public class PatternJEdge extends GraphJEdge {
     // ------------------------------------------------------------------------
 
     // Private constructor. Use the prototype.
-    private PatternJEdge(PatternJGraph jGraph, PatternJModel jModel) {
-        super(jGraph, jModel);
+    private PatternJEdge(PatternJModel jModel) {
+        super(jModel);
     }
 
     // Private constructor. Use the prototype.
-    private PatternJEdge(PatternJGraph jGraph, PatternJModel jModel,
-            AbstractPatternEdge<?> pEdge) {
-        super(jGraph, jModel, pEdge);
+    private PatternJEdge(PatternJModel jModel, AbstractPatternEdge<?> pEdge) {
+        super(jModel, pEdge);
     }
 
     // ------------------------------------------------------------------------
@@ -84,8 +83,7 @@ public class PatternJEdge extends GraphJEdge {
     @Override
     public PatternJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
         assert edge instanceof AbstractPatternEdge<?>;
-        return new PatternJEdge(getJGraph(), (PatternJModel) jModel,
-            (AbstractPatternEdge<?>) edge);
+        return new PatternJEdge((PatternJModel) jModel, (AbstractPatternEdge<?>) edge);
     }
 
     /**
@@ -104,7 +102,7 @@ public class PatternJEdge extends GraphJEdge {
 
     /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */
     public static PatternJEdge getPrototype(PatternJGraph jGraph) {
-        return new PatternJEdge(jGraph, null);
+        return new PatternJEdge(null);
     }
 
     /** The standard jgraph attributes used for representing pattern edges. */
