@@ -16,7 +16,6 @@
  */
 package groove.explore.strategy;
 
-import groove.lts.GTS;
 import groove.lts.GraphState;
 
 import java.io.BufferedReader;
@@ -47,11 +46,6 @@ public class RemoteStrategy extends SymbolicStrategy {
      */
     public void setHost(String host) {
         this.host = host;
-    }
-
-    @Override
-    public void prepare(GTS gts, GraphState startState) {
-        super.prepare(gts, startState);
     }
 
     @Override

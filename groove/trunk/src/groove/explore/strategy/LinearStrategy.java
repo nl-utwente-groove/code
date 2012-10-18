@@ -45,9 +45,7 @@ public class LinearStrategy extends AbstractStrategy {
      *        single outgoing transition has been computed.
      */
     public LinearStrategy(boolean closeFast) {
-        if (closeFast) {
-            enableCloseExit();
-        }
+        this.closeFast = closeFast;
     }
 
     @Override
@@ -58,11 +56,9 @@ public class LinearStrategy extends AbstractStrategy {
         MatchResult match = getMatch();
         if (match != null) {
             getState().applyMatch(match);
-            if (closeExit()) {
+            if (isCloseFast()) {
                 getState().setClosed(false);
             }
-        } else {
-            getState().setClosed(true);
         }
         return updateAtState();
     }
@@ -76,34 +72,28 @@ public class LinearStrategy extends AbstractStrategy {
     protected GraphState getNextState() {
         GraphState result = this.collector.getNewState();
         this.collector.reset();
-        if (result == null) {
-            getGTS().removeLTSListener(this.collector);
-        }
         return result;
     }
 
     @Override
-    public void prepare(GTS gts, GraphState state) {
+    protected void prepare() {
         // We have to set the non-collapsing property before the first (start)
         // state is generated, otherwise it is too late.
-        gts.getRecord().setCollapse(false);
-        gts.getRecord().setCopyGraphs(false);
-        gts.getRecord().setReuseEvents(NONE);
-        super.prepare(gts, state);
-        gts.addLTSListener(this.collector);
+        getGTS().getRecord().setCollapse(false);
+        getGTS().getRecord().setCopyGraphs(false);
+        getGTS().getRecord().setReuseEvents(NONE);
+        super.prepare();
+        getGTS().addLTSListener(this.collector);
+    }
+
+    @Override
+    protected void finish() {
+        getGTS().removeLTSListener(this.collector);
     }
 
     /** Return the current value of the "close on exit" setting */
-    public boolean closeExit() {
-        return this.closeExit;
-    }
-
-    /**
-     * Enable closeExit, to close states immediately after a transition has been generated.
-     * This can save memory when using linear strategies.
-     */
-    public void enableCloseExit() {
-        this.closeExit = true;
+    private boolean isCloseFast() {
+        return this.closeFast;
     }
 
     /** Collects states newly added to the GTS. */
@@ -112,7 +102,7 @@ public class LinearStrategy extends AbstractStrategy {
      * Option to close states immediately after a transition has been generated.
      * Used to save memory by closing states ASAP.
      */
-    private boolean closeExit = false;
+    private final boolean closeFast;
 
     /**
      * Registers the first new state added to the GTS it listens to. Such an

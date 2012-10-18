@@ -419,7 +419,7 @@ public class SimulatorModel implements Cloneable {
     /** Fully explores a given state of the GTS. */
     public void doExploreState() {
         start();
-        getExploreStateStrategy().prepare(getGts(), getState());
+        getExploreStateStrategy().setGTS(getGts(), getState());
         getExploreStateStrategy().play();
         changeGts(getGts(), true);
         RuleTransition outTrans = getOutTransition(getState());

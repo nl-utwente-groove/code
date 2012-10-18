@@ -56,12 +56,14 @@ public class StateCache {
 
     /** Adds a transition stub to the data structures stored in this cache. */
     boolean addTransition(RuleTransition trans) {
+        assert trans.source() == getState();
         boolean result = getStubSet().add(trans.toStub());
         if (result && this.transitionMap != null) {
             this.transitionMap.put(trans.getEvent(), trans);
         }
         this.matches.remove(trans);
         addChild(trans.target(), new GTS.NormalisedStateSet());
+        maybeSetClosed();
         return result;
     }
 
@@ -100,9 +102,8 @@ public class StateCache {
 
     /** 
      * Callback method invoked when the state has been closed.
-     * If there are no raw children, calls {@link #fireCooked()}.
      */
-    void fireClosed() {
+    void notifyClosed() {
         if (this.rawChildCount == 0) {
             getState().setCooked();
             if (!this.present) {
@@ -115,7 +116,7 @@ public class StateCache {
      * Callback method invoked when the state has become cooked.
      * Notifies all raw predecessors that the associated state has become cooked.
      */
-    void fireCooked() {
+    void notifyCooked() {
         for (StateCache parent : this.rawParents) {
             parent.notifyChildCooked(this.present);
         }
@@ -402,6 +403,7 @@ public class StateCache {
         CtrlSchedule schedule = getState().getSchedule();
         if (schedule.isFinished()) {
             this.latestMatches = EMPTY_MATCH_SET;
+            maybeSetClosed();
         } else {
             result = !schedule.isTried();
             if (!result) {
@@ -465,11 +467,21 @@ public class StateCache {
         return new MatchCollector(getState());
     }
 
+    /** 
+     * If there are no more matches, and the schedule is finished,
+     * sets the state to closed.
+     */
+    private void maybeSetClosed() {
+        if (this.matches.isEmpty() && getState().getSchedule().isFinished()) {
+            getState().setClosed(true);
+        }
+    }
+
     /** Strategy object used to find the matches. */
     private MatchCollector matcher;
     /** The matches found so far for this state. */
     private MatchResultSet matches;
-    /** The matches found during the latest call to {@link #trySchedule()}. */
+    /** The matches found during the latest successful call to {@link #trySchedule()}. */
     private MatchResultSet latestMatches;
     /**
      * The set of outgoing transitions computed for the underlying graph.
@@ -489,7 +501,7 @@ public class StateCache {
      * Set of direct uncooked predecessor states, maintained as long this state 
      * is transient and uncooked. These states are notified as soon as this state is
      * discovered to be non-transient or cooked.
-     * @see #fireCooked()
+     * @see #notifyCooked()
      */
     private final List<StateCache> rawParents = new ArrayList<StateCache>();
     /** Transitively closed set of uncooked ancestors. This is maintained

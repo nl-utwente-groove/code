@@ -28,7 +28,7 @@ import groove.view.FormatException;
  * either according to some condition (see {@link ConditionalStrategy}), or
  * because of the nature of the strategy (see for instance
  * {@link LinearStrategy}). Most often, a strategy starts its exploration at
- * some state, fixed by the {@link #prepare(GTS, GraphState)} method.
+ * some state, fixed by the {@link #setGTS(GTS, GraphState)} method.
  */
 public interface Strategy {
     /**
@@ -42,9 +42,8 @@ public interface Strategy {
 
     /**
      * Sets the GTS to be explored. Also sets the exploration start state to the
-     * GTS start state. Convenience method for
-     * <code>prepare(gts, null)</code>.
-     * @see #prepare(GTS, GraphState)
+     * GTS start state. Convenience method for {@link #setGTS(GTS, GraphState)}.
+     * @see #setGTS(GTS, GraphState)
      */
     public void prepare(GTS gts);
 
@@ -56,7 +55,7 @@ public interface Strategy {
      * @param state the start state for the exploration; if <code>null</code>,
      * the GTS start state is used
      */
-    public void prepare(GTS gts, GraphState state);
+    public void setGTS(GTS gts, GraphState state);
 
     /** 
      * Plays out this strategy, until a halting condition kicks in, 

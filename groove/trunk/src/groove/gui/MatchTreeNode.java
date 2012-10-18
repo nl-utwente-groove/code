@@ -32,16 +32,16 @@ class MatchTreeNode extends DefaultMutableTreeNode {
      * children.
      */
     public MatchTreeNode(SimulatorModel model, GraphState source,
-            MatchResult event, int nr, boolean anchored) {
-        super(event, false);
+            MatchResult match, int nr, boolean anchored) {
+        super(match, false);
         this.source = source;
         this.nr = nr;
         this.model = model;
         StringBuilder result = new StringBuilder();
-        MatchResult match = getMatch();
         if (match instanceof RuleTransition) {
-            String state = ((RuleTransition) match).target().toString();
-            result.append(((RuleTransition) match).text(anchored));
+            RuleTransition trans = (RuleTransition) match;
+            String state = trans.target().toString();
+            result.append(trans.text(anchored));
             result.append(RIGHTARROW);
             result.append(HTMLConverter.ITALIC_TAG.on(state));
             if (this.model.getTrace().contains(match)) {

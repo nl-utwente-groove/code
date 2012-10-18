@@ -16,12 +16,8 @@
  */
 package groove.explore.strategy;
 
-import static groove.trans.RuleEvent.Reuse.NONE;
 import groove.lts.DefaultGraphNextState;
-import groove.lts.GTS;
-import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
-import groove.lts.MatchResult;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine;
 import groove.match.rete.ReteSearchEngine;
@@ -34,7 +30,7 @@ import groove.trans.DeltaStore;
  * @author Amir Hossein Ghamarian
  * 
  */
-public class ReteLinearStrategy extends AbstractStrategy {
+public class ReteLinearStrategy extends LinearStrategy {
     /**
      * Constructs a default instance of the strategy, in which states are only
      * closed if they have been fully explored
@@ -50,68 +46,25 @@ public class ReteLinearStrategy extends AbstractStrategy {
      *        single outgoing transition has been computed.
      */
     public ReteLinearStrategy(boolean closeFast) {
-        if (closeFast) {
-            enableCloseExit();
-        }
-    }
-
-    private void enableCloseExit() {
-        this.closeExit = true;
-    }
-
-    @Override
-    public boolean next() {
-        if (getState() == null) {
-            getGTS().removeLTSListener(this.collector);
-            unprepare();
-            return false;
-        }
-
-        MatchResult match = getMatch();
-        if (match != null) {
-            getState().applyMatch(match);
-            if (closeExit()) {
-                getState().setClosed(false);
-            }
-        } else {
-            getState().setClosed(true);
-        }
-        updateAtState();
-        return true;
-    }
-
-    /** Callback method to return the single next match. */
-    protected MatchResult getMatch() {
-        return getState().getMatch();
+        super(closeFast);
     }
 
     @Override
     protected GraphState getNextState() {
-        GraphState result = this.collector.getNewState();
-        this.collector.reset();
+        GraphState result = super.getNextState();
         DeltaStore d = new DeltaStore();
         if (result != null) {
             ((DefaultGraphNextState) result).getDelta().applyDelta(d);
             this.rete.transitionOccurred(result.getGraph(), d);
-
-        } else {
-            getGTS().removeLTSListener(this.collector);
         }
         return result;
     }
 
     @Override
-    public void prepare(GTS gts, GraphState state) {
-        // We have to set the non-collapsing property before the first (start)
-        // state is generated, otherwise it is too late.
-        gts.getRecord().setCollapse(false);
-        gts.getRecord().setCopyGraphs(false);
-        gts.getRecord().setReuseEvents(NONE);
-        super.prepare(gts, state);
-        gts.addLTSListener(this.collector);
-
-        //initializing the RETE network
-        this.rete = new ReteSearchEngine(gts.getGrammar());
+    protected void prepare() {
+        super.prepare();
+        // initialise the RETE network
+        this.rete = new ReteSearchEngine(getGTS().getGrammar());
         this.oldEngine = MatcherFactory.instance().getEngine();
         MatcherFactory.instance().setEngine(this.rete);
     }
@@ -119,67 +72,12 @@ public class ReteLinearStrategy extends AbstractStrategy {
     /**
      * Does some clean-up for when the full exploration is finished.
      */
-    protected void unprepare() {
-        //TODO ARASH: (Talk to Arend about this)
-        //If the exploration is stopped half-way through, then this method
-        //will not be called. I think The AbstractStrategy should be changed so that
-        //a notification is set to an strategy that it is abruptly stopped so as to
-        //let the strategy do any clean-up necessary.
-        //        ReteSearchEngine.unlock();
-        //        SearchEngineFactory.getInstance().setEngineType(this.oldType);
+    @Override
+    protected void finish() {
         MatcherFactory.instance().setEngine(this.oldEngine);
+        super.finish();
     }
-
-    /** Return the current value of the "close on exit" setting */
-    public boolean closeExit() {
-        return this.closeExit;
-    }
-
-    /** Collects states newly added to the GTS. */
-    private final NewStateCollector collector = new NewStateCollector();
 
     private SearchEngine oldEngine;
     private ReteSearchEngine rete;
-
-    /** 
-     * Option to close states immediately after a transition has been generated.
-     * Used to save memory by closing states ASAP.
-     */
-    private boolean closeExit = false;
-
-    /**
-     * Registers the first new state added to the GTS it listens to. Such an
-     * object should be added as listener only to a single GTS.
-     */
-    static private class NewStateCollector extends GTSAdapter {
-        NewStateCollector() {
-            reset();
-        }
-
-        /**
-         * Returns the collected new state, or null if no new state was
-         * registered.
-         * @return the collected new state, or null if no new state was
-         *         registered since last reset operation
-         */
-        GraphState getNewState() {
-            return this.newState;
-        }
-
-        /** Forgets collected new state. */
-        void reset() {
-            this.newState = null;
-        }
-
-        @Override
-        public void addUpdate(GTS shape, GraphState state) {
-            if (!state.isClosed() && this.newState == null) {
-                this.newState = state;
-            }
-        }
-
-        private GraphState newState;
-
-    }
-
 }

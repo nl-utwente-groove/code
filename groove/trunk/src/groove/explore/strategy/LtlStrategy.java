@@ -24,7 +24,6 @@ import groove.explore.result.Result;
 import groove.explore.util.RandomChooserInSequence;
 import groove.explore.util.RandomNewStateChooser;
 import groove.graph.EdgeRole;
-import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.RuleTransition;
@@ -52,10 +51,13 @@ import java.util.Stack;
 public class LtlStrategy extends AbstractStrategy {
     /** This implementation initialises the product automaton as well. */
     @Override
-    public void prepare(GTS gts, GraphState state) {
-        super.prepare(gts, gts.startState());
+    protected void prepare() {
+        super.prepare();
         this.productGTS = new ProductStateSet();
-        this.productGTS.addListener(this.collector); // currentPath = new Stack<GraphTransition>();
+        this.productGTS.addListener(this.collector);
+        for (CycleAcceptor acceptor : this.acceptors) {
+            this.productGTS.addListener(acceptor);
+        }
         this.searchStack = new Stack<ProductState>();
         this.transitionStack = new Stack<ProductTransition>();
         assert (this.initialLocation != null) : "The property automaton should have an initial state";
@@ -64,6 +66,12 @@ public class LtlStrategy extends AbstractStrategy {
         setStartBuchiState(startState);
         this.productGTS.addState(startState);
 
+    }
+
+    @Override
+    protected void finish() {
+        super.finish();
+        getProductGTS().removeListener(this.collector);
     }
 
     /**
@@ -125,11 +133,9 @@ public class LtlStrategy extends AbstractStrategy {
 
     @Override
     protected GraphState getNextState() {
-        boolean result;
         if (this.collector.pickRandomNewState() != null) {
             ProductState newState = this.collector.pickRandomNewState();
             this.atBuchiState = newState;
-            result = (this.atBuchiState != null);
         } else {
             ProductState s = null;
 
@@ -156,19 +162,11 @@ public class LtlStrategy extends AbstractStrategy {
             if (parent == null) {
                 // the start state is reached and does not have open successors
                 this.atBuchiState = null;
-                result = false;
             } else if (s != null) { // the current state has an open successor (is
                 // not really backtracking, a sibling state is
                 // fully explored)
                 this.atBuchiState = s;
-                result = true;
-            } else {
-                // else, atState is open, so we continue exploring it
-                result = true;
             }
-        }
-        if (!result) {
-            getProductGTS().removeListener(this.collector);
         }
         return this.atBuchiState == null ? null
                 : this.atBuchiState.getGraphState();
@@ -270,15 +268,25 @@ public class LtlStrategy extends AbstractStrategy {
     @Override
     public void addGTSListener(Acceptor listener) {
         if (listener instanceof CycleAcceptor) {
-            ((CycleAcceptor) listener).setStrategy(this);
-            this.productGTS.addListener((CycleAcceptor) listener);
+            CycleAcceptor acceptor = (CycleAcceptor) listener;
+            acceptor.setStrategy(this);
+            if (this.productGTS == null) {
+                this.acceptors.add(acceptor);
+            } else {
+                this.productGTS.addListener(acceptor);
+            }
         }
     }
 
     @Override
     public void removeGTSListener(Acceptor listener) {
         if (listener instanceof CycleAcceptor) {
-            this.productGTS.removeListener((CycleAcceptor) listener);
+            CycleAcceptor acceptor = (CycleAcceptor) listener;
+            if (this.productGTS == null) {
+                this.acceptors.remove(acceptor);
+            } else {
+                this.productGTS.removeListener((CycleAcceptor) listener);
+            }
         }
     }
 
@@ -321,7 +329,7 @@ public class LtlStrategy extends AbstractStrategy {
     public void exploreState(GraphState state) {
         Strategy explore = new ExploreStateStrategy();
         if (getGTS().isOpen(state)) {
-            explore.prepare(getGTS(), state);
+            explore.setGTS(getGTS(), state);
             explore.play();
         }
     }
@@ -497,6 +505,8 @@ public class LtlStrategy extends AbstractStrategy {
 
     /** The Buchi start graph-state of the system. */
     private ProductState startBuchiState;
+    /** Acceptors to be added to the product GTS, once it is created. */
+    private Set<CycleAcceptor> acceptors = new HashSet<CycleAcceptor>();
     /** The synchronised product of the system and the property. */
     protected ProductStateSet productGTS;
     /** The current Buchi graph-state the system is at. */

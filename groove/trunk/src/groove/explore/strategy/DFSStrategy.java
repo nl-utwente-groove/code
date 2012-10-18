@@ -33,7 +33,7 @@ import java.util.Stack;
  */
 public class DFSStrategy extends ClosingStrategy {
     @Override
-    protected GraphState getFromPool() {
+    protected GraphState getNextState() {
         if (this.stack.isEmpty()) {
             return null;
         } else {

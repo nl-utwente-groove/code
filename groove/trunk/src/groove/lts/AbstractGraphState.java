@@ -211,7 +211,7 @@ abstract public class AbstractGraphState extends
             if (!complete) {
                 setSchedule(getCtrlState().getSchedule());
             }
-            getCache().fireClosed();
+            getCache().notifyClosed();
             fireStatus(CLOSED);
         }
         return result;
@@ -262,7 +262,7 @@ abstract public class AbstractGraphState extends
     public boolean setCooked() {
         boolean result = setStatus(COOKED);
         if (result) {
-            getCache().fireCooked();
+            getCache().notifyCooked();
             setCacheCollectable();
             fireStatus(COOKED);
         }
@@ -418,7 +418,7 @@ abstract public class AbstractGraphState extends
         boolean wasTransient = isTransient();
         this.schedule = schedule;
         if (wasTransient && !schedule.isTransient()) {
-            getCache().fireCooked();
+            getCache().notifyCooked();
         }
     }
 

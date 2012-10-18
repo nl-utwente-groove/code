@@ -27,7 +27,7 @@ import java.util.Queue;
  */
 public class BFSStrategy extends ClosingStrategy {
     @Override
-    protected GraphState getFromPool() {
+    protected GraphState getNextState() {
         return this.stateQueue.poll();
     }
 
