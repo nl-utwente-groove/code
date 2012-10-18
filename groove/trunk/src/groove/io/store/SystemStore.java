@@ -202,6 +202,16 @@ abstract public class SystemStore extends UndoableEditSupport {
      */
     abstract public boolean isModifiable();
 
+    /** Indicates if edits are currently added to the undo list. */
+    public boolean isUndoSuspended() {
+        return this.undoSuspended;
+    }
+
+    /** Changes the registration of edits to the undo list. */
+    public void setUndoSuspended(boolean undoSuspended) {
+        this.undoSuspended = undoSuspended;
+    }
+
     /** Returns the resource map for a given graph-based resource kind. */
     protected final Map<String,AspectGraph> getGraphMap(ResourceKind kind) {
         Map<String,AspectGraph> result = this.graphMap.get(kind);
@@ -237,6 +247,8 @@ abstract public class SystemStore extends UndoableEditSupport {
 
     /** The grammar view associated with this store. */
     private GrammarModel model;
+    /** Flag indicating that edits are currently not posted. */
+    private boolean undoSuspended;
     /** The observable object associated with this system store. */
     private final Observable observable = new Observable() {
         /** Always invokes {@link #setChanged()}. */

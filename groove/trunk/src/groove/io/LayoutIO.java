@@ -223,10 +223,13 @@ public class LayoutIO {
 
     private static void correctPoint(List<Point2D> points, int i,
             JVertexLayout layout) {
-        Rectangle2D bounds = layout.getBounds();
-        if (!bounds.contains(points.get(i))) {
-            points.set(i,
-                new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()));
+        if (layout != null) {
+            Rectangle2D bounds = layout.getBounds();
+            if (!bounds.contains(points.get(i))) {
+                points.set(
+                    i,
+                    new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()));
+            }
         }
     }
 

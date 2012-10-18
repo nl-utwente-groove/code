@@ -17,7 +17,11 @@ import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JFileChooser;
@@ -75,11 +79,6 @@ public class LoadGrammarAction extends SimulatorAction {
         // names & files
         getGrammarFileChooser().setSelectedFile(grammarFile);
         getRuleFileChooser().setCurrentDirectory(grammarFile);
-        // MdM - TODO - dont know what to do with the code below....
-        //        if (startGraphName != null) {
-        //            File startFile = new File(grammarFile, startGraphName);
-        //            getStateFileChooser().setSelectedFile(startFile);
-        //        } else {
         // make sure the selected file from an old grammar is
         // unselected
         getStateFileChooser().setSelectedFile(null);
@@ -195,60 +194,100 @@ public class LoadGrammarAction extends SimulatorAction {
      * The user must confirm the rename if there are names to be changed.
      */
     private boolean makeIdentifiersValid(SystemStore store) throws IOException {
+        boolean result = true;
         boolean confirmed = false;
-        String[] options = {"Continue", "Abort"};
+        store.setUndoSuspended(true);
         // loop over all resource kinds
-        for (ResourceKind kind : ResourceKind.all(false)) {
-            Set<String> modifiedNames = new HashSet<String>();
+        outer: for (ResourceKind kind : ResourceKind.all(false)) {
+            Set<String> newNames = new HashSet<String>();
             // collect all resource names of this kind
-            Set<String> oldNames = new HashSet<String>();
+            Set<String> oldNames;
             if (kind.isGraphBased()) {
-                oldNames.addAll(store.getGraphs(kind).keySet());
+                oldNames = store.getGraphs(kind).keySet();
             } else {
-                oldNames.addAll(store.getTexts(kind).keySet());
+                oldNames = store.getTexts(kind).keySet();
             }
             // loop over all collected names
+            Map<String,String> renameMap = new HashMap<String,String>();
             for (String name : oldNames) {
                 StringBuilder legal = new StringBuilder();
                 // check if name is valid
                 if (!QualName.isValid(name, legal, null)) {
                     // if not, ask confirmation from the user to continue
-                    if (!confirmed
-                        && JOptionPane.showOptionDialog(
-                            getFrame(),
-                            "Warning: the grammar contains resources with "
-                                + "invalid (since grammar version 3.1) names.\n"
-                                + "These will be renamed automatically.",
-                            "Warning: invalid identifiers",
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.WARNING_MESSAGE, null, options,
-                            "Continue") != JOptionPane.OK_OPTION) {
-                        return false;
+                    if (!confirmed && !askReplaceNames()) {
+                        result = false;
+                        break outer;
                     }
                     // user confirmed, rename resource
                     confirmed = true;
                     String newName = legal.toString();
                     // make sure the modified name is fresh
                     while (oldNames.contains(newName)
-                        || modifiedNames.contains(newName)) {
+                        || newNames.contains(newName)) {
                         newName = newName + "_";
                     }
-                    modifiedNames.add(newName);
-                    // store old name in rule properties, if possible
-                    if (kind == ResourceKind.RULE) {
-                        AspectGraph rule = store.getGraphs(kind).get(name);
-                        GraphProperties properties =
-                            GraphInfo.getProperties(rule, true);
-                        if (properties != null
-                            && properties.getTransitionLabel() == null) {
-                            properties.setTransitionLabel(name);
-                        }
-                    }
-                    // do the actual rename 
-                    store.rename(kind, name, newName);
+                    newNames.add(newName);
+                    renameMap.put(name, newName);
+                }
+            }
+            if (!renameMap.isEmpty()) {
+                if (kind.isGraphBased()) {
+                    replaceGraphs(store, kind, renameMap);
+                } else {
+                    replaceTexts(store, kind, renameMap);
                 }
             }
         }
-        return true;
+        store.setUndoSuspended(false);
+        return result;
+    }
+
+    private void replaceGraphs(SystemStore store, ResourceKind kind,
+            Map<String,String> renameMap) throws IOException {
+        Map<String,AspectGraph> oldGraphMap = store.getGraphs(kind);
+        List<AspectGraph> newGraphs = new ArrayList<AspectGraph>();
+        for (Map.Entry<String,String> e : renameMap.entrySet()) {
+            String oldName = e.getKey();
+            String newName = e.getValue();
+            AspectGraph oldGraph = oldGraphMap.get(oldName);
+            AspectGraph newGraph = oldGraph.clone();
+            newGraph.setName(newName);
+            if (kind == ResourceKind.RULE) {
+                // store old name in rule properties, if possible
+                GraphProperties properties =
+                    GraphInfo.getProperties(newGraph, false);
+                if (properties.getTransitionLabel() == null) {
+                    properties.setTransitionLabel(oldName);
+                }
+            }
+            newGraph.setFixed();
+            newGraphs.add(newGraph);
+        }
+        store.deleteGraphs(kind, renameMap.keySet());
+        store.putGraphs(kind, newGraphs, false);
+    }
+
+    private void replaceTexts(SystemStore store, ResourceKind kind,
+            Map<String,String> renameMap) throws IOException {
+        Map<String,String> oldTextMap = store.getTexts(kind);
+        Map<String,String> newTextMap = new HashMap<String,String>();
+        for (Map.Entry<String,String> e : renameMap.entrySet()) {
+            String oldName = e.getKey();
+            String newName = e.getValue();
+            String text = oldTextMap.get(oldName);
+            newTextMap.put(newName, text);
+        }
+        store.deleteTexts(kind, renameMap.keySet());
+        store.putTexts(kind, newTextMap);
+    }
+
+    private boolean askReplaceNames() {
+        String[] options = {"Continue", "Abort"};
+        return JOptionPane.showOptionDialog(getFrame(),
+            "Warning: the grammar contains resources with "
+                + "invalid (since grammar version 3.1) names.\n"
+                + "These will be renamed automatically.",
+            "Warning: invalid identifiers", JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE, null, options, "Continue") == JOptionPane.OK_OPTION;
     }
 }

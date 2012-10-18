@@ -857,8 +857,10 @@ public class DefaultFileSystemStore extends SystemStore {
     /** Posts the edit, and also notifies the observers. */
     @Override
     public synchronized void postEdit(UndoableEdit e) {
-        super.postEdit(e);
-        notifyObservers((Edit) e);
+        if (!isUndoSuspended()) {
+            super.postEdit(e);
+            notifyObservers((Edit) e);
+        }
     }
 
     @Override

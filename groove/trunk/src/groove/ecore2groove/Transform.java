@@ -239,7 +239,7 @@ public class Transform {
             }
             String name = constraintRule.getName();
             arg.getInfo().setFile(f + File.separator + name + ".gty");
-            arg.getInfo().getProperties(true).setPriority(50);
+            arg.getInfo().getProperties().setPriority(50);
             rules.add(arg);
 
             number++;
