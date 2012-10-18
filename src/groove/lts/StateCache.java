@@ -401,56 +401,57 @@ public class StateCache {
     private boolean trySchedule() {
         boolean result = false;
         CtrlSchedule schedule = getState().getSchedule();
+        if (schedule.isTried()) {
+            // the schedule has been tried and has yielded matches; 
+            // now see if at least one match has resulted
+            // in a transition to a present state, or all matches
+            // have resulted in transitions to absent states
+            boolean allAbsent = true;
+            boolean somePresent = false;
+            for (MatchResult m : this.latestMatches) {
+                RuleTransition t = getTransitionMap().get(m.getEvent());
+                if (t == null) {
+                    allAbsent = false;
+                } else {
+                    GraphState target = t.target();
+                    if (target.isPresent()) {
+                        somePresent = true;
+                        break;
+                    }
+                    allAbsent &= target.isAbsent();
+                }
+            }
+            if (somePresent || allAbsent) {
+                // yes, there is a present outgoing transition
+                // or all outgoing transitions are absent
+                schedule = schedule.next(somePresent);
+                getState().setSchedule(schedule);
+            }
+        }
         if (schedule.isFinished()) {
             this.latestMatches = EMPTY_MATCH_SET;
             maybeSetClosed();
-        } else {
-            result = !schedule.isTried();
-            if (!result) {
-                // the schedule has been tried and has yielded matches; 
-                // now see if at least one match has resulted
-                // in a transition to a present state, or all matches
-                // have resulted in transitions to absent states
-                boolean allAbsent = true;
-                boolean somePresent = false;
-                for (MatchResult m : this.latestMatches) {
-                    RuleTransition t = getTransitionMap().get(m.getEvent());
-                    if (t != null) {
-                        GraphState target = t.target();
-                        if (target.isPresent()) {
-                            somePresent = true;
-                            break;
-                        }
-                        allAbsent &= target.isAbsent();
-                    }
-                }
-                result = somePresent || allAbsent;
-                if (result) {
-                    // yes, there is a present outgoing transition
-                    // or all outgoing transitions are absent
-                    getState().setSchedule(schedule.next(somePresent));
-                }
+        } else if (!schedule.isTried()) {
+            this.latestMatches =
+                getMatchCollector().computeMatches(schedule.getTransition());
+            CtrlSchedule nextSchedule;
+            if (this.latestMatches.isEmpty()) {
+                // no transitions will be generated
+                nextSchedule = schedule.next(false);
+            } else if (schedule.next(true) == schedule.next(false)) {
+                // it does not matter whether a transition is generated or not
+                nextSchedule = schedule.next(false);
+            } else if (schedule.isTransient()
+                || !schedule.getTransition().target().isTransient()) {
+                // the control transition is atomic
+                // so the existence of a match guarantees the existence of a transition
+                nextSchedule = schedule.next(true);
+            } else {
+                nextSchedule = schedule.getTriedSchedule();
             }
-            if (result) {
-                this.latestMatches = getMatchCollector().computeMatches();
-                CtrlSchedule nextSchedule;
-                if (this.latestMatches.isEmpty()) {
-                    // no transitions will be generated
-                    nextSchedule = schedule.next(false);
-                } else if (schedule.next(true) == schedule.next(false)) {
-                    // it does not matter whether a transition is generated or not
-                    nextSchedule = schedule.next(false);
-                } else if (schedule.isTransient()
-                    || !schedule.getTransition().target().isTransient()) {
-                    // the control transition is atomic
-                    // so the existence of a match guarantees the existence of a transition
-                    nextSchedule = schedule.next(true);
-                } else {
-                    nextSchedule = schedule.getTriedSchedule();
-                }
-                getState().setSchedule(nextSchedule);
-                this.matches.addAll(this.latestMatches);
-            }
+            getState().setSchedule(nextSchedule);
+            this.matches.addAll(this.latestMatches);
+            result = true;
         }
         return result;
     }

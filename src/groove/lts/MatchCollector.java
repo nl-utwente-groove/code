@@ -71,16 +71,15 @@ public class MatchCollector {
     }
 
     /**
-     * Returns the set of matching events for the control transition
-     * of the current state schedule.
+     * Returns the set of matching events for a given control transition.
+     * @param ct the transition for which matches are to be found; non-{@code null}
      */
-    public MatchResultSet computeMatches() {
+    public MatchResultSet computeMatches(CtrlTransition ct) {
         final MatchResultSet result = new MatchResultSet();
         if (DEBUG) {
             System.out.printf("Matches for %s, %s%n  ", this.state,
                 this.state.getGraph());
         }
-        CtrlTransition ct = this.state.getSchedule().getTransition();
         assert ct != null;
         // there are three reasons to want to use the parent matches: to
         // save matching time, to reuse added nodes, and to find confluent 
