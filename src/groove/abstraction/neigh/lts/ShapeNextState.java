@@ -86,11 +86,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
 
     @Override
     public String text(boolean anchored) {
-        if (anchored) {
-            return RuleTransitionLabel.getAnchorText(getEvent());
-        } else {
-            return label().text();
-        }
+        return label().text(anchored);
     }
 
     @Override

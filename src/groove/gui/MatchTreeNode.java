@@ -20,39 +20,30 @@ import groove.io.HTMLConverter;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
+import groove.lts.RuleTransitionLabel;
 
-import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.Icon;
 
 /**
  * Tree node wrapping a graph transition.
  */
-class MatchTreeNode extends DefaultMutableTreeNode {
+class MatchTreeNode extends DisplayTreeNode {
     /**
      * Creates a new tree node based on a given graph transition. The node cannot have
      * children.
      */
     public MatchTreeNode(SimulatorModel model, GraphState source,
             MatchResult match, int nr, boolean anchored) {
-        super(match, false);
+        super(null, match, false);
         this.source = source;
         this.nr = nr;
         this.model = model;
-        StringBuilder result = new StringBuilder();
-        if (match instanceof RuleTransition) {
-            RuleTransition trans = (RuleTransition) match;
-            String state = trans.target().toString();
-            result.append(trans.text(anchored));
-            result.append(RIGHTARROW);
-            result.append(HTMLConverter.ITALIC_TAG.on(state));
-            if (this.model.getTrace().contains(match)) {
-                result.append(TRACE_SUFFIX);
-            }
-            HTMLConverter.HTML_TAG.on(result);
-        } else {
-            result.append("Match ");
-            result.append(this.nr);
-        }
-        this.label = result.toString();
+        this.anchored = anchored;
+    }
+
+    /** Indicates if this match is already turned into a transition. */
+    public boolean isTransition() {
+        return getMatch() instanceof RuleTransition;
     }
 
     /**
@@ -70,14 +61,59 @@ class MatchTreeNode extends DefaultMutableTreeNode {
     }
 
     @Override
-    public String toString() {
+    public Icon getIcon() {
+        return Icons.GRAPH_MATCH_ICON;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return isTransition();
+    }
+
+    @Override
+    public String getTip() {
+        if (isEnabled()) {
+            return super.getTip();
+        } else {
+            return "Doubleclick to apply match";
+        }
+    }
+
+    @Override
+    public String getText() {
+        if (this.label == null) {
+            this.label = computeText();
+        }
         return this.label;
+    }
+
+    private String computeText() {
+        StringBuilder result = new StringBuilder();
+        result.append(this.nr);
+        result.append(": ");
+        if (isTransition()) {
+            RuleTransition trans = (RuleTransition) getMatch();
+            result.append(trans.text(this.anchored));
+            result.append(RIGHTARROW);
+            result.append(HTMLConverter.ITALIC_TAG.on(trans.target().toString()));
+            if (this.model.getTrace().contains(trans)) {
+                result.append(TRACE_SUFFIX);
+            }
+            HTMLConverter.HTML_TAG.on(result);
+        } else {
+            result.append(RuleTransitionLabel.text(this.source,
+                getMatch().getEvent(), this.anchored));
+            result.append(RIGHTARROW);
+            result.append("?");
+        }
+        return result.toString();
     }
 
     private final SimulatorModel model;
     private final GraphState source;
     private final int nr;
-    private final String label;
+    private final boolean anchored;
+    private String label;
     /** HTML representation of the right arrow. */
     private static final String RIGHTARROW = "-->";
     /** The suffix for a match that is in the selected trace. */

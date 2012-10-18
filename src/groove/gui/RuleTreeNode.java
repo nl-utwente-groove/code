@@ -21,18 +21,16 @@ import groove.graph.GraphProperties;
 import groove.io.HTMLConverter;
 import groove.view.RuleModel;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
 /**
  * Rule nodes (= level 1 nodes) of the directory
  */
-class RuleTreeNode extends DefaultMutableTreeNode {
+class RuleTreeNode extends DisplayTreeNode {
     /**
      * Creates a new rule node based on a given rule name. The node can have
      * children.
      */
-    public RuleTreeNode(RuleModel rule) {
-        super(rule, true);
+    public RuleTreeNode(ResourceDisplay display, RuleModel rule) {
+        super(display, rule, true);
         this.tried = true;
     }
 
@@ -43,19 +41,17 @@ class RuleTreeNode extends DefaultMutableTreeNode {
         return (RuleModel) getUserObject();
     }
 
-    /**
-     * To display, show child name only.
-     */
     @Override
-    public String toString() {
-        return getRule().getLastName();
+    public String getName() {
+        return getRule().getFullName();
     }
 
     /** Returns HTML-formatted tool tip text for this rule node. */
-    public String getToolTipText() {
+    @Override
+    public String getTip() {
         StringBuilder result = new StringBuilder();
         result.append("Rule ");
-        result.append(HTMLConverter.STRONG_TAG.on(getRule().getFullName()));
+        result.append(HTMLConverter.STRONG_TAG.on(getName()));
         GraphProperties properties =
             GraphInfo.getProperties(getRule().getSource(), false);
         if (properties != null && !properties.isEmpty()) {
@@ -79,6 +75,10 @@ class RuleTreeNode extends DefaultMutableTreeNode {
                 }
             }
         }
+        if (!isTried() && (properties == null || properties.isEnabled())) {
+            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append("Currently disabled due to rule priorities or control");
+        }
         HTMLConverter.HTML_TAG.on(result);
         return result.toString();
     }
@@ -86,6 +86,11 @@ class RuleTreeNode extends DefaultMutableTreeNode {
     /** Returns an HTML-formatted string for a given key/value-pair. */
     private String propertyToString(String key, String value) {
         return "<b>" + key + "</b> = " + value;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.tried;
     }
 
     /** Indicates if the rule wrapped by this node has been tried on the current state. */

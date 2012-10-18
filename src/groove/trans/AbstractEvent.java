@@ -61,11 +61,16 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
 
     abstract Reuse getReuse();
 
-    /** Returns a string showing this event as a rule call. */
-    public String getLabelText(HostNode[] addedNodes) {
+    /** 
+     * Returns a string showing this event as a rule call. 
+     * @param anchored if {@code true}, append the anchor images rather than the parameters
+     */
+    public String getLabelText(HostNode[] addedNodes, boolean anchored) {
         StringBuilder result = new StringBuilder();
         result.append(getRule().getTransitionLabel());
-        if (getRule().getSystemProperties().isUseParameters()) {
+        if (anchored) {
+            result.append(getAnchorImageString());
+        } else if (getRule().getSystemProperties().isUseParameters()) {
             result.append('(');
             boolean first = true;
             for (HostNode arg : getArguments(addedNodes)) {
@@ -131,7 +136,7 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
 
     @Override
     public String toString() {
-        return getLabelText(null);
+        return getLabelText(null, false);
     }
 
     /**

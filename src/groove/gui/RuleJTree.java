@@ -156,7 +156,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
                     addParentNode(topNode, dirNodeMap,
                         QualName.getParent(ruleName));
                 // create the rule node and register it
-                RuleTreeNode ruleNode = new RuleTreeNode(ruleView);
+                RuleTreeNode ruleNode =
+                    new RuleTreeNode(this.display, ruleView);
                 addSortedNode(parentNode, ruleNode);
                 TreePath rulePath = new TreePath(ruleNode.getPath());
                 expandedPaths.add(rulePath);
@@ -482,9 +483,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
     public String convertValueToText(Object value, boolean selected,
             boolean expanded, boolean leaf, int row, boolean hasFocus) {
         String result;
-        if (value instanceof RuleTreeNode) {
-            RuleModel ruleView = ((RuleTreeNode) value).getRule();
-            result = this.display.getLabelText(ruleView.getFullName());
+        if (value instanceof DisplayTreeNode) {
+            result = ((DisplayTreeNode) value).getText();
         } else {
             result =
                 super.convertValueToText(value, selected, expanded, leaf, row,
@@ -692,12 +692,12 @@ public class RuleJTree extends JTree implements SimulatorListener {
     /**
      * Transaction nodes (= level 1 nodes) of the directory
      */
-    private static class ActionTreeNode extends DefaultMutableTreeNode {
+    private class ActionTreeNode extends DisplayTreeNode {
         /**
          * Creates a new transaction node based on a given control automaton.
          */
         public ActionTreeNode(CtrlAut action) {
-            super(action, true);
+            super(RuleJTree.this.display, action, true);
         }
 
         /**
@@ -707,9 +707,14 @@ public class RuleJTree extends JTree implements SimulatorListener {
             return (CtrlAut) getUserObject();
         }
 
-        /** Text of this node as displayed in the rule tree. */
-        public String getText() {
-            return QualName.getLastName(getAction().getName());
+        @Override
+        public Icon getIcon() {
+            return Icons.ACTION_LIST_ICON;
+        }
+
+        @Override
+        public String getName() {
+            return getAction().getName();
         }
 
         /**
@@ -717,7 +722,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
          */
         @Override
         public String toString() {
-            return getText();
+            return QualName.getLastName(getName());
         }
     }
 
@@ -765,33 +770,23 @@ public class RuleJTree extends JTree implements SimulatorListener {
             Icon icon = null;
             String text = value.toString();
             String tip = null;
-            Color foreground =
-                JAttr.getForeground(cellSelected, cellFocused, error);
-            Color background =
-                JAttr.getBackground(cellSelected, cellFocused, error);
-            if (value instanceof RuleTreeNode) {
-                RuleTreeNode node = (RuleTreeNode) value;
-                tip = node.getToolTipText();
-                RuleDisplay display = RuleJTree.this.display;
-                String ruleName = node.getRule().getFullName();
-                icon = display.getListIcon(ruleName);
-                error = display.hasError(ruleName);
-                text = display.getLabelText(ruleName);
-                if (!((RuleTreeNode) value).isTried()) {
-                    foreground = transparent(foreground);
-                }
-            } else if (value instanceof ActionTreeNode) {
-                icon = Icons.ACTION_LIST_ICON;
-                text = ((ActionTreeNode) value).getText();
-            } else if (value instanceof MatchTreeNode) {
-                icon = Icons.GRAPH_MATCH_ICON;
+            boolean enabled = true;
+            if (value instanceof DisplayTreeNode) {
+                DisplayTreeNode node = (DisplayTreeNode) value;
+                tip = node.getTip();
+                icon = node.getIcon();
+                error = node.isError();
+                text = node.getText();
+                enabled = node.isEnabled();
             }
-            if (icon != null) {
-                setIcon(icon);
-            }
+            setIcon(icon);
             setText(text);
             setToolTipText(tip);
-            setForeground(foreground);
+            Color foreground =
+                JAttr.getForeground(cellSelected, cellFocused, error);
+            setForeground(enabled ? foreground : transparent(foreground));
+            Color background =
+                JAttr.getBackground(cellSelected, cellFocused, error);
             if (cellSelected) {
                 setBackgroundSelectionColor(background);
             } else {

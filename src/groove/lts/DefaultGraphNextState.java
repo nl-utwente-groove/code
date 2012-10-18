@@ -58,7 +58,8 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         if (DEBUG) {
             System.out.printf("Created state %s from %s:%n", this, source);
             System.out.printf("  Graph: %s%n", source.getGraph());
-            System.out.printf("  Event: %s%n", event.getAnchorImageString());
+            System.out.printf("  Event: %s%n",
+                ((AbstractEvent<?,?>) event).getLabelText(addedNodes, true));
             System.out.printf("  Event id: %s%n",
                 System.identityHashCode(event));
         }
@@ -66,11 +67,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
 
     @Override
     public String text(boolean anchored) {
-        if (anchored) {
-            return RuleTransitionLabel.getAnchorText(getEvent());
-        } else {
-            return label().text();
-        }
+        return label().text(anchored);
     }
 
     public RuleEvent getEvent() {
