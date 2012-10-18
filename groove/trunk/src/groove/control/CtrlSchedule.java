@@ -61,6 +61,9 @@ public class CtrlSchedule {
         this.success = origin.success;
         this.isTransient = origin.isTransient;
         this.tried = true;
+        this.succNext = origin.succNext;
+        this.failNext = origin.failNext;
+        this.triedSchedule = this;
     }
 
     /** Indicates if this node signals the end of the schedule. */
@@ -90,7 +93,6 @@ public class CtrlSchedule {
 
     /** Returns a tried version of this schedule. */
     public CtrlSchedule getTriedSchedule() {
-        assert !isTried();
         if (this.triedSchedule == null) {
             this.triedSchedule = new CtrlSchedule(this);
         }

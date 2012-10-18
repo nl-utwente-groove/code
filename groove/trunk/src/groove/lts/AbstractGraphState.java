@@ -414,6 +414,7 @@ abstract public class AbstractGraphState extends
 
     @Override
     public void setSchedule(CtrlSchedule schedule) {
+        assert schedule != null;
         assert schedule.getState() == getCtrlState();
         boolean wasTransient = isTransient();
         this.schedule = schedule;
