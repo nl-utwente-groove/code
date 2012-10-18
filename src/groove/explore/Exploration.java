@@ -221,7 +221,7 @@ public class Exploration {
 
         // initialize acceptor and GTS
         parsedAcceptor.setResult(new Result(this.nrResults));
-        parsedStrategy.prepare(gts, state);
+        parsedStrategy.setGTS(gts, state);
 
         // initialize profiling and prepare graph listener
         playReporter.start();

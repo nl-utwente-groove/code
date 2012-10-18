@@ -37,19 +37,15 @@ import java.util.Stack;
  * @version $Revision $
  */
 public class ReteStrategy extends AbstractStrategy {
-
     @Override
     public boolean next() {
         ReteStrategyNextReporter.start();
         if (getState() == null) {
-            unprepare();
-            getGTS().removeLTSListener(this.exploreListener);
             ReteStrategyNextReporter.stop();
             return false;
         }
 
-        Collection<? extends MatchResult> ruleMatches =
-            getState().getMatches();
+        Collection<? extends MatchResult> ruleMatches = getState().getMatches();
         Collection<GraphState> outTransitions =
             new ArrayList<GraphState>(ruleMatches.size());
 
@@ -59,7 +55,6 @@ public class ReteStrategy extends AbstractStrategy {
         }
 
         addToPool(outTransitions);
-        getState().setClosed(true);
         this.deltaAccumulator = new DeltaStore();
         updateAtState();
         ReteStrategyNextReporter.stop();
@@ -67,14 +62,14 @@ public class ReteStrategy extends AbstractStrategy {
     }
 
     @Override
-    public void prepare(GTS gts, GraphState startState) {
-        super.prepare(gts, startState);
-        gts.getRecord().setCopyGraphs(false);
+    protected void prepare() {
+        getGTS().getRecord().setCopyGraphs(false);
+        super.prepare();
         getGTS().addLTSListener(this.exploreListener);
         clearPool();
         this.newStates.clear();
-        //initializing the rete network
-        this.rete = new ReteSearchEngine(gts.getGrammar());
+        // initialise the rete network
+        this.rete = new ReteSearchEngine(getGTS().getGrammar());
         this.oldEngine = MatcherFactory.instance().getEngine();
         MatcherFactory.instance().setEngine(this.rete);
         //this.rete.getNetwork().save("e:\\temp\\reg-exp.gst", "reg-exp");
@@ -83,8 +78,11 @@ public class ReteStrategy extends AbstractStrategy {
     /**
      * Does some clean-up for when the full exploration is finished.
      */
-    protected void unprepare() {
+    @Override
+    protected void finish() {
+        super.finish();
         MatcherFactory.instance().setEngine(this.oldEngine);
+        getGTS().removeLTSListener(this.exploreListener);
     }
 
     @Override

@@ -37,27 +37,45 @@ public abstract class AbstractStrategy implements Strategy {
     }
 
     final public void prepare(GTS gts) {
-        this.prepare(gts, null);
+        this.setGTS(gts, null);
     }
 
-    public void prepare(GTS gts, GraphState state) {
+    final public void setGTS(GTS gts, GraphState state) {
         this.gts = gts;
-        this.atState = state == null ? gts.startState() : state;
-        MatcherFactory.instance().setDefaultEngine();
-    }
-
-    @Override
-    final public void play(Halter halter) {
-        this.interrupted = false;
-        while ((halter == null || !halter.halt()) && next()
-            && !testInterrupted()) {
-            // do nothing
-        }
+        this.startState = state;
     }
 
     @Override
     final public void play() {
         play(null);
+    }
+
+    @Override
+    final public void play(Halter halter) {
+        prepare();
+        this.interrupted = false;
+        while ((halter == null || !halter.halt()) && next()
+            && !testInterrupted()) {
+            // do nothing
+        }
+        finish();
+    }
+
+    /** Notification method invoked when the exploration is started. */
+    protected void prepare() {
+        assert this.gts != null : "GTS has not been set";
+        this.atState =
+            this.startState == null ? this.gts.startState() : this.startState;
+        MatcherFactory.instance().setDefaultEngine();
+    }
+
+    /**
+     * Notification method invoked when the exploration is stopped for any reason.
+     * Reasons may be: the halter condition has kicked in, or the thread has been 
+     * interrupted, or exploration is done. 
+     */
+    protected void finish() {
+        // empty
     }
 
     @Override
@@ -92,7 +110,6 @@ public abstract class AbstractStrategy implements Strategy {
         for (MatchResult next : getState().getMatches()) {
             getState().applyMatch(next);
         }
-        getState().setClosed(true);
         return updateAtState();
     }
 
@@ -100,8 +117,16 @@ public abstract class AbstractStrategy implements Strategy {
      * The graph transition system explored by the strategy.
      * @return The graph transition system explored by the strategy.
      */
-    protected GTS getGTS() {
+    protected final GTS getGTS() {
         return this.gts;
+    }
+
+    /**
+     * The start state set at construction time.
+     * @return the start state for exploration; may be {@code null}.
+     */
+    protected final GraphState getStartState() {
+        return this.startState;
     }
 
     /**
@@ -157,6 +182,11 @@ public abstract class AbstractStrategy implements Strategy {
     private boolean interrupted;
     /** The graph transition system explored by the strategy. */
     private GTS gts;
+    /**
+     * Start state for exploration, set in the constructor.
+     * If {@code null}, the GTS start state is selected at exploration time.
+     */
+    private GraphState startState;
     /** The state that will be explored by the next call of {@link #next()}. */
     private GraphState atState;
     /** The state that will be explored by the next call of {@link #next()}. */

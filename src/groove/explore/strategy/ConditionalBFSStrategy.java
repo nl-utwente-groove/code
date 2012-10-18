@@ -27,10 +27,10 @@ import groove.lts.GraphState;
 public class ConditionalBFSStrategy extends BFSStrategy implements
         ConditionalStrategy {
     @Override
-    protected GraphState getFromPool() {
-        GraphState result = super.getFromPool();
+    protected GraphState getNextState() {
+        GraphState result = super.getNextState();
         while (result != null && !getExplCond().isSatisfied(result)) {
-            result = super.getFromPool();
+            result = super.getNextState();
         }
         return result;
     }

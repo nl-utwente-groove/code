@@ -374,7 +374,9 @@ public class RuleJTree extends JTree implements SimulatorListener {
             new TreeSet<MatchResult>(MatchResult.COMPARATOR);
         if (state != null) {
             matches.addAll(state.getTransitionSet());
-            matches.addAll(state.getMatches());
+            for (MatchResult match : state.getMatches()) {
+                matches.add(match.getEvent());
+            }
         }
         refreshMatches(state, matches);
         setEnabled(getGrammar() != null);

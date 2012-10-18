@@ -28,8 +28,8 @@ import groove.lts.GraphState;
  */
 abstract public class ClosingStrategy extends AbstractStrategy {
     @Override
-    public void prepare(GTS gts, GraphState startState) {
-        super.prepare(gts, startState);
+    protected void prepare() {
+        super.prepare();
         // for the closing strategy, there is no problem in aliasing
         // the graph data structures. On the whole, this seems wise, to
         // avoid excessive garbage collection.
@@ -39,19 +39,13 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected GraphState getNextState() {
-        GraphState result = getFromPool();
-        if (result == null) {
-            getGTS().removeLTSListener(this.exploreListener);
-        }
-        return result;
+    protected void finish() {
+        super.finish();
+        getGTS().removeLTSListener(this.exploreListener);
     }
 
     /** Callback method to add a pool element to the pool. */
     abstract protected void putInPool(GraphState element);
-
-    /** Returns the next element from the pool of explorable states. */
-    abstract protected GraphState getFromPool();
 
     /** Clears the pool, in order to prepare the strategy for reuse. */
     abstract protected void clearPool();
