@@ -46,14 +46,21 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.undo.UndoableEdit;
+
 import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.ConnectionSet;
+import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
+import org.jgraph.graph.ParentMap;
 
 /**
  * Implements jgraph's GraphModel interface on top of a {@link ResourceModel}. This is
@@ -313,16 +320,53 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         super.remove(removables.toArray());
     }
 
+    @SuppressWarnings("rawtypes")
+    @Override
+    public void insert(Object[] roots, Map attributes, ConnectionSet cs,
+            ParentMap pm, UndoableEdit[] edits) {
+        Set<Object> insertables = new LinkedHashSet<Object>();
+        // only copy edges whose source and target ports are connected
+        for (Object root : roots) {
+            boolean insert = true;
+            if (root instanceof AspectJEdge) {
+                AspectJEdge jEdge = (AspectJEdge) root;
+                DefaultPort sourcePort = (DefaultPort) cs.getPort(jEdge, true);
+                DefaultPort targetPort = (DefaultPort) cs.getPort(jEdge, false);
+                insert = sourcePort != null && targetPort != null;
+            }
+            if (insert) {
+                insertables.add(root);
+            } else {
+                // if the root is not copied over, remove it from the attribute map
+                // to avoid its being flagged as a changed element
+                attributes.remove(root);
+            }
+        }
+        // adjust the connection set by removing all connections for edges
+        // that were just removed
+        Iterator it = cs.connections();
+        while (it.hasNext()) {
+            ConnectionSet.Connection conn =
+                (ConnectionSet.Connection) it.next();
+            if (!insertables.contains(conn.getEdge())) {
+                it.remove();
+            }
+        }
+        super.insert(insertables.toArray(), attributes, cs, pm, edits);
+    }
+
     @Override
     public Map<?,?> cloneCells(Object[] cells) {
         Map<?,?> result = super.cloneCells(cells);
         // assign new node numbers to the JVertices
         collectNodeNrs();
-        for (Object cell : result.values()) {
-            if (cell instanceof AspectJVertex) {
-                ((AspectJVertex) cell).reset(this, createAspectNode());
-            } else if (cell instanceof AspectJEdge) {
-                ((AspectJEdge) cell).reset(this);
+        for (Object jCell : result.values()) {
+            if (jCell instanceof AspectJVertex) {
+                AspectJVertex jVertex = ((AspectJVertex) jCell);
+                jVertex.reset(this, createAspectNode());
+            } else if (jCell instanceof AspectJEdge) {
+                AspectJEdge jEdge = (AspectJEdge) jCell;
+                jEdge.reset(this);
             }
         }
         resetNodeNrs();
