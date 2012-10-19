@@ -66,6 +66,11 @@ public class CtrlSchedule {
         this.triedSchedule = this;
     }
 
+    /** Indicates if this is the initial schedule of the control state. */
+    public boolean isInitial() {
+        return this == this.state.getSchedule();
+    }
+
     /** Indicates if this node signals the end of the schedule. */
     public boolean isFinished() {
         return this.trans == null;

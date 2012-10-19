@@ -16,14 +16,17 @@
  */
 package groove.explore.strategy;
 
+import groove.control.CtrlSchedule;
 import groove.lts.GraphState;
+
+import java.util.Stack;
 
 /**
  * Explores all outgoing transitions of a given state.
  * @author Iovka Boneva
  * 
  */
-public class ExploreStateStrategy extends AbstractStrategy {
+public class ExploreStateStrategy extends ClosingStrategy {
     /**
      * Creates a strategy with empty graph transition system and empty start
      * state. The GTS and the state should be set before using it.
@@ -35,6 +38,27 @@ public class ExploreStateStrategy extends AbstractStrategy {
 
     @Override
     protected GraphState getNextState() {
-        return null;
+        if (this.stack.isEmpty()) {
+            return null;
+        } else {
+            return this.stack.pop();
+        }
     }
+
+    @Override
+    protected void putInPool(GraphState state) {
+        CtrlSchedule schedule = state.getSchedule();
+        if ((schedule.isTransient() || !schedule.isInitial())
+            && !schedule.isFinished()) {
+            // insert on top of the stack
+            this.stack.push(state);
+        }
+    }
+
+    @Override
+    protected void clearPool() {
+        this.stack.clear();
+    }
+
+    private final Stack<GraphState> stack = new Stack<GraphState>();
 }

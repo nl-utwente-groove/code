@@ -38,13 +38,9 @@ import java.util.Stack;
  */
 public class ReteStrategy extends AbstractStrategy {
     @Override
-    public boolean next() {
+    public void next() {
+        assert hasState();
         ReteStrategyNextReporter.start();
-        if (getState() == null) {
-            ReteStrategyNextReporter.stop();
-            return false;
-        }
-
         Collection<? extends MatchResult> ruleMatches = getState().getMatches();
         Collection<GraphState> outTransitions =
             new ArrayList<GraphState>(ruleMatches.size());
@@ -56,9 +52,8 @@ public class ReteStrategy extends AbstractStrategy {
 
         addToPool(outTransitions);
         this.deltaAccumulator = new DeltaStore();
-        updateAtState();
+        updateState();
         ReteStrategyNextReporter.stop();
-        return true;
     }
 
     @Override

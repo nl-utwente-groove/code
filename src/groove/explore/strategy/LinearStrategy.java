@@ -49,10 +49,8 @@ public class LinearStrategy extends AbstractStrategy {
     }
 
     @Override
-    public boolean next() {
-        if (getState() == null) {
-            return false;
-        }
+    public void next() {
+        assert hasState();
         MatchResult match = getMatch();
         if (match != null) {
             getState().applyMatch(match);
@@ -60,7 +58,7 @@ public class LinearStrategy extends AbstractStrategy {
                 getState().setClosed(false);
             }
         }
-        return updateAtState();
+        updateState();
     }
 
     /** Callback method to return the single next match. */

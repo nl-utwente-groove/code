@@ -42,8 +42,8 @@ public class DFSStrategy extends ClosingStrategy {
     }
 
     @Override
-    protected void putInPool(GraphState element) {
-        this.stack.push(element);
+    protected void putInPool(GraphState state) {
+        this.stack.push(state);
     }
 
     @Override

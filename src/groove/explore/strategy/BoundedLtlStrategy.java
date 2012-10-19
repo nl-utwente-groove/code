@@ -58,7 +58,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
      * The next step makes atomic the full exploration of a state.
      */
     @Override
-    public boolean next() {
+    public void next() {
         if (getAtBuchiState() == null) {
             while (getAtBuchiState() == null
                 && getProductGTS().hasOpenStates()
@@ -67,7 +67,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
             }
             if (getAtBuchiState() == null) {
                 getProductGTS().removeListener(this.collector);
-                return false;
+                return;
             }
         }
 
@@ -97,7 +97,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
             for (ProductTransition transition : getAtBuchiState().outTransitions()) {
                 if (counterExample(getAtBuchiState(), transition.target())) {
                     constructCounterExample();
-                    return true;
+                    return;
                 }
             }
         }
@@ -122,7 +122,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
                                 productTransition.target())) {
                                 // notify counter-example
                                 constructCounterExample();
-                                return true;
+                                return;
                             }
                         }
                     }
@@ -148,7 +148,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
             getAtBuchiState().setExplored();
         }
 
-        return updateAtState();
+        updateState();
     }
 
     /**
