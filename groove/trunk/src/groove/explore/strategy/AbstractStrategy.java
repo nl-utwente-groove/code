@@ -19,7 +19,6 @@ package groove.explore.strategy;
 import groove.explore.result.Acceptor;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.MatchResult;
 import groove.match.MatcherFactory;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemRecord;
@@ -54,9 +53,9 @@ public abstract class AbstractStrategy implements Strategy {
     final public void play(Halter halter) {
         prepare();
         this.interrupted = false;
-        while ((halter == null || !halter.halt()) && next()
+        while ((halter == null || !halter.halt()) && hasState()
             && !testInterrupted()) {
-            // do nothing
+            next();
         }
         finish();
     }
@@ -97,21 +96,11 @@ public abstract class AbstractStrategy implements Strategy {
 
     /**
      * Executes one step of the strategy.
-     * @return false if the strategy is completed, <code>true</code>
-     *         otherwise.
      * @require The previous call of this method, if any, returned
      *          <code>true</code>. Otherwise, the behaviour is not
      *          guaranteed.
      */
-    protected boolean next() {
-        if (getState() == null) {
-            return false;
-        }
-        for (MatchResult next : getState().getMatches()) {
-            getState().applyMatch(next);
-        }
-        return updateAtState();
-    }
+    abstract protected void next();
 
     /**
      * The graph transition system explored by the strategy.
@@ -127,6 +116,11 @@ public abstract class AbstractStrategy implements Strategy {
      */
     protected final GraphState getStartState() {
         return this.startState;
+    }
+
+    /** Indicates if there is a next state to be explored. */
+    final protected boolean hasState() {
+        return getState() != null;
     }
 
     /**
@@ -146,14 +140,11 @@ public abstract class AbstractStrategy implements Strategy {
      * Callback method to set the next state to be explored (which itself is 
      * determined by a call to {@link #getNextState()}), if any. This method
      * should be the only one who updates atState.
-     * @return {@code true} if there are more states to be explored, {@code false}
-     * otherwise.
      * @see #getNextState()
      */
-    final protected boolean updateAtState() {
+    final protected void updateState() {
         this.lastState = getState();
         this.atState = getNextState();
-        return this.atState != null;
     }
 
     /**

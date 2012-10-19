@@ -16,10 +16,10 @@
  */
 package groove.explore.strategy;
 
+import groove.control.CtrlSchedule;
 import groove.lts.GraphState;
 
 import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * A breadth-first exploration that uses its own queue of open states.
@@ -32,8 +32,14 @@ public class BFSStrategy extends ClosingStrategy {
     }
 
     @Override
-    protected void putInPool(GraphState element) {
-        this.stateQueue.offer(element);
+    protected void putInPool(GraphState state) {
+        CtrlSchedule schedule = state.getSchedule();
+        if (schedule.isInitial() && !schedule.isTransient()) {
+            this.stateQueue.offer(state);
+        } else if (!schedule.isFinished()) {
+            // insert in front of the queue
+            this.stateQueue.add(0, state);
+        }
     }
 
     @Override
@@ -45,5 +51,6 @@ public class BFSStrategy extends ClosingStrategy {
      * Queue of states to be explored. The set of outgoing transitions of the
      * parent state is included with each state.
      */
-    private final Queue<GraphState> stateQueue = new LinkedList<GraphState>();
+    private final LinkedList<GraphState> stateQueue =
+        new LinkedList<GraphState>();
 }

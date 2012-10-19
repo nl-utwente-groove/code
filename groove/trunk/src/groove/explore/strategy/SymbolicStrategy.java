@@ -86,10 +86,8 @@ public class SymbolicStrategy extends AbstractStrategy {
     }
 
     @Override
-    public boolean next() {
-        if (getState() == null) {
-            return false;
-        }
+    public void next() {
+        assert hasState();
         // If the current location is new, determine its outgoing switch
         // relations
         Location current = this.sts.getCurrentLocation();
@@ -133,7 +131,7 @@ public class SymbolicStrategy extends AbstractStrategy {
                 temp.clear();
             }
         }
-        return updateAtState();
+        updateState();
     }
 
     @Override

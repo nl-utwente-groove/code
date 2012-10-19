@@ -19,6 +19,9 @@ package groove.explore.strategy;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
+import groove.lts.MatchResult;
+
+import java.util.List;
 
 /**
  * Strategy that closes every state it explores, and adds the newly generated
@@ -27,6 +30,19 @@ import groove.lts.GraphState;
  * e.g., breadth-first or depth-first.
  */
 abstract public class ClosingStrategy extends AbstractStrategy {
+    @Override
+    protected void next() {
+        assert hasState();
+        List<MatchResult> matches = getState().getMatches();
+        if (!getState().getSchedule().isFinished()) {
+            putInPool(getState());
+        }
+        for (MatchResult next : matches) {
+            getState().applyMatch(next);
+        }
+        updateState();
+    }
+
     @Override
     protected void prepare() {
         super.prepare();
@@ -45,7 +61,7 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     }
 
     /** Callback method to add a pool element to the pool. */
-    abstract protected void putInPool(GraphState element);
+    abstract protected void putInPool(GraphState state);
 
     /** Clears the pool, in order to prepare the strategy for reuse. */
     abstract protected void clearPool();

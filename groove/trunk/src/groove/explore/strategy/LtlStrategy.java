@@ -78,9 +78,9 @@ public class LtlStrategy extends AbstractStrategy {
      * The next step makes atomic the full exploration of a state.
      */
     @Override
-    public boolean next() {
+    public void next() {
         if (getAtBuchiState() == null) {
-            return false;
+            return;
         }
 
         // put current state on the stack
@@ -114,7 +114,7 @@ public class LtlStrategy extends AbstractStrategy {
                             for (ProductState state : searchStack()) {
                                 getResult().add(state.getGraphState());
                             }
-                            return false;
+                            return;
                         }
                     }
                 }
@@ -128,7 +128,7 @@ public class LtlStrategy extends AbstractStrategy {
             // will never yield a counter-example
         }
 
-        return updateAtState();
+        updateState();
     }
 
     @Override
