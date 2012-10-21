@@ -18,6 +18,7 @@ package groove.lts;
 
 import groove.graph.Edge;
 import groove.trans.Action;
+import groove.trans.Event;
 import groove.trans.HostGraphMorphism;
 
 /**
@@ -47,6 +48,9 @@ public interface GraphTransition extends Edge {
     /** Returns the action for which this is a transition. */
     public Action getAction();
 
+    /** Returns the action instance on which this transition is based. */
+    public Event getEvent();
+
     /** Indicates if this transition is part of a recipe transition. */
     public boolean isPartial();
 
@@ -56,7 +60,45 @@ public interface GraphTransition extends Edge {
     public Iterable<RuleTransition> getSteps();
 
     /**
+     * Converts this transition to a more memory-efficient representation, from
+     * which the original transition can be retrieved by
+     * {@link GraphTransitionStub#toTransition(GraphState)}.
+     */
+    public GraphTransitionStub toStub();
+
+    /**
      * Returns the (partial) morphism from the source to the target graph.
      */
     public HostGraphMorphism getMorphism();
+
+    /** Classes of graph transitions. */
+    public enum Class {
+        /** Combination of {@link Class#RULE} and {@link Class#COMPLETE}. */
+        ANY {
+            @Override
+            public boolean admits(GraphTransition trans) {
+                return true;
+            }
+        },
+        /** Only rule transitions, be they partial or complete. */
+        RULE {
+            @Override
+            public boolean admits(GraphTransition trans) {
+                return trans instanceof RuleTransition;
+            }
+        },
+        /**
+         * Only complete transitions, be they rule- or recipe-triggered. 
+         * @see GraphTransition#isPartial()
+         */
+        COMPLETE {
+            @Override
+            public boolean admits(GraphTransition trans) {
+                return !trans.isPartial();
+            }
+        };
+
+        /** Indicates if a given graph transition belongs to this class. */
+        abstract public boolean admits(GraphTransition trans);
+    }
 }

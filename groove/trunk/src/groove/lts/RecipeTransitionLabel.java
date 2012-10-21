@@ -51,6 +51,32 @@ public class RecipeTransitionLabel extends AbstractLabel implements ActionLabel 
         return this.text;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof RecipeTransitionLabel)) {
+            return false;
+        }
+        RecipeTransitionLabel other = (RecipeTransitionLabel) obj;
+        if (!this.recipe.equals(other.recipe)) {
+            return false;
+        }
+        if (!this.steps.equals(other.steps)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    protected int computeHashCode() {
+        final int prime = 31;
+        int result = this.recipe.hashCode();
+        result = prime * result + this.steps.hashCode();
+        return result;
+    }
+
     private final String text;
     private final Recipe recipe;
     private final Iterable<RuleTransition> steps;

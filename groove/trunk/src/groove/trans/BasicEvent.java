@@ -45,7 +45,7 @@ import java.util.Set;
  * @version $Revision$ $Date: 2008-03-04 11:01:33 $
  */
 final public class BasicEvent extends
-        AbstractEvent<Rule,BasicEvent.SPOEventCache> {
+        AbstractRuleEvent<Rule,BasicEvent.SPOEventCache> {
     /**
      * Constructs a new event on the basis of a given production rule and anchor
      * map. A further parameter determines whether information should be stored
@@ -167,7 +167,7 @@ final public class BasicEvent extends
         HostNode[] result;
         int size = getRule().getSignature().size();
         if (size == 0) {
-            result = AbstractEvent.EMPTY_NODE_ARRAY;
+            result = AbstractRuleEvent.EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[size];
             int anchorSize = getRule().getAnchor().size();
@@ -509,7 +509,7 @@ final public class BasicEvent extends
         RuleNode[] creatorNodes = getRule().getCreatorNodes();
         int count = creatorNodes.length;
         if (count == 0) {
-            result = AbstractEvent.EMPTY_NODE_ARRAY;
+            result = AbstractRuleEvent.EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[count];
             if (added == null && getReuse() == AGGRESSIVE) {
@@ -710,7 +710,7 @@ final public class BasicEvent extends
 
     /** Cache holding the anchor map. */
     final class SPOEventCache extends
-            AbstractEvent<Rule,SPOEventCache>.AbstractEventCache {
+            AbstractRuleEvent<Rule,SPOEventCache>.AbstractEventCache {
         /**
          * @return Returns the anchorMap.
          */

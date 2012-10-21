@@ -24,11 +24,11 @@ import groove.lts.GraphState;
 import groove.lts.RuleTransition;
 import groove.lts.RuleTransitionLabel;
 import groove.lts.RuleTransitionStub;
-import groove.trans.Action;
 import groove.trans.HostGraphMorphism;
 import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.Recipe;
+import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.view.FormatException;
@@ -105,7 +105,7 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public Action getAction() {
+    public Rule getAction() {
         return getEvent().getRule();
     }
 

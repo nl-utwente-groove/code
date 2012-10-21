@@ -449,7 +449,7 @@ public class SimulatorModel implements Cloneable {
     private MatchResult getOutTransition(GraphState state) {
         MatchResult result = state.getMatch();
         if (result == null) {
-            for (RuleTransition trans : state.getTransitionSet()) {
+            for (RuleTransition trans : state.getRuleTransitions()) {
                 if (trans.target() != state) {
                     result = trans;
                     if (!trans.target().isClosed()) {

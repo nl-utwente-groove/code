@@ -24,9 +24,9 @@ import groove.control.CtrlTransition;
 import groove.lts.AbstractGraphState;
 import groove.lts.ActionLabel;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.lts.MatchCollector;
 import groove.lts.MatchResultSet;
-import groove.lts.RuleTransition;
 import groove.lts.RuleTransitionStub;
 import groove.lts.StateCache;
 import groove.lts.StateReference;
@@ -65,7 +65,7 @@ public class ShapeState extends AbstractGraphState {
     /** A (possible null) reference to a state that subsumes this one. */
     private ShapeState subsumptor;
     /** Set of outgoing transitions from this state. */
-    private ArrayList<RuleTransition> transitions;
+    private ArrayList<GraphTransition> transitions;
     /**
      * Temporary set of possible subsumed states used when adding the state to
      * the GTS.
@@ -91,7 +91,7 @@ public class ShapeState extends AbstractGraphState {
             // Fix the shape to avoid modifications.
             this.shape.setFixed();
         }
-        this.transitions = new ArrayList<RuleTransition>();
+        this.transitions = new ArrayList<GraphTransition>();
         this.subsumedStates = new ArrayList<ShapeState>();
         setCtrlState(ctrlState);
     }
@@ -116,8 +116,15 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public Set<RuleTransition> getTransitionSet() {
-        return new HashSet<RuleTransition>(this.transitions);
+    public Set<? extends GraphTransition> getTransitions(
+            GraphTransition.Class claz) {
+        Set<GraphTransition> result = new HashSet<GraphTransition>();
+        for (GraphTransition trans : this.transitions) {
+            if (claz.admits(trans)) {
+                result.add(trans);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -126,7 +133,7 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    public boolean addTransition(RuleTransition transition) {
+    public boolean addTransition(GraphTransition transition) {
         assert transition instanceof ShapeTransition
             || transition instanceof ShapeNextState : "Invalid transition type.";
         this.transitions.add(transition);
@@ -148,7 +155,7 @@ public class ShapeState extends AbstractGraphState {
      */
     protected boolean containsTransition(ActionLabel label, ShapeState target) {
         boolean result = false;
-        for (RuleTransition trans : this.transitions) {
+        for (GraphTransition trans : this.transitions) {
             if (trans.target().getNumber() == target.getNumber()
                 && trans.label().equals(label)) {
                 result = true;

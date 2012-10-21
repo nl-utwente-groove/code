@@ -77,17 +77,35 @@ public interface GraphState extends Node {
     public RuleTransitionStub getOutStub(RuleEvent event);
 
     /**
-     * Returns an unmodifiable set view on the currently generated outgoing
-     * transitions starting in this state.
+     * Returns the set of currently generated outgoing
+     * complete transitions starting in this state.
+     * Convenience method for {@code getTransitions(COMPLETE)}.
+     * @see #getTransitions(GraphTransition.Class)
      */
-    public Set<RuleTransition> getTransitionSet();
+    public Set<? extends GraphTransition> getTransitions();
+
+    /**
+     * Returns the set of currently generated outgoing
+     * rule transitions starting in this state.
+     * Convenience method for {@code getTransitions(RULE)}.
+     * @see #getTransitions(GraphTransition.Class)
+     */
+    public Set<RuleTransition> getRuleTransitions();
+
+    /**
+     * Returns the set of currently generated outgoing
+     * transitions of a certain class starting in this state.
+     * @param claz class of graph transformations to be returned
+     */
+    public Set<? extends GraphTransition> getTransitions(
+            GraphTransition.Class claz);
 
     /**
      * Adds an outgoing transition to this state, if it is not yet there.
      * @return <code>true</code> if the transition was added,
      *         <code>false</code> otherwise
      */
-    public boolean addTransition(RuleTransition transition);
+    public boolean addTransition(GraphTransition transition);
 
     /** 
      * Returns the first unexplored match found for this state, insofar one can

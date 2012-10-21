@@ -54,6 +54,14 @@ public class RecipeTransition extends
     }
 
     @Override
+    public RecipeEvent getEvent() {
+        if (this.event == null) {
+            this.event = new RecipeEvent(this);
+        }
+        return this.event;
+    }
+
+    @Override
     public boolean isPartial() {
         return false;
     }
@@ -69,19 +77,6 @@ public class RecipeTransition extends
     }
 
     /**
-     * This implementation throws an {@link IllegalArgumentException} if
-     * <code>source</code> is not equal to the source of the transition,
-     * otherwise it returns <code>target()</code>.
-     */
-    public GraphState getTarget(GraphState source) {
-        if (source != source()) {
-            throw new IllegalArgumentException("Source state incompatible");
-        } else {
-            return target();
-        }
-    }
-
-    /**
      * This implementation reconstructs the rule application from the stored
      * footprint, and appends an isomorphism to the actual target if necessary.
      */
@@ -90,6 +85,11 @@ public class RecipeTransition extends
             this.morphism = computeMorphism();
         }
         return this.morphism;
+    }
+
+    @Override
+    public RecipeEvent toStub() {
+        return getEvent();
     }
 
     /**
@@ -178,4 +178,5 @@ public class RecipeTransition extends
      * footprint) using {@link #computeMorphism()}.
      */
     private HostGraphMorphism morphism;
+    private RecipeEvent event;
 }

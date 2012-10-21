@@ -23,7 +23,7 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.prolog.GrooveEnvironment;
-import groove.trans.RuleEvent;
+import groove.trans.Event;
 
 /**
  * Predicate active_rulevent(?RuleEvent)
@@ -38,8 +38,8 @@ public class Predicate_active_ruleevent extends TransPrologCode {
         if (!(interpreter.getEnvironment() instanceof GrooveEnvironment)) {
             GrooveEnvironment.invalidEnvironment();
         }
-        RuleEvent ruleEvent =
-            ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getActiveRuleEvent();
+        Event ruleEvent =
+            ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getActiveEvent();
         if (ruleEvent == null) {
             return FAIL;
         }

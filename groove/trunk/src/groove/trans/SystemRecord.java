@@ -78,8 +78,8 @@ public class SystemRecord {
      */
     public RuleEvent normaliseEvent(RuleEvent event) {
         RuleEvent result;
-        if (getReuse() == EVENT && event instanceof AbstractEvent<?,?>) {
-            result = this.eventMap.put((AbstractEvent<?,?>) event);
+        if (getReuse() == EVENT && event instanceof AbstractRuleEvent<?,?>) {
+            result = this.eventMap.put((AbstractRuleEvent<?,?>) event);
             if (result == null) {
                 // the event is new.
                 result = event;
@@ -170,16 +170,16 @@ public class SystemRecord {
      * Identity map for events that have been encountered during exploration.
      * Events are stored only if {@link #getReuse()} is set.
      */
-    private final TreeHashSet<AbstractEvent<?,?>> eventMap =
-        new TreeHashSet<AbstractEvent<?,?>>() {
+    private final TreeHashSet<AbstractRuleEvent<?,?>> eventMap =
+        new TreeHashSet<AbstractRuleEvent<?,?>>() {
             @Override
-            protected boolean areEqual(AbstractEvent<?,?> newKey,
-                    AbstractEvent<?,?> oldKey) {
+            protected boolean areEqual(AbstractRuleEvent<?,?> newKey,
+                    AbstractRuleEvent<?,?> oldKey) {
                 return newKey.equalsEvent(oldKey);
             }
 
             @Override
-            protected int getCode(AbstractEvent<?,?> key) {
+            protected int getCode(AbstractRuleEvent<?,?> key) {
                 return key.eventHashCode();
             }
         };

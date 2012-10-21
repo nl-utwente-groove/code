@@ -17,7 +17,7 @@ package groove.lts;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.EdgeRole;
-import groove.trans.AbstractEvent;
+import groove.trans.AbstractRuleEvent;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
 import groove.trans.HostGraphMorphism;
@@ -59,7 +59,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
             System.out.printf("Created state %s from %s:%n", this, source);
             System.out.printf("  Graph: %s%n", source.getGraph());
             System.out.printf("  Event: %s%n",
-                ((AbstractEvent<?,?>) event).getLabelText(addedNodes, true));
+                ((AbstractRuleEvent<?,?>) event).getLabelText(addedNodes, true));
             System.out.printf("  Event id: %s%n",
                 System.identityHashCode(event));
         }
@@ -86,7 +86,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
 
     @Override
     public String getOutputString() throws FormatException {
-        return ((AbstractEvent<?,?>) getEvent()).getOutputString(getAddedNodes());
+        return ((AbstractRuleEvent<?,?>) getEvent()).getOutputString(getAddedNodes());
     }
 
     public HostNode[] getAddedNodes() {

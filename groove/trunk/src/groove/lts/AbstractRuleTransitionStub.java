@@ -18,6 +18,7 @@ package groove.lts;
 
 import groove.graph.Element;
 import groove.trans.HostNode;
+import groove.trans.Rule;
 import groove.trans.RuleEvent;
 
 import java.util.Arrays;
@@ -30,12 +31,12 @@ import java.util.Arrays;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract class AbstractGraphTransitionStub implements RuleTransitionStub {
+abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
     /**
      * Constructs a stub on the basis of a given rule event, added nodes and
      * target state.
      */
-    AbstractGraphTransitionStub(RuleEvent event, HostNode[] addedNodes,
+    AbstractRuleTransitionStub(RuleEvent event, HostNode[] addedNodes,
             GraphState target) {
         this.event = event;
         this.addedNodes = addedNodes;
@@ -50,6 +51,11 @@ abstract class AbstractGraphTransitionStub implements RuleTransitionStub {
     /** The event wrapped by this stub. */
     public final RuleEvent getEvent() {
         return this.event;
+    }
+
+    @Override
+    public final Rule getAction() {
+        return getEvent().getRule();
     }
 
     public RuleEvent getEvent(GraphState source) {
@@ -68,21 +74,21 @@ abstract class AbstractGraphTransitionStub implements RuleTransitionStub {
         if (this == obj) {
             return true;
         } else {
-            return obj instanceof AbstractGraphTransitionStub
-                && equalsStub((AbstractGraphTransitionStub) obj);
+            return obj instanceof AbstractRuleTransitionStub
+                && equalsStub((AbstractRuleTransitionStub) obj);
         }
     }
 
     public RuleTransition toTransition(GraphState source) {
-        return new DefaultRuleTransition(source,
-            getEvent(source), getAddedNodes(source), getTarget(source), isSymmetry());
+        return new DefaultRuleTransition(source, getEvent(source),
+            getAddedNodes(source), getTarget(source), isSymmetry());
     }
 
     /**
      * Compares the events of this and the other transition. Callback method
      * from {@link #equals(Object)}.
      */
-    protected boolean equalsStub(AbstractGraphTransitionStub other) {
+    protected boolean equalsStub(AbstractRuleTransitionStub other) {
         boolean result =
             this.target == other.target && getEvent() == other.getEvent()
                 && isSymmetry() == other.isSymmetry();

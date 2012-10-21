@@ -22,7 +22,7 @@ import java.util.Iterator;
 
 /**
  * Set that is built on an inner set but transforms the images using the
- * abstract methd {@link #toOuter(Object)}. Note that this set is inefficient
+ * abstract method {@link #toOuter(Object)}. Note that this set is inefficient
  * in everything except for iteration.
  * @see groove.util.TransformIterator
  * @see groove.util.TransformMap
@@ -56,7 +56,7 @@ abstract public class TransformCollection<T,U> extends AbstractCollection<U> {
 
     /**
      * Converts the parameter using {@link #toInner(Object)} and delegates the
-     * mathod to the inner set.
+     * method to the inner set.
      */
     @Override
     public boolean add(U obj) {

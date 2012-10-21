@@ -16,30 +16,19 @@
  */
 package groove.lts;
 
-import groove.trans.HostNode;
-import groove.trans.Rule;
-import groove.trans.RuleEvent;
+import groove.trans.Action;
 
 /**
- * Graph transition stub specialised to rule transitions.
+ * An object recording the necessary information to reconstruct an
+ * {@link GraphTransition} from a source {@link GraphState}.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 4083 $
  */
-public interface RuleTransitionStub extends GraphTransitionStub {
-    /** Specialises the return type. */
-    Rule getAction();
-
+public interface GraphTransitionStub {
     /**
-     * Returns the event that underlies the transition from a given source to
-     * this object.
+     * Returns the action that has generated this transition.
      */
-    RuleEvent getEvent(GraphState source);
-
-    /**
-     * Returns the added nodes in the transition from a given source to this
-     * object.
-     */
-    HostNode[] getAddedNodes(GraphState source);
+    Action getAction();
 
     /**
      * Returns the target state of this graph transition stub, given
@@ -54,13 +43,5 @@ public interface RuleTransitionStub extends GraphTransitionStub {
      * @return A graph transition based on the given source, and the rule,
      *         anchor images and target state stored in this out-transition.
      */
-    RuleTransition toTransition(GraphState source);
-
-    /**
-     * Indicates if the transition stub involves a non-trivial symmetry.
-     * @return <code>true</code> if the transition involves a non-trivial
-     *         symmetry
-     * @see RuleTransition#isSymmetry()
-     */
-    boolean isSymmetry();
+    GraphTransition toTransition(GraphState source);
 }

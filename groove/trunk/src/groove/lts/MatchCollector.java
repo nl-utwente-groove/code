@@ -21,6 +21,7 @@ import groove.control.CtrlPar;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.algebra.ValueNode;
+import groove.trans.Event;
 import groove.trans.AnchorValue;
 import groove.trans.CompositeEvent;
 import groove.trans.HostEdge;
@@ -31,10 +32,10 @@ import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleToHostMap;
 import groove.trans.SystemRecord;
+import groove.util.KeySet;
 import groove.util.Visitor;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -87,12 +88,15 @@ public class MatchCollector {
         // the third only if the parent match target is already closed
         final boolean isDisabled = isDisabled(ct.getCall());
         if (!isDisabled) {
-            for (MatchResult trans : this.parentTransMap.values()) {
-                if (trans.getEvent().getRule().equals(ct.getRule())) {
-                    result.add(trans);
-                    if (DEBUG) {
-                        System.out.print(" T"
-                            + System.identityHashCode(trans.getEvent()));
+            for (GraphTransition trans : this.parentTransMap) {
+                if (trans instanceof RuleTransition) {
+                    RuleTransition ruleTrans = (RuleTransition) trans;
+                    if (ruleTrans.getEvent().getRule().equals(ct.getRule())) {
+                        result.add(ruleTrans);
+                        if (DEBUG) {
+                            System.out.print(" T"
+                                + System.identityHashCode(trans.getEvent()));
+                        }
                     }
                 }
             }
@@ -248,7 +252,7 @@ public class MatchCollector {
     private MatchResult getParentTrans(RuleEvent event) {
         MatchResult result = null;
         if (this.parentTransMap != null) {
-            result = this.parentTransMap.get(event);
+            result = (RuleTransition) this.parentTransMap.get(event);
         }
         if (result == null) {
             result = event;
@@ -265,7 +269,7 @@ public class MatchCollector {
     /** Possibly {@code null} mapping from rules to sets of outgoing
      * transitions for the parent of this state.
      */
-    private final Map<RuleEvent,? extends MatchResult> parentTransMap;
+    private final KeySet<Event,GraphTransition> parentTransMap;
     /** The rules that may be enabled. */
     private final Set<Rule> enabledRules;
     /** The rules that may be disabled. */

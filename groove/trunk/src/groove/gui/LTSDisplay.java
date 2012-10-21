@@ -21,7 +21,7 @@ import groove.gui.jgraph.JGraphMode;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.lts.GraphState;
-import groove.lts.RuleTransition;
+import groove.lts.GraphTransition;
 
 import java.awt.BorderLayout;
 import java.util.HashSet;
@@ -160,7 +160,7 @@ public class LTSDisplay extends Display {
             jCells.add(getLtsModel().getJCellForNode(state));
             if (showTransitions && i + 1 < counterExamples.size()) {
                 // find transition to next state
-                for (RuleTransition trans : state.getTransitionSet()) {
+                for (GraphTransition trans : state.getTransitions()) {
                     if (trans.target() == counterExamples.get(i + 1)) {
                         jCells.add(getLtsModel().getJCellForEdge(trans));
                         break;

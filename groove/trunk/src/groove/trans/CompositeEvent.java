@@ -34,7 +34,7 @@ import java.util.TreeSet;
  * @version $Revision $
  */
 public class CompositeEvent extends
-        AbstractEvent<Rule,CompositeEvent.CompositeEventCache> {
+        AbstractRuleEvent<Rule,CompositeEvent.CompositeEventCache> {
     /**
      * Creates a composite event on the basis of a given (nonempty) constituent event set.
      * @param record the system record from which this event was created; may be
@@ -221,7 +221,7 @@ public class CompositeEvent extends
         CacheReference.<CompositeEventCache>newInstance(false);
 
     class CompositeEventCache extends
-            AbstractEvent<Rule,CompositeEventCache>.AbstractEventCache {
+            AbstractRuleEvent<Rule,CompositeEventCache>.AbstractEventCache {
         /**
          * Reconstructs a set of events from the array stored in the composite
          * event.

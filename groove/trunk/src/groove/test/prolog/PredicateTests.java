@@ -368,7 +368,7 @@ public class PredicateTests {
                     gts.getGrammar(),
                     gts,
                     gts.startState(),
-                    gts.startState().getTransitionSet().iterator().next().getEvent()),
+                    gts.startState().getRuleTransitions().iterator().next().getEvent()),
                 predicate);
         } catch (Exception e) {
             fail(e.getMessage());

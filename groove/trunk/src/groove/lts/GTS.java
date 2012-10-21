@@ -262,9 +262,9 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
             Set<GraphTransition> graphTransitions =
                 new HashSet<GraphTransition>();
             if (isViewTransient()) {
-                graphTransitions.addAll(state.getTransitionSet());
+                graphTransitions.addAll(state.getTransitions(GraphTransition.Class.ANY));
             }
-            for (RuleTransition outTrans : state.getTransitionSet()) {
+            for (RuleTransition outTrans : state.getRuleTransitions()) {
                 Recipe recipe = outTrans.getCtrlTransition().getRecipe();
                 if (recipe == null) {
                     graphTransitions.add(outTrans);
@@ -274,7 +274,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
             }
             result = graphTransitions;
         } else {
-            result = state.getTransitionSet();
+            result = state.getTransitions();
         }
         return result;
     }
@@ -304,7 +304,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
                     GraphState intermediate = sequence.getKey();
                     Chain<RuleTransition> steps = sequence.getValue();
                     if (intermediate.isTransient()) {
-                        for (RuleTransition outTrans : intermediate.getTransitionSet()) {
+                        for (RuleTransition outTrans : intermediate.getRuleTransitions()) {
                             assert outTrans.getCtrlTransition().getRecipe() == trans.getCtrlTransition().getRecipe();
                             assert !outTrans.getCtrlTransition().isStart();
                             GraphState target = outTrans.target();
@@ -574,7 +574,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         case COOKED:
             if (state.isTransient()) {
                 this.cookedStateCount++;
-                this.cookedTransitionCount += state.getTransitionSet().size();
+                this.cookedTransitionCount += state.getTransitions().size();
             } else {
                 for (GraphTransition outTrans : outEdgeSet(state)) {
                     if (outTrans.isPartial()) {
@@ -597,7 +597,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     private boolean hasFinalProperties(GraphState state) {
         boolean result = state.isPresent();
         if (result) {
-            for (RuleTransition trans : state.getTransitionSet()) {
+            for (RuleTransition trans : state.getRuleTransitions()) {
                 if (!trans.target().isAbsent()) {
                     if (trans.getCtrlTransition().getRule().isModifying()
                         || !trans.target().equals(state)) {

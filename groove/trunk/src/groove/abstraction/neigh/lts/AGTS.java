@@ -324,7 +324,7 @@ public final class AGTS extends GTS {
                 result.startState = reducedSrc;
             }
             // Go over all next states.
-            for (RuleTransition origTrans : origSrcClosure.getTransitionSet()) {
+            for (RuleTransition origTrans : origSrcClosure.getRuleTransitions()) {
                 ShapeState origTgt = (ShapeState) origTrans.target();
                 ShapeState origTgtClosure = closureMap.get(origTgt);
                 assert origTgtClosure != null;

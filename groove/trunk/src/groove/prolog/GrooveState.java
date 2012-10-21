@@ -20,7 +20,6 @@ package groove.prolog;
 
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.MatchResult;
 import groove.trans.GraphGrammar;
 import groove.trans.RuleEvent;
 
@@ -47,17 +46,17 @@ public class GrooveState {
     /**
      * The currently selected RuleEvent
      */
-    private RuleEvent activeRuleEvent;
+    private RuleEvent event;
 
     /**
      * Constructs a groove state from a graph, a GTS and the current state
      * @param graphGrammar      A grammar view
      * @param gts               A GTS
      * @param state             The currently selected state in the GTS
-     * @param match   The currently selected rule event in the GTS
+     * @param event   The currently selected rule event in the GTS
      */
     public GrooveState(GraphGrammar graphGrammar, GTS gts, GraphState state,
-            MatchResult match) {
+            RuleEvent event) {
         if (graphGrammar == null) {
             throw new NullPointerException();
         }
@@ -65,7 +64,7 @@ public class GrooveState {
         this.graphGrammar = graphGrammar;
         this.gts = gts;
         this.state = state;
-        this.activeRuleEvent = match == null ? null : match.getEvent();
+        this.event = event;
     }
 
     /**
@@ -96,7 +95,7 @@ public class GrooveState {
      * Gets he rule event of the currently selected transition in the GTS
      * @return  The rule event of the currently selected transition in the GTS, or null if there is no selected transition
      */
-    public RuleEvent getActiveRuleEvent() {
-        return this.activeRuleEvent;
+    public RuleEvent getActiveEvent() {
+        return this.event;
     }
 }
