@@ -107,18 +107,18 @@ public class ActionStore implements SimulatorListener {
      * Returns the transition application action permanently associated with
      * this simulator.
      */
-    public ApplyMatchAction getApplyTransitionAction() {
-        if (this.applyTransitionAction == null) {
-            this.applyTransitionAction = new ApplyMatchAction(this.simulator);
+    public ApplyMatchAction getApplyMatchAction() {
+        if (this.applyMatchAction == null) {
+            this.applyMatchAction = new ApplyMatchAction(this.simulator);
         }
-        return this.applyTransitionAction;
+        return this.applyMatchAction;
     }
 
     /**
      * The transition application action permanently associated with this
      * simulator.
      */
-    private ApplyMatchAction applyTransitionAction;
+    private ApplyMatchAction applyMatchAction;
 
     /**
      * Returns the back simulation action permanently associated with this

@@ -34,6 +34,7 @@ import groove.explore.strategy.BoundedLtlStrategy;
 import groove.explore.strategy.BoundedPocketLtlStrategy;
 import groove.explore.strategy.ConditionalBFSStrategy;
 import groove.explore.strategy.DFSStrategy;
+import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.strategy.LinearStrategy;
 import groove.explore.strategy.LtlStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
@@ -48,7 +49,6 @@ import groove.view.GrammarModel;
 
 import java.util.EnumSet;
 import java.util.Map;
-import java.util.Set;
 
 /** Symbolic values for the implemented strategies. */
 public enum StrategyValue implements ParsableValue {
@@ -69,6 +69,9 @@ public enum StrategyValue implements ParsableValue {
     RANDOM("random", "Random Linear Exploration",
             "This strategy chooses one transition from each open state. "
                 + "The transition is chosen randomly."),
+    /** Random linear strategy. */
+    STATE("state", "Single-State Exploration",
+            "This strategy fully explores the current state."),
     /** Depth-first RETE strategy. */
     RETE("rete", "Rete Strategy (DFS based)",
             "This strategy finds all possible transitions from the Rete "
@@ -226,6 +229,14 @@ public enum StrategyValue implements ParsableValue {
                 }
             };
 
+        case STATE:
+            return new MyTemplate0() {
+                @Override
+                public Strategy create() {
+                    return new ExploreStateStrategy();
+                }
+            };
+
         case CONDITIONAL:
             return new MyTemplate2<Rule,Boolean>(new PSequence(
                 new POptional("!", "mode", EncodedRuleMode.NEGATIVE,
@@ -362,17 +373,23 @@ public enum StrategyValue implements ParsableValue {
     private final String description;
 
     /** Set of model checking strategies. */
-    public final static Set<StrategyValue> LTL_STRATEGIES = EnumSet.of(LTL,
+    public final static EnumSet<StrategyValue> LTL_STRATEGIES = EnumSet.of(LTL,
         LTL_BOUNDED, LTL_POCKET);
+    /** Set of strategies that can be selected from the exploration dialog. */
+    public final static EnumSet<StrategyValue> DIALOG_STRATEGIES;
     /** Special mask for development strategies only. Treated specially. */
-    public final static Set<StrategyValue> DEVELOPMENT_ONLY_STRATEGIES =
+    public final static EnumSet<StrategyValue> DEVELOPMENT_ONLY_STRATEGIES =
         EnumSet.of(RETE, RETE_LINEAR, RETE_RANDOM, SHAPE_DFS, SHAPE_BFS);
     /** Set of strategies for abstract exploration. */
     public final static EnumSet<StrategyValue> ABSTRACT_STRATEGIES =
         EnumSet.of(SHAPE_DFS, SHAPE_BFS);
-    /** Set of strategies for abstract exploration. */
+    /** Set of strategies for concrete exploration. */
     public final static EnumSet<StrategyValue> CONCRETE_STRATEGIES =
         EnumSet.complementOf(ABSTRACT_STRATEGIES);
+    static {
+        DIALOG_STRATEGIES = EnumSet.complementOf(LTL_STRATEGIES);
+        DIALOG_STRATEGIES.remove(STATE);
+    }
 
     /** Specialised parameterless template that uses the strategy value's keyword, name and description. */
     abstract private class MyTemplate0 extends Template0<Strategy> {

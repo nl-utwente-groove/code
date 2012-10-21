@@ -3,6 +3,9 @@ package groove.gui.action;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.lts.GraphState;
+import groove.lts.MatchResult;
+import groove.lts.RuleTransition;
 import groove.view.GrammarModel;
 
 import javax.swing.Action;
@@ -20,10 +23,19 @@ public class ApplyMatchAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        if (getSimulatorModel().hasMatch()) {
-            getSimulatorModel().doApplyMatch();
+        MatchResult match = getSimulatorModel().getMatch();
+        if (match == null) {
+            // no match is selected; explore the selected state instead
+            getActions().getExploreAction().doExploreState();
         } else {
-            getSimulatorModel().doExploreState();
+            GraphState state = getSimulatorModel().getState();
+            RuleTransition trans = getSimulatorModel().getTransition();
+            if (match instanceof RuleTransition) {
+                trans = (RuleTransition) match;
+            } else {
+                trans = state.applyMatch(match);
+            }
+            getSimulatorModel().doSetOutTransition(trans.target(), trans);
         }
     }
 

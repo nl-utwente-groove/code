@@ -209,7 +209,7 @@ public class StateList extends JTree implements SimulatorListener {
             result.add(getActions().getSaveStateAction());
             result.add(getActions().getExportStateAction());
         } else if (node instanceof MatchTreeNode) {
-            result.add(getActions().getApplyTransitionAction());
+            result.add(getActions().getApplyMatchAction());
         }
         return result;
     }
@@ -643,11 +643,7 @@ public class StateList extends JTree implements SimulatorListener {
                 getSimulatorModel().setDisplay(toDisplay);
                 break;
             case 2:
-                if (node instanceof MatchTreeNode) {
-                    getSimulatorModel().doApplyMatch();
-                } else if (node instanceof StateTreeNode) {
-                    getSimulatorModel().doExploreState();
-                }
+                getActions().getApplyMatchAction().execute();
             }
         }
 

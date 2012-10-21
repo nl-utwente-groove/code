@@ -1,7 +1,6 @@
 package groove.gui;
 
 import groove.explore.Exploration;
-import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExplorationStatistics;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
@@ -415,58 +414,47 @@ public class SimulatorModel implements Cloneable {
         }
     }
 
-    /** Fully explores a given state of the GTS. */
-    public void doExploreState() {
-        start();
-        getExploreStateStrategy().setGTS(getGts(), getState());
-        getExploreStateStrategy().play();
-        changeGts(getGts(), true);
-        RuleTransition outTrans = getOutTransition(getState());
-        if (outTrans != null) {
-            changeMatch(outTrans);
-            changeDisplay(DisplayKind.LTS);
-        }
-        finish();
-    }
-
-    /**
-     * Applies a match to the current state. The current state is set to the
-     * derivation's target, and the current derivation to null.
+    /** 
+     * Sets the selected transition to an outgoing transition of a given state,
+     * if any. Preference is given to a transition to a non-closed state.
+     * If there is no suitable outgoing transition, the state is set instead.
+     * In addition, the history may be changed by setting the currently selected
+     * rule match to a corresponding (explored) transition.
+     * @param state the state to which (or to an outgoing transition of which) the
+     * model is set
+     * @param inTrans if non-{@code null}, the currently set match is changed to
+     * this transition
+     * @return if {@code true}, the transition or state was really changed
+     * @see #setMatch(MatchResult)
      */
-    public void doApplyMatch() {
+    public final boolean doSetOutTransition(GraphState state,
+            RuleTransition inTrans) {
         start();
-        RuleTransition trans = getTransition();
-        if (trans == null) {
-            trans = getState().applyMatch(getMatch());
+        if (inTrans != null) {
+            assert this.old.match != null
+                && this.old.match.getEvent().equals(inTrans.getEvent());
+            this.old.match = inTrans;
         }
-        if (trans != null) {
-            changeGts();
-            // fake it by pretending the old match was the
-            // transition that has just been applied
-            this.old.match = trans;
-            GraphState state = this.state = trans.target();
-            this.changes.add(Change.STATE);
-            RuleTransition outTrans = null;
-            // set the match to an outgoing transition
-            if (state.isClosed()) {
-                outTrans = getOutTransition(state);
-            }
-            changeMatch(outTrans);
-            changeDisplay(DisplayKind.LTS);
-        }
-        finish();
+        changeGts();
+        changeState(state);
+        changeMatch(getOutTransition(state));
+        changeDisplay(DisplayKind.LTS);
+        return finish();
     }
 
-    /** Returns the first outgoing transition that is not a self-loop,
+    /**Returns the first outgoing transition that is not a self-loop,
      * preferably one that also leads to an open state.
-     * Returns {@code null} if there is no such outgoing transition. */
-    private RuleTransition getOutTransition(GraphState state) {
-        RuleTransition result = null;
-        for (RuleTransition outTrans : getState().getTransitionSet()) {
-            if (outTrans.target() != getState()) {
-                result = outTrans;
-                if (!outTrans.target().isClosed()) {
-                    break;
+     * Returns {@code null} if there is no such outgoing transition.
+     */
+    private MatchResult getOutTransition(GraphState state) {
+        MatchResult result = state.getMatch();
+        if (result == null) {
+            for (RuleTransition trans : state.getTransitionSet()) {
+                if (trans.target() != state) {
+                    result = trans;
+                    if (!trans.target().isClosed()) {
+                        break;
+                    }
                 }
             }
         }
@@ -671,8 +659,7 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** 
-     * Changes the selected event and, if the event is propagated,
-     * possibly the rule.
+     * Changes the selected rule match.
      */
     private final boolean changeMatch(MatchResult match) {
         boolean result = match != this.match;
@@ -1171,18 +1158,6 @@ public class SimulatorModel implements Cloneable {
         }
     }
     private final MyLTSListener ltsListener = new MyLTSListener();
-
-    /**
-     * @return the explore-strategy for exploring a single state
-     */
-    private ExploreStateStrategy getExploreStateStrategy() {
-        if (this.exploreStateStrategy == null) {
-            this.exploreStateStrategy = new ExploreStateStrategy();
-        }
-        return this.exploreStateStrategy;
-    }
-
-    private ExploreStateStrategy exploreStateStrategy;
 
     /** Change type. */
     public static enum Change {

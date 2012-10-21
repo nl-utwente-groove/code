@@ -1,6 +1,8 @@
 package groove.gui.action;
 
+import groove.explore.AcceptorValue;
 import groove.explore.Exploration;
+import groove.explore.StrategyValue;
 import groove.gui.DisplayKind;
 import groove.gui.Icons;
 import groove.gui.Options;
@@ -59,14 +61,21 @@ public class ExploreAction extends SimulatorAction {
         explore(getSimulatorModel().getExploration(), true, true);
     }
 
+    /** Fully explores a given state of the GTS. */
+    public void doExploreState() {
+        GraphState state = getSimulatorModel().getState();
+        explore(getStateExploration(), true, true);
+        getSimulatorModel().doSetOutTransition(state, null);
+    }
+
     /**
-     * Run the exploration stored in the {@link SimulatorModel}. Can be called
-     * from outside the Simulator.
+     * Run a given exploration. Can be called from outside the Simulator.
+     * @param exploration the exploration strategy to be used
      * @param setResult if {@code true}, the result of the exploration will be set in the GTS
      * @param emphasise if {@code true}, the result of the exploration will be emphasised
      */
-    public void explore(boolean setResult, boolean emphasise) {
-        Exploration exploration = getSimulatorModel().getExploration();
+    public void explore(Exploration exploration, boolean setResult,
+            boolean emphasise) {
         LTSJModel ltsJModel = getLtsDisplay().getLtsModel();
         if (ltsJModel == null) {
             if (getSimulatorModel().setGts()) {
@@ -82,7 +91,7 @@ public class ExploreAction extends SimulatorAction {
         // unhook the lts' jmodel from the lts, for efficiency's sake
         gts.removeLTSListener(ltsJModel);
         // create a thread to do the work in the background
-        Thread generateThread = new ExploreThread();
+        Thread generateThread = new ExploreThread(exploration);
         // go!
         getSimulatorModel().getExplorationStats().start();
         generateThread.start();
@@ -107,23 +116,6 @@ public class ExploreAction extends SimulatorAction {
         if (isAnimated() && exploration.getLastState() != null) {
             getSimulatorModel().setState(exploration.getLastState());
         }
-    }
-
-    /**
-     * Run a given exploration. Can be called from outside the Simulator.
-     * @param exploration the exploration strategy to be used
-     * @param setResult if {@code true}, the result of the exploration will be set in the GTS
-     * @param emphasise if {@code true}, the result of the exploration will be emphasised
-     */
-    public void explore(Exploration exploration, boolean setResult,
-            boolean emphasise) {
-        try {
-            getSimulatorModel().setExploration(exploration);
-        } catch (FormatException e) {
-            // fail silently
-            return;
-        }
-        explore(setResult, emphasise);
     }
 
     @Override
@@ -255,6 +247,19 @@ public class ExploreAction extends SimulatorAction {
         });
     }
 
+    /**
+     * @return the explore-strategy for exploring a single state
+     */
+    private Exploration getStateExploration() {
+        if (this.stateExploration == null) {
+            this.stateExploration =
+                new Exploration(StrategyValue.STATE, AcceptorValue.NONE, 0);
+        }
+        return this.stateExploration;
+    }
+
+    private Exploration stateExploration;
+
     /** Slider for the animation speed. */
     private JPanel animationPanel;
     /** Label displaying the number of states generated so far. */
@@ -309,13 +314,14 @@ public class ExploreAction extends SimulatorAction {
      * Class that spawns a thread to perform a long-lasting action, while
      * displaying a dialog that can interrupt the thread.
      */
-    public class ExploreThread extends Thread {
+    private class ExploreThread extends Thread {
         /**
          * Constructs a generate thread for a given exploration strategy.
          */
-        public ExploreThread() {
+        public ExploreThread(Exploration exploration) {
             this.cancelDialog = createCancelDialog();
             this.progressListener = createProgressListener();
+            this.exploration = exploration;
         }
 
         @Override
@@ -344,9 +350,8 @@ public class ExploreAction extends SimulatorAction {
             displayProgress(gts);
             gts.addLTSListener(this.progressListener);
             GraphState state = simulatorModel.getState();
-            final Exploration exploration = simulatorModel.getExploration();
             try {
-                exploration.play(gts, state);
+                this.exploration.play(gts, state);
                 disposeCancelDialog();
             } catch (FormatException exc) {
                 // this should not occur, as the exploration and the
@@ -354,7 +359,7 @@ public class ExploreAction extends SimulatorAction {
                 disposeCancelDialog();
                 showErrorDialog(exc,
                     "Exploration strategy %s incompatible with grammar",
-                    exploration.getIdentifier());
+                    this.exploration.getIdentifier());
             }
             gts.removeLTSListener(this.progressListener);
         }
@@ -434,6 +439,8 @@ public class ExploreAction extends SimulatorAction {
             return isAnimated() ? new AnimateListener() : new ExploreListener();
         }
 
+        /** Exploration to be used. */
+        private final Exploration exploration;
         /** Dialog for cancelling the thread. */
         private final JDialog cancelDialog;
         /** Button that cancels the thread. */

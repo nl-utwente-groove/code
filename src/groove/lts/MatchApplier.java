@@ -52,8 +52,8 @@ public class MatchApplier {
 
     /**
      * Adds a transition to the GTS, from a given source state and for a given
-     * rule event. The event is assumed not to have been explored yet.
-     * @return the added (new) transition
+     * rule match. The match is assumed not to have been explored yet.
+     * @return the added (new) transition; non-{@code null}
      */
     public RuleTransition apply(GraphState source, MatchResult match) {
         addTransitionReporter.start();
@@ -71,6 +71,7 @@ public class MatchApplier {
                 // the sibling is the child reached by the virtual event
                 assert source instanceof GraphNextState;
                 RuleTransition parentTrans = (RuleTransition) match;
+                assert source != parentTrans.source();
                 boolean parentModifiesCtrl =
                     parentTrans.getCtrlTransition().isModifying();
                 RuleEvent sourceEvent = ((GraphNextState) source).getEvent();

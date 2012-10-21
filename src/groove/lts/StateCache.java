@@ -291,7 +291,6 @@ public class StateCache {
         for (RuleTransitionStub stub : getStubSet()) {
             RuleTransition trans = stub.toTransition(this.state);
             result.put(trans.getEvent(), trans);
-            this.matches.add(trans);
         }
         return result;
     }
@@ -352,48 +351,34 @@ public class StateCache {
     }
 
     /**
-     * Returns all matches of the state, insofar they can be determined
+     * Returns all unexplored matches of the state, insofar they can be determined
      * without cooking any currently uncooked successor states. 
-     * @return set of matches; includes outgoing transitions where possible
+     * @return set of unexplored matches
      */
     MatchResultSet getMatches() {
         if (this.matches == null) {
             this.matches = new MatchResultSet();
         }
-        if (getState().isClosed()) {
-            // we're recomputing the matches for a closed state
-            // all matches have resulted in outgoing transitions; use those
-            this.matches.addAll(getTransitionMap().values());
-        } else {
-            // try all schedules as long as this is possible
-            while (trySchedule()) {
-                // do nothing
-            }
+        // try all schedules as long as this is possible
+        while (trySchedule()) {
+            // do nothing
         }
         return this.matches;
     }
 
-    /** Returns the first match of the state. */
+    /** Returns the first unexplored match of the state. */
     MatchResult getMatch() {
         MatchResult result = null;
-        if (getState().isClosed()) {
-            // take the first outgoing transition, if any
-            if (!getTransitionMap().isEmpty()) {
-                result =
-                    getTransitionMap().entrySet().iterator().next().getValue();
-            }
-        } else {
-            // compute matches insofar necessary and feasible
-            if (this.matches == null) {
-                this.matches = new MatchResultSet();
-            }
-            while (this.matches.isEmpty() && trySchedule()) {
-                // do nothing
-            }
-            // return the first match if there is one
-            if (!this.matches.isEmpty()) {
-                result = this.matches.iterator().next();
-            }
+        // compute matches insofar necessary and feasible
+        if (this.matches == null) {
+            this.matches = new MatchResultSet();
+        }
+        while (this.matches.isEmpty() && trySchedule()) {
+            // do nothing
+        }
+        // return the first match if there is one
+        if (!this.matches.isEmpty()) {
+            result = this.matches.iterator().next();
         }
         return result;
     }

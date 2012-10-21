@@ -30,8 +30,8 @@ public enum AcceptorValue implements ParsableValue {
     /** Acceptor for final states. */
     FINAL("final", "Final States",
             "This acceptor succeeds when a state is added to the LTS that is "
-                + "<I>final</I>. A state is final when no rule is applicable "
-                + "on it (or rule application results in the same state)."),
+                + "<I>final</I>. A state is final when no modifying rule is"
+                + "applicable on it."),
     /** Acceptor for states where a given invariant rule is applicable. */
     INVARIANT("inv", "Check Invariant",
             "This acceptor succeeds when a state is reached in which the "

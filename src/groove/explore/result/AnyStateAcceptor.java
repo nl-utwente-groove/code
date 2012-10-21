@@ -19,6 +19,7 @@ package groove.explore.result;
 
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.GraphState.Flag;
 
 /**
  * Acceptor that accepts any new state that is added to the LTS.
@@ -48,6 +49,17 @@ public class AnyStateAcceptor extends Acceptor {
 
     @Override
     public void addUpdate(GTS gts, GraphState state) {
-        getResult().add(state);
+        if (state.isCooked()) {
+            getResult().add(state);
+        }
     }
+
+    @Override
+    public void statusUpdate(GTS graph, GraphState explored, Flag flag) {
+        if (flag == Flag.COOKED) {
+            getResult().add(explored);
+            super.statusUpdate(graph, explored, flag);
+        }
+    }
+
 }

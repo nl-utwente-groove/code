@@ -144,7 +144,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
     public JMenu createExploreMenu() {
         JMenu result = new JMenu("Explore");
         result.add(getActions().getExplorationDialogAction());
-        result.add(getActions().getApplyTransitionAction());
+        result.add(getActions().getApplyMatchAction());
         result.add(getActions().getExploreAction());
         result.addSeparator();
         result.add(createCheckerMenu());
