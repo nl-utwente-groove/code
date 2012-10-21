@@ -154,7 +154,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
             StrategyEnumerator.newInstance();
         Set<StrategyValue> strategyMask =
             new HashSet<StrategyValue>(EnumSet.allOf(StrategyValue.class));
-        strategyMask.removeAll(StrategyValue.LTL_STRATEGIES);
+        strategyMask.removeAll(StrategyValue.DIALOG_STRATEGIES);
         strategyEnumerator.setMask(strategyMask);
         this.strategyEditor = strategyEnumerator.createEditor(getGrammar());
         Serialized defaultStrategy =
@@ -226,7 +226,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
         try {
             getSimulatorModel().setExploration(createExploration());
             closeDialog();
-            this.simulator.getActions().getExploreAction().explore(true, true);
+            this.simulator.getActions().getExploreAction().execute();
         } catch (FormatException exc) {
             showError(exc);
         }

@@ -325,7 +325,7 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
                         GraphState node = ((LTSJVertex) cell).getNode();
                         getSimulatorModel().setState(node);
                         if (evt.getClickCount() == 2) {
-                            getSimulatorModel().doExploreState();
+                            getActions().getExploreAction().doExploreState();
                         }
                     }
                 }

@@ -180,7 +180,7 @@ final public class AspectJGraph extends GraphJGraph {
         JMenu result = new JMenu("Popup");
         switch (getGraphRole()) {
         case HOST:
-            result.add(getActions().getApplyTransitionAction());
+            result.add(getActions().getApplyMatchAction());
             result.addSeparator();
             break;
         }

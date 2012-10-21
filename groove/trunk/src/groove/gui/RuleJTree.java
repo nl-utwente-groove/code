@@ -474,7 +474,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             res.add(getActions().getEditRulePropertiesAction());
         } else if (node instanceof MatchTreeNode) {
             res.addSeparator();
-            res.add(getActions().getApplyTransitionAction());
+            res.add(getActions().getApplyMatchAction());
         }
         return res;
     }
@@ -657,7 +657,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             Object selectedNode = path.getLastPathComponent();
             if (selectedNode instanceof MatchTreeNode) {
                 if (evt.getClickCount() == 2) {
-                    getSimulatorModel().doApplyMatch();
+                    getActions().getApplyMatchAction().execute();
                 }
             }
         }

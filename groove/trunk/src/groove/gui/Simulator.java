@@ -694,7 +694,7 @@ public class Simulator implements SimulatorListener {
         result.add(getActions().getExplorationDialogAction());
         result.addSeparator();
         result.add(getActions().getStartSimulationAction());
-        result.add(getActions().getApplyTransitionAction());
+        result.add(getActions().getApplyMatchAction());
         result.add(getActions().getAnimateAction());
         result.add(getActions().getExploreAction());
         result.addSeparator();

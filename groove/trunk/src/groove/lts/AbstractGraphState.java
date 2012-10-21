@@ -194,7 +194,17 @@ abstract public class AbstractGraphState extends
 
     @Override
     public RuleTransition applyMatch(MatchResult match) {
-        return getGTS().getMatchApplier().apply(this, match);
+        RuleTransition result = null;
+        if (match instanceof RuleTransition) {
+            RuleTransition trans = (RuleTransition) match;
+            if (trans.source() == this) {
+                result = trans;
+            }
+        }
+        if (result == null) {
+            result = getGTS().getMatchApplier().apply(this, match);
+        }
+        return result;
     }
 
     public boolean isClosed() {

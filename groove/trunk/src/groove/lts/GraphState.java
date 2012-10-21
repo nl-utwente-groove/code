@@ -90,22 +90,23 @@ public interface GraphState extends Node {
     public boolean addTransition(RuleTransition transition);
 
     /** 
-     * Returns the first match found for this state, insofar one can currently
-     * be computed.
+     * Returns the first unexplored match found for this state, insofar one can
+     * currently be computed.
      */
     public MatchResult getMatch();
 
     /** 
-     * Returns the set of all match results for this state, insofar they can 
-     * currently be computed. Wherever they exist, the match results are given in
-     * the form of outgoing transitions.
+     * Returns the set of all unexplored matches for this state, insofar they can 
+     * currently be computed.
      */
     public List<MatchResult> getMatches();
 
-    /** Applies a rule match to this state.
-     * This typically results in the addition of a new outgoing transition.
+    /**
+     * Applies a rule match to this state.
+     * If the match is an outgoing rule transition of this state, nothing happens.
      * @param match the match to be applied
-     * @return the added transition, if any
+     * @return the added transition (or the match itself if that is an outgoing
+     * transition); non-{@code null}
      */
     public RuleTransition applyMatch(MatchResult match);
 
