@@ -24,7 +24,7 @@ import groove.trans.RuleEvent;
  * @author Arend Rensink
  * @version $Revision$
  */
-class SymmetryTransitionStub extends AbstractGraphTransitionStub {
+class SymmetryTransitionStub extends AbstractRuleTransitionStub {
     /**
      * Default constructor, providing the event, added nodes and target of the
      * stub.

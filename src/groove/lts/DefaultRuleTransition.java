@@ -24,7 +24,7 @@ import groove.graph.EdgeRole;
 import groove.graph.Element;
 import groove.graph.Morphism;
 import groove.graph.iso.IsoChecker;
-import groove.trans.AbstractEvent;
+import groove.trans.AbstractRuleEvent;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostGraphMorphism;
@@ -88,7 +88,7 @@ public class DefaultRuleTransition extends
 
     @Override
     public String getOutputString() throws FormatException {
-        return ((AbstractEvent<?,?>) getEvent()).getOutputString(getAddedNodes());
+        return ((AbstractRuleEvent<?,?>) getEvent()).getOutputString(getAddedNodes());
     }
 
     public boolean isSymmetry() {

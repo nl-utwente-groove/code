@@ -30,7 +30,6 @@ import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
-import groove.util.TransformSet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,52 +62,35 @@ abstract public class AbstractGraphState extends
         return getRecord().getGTS();
     }
 
-    public Set<RuleTransition> getTransitionSet() {
-        return new TransformSet<RuleTransitionStub,RuleTransition>(
-            getCachedTransitionStubs()) {
-            @Override
-            protected RuleTransition toOuter(RuleTransitionStub stub) {
-                return stub.toTransition(AbstractGraphState.this);
-            }
-
-            @Override
-            protected RuleTransitionStub toInner(Object key) {
-                if (key instanceof RuleTransition) {
-                    RuleEvent keyEvent = ((RuleTransition) key).getEvent();
-                    HostNode[] keyAddedNodes =
-                        ((RuleTransition) key).getAddedNodes();
-                    GraphState keyTarget = ((RuleTransition) key).target();
-                    return createTransitionStub(keyEvent, keyAddedNodes,
-                        keyTarget);
-                } else {
-                    return null;
-                }
-            }
-        };
+    final public Set<? extends GraphTransition> getTransitions() {
+        return getTransitions(GraphTransition.Class.COMPLETE);
     }
 
-    public boolean addTransition(RuleTransition transition) {
+    @SuppressWarnings("unchecked")
+    final public Set<RuleTransition> getRuleTransitions() {
+        return (Set<RuleTransition>) getTransitions(GraphTransition.Class.RULE);
+    }
+
+    public Set<? extends GraphTransition> getTransitions(
+            GraphTransition.Class claz) {
+        return getCache().getTransitions(claz);
+    }
+
+    public boolean addTransition(GraphTransition transition) {
         return getCache().addTransition(transition);
     }
 
     public RuleTransitionStub getOutStub(RuleEvent event) {
         assert event != null;
         RuleTransitionStub result = null;
-        if (isClosed()) {
-            RuleTransitionStub[] outTransitions = this.transitionStubs;
-            for (int i = 0; result == null && i < outTransitions.length; i++) {
-                RuleTransitionStub trans = outTransitions[i];
-                if (trans.getEvent(this) == event) {
-                    result = trans;
-                }
-            }
-        } else {
-            Iterator<RuleTransitionStub> outTransIter = getTransitionStubIter();
-            while (result == null && outTransIter.hasNext()) {
-                RuleTransitionStub trans = outTransIter.next();
-                if (trans.getEvent(this) == event) {
-                    result = trans;
-                }
+        Iterator<? extends GraphTransitionStub> outTransIter =
+            getTransitionStubIter();
+        while (outTransIter.hasNext()) {
+            GraphTransitionStub stub = outTransIter.next();
+            if (stub instanceof RuleTransitionStub
+                && ((RuleTransitionStub) stub).getEvent(this) == event) {
+                result = (RuleTransitionStub) stub;
+                break;
             }
         }
         return result;
@@ -144,7 +126,7 @@ abstract public class AbstractGraphState extends
      * Returns an iterator over the outgoing transitions as stored, i.e.,
      * without encodings taken into account.
      */
-    final protected Iterator<RuleTransitionStub> getTransitionStubIter() {
+    final protected Iterator<? extends GraphTransitionStub> getTransitionStubIter() {
         if (isClosed()) {
             return getStoredTransitionStubs().iterator();
         } else {
@@ -155,7 +137,7 @@ abstract public class AbstractGraphState extends
     /**
      * Returns a list view upon the current outgoing transitions.
      */
-    private Set<RuleTransitionStub> getCachedTransitionStubs() {
+    private Set<GraphTransitionStub> getCachedTransitionStubs() {
         return getCache().getStubSet();
     }
 
@@ -164,7 +146,7 @@ abstract public class AbstractGraphState extends
      * Note that this is only guaranteed to be synchronised with the cached stub
      * set if the state is closed.
      */
-    public final Collection<RuleTransitionStub> getStoredTransitionStubs() {
+    final Collection<GraphTransitionStub> getStoredTransitionStubs() {
         return Arrays.asList(this.transitionStubs);
     }
 
@@ -172,7 +154,7 @@ abstract public class AbstractGraphState extends
      * Stores a set of outgoing transition stubs in a memory efficient way.
      */
     private void setStoredTransitionStubs(
-            Collection<RuleTransitionStub> outTransitionSet) {
+            Collection<GraphTransitionStub> outTransitionSet) {
         if (outTransitionSet.isEmpty()) {
             this.transitionStubs = EMPTY_TRANSITION_STUBS;
         } else {
@@ -448,7 +430,7 @@ abstract public class AbstractGraphState extends
     private CtrlSchedule schedule;
 
     /** Global constant empty stub array. */
-    private RuleTransitionStub[] transitionStubs = EMPTY_TRANSITION_STUBS;
+    private GraphTransitionStub[] transitionStubs = EMPTY_TRANSITION_STUBS;
 
     /**
      * Slot to store a frozen graph representation. When filled, this provides a
@@ -468,7 +450,7 @@ abstract public class AbstractGraphState extends
     static private int frozenGraphCount;
 
     /** Constant empty array of out transition, shared for memory efficiency. */
-    private static final RuleTransitionStub[] EMPTY_TRANSITION_STUBS =
+    private static final GraphTransitionStub[] EMPTY_TRANSITION_STUBS =
         new RuleTransitionStub[0];
     /** Fixed empty array of (created) nodes. */
     private static final HostNode[] EMPTY_NODE_LIST = new HostNode[0];

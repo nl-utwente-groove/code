@@ -38,10 +38,10 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.AbstractEventCache>
+public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEvent<R,C>.AbstractEventCache>
         extends AbstractCacheHolder<C> implements RuleEvent {
     /** Constructs an event for a given rule. */
-    protected AbstractEvent(CacheReference<C> template, R rule) {
+    protected AbstractRuleEvent(CacheReference<C> template, R rule) {
         super(template);
         this.rule = rule;
     }
@@ -126,6 +126,10 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
      */
     abstract HostNode[] getArguments(HostNode[] addedNodes);
 
+    public R getAction() {
+        return getRule();
+    }
+
     public R getRule() {
         return this.rule;
     }
@@ -161,10 +165,10 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof AbstractEvent)) {
+        if (!(obj instanceof AbstractRuleEvent)) {
             return false;
         }
-        AbstractEvent<?,?> other = (AbstractEvent<?,?>) obj;
+        AbstractRuleEvent<?,?> other = (AbstractRuleEvent<?,?>) obj;
         if (getReuse() != EVENT) {
             return equalsEvent(other);
         }

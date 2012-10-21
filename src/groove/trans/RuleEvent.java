@@ -29,7 +29,7 @@ import groove.lts.RuleTransitionStub;
  * @version $Revision$ $Date: 2008-03-03 21:27:40 $
  */
 public interface RuleEvent extends Comparable<RuleEvent>, RuleTransitionStub,
-        MatchResult {
+        MatchResult, Event {
     /**
      * Returns the rule for which this is an application.
      */

@@ -17,41 +17,26 @@
 package groove.util;
 
 import java.util.AbstractSet;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Set that simultaneously behaves as a mapping from a property of the
- * contained elements to the set of elements with that property.
+ * Set that simultaneously behaves as a mapping from a uniquely defining
+ * property of the contained elements to the element with that property.
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class MapSet<K,E> extends AbstractSet<E> implements Set<E> {
+abstract public class KeySet<K,E> extends AbstractSet<E> implements Set<E> {
     @Override
     public Iterator<E> iterator() {
-        return new AbstractNestedIterator<E>() {
-            @Override
-            protected Iterator<E> nextIterator() {
-                return Collections.unmodifiableSet(this.setIterator.next()).iterator();
-            }
-
-            @Override
-            protected boolean hasNextIterator() {
-                return this.setIterator.hasNext();
-            }
-
-            private final Iterator<Set<E>> setIterator =
-                MapSet.this.map.values().iterator();
-        };
+        return this.map.values().iterator();
     }
 
     @Override
     public int size() {
-        return this.size;
+        return this.map.size();
     }
 
     @Override
@@ -59,21 +44,21 @@ abstract public class MapSet<K,E> extends AbstractSet<E> implements Set<E> {
         boolean result = false;
         K key = getKey(o);
         if (key != null) {
-            result = this.map.get(key).contains(o);
+            result = this.map.containsKey(key);
         }
         return result;
     }
 
     @Override
     public boolean add(E e) {
+        boolean result = false;
         K key = getKey(e);
-        Set<E> set = this.map.get(key);
-        if (set == null) {
-            this.map.put(key, set = new HashSet<E>());
-        }
-        boolean result = set.add(e);
-        if (result) {
-            this.size++;
+        if (key != null) {
+            E element = this.map.get(key);
+            result = element == null;
+            if (result) {
+                this.map.put(key, e);
+            }
         }
         return result;
     }
@@ -82,15 +67,9 @@ abstract public class MapSet<K,E> extends AbstractSet<E> implements Set<E> {
     public boolean remove(Object o) {
         boolean result = false;
         K key = getKey(o);
-        Set<E> set = this.map.get(key);
-        if (set != null) {
-            result = set.remove(o);
-            if (result && set.isEmpty()) {
-                this.map.remove(key);
-            }
-        }
-        if (result) {
-            this.size--;
+        if (key != null) {
+            E element = this.map.remove(key);
+            result = element != null;
         }
         return result;
     }
@@ -101,7 +80,7 @@ abstract public class MapSet<K,E> extends AbstractSet<E> implements Set<E> {
     }
 
     /** Retrieves the set of elements corresponding to a given key. */
-    public Set<E> get(K key) {
+    public E get(K key) {
         return this.map.get(key);
     }
 
@@ -112,6 +91,5 @@ abstract public class MapSet<K,E> extends AbstractSet<E> implements Set<E> {
      */
     abstract protected K getKey(Object value);
 
-    private final Map<K,Set<E>> map = new HashMap<K,Set<E>>();
-    private int size;
+    private final Map<K,E> map = new LinkedHashMap<K,E>();
 }

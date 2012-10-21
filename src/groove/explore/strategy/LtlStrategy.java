@@ -26,7 +26,6 @@ import groove.explore.util.RandomNewStateChooser;
 import groove.graph.EdgeRole;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.RuleTransition;
 import groove.verify.BuchiGraph;
 import groove.verify.BuchiLocation;
 import groove.verify.BuchiTransition;
@@ -96,13 +95,14 @@ public class LtlStrategy extends AbstractStrategy {
         // current state with the current Buchi location and add
         // the resulting combined transition to the product GTS
 
-        Set<RuleTransition> outTransitions = getState().getTransitionSet();
+        Set<? extends GraphTransition> outTransitions =
+            getState().getTransitions();
         Set<String> applicableRules = filterRuleNames(outTransitions);
 
         for (BuchiTransition buchiTrans : getAtBuchiLocation().outTransitions()) {
             if (buchiTrans.isEnabled(applicableRules)) {
                 boolean finalState = true;
-                for (RuleTransition nextTransition : outTransitions) {
+                for (GraphTransition nextTransition : outTransitions) {
                     if (nextTransition.getRole() == EdgeRole.BINARY) {
                         finalState = false;
                         ProductTransition productTransition =

@@ -72,7 +72,7 @@ public class Predicate_state_ruleevent extends LtsPrologCode {
             GraphState graphState = getGraphState(args[0]);
             Iterator<RuleEvent> it =
                 new TransformIterator<RuleTransition,RuleEvent>(
-                    graphState.getTransitionSet().iterator()) {
+                    graphState.getRuleTransitions().iterator()) {
                     @Override
                     protected RuleEvent toOuter(RuleTransition from) {
                         return from.getEvent();

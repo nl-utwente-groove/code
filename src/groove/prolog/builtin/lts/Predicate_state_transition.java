@@ -40,7 +40,7 @@ public class Predicate_state_transition extends LtsPrologCode {
         } else {
             GraphState graphState = getGraphState(args[0]);
             PrologCollectionIterator it =
-                new PrologCollectionIterator(graphState.getTransitionSet(),
+                new PrologCollectionIterator(graphState.getTransitions(),
                     args[1], interpreter.getUndoPosition());
             return it.nextSolution(interpreter);
         }

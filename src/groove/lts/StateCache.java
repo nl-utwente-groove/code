@@ -17,6 +17,7 @@
 package groove.lts;
 
 import groove.control.CtrlSchedule;
+import groove.trans.Event;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
 import groove.trans.HostEdge;
@@ -26,13 +27,13 @@ import groove.trans.HostNode;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
+import groove.util.KeySet;
+import groove.util.SetView;
 import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -55,16 +56,31 @@ public class StateCache {
     }
 
     /** Adds a transition stub to the data structures stored in this cache. */
-    boolean addTransition(RuleTransition trans) {
+    boolean addTransition(GraphTransition trans) {
         assert trans.source() == getState();
         boolean result = getStubSet().add(trans.toStub());
         if (result && this.transitionMap != null) {
-            this.transitionMap.put(trans.getEvent(), trans);
+            this.transitionMap.add(trans);
         }
         this.matches.remove(trans);
         addChild(trans.target(), new GTS.NormalisedStateSet());
         maybeSetClosed();
         return result;
+    }
+
+    Set<? extends GraphTransition> getTransitions(
+            final GraphTransition.Class claz) {
+        if (claz == GraphTransition.Class.ANY) {
+            return getTransitionMap();
+        } else {
+            return new SetView<GraphTransition>(getTransitionMap()) {
+                @Override
+                public boolean approves(Object obj) {
+                    return obj instanceof GraphTransition
+                        && claz.admits((GraphTransition) obj);
+                }
+            };
+        }
     }
 
     /** 
@@ -83,7 +99,7 @@ public class StateCache {
             } else if (this.rawAncestors.contains(child)) {
                 if (cyclic.add(child)) {
                     // recursively investigate all grandchildren
-                    for (RuleTransition childTrans : child.getTransitionSet()) {
+                    for (RuleTransition childTrans : child.getRuleTransitions()) {
                         addChild(childTrans.target(), cyclic);
                     }
                 }
@@ -141,13 +157,8 @@ public class StateCache {
         }
     }
 
-    AbstractGraphState getState() {
+    final AbstractGraphState getState() {
         return this.state;
-    }
-
-    /** Sets the cached graph. */
-    void setGraph(DeltaHostGraph graph) {
-        this.graph = graph;
     }
 
     /**
@@ -156,7 +167,7 @@ public class StateCache {
      * @throws IllegalStateException if the underlying state is not a
      *         {@link GraphNextState}
      */
-    DeltaHostGraph getGraph() {
+    final DeltaHostGraph getGraph() {
         if (this.graph == null) {
             this.graph = computeGraph();
         }
@@ -164,7 +175,7 @@ public class StateCache {
     }
 
     /** Indicates if this cache currently stores a graph. */
-    boolean hasGraph() {
+    final boolean hasGraph() {
         return this.graph != null;
     }
 
@@ -172,7 +183,7 @@ public class StateCache {
      * Lazily creates and returns the delta with respect to the
      * parent state.
      */
-    DeltaApplier getDelta() {
+    final DeltaApplier getDelta() {
         if (this.delta == null) {
             this.delta = createDelta();
         }
@@ -270,11 +281,15 @@ public class StateCache {
         return result;
     }
 
+    RuleTransition getRuleTransition(RuleEvent event) {
+        return (RuleTransition) getTransitionMap().get(event);
+    }
+
     /**
      * Lazily creates and returns a mapping from the events to 
      * outgoing transitions of this state.
      */
-    Map<RuleEvent,RuleTransition> getTransitionMap() {
+    KeySet<Event,GraphTransition> getTransitionMap() {
         if (this.transitionMap == null) {
             this.transitionMap = computeTransitionMap();
         }
@@ -285,12 +300,21 @@ public class StateCache {
      * Computes a mapping from the events to the 
      * outgoing transitions of this state.
      */
-    private Map<RuleEvent,RuleTransition> computeTransitionMap() {
-        Map<RuleEvent,RuleTransition> result =
-            new HashMap<RuleEvent,RuleTransition>();
-        for (RuleTransitionStub stub : getStubSet()) {
-            RuleTransition trans = stub.toTransition(this.state);
-            result.put(trans.getEvent(), trans);
+    private KeySet<Event,GraphTransition> computeTransitionMap() {
+        KeySet<Event,GraphTransition> result =
+            new KeySet<Event,GraphTransition>() {
+                @Override
+                protected Event getKey(Object value) {
+                    Event result = null;
+                    if (value instanceof GraphTransition) {
+                        result = ((GraphTransition) value).getEvent();
+                    }
+                    return result;
+                }
+            };
+        for (GraphTransitionStub stub : getStubSet()) {
+            GraphTransition trans = stub.toTransition(this.state);
+            result.add(trans);
         }
         return result;
     }
@@ -301,7 +325,7 @@ public class StateCache {
      * {@link #computeStubSet()}; if the state is not closed, an empty set is
      * initialised.
      */
-    Set<RuleTransitionStub> getStubSet() {
+    Set<GraphTransitionStub> getStubSet() {
         if (this.stubSet == null) {
             this.stubSet = computeStubSet();
         }
@@ -321,8 +345,8 @@ public class StateCache {
      * corresponding array in the underlying graph state. It is assumed that
      * <code>getState().isClosed()</code>.
      */
-    private Set<RuleTransitionStub> computeStubSet() {
-        Set<RuleTransitionStub> result = createStubSet();
+    private Set<GraphTransitionStub> computeStubSet() {
+        Set<GraphTransitionStub> result = createStubSet();
         result.addAll(this.state.getStoredTransitionStubs());
         return result;
     }
@@ -330,22 +354,26 @@ public class StateCache {
     /**
      * Factory method for the outgoing transition set.
      */
-    private Set<RuleTransitionStub> createStubSet() {
-        return new TreeHashSet<RuleTransitionStub>() {
+    private Set<GraphTransitionStub> createStubSet() {
+        return new TreeHashSet<GraphTransitionStub>() {
             @Override
-            protected boolean areEqual(RuleTransitionStub key,
-                    RuleTransitionStub otherKey) {
-                return key.getEvent(getState()).equals(
-                    otherKey.getEvent(getState()));
-                // return key.getEvent(getState()) ==
-                // otherKey.getEvent(getState());
+            protected boolean areEqual(GraphTransitionStub key,
+                    GraphTransitionStub otherKey) {
+                return getEvent(key).equals(getEvent(otherKey));
             }
 
             @Override
-            protected int getCode(RuleTransitionStub key) {
-                RuleEvent keyEvent = key.getEvent(getState());
-                // return keyEvent == null ? 0 : keyEvent.identityHashCode();
+            protected int getCode(GraphTransitionStub key) {
+                Event keyEvent = getEvent(key);
                 return keyEvent == null ? 0 : keyEvent.hashCode();
+            }
+
+            private Event getEvent(GraphTransitionStub stub) {
+                if (stub instanceof RecipeEvent) {
+                    return (RecipeEvent) stub;
+                } else {
+                    return ((RuleTransitionStub) stub).getEvent(getState());
+                }
             }
         };
     }
@@ -394,7 +422,7 @@ public class StateCache {
             boolean allAbsent = true;
             boolean somePresent = false;
             for (MatchResult m : this.latestMatches) {
-                RuleTransition t = getTransitionMap().get(m.getEvent());
+                GraphTransition t = getTransitionMap().get(m.getEvent());
                 if (t == null) {
                     allAbsent = false;
                 } else {
@@ -470,9 +498,10 @@ public class StateCache {
     /** The matches found during the latest successful call to {@link #trySchedule()}. */
     private MatchResultSet latestMatches;
     /**
-     * The set of outgoing transitions computed for the underlying graph.
+     * The set of outgoing transitions computed for the underlying graph,
+     * for every class of graph transitions.
      */
-    private Set<RuleTransitionStub> stubSet;
+    private Set<GraphTransitionStub> stubSet;
     /** The graph state of this cache. */
     private final AbstractGraphState state;
     /** The system record generating this state. */
@@ -480,7 +509,7 @@ public class StateCache {
     /** The delta with respect to the state's parent. */
     private DeltaApplier delta;
     /** Cached map from events to target transitions. */
-    private Map<RuleEvent,RuleTransition> transitionMap;
+    private KeySet<Event,GraphTransition> transitionMap;
     /** Cached graph for this state. */
     private DeltaHostGraph graph;
     /** 

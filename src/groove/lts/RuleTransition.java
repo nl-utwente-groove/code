@@ -87,7 +87,7 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition,
     /**
      * Converts this transition to a more memory-efficient representation, from
      * which the original transition can be retrieved by
-     * {@link RuleTransitionStub#toTransition(GraphState)}.
+     * {@link GraphTransitionStub#toTransition(GraphState)}.
      */
     public RuleTransitionStub toStub();
 

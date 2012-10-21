@@ -35,7 +35,7 @@ public class Predicate_state_transition_set extends LtsPrologCode {
             Term[] args) throws PrologException {
         GraphState graphState = getGraphState(args[0]);
         Term resultSet =
-            CompoundTerm.getList(PrologUtils.createJOTlist(graphState.getTransitionSet()));
+            CompoundTerm.getList(PrologUtils.createJOTlist(graphState.getTransitions()));
         return interpreter.unify(args[1], resultSet);
     }
 }

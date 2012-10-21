@@ -17,7 +17,7 @@
 package groove.lts;
 
 import groove.graph.AbstractLabel;
-import groove.trans.AbstractEvent;
+import groove.trans.AbstractRuleEvent;
 import groove.trans.HostNode;
 import groove.trans.Recipe;
 import groove.trans.Rule;
@@ -76,7 +76,7 @@ public class RuleTransitionLabel extends AbstractLabel implements ActionLabel {
             result.append(this.recipe);
             result.append('/');
         }
-        result.append(((AbstractEvent<?,?>) this.event).getLabelText(
+        result.append(((AbstractRuleEvent<?,?>) this.event).getLabelText(
             this.addedNodes, anchored));
         if (brackets) {
             result.append(END_CHAR);

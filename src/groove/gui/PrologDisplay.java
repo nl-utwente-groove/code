@@ -24,6 +24,7 @@ import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologException;
+import groove.lts.MatchResult;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.GrooveState;
 import groove.prolog.PrologEngine;
@@ -411,11 +412,12 @@ public class PrologDisplay extends ResourceDisplay {
             addQueryHistory(queryString);
             getResultsArea().setText("?- " + queryString + "\n");
 
+            MatchResult match = getSimulatorModel().getMatch();
             getEngine().setGrooveState(
                 new GrooveState(getGrammar().toGrammar(),
                     getSimulatorModel().getGts(),
-                    getSimulatorModel().getState(),
-                    getSimulatorModel().getMatch()));
+                    getSimulatorModel().getState(), match == null ? null
+                            : match.getEvent()));
 
             this.solutionCount = 0;
             processResults(getEngine().newQuery(queryString));
