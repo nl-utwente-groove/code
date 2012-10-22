@@ -20,6 +20,7 @@ import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
+import groove.lts.RuleTransition;
 
 import java.util.List;
 
@@ -36,6 +37,18 @@ abstract public class ClosingStrategy extends AbstractStrategy {
         List<MatchResult> matches = getState().getMatches();
         if (!getState().getSchedule().isFinished()) {
             putInPool(getState());
+            if (matches.isEmpty()) {
+                // it must be the case that some matches have already
+                // been explored but not as part of the current strategy
+                // invocation; so just look up the existing transitions
+                // and add them
+                for (RuleTransition trans : getState().getRuleTransitions()) {
+                    GraphState target = trans.target();
+                    if (!target.isClosed()) {
+                        putInPool(target);
+                    }
+                }
+            }
         }
         for (MatchResult next : matches) {
             getState().applyMatch(next);

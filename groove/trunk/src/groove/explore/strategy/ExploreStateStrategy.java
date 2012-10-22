@@ -48,8 +48,7 @@ public class ExploreStateStrategy extends ClosingStrategy {
     @Override
     protected void putInPool(GraphState state) {
         CtrlSchedule schedule = state.getSchedule();
-        if ((schedule.isTransient() || !schedule.isInitial())
-            && !schedule.isFinished()) {
+        if ((schedule.isTransient() || !schedule.isInitial())) {
             // insert on top of the stack
             this.stack.push(state);
         }
