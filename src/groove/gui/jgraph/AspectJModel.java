@@ -344,12 +344,14 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         }
         // adjust the connection set by removing all connections for edges
         // that were just removed
-        Iterator it = cs.connections();
-        while (it.hasNext()) {
-            ConnectionSet.Connection conn =
-                (ConnectionSet.Connection) it.next();
-            if (!insertables.contains(conn.getEdge())) {
-                it.remove();
+        if (cs != null) {
+            Iterator it = cs.connections();
+            while (it.hasNext()) {
+                ConnectionSet.Connection conn =
+                    (ConnectionSet.Connection) it.next();
+                if (!insertables.contains(conn.getEdge())) {
+                    it.remove();
+                }
             }
         }
         super.insert(insertables.toArray(), attributes, cs, pm, edits);
