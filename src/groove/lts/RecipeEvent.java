@@ -19,17 +19,13 @@ package groove.lts;
 import groove.trans.Event;
 import groove.trans.Recipe;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 /** Event class for recipe transitions. */
 public class RecipeEvent implements GraphTransitionStub, Event {
     /** Constructs a stub from a sequence of rule transitions. */
     public RecipeEvent(RecipeTransition trans) {
-        List<RuleTransitionStub> steps = new ArrayList<RuleTransitionStub>();
         this.recipe = trans.getAction();
-        this.steps = steps.toArray(new RuleTransitionStub[steps.size()]);
+        this.initial = trans.getInitial().toStub();
+        this.target = trans.target();
     }
 
     @Override
@@ -39,26 +35,19 @@ public class RecipeEvent implements GraphTransitionStub, Event {
 
     @Override
     public GraphState getTarget(GraphState source) {
-        return toTransition(source).target();
+        assert this.initial.getTarget(source) != null;
+        return this.target;
+    }
+
+    @Override
+    public Event getEvent(GraphState source) {
+        return this;
     }
 
     @Override
     public RecipeTransition toTransition(GraphState source) {
-        List<RuleTransition> steps = new ArrayList<RuleTransition>();
-        GraphState intermediate = source;
-        for (int i = 0; i < this.steps.length; i++) {
-            RuleTransitionStub stub = this.steps[i];
-            RuleTransition step = stub.toTransition(intermediate);
-            steps.add(step);
-            intermediate = step.target();
-        }
-        return new RecipeTransition(source, this.recipe, steps, intermediate);
-    }
-
-    @Override
-    public String toString() {
-        return "RecipeTransitionStub [recipe=" + this.recipe + ", steps="
-            + Arrays.toString(this.steps) + "]";
+        return new RecipeTransition(source,
+            this.initial.toTransition(source), this.target);
     }
 
     @Override
@@ -66,7 +55,8 @@ public class RecipeEvent implements GraphTransitionStub, Event {
         final int prime = 31;
         int result = 1;
         result = prime * result + this.recipe.hashCode();
-        result = prime * result + Arrays.hashCode(this.steps);
+        result = prime * result + this.initial.hashCode();
+        result = prime * result + this.target.hashCode();
         return result;
     }
 
@@ -85,7 +75,10 @@ public class RecipeEvent implements GraphTransitionStub, Event {
         if (!this.recipe.equals(other.recipe)) {
             return false;
         }
-        if (!Arrays.equals(this.steps, other.steps)) {
+        if (!this.initial.equals(other.initial)) {
+            return false;
+        }
+        if (!this.target.equals(other.target)) {
             return false;
         }
         return true;
@@ -93,6 +86,8 @@ public class RecipeEvent implements GraphTransitionStub, Event {
 
     /** Source state of the rule transition. */
     private final Recipe recipe;
-    /** Sequence of rule transitions leading to this recipe transition. */
-    private final RuleTransitionStub[] steps;
+    /** Initial rule transition of the event. */
+    private final RuleTransitionStub initial;
+    /** Target state of the event. */
+    private final GraphState target;
 }

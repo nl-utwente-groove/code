@@ -104,7 +104,7 @@ public class MatchApplier {
             }
         }
         // add transition to gts
-        getGTS().addRuleTransition(transition);
+        getGTS().addTransition(transition);
         addTransitionReporter.stop();
         return transition;
     }

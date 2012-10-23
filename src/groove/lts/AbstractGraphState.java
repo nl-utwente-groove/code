@@ -159,7 +159,7 @@ abstract public class AbstractGraphState extends
             this.transitionStubs = EMPTY_TRANSITION_STUBS;
         } else {
             this.transitionStubs =
-                new RuleTransitionStub[outTransitionSet.size()];
+                new GraphTransitionStub[outTransitionSet.size()];
             outTransitionSet.toArray(this.transitionStubs);
         }
     }

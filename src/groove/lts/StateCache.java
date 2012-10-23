@@ -17,9 +17,9 @@
 package groove.lts;
 
 import groove.control.CtrlSchedule;
-import groove.trans.Event;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
+import groove.trans.Event;
 import groove.trans.HostEdge;
 import groove.trans.HostElement;
 import groove.trans.HostGraph;
@@ -28,10 +28,12 @@ import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.KeySet;
+import groove.util.Pair;
 import groove.util.SetView;
 import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -63,7 +65,9 @@ public class StateCache {
             this.transitionMap.add(trans);
         }
         this.matches.remove(trans);
-        addChild(trans.target(), new GTS.NormalisedStateSet());
+        if (trans.isPartial()) {
+            addOutPartial((RuleTransition) trans);
+        }
         maybeSetClosed();
         return result;
     }
@@ -84,35 +88,66 @@ public class StateCache {
     }
 
     /** 
-     * Possibly adds this cache to the raw parents of a given
-     * child state. If the prospective child is itself one of this cache's
-     * raw ancestors, the grandchildren are added recursively.
-     * @param child the child state to whose parents this cache should be added
-     * @param cyclic intersection of this cache's uncooked ancestors and {@code child}'s
-     * successors that have already been investigated 
+     * Adds an outgoing partial transition to this cache.
+     * @param partial new outgoing partial rule transition from this state
      */
-    private void addChild(GraphState child, Set<GraphState> cyclic) {
+    private void addOutPartial(RuleTransition partial) {
+        boolean isTransient = getState().isTransient();
+        // record the transition as reachable if it is not an 
+        // outgoing transition of this state
+        if (isTransient) {
+            this.partials.add(partial);
+        }
+        GraphState child = partial.target();
         // only add the child if it is raw
-        if (child.isTransient() && !child.isCooked()) {
-            if (child.equals(getState())) {
-                // do nothing
-            } else if (this.rawAncestors.contains(child)) {
-                if (cyclic.add(child)) {
-                    // recursively investigate all grandchildren
-                    for (RuleTransition childTrans : child.getRuleTransitions()) {
-                        addChild(childTrans.target(), cyclic);
-                    }
-                }
-            } else {
-                // add this cache as uncooked ancestor to the given child
-                StateCache childCache = child.getCache();
-                childCache.rawParents.add(this);
-                childCache.rawAncestors.add(getState());
-                childCache.rawAncestors.addAll(this.rawAncestors);
-                this.rawChildCount++;
-            }
-        } else {
+        if (!child.isTransient()) {
+            // we've reached a non-transient state
+            // so this state is certainly present
             this.present = true;
+        } else if (!child.isClosed()) {
+            // we've reached a transient open state
+            this.transientOpens.add(child);
+            child.getCache().addInPartial(this, partial);
+        }
+        if (isTransient) {
+            // notify all parents of the new partial
+            for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
+                parent.one().notifyPartial(partial);
+            }
+        }
+    }
+
+    /**
+     * Adds an incoming partial transition to this cache.
+     * The transition source is registered as a parent,
+     * and it is notified of all currently found partials.
+     * @param parentCache the state cache of the transition source
+     * @param in a new incoming partial transition
+     */
+    private void addInPartial(StateCache parentCache, RuleTransition in) {
+        this.rawParents.add(Pair.newPair(parentCache, in));
+        for (RuleTransition partial : this.partials) {
+            parentCache.notifyPartial(partial);
+        }
+    }
+
+    /**
+     * Notifies the cache of the existence of a reachable partial transition.
+     * @param partial partial transition reachable from this state
+     */
+    private void notifyPartial(RuleTransition partial) {
+        // maybe add the transition target to the transient open states
+        GraphState target = partial.target();
+        if (target.isTransient() && !target.isClosed()) {
+            this.transientOpens.add(target);
+        }
+        // add the partial if it was not already known
+        if (getState().isTransient() && this.partials.add(partial)) {
+            // notify all parents of the new partial
+            for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
+                parent.one().notifyPartial(partial);
+            }
+            this.present |= !target.isTransient();
         }
     }
 
@@ -120,10 +155,25 @@ public class StateCache {
      * Callback method invoked when the state has been closed.
      */
     void notifyClosed() {
-        if (this.rawChildCount == 0) {
-            getState().setCooked();
-            if (!this.present) {
-                getState().setAbsent();
+        if (this.state.isTransient()) {
+            // notify all parents of the closure
+            for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
+                parent.one().notifyChildClosed(this.state);
+            }
+            if (this.transientOpens.isEmpty()) {
+                setStateCooked();
+            }
+        }
+    }
+
+    private void notifyChildClosed(GraphState state) {
+        if (this.transientOpens.remove(state)) {
+            if (this.transientOpens.isEmpty()) {
+                setStateCooked();
+            }
+            // notify all parents of the closure
+            for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
+                parent.one().notifyChildClosed(state);
             }
         }
     }
@@ -133,27 +183,41 @@ public class StateCache {
      * Notifies all raw predecessors that the associated state has become cooked.
      */
     void notifyCooked() {
-        for (StateCache parent : this.rawParents) {
-            parent.notifyChildCooked(this.present);
+        for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
+            parent.one().notifyChildCooked(parent.two(), this);
         }
         this.rawParents.clear();
-        this.rawAncestors.clear();
+        this.partials.clear();
     }
 
     /** 
-     * Callback method signalling that one of the uncooked successors has
+     * Callback method signalling that one of the raw successor states has
      * become cooked.
-     * @param present flag indicating that the cooked successor is now present,
-     * implying that this state is present as well.
+     * @param out reachable outgoing partial rule transition leading to the
+     * cooked child
+     * @param childCache state cache of the cooked child
      */
-    private void notifyChildCooked(boolean present) {
-        this.rawChildCount--;
-        this.present |= present;
-        if (this.rawChildCount == 0) {
-            getState().setCooked();
-            if (!this.present) {
-                getState().setAbsent();
+    private void notifyChildCooked(RuleTransition out, StateCache childCache) {
+        assert out.source() == getState();
+        if (!getState().isTransient() && childCache.present) {
+            Set<GraphState> recipeTargets = new HashSet<GraphState>();
+            for (RuleTransition partial : childCache.partials) {
+                GraphState t = partial.target();
+                if (!t.isTransient()) {
+                    recipeTargets.add(t);
+                }
             }
+            for (GraphState t : recipeTargets) {
+                getState().getGTS().addTransition(
+                    new RecipeTransition(getState(), out, t));
+            }
+        }
+    }
+
+    private void setStateCooked() {
+        getState().setCooked();
+        if (!this.present) {
+            getState().setAbsent();
         }
     }
 
@@ -369,11 +433,7 @@ public class StateCache {
             }
 
             private Event getEvent(GraphTransitionStub stub) {
-                if (stub instanceof RecipeEvent) {
-                    return (RecipeEvent) stub;
-                } else {
-                    return ((RuleTransitionStub) stub).getEvent(getState());
-                }
+                return stub.getEvent(getState());
             }
         };
     }
@@ -491,6 +551,11 @@ public class StateCache {
         }
     }
 
+    @Override
+    public String toString() {
+        return "StateCache [state=" + this.state + "]";
+    }
+
     /** Strategy object used to find the matches. */
     private MatchCollector matcher;
     /** The matches found so far for this state. */
@@ -513,18 +578,14 @@ public class StateCache {
     /** Cached graph for this state. */
     private DeltaHostGraph graph;
     /** 
-     * Set of direct uncooked predecessor states, maintained as long this state 
-     * is transient and uncooked. These states are notified as soon as this state is
-     * discovered to be non-transient or cooked.
-     * @see #notifyCooked()
+     * Set of incoming transitions from raw parent states.
      */
-    private final List<StateCache> rawParents = new ArrayList<StateCache>();
-    /** Transitively closed set of uncooked ancestors. This is maintained
-     * to ensure that cycles of transient states are correctly cooked.
-     */
-    private final Set<GraphState> rawAncestors = new GTS.NormalisedStateSet();
-    /** Number of transient, uncooked successors. */
-    private int rawChildCount;
+    private final List<Pair<StateCache,RuleTransition>> rawParents =
+        new ArrayList<Pair<StateCache,RuleTransition>>();
+    /** Set of reachable transient open states. */
+    private final Set<GraphState> transientOpens = new HashSet<GraphState>();
+    /** Set of reachable partial rule transitions. */
+    private final Set<RuleTransition> partials = new HashSet<RuleTransition>();
     /** Flag indicating if the associated state is known to be present. */
     private boolean present;
     /**

@@ -176,7 +176,7 @@ public final class ShapeMatchApplier extends MatchApplier {
             }
         }
         if (trans != null) {
-            agts.addRuleTransition(trans);
+            agts.addTransition(trans);
         }
         return trans;
     }

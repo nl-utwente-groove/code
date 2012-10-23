@@ -160,7 +160,7 @@ public class LTSDisplay extends Display {
             jCells.add(getLtsModel().getJCellForNode(state));
             if (showTransitions && i + 1 < counterExamples.size()) {
                 // find transition to next state
-                for (GraphTransition trans : state.getTransitions()) {
+                for (GraphTransition trans : state.getTransitions(GraphTransition.Class.ANY)) {
                     if (trans.target() == counterExamples.get(i + 1)) {
                         jCells.add(getLtsModel().getJCellForEdge(trans));
                         break;
