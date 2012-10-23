@@ -40,11 +40,8 @@ import groove.trans.HostEdge;
 import groove.trans.HostFactory;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.trans.Recipe;
 import groove.trans.SystemRecord;
-import groove.util.Chain;
 import groove.util.NestedIterator;
-import groove.util.SetView;
 import groove.util.TransformIterator;
 import groove.util.TreeHashSet;
 import groove.view.FormatException;
@@ -57,7 +54,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -255,81 +251,8 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
 
     @Override
     public Set<? extends GraphTransition> outEdgeSet(Node node) {
-        Set<? extends GraphTransition> result;
         GraphState state = (GraphState) node;
-        if (state.isCooked() && !state.isTransient()
-            && state.getCtrlState().hasRecipes()) {
-            Set<GraphTransition> graphTransitions =
-                new HashSet<GraphTransition>();
-            if (isViewTransient()) {
-                graphTransitions.addAll(state.getTransitions(GraphTransition.Class.ANY));
-            }
-            for (RuleTransition outTrans : state.getRuleTransitions()) {
-                Recipe recipe = outTrans.getCtrlTransition().getRecipe();
-                if (recipe == null) {
-                    graphTransitions.add(outTrans);
-                } else {
-                    collectRecipeTransitions(graphTransitions, outTrans);
-                }
-            }
-            result = graphTransitions;
-        } else {
-            result = state.getTransitions();
-        }
-        return result;
-    }
-
-    /**
-     * Adds all recipe transition starting with a given transition
-     * to a given set.
-     */
-    private void collectRecipeTransitions(Set<GraphTransition> result,
-            RuleTransition trans) {
-        GraphState state = trans.target();
-        if (state.isAbsent()) {
-            // do nothing
-        } else if (state.isTransient()) {
-            Map<GraphState,Chain<RuleTransition>> sequences =
-                new HashMap<GraphState,Chain<RuleTransition>>();
-            // set of (intermediate) states already found
-            Set<GraphState> oldStates = new NormalisedStateSet();
-            sequences.put(state, Chain.singleton(trans));
-            oldStates.add(state);
-            // BFS over the outgoing transitions
-            do {
-                // collect all sequences from the final states of the current sequences
-                Map<GraphState,Chain<RuleTransition>> oldSequences = sequences;
-                sequences = new HashMap<GraphState,Chain<RuleTransition>>();
-                for (Map.Entry<GraphState,Chain<RuleTransition>> sequence : oldSequences.entrySet()) {
-                    GraphState intermediate = sequence.getKey();
-                    Chain<RuleTransition> steps = sequence.getValue();
-                    if (intermediate.isTransient()) {
-                        for (RuleTransition outTrans : intermediate.getRuleTransitions()) {
-                            assert outTrans.getCtrlTransition().getRecipe() == trans.getCtrlTransition().getRecipe();
-                            assert !outTrans.getCtrlTransition().isStart();
-                            GraphState target = outTrans.target();
-                            if (!target.isAbsent() && oldStates.add(target)) {
-                                sequences.put(target, steps.prefix(outTrans));
-                            }
-                        }
-                    } else {
-                        // the sequence is complete (but in inverse order)
-                        result.add(createRecipeTransition(steps.toList(false)));
-                    }
-                }
-            } while (!sequences.isEmpty());
-        } else {
-            result.add(createRecipeTransition(Collections.singletonList(trans)));
-        }
-    }
-
-    /** Creates a recipe transition for a given chain of rule transitions, to a given target state. */
-    private RecipeTransition createRecipeTransition(List<RuleTransition> steps) {
-        RuleTransition first = steps.get(0);
-        GraphState source = first.source();
-        GraphState target = steps.get(steps.size() - 1).target();
-        Recipe recipe = first.getRecipe();
-        return new RecipeTransition(source, recipe, steps, target);
+        return state.getTransitions(GraphTransition.Class.ANY);
     }
 
     /** Checks if this GTS has a state with a post application error. */
@@ -376,29 +299,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
 
     public Set<? extends GraphState> nodeSet() {
         if (this.nodeSet == null) {
-            Set<GraphState> result = getStateSet();
-            if (getGrammar().hasRecipes()) {
-                this.nodeSet = new SetView<GraphState>(result) {
-                    @Override
-                    public boolean approves(Object obj) {
-                        if (!(obj instanceof GraphState)) {
-                            return false;
-                        }
-                        GraphState state = (GraphState) obj;
-                        return isViewTransient() || !state.isTransient()
-                            || !state.isCooked();
-                    }
-
-                    @Override
-                    public int size() {
-                        return this.set.size()
-                            - (isViewTransient() ? 0
-                                    : GTS.this.cookedStateCount);
-                    }
-                };
-            } else {
-                this.nodeSet = result;
-            }
+            this.nodeSet = getStateSet();
         }
         return this.nodeSet;
     }
@@ -450,23 +351,25 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     /**
      * Adds a transition to the GTS, under the assumption that the source and
      * target states are already present.
-     * @param transition the source state of the transition to be added
+     * @param trans the source state of the transition to be added
      */
-    public void addRuleTransition(RuleTransition transition) {
+    public void addTransition(GraphTransition trans) {
         // add (possibly isomorphically modified) edge to LTS
-        if (transition.source().addTransition(transition)) {
-            this.transitionCount++;
-            fireAddEdge(transition);
+        if (trans.source().addTransition(trans)) {
+            fireAddEdge(trans);
         } else {
             spuriousTransitionCount++;
         }
-        try {
-            String outputString = transition.getOutputString();
-            if (outputString != null) {
-                System.out.print(outputString);
+        if (trans instanceof RuleTransition) {
+            try {
+                String outputString =
+                    ((RuleTransition) trans).getOutputString();
+                if (outputString != null) {
+                    System.out.print(outputString);
+                }
+            } catch (FormatException e) {
+                System.err.println(e.getMessage());
             }
-        } catch (FormatException e) {
-            System.err.println(e.getMessage());
         }
     }
 
@@ -552,6 +455,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      */
     @Override
     protected void fireAddEdge(GraphTransition edge) {
+        this.transitionCount++;
         super.fireAddEdge(edge);
         for (GTSListener listener : getGraphListeners()) {
             listener.addUpdate(this, edge);
@@ -572,18 +476,17 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
             this.closedStateCount++;
             break;
         case COOKED:
-            if (state.isTransient()) {
-                this.cookedStateCount++;
-                this.cookedTransitionCount += state.getTransitions().size();
-            } else {
-                for (GraphTransition outTrans : outEdgeSet(state)) {
-                    if (outTrans.isPartial()) {
-                        this.cookedTransitionCount++;
-                    } else if (outTrans instanceof RecipeTransition) {
-                        fireAddEdge(outTrans);
-                    }
-                }
-            }
+            //            if (state.isTransient()) {
+            //                this.cookedTransitionCount += state.getTransitions().size();
+            //            } else {
+            //                for (GraphTransition outTrans : outEdgeSet(state)) {
+            //                    if (outTrans.isPartial()) {
+            //                        this.cookedTransitionCount++;
+            //                    } else if (outTrans instanceof RecipeTransition) {
+            //                        fireAddEdge(outTrans);
+            //                    }
+            //                }
+            //            }
         }
         for (GTSListener listener : getGraphListeners()) {
             listener.statusUpdate(this, state, flag);
@@ -614,7 +517,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      * @return Returns the transitionCount.
      */
     public final int getTransitionCount() {
-        return this.transitionCount - this.cookedTransitionCount;
+        return this.transitionCount;
     }
 
     /**
@@ -676,7 +579,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     @Override
     public boolean addEdgeWithoutCheck(GraphTransition edge) {
         if (edge instanceof RuleTransition) {
-            addRuleTransition((RuleTransition) edge);
+            addTransition(edge);
             return true;
         } else {
             return false;
@@ -696,19 +599,6 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     @Override
     public GraphRole getRole() {
         return GraphRole.LTS;
-    }
-
-    /** 
-     * Indicates if the transient states and partial transitions are 
-     * included in the GTS view.
-     */
-    public boolean isViewTransient() {
-        return this.viewTransient;
-    }
-
-    /** Sets the GTS to showing transient states and partial transitions. */
-    public void setViewTransient(boolean viewTransient) {
-        this.viewTransient = viewTransient;
     }
 
     /** Returns the match applier associated with this GTS. */
@@ -759,25 +649,10 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      * The number of closed states in the GTS.
      */
     private int closedStateCount = 0;
-    /** 
-     * The number of cooked transient states in the GTS.
-     * These are the states that are no longer considered part of the GTS.
-     */
-    private int cookedStateCount = 0;
     /**
      * The number of transitions in the GTS.
      */
     private int transitionCount = 0;
-    /**
-     * The number of cooked recipe transitions in the GTS.
-     * These are the transitions that only appear as part of recipe transitions.
-     */
-    private int cookedTransitionCount = 0;
-
-    /** Flag to indicate that the transient states and partial transitions
-     * are included in the GTS.
-     */
-    private boolean viewTransient = true;
     /**
      * Set of {@link GTSListener} s to be identified of changes in this graph.
      * Set to <tt>null</tt> when the graph is fixed.

@@ -99,10 +99,14 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
         return getEdge().isPartial();
     }
 
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
     @Override
     public boolean isVisible() {
         boolean result =
-            (getJGraph().isShowPartialTransitions() || !isPartial())
+            (getJGraph().isShowPartialTransitions() || !isPartial() || !getEdge().source().isCooked())
                 && super.isVisible();
         return result && this.visible;
     }
@@ -141,10 +145,6 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     /** Returns a prototype {@link CtrlJEdge} for a given {@link CtrlJGraph}. */
     public static LTSJEdge getPrototype(LTSJGraph jGraph) {
         return new LTSJEdge(null);
-    }
-
-    public void setVisible(boolean visible) {
-        this.visible = visible;
     }
 
 }

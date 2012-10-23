@@ -22,12 +22,13 @@ import groove.trans.Recipe;
 /** Class of labels that can appear on rule transitions. */
 public class RecipeTransitionLabel extends AbstractLabel implements ActionLabel {
     /** 
-     * Constructs a new label on the basis of a given rule event and list
-     * of created nodes.
+     * Constructs a new label on the basis of a given recipe and initial rule transition.
+     * The subsequent rule transitions are optionally passed in; if {@code null},
+     * they can be computed.
      */
-    public RecipeTransitionLabel(Recipe recipe, Iterable<RuleTransition> steps) {
-        this.recipe = recipe;
-        this.steps = steps;
+    public RecipeTransitionLabel(RuleTransition initial) {
+        this.recipe = initial.getRecipe();
+        this.initial = initial;
         this.text = getLabelText();
     }
 
@@ -36,9 +37,9 @@ public class RecipeTransitionLabel extends AbstractLabel implements ActionLabel 
         return this.recipe;
     }
 
-    /** Returns the list of rule transitions comprising this label. */
-    public Iterable<RuleTransition> getSteps() {
-        return this.steps;
+    /** Returns the initial rule transition of the recipe transition. */
+    public RuleTransition getInitial() {
+        return this.initial;
     }
 
     /** Constructs the label text. */
@@ -63,7 +64,7 @@ public class RecipeTransitionLabel extends AbstractLabel implements ActionLabel 
         if (!this.recipe.equals(other.recipe)) {
             return false;
         }
-        if (!this.steps.equals(other.steps)) {
+        if (!this.initial.equals(other.initial)) {
             return false;
         }
         return true;
@@ -73,11 +74,11 @@ public class RecipeTransitionLabel extends AbstractLabel implements ActionLabel 
     protected int computeHashCode() {
         final int prime = 31;
         int result = this.recipe.hashCode();
-        result = prime * result + this.steps.hashCode();
+        result = prime * result + this.initial.hashCode();
         return result;
     }
 
     private final String text;
     private final Recipe recipe;
-    private final Iterable<RuleTransition> steps;
+    private final RuleTransition initial;
 }

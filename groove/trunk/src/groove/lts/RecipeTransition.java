@@ -23,7 +23,11 @@ import groove.trans.HostGraphMorphism;
 import groove.trans.Recipe;
 import groove.trans.RuleApplication;
 
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 /**
  * Models a transition corresponding to the complete execution of
@@ -32,15 +36,14 @@ import java.util.Iterator;
  * @version $Revision: 3638 $ $Date: 2008-03-05 16:50:10 $
  */
 public class RecipeTransition extends
-        AbstractEdge<GraphState,RecipeTransitionLabel> implements
-        GraphTransition {
+        AbstractEdge<GraphState,RecipeTransitionLabel> implements GraphTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between
      * a given source and target state.
      */
-    public RecipeTransition(GraphState source, Recipe recipe,
-            Iterable<RuleTransition> steps, GraphState target) {
-        super(source, new RecipeTransitionLabel(recipe, steps), target);
+    public RecipeTransition(GraphState source, RuleTransition initial,
+            GraphState target) {
+        super(source, new RecipeTransitionLabel(initial), target);
     }
 
     @Override
@@ -66,9 +69,59 @@ public class RecipeTransition extends
         return false;
     }
 
-    /** Returns the list of rule transitions comprising this recipe transition. */
-    public Iterable<RuleTransition> getSteps() {
-        return label().getSteps();
+    /** Returns the initial rule transition of the recipe transition. */
+    public RuleTransition getInitial() {
+        return label().getInitial();
+    }
+
+    /** Returns the collection of rule transitions comprising this label. */
+    public Set<RuleTransition> getSteps() {
+        if (this.steps == null) {
+            this.steps = computeSteps();
+        }
+        return this.steps;
+    }
+
+    private Set<RuleTransition> computeSteps() {
+        // mapping from states to sets of incoming transitions
+        Map<GraphState,Set<RuleTransition>> inMap =
+            new HashMap<GraphState,Set<RuleTransition>>();
+        // build the incoming transition map
+        Stack<GraphState> pool = new Stack<GraphState>();
+        pool.add(getInitial().target());
+        while (!pool.isEmpty()) {
+            GraphState next = pool.pop();
+            for (RuleTransition trans : next.getRuleTransitions()) {
+                GraphState target = trans.target();
+                if (target.isTransient() || target == target()) {
+                    Set<RuleTransition> inSet = inMap.get(target);
+                    boolean fresh = inSet == null;
+                    if (fresh) {
+                        inMap.put(target, inSet = new HashSet<RuleTransition>());
+                    }
+                    inSet.add(trans);
+                    if (fresh && target != target()) {
+                        pool.add(target);
+                    }
+                }
+            }
+        }
+        assert inMap.containsKey(target());
+        // backward reachability to build up the result set
+        Set<RuleTransition> result = new HashSet<RuleTransition>();
+        result.add(getInitial());
+        pool.add(target());
+        while (!pool.isEmpty()) {
+            GraphState next = pool.pop();
+            Set<RuleTransition> inSet = inMap.remove(next);
+            if (inSet != null) {
+                for (RuleTransition in : inSet) {
+                    result.add(in);
+                    pool.add(in.source());
+                }
+            }
+        }
+        return result;
     }
 
     @Override
@@ -146,17 +199,10 @@ public class RecipeTransition extends
             }
             if (result == 0) {
                 // the other must be a transition for the same recipe;
-                // compare the steps lexicographically
-                Iterator<RuleTransition> mySteps = getSteps().iterator();
-                Iterator<RuleTransition> hisSteps =
-                    ((RecipeTransition) other).getSteps().iterator();
-                while (result == 0 && mySteps.hasNext() && hisSteps.hasNext()) {
-                    result = mySteps.next().compareTo(hisSteps.next());
-                }
-                if (result == 0) {
-                    result =
-                        mySteps.hasNext() ? -1 : hisSteps.hasNext() ? +1 : 0;
-                }
+                // compare the initial rule transitions
+                result =
+                    getInitial().compareTo(
+                        ((RecipeTransition) obj).getInitial());
             }
             if (result == 0) {
                 result = target().compareTo(other.target());
@@ -179,4 +225,5 @@ public class RecipeTransition extends
      */
     private HostGraphMorphism morphism;
     private RecipeEvent event;
+    private Set<RuleTransition> steps;
 }

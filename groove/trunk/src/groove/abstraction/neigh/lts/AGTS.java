@@ -29,6 +29,7 @@ import groove.graph.TypeNode;
 import groove.lts.ActionLabel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.lts.MatchApplier;
 import groove.lts.RuleTransition;
 import groove.trans.GraphGrammar;
@@ -145,12 +146,12 @@ public final class AGTS extends GTS {
      * The given transition must be of type ShapeTransition or ShapeNextState.
      */
     @Override
-    public void addRuleTransition(RuleTransition transition) {
+    public void addTransition(GraphTransition transition) {
         assert (transition instanceof ShapeTransition)
             || (transition instanceof ShapeNextState) : "Type error : "
             + transition + " is not of type ShapeTransition or ShapeNextState.";
         if (!this.reachability) {
-            super.addRuleTransition(transition);
+            super.addTransition(transition);
         }
     }
 
@@ -346,7 +347,7 @@ public final class AGTS extends GTS {
                         ShapeTransition reducedTrans =
                             new ShapeTransition(reducedSrc,
                                 origTrans.getEvent(), reducedTgt);
-                        result.addRuleTransition(reducedTrans);
+                        result.addTransition(reducedTrans);
                     }
                 }
             }
@@ -359,7 +360,7 @@ public final class AGTS extends GTS {
             ShapeState reducedState) {
         reducedGTS.addStateWithoutCheck(reducedState);
         if (reducedState instanceof ShapeNextState) {
-            reducedGTS.addRuleTransition((RuleTransition) reducedState);
+            reducedGTS.addTransition((RuleTransition) reducedState);
         }
         reducedState.setClosed(true);
         if (this.isFinal(origState)) {
