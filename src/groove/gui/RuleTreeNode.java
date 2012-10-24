@@ -24,13 +24,13 @@ import groove.view.RuleModel;
 /**
  * Rule nodes (= level 1 nodes) of the directory
  */
-class RuleTreeNode extends DisplayTreeNode {
+class RuleTreeNode extends ResourceTreeNode {
     /**
      * Creates a new rule node based on a given rule name. The node can have
      * children.
      */
-    public RuleTreeNode(ResourceDisplay display, RuleModel rule) {
-        super(display, rule, true);
+    public RuleTreeNode(ResourceDisplay display, String ruleName) {
+        super(display, ruleName, true);
         this.tried = true;
     }
 
@@ -38,12 +38,7 @@ class RuleTreeNode extends DisplayTreeNode {
      * Convenience method to retrieve the user object as a rule name.
      */
     public RuleModel getRule() {
-        return (RuleModel) getUserObject();
-    }
-
-    @Override
-    public String getName() {
-        return getRule().getFullName();
+        return (RuleModel) getResource();
     }
 
     /** Returns HTML-formatted tool tip text for this rule node. */

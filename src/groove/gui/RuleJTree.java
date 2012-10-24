@@ -24,8 +24,6 @@ import static groove.gui.SimulatorModel.Change.STATE;
 import groove.control.CtrlAut;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
-import groove.gui.jgraph.JAttr;
-import groove.gui.jgraph.JAttr.ColorSet;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.trans.Action;
@@ -37,7 +35,6 @@ import groove.view.ResourceModel;
 import groove.view.RuleModel;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
@@ -93,7 +90,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
         setShowsRootHandles(true);
         setEnabled(false);
         setToggleClickCount(0);
-        setCellRenderer(new MyTreeCellRenderer());
+        setCellRenderer(new DisplayTreeCellRenderer(this));
         getSelectionModel().setSelectionMode(
             TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         // set icons
@@ -158,7 +155,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                         QualName.getParent(ruleName));
                 // create the rule node and register it
                 RuleTreeNode ruleNode =
-                    new RuleTreeNode(this.display, ruleView);
+                    new RuleTreeNode(this.display, ruleName);
                 addSortedNode(parentNode, ruleNode);
                 TreePath rulePath = new TreePath(ruleNode.getPath());
                 expandedPaths.add(rulePath);
@@ -698,7 +695,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
          * Creates a new transaction node based on a given control automaton.
          */
         public ActionTreeNode(CtrlAut action) {
-            super(RuleJTree.this.display, action, true);
+            super(action, true);
         }
 
         /**
@@ -713,7 +710,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
             return Icons.ACTION_LIST_ICON;
         }
 
-        @Override
         public String getName() {
             return getAction().getName();
         }
@@ -751,58 +747,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
         @Override
         public String toString() {
             return name();
-        }
-    }
-
-    /**
-     * Class to provide proper icons for directory nodes
-     */
-    private class MyTreeCellRenderer extends DefaultTreeCellRenderer {
-        @Override
-        public Component getTreeCellRendererComponent(JTree tree, Object value,
-                boolean sel, boolean expanded, boolean leaf, int row,
-                boolean hasFocus) {
-            boolean cellSelected = sel || hasFocus;
-            boolean cellFocused = cellSelected && RuleJTree.this.isFocusOwner();
-            super.getTreeCellRendererComponent(tree, value, cellSelected,
-                expanded, leaf, row, false);
-
-            boolean error = false;
-            boolean isTransient = false;
-            Icon icon = null;
-            String text = value.toString();
-            String tip = null;
-            boolean enabled = true;
-            if (value instanceof DisplayTreeNode) {
-                DisplayTreeNode node = (DisplayTreeNode) value;
-                tip = node.getTip();
-                icon = node.getIcon();
-                error = node.isError();
-                text = node.getText();
-                enabled = node.isEnabled();
-                isTransient = node.isTransient();
-            }
-            setIcon(icon);
-            setText(text);
-            setToolTipText(tip);
-            ColorSet colors =
-                isTransient ? JAttr.TRANSIENT_COLORS : error
-                        ? JAttr.ERROR_COLORS : JAttr.NORMAL_COLORS;
-            Color background = colors.getBackground(cellSelected, cellFocused);
-            Color foreground = colors.getForeground(cellSelected, cellFocused);
-            setForeground(enabled ? foreground : transparent(foreground));
-            if (cellSelected) {
-                setBackgroundSelectionColor(background);
-            } else {
-                setBackgroundNonSelectionColor(background);
-            }
-            setOpaque(false);
-            return this;
-        }
-
-        /** Returns a transparent version of a given colour. */
-        private Color transparent(Color c) {
-            return new Color(c.getRed(), c.getGreen(), c.getBlue(), 125);
         }
     }
 

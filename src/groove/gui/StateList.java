@@ -20,7 +20,6 @@ import static groove.trans.ResourceKind.RULE;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
-import groove.gui.jgraph.JAttr.ColorSet;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -29,11 +28,8 @@ import groove.lts.StartGraphState;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
-import groove.view.GrammarModel;
 import groove.view.RuleModel;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
@@ -61,7 +57,6 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreeNode;
@@ -78,9 +73,7 @@ public class StateList extends JTree implements SimulatorListener {
      * Creates a new state list.
      */
     protected StateList(Simulator simulator) {
-        this.simulatorModel = simulator.getModel();
-        this.actions = simulator.getActions();
-        this.options = simulator.getOptions();
+        this.simulator = simulator;
         setEnabled(false);
         setBackground(JAttr.STATE_BACKGROUND);
         setLargeModel(true);
@@ -91,7 +84,7 @@ public class StateList extends JTree implements SimulatorListener {
         setModel(getModel());
         getSelectionModel().setSelectionMode(
             TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
-        this.setCellRenderer(new StateCellRenderer());
+        this.setCellRenderer(new DisplayTreeCellRenderer(this));
         installListeners();
         ToolTipManager.sharedInstance().registerComponent(this);
     }
@@ -144,7 +137,7 @@ public class StateList extends JTree implements SimulatorListener {
         addTreeSelectionListener(new StateSelectionListener());
         addMouseListener(new StateMouseListener());
         JMenuItem showAnchorsOptionItem =
-            this.options.getItem(Options.SHOW_ANCHORS_OPTION);
+            getOptions().getItem(Options.SHOW_ANCHORS_OPTION);
         if (showAnchorsOptionItem != null) {
             // listen to the option controlling the rule anchor display
             showAnchorsOptionItem.addItemListener(new ItemListener() {
@@ -336,12 +329,11 @@ public class StateList extends JTree implements SimulatorListener {
             }
             events.add(match);
         }
-        GrammarModel grammar = getSimulatorModel().getGrammar();
-        boolean anchored = this.options.isSelected(Options.SHOW_ANCHORS_OPTION);
+        boolean anchored = getOptions().isSelected(Options.SHOW_ANCHORS_OPTION);
         for (Map.Entry<Rule,Set<MatchResult>> matchEntry : matchMap.entrySet()) {
             Rule rule = matchEntry.getKey();
             RuleTreeNode ruleNode =
-                new RuleTreeNode(null, grammar.getRuleModel(rule.getFullName()));
+                new RuleTreeNode(getRuleDisplay(), rule.getFullName());
             result.add(ruleNode);
             int count = 0;
             for (MatchResult trans : matchEntry.getValue()) {
@@ -456,16 +448,22 @@ public class StateList extends JTree implements SimulatorListener {
 
     /** Returns the simulator to which the state list belongs. */
     final private SimulatorModel getSimulatorModel() {
-        return this.simulatorModel;
+        return this.simulator.getModel();
     }
 
     private final ActionStore getActions() {
-        return this.actions;
+        return this.simulator.getActions();
     }
 
-    private final SimulatorModel simulatorModel;
-    private final ActionStore actions;
-    private final Options options;
+    private final RuleDisplay getRuleDisplay() {
+        return this.simulator.getDisplaysPanel().getRuleDisplay();
+    }
+
+    private final Options getOptions() {
+        return this.simulator.getOptions();
+    }
+
+    private final Simulator simulator;
     /** The fixed top node of the tree. */
     private final DefaultMutableTreeNode topNode = new DefaultMutableTreeNode(
         null, true);
@@ -488,7 +486,7 @@ public class StateList extends JTree implements SimulatorListener {
     abstract static private class NumberedTreeNode extends DisplayTreeNode {
         /** Creates a tree node with a given user object. */
         protected NumberedTreeNode(Object userObject) {
-            super(null, userObject, true);
+            super(userObject, true);
         }
 
         /** Returns the number. */
@@ -723,63 +721,6 @@ public class StateList extends JTree implements SimulatorListener {
                 }
             }
             return result;
-        }
-    }
-
-    /**
-     * Cell renderer for the state list.
-     */
-    private class StateCellRenderer extends DefaultTreeCellRenderer {
-        // This is the only method defined by ListCellRenderer.
-        // We just reconfigure the JLabel each time we're called.
-        @Override
-        public Component getTreeCellRendererComponent(JTree tree, Object value,
-                boolean isSelected, boolean expanded, boolean leaf, int row,
-                boolean hasFocus) {
-            boolean cellSelected = isSelected || hasFocus;
-            boolean cellFocused = cellSelected && StateList.this.isFocusOwner();
-            Component result =
-                super.getTreeCellRendererComponent(tree, value, cellSelected,
-                    expanded, leaf, row, false);
-            Icon icon = null;
-            String tip = null;
-            String text = value.toString();
-            boolean enabled = true;
-            boolean error = false;
-            boolean isTransient = false;
-            if (value instanceof DisplayTreeNode) {
-                DisplayTreeNode node = (DisplayTreeNode) value;
-                tip = node.getTip();
-                icon = node.getIcon();
-                text = node.getText();
-                enabled = node.isEnabled();
-                error = node.isError();
-                isTransient = node.isTransient();
-            }
-            setIcon(icon);
-            setText(text);
-            setToolTipText(tip);
-            ColorSet colors =
-                isTransient ? JAttr.TRANSIENT_COLORS : error
-                        ? JAttr.ERROR_COLORS : JAttr.NORMAL_COLORS;
-            Color background = colors.getBackground(cellSelected, cellFocused);
-            Color foreground = colors.getForeground(cellSelected, cellFocused);
-            setForeground(enabled ? foreground : transparent(foreground));
-            if (background == Color.WHITE) {
-                background = JAttr.STATE_BACKGROUND;
-            }
-            if (cellSelected) {
-                setBackgroundSelectionColor(background);
-            } else {
-                setBackgroundNonSelectionColor(background);
-            }
-            setOpaque(false);
-            return result;
-        }
-
-        /** Returns a transparent version of a given colour. */
-        private Color transparent(Color c) {
-            return new Color(c.getRed(), c.getGreen(), c.getBlue(), 125);
         }
     }
 }

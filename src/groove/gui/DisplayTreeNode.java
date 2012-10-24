@@ -22,46 +22,18 @@ import javax.swing.tree.DefaultMutableTreeNode;
 /** Superclass for tree nodes in a display-related list. */
 public abstract class DisplayTreeNode extends DefaultMutableTreeNode {
     /** Constructs a node. */
-    protected DisplayTreeNode(ResourceDisplay display, Object userObject,
-            boolean allowsChildren) {
+    protected DisplayTreeNode(Object userObject, boolean allowsChildren) {
         super(userObject, allowsChildren);
-        this.display = display;
-    }
-
-    /** Returns the display with which this tree node is associated. */
-    protected ResourceDisplay getDisplay() {
-        return this.display;
-    }
-
-    /** Indicates if this node stands for a resource. */
-    protected boolean isResource() {
-        return getDisplay() != null;
-    }
-
-    /**
-     * Returns the full resource name if this node wraps a resource;
-     * otherwise, returns {@code null}.
-     */
-    public String getName() {
-        return null;
     }
 
     /** Returns the icon to be used when rendering this tree node. */
     public Icon getIcon() {
-        if (isResource()) {
-            return getDisplay().getListIcon(getName());
-        } else {
-            return null;
-        }
+        return null;
     }
 
     /** Indicates if this tree node contains an error. */
     public boolean isError() {
-        if (isResource()) {
-            return getDisplay().hasError(getName());
-        } else {
-            return false;
-        }
+        return false;
     }
 
     /** Indicates if this tree node represent a transient state or partial transition. */
@@ -76,19 +48,11 @@ public abstract class DisplayTreeNode extends DefaultMutableTreeNode {
 
     /** Returns the text to be displayed on the tree node. */
     public String getText() {
-        String result = getName();
-        if (result == null) {
-            result = toString();
-        } else if (isResource()) {
-            result = getDisplay().getLabelText(result);
-        }
-        return result;
+        return toString();
     }
 
     /** Returns the tooltip to be used when rendering this tree node. */
     public String getTip() {
         return null;
     }
-
-    private final ResourceDisplay display;
 }

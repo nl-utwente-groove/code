@@ -34,7 +34,7 @@ class MatchTreeNode extends DisplayTreeNode {
      */
     public MatchTreeNode(SimulatorModel model, GraphState source,
             MatchResult match, int nr, boolean anchored) {
-        super(null, match, false);
+        super(match, false);
         this.source = source;
         this.nr = nr;
         this.model = model;
@@ -48,7 +48,8 @@ class MatchTreeNode extends DisplayTreeNode {
 
     @Override
     public boolean isTransient() {
-        return isTransition() && ((RuleTransition) getMatch()).isPartial();
+        return this.source.getCtrlState().getTransition(
+            getMatch().getEvent().getRule()).hasRecipe();
     }
 
     /**
