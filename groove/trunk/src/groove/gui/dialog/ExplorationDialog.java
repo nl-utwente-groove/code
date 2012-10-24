@@ -152,10 +152,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
         // Create the strategy editor.
         StrategyEnumerator strategyEnumerator =
             StrategyEnumerator.newInstance();
-        Set<StrategyValue> strategyMask =
-            new HashSet<StrategyValue>(EnumSet.allOf(StrategyValue.class));
-        strategyMask.removeAll(StrategyValue.DIALOG_STRATEGIES);
-        strategyEnumerator.setMask(strategyMask);
+        strategyEnumerator.setMask(StrategyValue.DIALOG_STRATEGIES);
         this.strategyEditor = strategyEnumerator.createEditor(getGrammar());
         Serialized defaultStrategy =
             getSimulatorModel().getExploration().getStrategy();

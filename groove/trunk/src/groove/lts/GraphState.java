@@ -35,20 +35,20 @@ import java.util.Set;
  * flags:
  * <ul>
  * <li> <b>Closed:</b> A graph state is closed if all rule applications have been explored.
- * <li> <b>Cooked:</b> A graph state is cooked if it is closed and all reachable states up
+ * <li> <b>Cooked:</b> A graph state is done if it is closed and all reachable states up
  * until the first non-transient states are also closed. This means that all outgoing
  * transitions (including recipe transitions) are known.
  * <li> <b>Transient:</b> A graph state is transient if it is an intermediate state in 
  * the execution of a recipe.
- * <li> <b>Absent:</b> A graph state is absent if it is cooked and transient and does not 
+ * <li> <b>Absent:</b> A graph state is absent if it is done and transient and does not 
  * have a path to a non-transient state, or violates a right 
  * application condition.
  * <li> <b>Error:</b> A graph state is erroneous if it fails to satisfy an invariant
  * </ul>
  * A derived concept is:
  * <ul>
- * <li> <b>Present:</b> A graph state is (definitely) present if it is cooked and not absent.
- * (Note that this is <i>not</i> strictly the inverse of being absent: an uncooked state
+ * <li> <b>Present:</b> A graph state is (definitely) present if it is done and not absent.
+ * (Note that this is <i>not</i> strictly the inverse of being absent: a raw state
  * is neither present nor absent.
  * </ul>
  * @author Arend Rensink
@@ -170,19 +170,20 @@ public interface GraphState extends Node {
     public boolean isError();
 
     /** 
-     * Declares this state to be cooked.
-     * @return if {@code false}, the state was already known to be cooked
-     * @see #isCooked()
+     * Declares this state to be done, while also setting its presence.
+     * @param present flag indicating if the state is present
+     * @return if {@code false}, the state was already known to be done
+     * @see Flag#DONE
      */
-    public boolean setCooked();
+    public boolean setDone(boolean present);
 
     /** 
-     * Indicates if this state is cooked. 
+     * Indicates if this state is done. 
      * This is the case if
      * all outgoing paths have been explored up until the first non-transient state.
-     * @see #isTransient()
+     * @see Flag#DONE
      */
-    public boolean isCooked();
+    public boolean isDone();
 
     /** 
      * Indicates if this is a transient state.
@@ -206,11 +207,26 @@ public interface GraphState extends Node {
 
     /** 
      * Indicates if this state is properly part of the state space.
-     * If a state is cooked, it is either present or absent.
-     * @see #isCooked()
+     * If a state is done, it is either present or absent.
+     * @see #isDone()
      * @see #isAbsent() 
      */
     public boolean isPresent();
+
+    /** Tests if a given status flag is set. */
+    public boolean hasFlag(Flag flag);
+
+    /** 
+     * Changes the value of a given status flag.
+     * This is only allowed for exploration strategy-related flags;
+     * for others, (re)setting is done internally.
+     * @param flag the flag to be changed
+     * @param value new value for the flag
+     * @return if {@code true}, the value of the flag was changed as a result of this call
+     * @see #hasFlag(Flag)
+     * @see Flag#isStrategy()
+     */
+    public boolean setFlag(Flag flag, boolean value);
 
     /** Changeable status flags of a graph state. */
     public enum Flag {
@@ -218,25 +234,28 @@ public interface GraphState extends Node {
          * Flag indicating that the state has been closed.
          * This is the case if and only if no more outgoing transitions will be added.
          */
-        CLOSED,
+        CLOSED(false),
         /**
-         * Flag indicating that the graph state has been cooked. 
+         * Flag indicating that exploration of the graph state is done. 
          * This is the case if and only if it is closed, and all outgoing transition
          * sequences eventually lead to non-transient or absent states.
          */
-        COOKED,
+        DONE(false),
         /**
          * Flag indicating that the graph state is absent.
          * This is the case if it is closed and transient and has
          * no reachable non-transient state, or if it violates a right
          * application condition.
          */
-        ABSENT,
+        ABSENT(false),
         /** Flag indicating that the state has an error. */
-        ERROR;
+        ERROR(false),
+        /** Helper flag used during state space exploration. */
+        KNOWN(true);
 
-        private Flag() {
+        private Flag(boolean strategy) {
             this.mask = 1 << ordinal();
+            this.strategy = strategy;
         }
 
         /** Returns the mask corresponding to this flag. */
@@ -249,11 +268,23 @@ public interface GraphState extends Node {
             return status | this.mask;
         }
 
+        /** Resets this flag in a given integer value. */
+        public int reset(int status) {
+            return status & ~this.mask;
+        }
+
         /** Tests if this flag is set in a given integer value. */
         public boolean test(int status) {
             return (status & this.mask) != 0;
         }
 
+        /** Indicates if this flag is exploration strategy-related. */
+        public boolean isStrategy() {
+            return this.strategy;
+        }
+
         private final int mask;
+        /** Indicates if this flag is exploration-related. */
+        private final boolean strategy;
     }
 }

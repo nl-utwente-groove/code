@@ -415,25 +415,24 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** 
-     * Sets the selected transition to an outgoing transition of a given state,
-     * if any. Preference is given to a transition to a non-closed state.
-     * If there is no suitable outgoing transition, the state is set instead.
-     * In addition, the history may be changed by setting the currently selected
-     * rule match to a corresponding (explored) transition.
-     * @param state the state to which (or to an outgoing transition of which) the
-     * model is set
-     * @param inTrans if non-{@code null}, the currently set match is changed to
-     * this transition
+     * Sets the selected state and transition to given values.
+     * @param state the new selected state; non-{@code null}
+     * @param trans the new selected transition; if non-{@code null}, the state 
+     * equals the transition source, and the transition was already selected as a match
      * @return if {@code true}, the transition or state was really changed
      * @see #setMatch(MatchResult)
      */
     public final boolean doSetOutTransition(GraphState state,
-            RuleTransition inTrans) {
+            RuleTransition trans) {
+        assert state != null;
         start();
-        if (inTrans != null) {
+        if (trans != null) {
+            assert state == trans.source();
             assert this.old.match != null
-                && this.old.match.getEvent().equals(inTrans.getEvent());
-            this.old.match = inTrans;
+                && this.old.match.getEvent().equals(trans.getEvent());
+            // fake the history: the previously selected match is supposed
+            // to have been this transition already
+            this.old.match = trans;
         }
         changeGts();
         changeState(state);

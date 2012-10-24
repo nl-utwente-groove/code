@@ -16,7 +16,6 @@
  */
 package groove.explore.strategy;
 
-import groove.control.CtrlSchedule;
 import groove.lts.GraphState;
 
 import java.util.LinkedList;
@@ -33,13 +32,7 @@ public class BFSStrategy extends ClosingStrategy {
 
     @Override
     protected void putInPool(GraphState state) {
-        CtrlSchedule schedule = state.getSchedule();
-        if (schedule.isInitial() && !schedule.isTransient()) {
-            this.stateQueue.offer(state);
-        } else if (!schedule.isFinished()) {
-            // insert in front of the queue
-            this.stateQueue.add(0, state);
-        }
+        this.stateQueue.offer(state);
     }
 
     @Override
