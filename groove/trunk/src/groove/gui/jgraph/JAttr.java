@@ -344,7 +344,7 @@ public class JAttr {
             ERROR_NORMAL_BACKGROUND);
     }
     /** Colour used for transient states. */
-    static public final Color TRANSIENT_COLOR = Colors.findColor("255 20 147");
+    static public final Color TRANSIENT_COLOR = Colors.findColor("165 42 42");
 
     /** Text display colours to be used for transient states. */
     static public final ColorSet TRANSIENT_COLORS = new ColorSet();

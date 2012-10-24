@@ -224,7 +224,8 @@ public class CtrlHelper {
                 functionTree.getChildCount() == 2 ? "0"
                         : functionTree.getChild(1).getText();
             this.namespace.addRecipe(name, Integer.parseInt(priority),
-                new ArrayList<CtrlPar.Var>(), fragment);
+                new ArrayList<CtrlPar.Var>(), fragment.getName(),
+                fragment.getStartLine());
             result = true;
         }
         return result;
