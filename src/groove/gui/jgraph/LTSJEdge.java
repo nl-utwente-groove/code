@@ -106,7 +106,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     @Override
     public boolean isVisible() {
         boolean result =
-            (getJGraph().isShowPartialTransitions() || !isPartial() || !getEdge().source().isCooked())
+            (getJGraph().isShowPartialTransitions() || !isPartial() || !getEdge().source().isDone())
                 && super.isVisible();
         return result && this.visible;
     }

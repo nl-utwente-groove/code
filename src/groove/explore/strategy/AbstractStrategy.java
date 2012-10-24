@@ -19,6 +19,7 @@ package groove.explore.strategy;
 import groove.explore.result.Acceptor;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.GraphState.Flag;
 import groove.match.MatcherFactory;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemRecord;
@@ -52,6 +53,7 @@ public abstract class AbstractStrategy implements Strategy {
     @Override
     final public void play(Halter halter) {
         prepare();
+        collectKnownStates();
         this.interrupted = false;
         while ((halter == null || !halter.halt()) && hasState()
             && !testInterrupted()) {
@@ -66,6 +68,23 @@ public abstract class AbstractStrategy implements Strategy {
         this.atState =
             this.startState == null ? this.gts.startState() : this.startState;
         MatcherFactory.instance().setDefaultEngine();
+    }
+
+    /**
+     * Sets all states already in the state space to Flag.KNOWN.
+     */
+    private void collectKnownStates() {
+        for (GraphState next : getGTS().nodeSet()) {
+            next.setFlag(Flag.KNOWN, isSuitableKnownState(next));
+        }
+    }
+
+    /**
+     * Callback method to determine if a given state may be added to the
+     * set of known states.
+     */
+    protected boolean isSuitableKnownState(GraphState state) {
+        return true;
     }
 
     /**

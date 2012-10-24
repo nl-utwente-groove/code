@@ -20,12 +20,13 @@ import static groove.trans.RuleEvent.Reuse.NONE;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
+import groove.lts.GraphState.Flag;
 import groove.lts.MatchResult;
 
+import java.util.Stack;
+
 /**
- * Explores a single path until reaching a final state or a loop. In case of
- * abstract simulation, this implementation will prefer going along a path then
- * stopping exploration when a loop is met.
+ * Explores a single path until reaching a final state or a loop.
  * @author Iovka Boneva
  * 
  */
@@ -50,13 +51,14 @@ public class LinearStrategy extends AbstractStrategy {
 
     @Override
     public void next() {
-        assert hasState();
+        GraphState state = getState();
         MatchResult match = getMatch();
+        // put the state back in the pool for backtracking of recipes
+        if (!state.isClosed()) {
+            putBackInPool();
+        }
         if (match != null) {
-            getState().applyMatch(match);
-            if (isCloseFast()) {
-                getState().setClosed(false);
-            }
+            state.applyMatch(match);
         }
         updateState();
     }
@@ -68,9 +70,11 @@ public class LinearStrategy extends AbstractStrategy {
 
     @Override
     protected GraphState getNextState() {
-        GraphState result = this.collector.getNewState();
-        this.collector.reset();
-        return result;
+        if (this.pool.isEmpty()) {
+            return null;
+        } else {
+            return this.pool.pop();
+        }
     }
 
     @Override
@@ -81,12 +85,42 @@ public class LinearStrategy extends AbstractStrategy {
         getGTS().getRecord().setCopyGraphs(false);
         getGTS().getRecord().setReuseEvents(NONE);
         super.prepare();
-        getGTS().addLTSListener(this.collector);
+        getGTS().addLTSListener(this.exploreListener);
     }
 
     @Override
     protected void finish() {
-        getGTS().removeLTSListener(this.collector);
+        getGTS().removeLTSListener(this.exploreListener);
+    }
+
+    @Override
+    protected boolean isSuitableKnownState(GraphState state) {
+        return state != getStartState();
+    }
+
+    /**
+     * Pushes the currently explored state back onto the stack,
+     * for backtracking recipes. 
+     */
+    private void putBackInPool() {
+        this.pool.push(getState());
+    }
+
+    private void putFreshInPool(GraphState state) {
+        // empty the pool if the new state is not transient
+        // as then no more backtracking is going to be needed
+        if (!state.isTransient()) {
+            if (isCloseFast()) {
+                for (GraphState s : this.pool) {
+                    s.setClosed(false);
+                }
+            }
+            this.pool.clear();
+        }
+        // only add non-transient states if they are unknown
+        if (state.isTransient() || !state.hasFlag(Flag.KNOWN)) {
+            this.pool.push(state);
+        }
     }
 
     /** Return the current value of the "close on exit" setting */
@@ -94,46 +128,22 @@ public class LinearStrategy extends AbstractStrategy {
         return this.closeFast;
     }
 
-    /** Collects states newly added to the GTS. */
-    private final NewStateCollector collector = new NewStateCollector();
     /** 
      * Option to close states immediately after a transition has been generated.
      * Used to save memory by closing states ASAP.
      */
     private final boolean closeFast;
 
-    /**
-     * Registers the first new state added to the GTS it listens to. Such an
-     * object should be added as listener only to a single GTS.
-     */
-    static private class NewStateCollector extends GTSAdapter {
-        NewStateCollector() {
-            reset();
-        }
+    private final Stack<GraphState> pool = new Stack<GraphState>();
 
-        /**
-         * Returns the collected new state, or null if no new state was
-         * registered.
-         * @return the collected new state, or null if no new state was
-         *         registered since last reset operation
-         */
-        GraphState getNewState() {
-            return this.newState;
-        }
+    /** Listener to keep track of states added to the GTS. */
+    private final ExploreListener exploreListener = new ExploreListener();
 
-        /** Forgets collected new state. */
-        void reset() {
-            this.newState = null;
-        }
-
+    /** A queue with states to be explored, used as a FIFO. */
+    private class ExploreListener extends GTSAdapter {
         @Override
-        public void addUpdate(GTS shape, GraphState state) {
-            if (!state.isClosed() && this.newState == null) {
-                this.newState = state;
-            }
+        public void addUpdate(GTS gts, GraphState state) {
+            putFreshInPool(state);
         }
-
-        private GraphState newState;
     }
-
 }

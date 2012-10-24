@@ -474,19 +474,6 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
                 setFinal(state);
             }
             this.closedStateCount++;
-            break;
-        case COOKED:
-            //            if (state.isTransient()) {
-            //                this.cookedTransitionCount += state.getTransitions().size();
-            //            } else {
-            //                for (GraphTransition outTrans : outEdgeSet(state)) {
-            //                    if (outTrans.isPartial()) {
-            //                        this.cookedTransitionCount++;
-            //                    } else if (outTrans instanceof RecipeTransition) {
-            //                        fireAddEdge(outTrans);
-            //                    }
-            //                }
-            //            }
         }
         for (GTSListener listener : getGraphListeners()) {
             listener.statusUpdate(this, state, flag);
@@ -624,8 +611,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     private final GraphGrammar grammar;
     /** Unique factory for host elements, associated with this GTS. */
     private HostFactory hostFactory;
-    /** The set of nodes of the GTS, as a view on the state set that
-     * filters out all cooked transient states. */
+    /** The set of nodes of the GTS. */
     private Set<? extends GraphState> nodeSet;
     /** The set of states of the GTS. */
     private StateSet stateSet;

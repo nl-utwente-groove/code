@@ -49,14 +49,14 @@ public class AnyStateAcceptor extends Acceptor {
 
     @Override
     public void addUpdate(GTS gts, GraphState state) {
-        if (state.isCooked()) {
+        if (state.isDone()) {
             getResult().add(state);
         }
     }
 
     @Override
     public void statusUpdate(GTS graph, GraphState explored, Flag flag) {
-        if (flag == Flag.COOKED) {
+        if (flag == Flag.DONE) {
             getResult().add(explored);
             super.statusUpdate(graph, explored, flag);
         }

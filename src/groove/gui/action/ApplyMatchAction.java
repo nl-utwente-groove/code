@@ -35,7 +35,7 @@ public class ApplyMatchAction extends SimulatorAction {
             } else {
                 trans = state.applyMatch(match);
             }
-            getSimulatorModel().doSetOutTransition(trans.target(), trans);
+            getSimulatorModel().doSetOutTransition(trans.source(), trans);
         }
     }
 

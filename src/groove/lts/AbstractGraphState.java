@@ -18,7 +18,7 @@ package groove.lts;
 
 import static groove.lts.GraphState.Flag.ABSENT;
 import static groove.lts.GraphState.Flag.CLOSED;
-import static groove.lts.GraphState.Flag.COOKED;
+import static groove.lts.GraphState.Flag.DONE;
 import static groove.lts.GraphState.Flag.ERROR;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
@@ -190,11 +190,11 @@ abstract public class AbstractGraphState extends
     }
 
     public boolean isClosed() {
-        return testStatus(CLOSED);
+        return hasFlag(CLOSED);
     }
 
     public boolean setClosed(boolean complete) {
-        boolean result = setStatus(CLOSED);
+        boolean result = setStatus(CLOSED, true);
         if (result) {
             setStoredTransitionStubs(getCachedTransitionStubs());
             updateClosed();
@@ -214,7 +214,7 @@ abstract public class AbstractGraphState extends
 
     @Override
     public boolean setError() {
-        boolean result = setStatus(ERROR);
+        boolean result = setStatus(ERROR, true);
         if (result) {
             fireStatus(ERROR);
         }
@@ -223,7 +223,7 @@ abstract public class AbstractGraphState extends
 
     @Override
     public boolean isError() {
-        return testStatus(ERROR);
+        return hasFlag(ERROR);
     }
 
     @Override
@@ -233,7 +233,7 @@ abstract public class AbstractGraphState extends
 
     @Override
     public boolean setAbsent() {
-        boolean result = setStatus(ABSENT);
+        boolean result = setStatus(ABSENT, true);
         if (result) {
             fireStatus(ABSENT);
         }
@@ -242,40 +242,54 @@ abstract public class AbstractGraphState extends
 
     @Override
     public boolean isAbsent() {
-        return testStatus(ABSENT);
+        return hasFlag(ABSENT);
     }
 
     @Override
     public boolean isPresent() {
-        return isCooked() && !isAbsent();
+        return isDone() && !isAbsent();
     }
 
     @Override
-    public boolean setCooked() {
-        boolean result = setStatus(COOKED);
+    public boolean setDone(boolean present) {
+        boolean result = setStatus(DONE, true);
         if (result) {
-            getCache().notifyCooked();
+            if (!present) {
+                setAbsent();
+            }
+            getCache().notifyDone();
             setCacheCollectable();
-            fireStatus(COOKED);
+            fireStatus(DONE);
         }
         return result;
     }
 
     @Override
-    public boolean isCooked() {
-        return testStatus(COOKED);
+    public boolean isDone() {
+        return hasFlag(DONE);
     }
 
-    /** Tests if a given flag is set in the status mask. */
-    private boolean testStatus(Flag flag) {
+    @Override
+    public boolean hasFlag(Flag flag) {
         return flag.test(this.status);
     }
 
-    /** Sets a given flag in this state's status. */
-    private boolean setStatus(Flag flag) {
-        boolean result = !testStatus(flag);
+    @Override
+    public boolean setFlag(Flag flag, boolean value) {
+        assert flag.isStrategy();
+        return setStatus(flag, value);
+    }
+
+    /** 
+     * Sets a given flag in this state's status. 
+     * @param value the new value of the flag
+     * @return if {@code true}, the status value for the flag was changed
+     */
+    private boolean setStatus(Flag flag, boolean value) {
+        boolean result = value != hasFlag(flag);
         if (result) {
-            this.status = flag.set(this.status);
+            this.status =
+                value ? flag.set(this.status) : flag.reset(this.status);
         }
         return result;
     }
@@ -411,7 +425,7 @@ abstract public class AbstractGraphState extends
         boolean wasTransient = isTransient();
         this.schedule = schedule;
         if (wasTransient && !schedule.isTransient()) {
-            getCache().notifyCooked();
+            getCache().notifyDone();
         }
     }
 

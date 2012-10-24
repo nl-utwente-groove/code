@@ -48,7 +48,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     /** A state is also visible if it is open, final, or the start state. */
     @Override
     public boolean isVisible() {
-        return (getJGraph().isShowPartialTransitions() || !isTransient() || !getNode().isCooked())
+        return (getJGraph().isShowPartialTransitions() || !isTransient() || !getNode().isDone())
             && (isSpecialNode() || hasVisibleIncidentEdge()) && this.visible;
     }
 

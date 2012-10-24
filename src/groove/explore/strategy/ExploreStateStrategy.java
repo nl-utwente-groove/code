@@ -16,7 +16,6 @@
  */
 package groove.explore.strategy;
 
-import groove.control.CtrlSchedule;
 import groove.lts.GraphState;
 
 import java.util.Stack;
@@ -37,6 +36,11 @@ public class ExploreStateStrategy extends ClosingStrategy {
     }
 
     @Override
+    protected boolean isSuitableKnownState(GraphState state) {
+        return state == getStartState() || state.isTransient();
+    }
+
+    @Override
     protected GraphState getNextState() {
         if (this.stack.isEmpty()) {
             return null;
@@ -47,8 +51,7 @@ public class ExploreStateStrategy extends ClosingStrategy {
 
     @Override
     protected void putInPool(GraphState state) {
-        CtrlSchedule schedule = state.getSchedule();
-        if ((schedule.isTransient() || !schedule.isInitial())) {
+        if (state == getStartState() || state.isTransient()) {
             // insert on top of the stack
             this.stack.push(state);
         }

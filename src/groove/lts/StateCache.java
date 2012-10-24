@@ -64,7 +64,9 @@ public class StateCache {
         if (result && this.transitionMap != null) {
             this.transitionMap.add(trans);
         }
-        this.matches.remove(trans);
+        if (trans instanceof RuleTransition) {
+            this.matches.remove(trans);
+        }
         if (trans.isPartial()) {
             addOutPartial((RuleTransition) trans);
         }
@@ -92,27 +94,26 @@ public class StateCache {
      * @param partial new outgoing partial rule transition from this state
      */
     private void addOutPartial(RuleTransition partial) {
-        boolean isTransient = getState().isTransient();
-        // record the transition as reachable if it is not an 
-        // outgoing transition of this state
-        if (isTransient) {
-            this.partials.add(partial);
-        }
+        notifyPartial(partial);
         GraphState child = partial.target();
-        // only add the child if it is raw
         if (!child.isTransient()) {
             // we've reached a non-transient state
             // so this state is certainly present
             this.present = true;
-        } else if (!child.isClosed()) {
-            // we've reached a transient open state
-            this.transientOpens.add(child);
+        } else if (!child.isDone()) {
+            // we've reached a transient raw state
             child.getCache().addInPartial(this, partial);
-        }
-        if (isTransient) {
-            // notify all parents of the new partial
-            for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
-                parent.one().notifyPartial(partial);
+        } else {
+            // we've reached a transient done state
+            this.present |= child.getCache().present;
+            if (getState().isTransient()) {
+                // if this state is transient, add the child partials
+                for (RuleTransition childPartial : child.getCache().partials) {
+                    notifyPartial(childPartial);
+                }
+            } else {
+                // if this state is non-transient, we've found a recipe transition
+                notifyChildDone(partial, child.getCache());
             }
         }
     }
@@ -179,25 +180,24 @@ public class StateCache {
     }
 
     /** 
-     * Callback method invoked when the state has become cooked.
-     * Notifies all raw predecessors that the associated state has become cooked.
+     * Callback method invoked when the state has become done.
+     * Notifies all raw predecessors that the associated state has become done.
      */
-    void notifyCooked() {
+    void notifyDone() {
         for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
-            parent.one().notifyChildCooked(parent.two(), this);
+            parent.one().notifyChildDone(parent.two(), this);
         }
         this.rawParents.clear();
-        this.partials.clear();
     }
 
     /** 
      * Callback method signalling that one of the raw successor states has
-     * become cooked.
+     * become done.
      * @param out reachable outgoing partial rule transition leading to the
-     * cooked child
-     * @param childCache state cache of the cooked child
+     * done child
+     * @param childCache state cache of the done child
      */
-    private void notifyChildCooked(RuleTransition out, StateCache childCache) {
+    private void notifyChildDone(RuleTransition out, StateCache childCache) {
         assert out.source() == getState();
         if (!getState().isTransient() && childCache.present) {
             Set<GraphState> recipeTargets = new HashSet<GraphState>();
@@ -215,10 +215,7 @@ public class StateCache {
     }
 
     private void setStateCooked() {
-        getState().setCooked();
-        if (!this.present) {
-            getState().setAbsent();
-        }
+        getState().setDone(this.present);
     }
 
     final AbstractGraphState getState() {
@@ -440,7 +437,7 @@ public class StateCache {
 
     /**
      * Returns all unexplored matches of the state, insofar they can be determined
-     * without cooking any currently uncooked successor states. 
+     * without exploring any currently raw successor states. 
      * @return set of unexplored matches
      */
     MatchResultSet getMatches() {
