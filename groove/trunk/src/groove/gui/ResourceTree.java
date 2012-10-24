@@ -23,16 +23,12 @@ import static groove.gui.SimulatorModel.Change.RULE;
 import static groove.gui.SimulatorModel.Change.STATE;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
-import groove.gui.jgraph.JAttr;
-import groove.gui.jgraph.JAttr.ColorSet;
-import groove.io.HTMLConverter;
 import groove.lts.GraphState;
 import groove.trans.ResourceKind;
 import groove.util.Strings;
 import groove.view.GrammarModel;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
@@ -53,7 +49,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -107,7 +102,7 @@ public class ResourceTree extends JTree implements SimulatorListener {
         setToggleClickCount(0);
 
         // set cell renderer
-        MyTreeCellRenderer renderer = new MyTreeCellRenderer();
+        DisplayTreeCellRenderer renderer = new DisplayTreeCellRenderer(this);
         renderer.setLeafIcon(Icons.getListIcon(parent.getResourceKind()));
         setCellRenderer(renderer);
         getSelectionModel().setSelectionMode(
@@ -166,8 +161,8 @@ public class ResourceTree extends JTree implements SimulatorListener {
             for (int i = 0; i < getRowCount(); i++) {
                 TreePath path = getPathForRow(i);
                 TreeNode node = (TreeNode) path.getLastPathComponent();
-                if (node instanceof ResourceNode) {
-                    ResourceNode rnode = (ResourceNode) node;
+                if (node instanceof ResourceTreeNode) {
+                    ResourceTreeNode rnode = (ResourceTreeNode) node;
                     visible.add(rnode.getName());
                 } else if (node instanceof PathNode) {
                     PathNode pnode = (PathNode) node;
@@ -184,8 +179,8 @@ public class ResourceTree extends JTree implements SimulatorListener {
 
                 // expand/select all the previously expanded/selected nodes
                 for (DefaultMutableTreeNode node : created) {
-                    if (node instanceof ResourceNode) {
-                        String name = ((ResourceNode) node).getName();
+                    if (node instanceof ResourceTreeNode) {
+                        String name = ((ResourceTreeNode) node).getName();
                         if (visible.contains(name) || selected.contains(name)) {
                             TreePath path = new TreePath(node.getPath());
                             expandPath(path.getParentPath());
@@ -300,7 +295,7 @@ public class ResourceTree extends JTree implements SimulatorListener {
      * created.
      */
     public JPopupMenu createPopupMenu(TreeNode node) {
-        return this.parentDisplay.createListPopupMenu(node instanceof ResourceNode);
+        return this.parentDisplay.createListPopupMenu(node instanceof ResourceTreeNode);
     }
 
     /**
@@ -355,46 +350,6 @@ public class ResourceTree extends JTree implements SimulatorListener {
     // LOCAL CLASS - MyTreeCellRenderer
     // ========================================================================
 
-    /**
-     * Custom cell renderer, which properly sets fore- and background colours
-     * (based on focus, and possibly errors)
-     */
-    private class MyTreeCellRenderer extends DefaultTreeCellRenderer {
-        @Override
-        public Component getTreeCellRendererComponent(JTree tree, Object value,
-                boolean sel, boolean expanded, boolean leaf, int row,
-                boolean hasFocus) {
-            boolean cellSelected = sel || hasFocus;
-            boolean cellFocused =
-                cellSelected && ResourceTree.this.isFocusOwner();
-            super.getTreeCellRendererComponent(tree, value, cellSelected,
-                expanded, leaf, row, false);
-
-            boolean error = false;
-            boolean isTransient = false;
-            if (value instanceof DisplayTreeNode) {
-                DisplayTreeNode node = (DisplayTreeNode) value;
-                setToolTipText(node.getTip());
-                setIcon(node.getIcon());
-                setText(node.getText());
-                error = node.isError();
-                isTransient = node.isTransient();
-            }
-            ColorSet colors =
-                isTransient ? JAttr.TRANSIENT_COLORS : error
-                        ? JAttr.ERROR_COLORS : JAttr.NORMAL_COLORS;
-            setForeground(colors.getForeground(cellSelected, cellFocused));
-            Color background = colors.getBackground(cellSelected, cellFocused);
-            if (cellSelected) {
-                setBackgroundSelectionColor(background);
-            } else {
-                setBackgroundNonSelectionColor(background);
-            }
-            setOpaque(false);
-            return this;
-        }
-    }
-
     // ========================================================================
     // LOCAL CLASS - MySelectionListener
     // ========================================================================
@@ -419,8 +374,8 @@ public class ResourceTree extends JTree implements SimulatorListener {
             TreePath[] paths = getSelectionPaths();
             for (int i = 0; paths != null && i < paths.length; i++) {
                 Object selectedNode = paths[i].getLastPathComponent();
-                if (selectedNode instanceof ResourceNode) {
-                    selected.add(((ResourceNode) selectedNode).getName());
+                if (selectedNode instanceof ResourceTreeNode) {
+                    selected.add(((ResourceTreeNode) selectedNode).getName());
                 }
             }
             getSimulatorModel().doSelectSet(ResourceTree.this.resourceKind,
@@ -452,12 +407,12 @@ public class ResourceTree extends JTree implements SimulatorListener {
             // change active tab in the Simulator
             DisplayKind display =
                 DisplayKind.toDisplay(ResourceTree.this.resourceKind);
-            if (selected instanceof ResourceNode && display != null) {
+            if (selected instanceof ResourceTreeNode && display != null) {
                 getSimulatorModel().setDisplay(display);
             }
 
             // invoke editor, if this was a double click
-            if (selected instanceof ResourceNode && evt.getClickCount() > 1) {
+            if (selected instanceof ResourceTreeNode && evt.getClickCount() > 1) {
                 ResourceTree.this.parentDisplay.getEditAction().execute();
             }
 
@@ -520,41 +475,6 @@ public class ResourceTree extends JTree implements SimulatorListener {
     // ========================================================================
     // LOCAL CLASS - ResourceNode
     // ========================================================================
-
-    /**
-     * A {@link ResourceNode} is a {@link DefaultMutableTreeNode} that
-     * corresponds to a resource.
-     */
-    public class ResourceNode extends DisplayTreeNode {
-        /** Default constructor. */
-        public ResourceNode(String resourceName) {
-            super(ResourceTree.this.parentDisplay, resourceName, false);
-        }
-
-        @Override
-        public String getName() {
-            return (String) getUserObject();
-        }
-
-        @Override
-        public String getTip() {
-            StringBuilder result = new StringBuilder();
-            switch (ResourceTree.this.resourceKind) {
-            case HOST:
-                result.append("Host graph ");
-                break;
-            case RULE:
-                result.append("Rule ");
-                break;
-            case TYPE:
-                result.append("Type graph ");
-                break;
-            }
-            result.append(HTMLConverter.STRONG_TAG.on(getName()));
-            HTMLConverter.HTML_TAG.on(result);
-            return result.toString();
-        }
-    }
 
     // ========================================================================
     // LOCAL CLASS - PathNode
@@ -640,7 +560,9 @@ public class ResourceTree extends JTree implements SimulatorListener {
             }
             for (String resource : this.resources) {
                 String fullName = extendPath(path, resource);
-                ResourceNode leaf = new ResourceNode(fullName);
+                ResourceTreeNode leaf =
+                    new ResourceTreeNode(ResourceTree.this.parentDisplay,
+                        fullName);
                 created.add(leaf);
                 //root.add(leaf);
                 addSortedNode(root, leaf);

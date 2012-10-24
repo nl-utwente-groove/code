@@ -415,10 +415,10 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** 
-     * Sets the selected state and transition to given values.
+     * Sets the selected state and if possible an outgoing transition.
      * @param state the new selected state; non-{@code null}
-     * @param trans the new selected transition; if non-{@code null}, the state 
-     * equals the transition source, and the transition was already selected as a match
+     * @param trans if not {@code null}, a transition that should be inserted post-hoc into the
+     * history as the one that was selected before this change
      * @return if {@code true}, the transition or state was really changed
      * @see #setMatch(MatchResult)
      */
@@ -427,7 +427,7 @@ public class SimulatorModel implements Cloneable {
         assert state != null;
         start();
         if (trans != null) {
-            assert state == trans.source();
+            assert state == trans.target();
             assert this.old.match != null
                 && this.old.match.getEvent().equals(trans.getEvent());
             // fake the history: the previously selected match is supposed
@@ -436,18 +436,21 @@ public class SimulatorModel implements Cloneable {
         }
         changeGts();
         changeState(state);
-        changeMatch(getOutTransition(state));
+        changeMatch(getMatch(state));
         changeDisplay(DisplayKind.LTS);
         return finish();
     }
 
-    /**Returns the first outgoing transition that is not a self-loop,
+    /**
+     * Returns the first unexplored match of the state; if there is none,
+     * returns the first outgoing transition that is not a self-loop,
      * preferably one that also leads to an open state.
-     * Returns {@code null} if there is no such outgoing transition.
+     * Returns {@code null} if there is no such match or transition.
      */
-    private MatchResult getOutTransition(GraphState state) {
-        MatchResult result = state.getMatch();
-        if (result == null) {
+    private MatchResult getMatch(GraphState state) {
+        MatchResult result = null;
+        MatchResult match = state.getMatch();
+        if (match == null) {
             for (RuleTransition trans : state.getRuleTransitions()) {
                 if (trans.target() != state) {
                     result = trans;
@@ -456,6 +459,8 @@ public class SimulatorModel implements Cloneable {
                     }
                 }
             }
+        } else {
+            result = match.getEvent();
         }
         return result;
     }
