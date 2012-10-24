@@ -72,7 +72,7 @@ class RuleTreeNode extends ResourceTreeNode {
         }
         if (!isTried() && (properties == null || properties.isEnabled())) {
             result.append(HTMLConverter.HTML_LINEBREAK);
-            result.append("Currently disabled due to rule priorities or control");
+            result.append("Not scheduled in this state, due to rule priorities or control");
         }
         HTMLConverter.HTML_TAG.on(result);
         return result.toString();

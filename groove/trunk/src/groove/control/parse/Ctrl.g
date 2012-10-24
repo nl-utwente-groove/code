@@ -26,6 +26,8 @@ import java.util.LinkedList;
 }
 
 @lexer::members {
+    /** Line number of the first line of a control fragment. */
+    private int startLine;
     /** Last token read when start position is recorded. */
     private String lastToken;
     /** Start position of a recorded substring of the input. */
@@ -37,14 +39,11 @@ import java.util.LinkedList;
     public void startRecord() {
         lastToken = this.state.token.getText();
         recordPos = getCharIndex();
+        startLine = this.state.token.getLine();
     }
     
-    public String getRecord() {
-        org.antlr.runtime.Token currentToken = this.state.token;
-        int currentTokenLength =
-            currentToken == null ? 0 : currentToken.getText().length();
-        return (this.lastToken + getCharStream().substring(this.recordPos,
-            getCharIndex() - 1 - currentTokenLength)).trim();
+    public CtrlFragment getRecord() {
+        return new CtrlFragment(helper.getControlName(), startLine);
     }
     
     public void setHelper(CtrlHelper helper) {

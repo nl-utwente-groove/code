@@ -150,7 +150,17 @@ abstract public class ResourceTab extends JPanel implements Tab {
      */
     @Override
     public String getTitle() {
-        return (isDirty() ? "*" : "") + QualName.getLastName(getName());
+        StringBuilder result =
+            new StringBuilder(QualName.getLastName(getName()));
+        return decorateText(result).toString();
+    }
+
+    /** Decorates a string by adding an indication of the editor being dirty. */
+    protected StringBuilder decorateText(StringBuilder text) {
+        if (isDirty()) {
+            text.insert(0, "*");
+        }
+        return text;
     }
 
     /** Returns the resource kind of this editor tab. */

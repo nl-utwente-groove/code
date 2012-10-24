@@ -109,14 +109,6 @@ final public class RuleDisplay extends ResourceDisplay {
         }
     }
 
-    @Override
-    protected void decorateLabelText(String name, StringBuilder text) {
-        if (!getResource(name).isEnabled()) {
-            text.insert(0, "(");
-            text.append(")");
-        }
-    }
-
     /**
      * Returns the button for the collapse all action, lazily creating it
      * first.

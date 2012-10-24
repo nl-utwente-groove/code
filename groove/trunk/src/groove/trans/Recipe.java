@@ -30,11 +30,13 @@ import java.util.List;
  */
 public class Recipe implements Action {
     /** Constructs a recipe from a control automaton, given a priority. */
-    public Recipe(String name, int priority, List<CtrlPar.Var> sig, String text) {
+    public Recipe(String name, int priority, List<CtrlPar.Var> sig,
+            String controlName, int startLine) {
         this.name = name;
         this.priority = priority;
         this.sig = sig;
-        this.text = text;
+        this.controlName = controlName;
+        this.startLine = startLine;
     }
 
     @Override
@@ -64,9 +66,14 @@ public class Recipe implements Action {
         return this.body;
     }
 
-    /** Returns the text of this recipe. */
-    public String getText() {
-        return this.text;
+    /** Returns the full name of the control program in which this recipe is declared. */
+    public String getControlName() {
+        return this.controlName;
+    }
+
+    /** Returns the start line of this recipe's declaration within the control program. */
+    public int getStartLine() {
+        return this.startLine;
     }
 
     @Override
@@ -115,5 +122,6 @@ public class Recipe implements Action {
     private final int priority;
     private final List<CtrlPar.Var> sig;
     private CtrlAut body;
-    private final String text;
+    private final String controlName;
+    private final int startLine;
 }

@@ -325,7 +325,7 @@ public final class Icons {
     /** Small icon for production rules, as shown in the rule tree. */
     public static final ImageIcon RULE_LIST_ICON = createIcon("rule-small.gif");
     /** Small icon for transactional rules, as shown in the rule tree. */
-    public static final ImageIcon ACTION_LIST_ICON =
+    public static final ImageIcon RECIPE_LIST_ICON =
         createIcon("rule-small-multi.gif");
     /** Icon for rule (GPR) files. */
     public static final ImageIcon RULE_FILE_ICON = createIcon("rule-file.gif");
