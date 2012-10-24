@@ -226,10 +226,15 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
      */
     public static <N extends Node,E extends Edge> GraphInfo<N,E> getInfo(
             Graph<N,E> graph, boolean create) {
-        GraphInfo<N,E> result = graph.getInfo();
-        if (result == null && create) {
-            assert !graph.isFixed();
-            result = graph.setInfo(new GraphInfo<N,E>());
+        GraphInfo<N,E> result = null;
+        if (graph == null) {
+            assert !create;
+        } else {
+            result = graph.getInfo();
+            if (result == null && create) {
+                assert !graph.isFixed();
+                result = graph.setInfo(new GraphInfo<N,E>());
+            }
         }
         return result;
     }
@@ -240,9 +245,14 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
      */
     public static <N extends Node,E extends Edge> boolean hasErrors(
             Graph<N,E> graph) {
-        GraphInfo<N,E> graphInfo = graph.getInfo();
-        return graphInfo != null && graphInfo.getErrors() != null
-            && !graphInfo.getErrors().isEmpty();
+        boolean result = false;
+        if (graph != null) {
+            GraphInfo<N,E> graphInfo = graph.getInfo();
+            result =
+                graphInfo != null && graphInfo.getErrors() != null
+                    && !graphInfo.getErrors().isEmpty();
+        }
+        return result;
     }
 
     /**
@@ -251,9 +261,11 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
      */
     public static <N extends Node,E extends Edge> void throwException(
             Graph<N,E> graph) throws FormatException {
-        GraphInfo<N,E> graphInfo = graph.getInfo();
-        if (graphInfo != null && graphInfo.getErrors() != null) {
-            graphInfo.getErrors().throwException();
+        if (graph != null) {
+            GraphInfo<N,E> graphInfo = graph.getInfo();
+            if (graphInfo != null && graphInfo.getErrors() != null) {
+                graphInfo.getErrors().throwException();
+            }
         }
     }
 
@@ -264,12 +276,14 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
      */
     public static <N extends Node,E extends Edge> FormatErrorSet getErrors(
             Graph<N,E> graph) {
-        GraphInfo<N,E> graphInfo = graph.getInfo();
-        if (graphInfo == null) {
-            return null;
-        } else {
-            return graphInfo.getErrors();
+        FormatErrorSet result = null;
+        if (graph != null) {
+            GraphInfo<N,E> graphInfo = graph.getInfo();
+            if (graphInfo != null) {
+                result = graphInfo.getErrors();
+            }
         }
+        return result;
     }
 
     /**
@@ -297,8 +311,17 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
      * Convenience method to retrieve the file of a graph.
      */
     public static <N extends Node,E extends Edge> File getFile(Graph<N,E> graph) {
-        GraphInfo<N,E> graphInfo = graph.getInfo();
-        return new File(graphInfo.getFile());
+        File result = null;
+        if (graph != null) {
+            GraphInfo<N,E> graphInfo = graph.getInfo();
+            if (graphInfo != null) {
+                String fileName = graphInfo.getFile();
+                if (fileName != null) {
+                    result = new File(fileName);
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -318,13 +341,15 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
      */
     public static <N extends Node,E extends Edge> LayoutMap<N,E> getLayoutMap(
             Graph<?,?> graph) {
-        @SuppressWarnings("unchecked")
-        GraphInfo<N,E> graphInfo = (GraphInfo<N,E>) graph.getInfo();
-        if (graphInfo == null) {
-            return null;
-        } else {
-            return graphInfo.getLayoutMap();
+        LayoutMap<N,E> result = null;
+        if (graph != null) {
+            @SuppressWarnings("unchecked")
+            GraphInfo<N,E> graphInfo = (GraphInfo<N,E>) graph.getInfo();
+            if (graphInfo != null) {
+                result = graphInfo.getLayoutMap();
+            }
         }
+        return result;
     }
 
     /**
