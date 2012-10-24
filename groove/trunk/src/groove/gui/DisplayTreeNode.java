@@ -64,6 +64,11 @@ public abstract class DisplayTreeNode extends DefaultMutableTreeNode {
         }
     }
 
+    /** Indicates if this tree node represent a transient state or partial transition. */
+    public boolean isTransient() {
+        return false;
+    }
+
     /** Indicates if this tree node is enabled. */
     public boolean isEnabled() {
         return true;

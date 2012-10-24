@@ -20,6 +20,7 @@ import static groove.trans.ResourceKind.RULE;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
+import groove.gui.jgraph.JAttr.ColorSet;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -744,21 +745,26 @@ public class StateList extends JTree implements SimulatorListener {
             String tip = null;
             String text = value.toString();
             boolean enabled = true;
+            boolean error = false;
+            boolean isTransient = false;
             if (value instanceof DisplayTreeNode) {
                 DisplayTreeNode node = (DisplayTreeNode) value;
                 tip = node.getTip();
                 icon = node.getIcon();
                 text = node.getText();
                 enabled = node.isEnabled();
+                error = node.isError();
+                isTransient = node.isTransient();
             }
             setIcon(icon);
             setText(text);
             setToolTipText(tip);
-            Color foreground =
-                JAttr.getForeground(cellSelected, cellFocused, false);
+            ColorSet colors =
+                isTransient ? JAttr.TRANSIENT_COLORS : error
+                        ? JAttr.ERROR_COLORS : JAttr.NORMAL_COLORS;
+            Color background = colors.getBackground(cellSelected, cellFocused);
+            Color foreground = colors.getForeground(cellSelected, cellFocused);
             setForeground(enabled ? foreground : transparent(foreground));
-            Color background =
-                JAttr.getBackground(cellSelected, cellFocused, false);
             if (background == Color.WHITE) {
                 background = JAttr.STATE_BACKGROUND;
             }

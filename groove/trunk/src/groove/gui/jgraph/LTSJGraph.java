@@ -356,6 +356,11 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
     /** Active edge attributes of the LTS */
     static public final JAttr.AttributeMap LTS_EDGE_ACTIVE_CHANGE;
 
+    static private final Color FINAL_BACK = Color.red;
+    static private final Color OPEN_BACK = Color.gray.brighter();
+    static private final Color START_BACK = Color.green;
+    static private final Color RESULT_BACK = Colors.findColor("255 165 0");
+    static private final Color ACTIVE_COLOR = Color.BLUE;
     // set the emphasis attributes
     static {
         // Ordinary LTS nodes and edges
@@ -369,37 +374,36 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         LTS_EDGE_ATTR = ltsValues.getEdgeAttrs();
         LTS_START_NODE_ATTR = new JAttr() {
             {
-                this.backColour = Color.green;
+                this.backColour = START_BACK;
             }
         }.getNodeAttrs();
 
         // Special LTS  nodes
         LTS_OPEN_NODE_ATTR = new JAttr() {
             {
-                this.backColour = Color.gray.brighter();
+                this.backColour = OPEN_BACK;
             }
         }.getNodeAttrs();
         LTS_FINAL_NODE_ATTR = new JAttr() {
             {
-                this.backColour = Color.red;
+                this.backColour = FINAL_BACK;
             }
         }.getNodeAttrs();
         LTS_RESULT_NODE_ATTR = new JAttr() {
             {
-                this.backColour = Colors.findColor("255 165 0");
+                this.backColour = RESULT_BACK;
             }
         }.getNodeAttrs();
         LTS_ERROR_NODE_ATTR = new JAttr() {
             {
-                this.backColour = JAttr.ERROR_SELECT_BACKGROUND;
-                this.lineColour = JAttr.ERROR_SELECT_FOREGROUND;
+                this.backColour = this.lineColour = ERROR_COLOR;
             }
         }.getNodeAttrs();
 
         // active LTS nodes and edges
         JAttr ltsActive = new JAttr() {
             {
-                this.lineColour = this.foreColour = Color.blue;
+                this.lineColour = this.foreColour = ACTIVE_COLOR;
                 this.linewidth = 3;
                 this.lineEnd = GraphConstants.ARROW_SIMPLE;
             }
@@ -410,7 +414,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         JAttr ltsTransient = new JAttr() {
             {
                 this.shape = JVertexShape.DIAMOND;
-                this.foreColour = this.lineColour = new Color(255, 20, 147);
+                this.foreColour = this.lineColour = TRANSIENT_COLOR;
             }
         };
         LTS_NODE_TRANSIENT_CHANGE =
