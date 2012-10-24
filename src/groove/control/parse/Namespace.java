@@ -58,16 +58,14 @@ public class Namespace {
      * @return {@code true} if the name is new.
      */
     public boolean addRecipe(String name, int priority, List<CtrlPar.Var> sig,
-            CtrlFragment fragment) {
+            String controlName, int startLine) {
         boolean result = !this.kindMap.containsKey(name);
         if (result) {
             this.kindMap.put(name, Kind.RECIPE);
             this.sigMap.put(name, sig);
             this.allNames.add(name);
-            this.recipeMap.put(
-                name,
-                new Recipe(name, priority, sig, fragment.getName(),
-                    fragment.getStartLine()));
+            this.recipeMap.put(name, new Recipe(name, priority, sig,
+                controlName, startLine));
         }
         return result;
     }

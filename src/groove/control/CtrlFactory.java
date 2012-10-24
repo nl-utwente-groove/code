@@ -401,10 +401,11 @@ public class CtrlFactory {
                 namespace.addRule((Rule) action);
                 break;
             case RECIPE:
+                Recipe recipe = (Recipe) action;
                 namespace.addRecipe(action.getFullName(), action.getPriority(),
-                    action.getSignature(), null);
-                namespace.addBody(action.getFullName(),
-                    ((Recipe) action).getBody());
+                    action.getSignature(), recipe.getControlName(),
+                    recipe.getStartLine());
+                namespace.addBody(action.getFullName(), recipe.getBody());
             }
             int priority = action.getPriority();
             Set<Action> priorityActions = priorityMap.get(priority);
