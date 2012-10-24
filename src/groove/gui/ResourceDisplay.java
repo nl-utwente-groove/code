@@ -300,6 +300,11 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         return this.editorMap;
     }
 
+    /** Indicates if the resource with a given name is currently being edited. */
+    protected final boolean isEdited(String name) {
+        return getEditors().containsKey(name);
+    }
+
     /**
      * Attempts to save all dirty editors on this display, 
      * after asking permission from the user.
@@ -546,14 +551,35 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * tab component.
      */
     protected String getLabelText(String name) {
-        StringBuilder result = new StringBuilder();
-        if (this.editorMap.containsKey(name)) {
-            result.append(this.editorMap.get(name).getTitle());
-        } else {
-            result.append(getResource(name).getLastName());
-        }
-        decorateLabelText(name, result);
+        StringBuilder result =
+            new StringBuilder(getResource(name).getLastName());
+        decorateText(name, result, getKind() != DisplayKind.RULE);
         return result.toString();
+    }
+
+    /** 
+     * Adds HTML formatting to the label text for the main display.
+     * Callback method from {@link #getLabelText(String)}.
+     * @param name the name of the displayed object. This determines the
+     * decoration
+     * @param text the text to be decorated
+     * @param enableBold if {@code true}, enabled resource names are set bold
+     */
+    protected StringBuilder decorateText(String name, StringBuilder text,
+            boolean enableBold) {
+        if (isEdited(name)) {
+            getEditors().get(name).decorateText(text);
+        }
+        if (getResource(name).isEnabled()) {
+            if (enableBold) {
+                HTMLConverter.STRONG_TAG.on(text);
+                HTMLConverter.HTML_TAG.on(text);
+            }
+        } else {
+            text.insert(0, "(");
+            text.append(")");
+        }
+        return text;
     }
 
     /**
@@ -579,23 +605,6 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             result = enabled ? this.enabledText : this.disabledText;
         }
         return result;
-    }
-
-    /** 
-     * Adds HTML formatting to the label text for the main display.
-     * Callback method from {@link #getLabelText(String)}.
-     * @param name the name of the displayed object. This determines the
-     * decoration
-     * @param text the text to be decorated
-     */
-    protected void decorateLabelText(String name, StringBuilder text) {
-        if (getResource(name).isEnabled()) {
-            HTMLConverter.STRONG_TAG.on(text);
-            HTMLConverter.HTML_TAG.on(text);
-        } else {
-            text.insert(0, "(");
-            text.append(")");
-        }
     }
 
     /** Index of the pain panel. This returns {@code 0} by default. */

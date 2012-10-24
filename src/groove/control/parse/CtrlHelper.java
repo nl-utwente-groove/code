@@ -57,6 +57,11 @@ public class CtrlHelper {
         this.algebraFamily = family;
     }
 
+    /** Returns the full name of the control program currently being parsed. */
+    String getControlName() {
+        return this.namespace.getFullName();
+    }
+
     /** Sets the package for the declared names. */
     void setPackage(CommonTree packageTree) {
         this.packageName = packageTree.getText();
@@ -200,7 +205,7 @@ public class CtrlHelper {
      * @return {@code true} if no rule, function or recipe with the name of this one was
      * already declared; {@code false} otherwise
      */
-    boolean declareName(Tree functionTree, String text) {
+    boolean declareName(Tree functionTree, CtrlFragment fragment) {
         boolean result = false;
         assert (functionTree.getType() == CtrlParser.FUNCTION || functionTree.getType() == CtrlParser.RECIPE)
             && functionTree.getChildCount() <= 3;
@@ -219,7 +224,7 @@ public class CtrlHelper {
                 functionTree.getChildCount() == 2 ? "0"
                         : functionTree.getChild(1).getText();
             this.namespace.addRecipe(name, Integer.parseInt(priority),
-                new ArrayList<CtrlPar.Var>(), text);
+                new ArrayList<CtrlPar.Var>(), fragment);
             result = true;
         }
         return result;

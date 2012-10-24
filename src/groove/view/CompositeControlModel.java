@@ -21,14 +21,12 @@ import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
 import groove.graph.GraphInfo;
 import groove.trans.Action;
+import groove.trans.Recipe;
 import groove.trans.ResourceKind;
-import groove.trans.Rule;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Model combining all enabled control programs.
@@ -54,10 +52,6 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
     @Override
     CtrlAut compute() throws FormatException {
         FormatErrorSet errors = createErrors();
-        this.actionMap.clear();
-        for (Rule rule : getGrammar().getRules()) {
-            this.actionMap.put(rule.getFullName(), rule);
-        }
         this.loader.init(getGrammar().getProperties().getAlgebraFamily(),
             getGrammar().getRules());
         Collection<String> controlNames = getGrammar().getActiveNames(CONTROL);
@@ -121,12 +115,16 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
         return this.loader.getActions();
     }
 
+    /** Returns the set of all top-level actions of the enabled control programs. */
+    public Collection<Recipe> getRecipes() {
+        synchronise();
+        return this.loader.getRecipes();
+    }
+
     /** Returns the control loader used in this composite control model. */
     public CtrlLoader getLoader() {
         return this.loader;
     }
 
-    /** Mapping from recipe names to recipes defined in the enabled control programs. */
-    private final Map<String,Action> actionMap = new TreeMap<String,Action>();
     private final CtrlLoader loader = new CtrlLoader();
 }

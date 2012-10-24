@@ -27,6 +27,7 @@ import groove.io.FileType;
 import groove.trans.Action;
 import groove.trans.GraphGrammar;
 import groove.trans.QualName;
+import groove.trans.Recipe;
 import groove.trans.Rule;
 import groove.util.Groove;
 import groove.view.FormatErrorSet;
@@ -147,6 +148,14 @@ public class CtrlLoader {
      */
     public Collection<Action> getActions() {
         return this.namespace.getActions();
+    }
+
+    /** 
+     * Returns the set of all recipes collected in the course of
+     * processing all control files since the last {@link #init}.
+     */
+    public Collection<Recipe> getRecipes() {
+        return this.namespace.getRecipes();
     }
 
     /** Namespace of this loader. */

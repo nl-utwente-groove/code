@@ -16,6 +16,8 @@
  */
 package groove.control;
 
+import groove.trans.Recipe;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,10 +38,15 @@ public class CtrlSchedule {
         this.trans = trans;
         this.previousCalls = new HashSet<CtrlCall>();
         this.previousRules = new HashSet<String>();
+        this.previousRecipes = new HashSet<String>();
         for (CtrlTransition triedTrans : previous) {
             CtrlCall call = triedTrans.getCall();
             this.previousCalls.add(call);
             this.previousRules.add(call.getRule().getFullName());
+            Recipe recipe = triedTrans.getRecipe();
+            if (recipe != null) {
+                this.previousRecipes.add(recipe.getFullName());
+            }
         }
         this.success = success;
         assert !isTransient || state.isTransient();
@@ -56,6 +63,11 @@ public class CtrlSchedule {
         CtrlCall call = this.trans.getCall();
         this.previousCalls = new HashSet<CtrlCall>(origin.previousCalls);
         this.previousCalls.add(call);
+        this.previousRecipes = new HashSet<String>(origin.previousRecipes);
+        Recipe recipe = this.trans.getRecipe();
+        if (recipe != null) {
+            this.previousRecipes.add(recipe.getFullName());
+        }
         this.previousRules = new HashSet<String>(origin.previousRules);
         this.previousRules.add(call.getRule().getFullName());
         this.success = origin.success;
@@ -136,6 +148,17 @@ public class CtrlSchedule {
         return this.previousRules;
     }
 
+    /**
+     * Returns the set of recipes that have been tried at this point
+     * of the schedule.
+     * These are the rules occurring in {@link #getPreviousCalls()}
+     * @return a set of tried control calls, or {@code null} if {@link #isFinished()} 
+     * yields {@code false}.
+     */
+    public Set<String> getPreviousRecipes() {
+        return this.previousRecipes;
+    }
+
     /** Sets the success and failure schedules. */
     public void setNext(CtrlSchedule success, CtrlSchedule failure) {
         this.succNext = success;
@@ -202,6 +225,9 @@ public class CtrlSchedule {
     private final CtrlState state;
     /** The transition at this node of the schedule. */
     private final CtrlTransition trans;
+    /** The set of recipes that have been tried when this point of the schedule is reached.
+     */
+    private final Set<String> previousRecipes;
     /** The set of calls that have been tried when this point of the schedule is reached.
      */
     private final Set<CtrlCall> previousCalls;
