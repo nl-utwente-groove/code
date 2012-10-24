@@ -24,6 +24,7 @@ import static groove.gui.SimulatorModel.Change.STATE;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
+import groove.gui.jgraph.JAttr.ColorSet;
 import groove.io.HTMLConverter;
 import groove.lts.GraphState;
 import groove.trans.ResourceKind;
@@ -370,16 +371,20 @@ public class ResourceTree extends JTree implements SimulatorListener {
                 expanded, leaf, row, false);
 
             boolean error = false;
+            boolean isTransient = false;
             if (value instanceof DisplayTreeNode) {
                 DisplayTreeNode node = (DisplayTreeNode) value;
                 setToolTipText(node.getTip());
                 setIcon(node.getIcon());
                 setText(node.getText());
                 error = node.isError();
+                isTransient = node.isTransient();
             }
-            setForeground(JAttr.getForeground(cellSelected, cellFocused, error));
-            Color background =
-                JAttr.getBackground(cellSelected, cellFocused, error);
+            ColorSet colors =
+                isTransient ? JAttr.TRANSIENT_COLORS : error
+                        ? JAttr.ERROR_COLORS : JAttr.NORMAL_COLORS;
+            setForeground(colors.getForeground(cellSelected, cellFocused));
+            Color background = colors.getBackground(cellSelected, cellFocused);
             if (cellSelected) {
                 setBackgroundSelectionColor(background);
             } else {

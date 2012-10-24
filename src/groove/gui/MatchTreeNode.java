@@ -46,6 +46,11 @@ class MatchTreeNode extends DisplayTreeNode {
         return getMatch() instanceof RuleTransition;
     }
 
+    @Override
+    public boolean isTransient() {
+        return isTransition() && ((RuleTransition) getMatch()).isPartial();
+    }
+
     /**
      * Convenience method to retrieve the user object as a graph transition.
      */

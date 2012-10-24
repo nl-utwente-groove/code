@@ -25,6 +25,7 @@ import groove.control.CtrlAut;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
+import groove.gui.jgraph.JAttr.ColorSet;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.trans.Action;
@@ -767,6 +768,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 expanded, leaf, row, false);
 
             boolean error = false;
+            boolean isTransient = false;
             Icon icon = null;
             String text = value.toString();
             String tip = null;
@@ -778,15 +780,17 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 error = node.isError();
                 text = node.getText();
                 enabled = node.isEnabled();
+                isTransient = node.isTransient();
             }
             setIcon(icon);
             setText(text);
             setToolTipText(tip);
-            Color foreground =
-                JAttr.getForeground(cellSelected, cellFocused, error);
+            ColorSet colors =
+                isTransient ? JAttr.TRANSIENT_COLORS : error
+                        ? JAttr.ERROR_COLORS : JAttr.NORMAL_COLORS;
+            Color background = colors.getBackground(cellSelected, cellFocused);
+            Color foreground = colors.getForeground(cellSelected, cellFocused);
             setForeground(enabled ? foreground : transparent(foreground));
-            Color background =
-                JAttr.getBackground(cellSelected, cellFocused, error);
             if (cellSelected) {
                 setBackgroundSelectionColor(background);
             } else {

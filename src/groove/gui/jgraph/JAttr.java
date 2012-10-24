@@ -16,8 +16,12 @@
  */
 package groove.gui.jgraph;
 
+import static groove.gui.jgraph.JAttr.SelectionMode.FOCUSED;
+import static groove.gui.jgraph.JAttr.SelectionMode.NONE;
+import static groove.gui.jgraph.JAttr.SelectionMode.SELECTED;
 import groove.gui.Options;
 import groove.util.Colors;
+import groove.util.DefaultFixable;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -30,6 +34,7 @@ import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -303,6 +308,15 @@ public class JAttr {
     static public final Color NORMAL_BACKGROUND = Color.WHITE;
     /** Text colour used for non-selected items in lists. */
     static public final Color NORMAL_FOREGROUND = Color.BLACK;
+
+    /** Text display colours to be used in normal display mode. */
+    static public final ColorSet NORMAL_COLORS = new ColorSet();
+    static {
+        NORMAL_COLORS.putColors(FOCUSED, FOCUS_FOREGROUND, FOCUS_BACKGROUND);
+        NORMAL_COLORS.putColors(SELECTED, SELECT_FOREGROUND, SELECT_BACKGROUND);
+        NORMAL_COLORS.putColors(NONE, NORMAL_FOREGROUND, NORMAL_BACKGROUND);
+    }
+
     /** Colour used for indicating errors in graphs. */
     static public final Color ERROR_COLOR = new Color(MAX_VALUE, 50, 0, 40);
     /** Background colour used for focused error items in lists. */
@@ -319,66 +333,27 @@ public class JAttr {
     /** Text colour used for non-selected, non-focused error items in lists. */
     static public final Color ERROR_NORMAL_FOREGROUND = Color.RED;
 
-    /**
-     * Returns the foreground colour to be used for list items, under
-     * certain conditions.
-     * @param selected indicates if the item is currently selected
-     * @param focused indicates if the list the item appears in is currently
-     * focused. (This is <i>not</i> the same as cell focus in a list.)
-     * @param error indicates if the cell is associated with an object with
-     * (syntax) errors
-     * @see #getBackground
-     */
-    static public Color getForeground(boolean selected, boolean focused,
-            boolean error) {
-        if (error) {
-            if (focused) {
-                return ERROR_FOCUS_FOREGROUND;
-            } else if (selected) {
-                return ERROR_SELECT_FOREGROUND;
-            } else {
-                return ERROR_NORMAL_FOREGROUND;
-            }
-        } else {
-            if (focused) {
-                return FOCUS_FOREGROUND;
-            } else if (selected) {
-                return SELECT_FOREGROUND;
-            } else {
-                return NORMAL_FOREGROUND;
-            }
-        }
+    /** Text display colours to be used in error mode. */
+    static public final ColorSet ERROR_COLORS = new ColorSet();
+    static {
+        ERROR_COLORS.putColors(FOCUSED, ERROR_FOCUS_FOREGROUND,
+            ERROR_FOCUS_BACKGROUND);
+        ERROR_COLORS.putColors(SELECTED, ERROR_SELECT_FOREGROUND,
+            ERROR_SELECT_BACKGROUND);
+        ERROR_COLORS.putColors(NONE, ERROR_NORMAL_FOREGROUND,
+            ERROR_NORMAL_BACKGROUND);
     }
+    /** Colour used for transient states. */
+    static public final Color TRANSIENT_COLOR = Colors.findColor("255 20 147");
 
-    /**
-     * Returns the foreground colour to be used for list items, under
-     * certain conditions.
-     * @param selected indicates if the item is currently selected
-     * @param focused indicates if the list the item appears in is currently
-     * focused. (This is <i>not</i> the same as cell focus in a list.)
-     * @param error indicates if the cell is associated with an object with
-     * (syntax) errors
-     * @see #getForeground
-     */
-    static public Color getBackground(boolean selected, boolean focused,
-            boolean error) {
-        if (error) {
-            if (focused) {
-                return ERROR_FOCUS_BACKGROUND;
-            } else if (selected) {
-                return ERROR_SELECT_BACKGROUND;
-            } else {
-                return ERROR_NORMAL_BACKGROUND;
-            }
-        } else {
-            if (focused) {
-                return FOCUS_BACKGROUND;
-            } else if (selected) {
-                return SELECT_BACKGROUND;
-            } else {
-                return NORMAL_BACKGROUND;
-            }
-        }
+    /** Text display colours to be used for transient states. */
+    static public final ColorSet TRANSIENT_COLORS = new ColorSet();
+    static {
+        TRANSIENT_COLORS.putColors(FOCUSED, Color.WHITE,
+            TRANSIENT_COLOR.darker());
+        TRANSIENT_COLORS.putColors(SELECTED, TRANSIENT_COLOR.darker(),
+            SELECT_BACKGROUND);
+        TRANSIENT_COLORS.putColors(NONE, TRANSIENT_COLOR, NORMAL_BACKGROUND);
     }
 
     /** Line width used for emphasised cells. */
@@ -572,5 +547,88 @@ public class JAttr {
             }
             return this;
         }
+    }
+
+    /** Cell selection modes in trees or lists. */
+    public static enum SelectionMode {
+        /** Focused selection. */
+        FOCUSED,
+        /** Normal selection. */
+        SELECTED,
+        /** No selection. */
+        NONE;
+
+        /** Converts a pair of boolean values into a selection mode. */
+        public static SelectionMode toMode(boolean selected, boolean focused) {
+            if (focused) {
+                return SelectionMode.FOCUSED;
+            } else if (selected) {
+                return SelectionMode.SELECTED;
+            } else {
+                return SelectionMode.NONE;
+            }
+        }
+    }
+
+    /** Set of colours per selection mode. */
+    public static class ColorSet extends DefaultFixable {
+        /** Adds the foreground and background colours for a given selection mode. */
+        public void putColors(SelectionMode mode, Color foreground,
+                Color background) {
+            testFixed(false);
+            Color oldFore = this.foreColors.put(mode, foreground);
+            assert oldFore == null;
+            Color oldBack = this.backColors.put(mode, background);
+            assert oldBack == null;
+            if (this.foreColors.size() == SelectionMode.values().length) {
+                setFixed();
+            }
+        }
+
+        /** 
+         * Returns the foreground colour for the mode indicated by the parameters.
+         * @param selected if {@code true}, use selection mode
+         * @param focused if {@code true}, use focused mode
+         * @return the colour for the relevant mode 
+         */
+        public Color getForeground(boolean selected, boolean focused) {
+            return getColor(this.foreColors, selected, focused);
+        }
+
+        /** 
+         * Returns the foreground colour for the given selection mode
+         * @return the colour for the relevant mode 
+         */
+        public Color getForeground(SelectionMode mode) {
+            return this.foreColors.get(mode);
+        }
+
+        /** 
+         * Returns the background colour for the mode indicated by the parameters.
+         * @param selected if {@code true}, use selection mode
+         * @param focused if {@code true}, use focused mode
+         * @return the colour for the relevant mode 
+         */
+        public Color getBackground(boolean selected, boolean focused) {
+            return getColor(this.backColors, selected, focused);
+        }
+
+        /** 
+         * Returns the background colour for the given selection mode
+         * @return the colour for the relevant mode 
+         */
+        public Color getBackground(SelectionMode mode) {
+            return this.backColors.get(mode);
+        }
+
+        private Color getColor(Map<SelectionMode,Color> colors,
+                boolean selected, boolean focused) {
+            return colors.get(SelectionMode.toMode(selected, focused));
+        }
+
+        private final Map<SelectionMode,Color> foreColors =
+            new EnumMap<SelectionMode,Color>(SelectionMode.class);
+        private final Map<SelectionMode,Color> backColors =
+            new EnumMap<SelectionMode,Color>(SelectionMode.class);
     }
 }

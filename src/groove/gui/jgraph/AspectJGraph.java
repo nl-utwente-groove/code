@@ -505,43 +505,51 @@ final public class AspectJGraph extends GraphJGraph {
     static public final Map<AspectKind,JAttr.AttributeMap> ASPECT_EDGE_ATTR =
         new EnumMap<AspectKind,JAttr.AttributeMap>(AspectKind.class);
 
+    static private final Color REMARK_FORE = Colors.findColor("255 140 0");
+    static private final Color REMARK_BACK = Colors.findColor("255 255 180");
+    static private final Color EMBARGO_FORE = Color.red;
+    static private final Color EMBARGO_BACK = null;
+    static private final Color ERASER_FORE = Color.blue;
+    static private final Color ERASER_BACK = Colors.findColor("200 240 255");
+    static private final Color CREATOR_FORE = Color.green.darker();
+    static private final Color CREATOR_BACK = null;
     static {
         for (AspectKind aspect : AspectKind.values()) {
             /** Object to collect the attributes. */
             JAttr v = new JAttr();
             switch (aspect) {
             case REMARK:
-                v.foreColour = Colors.findColor("255 140 0");
-                v.backColour = Colors.findColor("255 255 180");
+                v.foreColour = REMARK_FORE;
+                v.backColour = REMARK_BACK;
                 break;
             case EMBARGO:
-                v.foreColour = Color.red;
-                v.backColour = null;
+                v.foreColour = EMBARGO_FORE;
+                v.backColour = EMBARGO_BACK;
                 v.linewidth = 5;
                 v.dash = new float[] {2, 2};
                 v.endFill = false;
                 break;
             case CONNECT:
-                v.foreColour = Color.red;
-                v.backColour = null;
+                v.foreColour = EMBARGO_FORE;
+                v.backColour = EMBARGO_BACK;
                 v.linewidth = 4;
                 v.dash = new float[] {2, 4};
                 v.endFill = false;
                 v.lineEnd = GraphConstants.ARROW_NONE;
                 break;
             case ERASER:
-                v.foreColour = Color.blue;
-                v.backColour = Colors.findColor("200 240 255");
+                v.foreColour = ERASER_FORE;
+                v.backColour = ERASER_BACK;
                 v.dash = new float[] {4, 4};
                 break;
             case CREATOR:
-                v.foreColour = Color.green.darker();
-                v.backColour = null;
+                v.foreColour = CREATOR_FORE;
+                v.backColour = CREATOR_BACK;
                 v.linewidth = 3;
                 break;
             case ADDER:
-                v.foreColour = Color.green.darker();
-                v.backColour = null;
+                v.foreColour = CREATOR_FORE;
+                v.backColour = CREATOR_BACK;
                 v.linewidth = 6;
                 v.dash = new float[] {2, 2};
                 v.endFill = false;

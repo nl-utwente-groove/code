@@ -8,8 +8,6 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 
-import java.util.List;
-
 /**
  * JVertex class that describes the underlying node as a graph state.
  * @author Arend Rensink
@@ -123,12 +121,11 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     }
 
     @Override
-    public List<StringBuilder> getLines() {
-        List<StringBuilder> result = super.getLines();
+    protected String getNodeIdString() {
+        String result = super.getNodeIdString();
         CtrlState ctrlState = getNode().getCtrlState();
         if (!ctrlState.getAut().isDefault()) {
-            result.add(new StringBuilder("ctrl: "
-                + HTMLConverter.toHtml(ctrlState.toString())));
+            result += "|" + ctrlState.toString();
         }
         return result;
     }
@@ -191,14 +188,14 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
             result = LTSJGraph.LTS_NODE_ATTR;
         }
         result = result.clone();
-        if (isActive()) {
-            result.applyMap(LTSJGraph.LTS_NODE_ACTIVE_CHANGE);
-        }
         if (getNode().isAbsent()) {
             result.applyMap(LTSJGraph.LTS_NODE_ABSENT_CHANGE);
         }
         if (isTransient()) {
             result.applyMap(LTSJGraph.LTS_NODE_TRANSIENT_CHANGE);
+        }
+        if (isActive()) {
+            result.applyMap(LTSJGraph.LTS_NODE_ACTIVE_CHANGE);
         }
         return result;
     }

@@ -126,14 +126,14 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     @Override
     protected AttributeMap createAttributes() {
         AttributeMap result = LTSJGraph.LTS_EDGE_ATTR.clone();
-        if (isActive()) {
-            result.applyMap(LTSJGraph.LTS_EDGE_ACTIVE_CHANGE);
-        }
         if (isAbsent()) {
             result.applyMap(LTSJGraph.LTS_EDGE_ABSENT_CHANGE);
         }
         if (isPartial()) {
             result.applyMap(LTSJGraph.LTS_EDGE_TRANSIENT_CHANGE);
+        }
+        if (isActive()) {
+            result.applyMap(LTSJGraph.LTS_EDGE_ACTIVE_CHANGE);
         }
         return result;
     }
