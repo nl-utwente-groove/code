@@ -626,8 +626,10 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
             AspectNode newStateNode = newState.getNode(colorEntry.getKey());
             AspectJVertex targetCell =
                 newStateJModel.getJCellForNode(newStateNode);
-            targetCell.setColor(colorEntry.getValue());
-            newStateJModel.synchroniseLayout(targetCell);
+            if (targetCell != null) {
+                targetCell.setColor(colorEntry.getValue());
+                newStateJModel.synchroniseLayout(targetCell);
+            }
         }
         Set<AspectEdge> newEdges =
             new HashSet<AspectEdge>(newStateJModel.getGraph().edgeSet());
