@@ -78,11 +78,6 @@ public class CtrlJVertex extends GraphJVertex {
     /**
      * This implementation adds special attributes for the start state, open
      * states, final states, and the active state.
-     * @see LTSJGraph#LTS_NODE_ATTR
-     * @see LTSJGraph#LTS_START_NODE_ATTR
-     * @see LTSJGraph#LTS_OPEN_NODE_ATTR
-     * @see LTSJGraph#LTS_FINAL_NODE_ATTR
-     * @see LTSJGraph#LTS_NODE_ACTIVE_CHANGE
      */
     @Override
     protected AttributeMap createAttributes() {

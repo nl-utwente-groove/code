@@ -65,7 +65,7 @@ public class ExploreAction extends SimulatorAction {
     public void doExploreState() {
         GraphState state = getSimulatorModel().getState();
         explore(getStateExploration(), true, true);
-        getSimulatorModel().doSetOutTransition(state, null);
+        getSimulatorModel().doSetStateAndMatch(state, null);
     }
 
     /**

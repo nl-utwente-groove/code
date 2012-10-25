@@ -29,13 +29,13 @@ public class ApplyMatchAction extends SimulatorAction {
             getActions().getExploreAction().doExploreState();
         } else {
             GraphState state = getSimulatorModel().getState();
-            RuleTransition trans = getSimulatorModel().getTransition();
+            RuleTransition trans;
             if (match instanceof RuleTransition) {
                 trans = (RuleTransition) match;
             } else {
                 trans = state.applyMatch(match);
             }
-            getSimulatorModel().doSetOutTransition(trans.target(), trans);
+            getSimulatorModel().doSetStateAndMatch(trans.target(), trans);
         }
     }
 

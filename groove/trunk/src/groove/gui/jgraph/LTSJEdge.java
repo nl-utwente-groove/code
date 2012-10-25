@@ -130,9 +130,10 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
             result.applyMap(LTSJGraph.LTS_EDGE_ABSENT_CHANGE);
         }
         if (isPartial()) {
-            result.applyMap(LTSJGraph.LTS_EDGE_TRANSIENT_CHANGE);
-        }
-        if (isActive()) {
+            result.applyMap(isActive()
+                    ? LTSJGraph.LTS_EDGE_TRANSIENT_ACTIVE_CHANGE
+                    : LTSJGraph.LTS_EDGE_TRANSIENT_CHANGE);
+        } else if (isActive()) {
             result.applyMap(LTSJGraph.LTS_EDGE_ACTIVE_CHANGE);
         }
         return result;

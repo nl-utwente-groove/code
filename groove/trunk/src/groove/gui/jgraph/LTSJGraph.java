@@ -27,6 +27,8 @@ import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
+import groove.lts.RecipeTransition;
 import groove.lts.RuleTransition;
 import groove.util.Colors;
 
@@ -189,7 +191,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
      * is the one currently selected in the simulator. Returns <tt>null</tt> if
      * no transition is selected.
      */
-    public RuleTransition getActiveTransition() {
+    public GraphTransition getActiveTransition() {
         return this.activeTransition;
     }
 
@@ -209,25 +211,24 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
      * @param state the new active state
      * @param trans the new active transition
      */
-    public void setActive(GraphState state, RuleTransition trans) {
+    public void setActive(GraphState state, GraphTransition trans) {
         List<GraphJCell> activeCells = new ArrayList<GraphJCell>();
         List<GraphJCell> changedCells = new ArrayList<GraphJCell>();
-        RuleTransition previousTrans = this.activeTransition;
+        GraphTransition previousTrans = getActiveTransition();
         this.activeTransition = trans;
         if (previousTrans != null) {
-            LTSJCell jCell =
-                (LTSJCell) getModel().getJCellForEdge(previousTrans);
-            if (jCell != null && jCell.setActive(false)) {
-                changedCells.add(jCell);
+            for (LTSJCell jCell : getTransitionCells(previousTrans)) {
+                if (jCell.setActive(false)) {
+                    changedCells.add(jCell);
+                }
             }
         }
         if (trans != null) {
-            LTSJCell jCell = (LTSJCell) getModel().getJCellForEdge(trans);
-            if (jCell != null) {
+            for (LTSJCell jCell : getTransitionCells(trans)) {
+                activeCells.add(jCell);
                 if (jCell.setActive(true)) {
                     changedCells.add(jCell);
                 }
-                activeCells.add(jCell);
             }
         }
         GraphState previousState = this.activeState;
@@ -256,6 +257,29 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         if (elem != null) {
             scrollTo(elem);
         }
+    }
+
+    /** Collects all cells for a given transition and its subtransitions. */
+    private Collection<LTSJCell> getTransitionCells(GraphTransition trans) {
+        Collection<LTSJCell> result = new ArrayList<LTSJCell>();
+        LTSJCell jCell = (LTSJCell) getModel().getJCellForEdge(trans);
+        if (jCell != null) {
+            result.add(jCell);
+        }
+        if (trans instanceof RecipeTransition) {
+            for (RuleTransition subTrans : ((RecipeTransition) trans).getSteps()) {
+                jCell = (LTSJCell) getModel().getJCellForEdge(subTrans);
+                if (jCell != null) {
+                    result.add(jCell);
+                }
+                jCell =
+                    (LTSJCell) getModel().getJCellForNode(subTrans.source());
+                if (jCell != null) {
+                    result.add(jCell);
+                }
+            }
+        }
+        return result;
     }
 
     /** Returns the traces from the given set of states to the start state. */
@@ -307,7 +331,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
      * @invariant activeTransition == null ||
      *            ltsJModel.graph().contains(activeTransition)
      */
-    private RuleTransition activeTransition;
+    private GraphTransition activeTransition;
 
     /**
      * The simulator to which this j-graph is associated.
@@ -355,12 +379,18 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
     static public final JAttr.AttributeMap LTS_NODE_ACTIVE_CHANGE;
     /** Active edge attributes of the LTS */
     static public final JAttr.AttributeMap LTS_EDGE_ACTIVE_CHANGE;
+    /** Transient active node attributes of the LTS */
+    static public final JAttr.AttributeMap LTS_NODE_TRANSIENT_ACTIVE_CHANGE;
+    /** Transient active edge attributes of the LTS */
+    static public final JAttr.AttributeMap LTS_EDGE_TRANSIENT_ACTIVE_CHANGE;
 
     static private final Color FINAL_BACK = Color.red;
     static private final Color OPEN_BACK = Color.gray.brighter();
     static private final Color START_BACK = Color.green;
     static private final Color RESULT_BACK = Colors.findColor("255 165 0");
     static private final Color ACTIVE_COLOR = Color.BLUE;
+    static private final Color TRANSIENT_ACTIVE_COLOR =
+        Colors.findColor("165 42 149");
     // set the emphasis attributes
     static {
         // Ordinary LTS nodes and edges
@@ -421,6 +451,18 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
             ltsTransient.getNodeAttrs().diff(LTS_NODE_ATTR);
         LTS_EDGE_TRANSIENT_CHANGE =
             ltsTransient.getEdgeAttrs().diff(LTS_EDGE_ATTR);
+        // transient active LTS nodes and edges
+        JAttr ltsTransientActive = new JAttr() {
+            {
+                this.lineColour = this.foreColour = TRANSIENT_ACTIVE_COLOR;
+                this.linewidth = 3;
+                this.lineEnd = GraphConstants.ARROW_SIMPLE;
+            }
+        };
+        LTS_NODE_TRANSIENT_ACTIVE_CHANGE =
+            ltsTransientActive.getNodeAttrs().diff(LTS_NODE_ATTR);
+        LTS_EDGE_TRANSIENT_ACTIVE_CHANGE =
+            ltsTransientActive.getEdgeAttrs().diff(LTS_EDGE_ATTR);
         // absent LTS nodes and edges
         JAttr ltsAbsent = new JAttr() {
             {
@@ -448,8 +490,8 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
          * Adapts the name of the action so that it reflects that the element to
          * scroll to is a given transition.
          */
-        public void setTransition(RuleTransition edge) {
-            putValue(Action.NAME, Options.SCROLL_TO_ACTION_NAME + " derivation");
+        public void setTransition(GraphTransition edge) {
+            putValue(Action.NAME, Options.SCROLL_TO_ACTION_NAME + " transition");
         }
 
         /**

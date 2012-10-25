@@ -18,6 +18,7 @@ package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.lts.RuleTransition;
 import groove.util.Groove;
 import groove.util.History;
@@ -71,10 +72,10 @@ public class StepHistory implements SimulatorListener {
             this.history.clear();
             refreshActions();
         }
-        if (changes.contains(Change.STATE) && source.getState() != null) {
+        if (changes.contains(Change.STATE) && source.hasState()) {
             setStateUpdate(source.getState());
         }
-        if (changes.contains(Change.MATCH) && source.getTransition() != null) {
+        if (changes.contains(Change.MATCH) && source.hasTransition()) {
             setTransitionUpdate(source.getTransition());
         }
     }
@@ -101,7 +102,7 @@ public class StepHistory implements SimulatorListener {
      * don't get the selection of a state followed by the selection of an
      * outgoing transition, but only the latter).
      */
-    private synchronized void setTransitionUpdate(RuleTransition transition) {
+    private synchronized void setTransitionUpdate(GraphTransition transition) {
         if (!this.ignoreSimulationUpdates) {
             HistoryAction newAction = new SetTransitionAction(transition);
             // test if the previous history action was setting the source state
@@ -181,7 +182,7 @@ public class StepHistory implements SimulatorListener {
             this.simulatorModel.setState(action.getState());
         } else {
             assert action instanceof SetTransitionAction;
-            this.simulatorModel.setMatch(action.getTransition());
+            this.simulatorModel.setTransition(action.getTransition());
         }
     }
 
@@ -237,7 +238,7 @@ public class StepHistory implements SimulatorListener {
          *        if the action is setting a state
          */
         public HistoryAction(final GraphState state,
-                final RuleTransition transition) {
+                final GraphTransition transition) {
             this.transition = transition;
             if (state == null) {
                 this.state = transition.source();
@@ -258,7 +259,7 @@ public class StepHistory implements SimulatorListener {
          * Returns the transition stored in this action, if any, or
          * <code>null</code> otherwise.
          */
-        RuleTransition getTransition() {
+        GraphTransition getTransition() {
             return this.transition;
         }
 
@@ -300,7 +301,7 @@ public class StepHistory implements SimulatorListener {
          * The transition stored in this history action; may be
          * <code>null</code> if the action is setting a state.
          */
-        private final RuleTransition transition;
+        private final GraphTransition transition;
     }
 
     /** Action that records setting a state. */
@@ -314,7 +315,7 @@ public class StepHistory implements SimulatorListener {
     /** Action that records setting a transition. */
     private class SetTransitionAction extends HistoryAction {
         /** Constructs an instance for a given graph transition. */
-        public SetTransitionAction(final RuleTransition transition) {
+        public SetTransitionAction(final GraphTransition transition) {
             super(null, transition);
         }
     }
