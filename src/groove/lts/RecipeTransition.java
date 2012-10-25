@@ -36,7 +36,8 @@ import java.util.Stack;
  * @version $Revision: 3638 $ $Date: 2008-03-05 16:50:10 $
  */
 public class RecipeTransition extends
-        AbstractEdge<GraphState,RecipeTransitionLabel> implements GraphTransition {
+        AbstractEdge<GraphState,RecipeTransitionLabel> implements
+        GraphTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between
      * a given source and target state.
@@ -76,10 +77,14 @@ public class RecipeTransition extends
 
     /** Returns the collection of rule transitions comprising this label. */
     public Set<RuleTransition> getSteps() {
-        if (this.steps == null) {
-            this.steps = computeSteps();
+        Set<RuleTransition> result = this.steps;
+        if (result == null) {
+            result = computeSteps();
+            if (source().isDone()) {
+                this.steps = result;
+            }
         }
-        return this.steps;
+        return result;
     }
 
     private Set<RuleTransition> computeSteps() {
