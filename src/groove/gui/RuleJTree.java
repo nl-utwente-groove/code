@@ -246,7 +246,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                     if (subRule.getPriority() == priority) {
                         String ruleName = subRule.getFullName();
                         recipes.add(new RuleEntry(
-                            grammar.getRuleModel(ruleName), recipe));
+                            grammar.getRuleModel(ruleName)));
                         subRuleNames.add(ruleName);
                     }
                 }
@@ -260,7 +260,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 if (rules == null) {
                     result.put(priority, rules = new HashSet<ActionEntry>());
                 }
-                rules.add(new RuleEntry(ruleModel, null));
+                rules.add(new RuleEntry(ruleModel));
             }
         }
         return result;
@@ -690,23 +690,13 @@ public class RuleJTree extends JTree implements SimulatorListener {
     }
 
     private class RuleEntry implements ActionEntry {
-        public RuleEntry(RuleModel model, Recipe recipe) {
+        public RuleEntry(RuleModel model) {
             this.model = model;
-            this.recipe = recipe;
         }
 
         @Override
         public String getName() {
             return getModel().getFullName();
-        }
-
-        /** Returns the name of the containing recipe, if any. */
-        public String getRecipeName() {
-            String result = null;
-            if (this.recipe != null) {
-                result = this.recipe.getFullName();
-            }
-            return result;
         }
 
         @Override
@@ -739,8 +729,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
 
         /** The rule wrapped by this entry. */
         private final RuleModel model;
-        /** The containing recipe wrapped by this entry, if any. */
-        private final Recipe recipe;
     }
 
     private class RecipeEntry implements ActionEntry {
