@@ -105,6 +105,9 @@ class MatchTreeNode extends DisplayTreeNode {
             if (this.model.getTrace().contains(trans)) {
                 result.append(TRACE_SUFFIX);
             }
+            if (trans.target().isAbsent()) {
+                HTMLConverter.STRIKETHROUGH_TAG.on(result);
+            }
             HTMLConverter.HTML_TAG.on(result);
         } else {
             result.append(RuleTransitionLabel.text(this.source,
