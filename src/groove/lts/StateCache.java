@@ -517,7 +517,7 @@ public class StateCache {
                 // so the existence of a match guarantees the existence of a transition
                 nextSchedule = schedule.next(true);
             } else {
-                nextSchedule = schedule.getTriedSchedule();
+                nextSchedule = schedule.toTriedSchedule();
             }
             getState().setSchedule(nextSchedule);
             this.matches.addAll(this.latestMatches);

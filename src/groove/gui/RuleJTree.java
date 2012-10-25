@@ -22,9 +22,9 @@ import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.RULE;
 import static groove.gui.SimulatorModel.Change.STATE;
 import groove.control.CtrlAut;
+import groove.control.CtrlTransition;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
-import groove.io.HTMLConverter;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.trans.Action;
@@ -32,6 +32,7 @@ import groove.trans.QualName;
 import groove.trans.Recipe;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
+import groove.util.Duo;
 import groove.util.Strings;
 import groove.view.GrammarModel;
 import groove.view.ResourceModel;
@@ -59,7 +60,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.ActionMap;
-import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -150,45 +150,52 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 this.topDirectoryNode.add(topNode);
                 dirNodeMap.clear();
             }
-            // create and collect nodes for all actions
-            Map<String,DisplayTreeNode> actionNodeMap =
-                new HashMap<String,DisplayTreeNode>();
+            // collect entries for all actions
+            Map<String,RuleEntry> ruleEntryMap =
+                new HashMap<String,RuleEntry>();
             List<RecipeEntry> recipes = new ArrayList<RecipeEntry>();
             for (ActionEntry action : priorityEntry.getValue()) {
-                DisplayTreeNode node =
-                    createActionNode(action, expandedPaths, selectedPaths);
-                actionNodeMap.put(action.getName(), node);
                 if (action instanceof RecipeEntry) {
                     recipes.add((RecipeEntry) action);
+                } else {
+                    ruleEntryMap.put(action.getName(), ((RuleEntry) action));
                 }
             }
+            List<String> subruleNames = new ArrayList<String>();
             // add the recipes and their subrules to the tree
             for (RecipeEntry recipe : recipes) {
                 String name = recipe.getName();
                 // recursively add parent directory nodes as required
                 DefaultMutableTreeNode parentNode =
                     addParentNode(topNode, dirNodeMap, QualName.getParent(name));
-                DisplayTreeNode recipeNode = actionNodeMap.remove(name);
+                DisplayTreeNode recipeNode =
+                    createActionNode(recipe, expandedPaths, selectedPaths);
                 addSortedNode(parentNode, recipeNode);
                 Set<Rule> subrules = recipe.getRecipe().getBody().getRules();
                 if (subrules != null) {
-                    for (Rule subrule : subrules) {
-                        String subruleName = subrule.getFullName();
-                        DisplayTreeNode subruleNode =
-                            actionNodeMap.remove(subruleName);
-                        if (subruleNode != null) {
-                            addSortedNode(recipeNode, subruleNode);
+                    for (Rule sr : subrules) {
+                        String srName = sr.getFullName();
+                        RuleEntry srEntry = ruleEntryMap.get(srName);
+                        DisplayTreeNode srNode =
+                            createActionNode(srEntry, expandedPaths,
+                                selectedPaths);
+                        if (srNode != null) {
+                            addSortedNode(recipeNode, srNode);
                         }
+                        subruleNames.add(srName);
                     }
                 }
             }
+            ruleEntryMap.keySet().removeAll(subruleNames);
             // add the remaining rules to the tree
-            for (Map.Entry<String,DisplayTreeNode> ruleEntry : actionNodeMap.entrySet()) {
-                String name = ruleEntry.getKey();
+            for (RuleEntry ruleEntry : ruleEntryMap.values()) {
+                String name = ruleEntry.getName();
                 // recursively add parent directory nodes as required
                 DefaultMutableTreeNode parentNode =
                     addParentNode(topNode, dirNodeMap, QualName.getParent(name));
-                addSortedNode(parentNode, ruleEntry.getValue());
+                DisplayTreeNode ruleNode =
+                    createActionNode(ruleEntry, expandedPaths, selectedPaths);
+                addSortedNode(parentNode, ruleNode);
             }
         }
         for (TreePath path : expandedPaths) {
@@ -239,7 +246,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                     if (subRule.getPriority() == priority) {
                         String ruleName = subRule.getFullName();
                         recipes.add(new RuleEntry(
-                            grammar.getRuleModel(ruleName)));
+                            grammar.getRuleModel(ruleName), recipe));
                         subRuleNames.add(ruleName);
                     }
                 }
@@ -253,7 +260,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 if (rules == null) {
                     result.put(priority, rules = new HashSet<ActionEntry>());
                 }
-                rules.add(new RuleEntry(ruleModel));
+                rules.add(new RuleEntry(ruleModel, null));
             }
         }
         return result;
@@ -451,17 +458,18 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * @param match the match result to be selected
      */
     private void selectMatch(RuleModel rule, MatchResult match) {
-        DefaultMutableTreeNode treeNode = null;
+        List<DefaultMutableTreeNode> treeNodes =
+            new ArrayList<DefaultMutableTreeNode>();
         if (match != null) {
-            treeNode = this.matchNodeMap.get(match);
+            treeNodes.add(this.matchNodeMap.get(match));
         } else if (rule != null) {
-            treeNode = this.ruleNodeMap.get(rule.getFullName());
+            treeNodes.addAll(this.ruleNodeMap.get(rule.getFullName()));
         }
-        if (treeNode == null) {
-            clearSelection();
-        } else {
-            setSelectionPath(new TreePath(treeNode.getPath()));
+        TreePath[] paths = new TreePath[treeNodes.size()];
+        for (int i = 0; i < treeNodes.size(); i++) {
+            paths[i] = new TreePath(treeNodes.get(i).getPath());
         }
+        setSelectionPaths(paths);
     }
 
     /**
@@ -477,35 +485,62 @@ public class RuleJTree extends JTree implements SimulatorListener {
         // clean up current match node map
         this.clearMatchMaps();
         // set the tried status of the rules
-        Set<String> triedRules =
-            state == null ? Collections.<String>emptySet()
-                    : state.getSchedule().getPreviousRules();
-        for (RuleTreeNode nextNode : this.ruleNodeMap.values()) {
-            nextNode.setTried(triedRules.contains(nextNode.getName()));
+        Set<CtrlTransition> triedTransitions =
+            state == null ? Collections.<CtrlTransition>emptySet()
+                    : state.getSchedule().getTriedTransitions();
+        // convert the transitions to pairs of rule name + recipe name
+        Set<Duo<String>> triedPairs = new HashSet<Duo<String>>();
+        for (CtrlTransition t : triedTransitions) {
+            String ruleName = t.getRule().getFullName();
+            String recipeName =
+                t.hasRecipe() ? t.getRecipe().getFullName() : null;
+            triedPairs.add(Duo.newDuo(ruleName, recipeName));
+        }
+        Collection<RuleTreeNode> treeNodes = new ArrayList<RuleTreeNode>();
+        // for all nodes, check if their rule/recipe pair has been tried
+        for (Collection<RuleTreeNode> nodes : this.ruleNodeMap.values()) {
+            treeNodes.addAll(nodes);
+            for (RuleTreeNode n : nodes) {
+                String ruleName = n.getName();
+                Recipe recipe = n.getRecipe();
+                String recipeName =
+                    recipe == null ? null : recipe.getFullName();
+                boolean tried =
+                    triedPairs.contains(Duo.newDuo(ruleName, recipeName));
+                n.setTried(tried);
+            }
         }
         // expand all rule nodes and subsequently collapse all directory nodes
-        for (RuleTreeNode nextNode : this.ruleNodeMap.values()) {
-            expandPath(new TreePath(nextNode.getPath()));
+        for (RuleTreeNode n : treeNodes) {
+            expandPath(new TreePath(n.getPath()));
         }
-        for (RuleTreeNode nextNode : this.ruleNodeMap.values()) {
-            collapsePath(new TreePath(nextNode.getPath()));
+        for (RuleTreeNode n : treeNodes) {
+            collapsePath(new TreePath(n.getPath()));
         }
         // recollect the match results so that they are ordered according to the
         // rule events
         // insert new matches
         for (MatchResult match : matches) {
-            String ruleName = match.getEvent().getRule().getFullName();
-            RuleTreeNode ruleNode = this.ruleNodeMap.get(ruleName);
-            assert ruleNode != null : String.format(
-                "Rule %s has no image in map %s", ruleName, this.ruleNodeMap);
-            int nrOfMatches = ruleNode.getChildCount();
-            MatchTreeNode matchNode =
-                new MatchTreeNode(getSimulatorModel(), state, match,
-                    nrOfMatches + 1, getSimulator().getOptions().isSelected(
-                        Options.SHOW_ANCHORS_OPTION));
-            this.ruleDirectory.insertNodeInto(matchNode, ruleNode, nrOfMatches);
-            expandPath(new TreePath(ruleNode.getPath()));
-            this.matchNodeMap.put(match, matchNode);
+            Rule rule = match.getEvent().getRule();
+            Recipe recipe =
+                state.getCtrlState().getTransition(rule).getRecipe();
+            String ruleName = rule.getFullName();
+            // find the correct rule tree node
+            for (RuleTreeNode ruleNode : this.ruleNodeMap.get(ruleName)) {
+                if (ruleNode.hasRecipe() ? ruleNode.getRecipe().equals(recipe)
+                        : recipe == null) {
+                    int nrOfMatches = ruleNode.getChildCount();
+                    MatchTreeNode matchNode =
+                        new MatchTreeNode(getSimulatorModel(), state, match,
+                            nrOfMatches + 1,
+                            getSimulator().getOptions().isSelected(
+                                Options.SHOW_ANCHORS_OPTION));
+                    this.ruleDirectory.insertNodeInto(matchNode, ruleNode,
+                        nrOfMatches);
+                    expandPath(new TreePath(ruleNode.getPath()));
+                    this.matchNodeMap.put(match, matchNode);
+                }
+            }
         }
 
     }
@@ -622,8 +657,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * Mapping from rule names in the current grammar to rule nodes in the
      * current rule directory.
      */
-    private final Map<String,RuleTreeNode> ruleNodeMap =
-        new HashMap<String,RuleTreeNode>();
+    private final Map<String,Collection<RuleTreeNode>> ruleNodeMap =
+        new HashMap<String,Collection<RuleTreeNode>>();
     /**
      * Mapping from action names in the current grammar to entries in this tree.
      */
@@ -655,13 +690,23 @@ public class RuleJTree extends JTree implements SimulatorListener {
     }
 
     private class RuleEntry implements ActionEntry {
-        public RuleEntry(RuleModel model) {
+        public RuleEntry(RuleModel model, Recipe recipe) {
             this.model = model;
+            this.recipe = recipe;
         }
 
         @Override
         public String getName() {
             return getModel().getFullName();
+        }
+
+        /** Returns the name of the containing recipe, if any. */
+        public String getRecipeName() {
+            String result = null;
+            if (this.recipe != null) {
+                result = this.recipe.getFullName();
+            }
+            return result;
         }
 
         @Override
@@ -673,7 +718,13 @@ public class RuleJTree extends JTree implements SimulatorListener {
         public RuleTreeNode createTreeNode() {
             RuleTreeNode result =
                 new RuleTreeNode(RuleJTree.this.display, getName());
-            RuleJTree.this.ruleNodeMap.put(getName(), result);
+            Collection<RuleTreeNode> nodes =
+                RuleJTree.this.ruleNodeMap.get(getName());
+            if (nodes == null) {
+                RuleJTree.this.ruleNodeMap.put(getName(), nodes =
+                    new ArrayList<RuleTreeNode>());
+            }
+            nodes.add(result);
             return result;
         }
 
@@ -686,7 +737,10 @@ public class RuleJTree extends JTree implements SimulatorListener {
             return getModel().isEnabled();
         }
 
+        /** The rule wrapped by this entry. */
         private final RuleModel model;
+        /** The containing recipe wrapped by this entry, if any. */
+        private final Recipe recipe;
     }
 
     private class RecipeEntry implements ActionEntry {
@@ -866,69 +920,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
          */
         public PriorityTreeNode(int priority) {
             super("Priority " + priority, true);
-        }
-    }
-
-    /**
-     * Transaction nodes (= level 1 nodes) of the directory
-     */
-    private class RecipeTreeNode extends DisplayTreeNode {
-        /**
-         * Creates a new transaction node based on a given control automaton.
-         */
-        public RecipeTreeNode(Recipe recipe) {
-            super(recipe, true);
-        }
-
-        /**
-         * Returns the control automaton of the transaction wrapped in this node.
-         */
-        public Recipe getRecipe() {
-            return (Recipe) getUserObject();
-        }
-
-        @Override
-        public Icon getIcon() {
-            return Icons.RECIPE_LIST_ICON;
-        }
-
-        public String getName() {
-            return getRecipe().getFullName();
-        }
-
-        @Override
-        public boolean isError() {
-            return getRecipe().getBody() == null;
-        }
-
-        @Override
-        public String toString() {
-            return getRecipe().getLastName() + " (recipe)";
-        }
-
-        /** Indicates if the rule wrapped by this node has been tried on the current state. */
-        @Override
-        public boolean isEnabled() {
-            boolean result = false;
-            int count = getChildCount();
-            for (int i = 0; !result && i < count; i++) {
-                RuleTreeNode child = (RuleTreeNode) getChildAt(i);
-                result = child.isEnabled();
-            }
-            return result;
-        }
-
-        @Override
-        public String getTip() {
-            StringBuilder result = new StringBuilder();
-            result.append("Recipe ");
-            result.append(HTMLConverter.STRONG_TAG.on(getName()));
-            if (!isEnabled()) {
-                result.append(HTMLConverter.HTML_LINEBREAK);
-                result.append("Not active in this state");
-            }
-            HTMLConverter.HTML_TAG.on(result);
-            return result.toString();
         }
     }
 

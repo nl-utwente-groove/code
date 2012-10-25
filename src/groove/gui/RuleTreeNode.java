@@ -19,7 +19,10 @@ package groove.gui;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.io.HTMLConverter;
+import groove.trans.Recipe;
 import groove.view.RuleModel;
+
+import javax.swing.tree.TreeNode;
 
 /**
  * Rule nodes (= level 1 nodes) of the directory
@@ -39,6 +42,24 @@ class RuleTreeNode extends ResourceTreeNode {
      */
     public RuleModel getRule() {
         return (RuleModel) getResource();
+    }
+
+    /** 
+     * Returns the recipe of which this rule node is part.
+     * This is determined by the parent node in the tree.
+     */
+    public Recipe getRecipe() {
+        Recipe result = null;
+        TreeNode parent = getParent();
+        if (parent instanceof RecipeTreeNode) {
+            result = ((RecipeTreeNode) parent).getRecipe();
+        }
+        return result;
+    }
+
+    /** Indicates if this rule node is part of a recipe. */
+    public boolean hasRecipe() {
+        return getRecipe() != null;
     }
 
     /** Returns HTML-formatted tool tip text for this rule node. */
