@@ -28,6 +28,15 @@ public class RecipeEvent implements GraphTransitionStub, Event {
         this.target = trans.target();
     }
 
+    /**
+     * Constructs an event for a given recipe, initial transition and target state.
+     */
+    public RecipeEvent(Recipe recipe, RuleTransition initial, GraphState target) {
+        this.recipe = recipe;
+        this.initial = initial.toStub();
+        this.target = target;
+    }
+
     @Override
     public Recipe getAction() {
         return this.recipe;
@@ -46,8 +55,8 @@ public class RecipeEvent implements GraphTransitionStub, Event {
 
     @Override
     public RecipeTransition toTransition(GraphState source) {
-        return new RecipeTransition(source,
-            this.initial.toTransition(source), this.target);
+        return new RecipeTransition(source, this.initial.toTransition(source),
+            this.target);
     }
 
     @Override

@@ -94,61 +94,47 @@ public class StateCache {
      * @param partial new outgoing partial rule transition from this state
      */
     private void addOutPartial(RuleTransition partial) {
-        notifyPartial(partial);
+        notifyPartial(partial, partial);
         GraphState child = partial.target();
-        if (!child.isTransient()) {
-            // we've reached a non-transient state
-            // so this state is certainly present
-            this.present = true;
-        } else if (!child.isDone()) {
-            // we've reached a transient raw state
-            child.getCache().addInPartial(this, partial);
-        } else {
-            // we've reached a transient done state
-            this.present |= child.getCache().present;
-            if (getState().isTransient()) {
-                // if this state is transient, add the child partials
-                for (RuleTransition childPartial : child.getCache().partials) {
-                    notifyPartial(childPartial);
-                }
-            } else {
-                // if this state is non-transient, we've found a recipe transition
-                notifyChildDone(partial, child.getCache());
+        StateCache childCache = child.getCache();
+        this.present |= childCache.present;
+        if (child.isTransient()) {
+            if (!child.isDone()) {
+                // we've reached a transient raw state
+                childCache.rawParents.add(Pair.newPair(this, partial));
             }
-        }
-    }
-
-    /**
-     * Adds an incoming partial transition to this cache.
-     * The transition source is registered as a parent,
-     * and it is notified of all currently found partials.
-     * @param parentCache the state cache of the transition source
-     * @param in a new incoming partial transition
-     */
-    private void addInPartial(StateCache parentCache, RuleTransition in) {
-        this.rawParents.add(Pair.newPair(parentCache, in));
-        for (RuleTransition partial : this.partials) {
-            parentCache.notifyPartial(partial);
+            // add the child partials to this cache
+            for (RuleTransition childPartial : child.getCache().partials) {
+                notifyPartial(childPartial, partial);
+            }
         }
     }
 
     /**
      * Notifies the cache of the existence of a reachable partial transition.
      * @param partial partial transition reachable from this state
+     * @param initial initial transition of a potential recipe transition ending
+     * on the new partial transition
      */
-    private void notifyPartial(RuleTransition partial) {
+    private void notifyPartial(RuleTransition partial, RuleTransition initial) {
         // maybe add the transition target to the transient open states
         GraphState target = partial.target();
         if (target.isTransient() && !target.isClosed()) {
             this.transientOpens.add(target);
         }
         // add the partial if it was not already known
-        if (getState().isTransient() && this.partials.add(partial)) {
-            // notify all parents of the new partial
-            for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
-                parent.one().notifyPartial(partial);
+        if (getState().isTransient()) {
+            if (this.partials.add(partial)) {
+                // notify all parents of the new partial
+                for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
+                    parent.one().notifyPartial(partial, parent.two());
+                }
+                this.present |= !target.isTransient();
             }
-            this.present |= !target.isTransient();
+        } else if (!target.isTransient()) {
+            // add recipe transition if there was none
+            getState().getGTS().addTransition(
+                new RecipeTransition(getState(), initial, target));
         }
     }
 
@@ -184,34 +170,7 @@ public class StateCache {
      * Notifies all raw predecessors that the associated state has become done.
      */
     void notifyDone() {
-        for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
-            parent.one().notifyChildDone(parent.two(), this);
-        }
         this.rawParents.clear();
-    }
-
-    /** 
-     * Callback method signalling that one of the raw successor states has
-     * become done.
-     * @param out reachable outgoing partial rule transition leading to the
-     * done child
-     * @param childCache state cache of the done child
-     */
-    private void notifyChildDone(RuleTransition out, StateCache childCache) {
-        assert out.source() == getState();
-        if (!getState().isTransient() && childCache.present) {
-            Set<GraphState> recipeTargets = new HashSet<GraphState>();
-            for (RuleTransition partial : childCache.partials) {
-                GraphState t = partial.target();
-                if (!t.isTransient()) {
-                    recipeTargets.add(t);
-                }
-            }
-            for (GraphState t : recipeTargets) {
-                getState().getGTS().addTransition(
-                    new RecipeTransition(getState(), out, t));
-            }
-        }
     }
 
     private void setStateCooked() {
