@@ -192,9 +192,10 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
             result.applyMap(LTSJGraph.LTS_NODE_ABSENT_CHANGE);
         }
         if (isTransient()) {
-            result.applyMap(LTSJGraph.LTS_NODE_TRANSIENT_CHANGE);
-        }
-        if (isActive()) {
+            result.applyMap(isActive()
+                    ? LTSJGraph.LTS_NODE_TRANSIENT_ACTIVE_CHANGE
+                    : LTSJGraph.LTS_NODE_TRANSIENT_CHANGE);
+        } else if (isActive()) {
             result.applyMap(LTSJGraph.LTS_NODE_ACTIVE_CHANGE);
         }
         return result;

@@ -40,6 +40,7 @@ import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
 import groove.lts.StartGraphState;
@@ -288,7 +289,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
                 clearSelectedMatch(true);
                 displayState(null);
             } else {
-                RuleTransition transition = oldModel.getTransition();
+                GraphTransition transition = oldModel.getTransition();
                 GraphState target =
                     transition == null ? null : transition.target();
                 if (target == newState) {
@@ -503,17 +504,21 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
      * Extracts the colours that were added to the target state of a given
      * graph transition.
      */
-    private Map<HostNode,Color> extractColors(RuleTransition transition) {
+    private Map<HostNode,Color> extractColors(GraphTransition transition) {
         Map<HostNode,Color> result = new HashMap<HostNode,Color>();
-        RuleApplication application = transition.createRuleApplication();
-        Map<RuleNode,Set<HostNode>> comatch = application.getComatch();
-        for (Map.Entry<RuleNode,Color> colorEntry : application.getRule().getColorMap().entrySet()) {
-            Set<HostNode> matches = comatch.get(colorEntry.getKey());
-            // possibly this node has no matches, for instance if it is universally
-            // quantified
-            if (matches != null) {
-                for (HostNode hostNode : matches) {
-                    result.put(hostNode, colorEntry.getValue());
+        // TODO make this work for arbitrary graph transitions
+        if (transition instanceof RuleTransition) {
+            RuleTransition ruleTrans = (RuleTransition) transition;
+            RuleApplication application = ruleTrans.createRuleApplication();
+            Map<RuleNode,Set<HostNode>> comatch = application.getComatch();
+            for (Map.Entry<RuleNode,Color> colorEntry : application.getRule().getColorMap().entrySet()) {
+                Set<HostNode> matches = comatch.get(colorEntry.getKey());
+                // possibly this node has no matches, for instance if it is universally
+                // quantified
+                if (matches != null) {
+                    for (HostNode hostNode : matches) {
+                        result.put(hostNode, colorEntry.getValue());
+                    }
                 }
             }
         }

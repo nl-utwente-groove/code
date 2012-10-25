@@ -14,6 +14,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
+import groove.lts.RecipeTransition;
 import groove.lts.RuleTransition;
 import groove.trans.GraphGrammar;
 import groove.trans.ResourceKind;
@@ -415,14 +416,14 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** 
-     * Sets the selected state and if possible an outgoing transition.
+     * Sets the selected state and if possible an outgoing match.
      * @param state the new selected state; non-{@code null}
      * @param trans if not {@code null}, a transition that should be inserted post-hoc into the
      * history as the one that was selected before this change
      * @return if {@code true}, the transition or state was really changed
      * @see #setMatch(MatchResult)
      */
-    public final boolean doSetOutTransition(GraphState state,
+    public final boolean doSetStateAndMatch(GraphState state,
             RuleTransition trans) {
         assert state != null;
         start();
@@ -436,7 +437,11 @@ public class SimulatorModel implements Cloneable {
         }
         changeGts();
         changeState(state);
-        changeMatch(getMatch(state));
+        MatchResult match = getMatch(state);
+        changeMatch(match);
+        if (match instanceof GraphTransition) {
+            changeTransition((GraphTransition) match);
+        }
         changeDisplay(DisplayKind.LTS);
         return finish();
     }
@@ -514,6 +519,7 @@ public class SimulatorModel implements Cloneable {
         if (changeGts(gts, false)) {
             changeState(gts == null ? null : gts.startState());
             changeMatch(null);
+            changeTransition(null);
             this.trace.clear();
         } else if (this.ltsListener.isChanged()) {
             this.ltsListener.clear();
@@ -597,6 +603,7 @@ public class SimulatorModel implements Cloneable {
         changeGts();
         if (changeState(state)) {
             changeMatch(null);
+            changeTransition(null);
             if (state != null) {
                 changeDisplay(DisplayKind.LTS);
             }
@@ -629,20 +636,6 @@ public class SimulatorModel implements Cloneable {
         return this.match;
     }
 
-    /** Returns the currently selected trace. */
-    public final Set<RuleTransition> getTrace() {
-        return this.trace;
-    }
-
-    /** Returns the currently selected transition, if the selected match is
-     * a transition.
-     * @see #getMatch()
-     */
-    public final RuleTransition getTransition() {
-        return this.match instanceof RuleTransition
-                ? (RuleTransition) this.match : null;
-    }
-
     /** 
      * Changes the selected rule match, and fires an update event.
      * If the match is changed to a non-null event, also sets the rule.
@@ -655,8 +648,50 @@ public class SimulatorModel implements Cloneable {
             changeSelected(ResourceKind.RULE,
                 match.getEvent().getRule().getFullName());
             if (match instanceof RuleTransition) {
-                changeState(((RuleTransition) match).source());
+                RuleTransition trans = (RuleTransition) match;
+                changeTransition(trans);
+                changeState(trans.source());
+            } else {
+                changeTransition(null);
             }
+            changeDisplay(DisplayKind.LTS);
+        }
+        return finish();
+    }
+
+    /** Returns the currently selected trace. */
+    public final Set<RuleTransition> getTrace() {
+        return this.trace;
+    }
+
+    /** Indicates if there is currently a transition selected.
+     */
+    public final boolean hasTransition() {
+        return getTransition() != null;
+    }
+
+    /** Returns the currently selected transition, if the selected match is
+     * a transition.
+     * @see #getMatch()
+     */
+    public final GraphTransition getTransition() {
+        return this.trans;
+    }
+
+    /** Returns the currently selected transition, if the selected match is
+     * a transition.
+     * @see #getMatch()
+     */
+    public final boolean setTransition(GraphTransition trans) {
+        start();
+        if (changeTransition(trans) && trans != null) {
+            MatchResult match =
+                trans instanceof RuleTransition ? (RuleTransition) trans
+                        : ((RecipeTransition) trans).getInitial();
+            changeMatch(match);
+            changeSelected(ResourceKind.RULE,
+                match.getEvent().getRule().getFullName());
+            changeState(trans.source());
             changeDisplay(DisplayKind.LTS);
         }
         return finish();
@@ -669,6 +704,18 @@ public class SimulatorModel implements Cloneable {
         boolean result = match != this.match;
         if (result) {
             this.match = match;
+            this.changes.add(Change.MATCH);
+        }
+        return result;
+    }
+
+    /** 
+     * Changes the selected transition.
+     */
+    private final boolean changeTransition(GraphTransition trans) {
+        boolean result = trans != this.trans;
+        if (result) {
+            this.trans = trans;
             this.changes.add(Change.MATCH);
         }
         return result;
@@ -696,6 +743,7 @@ public class SimulatorModel implements Cloneable {
             changeGts(null, false);
             changeState(null);
             changeMatch(null);
+            changeTransition(null);
             changeExploration();
             for (ResourceKind resource : ResourceKind.all(false)) {
                 changeSelected(resource, null);
@@ -729,6 +777,7 @@ public class SimulatorModel implements Cloneable {
             changeGts(null, false);
             changeState(null);
             changeMatch(null);
+            changeTransition(null);
             changeExploration();
         }
         // restrict the selected resources to those that are (still)
@@ -1126,6 +1175,8 @@ public class SimulatorModel implements Cloneable {
     private GraphState state;
     /** Currently selected match (event or transition). */
     private MatchResult match;
+    /** Currently selected transition, if any. */
+    private GraphTransition trans;
     /** Currently selected trace (set of transitions). */
     private final Set<RuleTransition> trace = new HashSet<RuleTransition>();
     /** Mapping from resource kinds to sets of selected resources of that kind. */

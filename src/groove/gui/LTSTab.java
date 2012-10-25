@@ -38,8 +38,6 @@ import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
-import groove.lts.MatchResult;
-import groove.lts.RuleTransition;
 import groove.view.GrammarModel;
 
 import java.awt.Component;
@@ -216,9 +214,9 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
             refreshStatus();
         }
         if (changes.contains(STATE) || changes.contains(MATCH)) {
-            GraphState state = source.getState();
-            RuleTransition transition = source.getTransition();
             if (getJModel() != null) {
+                GraphState state = source.getState();
+                GraphTransition transition = source.getTransition();
                 getJGraph().setActive(state, transition);
             }
         }
@@ -318,9 +316,8 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
                     GraphJCell cell =
                         getJGraph().getFirstCellForLocation(loc.x, loc.y);
                     if (cell instanceof LTSJEdge) {
-                        GraphTransition edge = ((LTSJEdge) cell).getEdge();
-                        MatchResult match = edge.getSteps().iterator().next();
-                        getSimulatorModel().setMatch(match);
+                        GraphTransition trans = ((LTSJEdge) cell).getEdge();
+                        getSimulatorModel().setTransition(trans);
                     } else if (cell instanceof LTSJVertex) {
                         GraphState node = ((LTSJVertex) cell).getNode();
                         getSimulatorModel().setState(node);
