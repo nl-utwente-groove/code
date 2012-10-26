@@ -313,7 +313,7 @@ public class CtrlBuildTest {
     }
 
     private String getName(CtrlSchedule s) {
-        return s.getTransition().getCall().getName();
+        return s.getTransitions().get(0).getCall().getName();
     }
 
     /** Builds a control automaton that should contain an error. */
