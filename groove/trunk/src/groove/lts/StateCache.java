@@ -17,6 +17,7 @@
 package groove.lts;
 
 import groove.control.CtrlSchedule;
+import groove.control.CtrlTransition;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
 import groove.trans.Event;
@@ -33,6 +34,7 @@ import groove.util.SetView;
 import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -461,17 +463,23 @@ public class StateCache {
             this.latestMatches = EMPTY_MATCH_SET;
             maybeSetClosed();
         } else if (!schedule.isTried()) {
-            this.latestMatches =
-                getMatchCollector().computeMatches(schedule.getTransition());
+            // flag collecting if any of the transitions in this schedule
+            // have a transient target
+            boolean transientTargets = false;
+            List<MatchResult> latestMatches =
+                this.latestMatches = new ArrayList<MatchResult>();
+            for (CtrlTransition ct : schedule.getTransitions()) {
+                latestMatches.addAll(getMatchCollector().computeMatches(ct));
+                transientTargets |= ct.target().isTransient();
+            }
             CtrlSchedule nextSchedule;
-            if (this.latestMatches.isEmpty()) {
+            if (latestMatches.isEmpty()) {
                 // no transitions will be generated
                 nextSchedule = schedule.next(false);
             } else if (schedule.next(true) == schedule.next(false)) {
                 // it does not matter whether a transition is generated or not
                 nextSchedule = schedule.next(false);
-            } else if (schedule.isTransient()
-                || !schedule.getTransition().target().isTransient()) {
+            } else if (schedule.isTransient() || !transientTargets) {
                 // the control transition is atomic
                 // so the existence of a match guarantees the existence of a transition
                 nextSchedule = schedule.next(true);
@@ -479,7 +487,7 @@ public class StateCache {
                 nextSchedule = schedule.toTriedSchedule();
             }
             getState().setSchedule(nextSchedule);
-            this.matches.addAll(this.latestMatches);
+            this.matches.addAll(latestMatches);
             result = true;
         }
         return result;
@@ -517,7 +525,7 @@ public class StateCache {
     /** The matches found so far for this state. */
     private MatchResultSet matches;
     /** The matches found during the latest successful call to {@link #trySchedule()}. */
-    private MatchResultSet latestMatches;
+    private List<MatchResult> latestMatches;
     /**
      * The set of outgoing transitions computed for the underlying graph,
      * for every class of graph transitions.
@@ -556,5 +564,6 @@ public class StateCache {
      */
     static private final int FREEZE_BOUND = 10;
     /** Unique empty match set. */
-    static private final MatchResultSet EMPTY_MATCH_SET = new MatchResultSet();
+    static private final List<MatchResult> EMPTY_MATCH_SET =
+        Collections.emptyList();
 }

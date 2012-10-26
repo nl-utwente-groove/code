@@ -85,7 +85,8 @@ public class PatternGraphMatchSetCollector {
         if (schedule.isFinished()) {
             result = null;
         } else {
-            result = schedule.getTransition();
+            result = schedule.getTransitions().get(0);
+            this.transIx = 1;
         }
         return result;
     }
@@ -96,12 +97,16 @@ public class PatternGraphMatchSetCollector {
         CtrlSchedule schedule = this.state.getSchedule();
         if (schedule.isFinished()) {
             result = null;
+        } else if (this.transIx < schedule.getTransitions().size()) {
+            result = schedule.getTransitions().get(this.transIx);
+            this.transIx++;
         } else {
             this.state.setSchedule(schedule = schedule.next(matchFound));
             if (schedule.isFinished()) {
                 result = null;
             } else {
-                result = schedule.getTransition();
+                result = schedule.getTransitions().get(0);
+                this.transIx = 1;
             }
         }
         return result;
@@ -119,4 +124,5 @@ public class PatternGraphMatchSetCollector {
         return !matches.isEmpty();
     }
 
+    private int transIx;
 }

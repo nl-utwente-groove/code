@@ -349,8 +349,8 @@ public class CtrlState implements Node {
 
     private CtrlSchedule computeSchedule(Set<CtrlTransition> transSet,
             Set<CtrlTransition> tried, Set<CtrlTransition> failed) {
-        // look for the untried call with the least disablings
-        CtrlTransition chosenTrans = null;
+        // look for the untried calls with the least disablings
+        List<CtrlTransition> chosenTrans = null;
         Set<CtrlTransition> chosenDisablings = null;
         // boolean indicating that the omega rule guards have all been satisfied
         boolean success = false;
@@ -376,9 +376,12 @@ public class CtrlState implements Node {
             if (chosenTrans == null
                 || tryDisablings.size() < chosenDisablings.size()
                 || (tryDisablings.size() == chosenDisablings.size() && smallerThan(
-                    tryTrans, chosenTrans))) {
-                chosenTrans = tryTrans;
+                    tryTrans, chosenTrans.get(0)))) {
+                chosenTrans = new ArrayList<CtrlTransition>();
+                chosenTrans.add(tryTrans);
                 chosenDisablings = tryDisablings;
+            } else if (tryDisablings.equals(chosenDisablings)) {
+                chosenTrans.add(tryTrans);
             }
         }
         boolean isTransient = isTransient();
@@ -392,12 +395,12 @@ public class CtrlState implements Node {
             new CtrlSchedule(this, chosenTrans, tried, success, isTransient);
         if (chosenTrans != null) {
             Set<CtrlTransition> newTried = new HashSet<CtrlTransition>(tried);
-            newTried.add(chosenTrans);
+            newTried.addAll(chosenTrans);
             Set<CtrlTransition> newFailed = new HashSet<CtrlTransition>(failed);
-            newFailed.add(chosenTrans);
+            newFailed.addAll(chosenTrans);
             Set<CtrlTransition> remainder =
                 new LinkedHashSet<CtrlTransition>(transSet);
-            remainder.remove(chosenTrans);
+            remainder.removeAll(chosenTrans);
             CtrlSchedule failNext = getSchedule(remainder, newTried, newFailed);
             CtrlSchedule succNext;
             if (chosenDisablings.isEmpty()) {

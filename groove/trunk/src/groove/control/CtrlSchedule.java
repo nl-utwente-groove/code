@@ -18,6 +18,7 @@ package groove.control;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /** Sequence of control transitions to be tried out from a control state. */
@@ -30,10 +31,10 @@ public class CtrlSchedule {
      * @param isTransient if {@code true}, the schedule is part of a transaction
      * @param success if {@code true}, this schedule represents a success state
      */
-    public CtrlSchedule(CtrlState state, CtrlTransition trans,
+    public CtrlSchedule(CtrlState state, List<CtrlTransition> trans,
             Set<CtrlTransition> previous, boolean success, boolean isTransient) {
         this.state = state;
-        this.trans = trans;
+        this.transitions = trans;
         this.triedCalls = new HashSet<CtrlCall>();
         this.triedRules = new HashSet<String>();
         this.triedTransitions = new HashSet<CtrlTransition>();
@@ -54,15 +55,22 @@ public class CtrlSchedule {
      */
     private CtrlSchedule(CtrlSchedule origin) {
         this.state = origin.state;
-        this.trans = origin.trans;
-        CtrlCall call = this.trans.getCall();
-        this.triedCalls = new HashSet<CtrlCall>(origin.triedCalls);
-        this.triedCalls.add(call);
-        this.triedTransitions =
-            new HashSet<CtrlTransition>(origin.triedTransitions);
-        this.triedTransitions.add(this.trans);
-        this.triedRules = new HashSet<String>(origin.triedRules);
-        this.triedRules.add(call.getRule().getFullName());
+        this.transitions = origin.transitions;
+        Set<CtrlCall> triedCalls = new HashSet<CtrlCall>();
+        Set<CtrlTransition> triedTransitions = new HashSet<CtrlTransition>();
+        Set<String> triedRules = new HashSet<String>();
+        for (CtrlTransition t : this.transitions) {
+            CtrlCall call = t.getCall();
+            triedCalls.addAll(origin.triedCalls);
+            triedCalls.add(call);
+            triedTransitions.addAll(origin.triedTransitions);
+            triedTransitions.add(t);
+            triedRules.addAll(origin.triedRules);
+            triedRules.add(call.getRule().getFullName());
+        }
+        this.triedCalls = triedCalls;
+        this.triedTransitions = triedTransitions;
+        this.triedRules = triedRules;
         this.success = origin.success;
         this.isTransient = origin.isTransient;
         this.tried = true;
@@ -78,7 +86,7 @@ public class CtrlSchedule {
 
     /** Indicates if this node signals the end of the schedule. */
     public boolean isFinished() {
-        return this.trans == null;
+        return this.transitions == null;
     }
 
     /** Indicates if this schedule represents a success state. */
@@ -94,7 +102,7 @@ public class CtrlSchedule {
     }
 
     /**
-     * Indicates if {@link #getTransition()} has already been tried out,
+     * Indicates if the scheduled transitions have already been tried out,
      * but the result has not yet been registered.
      */
     public boolean isTried() {
@@ -112,8 +120,8 @@ public class CtrlSchedule {
     /** Returns the currently scheduled transition.
      * May be {@code null} if this is the end of the schedule.
       */
-    public CtrlTransition getTransition() {
-        return this.trans;
+    public List<CtrlTransition> getTransitions() {
+        return this.transitions;
     }
 
     /** Returns the control state to which this schedule belongs. */
@@ -174,22 +182,30 @@ public class CtrlSchedule {
             result.append("    ");
         }
         result.append(prefix);
-        if (this.trans == null) {
+        if (this.transitions == null) {
             result.append("No transitions");
             if (isSuccess()) {
                 result.append("; success");
             }
             result.append("\n");
         } else {
-            result.append("Call ");
-            result.append(this.trans);
-            if (this.trans.getParBinding().length > 0) {
-                result.append(", parameter binding: ");
-                result.append(Arrays.toString(this.trans.getParBinding()));
-            }
-            if (this.trans.getTargetVarBinding().length > 0) {
-                result.append(", target variable binding: ");
-                result.append(Arrays.toString(this.trans.getTargetVarBinding()));
+            boolean first = true;
+            for (CtrlTransition t : getTransitions()) {
+                if (first) {
+                    first = false;
+                } else {
+                    result.append('\n');
+                }
+                result.append("Call ");
+                result.append(t);
+                if (t.getParBinding().length > 0) {
+                    result.append(", parameter binding: ");
+                    result.append(Arrays.toString(t.getParBinding()));
+                }
+                if (t.getTargetVarBinding().length > 0) {
+                    result.append(", target variable binding: ");
+                    result.append(Arrays.toString(t.getTargetVarBinding()));
+                }
             }
             if (isSuccess()) {
                 result.append("; success");
@@ -216,8 +232,8 @@ public class CtrlSchedule {
 
     /** The control state to which this schedule belongs. */
     private final CtrlState state;
-    /** The transition at this node of the schedule. */
-    private final CtrlTransition trans;
+    /** The transitions at this node of the schedule. */
+    private final List<CtrlTransition> transitions;
     /** The set of recipes that have been tried when this point of the schedule is reached.
      */
     private final Set<CtrlTransition> triedTransitions;
@@ -228,13 +244,13 @@ public class CtrlSchedule {
      */
     private final Set<String> triedRules;
     /** 
-     * Flag indicating that {@link #trans} was already tried out (but the result
+     * Flag indicating that {@link #transitions} was already tried out (but the result
      * has not yet been registered).
      */
     private final boolean tried;
-    /** Next schedule node in case {@link #trans} succeeds. */
+    /** Next schedule node in case {@link #transitions} succeeds. */
     private CtrlSchedule succNext;
-    /** Next schedule node in case {@link #trans} fails. */
+    /** Next schedule node in case {@link #transitions} fails. */
     private CtrlSchedule failNext;
     /** Flag indicating if this schedule represents a success state. */
     private final boolean success;
