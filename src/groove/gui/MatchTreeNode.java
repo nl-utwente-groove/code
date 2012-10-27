@@ -43,13 +43,17 @@ class MatchTreeNode extends DisplayTreeNode {
 
     /** Indicates if this match is already turned into a transition. */
     public boolean isTransition() {
-        return getMatch() instanceof RuleTransition;
+        return getMatch().hasRuleTransition();
+    }
+
+    /** Returns the rule transition of the match, if any. */
+    public RuleTransition getTransition() {
+        return getMatch().getRuleTransition();
     }
 
     @Override
     public boolean isTransient() {
-        return this.source.getCtrlState().getTransition(
-            getMatch().getEvent().getRule()).hasRecipe();
+        return getMatch().getCtrlTransition().hasRecipe();
     }
 
     /**
@@ -110,8 +114,8 @@ class MatchTreeNode extends DisplayTreeNode {
             }
             HTMLConverter.HTML_TAG.on(result);
         } else {
-            result.append(RuleTransitionLabel.text(this.source,
-                getMatch().getEvent(), this.anchored));
+            result.append(RuleTransitionLabel.text(this.source, getMatch(),
+                this.anchored));
             result.append(RIGHTARROW);
             result.append("?");
         }

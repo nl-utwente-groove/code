@@ -155,13 +155,13 @@ public class SymbolicStrategy extends AbstractStrategy {
         Collections.sort(sortedMatches, new PriorityComparator());
         List<Collection<? extends MatchResult>> priorityGroups =
             new ArrayList<Collection<? extends MatchResult>>();
-        int priority = sortedMatches.get(0).getEvent().getRule().getPriority();
+        int priority = sortedMatches.get(0).getRule().getPriority();
         Collection<MatchResult> current = new HashSet<MatchResult>();
         for (MatchResult match : sortedMatches) {
-            if (match.getEvent().getRule().getPriority() != priority) {
+            if (match.getRule().getPriority() != priority) {
                 priorityGroups.add(current);
                 current = new HashSet<MatchResult>();
-                priority = match.getEvent().getRule().getPriority();
+                priority = match.getRule().getPriority();
             }
             current.add(match);
         }
@@ -174,8 +174,7 @@ public class SymbolicStrategy extends AbstractStrategy {
 
         @Override
         public int compare(MatchResult res1, MatchResult res2) {
-            return res2.getEvent().getRule().getPriority()
-                - res1.getEvent().getRule().getPriority();
+            return res2.getRule().getPriority() - res1.getRule().getPriority();
         }
 
         @Override

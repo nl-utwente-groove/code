@@ -27,6 +27,7 @@ import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
+import groove.lts.RuleTransition;
 import groove.trans.Action;
 import groove.trans.QualName;
 import groove.trans.Recipe;
@@ -171,18 +172,21 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 DisplayTreeNode recipeNode =
                     createActionNode(recipe, expandedPaths, selectedPaths);
                 addSortedNode(parentNode, recipeNode);
-                Set<Rule> subrules = recipe.getRecipe().getBody().getRules();
-                if (subrules != null) {
-                    for (Rule sr : subrules) {
-                        String srName = sr.getFullName();
-                        RuleEntry srEntry = ruleEntryMap.get(srName);
-                        DisplayTreeNode srNode =
-                            createActionNode(srEntry, expandedPaths,
-                                selectedPaths);
-                        if (srNode != null) {
-                            addSortedNode(recipeNode, srNode);
+                CtrlAut body = recipe.getRecipe().getBody();
+                if (body != null) {
+                    Set<Rule> subrules = body.getRules();
+                    if (subrules != null) {
+                        for (Rule sr : subrules) {
+                            String srName = sr.getFullName();
+                            RuleEntry srEntry = ruleEntryMap.get(srName);
+                            DisplayTreeNode srNode =
+                                createActionNode(srEntry, expandedPaths,
+                                    selectedPaths);
+                            if (srNode != null) {
+                                addSortedNode(recipeNode, srNode);
+                            }
+                            subruleNames.add(srName);
                         }
-                        subruleNames.add(srName);
                     }
                 }
             }
@@ -442,10 +446,10 @@ public class RuleJTree extends JTree implements SimulatorListener {
         SortedSet<MatchResult> matches =
             new TreeSet<MatchResult>(MatchResult.COMPARATOR);
         if (state != null) {
-            matches.addAll(state.getRuleTransitions());
-            for (MatchResult match : state.getMatches()) {
-                matches.add(match.getEvent());
+            for (RuleTransition trans : state.getRuleTransitions()) {
+                matches.add(trans.getKey());
             }
+            matches.addAll(state.getMatches());
         }
         refreshMatches(state, matches);
         setEnabled(getGrammar() != null);
@@ -522,8 +526,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
         // insert new matches
         for (MatchResult match : matches) {
             Rule rule = match.getEvent().getRule();
-            Recipe recipe =
-                state.getCtrlState().getTransition(rule).getRecipe();
+            Recipe recipe = match.getCtrlTransition().getRecipe();
             String ruleName = rule.getFullName();
             // find the correct rule tree node
             for (RuleTreeNode ruleNode : this.ruleNodeMap.get(ruleName)) {

@@ -26,6 +26,7 @@ import groove.lts.ActionLabel;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchCollector;
+import groove.lts.MatchResult;
 import groove.lts.MatchResultSet;
 import groove.lts.RuleTransitionStub;
 import groove.lts.StateCache;
@@ -34,7 +35,6 @@ import groove.trans.HostElement;
 import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.Rule;
-import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.CacheReference;
 
@@ -237,7 +237,7 @@ public class ShapeState extends AbstractGraphState {
     // ------------------------------------------------------------------------
 
     @Override
-    public RuleTransitionStub getOutStub(RuleEvent event) {
+    public RuleTransitionStub getOutStub(MatchResult match) {
         throw new UnsupportedOperationException();
     }
 
@@ -252,14 +252,14 @@ public class ShapeState extends AbstractGraphState {
     }
 
     @Override
-    protected RuleTransitionStub createTransitionStub(RuleEvent event,
+    protected RuleTransitionStub createTransitionStub(MatchResult match,
             HostNode[] addedNodes, GraphState target) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     protected RuleTransitionStub createInTransitionStub(GraphState source,
-            RuleEvent event, HostNode[] addedNodes) {
+            MatchResult match, HostNode[] addedNodes) {
         throw new UnsupportedOperationException();
     }
 
@@ -294,7 +294,7 @@ public class ShapeState extends AbstractGraphState {
             Rule rule = ct.getRule();
             for (Proof preMatch : PreMatch.getPreMatches(
                 ShapeState.this.getGraph(), rule)) {
-                result.add(getRecord().getEvent(preMatch));
+                result.add(new MatchResult(getRecord().getEvent(preMatch), ct));
             }
             return result;
         }

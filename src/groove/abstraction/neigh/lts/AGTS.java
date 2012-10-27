@@ -335,7 +335,7 @@ public final class AGTS extends GTS {
                     reducedTgt =
                         new ShapeNextState(result.nodeCount(),
                             origTgtClosure.getGraph(), reducedSrc,
-                            origTrans.getEvent());
+                            origTrans.getKey());
                     toProcess.add(origTgtClosure);
                     addReducedState(result, origTgtClosure, reducedTgt);
                     stateMap.put(origTgtClosure, reducedTgt);
@@ -345,8 +345,8 @@ public final class AGTS extends GTS {
                     // Create a new transition.
                     if (!reducedSrc.containsTransition(transLabel, reducedTgt)) {
                         ShapeTransition reducedTrans =
-                            new ShapeTransition(reducedSrc,
-                                origTrans.getEvent(), reducedTgt);
+                            new ShapeTransition(reducedSrc, origTrans.getKey(),
+                                reducedTgt);
                         result.addTransition(reducedTrans);
                     }
                 }

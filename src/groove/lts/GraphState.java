@@ -21,7 +21,6 @@ import groove.control.CtrlState;
 import groove.graph.Node;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.trans.RuleEvent;
 
 import java.util.List;
 import java.util.Set;
@@ -71,10 +70,10 @@ public interface GraphState extends Node {
     public void setSchedule(CtrlSchedule schedule);
 
     /**
-     * Retrieves an outgoing transition with a given event, if it exists. Yields
+     * Retrieves an outgoing transition with a given match, if it exists. Yields
      * <code>null</code> otherwise.
      */
-    public RuleTransitionStub getOutStub(RuleEvent event);
+    public RuleTransitionStub getOutStub(MatchResult match);
 
     /**
      * Returns the set of currently generated outgoing

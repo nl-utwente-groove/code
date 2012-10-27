@@ -16,7 +16,6 @@
  */
 package groove.abstraction.pattern.lts;
 
-import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.graph.EdgeRole;
 
@@ -37,9 +36,8 @@ public class PatternGraphNextState extends PatternGraphState implements
 
     /** Default constructor. */
     public PatternGraphNextState(PatternGraph graph, PatternGraphState source,
-            int number, PGTS pgts, Match match) {
-        super(graph, source.getCtrlState().getTransition(
-            match.getRule().getSimpleRule()).target(), number, pgts);
+            int number, PGTS pgts, MatchResult match) {
+        super(graph, match.getCtrlTransition().target(), number, pgts);
         this.transition = new PatternGraphTransition(source, match, this);
     }
 

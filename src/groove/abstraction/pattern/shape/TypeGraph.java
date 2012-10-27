@@ -18,7 +18,7 @@ package groove.abstraction.pattern.shape;
 
 import groove.abstraction.MyHashMap;
 import groove.abstraction.pattern.Util;
-import groove.abstraction.pattern.match.Match;
+import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
 import groove.abstraction.pattern.trans.PatternGraphRuleApplication;
@@ -420,14 +420,15 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
                 PatternRule pRule = getClosureRule(tNode);
                 Matcher matcher =
                     MatcherFactory.instance().getMatcher(pRule, true);
-                for (Match match : matcher.findMatches(pGraph)) {
+                for (MatchResult match : matcher.findMatches(pGraph, null)) {
                     // For each match we found we add a new pattern. We don't
                     // have to recompute any matches after the transformation
                     // because the dependency on patterns grows towards the
                     // depth of the type graph. So no patterns of the same
                     // layer can depend on each other.
                     PatternGraphRuleApplication app =
-                        new PatternGraphRuleApplication(pGraph, match);
+                        new PatternGraphRuleApplication(pGraph,
+                            match.getMatch());
                     app.transformWithClosureRule();
                 }
             }

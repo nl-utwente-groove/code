@@ -16,7 +16,6 @@
  */
 package groove.lts;
 
-import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.AbstractEdge;
 import groove.graph.AbstractGraph;
@@ -50,21 +49,21 @@ public class DefaultRuleTransition extends
      * Constructs a GraphTransition on the basis of a given rule event, between
      * a given source and target state.
      */
-    public DefaultRuleTransition(GraphState source, RuleEvent event,
+    public DefaultRuleTransition(GraphState source, MatchResult match,
             HostNode[] addedNodes, GraphState target, boolean symmetry) {
         super(source,
-            RuleTransitionLabel.createLabel(source, event, addedNodes), target);
+            RuleTransitionLabel.createLabel(source, match, addedNodes), target);
         this.symmetry = symmetry;
     }
 
     /**
-     * @param event the rule event
      * @param source the source state
+     * @param match the rule event
      * @param target the target state
      */
-    public DefaultRuleTransition(RuleEvent event, GraphState source,
+    public DefaultRuleTransition(GraphState source, MatchResult match,
             GraphState target) {
-        this(source, event, null, target, false);
+        this(source, match, null, target, false);
     }
 
     @Override
@@ -109,15 +108,20 @@ public class DefaultRuleTransition extends
         return label().getAddedNodes();
     }
 
+    @Override
+    public MatchResult getKey() {
+        return new MatchResult(this);
+    }
+
     public RuleTransitionStub toStub() {
         if (isSymmetry()) {
-            return new SymmetryTransitionStub(getEvent(), getAddedNodes(),
+            return new SymmetryTransitionStub(getKey(), getAddedNodes(),
                 target());
         } else if (target() instanceof DefaultGraphNextState) {
             return ((DefaultGraphNextState) target()).createInTransitionStub(
-                source(), getEvent(), getAddedNodes());
+                source(), getKey(), getAddedNodes());
         } else {
-            return new IdentityTransitionStub(getEvent(), getAddedNodes(),
+            return new IdentityTransitionStub(getKey(), getAddedNodes(),
                 target());
         }
     }
@@ -131,11 +135,11 @@ public class DefaultRuleTransition extends
      * <code>source</code> is not equal to the source of the transition,
      * otherwise it returns {@link #getEvent()}.
      */
-    public RuleEvent getEvent(GraphState source) {
+    public GraphTransitionKey getKey(GraphState source) {
         if (source != source()) {
             throw new IllegalArgumentException("Source state incompatible");
         } else {
-            return getEvent();
+            return getKey();
         }
     }
 
@@ -305,8 +309,7 @@ public class DefaultRuleTransition extends
 
     /** Returns the (possibly {@code null} underlying control transition. */
     public CtrlTransition getCtrlTransition() {
-        CtrlState sourceCtrl = this.source.getCtrlState();
-        return sourceCtrl.getTransition(getAction());
+        return this.label.getCtrlTransition();
     }
 
     @Override

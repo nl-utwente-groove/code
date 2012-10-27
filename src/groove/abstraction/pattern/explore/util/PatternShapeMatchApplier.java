@@ -17,6 +17,7 @@
 package groove.abstraction.pattern.explore.util;
 
 import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
+import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.lts.PSTS;
 import groove.abstraction.pattern.lts.PatternGraphNextState;
 import groove.abstraction.pattern.lts.PatternGraphState;
@@ -24,7 +25,6 @@ import groove.abstraction.pattern.lts.PatternGraphTransition;
 import groove.abstraction.pattern.lts.PatternNextState;
 import groove.abstraction.pattern.lts.PatternState;
 import groove.abstraction.pattern.lts.PatternTransition;
-import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.PreMatch;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.trans.MaterialisingRuleApplication;
@@ -70,9 +70,9 @@ public class PatternShapeMatchApplier implements PatternRuleEventApplier {
     // ------------------------------------------------------------------------
 
     @Override
-    public void apply(PatternState source, Match match) {
-        assert match instanceof PreMatch;
-        PreMatch preMatch = (PreMatch) match;
+    public void apply(PatternState source, MatchResult match) {
+        assert match.getMatch() instanceof PreMatch;
+        PreMatch preMatch = (PreMatch) match.getMatch();
 
         if (USE_GUI && source.getNumber() == 0) {
             PatternPreviewDialog.showPatternGraph(source.getGraph());
@@ -89,12 +89,12 @@ public class PatternShapeMatchApplier implements PatternRuleEventApplier {
             PatternNextState newState =
                 new PatternGraphNextState(normShape,
                     (PatternGraphState) source, this.psts.getNextStateNr(),
-                    this.psts, preMatch);
+                    this.psts, match);
             PatternState oldState = this.psts.addState(newState);
             PatternTransition trans = null;
             if (oldState != null) {
                 // The state was not added as an equivalent state existed.
-                trans = new PatternGraphTransition(source, preMatch, oldState);
+                trans = new PatternGraphTransition(source, match, oldState);
                 println("New transition: " + trans);
             } else {
                 // The state was added as a next-state.

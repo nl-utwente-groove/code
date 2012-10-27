@@ -21,6 +21,8 @@ import groove.control.CtrlTransition;
 import groove.graph.EdgeRole;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
+import groove.lts.GraphTransitionKey;
+import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
 import groove.lts.RuleTransitionLabel;
 import groove.lts.RuleTransitionStub;
@@ -58,11 +60,10 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
      * @param number the number of the state to be created; non-negative
      */
     public ShapeNextState(int number, Shape shape, ShapeState source,
-            RuleEvent event) {
+            MatchResult match) {
         super(source.getCacheReference(), shape,
-            source.getCtrlState().getTransition(event.getRule()).target(),
-            number);
-        this.transition = new ShapeTransition(source, event, this);
+            match.getCtrlTransition().target(), number);
+        this.transition = new ShapeTransition(source, match, this);
     }
 
     // ------------------------------------------------------------------------
@@ -125,8 +126,8 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
-    public RuleEvent getEvent(GraphState source) {
-        return this.transition.getEvent();
+    public GraphTransitionKey getKey(GraphState source) {
+        return this.transition.getKey();
     }
 
     @Override
@@ -142,6 +143,11 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     @Override
     public CtrlTransition getCtrlTransition() {
         return this.transition.getCtrlTransition();
+    }
+
+    @Override
+    public MatchResult getKey() {
+        return new MatchResult(this);
     }
 
     @Override

@@ -19,7 +19,7 @@ package groove.test.abstraction.pattern;
 import static org.junit.Assert.assertEquals;
 import groove.abstraction.pattern.PatternAbstraction;
 import groove.abstraction.pattern.io.xml.TypeGraphJaxbGxlIO;
-import groove.abstraction.pattern.match.Match;
+import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
 import groove.abstraction.pattern.shape.PatternGraph;
@@ -69,7 +69,7 @@ public class TestMatching {
         PatternShape pShape = getNormalisedShape("start-5");
         PatternRule pRule = getPatternRule("del");
         Matcher matcher = MatcherFactory.instance().getMatcher(pRule, false);
-        List<Match> matches = matcher.findMatches(pShape);
+        List<MatchResult> matches = matcher.findMatches(pShape, null);
         assertEquals(1, matches.size());
     }
 

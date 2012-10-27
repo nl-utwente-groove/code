@@ -20,13 +20,11 @@ import groove.control.CtrlSchedule;
 import groove.control.CtrlTransition;
 import groove.trans.DeltaApplier;
 import groove.trans.DeltaHostGraph;
-import groove.trans.Event;
 import groove.trans.HostEdge;
 import groove.trans.HostElement;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleApplication;
-import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.KeySet;
 import groove.util.Pair;
@@ -36,6 +34,7 @@ import groove.util.TreeHashSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -67,10 +66,10 @@ public class StateCache {
             this.transitionMap.add(trans);
         }
         if (trans instanceof RuleTransition) {
-            this.matches.remove(trans);
-        }
-        if (trans.isPartial()) {
-            addOutPartial((RuleTransition) trans);
+            this.matches.remove(trans.getKey());
+            if (trans.isPartial()) {
+                addOutPartial((RuleTransition) trans);
+            }
         }
         maybeSetClosed();
         return result;
@@ -303,15 +302,15 @@ public class StateCache {
         return result;
     }
 
-    RuleTransition getRuleTransition(RuleEvent event) {
-        return (RuleTransition) getTransitionMap().get(event);
+    RuleTransition getRuleTransition(MatchResult match) {
+        return (RuleTransition) getTransitionMap().get(match);
     }
 
     /**
      * Lazily creates and returns a mapping from the events to 
      * outgoing transitions of this state.
      */
-    KeySet<Event,GraphTransition> getTransitionMap() {
+    KeySet<GraphTransitionKey,GraphTransition> getTransitionMap() {
         if (this.transitionMap == null) {
             this.transitionMap = computeTransitionMap();
         }
@@ -322,16 +321,12 @@ public class StateCache {
      * Computes a mapping from the events to the 
      * outgoing transitions of this state.
      */
-    private KeySet<Event,GraphTransition> computeTransitionMap() {
-        KeySet<Event,GraphTransition> result =
-            new KeySet<Event,GraphTransition>() {
+    private KeySet<GraphTransitionKey,GraphTransition> computeTransitionMap() {
+        KeySet<GraphTransitionKey,GraphTransition> result =
+            new KeySet<GraphTransitionKey,GraphTransition>() {
                 @Override
-                protected Event getKey(Object value) {
-                    Event result = null;
-                    if (value instanceof GraphTransition) {
-                        result = ((GraphTransition) value).getEvent();
-                    }
-                    return result;
+                protected GraphTransitionKey getKey(Object value) {
+                    return ((GraphTransition) value).getKey();
                 }
             };
         for (GraphTransitionStub stub : getStubSet()) {
@@ -379,19 +374,19 @@ public class StateCache {
     private Set<GraphTransitionStub> createStubSet() {
         return new TreeHashSet<GraphTransitionStub>() {
             @Override
-            protected boolean areEqual(GraphTransitionStub key,
-                    GraphTransitionStub otherKey) {
-                return getEvent(key).equals(getEvent(otherKey));
+            protected boolean areEqual(GraphTransitionStub stub,
+                    GraphTransitionStub otherStub) {
+                return getKey(stub).equals(getKey(otherStub));
             }
 
             @Override
-            protected int getCode(GraphTransitionStub key) {
-                Event keyEvent = getEvent(key);
+            protected int getCode(GraphTransitionStub stub) {
+                GraphTransitionKey keyEvent = getKey(stub);
                 return keyEvent == null ? 0 : keyEvent.hashCode();
             }
 
-            private Event getEvent(GraphTransitionStub stub) {
-                return stub.getEvent(getState());
+            private GraphTransitionKey getKey(GraphTransitionStub stub) {
+                return stub.getKey(getState());
             }
         };
     }
@@ -439,8 +434,10 @@ public class StateCache {
             // have resulted in transitions to absent states
             boolean allAbsent = true;
             boolean somePresent = false;
-            for (MatchResult m : this.latestMatches) {
-                GraphTransition t = getTransitionMap().get(m.getEvent());
+            Iterator<MatchResult> matchIter = this.latestMatches.iterator();
+            while (matchIter.hasNext()) {
+                MatchResult m = matchIter.next();
+                GraphTransition t = getTransitionMap().get(m);
                 if (t == null) {
                     allAbsent = false;
                 } else {
@@ -448,8 +445,11 @@ public class StateCache {
                     if (target.isPresent()) {
                         somePresent = true;
                         break;
+                    } else if (target.isAbsent()) {
+                        matchIter.remove();
+                    } else {
+                        allAbsent = false;
                     }
-                    allAbsent &= target.isAbsent();
                 }
             }
             if (somePresent || allAbsent) {
@@ -467,7 +467,7 @@ public class StateCache {
             // have a transient target
             boolean transientTargets = false;
             List<MatchResult> latestMatches =
-                this.latestMatches = new ArrayList<MatchResult>();
+                this.latestMatches = new LinkedList<MatchResult>();
             for (CtrlTransition ct : schedule.getTransitions()) {
                 latestMatches.addAll(getMatchCollector().computeMatches(ct));
                 transientTargets |= ct.target().isTransient();
@@ -538,7 +538,7 @@ public class StateCache {
     /** The delta with respect to the state's parent. */
     private DeltaApplier delta;
     /** Cached map from events to target transitions. */
-    private KeySet<Event,GraphTransition> transitionMap;
+    private KeySet<GraphTransitionKey,GraphTransition> transitionMap;
     /** Cached graph for this state. */
     private DeltaHostGraph graph;
     /** 

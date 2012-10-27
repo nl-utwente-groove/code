@@ -20,14 +20,5 @@ import groove.util.TreeHashSet;
 
 /** Set of {@link MatchResult}s, which only tests for code and equality of the events. */
 public class MatchResultSet extends TreeHashSet<MatchResult> {
-
-    @Override
-    protected boolean areEqual(MatchResult newKey, MatchResult oldKey) {
-        return newKey.getEvent().equals(oldKey.getEvent());
-    }
-
-    @Override
-    protected int getCode(MatchResult key) {
-        return key.getEvent().hashCode();
-    }
+    // empty
 }

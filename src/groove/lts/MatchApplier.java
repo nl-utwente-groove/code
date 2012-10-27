@@ -16,7 +16,6 @@
  */
 package groove.lts;
 
-import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.trans.CompositeEvent;
 import groove.trans.HostNode;
@@ -58,28 +57,27 @@ public class MatchApplier {
     public RuleTransition apply(GraphState source, MatchResult match) {
         addTransitionReporter.start();
         RuleTransition transition = null;
-        Rule rule = match.getEvent().getRule();
-        CtrlState sourceCtrl = source.getCtrlState();
-        CtrlTransition ctrlTrans = sourceCtrl.getTransition(rule);
+        Rule rule = match.getRule();
+        CtrlTransition ctrlTrans = match.getCtrlTransition();
         if (!ctrlTrans.isModifying()) {
             if (!rule.isModifying()) {
                 transition = createTransition(source, match, source, false);
-            } else if (match instanceof RuleTransition) {
+            } else if (match.hasRuleTransition()) {
                 // try to find the target state by walking around three previously
                 // generated sides of a confluent diamond
                 // the parent state is the source of source
                 // the sibling is the child reached by the virtual event
                 assert source instanceof GraphNextState;
-                RuleTransition parentTrans = (RuleTransition) match;
+                RuleTransition parentTrans = match.getRuleTransition();
                 assert source != parentTrans.source();
-                boolean parentModifiesCtrl =
-                    parentTrans.getCtrlTransition().isModifying();
-                RuleEvent sourceEvent = ((GraphNextState) source).getEvent();
-                if (!parentModifiesCtrl && !parentTrans.isSymmetry()
-                    && !parentTrans.getEvent().conflicts(sourceEvent)) {
+                boolean sourceModifiesCtrl =
+                    ((GraphNextState) source).getCtrlTransition().isModifying();
+                MatchResult sourceKey = ((GraphNextState) source).getKey();
+                if (!sourceModifiesCtrl && !parentTrans.isSymmetry()
+                    && !match.getEvent().conflicts(sourceKey.getEvent())) {
                     GraphState sibling = parentTrans.target();
                     RuleTransitionStub siblingOut =
-                        sibling.getOutStub(sourceEvent);
+                        sibling.getOutStub(sourceKey);
                     if (siblingOut != null) {
                         transition =
                             createTransition(source, match,
@@ -91,7 +89,7 @@ public class MatchApplier {
             }
         }
         if (transition == null) {
-            GraphNextState freshTarget = createState(source, ctrlTrans, match);
+            GraphNextState freshTarget = createState(source, match);
             addStateReporter.start();
             GraphState isoTarget = getGTS().addState(freshTarget);
             addStateReporter.stop();
@@ -99,7 +97,7 @@ public class MatchApplier {
                 transition = freshTarget;
             } else {
                 transition =
-                    new DefaultRuleTransition(source, match.getEvent(),
+                    new DefaultRuleTransition(source, match,
                         freshTarget.getAddedNodes(), isoTarget, true);
             }
         }
@@ -113,13 +111,12 @@ public class MatchApplier {
      * Creates a fresh graph state, based on a given rule application and source
      * state.
      */
-    private GraphNextState createState(GraphState source,
-            CtrlTransition ctrlTrans, MatchResult match) {
+    private GraphNextState createState(GraphState source, MatchResult match) {
         HostNode[] addedNodes;
         HostNode[] boundNodes;
         RuleEvent event = match.getEvent();
         if (reuseCreatedNodes(source, match)) {
-            RuleTransition parentOut = (RuleTransition) match;
+            RuleTransition parentOut = match.getRuleTransition();
             addedNodes = parentOut.getAddedNodes();
         } else if (event.getRule().hasNodeCreators()) {
             RuleEffect record =
@@ -129,6 +126,7 @@ public class MatchApplier {
         } else {
             addedNodes = EMPTY_NODE_ARRAY;
         }
+        CtrlTransition ctrlTrans = match.getCtrlTransition();
         if (ctrlTrans.target().getBoundVars().isEmpty()) {
             boundNodes = EMPTY_NODE_ARRAY;
         } else {
@@ -138,7 +136,7 @@ public class MatchApplier {
         }
         assert boundNodes.length == ctrlTrans.getTargetVarBinding().length;
         return new DefaultGraphNextState(this.gts.nodeCount(),
-            (AbstractGraphState) source, event, addedNodes, boundNodes);
+            (AbstractGraphState) source, match, addedNodes, boundNodes);
     }
 
     /**
@@ -151,7 +149,7 @@ public class MatchApplier {
         HostNode[] addedNodes;
         RuleEvent event = match.getEvent();
         if (reuseCreatedNodes(source, match)) {
-            RuleTransition parentOut = (RuleTransition) match;
+            RuleTransition parentOut = match.getRuleTransition();
             addedNodes = parentOut.getAddedNodes();
         } else {
             RuleEffect record =
@@ -161,7 +159,7 @@ public class MatchApplier {
                 record.hasCreatedNodes() ? record.getCreatedNodeArray()
                         : EMPTY_NODE_ARRAY;
         }
-        return new DefaultRuleTransition(source, event, addedNodes, target,
+        return new DefaultRuleTransition(source, match, addedNodes, target,
             symmetry);
     }
 
@@ -170,13 +168,13 @@ public class MatchApplier {
      * as created nodes for a new target graph.
      */
     private boolean reuseCreatedNodes(GraphState source, MatchResult match) {
-        if (!(match instanceof RuleTransition)) {
+        if (!match.hasRuleTransition()) {
             return false;
         }
         if (!(source instanceof GraphNextState)) {
             return false;
         }
-        HostNode[] addedNodes = ((RuleTransition) match).getAddedNodes();
+        HostNode[] addedNodes = match.getRuleTransition().getAddedNodes();
         if (addedNodes == null || addedNodes.length == 0) {
             return true;
         }
@@ -185,7 +183,7 @@ public class MatchApplier {
             return false;
         }
         RuleEvent matchEvent = match.getEvent();
-        if (match instanceof CompositeEvent) {
+        if (matchEvent instanceof CompositeEvent) {
             return false;
         }
         return sourceEvent != matchEvent;

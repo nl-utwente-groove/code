@@ -16,10 +16,10 @@
  */
 package groove.lts;
 
+import groove.control.CtrlTransition;
 import groove.graph.AbstractLabel;
 import groove.trans.AbstractRuleEvent;
 import groove.trans.HostNode;
-import groove.trans.Recipe;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
@@ -32,12 +32,11 @@ public class RuleTransitionLabel extends AbstractLabel implements ActionLabel {
      * Constructs a new label on the basis of a given rule event and list
      * of created nodes.
      */
-    private RuleTransitionLabel(GraphState source, RuleEvent event,
+    private RuleTransitionLabel(GraphState source, MatchResult match,
             HostNode[] addedNodes) {
-        this.event = event;
+        this.event = match.getEvent();
+        this.ctrlTrans = match.getCtrlTransition();
         this.addedNodes = addedNodes;
-        this.recipe =
-            source.getCtrlState().getTransition(event.getRule()).getRecipe();
     }
 
     @Override
@@ -48,6 +47,11 @@ public class RuleTransitionLabel extends AbstractLabel implements ActionLabel {
     /** Returns the event wrapped in this label. */
     public RuleEvent getEvent() {
         return this.event;
+    }
+
+    /** Returns the event wrapped in this label. */
+    public CtrlTransition getCtrlTransition() {
+        return this.ctrlTrans;
     }
 
     /** Returns the added nodes of the label. */
@@ -72,11 +76,11 @@ public class RuleTransitionLabel extends AbstractLabel implements ActionLabel {
         if (brackets) {
             result.append(BEGIN_CHAR);
         }
-        if (this.recipe != null) {
-            result.append(this.recipe);
+        if (getCtrlTransition().hasRecipe()) {
+            result.append(getCtrlTransition().getRecipe());
             result.append('/');
         }
-        result.append(((AbstractRuleEvent<?,?>) this.event).getLabelText(
+        result.append(((AbstractRuleEvent<?,?>) getEvent()).getLabelText(
             this.addedNodes, anchored));
         if (brackets) {
             result.append(END_CHAR);
@@ -90,9 +94,7 @@ public class RuleTransitionLabel extends AbstractLabel implements ActionLabel {
         int result = 1;
         result = prime * result + Arrays.hashCode(this.addedNodes);
         result = prime * result + this.event.hashCode();
-        result =
-            prime * result
-                + ((this.recipe == null) ? 0 : this.recipe.hashCode());
+        result = prime * result + this.ctrlTrans.hashCode();
         return result;
     }
 
@@ -111,27 +113,23 @@ public class RuleTransitionLabel extends AbstractLabel implements ActionLabel {
         if (!this.event.equals(other.event)) {
             return false;
         }
-        if (this.recipe == null) {
-            if (other.recipe != null) {
-                return false;
-            }
-        } else if (!this.recipe.equals(other.recipe)) {
+        if (!this.ctrlTrans.equals(other.ctrlTrans)) {
             return false;
         }
         return true;
     }
 
     private final RuleEvent event;
+    private final CtrlTransition ctrlTrans;
     private final HostNode[] addedNodes;
-    private final Recipe recipe;
 
     /** 
      * Returns the label text for the rule label consisting of a given source state
      * and event. Optionally, the rule parameters are replaced by anchor images.
      */
-    public static final String text(GraphState source, RuleEvent event,
+    public static final String text(GraphState source, MatchResult match,
             boolean anchored) {
-        return createLabel(source, event, null).text(anchored);
+        return createLabel(source, match, null).text(anchored);
     }
 
     /** 
@@ -139,9 +137,9 @@ public class RuleTransitionLabel extends AbstractLabel implements ActionLabel {
      * @see SystemRecord#normaliseLabel(RuleTransitionLabel)
      */
     public static final RuleTransitionLabel createLabel(GraphState source,
-            RuleEvent event, HostNode[] addedNodes) {
+            MatchResult match, HostNode[] addedNodes) {
         RuleTransitionLabel result =
-            new RuleTransitionLabel(source, event, addedNodes);
+            new RuleTransitionLabel(source, match, addedNodes);
         if (REUSE_LABELS) {
             SystemRecord record = source.getGTS().getRecord();
             result = record.normaliseLabel(result);
