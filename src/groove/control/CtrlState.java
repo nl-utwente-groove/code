@@ -138,7 +138,8 @@ public class CtrlState implements Node {
             this.transitionMap.put(result.getRule(), result);
         if (oldTrans != null) {
             FormatErrorSet errors =
-                new FormatErrorSet("Nondeterminism for '%s'", result.getCall());
+                new FormatErrorSet("Nondeterministic '%s'-call",
+                    result.getCall());
             GraphInfo.addErrors(getAut(), errors);
         }
         if (result.hasRecipe()) {
@@ -270,8 +271,10 @@ public class CtrlState implements Node {
      */
     public void setExitGuard(CtrlGuard exitGuard) {
         assert isTransient()
-            && (this.exitGuard == null || this.exitGuard.equals(exitGuard));
-        this.exitGuard = exitGuard;
+            && (this.exitGuard == null || exitGuard.containsAll(this.exitGuard));
+        if (this.exitGuard == null) {
+            this.exitGuard = exitGuard;
+        }
     }
 
     /** 
@@ -373,14 +376,30 @@ public class CtrlState implements Node {
             } else {
                 tryDisablings = Collections.emptySet();
             }
-            if (chosenTrans == null
-                || tryDisablings.size() < chosenDisablings.size()
-                || (tryDisablings.size() == chosenDisablings.size() && smallerThan(
-                    tryTrans, chosenTrans.get(0)))) {
-                chosenTrans = new ArrayList<CtrlTransition>();
-                chosenTrans.add(tryTrans);
-                chosenDisablings = tryDisablings;
+            // determine whether this control transition should be scheduled,
+            // and whether it can be joined with the previously chosen ones
+            boolean choose, fresh;
+            if (chosenTrans == null) {
+                choose = true;
+                fresh = true;
             } else if (tryDisablings.equals(chosenDisablings)) {
+                choose = true;
+                fresh = false;
+            } else if (tryDisablings.size() < chosenDisablings.size()) {
+                choose = true;
+                fresh = true;
+            } else if (tryDisablings.size() > chosenDisablings.size()) {
+                choose = false;
+                fresh = false;
+            } else {
+                choose = smallerThan(tryTrans, chosenTrans.get(0));
+                fresh = true;
+            }
+            if (choose) {
+                if (fresh) {
+                    chosenTrans = new ArrayList<CtrlTransition>();
+                    chosenDisablings = tryDisablings;
+                }
                 chosenTrans.add(tryTrans);
             }
         }
