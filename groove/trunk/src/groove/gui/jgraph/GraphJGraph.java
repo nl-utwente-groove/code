@@ -411,7 +411,9 @@ public class GraphJGraph extends org.jgraph.JGraph {
 
     /** Refreshes the visibility and view of all JCells in the model. */
     public void refreshAllCells() {
-        refreshCells(getModel().getRoots());
+        if (getModel() != null) {
+            refreshCells(getModel().getRoots());
+        }
     }
 
     /**
