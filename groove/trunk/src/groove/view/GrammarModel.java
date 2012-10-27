@@ -537,12 +537,12 @@ public class GrammarModel implements Observer {
             Object source = sourceEntry.getValue();
             ResourceModel<?> model = modelMap.get(name);
             if (model == null || model.getSource() != source) {
-                modelMap.put(name, createModel(kind, name));
+                modelMap.put(name, model = createModel(kind, name));
                 // collect the active rules
-                if (kind == RULE
-                    && GraphProperties.isEnabled((AspectGraph) source)) {
-                    newActiveNames.add(name);
-                }
+            }
+            if (kind == RULE
+                && GraphProperties.isEnabled((AspectGraph) model.getSource())) {
+                newActiveNames.add(name);
             }
         }
         // update the active names set
