@@ -183,6 +183,11 @@ public class RecipeTransition extends
     }
 
     @Override
+    public RecipeEvent getKey() {
+        return getEvent();
+    }
+
+    @Override
     public RecipeEvent toStub() {
         return getEvent();
     }

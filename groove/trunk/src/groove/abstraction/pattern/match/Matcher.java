@@ -17,6 +17,7 @@
 package groove.abstraction.pattern.match;
 
 import groove.abstraction.MyHashSet;
+import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.shape.PatternEdge;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternNode;
@@ -24,6 +25,7 @@ import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.trans.PatternRule;
 import groove.abstraction.pattern.trans.RuleEdge;
 import groove.abstraction.pattern.trans.RuleNode;
+import groove.control.CtrlTransition;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -87,8 +89,9 @@ public final class Matcher {
     }
 
     /** Returns a list of all matches found on the given graph. */
-    public List<Match> findMatches(PatternGraph pGraph) {
-        List<Match> result = new ArrayList<Match>();
+    public List<MatchResult> findMatches(PatternGraph pGraph,
+            CtrlTransition ctrlTrans) {
+        List<MatchResult> result = new ArrayList<MatchResult>();
         this.search.initialise(pGraph);
         while (this.search.find()) {
             Match match = this.search.getMatch();
@@ -98,7 +101,7 @@ public final class Matcher {
             // In this case the call to getMatch fails and we have an null
             // reference.
             if (match != null) {
-                result.add(match);
+                result.add(new MatchResult(match, ctrlTrans));
             }
         }
         return result;

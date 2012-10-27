@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
+ * Copyright 2003--2011 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -14,24 +14,13 @@
  *
  * $Id$
  */
-package groove.abstraction.pattern.explore.util;
+package groove.lts;
 
-import groove.abstraction.pattern.lts.MatchResult;
-import groove.abstraction.pattern.lts.PatternState;
-import groove.lts.MatchApplier;
 
-/**
- * Common interface for match appliers of pattern graph and pattern shape
- * transition systems.
- * 
- * See {@link MatchApplier}.
+/** 
+ * Type encoding the essential ingredients for a graph transition.
+ * These ingredients consist of the event and the control transition.
  */
-public interface PatternRuleEventApplier {
-
-    /**
-     * Adds a transition to the PGTS, from a given source state and for a given
-     * rule event. The event is assumed not to have been explored yet.
-     */
-    void apply(PatternState source, MatchResult match);
-
+public interface GraphTransitionKey {
+    // empty
 }

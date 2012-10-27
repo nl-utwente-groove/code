@@ -87,7 +87,7 @@ public class TestMat2 {
         PatternRule pRule = pTGraph.lift(sRule);
 
         Matcher matcher = MatcherFactory.instance().getMatcher(pRule, false);
-        Match preMatch = matcher.findMatches(pShape).get(0);
+        Match preMatch = matcher.findMatches(pShape, null).get(0).getMatch();
         Collection<Materialisation> mats =
             Materialisation.getMaterialisations(pShape, (PreMatch) preMatch);
         for (Materialisation mat : mats) {

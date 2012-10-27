@@ -17,8 +17,8 @@
 package groove.abstraction.pattern.explore.util;
 
 import groove.abstraction.MyHashSet;
+import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.lts.PatternState;
-import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
 import groove.abstraction.pattern.trans.PatternRule;
@@ -62,8 +62,8 @@ public class PatternGraphMatchSetCollector {
      * Returns the set of matching events for the state passed in by the
      * constructor.
      */
-    public Collection<Match> getMatchSet() {
-        Collection<Match> result = new MyHashSet<Match>();
+    public Collection<MatchResult> getMatchSet() {
+        Collection<MatchResult> result = new MyHashSet<MatchResult>();
         CtrlTransition ctrlTrans = firstCall();
         while (ctrlTrans != null) {
             boolean hasMatches = collectEvents(ctrlTrans, result);
@@ -117,12 +117,13 @@ public class PatternGraphMatchSetCollector {
 
     /** Adds the matching events for a given rule into an existing set. */
     private boolean collectEvents(CtrlTransition ctrlTrans,
-            final Collection<Match> result) {
+            final Collection<MatchResult> result) {
         String ruleName = ctrlTrans.getRule().getLastName();
         PatternRule pRule = this.state.getPGTS().getGrammar().getRule(ruleName);
         Matcher matcher =
             MatcherFactory.instance().getMatcher(pRule, isInjective());
-        List<Match> matches = matcher.findMatches(this.state.getGraph());
+        List<MatchResult> matches =
+            matcher.findMatches(this.state.getGraph(), ctrlTrans);
         result.addAll(matches);
         return !matches.isEmpty();
     }

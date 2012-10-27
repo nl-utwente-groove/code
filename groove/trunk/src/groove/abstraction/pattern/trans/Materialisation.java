@@ -887,6 +887,11 @@ public final class Materialisation {
 
     /** Returns true if the materialisation is valid. */
     private boolean isValid() {
+        assert areMapsEmpty();
+        assert isMorphConsistent();
+        assert isMatchConcrete();
+        assert isEnvironmentCorrect();
+        assert isConcretePartCommuting(false);
         return areMapsEmpty()
             && isMorphConsistent() // && isMorphValid()
             && isMatchConcrete() && isEnvironmentCorrect()

@@ -441,7 +441,7 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
                         match.getEvent()));
                 } else {
                     result.append(String.format(" (with match of %s)",
-                        match.getEvent().getRule().getFullName()));
+                        match.getRule().getFullName()));
                 }
             }
         }

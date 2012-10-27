@@ -20,7 +20,8 @@ import groove.trans.Event;
 import groove.trans.Recipe;
 
 /** Event class for recipe transitions. */
-public class RecipeEvent implements GraphTransitionStub, Event {
+public class RecipeEvent implements GraphTransitionStub, Event,
+        GraphTransitionKey {
     /** Constructs a stub from a sequence of rule transitions. */
     public RecipeEvent(RecipeTransition trans) {
         this.recipe = trans.getAction();
@@ -49,7 +50,7 @@ public class RecipeEvent implements GraphTransitionStub, Event {
     }
 
     @Override
-    public Event getEvent(GraphState source) {
+    public GraphTransitionKey getKey(GraphState source) {
         return this;
     }
 

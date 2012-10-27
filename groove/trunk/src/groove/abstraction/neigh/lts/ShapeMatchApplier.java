@@ -152,18 +152,20 @@ public final class ShapeMatchApplier extends MatchApplier {
         Pair<Shape,RuleEvent> pair = mat.applyMatch(agts.getRecord());
         Shape transformedShape = pair.one();
         RuleEvent realEvent = pair.two();
+        MatchResult realMatch =
+            new MatchResult(realEvent, match.getCtrlTransition());
         Shape target = transformedShape.normalise();
 
         RuleTransition trans = null;
         ShapeNextState newState =
-            new ShapeNextState(agts.getNextStateNr(), target, source, realEvent);
+            new ShapeNextState(agts.getNextStateNr(), target, source, realMatch);
         addStateReporter.start();
         ShapeState oldState = agts.addState(newState);
         addStateReporter.stop();
         if (oldState != null) {
             // The state was not added as an equivalent state existed.
             if (!agts.isReachability()) {
-                trans = new ShapeTransition(source, realEvent, oldState);
+                trans = new ShapeTransition(source, realMatch, oldState);
                 this.println("New transition: " + trans);
             }
         } else {

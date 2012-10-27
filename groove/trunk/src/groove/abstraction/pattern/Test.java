@@ -19,7 +19,7 @@ package groove.abstraction.pattern;
 import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
 import groove.abstraction.pattern.io.xml.PatternShapeGxl;
 import groove.abstraction.pattern.io.xml.TypeGraphJaxbGxlIO;
-import groove.abstraction.pattern.match.Match;
+import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
 import groove.abstraction.pattern.match.PreMatch;
@@ -82,8 +82,8 @@ public class Test {
 
         PatternRule pRule = pTGraph.lift(sRule);
         Matcher matcher = MatcherFactory.instance().getMatcher(pRule, false);
-        List<Match> matches = matcher.findMatches(pShape);
-        PreMatch preMatch = (PreMatch) matches.get(0);
+        List<MatchResult> matches = matcher.findMatches(pShape, null);
+        PreMatch preMatch = (PreMatch) matches.get(0).getMatch();
 
         Collection<Materialisation> mats =
             Materialisation.getMaterialisations(pShape, preMatch);

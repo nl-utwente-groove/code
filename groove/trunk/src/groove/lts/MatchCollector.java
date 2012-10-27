@@ -21,7 +21,6 @@ import groove.control.CtrlPar;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.algebra.ValueNode;
-import groove.trans.Event;
 import groove.trans.AnchorValue;
 import groove.trans.CompositeEvent;
 import groove.trans.HostEdge;
@@ -75,7 +74,7 @@ public class MatchCollector {
      * Returns the set of matching events for a given control transition.
      * @param ct the transition for which matches are to be found; non-{@code null}
      */
-    public MatchResultSet computeMatches(CtrlTransition ct) {
+    public MatchResultSet computeMatches(final CtrlTransition ct) {
         final MatchResultSet result = new MatchResultSet();
         if (DEBUG) {
             System.out.printf("Matches for %s, %s%n  ", this.state,
@@ -92,7 +91,7 @@ public class MatchCollector {
                 if (trans instanceof RuleTransition) {
                     RuleTransition ruleTrans = (RuleTransition) trans;
                     if (ruleTrans.getEvent().getRule().equals(ct.getRule())) {
-                        result.add(ruleTrans);
+                        result.add(ruleTrans.getKey());
                         if (DEBUG) {
                             System.out.print(" T"
                                 + System.identityHashCode(trans.getEvent()));
@@ -115,8 +114,13 @@ public class MatchCollector {
                             // only look up the event in the parent map if
                             // the rule was disabled, as otherwise the result
                             // already contains all relevant parent results
-                            MatchResult match =
-                                isDisabled ? getParentTrans(event) : event;
+                            MatchResult match = null;
+                            if (isDisabled) {
+                                match = getParentTrans(event, ct);
+                            }
+                            if (match == null) {
+                                match = new MatchResult(event, ct);
+                            }
                             result.add(match);
                             if (DEBUG) {
                                 System.out.print(" E"
@@ -183,8 +187,7 @@ public class MatchCollector {
         }
         // there may be new matches only if the rule call was untried in
         // the parent state
-        Set<CtrlCall> triedCalls =
-            state.source().getSchedule().getTriedCalls();
+        Set<CtrlCall> triedCalls = state.source().getSchedule().getTriedCalls();
         return triedCalls == null || !triedCalls.contains(call);
     }
 
@@ -249,13 +252,13 @@ public class MatchCollector {
      * Returns the parent state's out-transition for a given event, if any,
      * or otherwise the event itself.
      */
-    private MatchResult getParentTrans(RuleEvent event) {
+    private MatchResult getParentTrans(RuleEvent event, CtrlTransition ct) {
         MatchResult result = null;
         if (this.parentTransMap != null) {
-            result = (RuleTransition) this.parentTransMap.get(event);
-        }
-        if (result == null) {
-            result = event;
+            RuleTransition trans =
+                (RuleTransition) this.parentTransMap.get(new MatchResult(event,
+                    ct));
+            return trans == null ? null : trans.getKey();
         }
         return result;
     }
@@ -269,7 +272,7 @@ public class MatchCollector {
     /** Possibly {@code null} mapping from rules to sets of outgoing
      * transitions for the parent of this state.
      */
-    private final KeySet<Event,GraphTransition> parentTransMap;
+    private final KeySet<GraphTransitionKey,GraphTransition> parentTransMap;
     /** The rules that may be enabled. */
     private final Set<Rule> enabledRules;
     /** The rules that may be disabled. */

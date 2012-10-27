@@ -18,7 +18,6 @@ package groove.lts;
 
 import groove.trans.HostNode;
 import groove.trans.Rule;
-import groove.trans.RuleEvent;
 
 /**
  * Graph transition stub specialised to rule transitions.
@@ -33,7 +32,7 @@ public interface RuleTransitionStub extends GraphTransitionStub {
      * Returns the event that underlies the transition from a given source to
      * this object.
      */
-    RuleEvent getEvent(GraphState source);
+    GraphTransitionKey getKey(GraphState source);
 
     /**
      * Returns the added nodes in the transition from a given source to this

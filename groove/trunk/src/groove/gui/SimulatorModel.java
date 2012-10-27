@@ -14,7 +14,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
-import groove.lts.RecipeTransition;
 import groove.lts.RuleTransition;
 import groove.trans.GraphGrammar;
 import groove.trans.ResourceKind;
@@ -430,10 +429,9 @@ public class SimulatorModel implements Cloneable {
         if (trans != null) {
             assert state == trans.target();
             assert this.old.match != null
-                && this.old.match.getEvent().equals(trans.getEvent());
+                && this.old.match.equals(trans.getKey());
             // fake the history: the previously selected match is supposed
             // to have been this transition already
-            this.old.match = trans;
             this.old.trans = trans;
         }
         changeGts();
@@ -453,19 +451,16 @@ public class SimulatorModel implements Cloneable {
      * Returns {@code null} if there is no such match or transition.
      */
     private MatchResult getMatch(GraphState state) {
-        MatchResult result = null;
-        MatchResult match = state.getMatch();
-        if (match == null) {
+        MatchResult result = state.getMatch();
+        if (result == null) {
             for (RuleTransition trans : state.getRuleTransitions()) {
                 if (trans.target() != state) {
-                    result = trans;
+                    result = trans.getKey();
                     if (!trans.target().isClosed()) {
                         break;
                     }
                 }
             }
-        } else {
-            result = match.getEvent();
         }
         return result;
     }
@@ -645,10 +640,9 @@ public class SimulatorModel implements Cloneable {
     public final boolean setMatch(MatchResult match) {
         start();
         if (changeMatch(match) && match != null) {
-            changeSelected(ResourceKind.RULE,
-                match.getEvent().getRule().getFullName());
-            if (match instanceof RuleTransition) {
-                RuleTransition trans = (RuleTransition) match;
+            changeSelected(ResourceKind.RULE, match.getRule().getFullName());
+            if (match.hasRuleTransition()) {
+                RuleTransition trans = match.getRuleTransition();
                 changeTransition(trans);
                 changeState(trans.source());
             } else {
@@ -685,12 +679,10 @@ public class SimulatorModel implements Cloneable {
     public final boolean setTransition(GraphTransition trans) {
         start();
         if (changeTransition(trans) && trans != null) {
-            MatchResult match =
-                trans instanceof RuleTransition ? (RuleTransition) trans
-                        : ((RecipeTransition) trans).getInitial();
+            RuleTransition ruleTrans = trans.getSteps().iterator().next();
+            MatchResult match = ruleTrans.getKey();
             changeMatch(match);
-            changeSelected(ResourceKind.RULE,
-                match.getEvent().getRule().getFullName());
+            changeSelected(ResourceKind.RULE, match.getRule().getFullName());
             changeState(trans.source());
             changeDisplay(DisplayKind.LTS);
         }

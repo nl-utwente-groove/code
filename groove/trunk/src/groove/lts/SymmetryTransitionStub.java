@@ -17,7 +17,6 @@
 package groove.lts;
 
 import groove.trans.HostNode;
-import groove.trans.RuleEvent;
 
 /**
  * Graph transition stub based on a true event renaming.
@@ -29,8 +28,8 @@ class SymmetryTransitionStub extends AbstractRuleTransitionStub {
      * Default constructor, providing the event, added nodes and target of the
      * stub.
      */
-    SymmetryTransitionStub(RuleEvent event, HostNode[] addedNodes, GraphState target) {
-        super(event, addedNodes, target);
+    SymmetryTransitionStub(MatchResult match, HostNode[] addedNodes, GraphState target) {
+        super(match, addedNodes, target);
     }
 
     /** This type of transition stub involves a non-trivial symmetry. */

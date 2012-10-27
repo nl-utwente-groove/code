@@ -16,7 +16,6 @@
  */
 package groove.abstraction.pattern.lts;
 
-import groove.abstraction.pattern.match.Match;
 import groove.graph.AbstractEdge;
 
 /** Transitions occurring in a PGTS. */
@@ -25,7 +24,7 @@ public class PatternGraphTransition extends
         PatternTransition {
 
     /** Default constructor. */
-    public PatternGraphTransition(PatternState source, Match match,
+    public PatternGraphTransition(PatternState source, MatchResult match,
             PatternState target) {
         super(source, new PatternTransitionLabel(match), target);
     }

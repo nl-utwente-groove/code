@@ -21,7 +21,7 @@ import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.PatternAbstraction;
 import groove.abstraction.pattern.io.xml.PatternShapeGxl;
 import groove.abstraction.pattern.io.xml.TypeGraphJaxbGxlIO;
-import groove.abstraction.pattern.match.Match;
+import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
 import groove.abstraction.pattern.match.PreMatch;
@@ -132,9 +132,9 @@ public class TestMaterialisation {
             boolean hostIsShape) {
         loadTest(testNumber, hostIsShape);
         Matcher matcher = MatcherFactory.instance().getMatcher(pRule, false);
-        List<Match> matches = matcher.findMatches(pShape);
+        List<MatchResult> matches = matcher.findMatches(pShape, null);
         assertEquals(1, matches.size());
-        PreMatch preMatch = (PreMatch) matches.get(0);
+        PreMatch preMatch = (PreMatch) matches.get(0).getMatch();
         Collection<Materialisation> mats =
             Materialisation.getMaterialisations(pShape, preMatch);
         assertEquals(1, mats.size());
@@ -150,12 +150,13 @@ public class TestMaterialisation {
         int size = nodeCount.length;
         loadTest(testNumber, hostIsShape);
         Matcher matcher = MatcherFactory.instance().getMatcher(pRule, false);
-        List<Match> matches = matcher.findMatches(pShape);
+        List<MatchResult> matches = matcher.findMatches(pShape, null);
         assertEquals(matchCount, matches.size());
         int i = 0;
-        for (Match preMatch : matches) {
+        for (MatchResult preMatch : matches) {
             Collection<Materialisation> mats =
-                Materialisation.getMaterialisations(pShape, (PreMatch) preMatch);
+                Materialisation.getMaterialisations(pShape,
+                    (PreMatch) preMatch.getMatch());
             for (Materialisation mat : mats) {
                 PatternShape matShape = mat.getShape();
                 assertEquals(nodeCount[i], matShape.nodeCount());

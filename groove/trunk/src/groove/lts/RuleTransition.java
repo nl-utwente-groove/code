@@ -22,6 +22,7 @@ import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.Recipe;
 import groove.trans.RuleApplication;
+import groove.trans.RuleEvent;
 import groove.view.FormatException;
 
 /**
@@ -29,13 +30,15 @@ import groove.view.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface RuleTransition extends RuleTransitionStub, GraphTransition,
-        MatchResult {
+public interface RuleTransition extends RuleTransitionStub, GraphTransition {
     /** Overrides the method to specialise the result type. */
     GraphState source();
 
     /** Overrides the method to specialise the result type. */
     GraphState target();
+
+    /** Returns the event associated with this rule transition. */
+    RuleEvent getEvent();
 
     /** Overrides the method to specialise the result type. */
     RuleTransitionLabel label();
@@ -57,6 +60,9 @@ public interface RuleTransition extends RuleTransitionStub, GraphTransition,
 
     /** Returns the (possibly {@code null} control transition associated with this transition. */
     CtrlTransition getCtrlTransition();
+
+    @Override
+    public MatchResult getKey();
 
     /**
      * Returns the nodes added by this transition, in coanchor order.

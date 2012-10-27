@@ -59,6 +59,9 @@ public interface GraphTransition extends Edge {
      */
     public Iterable<RuleTransition> getSteps();
 
+    /** Extracts the key ingredients from this graph transition. */
+    public GraphTransitionKey getKey();
+
     /**
      * Converts this transition to a more memory-efficient representation, from
      * which the original transition can be retrieved by

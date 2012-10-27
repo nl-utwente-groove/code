@@ -16,27 +16,117 @@
  */
 package groove.lts;
 
+import groove.control.CtrlTransition;
+import groove.trans.Rule;
 import groove.trans.RuleEvent;
 
 import java.util.Comparator;
 
 /** 
- * Class encoding the result of a matching phase.
- * Apart from the rule event, this may contain other information
- * facilitating the faster traversal of the state space.
+ * Class encoding the result of matching the rule in a control transition.
+ * This essentially consists of a rule event and the control transition.
  */
-public interface MatchResult {
-    /** Returns the rule event wrapped by this result. */
-    public RuleEvent getEvent();
+public class MatchResult implements GraphTransitionKey {
+    /** Constructs a result from a given event and control transition. */
+    public MatchResult(RuleTransition ruleTrans) {
+        this.ruleTrans = ruleTrans;
+        this.event = ruleTrans.getEvent();
+        this.ctrlTrans = ruleTrans.getCtrlTransition();
+    }
 
+    /** Constructs a result from a given event and control transition. */
+    public MatchResult(RuleEvent event, CtrlTransition ctrlTrans) {
+        this.ruleTrans = null;
+        this.event = event;
+        this.ctrlTrans = ctrlTrans;
+    }
+
+    /** Indicates if this match result is based on an already explored rule transition. */
+    public boolean hasRuleTransition() {
+        return this.ruleTrans != null;
+    }
+
+    /** Returns the rule transition wrapped in this match result, if any. */
+    public RuleTransition getRuleTransition() {
+        return this.ruleTrans;
+    }
+
+    /** Returns the event wrapped by this transition key. */
+    public RuleEvent getEvent() {
+        return this.event;
+    }
+
+    /** Returns the control transition wrapped by this transition key. */
+    public CtrlTransition getCtrlTransition() {
+        return this.ctrlTrans;
+    }
+
+    /** Returns the underlying rule of this match. */
+    public Rule getRule() {
+        return this.event.getRule();
+    }
+
+    @Override
+    public int hashCode() {
+        int hashcode = this.hashcode;
+        if (hashcode == 0) {
+            hashcode = computeHashCode();
+            if (hashcode == 0) {
+                hashcode++;
+            }
+            this.hashcode = hashcode;
+        }
+        return hashcode;
+    }
+
+    private int computeHashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + getCtrlTransition().hashCode();
+        result = prime * result + getEvent().hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof MatchResult)) {
+            return false;
+        }
+        MatchResult other = (MatchResult) obj;
+        if (!getCtrlTransition().equals(other.getCtrlTransition())) {
+            return false;
+        }
+        if (!getEvent().equals(other.getEvent())) {
+            return false;
+        }
+        return true;
+    }
+
+    /** The precomputed hashcode; 0 if it has not yet been not initialised. */
+    private int hashcode;
+
+    private final RuleTransition ruleTrans;
+    private final RuleEvent event;
+    private final CtrlTransition ctrlTrans;
     /** Fixed comparator for match results, which compares results for their 
-     * rule events. 
+     * rule events and then their control transitions. 
      */
     public static final Comparator<MatchResult> COMPARATOR =
         new Comparator<MatchResult>() {
             @Override
             public int compare(MatchResult o1, MatchResult o2) {
-                return o1.getEvent().compareTo(o2.getEvent());
+                int result = o1.getEvent().compareTo(o2.getEvent());
+                if (result == 0) {
+                    result =
+                        o1.getCtrlTransition().compareTo(o2.getCtrlTransition());
+                }
+                return result;
             }
         };
 }

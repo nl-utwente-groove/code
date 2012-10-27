@@ -17,7 +17,7 @@
 package groove.abstraction.neigh.lts;
 
 import groove.lts.DefaultRuleTransition;
-import groove.trans.RuleEvent;
+import groove.lts.MatchResult;
 
 /**
  * Implements a transition in the abstract GTS.
@@ -31,8 +31,8 @@ public final class ShapeTransition extends DefaultRuleTransition {
     // ------------------------------------------------------------------------
 
     /** Default constructor, delegates to super class. */
-    public ShapeTransition(ShapeState source, RuleEvent event, ShapeState target) {
-        super(event, source, target);
+    public ShapeTransition(ShapeState source, MatchResult key, ShapeState target) {
+        super(source, key, target);
     }
 
     // ------------------------------------------------------------------------

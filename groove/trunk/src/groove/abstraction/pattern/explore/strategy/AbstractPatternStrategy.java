@@ -18,9 +18,9 @@ package groove.abstraction.pattern.explore.strategy;
 
 import groove.abstraction.pattern.explore.util.PatternGraphMatchSetCollector;
 import groove.abstraction.pattern.explore.util.PatternRuleEventApplier;
+import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PatternState;
-import groove.abstraction.pattern.match.Match;
 import groove.explore.strategy.AbstractStrategy;
 
 /**
@@ -62,7 +62,7 @@ public abstract class AbstractPatternStrategy implements PatternStrategy {
         if (getState() == null) {
             return false;
         }
-        for (Match next : createMatchCollector().getMatchSet()) {
+        for (MatchResult next : createMatchCollector().getMatchSet()) {
             getMatchApplier().apply(getState(), next);
         }
         getState().setClosed(true);

@@ -14,7 +14,6 @@
  */
 package groove.lts;
 
-import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.EdgeRole;
 import groove.trans.AbstractRuleEvent;
@@ -45,23 +44,22 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * @param boundNodes nodes that are bound to control variables
      */
     public DefaultGraphNextState(int number, AbstractGraphState source,
-            RuleEvent event, HostNode[] addedNodes, HostNode[] boundNodes) {
+            MatchResult match, HostNode[] addedNodes, HostNode[] boundNodes) {
         super(source.getCacheReference(), number);
         this.source = source;
-        this.event = event;
+        this.event = match.getEvent();
         this.addedNodes = addedNodes;
-        CtrlState sourceCtrlState = source.getCtrlState();
-        CtrlTransition ctrlTrans =
-            sourceCtrlState.getTransition(event.getRule());
+        CtrlTransition ctrlTrans = this.ctrlTrans = match.getCtrlTransition();
         setCtrlState(ctrlTrans.target());
         this.boundNodes = boundNodes;
         if (DEBUG) {
             System.out.printf("Created state %s from %s:%n", this, source);
             System.out.printf("  Graph: %s%n", source.getGraph());
             System.out.printf("  Event: %s%n",
-                ((AbstractRuleEvent<?,?>) event).getLabelText(addedNodes, true));
+                ((AbstractRuleEvent<?,?>) this.event).getLabelText(addedNodes,
+                    true));
             System.out.printf("  Event id: %s%n",
-                System.identityHashCode(event));
+                System.identityHashCode(match));
         }
     }
 
@@ -70,6 +68,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         return label().text(anchored);
     }
 
+    @Override
     public RuleEvent getEvent() {
         return this.event;
     }
@@ -102,6 +101,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * This implementation reconstructs the matching using the rule, the anchor
      * images, and the basis graph.
      */
+    @Override
     public Proof getProof() {
         return getEvent().getMatch(source().getGraph());
     }
@@ -110,6 +110,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * Constructs an underlying morphism for the transition from the stored
      * footprint.
      */
+    @Override
     public HostGraphMorphism getMorphism() {
         return createRuleApplication().getMorphism();
     }
@@ -117,6 +118,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     /** Callback method to construct a rule application from this
      * state, considered as a graph transition.
      */
+    @Override
     public RuleApplication createRuleApplication() {
         return new RuleApplication(getEvent(), source().getGraph(), getGraph(),
             getAddedNodes());
@@ -125,8 +127,9 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     /**
      * This implementation returns the rule name.
      */
+    @Override
     public RuleTransitionLabel label() {
-        return RuleTransitionLabel.createLabel(source(), getEvent(),
+        return RuleTransitionLabel.createLabel(source(), getKey(),
             this.addedNodes);
     }
 
@@ -144,6 +147,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * Returns the basis graph of the delta graph (which is guaranteed to be a
      * {@link GraphState}).
      */
+    @Override
     public AbstractGraphState source() {
         return this.source;
     }
@@ -151,20 +155,23 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     /**
      * This implementation returns <code>this</code>.
      */
+    @Override
     public DefaultGraphNextState target() {
         return this;
     }
 
-    public RuleEvent getEvent(GraphState source) {
+    @Override
+    public GraphTransitionKey getKey(GraphState source) {
         if (source == source()) {
-            return getEvent();
+            return getKey();
         } else {
             // we are acting as a transition stub aliasing the source state
             // (interpreted as a transition)
-            return getSourceEvent();
+            return getSourceKey();
         }
     }
 
+    @Override
     public HostNode[] getAddedNodes(GraphState source) {
         if (source == source()) {
             return getAddedNodes();
@@ -179,18 +186,25 @@ public class DefaultGraphNextState extends AbstractGraphState implements
         return false;
     }
 
+    @Override
+    public MatchResult getKey() {
+        return new MatchResult(this);
+    }
+
+    @Override
     public RuleTransitionStub toStub() {
         return this;
     }
 
     /**
      * This implementation returns a {@link DefaultRuleTransition} with
-     * {@link #getSourceEvent()} if <code>source</code> does not equal
+     * {@link #getSourceKey()} if <code>source</code> does not equal
      * {@link #source()}, otherwise it returns <code>this</code>.
      */
+    @Override
     public RuleTransition toTransition(GraphState source) {
         if (source != source()) {
-            return new DefaultRuleTransition(source, getSourceEvent(),
+            return new DefaultRuleTransition(source, getSourceKey(),
                 getSourceAddedNodes(), this, isSymmetry());
         } else {
             return this;
@@ -201,6 +215,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * When a {@link DefaultGraphNextState} is used as a graph transition
      * stub, the state itself is always the target state.
      */
+    @Override
     public GraphState getTarget(GraphState source) {
         return this;
     }
@@ -224,12 +239,12 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     }
 
     /**
-     * Returns the event from the source of this transition, if that is itself a
+     * Returns the match from the source of this transition, if that is itself a
      * {@link groove.lts.RuleTransitionStub}.
      */
-    protected RuleEvent getSourceEvent() {
+    protected MatchResult getSourceKey() {
         if (source() instanceof GraphNextState) {
-            return ((GraphNextState) source()).getEvent();
+            return ((GraphNextState) source()).getKey();
         } else {
             return null;
         }
@@ -286,20 +301,18 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      */
     @Override
     protected RuleTransitionStub createInTransitionStub(GraphState source,
-            RuleEvent event, HostNode[] addedNodes) {
-        if (source == source() && event == getEvent()) {
+            MatchResult match, HostNode[] addedNodes) {
+        if (source == source() && match == getEvent()) {
             return this;
-        } else if (source != source() && event == getSourceEvent()) {
+        } else if (source != source() && match == getSourceKey()) {
             return this;
         } else {
-            return super.createInTransitionStub(source, event, addedNodes);
+            return super.createInTransitionStub(source, match, addedNodes);
         }
     }
 
     public CtrlTransition getCtrlTransition() {
-        CtrlState sourceCtrlState = source().getCtrlState();
-        return sourceCtrlState == null ? null
-                : sourceCtrlState.getTransition(getEvent().getRule());
+        return this.ctrlTrans;
     }
 
     @Override
@@ -323,6 +336,11 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      * created.
      */
     private final RuleEvent event;
+    /**
+     * The incoming control transition with which this state was
+     * created.
+     */
+    private final CtrlTransition ctrlTrans;
     /**
      * The identities of the nodes added with respect to the source state.
      */

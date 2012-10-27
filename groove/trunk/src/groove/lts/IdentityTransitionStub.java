@@ -17,7 +17,6 @@
 package groove.lts;
 
 import groove.trans.HostNode;
-import groove.trans.RuleEvent;
 
 /**
  * Graph transition stub based on an identity morphism.
@@ -28,8 +27,8 @@ class IdentityTransitionStub extends AbstractRuleTransitionStub {
     /**
      * Default constructor, providing the event and target of the stub.
      */
-    IdentityTransitionStub(RuleEvent event, HostNode[] addedNodes, GraphState target) {
-        super(event, addedNodes, target);
+    IdentityTransitionStub(MatchResult match, HostNode[] addedNodes, GraphState target) {
+        super(match, addedNodes, target);
     }
 
     /** This type of transition stub involves no non-trivial symmetry. */

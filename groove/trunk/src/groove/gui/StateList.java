@@ -24,6 +24,7 @@ import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
+import groove.lts.RuleTransition;
 import groove.lts.StartGraphState;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
@@ -316,18 +317,18 @@ public class StateList extends JTree implements SimulatorListener {
         Map<Rule,Set<MatchResult>> matchMap =
             new TreeMap<Rule,Set<MatchResult>>();
         Collection<MatchResult> matches = new ArrayList<MatchResult>();
-        matches.addAll(state.getRuleTransitions());
-        for (MatchResult match : state.getMatches()) {
-            matches.add(match.getEvent());
+        for (RuleTransition trans : state.getRuleTransitions()) {
+            matches.add(trans.getKey());
         }
+        matches.addAll(state.getMatches());
         for (MatchResult match : matches) {
-            Rule rule = match.getEvent().getRule();
-            Set<MatchResult> events = matchMap.get(rule);
-            if (events == null) {
-                matchMap.put(rule, events =
+            Rule rule = match.getRule();
+            Set<MatchResult> ruleMatches = matchMap.get(rule);
+            if (ruleMatches == null) {
+                matchMap.put(rule, ruleMatches =
                     new TreeSet<MatchResult>(MatchResult.COMPARATOR));
             }
-            events.add(match);
+            ruleMatches.add(match);
         }
         boolean anchored = getOptions().isSelected(Options.SHOW_ANCHORS_OPTION);
         for (Map.Entry<Rule,Set<MatchResult>> matchEntry : matchMap.entrySet()) {

@@ -16,8 +16,6 @@
  */
 package groove.trans;
 
-import groove.lts.MatchResult;
-import groove.lts.RuleTransitionStub;
 
 /**
  * Interface to encode a rule instantiation that provides images to the rule
@@ -28,8 +26,7 @@ import groove.lts.RuleTransitionStub;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-03 21:27:40 $
  */
-public interface RuleEvent extends Comparable<RuleEvent>, RuleTransitionStub,
-        MatchResult, Event {
+public interface RuleEvent extends Comparable<RuleEvent>, Event {
     /**
      * Returns the rule for which this is an application.
      */

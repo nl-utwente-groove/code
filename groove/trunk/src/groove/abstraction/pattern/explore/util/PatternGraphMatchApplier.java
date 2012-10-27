@@ -16,6 +16,7 @@
  */
 package groove.abstraction.pattern.explore.util;
 
+import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PatternGraphNextState;
 import groove.abstraction.pattern.lts.PatternGraphState;
@@ -23,7 +24,6 @@ import groove.abstraction.pattern.lts.PatternGraphTransition;
 import groove.abstraction.pattern.lts.PatternNextState;
 import groove.abstraction.pattern.lts.PatternState;
 import groove.abstraction.pattern.lts.PatternTransition;
-import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.trans.PatternGraphRuleApplication;
 import groove.lts.MatchApplier;
@@ -56,9 +56,9 @@ public class PatternGraphMatchApplier implements PatternRuleEventApplier {
     // ------------------------------------------------------------------------
 
     @Override
-    public void apply(PatternState source, Match match) {
+    public void apply(PatternState source, MatchResult match) {
         PatternGraphRuleApplication app =
-            new PatternGraphRuleApplication(source.getGraph(), match);
+            new PatternGraphRuleApplication(source.getGraph(), match.getMatch());
         PatternGraph result = app.transform(false);
         PatternNextState newState =
             new PatternGraphNextState(result, (PatternGraphState) source,

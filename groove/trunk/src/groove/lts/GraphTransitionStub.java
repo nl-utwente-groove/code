@@ -17,7 +17,6 @@
 package groove.lts;
 
 import groove.trans.Action;
-import groove.trans.Event;
 
 /**
  * An object recording the necessary information to reconstruct an
@@ -50,5 +49,5 @@ public interface GraphTransitionStub {
      * Returns the event that underlies the transition from a given source to
      * this object.
      */
-    Event getEvent(GraphState source);
+    GraphTransitionKey getKey(GraphState source);
 }

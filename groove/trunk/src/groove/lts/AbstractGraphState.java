@@ -26,7 +26,6 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.trans.HostElement;
 import groove.trans.HostNode;
-import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
@@ -80,15 +79,15 @@ abstract public class AbstractGraphState extends
         return getCache().addTransition(transition);
     }
 
-    public RuleTransitionStub getOutStub(RuleEvent event) {
-        assert event != null;
+    public RuleTransitionStub getOutStub(MatchResult match) {
+        assert match != null;
         RuleTransitionStub result = null;
         Iterator<? extends GraphTransitionStub> outTransIter =
             getTransitionStubIter();
         while (outTransIter.hasNext()) {
             GraphTransitionStub stub = outTransIter.next();
             if (stub instanceof RuleTransitionStub
-                && ((RuleTransitionStub) stub).getEvent(this) == event) {
+                && ((RuleTransitionStub) stub).getKey(this) == match) {
                 result = (RuleTransitionStub) stub;
                 break;
             }
@@ -99,17 +98,17 @@ abstract public class AbstractGraphState extends
     /**
      * Callback factory method for creating an outgoing transition (from this
      * state) for the given derivation and target state. This implementation
-     * invokes {@link #createInTransitionStub(GraphState, RuleEvent, HostNode[])} if
+     * invokes {@link #createInTransitionStub(GraphState, MatchResult, HostNode[])} if
      * the target is a {@link AbstractGraphState}, otherwise it creates a
      * {@link IdentityTransitionStub}.
      */
-    protected RuleTransitionStub createTransitionStub(RuleEvent event,
+    protected RuleTransitionStub createTransitionStub(MatchResult match,
             HostNode[] addedNodes, GraphState target) {
         if (target instanceof AbstractGraphState) {
             return ((AbstractGraphState) target).createInTransitionStub(this,
-                event, addedNodes);
+                match, addedNodes);
         } else {
-            return new IdentityTransitionStub(event, addedNodes, target);
+            return new IdentityTransitionStub(match, addedNodes, target);
         }
     }
 
@@ -118,8 +117,8 @@ abstract public class AbstractGraphState extends
      * from a given graph and with a given rule event.
      */
     protected RuleTransitionStub createInTransitionStub(GraphState source,
-            RuleEvent event, HostNode[] addedNodes) {
-        return new IdentityTransitionStub(event, addedNodes, this);
+            MatchResult match, HostNode[] addedNodes) {
+        return new IdentityTransitionStub(match, addedNodes, this);
     }
 
     /**
