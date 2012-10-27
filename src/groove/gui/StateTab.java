@@ -481,16 +481,14 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
         GraphState target = trans.target();
         AspectJModel targetJModel = getAspectJModel(target);
         HostToAspectMap targetAspectMap = getAspectMap(target);
-        // initially set all cells of the new model to layoutable
-        for (AspectJCell jCell : targetJModel.getRoots()) {
-            jCell.setLayoutable(true);
-        }
         HostGraphMorphism morphism = trans.getMorphism();
         // find out newly created colours
         Map<HostNode,Color> newColorMap = extractColors(trans);
-        // transfer layout and colours for nodes
+        // compute target node attributes
         Set<HostNode> newNodes =
             new HashSet<HostNode>(target.getGraph().nodeSet());
+        Map<AspectNode,Attributes> nodeAttrMap =
+            new HashMap<AspectNode,StateTab.Attributes>();
         for (Map.Entry<HostNode,HostNode> entry : morphism.nodeMap().entrySet()) {
             AspectNode sourceAspectNode =
                 sourceAspectMap.getNode(entry.getKey());
@@ -502,35 +500,24 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
             assert sourceCell != null : "Source element " + sourceAspectNode
                 + " unknown";
             HostNode targetNode = entry.getValue();
+            Attributes attr =
+                new Attributes(
+                    GraphConstants.getBounds(sourceCell.getAttributes()),
+                    sourceCell.isGrayedOut(), newColorMap.get(targetNode));
             AspectNode targetAspectNode = targetAspectMap.getNode(targetNode);
-            AspectJVertex targetCell =
-                targetJModel.getJCellForNode(targetAspectNode);
-            assert targetCell != null : "Target element " + targetAspectNode
-                + " unknown";
-            Rectangle2D sourceBounds =
-                GraphConstants.getBounds(sourceCell.getAttributes());
-            GraphConstants.setBounds(targetCell.getAttributes(), sourceBounds);
-            targetCell.setLayoutable(false);
-            targetCell.setGrayedOut(sourceCell.isGrayedOut());
-            Color targetColor = newColorMap.get(targetNode);
-            if (targetColor != null) {
-                targetCell.setColor(targetColor);
-            }
-            targetJModel.synchroniseLayout(targetCell);
+            nodeAttrMap.put(targetAspectNode, attr);
             newNodes.remove(targetNode);
         }
         // add colours for new nodes
         for (HostNode targetNode : newNodes) {
+            Attributes attr =
+                new Attributes(null, false, newColorMap.get(targetNode));
             AspectNode targetAspectNode = targetAspectMap.getNode(targetNode);
-            AspectJVertex targetCell =
-                targetJModel.getJCellForNode(targetAspectNode);
-            assert targetCell != null : "Target element " + targetAspectNode
-                + " unknown";
-            targetCell.setColor(newColorMap.get(targetNode));
+            nodeAttrMap.put(targetAspectNode, attr);
         }
-        // transfer layout and colours for edges
-        Set<AspectEdge> newEdges =
-            new HashSet<AspectEdge>(targetAspectMap.edgeMap().values());
+        // compute target edge attributes
+        Map<AspectEdge,Attributes> edgeAttrMap =
+            new HashMap<AspectEdge,StateTab.Attributes>();
         for (Map.Entry<HostEdge,HostEdge> entry : morphism.edgeMap().entrySet()) {
             AspectEdge sourceAspectEdge =
                 sourceAspectMap.getEdge(entry.getKey());
@@ -539,30 +526,62 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
             }
             AspectJCell sourceCell =
                 sourceJModel.getJCellForEdge(sourceAspectEdge);
+            if (sourceCell instanceof AspectJVertex) {
+                continue;
+            }
             AttributeMap sourceAttributes = sourceCell.getAttributes();
+            Attributes attr =
+                new Attributes(GraphConstants.getPoints(sourceAttributes),
+                    GraphConstants.getLabelPosition(sourceAttributes),
+                    GraphConstants.getLineStyle(sourceAttributes),
+                    sourceCell.isGrayedOut());
             AspectEdge targetAspectEdge =
                 targetAspectMap.getEdge(entry.getValue());
+            edgeAttrMap.put(targetAspectEdge, attr);
+        }
+        // store target node attributes
+        for (Map.Entry<AspectNode,Attributes> e : nodeAttrMap.entrySet()) {
+            AspectNode targetAspectNode = e.getKey();
+            Attributes attr = e.getValue();
+            AspectJVertex targetCell =
+                targetJModel.getJCellForNode(targetAspectNode);
+            assert targetCell != null : "Target element " + targetAspectNode
+                + " unknown";
+            if (attr.bounds != null) {
+                GraphConstants.setBounds(targetCell.getAttributes(),
+                    attr.bounds);
+            }
+            targetCell.setGrayedOut(attr.grayedOut);
+            if (attr.color != null) {
+                targetCell.setColor(attr.color);
+            }
+            targetCell.setLayoutable(attr.bounds == null);
+            targetJModel.synchroniseLayout(targetCell);
+        }
+        // store target edge attributes
+        for (Map.Entry<AspectEdge,Attributes> e : edgeAttrMap.entrySet()) {
+            AspectEdge targetAspectEdge = e.getKey();
             AspectJCell targetCell =
                 targetJModel.getJCellForEdge(targetAspectEdge);
+            if (targetCell instanceof AspectJVertex) {
+                continue;
+            }
             assert targetCell != null : "Target element " + targetAspectEdge
                 + " unknown";
             AttributeMap targetAttributes = targetCell.getAttributes();
-            List<?> sourcePoints = GraphConstants.getPoints(sourceAttributes);
-            if (sourcePoints != null) {
+            Attributes attr = e.getValue();
+            if (attr.points != null) {
                 GraphConstants.setPoints(targetAttributes,
-                    new LinkedList<Object>(sourcePoints));
+                    new LinkedList<Object>(attr.points));
             }
-            Point2D labelPosition =
-                GraphConstants.getLabelPosition(sourceAttributes);
-            if (labelPosition != null) {
-                GraphConstants.setLabelPosition(targetAttributes, labelPosition);
+            if (attr.labelPosition != null) {
+                GraphConstants.setLabelPosition(targetAttributes,
+                    attr.labelPosition);
             }
-            GraphConstants.setLineStyle(targetAttributes,
-                GraphConstants.getLineStyle(sourceAttributes));
-            targetCell.setLayoutable(false);
-            targetCell.setGrayedOut(sourceCell.isGrayedOut());
+            GraphConstants.setLineStyle(targetAttributes, attr.lineStyle);
+            targetCell.setGrayedOut(attr.grayedOut);
+            targetCell.setLayoutable(attr.points == null);
             targetJModel.synchroniseLayout(targetCell);
-            newEdges.remove(targetAspectEdge);
         }
     }
 
@@ -730,4 +749,32 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
     /** Display name of this panel. */
     public static final String FRAME_NAME = "Current state";
 
+    /** Temporary record of graph element attributes. */
+    private static class Attributes {
+        Attributes(Rectangle2D bounds, boolean grayedOut, Color color) {
+            this.bounds = bounds;
+            this.grayedOut = grayedOut;
+            this.color = color;
+            this.points = null;
+            this.labelPosition = null;
+            this.lineStyle = 0;
+        }
+
+        Attributes(List<?> points, Point2D labelPosition, int lineStyle,
+                boolean grayedOut) {
+            this.bounds = null;
+            this.grayedOut = grayedOut;
+            this.color = null;
+            this.points = points;
+            this.labelPosition = labelPosition;
+            this.lineStyle = lineStyle;
+        }
+
+        final Rectangle2D bounds;
+        final Color color;
+        final boolean grayedOut;
+        final List<?> points;
+        final Point2D labelPosition;
+        final int lineStyle;
+    }
 }
