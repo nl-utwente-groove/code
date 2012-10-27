@@ -208,9 +208,6 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
         CtrlState result;
         if (recipe == null) {
             result = createState(original.getRecipe());
-            if (original.hasExitGuard()) {
-                result.setExitGuard(original.getExitGuard());
-            }
         } else {
             result = createState(recipe);
         }
