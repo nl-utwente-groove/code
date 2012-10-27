@@ -37,8 +37,10 @@ import groove.view.FormatException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
@@ -281,39 +283,38 @@ public class CtrlBuildTest {
         assertEquals("a", getName(s1));
         assertTrue(s1 == s0.next(true));
         CtrlSchedule s1f = s1.next(false);
-        assertEquals("c", getName(s1f));
         assertTrue(s1f.isSuccess());
+        assertEquals(Arrays.asList("c", "e"), getNames(s1f));
         CtrlSchedule s1ff = s1f.next(false);
-        assertEquals("e", getName(s1ff));
+        assertEquals("d", getName(s1ff));
         assertTrue(s1ff.isSuccess());
-        CtrlSchedule s1fff = s1ff.next(false);
-        assertEquals("d", getName(s1fff));
-        assertTrue(s1fff.isSuccess());
-        assertSame(s1fff.next(false), s1fff.next(true));
-        assertTrue(s1fff.next(false).isFinished());
+        assertSame(s1ff.next(false), s1ff.next(true));
+        assertTrue(s1ff.next(false).isFinished());
         CtrlSchedule s1ft = s1f.next(true);
-        assertEquals("e", getName(s1ft));
         assertTrue(s1ft.isSuccess());
-        assertSame(s1ft.next(false), s1ft.next(true));
-        assertTrue(s1ft.next(false).isFinished());
+        assertTrue(s1ft.isFinished());
         CtrlSchedule s1t = s1.next(true);
-        assertEquals("c", getName(s1t));
+        assertEquals(Arrays.asList("c", "e"), getNames(s1t));
         CtrlSchedule s1tf = s1t.next(false);
-        assertEquals("e", getName(s1tf));
-        CtrlSchedule s1tff = s1tf.next(false);
-        assertEquals("d", getName(s1tff));
-        assertSame(s1tff.next(false), s1tff.next(true));
-        assertTrue(s1tff.next(false).isFinished());
-        assertFalse(s1tff.next(false).isSuccess());
+        assertEquals("d", getName(s1tf));
+        assertSame(s1tf.next(false), s1tf.next(true));
+        assertTrue(s1tf.next(false).isFinished());
+        assertFalse(s1tf.next(false).isSuccess());
         CtrlSchedule s1tt = s1t.next(true);
-        assertEquals("e", getName(s1tt));
-        assertSame(s1tt.next(false), s1tt.next(true));
-        assertTrue(s1tt.next(true).isFinished());
-        assertFalse(s1tt.next(false).isSuccess());
+        assertTrue(s1tt.isFinished());
+        assertFalse(s1tt.isSuccess());
     }
 
     private String getName(CtrlSchedule s) {
         return s.getTransitions().get(0).getCall().getName();
+    }
+
+    private List<String> getNames(CtrlSchedule s) {
+        List<String> result = new ArrayList<String>();
+        for (CtrlTransition trans : s.getTransitions()) {
+            result.add(trans.getCall().getName());
+        }
+        return result;
     }
 
     /** Builds a control automaton that should contain an error. */
