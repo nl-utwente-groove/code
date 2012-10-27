@@ -23,8 +23,11 @@ import groove.trans.HostGraphMorphism;
 import groove.trans.Recipe;
 import groove.trans.RuleApplication;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -83,6 +86,40 @@ public class RecipeTransition extends
             if (source().isDone()) {
                 this.steps = result;
             }
+        }
+        return result;
+    }
+
+    /** Returns a shortest rule transition sequence from source to target. */
+    public List<RuleTransition> getPath() {
+        List<RuleTransition> result = null;
+        // all paths of the current length
+        List<List<RuleTransition>> paths =
+            new ArrayList<List<RuleTransition>>();
+        paths.add(Arrays.asList(getInitial()));
+        // do the following for paths of increasing length
+        while (result == null) {
+            List<List<RuleTransition>> newPaths =
+                new ArrayList<List<RuleTransition>>();
+            for (List<RuleTransition> path : paths) {
+                GraphState target = path.get(path.size() - 1).target();
+                // check if any of the paths reaches the target
+                if (target == target()) {
+                    result = path;
+                    break;
+                } else {
+                    // otherwise, extend the path in all possible ways
+                    for (RuleTransition next : target.getRuleTransitions()) {
+                        if (getSteps().contains(next)) {
+                            List<RuleTransition> newPath =
+                                new ArrayList<RuleTransition>(path);
+                            newPath.add(next);
+                            newPaths.add(newPath);
+                        }
+                    }
+                }
+            }
+            paths = newPaths;
         }
         return result;
     }

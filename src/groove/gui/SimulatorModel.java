@@ -434,14 +434,14 @@ public class SimulatorModel implements Cloneable {
             // fake the history: the previously selected match is supposed
             // to have been this transition already
             this.old.match = trans;
+            this.old.trans = trans;
         }
         changeGts();
         changeState(state);
         MatchResult match = getMatch(state);
         changeMatch(match);
-        if (match instanceof GraphTransition) {
-            changeTransition((GraphTransition) match);
-        }
+        changeTransition(match instanceof GraphTransition
+                ? (GraphTransition) match : null);
         changeDisplay(DisplayKind.LTS);
         return finish();
     }
