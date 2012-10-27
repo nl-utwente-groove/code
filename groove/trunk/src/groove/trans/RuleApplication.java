@@ -425,7 +425,7 @@ public class RuleApplication implements DeltaApplier {
      * Note that this is <i>not</i> the same kind of object as the matching.
      */
     private HostGraphMorphism createMorphism() {
-        return new HostGraphMorphism(getSource().getFactory());
+        return getSource().getFactory().createMorphism();
     }
 
     /**

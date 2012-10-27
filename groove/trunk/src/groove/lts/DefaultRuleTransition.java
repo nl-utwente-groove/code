@@ -202,22 +202,35 @@ public class DefaultRuleTransition extends
      * footprint.
      */
     protected HostGraphMorphism computeMorphism() {
-        RuleApplication appl = getEvent().newApplication(source().getGraph());
-        HostGraphMorphism result = appl.getMorphism();
-        if (isSymmetry()) {
-            HostGraph derivedTarget = appl.getTarget().clone();//new DefaultHostGraph(appl.getTarget());
-            HostGraph realTarget = target().getGraph().clone();//new DefaultHostGraph(target().getGraph());
-            final Morphism<HostNode,HostEdge> iso =
-                IsoChecker.<HostNode,HostEdge>getInstance(true).getIsomorphism(
-                    derivedTarget, realTarget);
-            assert iso != null : "Can't reconstruct derivation from graph transition "
-                + this
-                + ": \n"
-                + AbstractGraph.toString(derivedTarget)
-                + " and \n"
-                + AbstractGraph.toString(realTarget)
-                + " \nnot isomorphic";
-            result = result.then(iso);
+        HostGraphMorphism result;
+        HostGraph sourceGraph = source().getGraph();
+        if (getAction().isModifying()) {
+            RuleApplication appl = getEvent().newApplication(sourceGraph);
+            result = appl.getMorphism();
+            if (isSymmetry()) {
+                HostGraph derivedTarget = appl.getTarget().clone();
+                HostGraph realTarget = target().getGraph().clone();
+                final Morphism<HostNode,HostEdge> iso =
+                    IsoChecker.<HostNode,HostEdge>getInstance(true).getIsomorphism(
+                        derivedTarget, realTarget);
+                assert iso != null : "Can't reconstruct derivation from graph transition "
+                    + this
+                    + ": \n"
+                    + AbstractGraph.toString(derivedTarget)
+                    + " and \n"
+                    + AbstractGraph.toString(realTarget)
+                    + " \nnot isomorphic";
+                result = result.then(iso);
+            }
+        } else {
+            // create an identity morphism
+            result = sourceGraph.getFactory().createMorphism();
+            for (HostNode node : sourceGraph.nodeSet()) {
+                result.putNode(node, node);
+            }
+            for (HostEdge edge : sourceGraph.edgeSet()) {
+                result.putEdge(edge, edge);
+            }
         }
         return result;
     }
