@@ -26,12 +26,14 @@ import groove.view.FormatErrorSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
@@ -41,7 +43,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlState implements Node {
+public class CtrlState implements Node, Comparator<CtrlTransition> {
     /**
      * Creates a control state with a given number.
      * @param aut the automaton for which this state is created
@@ -353,7 +355,7 @@ public class CtrlState implements Node {
     private CtrlSchedule computeSchedule(Set<CtrlTransition> transSet,
             Set<CtrlTransition> tried, Set<CtrlTransition> failed) {
         // look for the untried calls with the least disablings
-        List<CtrlTransition> chosenTrans = null;
+        SortedSet<CtrlTransition> chosenTrans = null;
         Set<CtrlTransition> chosenDisablings = null;
         // boolean indicating that the omega rule guards have all been satisfied
         boolean success = false;
@@ -392,12 +394,12 @@ public class CtrlState implements Node {
                 choose = false;
                 fresh = false;
             } else {
-                choose = smallerThan(tryTrans, chosenTrans.get(0));
+                choose = compare(tryTrans, chosenTrans.first()) < 0;
                 fresh = true;
             }
             if (choose) {
                 if (fresh) {
-                    chosenTrans = new ArrayList<CtrlTransition>();
+                    chosenTrans = new TreeSet<CtrlTransition>(this);
                     chosenDisablings = tryDisablings;
                 }
                 chosenTrans.add(tryTrans);
@@ -411,7 +413,9 @@ public class CtrlState implements Node {
             isTransient = !guard.isEmpty();
         }
         CtrlSchedule result =
-            new CtrlSchedule(this, chosenTrans, tried, success, isTransient);
+            new CtrlSchedule(this, chosenTrans == null ? null
+                    : new ArrayList<CtrlTransition>(chosenTrans), tried,
+                success, isTransient);
         if (chosenTrans != null) {
             Set<CtrlTransition> newTried = new HashSet<CtrlTransition>(tried);
             newTried.addAll(chosenTrans);
@@ -437,7 +441,8 @@ public class CtrlState implements Node {
     /** Compares two control transition for the purpose of deciding which one
      * is to come first in the schedule.
      */
-    private boolean smallerThan(CtrlTransition one, CtrlTransition two) {
+    @Override
+    public int compare(CtrlTransition one, CtrlTransition two) {
         int result =
             one.getCall().toString().compareTo(two.getCall().toString());
         if (result == 0) {
@@ -459,7 +464,7 @@ public class CtrlState implements Node {
         if (result == 0) {
             result = one.getNumber() - two.getNumber();
         }
-        return result < 0;
+        return result;
     }
 
     /** Internal number to identify the state. */
