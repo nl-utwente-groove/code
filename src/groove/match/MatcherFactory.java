@@ -35,6 +35,7 @@ import groove.trans.Condition;
 public class MatcherFactory {
     private MatcherFactory() {
         this.engine = defaultEngine;
+        this.oracle = new DefaultValueOracle();
     }
 
     /**
@@ -53,6 +54,16 @@ public class MatcherFactory {
      */
     public void setEngine(SearchMode mode) {
         this.engine = PlanSearchEngine.getInstance(mode);
+    }
+
+    /** Returns the installed value oracle. */
+    public ValueOracle getOracle() {
+        return this.oracle;
+    }
+
+    /** Sets a new value oracle. */
+    public void setOracle(ValueOracle oracle) {
+        this.oracle = oracle;
     }
 
     /** Sets the search engine to the default. */
@@ -77,6 +88,9 @@ public class MatcherFactory {
 
     /** The currently set search engine. */
     private SearchEngine engine;
+
+    /** Oracle for matching value nodes. */
+    private ValueOracle oracle;
 
     /** Returns the singleton instance of the factory. */
     public static MatcherFactory instance() {

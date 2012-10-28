@@ -55,4 +55,8 @@ public interface SearchStrategy {
 
     /** Returns the search engine that was used to create this strategy. */
     public SearchEngine getEngine();
+    
+    /** Returns the value oracle of this matcher. */
+    public ValueOracle getOracle();
+
 }

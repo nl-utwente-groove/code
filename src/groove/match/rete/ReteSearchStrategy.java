@@ -18,6 +18,7 @@ package groove.match.rete;
 
 import groove.match.SearchStrategy;
 import groove.match.TreeMatch;
+import groove.match.ValueOracle;
 import groove.trans.Condition;
 import groove.trans.Condition.Op;
 import groove.trans.EdgeEmbargo;
@@ -42,16 +43,24 @@ public class ReteSearchStrategy implements SearchStrategy {
      * Creates a matching strategy object that uses the RETE algorithm for matching.  
      * @param owner The RETE search engine
      * @param condition the condition for which this strategy is to be created; non-{@code null}.
+     * @param oracle the oracle to obtain values for unbound variable nodes
      */
-    public ReteSearchStrategy(ReteSearchEngine owner, Condition condition) {
+    public ReteSearchStrategy(ReteSearchEngine owner, Condition condition,
+            ValueOracle oracle) {
         this.engine = owner;
         this.condition = condition;
+        this.oracle = oracle;
         assert condition != null;
     }
 
     @Override
     public ReteSearchEngine getEngine() {
         return this.engine;
+    }
+
+    @Override
+    public ValueOracle getOracle() {
+        return this.oracle;
     }
 
     @Override
@@ -218,7 +227,8 @@ public class ReteSearchStrategy implements SearchStrategy {
                     getCondition().getSubConditions().size());
             for (Condition subCondition : getCondition().getSubConditions()) {
                 if (!(subCondition instanceof EdgeEmbargo)) {
-                    result.add(new ReteSearchStrategy(getEngine(), subCondition));
+                    result.add(new ReteSearchStrategy(getEngine(),
+                        subCondition, this.oracle));
                 }
             }
             this.subMatchers =
@@ -234,5 +244,6 @@ public class ReteSearchStrategy implements SearchStrategy {
 
     private final Condition condition;
     private final ReteSearchEngine engine;
+    private final ValueOracle oracle;
     private ReteSearchStrategy[] subMatchers;
 }

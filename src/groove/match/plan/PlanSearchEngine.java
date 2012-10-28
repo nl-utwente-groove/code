@@ -24,6 +24,7 @@ import groove.graph.TypeLabel;
 import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.SearchEngine;
+import groove.match.ValueOracle;
 import groove.rel.LabelVar;
 import groove.rel.RegExpr;
 import groove.trans.Anchor;
@@ -73,7 +74,7 @@ public class PlanSearchEngine extends SearchEngine {
     }
 
     @Override
-    public PlanSearchStrategy createMatcher(Condition condition, Anchor seed) {
+    public PlanSearchStrategy createMatcher(Condition condition, Anchor seed, ValueOracle oracle) {
         Set<AnchorKey> anchorKeys = new HashSet<AnchorKey>();
         if (condition.hasRule()) {
             anchorKeys.addAll(condition.getRule().getAnchor());
@@ -102,7 +103,7 @@ public class PlanSearchEngine extends SearchEngine {
             relevant |= this.searchMode == SearchMode.MINIMAL;
             item.setRelevant(relevant);
         }
-        PlanSearchStrategy result = new PlanSearchStrategy(this, plan);
+        PlanSearchStrategy result = new PlanSearchStrategy(this, plan, oracle);
         if (PRINT) {
             System.out.print(String.format("%nPlan for %s, seed %s:%n    %s",
                 condition.getName(), seed, result));

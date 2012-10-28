@@ -23,6 +23,7 @@ import groove.graph.algebra.VariableNode;
 import groove.match.SearchEngine;
 import groove.match.SearchStrategy;
 import groove.match.TreeMatch;
+import groove.match.ValueOracle;
 import groove.rel.LabelVar;
 import groove.trans.Condition;
 import groove.trans.DefaultHostNode;
@@ -38,7 +39,6 @@ import groove.util.Visitor;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,13 +53,16 @@ public class PlanSearchStrategy implements SearchStrategy {
      * Constructs a strategy from a given list of search items. A flag controls
      * if solutions should be injective.
      * @param plan the search items that make up the search plan
+     * @param oracle the oracle to obtain values for unbound variable nodes
      */
-    public PlanSearchStrategy(PlanSearchEngine engine, SearchPlan plan) {
+    public PlanSearchStrategy(PlanSearchEngine engine, SearchPlan plan,
+            ValueOracle oracle) {
         this.nodeIxMap = new HashMap<RuleNode,Integer>();
         this.edgeIxMap = new HashMap<RuleEdge,Integer>();
         this.varIxMap = new HashMap<LabelVar,Integer>();
         this.condIxMap = new HashMap<Condition,Integer>();
         this.engine = engine;
+        this.oracle = oracle;
         this.plan = plan;
         this.injective = plan.isInjective();
     }
@@ -67,6 +70,11 @@ public class PlanSearchStrategy implements SearchStrategy {
     @Override
     public SearchEngine getEngine() {
         return this.engine;
+    }
+
+    @Override
+    public ValueOracle getOracle() {
+        return this.oracle;
     }
 
     @Override
@@ -89,7 +97,7 @@ public class PlanSearchStrategy implements SearchStrategy {
     /**
      * Retrieves the search plan for this strategy.
      */
-    final protected List<? extends SearchItem> getPlan() {
+    final protected SearchPlan getPlan() {
         return this.plan;
     }
 
@@ -246,6 +254,7 @@ public class PlanSearchStrategy implements SearchStrategy {
 
     /** The fixed search object. */
     private Search search;
+    private final ValueOracle oracle;
     /** The engine used to create this strategy. */
     private final PlanSearchEngine engine;
     /**
