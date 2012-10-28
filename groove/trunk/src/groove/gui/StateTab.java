@@ -500,19 +500,25 @@ public class StateTab extends JGraphPanel<AspectJGraph> implements Tab,
             assert sourceCell != null : "Source element " + sourceAspectNode
                 + " unknown";
             HostNode targetNode = entry.getValue();
+            newNodes.remove(targetNode);
             Attributes attr =
                 new Attributes(
                     GraphConstants.getBounds(sourceCell.getAttributes()),
                     sourceCell.isGrayedOut(), newColorMap.get(targetNode));
             AspectNode targetAspectNode = targetAspectMap.getNode(targetNode);
+            if (targetAspectNode == null) {
+                continue;
+            }
             nodeAttrMap.put(targetAspectNode, attr);
-            newNodes.remove(targetNode);
         }
         // add colours for new nodes
         for (HostNode targetNode : newNodes) {
             Attributes attr =
                 new Attributes(null, false, newColorMap.get(targetNode));
             AspectNode targetAspectNode = targetAspectMap.getNode(targetNode);
+            if (targetAspectNode == null) {
+                continue;
+            }
             nodeAttrMap.put(targetAspectNode, attr);
         }
         // compute target edge attributes

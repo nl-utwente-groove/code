@@ -34,11 +34,6 @@ public class ExploreStateStrategy extends ClosingStrategy {
     }
 
     @Override
-    protected boolean isSuitableKnownState(GraphState state) {
-        return state == getStartState() || state.isTransient();
-    }
-
-    @Override
     protected GraphState getFromPool() {
         GraphState result = this.state;
         this.state = null;

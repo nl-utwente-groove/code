@@ -93,11 +93,6 @@ public class LinearStrategy extends AbstractStrategy {
         getGTS().removeLTSListener(this.exploreListener);
     }
 
-    @Override
-    protected boolean isSuitableKnownState(GraphState state) {
-        return state != getStartState();
-    }
-
     /**
      * Pushes the currently explored state back onto the stack,
      * for backtracking recipes. 

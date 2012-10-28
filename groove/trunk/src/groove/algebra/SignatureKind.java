@@ -28,22 +28,28 @@ import java.util.Set;
  */
 public enum SignatureKind {
     /** Signature kind of booleans. */
-    BOOL("bool"),
+    BOOL("bool", "true"),
     /** Signature kind of integers. */
-    INT("int"),
+    INT("int", "0"),
     /** Signature kind of real numbers. */
-    REAL("real"),
+    REAL("real", "0.0"),
     /** Signature kind of strings. */
-    STRING("string");
+    STRING("string", "\"\"");
 
     /** Constructs a signature kind with a given name. */
-    private SignatureKind(String name) {
+    private SignatureKind(String name, String defaultValue) {
         this.name = name;
+        this.defaultValue = defaultValue;
     }
 
     /** Returns the name of this signature. */
     final public String getName() {
         return this.name;
+    }
+
+    /** Returns a symbolic representation of the default value for this signature. */
+    public String getDefaultValue() {
+        return this.defaultValue;
     }
 
     @Override
@@ -52,6 +58,7 @@ public enum SignatureKind {
     }
 
     private final String name;
+    private final String defaultValue;
 
     /** Returns the signature kind for a given signature name. */
     public static SignatureKind getKind(String sigName) {
