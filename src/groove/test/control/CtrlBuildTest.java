@@ -234,11 +234,11 @@ public class CtrlBuildTest {
     /** Tests function calls. */
     @Test
     public void testFunctions() {
-        buildCorrect("f(); function f() { a; }", 3, 2);
-        buildCorrect("f(); f(); function f() { choice a; or {b;c;} }", 6, 7);
-        buildCorrect("f(); function f() { node x; bNode(out x); }", 3, 2);
+        buildCorrect("function f() { a; } f(); ", 3, 2);
+        buildCorrect("function f() { choice a; or {b;c;} } f(); f(); ", 6, 7);
+        buildCorrect("function f() { node x; bNode(out x); } f(); ", 3, 2);
         buildWrong("function f() { g(); } function g() { f(); }");
-        buildCorrect("function f() { a | g(); } function g() { b; c; } f(); ",
+        buildCorrect("function g() { b; c; } function f() { a | g(); } f(); ",
             4, 4);
     }
 
