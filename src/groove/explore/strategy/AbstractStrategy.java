@@ -75,16 +75,8 @@ public abstract class AbstractStrategy implements Strategy {
      */
     private void collectKnownStates() {
         for (GraphState next : getGTS().nodeSet()) {
-            next.setFlag(Flag.KNOWN, isSuitableKnownState(next));
+            next.setFlag(Flag.KNOWN, true);
         }
-    }
-
-    /**
-     * Callback method to determine if a given state may be added to the
-     * set of known states.
-     */
-    protected boolean isSuitableKnownState(GraphState state) {
-        return true;
     }
 
     /**

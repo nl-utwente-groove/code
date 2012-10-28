@@ -83,7 +83,8 @@ public class PointBoolAlgebra extends BoolSignature<Object> implements
     /** Name of this algebra. */
     public static final String NAME = "pbool";
     /** Singleton object of this algebra. */
-    public static final String singleBool = "true";
+    public static final String singleBool =
+        SignatureKind.BOOL.getDefaultValue();
     /** Singleton instance of this algebra. */
     public static final PointBoolAlgebra instance = new PointBoolAlgebra();
 }

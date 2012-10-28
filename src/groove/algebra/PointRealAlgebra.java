@@ -146,7 +146,8 @@ public class PointRealAlgebra extends RealSignature<Object,Object,Object>
      */
     public static final String singleBool = PointBoolAlgebra.singleBool;
     /** Point value of the real algebra. */
-    public static final String singleReal = "1.0";
+    public static final String singleReal =
+        SignatureKind.REAL.getDefaultValue();
     /** Singleton instance of this algebra. */
     public static final PointRealAlgebra instance = new PointRealAlgebra();
 }

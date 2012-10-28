@@ -79,7 +79,7 @@ public class PointStringAlgebra extends StringSignature<Object,Object,Object>
     }
 
     public String getSymbol(Object value) {
-        return singleStringSymbol;
+        return singleString;
     }
 
     public Object getValueFromString(String constant) {
@@ -108,9 +108,8 @@ public class PointStringAlgebra extends StringSignature<Object,Object,Object>
     /** Point value of the string algebra. */
     public static final String singleInt = PointIntAlgebra.singleInt;
     /** Point value of the string algebra. */
-    public static final String singleString = "";
-    /** Symbolic representation of the single string value. */
-    private static final String singleStringSymbol = "\"\"";
+    public static final String singleString =
+        SignatureKind.STRING.getDefaultValue();
     /** Singleton instance of this algebra. */
     public static final PointStringAlgebra instance = new PointStringAlgebra();
 }

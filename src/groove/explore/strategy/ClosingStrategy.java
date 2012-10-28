@@ -47,9 +47,8 @@ abstract public class ClosingStrategy extends AbstractStrategy {
         if (state.setFlag(Flag.KNOWN, false)) {
             for (RuleTransition out : state.getRuleTransitions()) {
                 GraphState target = out.target();
-                if (target.hasFlag(Flag.KNOWN)) {
-                    putInPool(target);
-                }
+                assert target.hasFlag(Flag.KNOWN);
+                addExplorable(target);
             }
         }
         for (MatchResult next : matches) {
@@ -84,6 +83,15 @@ abstract public class ClosingStrategy extends AbstractStrategy {
         }
     }
 
+    /** Adds a given state to the set of explorable states. */
+    private void addExplorable(GraphState state) {
+        if (state.isTransient()) {
+            ClosingStrategy.this.transientStack.push(state);
+        } else {
+            putInPool(state);
+        }
+    }
+
     /** Callback method to retrieve the next element from the pool. */
     abstract protected GraphState getFromPool();
 
@@ -103,11 +111,7 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     private class ExploreListener extends GTSAdapter {
         @Override
         public void addUpdate(GTS gts, GraphState state) {
-            if (state.isTransient()) {
-                ClosingStrategy.this.transientStack.push(state);
-            } else {
-                putInPool(state);
-            }
+            addExplorable(state);
         }
     }
 }
