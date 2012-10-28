@@ -132,7 +132,6 @@ public class Namespace {
         assert hasName(name) && getKind(name).hasBody() : String.format(
             "Unknown or inappropriate name %s", name);
         CtrlAut result = this.bodyMap.get(name);
-        assert result != null : String.format("Unknown function %s", name);
         return result;
     }
 

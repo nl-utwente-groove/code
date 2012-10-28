@@ -50,7 +50,7 @@ import java.util.HashMap;
 }
 
 program 
-  : ^(PROGRAM package_decl import_decl* recipes functions block) 
+  : ^(PROGRAM package_decl import_decl* functions recipes block) 
     { if ($block.tree.getChildCount() == 0) {
           helper.checkAny($PROGRAM);
       }

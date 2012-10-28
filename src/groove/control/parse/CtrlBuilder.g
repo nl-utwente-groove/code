@@ -45,7 +45,7 @@ import java.util.HashSet;
 }
 
 program returns [ CtrlAut aut ]
-  : ^(PROGRAM package_decl import_decl* recipes functions block)
+  : ^(PROGRAM package_decl import_decl* functions recipes block)
     { if ($block.tree.getChildCount() == 0) {
           $aut = null;
       } else {

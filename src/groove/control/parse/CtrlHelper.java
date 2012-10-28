@@ -158,17 +158,20 @@ public class CtrlHelper {
      */
     CommonTree lookup(CommonTree ruleNameToken) {
         CommonTree result = ruleNameToken;
-        String ruleName = ruleNameToken.getText();
-        if (QualName.getParent(ruleName).isEmpty()) {
-            if (this.importMap.containsKey(ruleName)) {
-                ruleName = this.importMap.get(ruleName);
+        String name = ruleNameToken.getText();
+        if (QualName.getParent(name).isEmpty()) {
+            if (this.importMap.containsKey(name)) {
+                name = this.importMap.get(name);
             } else {
-                ruleName = QualName.extend(this.packageName, ruleName);
+                name = QualName.extend(this.packageName, name);
             }
-            CommonToken token = new CommonToken(CtrlParser.ID, ruleName);
+            CommonToken token = new CommonToken(CtrlParser.ID, name);
             token.setLine(ruleNameToken.getLine());
             token.setTokenIndex(ruleNameToken.getToken().getTokenIndex());
             result = new CtrlTree(token);
+        }
+        if (!this.namespace.hasName(name)) {
+            emitErrorMessage(result, "Unknown name or identifier %s", name);
         }
         return result;
     }

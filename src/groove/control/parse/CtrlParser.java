@@ -1,4 +1,4 @@
-// $ANTLR 3.4 E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g 2012-10-24 22:07:03
+// $ANTLR 3.4 E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g 2012-10-28 13:54:07
 
 package groove.control.parse;
 import groove.control.*;
@@ -153,7 +153,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "program"
-    // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:105:1: program : package_decl ( import_decl )* ( function | recipe | stat )* EOF -> ^( PROGRAM ( package_decl )? ( import_decl )* ^( RECIPES ( recipe )* ) ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) ) ;
+    // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:105:1: program : package_decl ( import_decl )* ( function | recipe | stat )* EOF -> ^( PROGRAM ( package_decl )? ( import_decl )* ^( FUNCTIONS ( function )* ) ^( RECIPES ( recipe )* ) ^( BLOCK ( stat )* ) ) ;
     public final CtrlParser.program_return program() throws RecognitionException {
         CtrlParser.program_return retval = new CtrlParser.program_return();
         retval.start = input.LT(1);
@@ -181,7 +181,7 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleSubtreeStream stream_stat=new RewriteRuleSubtreeStream(adaptor,"rule stat");
         RewriteRuleSubtreeStream stream_function=new RewriteRuleSubtreeStream(adaptor,"rule function");
         try {
-            // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:106:3: ( package_decl ( import_decl )* ( function | recipe | stat )* EOF -> ^( PROGRAM ( package_decl )? ( import_decl )* ^( RECIPES ( recipe )* ) ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) ) )
+            // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:106:3: ( package_decl ( import_decl )* ( function | recipe | stat )* EOF -> ^( PROGRAM ( package_decl )? ( import_decl )* ^( FUNCTIONS ( function )* ) ^( RECIPES ( recipe )* ) ^( BLOCK ( stat )* ) ) )
             // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:110:5: package_decl ( import_decl )* ( function | recipe | stat )* EOF
             {
             pushFollow(FOLLOW_package_decl_in_program141);
@@ -313,7 +313,7 @@ public TreeAdaptor getTreeAdaptor() {
             if ( state.backtracking==0 ) { helper.checkEOF(EOF6_tree); }
 
             // AST REWRITE
-            // elements: function, stat, recipe, package_decl, import_decl
+            // elements: stat, import_decl, recipe, function, package_decl
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -325,9 +325,9 @@ public TreeAdaptor getTreeAdaptor() {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (CommonTree)adaptor.nil();
-            // 114:5: -> ^( PROGRAM ( package_decl )? ( import_decl )* ^( RECIPES ( recipe )* ) ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) )
+            // 114:5: -> ^( PROGRAM ( package_decl )? ( import_decl )* ^( FUNCTIONS ( function )* ) ^( RECIPES ( recipe )* ) ^( BLOCK ( stat )* ) )
             {
-                // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:114:8: ^( PROGRAM ( package_decl )? ( import_decl )* ^( RECIPES ( recipe )* ) ^( FUNCTIONS ( function )* ) ^( BLOCK ( stat )* ) )
+                // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:114:8: ^( PROGRAM ( package_decl )? ( import_decl )* ^( FUNCTIONS ( function )* ) ^( RECIPES ( recipe )* ) ^( BLOCK ( stat )* ) )
                 {
                 CommonTree root_1 = (CommonTree)adaptor.nil();
                 root_1 = (CommonTree)adaptor.becomeRoot(
@@ -348,36 +348,36 @@ public TreeAdaptor getTreeAdaptor() {
                 }
                 stream_import_decl.reset();
 
-                // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:117:11: ^( RECIPES ( recipe )* )
-                {
-                CommonTree root_2 = (CommonTree)adaptor.nil();
-                root_2 = (CommonTree)adaptor.becomeRoot(
-                (CommonTree)adaptor.create(RECIPES, "RECIPES")
-                , root_2);
-
-                // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:117:21: ( recipe )*
-                while ( stream_recipe.hasNext() ) {
-                    adaptor.addChild(root_2, stream_recipe.nextTree());
-
-                }
-                stream_recipe.reset();
-
-                adaptor.addChild(root_1, root_2);
-                }
-
-                // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:118:11: ^( FUNCTIONS ( function )* )
+                // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:117:11: ^( FUNCTIONS ( function )* )
                 {
                 CommonTree root_2 = (CommonTree)adaptor.nil();
                 root_2 = (CommonTree)adaptor.becomeRoot(
                 (CommonTree)adaptor.create(FUNCTIONS, "FUNCTIONS")
                 , root_2);
 
-                // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:118:23: ( function )*
+                // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:117:23: ( function )*
                 while ( stream_function.hasNext() ) {
                     adaptor.addChild(root_2, stream_function.nextTree());
 
                 }
                 stream_function.reset();
+
+                adaptor.addChild(root_1, root_2);
+                }
+
+                // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:118:11: ^( RECIPES ( recipe )* )
+                {
+                CommonTree root_2 = (CommonTree)adaptor.nil();
+                root_2 = (CommonTree)adaptor.becomeRoot(
+                (CommonTree)adaptor.create(RECIPES, "RECIPES")
+                , root_2);
+
+                // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\Ctrl.g:118:21: ( recipe )*
+                while ( stream_recipe.hasNext() ) {
+                    adaptor.addChild(root_2, stream_recipe.nextTree());
+
+                }
+                stream_recipe.reset();
 
                 adaptor.addChild(root_1, root_2);
                 }
@@ -1443,7 +1443,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                             // AST REWRITE
-                            // elements: stat, cond, WHILE, stat
+                            // elements: stat, WHILE, cond, stat
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -1514,7 +1514,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                             // AST REWRITE
-                            // elements: stat, cond, stat, UNTIL
+                            // elements: stat, cond, UNTIL, stat
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -2822,7 +2822,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: rule_name, arg_list
+            // elements: arg_list, rule_name
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -3132,7 +3132,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: ID, OUT
+                    // elements: OUT, ID
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
