@@ -108,6 +108,11 @@ public class MatchResult implements GraphTransitionKey {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return this.ctrlTrans.label().text();
+    }
+
     /** The precomputed hashcode; 0 if it has not yet been not initialised. */
     private int hashcode;
 

@@ -102,7 +102,7 @@ class MatchTreeNode extends DisplayTreeNode {
         result.append(this.nr);
         result.append(": ");
         if (isTransition()) {
-            RuleTransition trans = (RuleTransition) getMatch();
+            RuleTransition trans = getTransition();
             result.append(trans.text(this.anchored));
             result.append(RIGHTARROW);
             result.append(HTMLConverter.ITALIC_TAG.on(trans.target().toString()));

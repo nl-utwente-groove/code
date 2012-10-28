@@ -69,10 +69,11 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     StringBuilder getNodeDescription() {
         StringBuilder result = new StringBuilder("State ");
         result.append(HTMLConverter.UNDERLINE_TAG.on(getNode()));
-        // if a control location is available, add this to the tooltip
-        // if( this.getNode().getLocation() != null ) {
-        // result.append("ctrl: " + this.getNode().getLocation());
-        // }
+        CtrlState ctrlState = getNode().getCtrlState();
+        if (!ctrlState.getAut().isDefault() || !ctrlState.isStart()) {
+            result.append(" with control state ");
+            result.append(HTMLConverter.UNDERLINE_TAG.on(ctrlState));
+        }
         return result;
     }
 
@@ -124,7 +125,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     protected String getNodeIdString() {
         String result = super.getNodeIdString();
         CtrlState ctrlState = getNode().getCtrlState();
-        if (!ctrlState.getAut().isDefault()) {
+        if (!ctrlState.getAut().isDefault() || !ctrlState.isStart()) {
             result += "|" + ctrlState.toString();
         }
         return result;

@@ -265,7 +265,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     /**
      * This implementation compares the state on the basis of its qualities as a
      * {@link RuleTransition}. That is, two objects are considered equal if
-     * they have the same source and event.
+     * they have the same source and rule transition key.
      * @see #equalsTransition(RuleTransition)
      */
     @Override
@@ -279,11 +279,13 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     }
 
     /**
-     * This implementation compares the source and event of another
+     * This implementation compares the rule transition key of another
      * {@link RuleTransition} to those of this object.
      */
     protected boolean equalsTransition(RuleTransition other) {
-        return source() == other.source() && getEvent() == other.getEvent();
+        return source() == other.source()
+            && getEvent().equals(other.getEvent())
+            && getCtrlTransition().equals(other.getCtrlTransition());
     }
 
     /**
@@ -291,7 +293,8 @@ public class DefaultGraphNextState extends AbstractGraphState implements
      */
     @Override
     public int hashCode() {
-        return source().getNumber() + getEvent().hashCode();
+        return source().getNumber() + getEvent().hashCode()
+            + getCtrlTransition().hashCode();
     }
 
     /**

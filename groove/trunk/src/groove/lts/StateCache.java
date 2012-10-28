@@ -143,38 +143,53 @@ public class StateCache {
      * Callback method invoked when the state has been closed.
      */
     void notifyClosed() {
-        if (this.state.isTransient()) {
+        if (getState().isTransient()) {
             // notify all parents of the closure
-            for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
-                parent.one().notifyChildClosed(this.state);
-            }
+            fireChanged(getState());
             if (this.transientOpens.isEmpty()) {
-                setStateCooked();
+                setStateDone();
             }
         }
     }
 
-    private void notifyChildClosed(GraphState state) {
-        if (this.transientOpens.remove(state)) {
-            if (this.transientOpens.isEmpty()) {
-                setStateCooked();
+    /** Callback method invoked when a child closed or became non-transient. */
+    private void notifyChildChanged(GraphState child, RuleTransition initial) {
+        if (this.transientOpens.remove(child)) {
+            if (this.transientOpens.isEmpty() && getState().isClosed()) {
+                setStateDone();
             }
-            // notify all parents of the closure
-            for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
-                parent.one().notifyChildClosed(state);
+            this.present |= !child.isTransient();
+            if (getState().isTransient()) {
+                // notify all parents of the change
+                fireChanged(child);
+            } else if (!child.isTransient()) {
+                // add recipe transition if there was none
+                getState().getGTS().addTransition(
+                    new RecipeTransition(getState(), initial, child));
             }
         }
     }
 
     /** 
      * Callback method invoked when the state has become done.
-     * Notifies all raw predecessors that the associated state has become done.
+     * All raw parents should already know this (they were notified when the state closed).
      */
     void notifyDone() {
         this.rawParents.clear();
     }
 
-    private void setStateCooked() {
+    /** 
+     * Callback method invoked when the state closed or became non-transient.
+     * Notifies all raw predecessors.
+     */
+    void fireChanged(GraphState state) {
+        // notify all parents of the change
+        for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
+            parent.one().notifyChildChanged(state, parent.two());
+        }
+    }
+
+    private void setStateDone() {
         getState().setDone(this.present);
     }
 
@@ -209,6 +224,11 @@ public class StateCache {
             this.delta = createDelta();
         }
         return this.delta;
+    }
+
+    /** Indicates if a path to a non-transient state has been found. */
+    final boolean isPresent() {
+        return this.present;
     }
 
     /**
@@ -427,6 +447,7 @@ public class StateCache {
     private boolean trySchedule() {
         boolean result = false;
         CtrlSchedule schedule = getState().getSchedule();
+        boolean isTransient = schedule.isTransient();
         if (schedule.isTried()) {
             // the schedule has been tried and has yielded matches; 
             // now see if at least one match has resulted
@@ -489,6 +510,10 @@ public class StateCache {
             getState().setSchedule(nextSchedule);
             this.matches.addAll(latestMatches);
             result = true;
+        }
+        if (isTransient && !getState().isTransient()) {
+            this.present = true;
+            fireChanged(getState());
         }
         return result;
     }

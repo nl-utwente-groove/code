@@ -148,7 +148,8 @@ public class RecipeTransition extends
                 }
             }
         }
-        assert inMap.containsKey(target());
+        assert getInitial().target().equals(target())
+            || inMap.containsKey(target());
         // backward reachability to build up the result set
         Set<RuleTransition> result = new HashSet<RuleTransition>();
         result.add(getInitial());

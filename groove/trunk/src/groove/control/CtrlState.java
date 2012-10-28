@@ -106,6 +106,11 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
         return this.stateNumber;
     }
 
+    /** Indicates if this is the start state of the automaton. */
+    public boolean isStart() {
+        return getAut().getStart() == this;
+    }
+
     /** 
      * Indicates if this is a transient control state.
      * A control state is transient if there is a transaction underway.

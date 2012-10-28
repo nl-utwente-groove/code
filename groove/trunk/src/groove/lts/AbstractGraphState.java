@@ -246,7 +246,13 @@ abstract public class AbstractGraphState extends
 
     @Override
     public boolean isPresent() {
-        return isDone() && !isAbsent();
+        if (isAbsent()) {
+            return false;
+        } else if (isDone()) {
+            return true;
+        } else {
+            return getCache().isPresent();
+        }
     }
 
     @Override
@@ -421,11 +427,7 @@ abstract public class AbstractGraphState extends
     public void setSchedule(CtrlSchedule schedule) {
         assert schedule != null;
         assert schedule.getState() == getCtrlState();
-        boolean wasTransient = isTransient();
         this.schedule = schedule;
-        if (wasTransient && !schedule.isTransient()) {
-            getCache().notifyDone();
-        }
     }
 
     public final CtrlSchedule getSchedule() {
