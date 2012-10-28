@@ -39,8 +39,9 @@ public class CtrlGuard extends TreeSet<CtrlTransition> implements
         CtrlGuard result = new CtrlGuard();
         for (CtrlTransition key : this) {
             CtrlTransition image = map == null ? key : map.get(key);
-            assert image != null;
-            result.add(image);
+            if (image != null) {
+                result.add(image);
+            }
         }
         return result;
     }

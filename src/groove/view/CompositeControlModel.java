@@ -19,7 +19,6 @@ package groove.view;
 import static groove.trans.ResourceKind.CONTROL;
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
-import groove.graph.GraphInfo;
 import groove.trans.Action;
 import groove.trans.Recipe;
 import groove.trans.ResourceKind;
@@ -106,10 +105,9 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
                 result = result.normalise();
             }
         } catch (FormatException e) {
-            errors.addAll(e.getErrors());
-        }
-        if (GraphInfo.hasErrors(result)) {
-            errors.addAll(GraphInfo.getErrors(result));
+            for (FormatError error : e.getErrors()) {
+                errors.add("Error in composite control program: %s", error);
+            }
         }
         errors.throwException();
         return result;

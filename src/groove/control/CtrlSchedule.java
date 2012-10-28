@@ -178,9 +178,11 @@ public class CtrlSchedule {
 
     private String toString(int depth, String prefix) {
         StringBuilder result = new StringBuilder();
+        StringBuilder spaces = new StringBuilder();
         for (int i = 0; i <= depth; i++) {
-            result.append("    ");
+            spaces.append("    ");
         }
+        result.append(spaces);
         result.append(prefix);
         if (this.transitions == null) {
             result.append("No transitions");
@@ -195,6 +197,7 @@ public class CtrlSchedule {
                     first = false;
                 } else {
                     result.append('\n');
+                    result.append(spaces);
                 }
                 result.append("Call ");
                 result.append(t);

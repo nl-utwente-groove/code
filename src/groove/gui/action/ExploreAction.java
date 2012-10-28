@@ -96,6 +96,8 @@ public class ExploreAction extends SimulatorAction {
         getSimulatorModel().getExplorationStats().start();
         generateThread.start();
         getSimulatorModel().getExplorationStats().stop();
+        // emphasise the result states, if required
+        getSimulatorModel().setGts(gts, true);
         gts.addLTSListener(ltsJModel);
         // collect the result states
         if (setResult) {
@@ -105,8 +107,6 @@ public class ExploreAction extends SimulatorAction {
         if (lastState != null) {
             getSimulatorModel().setState(lastState);
         }
-        // emphasise the result states, if required
-        getSimulatorModel().setGts(gts, true);
         if (emphasise) {
             Collection<GraphState> result =
                 exploration.getLastResult().getValue();

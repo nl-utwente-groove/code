@@ -35,6 +35,7 @@ import groove.gui.jgraph.LTSJModel;
 import groove.gui.jgraph.LTSJVertex;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
+import groove.lts.GTSCounter;
 import groove.lts.GraphState;
 import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
@@ -251,28 +252,45 @@ public class LTSTab extends JGraphPanel<LTSJGraph> implements
     protected String getStatusText() {
         StringBuilder text = new StringBuilder();
         GTS gts = getSimulatorModel().getGts();
+        GTSCounter counter = getSimulatorModel().getGTSCounter();
         if (gts == null) {
             text.append("No start state loaded");
         } else {
+            int totalStateCount = counter.getStateCount();
+            int transientStateCount = counter.getTransientStateCount();
+            int absentStateCount = counter.getStateCount(Flag.ABSENT);
+            int openStateCount = counter.getOpenStateCount();
+            int finalStateCount = counter.getFinalStateCount();
+            int totalTransCount = counter.getTransitionCount();
+            int partialTransCount = counter.getPartialTransitionCount();
+            int ruleTransCount = counter.getRuleTransitionCount();
+            int absentTransCount = counter.getAbsentTransitionCount();
             text.append("Currently explored: ");
-            text.append(gts.nodeCount());
+            text.append(totalStateCount - transientStateCount);
             text.append(" states");
-            if (gts.openStateCount() > 0 || gts.hasFinalStates()) {
+            if (openStateCount > 0 || finalStateCount > 0) {
                 text.append(" (");
-                if (gts.openStateCount() > 0) {
-                    text.append(gts.openStateCount() + " open");
+                if (openStateCount > 0) {
+                    text.append(openStateCount + " open");
                     if (gts.hasFinalStates()) {
                         text.append(", ");
                     }
                 }
-                if (gts.hasFinalStates()) {
-                    text.append(gts.getFinalStates().size() + " final");
+                if (finalStateCount > 0) {
+                    text.append(finalStateCount + " final");
                 }
                 text.append(")");
             }
             text.append(", ");
-            text.append(gts.edgeCount());
+            text.append(totalTransCount - partialTransCount);
             text.append(" transitions");
+            if (partialTransCount > 0 || transientStateCount > 0) {
+                text.append(" [low-level counts: ");
+                text.append(totalStateCount - absentStateCount);
+                text.append(" states, ");
+                text.append(ruleTransCount - absentTransCount);
+                text.append(" rule transitions]");
+            }
         }
         return text.toString();
     }

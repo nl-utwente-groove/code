@@ -135,27 +135,33 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
     /**
      * Creates and adds an outgoing transition to this control state.
      * It is an error if there was
-     * already a transition for the same rule.
+     * already a transition for the same rule call.
      */
     public CtrlTransition addTransition(CtrlLabel label, CtrlState target) {
-        CtrlTransition result = new CtrlTransition(this, label, target);
-        this.transitions.add(result);
-        CtrlTransition oldTrans =
-            this.transitionMap.put(result.getCall(), result);
+        CtrlTransition result = null;
+        CtrlTransition oldTrans = this.transitionMap.get(label.getCall());
         if (oldTrans != null) {
-            FormatErrorSet errors =
-                new FormatErrorSet("Nondeterministic '%s'-call",
-                    result.getCall());
-            GraphInfo.addErrors(getAut(), errors);
-        }
-        if (result.hasRecipe()) {
-            this.recipeCount++;
-        }
-        if (label.getCall().isOmega()) {
-            getAut().addOmega(result);
-        }
-        if (label.isStart() && isTransient()) {
-            setExitGuard(label.getGuard());
+            // if the new call is only reachable when the old one failed,
+            // just don't add the transition
+            if (!label.getGuard().contains(oldTrans)) {
+                FormatErrorSet errors =
+                    new FormatErrorSet("Nondeterministic '%s'-call",
+                        label.getCall());
+                GraphInfo.addErrors(getAut(), errors);
+            }
+        } else {
+            result = new CtrlTransition(this, label, target);
+            this.transitionMap.put(label.getCall(), result);
+            this.transitions.add(result);
+            if (result.hasRecipe()) {
+                this.recipeCount++;
+            }
+            if (label.getCall().isOmega()) {
+                getAut().addOmega(result);
+            }
+            if (label.isStart() && isTransient()) {
+                setExitGuard(label.getGuard());
+            }
         }
         return result;
     }
@@ -165,7 +171,6 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
      */
     public void removeOmega(CtrlTransition trans) {
         assert trans.getCall().isOmega();
-        assert trans.getNumber() == this.transitions.size() - 1;
         this.transitions.remove(trans.getNumber());
         boolean result = this.transitionMap.remove(trans.getCall()) != null;
         if (result) {
@@ -304,7 +309,9 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
             CtrlLabel newLabel = key.label().newLabel(transMap, guard);
             CtrlTransition image =
                 sourceImage.addTransition(newLabel, targetImage);
-            transMap.put(key, image);
+            if (image != null) {
+                transMap.put(key, image);
+            }
         }
     }
 

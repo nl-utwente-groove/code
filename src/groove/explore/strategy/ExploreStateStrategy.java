@@ -18,8 +18,6 @@ package groove.explore.strategy;
 
 import groove.lts.GraphState;
 
-import java.util.Stack;
-
 /**
  * Explores all outgoing transitions of a given state.
  * @author Iovka Boneva
@@ -41,26 +39,23 @@ public class ExploreStateStrategy extends ClosingStrategy {
     }
 
     @Override
-    protected GraphState getNextState() {
-        if (this.stack.isEmpty()) {
-            return null;
-        } else {
-            return this.stack.pop();
-        }
+    protected GraphState getFromPool() {
+        GraphState result = this.state;
+        this.state = null;
+        return result;
     }
 
     @Override
     protected void putInPool(GraphState state) {
-        if (state == getStartState() || state.isTransient()) {
-            // insert on top of the stack
-            this.stack.push(state);
+        if (state == getStartState()) {
+            this.state = state;
         }
     }
 
     @Override
     protected void clearPool() {
-        this.stack.clear();
+        this.state = null;
     }
 
-    private final Stack<GraphState> stack = new Stack<GraphState>();
+    private GraphState state;
 }

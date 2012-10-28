@@ -126,11 +126,11 @@ public class StateCache {
         // add the partial if it was not already known
         if (getState().isTransient()) {
             if (this.partials.add(partial)) {
+                this.present |= !target.isTransient();
                 // notify all parents of the new partial
                 for (Pair<StateCache,RuleTransition> parent : this.rawParents) {
                     parent.one().notifyPartial(partial, parent.two());
                 }
-                this.present |= !target.isTransient();
             }
         } else if (!target.isTransient()) {
             // add recipe transition if there was none
@@ -146,27 +146,27 @@ public class StateCache {
         if (getState().isTransient()) {
             // notify all parents of the closure
             fireChanged(getState());
-            if (this.transientOpens.isEmpty()) {
-                setStateDone();
-            }
+        }
+        if (this.transientOpens.isEmpty()) {
+            setStateDone();
         }
     }
 
     /** Callback method invoked when a child closed or became non-transient. */
     private void notifyChildChanged(GraphState child, RuleTransition initial) {
         if (this.transientOpens.remove(child)) {
-            if (this.transientOpens.isEmpty() && getState().isClosed()) {
-                setStateDone();
-            }
             this.present |= !child.isTransient();
             if (getState().isTransient()) {
                 // notify all parents of the change
                 fireChanged(child);
-            } else if (!child.isTransient()) {
-                // add recipe transition if there was none
-                getState().getGTS().addTransition(
-                    new RecipeTransition(getState(), initial, child));
             }
+        }
+        if (!getState().isTransient() && !child.isTransient()) {
+            getState().getGTS().addTransition(
+                new RecipeTransition(getState(), initial, child));
+        }
+        if (this.transientOpens.isEmpty() && getState().isClosed()) {
+            setStateDone();
         }
     }
 
@@ -478,17 +478,16 @@ public class StateCache {
                 // or all outgoing transitions are absent
                 schedule = schedule.next(somePresent);
                 getState().setSchedule(schedule);
+                this.latestMatches = EMPTY_MATCH_SET;
             }
         }
         if (schedule.isFinished()) {
-            this.latestMatches = EMPTY_MATCH_SET;
             maybeSetClosed();
         } else if (!schedule.isTried()) {
             // flag collecting if any of the transitions in this schedule
             // have a transient target
             boolean transientTargets = false;
-            List<MatchResult> latestMatches =
-                this.latestMatches = new LinkedList<MatchResult>();
+            List<MatchResult> latestMatches = new LinkedList<MatchResult>();
             for (CtrlTransition ct : schedule.getTransitions()) {
                 latestMatches.addAll(getMatchCollector().computeMatches(ct));
                 transientTargets |= ct.target().isTransient();
@@ -506,6 +505,7 @@ public class StateCache {
                 nextSchedule = schedule.next(true);
             } else {
                 nextSchedule = schedule.toTriedSchedule();
+                this.latestMatches = latestMatches;
             }
             getState().setSchedule(nextSchedule);
             this.matches.addAll(latestMatches);
