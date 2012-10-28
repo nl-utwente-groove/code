@@ -21,73 +21,38 @@ import groove.io.ExtensionFilter;
 import java.io.File;
 
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileFilter;
 
 /**
- * Class that show a dialog for saving files.
+ * Class that shows a dialog for saving files.
  */
 public class SaveDialog {
-
     /**
      * Brings up a save dialog based on a given file chooser filter. The chosen
-     * filename is appended with the required extension. Confirmation is asked
-     * if the chosen filename already exists and does not equal the original
-     * file (also passed in as a parameter).
+     * filename is appended with the required extension.
      * @param originalFile the file from which the object to be saved has been
      *        loaded; <code>null</code> if there is none such
      * @return the chosen file, if any; if null, no file has been chosen
      */
     public static File show(JFileChooser chooser, java.awt.Component parent,
             File originalFile) {
+        File result = null;
         chooser.rescanCurrentDirectory();
         // choose a file name to save to,
         // asking confirmation if an existing file is to be overwritten
-        boolean doSave; // indicates that the save should be carried through
-        boolean noChoice; // indicates that a definite choice has not been
-                          // made
-        File res = null; // the file to save to (if doSave)
-        do {
-            doSave =
-                (chooser.showSaveDialog(parent) == JFileChooser.APPROVE_OPTION);
-            if (doSave) {
-                // apparently we're set to save
-                res = chooser.getSelectedFile();
-                // if the file exists, defer definite choice
-                noChoice =
-                    res.exists()
-                        && (originalFile != null)
-                        && !res.getAbsoluteFile().equals(
-                            originalFile.getAbsoluteFile());
-                if (noChoice) {
-                    // ask for confirmation before overwriting file
-                    int overwrite =
-                        JOptionPane.showConfirmDialog(parent,
-                            "Overwrite existing file \"" + res.getName()
-                                + "\"?");
-                    // any answer but NO is a definite choice
-                    noChoice = (overwrite == JOptionPane.NO_OPTION);
-                    // any answer but YES means don't save
-                    doSave = (overwrite == JOptionPane.YES_OPTION);
-                }
-                // extend file name if chosen under an extension filter
-                javax.swing.filechooser.FileFilter filter =
-                    chooser.getFileFilter();
-                if (filter instanceof ExtensionFilter) {
-                    res =
-                        new File(
-                            ((ExtensionFilter) filter).addExtension(res.getPath()));
-                }
-            } else {
-                // a choice not to save is a definite choice
-                noChoice = false;
-            }
-        } while (noChoice);
-        // return the file if the choice is to save, null otherwise
+        boolean doSave =
+            (chooser.showSaveDialog(parent) == JFileChooser.APPROVE_OPTION);
         if (doSave) {
-            return res;
-        } else {
-            return null;
+            // apparently we're set to save
+            result = chooser.getSelectedFile();
+            // extend file name if chosen under an extension filter
+            FileFilter filter = chooser.getFileFilter();
+            if (filter instanceof ExtensionFilter) {
+                result =
+                    new File(
+                        ((ExtensionFilter) filter).addExtension(result.getPath()));
+            }
         }
+        return result;
     }
-
 }

@@ -28,13 +28,11 @@ public class SaveGrammarAction extends SimulatorAction {
         // now save, if so required
         if (approve == JFileChooser.APPROVE_OPTION) {
             File selectedFile = getGrammarFileChooser(false).getSelectedFile();
-            if (confirmOverwriteGrammar(selectedFile)) {
-                try {
-                    save(selectedFile, true);
-                } catch (IOException exc) {
-                    showErrorDialog(exc, "Error while saving grammar to "
-                        + selectedFile);
-                }
+            try {
+                save(selectedFile, true);
+            } catch (IOException exc) {
+                showErrorDialog(exc, "Error while saving grammar to "
+                    + selectedFile);
             }
         }
     }
