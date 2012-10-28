@@ -359,7 +359,7 @@ public class CtrlFactory {
 
     /** Factory method for control labels. */
     private CtrlLabel createLabel(CtrlCall call, CtrlGuard guard) {
-        return new CtrlLabel(call, guard, null, true);
+        return new CtrlLabel(call, guard, true);
     }
 
     /** Factory method for omega control labels, with an empty guard. */

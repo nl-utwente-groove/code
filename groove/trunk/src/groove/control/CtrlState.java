@@ -20,7 +20,6 @@ import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.trans.Recipe;
-import groove.trans.Rule;
 import groove.view.FormatErrorSet;
 
 import java.util.ArrayList;
@@ -137,7 +136,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
         CtrlTransition result = new CtrlTransition(this, label, target);
         this.transitions.add(result);
         CtrlTransition oldTrans =
-            this.transitionMap.put(result.getRule(), result);
+            this.transitionMap.put(result.getCall(), result);
         if (oldTrans != null) {
             FormatErrorSet errors =
                 new FormatErrorSet("Nondeterministic '%s'-call",
@@ -159,15 +158,14 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
     /**
      * Removes an outgoing transition from this control state.
      */
-    public boolean removeOmega(CtrlTransition trans) {
+    public void removeOmega(CtrlTransition trans) {
         assert trans.getCall().isOmega();
         assert trans.getNumber() == this.transitions.size() - 1;
         this.transitions.remove(trans.getNumber());
-        boolean result = this.transitionMap.remove(trans.getRule()) != null;
+        boolean result = this.transitionMap.remove(trans.getCall()) != null;
         if (result) {
             getAut().removeOmega(trans);
         }
-        return result;
     }
 
     /** Indicates if this control state has outgoing recipe transitions. */
@@ -176,8 +174,8 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
     }
 
     /** Returns the outgoing control transition for a given rule, if any. */
-    public CtrlTransition getTransition(Rule rule) {
-        return this.transitionMap.get(rule);
+    public CtrlTransition getTransition(CtrlCall call) {
+        return this.transitionMap.get(call);
     }
 
     /** Returns the outgoing control transitions of this control state. */
@@ -453,7 +451,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
             int hisRecipe = two.hasRecipe() ? 1 : 0;
             result = myRecipe - hisRecipe;
             if (result == 0 && one.hasRecipe()) {
-                result = getRecipe().compareTo(two.getRecipe());
+                result = one.getRecipe().compareTo(two.getRecipe());
             }
         }
         if (result == 0) {
@@ -473,8 +471,8 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
     private final List<CtrlTransition> transitions =
         new ArrayList<CtrlTransition>();
     /** Mapping from rules to outgoing transitions. */
-    private final Map<Rule,CtrlTransition> transitionMap =
-        new HashMap<Rule,CtrlTransition>();
+    private final Map<CtrlCall,CtrlTransition> transitionMap =
+        new HashMap<CtrlCall,CtrlTransition>();
     /** The collection of bound variables of this control state. */
     private final List<CtrlVar> boundVars = new ArrayList<CtrlVar>();
     /** Optional name of a recipe of which this is a transient state. */

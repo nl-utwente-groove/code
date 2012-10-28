@@ -543,7 +543,7 @@ public class StateList extends JTree implements SimulatorListener {
     /**
      * Tree node wrapping a graph state.
      */
-    private static class StateTreeNode extends NumberedTreeNode {
+    static class StateTreeNode extends NumberedTreeNode {
         /**
          * Creates a new rule node based on a given state. The node can have
          * children.

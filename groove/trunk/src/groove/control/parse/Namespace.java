@@ -201,7 +201,7 @@ public class Namespace {
         result.addAll(this.ruleMap.values());
         for (Recipe recipe : this.recipeMap.values()) {
             result.add(recipe);
-            result.removeAll(recipe.getBody().getRules());
+            result.removeAll(recipe.getRules());
         }
         return result;
     }

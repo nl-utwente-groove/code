@@ -551,10 +551,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * tab component.
      */
     protected String getLabelText(String name) {
-        StringBuilder result =
-            new StringBuilder(getResource(name).getLastName());
-        decorateText(name, result, getKind() != DisplayKind.RULE);
-        return result.toString();
+        return getLabelText(name, getResource(name).isEnabled());
     }
 
     /** 
@@ -562,24 +559,24 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * Callback method from {@link #getLabelText(String)}.
      * @param name the name of the displayed object. This determines the
      * decoration
-     * @param text the text to be decorated
-     * @param enableBold if {@code true}, enabled resource names are set bold
+     * @param enabled flag indicating if the name should be shown as enabled
      */
-    protected StringBuilder decorateText(String name, StringBuilder text,
-            boolean enableBold) {
+    protected String getLabelText(String name, boolean enabled) {
+        StringBuilder result =
+            new StringBuilder(getResource(name).getLastName());
         if (isEdited(name)) {
-            getEditors().get(name).decorateText(text);
+            getEditors().get(name).decorateText(result);
         }
-        if (getResource(name).isEnabled()) {
-            if (enableBold) {
-                HTMLConverter.STRONG_TAG.on(text);
-                HTMLConverter.HTML_TAG.on(text);
+        if (enabled) {
+            if (getKind() != DisplayKind.RULE) {
+                HTMLConverter.STRONG_TAG.on(result);
+                HTMLConverter.HTML_TAG.on(result);
             }
         } else {
-            text.insert(0, "(");
-            text.append(")");
+            result.insert(0, "(");
+            result.append(")");
         }
-        return text;
+        return result.toString();
     }
 
     /**

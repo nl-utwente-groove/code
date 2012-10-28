@@ -21,6 +21,7 @@ import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class wrapping a transaction.
@@ -64,6 +65,18 @@ public class Recipe implements Action {
     /** Returns the body of this recipe. */
     public CtrlAut getBody() {
         return this.body;
+    }
+
+    /** 
+     * Returns the set of rules called by this recipe.
+     * May be {@code null} if the recipe automaton is not set or contains errors.
+     */
+    public Set<Rule> getRules() {
+        Set<Rule> result = this.rules;
+        if (result == null && getBody() != null) {
+            result = this.rules = getBody().getRules();
+        }
+        return result;
     }
 
     /** Returns the full name of the control program in which this recipe is declared. */
@@ -122,6 +135,7 @@ public class Recipe implements Action {
     private final int priority;
     private final List<CtrlPar.Var> sig;
     private CtrlAut body;
+    private Set<Rule> rules;
     private final String controlName;
     private final int startLine;
 }

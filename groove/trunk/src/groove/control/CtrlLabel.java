@@ -34,12 +34,10 @@ public class CtrlLabel extends AbstractLabel {
      * a guard.
      * @param call the (non-{@code null}) control call in the label
      * @param guard the (non-{@code null}) guard of the control call
-     * @param recipe the (optional) recipe of which this label is part
      * @param start flag indicating if this is the first call of a new action
      */
-    public CtrlLabel(CtrlCall call, CtrlGuard guard, Recipe recipe,
-            boolean start) {
-        this(0, call, guard, recipe, start);
+    public CtrlLabel(CtrlCall call, CtrlGuard guard, boolean start) {
+        this(0, call, guard, start);
     }
 
     /** 
@@ -48,15 +46,13 @@ public class CtrlLabel extends AbstractLabel {
      * @param number number of the label
      * @param call the (non-{@code null}) control call in the label
      * @param guard the (non-{@code null}) guard of the control call
-     * @param recipe the (optional) recipe of which this label is part
      * @param start flag indicating if this is the first call of a new action
      */
-    private CtrlLabel(int number, CtrlCall call, CtrlGuard guard,
-            Recipe recipe, boolean start) {
+    private CtrlLabel(int number, CtrlCall call, CtrlGuard guard, boolean start) {
         assert start || !call.isOmega();
-        assert start || recipe != null;
+        assert start || call.hasRecipe();
         this.call = call;
-        this.recipe = recipe;
+        this.recipe = call.getRecipe();
         this.start = start;
         this.guard.addAll(guard);
         this.number = number;
@@ -153,8 +149,7 @@ public class CtrlLabel extends AbstractLabel {
 
     /** Returns a renumbered copy of this label. */
     public CtrlLabel newLabel(int number) {
-        return new CtrlLabel(number, getCall(), getGuard(), getRecipe(),
-            isStart());
+        return new CtrlLabel(number, getCall(), getGuard(), isStart());
     }
 
     @Override
@@ -224,7 +219,6 @@ public class CtrlLabel extends AbstractLabel {
         if (guard != null) {
             newGuard.addAll(guard);
         }
-        return new CtrlLabel(getNumber(), getCall(), newGuard, getRecipe(),
-            isStart());
+        return new CtrlLabel(getNumber(), getCall(), newGuard, isStart());
     }
 }

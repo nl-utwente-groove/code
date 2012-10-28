@@ -16,8 +16,8 @@
  */
 package groove.control;
 
-import groove.control.CtrlPar.Var;
 import groove.trans.Action;
+import groove.trans.Recipe;
 import groove.trans.Rule;
 import groove.util.Groove;
 
@@ -38,6 +38,7 @@ public class CtrlCall {
         this.name = OMEGA_NAME;
         this.rule = null;
         this.args = null;
+        this.recipe = null;
     }
 
     /**
@@ -52,6 +53,7 @@ public class CtrlCall {
         this.kind = kind;
         this.name = name;
         this.rule = null;
+        this.recipe = null;
         this.args = args;
     }
 
@@ -61,28 +63,22 @@ public class CtrlCall {
      * @param args list of arguments for the call; may be {@code null}
      */
     public CtrlCall(Rule rule, List<CtrlPar> args) {
+        this(rule, args, null);
+    }
+
+    /**
+     * Constructs an instantiated call for a given rule, list of arguments
+     * and enclosing recipe.
+     * @param rule the rule to be called; non-{@code null}
+     * @param args list of arguments for the call; may be {@code null}
+     * @param recipe enclosing recipe; may be {@code null}
+     */
+    private CtrlCall(Rule rule, List<CtrlPar> args, Recipe recipe) {
         this.kind = CtrlCall.Kind.RULE;
         this.name = rule.getFullName();
         this.args = args;
         this.rule = rule;
-        // the following assertion has been removed since in symbolic
-        // exploration it is actually OK not to provide values for input parameters
-        //        assert ruleInputSatisfied();
-    }
-
-    @SuppressWarnings("unused")
-    private boolean ruleInputSatisfied() {
-        for (int i = 0; i < this.rule.getSignature().size(); i++) {
-            Var var = this.rule.getSignature().get(i);
-            if (var.isInOnly()) {
-                if (this.args == null || !this.args.get(i).isInOnly()) {
-                    throw new IllegalArgumentException(String.format(
-                        "Parameter %d of rule %s not instantiated in %s", i,
-                        this.rule.getFullName(), this));
-                }
-            }
-        }
-        return true;
+        this.recipe = recipe;
     }
 
     @Override
@@ -98,15 +94,22 @@ public class CtrlCall {
             return false;
         }
         if (isOmega()) {
-            return true;
+            return other.isOmega();
         }
         if (!getName().equals(other.getName())) {
             return false;
         }
         if (getArgs() == null) {
-            return other.getArgs() == null;
+            if (other.getArgs() != null) {
+                return false;
+            }
+        } else if (!getArgs().equals(other.getArgs())) {
+            return false;
+        }
+        if (getRecipe() == null) {
+            return other.getRecipe() == null;
         } else {
-            return getArgs().equals(other.getArgs());
+            return getRecipe().equals(other.getRecipe());
         }
     }
 
@@ -117,6 +120,9 @@ public class CtrlCall {
         result = prime * result + (isOmega() ? 1231 : 1237);
         if (getName() != null) {
             result = prime * result + getName().hashCode();
+        }
+        if (getRecipe() != null) {
+            result = prime * result + getRecipe().hashCode();
         }
         if (getArgs() != null) {
             result = prime * result + getArgs().hashCode();
@@ -217,6 +223,17 @@ public class CtrlCall {
         this.inVars = inVars;
     }
 
+    /** Copies this call while embedding it into a recipe. */
+    public CtrlCall embed(Recipe recipe) {
+        if (isOmega()) {
+            assert recipe == null;
+            return this;
+        } else {
+            assert getRule() != null;
+            return new CtrlCall(getRule(), getArgs(), recipe);
+        }
+    }
+
     private Map<CtrlVar,Integer> inVars;
     private Map<CtrlVar,Integer> outVars;
 
@@ -258,6 +275,28 @@ public class CtrlCall {
      * May be {@code null} if this is a function or omega call.
      */
     private final Rule rule;
+
+    /** 
+     * Returns the enclosing recipe of this call, if any
+     * @return the enclosing recipe, if this is a rule call within a recipe
+     * @see #getKind()
+     */
+    public final Recipe getRecipe() {
+        return this.recipe;
+    }
+
+    /** 
+     * Indicates if this call has an enclosing recipe.
+     */
+    public final boolean hasRecipe() {
+        return getRecipe() != null;
+    }
+
+    /** 
+     * The enclosing recipe of this call.
+     * May be {@code null} if this is not a sub-rule call.
+     */
+    private final Recipe recipe;
 
     /** 
      * Returns the name of the function being called.
