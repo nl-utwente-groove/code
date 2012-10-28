@@ -1,4 +1,4 @@
-// $ANTLR 3.4 E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\CtrlChecker.g 2012-10-24 22:07:01
+// $ANTLR 3.4 E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\CtrlChecker.g 2012-10-28 13:53:32
 
 package groove.control.parse;
 import groove.control.*;
@@ -151,7 +151,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "program"
-    // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\CtrlChecker.g:52:1: program : ^( PROGRAM package_decl ( import_decl )* recipes functions block ) ;
+    // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\CtrlChecker.g:52:1: program : ^( PROGRAM package_decl ( import_decl )* functions recipes block ) ;
     public final CtrlChecker.program_return program() throws RecognitionException {
         CtrlChecker.program_return retval = new CtrlChecker.program_return();
         retval.start = input.LT(1);
@@ -167,9 +167,9 @@ public TreeAdaptor getTreeAdaptor() {
 
         CtrlChecker.import_decl_return import_decl3 =null;
 
-        CtrlChecker.recipes_return recipes4 =null;
+        CtrlChecker.functions_return functions4 =null;
 
-        CtrlChecker.functions_return functions5 =null;
+        CtrlChecker.recipes_return recipes5 =null;
 
         CtrlChecker.block_return block6 =null;
 
@@ -177,8 +177,8 @@ public TreeAdaptor getTreeAdaptor() {
         CtrlTree PROGRAM1_tree=null;
 
         try {
-            // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\CtrlChecker.g:53:3: ( ^( PROGRAM package_decl ( import_decl )* recipes functions block ) )
-            // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\CtrlChecker.g:53:5: ^( PROGRAM package_decl ( import_decl )* recipes functions block )
+            // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\CtrlChecker.g:53:3: ( ^( PROGRAM package_decl ( import_decl )* functions recipes block ) )
+            // E:\\Eclipse\\groove-head\\src\\groove\\control\\parse\\CtrlChecker.g:53:5: ^( PROGRAM package_decl ( import_decl )* functions recipes block )
             {
             _last = (CtrlTree)input.LT(1);
             {
@@ -239,23 +239,23 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             _last = (CtrlTree)input.LT(1);
-            pushFollow(FOLLOW_recipes_in_program63);
-            recipes4=recipes();
+            pushFollow(FOLLOW_functions_in_program63);
+            functions4=functions();
 
             state._fsp--;
 
              
-            if ( _first_1==null ) _first_1 = recipes4.tree;
+            if ( _first_1==null ) _first_1 = functions4.tree;
 
 
             _last = (CtrlTree)input.LT(1);
-            pushFollow(FOLLOW_functions_in_program65);
-            functions5=functions();
+            pushFollow(FOLLOW_recipes_in_program65);
+            recipes5=recipes();
 
             state._fsp--;
 
              
-            if ( _first_1==null ) _first_1 = functions5.tree;
+            if ( _first_1==null ) _first_1 = recipes5.tree;
 
 
             _last = (CtrlTree)input.LT(1);
@@ -2311,10 +2311,10 @@ public TreeAdaptor getTreeAdaptor() {
  
 
     public static final BitSet FOLLOW_PROGRAM_in_program56 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_package_decl_in_program58 = new BitSet(new long[]{0x0010000020000000L});
-    public static final BitSet FOLLOW_import_decl_in_program60 = new BitSet(new long[]{0x0010000020000000L});
-    public static final BitSet FOLLOW_recipes_in_program63 = new BitSet(new long[]{0x0000000004000000L});
-    public static final BitSet FOLLOW_functions_in_program65 = new BitSet(new long[]{0x0000000000000800L});
+    public static final BitSet FOLLOW_package_decl_in_program58 = new BitSet(new long[]{0x0000000024000000L});
+    public static final BitSet FOLLOW_import_decl_in_program60 = new BitSet(new long[]{0x0000000024000000L});
+    public static final BitSet FOLLOW_functions_in_program63 = new BitSet(new long[]{0x0010000000000000L});
+    public static final BitSet FOLLOW_recipes_in_program65 = new BitSet(new long[]{0x0000000000000800L});
     public static final BitSet FOLLOW_block_in_program67 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_PACKAGE_in_package_decl90 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_ID_in_package_decl92 = new BitSet(new long[]{0x0000000000000008L});

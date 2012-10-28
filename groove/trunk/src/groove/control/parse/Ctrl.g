@@ -114,8 +114,8 @@ program
     -> ^( PROGRAM
           package_decl?
           import_decl*
-          ^(RECIPES recipe*) 
           ^(FUNCTIONS function*) 
+          ^(RECIPES recipe*) 
           ^(BLOCK stat*)
         )
   ;
