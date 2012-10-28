@@ -319,6 +319,19 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         refreshAllCells();
     }
 
+    @Override
+    public boolean isFiltering(Element jCellKey) {
+        boolean result = super.isFiltering(jCellKey);
+        if (!result && !isShowPartialTransitions()) {
+            if (jCellKey instanceof RuleTransition) {
+                result = ((RuleTransition) jCellKey).isPartial();
+            } else if (jCellKey instanceof GraphState) {
+                result = ((GraphState) jCellKey).isTransient();
+            }
+        }
+        return result;
+    }
+
     /**
      * The active state of the LTS. Is null if there is no active state.
      * @invariant activeState == null || ltsJModel.graph().contains(activeState)

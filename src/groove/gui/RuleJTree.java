@@ -456,8 +456,12 @@ public class RuleJTree extends JTree implements SimulatorListener {
         List<DefaultMutableTreeNode> treeNodes =
             new ArrayList<DefaultMutableTreeNode>();
         if (match != null) {
-            treeNodes.add(this.matchNodeMap.get(match));
-        } else if (rule != null) {
+            MatchTreeNode node = this.matchNodeMap.get(match);
+            if (node != null) {
+                treeNodes.add(node);
+            }
+        }
+        if (treeNodes.isEmpty() && rule != null) {
             treeNodes.addAll(this.ruleNodeMap.get(rule.getFullName()));
         }
         TreePath[] paths = new TreePath[treeNodes.size()];
