@@ -163,7 +163,7 @@ public class CtrlBuildTest {
     }
 
     private CtrlLabel createLabel(CtrlCall call, CtrlGuard guard) {
-        return new CtrlLabel(call, guard, null, true);
+        return new CtrlLabel(call, guard, true);
     }
 
     /** Test for initialisation errors. */

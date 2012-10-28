@@ -19,6 +19,7 @@ package groove.control;
 import groove.algebra.AlgebraFamily;
 import groove.control.parse.CtrlBuilder;
 import groove.control.parse.CtrlChecker;
+import groove.control.parse.CtrlLexer;
 import groove.control.parse.CtrlParser;
 import groove.control.parse.CtrlTree;
 import groove.control.parse.Namespace;
@@ -41,8 +42,9 @@ import java.util.TreeMap;
 
 import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CharStream;
 import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.Token;
+import org.antlr.runtime.TokenRewriteStream;
 
 /**
  * Wrapper for the ANTLR control parser and builder.
@@ -73,31 +75,17 @@ public class CtrlLoader {
      */
     public void parse(String name, String program) throws FormatException {
         assert this.errors == null;
-        CtrlTree tree = parse(name, new ANTLRStringStream(program));
-        CtrlTree oldTree = this.treeMap.put(name, tree);
-        assert oldTree == null;
-    }
-
-    /**
-     * Parses a given, named control program on the basis of a set of rules.
-     * The parse result is stored internally; a later call to {@link #buildAutomaton(String)}
-     * will collect all parse trees and build a control automaton.
-     * @param name the qualified name of the control program to be parsed
-     * @param program the control program
-     */
-    public void parse(String name, File program) throws FormatException,
-        IOException {
-        assert this.errors == null;
-        CtrlTree tree = parse(name, new ANTLRFileStream(program.getPath()));
-        CtrlTree oldTree = this.treeMap.put(name, tree);
-        assert oldTree == null;
+        ANTLRStringStream charStream = new ANTLRStringStream(program);
+        CtrlTree tree = parse(name, charStream);
+        Object oldRecord = this.treeMap.put(name, tree);
+        assert oldRecord == null;
     }
 
     /**
      * Returns the syntax tree for a given program. 
      * @param name the qualified name of the control program to be parsed
      */
-    private CtrlTree parse(String name, CharStream inputStream)
+    private CtrlTree parse(String name, ANTLRStringStream inputStream)
         throws FormatException {
         try {
             this.namespace.setFullName(name);
@@ -109,6 +97,7 @@ public class CtrlLoader {
             this.parser.getErrors().throwException();
             tree = this.checker.run(tree, this.namespace, this.family);
             this.checker.getErrors().throwException();
+            tree.setInputStream(inputStream);
             return tree;
         } catch (RecognitionException re) {
             throw new FormatException(re.getMessage(), re.line,
@@ -156,6 +145,24 @@ public class CtrlLoader {
      */
     public Collection<Recipe> getRecipes() {
         return this.namespace.getRecipes();
+    }
+
+    /** 
+     * Returns a renamed version of an existing control program.
+     * TODO extend this to deal correctly with qualified names (SF Feature Request #3581300) 
+     */
+    public String rename(String name, String oldCallName, String newCallName) {
+        CtrlTree tree = this.treeMap.get(name);
+        CtrlLexer lexer = new CtrlLexer(null);
+        ANTLRStringStream charStream = tree.getInputStream();
+        charStream.reset();
+        lexer.setCharStream(charStream);
+        TokenRewriteStream rewriter = new TokenRewriteStream(lexer);
+        rewriter.fill();
+        for (Token t : tree.getCallTokens(oldCallName)) {
+            rewriter.replace(t, newCallName);
+        }
+        return rewriter.toString();
     }
 
     /** Namespace of this loader. */

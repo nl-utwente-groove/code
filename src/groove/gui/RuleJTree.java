@@ -21,7 +21,6 @@ import static groove.gui.SimulatorModel.Change.GTS;
 import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.RULE;
 import static groove.gui.SimulatorModel.Change.STATE;
-import groove.control.CtrlAut;
 import groove.control.CtrlTransition;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
@@ -120,11 +119,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
     private void clearAllMaps() {
         this.ruleNodeMap.clear();
         this.actionMap.clear();
-        this.clearMatchMaps();
-    }
-
-    /** Clears the match maps of the tree. */
-    protected void clearMatchMaps() {
         this.matchNodeMap.clear();
     }
 
@@ -172,21 +166,18 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 DisplayTreeNode recipeNode =
                     createActionNode(recipe, expandedPaths, selectedPaths);
                 addSortedNode(parentNode, recipeNode);
-                CtrlAut body = recipe.getRecipe().getBody();
-                if (body != null) {
-                    Set<Rule> subrules = body.getRules();
-                    if (subrules != null) {
-                        for (Rule sr : subrules) {
-                            String srName = sr.getFullName();
-                            RuleEntry srEntry = ruleEntryMap.get(srName);
-                            DisplayTreeNode srNode =
-                                createActionNode(srEntry, expandedPaths,
-                                    selectedPaths);
-                            if (srNode != null) {
-                                addSortedNode(recipeNode, srNode);
-                            }
-                            subruleNames.add(srName);
+                Set<Rule> subrules = recipe.getRecipe().getRules();
+                if (subrules != null) {
+                    for (Rule sr : subrules) {
+                        String srName = sr.getFullName();
+                        RuleEntry srEntry = ruleEntryMap.get(srName);
+                        DisplayTreeNode srNode =
+                            createActionNode(srEntry, expandedPaths,
+                                selectedPaths);
+                        if (srNode != null) {
+                            addSortedNode(recipeNode, srNode);
                         }
+                        subruleNames.add(srName);
                     }
                 }
             }
@@ -244,11 +235,11 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 result.put(priority, recipes = new HashSet<ActionEntry>());
             }
             recipes.add(new RecipeEntry(recipe));
-            CtrlAut body = recipe.getBody();
-            if (body != null) {
-                for (Rule subRule : body.getRules()) {
-                    if (subRule.getPriority() == priority) {
-                        String ruleName = subRule.getFullName();
+            Set<Rule> subrules = recipe.getRules();
+            if (subrules != null) {
+                for (Rule subrule : subrules) {
+                    if (subrule.getPriority() == priority) {
+                        String ruleName = subrule.getFullName();
                         recipes.add(new RuleEntry(
                             grammar.getRuleModel(ruleName)));
                         subRuleNames.add(ruleName);
@@ -487,7 +478,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             this.ruleDirectory.removeNodeFromParent(matchNode);
         }
         // clean up current match node map
-        this.clearMatchMaps();
+        this.matchNodeMap.clear();
         // set the tried status of the rules
         Set<CtrlTransition> triedTransitions =
             state == null ? Collections.<CtrlTransition>emptySet()
@@ -506,9 +497,9 @@ public class RuleJTree extends JTree implements SimulatorListener {
             treeNodes.addAll(nodes);
             for (RuleTreeNode n : nodes) {
                 String ruleName = n.getName();
-                Recipe recipe = n.getRecipe();
+                Recipe ruleRecipe = getRecipe(n);
                 String recipeName =
-                    recipe == null ? null : recipe.getFullName();
+                    ruleRecipe == null ? null : ruleRecipe.getFullName();
                 boolean tried =
                     triedPairs.contains(Duo.newDuo(ruleName, recipeName));
                 n.setTried(tried);
@@ -530,8 +521,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             String ruleName = rule.getFullName();
             // find the correct rule tree node
             for (RuleTreeNode ruleNode : this.ruleNodeMap.get(ruleName)) {
-                if (ruleNode.hasRecipe() ? ruleNode.getRecipe().equals(recipe)
-                        : recipe == null) {
+                if (recipe == null || recipe.equals(getRecipe(ruleNode))) {
                     int nrOfMatches = ruleNode.getChildCount();
                     MatchTreeNode matchNode =
                         new MatchTreeNode(getSimulatorModel(), state, match,
@@ -545,7 +535,16 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 }
             }
         }
+    }
 
+    /** Returns the name of the recipe in which a given rule node is empedded, if any. */
+    private Recipe getRecipe(RuleTreeNode ruleNode) {
+        Recipe result = null;
+        TreeNode parent = ruleNode.getParent();
+        if (parent instanceof RecipeTreeNode) {
+            result = ((RecipeTreeNode) parent).getRecipe();
+        }
+        return result;
     }
 
     /**
@@ -598,6 +597,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * @param child Child node to insert.
      */
     private void addSortedNode(MutableTreeNode parent, MutableTreeNode child) {
+        boolean childIsRecipe = child instanceof RecipeTreeNode;
         Comparator<String> comparator = Strings.getNaturalComparator();
         String childString = child.toString();
         @SuppressWarnings("unchecked")
@@ -605,8 +605,12 @@ public class RuleJTree extends JTree implements SimulatorListener {
         int index = 0;
         while (enumParent.hasMoreElements()) {
             MutableTreeNode nextChild = enumParent.nextElement();
+            boolean nextChildIsRecipe = nextChild instanceof RecipeTreeNode;
+            if (childIsRecipe && !nextChildIsRecipe) {
+                break;
+            }
             int compare = comparator.compare(nextChild.toString(), childString);
-            if (compare > 0) {
+            if (childIsRecipe == nextChildIsRecipe && compare > 0) {
                 break;
             }
             index++;

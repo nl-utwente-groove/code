@@ -5,6 +5,10 @@ import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -96,8 +100,37 @@ public class CtrlTree extends CommonTree {
         this.call = call;
     }
 
+    /** Returns the (possibly {@code null}) input stream of this call tree. */
+    public ANTLRStringStream getInputStream() {
+        return this.inputStream;
+    }
+
+    /** Sets the input stream of this call tree. */
+    public void setInputStream(ANTLRStringStream inputStream) {
+        this.inputStream = inputStream;
+    }
+
+    /** Returns a list of all call tokens in this tree with a given name. */
+    public List<Token> getCallTokens(String name) {
+        List<Token> result = new ArrayList<Token>();
+        collectCallTokens(result, name);
+        return result;
+    }
+
+    /** Recursively collects all call tokens with a given name. */
+    private void collectCallTokens(List<Token> result, String name) {
+        if (getToken().getType() == CtrlLexer.CALL
+            && getToken().getText().equals(name)) {
+            result.add(getToken());
+        }
+        for (int i = 0; i < getChildCount(); i++) {
+            getChild(i).collectCallTokens(result, name);
+        }
+    }
+
     private CtrlVar var;
     private CtrlPar par;
     private CtrlCall call;
     private CtrlType type;
+    private ANTLRStringStream inputStream;
 }

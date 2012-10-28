@@ -23,10 +23,16 @@ import groove.graph.GraphInfo;
 import groove.trans.Action;
 import groove.trans.Recipe;
 import groove.trans.ResourceKind;
+import groove.trans.Rule;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Model combining all enabled control programs.
@@ -126,5 +132,46 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
         return this.loader;
     }
 
+    /** 
+     * Returns the (non-{@code null}) set of recipe names calling a given rule.
+     */
+    public Set<String> getRecipes(String rule) {
+        Set<String> result = getRuleRecipeMap().get(rule);
+        if (result == null) {
+            result = Collections.emptySet();
+        }
+        return result;
+    }
+
+    private Map<String,Set<String>> getRuleRecipeMap() {
+        Map<String,Set<String>> result = this.ruleRecipeMap;
+        if (result == null) {
+            result = this.ruleRecipeMap = new HashMap<String,Set<String>>();
+            for (Recipe recipe : getRecipes()) {
+                Set<Rule> subrules = recipe.getRules();
+                if (subrules != null) {
+                    for (Rule subrule : subrules) {
+                        String subruleName = subrule.getFullName();
+                        Set<String> recipes =
+                            this.ruleRecipeMap.get(subruleName);
+                        if (recipes == null) {
+                            this.ruleRecipeMap.put(subruleName, recipes =
+                                new HashSet<String>());
+                        }
+                        recipes.add(recipe.getFullName());
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    void notifyGrammarModified() {
+        this.ruleRecipeMap = null;
+        super.notifyGrammarModified();
+    }
+
     private final CtrlLoader loader = new CtrlLoader();
+    private Map<String,Set<String>> ruleRecipeMap;
 }

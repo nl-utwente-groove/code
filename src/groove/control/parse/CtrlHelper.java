@@ -40,6 +40,7 @@ import java.util.Stack;
 
 import org.antlr.runtime.BaseRecognizer;
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 
@@ -132,14 +133,14 @@ public class CtrlHelper {
      */
     CommonTree emptyPackage() {
         CtrlTree result = new CtrlTree(new CommonToken(CtrlParser.PACKAGE));
-        result.addChild(toQualName(Collections.emptyList()));
+        result.addChild(toQualName(Collections.<Token>emptyList()));
         return result;
     }
 
     /** Creates a new tree with a {@link CtrlParser#ID} token at the root,
      * of which the text is the concatenation of the children of the given tree.
      */
-    CommonTree toQualName(List<?> children) {
+    CommonTree toQualName(List<? extends Token> children) {
         CommonToken token = new CommonToken(CtrlParser.ID, flatten(children));
         // set the line/column info to get useful error output
         if (!children.isEmpty()) {

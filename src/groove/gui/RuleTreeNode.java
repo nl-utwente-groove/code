@@ -19,10 +19,7 @@ package groove.gui;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.io.HTMLConverter;
-import groove.trans.Recipe;
 import groove.view.RuleModel;
-
-import javax.swing.tree.TreeNode;
 
 /**
  * Rule nodes (= level 1 nodes) of the directory
@@ -44,22 +41,9 @@ class RuleTreeNode extends ResourceTreeNode {
         return (RuleModel) getResource();
     }
 
-    /** 
-     * Returns the recipe of which this rule node is part.
-     * This is determined by the parent node in the tree.
-     */
-    public Recipe getRecipe() {
-        Recipe result = null;
-        TreeNode parent = getParent();
-        if (parent instanceof RecipeTreeNode) {
-            result = ((RecipeTreeNode) parent).getRecipe();
-        }
-        return result;
-    }
-
     /** Indicates if this rule node is part of a recipe. */
     public boolean hasRecipe() {
-        return getRecipe() != null;
+        return getRule().hasRecipes();
     }
 
     /** Returns HTML-formatted tool tip text for this rule node. */
@@ -107,6 +91,18 @@ class RuleTreeNode extends ResourceTreeNode {
     @Override
     public boolean isEnabled() {
         return this.tried;
+    }
+
+    /** Returns the text to be displayed on the tree node. */
+    @Override
+    public String getText() {
+        boolean showEnabled = getRule().isEnabled();
+        if (showEnabled) {
+            showEnabled =
+                !hasRecipe() || (getParent() instanceof RecipeTreeNode)
+                    || (getParent() instanceof StateList.StateTreeNode);
+        }
+        return getDisplay().getLabelText(getName(), showEnabled);
     }
 
     /** Indicates if the rule wrapped by this node has been tried on the current state. */

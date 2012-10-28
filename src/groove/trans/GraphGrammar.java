@@ -178,7 +178,7 @@ public class GraphGrammar {
         case RECIPE:
             Recipe recipe = (Recipe) action;
             this.nameRecipeMap.put(ruleName, recipe);
-            for (Rule subRule : recipe.getBody().getRules()) {
+            for (Rule subRule : recipe.getRules()) {
                 subRule.setPartial();
                 this.allRules.add(subRule);
             }

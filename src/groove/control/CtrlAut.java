@@ -162,11 +162,11 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
             CtrlGuard newGuard = label.getGuard().newGuard(morphism.edgeMap());
             Recipe newRecipe =
                 recipe == null || call.isOmega() ? trans.getRecipe() : recipe;
+            CtrlCall newCall = call.embed(newRecipe);
             boolean newStart =
                 recipe == null ? trans.isStart()
                         : newSource == result.getStart() || call.isOmega();
-            CtrlLabel newLabel =
-                new CtrlLabel(call, newGuard, newRecipe, newStart);
+            CtrlLabel newLabel = new CtrlLabel(newCall, newGuard, newStart);
             CtrlTransition newTrans =
                 newSource.addTransition(newLabel, newTarget);
             morphism.putEdge(trans, newTrans);
@@ -580,7 +580,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
     private final Set<CtrlState> states = new HashSet<CtrlState>();
 
     /** The set of transitions of this control automaton. */
-    private final Set<CtrlTransition> transitions = new TransitionSet();
+    private final TransitionSet transitions = new TransitionSet();
 
     /** The set of omega transitions in this control automaton. */
     private final Set<CtrlTransition> omegaTransitions =
@@ -656,7 +656,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
             if (o instanceof CtrlTransition) {
                 CtrlTransition trans = (CtrlTransition) o;
                 return trans.equals(trans.source().getTransition(
-                    trans.getRule()));
+                    trans.getCall()));
             } else {
                 return false;
             }
