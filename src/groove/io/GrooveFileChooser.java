@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileView;
 
@@ -84,6 +85,53 @@ public class GrooveFileChooser extends JFileChooser {
         }
         return result;
     }
+
+    @Override
+    public void approveSelection() {
+        if (getDialogType() == SAVE_DIALOG && isAskOverwrite()) {
+            File f = getSelectedFile();
+            // When saving, check if file already exists. If so, ask for overwrite confirmation
+            if (f.exists()) {
+                int result =
+                    JOptionPane.showConfirmDialog(this, f.getName()
+                        + " already exists, overwrite?",
+                        "Overwrite existing file", JOptionPane.YES_NO_OPTION);
+                switch (result) {
+                case JOptionPane.YES_OPTION:
+                    super.approveSelection();
+                    return;
+                    // If no or close, do not approve
+                case JOptionPane.NO_OPTION:
+                default:
+                    return;
+                }
+            } else {
+                // Approve if file doesn't exist yet
+                super.approveSelection();
+                return;
+            }
+        } else {
+            // For open dialog simply approve
+            super.approveSelection();
+            return;
+        }
+    }
+
+    /** Changes the confirmation behaviour on overwriting an existing file. */
+    public void setAskOverwrite(boolean askOverwrite) {
+        this.askOverwrite = askOverwrite;
+    }
+
+    /** Returns the current confirmation setting on overwriting existing files. */
+    public boolean isAskOverwrite() {
+        return this.askOverwrite;
+    }
+
+    /**
+     * If true, a dialog will show asking if a file should be overwritten 
+     * during save if it already exists. Defaults to {@code true}.
+     */
+    private boolean askOverwrite = true;
 
     /**
      * Factory method for the file view set in this file chooser.
