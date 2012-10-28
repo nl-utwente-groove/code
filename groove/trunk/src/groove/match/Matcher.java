@@ -47,12 +47,12 @@ import java.util.Set;
 public class Matcher implements SearchStrategy {
     /** Constructs a fresh instance of this strategy, for a given
      * condition and sets of seeded (i.e., pre-matched) nodes and edges.
-     * @param engine the engine to be used in the matcher
+     * @param factory the matcher factory that has created this matcher object
      * @param condition the condition that the strategy will find matches for
-     * @param seed graph that will be pre-matched when the strategy is invoked
+     * @param seed set of nodes that will be pre-matched when the strategy is invoked
      */
-    public Matcher(SearchEngine engine, Condition condition, Anchor seed) {
-        this.engine = engine;
+    public Matcher(MatcherFactory factory, Condition condition, Anchor seed) {
+        this.engine = factory.getEngine();
         this.condition = condition;
         if (seed == null && condition.getOp().hasPattern()) {
             seed = new Anchor();
@@ -61,16 +61,7 @@ public class Matcher implements SearchStrategy {
             seed.addAll(condition.getRoot().varSet());
         }
         this.seed = seed;
-    }
-
-    /** Constructs a fresh instance of this strategy, for a given
-     * condition and sets of seeded (i.e., pre-matched) nodes and edges.
-     * @param factory the matcher factory that has created this matcher object
-     * @param condition the condition that the strategy will find matches for
-     * @param seed set of nodes that will be pre-matched when the strategy is invoked
-     */
-    public Matcher(MatcherFactory factory, Condition condition, Anchor seed) {
-        this(factory.getEngine(), condition, seed);
+        this.oracle = factory.getOracle();
     }
 
     /** 
@@ -139,6 +130,16 @@ public class Matcher implements SearchStrategy {
     @Override
     public SearchEngine getEngine() {
         return this.engine;
+    }
+
+    @Override
+    public ValueOracle getOracle() {
+        return this.oracle;
+    }
+
+    /** Changes the value oracle of this matcher. */
+    public void setOracle(ValueOracle oracle) {
+        this.oracle = oracle;
     }
 
     /** 
@@ -230,7 +231,9 @@ public class Matcher implements SearchStrategy {
      */
     public final SearchStrategy getSearchStrategy() {
         if (this.inner == null || this.inner.getEngine() != getEngine()) {
-            this.inner = getEngine().createMatcher(getCondition(), getSeed());
+            this.inner =
+                getEngine().createMatcher(getCondition(), getSeed(),
+                    getOracle());
         }
         return this.inner;
     }
@@ -240,6 +243,7 @@ public class Matcher implements SearchStrategy {
     private final Anchor seed;
 
     private SearchStrategy inner;
+    private ValueOracle oracle;
     /** Reusable finder for {@link #find(HostGraph, RuleToHostMap)}. */
     private final Finder<TreeMatch> finder = Visitor.newFinder(null);
     /** Reusable collector for {@link #findAll(HostGraph, RuleToHostMap)}. */

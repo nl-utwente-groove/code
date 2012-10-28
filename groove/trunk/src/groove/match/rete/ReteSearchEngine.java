@@ -17,6 +17,7 @@
 package groove.match.rete;
 
 import groove.match.SearchEngine;
+import groove.match.ValueOracle;
 import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Anchor;
 import groove.trans.Condition;
@@ -98,9 +99,9 @@ public class ReteSearchEngine extends SearchEngine {
 
     @Override
     public synchronized ReteSearchStrategy createMatcher(Condition condition,
-            Anchor seed) {
+            Anchor seed, ValueOracle oracle) {
         //TODO: ARASH: What about the seed nodes and edges?
-        return new ReteSearchStrategy(this, condition);
+        return new ReteSearchStrategy(this, condition, oracle);
     }
 
     private final ReteNetwork network;

@@ -232,7 +232,7 @@ public class QuantifierCountChecker extends ReteNetworkNode implements
         if (this.conditionMatcher == null) {
             this.conditionMatcher =
                 this.getOwner().getOwnerEngine().createMatcher(
-                    this.universalQuantifierChecker.getCondition(), null);
+                    this.universalQuantifierChecker.getCondition(), null, null);
         }
         if (activeAnchors != null) {
             for (RuleToHostMap anchor : activeAnchors) {

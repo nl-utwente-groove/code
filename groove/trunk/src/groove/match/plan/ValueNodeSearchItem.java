@@ -18,9 +18,14 @@ package groove.match.plan;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
+import groove.algebra.Term;
+import groove.algebra.Variable;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
+import groove.match.ValueOracle;
 import groove.match.plan.PlanSearchStrategy.Search;
+import groove.trans.Condition;
+import groove.trans.HostFactory;
 import groove.trans.HostGraph;
 import groove.trans.RuleNode;
 
@@ -41,12 +46,18 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         this.node = node;
         this.boundNodes = Collections.<RuleNode>singleton(node);
         this.algebra = family.getAlgebra(node.getSignature());
-        this.value = family.getValue(node.getTerm());
+        Term term = node.getTerm();
+        this.value =
+            term instanceof Variable ? null : family.getValue(node.getTerm());
     }
 
-    public ValueNodeRecord createRecord(
+    public Record createRecord(
             groove.match.plan.PlanSearchStrategy.Search matcher) {
-        return new ValueNodeRecord(matcher);
+        if (this.value == null) {
+            return new ValueQueryRecord(matcher);
+        } else {
+            return new ValueNodeRecord(matcher);
+        }
     }
 
     /**
@@ -81,6 +92,8 @@ class ValueNodeSearchItem extends AbstractSearchItem {
 
     public void activate(PlanSearchStrategy strategy) {
         this.nodeIx = strategy.getNodeIx(this.node);
+        this.oracle = strategy.getOracle();
+        this.condition = strategy.getPlan().getCondition();
     }
 
     /** Singleton set consisting of <code>node</code>. */
@@ -93,6 +106,10 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     final Object value;
     /** The index of the value node (in the result. */
     int nodeIx;
+    /** Condition being matched. */
+    Condition condition;
+    /** Source of matches in case the variable node is unbound. */
+    ValueOracle oracle;
 
     /**
      * Record of a value node search item.
@@ -139,5 +156,43 @@ class ValueNodeSearchItem extends AbstractSearchItem {
 
         /** The constant value of the variable node, if any. */
         private ValueNode image;
+    }
+
+    private class ValueQueryRecord extends MultipleRecord<String> {
+        public ValueQueryRecord(Search search) {
+            super(search);
+        }
+
+        @Override
+        public void initialise(HostGraph host) {
+            super.initialise(host);
+            this.factory = host.getFactory();
+            this.values =
+                ValueNodeSearchItem.this.oracle.getValues(
+                    ValueNodeSearchItem.this.condition,
+                    ValueNodeSearchItem.this.node);
+        }
+
+        @Override
+        void init() {
+            this.imageIter = this.values.iterator();
+        }
+
+        @Override
+        boolean write(String image) {
+            ValueNode imageNode =
+                this.factory.createNodeFromString(
+                    ValueNodeSearchItem.this.algebra, image);
+            return this.search.putNode(ValueNodeSearchItem.this.nodeIx,
+                imageNode);
+        }
+
+        @Override
+        void erase() {
+            this.search.putNode(ValueNodeSearchItem.this.nodeIx, null);
+        }
+
+        private HostFactory factory;
+        private Iterable<String> values;
     }
 }
