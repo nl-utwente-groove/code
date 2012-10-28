@@ -373,14 +373,23 @@ public class ResourceTree extends JTree implements SimulatorListener {
             suspendListeners();
             TreePath[] paths = getSelectionPaths();
             for (int i = 0; paths != null && i < paths.length; i++) {
-                Object selectedNode = paths[i].getLastPathComponent();
-                if (selectedNode instanceof ResourceTreeNode) {
-                    selected.add(((ResourceTreeNode) selectedNode).getName());
-                }
+                TreeNode node = (TreeNode) paths[i].getLastPathComponent();
+                collectResources(node, selected);
             }
             getSimulatorModel().doSelectSet(ResourceTree.this.resourceKind,
                 selected);
             activateListeners();
+        }
+
+        private void collectResources(TreeNode node, Set<String> result) {
+            if (node instanceof PathNode) {
+                PathNode path = (PathNode) node;
+                for (int i = 0; i < path.getChildCount(); i++) {
+                    collectResources(path.getChildAt(i), result);
+                }
+            } else if (node instanceof ResourceTreeNode) {
+                result.add(((ResourceTreeNode) node).getName());
+            }
         }
     }
 
