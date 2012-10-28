@@ -28,6 +28,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 
 /**
  * Menu for zoomin in/out on a jgraph.
@@ -43,21 +44,24 @@ public class ZoomMenu extends JMenu {
      * @see #ZOOM_MENU_NAME
      */
     public ZoomMenu(GraphJGraph jgraph) {
-        this(jgraph, ZOOM_MENU_NAME);
+        super(ZOOM_MENU_NAME);
+        this.jgraph = jgraph;
         add(this.zoomToFitAction);
         add(this.zoomInAction);
         add(this.zoomOutAction);
         add(this.resetZoomAction);
         setMnemonic(MENU_MNEMONIC);
+        registerAction(this.zoomInAction, KeyEvent.VK_EQUALS);
+        registerAction(this.zoomOutAction, KeyEvent.VK_MINUS);
+        registerAction(this.resetZoomAction, KeyEvent.VK_0);
         reset();
     }
 
-    /**
-     * Constructs a standard zoom menu with a given name.
-     */
-    public ZoomMenu(GraphJGraph jgraph, String name) {
-        super(name);
-        this.jgraph = jgraph;
+    /** Registers a keyboard accelerator for a given action. */
+    private void registerAction(Action action, int keyCode) {
+        action.putValue(Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke(keyCode, ActionEvent.CTRL_MASK));
+        this.jgraph.addAccelerator(action);
     }
 
     /**
