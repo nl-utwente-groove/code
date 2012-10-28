@@ -260,7 +260,7 @@ abstract public class AbstractGraphState extends
         boolean result = setStatus(DONE, true);
         if (result) {
             if (!present) {
-                setAbsent();
+                setStatus(ABSENT, true);
             }
             getCache().notifyDone();
             setCacheCollectable();

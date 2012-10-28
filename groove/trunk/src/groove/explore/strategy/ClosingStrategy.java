@@ -24,6 +24,7 @@ import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
 
 import java.util.List;
+import java.util.Stack;
 
 /**
  * Strategy that closes every state it explores, and adds the newly generated
@@ -37,6 +38,7 @@ abstract public class ClosingStrategy extends AbstractStrategy {
         GraphState state = getState();
         List<MatchResult> matches = state.getMatches();
         if (!state.getSchedule().isFinished()) {
+            assert !state.isTransient();
             // there are potential rule matches now blocked until 
             // the previous ones have been explored
             putInPool(state);
@@ -73,7 +75,19 @@ abstract public class ClosingStrategy extends AbstractStrategy {
         getGTS().removeLTSListener(this.exploreListener);
     }
 
-    /** Callback method to add a pool element to the pool. */
+    @Override
+    protected GraphState getNextState() {
+        if (this.transientStack.isEmpty()) {
+            return getFromPool();
+        } else {
+            return this.transientStack.pop();
+        }
+    }
+
+    /** Callback method to retrieve the next element from the pool. */
+    abstract protected GraphState getFromPool();
+
+    /** Callback method to add a non-transient graph state to the pool. */
     abstract protected void putInPool(GraphState state);
 
     /** Clears the pool, in order to prepare the strategy for reuse. */
@@ -82,11 +96,18 @@ abstract public class ClosingStrategy extends AbstractStrategy {
     /** Listener to keep track of states added to the GTS. */
     private final ExploreListener exploreListener = new ExploreListener();
 
+    /** Local stack of transient states; these should be explored first. */
+    private final Stack<GraphState> transientStack = new Stack<GraphState>();
+
     /** A queue with states to be explored, used as a FIFO. */
     private class ExploreListener extends GTSAdapter {
         @Override
         public void addUpdate(GTS gts, GraphState state) {
-            putInPool(state);
+            if (state.isTransient()) {
+                ClosingStrategy.this.transientStack.push(state);
+            } else {
+                putInPool(state);
+            }
         }
     }
 }

@@ -96,7 +96,14 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
 
     /** Indicates that this edge is a partial rule application. */
     final boolean isPartial() {
-        return getEdge().isPartial();
+        boolean result = true;
+        for (Edge trans : getEdges()) {
+            if (!((GraphTransition) trans).isPartial()) {
+                result = false;
+                break;
+            }
+        }
+        return result;
     }
 
     public void setVisible(boolean visible) {
@@ -106,9 +113,9 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     @Override
     public boolean isVisible() {
         boolean result =
-            (getJGraph().isShowPartialTransitions() || !isPartial() || !getEdge().source().isDone())
-                && super.isVisible();
-        return result && this.visible;
+            getJGraph().isShowPartialTransitions() || !isPartial()
+                || !getEdge().source().isDone();
+        return result && this.visible && super.isVisible();
     }
 
     /** Changes the active status of this edge.

@@ -10,6 +10,7 @@ import groove.io.store.DefaultFileSystemStore;
 import groove.io.store.SystemStore;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
+import groove.lts.GTSCounter;
 import groove.lts.GraphState;
 import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
@@ -564,6 +565,7 @@ public class SimulatorModel implements Cloneable {
             if (gts != null) {
                 gts.addLTSListener(this.ltsListener);
             }
+            this.gtsCounter.setGTS(gts);
             this.ltsListener.clear();
             this.gts = gts;
             this.changes.add(Change.GTS);
@@ -1098,6 +1100,11 @@ public class SimulatorModel implements Cloneable {
         }
     }
 
+    /** Returns a counter registering all kinds of counts for the currently loaded GTS. */
+    public GTSCounter getGTSCounter() {
+        return this.gtsCounter;
+    }
+
     /** 
      * Starts a transaction.
      * This is only allowed if no transaction is currently underway.
@@ -1205,6 +1212,7 @@ public class SimulatorModel implements Cloneable {
         }
     }
     private final MyLTSListener ltsListener = new MyLTSListener();
+    private final GTSCounter gtsCounter = new GTSCounter();
 
     /** Change type. */
     public static enum Change {

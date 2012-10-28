@@ -169,6 +169,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
             CtrlLabel newLabel = new CtrlLabel(newCall, newGuard, newStart);
             CtrlTransition newTrans =
                 newSource.addTransition(newLabel, newTarget);
+            assert newTrans != null;
             morphism.putEdge(trans, newTrans);
         }
         if (isDefault()) {

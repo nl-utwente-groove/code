@@ -26,7 +26,7 @@ import java.util.LinkedList;
  */
 public class BFSStrategy extends ClosingStrategy {
     @Override
-    protected GraphState getNextState() {
+    protected GraphState getFromPool() {
         return this.stateQueue.poll();
     }
 
