@@ -73,7 +73,7 @@ public abstract class BoolSignature<Bool> implements Signature {
 
     /** Only <code>true</code> and <code>false</code> are legal values. */
     final public boolean isValue(String value) {
-        return value.equals("true") || value.equals("false");
+        return value.equals(TRUE) || value.equals(FALSE);
     }
 
     /**
@@ -95,4 +95,9 @@ public abstract class BoolSignature<Bool> implements Signature {
      * representation to the algebra representation.
      */
     protected abstract Bool toValue(Boolean constant);
+
+    /** The unique string representation of the true value. */
+    public static final String TRUE = "true";
+    /** The unique string representation of the false value. */
+    public static final String FALSE = "false";
 }
