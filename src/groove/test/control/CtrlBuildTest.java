@@ -26,7 +26,6 @@ import groove.control.CtrlCall;
 import groove.control.CtrlFactory;
 import groove.control.CtrlGuard;
 import groove.control.CtrlLabel;
-import groove.control.CtrlLoader;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
@@ -35,8 +34,6 @@ import groove.trans.Rule;
 import groove.util.Groove;
 import groove.view.FormatException;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -50,20 +47,9 @@ import org.junit.Test;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlBuildTest {
+public class CtrlBuildTest extends CtrlTester {
     private static final String GRAMMAR_DIR = "junit/samples/";
-    private static final String CONTROL_DIR = "junit/control/";
 
-    private GraphGrammar testGrammar;
-    {
-        try {
-            this.testGrammar =
-                Groove.loadGrammar(GRAMMAR_DIR + "emptyrules").toGrammar();
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-    }
     private GraphGrammar prioGrammar;
     {
         try {
@@ -210,6 +196,7 @@ public class CtrlBuildTest {
     /** Tests building if statements. */
     @Test
     public void testIf() {
+        buildWrong("a|a");
         buildCorrect("if (a|b) c;", 4, 5);
         buildCorrect("if (a|b) c; d;", 5, 6);
         buildCorrect("if (a|b) c; else d;", 4, 5);
@@ -316,76 +303,4 @@ public class CtrlBuildTest {
         }
         return result;
     }
-
-    /** Builds a control automaton that should contain an error. */
-    private void buildWrong(String program) {
-        buildWrong("dummy", program);
-    }
-
-    /** Builds a control automaton that should contain an error. */
-    private void buildWrong(String name, String program) {
-        try {
-            CtrlAut aut;
-            if (program == null) {
-                aut = buildFile(name);
-            } else {
-                aut = buildString(name, program);
-            }
-            fail(String.format("%s builds without errors: %n%s%n", name,
-                aut.toString()));
-        } catch (FormatException e) {
-            if (DEBUG) {
-                System.out.println(e.getMessage());
-            }
-        }
-    }
-
-    private CtrlAut buildCorrect(String name, int nodeCount, int edgeCount) {
-        return buildCorrect("dummy", name, nodeCount, edgeCount);
-    }
-
-    private CtrlAut buildCorrect(String name, String program, int nodeCount,
-            int edgeCount) {
-        CtrlAut result = null;
-        try {
-            result =
-                program == null ? buildFile(name) : buildString(name, program);
-            assertEquals(nodeCount, result.nodeCount());
-            assertEquals(edgeCount, result.edgeCount());
-        } catch (FormatException e) {
-            fail(e.getMessage());
-        }
-        return result;
-    }
-
-    /** Builds a control automaton from a file with a given name. */
-    private CtrlAut buildFile(String programName) throws FormatException {
-        CtrlAut result = null;
-        try {
-            result =
-                CtrlLoader.run(this.testGrammar, programName, new File(
-                    CONTROL_DIR));
-            if (DEBUG) {
-                System.out.printf("Control automaton for %s:%n%s%n",
-                    programName, result);
-            }
-        } catch (IOException e) {
-            fail(e.getMessage());
-        }
-        return result;
-    }
-
-    /** Builds a control automaton from a given program. */
-    private CtrlAut buildString(String programName, String program)
-        throws FormatException {
-        CtrlAut result = null;
-        result = CtrlLoader.run(this.testGrammar, programName, program);
-        if (DEBUG) {
-            System.out.printf("Control automaton for \'%s\':%n%s%n", program,
-                result);
-        }
-        return result;
-    }
-
-    static private final boolean DEBUG = false;
 }
