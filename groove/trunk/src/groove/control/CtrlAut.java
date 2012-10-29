@@ -29,7 +29,6 @@ import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 
 import java.util.AbstractSet;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,7 +36,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -586,25 +584,6 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
     /** The set of omega transitions in this control automaton. */
     private final Set<CtrlTransition> omegaTransitions =
         new HashSet<CtrlTransition>();
-
-    /** 
-     * Assigns a list formal parameters to this automaton.
-     * @param pars the list of formal parameters; non-{@code null} 
-     */
-    public final void setPars(List<CtrlPar.Var> pars) {
-        this.pars = new ArrayList<CtrlPar.Var>(pars);
-    }
-
-    /**
-     * Returns the set of parameters of this control automaton.
-     * @return the set of parameters; may be {@code null}
-     */
-    public final List<CtrlPar.Var> getPars() {
-        return this.pars;
-    }
-
-    /** List of formal parameters of this automaton; may be {@code null}. */
-    private List<CtrlPar.Var> pars;
 
     /** Upper bound of the range of known consecutive state numbers. */
     private int maxStateNr = -1;
