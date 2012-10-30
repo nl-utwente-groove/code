@@ -24,6 +24,8 @@ import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
 import groove.algebra.Algebras;
 import groove.annotation.Help;
 import groove.graph.EdgeRole;
+import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.gui.action.SnapToGridAction;
 import groove.gui.jgraph.AspectJEdge;
@@ -209,21 +211,21 @@ final public class GraphEditorTab extends ResourceTab implements
                 getName());
         if (graphModel == null) {
             dispose();
-            //        } else if (isDirty() || getGraph() == graphModel.getSource()) {
-            //            // check if the properties have changed
-            //            GraphProperties properties =
-            //                GraphInfo.getProperties(graphModel.getSource(), false);
-            //            if (properties != null
-            //                && !properties.equals(GraphInfo.getProperties(getGraph(), false))) {
-            //                AspectGraph newGraph = getGraph().clone();
-            //                GraphInfo.setProperties(newGraph, properties);
-            //                newGraph.setFixed();
-            //                change(newGraph);
-            //            } else {
-            //                getJModel().loadViewErrors();
-            //                getJGraph().refresh();
-            //            }
-            //            updateStatus();
+        } else if (isDirty() || getGraph() == graphModel.getSource()) {
+            // check if the properties have changed
+            GraphProperties properties =
+                GraphInfo.getProperties(graphModel.getSource(), false);
+            if (properties != null
+                && !properties.equals(GraphInfo.getProperties(getGraph(), false))) {
+                AspectGraph newGraph = getGraph().clone();
+                GraphInfo.setProperties(newGraph, properties);
+                newGraph.setFixed();
+                change(newGraph);
+            } else {
+                getJModel().loadViewErrors();
+                getJGraph().refresh();
+            }
+            updateStatus();
         } else {
             setGraph(graphModel.getSource());
         }
