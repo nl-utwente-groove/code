@@ -42,7 +42,7 @@ class DisplayWindow extends JFrame {
         this.parent = parent;
         this.display = display;
         JPanel listPanel = this.display.getListPanel();
-        JComponent displayPanel = this.display.getDisplayPanel();
+        JComponent displayPanel = this.display;
         JComponent content;
         if (listPanel == null) {
             content = displayPanel;

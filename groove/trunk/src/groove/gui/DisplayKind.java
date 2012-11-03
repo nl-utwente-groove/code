@@ -46,6 +46,11 @@ public enum DisplayKind {
         return this.resource;
     }
 
+    /** Indicates if this is a resource-related display. */
+    public final boolean hasResource() {
+        return getResource() != null;
+    }
+
     /** Returns the title of this display. */
     public final String getTitle() {
         return this.title;
@@ -82,9 +87,8 @@ public enum DisplayKind {
 
     static {
         for (DisplayKind kind : DisplayKind.values()) {
-            ResourceKind resource = kind.getResource();
-            if (resource != null) {
-                resourceMap.put(resource, kind);
+            if (kind.hasResource()) {
+                resourceMap.put(kind.getResource(), kind);
             }
         }
     }

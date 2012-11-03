@@ -15,7 +15,7 @@ public class FilterLTSAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        getLtsDisplay().getLTSTab().toggleFilterLts();
+        getLtsDisplay().getGraphPanel().toggleFilterLts();
     }
 
     @Override

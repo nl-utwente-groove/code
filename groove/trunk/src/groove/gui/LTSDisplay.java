@@ -47,8 +47,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
@@ -68,8 +66,17 @@ public class LTSDisplay extends Display {
     }
 
     @Override
-    protected JComponent createDisplayPanel() {
-        return new LTSDisplayPanel();
+    protected void buildDisplay() {
+        setLayout(new BorderLayout());
+        JToolBar toolBar = Options.createToolBar();
+        fillToolBar(toolBar);
+        add(toolBar, BorderLayout.NORTH);
+        add(getGraphPanel());
+    }
+
+    @Override
+    protected void installListeners() {
+        // nothing to be installed
     }
 
     @Override
@@ -163,16 +170,16 @@ public class LTSDisplay extends Display {
     }
 
     /** Returns the LTS tab on this display. */
-    public LTSTab getLTSTab() {
-        if (this.ltsTab == null) {
-            this.ltsTab = new LTSTab(this);
+    public LTSGraphPanel getGraphPanel() {
+        if (this.graphPanel == null) {
+            this.graphPanel = new LTSGraphPanel(this);
         }
-        return this.ltsTab;
+        return this.graphPanel;
     }
 
     /** Returns the LTS' JGraph. */
     public LTSJGraph getLtsJGraph() {
-        return getLTSTab().getJGraph();
+        return getGraphPanel().getJGraph();
     }
 
     /** Returns the model of the LTS' JGraph. */
@@ -180,26 +187,16 @@ public class LTSDisplay extends Display {
         return getLtsJGraph().getModel();
     }
 
-    private LTSTab ltsTab;
+    private LTSGraphPanel graphPanel;
     /** Toggle buttons */
     private JToggleButton showHideLTSButton;
     private JToggleButton filterLTSButton;
 
-    private class LTSDisplayPanel extends JPanel implements Panel {
-        public LTSDisplayPanel() {
-            super(new BorderLayout());
-            this.toolBar = Options.createToolBar();
-            fillToolBar(this.toolBar);
-            add(this.toolBar, BorderLayout.NORTH);
-            add(getLTSTab());
-        }
-
-        @Override
-        public Display getDisplay() {
-            return LTSDisplay.this;
-        }
-
-        private final JToolBar toolBar;
+    /** Returns an LTS display for a given simulator. */
+    public static LTSDisplay newInstance(Simulator simulator) {
+        LTSDisplay result = new LTSDisplay(simulator);
+        result.buildDisplay();
+        return result;
     }
 
     /**
@@ -207,10 +204,10 @@ public class LTSDisplay extends Display {
      * @author Arend Rensink
      * @version $Revision$
      */
-    public class LTSTab extends JGraphPanel<LTSJGraph> implements
+    public class LTSGraphPanel extends JGraphPanel<LTSJGraph> implements
             SimulatorListener {
         /** Creates a LTS panel for a given simulator. */
-        public LTSTab(LTSDisplay display) {
+        public LTSGraphPanel(LTSDisplay display) {
             super(new LTSJGraph(display.getSimulator()), true);
             getJGraph().setToolTipEnabled(true);
             setEnabledBackground(JAttr.STATE_BACKGROUND);

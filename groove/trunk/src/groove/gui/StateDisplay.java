@@ -73,9 +73,7 @@ import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 
@@ -98,8 +96,16 @@ public class StateDisplay extends Display {
     }
 
     @Override
-    protected JComponent createDisplayPanel() {
-        return new StateDisplayPanel();
+    protected void buildDisplay() {
+        JToolBar toolBar = Options.createToolBar();
+        fillToolBar(toolBar);
+        add(toolBar, BorderLayout.NORTH);
+        add(getGraphPanel());
+    }
+
+    @Override
+    protected void installListeners() {
+        // nothing to be installed
     }
 
     @Override
@@ -131,74 +137,28 @@ public class StateDisplay extends Display {
         result.add(getActions().getForwardAction());
     }
 
-    private JToggleButton getShowHideLTSButton() {
-        if (this.showHideLTSButton == null) {
-            this.showHideLTSButton =
-                Options.createToggleButton(getActions().getShowHideLTSAction());
-        }
-        return this.showHideLTSButton;
-    }
-
-    /** Returns true if the LTS JGraph is hidden. */
-    public boolean isHiddingLts() {
-        return getShowHideLTSButton().isSelected();
-    }
-
-    private JToggleButton getFilterLTSButton() {
-        if (this.filterLTSButton == null) {
-            this.filterLTSButton =
-                Options.createToggleButton(getActions().getFilterLTSAction());
-        }
-        return this.filterLTSButton;
-    }
-
-    /** Returns true if the LTS JGraph is filtered. */
-    public boolean isFilteringLts() {
-        return getFilterLTSButton().isSelected();
-    }
-
     /** Returns the state tab on this display. */
-    public StateTab getStateTab() {
-        if (this.stateTab == null) {
-            this.stateTab = new StateTab(this);
+    public JGraphPanel<AspectJGraph> getGraphPanel() {
+        if (this.stateGraphPanel == null) {
+            this.stateGraphPanel = new StateGraphPanel(this);
         }
-        return this.stateTab;
+        return this.stateGraphPanel;
     }
 
-    private StateTab stateTab;
-    /** Toggle buttons */
-    private JToggleButton showHideLTSButton;
-    private JToggleButton filterLTSButton;
-
-    private class StateDisplayPanel extends JPanel implements Panel {
-        public StateDisplayPanel() {
-            super(new BorderLayout());
-            this.toolBar = Options.createToolBar();
-            fillToolBar(this.toolBar);
-            add(this.toolBar, BorderLayout.NORTH);
-            add(getStateTab());
-        }
-
-        @Override
-        public Display getDisplay() {
-            return StateDisplay.this;
-        }
-
-        private final JToolBar toolBar;
-    }
+    private StateGraphPanel stateGraphPanel;
 
     /**
      * Window that displays and controls the current state graph.
      * @author Arend Rensink
      * @version $Revision$
      */
-    public class StateTab extends JGraphPanel<AspectJGraph> implements
+    private class StateGraphPanel extends JGraphPanel<AspectJGraph> implements
             SimulatorListener {
 
         // --------------------- INSTANCE DEFINITIONS ----------------------
 
         /** Constructs a new state panel. */
-        public StateTab(StateDisplay display) {
+        public StateGraphPanel(StateDisplay display) {
             super(new AspectJGraph(display.getSimulator(), display.getKind(),
                 false), true);
             initialise();
@@ -274,7 +234,7 @@ public class StateDisplay extends Display {
             this.graphSelectionListener = new GraphSelectionListener() {
                 @Override
                 public void valueChanged(GraphSelectionEvent e) {
-                    if (StateTab.this.matchSelected) {
+                    if (StateGraphPanel.this.matchSelected) {
                         // change only if cells were removed from the selection
                         boolean removed = false;
                         Object[] cells = e.getCells();
@@ -805,8 +765,6 @@ public class StateDisplay extends Display {
 
         /** The currently emphasised match (nullable). */
         private boolean matchSelected;
-        /** Tab label in case there is no state selected. */
-        public static final String NO_STATE_TEXT = "No state";
         /** Display name of this panel. */
         public static final String FRAME_NAME = "Current state";
     }

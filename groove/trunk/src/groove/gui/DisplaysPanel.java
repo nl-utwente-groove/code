@@ -51,13 +51,9 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     public DisplaysPanel(final Simulator simulator) {
         super(TOP);
         this.simulator = simulator;
-        addTab(getStateDisplay());
-        addTab(getLtsDisplay());
-        addTab(getHostDisplay());
-        addTab(getRuleDisplay());
-        addTab(getControlDisplay());
-        addTab(getTypeDisplay());
-        addTab(getPrologDisplay());
+        for (DisplayKind kind : DisplayKind.values()) {
+            addTab(getDisplay(kind));
+        }
         setSelectedIndex(0);
         getUpperListsPanel().setSelectedIndex(0);
         getLowerListsPanel().setSelectedIndex(0);
@@ -67,7 +63,6 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     private void addTab(Display component) {
         DisplayKind kind = component.getKind();
-        this.displaysMap.put(kind, component);
         ListPanel listPanel = component.getListPanel();
         if (listPanel != null) {
             this.listKindMap.put(listPanel, kind);
@@ -98,7 +93,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 attach(display);
             }
         } else {
-            remove(display.getDisplayPanel());
+            remove(display);
             ListPanel listPanel = display.getListPanel();
             if (listPanel != null) {
                 getListsPanel(displayKind).remove(listPanel);
@@ -165,72 +160,14 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         removeChangeListener(this.tabListener);
     }
 
-    /** Returns the state and graph display shown on this panel. */
-    public ResourceDisplay getHostDisplay() {
-        if (this.hostDisplay == null) {
-            this.hostDisplay =
-                new ResourceDisplay(this.simulator, ResourceKind.HOST);
-            this.hostDisplay.installListeners();
+    /** Lazily creates and returns the display of a given kind. */
+    public Display getDisplay(DisplayKind kind) {
+        Display result = this.displaysMap.get(kind);
+        if (result == null) {
+            result = Display.newDisplay(this.simulator, kind);
+            this.displaysMap.put(kind, result);
         }
-        return this.hostDisplay;
-    }
-
-    /** Returns the rule display shown on this panel. */
-    public RuleDisplay getRuleDisplay() {
-        if (this.ruleDisplay == null) {
-            this.ruleDisplay = new RuleDisplay(this.simulator);
-        }
-        return this.ruleDisplay;
-    }
-
-    /** Returns the type display shown on this panel. */
-    public ResourceDisplay getTypeDisplay() {
-        if (this.typeDisplay == null) {
-            this.typeDisplay =
-                new ResourceDisplay(this.simulator, ResourceKind.TYPE);
-            this.typeDisplay.installListeners();
-        }
-        return this.typeDisplay;
-    }
-
-    /**
-     * Returns the simulator panel on which the LTS. Note that this panel may
-     * currently not be visible.
-     */
-    public LTSDisplay getLtsDisplay() {
-        if (this.ltsDisplay == null) {
-            this.ltsDisplay = new LTSDisplay(this.simulator);
-        }
-        return this.ltsDisplay;
-    }
-
-    /**
-     * Returns the simulator panel on which the LTS. Note that this panel may
-     * currently not be visible.
-     */
-    public StateDisplay getStateDisplay() {
-        if (this.stateDisplay == null) {
-            this.stateDisplay = new StateDisplay(this.simulator);
-        }
-        return this.stateDisplay;
-    }
-
-    /** Returns the panel containing the control program. */
-    public ControlDisplay getControlDisplay() {
-        if (this.controlDisplay == null) {
-            this.controlDisplay = new ControlDisplay(this.simulator);
-        }
-        return this.controlDisplay;
-    }
-
-    /**
-     * Returns the prolog panel.
-     */
-    public PrologDisplay getPrologDisplay() {
-        if (this.prologDisplay == null) {
-            this.prologDisplay = new PrologDisplay(this.simulator);
-        }
-        return this.prologDisplay;
+        return result;
     }
 
     /** Upper tabbed pane holding the list panels of the various components on the 
@@ -291,9 +228,9 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 break;
             }
             if (changeDisplay) {
-                Display panel = this.displaysMap.get(newDisplayKind);
-                if (indexOfComponent(panel.getDisplayPanel()) >= 0) {
-                    setSelectedComponent(panel.getDisplayPanel());
+                Display panel = getDisplay(newDisplayKind);
+                if (indexOfComponent(panel) >= 0) {
+                    setSelectedComponent(panel);
                 } else {
                     DisplayWindow window =
                         this.detachedMap.get(source.getDisplay());
@@ -322,10 +259,9 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 changedTo = source.getResource(resource).getFullName();
             }
             if (changedTo == null) {
-                Display panel = this.displaysMap.get(source.getDisplay());
-                if (panel != null
-                    && indexOfComponent(panel.getDisplayPanel()) >= 0) {
-                    setSelectedComponent(panel.getDisplayPanel());
+                Display panel = getDisplay(source.getDisplay());
+                if (panel != null && indexOfComponent(panel) >= 0) {
+                    setSelectedComponent(panel);
                 }
             }
         }
@@ -360,7 +296,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     /** Returns the panel corresponding to a certain tab kind. */
     public Display getDisplayFor(DisplayKind display) {
-        return this.displaysMap.get(display);
+        return getDisplay(display);
     }
 
     /** Returns the panel corresponding to a certain tab kind. */
@@ -370,7 +306,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     /** Reattaches a component at its proper place. */
     public void attach(Display display) {
-        if (indexOfComponent(display.getDisplayPanel()) >= 0) {
+        if (indexOfComponent(display) >= 0) {
             // the component is already attached; don't do anything
             return;
         }
@@ -401,7 +337,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 break;
             }
         }
-        insertTab(null, null, display.getDisplayPanel(), myKind.getTip(), index);
+        insertTab(null, null, display, myKind.getTip(), index);
         TabLabel tabComponent =
             new TabLabel(this, display, myKind.getTabIcon(), null);
         tabComponent.setFocusable(false);
@@ -450,13 +386,13 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Creates a popup menu with a detach action for a given component. */
-    private JPopupMenu createDetachMenu(final Display component) {
-        assert indexOfComponent(component.getDisplayPanel()) >= 0;
+    private JPopupMenu createDetachMenu(final Display display) {
+        assert indexOfComponent(display) >= 0;
         JPopupMenu result = new JPopupMenu();
         result.add(new AbstractAction(Options.DETACH_ACTION_NAME) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                detach(component);
+                detach(display);
             }
         });
         return result;
@@ -498,12 +434,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     /** Returns the display component corresponding to the tab at a given position. */
     protected Display getDisplayAt(int index) {
-        Component component = getComponentAt(index);
-        if (component instanceof Display.Panel) {
-            return ((Display.Panel) component).getDisplay();
-        } else {
-            return null;
-        }
+        return (Display) getComponentAt(index);
     }
 
     /** Resets the selected tab to the one before the last call to {@link #setSelectedIndex(int)}. */
@@ -524,9 +455,10 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
      */
     public boolean saveAllEditors(boolean dispose) {
         boolean result = true;
-        for (Display display : this.displaysMap.values()) {
-            if (display instanceof ResourceDisplay) {
-                result = ((ResourceDisplay) display).saveAllEditors(dispose);
+        for (DisplayKind kind : DisplayKind.values()) {
+            if (kind.hasResource()) {
+                result =
+                    ((ResourceDisplay) getDisplay(kind)).saveAllEditors(dispose);
                 if (!result) {
                     break;
                 }
@@ -550,21 +482,6 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     /** Mapping of currently detached displays. */
     private final Map<DisplayKind,DisplayWindow> detachedMap =
         new HashMap<DisplayKind,DisplayWindow>();
-    /** The state tab shown on this panel. */
-    private ResourceDisplay hostDisplay;
-    /** The rule tab shown on this panel. */
-    private RuleDisplay ruleDisplay;
-    /** The type graph tab shown on this panel. */
-    private ResourceDisplay typeDisplay;
-    /** LTS tab shown on this panel. */
-    private LTSDisplay ltsDisplay;
-    /** State tab shown on this panel. */
-    private StateDisplay stateDisplay;
-    /** Prolog display panel. */
-    private PrologDisplay prologDisplay;
-    /** Control display panel. */
-    private ControlDisplay controlDisplay;
-
     /** Panel with the rules and states lists. */
     private JTabbedPane upperListsPanel;
     /** Panel with the other resource lists. */

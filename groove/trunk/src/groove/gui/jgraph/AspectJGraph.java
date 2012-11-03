@@ -78,9 +78,9 @@ final public class AspectJGraph extends GraphJGraph {
      * @param editing if {@code true}, the graph is editable
      */
     public AspectJGraph(Simulator simulator, DisplayKind kind, boolean editing) {
-        super(simulator, !editing && kind.getGraphRole() != GraphRole.RULE);
+        super(simulator, !editing && kind != DisplayKind.RULE);
         this.editing = editing;
-        this.forState = kind == DisplayKind.LTS;
+        this.forState = kind == DisplayKind.STATE;
         this.graphRole = this.forState ? GraphRole.HOST : kind.getGraphRole();
         setEditable(editing);
         getGraphLayoutCache().setSelectsLocalInsertedCells(editing);

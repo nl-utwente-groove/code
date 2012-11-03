@@ -644,7 +644,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
 
     /** Convenience method to retrieve the control display. */
     private final ControlDisplay getControlDisplay() {
-        return getSimulator().getDisplaysPanel().getControlDisplay();
+        return (ControlDisplay) getSimulator().getDisplaysPanel().getDisplay(
+            DisplayKind.CONTROL);
     }
 
     private final RuleDisplay display;
@@ -864,9 +865,8 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 if (evt.getClickCount() == 1 && toDisplay != null) {
                     getSimulatorModel().setDisplay(toDisplay);
                 } else if (evt.getClickCount() == 2 && toDisplay != null) {
-                    ResourceKind kind = toDisplay.getResource();
-                    if (kind != null) {
-                        getActions().getEditAction(kind).execute();
+                    if (toDisplay.hasResource()) {
+                        getActions().getEditAction(toDisplay.getResource()).execute();
                     }
                 }
             }

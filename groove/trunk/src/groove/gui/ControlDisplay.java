@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
@@ -51,15 +49,26 @@ final public class ControlDisplay extends ResourceDisplay {
     /**
      * @param simulator The Simulator the panel is added to.
      */
-    public ControlDisplay(Simulator simulator) {
+    ControlDisplay(Simulator simulator) {
         super(simulator, ResourceKind.CONTROL);
-        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.CONTROL);
-        installListeners();
     }
 
     @Override
-    protected JComponent createDisplayPanel() {
-        return new ControlPanel();
+    protected void buildDisplay() {
+        // create the layout for this JPanel
+        setFocusable(false);
+        JSplitPane splitPane =
+            new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getTabPane(),
+                new JScrollPane(getDocPane()));
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setResizeWeight(1.0);
+        add(splitPane, BorderLayout.CENTER);
+    }
+
+    @Override
+    protected void installListeners() {
+        super.installListeners();
+        getSimulatorModel().addListener(this, Change.GRAMMAR, Change.CONTROL);
     }
 
     private JTree getDocPane() {
@@ -166,26 +175,4 @@ final public class ControlDisplay extends ResourceDisplay {
 
     /** Tool type map for syntax help. */
     private Map<?,String> toolTipMap;
-
-    /** Panel of this display. */
-    private class ControlPanel extends JPanel implements Panel {
-        /** Constructs an instance of the panel. */
-        public ControlPanel() {
-            // create the layout for this JPanel
-            this.setLayout(new BorderLayout());
-            setFocusable(false);
-            JSplitPane splitPane =
-                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getTabPane(),
-                    new JScrollPane(getDocPane()));
-            splitPane.setOneTouchExpandable(true);
-            splitPane.setResizeWeight(1.0);
-
-            add(splitPane, BorderLayout.CENTER);
-        }
-
-        @Override
-        public Display getDisplay() {
-            return ControlDisplay.this;
-        }
-    }
 }

@@ -21,17 +21,17 @@ public class EditStateAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        AspectGraph graph = getStateDisplay().getStateTab().getGraph();
+        AspectGraph graph = getStateDisplay().getGraphPanel().getGraph();
         final String newGraphName = askNewName(graph.getName(), true);
         if (newGraphName != null) {
             final AspectGraph newGraph = graph.rename(newGraphName);
             try {
-                getSimulatorModel().doAddGraph(getResourceKind(), newGraph, false);
+                getSimulatorModel().doAddGraph(getResourceKind(), newGraph,
+                    false);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        getDisplaysPanel().getHostDisplay().startEditResource(
-                            newGraphName);
+                        getHostDisplay().startEditResource(newGraphName);
                     }
                 });
             } catch (IOException e) {

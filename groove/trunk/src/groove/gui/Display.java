@@ -27,7 +27,6 @@ import java.awt.Dimension;
 import java.awt.Window;
 
 import javax.swing.Icon;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -35,29 +34,22 @@ import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 
 /**
- * Component that can appear on a tab in the {@link SimulatorModel}.
+ * Component that can appear on a display tab in the {@link SimulatorModel}.
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class Display {
+abstract public class Display extends JPanel {
     /** Creates the singleton instance for a given simulator. */
-    public Display(Simulator simulator, DisplayKind kind) {
+    protected Display(Simulator simulator, DisplayKind kind) {
+        super(new BorderLayout());
         this.simulator = simulator;
         this.kind = kind;
         this.resource = kind.getResource();
     }
 
-    /** Main panel of this tab; typically this is {@code this}. */
-    public final JComponent getDisplayPanel() {
-        if (this.displayPanel == null) {
-            this.displayPanel = createDisplayPanel();
-        }
-        return this.displayPanel;
-    }
-
     /** Tests if this display is part of an active top-level window. */
     public boolean isActive() {
-        Container top = getDisplayPanel().getParent();
+        Container top = getParent();
         while (top != null && top.getParent() != null) {
             top = top.getParent();
         }
@@ -65,12 +57,15 @@ abstract public class Display {
     }
 
     /** 
-     * Callback factory method for the display panel.
-     * This is a hook to allow additional components on the display
-     * panel, as in the {@link PrologDisplay}.
-     * @see #getDisplayPanel() 
+     * Callback method to build the content of the display panel.
      */
-    abstract protected JComponent createDisplayPanel();
+    abstract protected void buildDisplay();
+
+    /** 
+     * Callback method to install all listeners to the display.
+     * This is called after building the display.
+     */
+    abstract protected void installListeners();
 
     /** List panel corresponding to this tab; may be {@code null}. */
     public final ListPanel getListPanel() {
@@ -162,15 +157,43 @@ abstract public class Display {
     private final Simulator simulator;
     private final DisplayKind kind;
     private final ResourceKind resource;
-    /** The main display panel. */
-    private JComponent displayPanel;
-
     /** Panel with the label list. */
     private ListPanel listPanel;
     /** Production system control program list. */
     private JTree resourceList;
     /** Toolbar for the {@link #listPanel}. */
     private JToolBar listToolBar;
+
+    /** Creates and returns a fully built instance of the display for a given kind. */
+    public static Display newDisplay(Simulator simulator, DisplayKind kind) {
+        Display result = null;
+        switch (kind) {
+        case CONTROL:
+            result = new ControlDisplay(simulator);
+            break;
+        case LTS:
+            result = new LTSDisplay(simulator);
+            break;
+        case PROLOG:
+            result = new PrologDisplay(simulator);
+            break;
+        case RULE:
+            result = new RuleDisplay(simulator);
+            break;
+        case STATE:
+            result = new StateDisplay(simulator);
+            break;
+        case HOST:
+        case TYPE:
+            result = new ResourceDisplay(simulator, kind.getResource());
+            break;
+        default:
+            assert false;
+        }
+        result.buildDisplay();
+        result.installListeners();
+        return result;
+    }
 
     /** Interface for tabs on this display. */
     public static interface Tab {
@@ -205,7 +228,7 @@ abstract public class Display {
         /**
          * Returns the display on which this tab is placed.
          */
-        public Display getDisplay();
+        public ResourceDisplay getDisplay();
 
         /**
          * Returns the actual component of this tab.
@@ -220,12 +243,6 @@ abstract public class Display {
          * Callback method to notify the tab of a change in grammar. 
          */
         public void updateGrammar(GrammarModel grammar);
-    }
-
-    /** Interface of the panel being used for the display. */
-    interface Panel {
-        /** Returns the display to which this panel belongs. */
-        Display getDisplay();
     }
 
     /** Panel that contains list for this display. */
