@@ -505,11 +505,10 @@ public class Simulator implements SimulatorListener {
          * given {@link DisplayKind}.
          */
         protected void refresh(DisplayKind display) {
-            ResourceKind resource = display.getResource();
-            if (resource == null) {
-                setEnabled(false);
+            if (display.hasResource()) {
+                refresh(display.getResource());
             } else {
-                refresh(resource);
+                setEnabled(false);
             }
         }
 

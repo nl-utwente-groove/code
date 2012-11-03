@@ -53,7 +53,6 @@ import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -82,15 +81,44 @@ public class PrologDisplay extends ResourceDisplay {
     /**
      * Construct a prolog panel
      */
-    public PrologDisplay(Simulator simulator) {
+    PrologDisplay(Simulator simulator) {
         super(simulator, ResourceKind.PROLOG);
         Environment.setDefaultOutputStream(getUserOutput());
-        installListeners();
     }
 
     @Override
-    protected JComponent createDisplayPanel() {
-        return new MyDisplayPanel();
+    protected void buildDisplay() {
+        JPanel queryPane = new JPanel(new BorderLayout());
+        JLabel leading = new JLabel(" ?- ");
+        leading.setFont(leading.getFont().deriveFont(Font.BOLD));
+        queryPane.add(leading, BorderLayout.WEST);
+        queryPane.add(getQueryField(), BorderLayout.CENTER);
+        JPanel buttonsPane =
+            new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        buttonsPane.add(createExecuteButton());
+        buttonsPane.add(getNextResultButton());
+        buttonsPane.setBorder(null);
+        queryPane.add(buttonsPane, BorderLayout.EAST);
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setDividerLocation(.4);
+        splitPane.setBottomComponent(getTabPane());
+        splitPane.setTopComponent(getResultsPanel());
+
+        JPanel mainPane = new JPanel(new BorderLayout());
+        mainPane.add(queryPane, BorderLayout.NORTH);
+        mainPane.add(splitPane, BorderLayout.CENTER);
+
+        JSplitPane sp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        sp2.setResizeWeight(0.9);
+        sp2.setBorder(null);
+        sp2.setOneTouchExpandable(true);
+        sp2.setRightComponent(getSyntaxHelp());
+        sp2.setLeftComponent(mainPane);
+
+        setLayout(new BorderLayout());
+        add(sp2, BorderLayout.CENTER);
     }
 
     /**
@@ -630,50 +658,6 @@ public class PrologDisplay extends ResourceDisplay {
             this.dest.append(new String(this.buffer, 0, this.pos));
             this.buffer = new int[BUFFER_SIZE];
             this.pos = 0;
-        }
-    }
-
-    /** Main panel component of this display. */
-    private class MyDisplayPanel extends JPanel implements Panel {
-        /** Constructs the panel. */
-        public MyDisplayPanel() {
-            JPanel queryPane = new JPanel(new BorderLayout());
-            JLabel leading = new JLabel(" ?- ");
-            leading.setFont(leading.getFont().deriveFont(Font.BOLD));
-            queryPane.add(leading, BorderLayout.WEST);
-            queryPane.add(getQueryField(), BorderLayout.CENTER);
-            JPanel buttonsPane =
-                new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-            buttonsPane.add(createExecuteButton());
-            buttonsPane.add(getNextResultButton());
-            buttonsPane.setBorder(null);
-            queryPane.add(buttonsPane, BorderLayout.EAST);
-
-            JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-            splitPane.setOneTouchExpandable(true);
-            splitPane.setDividerLocation(.4);
-            splitPane.setBottomComponent(getTabPane());
-            splitPane.setTopComponent(getResultsPanel());
-
-            JPanel mainPane = new JPanel(new BorderLayout());
-            mainPane.add(queryPane, BorderLayout.NORTH);
-            mainPane.add(splitPane, BorderLayout.CENTER);
-
-            JSplitPane sp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-            sp2.setResizeWeight(0.9);
-            sp2.setBorder(null);
-            sp2.setOneTouchExpandable(true);
-            sp2.setRightComponent(getSyntaxHelp());
-            sp2.setLeftComponent(mainPane);
-
-            setLayout(new BorderLayout());
-            add(sp2, BorderLayout.CENTER);
-
-        }
-
-        @Override
-        public Display getDisplay() {
-            return PrologDisplay.this;
         }
     }
 }

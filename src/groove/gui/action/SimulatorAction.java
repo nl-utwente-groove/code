@@ -3,6 +3,7 @@ package groove.gui.action;
 import groove.graph.TypeLabel;
 import groove.gui.BehaviourOption;
 import groove.gui.ControlDisplay;
+import groove.gui.DisplayKind;
 import groove.gui.DisplaysPanel;
 import groove.gui.EditType;
 import groove.gui.Icons;
@@ -162,37 +163,38 @@ public abstract class SimulatorAction extends AbstractAction implements
 
     /** Convenience method to retrieve the state panel of the simulator. */
     protected final ResourceDisplay getHostDisplay() {
-        return getDisplaysPanel().getHostDisplay();
+        return (ResourceDisplay) getDisplaysPanel().getDisplay(DisplayKind.HOST);
     }
 
     /** Convenience method to retrieve the rule panel of the simulator */
     protected final RuleDisplay getRuleDisplay() {
-        return getDisplaysPanel().getRuleDisplay();
+        return (RuleDisplay) getDisplaysPanel().getDisplay(DisplayKind.RULE);
     }
 
     /** Convenience method to retrieve the type panel of the simulator. */
     protected final ResourceDisplay getTypeDisplay() {
-        return getDisplaysPanel().getTypeDisplay();
+        return (ResourceDisplay) getDisplaysPanel().getDisplay(DisplayKind.TYPE);
     }
 
     /** Returns the control panel that owns the action. */
     final protected ControlDisplay getControlDisplay() {
-        return getDisplaysPanel().getControlDisplay();
+        return (ControlDisplay) getDisplaysPanel().getDisplay(
+            (DisplayKind.CONTROL));
     }
 
     /** Returns the prolog panel that owns the action. */
     final protected PrologDisplay getPrologDisplay() {
-        return getDisplaysPanel().getPrologDisplay();
+        return (PrologDisplay) getDisplaysPanel().getDisplay(DisplayKind.PROLOG);
     }
 
     /** Returns the LTS panel that owns the action. */
     final protected LTSDisplay getLtsDisplay() {
-        return getDisplaysPanel().getLtsDisplay();
+        return (LTSDisplay) getDisplaysPanel().getDisplay(DisplayKind.LTS);
     }
 
     /** Returns the state panel that owns the action. */
     final protected StateDisplay getStateDisplay() {
-        return getDisplaysPanel().getStateDisplay();
+        return (StateDisplay) getDisplaysPanel().getDisplay(DisplayKind.STATE);
     }
 
     /** Returns the (possibly {@code null}) edit type of this action.*/

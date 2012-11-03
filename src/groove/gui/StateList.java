@@ -455,8 +455,9 @@ public class StateList extends JTree implements SimulatorListener {
         return this.simulator.getActions();
     }
 
-    private final RuleDisplay getRuleDisplay() {
-        return this.simulator.getDisplaysPanel().getRuleDisplay();
+    private final ResourceDisplay getRuleDisplay() {
+        return (ResourceDisplay) this.simulator.getDisplaysPanel().getDisplay(
+            DisplayKind.RULE);
     }
 
     private final Options getOptions() {

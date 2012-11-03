@@ -38,9 +38,8 @@ final public class RuleDisplay extends ResourceDisplay {
     /**
      * Constructs a panel for a given simulator.
      */
-    public RuleDisplay(Simulator simulator) {
+    RuleDisplay(Simulator simulator) {
         super(simulator, ResourceKind.RULE);
-        installListeners();
     }
 
     @Override

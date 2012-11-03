@@ -107,7 +107,7 @@ public class ExportAction extends SimulatorAction {
                                 ? ((GraphTab) selectedTab).getJGraph()
                                 : ((GraphEditorTab) selectedTab).getJGraph();
             case STATE:
-                return getStateDisplay().getStateTab().getJGraph();
+                return getStateDisplay().getGraphPanel().getJGraph();
             case LTS:
                 return getLtsDisplay().getLtsJGraph();
             default:

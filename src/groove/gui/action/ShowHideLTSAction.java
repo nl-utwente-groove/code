@@ -32,7 +32,7 @@ public class ShowHideLTSAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        getLtsDisplay().getLTSTab().toggleShowHideLts();
+        getLtsDisplay().getGraphPanel().toggleShowHideLts();
         getActions().getFilterLTSAction().setEnabled(
             !getLtsDisplay().isHidingLts());
     }

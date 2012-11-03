@@ -41,7 +41,6 @@ import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
-import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
@@ -60,20 +59,13 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     /**
      * Constructs a display, for a given simulator and resource kind.
      */
-    public ResourceDisplay(Simulator simulator, ResourceKind resource) {
+    ResourceDisplay(Simulator simulator, ResourceKind resource) {
         super(simulator, DisplayKind.toDisplay(resource));
     }
 
-    /** 
-     * Callback factory method for the display panel.
-     * This implementation defers to {@link #getTabPane()},
-     * but it is a hook to allow additional components on the display
-     * panel, as in the {@link PrologDisplay}.
-     * @see #getDisplayPanel() 
-     */
     @Override
-    protected JComponent createDisplayPanel() {
-        return getTabPane();
+    protected void buildDisplay() {
+        add(getTabPane());
     }
 
     /**
@@ -91,8 +83,8 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * Returns the panel holding all display tabs.
      * This may or may not be the same as #getDisplayPanel().
      */
-    final protected TabbedDisplayPanel createTabPane() {
-        return new TabbedDisplayPanel();
+    final protected MyTabbedPane createTabPane() {
+        return new MyTabbedPane();
     }
 
     /** Callback method to create the resource list. */
@@ -396,11 +388,12 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * Initialises all listening activity on the display, and 
      * calls {@link #activateListening()}.
      */
+    @Override
     protected void installListeners() {
         getSimulatorModel().addListener(this, Change.GRAMMAR,
             Change.toChange(getResourceKind()));
         // adds a mouse listener that offers a popup menu with a detach action
-        getDisplayPanel().addMouseListener(new MouseAdapter() {
+        addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
@@ -410,7 +403,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
                         ResourceTab tab =
                             (ResourceTab) getTabPane().getComponentAt(index);
                         if (tab != getMainTab()) {
-                            createDetachMenu(tab).show(getDisplayPanel(),
+                            createDetachMenu(tab).show(ResourceDisplay.this,
                                 e.getX(), e.getY());
                         }
                     }
@@ -656,9 +649,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     /** Tool tip text for a disabled resource. */
     private String disabledText;
 
-    class TabbedDisplayPanel extends JTabbedPane implements Panel {
+    private class MyTabbedPane extends JTabbedPane {
         /** Constructs an instance of the panel. */
-        public TabbedDisplayPanel() {
+        public MyTabbedPane() {
             super(BOTTOM);
             setFocusable(false);
             setBorder(new EmptyBorder(0, 0, -4, 0));
@@ -677,7 +670,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             }
             // make sure the tab component of the selected tab is enabled
             setTabEnabled(getSelectedIndex(), true);
-            getDisplayPanel().setEnabled(getTabCount() > 0);
+            setEnabled(getTabCount() > 0);
             ListPanel listPanel = getListPanel();
             if (listPanel != null) {
                 listPanel.repaint();
@@ -708,11 +701,6 @@ public class ResourceDisplay extends Display implements SimulatorListener {
                 }
                 getComponentAt(index).requestFocus();
             }
-        }
-
-        @Override
-        public Display getDisplay() {
-            return ResourceDisplay.this;
         }
     }
 

@@ -217,9 +217,9 @@ abstract public class ResourceTab extends JPanel implements Tab {
         boolean result = true;
         if (isDirty()) {
             int answer =
-                JOptionPane.showConfirmDialog(getDisplay().getDisplayPanel(),
-                    String.format("%s '%s' has been modified. Save changes?",
-                        getResourceKind().getName(), getName()), null,
+                JOptionPane.showConfirmDialog(getDisplay(), String.format(
+                    "%s '%s' has been modified. Save changes?",
+                    getResourceKind().getName(), getName()), null,
                     JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.YES_OPTION) {
                 saveResource();
