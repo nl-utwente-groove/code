@@ -8,7 +8,6 @@ import groove.gui.DisplayKind;
 import groove.gui.GraphEditorTab;
 import groove.gui.GraphTab;
 import groove.gui.Icons;
-import groove.gui.LTSDisplay;
 import groove.gui.Options;
 import groove.gui.ResourceDisplay;
 import groove.gui.Simulator;
@@ -107,11 +106,10 @@ public class ExportAction extends SimulatorAction {
                         : selectedTab instanceof GraphTab
                                 ? ((GraphTab) selectedTab).getJGraph()
                                 : ((GraphEditorTab) selectedTab).getJGraph();
+            case STATE:
+                return getStateDisplay().getStateTab().getJGraph();
             case LTS:
-                LTSDisplay ltsDisplay = (LTSDisplay) this.display;
-                return ltsDisplay.isStateTabSelected()
-                        ? ltsDisplay.getStateTab().getJGraph()
-                        : ltsDisplay.getLtsJGraph();
+                return getLtsDisplay().getLtsJGraph();
             default:
                 assert false;
                 return null;

@@ -76,6 +76,25 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         return getTabPane();
     }
 
+    /**
+     * Returns the panel holding all display tabs.
+     * This may or may not be the same as #getDisplayPanel().
+     */
+    final public JTabbedPane getTabPane() {
+        if (this.tabPane == null) {
+            this.tabPane = createTabPane();
+        }
+        return this.tabPane;
+    }
+
+    /**
+     * Returns the panel holding all display tabs.
+     * This may or may not be the same as #getDisplayPanel().
+     */
+    final protected TabbedDisplayPanel createTabPane() {
+        return new TabbedDisplayPanel();
+    }
+
     /** Callback method to create the resource list. */
     @Override
     protected JTree createList() {
@@ -84,7 +103,10 @@ public class ResourceDisplay extends Display implements SimulatorListener {
 
     @Override
     protected void resetList() {
-        ((ResourceTree) getList()).suspendListeners();
+        ResourceTree list = (ResourceTree) getList();
+        if (list != null) {
+            list.suspendListeners();
+        }
         super.resetList();
     }
 
@@ -202,15 +224,6 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             this.enableButton.setText(null);
         }
         return this.enableButton;
-    }
-
-    /**
-     * Returns the panel holding all display tabs.
-     * This may or may not be the same as #getDisplayPanel().
-     */
-    @Override
-    final protected TabbedDisplayPanel createTabPane() {
-        return new TabbedDisplayPanel();
     }
 
     /** Callback to obtain the main tab of this display. */
@@ -627,6 +640,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             name);
     }
 
+    private JTabbedPane tabPane;
     private JToggleButton enableButton;
 
     /** Mapping from graph names to editors for those graphs. */
@@ -664,7 +678,10 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             // make sure the tab component of the selected tab is enabled
             setTabEnabled(getSelectedIndex(), true);
             getDisplayPanel().setEnabled(getTabCount() > 0);
-            getListPanel().repaint();
+            ListPanel listPanel = getListPanel();
+            if (listPanel != null) {
+                listPanel.repaint();
+            }
         }
 
         @Override

@@ -76,7 +76,6 @@ public class StateList extends JTree implements SimulatorListener {
     protected StateList(Simulator simulator) {
         this.simulator = simulator;
         setEnabled(false);
-        setBackground(JAttr.STATE_BACKGROUND);
         setLargeModel(true);
         setRootVisible(false);
         setShowsRootHandles(true);
@@ -638,7 +637,7 @@ public class StateList extends JTree implements SimulatorListener {
                 if (node instanceof RuleTreeNode) {
                     toDisplay = DisplayKind.RULE;
                 } else {
-                    toDisplay = DisplayKind.LTS;
+                    toDisplay = DisplayKind.STATE;
                 }
                 getSimulatorModel().setDisplay(toDisplay);
                 break;

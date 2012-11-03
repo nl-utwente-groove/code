@@ -21,7 +21,7 @@ public class EditStateAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        AspectGraph graph = getLtsDisplay().getStateTab().getGraph();
+        AspectGraph graph = getStateDisplay().getStateTab().getGraph();
         final String newGraphName = askNewName(graph.getName(), true);
         if (newGraphName != null) {
             final AspectGraph newGraph = graph.rename(newGraphName);

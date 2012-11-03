@@ -29,7 +29,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -52,13 +51,16 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     public DisplaysPanel(final Simulator simulator) {
         super(TOP);
         this.simulator = simulator;
+        addTab(getStateDisplay());
+        addTab(getLtsDisplay());
         addTab(getHostDisplay());
         addTab(getRuleDisplay());
-        addTab(getLtsDisplay());
         addTab(getControlDisplay());
         addTab(getTypeDisplay());
         addTab(getPrologDisplay());
         setSelectedIndex(0);
+        getUpperListsPanel().setSelectedIndex(0);
+        getLowerListsPanel().setSelectedIndex(0);
         installListeners();
         setVisible(true);
     }
@@ -66,7 +68,10 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     private void addTab(Display component) {
         DisplayKind kind = component.getKind();
         this.displaysMap.put(kind, component);
-        this.listKindMap.put(component.getListPanel(), kind);
+        ListPanel listPanel = component.getListPanel();
+        if (listPanel != null) {
+            this.listKindMap.put(listPanel, kind);
+        }
         if (Options.getOptionalTabs().contains(kind.getResource())) {
             showOrHideTab(kind.getResource());
         } else {
@@ -94,7 +99,10 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             }
         } else {
             remove(display.getDisplayPanel());
-            getListsPanel(displayKind).remove(display.getListPanel());
+            ListPanel listPanel = display.getListPanel();
+            if (listPanel != null) {
+                getListsPanel(displayKind).remove(listPanel);
+            }
         }
         return show;
     }
@@ -159,12 +167,12 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     /** Returns the state and graph display shown on this panel. */
     public ResourceDisplay getHostDisplay() {
-        if (this.stateDisplay == null) {
-            this.stateDisplay =
+        if (this.hostDisplay == null) {
+            this.hostDisplay =
                 new ResourceDisplay(this.simulator, ResourceKind.HOST);
-            this.stateDisplay.installListeners();
+            this.hostDisplay.installListeners();
         }
-        return this.stateDisplay;
+        return this.hostDisplay;
     }
 
     /** Returns the rule display shown on this panel. */
@@ -196,6 +204,17 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         return this.ltsDisplay;
     }
 
+    /**
+     * Returns the simulator panel on which the LTS. Note that this panel may
+     * currently not be visible.
+     */
+    public StateDisplay getStateDisplay() {
+        if (this.stateDisplay == null) {
+            this.stateDisplay = new StateDisplay(this.simulator);
+        }
+        return this.stateDisplay;
+    }
+
     /** Returns the panel containing the control program. */
     public ControlDisplay getControlDisplay() {
         if (this.controlDisplay == null) {
@@ -218,7 +237,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
      * {@link DisplaysPanel}.
      * @see Display#getListPanel()
      */
-    public JTabbedPane getUpperListPanel() {
+    public JTabbedPane getUpperListsPanel() {
         if (this.upperListsPanel == null) {
             this.upperListsPanel = new JTabbedPane();
         }
@@ -236,10 +255,11 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         return this.lowerListsPanel;
     }
 
-    /** Indicates is a list panel should go onto the upper or the lower pane. */
+    /** Indicates if a list panel should go onto the upper or the lower pane. */
     private JTabbedPane getListsPanel(DisplayKind kind) {
-        if (kind == DisplayKind.LTS || kind == DisplayKind.RULE) {
-            return getUpperListPanel();
+        if (kind == DisplayKind.LTS || kind == DisplayKind.STATE
+            || kind == DisplayKind.RULE) {
+            return getUpperListsPanel();
         } else {
             return getLowerListsPanel();
         }
@@ -255,33 +275,42 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             }
         }
         if (changes.contains(Change.DISPLAY)) {
-            if (!this.changingTabs) {
-                Display display = this.displaysMap.get(source.getDisplay());
-                if (indexOfComponent(display.getDisplayPanel()) >= 0) {
-                    setSelectedComponent(display.getDisplayPanel());
+            DisplayKind oldDisplayKind = oldModel.getDisplay();
+            DisplayKind newDisplayKind = source.getDisplay();
+            boolean changeDisplay = !this.changingTabs;
+            boolean changeList = oldDisplayKind != newDisplayKind;
+            switch (oldDisplayKind) {
+            case LTS:
+                changeDisplay = newDisplayKind != DisplayKind.STATE;
+                break;
+            case RULE:
+                changeList &= newDisplayKind != DisplayKind.STATE;
+                break;
+            case STATE:
+                changeList &= newDisplayKind != DisplayKind.RULE;
+                break;
+            }
+            if (changeDisplay) {
+                Display panel = this.displaysMap.get(newDisplayKind);
+                if (indexOfComponent(panel.getDisplayPanel()) >= 0) {
+                    setSelectedComponent(panel.getDisplayPanel());
                 } else {
                     DisplayWindow window =
                         this.detachedMap.get(source.getDisplay());
                     if (window == null) {
-                        attach(display);
+                        attach(panel);
                     } else {
                         window.toFront();
                     }
                 }
-            }
-            JPanel listPanel =
-                getDisplayFor(source.getDisplay()).getListPanel();
-            JTabbedPane listsTabPane = getListsPanel(source.getDisplay());
-            // do not automatically switch lists panel between LTS and rule mode
-            ListPanel oldListPanel =
-                (ListPanel) listsTabPane.getSelectedComponent();
-            boolean stopChange =
-                oldListPanel != null
-                    && EnumSet.of(DisplayKind.LTS, DisplayKind.RULE).equals(
-                        EnumSet.of(source.getDisplay(),
-                            oldListPanel.getDisplayKind()));
-            if (!stopChange && listsTabPane.indexOfComponent(listPanel) >= 0) {
-                listsTabPane.setSelectedComponent(listPanel);
+                JPanel newListPanel =
+                    getDisplayFor(newDisplayKind).getListPanel();
+                JTabbedPane listsTabPane = getListsPanel(source.getDisplay());
+                // do not automatically switch lists panel between state and rule mode
+                if (changeList && newListPanel != null
+                    && listsTabPane.indexOfComponent(newListPanel) >= 0) {
+                    listsTabPane.setSelectedComponent(newListPanel);
+                }
             }
         } else if (getSelectedComponent() != null) {
             // switch tabs if the selection on the currently displayed tab
@@ -315,14 +344,16 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     public JGraphPanel<?> getGraphPanel() {
         JGraphPanel<?> result = null;
         Display display = getSelectedDisplay();
-        Component selectedComponent =
-            display.getTabPane().getSelectedComponent();
-        if (selectedComponent instanceof GraphEditorTab) {
-            result = ((GraphEditorTab) selectedComponent).getEditArea();
-        } else if (selectedComponent instanceof GraphTab) {
-            result = ((GraphTab) selectedComponent).getEditArea();
-        } else if (selectedComponent instanceof JGraphPanel<?>) {
-            result = (JGraphPanel<?>) selectedComponent;
+        if (display.getResourceKind() != null) {
+            Component selectedComponent =
+                ((ResourceDisplay) display).getTabPane().getSelectedComponent();
+            if (selectedComponent instanceof GraphEditorTab) {
+                result = ((GraphEditorTab) selectedComponent).getEditArea();
+            } else if (selectedComponent instanceof GraphTab) {
+                result = ((GraphTab) selectedComponent).getEditArea();
+            } else if (selectedComponent instanceof JGraphPanel<?>) {
+                result = (JGraphPanel<?>) selectedComponent;
+            }
         }
         return result;
     }
@@ -348,7 +379,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         // first add the corresponding list panel
         JPanel listPanel = display.getListPanel();
         JTabbedPane tabbedPane = getListsPanel(display.getKind());
-        if (tabbedPane.indexOfComponent(listPanel) < 0) {
+        if (listPanel != null && tabbedPane.indexOfComponent(listPanel) < 0) {
             int index;
             for (index = 0; index < tabbedPane.getTabCount(); index++) {
                 DisplayKind otherKind =
@@ -520,13 +551,15 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     private final Map<DisplayKind,DisplayWindow> detachedMap =
         new HashMap<DisplayKind,DisplayWindow>();
     /** The state tab shown on this panel. */
-    private ResourceDisplay stateDisplay;
+    private ResourceDisplay hostDisplay;
     /** The rule tab shown on this panel. */
     private RuleDisplay ruleDisplay;
     /** The type graph tab shown on this panel. */
     private ResourceDisplay typeDisplay;
     /** LTS tab shown on this panel. */
     private LTSDisplay ltsDisplay;
+    /** State tab shown on this panel. */
+    private StateDisplay stateDisplay;
     /** Prolog display panel. */
     private PrologDisplay prologDisplay;
     /** Control display panel. */

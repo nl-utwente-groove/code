@@ -30,7 +30,6 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
@@ -67,37 +66,27 @@ abstract public class Display {
 
     /** 
      * Callback factory method for the display panel.
-     * This implementation defers to {@link #getTabPane()},
-     * but it is a hook to allow additional components on the display
+     * This is a hook to allow additional components on the display
      * panel, as in the {@link PrologDisplay}.
      * @see #getDisplayPanel() 
      */
     abstract protected JComponent createDisplayPanel();
 
-    /**
-     * Returns the panel holding all display tabs.
-     * This may or may not be the same as #getDisplayPanel().
-     */
-    final public JTabbedPane getTabPane() {
-        if (this.tabPane == null) {
-            this.tabPane = createTabPane();
-        }
-        return this.tabPane;
-    }
-
-    /**
-     * Creates the panel holding all display tabs.
-     * This may or may not be the same as #getDisplayPanel().
-     */
-    abstract protected JTabbedPane createTabPane();
-
     /** List panel corresponding to this tab; may be {@code null}. */
-    public ListPanel getListPanel() {
+    public final ListPanel getListPanel() {
         if (this.listPanel == null) {
-            this.listPanel = new ListPanel();
-            ToolTipManager.sharedInstance().registerComponent(this.listPanel);
+            this.listPanel = createListPanel();
+            if (this.listPanel != null) {
+                ToolTipManager.sharedInstance().registerComponent(
+                    this.listPanel);
+            }
         }
         return this.listPanel;
+    }
+
+    /** Factory method for the list panel corresponding to this display; may be {@code null}. */
+    protected ListPanel createListPanel() {
+        return new ListPanel();
     }
 
     /** Creates and returns the fixed tool bar for the label list. */
@@ -175,7 +164,6 @@ abstract public class Display {
     private final ResourceKind resource;
     /** The main display panel. */
     private JComponent displayPanel;
-    private JTabbedPane tabPane;
 
     /** Panel with the label list. */
     private ListPanel listPanel;

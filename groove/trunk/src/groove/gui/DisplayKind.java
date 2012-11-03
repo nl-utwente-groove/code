@@ -10,21 +10,23 @@ import javax.swing.ImageIcon;
 
 /** Type of components in the panel. */
 public enum DisplayKind {
-    /** State panel. */
+    /** Host graph display. */
     HOST(ResourceKind.HOST, Icons.GRAPH_FRAME_ICON, "Graphs",
             "Current graph state"),
-    /** Rule panel. */
+    /** Rule display. */
     RULE(ResourceKind.RULE, Icons.RULE_FRAME_ICON, "Rules", "Selected rule"),
-    /** LTS panel. */
-    LTS(null, Icons.LTS_FRAME_ICON, "Simulation", "Simulation panel"),
-    /** Type panel. */
+    /** Type display. */
     TYPE(ResourceKind.TYPE, Icons.TYPE_FRAME_ICON, "Types", "Type graphs"),
-    /** Control panel. */
+    /** Control display. */
     CONTROL(ResourceKind.CONTROL, Icons.CONTROL_FRAME_ICON, "Control",
             "Control specifications"),
-    /** Prolog panel. */
+    /** Prolog display. */
     PROLOG(ResourceKind.PROLOG, Icons.PROLOG_FRAME_ICON, "Prolog",
-            "Prolog programs");
+            "Prolog programs"),
+    /** State display. */
+    STATE(null, Icons.STATE_FRAME_ICON, "State", "State panel"),
+    /** LTS display. */
+    LTS(null, Icons.LTS_FRAME_ICON, "Simulation", "Simulation panel");
 
     private DisplayKind(ResourceKind resource, ImageIcon tabIcon, String title,
             String tip) {
@@ -61,7 +63,8 @@ public enum DisplayKind {
 
     /** Returns true if this display kind is used for showing graphs. */
     public final boolean isGraphBased() {
-        return this == HOST || this == RULE || this == LTS || this == TYPE;
+        return this == HOST || this == RULE || this == LTS || this == STATE
+            || this == TYPE;
     }
 
     private final ResourceKind resource;

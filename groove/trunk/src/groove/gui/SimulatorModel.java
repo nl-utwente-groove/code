@@ -602,7 +602,7 @@ public class SimulatorModel implements Cloneable {
             changeMatch(null);
             changeTransition(null);
             if (state != null) {
-                changeDisplay(DisplayKind.LTS);
+                changeDisplay(DisplayKind.STATE);
             }
         }
         return finish();
@@ -686,7 +686,7 @@ public class SimulatorModel implements Cloneable {
             changeMatch(match);
             changeSelected(ResourceKind.RULE, match.getRule().getFullName());
             changeState(trans.source());
-            changeDisplay(DisplayKind.LTS);
+            changeDisplay(DisplayKind.STATE);
         }
         return finish();
     }

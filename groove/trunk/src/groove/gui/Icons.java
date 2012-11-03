@@ -350,6 +350,9 @@ public final class Icons {
     /** Closed state icon. */
     public static final ImageIcon STATE_FINAL_ICON =
         createIcon("state-final.gif");
+    /** Icon for the state panel of the simulator. */
+    public static final ImageIcon STATE_FRAME_ICON =
+        createIcon("state-frame.gif");
     /** State display mode icon. */
     public static final ImageIcon STATE_MODE_ICON =
         createIcon("state-mode.gif");
