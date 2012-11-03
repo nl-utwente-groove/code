@@ -17,12 +17,12 @@
 package groove.gui.action;
 
 import groove.gui.DisplayKind;
-import groove.gui.LTSDisplay;
 import groove.gui.Refreshable;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.StateDisplay;
 import groove.trans.ResourceKind;
 
 import java.util.ArrayList;
@@ -361,7 +361,7 @@ public class ActionStore implements SimulatorListener {
     public ExportAction getExportAction(DisplayKind kind) {
         if (!this.exportActionMap.containsKey(kind)) {
             ExportAction result = null;
-            if (kind == DisplayKind.LTS || kind.getResource().isGraphBased()) {
+            if (kind.isGraphBased()) {
                 result = new ExportAction(getSimulator(), kind);
             }
             // also put it in the map when the result is null,
@@ -377,8 +377,8 @@ public class ActionStore implements SimulatorListener {
     /** Returns the export action appropriate for a given simulator tab kind. */
     public ExportAction getExportStateAction() {
         if (this.exportStateAction == null) {
-            LTSDisplay display =
-                this.simulator.getDisplaysPanel().getLtsDisplay();
+            StateDisplay display =
+                this.simulator.getDisplaysPanel().getStateDisplay();
             this.exportStateAction =
                 display.getStateTab().getJGraph().getExportAction();
         }

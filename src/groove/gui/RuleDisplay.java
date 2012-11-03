@@ -75,8 +75,8 @@ final public class RuleDisplay extends ResourceDisplay {
     }
 
     @Override
-    public ListPanel getListPanel() {
-        ListPanel result = super.getListPanel();
+    protected ListPanel createListPanel() {
+        ListPanel result = super.createListPanel();
         result.add(this.statusLine, BorderLayout.SOUTH);
         return result;
     }

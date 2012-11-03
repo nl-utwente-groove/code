@@ -5,6 +5,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -41,19 +42,16 @@ class DisplayWindow extends JFrame {
         this.parent = parent;
         this.display = display;
         JPanel listPanel = this.display.getListPanel();
-        JSplitPane splitPane =
-            new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, listPanel,
-                this.display.getDisplayPanel());
-        getContentPane().add(splitPane);
-        pack();
-        setVisible(true);
-    }
-
-    /** Constructs an instance for a given simulator and panel. */
-    public DisplayWindow(StateTab stateTab) {
-        this(Kind.STATE, "Current State", (ImageIcon) stateTab.getIcon());
-        this.stateTab = stateTab;
-        getContentPane().add(this.stateTab);
+        JComponent displayPanel = this.display.getDisplayPanel();
+        JComponent content;
+        if (listPanel == null) {
+            content = displayPanel;
+        } else {
+            content =
+                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, listPanel,
+                    displayPanel);
+        }
+        getContentPane().add(content);
         pack();
         setVisible(true);
     }
@@ -63,15 +61,12 @@ class DisplayWindow extends JFrame {
         case DISPLAY:
             this.parent.attach(this.display);
             break;
-        case STATE:
-            this.stateTab.getDisplay().attachStateTab();
         }
     }
 
     private final Kind kind;
     private DisplaysPanel parent;
     private Display display;
-    private StateTab stateTab;
     private static final Dimension MINIMUM_SIZE = new Dimension(500, 300);
 
     private static enum Kind {

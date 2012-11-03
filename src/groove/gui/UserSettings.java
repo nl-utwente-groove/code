@@ -117,20 +117,11 @@ public class UserSettings {
         String display = userPrefs.get(DISPLAY_KEY, "");
         final DisplayKind kind =
             display.isEmpty() ? null : DisplayKind.valueOf(display);
-        String ltsTab = userPrefs.get(SIMULATION_TAB_KEY, "");
-        final Integer tabIndex =
-            ltsTab.isEmpty() ? null : Integer.parseInt(ltsTab);
-        if (kind != null || tabIndex != null) {
+        if (kind != null) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    if (kind != null) {
-                        simulator.getModel().setDisplay(kind);
-                    }
-                    if (tabIndex != null) {
-                        simulator.getDisplaysPanel().getLtsDisplay().getTabPane().setSelectedIndex(
-                            tabIndex);
-                    }
+                    simulator.getModel().setDisplay(kind);
                 }
             });
         }
@@ -174,13 +165,6 @@ public class UserSettings {
     private static void syncDisplaySettings(Simulator simulator) {
         Object display = simulator.getModel().getDisplay().name();
         userPrefs.put(DISPLAY_KEY, display.toString());
-        int ltsTabIndex =
-            simulator.getDisplaysPanel().getLtsDisplay().getTabPane().getSelectedIndex();
-        if (ltsTabIndex >= 0) {
-            userPrefs.put(SIMULATION_TAB_KEY, "" + ltsTabIndex);
-        } else {
-            userPrefs.remove(SIMULATION_TAB_KEY);
-        }
     }
 
     /** The persistently stored user preferences. */
@@ -189,8 +173,6 @@ public class UserSettings {
     private static final String LOCATION_KEY = "Grammar location";
     /** Key for the selected display. */
     private static final String DISPLAY_KEY = "Selected display";
-    /** Key for the selected simulation tab. */
-    private static final String SIMULATION_TAB_KEY = "Selected simulation tab";
     static private final String SIM_MAX_KEY = "Simulator maximized";
     static private final String SIM_WIDTH_KEY = "Simulator width";
     static private final String SIM_HEIGHT_KEY = "Simulator height";

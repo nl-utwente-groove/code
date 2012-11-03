@@ -127,7 +127,7 @@ public class TabLabel extends JPanel {
      * Creates new component for the state tab. 
      */
     public TabLabel(Display display, Tab tab, Icon icon, String title) {
-        this(Kind.STATE, icon, title, tab instanceof StateTab);
+        this(Kind.STATE, icon, title, false);
         this.display = display;
     }
 
@@ -181,9 +181,6 @@ public class TabLabel extends JPanel {
             break;
         case DISPLAY:
             ((DisplaysPanel) this.parent).detach(this.display);
-            break;
-        case STATE:
-            ((LTSDisplay) this.display).detachStateTab();
             break;
         case LIST:
             ((ListTabbedPane) this.parent).closeSearchTab();

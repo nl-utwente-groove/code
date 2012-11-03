@@ -14,6 +14,7 @@ import groove.gui.ResourceDisplay;
 import groove.gui.RuleDisplay;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
+import groove.gui.StateDisplay;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.FindReplaceDialog;
 import groove.gui.dialog.FreshNameDialog;
@@ -184,9 +185,14 @@ public abstract class SimulatorAction extends AbstractAction implements
         return getDisplaysPanel().getPrologDisplay();
     }
 
-    /** Returns the prolog panel that owns the action. */
+    /** Returns the LTS panel that owns the action. */
     final protected LTSDisplay getLtsDisplay() {
         return getDisplaysPanel().getLtsDisplay();
+    }
+
+    /** Returns the state panel that owns the action. */
+    final protected StateDisplay getStateDisplay() {
+        return getDisplaysPanel().getStateDisplay();
     }
 
     /** Returns the (possibly {@code null}) edit type of this action.*/

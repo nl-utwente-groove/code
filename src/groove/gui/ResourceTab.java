@@ -254,7 +254,10 @@ abstract public class ResourceTab extends JPanel implements Tab {
     protected void updateDirty() {
         getTabLabel().setTitle(this.display.getLabelText(getName()));
         getSaveAction().refresh();
-        this.display.getListPanel().repaint();
+        Display.ListPanel listPanel = this.display.getListPanel();
+        if (listPanel != null) {
+            listPanel.repaint();
+        }
     }
 
     /** 
