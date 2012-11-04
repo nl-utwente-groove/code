@@ -287,7 +287,7 @@ public class Simulator implements SimulatorListener {
             result.setLeftComponent(getDisplaysPanel());
             result.setRightComponent(getDisplaysPanel().getInfoPanel());
             result.setOneTouchExpandable(true);
-            result.setResizeWeight(0.8);
+            result.setResizeWeight(1);
             result.setDividerLocation(0.8);
             result.setContinuousLayout(true);
             result.setBorder(null);

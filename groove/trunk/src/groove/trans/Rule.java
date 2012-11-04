@@ -159,7 +159,7 @@ public class Rule implements Action, Fixable {
      */
     public String getTransitionLabel() {
         String result = this.ruleProperties.getTransitionLabel();
-        if (result == null) {
+        if (result.isEmpty()) {
             result = getFullName();
         }
         return result;

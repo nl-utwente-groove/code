@@ -216,13 +216,15 @@ public class SimulatorModel implements Cloneable {
             boolean layout) throws IOException {
         start();
         try {
+            String name = newGraph.getName();
+            boolean oldEnabled = isEnabled(kind, name);
             getStore().putGraphs(kind, Collections.singleton(newGraph), layout);
             if (layout) {
                 return false;
             } else {
-                boolean result = isEnabled(newGraph);
+                boolean result = isEnabled(kind, name) || oldEnabled;
                 changeGrammar(result);
-                changeSelected(kind, newGraph.getName());
+                changeSelected(kind, name);
                 changeDisplay(DisplayKind.toDisplay(kind));
                 return result;
             }
@@ -232,10 +234,8 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** Tests if a given aspect graph corresponds to an enabled resource. */
-    private boolean isEnabled(AspectGraph graph) {
-        ResourceKind kind = ResourceKind.toResource(graph.getRole());
-        assert kind != null;
-        return getGrammar().getActiveNames(kind).contains(graph.getName());
+    private boolean isEnabled(ResourceKind kind, String name) {
+        return getGrammar().getActiveNames(kind).contains(name);
     }
 
     /**

@@ -26,7 +26,10 @@ public enum DisplayKind {
     /** State display. */
     STATE(null, Icons.STATE_FRAME_ICON, "State", "State panel"),
     /** LTS display. */
-    LTS(null, Icons.LTS_FRAME_ICON, "Simulation", "Simulation panel");
+    LTS(null, Icons.LTS_FRAME_ICON, "Simulation", "Simulation panel"),
+    /** Properties display. */
+    PROPERTIES(null, Icons.PROPERTIES_FRAME_ICON, "Properties",
+            "System properties");
 
     private DisplayKind(ResourceKind resource, ImageIcon tabIcon, String title,
             String tip) {
@@ -49,6 +52,34 @@ public enum DisplayKind {
     /** Indicates if this is a resource-related display. */
     public final boolean hasResource() {
         return getResource() != null;
+    }
+
+    /** Indicates if this display should be put on the displays panel. */
+    public final boolean showDisplay() {
+        return this != PROPERTIES;
+    }
+
+    /** Returns the list panel indicator for this display.
+     * @return {@code -1} for no list, {@code 0} for upper, {@code 1} for lower.
+     */
+    public final int getListPanel() {
+        int result;
+        switch (this) {
+        case STATE:
+        case RULE:
+        case PROPERTIES:
+            result = 0;
+            break;
+        case CONTROL:
+        case HOST:
+        case TYPE:
+        case PROLOG:
+            result = 1;
+            break;
+        default:
+            result = -1;
+        }
+        return result;
     }
 
     /** Returns the title of this display. */

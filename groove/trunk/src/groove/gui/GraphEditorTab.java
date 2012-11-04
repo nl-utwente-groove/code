@@ -28,6 +28,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.gui.action.SnapToGridAction;
+import groove.gui.dialog.PropertiesTable;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
@@ -75,6 +76,8 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.event.UndoableEditEvent;
 
 import org.jgraph.event.GraphModelEvent;
@@ -214,10 +217,7 @@ final public class GraphEditorTab extends ResourceTab implements
                 GraphInfo.getProperties(graphModel.getSource(), false);
             if (properties != null
                 && !properties.equals(GraphInfo.getProperties(getGraph(), false))) {
-                AspectGraph newGraph = getGraph().clone();
-                GraphInfo.setProperties(newGraph, properties);
-                newGraph.setFixed();
-                change(newGraph);
+                changeProperties(properties);
             } else {
                 getJModel().loadViewErrors();
                 getJGraph().refresh();
@@ -275,6 +275,15 @@ final public class GraphEditorTab extends ResourceTab implements
         getJModel().loadGraph(newGraph);
         updateStatus();
         setName(newName);
+    }
+
+    /** Changes the properties of the graph in the JModel. */
+    private void changeProperties(Map<?,?> newProperties) {
+        AspectGraph newGraph = getGraph().clone();
+        GraphInfo.setProperties(newGraph, new GraphProperties(newProperties));
+        newGraph.setFixed();
+        getJModel().loadGraph(newGraph);
+        updateStatus();
     }
 
     @Override
@@ -419,20 +428,62 @@ final public class GraphEditorTab extends ResourceTab implements
     }
 
     @Override
-    public JComponent getUpperInfoPanel() {
-        JComponent result = this.labelPanel;
+    protected JComponent getUpperInfoPanel() {
+        JTabbedPane result = this.upperInfoPanel;
+        if (result == null) {
+            this.upperInfoPanel = result = new JTabbedPane();
+            result.add(getLabelPanel());
+            if (getResourceKind().hasProperties()) {
+                JComponent propertiesPanel = getPropertiesPanel();
+                JScrollPane scrollPanel = new JScrollPane(propertiesPanel);
+                scrollPanel.setName(propertiesPanel.getName());
+                scrollPanel.getViewport().setBackground(
+                    propertiesPanel.getBackground());
+                result.add(scrollPanel);
+                result.addChangeListener(createInfoListener(true));
+            }
+        }
+        if (getResourceKind().hasProperties()) {
+            result.setSelectedIndex(getDisplay().getInfoTabIndex(true));
+        }
+        return result;
+    }
+
+    private TitledPanel getLabelPanel() {
+        TitledPanel result = this.labelPanel;
         if (result == null) {
             LabelTree labelTree = getJGraph().getLabelTree();
-            result =
-                new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
-                    labelTree.createToolBar(), true);
+            this.labelPanel =
+                result =
+                    new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
+                        labelTree.createToolBar(), true);
+            result.setTitled(false);
+            result.setEnabledBackground(JAttr.EDITOR_BACKGROUND);
+        }
+        return result;
+    }
+
+    private PropertiesTable getPropertiesPanel() {
+        PropertiesTable result = this.propertiesPanel;
+        if (result == null) {
+            this.propertiesPanel =
+                result = new PropertiesTable(GraphProperties.KEYS, true);
+            result.setName("Properties");
             result.setBackground(JAttr.EDITOR_BACKGROUND);
+            result.getModel().addTableModelListener(new TableModelListener() {
+                @Override
+                public void tableChanged(TableModelEvent e) {
+                    changeProperties(GraphEditorTab.this.propertiesPanel.getProperties());
+                    setDirty(true);
+                }
+            });
+            result.setProperties(getGraph().getInfo().getProperties());
         }
         return result;
     }
 
     @Override
-    public JComponent getLowerInfoPanel() {
+    protected JComponent getLowerInfoPanel() {
         JComponent result = this.syntaxHelp;
         if (result == null) {
             this.syntaxHelp = result = createSyntaxHelp();
@@ -445,7 +496,6 @@ final public class GraphEditorTab extends ResourceTab implements
      * {@link #isDirty()} if no more undos are available.
      */
     private void updateHistoryButtons() {
-        // The View Argument Defines the Context
         getUndoAction().setEnabled(getUndoManager().canUndo());
         getRedoAction().setEnabled(getUndoManager().canRedo());
         updateDirty();
@@ -665,8 +715,12 @@ final public class GraphEditorTab extends ResourceTab implements
     /** The jgraph panel used in this editor. */
     private JGraphPanel<AspectJGraph> jGraphPanel;
 
-    /** Label panel. */
-    private JComponent labelPanel;
+    /** Label panel of this tab. */
+    private JTabbedPane upperInfoPanel;
+    /** Properties panel of this tab. */
+    private PropertiesTable propertiesPanel;
+    /** Label panel of this tab. */
+    private TitledPanel labelPanel;
     /** Syntax help panel. */
     private JComponent syntaxHelp;
     /** 

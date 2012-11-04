@@ -127,10 +127,10 @@ public class StateDisplay extends Display {
     @Override
     protected JComponent createInfoPanel() {
         LabelTree labelTree = getJGraph().getLabelTree();
-        JComponent result =
+        TitledPanel result =
             new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
                 labelTree.createToolBar(), true);
-        result.setBackground(JAttr.STATE_BACKGROUND);
+        result.setEnabledBackground(JAttr.STATE_BACKGROUND);
         return result;
     }
 
@@ -300,6 +300,12 @@ public class StateDisplay extends Display {
                 this.listening = false;
             }
             return result;
+        }
+
+        @Override
+        public void setJModel(GraphJModel<?,?> jModel) {
+            super.setJModel(jModel);
+            StateDisplay.this.setEnabled(jModel != null);
         }
 
         /**

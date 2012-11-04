@@ -57,7 +57,8 @@ public class Version {
 
     /** Tests if a given string represents a known GXL file format. */
     static public boolean isKnownGxlVersion(String version) {
-        return version == null || GXL_VERSION.equals(version);
+        return version == null || version.isEmpty()
+            || GXL_VERSION.equals(version);
     }
 
     /** Build number (timestamp with format yyyyMMddHHmmssSSS). */

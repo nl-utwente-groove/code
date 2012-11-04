@@ -297,6 +297,35 @@ public class Groove {
         return pad(text, length, true);
     }
 
+    /** Turns a camel-case string into a string with spaces.
+     * The first character is capitalised in any case; next
+     * words are capitalised optionally.
+     * @param input the (non-{@code null}) input string, in camel case
+     * @param caps if {@code true}, all words (not just the first) are capitalised
+     * @return a converted string
+     */
+    public static String unCamel(String input, boolean caps) {
+        StringBuilder result = new StringBuilder(input);
+        int ix = 0;
+        boolean wasLower = true;
+        while (ix < result.length()) {
+            char c = result.charAt(ix);
+            boolean isLower = Character.isLowerCase(c);
+            boolean atStart = ix == 0;
+            if (atStart || wasLower && !isLower) {
+                if (!atStart) {
+                    result.insert(ix, ' ');
+                    ix++;
+                }
+                result.setCharAt(ix, atStart || caps ? Character.toUpperCase(c)
+                        : Character.toLowerCase(c));
+            }
+            wasLower = isLower;
+            ix++;
+        }
+        return result.toString();
+    }
+
     /**
      * Start symbol for the string representation of an array.
      * @see #toString(Object[], String, String, String)

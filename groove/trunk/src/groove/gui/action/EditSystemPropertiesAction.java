@@ -1,5 +1,6 @@
 package groove.gui.action;
 
+import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.PropertiesDialog;
@@ -12,7 +13,7 @@ import java.util.Properties;
 public class EditSystemPropertiesAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public EditSystemPropertiesAction(Simulator simulator) {
-        super(simulator, Options.SYSTEM_PROPERTIES_ACTION_NAME, null);
+        super(simulator, Options.SYSTEM_PROPERTIES_ACTION_NAME, Icons.EDIT_ICON);
     }
 
     /**
@@ -23,11 +24,10 @@ public class EditSystemPropertiesAction extends SimulatorAction {
     public void execute() {
         Properties systemProperties = getGrammarModel().getProperties();
         PropertiesDialog dialog =
-            new PropertiesDialog(systemProperties,
-                SystemProperties.DEFAULT_KEYS, true);
+            new PropertiesDialog(systemProperties, SystemProperties.KEYS);
         if (dialog.showDialog(getFrame())) {
             SystemProperties newProperties = new SystemProperties();
-            newProperties.putAll(dialog.getEditedProperties());
+            newProperties.putAll(dialog.getProperties());
             try {
                 getSimulatorModel().doSetProperties(newProperties);
             } catch (IOException exc) {

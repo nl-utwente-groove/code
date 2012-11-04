@@ -201,6 +201,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         if (result == null) {
             this.splitInfoPanel =
                 result = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+            result.setContinuousLayout(true);
             result.setBorder(null);
         }
         return result;
@@ -232,6 +233,20 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             key = this.SPLIT_INFO_KEY;
         }
         ((CardLayout) infoPanel.getLayout()).show(infoPanel, key);
+    }
+
+    /** Gets the currently selected tab index of the upper or lower info panel. */
+    int getInfoTabIndex(boolean upper) {
+        return upper ? this.upperInfoTabIndex : this.lowerInfoTabIndex;
+    }
+
+    /** Changes the currently selected tab index of the upper or lower info panel. */
+    public void setInfoTabIndex(boolean upper, int index) {
+        if (upper) {
+            this.upperInfoTabIndex = index;
+        } else {
+            this.lowerInfoTabIndex = index;
+        }
     }
 
     /** Returns the copy action associated with this kind of resource. */
@@ -712,7 +727,10 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     private JSplitPane splitInfoPanel;
     private final String SPLIT_INFO_KEY = "Split info panel";
     private JToggleButton enableButton;
-
+    /** Index of the selected tab at the upper info panel. */
+    private int upperInfoTabIndex;
+    /** Index of the selected tab at the lower info panel. */
+    private int lowerInfoTabIndex;
     /** Mapping from graph names to editors for those graphs. */
     private final Map<String,ResourceTab> editorMap =
         new HashMap<String,ResourceTab>();

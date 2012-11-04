@@ -18,8 +18,12 @@ package groove.gui;
 
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.graph.GraphProperties.Key;
 import groove.io.HTMLConverter;
 import groove.view.RuleModel;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Rule nodes (= level 1 nodes) of the directory
@@ -55,24 +59,34 @@ class RuleTreeNode extends ResourceTreeNode {
         GraphProperties properties =
             GraphInfo.getProperties(getRule().getSource(), false);
         if (properties != null && !properties.isEmpty()) {
-            boolean hasProperties;
             String remark = properties.getRemark();
-            if (remark != null) {
+            if (!remark.isEmpty()) {
                 result.append(": ");
                 result.append(HTMLConverter.toHtml(remark));
-                hasProperties = properties.size() > 1;
-            } else {
-                hasProperties = true;
             }
-            if (hasProperties) {
-                for (String key : properties.getPropertyKeys()) {
-                    if (!GraphProperties.isSystemKey(key)
-                        && !key.equals(GraphProperties.REMARK_KEY)) {
-                        result.append(HTMLConverter.HTML_LINEBREAK);
-                        result.append(propertyToString(key,
-                            properties.getProperty(key)));
-                    }
+            Map<String,String> filteredProps =
+                new LinkedHashMap<String,String>();
+            // collect the non-system, non-remark properties
+            for (Key key : Key.values()) {
+                String value = properties.getProperty(key);
+                if (key != Key.REMARK && !key.isSystem() && value != null
+                    && !value.isEmpty()) {
+                    filteredProps.put(key.getDescription(), value);
                 }
+            }
+            // collect the user properties
+            for (Map.Entry<Object,Object> entry : properties.entrySet()) {
+                String keyword = (String) entry.getKey();
+                String value = (String) entry.getValue();
+                if (!GraphProperties.KEYS.containsKey(keyword)
+                    && !value.isEmpty()) {
+                    filteredProps.put(keyword, value);
+                }
+            }
+            // display everything
+            for (Map.Entry<String,String> entry : filteredProps.entrySet()) {
+                result.append(HTMLConverter.HTML_LINEBREAK);
+                result.append(propertyToString(entry));
             }
         }
         if (!isTried() && (properties == null || properties.isEnabled())) {
@@ -84,8 +98,8 @@ class RuleTreeNode extends ResourceTreeNode {
     }
 
     /** Returns an HTML-formatted string for a given key/value-pair. */
-    private String propertyToString(String key, String value) {
-        return "<b>" + key + "</b> = " + value;
+    private String propertyToString(Map.Entry<String,String> entry) {
+        return "<b>" + entry.getKey() + "</b> = " + entry.getValue();
     }
 
     @Override

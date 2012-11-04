@@ -251,7 +251,7 @@ public class ActionStore implements SimulatorListener {
     private EditRulePropertiesAction editRulePropertiesAction;
 
     /** Returns the action to show the system properties of the current grammar. */
-    public Action getEditSystemPropertiesAction() {
+    public SimulatorAction getEditSystemPropertiesAction() {
         // lazily create the action
         if (this.editSystemPropertiesAction == null) {
             this.editSystemPropertiesAction =
