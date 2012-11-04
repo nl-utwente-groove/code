@@ -20,7 +20,6 @@ import groove.control.parse.CtrlDoc;
 import groove.gui.SimulatorModel.Change;
 import groove.trans.ResourceKind;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -28,8 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
+import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
@@ -54,21 +52,19 @@ final public class ControlDisplay extends ResourceDisplay {
     }
 
     @Override
-    protected void buildDisplay() {
-        // create the layout for this JPanel
-        setFocusable(false);
-        JSplitPane splitPane =
-            new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getTabPane(),
-                new JScrollPane(getDocPane()));
-        splitPane.setOneTouchExpandable(true);
-        splitPane.setResizeWeight(1.0);
-        add(splitPane, BorderLayout.CENTER);
-    }
-
-    @Override
     protected void installListeners() {
         super.installListeners();
         getSimulatorModel().addListener(this, Change.GRAMMAR, Change.CONTROL);
+    }
+
+    @Override
+    protected JComponent createInfoPanel() {
+        return new TitledPanel("Control syntax", getDocPane(), null, true);
+    }
+
+    @Override
+    protected void buildInfoPanel() {
+        // do nothing
     }
 
     private JTree getDocPane() {

@@ -21,6 +21,7 @@ import groove.gui.SimulatorModel.Change;
 import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
 
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
@@ -50,6 +51,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     /** Constructs a fresh instance, for a given simulator. */
     public DisplaysPanel(final Simulator simulator) {
         super(TOP);
+        setBorder(null);
         this.simulator = simulator;
         for (DisplayKind kind : DisplayKind.values()) {
             addTab(getDisplay(kind));
@@ -192,6 +194,18 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         return this.lowerListsPanel;
     }
 
+    /** Returns the info panel showing the information about the current display.
+     */
+    public JPanel getInfoPanel() {
+        JPanel result = this.infoPanel;
+        if (result == null) {
+            this.infoPanel = result = new JPanel();
+            result.setBorder(null);
+            result.setLayout(new CardLayout());
+        }
+        return result;
+    }
+
     /** Indicates if a list panel should go onto the upper or the lower pane. */
     private JTabbedPane getListsPanel(DisplayKind kind) {
         if (kind == DisplayKind.LTS || kind == DisplayKind.STATE
@@ -212,22 +226,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             }
         }
         if (changes.contains(Change.DISPLAY)) {
-            DisplayKind oldDisplayKind = oldModel.getDisplay();
             DisplayKind newDisplayKind = source.getDisplay();
-            boolean changeDisplay = !this.changingTabs;
-            boolean changeList = oldDisplayKind != newDisplayKind;
-            switch (oldDisplayKind) {
-            case LTS:
-                changeDisplay = newDisplayKind != DisplayKind.STATE;
-                break;
-            case RULE:
-                changeList &= newDisplayKind != DisplayKind.STATE;
-                break;
-            case STATE:
-                changeList &= newDisplayKind != DisplayKind.RULE;
-                break;
-            }
-            if (changeDisplay) {
+            if (!this.changingTabs) {
                 Display panel = getDisplay(newDisplayKind);
                 if (indexOfComponent(panel) >= 0) {
                     setSelectedComponent(panel);
@@ -240,15 +240,30 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                         window.toFront();
                     }
                 }
-                JPanel newListPanel =
-                    getDisplayFor(newDisplayKind).getListPanel();
-                JTabbedPane listsTabPane = getListsPanel(source.getDisplay());
-                // do not automatically switch lists panel between state and rule mode
-                if (changeList && newListPanel != null
-                    && listsTabPane.indexOfComponent(newListPanel) >= 0) {
-                    listsTabPane.setSelectedComponent(newListPanel);
-                }
             }
+            // change the selected tab in the appropriate lists panel
+            JTabbedPane listsTabPane = getListsPanel(newDisplayKind);
+            DisplayKind oldListDisplayKind =
+                ((ListPanel) listsTabPane.getSelectedComponent()).getDisplayKind();
+            ListPanel newListPanel = getDisplay(newDisplayKind).getListPanel();
+            boolean changeList =
+                oldListDisplayKind != newDisplayKind && newListPanel != null
+                    && listsTabPane.indexOfComponent(newListPanel) >= 0;
+            // do not automatically switch lists panel between state and rule mode
+            switch (oldListDisplayKind) {
+            case RULE:
+                changeList &= newDisplayKind != DisplayKind.STATE;
+                break;
+            case STATE:
+                changeList &= newDisplayKind != DisplayKind.RULE;
+                break;
+            }
+            if (changeList) {
+                listsTabPane.setSelectedComponent(newListPanel);
+            }
+            // change the info panel
+            ((CardLayout) getInfoPanel().getLayout()).show(getInfoPanel(),
+                newDisplayKind.toString());
         } else if (getSelectedComponent() != null) {
             // switch tabs if the selection on the currently displayed tab
             // was set to null
@@ -295,13 +310,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     /** Returns the panel corresponding to a certain tab kind. */
-    public Display getDisplayFor(DisplayKind display) {
-        return getDisplay(display);
-    }
-
-    /** Returns the panel corresponding to a certain tab kind. */
     public ResourceDisplay getDisplayFor(ResourceKind resource) {
-        return (ResourceDisplay) getDisplayFor(DisplayKind.toDisplay(resource));
+        return (ResourceDisplay) getDisplay(DisplayKind.toDisplay(resource));
     }
 
     /** Reattaches a component at its proper place. */
@@ -328,6 +338,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             tabbedPane.insertTab(null, myKind.getTabIcon(), listPanel,
                 myKind.getTip(), index);
         }
+        // add the info panel
+        getInfoPanel().add(display.getInfoPanel(), display.getKind().toString());
         // now add the display panel
         int index;
         for (index = 0; index < getTabCount(); index++) {
@@ -486,6 +498,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     private JTabbedPane upperListsPanel;
     /** Panel with the other resource lists. */
     private JTabbedPane lowerListsPanel;
+    /** Panel with the display info. */
+    private JPanel infoPanel;
     /** Listener to tab changes. */
     private ChangeListener tabListener;
     /** Flag indicating that the {@link #tabListener} has caused a 

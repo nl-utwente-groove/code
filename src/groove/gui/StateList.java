@@ -634,13 +634,15 @@ public class StateList extends JTree implements SimulatorListener {
             Object node = path.getLastPathComponent();
             switch (evt.getClickCount()) {
             case 1:
-                DisplayKind toDisplay;
+                DisplayKind toDisplay = null;
                 if (node instanceof RuleTreeNode) {
                     toDisplay = DisplayKind.RULE;
-                } else {
+                } else if (getSimulatorModel().getDisplay() != DisplayKind.LTS) {
                     toDisplay = DisplayKind.STATE;
                 }
-                getSimulatorModel().setDisplay(toDisplay);
+                if (toDisplay != null) {
+                    getSimulatorModel().setDisplay(toDisplay);
+                }
                 break;
             case 2:
                 getActions().getApplyMatchAction().execute();

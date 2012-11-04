@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
@@ -94,6 +95,16 @@ public class LTSDisplay extends Display {
         return null;
     }
 
+    @Override
+    protected JComponent createInfoPanel() {
+        LabelTree labelTree = getJGraph().getLabelTree();
+        JComponent result =
+            new TitledPanel("Transition labels", labelTree,
+                labelTree.createToolBar(), true);
+        result.setBackground(JAttr.STATE_BACKGROUND);
+        return result;
+    }
+
     private void fillToolBar(JToolBar result) {
         result.removeAll();
         result.add(getActions().getExplorationDialogAction());
@@ -106,8 +117,8 @@ public class LTSDisplay extends Display {
         result.add(getActions().getBackAction());
         result.add(getActions().getForwardAction());
         result.addSeparator();
-        result.add(getLtsJGraph().getModeButton(JGraphMode.SELECT_MODE));
-        result.add(getLtsJGraph().getModeButton(JGraphMode.PAN_MODE));
+        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
+        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
         result.addSeparator();
         result.add(getShowHideLTSButton());
         result.add(getFilterLTSButton());
@@ -149,24 +160,24 @@ public class LTSDisplay extends Display {
      */
     public void emphasiseStates(List<GraphState> counterExamples,
             boolean showTransitions) {
-        if (getLtsModel() == null) {
+        if (getJModel() == null) {
             return;
         }
         Set<GraphJCell> jCells = new HashSet<GraphJCell>();
         for (int i = 0; i < counterExamples.size(); i++) {
             GraphState state = counterExamples.get(i);
-            jCells.add(getLtsModel().getJCellForNode(state));
+            jCells.add(getJModel().getJCellForNode(state));
             if (showTransitions && i + 1 < counterExamples.size()) {
                 // find transition to next state
                 for (GraphTransition trans : state.getTransitions(GraphTransition.Class.ANY)) {
                     if (trans.target() == counterExamples.get(i + 1)) {
-                        jCells.add(getLtsModel().getJCellForEdge(trans));
+                        jCells.add(getJModel().getJCellForEdge(trans));
                         break;
                     }
                 }
             }
         }
-        getLtsJGraph().setSelectionCells(jCells.toArray());
+        getJGraph().setSelectionCells(jCells.toArray());
     }
 
     /** Returns the LTS tab on this display. */
@@ -178,15 +189,19 @@ public class LTSDisplay extends Display {
     }
 
     /** Returns the LTS' JGraph. */
-    public LTSJGraph getLtsJGraph() {
+    public LTSJGraph getJGraph() {
         return getGraphPanel().getJGraph();
     }
 
     /** Returns the model of the LTS' JGraph. */
-    public LTSJModel getLtsModel() {
-        return getLtsJGraph().getModel();
+    public LTSJModel getJModel() {
+        return getJGraph().getModel();
     }
 
+    /**
+     * The LTS listener permanently associated with this display.
+     */
+    private final MyLTSListener ltsListener = new MyLTSListener();
     private LTSGraphPanel graphPanel;
     /** Toggle buttons */
     private JToggleButton showHideLTSButton;
@@ -197,6 +212,92 @@ public class LTSDisplay extends Display {
         LTSDisplay result = new LTSDisplay(simulator);
         result.buildDisplay();
         return result;
+    }
+
+    /**
+     * Listener that makes sure the panel status gets updated when the LYS is
+     * extended.
+     */
+    private class MyLTSListener extends GTSAdapter {
+        /** Empty constructor with the correct visibility. */
+        MyLTSListener() {
+            // empty
+        }
+
+        /**
+         * May only be called with the current lts as first parameter. Updates
+         * the frame title by showing the number of nodes and edges.
+         */
+        @Override
+        public void addUpdate(GTS gts, GraphState state) {
+            assert gts == getSimulatorModel().getGts() : "I want to listen only to my lts";
+            getGraphPanel().refreshStatus();
+        }
+
+        /**
+         * May only be called with the current lts as first parameter. Updates
+         * the frame title by showing the number of nodes and edges.
+         */
+        @Override
+        public void addUpdate(GTS gts, GraphTransition transition) {
+            assert gts == getSimulatorModel().getGts() : "I want to listen only to my lts";
+            getGraphPanel().refreshStatus();
+        }
+
+        /**
+         * If a state is closed, its background should be reset.
+         */
+        @Override
+        public void statusUpdate(GTS lts, GraphState closed, Flag flag) {
+            if (getJModel() == null) {
+                return;
+            }
+            GraphJCell jCell = getJModel().getJCellForNode(closed);
+            // during automatic generation, we do not always have vertices for
+            // all states
+            if (jCell != null) {
+                jCell.refreshAttributes();
+            }
+            getGraphPanel().refreshStatus();
+        }
+    }
+
+    /**
+     * Mouse listener that creates the popup menu and switches the view to the
+     * rule panel on double-clicks.
+     */
+    private class MyMouseListener extends MouseAdapter {
+        /** Empty constructor with the correct visibility. */
+        MyMouseListener() {
+            // empty
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent evt) {
+            if (getJGraph().getMode() == SELECT_MODE
+                && evt.getButton() == MouseEvent.BUTTON1) {
+                if (!isEnabled()
+                    && getActions().getStartSimulationAction().isEnabled()) {
+                    getActions().getStartSimulationAction().execute();
+                } else {
+                    // scale from screen to model
+                    java.awt.Point loc = evt.getPoint();
+                    // find cell in model coordinates
+                    GraphJCell cell =
+                        getJGraph().getFirstCellForLocation(loc.x, loc.y);
+                    if (cell instanceof LTSJEdge) {
+                        GraphTransition trans = ((LTSJEdge) cell).getEdge();
+                        getSimulatorModel().setTransition(trans);
+                    } else if (cell instanceof LTSJVertex) {
+                        GraphState node = ((LTSJVertex) cell).getNode();
+                        getSimulatorModel().setState(node);
+                        if (evt.getClickCount() == 2) {
+                            getActions().getExploreAction().doExploreState();
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -319,10 +420,11 @@ public class LTSDisplay extends Display {
                 }
                 if (gts != oldModel.getGts()) {
                     if (oldModel.getGts() != null) {
-                        oldModel.getGts().removeLTSListener(this.ltsListener);
+                        oldModel.getGts().removeLTSListener(
+                            LTSDisplay.this.ltsListener);
                     }
                     if (gts != null) {
-                        gts.addLTSListener(this.ltsListener);
+                        gts.addLTSListener(LTSDisplay.this.ltsListener);
                     }
                 }
                 refreshStatus();
@@ -389,97 +491,6 @@ public class LTSDisplay extends Display {
                 text.append(" transitions");
             }
             return text.toString();
-        }
-
-        /**
-         * The graph listener permanently associated with this panel.
-         */
-        private final MyLTSListener ltsListener = new MyLTSListener();
-
-        /**
-         * Mouse listener that creates the popup menu and switches the view to the
-         * rule panel on double-clicks.
-         */
-        private class MyMouseListener extends MouseAdapter {
-            /** Empty constructor with the correct visibility. */
-            MyMouseListener() {
-                // empty
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent evt) {
-                if (getJGraph().getMode() == SELECT_MODE
-                    && evt.getButton() == MouseEvent.BUTTON1) {
-                    if (!isEnabled()
-                        && getActions().getStartSimulationAction().isEnabled()) {
-                        getActions().getStartSimulationAction().execute();
-                    } else {
-                        // scale from screen to model
-                        java.awt.Point loc = evt.getPoint();
-                        // find cell in model coordinates
-                        GraphJCell cell =
-                            getJGraph().getFirstCellForLocation(loc.x, loc.y);
-                        if (cell instanceof LTSJEdge) {
-                            GraphTransition trans = ((LTSJEdge) cell).getEdge();
-                            getSimulatorModel().setTransition(trans);
-                        } else if (cell instanceof LTSJVertex) {
-                            GraphState node = ((LTSJVertex) cell).getNode();
-                            getSimulatorModel().setState(node);
-                            if (evt.getClickCount() == 2) {
-                                getActions().getExploreAction().doExploreState();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /**
-         * Listener that makes sure the panel status gets updated when the LYS is
-         * extended.
-         */
-        private class MyLTSListener extends GTSAdapter {
-            /** Empty constructor with the correct visibility. */
-            MyLTSListener() {
-                // empty
-            }
-
-            /**
-             * May only be called with the current lts as first parameter. Updates
-             * the frame title by showing the number of nodes and edges.
-             */
-            @Override
-            public void addUpdate(GTS gts, GraphState state) {
-                assert gts == getSimulatorModel().getGts() : "I want to listen only to my lts";
-                refreshStatus();
-            }
-
-            /**
-             * May only be called with the current lts as first parameter. Updates
-             * the frame title by showing the number of nodes and edges.
-             */
-            @Override
-            public void addUpdate(GTS gts, GraphTransition transition) {
-                assert gts == getSimulatorModel().getGts() : "I want to listen only to my lts";
-                refreshStatus();
-            }
-
-            /**
-             * If a state is closed, its background should be reset.
-             */
-            @Override
-            public void statusUpdate(GTS lts, GraphState closed, Flag flag) {
-                if (getJModel() == null) {
-                    return;
-                }
-                GraphJCell jCell = getJModel().getJCellForNode(closed);
-                // during automatic generation, we do not always have vertices for
-                // all states
-                if (jCell != null) {
-                    jCell.refreshAttributes();
-                }
-                refreshStatus();
-            }
         }
     }
 }

@@ -1297,7 +1297,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
 
     /**
      * Constructs a JGraph for a given graph,
-     * using given GraphJVertex and GraphJEdge prototypes
+     * using a given {@link AttributeFactory}
      * for displaying the nodes and edges.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})

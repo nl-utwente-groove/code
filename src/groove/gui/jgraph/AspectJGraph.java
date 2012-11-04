@@ -139,6 +139,14 @@ final public class AspectJGraph extends GraphJGraph {
         if (this.levelTree == null && getGraphRole() == GraphRole.RULE
             && !hasActiveEditor()) {
             this.levelTree = createLevelTree();
+            // deselect the level tree whenever the graph
+            // selection changes
+            addGraphSelectionListener(new GraphSelectionListener() {
+                @Override
+                public void valueChanged(GraphSelectionEvent e) {
+                    AspectJGraph.this.levelTree.clearSelection();
+                }
+            });
         }
         return this.levelTree;
     }

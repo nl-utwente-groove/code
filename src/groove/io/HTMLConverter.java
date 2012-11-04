@@ -198,6 +198,8 @@ public class HTMLConverter {
 
     // The readable codes do not work on the Mac in some situations. Replaced
     // them with the numeric codes - this fixes it. -- Maarten
+    /** Non-breaking space character. */
+    static public final String NBSP = "&#160;";
     /** Name of the HTML tag (<code>html</code>). */
     static public final String HTML_TAG_NAME = "html";
     /** HTML tag. */

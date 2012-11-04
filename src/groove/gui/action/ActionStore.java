@@ -380,8 +380,7 @@ public class ActionStore implements SimulatorListener {
             StateDisplay display =
                 (StateDisplay) this.simulator.getDisplaysPanel().getDisplay(
                     DisplayKind.STATE);
-            this.exportStateAction =
-                display.getGraphPanel().getJGraph().getExportAction();
+            this.exportStateAction = display.getJGraph().getExportAction();
         }
         return this.exportStateAction;
     }

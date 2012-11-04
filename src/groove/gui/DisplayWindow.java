@@ -41,19 +41,41 @@ class DisplayWindow extends JFrame {
             display.getKind().getTabIcon());
         this.parent = parent;
         this.display = display;
-        JPanel listPanel = this.display.getListPanel();
-        JComponent displayPanel = this.display;
-        JComponent content;
-        if (listPanel == null) {
-            content = displayPanel;
-        } else {
-            content =
-                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, listPanel,
-                    displayPanel);
-        }
-        getContentPane().add(content);
+        setContentPane(getContentPanel());
         pack();
         setVisible(true);
+    }
+
+    JComponent getContentPanel() {
+        JComponent result = this.contentPanel;
+        if (result == null) {
+            JPanel listPanel = this.display.getListPanel();
+            JComponent displayPanel = getDisplayInfoPanel();
+            if (listPanel == null) {
+                result = displayPanel;
+            } else {
+                result =
+                    new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, listPanel,
+                        displayPanel);
+            }
+            this.contentPanel = result;
+        }
+        return result;
+    }
+
+    JSplitPane getDisplayInfoPanel() {
+        JSplitPane result = this.displayInfoPanel;
+        if (result == null) {
+            JComponent infoPanel = this.display.getInfoPanel();
+            result = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+            result.setBorder(null);
+            result.setResizeWeight(0.9);
+            result.setLeftComponent(this.display);
+            result.setRightComponent(infoPanel);
+            infoPanel.setVisible(true);
+            this.displayInfoPanel = result;
+        }
+        return result;
     }
 
     private void doClosingAction() {
@@ -65,6 +87,10 @@ class DisplayWindow extends JFrame {
     }
 
     private final Kind kind;
+    /** Panel holding the list panel (if it exists( and the display+info panel. */
+    private JComponent contentPanel;
+    /** Split pane holding the display panel and the info panel. */
+    private JSplitPane displayInfoPanel;
     private DisplaysPanel parent;
     private Display display;
     private static final Dimension MINIMUM_SIZE = new Dimension(500, 300);

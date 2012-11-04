@@ -1,7 +1,6 @@
 package groove.gui;
 
 import groove.control.parse.CtrlTokenMaker;
-import groove.gui.ResourceDisplay.MainTab;
 import groove.prolog.util.PrologTokenMaker;
 import groove.trans.ResourceKind;
 import groove.view.FormatError;
@@ -34,7 +33,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
  * The tab also offers the functionality to edit the resource.
  * @author Arend Rensink
  */
-final public class TextTab extends ResourceTab implements MainTab {
+final public class TextTab extends ResourceTab {
     /**
      * Creates an initially empty text area.
      * @param display the display on which this editor is placed.
@@ -103,6 +102,16 @@ final public class TextTab extends ResourceTab implements MainTab {
     }
 
     @Override
+    public JComponent getUpperInfoPanel() {
+        return null;
+    }
+
+    @Override
+    public JComponent getLowerInfoPanel() {
+        return null;
+    }
+
+    @Override
     public Icon getIcon() {
         return isEditor() ? super.getIcon()
                 : Icons.getMainTabIcon(getDisplay().getResourceKind());
@@ -133,6 +142,7 @@ final public class TextTab extends ResourceTab implements MainTab {
     public boolean removeResource(String name) {
         boolean result = name.equals(getName());
         if (result) {
+            setName(null);
             this.textArea.setProgram(null);
             updateErrors();
         }
