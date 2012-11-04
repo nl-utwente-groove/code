@@ -66,7 +66,7 @@ public class FindReplaceAction extends SimulatorAction implements
     private void addAsListener(ResourceDisplay display) {
         GraphTab graphTab = (GraphTab) display.getMainTab();
         graphTab.getJGraph().addGraphSelectionListener(this);
-        graphTab.getEditArea().getLabelTree().addTreeSelectionListener(this);
+        graphTab.getLabelTree().addTreeSelectionListener(this);
     }
 
     @Override

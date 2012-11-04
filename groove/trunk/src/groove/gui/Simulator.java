@@ -30,7 +30,6 @@ import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import groove.graph.Element;
-import groove.gui.Display.Tab;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.AboutAction;
 import groove.gui.action.ActionStore;
@@ -38,11 +37,9 @@ import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
-import groove.gui.list.ErrorListPanel;
 import groove.gui.list.ListPanel.SelectableListEntry;
 import groove.gui.list.ListTabbedPane;
 import groove.gui.list.SearchResult;
-import groove.gui.list.SearchResultListPanel;
 import groove.trans.ResourceKind;
 import groove.util.Groove;
 import groove.view.FormatError;
@@ -158,6 +155,7 @@ public class Simulator implements SimulatorListener {
         }
         if (changes.contains(Change.DISPLAY)) {
             refreshMenuItems();
+            adjustInfoPanel(source.getDisplay());
         }
     }
 
@@ -165,29 +163,16 @@ public class Simulator implements SimulatorListener {
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
     private void setErrors(FormatErrorSet grammarErrors) {
-        getErrorListPanel().setEntries(grammarErrors);
-        adjustListPanel();
+        getResultsPanel().getErrorListPanel().setEntries(grammarErrors);
+        adjustResultsPanel();
     }
 
     /**
       * Displays a list of search results.
       */
     public void setSearchResults(List<SearchResult> searchResults) {
-        getSearchResultListPanel().setEntries(searchResults);
-        adjustListPanel();
-    }
-
-    private void adjustListPanel() {
-        JSplitPane contentPane = (JSplitPane) this.frame.getContentPane();
-        getListTabbedPane().adjustVisibility();
-        if (getListTabbedPane().isVisible()) {
-            contentPane.setBottomComponent(getListTabbedPane());
-            contentPane.setDividerSize(1);
-            contentPane.resetToPreferredSizes();
-        } else {
-            contentPane.remove(getListTabbedPane());
-            contentPane.setDividerSize(0);
-        }
+        getResultsPanel().getSearchResultListPanel().setEntries(searchResults);
+        adjustResultsPanel();
     }
 
     /**
@@ -230,29 +215,9 @@ public class Simulator implements SimulatorListener {
                 }
             });
             this.frame.setJMenuBar(createMenuBar());
-
-            JSplitPane leftPanel =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                    getDisplaysPanel().getUpperListsPanel(),
-                    getDisplaysPanel().getLowerListsPanel());
+            this.frame.setContentPane(getContentPanel());
             // make sure tool tips get displayed
-            ToolTipManager.sharedInstance().registerComponent(leftPanel);
-
-            JComponent rightPanel = getDisplaysPanel();
-
-            // Set up the content pane of the frame as a split pane,
-            // with the rule directory to the left and a desktop pane to the
-            // right
-            JSplitPane splitPane =
-                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel,
-                    rightPanel);
-
-            JSplitPane contentPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-            contentPane.setTopComponent(splitPane);
-            contentPane.setResizeWeight(0.8);
-            contentPane.setDividerSize(0);
-            contentPane.setContinuousLayout(true);
-            this.frame.setContentPane(contentPane);
+            ToolTipManager.sharedInstance().registerComponent(getContentPanel());
         }
         return this.frame;
     }
@@ -261,31 +226,109 @@ public class Simulator implements SimulatorListener {
      * Lazily creates and returns the panel with the state, rule and LTS views.
      */
     public DisplaysPanel getDisplaysPanel() {
-        if (this.simulatorPanel == null) {
-            this.simulatorPanel = new DisplaysPanel(this);
+        if (this.displaysPanel == null) {
+            this.displaysPanel = new DisplaysPanel(this);
         }
-        return this.simulatorPanel;
+        return this.displaysPanel;
     }
 
-    private ErrorListPanel getErrorListPanel() {
-        return getListTabbedPane().getErrorListPanel();
+    /**
+     * Lazily creates and returns the content panel of the simulator frame.
+     * The content panel consists of the grammar panel and the results panel.
+     */
+    JSplitPane getContentPanel() {
+        if (this.contentPanel == null) {
+            this.contentPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+            this.contentPanel.setTopComponent(getGrammarPanel());
+            this.contentPanel.setResizeWeight(0.8);
+            this.contentPanel.setDividerSize(0);
+            this.contentPanel.setContinuousLayout(true);
+        }
+        return this.contentPanel;
     }
 
-    private SearchResultListPanel getSearchResultListPanel() {
-        return getListTabbedPane().getSearchResultListPanel();
+    /**
+     * Lazily creates and returns the top panel of the simulator,
+     * containing all the grammar data.
+     */
+    JSplitPane getGrammarPanel() {
+        if (this.grammarPanel == null) {
+            this.grammarPanel =
+                new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, getListsPanel(),
+                    getDisplaysInfoPanel());
+            this.grammarPanel.setBorder(null);
+        }
+        return this.grammarPanel;
     }
 
-    private ListTabbedPane getListTabbedPane() {
-        if (this.listTabbedPane == null) {
-            this.listTabbedPane = new ListTabbedPane();
-            this.listTabbedPane.getErrorListPanel().addSelectionListener(
+    /**
+     * Lazily creates and returns the panel with the resource lists.
+     */
+    JSplitPane getListsPanel() {
+        if (this.listsPanel == null) {
+            this.listsPanel =
+                new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                    getDisplaysPanel().getUpperListsPanel(),
+                    getDisplaysPanel().getLowerListsPanel());
+            this.listsPanel.setBorder(null);
+        }
+        return this.listsPanel;
+    }
+
+    /**
+     * Lazily creates and returns the split pane
+     * containing the displays and info panels.
+     */
+    JSplitPane getDisplaysInfoPanel() {
+        JSplitPane result = this.displaysInfoPanel;
+        if (result == null) {
+            this.displaysInfoPanel =
+                result = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+            result.setLeftComponent(getDisplaysPanel());
+            result.setRightComponent(getDisplaysPanel().getInfoPanel());
+            result.setOneTouchExpandable(true);
+            result.setResizeWeight(0.8);
+            result.setDividerLocation(0.8);
+            result.setContinuousLayout(true);
+            result.setBorder(null);
+            ToolTipManager.sharedInstance().registerComponent(result);
+        }
+        return result;
+    }
+
+    /** Fills the info panel with the content of the currently selected display. */
+    private void adjustInfoPanel(DisplayKind kind) {
+        //        JComponent infoPanel =
+        //            getDisplaysPanel().getDisplay(kind).getInfoPanel();
+        //        int dividerLocation = getDisplaysInfoPanel().getDividerLocation();
+        //        getDisplaysInfoPanel().setRightComponent(infoPanel);
+        //        getDisplaysInfoPanel().setDividerLocation(dividerLocation);
+    }
+
+    private ListTabbedPane getResultsPanel() {
+        if (this.resultsPanel == null) {
+            this.resultsPanel = new ListTabbedPane();
+            this.resultsPanel.getErrorListPanel().addSelectionListener(
                 createListListener());
-            this.listTabbedPane.getSearchResultListPanel().addSelectionListener(
+            this.resultsPanel.getSearchResultListPanel().addSelectionListener(
                 createListListener());
             this.model.addListener(
-                this.listTabbedPane.getSearchResultListPanel(), Change.GRAMMAR);
+                this.resultsPanel.getSearchResultListPanel(), Change.GRAMMAR);
         }
-        return this.listTabbedPane;
+        return this.resultsPanel;
+    }
+
+    private void adjustResultsPanel() {
+        JSplitPane contentPane = (JSplitPane) this.frame.getContentPane();
+        getResultsPanel().adjustVisibility();
+        if (getResultsPanel().isVisible()) {
+            contentPane.setBottomComponent(getResultsPanel());
+            contentPane.setDividerSize(1);
+            contentPane.resetToPreferredSizes();
+        } else {
+            contentPane.remove(getResultsPanel());
+            contentPane.setDividerSize(0);
+        }
     }
 
     /**
@@ -302,7 +345,7 @@ public class Simulator implements SimulatorListener {
                     String name = entry.getResourceName();
                     if (resource != null) {
                         getModel().doSelect(resource, name);
-                        Tab resourceTab =
+                        ResourceTab resourceTab =
                             getDisplaysPanel().getDisplayFor(resource).getSelectedTab();
                         if (resource.isGraphBased()) {
                             AspectJGraph jGraph;
@@ -333,7 +376,7 @@ public class Simulator implements SimulatorListener {
     }
 
     /** List display. */
-    private ListTabbedPane listTabbedPane;
+    private ListTabbedPane resultsPanel;
 
     /** Refreshes some of the menu item by assigning the right action. */
     private void refreshMenuItems() {
@@ -837,7 +880,17 @@ public class Simulator implements SimulatorListener {
     private StepHistory stepHistory;
 
     /** background for displays. */
-    private DisplaysPanel simulatorPanel;
+    private DisplaysPanel displaysPanel;
+
+    /** Content pane of the simulator, containing in the grammar and results panels. */
+    private JSplitPane contentPanel;
+    /** Grammar panel, containing the lists and displays/info panels. */
+    private JSplitPane grammarPanel;
+    /** Split panel containing the displays and info panels. */
+    private JSplitPane displaysInfoPanel;
+
+    /** Lists panel of the simulator. */
+    private JSplitPane listsPanel;
 
     /** History of recently opened grammars. */
     private SimulatorHistory history;

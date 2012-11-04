@@ -76,10 +76,10 @@ public class ExploreAction extends SimulatorAction {
      */
     public void explore(Exploration exploration, boolean setResult,
             boolean emphasise) {
-        LTSJModel ltsJModel = getLtsDisplay().getLtsModel();
+        LTSJModel ltsJModel = getLtsDisplay().getJModel();
         if (ltsJModel == null) {
             if (getSimulatorModel().setGts()) {
-                ltsJModel = getLtsDisplay().getLtsModel();
+                ltsJModel = getLtsDisplay().getJModel();
             } else {
                 return;
             }

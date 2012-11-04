@@ -441,7 +441,9 @@ public class SimulatorModel implements Cloneable {
         changeMatch(match);
         changeTransition(match instanceof GraphTransition
                 ? (GraphTransition) match : null);
-        changeDisplay(DisplayKind.LTS);
+        if (getDisplay() != DisplayKind.LTS) {
+            changeDisplay(DisplayKind.STATE);
+        }
         return finish();
     }
 
@@ -601,7 +603,7 @@ public class SimulatorModel implements Cloneable {
         if (changeState(state)) {
             changeMatch(null);
             changeTransition(null);
-            if (state != null) {
+            if (state != null && getDisplay() != DisplayKind.LTS) {
                 changeDisplay(DisplayKind.STATE);
             }
         }
@@ -650,7 +652,9 @@ public class SimulatorModel implements Cloneable {
             } else {
                 changeTransition(null);
             }
-            changeDisplay(DisplayKind.LTS);
+            if (getDisplay() != DisplayKind.LTS) {
+                changeDisplay(DisplayKind.STATE);
+            }
         }
         return finish();
     }
@@ -686,7 +690,9 @@ public class SimulatorModel implements Cloneable {
             changeMatch(match);
             changeSelected(ResourceKind.RULE, match.getRule().getFullName());
             changeState(trans.source());
-            changeDisplay(DisplayKind.STATE);
+            if (getDisplay() != DisplayKind.LTS) {
+                changeDisplay(DisplayKind.STATE);
+            }
         }
         return finish();
     }
@@ -1037,10 +1043,10 @@ public class SimulatorModel implements Cloneable {
     /** Changes the display showing in the simulator panel. */
     private boolean changeDisplay(DisplayKind display) {
         boolean result = false;
-        //        if (display != this.display) {
-        this.display = display;
-        this.changes.add(Change.DISPLAY);
-        //        }
+        if (display != this.display) {
+            this.display = display;
+            this.changes.add(Change.DISPLAY);
+        }
         return result;
     }
 

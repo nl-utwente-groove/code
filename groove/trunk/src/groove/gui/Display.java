@@ -18,15 +18,13 @@ package groove.gui;
 
 import groove.gui.action.ActionStore;
 import groove.trans.ResourceKind;
-import groove.view.GrammarModel;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Window;
 
-import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -42,6 +40,7 @@ abstract public class Display extends JPanel {
     /** Creates the singleton instance for a given simulator. */
     protected Display(Simulator simulator, DisplayKind kind) {
         super(new BorderLayout());
+        setBorder(null);
         this.simulator = simulator;
         this.kind = kind;
         this.resource = kind.getResource();
@@ -108,6 +107,19 @@ abstract public class Display extends JPanel {
     /** Callback method to create the resource list. */
     abstract protected JTree createList();
 
+    /**
+     * Returns the information panel of the display.
+     */
+    public JComponent getInfoPanel() {
+        if (this.infoPanel == null) {
+            this.infoPanel = createInfoPanel();
+        }
+        return this.infoPanel;
+    }
+
+    /** Callback method to create the information panel of the display. */
+    abstract protected JComponent createInfoPanel();
+
     /** Resets the list to {@code null}, causing it to be recreated. */
     protected void resetList() {
         this.listPanel = null;
@@ -159,6 +171,8 @@ abstract public class Display extends JPanel {
     private final ResourceKind resource;
     /** Panel with the label list. */
     private ListPanel listPanel;
+    /** Information panel for the display. */
+    private JComponent infoPanel;
     /** Production system control program list. */
     private JTree resourceList;
     /** Toolbar for the {@link #listPanel}. */
@@ -193,56 +207,6 @@ abstract public class Display extends JPanel {
         result.buildDisplay();
         result.installListeners();
         return result;
-    }
-
-    /** Interface for tabs on this display. */
-    public static interface Tab {
-        /** 
-         * Returns the name of the 
-         * resource currently displayed on this tab.
-         */
-        public String getName();
-
-        /** 
-         * Returns the icon for this tab.
-         */
-        public Icon getIcon();
-
-        /** 
-         * Returns the title of this tab.
-         * This consists of the resource name plus an optional indication of the
-         * dirty status of the tab.
-         */
-        public String getTitle();
-
-        /** Returns the tab label component to be used for this tab. */
-        public TabLabel getTabLabel();
-
-        /** 
-         * Indicates if this tab is an editor tab.
-         * @return {@code true} if this is an editor tab, {@code false} if
-         * it is a main tab.
-         */
-        public boolean isEditor();
-
-        /**
-         * Returns the display on which this tab is placed.
-         */
-        public ResourceDisplay getDisplay();
-
-        /**
-         * Returns the actual component of this tab.
-         * This is typically {@code this}.
-         */
-        public Component getComponent();
-
-        /** Method to repaint the tab. */
-        public void repaint();
-
-        /** 
-         * Callback method to notify the tab of a change in grammar. 
-         */
-        public void updateGrammar(GrammarModel grammar);
     }
 
     /** Panel that contains list for this display. */

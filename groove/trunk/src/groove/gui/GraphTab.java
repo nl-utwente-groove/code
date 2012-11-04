@@ -6,7 +6,6 @@ import static groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import groove.gui.ResourceDisplay.MainTab;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
@@ -15,32 +14,23 @@ import groove.gui.jgraph.GraphJModel;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSplitPane;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
 import org.jgraph.JGraph;
-import org.jgraph.event.GraphSelectionEvent;
-import org.jgraph.event.GraphSelectionListener;
 import org.jgraph.graph.DefaultGraphModel.GraphModelEdit;
 
 /** Display tab component showing a graph-based resource. */
-final public class GraphTab extends ResourceTab implements MainTab {
+final public class GraphTab extends ResourceTab implements UndoableEditListener {
     /**
      * Constructs the instance of this tab for a given simulator and
      * resource kind.
@@ -78,10 +68,21 @@ final public class GraphTab extends ResourceTab implements MainTab {
 
     @Override
     public JGraphPanel<AspectJGraph> getEditArea() {
-        if (this.graphPanel == null) {
-            this.graphPanel = new GraphPanel(getJGraph());
+        JGraphPanel<AspectJGraph> result = this.graphPanel;
+        if (result == null) {
+            this.graphPanel =
+                result = new JGraphPanel<AspectJGraph>(getJGraph(), false);
+            result.setFocusable(false);
+            result.setEnabled(false);
+            result.initialise();
+            result.addRefreshListener(SHOW_ANCHORS_OPTION);
+            result.addRefreshListener(SHOW_ASPECTS_OPTION);
+            result.addRefreshListener(SHOW_NODE_IDS_OPTION);
+            result.addRefreshListener(SHOW_VALUE_NODES_OPTION);
+            result.addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
+            result.addRefreshListener(SHOW_BIDIRECTIONAL_EDGES_OPTION);
         }
-        return this.graphPanel;
+        return result;
     }
 
     @Override
@@ -110,6 +111,33 @@ final public class GraphTab extends ResourceTab implements MainTab {
     }
 
     @Override
+    public JComponent getUpperInfoPanel() {
+        TitledPanel result = this.labelPanel;
+        if (result == null) {
+            LabelTree labelTree = getJGraph().getLabelTree();
+            this.labelPanel =
+                result =
+                    new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
+                        labelTree.createToolBar(), true);
+        }
+        return result;
+    }
+
+    @Override
+    public JComponent getLowerInfoPanel() {
+        JPanel result = this.levelTreePanel;
+        if (result == null) {
+            final RuleLevelTree levelTree = getJGraph().getLevelTree();
+            if (levelTree != null && levelTree.isEnabled()) {
+                this.levelTreePanel =
+                    result =
+                        new TitledPanel("Nesting levels", levelTree, null, true);
+            }
+        }
+        return result;
+    }
+
+    @Override
     public boolean setResource(String name) {
         AspectJModel jModel = this.jModelMap.get(name);
         if (jModel == null && name != null) {
@@ -127,7 +155,14 @@ final public class GraphTab extends ResourceTab implements MainTab {
         if (jModel == null) {
             name = null;
         }
+        GraphJModel<?,?> oldJModel = getJModel();
+        if (oldJModel != null) {
+            oldJModel.removeUndoableEditListener(this);
+        }
         getEditArea().setJModel(jModel);
+        if (jModel != null) {
+            jModel.addUndoableEditListener(this);
+        }
         setName(name);
         getTabLabel().setTitle(name);
         updateErrors();
@@ -141,6 +176,7 @@ final public class GraphTab extends ResourceTab implements MainTab {
         jModel.loadGraph(graphClone);
     }
 
+    @Override
     public boolean removeResource(String name) {
         boolean result = name.equals(getName());
         this.jModelMap.remove(name);
@@ -155,9 +191,24 @@ final public class GraphTab extends ResourceTab implements MainTab {
      * This resets the internal data structures, and informs the
      * underlying {@link JGraph} of the type change.
      */
+    @Override
     public void updateGrammar(GrammarModel grammar) {
         this.jModelMap.clear();
         setResource(getName());
+    }
+
+    @Override
+    public void undoableEditHappened(UndoableEditEvent e) {
+        if (e.getEdit() instanceof GraphModelEdit) {
+            try {
+                getJModel().syncGraph();
+                AspectGraph graph = getJModel().getGraph();
+                getSimulatorModel().doAddGraph(getResourceKind(), graph, true);
+                loadGraphIntoJModel(GraphTab.this.getJModel(), graph);
+            } catch (IOException e1) {
+                // do nothing
+            }
+        }
     }
 
     /** Returns the underlying JGraph of this tab. */
@@ -170,8 +221,17 @@ final public class GraphTab extends ResourceTab implements MainTab {
         return getJGraph().getModel();
     }
 
+    /** Returns the label tree associated with this tab. */
+    public final LabelTree getLabelTree() {
+        return getJGraph().getLabelTree();
+    }
+
     /** Graph panel of this tab. */
-    private GraphPanel graphPanel;
+    private JGraphPanel<AspectJGraph> graphPanel;
+    /** Label panel of this tab. */
+    private TitledPanel labelPanel;
+    /** Level tree panel of this tab, if any. */
+    private JPanel levelTreePanel;
     /** The jgraph instance used in this tab. */
     private final AspectJGraph jGraph;
     /** Mapping from resource names to aspect models. */
@@ -179,116 +239,4 @@ final public class GraphTab extends ResourceTab implements MainTab {
         new HashMap<String,AspectJModel>();
 
     private final static boolean DEBUG = false;
-
-    private class GraphPanel extends JGraphPanel<AspectJGraph> implements
-            UndoableEditListener {
-        /**
-         * Constructs the instance of this tab for a given simulator and
-         * resource kind.
-         */
-        public GraphPanel(AspectJGraph jGraph) {
-            super(jGraph, false);
-            setFocusable(false);
-            setEnabled(false);
-            initialise();
-        }
-
-        @Override
-        public void setJModel(GraphJModel<?,?> jModel) {
-            GraphJModel<?,?> oldJModel = getJModel();
-            if (oldJModel != null) {
-                oldJModel.removeUndoableEditListener(this);
-            }
-            super.setJModel(jModel);
-            if (jModel != null) {
-                jModel.addUndoableEditListener(this);
-            }
-        }
-
-        @Override
-        protected void installListeners() {
-            super.installListeners();
-            addRefreshListener(SHOW_ANCHORS_OPTION);
-            addRefreshListener(SHOW_ASPECTS_OPTION);
-            addRefreshListener(SHOW_NODE_IDS_OPTION);
-            addRefreshListener(SHOW_VALUE_NODES_OPTION);
-            addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
-            addRefreshListener(SHOW_BIDIRECTIONAL_EDGES_OPTION);
-        }
-
-        @Override
-        protected JComponent createLabelPane() {
-            JComponent result;
-            JComponent labelPane = super.createLabelPane();
-            final RuleLevelTree levelTree = getJGraph().getLevelTree();
-            if (levelTree == null) {
-                result = labelPane;
-            } else {
-                final JPanel levelTreePanel = createLevelTreePanel(levelTree);
-                final JSplitPane splitPane =
-                    new JSplitPane(JSplitPane.VERTICAL_SPLIT, labelPane,
-                        levelTreePanel);
-                splitPane.setResizeWeight(0.75);
-                // deselect the level tree whenever the graph
-                // selection changes
-                getJGraph().addGraphSelectionListener(
-                    new GraphSelectionListener() {
-                        @Override
-                        public void valueChanged(GraphSelectionEvent e) {
-                            levelTree.clearSelection();
-                        }
-                    });
-                levelTree.addPropertyChangeListener("enabled",
-                    new PropertyChangeListener() {
-                        @Override
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            boolean enabled = (Boolean) evt.getNewValue();
-                            levelTreePanel.setVisible(enabled);
-                            splitPane.resetToPreferredSizes();
-                        }
-                    });
-                result = splitPane;
-            }
-            return result;
-        }
-
-        /** Creates a panel for the rule level tree. */
-        private JPanel createLevelTreePanel(final RuleLevelTree levelTree) {
-            final JPanel result = new JPanel(new BorderLayout(), false);
-            Box labelPaneTop = Box.createVerticalBox();
-            JLabel labelPaneTitle =
-                new JLabel(" " + Options.RULE_TREE_PANE_TITLE + " ");
-            labelPaneTitle.setAlignmentX(LEFT_ALIGNMENT);
-            labelPaneTop.add(labelPaneTitle);
-            result.add(labelPaneTop, BorderLayout.NORTH);
-            result.add(createLabelScrollPane(levelTree), BorderLayout.CENTER);
-            result.setPreferredSize(new Dimension(0, 70));
-            levelTree.addPropertyChangeListener("enabled",
-                new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        boolean enabled = (Boolean) evt.getNewValue();
-                        result.setVisible(enabled);
-                        if (enabled) {
-                            result.setSize(result.getPreferredSize());
-                        }
-                    }
-                });
-            return result;
-        }
-
-        @Override
-        public void undoableEditHappened(UndoableEditEvent e) {
-            if (e.getEdit() instanceof GraphModelEdit) {
-                try {
-                    GraphTab.this.getJModel().syncGraph();
-                    getSimulatorModel().doAddGraph(getResourceKind(),
-                        getGraph(), true);
-                    loadGraphIntoJModel(GraphTab.this.getJModel(), getGraph());
-                } catch (IOException e1) {
-                    // do nothing
-                }
-            }
-        }
-    }
 }

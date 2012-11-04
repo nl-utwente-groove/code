@@ -21,11 +21,9 @@ import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.util.Pair;
-import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -35,14 +33,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.accessibility.AccessibleState;
-import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JToolBar;
 
 import org.jgraph.JGraph;
 import org.jgraph.event.GraphSelectionEvent;
@@ -84,7 +79,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         // a main pane containing the graph, label tree and (possibly)
         // error panel, and an optional status bar.
         setLayout(new BorderLayout());
-        add(createMainPane());
+        add(createGraphPane());
         if (this.statusBar != null) {
             add(this.statusBar, BorderLayout.SOUTH);
         }
@@ -107,46 +102,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
                     evt.getNewValue() != PAN_MODE);
             }
         });
-    }
-
-    /** Component on which the graph and the label tree are displayed. */
-    protected JComponent createMainPane() {
-        // set up the split editor pane
-        JSplitPane result =
-            new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createGraphPane(),
-                createLabelPane());
-        result.setOneTouchExpandable(true);
-        result.setResizeWeight(1.0);
-        result.setBorder(null);
-        return result;
-    }
-
-    /** Creates the right hand side label pane. */
-    protected JComponent createLabelPane() {
-        JPanel result = new JPanel(new BorderLayout(), false);
-        Box labelPaneTop = Box.createVerticalBox();
-        JLabel labelPaneTitle =
-            new JLabel(" " + Options.LABEL_PANE_TITLE + " ");
-        labelPaneTitle.setAlignmentX(LEFT_ALIGNMENT);
-        labelPaneTop.add(labelPaneTitle);
-        JToolBar labelTreeToolbar = getLabelTree().createToolBar();
-        if (labelTreeToolbar != null) {
-            labelTreeToolbar.setAlignmentX(LEFT_ALIGNMENT);
-            labelPaneTop.add(labelTreeToolbar);
-        }
-        result.add(labelPaneTop, BorderLayout.NORTH);
-        result.add(createLabelScrollPane(getLabelTree()), BorderLayout.CENTER);
-        return result;
-    }
-
-    /** Creates a scroll pane of the right dimensions around a given component. */
-    protected JScrollPane createLabelScrollPane(Component component) {
-        return new JScrollPane(component) {
-            @Override
-            public Dimension getMinimumSize() {
-                return new Dimension(MINIMUM_LABEL_PANE_WIDTH, 0);
-            }
-        };
     }
 
     /**
@@ -214,15 +169,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     }
 
     /**
-     * Returns the graph that is currently selected (either one of the
-     * grammar view's host graphs, or a state).
-     */
-    public AspectGraph getGraph() {
-        return getJModel() == null ? null
-                : (AspectGraph) getJModel().getGraph();
-    }
-
-    /**
      * Returns the status bar of this panel, if any.
      */
     private JLabel getStatusBar() {
@@ -239,14 +185,12 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         this.jGraph.setEnabled(enabled);
         getScrollPane().getHorizontalScrollBar().setEnabled(enabled);
         getScrollPane().getVerticalScrollBar().setEnabled(enabled);
-        getLabelTree().setEnabled(enabled);
         if (getStatusBar() != null) {
             getStatusBar().setEnabled(enabled);
         }
         super.setEnabled(enabled);
         Color background = enabled ? getEnabledBackground() : null;
         getJGraph().setBackground(background);
-        getLabelTree().setBackground(background);
     }
 
     /** Callback method to return the background colour in case the panel is enabled.

@@ -28,6 +28,8 @@ import groove.view.GrammarModel;
 import groove.view.ResourceModel;
 import groove.view.aspect.AspectGraph;
 
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
@@ -41,7 +43,10 @@ import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
@@ -163,6 +168,72 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         return result;
     }
 
+    @Override
+    protected JComponent createInfoPanel() {
+        JPanel result = new JPanel();
+        result.setLayout(new CardLayout());
+        result.add(getSingleInfoPanel(), this.SINGLE_INFO_KEY);
+        result.add(getSplitInfoPanel(), this.SPLIT_INFO_KEY);
+        result.setBorder(null);
+        return result;
+    }
+
+    /**
+     * Lazily creates and returns a monolithic panel used as info panel in case there is
+     * only an upper panel.
+     */
+    private JPanel getSingleInfoPanel() {
+        JPanel result = this.singleInfoPanel;
+        if (result == null) {
+            this.singleInfoPanel = result = new JPanel();
+            result.setLayout(new BorderLayout());
+            result.setBorder(null);
+        }
+        return result;
+    }
+
+    /**
+     * Lazily creates and returns a split panel used as info panel in case there is
+     * an upper and a lower panel.
+     */
+    private JSplitPane getSplitInfoPanel() {
+        JSplitPane result = this.splitInfoPanel;
+        if (result == null) {
+            this.splitInfoPanel =
+                result = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+            result.setBorder(null);
+        }
+        return result;
+    }
+
+    /** Adjust the info panel by retrieving upper and lower info subpanels from the selected tab. */
+    protected void buildInfoPanel() {
+        JComponent upperInfoPanel = null;
+        JComponent lowerInfoPanel = null;
+        ResourceTab tab = getSelectedTab();
+        if (tab != null) {
+            upperInfoPanel = tab.getUpperInfoPanel();
+            lowerInfoPanel = tab.getLowerInfoPanel();
+        }
+        JPanel infoPanel = (JPanel) getInfoPanel();
+        String key;
+        if (lowerInfoPanel == null) {
+            getSingleInfoPanel().removeAll();
+            if (upperInfoPanel != null) {
+                getSingleInfoPanel().add(upperInfoPanel, BorderLayout.CENTER);
+            }
+            key = this.SINGLE_INFO_KEY;
+        } else {
+            JSplitPane splitInfoPanel = getSplitInfoPanel();
+            int dividerPos = splitInfoPanel.getDividerLocation();
+            splitInfoPanel.setTopComponent(upperInfoPanel);
+            splitInfoPanel.setBottomComponent(lowerInfoPanel);
+            splitInfoPanel.setDividerLocation(dividerPos);
+            key = this.SPLIT_INFO_KEY;
+        }
+        ((CardLayout) infoPanel.getLayout()).show(infoPanel, key);
+    }
+
     /** Returns the copy action associated with this kind of resource. */
     protected final CopyAction getCopyAction() {
         return getActions().getCopyAction(getResourceKind());
@@ -219,7 +290,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /** Callback to obtain the main tab of this display. */
-    public MainTab getMainTab() {
+    public ResourceTab getMainTab() {
         if (this.mainTab == null) {
             this.mainTab = createMainTab();
         }
@@ -227,7 +298,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /** Callback factory method for the main tab. */
-    protected MainTab createMainTab() {
+    protected ResourceTab createMainTab() {
         ResourceKind kind = getResourceKind();
         if (kind.isGraphBased()) {
             return new GraphTab(this);
@@ -251,6 +322,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             getEditors().put(name, result);
         }
         if (getTabPane().getSelectedComponent() == result) {
+            buildInfoPanel();
             getSimulatorModel().setDisplay(getKind());
         } else {
             getTabPane().setSelectedComponent(result);
@@ -332,14 +404,14 @@ public class ResourceDisplay extends Display implements SimulatorListener {
 
     /** Returns the currently selected editor tab, or {@code null} if no editor is selected. */
     public ResourceTab getSelectedEditor() {
-        Tab result = getSelectedTab();
+        ResourceTab result = getSelectedTab();
         return result != null && result.isEditor() ? (ResourceTab) result
                 : null;
     }
 
     /** Returns the currently selected tab, or {@code null} if no editor is selected. */
-    public Tab getSelectedTab() {
-        return (Tab) getTabPane().getSelectedComponent();
+    public ResourceTab getSelectedTab() {
+        return (ResourceTab) getTabPane().getSelectedComponent();
     }
 
     @Override
@@ -355,6 +427,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             getEnableButton().setSelected(
                 resourceModel != null && resourceModel.isEnabled());
             selectResource(source.getSelected(getResourceKind()));
+            buildInfoPanel();
             activateListening();
         }
     }
@@ -372,9 +445,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         getMainTab().updateGrammar(grammar);
         int tabCount = getTabPane().getTabCount();
         for (int i = tabCount - 1; i >= 0; i--) {
-            Tab tab = (Tab) getTabPane().getComponentAt(i);
+            ResourceTab tab = (ResourceTab) getTabPane().getComponentAt(i);
             if (tab.isEditor() && fresh) {
-                ((ResourceTab) tab).dispose();
+                tab.dispose();
             } else if (tab != getMainTab()) {
                 tab.updateGrammar(grammar);
             }
@@ -481,6 +554,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             Component selection = getTabPane().getSelectedComponent();
             String name = selection == null ? null : selection.getName();
             getSimulatorModel().doSelect(getResourceKind(), name);
+            buildInfoPanel();
             activateListening();
         }
     }
@@ -490,8 +564,8 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * either in an open editor or in the main tab.
      * @return the tab in which the resource is shown
      */
-    public Tab selectResource(String name) {
-        Tab result;
+    public ResourceTab selectResource(String name) {
+        ResourceTab result;
         if (name == null) {
             removeMainTab();
             result = null;
@@ -513,7 +587,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * Removes the main panel from the display.
      */
     protected void removeMainTab() {
-        getTabPane().remove(getMainTab().getComponent());
+        getTabPane().remove(getMainTab());
     }
 
     /** 
@@ -522,11 +596,10 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     protected void selectMainTab(String name) {
         if (getMainTab().setResource(name)) {
             TabLabel tabLabel = getMainTab().getTabLabel();
-            int index =
-                getTabPane().indexOfComponent(getMainTab().getComponent());
+            int index = getTabPane().indexOfComponent(getMainTab());
             if (index < 0) {
                 index = getMainTabIndex();
-                getTabPane().add(getMainTab().getComponent(), index);
+                getTabPane().add(getMainTab(), index);
                 getTabPane().setTitleAt(index, null);
                 getTabPane().setTabComponentAt(index, tabLabel);
             }
@@ -634,6 +707,10 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     private JTabbedPane tabPane;
+    private JPanel singleInfoPanel;
+    private final String SINGLE_INFO_KEY = "Single info panel";
+    private JSplitPane splitInfoPanel;
+    private final String SPLIT_INFO_KEY = "Split info panel";
     private JToggleButton enableButton;
 
     /** Mapping from graph names to editors for those graphs. */
@@ -642,7 +719,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
 
     /** Flag indicating that the listeners are currently active. */
     private boolean listening;
-    private MainTab mainTab;
+    private ResourceTab mainTab;
 
     /** Tool tip text for an enabled resource. */
     private String enabledText;
@@ -702,25 +779,5 @@ public class ResourceDisplay extends Display implements SimulatorListener {
                 getComponentAt(index).requestFocus();
             }
         }
-    }
-
-    /** Interface for the main tab on this display. */
-    protected static interface MainTab extends Tab {
-        /** 
-         * Changes this tab so as to display a given, named resource, if it exists.
-         * @param name the name of the resource; if {@code null}, the display
-         * should be emptied
-         * @return if {@code false}, no resource with the given name
-         * exists (and so the main tab was not changed)
-         */
-        public boolean setResource(String name);
-
-        /** 
-         * Removes a resource that is currently being edited from the
-         * main tab and its internal data structures.
-         * @param name the name of the resource to be removed
-         * @return {@code true} if this was the currently displayed resource
-         */
-        public boolean removeResource(String name);
     }
 }

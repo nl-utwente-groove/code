@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.gui.Display.Tab;
 import groove.gui.jgraph.JAttr;
 import groove.gui.list.ListTabbedPane;
 
@@ -126,7 +125,7 @@ public class TabLabel extends JPanel {
     /** 
      * Creates new component for the state tab. 
      */
-    public TabLabel(Display display, Tab tab, Icon icon, String title) {
+    public TabLabel(Display display, ResourceTab tab, Icon icon, String title) {
         this(Kind.STATE, icon, title, false);
         this.display = display;
     }
@@ -177,7 +176,7 @@ public class TabLabel extends JPanel {
     protected void doButtonAction() {
         switch (this.kind) {
         case RESOURCE:
-            ((ResourceTab) this.tab).saveEditor(true, true);
+            this.tab.saveEditor(true, true);
             break;
         case DISPLAY:
             ((DisplaysPanel) this.parent).detach(this.display);
@@ -196,7 +195,7 @@ public class TabLabel extends JPanel {
     private final boolean hasButton;
     private TabButton button;
     /** The editor panel in this tab. */
-    private Tab tab;
+    private ResourceTab tab;
     /** The panel on which the display is shown. */
     private JTabbedPane parent;
     /** The editor panel in this tab. */

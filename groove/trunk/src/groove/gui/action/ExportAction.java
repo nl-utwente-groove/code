@@ -3,13 +3,13 @@ package groove.gui.action;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.gui.Display;
-import groove.gui.Display.Tab;
 import groove.gui.DisplayKind;
 import groove.gui.GraphEditorTab;
 import groove.gui.GraphTab;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.ResourceDisplay;
+import groove.gui.ResourceTab;
 import groove.gui.Simulator;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.SaveDialog;
@@ -32,7 +32,7 @@ public class ExportAction extends SimulatorAction {
         super(simulator, Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
         putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
         this.displayKind = displayKind;
-        this.display = simulator.getDisplaysPanel().getDisplayFor(displayKind);
+        this.display = simulator.getDisplaysPanel().getDisplay(displayKind);
         this.jGraph = null;
         assert this.displayKind.isGraphBased();
     }
@@ -100,16 +100,16 @@ public class ExportAction extends SimulatorAction {
             case HOST:
             case RULE:
             case TYPE:
-                Tab selectedTab =
+                ResourceTab selectedTab =
                     ((ResourceDisplay) this.display).getSelectedTab();
                 return selectedTab == null ? null
                         : selectedTab instanceof GraphTab
                                 ? ((GraphTab) selectedTab).getJGraph()
                                 : ((GraphEditorTab) selectedTab).getJGraph();
             case STATE:
-                return getStateDisplay().getGraphPanel().getJGraph();
+                return getStateDisplay().getJGraph();
             case LTS:
-                return getLtsDisplay().getLtsJGraph();
+                return getLtsDisplay().getJGraph();
             default:
                 assert false;
                 return null;

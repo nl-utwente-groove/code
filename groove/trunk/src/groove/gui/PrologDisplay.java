@@ -53,6 +53,7 @@ import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -110,15 +111,19 @@ public class PrologDisplay extends ResourceDisplay {
         mainPane.add(queryPane, BorderLayout.NORTH);
         mainPane.add(splitPane, BorderLayout.CENTER);
 
-        JSplitPane sp2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        sp2.setResizeWeight(0.9);
-        sp2.setBorder(null);
-        sp2.setOneTouchExpandable(true);
-        sp2.setRightComponent(getSyntaxHelp());
-        sp2.setLeftComponent(mainPane);
-
         setLayout(new BorderLayout());
-        add(sp2, BorderLayout.CENTER);
+        add(mainPane, BorderLayout.CENTER);
+    }
+
+    @Override
+    protected JComponent createInfoPanel() {
+        return new TitledPanel("Available predicates", getSyntaxHelp(), null,
+            false);
+    }
+
+    @Override
+    protected void buildInfoPanel() {
+        getInfoPanel().setEnabled(isEnabled());
     }
 
     /**
@@ -179,20 +184,44 @@ public class PrologDisplay extends ResourceDisplay {
      * Creates the panel with documentation trees.
      */
     private JTabbedPane createSyntaxHelp() {
-        JTabbedPane treePane = new JTabbedPane();
-        // create the groove predicate tree
-        this.grooveTree = createPredicateTree(true);
-        treePane.add("Groove", new JScrollPane(this.grooveTree));
-        loadSyntaxHelpTree(this.grooveTree, getEnvironment().getGrooveTags());
-        // create the prolog predicate tree
-        this.prologTree = createPredicateTree(false);
-        treePane.add("Prolog", new JScrollPane(this.prologTree));
-        loadSyntaxHelpTree(this.prologTree, getEnvironment().getPrologTags());
-        // create the user predicate tree
-        this.userTree = createPredicateTree(false);
-        treePane.add("User", new JScrollPane(this.userTree));
-        loadSyntaxHelpTree(this.userTree, getEnvironment().getUserTags());
+        JTabbedPane treePane = new JTabbedPane() {
+            @Override
+            public void setEnabled(boolean enabled) {
+                getGrooveTree().setEnabled(enabled);
+                getPrologTree().setEnabled(enabled);
+                getUserTree().setEnabled(enabled);
+            }
+        };
+        treePane.add("Groove", new JScrollPane(getGrooveTree()));
+        treePane.add("Prolog", new JScrollPane(getPrologTree()));
+        treePane.add("User", new JScrollPane(getUserTree()));
         return treePane;
+    }
+
+    private JTree getGrooveTree() {
+        if (this.grooveTree == null) {
+            this.grooveTree = createPredicateTree(true);
+            loadSyntaxHelpTree(this.grooveTree,
+                getEnvironment().getGrooveTags());
+        }
+        return this.grooveTree;
+    }
+
+    private JTree getPrologTree() {
+        if (this.prologTree == null) {
+            this.prologTree = createPredicateTree(false);
+            loadSyntaxHelpTree(this.prologTree,
+                getEnvironment().getPrologTags());
+        }
+        return this.prologTree;
+    }
+
+    private JTree getUserTree() {
+        if (this.userTree == null) {
+            this.userTree = createPredicateTree(false);
+            loadSyntaxHelpTree(this.userTree, getEnvironment().getUserTags());
+        }
+        return this.userTree;
     }
 
     /** Loads a tree with a given set of tags. */
@@ -366,7 +395,7 @@ public class PrologDisplay extends ResourceDisplay {
         super.updateGrammar(grammar, fresh);
         this.environment = null;
         this.engine = null;
-        loadSyntaxHelpTree(this.userTree, getEnvironment().getUserTags());
+        loadSyntaxHelpTree(getUserTree(), getEnvironment().getUserTags());
     }
 
     /**

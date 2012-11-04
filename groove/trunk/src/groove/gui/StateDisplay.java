@@ -100,7 +100,7 @@ public class StateDisplay extends Display {
         JToolBar toolBar = Options.createToolBar();
         fillToolBar(toolBar);
         add(toolBar, BorderLayout.NORTH);
-        add(getGraphPanel());
+        add(getDisplayPanel());
     }
 
     @Override
@@ -124,6 +124,16 @@ public class StateDisplay extends Display {
         return result;
     }
 
+    @Override
+    protected JComponent createInfoPanel() {
+        LabelTree labelTree = getJGraph().getLabelTree();
+        JComponent result =
+            new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
+                labelTree.createToolBar(), true);
+        result.setBackground(JAttr.STATE_BACKGROUND);
+        return result;
+    }
+
     private void fillToolBar(JToolBar result) {
         result.removeAll();
         result.add(getActions().getExplorationDialogAction());
@@ -137,14 +147,77 @@ public class StateDisplay extends Display {
         result.add(getActions().getForwardAction());
     }
 
+    /** Lazily creates and returns the top-level display panel. */
+    private JSplitPane getDisplayPanel() {
+        JSplitPane result = this.displayPanel;
+        if (result == null) {
+            this.displayPanel =
+                result = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+            result.setTopComponent(getStatePanel());
+            result.setBottomComponent(getErrorPanel());
+            result.setDividerSize(0);
+            result.setContinuousLayout(true);
+            result.setResizeWeight(0.9);
+            result.resetToPreferredSizes();
+            result.setBorder(null);
+        }
+        return result;
+    }
+
+    /** Returns the currently displayed state graph. */
+    public AspectGraph getStateGraph() {
+        return getJGraph().getModel().getGraph();
+    }
+
+    /** Returns the JGraph component of the state display. */
+    final public AspectJGraph getJGraph() {
+        return getGraphPanel().getJGraph();
+    }
+
     /** Returns the state tab on this display. */
-    public JGraphPanel<AspectJGraph> getGraphPanel() {
+    private StateGraphPanel getGraphPanel() {
         if (this.stateGraphPanel == null) {
-            this.stateGraphPanel = new StateGraphPanel(this);
+            this.stateGraphPanel = new StateGraphPanel();
         }
         return this.stateGraphPanel;
     }
 
+    /** Gets the state panel, creating it (lazily) if necessary. */
+    private JComponent getStatePanel() {
+        if (this.statePanel == null) {
+            this.statePanel = getGraphPanel().createGraphPane();
+        }
+        return this.statePanel;
+    }
+
+    /** Gets the error panel, creating it (lazily) if necessary. */
+    ErrorListPanel getErrorPanel() {
+        if (this.errorPanel == null) {
+            this.errorPanel = new ErrorListPanel("Errors in state graph");
+            this.errorPanel.addSelectionListener(createErrorListener());
+        }
+        return this.errorPanel;
+    }
+
+    /** Creates the listener of the error panel. */
+    private Observer createErrorListener() {
+        return new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                if (arg != null) {
+                    GraphJCell errorCell =
+                        getGraphPanel().getJModel().getErrorMap().get(arg);
+                    if (errorCell != null) {
+                        getGraphPanel().getJGraph().setSelectionCell(errorCell);
+                    }
+                }
+            }
+        };
+    }
+
+    private JSplitPane displayPanel;
+    private JComponent statePanel;
+    private ErrorListPanel errorPanel;
     private StateGraphPanel stateGraphPanel;
 
     /**
@@ -158,67 +231,12 @@ public class StateDisplay extends Display {
         // --------------------- INSTANCE DEFINITIONS ----------------------
 
         /** Constructs a new state panel. */
-        public StateGraphPanel(StateDisplay display) {
-            super(new AspectJGraph(display.getSimulator(), display.getKind(),
-                false), true);
+        public StateGraphPanel() {
+            super(new AspectJGraph(getSimulator(), getKind(), false), true);
             initialise();
             setBorder(null);
             setEnabledBackground(JAttr.STATE_BACKGROUND);
             getJGraph().setToolTipEnabled(true);
-        }
-
-        @Override
-        public JComponent createMainPane() {
-            this.mainPane =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT, getStatePanel(),
-                    getErrorPanel());
-            this.mainPane.setDividerSize(0);
-            this.mainPane.setContinuousLayout(true);
-            this.mainPane.setResizeWeight(0.9);
-            this.mainPane.resetToPreferredSizes();
-            this.mainPane.setBorder(null);
-            return this.mainPane;
-        }
-
-        /** Gets the main pane, creating it (lazily) if necessary. */
-        public JSplitPane getMainPane() {
-            if (this.mainPane == null) {
-                createMainPane();
-            }
-            return this.mainPane;
-        }
-
-        /** Gets the state panel, creating it (lazily) if necessary. */
-        private JComponent getStatePanel() {
-            if (this.statePanel == null) {
-                this.statePanel = super.createMainPane();
-            }
-            return this.statePanel;
-        }
-
-        /** Gets the error panel, creating it (lazily) if necessary. */
-        private ErrorListPanel getErrorPanel() {
-            if (this.errorPanel == null) {
-                this.errorPanel = new ErrorListPanel("Errors in state graph");
-                this.errorPanel.addSelectionListener(createErrorListener());
-            }
-            return this.errorPanel;
-        }
-
-        /** Creates the listener of the error panel. */
-        private Observer createErrorListener() {
-            return new Observer() {
-                @Override
-                public void update(Observable o, Object arg) {
-                    if (arg != null) {
-                        GraphJCell errorCell =
-                            getJModel().getErrorMap().get(arg);
-                        if (errorCell != null) {
-                            getJGraph().setSelectionCell(errorCell);
-                        }
-                    }
-                }
-            };
         }
 
         @Override
@@ -401,11 +419,11 @@ public class StateDisplay extends Display {
             }
             if (state != null && state.isError()) {
                 getErrorPanel().setEntries(errors);
-                getMainPane().setBottomComponent(getErrorPanel());
-                getMainPane().resetToPreferredSizes();
+                getDisplayPanel().setBottomComponent(getErrorPanel());
+                getDisplayPanel().resetToPreferredSizes();
             } else {
                 getErrorPanel().clearEntries();
-                getMainPane().remove(getErrorPanel());
+                getDisplayPanel().remove(getErrorPanel());
             }
         }
 
@@ -744,9 +762,6 @@ public class StateDisplay extends Display {
             return result;
         }
 
-        private JSplitPane mainPane;
-        private JComponent statePanel;
-        private ErrorListPanel errorPanel;
         /**
          * Mapping from graphs to the corresponding graph models.
          */

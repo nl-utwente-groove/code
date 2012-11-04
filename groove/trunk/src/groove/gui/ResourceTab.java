@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.gui.Display.Tab;
 import groove.gui.action.CancelEditAction;
 import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
@@ -25,10 +24,10 @@ import groove.gui.list.ListPanel;
 import groove.trans.QualName;
 import groove.trans.ResourceKind;
 import groove.view.FormatError;
+import groove.view.GrammarModel;
 import groove.view.ResourceModel;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
@@ -51,7 +50,7 @@ import javax.swing.KeyStroke;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class ResourceTab extends JPanel implements Tab {
+abstract public class ResourceTab extends JPanel {
     /** Creates a panel for a given display. */
     public ResourceTab(ResourceDisplay display) {
         final Simulator simulator = display.getSimulator();
@@ -134,26 +133,40 @@ abstract public class ResourceTab extends JPanel implements Tab {
         }
     }
 
-    @Override
-    public Component getComponent() {
-        return this;
-    }
-
-    @Override
+    /** 
+     * Returns the icon for this tab.
+     */
     public Icon getIcon() {
         return Icons.getEditorTabIcon(getDisplay().getKind().getResource());
     }
 
-    /**
-     * Returns the title of this panel. The title is the last part of the name 
-     * plus an optional indication of the (dirty) status of the editor.
+    /** 
+     * Returns the title of this tab.
+     * This consists of the resource name plus an optional indication of the
+     * dirty status of the tab.
      */
-    @Override
     public String getTitle() {
         StringBuilder result =
             new StringBuilder(QualName.getLastName(getName()));
         return decorateText(result).toString();
     }
+
+    /**
+     * Returns the upper information panel of this tab.
+     * @return the upper information panel
+     */
+    abstract public JComponent getUpperInfoPanel();
+
+    /**
+     * Returns the lower information panel of this tab.
+     * @return the lower information panel, or {@code null} if there is none such.
+     */
+    abstract public JComponent getLowerInfoPanel();
+
+    /** 
+     * Callback method to notify the tab of a change in grammar. 
+     */
+    abstract public void updateGrammar(GrammarModel grammar);
 
     /** Decorates a string by adding an indication of the editor being dirty. */
     protected StringBuilder decorateText(StringBuilder text) {
@@ -168,7 +181,32 @@ abstract public class ResourceTab extends JPanel implements Tab {
         return this.resourceKind;
     }
 
-    @Override
+    /** 
+     * Changes this tab so as to display a given, named resource, if it exists.
+     * Should only be used if this is not an editor tab.
+     * @param name the name of the resource; if {@code null}, the display
+     * should be emptied
+     * @return if {@code false}, no resource with the given name
+     * exists (and so the main tab was not changed)
+     * @throws UnsupportedOperationException if this is an editor tab
+     */
+    abstract public boolean setResource(String name);
+
+    /** 
+     * Removes a resource that is currently being edited from the
+     * main tab and its internal data structures.
+     * Should only be used if this is not an editor tab.
+     * @param name the name of the resource to be removed
+     * @return {@code true} if this was the currently displayed resource
+     * @throws UnsupportedOperationException if this is an editor tab
+     */
+    abstract public boolean removeResource(String name);
+
+    /** 
+     * Indicates if this tab is an editor tab.
+     * @return {@code true} if this is an editor tab, {@code false} if
+     * it is a main tab.
+     */
     public boolean isEditor() {
         return true;
     }
@@ -229,10 +267,7 @@ abstract public class ResourceTab extends JPanel implements Tab {
         return result;
     }
 
-    /** 
-     * Returns the component to be used to fill the tab in a 
-     * {@link JTabbedPane}, when this panel is displayed.
-     */
+    /** Returns the tab label component to be used for this tab. */
     public final TabLabel getTabLabel() {
         if (this.tabLabel == null) {
             this.tabLabel = createTabLabel();
@@ -282,7 +317,9 @@ abstract public class ResourceTab extends JPanel implements Tab {
         getDisplay().getTabPane().remove(this);
     }
 
-    /** Returns the display on which this tab is placed. */
+    /**
+     * Returns the display on which this tab is placed.
+     */
     public final ResourceDisplay getDisplay() {
         return this.display;
     }

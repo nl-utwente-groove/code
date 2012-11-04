@@ -31,37 +31,45 @@ import javax.swing.SwingUtilities;
 public class UserSettings {
     /** Reads and applies previously stored settings. */
     public static void applyUserSettings(Simulator simulator) {
-        applyFrameSettings(simulator.getFrame());
+        applyFrameSettings(simulator);
         applyLocationSettings(simulator);
         applyDisplaySettings(simulator);
     }
 
     /** Reads and applies previously stored settings. */
-    private static void applyFrameSettings(JFrame frame) {
+    private static void applyFrameSettings(Simulator simulator) {
         String simMax = userPrefs.get(SIM_MAX_KEY, "");
         String simWidth = userPrefs.get(SIM_WIDTH_KEY, "");
         String simHeight = userPrefs.get(SIM_HEIGHT_KEY, "");
-        String rulePos = userPrefs.get(RULE_GRAPH_DIV_POS_KEY, "");
-        String mainPos = userPrefs.get(MAIN_DIV_POS_KEY, "");
 
-        if (simMax.isEmpty() || simWidth.isEmpty() || simHeight.isEmpty()
-            || rulePos.isEmpty() || mainPos.isEmpty()) {
-            return;
+        if (!simMax.isEmpty() && !simWidth.isEmpty() && !simHeight.isEmpty()) {
+            JFrame frame = simulator.getFrame();
+            if (Boolean.parseBoolean(simMax)) {
+                frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            } else {
+                int w = Integer.parseInt(simWidth);
+                int h = Integer.parseInt(simHeight);
+                frame.setSize(w, h);
+            }
         }
 
-        if (Boolean.parseBoolean(simMax)) {
-            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        } else {
-            int w = Integer.parseInt(simWidth);
-            int h = Integer.parseInt(simHeight);
-            frame.setSize(w, h);
+        String grammarPos = userPrefs.get(GRAMMAR_DIV_POS_KEY, "");
+        if (!grammarPos.isEmpty()) {
+            JSplitPane jsp = simulator.getGrammarPanel();
+            jsp.setDividerLocation(Integer.parseInt(grammarPos));
         }
 
-        JSplitPane jsp = (JSplitPane) frame.getContentPane().getComponent(1);
-        jsp.setDividerLocation(Integer.parseInt(mainPos));
+        String displaysInfoPos = userPrefs.get(DISPLAYS_INFO_DIV_POS_KEY, "");
+        if (!displaysInfoPos.isEmpty()) {
+            JSplitPane jsp = simulator.getDisplaysInfoPanel();
+            jsp.setDividerLocation(Integer.parseInt(displaysInfoPos));
+        }
 
-        jsp = (JSplitPane) jsp.getLeftComponent();
-        jsp.setDividerLocation(Integer.parseInt(rulePos));
+        String listsPos = userPrefs.get(LISTS_DIV_POS_KEY, "");
+        if (!listsPos.isEmpty()) {
+            JSplitPane jsp = simulator.getListsPanel();
+            jsp.setDividerLocation(Integer.parseInt(listsPos));
+        }
     }
 
     private static boolean isFrameMaximized(JFrame frame) {
@@ -74,17 +82,6 @@ public class UserSettings {
 
     private static int getFrameHeight(JFrame frame) {
         return frame.getHeight();
-    }
-
-    private static int getRuleDivPos(JFrame frame) {
-        JSplitPane jsp = (JSplitPane) frame.getContentPane().getComponent(1);
-        jsp = (JSplitPane) jsp.getLeftComponent();
-        return jsp.getDividerLocation();
-    }
-
-    private static int getMainDivPos(JFrame frame) {
-        JSplitPane jsp = (JSplitPane) frame.getContentPane().getComponent(1);
-        return jsp.getDividerLocation();
     }
 
     /** Restores the persisted user preferences into a given simulator. */
@@ -129,24 +126,28 @@ public class UserSettings {
 
     /** Synchronises saved settings with the current ones. */
     public static void syncSettings(Simulator simulator) {
-        syncFrameSettings(simulator.getFrame());
+        syncFrameSettings(simulator);
         syncLocationSettings(simulator);
         syncDisplaySettings(simulator);
     }
 
     /** Synchronises saved settings with the current ones. */
-    private static void syncFrameSettings(JFrame frame) {
+    private static void syncFrameSettings(Simulator simulator) {
+        JFrame frame = simulator.getFrame();
         String simMax = Boolean.toString(isFrameMaximized(frame));
         String simWidth = Integer.toString(getFrameWidth(frame));
         String simHeight = Integer.toString(getFrameHeight(frame));
-        String rulePos = Integer.toString(getRuleDivPos(frame));
-        String mainPos = Integer.toString(getMainDivPos(frame));
 
         userPrefs.put(SIM_MAX_KEY, simMax);
         userPrefs.put(SIM_WIDTH_KEY, simWidth);
         userPrefs.put(SIM_HEIGHT_KEY, simHeight);
-        userPrefs.put(RULE_GRAPH_DIV_POS_KEY, rulePos);
-        userPrefs.put(MAIN_DIV_POS_KEY, mainPos);
+        int grammarPos = simulator.getGrammarPanel().getDividerLocation();
+        userPrefs.put(GRAMMAR_DIV_POS_KEY, "" + grammarPos);
+        int displaysInfoPos =
+            simulator.getDisplaysInfoPanel().getDividerLocation();
+        userPrefs.put(DISPLAYS_INFO_DIV_POS_KEY, "" + displaysInfoPos);
+        int listsPos = simulator.getListsPanel().getDividerLocation();
+        userPrefs.put(LISTS_DIV_POS_KEY, "" + listsPos);
     }
 
     /** Persists the state of the simulator into the user preferences. */
@@ -176,8 +177,13 @@ public class UserSettings {
     static private final String SIM_MAX_KEY = "Simulator maximized";
     static private final String SIM_WIDTH_KEY = "Simulator width";
     static private final String SIM_HEIGHT_KEY = "Simulator height";
-    static private final String RULE_GRAPH_DIV_POS_KEY =
+    /** Key for the divider position in the lists panel. */
+    static private final String LISTS_DIV_POS_KEY =
         "Rule-Graph divider position";
-    static private final String MAIN_DIV_POS_KEY =
+    /** Key for the divider position in the main panel. */
+    static private final String GRAMMAR_DIV_POS_KEY =
         "Main panel divider position";
+    /** Key for the divider position in the grammar panel. */
+    static private final String DISPLAYS_INFO_DIV_POS_KEY =
+        "Displays+info panel divider position";
 }

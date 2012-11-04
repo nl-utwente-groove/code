@@ -43,7 +43,6 @@ import groove.view.ResourceModel;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -66,11 +65,9 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
@@ -281,6 +278,16 @@ final public class GraphEditorTab extends ResourceTab implements
     }
 
     @Override
+    public boolean setResource(String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean removeResource(String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     protected ResourceModel<?> getResource() {
         return getJModel().getResourceModel();
     }
@@ -398,7 +405,10 @@ final public class GraphEditorTab extends ResourceTab implements
     @Override
     protected JGraphPanel<?> getEditArea() {
         if (this.jGraphPanel == null) {
-            JGraphPanel<?> result = this.jGraphPanel = new MyGraphPanel(this);
+            JGraphPanel<?> result =
+                this.jGraphPanel =
+                    new JGraphPanel<AspectJGraph>(getJGraph(), false);
+            result.setEnabledBackground(JAttr.EDITOR_BACKGROUND);
             result.initialise();
             result.addRefreshListener(SHOW_NODE_IDS_OPTION);
             result.addRefreshListener(SHOW_VALUE_NODES_OPTION);
@@ -406,6 +416,28 @@ final public class GraphEditorTab extends ResourceTab implements
             result.setEnabled(true);
         }
         return this.jGraphPanel;
+    }
+
+    @Override
+    public JComponent getUpperInfoPanel() {
+        JComponent result = this.labelPanel;
+        if (result == null) {
+            LabelTree labelTree = getJGraph().getLabelTree();
+            result =
+                new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
+                    labelTree.createToolBar(), true);
+            result.setBackground(JAttr.EDITOR_BACKGROUND);
+        }
+        return result;
+    }
+
+    @Override
+    public JComponent getLowerInfoPanel() {
+        JComponent result = this.syntaxHelp;
+        if (result == null) {
+            this.syntaxHelp = result = createSyntaxHelp();
+        }
+        return result;
     }
 
     /**
@@ -493,11 +525,8 @@ final public class GraphEditorTab extends ResourceTab implements
     }
 
     /** Creates and returns a panel for the syntax descriptions. */
-    private Component createSyntaxHelp() {
+    private JComponent createSyntaxHelp() {
         initSyntax();
-        JPanel result = new JPanel();
-        result.setLayout(new BorderLayout());
-        result.add(new JLabel("Allowed labels:"), BorderLayout.NORTH);
         final JTabbedPane tabbedPane = new JTabbedPane();
         final int nodeTabIndex = tabbedPane.getTabCount();
         tabbedPane.addTab("Nodes", null, createSyntaxList(this.nodeKeys),
@@ -513,7 +542,8 @@ final public class GraphEditorTab extends ResourceTab implements
                 createSyntaxList(Algebras.getDocMap().keySet()),
                 "Available attribute operators");
         }
-        result.add(tabbedPane, BorderLayout.CENTER);
+        JPanel result =
+            new TitledPanel("Label syntax help", tabbedPane, null, false);
         // add a listener that switches the syntax help between nodes and edges
         // when a cell edit is started in the JGraph
         getJGraph().addPropertyChangeListener(new PropertyChangeListener() {
@@ -635,6 +665,10 @@ final public class GraphEditorTab extends ResourceTab implements
     /** The jgraph panel used in this editor. */
     private JGraphPanel<AspectJGraph> jGraphPanel;
 
+    /** Label panel. */
+    private JComponent labelPanel;
+    /** Syntax help panel. */
+    private JComponent syntaxHelp;
     /** 
      * The number of edit steps the editor state is removed
      * from a saved graph.
@@ -869,24 +903,5 @@ final public class GraphEditorTab extends ResourceTab implements
             }
             return result;
         }
-    }
-
-    private static class MyGraphPanel extends JGraphPanel<AspectJGraph> {
-        public MyGraphPanel(GraphEditorTab editorTab) {
-            super(editorTab.getJGraph(), false);
-            this.editorTab = editorTab;
-            setEnabledBackground(JAttr.EDITOR_BACKGROUND);
-        }
-
-        @Override
-        protected JComponent createLabelPane() {
-            JComponent labelPane = super.createLabelPane();
-            JSplitPane result =
-                new JSplitPane(JSplitPane.VERTICAL_SPLIT, labelPane,
-                    this.editorTab.createSyntaxHelp());
-            return result;
-        }
-
-        private final GraphEditorTab editorTab;
     }
 }
