@@ -6,7 +6,9 @@ import static groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
+import groove.graph.GraphProperties;
 import groove.gui.dialog.GraphPreviewDialog;
+import groove.gui.dialog.PropertiesTable;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
@@ -23,6 +25,8 @@ import java.util.Observer;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
@@ -111,7 +115,28 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     }
 
     @Override
-    public JComponent getUpperInfoPanel() {
+    protected JComponent getUpperInfoPanel() {
+        JTabbedPane result = this.upperInfoPanel;
+        if (result == null) {
+            this.upperInfoPanel = result = new JTabbedPane();
+            result.add(getLabelPanel());
+            if (getResourceKind().hasProperties()) {
+                JComponent propertiesPanel = getPropertiesPanel();
+                JScrollPane scrollPanel = new JScrollPane(propertiesPanel);
+                scrollPanel.setName(propertiesPanel.getName());
+                scrollPanel.getViewport().setBackground(
+                    propertiesPanel.getBackground());
+                result.add(scrollPanel);
+                result.addChangeListener(createInfoListener(true));
+            }
+        }
+        if (getResourceKind().hasProperties()) {
+            result.setSelectedIndex(getDisplay().getInfoTabIndex(true));
+        }
+        return result;
+    }
+
+    private TitledPanel getLabelPanel() {
         TitledPanel result = this.labelPanel;
         if (result == null) {
             LabelTree labelTree = getJGraph().getLabelTree();
@@ -119,12 +144,24 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
                 result =
                     new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
                         labelTree.createToolBar(), true);
+            result.setTitled(false);
+        }
+        return result;
+    }
+
+    private PropertiesTable getPropertiesPanel() {
+        PropertiesTable result = this.propertiesPanel;
+        if (result == null) {
+            this.propertiesPanel =
+                result = new PropertiesTable(GraphProperties.KEYS, false);
+            result.setName("Properties");
+            result.addMouseListener(new EditMouseListener());
         }
         return result;
     }
 
     @Override
-    public JComponent getLowerInfoPanel() {
+    protected JComponent getLowerInfoPanel() {
         JPanel result = this.levelTreePanel;
         if (result == null) {
             final RuleLevelTree levelTree = getJGraph().getLevelTree();
@@ -174,6 +211,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         AspectGraph graphClone = graph.clone();
         graphClone.setFixed();
         jModel.loadGraph(graphClone);
+        getPropertiesPanel().setProperties(graphClone.getInfo().getProperties());
     }
 
     @Override
@@ -228,6 +266,10 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
 
     /** Graph panel of this tab. */
     private JGraphPanel<AspectJGraph> graphPanel;
+    /** Label panel of this tab. */
+    private JTabbedPane upperInfoPanel;
+    /** Properties panel of this tab. */
+    private PropertiesTable propertiesPanel;
     /** Label panel of this tab. */
     private TitledPanel labelPanel;
     /** Level tree panel of this tab, if any. */

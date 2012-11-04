@@ -320,6 +320,9 @@ public final class Icons {
     /** Small icon for production rules, as shown in the prolog list. */
     public static final ImageIcon PROLOG_LIST_ICON =
         createIcon("prolog-file.gif");
+    /** Icon for Properties Panel. */
+    public static final ImageIcon PROPERTIES_FRAME_ICON =
+        createIcon("properties-frame.gif");
     /** Redo action icon. */
     public static final ImageIcon REDO_ICON = createIcon("redo.gif");
     /** Small icon for production rules, as shown in the rule tree. */

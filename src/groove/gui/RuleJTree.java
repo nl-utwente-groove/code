@@ -270,6 +270,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
         suspendListeners();
+        boolean renewSelection = false;
         if (changes.contains(GRAMMAR)) {
             GrammarModel grammar = source.getGrammar();
             if (grammar == null) {
@@ -280,18 +281,22 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 loadGrammar(grammar);
             }
             refresh(source.getState());
+            renewSelection = true;
         } else {
             if (changes.contains(GTS) || changes.contains(STATE)) {
                 // if the GTS has changed, this may mean that the state 
                 // displayed here has been closed, in which case we have to refresh
                 // since the rule events have been changed into transitions
                 refresh(source.getState());
+                renewSelection = true;
             }
             if (changes.contains(MATCH) || changes.contains(RULE)) {
-                ResourceModel<?> ruleModel =
-                    source.getResource(ResourceKind.RULE);
-                selectMatch((RuleModel) ruleModel, source.getMatch());
+                renewSelection = true;
             }
+        }
+        if (renewSelection) {
+            ResourceModel<?> ruleModel = source.getResource(ResourceKind.RULE);
+            selectMatch((RuleModel) ruleModel, source.getMatch());
         }
         activateListeners();
     }

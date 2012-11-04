@@ -65,10 +65,6 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     private void addTab(Display component) {
         DisplayKind kind = component.getKind();
-        ListPanel listPanel = component.getListPanel();
-        if (listPanel != null) {
-            this.listKindMap.put(listPanel, kind);
-        }
         if (Options.getOptionalTabs().contains(kind.getResource())) {
             showOrHideTab(kind.getResource());
         } else {
@@ -208,12 +204,15 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     /** Indicates if a list panel should go onto the upper or the lower pane. */
     private JTabbedPane getListsPanel(DisplayKind kind) {
-        if (kind == DisplayKind.LTS || kind == DisplayKind.STATE
-            || kind == DisplayKind.RULE) {
-            return getUpperListsPanel();
-        } else {
-            return getLowerListsPanel();
+        JTabbedPane result = null;
+        switch (kind.getListPanel()) {
+        case 0:
+            result = getUpperListsPanel();
+            break;
+        case 1:
+            result = getLowerListsPanel();
         }
+        return result;
     }
 
     @Override
@@ -243,20 +242,24 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             }
             // change the selected tab in the appropriate lists panel
             JTabbedPane listsTabPane = getListsPanel(newDisplayKind);
-            DisplayKind oldListDisplayKind =
-                ((ListPanel) listsTabPane.getSelectedComponent()).getDisplayKind();
             ListPanel newListPanel = getDisplay(newDisplayKind).getListPanel();
-            boolean changeList =
-                oldListDisplayKind != newDisplayKind && newListPanel != null
-                    && listsTabPane.indexOfComponent(newListPanel) >= 0;
-            // do not automatically switch lists panel between state and rule mode
-            switch (oldListDisplayKind) {
-            case RULE:
-                changeList &= newDisplayKind != DisplayKind.STATE;
-                break;
-            case STATE:
-                changeList &= newDisplayKind != DisplayKind.RULE;
-                break;
+            boolean changeList = listsTabPane != null;
+            if (changeList) {
+                DisplayKind oldListDisplayKind =
+                    ((ListPanel) listsTabPane.getSelectedComponent()).getDisplayKind();
+                changeList =
+                    oldListDisplayKind != newDisplayKind
+                        && newListPanel != null
+                        && listsTabPane.indexOfComponent(newListPanel) >= 0;
+                // do not automatically switch lists panel between state and rule mode
+                switch (oldListDisplayKind) {
+                case RULE:
+                    changeList &= newDisplayKind != DisplayKind.STATE;
+                    break;
+                case STATE:
+                    changeList &= newDisplayKind != DisplayKind.RULE;
+                    break;
+                }
             }
             if (changeList) {
                 listsTabPane.setSelectedComponent(newListPanel);
@@ -324,37 +327,40 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         DisplayKind myKind = display.getKind();
         // first add the corresponding list panel
         JPanel listPanel = display.getListPanel();
-        JTabbedPane tabbedPane = getListsPanel(display.getKind());
-        if (listPanel != null && tabbedPane.indexOfComponent(listPanel) < 0) {
+        JTabbedPane listsPanel = getListsPanel(display.getKind());
+        if (listPanel != null && listsPanel.indexOfComponent(listPanel) < 0) {
             int index;
-            for (index = 0; index < tabbedPane.getTabCount(); index++) {
+            for (index = 0; index < listsPanel.getTabCount(); index++) {
                 DisplayKind otherKind =
-                    this.listKindMap.get(tabbedPane.getComponentAt(index));
+                    ((ListPanel) listsPanel.getComponentAt(index)).getDisplayKind();
                 if (otherKind == null || myKind.compareTo(otherKind) < 0) {
                     // insert here
                     break;
                 }
             }
-            tabbedPane.insertTab(null, myKind.getTabIcon(), listPanel,
+            listsPanel.insertTab(null, myKind.getTabIcon(), listPanel,
                 myKind.getTip(), index);
         }
-        // add the info panel
-        getInfoPanel().add(display.getInfoPanel(), display.getKind().toString());
-        // now add the display panel
-        int index;
-        for (index = 0; index < getTabCount(); index++) {
-            DisplayKind otherKind = getDisplayAt(index).getKind();
-            if (otherKind == null || myKind.compareTo(otherKind) < 0) {
-                // insert here
-                break;
+        if (myKind.showDisplay()) {
+            // add the info panel
+            getInfoPanel().add(display.getInfoPanel(),
+                display.getKind().toString());
+            // now add the display panel
+            int index;
+            for (index = 0; index < getTabCount(); index++) {
+                DisplayKind otherKind = getDisplayAt(index).getKind();
+                if (otherKind == null || myKind.compareTo(otherKind) < 0) {
+                    // insert here
+                    break;
+                }
             }
+            insertTab(null, null, display, myKind.getTip(), index);
+            TabLabel tabComponent =
+                new TabLabel(this, display, myKind.getTabIcon(), null);
+            tabComponent.setFocusable(false);
+            setTabComponentAt(index, tabComponent);
+            setTabEnabled(index, index == getSelectedIndex());
         }
-        insertTab(null, null, display, myKind.getTip(), index);
-        TabLabel tabComponent =
-            new TabLabel(this, display, myKind.getTabIcon(), null);
-        tabComponent.setFocusable(false);
-        setTabComponentAt(index, tabComponent);
-        setTabEnabled(index, index == getSelectedIndex());
     }
 
     /** Detaches a component (presumably shown as a tab) into its own window. */
@@ -485,9 +491,6 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
     }
 
     private final Simulator simulator;
-    /** Mapping from simulator tab list panels to their tab kinds. */
-    private final Map<JPanel,DisplayKind> listKindMap =
-        new HashMap<JPanel,DisplayKind>();
     /** Mapping from display kinds to the corresponding panels. */
     private final Map<DisplayKind,Display> displaysMap =
         new HashMap<DisplayKind,Display>();

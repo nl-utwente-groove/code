@@ -118,6 +118,11 @@ public enum ResourceKind {
         return this.filter;
     }
 
+    /** Flag indicating if this resource kind has additional (editable) properties. */
+    public boolean hasProperties() {
+        return this == RULE;
+    }
+
     /** The graph role associated with this resource kind, or {@link GraphRole#NONE}
      * if there is no corresponding graph role.
      */

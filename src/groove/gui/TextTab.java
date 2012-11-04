@@ -102,12 +102,12 @@ final public class TextTab extends ResourceTab {
     }
 
     @Override
-    public JComponent getUpperInfoPanel() {
+    protected JComponent getUpperInfoPanel() {
         return null;
     }
 
     @Override
-    public JComponent getLowerInfoPanel() {
+    protected JComponent getLowerInfoPanel() {
         return null;
     }
 

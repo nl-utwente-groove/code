@@ -98,10 +98,10 @@ public class LTSDisplay extends Display {
     @Override
     protected JComponent createInfoPanel() {
         LabelTree labelTree = getJGraph().getLabelTree();
-        JComponent result =
+        TitledPanel result =
             new TitledPanel("Transition labels", labelTree,
                 labelTree.createToolBar(), true);
-        result.setBackground(JAttr.STATE_BACKGROUND);
+        result.setEnabledBackground(JAttr.STATE_BACKGROUND);
         return result;
     }
 
@@ -184,6 +184,7 @@ public class LTSDisplay extends Display {
     public LTSGraphPanel getGraphPanel() {
         if (this.graphPanel == null) {
             this.graphPanel = new LTSGraphPanel(this);
+            this.graphPanel.initialise();
         }
         return this.graphPanel;
     }
@@ -312,7 +313,6 @@ public class LTSDisplay extends Display {
             super(new LTSJGraph(display.getSimulator()), true);
             getJGraph().setToolTipEnabled(true);
             setEnabledBackground(JAttr.STATE_BACKGROUND);
-            initialise();
         }
 
         /**
@@ -446,6 +446,7 @@ public class LTSDisplay extends Display {
             if (enabled) {
                 getJGraph().getModeButton(SELECT_MODE).doClick();
             }
+            LTSDisplay.this.setEnabled(enabled);
         }
 
         /**

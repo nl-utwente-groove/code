@@ -28,7 +28,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
-import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 
 /**
@@ -80,7 +79,7 @@ abstract public class Display extends JPanel {
 
     /** Factory method for the list panel corresponding to this display; may be {@code null}. */
     protected ListPanel createListPanel() {
-        return new ListPanel();
+        return new ListPanel(getList(), getListToolBar(), getKind());
     }
 
     /** Creates and returns the fixed tool bar for the label list. */
@@ -97,7 +96,7 @@ abstract public class Display extends JPanel {
     abstract protected JToolBar createListToolBar();
 
     /** Returns the name list for this display. */
-    public JTree getList() {
+    public JComponent getList() {
         if (this.resourceList == null) {
             this.resourceList = createList();
         }
@@ -105,7 +104,7 @@ abstract public class Display extends JPanel {
     }
 
     /** Callback method to create the resource list. */
-    abstract protected JTree createList();
+    abstract protected JComponent createList();
 
     /**
      * Returns the information panel of the display.
@@ -113,6 +112,7 @@ abstract public class Display extends JPanel {
     public JComponent getInfoPanel() {
         if (this.infoPanel == null) {
             this.infoPanel = createInfoPanel();
+            this.infoPanel.setEnabled(false);
         }
         return this.infoPanel;
     }
@@ -166,6 +166,12 @@ abstract public class Display extends JPanel {
         return getSimulator().getActions();
     }
 
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        getInfoPanel().setEnabled(enabled);
+    }
+
     private final Simulator simulator;
     private final DisplayKind kind;
     private final ResourceKind resource;
@@ -174,7 +180,7 @@ abstract public class Display extends JPanel {
     /** Information panel for the display. */
     private JComponent infoPanel;
     /** Production system control program list. */
-    private JTree resourceList;
+    private JComponent resourceList;
     /** Toolbar for the {@link #listPanel}. */
     private JToolBar listToolBar;
 
@@ -201,6 +207,9 @@ abstract public class Display extends JPanel {
         case TYPE:
             result = new ResourceDisplay(simulator, kind.getResource());
             break;
+        case PROPERTIES:
+            result = new PropertiesDisplay(simulator);
+            break;
         default:
             assert false;
         }
@@ -210,11 +219,13 @@ abstract public class Display extends JPanel {
     }
 
     /** Panel that contains list for this display. */
-    public class ListPanel extends JPanel {
+    public static class ListPanel extends JPanel {
         /** Creates a new instance. */
-        public ListPanel() {
+        public ListPanel(JComponent list, JToolBar toolBar, DisplayKind kind) {
             super(new BorderLayout(), false);
-            JScrollPane controlPane = new JScrollPane(getList()) {
+            this.kind = kind;
+            this.list = list;
+            this.scrollPane = new JScrollPane(list) {
                 @Override
                 public Dimension getPreferredSize() {
                     Dimension superSize = super.getPreferredSize();
@@ -222,13 +233,27 @@ abstract public class Display extends JPanel {
                         Simulator.START_LIST_MINIMUM_HEIGHT);
                 }
             };
-            add(getListToolBar(), BorderLayout.NORTH);
-            add(controlPane, BorderLayout.CENTER);
+            this.scrollPane.setBackground(list.getBackground());
+            if (toolBar != null) {
+                add(toolBar, BorderLayout.NORTH);
+            }
+            add(this.scrollPane, BorderLayout.CENTER);
         }
 
         /** Returns the display kind of this panel. */
         public DisplayKind getDisplayKind() {
-            return getKind();
+            return this.kind;
         }
+
+        @Override
+        public void setEnabled(boolean enabled) {
+            super.setEnabled(enabled);
+            this.scrollPane.getViewport().setBackground(
+                this.list.getBackground());
+        }
+
+        private final JComponent list;
+        private final JScrollPane scrollPane;
+        private final DisplayKind kind;
     }
 }

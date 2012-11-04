@@ -79,11 +79,15 @@ public class TitledPanel extends JPanel {
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         this.inner.setEnabled(enabled);
+        if (this.enabledBackground != null) {
+            this.inner.setBackground(enabled ? this.enabledBackground : null);
+        }
     }
 
-    @Override
-    public void setBackground(Color background) {
-        if (this.inner != null) {
+    /** Sets the background colour for the enabled state. */
+    public void setEnabledBackground(Color background) {
+        this.enabledBackground = background;
+        if (background != null && this.inner.isEnabled()) {
             this.inner.setBackground(background);
         }
     }
@@ -91,4 +95,5 @@ public class TitledPanel extends JPanel {
     private final Box labelPanelTop;
     private final JLabel titleLabel;
     private final JComponent inner;
+    private Color enabledBackground;
 }

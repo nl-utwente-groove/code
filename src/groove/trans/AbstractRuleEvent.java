@@ -90,7 +90,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
     public String getOutputString(HostNode[] addedNodes) throws FormatException {
         String result = null;
         String formatString = getRule().getFormatString();
-        if (formatString != null) {
+        if (formatString != null && !formatString.isEmpty()) {
             List<Object> args = new ArrayList<Object>();
             for (HostNode arg : getArguments(addedNodes)) {
                 if (arg instanceof ValueNode) {

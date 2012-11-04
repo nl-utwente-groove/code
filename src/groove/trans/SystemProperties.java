@@ -3,6 +3,7 @@ package groove.trans;
 import groove.algebra.AlgebraFamily;
 import groove.explore.Exploration;
 import groove.graph.TypeLabel;
+import groove.gui.dialog.PropertyKey;
 import groove.util.Fixable;
 import groove.util.Groove;
 import groove.util.Property;
@@ -76,7 +77,8 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     public boolean isShowLoopsAsLabels() {
         String property = getProperty(Key.LOOPS_AS_LABELS);
-        return property == null || Boolean.valueOf(property);
+        return property == null || property.isEmpty()
+            || Boolean.valueOf(property);
     }
 
     /**
@@ -274,9 +276,12 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * if none is selected. 
      */
     public AlgebraFamily getAlgebraFamily() {
-        String result = getProperty(Key.ALGEBRA);
-        return result == null ? AlgebraFamily.DEFAULT
-                : AlgebraFamily.getInstance(result);
+        String property = getProperty(Key.ALGEBRA);
+        AlgebraFamily result =
+            property == null || property.isEmpty() ? AlgebraFamily.DEFAULT
+                    : AlgebraFamily.getInstance(property);
+        assert result != null;
+        return result;
     }
 
     /**
@@ -313,7 +318,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     public boolean isCheckIsomorphism() {
         String result = getProperty(Key.ISOMORPHISM);
-        return result == null || Boolean.valueOf(result);
+        return result == null || result.isEmpty() || Boolean.valueOf(result);
     }
 
     /**
@@ -515,12 +520,12 @@ public class SystemProperties extends java.util.Properties implements Fixable {
 
     /** Retrieves a property by key. */
     private String getProperty(Key key) {
-        return getProperty(key.getText());
+        return getProperty(key.getName());
     }
 
     /** Changes a property by key. */
     private void setProperty(Key key, String value) {
-        setProperty(key.getText(), value);
+        setProperty(key.getName(), value);
     }
 
     /**
@@ -562,15 +567,14 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * List of system-defined keys, in the order in which they are to appear in
      * a properties editor.
      */
-    static public final Map<String,Property<String>> DEFAULT_KEYS;
+    static public final Map<String,Key> KEYS;
 
     static {
-        Map<String,Property<String>> defaultKeys =
-            new LinkedHashMap<String,Property<String>>();
+        Map<String,Key> defaultKeys = new LinkedHashMap<String,Key>();
         for (Key key : Key.values()) {
-            defaultKeys.put(key.getText(), key.getProperty());
+            defaultKeys.put(key.getName(), key);
         }
-        DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
+        KEYS = Collections.unmodifiableMap(defaultKeys);
     }
 
     /** Map storing default property instances. */
@@ -643,7 +647,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     /** Type of property keys. */
-    public static enum Key {
+    public static enum Key implements PropertyKey {
         /**
          * Property name for the GROOVE version.
          */
@@ -769,22 +773,55 @@ public class SystemProperties extends java.util.Properties implements Fixable {
         }
 
         private Key(String text, PropertyKind property, String comment) {
-            this.text = text;
-            this.property = property.newInstance(comment);
+            this(text, null, Groove.unCamel(text, false), "", property, comment);
+        }
+
+        private Key(String text, String category, String description,
+                String defaultValue, PropertyKind property, String comment) {
+            this.name = text;
+            this.category = category;
+            this.description = description;
+            this.defaultValue = defaultValue;
+            this.format = property.newInstance(comment);
+            this.system = property == PropertyKind.UNMODIFIABLE;
         }
 
         /** Returns the text of this key. */
-        public String getText() {
-            return this.text;
+        public String getName() {
+            return this.name;
         }
 
         /** Returns the syntax check property. */
-        public Property<String> getProperty() {
-            return this.property;
+        public Property<String> getFormat() {
+            return this.format;
         }
 
-        private final String text;
-        private final Property<String> property;
+        @Override
+        public String getDefaultValue() {
+            return this.defaultValue;
+        }
+
+        @Override
+        public boolean isSystem() {
+            return this.system;
+        }
+
+        @Override
+        public String getDescription() {
+            return this.description;
+        }
+
+        @Override
+        public String getCategory() {
+            return this.category;
+        }
+
+        private final String name;
+        private final String description;
+        private final String category;
+        private final String defaultValue;
+        private final Property<String> format;
+        private final boolean system;
 
         /** Syntactic property checked on the values entered for a property key. */
         private enum PropertyKind {

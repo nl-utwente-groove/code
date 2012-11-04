@@ -260,7 +260,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
             }
             // Add version info
             AttrType attr = this.factory.createAttrType();
-            attr.setName(GraphProperties.VERSION_KEY);
+            attr.setName(GraphProperties.Key.VERSION.getName());
             attr.setString(Version.GXL_VERSION);
             graphAttrs.add(attr);
         }

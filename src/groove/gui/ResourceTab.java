@@ -44,6 +44,8 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Superclass for grammar component editors.
@@ -155,13 +157,24 @@ abstract public class ResourceTab extends JPanel {
      * Returns the upper information panel of this tab.
      * @return the upper information panel
      */
-    abstract public JComponent getUpperInfoPanel();
+    protected abstract JComponent getUpperInfoPanel();
 
     /**
      * Returns the lower information panel of this tab.
      * @return the lower information panel, or {@code null} if there is none such.
      */
-    abstract public JComponent getLowerInfoPanel();
+    protected abstract JComponent getLowerInfoPanel();
+
+    /** Creates a listener that conveys the selected tab index to the display. */
+    protected ChangeListener createInfoListener(final boolean upper) {
+        return new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                getDisplay().setInfoTabIndex(upper,
+                    ((JTabbedPane) e.getSource()).getSelectedIndex());
+            }
+        };
+    }
 
     /** 
      * Callback method to notify the tab of a change in grammar. 

@@ -17,14 +17,8 @@
 package groove.gui.action;
 
 import static groove.trans.ResourceKind.RULE;
-import groove.graph.GraphInfo;
-import groove.graph.GraphProperties;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.gui.dialog.PropertiesDialog;
-import groove.view.aspect.AspectGraph;
-
-import java.io.IOException;
 
 /**
  * Action for editing the current state or rule.
@@ -44,30 +38,8 @@ public class EditRulePropertiesAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        AspectGraph rule =
-            getSimulatorModel().getGraphResource(RULE).getSource();
-        // Associated rule properties.
-        GraphProperties properties = GraphInfo.cloneProperties(rule);
-
-        PropertiesDialog dialog =
-            new PropertiesDialog(properties, GraphProperties.DEFAULT_USER_KEYS,
-                true);
-
-        if (getRuleDisplay().saveEditor(rule.getName(), true, false)
-            && dialog.showDialog(getFrame())) {
-            // We go through the results of the dialog.
-            GraphProperties editedProperties =
-                new GraphProperties(dialog.getEditedProperties());
-            AspectGraph newGraph =
-                getSimulatorModel().getGraphResource(RULE).getSource().clone();
-            GraphInfo.setProperties(newGraph, editedProperties);
-            newGraph.setFixed();
-            try {
-                getSimulatorModel().doAddGraph(RULE, newGraph, false);
-            } catch (IOException exc) {
-                showErrorDialog(exc, "Error while modifying rule '%s'",
-                    rule.getName());
-            }
-        }
+        String ruleName = getSimulatorModel().getSelected(RULE);
+        getRuleDisplay().setInfoTabIndex(true, 1);
+        getRuleDisplay().startEditResource(ruleName);
     }
 }
