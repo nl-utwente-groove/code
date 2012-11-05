@@ -43,41 +43,37 @@ import org.junit.Test;
  * @author Arend Rensink
  * @version $Revision: 4463 $
  */
+@SuppressWarnings("all")
 public class RecipeTest {
     /** Location of the samples. */
     static public final String GRAMMAR = "junit/samples/recipes.gps";
     /** Counter for the GTS. */
     static public final GTSCounter counter = new GTSCounter();
 
-    @SuppressWarnings("javadoc")
     @Test
     public void testAOnly() {
         testExploration("start-A-only", "ab-recipes", 2, 2, 1, 1);
         testExploration("start-A-only", "alap-recipes", 3, 3, 3, 3);
     }
 
-    @SuppressWarnings("javadoc")
     @Test
     public void testABOnly() {
         testExploration("start-AB-only", "ab-recipes", 4, 8, 6, 10);
         testExploration("start-AB-only", "alap-recipes", 3, 7, 6, 10);
     }
 
-    @SuppressWarnings("javadoc")
     @Test
     public void testTiny() {
         testExploration("start-tiny", "ab-recipes", 6, 6, 8, 8);
         testExploration("start-tiny", "alap-recipes", 6, 8, 12, 14);
     }
 
-    @SuppressWarnings("javadoc")
     @Test
     public void testSmall() {
         testExploration("start-small", "ab-recipes", 16, 32, 56, 72);
         testExploration("start-small", "alap-recipes", 6, 28, 24, 60);
     }
 
-    @SuppressWarnings("javadoc")
     @Test
     public void testFull() {
         testExploration("start", "ab-recipes", 224, 736, 1888, 2368);
