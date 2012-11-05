@@ -579,7 +579,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
             if (newJModel != null) {
                 newJModel.addGraphModelListener(getCancelEditListener());
             }
-            getLabelTree().updateModel();
+            getLabelTree().synchroniseModel();
             setEnabled(newJModel != null);
             if (newJModel != null && getActions() != null) {
                 // create the popup menu to create and activate the actions therein

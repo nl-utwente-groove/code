@@ -51,7 +51,7 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
     @Override
     public CtrlAut compute() throws FormatException {
         this.loader.init(getGrammar().getProperties().getAlgebraFamily(),
-            getGrammar().getRules());
+            getRules());
         this.loader.parse(getFullName(), getProgram());
         CtrlAut result = this.loader.buildAutomaton(getFullName());
         if (result == null) {

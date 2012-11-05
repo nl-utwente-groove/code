@@ -46,6 +46,7 @@ public class TypeNode implements Node, TypeElement {
         this.nr = nr;
         this.type = type;
         this.graph = graph;
+        this.dataType = type.isDataType();
     }
 
     /** 
@@ -123,8 +124,8 @@ public class TypeNode implements Node, TypeElement {
     }
 
     /** Indicates if this node type stands for a data type. */
-    public boolean isDataType() {
-        return this.type.isDataType();
+    public final boolean isDataType() {
+        return this.dataType;
     }
 
     /** Sets this node type to imported. */
@@ -204,7 +205,8 @@ public class TypeNode implements Node, TypeElement {
 
     /** The type graph with which this node is associated. */
     private final TypeGraph graph;
-
+    /** Flag indicating this node is a data type. */
+    private final boolean dataType;
     /** Flag indicating if this node type is abstract. */
     private boolean abstracted;
     /** Flag indicating if this node type is imported from another type graph. */

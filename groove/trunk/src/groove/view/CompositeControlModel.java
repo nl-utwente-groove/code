@@ -58,7 +58,7 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
     CtrlAut compute() throws FormatException {
         FormatErrorSet errors = createErrors();
         this.loader.init(getGrammar().getProperties().getAlgebraFamily(),
-            getGrammar().getRules());
+            getRules());
         Collection<String> controlNames = getGrammar().getActiveNames(CONTROL);
         for (String controlName : controlNames) {
             ControlModel controlModel =

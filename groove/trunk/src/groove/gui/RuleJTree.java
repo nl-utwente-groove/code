@@ -33,7 +33,6 @@ import groove.trans.Recipe;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.util.Duo;
-import groove.util.Strings;
 import groove.view.GrammarModel;
 import groove.view.ResourceModel;
 import groove.view.RuleModel;
@@ -48,8 +47,6 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -70,7 +67,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -100,7 +96,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
         DefaultTreeCellRenderer renderer =
             (DefaultTreeCellRenderer) this.cellRenderer;
         renderer.setLeafIcon(Icons.GRAPH_MATCH_ICON);
-        this.topDirectoryNode = new DefaultMutableTreeNode();
+        this.topDirectoryNode = new SortingTreeNode();
         this.ruleDirectory = new DefaultTreeModel(this.topDirectoryNode, true);
         setModel(this.ruleDirectory);
         // set key bindings
@@ -130,7 +126,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
         setShowAnchorsOptionListener();
         this.clearAllMaps();
         this.topDirectoryNode.removeAllChildren();
-        DefaultMutableTreeNode topNode = this.topDirectoryNode;
+        SortingTreeNode topNode = this.topDirectoryNode;
         Map<Integer,Set<ActionEntry>> priorityMap = getPriorityMap(grammar);
         List<TreePath> expandedPaths = new ArrayList<TreePath>();
         List<TreePath> selectedPaths = new ArrayList<TreePath>();
@@ -161,11 +157,11 @@ public class RuleJTree extends JTree implements SimulatorListener {
             for (RecipeEntry recipe : recipes) {
                 String name = recipe.getName();
                 // recursively add parent directory nodes as required
-                DefaultMutableTreeNode parentNode =
+                SortingTreeNode parentNode =
                     addParentNode(topNode, dirNodeMap, QualName.getParent(name));
                 DisplayTreeNode recipeNode =
                     createActionNode(recipe, expandedPaths, selectedPaths);
-                addSortedNode(parentNode, recipeNode);
+                parentNode.insertSorted(recipeNode);
                 Set<Rule> subrules = recipe.getRecipe().getRules();
                 if (subrules != null) {
                     for (Rule sr : subrules) {
@@ -175,7 +171,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                             createActionNode(srEntry, expandedPaths,
                                 selectedPaths);
                         if (srNode != null) {
-                            addSortedNode(recipeNode, srNode);
+                            recipeNode.insertSorted(srNode);
                         }
                         subruleNames.add(srName);
                     }
@@ -186,11 +182,11 @@ public class RuleJTree extends JTree implements SimulatorListener {
             for (RuleEntry ruleEntry : ruleEntryMap.values()) {
                 String name = ruleEntry.getName();
                 // recursively add parent directory nodes as required
-                DefaultMutableTreeNode parentNode =
+                SortingTreeNode parentNode =
                     addParentNode(topNode, dirNodeMap, QualName.getParent(name));
                 DisplayTreeNode ruleNode =
                     createActionNode(ruleEntry, expandedPaths, selectedPaths);
-                addSortedNode(parentNode, ruleNode);
+                parentNode.insertSorted(ruleNode);
             }
         }
         for (TreePath path : expandedPaths) {
@@ -408,8 +404,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
     }
 
     /** Adds tree nodes for all levels of a structured rule name. */
-    private DefaultMutableTreeNode addParentNode(
-            DefaultMutableTreeNode topNode,
+    private SortingTreeNode addParentNode(SortingTreeNode topNode,
             Map<String,DirectoryTreeNode> dirNodeMap, String parentName) {
         //        QualName parent = ruleName.parent();
         if (parentName.isEmpty()) {
@@ -421,13 +416,13 @@ public class RuleJTree extends JTree implements SimulatorListener {
             if (result == null) {
                 // the parent node did not yet exist in the tree
                 // check recursively for the grandparent
-                DefaultMutableTreeNode grandParentNode =
+                SortingTreeNode grandParentNode =
                     addParentNode(topNode, dirNodeMap,
                         QualName.getParent(parentName));
                 // make the parent node and register it
                 result =
                     new DirectoryTreeNode(QualName.getLastName(parentName));
-                addSortedNode(grandParentNode, result);
+                grandParentNode.insertSorted(result);
                 dirNodeMap.put(parentName, result);
             }
             return result;
@@ -599,34 +594,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
         return result;
     }
 
-    /**
-     * Insert child node into parent using a sorting based on the name of the child node (toString)
-     * Uses a natural ordering sort
-     * @param parent Node to add child to in a sorted order
-     * @param child Child node to insert.
-     */
-    private void addSortedNode(MutableTreeNode parent, MutableTreeNode child) {
-        boolean childIsRecipe = child instanceof RecipeTreeNode;
-        Comparator<String> comparator = Strings.getNaturalComparator();
-        String childString = child.toString();
-        @SuppressWarnings("unchecked")
-        Enumeration<MutableTreeNode> enumParent = parent.children();
-        int index = 0;
-        while (enumParent.hasMoreElements()) {
-            MutableTreeNode nextChild = enumParent.nextElement();
-            boolean nextChildIsRecipe = nextChild instanceof RecipeTreeNode;
-            if (childIsRecipe && !nextChildIsRecipe) {
-                break;
-            }
-            int compare = comparator.compare(nextChild.toString(), childString);
-            if (childIsRecipe == nextChildIsRecipe && compare > 0) {
-                break;
-            }
-            index++;
-        }
-        parent.insert(child, index);
-    }
-
     /** Convenience method to retrieve the current grammar view. */
     private final GrammarModel getGrammar() {
         return getSimulatorModel().getGrammar();
@@ -669,7 +636,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * Alias for the top node in <tt>ruleDirectory</tt>.
      * @invariant <tt>topDirectoryNode == ruleDirectory.getRoot()</tt>
      */
-    private final DefaultMutableTreeNode topDirectoryNode;
+    private final SortingTreeNode topDirectoryNode;
     /**
      * Mapping from rule names in the current grammar to rule nodes in the
      * current rule directory.
@@ -918,7 +885,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
     /**
      * Priority nodes (used only if the rule system has multiple priorities)
      */
-    private static class PriorityTreeNode extends DefaultMutableTreeNode {
+    private static class PriorityTreeNode extends SortingTreeNode {
         /**
          * Creates a new priority node based on a given priority. The node can
          * (and will) have children.
@@ -931,7 +898,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
     /**
      * Directory nodes (= level 0 nodes) of the directory
      */
-    private static class DirectoryTreeNode extends DefaultMutableTreeNode {
+    private static class DirectoryTreeNode extends SortingTreeNode {
         /**
          * Creates a new directory node with a given name.
          */

@@ -111,7 +111,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
     @Override
     public boolean isEnabled() {
-        return hasRecipes() || GraphProperties.isEnabled(getSource());
+        return GraphProperties.isEnabled(getSource()) || hasRecipes();
     }
 
     /** Returns the set of recipe names in which this rule is called. */
