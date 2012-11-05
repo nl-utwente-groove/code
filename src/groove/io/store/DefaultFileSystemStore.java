@@ -58,7 +58,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.undo.AbstractUndoableEdit;
@@ -357,12 +356,6 @@ public class DefaultFileSystemStore extends SystemStore {
     @Override
     public Map<String,AspectGraph> getGraphs(ResourceKind kind) {
         testInit();
-        Map<String,AspectGraph> result = new TreeMap<String,AspectGraph>();
-        for (Map.Entry<String,AspectGraph> e : getGraphMap(kind).entrySet()) {
-            AspectGraph g = e.getValue().clone();
-            g.setFixed();
-            result.put(e.getKey(), g);
-        }
         return Collections.unmodifiableMap(getGraphMap(kind));
     }
 

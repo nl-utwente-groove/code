@@ -622,10 +622,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         List<TypeGuard> typeGuards = new ArrayList<TypeGuard>();
         Set<LabelVar> labelVars = new HashSet<LabelVar>();
         RuleNode parentImage = parentTyping.getNode(node);
-        Set<TypeNode> validTypes =
-            new HashSet<TypeNode>(parentImage == null ? nodeSet()
-                    : parentImage.getMatchingTypes());
-        validTypes.removeAll(this.factory.getDataTypes());
         TypeNode type = null;
         boolean sharp = false;
         for (RuleEdge edge : graph.outEdgeSet(node)) {
@@ -652,13 +648,24 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 }
             }
         }
-        // apply the known type guards for the label variables on this node
-        for (LabelVar var : labelVars) {
-            validTypes.retainAll(varTyping.get(var));
+        // collect the matching non-data type nodes
+        Set<TypeNode> validTypes = new HashSet<TypeNode>();
+        for (TypeNode tn : parentImage == null ? nodeSet()
+                : parentImage.getMatchingTypes()) {
+            if (!tn.isDataType()) {
+                validTypes.add(tn);
+            }
         }
-        // push the constraints back to the variables
+        // apply the known type guards for the label variables on this node
+        boolean validTypesChanged = false;
         for (LabelVar var : labelVars) {
-            varTyping.get(var).retainAll(validTypes);
+            validTypesChanged |= validTypes.retainAll(varTyping.get(var));
+        }
+        if (validTypesChanged) {
+            // push the constraints back to the variables
+            for (LabelVar var : labelVars) {
+                varTyping.get(var).retainAll(validTypes);
+            }
         }
         if (validTypes.isEmpty()) {
             String constraints =
@@ -677,8 +684,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     "Ambiguous typing: %s do not have least common supertype",
                     validTypes, node);
             }
-        } else {
-            validTypes.retainAll(type.getSubtypes());
+        } else if (validTypes.retainAll(type.getSubtypes())) {
             // again push the constraints back to the variables
             for (LabelVar var : labelVars) {
                 varTyping.get(var).retainAll(validTypes);

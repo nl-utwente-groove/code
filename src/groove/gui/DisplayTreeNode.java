@@ -17,10 +17,9 @@
 package groove.gui;
 
 import javax.swing.Icon;
-import javax.swing.tree.DefaultMutableTreeNode;
 
 /** Superclass for tree nodes in a display-related list. */
-public abstract class DisplayTreeNode extends DefaultMutableTreeNode {
+public abstract class DisplayTreeNode extends SortingTreeNode {
     /** Constructs a node. */
     protected DisplayTreeNode(Object userObject, boolean allowsChildren) {
         super(userObject, allowsChildren);

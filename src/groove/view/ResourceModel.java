@@ -16,10 +16,15 @@
  */
 package groove.view;
 
+import static groove.trans.ResourceKind.RULE;
 import groove.trans.QualName;
 import groove.trans.ResourceKind;
+import groove.trans.Rule;
 import groove.util.Status;
 import groove.view.aspect.AspectGraph;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * General interface for classes that provide part of a graph grammar. 
@@ -192,6 +197,22 @@ abstract public class ResourceModel<R> {
      * Called on initialisation and whenever the grammar model has changed.
      */
     abstract R compute() throws FormatException;
+
+    /** Returns the set of error-free rules. */
+    Collection<Rule> getRules() {
+        Collection<ResourceModel<?>> ruleModels =
+            getGrammar().getResourceSet(RULE);
+        Collection<Rule> result = new ArrayList<Rule>(ruleModels.size());
+        // set rules
+        for (ResourceModel<?> ruleModel : ruleModels) {
+            try {
+                result.add(((RuleModel) ruleModel).toResource());
+            } catch (FormatException exc) {
+                // do not add this rule
+            }
+        }
+        return result;
+    }
 
     /** The grammar model to which this resource belongs. */
     private final GrammarModel grammar;

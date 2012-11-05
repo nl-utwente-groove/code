@@ -297,7 +297,8 @@ public class Groove {
         return pad(text, length, true);
     }
 
-    /** Turns a camel-case string into a string with spaces.
+    /**
+     * Turns a camel-case string into a string with spaces.
      * The first character is capitalised in any case; next
      * words are capitalised optionally.
      * @param input the (non-{@code null}) input string, in camel case
@@ -317,7 +318,14 @@ public class Groove {
                     result.insert(ix, ' ');
                     ix++;
                 }
-                result.setCharAt(ix, atStart || caps ? Character.toUpperCase(c)
+                // determine if next character should be upper or lower case
+                boolean toUpper = atStart || caps;
+                if (!toUpper) {
+                    toUpper =
+                        ix < result.length() - 1
+                            && Character.isUpperCase(result.charAt(ix + 1));
+                }
+                result.setCharAt(ix, toUpper ? Character.toUpperCase(c)
                         : Character.toLowerCase(c));
             }
             wasLower = isLower;

@@ -105,6 +105,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         ToolTipManager.sharedInstance().registerComponent(this);
         addMouseListener(new MyMouseListener());
         setEnabled(jGraph.isEnabled());
+        setLargeModel(true);
     }
 
     @Override
@@ -229,7 +230,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      * Refreshes the labels according to the jModel,
      * if the jModel has changed.
      */
-    private void synchroniseModel() {
+    public void synchroniseModel() {
         if (this.jModel != getJGraph().getModel()
             || this.typeGraph != getTypeGraph()) {
             updateModel();
@@ -457,10 +458,13 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             for (TypeGraph.Sub subTypeGraph : typeGraphMap) {
                 TypeGraphTreeNode typeGraphNode =
                     new TypeGraphTreeNode(subTypeGraph);
-                getTopNode().add(typeGraphNode);
-                newNodes.add(typeGraphNode);
                 newNodes.addAll(updateTreeFromTypeGraph(typeGraphNode,
                     subTypeGraph.getNodes(), subTypeGraph.getEdges()));
+                // only add if there were any children
+                if (typeGraphNode.getChildCount() > 0) {
+                    getTopNode().add(typeGraphNode);
+                    newNodes.add(typeGraphNode);
+                }
             }
         }
         return newNodes;
@@ -476,6 +480,9 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             isShowsSubtypes() ? getTypeGraph().getDirectSubtypeMap()
                     : getTypeGraph().getDirectSupertypeMap();
         for (TypeNode node : new TreeSet<TypeNode>(typeNodes)) {
+            if (node.isDataType()) {
+                continue;
+            }
             Entry entry = getFilter().getEntry(node);
             if (isShowsAllLabels() || getFilter().hasJCells(entry)) {
                 EntryNode nodeTypeNode = new EntryNode(entry, true);

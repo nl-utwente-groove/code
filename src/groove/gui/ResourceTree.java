@@ -25,7 +25,6 @@ import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.lts.GraphState;
 import groove.trans.ResourceKind;
-import groove.util.Strings;
 import groove.view.GrammarModel;
 
 import java.awt.Color;
@@ -33,8 +32,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +47,6 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -68,7 +64,7 @@ public class ResourceTree extends JTree implements SimulatorListener {
 
     // The tree, and its root.
     private final DefaultTreeModel tree;
-    private final DefaultMutableTreeNode root;
+    private final SortingTreeNode root;
 
     // The kind of resources that are displayed.
     private final ResourceKind resourceKind;
@@ -109,7 +105,7 @@ public class ResourceTree extends JTree implements SimulatorListener {
             TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
 
         // initialize tree
-        this.root = new DefaultMutableTreeNode();
+        this.root = new SortingTreeNode();
         this.tree = new DefaultTreeModel(this.root, true);
         setModel(this.tree);
 
@@ -131,10 +127,9 @@ public class ResourceTree extends JTree implements SimulatorListener {
      * local tree. The resources are sorted before they are added.
      * Returns all the newly created {@link TreeNode}s.
      */
-    private Set<DefaultMutableTreeNode> loadGrammar(GrammarModel grammar) {
+    private Set<SortingTreeNode> loadGrammar(GrammarModel grammar) {
         // allocate result
-        Set<DefaultMutableTreeNode> result =
-            new HashSet<DefaultMutableTreeNode>();
+        Set<SortingTreeNode> result = new HashSet<SortingTreeNode>();
 
         // get all resources, and store them in the sorted FolderTree
         FolderTree ftree = new FolderTree();
@@ -174,11 +169,11 @@ public class ResourceTree extends JTree implements SimulatorListener {
             this.root.removeAllChildren();
             GrammarModel grammar = source.getGrammar();
             if (grammar != null) {
-                Set<DefaultMutableTreeNode> created = loadGrammar(grammar);
+                Set<SortingTreeNode> created = loadGrammar(grammar);
                 this.tree.reload(this.root);
 
                 // expand/select all the previously expanded/selected nodes
-                for (DefaultMutableTreeNode node : created) {
+                for (SortingTreeNode node : created) {
                     if (node instanceof ResourceTreeNode) {
                         String name = ((ResourceTreeNode) node).getName();
                         if (visible.contains(name) || selected.contains(name)) {
@@ -313,42 +308,6 @@ public class ResourceTree extends JTree implements SimulatorListener {
     public void mousePressed(TreeNode node, MouseEvent event) {
         // default - no user action
     }
-
-    /**
-     * Insert child node into parent using a sorting based on the name of the child node (toString)
-     * Uses a natural ordering sort, with the exception of PathNodes, which have a higher priority.
-     * @param parent Node to add child to in a sorted order
-     * @param child Child node to insert.
-     */
-    private void addSortedNode(MutableTreeNode parent, MutableTreeNode child) {
-        Comparator<String> comparator = Strings.getNaturalComparator();
-        String childString = child.toString();
-        @SuppressWarnings("unchecked")
-        Enumeration<MutableTreeNode> enumParent = parent.children();
-        int index = 0;
-        while (enumParent.hasMoreElements()) {
-            MutableTreeNode nextChild = enumParent.nextElement();
-            // Special case: a PathNode always sorts before any other node
-            if (nextChild instanceof PathNode && !(child instanceof PathNode)) {
-                index++;
-                continue;
-            }
-            if (!(nextChild instanceof PathNode) && child instanceof PathNode) {
-                break;
-            }
-            int compare = comparator.compare(nextChild.toString(), childString);
-            if (compare > 0) {
-                break;
-            }
-            // Still higher priority, increment index and continue
-            index++;
-        }
-        parent.insert(child, index);
-    }
-
-    // ========================================================================
-    // LOCAL CLASS - MyTreeCellRenderer
-    // ========================================================================
 
     // ========================================================================
     // LOCAL CLASS - MySelectionListener
@@ -493,7 +452,7 @@ public class ResourceTree extends JTree implements SimulatorListener {
      * A {@link PathNode} is a {@link DefaultMutableTreeNode} that corresponds
      * to a path in the current grammar.
      */
-    public class PathNode extends DefaultMutableTreeNode {
+    public class PathNode extends SortingTreeNode {
 
         // The (full) name of the path.
         private final String pathName;
@@ -557,15 +516,15 @@ public class ResourceTree extends JTree implements SimulatorListener {
          * Adds all tree resources to a DefaultMutableTreeNode (with the given
          * path). Also collects the created {@link TreeNode}s.
          */
-        public void store(DefaultMutableTreeNode root, String path,
-                Set<DefaultMutableTreeNode> created) {
+        public void store(SortingTreeNode root, String path,
+                Set<SortingTreeNode> created) {
             for (Map.Entry<String,FolderTree> entry : this.folders.entrySet()) {
                 String subpath = extendPath(path, entry.getKey());
                 PathNode node = new PathNode(subpath, entry.getKey());
                 entry.getValue().store(node, subpath, created);
                 created.add(node);
                 //root.add(node);
-                addSortedNode(root, node);
+                root.insertSorted(node);
             }
             for (String resource : this.resources) {
                 String fullName = extendPath(path, resource);
@@ -574,7 +533,7 @@ public class ResourceTree extends JTree implements SimulatorListener {
                         fullName);
                 created.add(leaf);
                 //root.add(leaf);
-                addSortedNode(root, leaf);
+                root.insertSorted(leaf);
             }
         }
 
