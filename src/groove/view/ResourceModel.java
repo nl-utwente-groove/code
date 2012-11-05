@@ -17,6 +17,7 @@
 package groove.view;
 
 import static groove.trans.ResourceKind.RULE;
+import groove.graph.GraphProperties;
 import groove.trans.QualName;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
@@ -198,15 +199,18 @@ abstract public class ResourceModel<R> {
      */
     abstract R compute() throws FormatException;
 
-    /** Returns the set of error-free rules. */
+    /** Returns the set of error-free, enabled rules. */
     Collection<Rule> getRules() {
         Collection<ResourceModel<?>> ruleModels =
             getGrammar().getResourceSet(RULE);
         Collection<Rule> result = new ArrayList<Rule>(ruleModels.size());
         // set rules
-        for (ResourceModel<?> ruleModel : ruleModels) {
+        for (ResourceModel<?> model : ruleModels) {
+            RuleModel ruleModel = (RuleModel) model;
             try {
-                result.add(((RuleModel) ruleModel).toResource());
+                if (GraphProperties.isEnabled(ruleModel.getSource())) {
+                    result.add(ruleModel.toResource());
+                }
             } catch (FormatException exc) {
                 // do not add this rule
             }
