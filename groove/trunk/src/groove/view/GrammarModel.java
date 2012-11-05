@@ -35,7 +35,6 @@ import groove.trans.GraphGrammar;
 import groove.trans.HostGraph;
 import groove.trans.QualName;
 import groove.trans.ResourceKind;
-import groove.trans.Rule;
 import groove.trans.SystemProperties;
 import groove.trans.SystemProperties.Key;
 import groove.util.Groove;
@@ -369,23 +368,6 @@ public class GrammarModel implements Observer {
                 }
             }
         }
-    }
-
-    /** Returns the set of enabled rules that do not have errors. */
-    public Set<Rule> getRules() {
-        Set<Rule> result = new HashSet<Rule>();
-        // set rules
-        for (ResourceModel<?> ruleModel : getResourceSet(RULE)) {
-            try {
-                // only add the enabled rules
-                if (ruleModel.isEnabled()) {
-                    result.add(((RuleModel) ruleModel).toResource());
-                }
-            } catch (FormatException exc) {
-                // do not add this rule
-            }
-        }
-        return result;
     }
 
     /** Checks if this grammar has rules (maybe with errors). */

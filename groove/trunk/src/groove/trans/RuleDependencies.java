@@ -16,6 +16,7 @@
  */
 package groove.trans;
 
+import static groove.trans.ResourceKind.RULE;
 import groove.graph.TypeEdge;
 import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
@@ -23,7 +24,10 @@ import groove.graph.TypeNode;
 import groove.rel.RegAut;
 import groove.trans.Condition.Op;
 import groove.util.Groove;
+import groove.view.FormatException;
 import groove.view.GrammarModel;
+import groove.view.ResourceModel;
+import groove.view.RuleModel;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,7 +54,8 @@ public class RuleDependencies {
             GrammarModel grammar = Groove.loadGrammar(args[0]);
             RuleDependencies data = new RuleDependencies(grammar);
             data.collectCharacteristics();
-            for (Rule rule : grammar.getRules()) {
+            List<Rule> rules = getRules(grammar);
+            for (Rule rule : rules) {
                 System.out.println("Rule " + rule.getFullName() + ":");
                 System.out.println("Positive labels: "
                     + data.positiveMap.get(rule));
@@ -78,7 +84,7 @@ public class RuleDependencies {
                 // disablerNames.removeAll(enablerNames);
                 // disabledNames.removeAll(enabledNames);
                 Collection<String> allRuleNames = new ArrayList<String>();
-                for (Action otherRule : grammar.getRules()) {
+                for (Action otherRule : rules) {
                     allRuleNames.add(otherRule.getFullName());
                 }
                 allRuleNames.removeAll(enablerNames);
@@ -95,11 +101,28 @@ public class RuleDependencies {
         }
     }
 
+    /** Returns the set of enabled rules that do not have errors. */
+    static private List<Rule> getRules(GrammarModel grammar) {
+        List<Rule> result = new ArrayList<Rule>();
+        // set rules
+        for (ResourceModel<?> ruleModel : grammar.getResourceSet(RULE)) {
+            try {
+                // only add the enabled rules
+                if (ruleModel.isEnabled()) {
+                    result.add(((RuleModel) ruleModel).toResource());
+                }
+            } catch (FormatException exc) {
+                // do not add this rule
+            }
+        }
+        return result;
+    }
+
     /** Constructs a new dependencies object, for a given rule system. */
-    public RuleDependencies(GrammarModel ruleSystem) {
-        this.rules = ruleSystem.getRules();
-        this.properties = ruleSystem.getProperties();
-        this.typeGraph = ruleSystem.getTypeGraph();
+    public RuleDependencies(GrammarModel grammar) {
+        this.rules = getRules(grammar);
+        this.properties = grammar.getProperties();
+        this.typeGraph = grammar.getTypeGraph();
     }
 
     /** Constructs a new dependencies object, for a given rule system. */
