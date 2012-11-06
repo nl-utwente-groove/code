@@ -964,7 +964,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     /** Shows a popup menu if the event is a popup trigger. */
     protected void maybeShowPopup(MouseEvent evt) {
         if (isPopupMenuEvent(evt) && getActions() != null) {
-            //getUI().cancelEdgeAdding();
+            getUI().cancelEdgeAdding();
             Point atPoint = evt.getPoint();
             createPopupMenu(atPoint).getPopupMenu().show(this, atPoint.x,
                 atPoint.y);
@@ -979,7 +979,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
      * @return <tt>true</tt> if <tt>e</tt> is a popup menu event
      */
     protected boolean isPopupMenuEvent(MouseEvent evt) {
-        return evt.isPopupTrigger() && !evt.isControlDown() && getUI().allowPopupMenu(evt);
+        return evt.isPopupTrigger() && !evt.isControlDown();
     }
 
     /**
