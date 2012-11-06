@@ -62,6 +62,7 @@ public class SimulatorModel implements Cloneable {
             switch (resource) {
             case CONTROL:
             case PROLOG:
+            case GROOVY:
                 getStore().deleteTexts(resource, names);
                 break;
             case HOST:
@@ -1252,6 +1253,14 @@ public class SimulatorModel implements Cloneable {
          * The selected prolog program has changed.
          */
         PROLOG(ResourceKind.PROLOG),
+        /**
+         * The selected config file has changed.
+         */
+        CONFIG(ResourceKind.CONFIG),
+        /**
+         * The selected Groovy script has changed.
+         */
+        GROOVY(ResourceKind.GROOVY),
         /** 
          * The selected rule set has changed.
          */

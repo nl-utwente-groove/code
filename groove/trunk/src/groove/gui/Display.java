@@ -203,6 +203,9 @@ abstract public class Display extends JPanel {
         case STATE:
             result = new StateDisplay(simulator);
             break;
+        case GROOVY:
+            result = new GroovyDisplay(simulator);
+            break;
         case HOST:
         case TYPE:
             result = new ResourceDisplay(simulator, kind.getResource());

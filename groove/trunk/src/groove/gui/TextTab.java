@@ -2,7 +2,6 @@ package groove.gui;
 
 import groove.control.parse.CtrlTokenMaker;
 import groove.prolog.util.PrologTokenMaker;
-import groove.trans.ResourceKind;
 import groove.view.FormatError;
 import groove.view.GrammarModel;
 import groove.view.TextBasedModel;
@@ -25,7 +24,9 @@ import javax.swing.text.BadLocationException;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.TokenMaker;
+import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 /**
@@ -212,8 +213,18 @@ final public class TextTab extends ResourceTab {
 
     /** Creates a token maker for the text area of this tab. */
     protected TokenMaker createTokenMaker() {
-        return getResourceKind() == ResourceKind.PROLOG
-                ? new PrologTokenMaker() : new CtrlTokenMaker();
+        switch (getResourceKind()) {
+        case PROLOG:
+            return new PrologTokenMaker();
+        case GROOVY:
+            return TokenMakerFactory.getDefaultInstance().getTokenMaker(
+                SyntaxConstants.SYNTAX_STYLE_GROOVY);
+        case CONTROL:
+            return new CtrlTokenMaker();
+        default:
+            return TokenMakerFactory.getDefaultInstance().getTokenMaker(
+                SyntaxConstants.SYNTAX_STYLE_NONE);
+        }
     }
 
     @Override

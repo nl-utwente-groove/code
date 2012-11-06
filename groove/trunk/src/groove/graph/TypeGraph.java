@@ -964,7 +964,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         Set<TypeNode> sub2 = getSubtypes(node2);
         assert sub2 != null : String.format(
             "Node type %s does not exist in type graph %s", node2, this);
-        return new HashSet<TypeNode>(sub1).removeAll(sub2);
+        return !Collections.disjoint(sub1, sub2);
     }
 
     /** Returns the set of all type labels occurring in the type graph. */

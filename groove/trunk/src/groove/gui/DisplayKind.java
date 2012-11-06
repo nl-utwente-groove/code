@@ -29,7 +29,10 @@ public enum DisplayKind {
     LTS(null, Icons.LTS_FRAME_ICON, "Simulation", "Simulation panel"),
     /** Properties display. */
     PROPERTIES(null, Icons.PROPERTIES_FRAME_ICON, "Properties",
-            "System properties");
+            "System properties"),
+    /** Groovy panel. */
+    GROOVY(ResourceKind.GROOVY, Icons.GROOVY_FRAME_ICON, "Groovy",
+            "Groovy scripts");
 
     private DisplayKind(ResourceKind resource, ImageIcon tabIcon, String title,
             String tip) {
@@ -65,19 +68,20 @@ public enum DisplayKind {
     public final int getListPanel() {
         int result;
         switch (this) {
-        case STATE:
-        case RULE:
-        case PROPERTIES:
-            result = 0;
-            break;
-        case CONTROL:
-        case HOST:
-        case TYPE:
-        case PROLOG:
-            result = 1;
-            break;
-        default:
-            result = -1;
+            case STATE:
+            case RULE:
+            case PROPERTIES:
+                result = 0;
+                break;
+            case CONTROL:
+            case HOST:
+            case TYPE:
+            case PROLOG:
+            case GROOVY:
+                result = 1;
+                break;
+            default:
+                result = -1;
         }
         return result;
     }

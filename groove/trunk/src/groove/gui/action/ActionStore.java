@@ -900,6 +900,21 @@ public class ActionStore implements SimulatorListener {
         return this.layoutDialogAction;
     }
 
+    /**
+     * The Groovy execute action permanently associated with this simulator.
+     */
+    private ExecGroovyAction execGroovyAction;
+
+    /**
+     * Returns the Groovy execute action permanently associated with this simulator.
+     */
+    public ExecGroovyAction getExecGroovyAction() {
+        if (this.execGroovyAction == null) {
+            this.execGroovyAction = new ExecGroovyAction(this.simulator);
+        }
+        return this.execGroovyAction;
+    }
+
     /** 
      * Method to bypass the lazy initialisation of some actions that are not
      * included in any menu of the simulator and therefore are not added to
