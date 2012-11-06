@@ -54,12 +54,17 @@ public final class SaveAction extends SimulatorAction {
                         : editor.getName();
             if (resourceKind.isGraphBased()) {
                 AspectGraph graph;
+                boolean minor;
                 if (editor == null) {
                     graph = getGrammarStore().getGraphs(resourceKind).get(name);
+                    minor = true;
                 } else {
                     graph = ((GraphEditorTab) editor).getGraph();
+                    minor = ((GraphEditorTab) editor).isDirtMinor();
                 }
-                saved = this.saveAs ? doSaveGraphAs(graph) : doSaveGraph(graph);
+                saved =
+                    this.saveAs ? doSaveGraphAs(graph) : doSaveGraph(graph,
+                        minor);
             } else {
                 assert resourceKind.isTextBased();
                 String text;
@@ -80,13 +85,15 @@ public final class SaveAction extends SimulatorAction {
 
     /**
      * Stores the graph within the grammar.
+     * @param graph the graph to be saved
+     * @param minor if {@code true}, this is a minor change
      * @return {@code true} if the action succeeded
      */
-    public boolean doSaveGraph(AspectGraph graph) {
+    public boolean doSaveGraph(AspectGraph graph, boolean minor) {
         boolean result = false;
         ResourceKind resource = ResourceKind.toResource(graph.getRole());
         try {
-            getSimulatorModel().doAddGraph(resource, graph, false);
+            getSimulatorModel().doAddGraph(resource, graph, minor);
             result = true;
         } catch (IOException exc) {
             showErrorDialog(exc, "Error while saving %s '%s'",
@@ -114,7 +121,7 @@ public final class SaveAction extends SimulatorAction {
                         selectedFile);
                 } else {
                     // save within the grammar
-                    result = doSaveGraph(graph.rename(nameInGrammar));
+                    result = doSaveGraph(graph.rename(nameInGrammar), false);
                 }
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while writing %s to '%s'",

@@ -1,6 +1,7 @@
 package groove.view;
 
 import static groove.trans.ResourceKind.HOST;
+import static groove.trans.ResourceKind.PROPERTIES;
 import static groove.trans.ResourceKind.RULE;
 import static groove.trans.ResourceKind.TYPE;
 import groove.graph.ImplicitTypeGraph;
@@ -49,6 +50,19 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
         } catch (FormatException e) {
             return getImplicitTypeGraph();
         }
+    }
+
+    @Override
+    boolean isShouldRebuild() {
+        boolean result = super.isShouldRebuild();
+        if (result) {
+            result = isStale(TYPE, PROPERTIES);
+            if (getGrammar().getActiveNames(TYPE).isEmpty()) {
+                // it's an implicit type graph; look also at the host graphs and rules
+                result |= isStale(HOST, RULE);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -120,7 +134,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
     }
 
     @Override
-    void notifyGrammarModified() {
+    void notifyWillRebuild() {
         this.implicitTypeGraph = null;
     }
 

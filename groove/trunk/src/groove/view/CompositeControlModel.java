@@ -165,9 +165,9 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
     }
 
     @Override
-    void notifyGrammarModified() {
+    void notifyWillRebuild() {
         this.ruleRecipeMap = null;
-        super.notifyGrammarModified();
+        super.notifyWillRebuild();
     }
 
     private final CtrlLoader loader = new CtrlLoader();

@@ -384,6 +384,13 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         }
     }
 
+    /** Disposes all detached displays. */
+    public void dispose() {
+        for (DisplayWindow window : this.detachedMap.values()) {
+            window.dispose();
+        }
+    }
+
     /**
      * If the component is not shown on a tab but in a separate frame,
      * disposes the frame.
@@ -395,6 +402,8 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             if (frame != null) {
                 frame.dispose();
             }
+            DisplayKind kind = ((Display) component).getKind();
+            this.detachedMap.remove(kind);
         } else {
             if (getSelectedComponent() == component) {
                 revertSelection();

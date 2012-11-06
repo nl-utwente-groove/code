@@ -27,6 +27,7 @@ import groove.graph.TypeFactory;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
+import groove.trans.ResourceKind;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
@@ -50,6 +51,15 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
     public TypeModel(GrammarModel grammar, AspectGraph source) {
         super(grammar, source);
         source.testFixed(true);
+    }
+
+    @Override
+    boolean isShouldRebuild() {
+        boolean result = super.isShouldRebuild();
+        if (result) {
+            result = isStale(ResourceKind.TYPE);
+        }
+        return result;
     }
 
     @Override

@@ -120,8 +120,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     }
 
     @Override
-    void notifyGrammarModified() {
-        super.notifyGrammarModified();
+    void notifyWillRebuild() {
+        super.notifyWillRebuild();
         this.labelSet = null;
     }
 

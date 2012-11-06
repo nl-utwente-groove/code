@@ -37,6 +37,8 @@ import groove.trans.QualName;
 import groove.trans.ResourceKind;
 import groove.trans.SystemProperties;
 import groove.trans.SystemProperties.Key;
+import groove.util.ChangeCount;
+import groove.util.ChangeCount.Tracker;
 import groove.util.Groove;
 import groove.util.Version;
 import groove.view.aspect.AspectGraph;
@@ -68,6 +70,7 @@ public class GrammarModel implements Observer {
      */
     public GrammarModel(SystemStore store) {
         this.store = store;
+        this.changeCount = new ChangeCount();
         String grammarVersion = store.getProperties().getGrammarVersion();
         boolean noActiveStartGraphs =
             store.getProperties().getActiveNames(HOST).isEmpty();
@@ -183,6 +186,7 @@ public class GrammarModel implements Observer {
     public void setLocalActiveNames(ResourceKind kind, Collection<String> names) {
         assert names != null;// && !names.isEmpty();
         this.localActiveNamesMap.put(kind, new TreeSet<String>(names));
+        this.resourceChangeCounts.get(kind).increase();
         invalidate();
     }
 
@@ -302,6 +306,7 @@ public class GrammarModel implements Observer {
         }
         this.startGraphModel = new HostModel(this, startGraph);
         this.isExternalStartGraphModel = true;
+        this.resourceChangeCounts.get(HOST).increase();
         invalidate();
     }
 
@@ -319,13 +324,17 @@ public class GrammarModel implements Observer {
     }
 
     /** 
-     * Returns the modification count of the model.
-     * The modification count is increased any time the grammar is invalidated
-     * due to a change in the store or start graph.
-     * This method can be used by clients to check if the grammar has been invalidated.
+     * Returns a fresh change tracker for the overall grammar model.
      */
-    public int getModificationCount() {
-        return this.modificationCount;
+    public Tracker createChangeTracker() {
+        return this.changeCount.createTracker();
+    }
+
+    /** 
+     * Returns a fresh change tracker for a given resource kind.
+     */
+    public Tracker createChangeTracker(ResourceKind kind) {
+        return this.resourceChangeCounts.get(kind).createTracker();
     }
 
     /**
@@ -479,7 +488,7 @@ public class GrammarModel implements Observer {
      * Also explicitly recomputes the start graph model.
      */
     private void invalidate() {
-        this.modificationCount++;
+        this.changeCount.increase();
         this.grammar = null;
         this.errors = null;
         if (!this.isExternalStartGraphModel) {
@@ -504,6 +513,9 @@ public class GrammarModel implements Observer {
      * @param kind the kind of resources to be synchronised
      */
     private void syncResource(ResourceKind kind) {
+        // register a change in this resource, regardless of what actually happens.
+        // This might possibly be refined
+        this.resourceChangeCounts.get(kind).increase();
         switch (kind) {
             case PROLOG:
                 this.prologEnvironment = null;
@@ -637,17 +649,12 @@ public class GrammarModel implements Observer {
      */
     private final Map<ResourceKind,SortedSet<String>> localActiveNamesMap =
         new EnumMap<ResourceKind,SortedSet<String>>(ResourceKind.class);
-    {
-        for (ResourceKind kind : ResourceKind.values()) {
-            this.resourceMap.put(kind, new TreeMap<String,ResourceModel<?>>());
-            this.storedActiveNamesMap.put(kind, new TreeSet<String>());
-        }
-    }
-
     /** The store backing this model. */
     private final SystemStore store;
     /** Counter of the number of invalidations of the grammar. */
-    private int modificationCount;
+    private final ChangeCount changeCount;
+    private final Map<ResourceKind,ChangeCount> resourceChangeCounts =
+        new EnumMap<ResourceKind,ChangeCount>(ResourceKind.class);
     /** Flag to indicate if the start graph is external. */
     private boolean isExternalStartGraphModel = false;
     /** Possibly empty list of errors found in the conversion to a grammar. */
@@ -662,6 +669,13 @@ public class GrammarModel implements Observer {
     private CompositeTypeModel typeModel;
     /** The control model composed from the individual control programs. */
     private CompositeControlModel controlModel;
+    {
+        for (ResourceKind kind : ResourceKind.values()) {
+            this.resourceMap.put(kind, new TreeMap<String,ResourceModel<?>>());
+            this.storedActiveNamesMap.put(kind, new TreeSet<String>());
+            this.resourceChangeCounts.put(kind, new ChangeCount());
+        }
+    }
 
     /**
      * Creates an instance based on a store located at a given URL.
