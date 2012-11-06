@@ -49,6 +49,8 @@ public final class Icons {
                 return NEW_GRAPH_ICON;
             case PROLOG:
                 return NEW_PROLOG_ICON;
+            case GROOVY:
+                return NEW_ICON;
             case RULE:
                 return NEW_RULE_ICON;
             case TYPE:
@@ -71,6 +73,8 @@ public final class Icons {
                 return EDIT_GRAPH_ICON;
             case PROLOG:
                 return EDIT_PROLOG_ICON;
+            case GROOVY:
+                return EDIT_ICON;
             case PROPERTIES:
                 return EDIT_ICON;
             case RULE:
@@ -103,6 +107,8 @@ public final class Icons {
             return GRAPH_MODE_ICON;
         case PROLOG:
             return PROLOG_FILE_ICON;
+        case GROOVY:
+            return GROOVY_FILE_ICON;
         case RULE:
             return RULE_MODE_ICON;
         case TYPE:
@@ -125,6 +131,8 @@ public final class Icons {
             return EDIT_GRAPH_ICON;
         case PROLOG:
             return EDIT_PROLOG_ICON;
+        case GROOVY:
+            return EDIT_ICON;
         case RULE:
             return EDIT_RULE_ICON;
         case TYPE:
@@ -147,6 +155,8 @@ public final class Icons {
             return GRAPH_LIST_ICON;
         case PROLOG:
             return PROLOG_LIST_ICON;
+        case GROOVY:
+            return GROOVY_LIST_ICON;
         case RULE:
             return RULE_LIST_ICON;
         case TYPE:
@@ -320,6 +330,15 @@ public final class Icons {
     /** Small icon for production rules, as shown in the prolog list. */
     public static final ImageIcon PROLOG_LIST_ICON =
         createIcon("prolog-file.gif");
+    /** Icon for Groovy Panel. */
+    public static final ImageIcon GROOVY_FRAME_ICON =
+        createIcon("groovy-frame.gif");
+    /** Icon for Groovy Files. */
+    public static final ImageIcon GROOVY_FILE_ICON =
+        createIcon("groovy-file.gif");
+    /** Small icon for scripts, as shown in the Groovy list. */
+    public static final ImageIcon GROOVY_LIST_ICON =
+        createIcon("groovy-file.gif");
     /** Icon for Properties Panel. */
     public static final ImageIcon PROPERTIES_FRAME_ICON =
         createIcon("properties-frame.gif");

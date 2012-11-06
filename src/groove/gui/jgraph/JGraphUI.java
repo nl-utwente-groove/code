@@ -20,21 +20,23 @@ import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
 import static groove.gui.jgraph.JAttr.NODE_EDGE_RADIUS;
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
-import static groove.gui.jgraph.JGraphUI.DragMode.EDGE;
 import static groove.gui.jgraph.JGraphUI.DragMode.MOVE;
-import static groove.gui.jgraph.JGraphUI.DragMode.PAN;
 import static groove.gui.jgraph.JGraphUI.DragMode.SELECT;
 import static java.awt.event.MouseEvent.BUTTON1;
+import static java.awt.event.MouseEvent.BUTTON2;
 import static java.awt.event.MouseEvent.BUTTON3;
 import groove.gui.Icons;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -50,6 +52,7 @@ import java.util.Collections;
 
 import javax.swing.JComponent;
 import javax.swing.JViewport;
+import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 
 import org.jgraph.JGraph;
@@ -58,6 +61,10 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 
 /** Adapted UI for JGraphs. */
 public class JGraphUI extends BasicGraphUI {
+    public JGraphUI() {
+        SCROLLSTEP = 0.0f;
+    }
+
     private GraphJGraph getJGraph() {
         return (GraphJGraph) this.graph;
     }
@@ -166,12 +173,14 @@ public class JGraphUI extends BasicGraphUI {
         ((MouseHandler) this.mouseListener).cancelEdgeAdding(null);
     }
 
-    private static final boolean ADD_EDGE_BY_CLICK = true;
+    public boolean allowPopupMenu(MouseEvent evt) {
+        return ((MouseHandler) this.mouseListener).allowPopupMenu(evt);
+    }
 
     /**
      * This is a complete reimplementation.
      */
-    public class MouseHandler extends MouseAdapter implements Serializable {
+    public class MouseHandler extends MouseAdapter implements Serializable, ActionListener {
         MouseHandler() {
             this.selectHandler = new RubberBand(getJGraph());
             if (getJGraph() instanceof AspectJGraph) {
@@ -179,6 +188,11 @@ public class JGraphUI extends BasicGraphUI {
             } else {
                 this.edgeHandler = null;
             }
+
+            dragTimer = new Timer(1000 / 25, this); //25fps
+            scrollDX = 0;
+            scrollDY = 0;
+            lastDrag = null;
         }
 
         @Override
@@ -186,13 +200,10 @@ public class JGraphUI extends BasicGraphUI {
             if (!isMyEvent(e)) {
                 return;
             }
-            boolean addEdge = false;
+
             if (getJGraphMode() == EDIT_MODE && e.getButton() == BUTTON1) {
                 // this is an editing-related event
-                if (isEdgeAdding() && e.getClickCount() == 1) {
-                    // finish edge adding
-                    finishEdgeAdding(e);
-                } else if (e.isAltDown()) {
+                if (e.isAltDown()) {
                     // add or remove an edge point
                     GraphJCell jEdge = getJEdgeAt(e.getPoint());
                     Object selectedCell = getJGraph().getSelectionCell();
@@ -207,42 +218,21 @@ public class JGraphUI extends BasicGraphUI {
                         }
                     }
                 } else if (getJCellAt(e.getPoint()) != null) {
-                    // select and possibly start adding edge, or edit vertex
+                    // edit vertex on double click
                     GraphJCell jCell = getJCellAt(e.getPoint());
                     switch (e.getClickCount()) {
-                    case 1:
-                        selectCellsForEvent(Collections.singleton(jCell), e);
-                        addEdge =
-                            jCell instanceof GraphJVertex && !e.isControlDown()
-                                && !e.isShiftDown();
-                        break;
-                    case 2:
-                        getJGraph().startEditingAtCell(jCell);
+                        case 2:
+                            getJGraph().startEditingAtCell(jCell);
                     }
                 } else {
                     switch (e.getClickCount()) {
-                    case 1:
-                        getJGraph().clearSelection();
-                        break;
-                    case 2:
-                        if (getJGraph().isEditable()) {
-                            ((AspectJGraph) getJGraph()).addVertex(e.getPoint());
-                        }
+                    // create new vertex on double click
+                        case 2:
+                            if (getJGraph().isEditable()) {
+                                ((AspectJGraph) getJGraph()).addVertex(e.getPoint());
+                            }
                     }
                 }
-            } else if (e.getButton() != BUTTON3) {
-                // this is not an editing-related event
-                GraphJCell jCell = getJCellAt(e.getPoint());
-                if (jCell == null) {
-                    getJGraph().clearSelection();
-                } else {
-                    selectCellsForEvent(Collections.singleton(jCell), e);
-                }
-            }
-            if (isEdgeAdding()) {
-                cancelEdgeAdding(e);
-            } else if (ADD_EDGE_BY_CLICK && addEdge && getJGraph().isEditable()) {
-                startEdgeAdding(e);
             }
         }
 
@@ -251,113 +241,192 @@ public class JGraphUI extends BasicGraphUI {
             if (!isMyEvent(e)) {
                 return;
             }
+
+            mouseInUse = false;
+
+            // If node outside any possible selection, select whatever is under the cursor
+            // Otherwise do not change the selection
+            GraphJCell jCell = getJCellAt(e.getPoint());
+            if (jCell != null && getJGraph().getSelectionCells(new Object[] {jCell}).length == 0) {
+                if (!isToggleSelectionEvent(e)) {
+                    selectCellsForEvent(Collections.singleton(jCell), e);
+                }
+            }
+
             getJGraph().requestFocus();
             stopEditing(getJGraph());
-            // determine the drag mode (although dragging does not yet start)
+            // determine the drag mode (although dragging does not yet start, might be no drag at all)
             DragMode newDragMode;
             GraphJCell jVertex = getJVertexAt(e.getPoint());
             GraphJCell jEdge = getJEdgeAt(e.getPoint());
-            if (getJGraphMode() == PAN_MODE && e.getButton() == BUTTON1) {
-                newDragMode = PAN;
+
+            // Default to selection marquee if nothing else
+            newDragMode = DragMode.SELECT;
+            if (getJGraphMode() == PAN_MODE && e.getButton() == BUTTON1 || e.getButton() == BUTTON2) {
+                newDragMode = DragMode.PAN;
             } else if (jVertex != null || jEdge != null) {
                 // either start adding an edge, or move 
-                if (getJGraphMode() == EDIT_MODE && e.getButton() == BUTTON1
-                    && !ADD_EDGE_BY_CLICK) {
-                    if (jEdge != null) {
-                        newDragMode = MOVE;
-                    } else if (getJGraph().isCellSelected(jVertex)) {
-                        newDragMode = EDGE;
-                    } else if (e.isAltDown()) {
-                        newDragMode = EDGE;
-                    } else {
-                        newDragMode = MOVE;
-                    }
+                if (getJGraphMode() == EDIT_MODE && e.getButton() == BUTTON3 &&
+                    jVertex != null && !(e.isControlDown() || e.isShiftDown() || e.isAltDown())) {
+                    newDragMode = DragMode.EDGE;
                 } else {
-                    newDragMode = MOVE;
+                    newDragMode = DragMode.MOVE;
                 }
-            } else {
-                newDragMode = SELECT;
             }
             this.dragMode = newDragMode;
             this.dragStart = e;
+            this.dragOrigX = this.dragStart.getX();
+            this.dragOrigY = this.dragStart.getY();
         }
 
         @Override
         public void mouseDragged(MouseEvent e) {
             if (!isMyEvent(e)) {
+                // reset drag operation
+                this.dragStart = null;
                 return;
             }
-            autoscroll(getJGraph(), e.getPoint());
+
+            // Check if the minimum drag distance has been exceeded before actually doing anything
+            if (this.dragStart != null) {
+                if (Math.abs(this.dragStart.getX() - e.getX()) < this.minDragDistance && Math.abs(this.dragStart.getY() - e.getY()) < this.minDragDistance) {
+                    return;
+                }
+            }
+
+            // Drag was aborted
+            if (this.dragMode == null) {
+                return;
+            }
+
+            if (this.dragStart != null) {
+                // Actually dragging, mouse is in use
+                mouseInUse = true;
+            }
+
+            autoscroll(getJGraph(), e);
             switch (this.dragMode) {
-            case PAN:
-                if (this.dragStart != null) {
-                    this.dragOrigX = this.dragStart.getX();
-                    this.dragOrigY = this.dragStart.getY();
-                    this.selectHandler.mousePressed(this.dragStart);
-                }
-                if (isPanEnabled()) {
+                case PAN:
                     doPan(e);
-                }
-                return;
-            case MOVE:
-                if (this.dragStart != null) {
-                    // there is a focused cell, or we wouldn't be in move mode
-                    // select it if currently not selected
-                    GraphJCell cell = getJEdgeAt(this.dragStart.getPoint());
-                    if (cell == null) {
-                        cell = getJCellAt(this.dragStart.getPoint());
-                        getJGraph().setCursor(Icons.HAND_CLOSED_CURSOR);
+                    break;
+                case MOVE:
+                    if (this.dragStart != null) {
+                        // there is a focused cell, or we wouldn't be in move mode
+                        // select it if currently not selected
+                        GraphJCell cell = getJEdgeAt(this.dragStart.getPoint());
+                        if (cell == null) {
+                            cell = getJCellAt(this.dragStart.getPoint());
+                            getJGraph().setCursor(Icons.HAND_CLOSED_CURSOR);
+                        }
+                        if (!getJGraph().isCellSelected(cell)) {
+                            getJGraph().setSelectionCell(cell);
+                        }
+                        getHandle().mousePressed(this.dragStart);
                     }
-                    if (!getJGraph().isCellSelected(cell)) {
-                        getJGraph().setSelectionCell(cell);
+                    if (getHandle() != null) {
+                        getHandle().mouseDragged(e);
                     }
-                    getHandle().mousePressed(this.dragStart);
-                }
-                if (getHandle() != null) {
-                    getHandle().mouseDragged(e);
-                }
-                break;
-            case EDGE:
-                if (this.dragStart != null) {
-                    this.edgeHandler.mousePressed(this.dragStart);
-                }
-                this.edgeHandler.mouseDragged(e);
-                break;
-            case SELECT:
-                if (this.dragStart != null) {
-                    this.selectHandler.mousePressed(this.dragStart);
-                }
-                this.selectHandler.mouseDragged(e);
+                    break;
+                case EDGE:
+                    if (this.dragStart != null) {
+                        startEdgeAdding(this.dragStart);
+                    }
+                    if (e.isControlDown() || e.isShiftDown() || e.isAltDown()) {
+                        cancelEdgeAdding(e);
+                        //Abort the drag
+                        this.dragMode = null;
+                    } else {
+                        continueEdgeAdding(e);
+                    }
+                    break;
+                case SELECT:
+                    if (this.dragStart != null) {
+                        this.selectHandler.mousePressed(this.dragStart);
+                    }
+                    this.selectHandler.mouseDragged(e);
             }
+
             this.dragStart = null;
+        }
+
+        private void autoscroll(GraphJGraph graph, MouseEvent e) {
+            Point p = e.getPoint();
+            lastDrag = e;
+            JViewport view = graph.getViewPort();
+            Rectangle viewRect = view.getViewRect();
+            boolean isScrollMode = this.dragMode != DragMode.PAN;
+            if (!view.getViewRect().contains(p) && isScrollMode) {
+                double dx = p.getX() >= viewRect.getMaxX() ? p.getX() - viewRect.getMaxX() : p.getX() <= viewRect.getMinX() ? p.getX() - viewRect.getMinX() : 0.0;
+                double dy = p.getY() >= viewRect.getMaxY() ? p.getY() - viewRect.getMaxY() : p.getY() <= viewRect.getMinY() ? p.getY() - viewRect.getMinY() : 0.0;
+
+                scrollDX = (int) dx;
+                scrollDY = (int) dy;
+
+                if (!dragTimer.isRunning()) {
+                    dragTimer.start();
+                }
+            } else {
+                scrollDX = 0;
+                scrollDY = 0;
+            }
         }
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            dragTimer.stop();
+            scrollDX = 0;
+            scrollDY = 0;
+            updateCachedPreferredSize();
             if (!isMyEvent(e)) {
+                this.dragStart = null;
                 return;
             }
+
             // if the drag start has been consumed, end the drag session
             if (this.dragStart == null && this.dragMode != null) {
                 switch (this.dragMode) {
-                case EDGE:
-                    finishEdgeAdding(e);
-                    break;
-                case MOVE:
-                    if (getHandle() != null) {
-                        getHandle().mouseReleased(e);
-                    }
-                    break;
-                case SELECT:
-                    completeSelect(e);
-                    this.selectHandler.mouseReleased(e);
-                    break;
-                case PAN:
-                    this.dragOrigX = -1;
-                    this.dragOrigY = -1;
+                    case EDGE:
+                        finishEdgeAdding(e);
+                        getJGraph().setCursor(getJGraph().getMode().getCursor());
+                        break;
+                    case MOVE:
+                        if (getHandle() != null) {
+                            getHandle().mouseReleased(e);
+                        }
+                        break;
+                    case SELECT:
+                        completeSelect(e);
+                        this.selectHandler.mouseReleased(e);
+                        break;
+                    case PAN:
+                        this.dragOrigX = -1;
+                        this.dragOrigY = -1;
+                        break;
                 }
             }
-            getJGraph().setCursor(getJGraph().getMode().getCursor());
+
+            // If no drag occured, check if selection needs modification
+            if (this.dragStart != null) {
+                GraphJCell jCell = getJCellAt(e.getPoint());
+                // If released outside selection, do not clear selection if alt down (edge connect point)
+                if (jCell == null) {
+                    if (e.isAltDown()) {
+                        // Do nothing
+                    } else {
+                        getJGraph().clearSelection();
+                    }
+                } else if (getJGraph().getSelectionCells(new Object[] {jCell}).length != 0 || isToggleSelectionEvent(e)) {
+                    // Select node under cursor (or toggle)
+                    selectCellForEvent(jCell, e);
+                }
+
+                this.dragStart = null;
+            }
+
+            if (mouseInUse) {
+                mouseInUse = false;
+                e.consume();
+            }
         }
 
         @Override
@@ -365,13 +434,7 @@ public class JGraphUI extends BasicGraphUI {
             if (!isMyEvent(e)) {
                 return;
             }
-            if (isEdgeAdding()) {
-                if (e.isControlDown() || e.isShiftDown() || e.isAltDown()) {
-                    cancelEdgeAdding(e);
-                } else {
-                    continueEdgeAdding(e);
-                }
-            } else if (getHandle() != null) {
+            if (getHandle() != null) {
                 getHandle().mouseMoved(e);
                 if (!e.isConsumed()) {
                     getJGraph().setCursor(getJGraph().getMode().getCursor());
@@ -384,9 +447,27 @@ public class JGraphUI extends BasicGraphUI {
             if (!isMyEvent(e)) {
                 return;
             }
-            if (getJGraph().getMode() == PAN_MODE) {
+            if (getJGraph().getMode() == PAN_MODE || e.isControlDown() || (this.dragStart != null && this.dragStart.getButton() == BUTTON3)) {
+                mouseInUse = true;
+                this.dragMode = null; //prevent drag
+
                 int change = -e.getWheelRotation();
-                getJGraph().changeScale(change);
+
+                Point2D centerPoint = getJGraph().getCenterPoint();
+
+                // Calculate zoom factor and scale
+                double oldscale = getJGraph().getScale();
+                double newscale = oldscale * Math.pow(GraphJGraph.ZOOM_FACTOR, change);
+                double factor = newscale / oldscale;
+
+                // Calculate new offset from center based on previous offset and zoom factor
+                double xOffset = (e.getX() - centerPoint.getX()) / factor;
+                double yOffset = (e.getY() - centerPoint.getY()) / factor;
+
+                // Calculate new center point
+                Point2D center = new Point((int) (e.getX() - xOffset), (int) (e.getY() - yOffset));
+                // And scale the graph
+                getJGraph().setScale(newscale, center);
             } else {
                 getJGraph().getParent().dispatchEvent(e);
             }
@@ -404,6 +485,10 @@ public class JGraphUI extends BasicGraphUI {
         private boolean isMyEvent(MouseEvent evt) {
             return evt != null && !evt.isConsumed() && getJGraph().isEnabled()
                 && !getJGraph().isPopupMenuEvent(evt);
+        }
+
+        public boolean allowPopupMenu(MouseEvent evt) {
+            return !mouseInUse && !evt.isConsumed();
         }
 
         /**
@@ -501,7 +586,7 @@ public class JGraphUI extends BasicGraphUI {
         }
 
         private boolean isPanEnabled() {
-            return getJGraph().getMode() == PAN_MODE && getViewPort() != null;
+            return /*getJGraph().getMode() == PAN_MODE && */getViewPort() != null;
         }
 
         private boolean isEdgeAdding() {
@@ -553,6 +638,27 @@ public class JGraphUI extends BasicGraphUI {
             return getJGraph().getViewPort();
         }
 
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (scrollDX == 0 && scrollDY == 0) {
+                return;
+            }
+            JViewport view = ((GraphJGraph) graph).getViewPort();
+            Rectangle viewRect = view.getViewRect();
+
+            double scrollDist = 0.8;
+
+            viewRect.x += scrollDist * scrollDX;
+            viewRect.y += scrollDist * scrollDY;
+
+            preferredSize.width = (int) Math.max(preferredSize.width, viewRect.getMaxX());
+            preferredSize.height = (int) Math.max(preferredSize.height, viewRect.getMaxY());
+            graph.revalidate();
+            graph.scrollRectToVisible(viewRect);
+
+            this.mouseDragged(new MouseEvent((Component) lastDrag.getSource(), lastDrag.getID(), lastDrag.getWhen(), lastDrag.getModifiers(), lastDrag.getX() + (int) (scrollDist * scrollDX), lastDrag.getY() + (int) (scrollDist * scrollDY), 1, false, lastDrag.getButton()));
+        }
+
         /** Rubber band renderer on the JGraph. */
         private final RubberBand selectHandler;
         /** Edge preview renderer on the JGraph. */
@@ -569,6 +675,14 @@ public class JGraphUI extends BasicGraphUI {
         private int dragOrigX = -1;
         /** Y-coordinate of a point where dragging started. */
         private int dragOrigY = -1;
+        /** Whether or not the mouse is currently used by the MouseHandler */
+        private boolean mouseInUse = false;
+        /** Integer describing the minimum drag distance in pixels in both X and Y direction */
+        private final int minDragDistance = 4;
+        private Timer dragTimer;
+        private int scrollDX;
+        private int scrollDY;
+        private MouseEvent lastDrag;
 
     } // End of BasicGraphUI.MouseHandler
 

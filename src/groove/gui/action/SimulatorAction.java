@@ -6,6 +6,7 @@ import groove.gui.ControlDisplay;
 import groove.gui.DisplayKind;
 import groove.gui.DisplaysPanel;
 import groove.gui.EditType;
+import groove.gui.GroovyDisplay;
 import groove.gui.Icons;
 import groove.gui.LTSDisplay;
 import groove.gui.Options;
@@ -154,6 +155,8 @@ public abstract class SimulatorAction extends AbstractAction implements
             return getRuleDisplay();
         case TYPE:
             return getTypeDisplay();
+        case GROOVY:
+            return getGroovyDisplay();
         case PROPERTIES:
         default:
             assert false;
@@ -185,6 +188,11 @@ public abstract class SimulatorAction extends AbstractAction implements
     /** Returns the prolog panel that owns the action. */
     final protected PrologDisplay getPrologDisplay() {
         return (PrologDisplay) getDisplaysPanel().getDisplay(DisplayKind.PROLOG);
+    }
+
+    /** Returns the groovy panel that owns the action. */
+    final protected GroovyDisplay getGroovyDisplay() {
+        return (GroovyDisplay) getDisplaysPanel().getDisplay(DisplayKind.GROOVY);
     }
 
     /** Returns the LTS panel that owns the action. */

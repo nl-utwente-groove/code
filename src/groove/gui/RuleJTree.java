@@ -921,5 +921,4 @@ public class RuleJTree extends JTree implements SimulatorListener {
             return name();
         }
     }
-
 }
