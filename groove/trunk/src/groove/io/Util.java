@@ -235,6 +235,46 @@ public class Util {
     }
 
     /**
+     * Constructs a relative path that addresses a given file
+     * target from a current directory.
+     * @param currentDir Must be absolute
+     * @param target Must be absolute
+     * @return Relative path from currentDir to target
+     */
+    public static File getRelativePath(File currentDir, File target) {
+        if (currentDir.isFile()) {
+            currentDir = new File(currentDir.getParent());
+        }
+        if (!currentDir.isAbsolute() || !target.isAbsolute()) {
+            return null;
+        }
+
+        String[] dirParts = currentDir.toString().split("\\Q" + File.pathSeparator + "\\E");
+        String[] targetParts = target.toString().split("\\Q" + File.pathSeparator + "\\E");
+
+        int i = 0;
+        int max = Math.max(dirParts.length, targetParts.length);
+        while (i < max && dirParts[i].equals(targetParts[i])) {
+            i++;
+        }
+        StringBuilder relPath = new StringBuilder();
+        int j = i;
+        while (j < dirParts.length) {
+            relPath.append(".." + File.pathSeparator);
+            j++;
+        }
+        while (i < targetParts.length) {
+            relPath.append(targetParts[i]);
+            i++;
+            if (i < targetParts.length) {
+                relPath.append(File.pathSeparator);
+            }
+        }
+
+        return new File(relPath.toString());
+    }
+
+    /**
      * The number of bytes in a 50 MB.
      */
     private static final long FIFTY_MB = 1024 * 1024 * 50;
