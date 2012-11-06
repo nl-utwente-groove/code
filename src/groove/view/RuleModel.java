@@ -46,6 +46,7 @@ import groove.trans.Condition;
 import groove.trans.Condition.Op;
 import groove.trans.DefaultRuleNode;
 import groove.trans.EdgeEmbargo;
+import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
@@ -110,6 +111,17 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     }
 
     @Override
+    boolean isShouldRebuild() {
+        boolean result = super.isShouldRebuild();
+        // check for the properties to update the match constraints
+        // check for the type graph to get the correct instance
+        result &=
+            isStale(ResourceKind.PROPERTIES) | this.oldTypeGraph != getType();
+        this.oldTypeGraph = getType();
+        return result;
+    }
+
+    @Override
     public boolean isEnabled() {
         return GraphProperties.isEnabled(getSource()) || hasRecipes();
     }
@@ -164,8 +176,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     }
 
     @Override
-    void notifyGrammarModified() {
-        super.notifyGrammarModified();
+    void notifyWillRebuild() {
+        super.notifyWillRebuild();
         this.labelSet = null;
         this.levelTree = null;
     }
@@ -367,6 +379,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         return this.normalSource;
     }
 
+    private TypeGraph oldTypeGraph;
     /** The factory for rule elements according to the given type graph. */
     private RuleFactory ruleFactory;
     /**

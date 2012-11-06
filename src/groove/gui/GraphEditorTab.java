@@ -80,11 +80,13 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.event.UndoableEditEvent;
 
+import org.jgraph.event.GraphLayoutCacheEvent.GraphLayoutCacheChange;
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
-import org.jgraph.graph.GraphLayoutCache.GraphLayoutCacheEdit;
+import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphUndoManager;
 
 /**
@@ -127,7 +129,7 @@ final public class GraphEditorTab extends ResourceTab implements
         getJGraph().setModel(newModel);
         newModel.addUndoableEditListener(getUndoManager());
         newModel.addGraphModelListener(this);
-        setDirty(false);
+        setClean();
         getUndoManager().discardAllEdits();
         updateHistoryButtons();
     }
@@ -230,23 +232,23 @@ final public class GraphEditorTab extends ResourceTab implements
 
     @Override
     public void setClean() {
-        setDirty(false);
+        this.dirtCount = 0;
+        this.dirtMinor = true;
+        updateDirty();
     }
 
     /**
      * Sets the modified status of the currently edited graph. Also updates the
      * frame title to reflect the new modified status.
-     * @param dirty the new modified status
+     * @boolean minor {@code true} if this was a minor edit, not necessitating
+     * a refresh of all resources
      * @see #isDirty()
      */
-    public void setDirty(boolean dirty) {
-        if (dirty) {
-            // if the dirt count was negative, this cannot be
-            // undone any more, so change to positive
-            this.dirtCount = Math.abs(this.dirtCount) + 1;
-        } else {
-            this.dirtCount = 0;
-        }
+    public void setDirty(boolean minor) {
+        // if the dirt count was negative, this cannot be
+        // undone any more, so change to positive
+        this.dirtCount = Math.abs(this.dirtCount) + 1;
+        this.dirtMinor &= minor;
         updateDirty();
     }
 
@@ -257,6 +259,11 @@ final public class GraphEditorTab extends ResourceTab implements
     @Override
     public boolean isDirty() {
         return this.dirtCount != 0;
+    }
+
+    /** Indicates if there is only minor (i.e., layout) dirt in the editor. */
+    public boolean isDirtMinor() {
+        return this.dirtMinor;
     }
 
     /** Changes the edited graph. */
@@ -303,8 +310,8 @@ final public class GraphEditorTab extends ResourceTab implements
 
     @Override
     protected void saveResource() {
-        getSaveAction().doSaveGraph(getGraph());
-        setDirty(false);
+        getSaveAction().doSaveGraph(getGraph(), isDirtMinor());
+        setClean();
     }
 
     /** Returns the jgraph component of this editor. */
@@ -388,21 +395,40 @@ final public class GraphEditorTab extends ResourceTab implements
                 @Override
                 public void undoableEditHappened(UndoableEditEvent e) {
                     boolean relevant = true;
+                    boolean minor = true;
+                    // only process edits that really changed anything
                     if (GraphEditorTab.this.refreshing
                         || getJGraph().isModelRefreshing()) {
                         relevant = false;
-                    } else if (e.getEdit() instanceof GraphLayoutCacheEdit) {
-                        // only process edits that really changed anything
-                        GraphLayoutCacheEdit edit =
-                            (GraphLayoutCacheEdit) e.getEdit();
+                    } else if (e.getEdit() instanceof GraphLayoutCacheChange) {
+                        GraphLayoutCacheChange edit =
+                            (GraphLayoutCacheChange) e.getEdit();
                         relevant =
-                            edit.getInserted().length > 0
-                                || edit.getRemoved().length > 0
-                                || edit.getChanged().length > 0;
+                            edit.getInserted() != null
+                                && edit.getInserted().length > 0
+                                || edit.getRemoved() != null
+                                && edit.getRemoved().length > 0
+                                || edit.getChanged() != null
+                                && edit.getChanged().length > 0;
+                        minor =
+                            (edit.getInserted() == null || edit.getInserted().length == 0)
+                                && (edit.getRemoved() == null || edit.getRemoved().length == 0);
+                        if (minor && edit.getChanged() != null) {
+                            for (Object in : edit.getChanged()) {
+                                AttributeMap attrs =
+                                    (AttributeMap) edit.getAttributes().get(in);
+                                if (GraphConstants.getValue(attrs) != null) {
+                                    minor = false;
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        minor = false;
                     }
                     if (relevant) {
                         super.undoableEditHappened(e);
-                        setDirty(true);
+                        setDirty(minor);
                         updateHistoryButtons();
                     }
                 }
@@ -470,14 +496,15 @@ final public class GraphEditorTab extends ResourceTab implements
                 result = new PropertiesTable(GraphProperties.KEYS, true);
             result.setName("Properties");
             result.setBackground(JAttr.EDITOR_BACKGROUND);
+            result.setProperties(getGraph().getInfo().getProperties());
+            // add the listener after initialising the properties, to avoid needless refreshes
             result.getModel().addTableModelListener(new TableModelListener() {
                 @Override
                 public void tableChanged(TableModelEvent e) {
                     changeProperties(GraphEditorTab.this.propertiesPanel.getProperties());
-                    setDirty(true);
+                    setDirty(false);
                 }
             });
-            result.setProperties(getGraph().getInfo().getProperties());
         }
         return result;
     }
@@ -730,6 +757,8 @@ final public class GraphEditorTab extends ResourceTab implements
      */
     private int dirtCount;
 
+    /** Flag indicating that there is only minor (layout) dirt in the editor. */
+    private boolean dirtMinor;
     /** The undo manager of the editor. */
     private transient GraphUndoManager undoManager;
 

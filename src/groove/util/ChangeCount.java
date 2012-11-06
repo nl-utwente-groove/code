@@ -48,10 +48,13 @@ public class ChangeCount {
 
     /** Tracker of an update count. */
     static public class Tracker {
-        /** Constructs a tracker, initialised at a given update. */
+        /** 
+         * Constructs a tracker, initialised at a given update.
+         * {@link #isStale()} will return {@code true} at the first call.
+         */
         private Tracker(ChangeCount model) {
             this.count = model;
-            this.last = model.getValue();
+            this.last = model.getValue() - 1;
         }
 
         /**

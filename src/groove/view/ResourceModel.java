@@ -21,11 +21,15 @@ import groove.graph.GraphProperties;
 import groove.trans.QualName;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
+import groove.util.ChangeCount;
+import groove.util.ChangeCount.Tracker;
 import groove.util.Status;
 import groove.view.aspect.AspectGraph;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * General interface for classes that provide part of a graph grammar. 
@@ -47,7 +51,16 @@ abstract public class ResourceModel<R> {
         this.grammar = grammar;
         this.kind = kind;
         this.name = name;
-        this.lastModCount = -1;
+        this.grammarTracker =
+            grammar == null ? null : grammar.createChangeTracker();
+        this.resourceTrackers =
+            new EnumMap<ResourceKind,ChangeCount.Tracker>(ResourceKind.class);
+        for (ResourceKind rk : ResourceKind.values()) {
+            this.resourceTrackers.put(
+                rk,
+                grammar == null ? ChangeCount.DUMMY_TRACKER
+                        : grammar.createChangeTracker(rk));
+        }
     }
 
     /** Returns the grammar model to which this resource belongs. */
@@ -58,6 +71,18 @@ abstract public class ResourceModel<R> {
     /** Returns the kind of this resource model. */
     public final ResourceKind getKind() {
         return this.kind;
+    }
+
+    /**
+     * Tests if this resource model is stale w.r.t. the grammar
+     * in any of a set of resource kind.
+     */
+    public final boolean isStale(ResourceKind... kinds) {
+        boolean result = false;
+        for (ResourceKind kind : kinds) {
+            result |= this.resourceTrackers.get(kind).isStale();
+        }
+        return result;
     }
 
     /**
@@ -136,8 +161,9 @@ abstract public class ResourceModel<R> {
      * @see #getStatus() 
      */
     final void synchronise() {
-        testGrammarModified();
-        if (this.status == Status.START) {
+        if (isShouldRebuild()) {
+            notifyWillRebuild();
+            this.status = Status.START;
             this.errors.clear();
             try {
                 this.resource = compute();
@@ -151,29 +177,24 @@ abstract public class ResourceModel<R> {
     }
 
     /**
-     * Tests if the grammar has been modified since last call of this method.
+     * Tests if the grammar has been modified to the degree
+     * where the resource should be rebuilt.
      * The method returns {@code true} on its first invocation.
      */
-    private boolean testGrammarModified() {
+    boolean isShouldRebuild() {
         boolean result = false;
         if (getGrammar() != null) {
-            int modCount = getGrammar().getModificationCount();
-            result = (modCount != this.lastModCount);
-            if (result) {
-                this.lastModCount = modCount;
-                this.status = Status.START;
-                notifyGrammarModified();
-            }
+            result = this.grammarTracker.isStale();
         }
         return result;
     }
 
     /**
-     * Callback method invoked to signal that a grammar modification
-     * has been detected. This allows subclasses to reset their internal
-     * structures.
+     * Callback method invoked to signal that the resource is about
+     * to be rebuilt, due to grammar modifications. This allows subclasses
+     * to reset their internal structures.
      */
-    void notifyGrammarModified() {
+    void notifyWillRebuild() {
         // empty
     }
 
@@ -230,6 +251,8 @@ abstract public class ResourceModel<R> {
     private R resource;
     /** The errors found during resource construction. */
     private final FormatErrorSet errors = new FormatErrorSet();
-    /** Grammar modification count at the last invocation of #isGrammarModified(). */
-    private int lastModCount;
+    /** Grammar modification tracker. */
+    private final Tracker grammarTracker;
+    /** Resource modification trackers. */
+    private final Map<ResourceKind,Tracker> resourceTrackers;
 }
