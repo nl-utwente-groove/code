@@ -479,7 +479,9 @@ public class Simulator implements SimulatorListener {
 
         JMenu newMenu = new JMenu(Options.NEW_MENU_NAME);
         for (ResourceKind resource : ResourceKind.values()) {
-            if (resource != ResourceKind.PROPERTIES) {
+            if (resource != ResourceKind.PROPERTIES
+                    && resource != ResourceKind.CONFIG
+                    ) {
                 newMenu.add(this.actions.getNewAction(resource));
             }
         }
