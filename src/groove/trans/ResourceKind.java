@@ -49,7 +49,11 @@ public enum ResourceKind {
     PROLOG("Prolog", "prolog program", FileType.PROLOG_FILTER, null),
     /** Grammar properties resource. */
     PROPERTIES("Properties", "grammar properties", FileType.PROPERTIES_FILTER,
-            Groove.PROPERTY_NAME);
+            Groove.PROPERTY_NAME),
+    /** Groovy script resources. */
+    GROOVY("Groovy", "groovy script", FileType.GROOVY_FILTER, null), 
+    /** Configuration resource. */
+    CONFIG("Configuration", "configuration file", FileType.CONFIGURATION_FILTER, null);
 
     /** Constructs a value with no corresponding graph role. */
     private ResourceKind(String name, String description,

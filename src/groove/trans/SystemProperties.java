@@ -255,6 +255,9 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      */
     public Set<String> getActiveNames(ResourceKind kind) {
         assert kind != ResourceKind.RULE;
+        if (kind == ResourceKind.CONFIG || kind == ResourceKind.GROOVY) {
+            return Collections.emptySet();
+        }
         String names = getProperty(resourceKeyMap.get(kind));
         if (names == null || "".equals(names)) {
             return Collections.emptySet();
@@ -594,6 +597,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
         resourceKeyMap.put(ResourceKind.CONTROL, Key.CONTROL_NAMES);
         resourceKeyMap.put(ResourceKind.PROLOG, Key.PROLOG_NAMES);
         resourceKeyMap.put(ResourceKind.HOST, Key.START_GRAPH_NAMES);
+
     }
 
     /**

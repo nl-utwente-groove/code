@@ -153,6 +153,19 @@ public class GrammarModel implements Observer {
         return Collections.unmodifiableSet(result);
     }
 
+    /**
+     * Returns the set of resource names of the local active resources of a given kind.
+     * @see #setLocalActiveNames(ResourceKind, Collection)
+     */
+    public Set<String> getLocalActiveNames(ResourceKind kind) {
+        // first check for locally stored names
+        Set<String> result = this.localActiveNamesMap.get(kind);
+        if (result == null) {
+            return null;
+        }
+        return Collections.unmodifiableSet(result);
+    }
+
     /** 
      * Convenience method for calling {@link #setLocalActiveNames(ResourceKind, Collection)}.
      */
@@ -168,7 +181,7 @@ public class GrammarModel implements Observer {
      * @see #getActiveNames(ResourceKind)
      */
     public void setLocalActiveNames(ResourceKind kind, Collection<String> names) {
-        assert names != null && !names.isEmpty();
+        assert names != null;// && !names.isEmpty();
         this.localActiveNamesMap.put(kind, new TreeSet<String>(names));
         invalidate();
     }
@@ -492,11 +505,11 @@ public class GrammarModel implements Observer {
      */
     private void syncResource(ResourceKind kind) {
         switch (kind) {
-        case PROLOG:
-            this.prologEnvironment = null;
-            break;
-        case PROPERTIES:
-            return;
+            case PROLOG:
+                this.prologEnvironment = null;
+                break;
+            case PROPERTIES:
+                return;
         }
         // update the set of resource models
         Map<String,ResourceModel<?>> modelMap = this.resourceMap.get(kind);
@@ -510,7 +523,7 @@ public class GrammarModel implements Observer {
         modelMap.keySet().retainAll(sourceMap.keySet());
         // collect the new active names
         SortedSet<String> newActiveNames = new TreeSet<String>();
-        if (kind != RULE) {
+        if (kind != RULE && kind != ResourceKind.GROOVY && kind != ResourceKind.CONFIG) {
             newActiveNames.addAll(getProperties().getActiveNames(kind));
         }
         // now synchronise the models with the sources in the store
@@ -549,14 +562,20 @@ public class GrammarModel implements Observer {
             String text = getStore().getTexts(kind).get(name);
             if (text != null) {
                 switch (kind) {
-                case CONTROL:
-                    result = new ControlModel(this, name, text);
-                    break;
-                case PROLOG:
-                    result = new PrologModel(this, name, text);
-                    break;
-                default:
-                    assert false;
+                    case CONTROL:
+                        result = new ControlModel(this, name, text);
+                        break;
+                    case PROLOG:
+                        result = new PrologModel(this, name, text);
+                        break;
+                    case GROOVY:
+                        result = new GroovyModel(this, name, text);
+                        break;
+                    case CONFIG:
+                        result = new ConfigModel(this, name, text);
+                        break;
+                    default:
+                        assert false;
                 }
             }
         }
@@ -569,17 +588,17 @@ public class GrammarModel implements Observer {
     public GraphBasedModel<?> createGraphModel(AspectGraph graph) {
         GraphBasedModel<?> result = null;
         switch (graph.getRole()) {
-        case HOST:
-            result = new HostModel(this, graph);
-            break;
-        case RULE:
-            result = new RuleModel(this, graph);
-            break;
-        case TYPE:
-            result = new TypeModel(this, graph);
-            break;
-        default:
-            assert false;
+            case HOST:
+                result = new HostModel(this, graph);
+                break;
+            case RULE:
+                result = new RuleModel(this, graph);
+                break;
+            case TYPE:
+                result = new TypeModel(this, graph);
+                break;
+            default:
+                assert false;
         }
         return result;
     }
@@ -719,24 +738,24 @@ public class GrammarModel implements Observer {
         public static boolean apply(Set<String> set, Manipulation manipulation,
                 Set<String> selected) {
             switch (manipulation) {
-            case ADD:
-                return set.addAll(selected);
-            case REMOVE:
-                return set.removeAll(selected);
-            case SET:
-                boolean changed = set.equals(selected);
-                set.clear();
-                set.addAll(selected);
-                return changed;
-            case TOGGLE:
-                for (String text : selected) {
-                    if (!set.remove(text)) {
-                        set.add(text);
+                case ADD:
+                    return set.addAll(selected);
+                case REMOVE:
+                    return set.removeAll(selected);
+                case SET:
+                    boolean changed = set.equals(selected);
+                    set.clear();
+                    set.addAll(selected);
+                    return changed;
+                case TOGGLE:
+                    for (String text : selected) {
+                        if (!set.remove(text)) {
+                            set.add(text);
+                        }
                     }
-                }
-                return !selected.isEmpty();
-            default:
-                return false;
+                    return !selected.isEmpty();
+                default:
+                    return false;
             }
         }
 
