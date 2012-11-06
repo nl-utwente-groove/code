@@ -56,6 +56,10 @@ public enum FileType {
     PROLOG1(".pro", "Prolog files"),
     /** Prolog files. */
     PROLOG2(".pl", "Prolog files"),
+    /** Configuration files. */
+    CONFIG(".xml", "Configuration files"),
+    /** Groovy files. */
+    GROOVY(".groovy", "Groovy files"),
 
     // Compressed files.
     /** ZIP files. */
@@ -79,7 +83,9 @@ public enum FileType {
     /** LaTeX Tikz files. */
     TIKZ(".tikz", "LaTeX Tikz files"),
     /** KTH file format, used by Marieke et al. */
-    KTH(".kth", "Simple KTH files");
+    KTH(".kth", "Simple KTH files"),
+    /** PDF file format, export graphs */
+    PDF(".pdf", "Adobe PDF documents");
 
     /** Enumeration of importable native files. */
     public static final EnumSet<FileType> importNative = EnumSet.of(RULE,
@@ -205,6 +211,10 @@ public enum FileType {
     public static final ExtensionFilter PROPERTIES_FILTER = createFilter(
         PROPERTY, true);
 
+    /** Filter for configuration files. */
+    public static final ExtensionFilter CONFIGURATION_FILTER = createFilter(
+        CONFIG, false);
+
     // Text files.
 
     /** Filter for log files. */
@@ -218,6 +228,10 @@ public enum FileType {
         true);
     /** Filter for Prolog files. */
     public static final ExtensionFilter PROLOG2_FILTER = createFilter(PROLOG2,
+        true);
+
+    /** Filter for Prolog files. */
+    public static final ExtensionFilter GROOVY_FILTER = createFilter(GROOVY,
         true);
 
     // Compressed files.
@@ -253,6 +267,9 @@ public enum FileType {
 
     /** Filter for KTH files. */
     public static final ExtensionFilter KTH_FILTER = createFilter(KTH, true);
+
+    /** Filter for PDF files. */
+    public static final ExtensionFilter PDF_FILTER = createFilter(PDF, true);
 
     // Composite filters.
 
