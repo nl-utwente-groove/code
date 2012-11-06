@@ -243,6 +243,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             typeEdge.setInMult(modelEdge.getInMult());
             typeEdge.setOutMult(modelEdge.getOutMult());
             typeEdge.setAbstract(modelEdge.getKind() == ABSTRACT);
+            typeEdge.setComposite(modelEdge.isComposite());
         }
         if (typeEdge != null) {
             elementMap.putEdge(modelEdge, typeEdge);
