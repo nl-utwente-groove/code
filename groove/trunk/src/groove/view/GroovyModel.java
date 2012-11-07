@@ -16,7 +16,8 @@
  */
 package groove.view;
 
-import groove.trans.ResourceKind;
+import static groove.trans.ResourceKind.GROOVY;
+import groove.groovy.Util;
 
 /**
  * Model for Groovy programs, which are just strings
@@ -36,12 +37,12 @@ public class GroovyModel extends TextBasedModel<String> {
      *            the groovy program; non-null
      */
     public GroovyModel(GrammarModel grammar, String name, String program) {
-        super(grammar, ResourceKind.GROOVY, name, program);
+        super(grammar, GROOVY, name, program);
     }
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return Util.isGroovyPresent();
     }
 
     @Override
