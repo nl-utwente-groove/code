@@ -864,7 +864,8 @@ public class Options implements Cloneable {
 
     /** Set of resource kinds for which the display tab is optional. */
     private static final Set<ResourceKind> optionalTabs = EnumSet.of(
-        ResourceKind.CONTROL, ResourceKind.PROLOG, ResourceKind.TYPE);
+        ResourceKind.CONTROL, ResourceKind.PROLOG, ResourceKind.TYPE,
+        ResourceKind.GROOVY);
 
     /** Show anchors option */
     static public final String SHOW_ANCHORS_OPTION = "Show anchors";
@@ -875,14 +876,6 @@ public class Options implements Cloneable {
         "Show bidirectional edges";
     /** Show node ids option */
     static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
-    /** Show the tab for control programs. */
-    static public final String SHOW_CONTROL_TAB_OPTION =
-        "Show control program tab";
-    /** Show the tab for prolog programs. */
-    static public final String SHOW_PROLOG_TAB_OPTION =
-        "Show prolog program tab";
-    /** Show the tab for type graphs. */
-    static public final String SHOW_TYPE_TAB_OPTION = "Show type graph tab";
     /** Show state ids option */
     static public final String SHOW_STATE_IDS_OPTION = "Show state identities";
     /** Show partial transitions option */

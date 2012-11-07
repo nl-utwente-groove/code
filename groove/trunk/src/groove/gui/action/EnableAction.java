@@ -49,7 +49,9 @@ public class EnableAction extends SimulatorAction {
         ResourceModel<?> resource =
             getSimulatorModel().getResource(resourceKind);
         boolean isEnabling = resource == null || !resource.isEnabled();
-        boolean enabled = name != null && getGrammarStore().isModifiable();
+        boolean enabled =
+            resourceKind.isEnableable() && name != null
+                && getGrammarStore().isModifiable();
         if (enabled && getResourceKind() == ResourceKind.RULE) {
             enabled = !((RuleModel) resource).hasRecipes();
         }
