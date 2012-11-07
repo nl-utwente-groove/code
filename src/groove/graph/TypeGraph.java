@@ -964,22 +964,21 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     /** Tests if two nodes have a common subtype. */
     private boolean hasCommonSubtype(TypeNode node1, TypeNode node2) {
         // check for common subtypes
-        if (node1 == node2) {
+        if (node1.equals(node2)) {
             return true;
         }
         Set<TypeNode> sub1 = getSubtypes(node1);
+        Set<TypeNode> sub2 = getSubtypes(node2);
         assert sub1 != null : String.format(
             "Node type %s does not exist in type graph %s", node1, this);
-        if (sub1.size() == 1) {
-            // sub1 doesn't have a proper subtype
-            return false;
-        }
-        Set<TypeNode> sub2 = getSubtypes(node2);
         assert sub2 != null : String.format(
             "Node type %s does not exist in type graph %s", node2, this);
-        if (sub2.size() == 1) {
+        if (sub1.size() == 1) {
+            // sub1 doesn't have a proper subtype
+            return sub2.size() > 1 && sub2.contains(node1);
+        } else if (sub2.size() == 1) {
             // sub2 doesn't have a proper subtype
-            return false;
+            return sub1.contains(node2);
         }
         return !Collections.disjoint(sub1, sub2);
     }

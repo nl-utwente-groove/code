@@ -95,7 +95,7 @@ public enum ResourceKind {
      * @see #isGraphBased()
      */
     public boolean isTextBased() {
-        return this != PROPERTIES && this != CONFIG && !isGraphBased();
+        return this != PROPERTIES && !isGraphBased();
     }
 
     /** Returns the (capitalised) name of this kind of resource. */
