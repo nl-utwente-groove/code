@@ -411,6 +411,9 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         getModel().reload(getTopNode());
         // expand those paths that were not collapsed before
         for (TreeNode newNode : newNodes) {
+            if (newNode.isLeaf()) {
+                continue;
+            }
             boolean expand = true;
             TreePath path = new TreePath(newNode.getPath());
             for (Object node : path.getPath()) {

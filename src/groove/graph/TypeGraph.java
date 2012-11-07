@@ -392,6 +392,13 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     /** Tests if one type node is a subtype of another. */
     public boolean isSubtype(TypeNode subType, TypeNode superType) {
         testFixed(true);
+        if (subType.equals(superType)) {
+            return true;
+        }
+        Set<TypeNode> allSubtypes = getSubtypes(superType);
+        if (allSubtypes.size() == 1) {
+            return false;
+        }
         return getSubtypes(superType).contains(subType);
     }
 
@@ -899,11 +906,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             TypeNode targetType, boolean precise) {
         TypeEdge result = null;
         for (TypeEdge edge : labelEdgeSet(label)) {
-            boolean sourceCorrect =
-                isSubtype(sourceType, edge.source(), precise);
-            boolean targetCorrect =
-                isSubtype(targetType, edge.target(), precise);
-            if (!sourceCorrect || !targetCorrect) {
+            if (!isSubtype(sourceType, edge.source(), precise)) {
+                continue;
+            }
+            if (!isSubtype(targetType, edge.target(), precise)) {
                 continue;
             }
             // try to find a concrete type
@@ -958,12 +964,23 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     /** Tests if two nodes have a common subtype. */
     private boolean hasCommonSubtype(TypeNode node1, TypeNode node2) {
         // check for common subtypes
+        if (node1 == node2) {
+            return true;
+        }
         Set<TypeNode> sub1 = getSubtypes(node1);
         assert sub1 != null : String.format(
             "Node type %s does not exist in type graph %s", node1, this);
+        if (sub1.size() == 1) {
+            // sub1 doesn't have a proper subtype
+            return false;
+        }
         Set<TypeNode> sub2 = getSubtypes(node2);
         assert sub2 != null : String.format(
             "Node type %s does not exist in type graph %s", node2, this);
+        if (sub2.size() == 1) {
+            // sub2 doesn't have a proper subtype
+            return false;
+        }
         return !Collections.disjoint(sub1, sub2);
     }
 
