@@ -24,29 +24,28 @@ import groove.trans.ResourceKind;
  * @author Staijen
  */
 public class GroovyModel extends TextBasedModel<String> {
-	/**
-	 * Constructs a control view from a given groovy program.
-	 * 
-	 * @param grammar
-	 *            the grammar view to which this groovy view belongs. Must be
-	 *            non-{@code null} in order to compute the control automation
-	 * @param name
-	 *            the name of the groovy program
-	 * @param program
-	 *            the groovy program; non-null
-	 */
-	public GroovyModel(GrammarModel grammar, String name, String program) {
-		super(grammar, ResourceKind.GROOVY, name, program);
-	}
+    /**
+     * Constructs a control view from a given groovy program.
+     * 
+     * @param grammar
+     *            the grammar view to which this groovy view belongs. Must be
+     *            non-{@code null} in order to compute the control automation
+     * @param name
+     *            the name of the groovy program
+     * @param program
+     *            the groovy program; non-null
+     */
+    public GroovyModel(GrammarModel grammar, String name, String program) {
+        super(grammar, ResourceKind.GROOVY, name, program);
+    }
 
-	// Cannot be enabled
-	@Override
-	public boolean isEnabled() {
-		return false;
-	}
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 
-	@Override
-	String compute() throws FormatException {
-		return getProgram();
-	}
+    @Override
+    String compute() throws FormatException {
+        return getProgram();
+    }
 }

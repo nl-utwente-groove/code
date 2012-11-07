@@ -51,9 +51,10 @@ public enum ResourceKind {
     PROPERTIES("Properties", "grammar properties", FileType.PROPERTIES_FILTER,
             Groove.PROPERTY_NAME),
     /** Groovy script resources. */
-    GROOVY("Groovy", "groovy script", FileType.GROOVY_FILTER, null), 
+    GROOVY("Groovy", "groovy script", FileType.GROOVY_FILTER, null),
     /** Configuration resource. */
-    CONFIG("Configuration", "configuration file", FileType.CONFIGURATION_FILTER, null);
+    CONFIG("Configuration", "configuration file",
+            FileType.CONFIGURATION_FILTER, null);
 
     /** Constructs a value with no corresponding graph role. */
     private ResourceKind(String name, String description,
@@ -94,7 +95,7 @@ public enum ResourceKind {
      * @see #isGraphBased()
      */
     public boolean isTextBased() {
-        return this != PROPERTIES && !isGraphBased();
+        return this != PROPERTIES && this != CONFIG && !isGraphBased();
     }
 
     /** Returns the (capitalised) name of this kind of resource. */
@@ -125,6 +126,16 @@ public enum ResourceKind {
     /** Flag indicating if this resource kind has additional (editable) properties. */
     public boolean hasProperties() {
         return this == RULE;
+    }
+
+    /** Indicates if this resource can be changed to enabled. */
+    public boolean isEnableable() {
+        return this != PROPERTIES && this != CONFIG && this != GROOVY;
+    }
+
+    /** Indicates if this resource has a display in the simulator. */
+    public boolean hasDisplay() {
+        return this != PROPERTIES && this != CONFIG;
     }
 
     /** The graph role associated with this resource kind, or {@link GraphRole#NONE}

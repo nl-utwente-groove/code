@@ -122,8 +122,10 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             res.add(getCopyAction());
             res.add(getDeleteAction());
             res.add(getRenameAction());
-            res.addSeparator();
-            res.add(getEnableAction());
+            if (getResourceKind().isEnableable()) {
+                res.addSeparator();
+                res.add(getEnableAction());
+            }
         }
         return res;
     }
@@ -158,12 +160,18 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         } else {
             result.addSeparator();
         }
-        result.add(getEnableButton());
-        if (getResourceKind() == ResourceKind.HOST
-            || getResourceKind() == ResourceKind.TYPE
-            || getResourceKind() == ResourceKind.PROLOG
-            || getResourceKind() == ResourceKind.CONTROL) {
-            result.add(getEnableUniqueAction());
+        ResourceKind kind = getResourceKind();
+        if (kind.isEnableable()) {
+            result.add(getEnableButton());
+            if (getResourceKind() == ResourceKind.HOST
+                || getResourceKind() == ResourceKind.TYPE
+                || getResourceKind() == ResourceKind.PROLOG
+                || getResourceKind() == ResourceKind.CONTROL) {
+                result.add(getEnableUniqueAction());
+            }
+        }
+        if (kind == ResourceKind.GROOVY) {
+            result.add(getActions().getExecGroovyAction());
         }
         return result;
     }

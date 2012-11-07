@@ -24,7 +24,6 @@ import groovy.lang.GroovyRuntimeException;
 import groovy.lang.GroovyShell;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -33,7 +32,6 @@ import java.io.PrintStream;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JToolBar;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
@@ -71,29 +69,6 @@ final public class GroovyDisplay extends ResourceDisplay {
         splitPane.setResizeWeight(0.8);
 
         add(splitPane, BorderLayout.CENTER);
-    }
-
-    @Override
-    protected JToolBar createListToolBar(int separation) {
-        //Override the entire toolbar, since it adds some unwanted buttons (enable)
-        JToolBar result = Options.createToolBar();
-        result.add(getNewAction());
-        result.add(getEditAction());
-        if (separation >= 0) {
-            result.addSeparator(new Dimension(separation, 0));
-        } else {
-            result.addSeparator();
-        }
-        result.add(getCopyAction());
-        result.add(getDeleteAction());
-        result.add(getRenameAction());
-        if (separation >= 0) {
-            result.addSeparator(new Dimension(separation, 0));
-        } else {
-            result.addSeparator();
-        }
-        result.add(getActions().getExecGroovyAction());
-        return result;
     }
 
     /**
