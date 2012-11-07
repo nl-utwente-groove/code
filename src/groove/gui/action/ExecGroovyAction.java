@@ -1,8 +1,14 @@
 package groove.gui.action;
 
+import static groove.trans.ResourceKind.GROOVY;
+import groove.groovy.Util;
 import groove.gui.GroovyDisplay;
 import groove.gui.Icons;
 import groove.gui.Simulator;
+import groove.io.HTMLConverter;
+import groove.view.GroovyModel;
+
+import javax.swing.Action;
 
 /** Action to execute the currently selected Groovy script. */
 public class ExecGroovyAction extends SimulatorAction {
@@ -10,20 +16,41 @@ public class ExecGroovyAction extends SimulatorAction {
 
     /** Constructs a new action, for a given control panel. */
     public ExecGroovyAction(Simulator simulator) {
-        super(simulator, "Execute Groovy script", Icons.GO_START_ICON, null,
-            groove.trans.ResourceKind.GROOVY);
+        super(simulator, DESCRIPTION, Icons.GO_START_ICON, null, GROOVY);
+        this.enabled = Util.isGroovyPresent();
+        if (!this.enabled) {
+            StringBuilder descr = new StringBuilder(DESCRIPTION);
+            descr.append(HTMLConverter.HTML_LINEBREAK);
+            descr.append(DISABLED_DESCRIPTION);
+            HTMLConverter.HTML_TAG.on(descr);
+            putValue(Action.SHORT_DESCRIPTION, descr.toString());
+        }
     }
 
     @Override
     public void execute() {
         for (String name : getSimulatorModel().getSelectSet(getResourceKind())) {
-            ((GroovyDisplay) getDisplay()).executeGroovy(name);
+            GroovyModel model =
+                (GroovyModel) getGrammarModel().getResource(GROOVY, name);
+            if (model.isEnabled()) {
+                ((GroovyDisplay) getDisplay()).executeGroovy(name);
+            }
         }
     }
 
     @Override
     public void refresh() {
-        boolean enabled = getSimulatorModel().isSelected(getResourceKind());
+        boolean enabled = this.enabled;
+        if (enabled) {
+            enabled =
+                !getSimulatorModel().getSelectSet(getResourceKind()).isEmpty();
+        }
         setEnabled(enabled);
     }
+
+    private final boolean enabled;
+
+    static private final String DESCRIPTION = "Execute Groovy script";
+    static private final String DISABLED_DESCRIPTION =
+        "To enable, insert the Groovy jars in the Groove bin directory";
 }

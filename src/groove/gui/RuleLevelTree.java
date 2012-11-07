@@ -47,6 +47,7 @@ public class RuleLevelTree extends CheckboxTree implements
     public RuleLevelTree(AspectJGraph jGraph) {
         this.jGraph = jGraph;
         addMouseListener(new MyMouseListener());
+        setLargeModel(true);
         setEnabled(jGraph.isEnabled());
         setShowsRootHandles(false);
         getUI().setCollapsedIcon(null);
