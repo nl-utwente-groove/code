@@ -20,21 +20,33 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.GraphRole;
 import groove.graph.Node;
-import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.GraphJModel;
 import groove.io.FileType;
+import groove.io.external.AbstractFormatExporter;
+import groove.io.external.Exporter.Exportable;
+import groove.io.external.Format;
+import groove.io.external.FormatImporter;
+import groove.io.external.PortException;
+import groove.trans.ResourceKind;
+import groove.view.GrammarModel;
+import groove.view.aspect.AspectGraph;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,50 +54,49 @@ import java.util.Set;
  * Class that implements load/save of graphs in the CADP .aut format.
  * @author Eduardo Zambon
  */
-public final class AutFormat extends AbstractExternalFileFormat<Graph<?,?>> {
+public final class AutPorter extends AbstractFormatExporter implements
+        FormatImporter {
 
-    /** Label used to identify the start state, when reading in from .aut */
-    private static final String ROOT_LABEL = "$ROOT$";
-
-    private static final AutFormat INSTANCE = new AutFormat();
-
-    /** Returns the singleton instance of this class. */
-    public static final AutFormat getInstance() {
-        return INSTANCE;
+    private AutPorter() {
+        Format autFormat = new Format(this, FileType.AUT);
+        this.formats = Arrays.asList(autFormat);
     }
-
-    private AutFormat() {
-        super(FileType.AUT);
-    }
-
-    // Methods from FileFormat.
 
     @Override
-    public void load(Graph<?,?> graph, File file) throws IOException {
-        FileInputStream fis = null;
-        BufferedReader reader = null;
-        try {
-            fis = new FileInputStream(file);
-            reader = new BufferedReader(new InputStreamReader(fis));
-            this.load(graph, reader);
-        } catch (FileNotFoundException e) {
-            throw new IOException(String.format("File %s not found.", file));
-        } finally {
-            if (fis != null) {
-                fis.close();
-            }
-            if (reader != null) {
-                reader.close();
-            }
-        }
+    public Kind getFormatKind() {
+        return Kind.GRAPH;
     }
 
-    private void load(Graph<?,?> origGraph, BufferedReader reader)
-        throws IOException {
+    @Override
+    public Collection<? extends Format> getSupportedFormats() {
+        return this.formats;
+    }
+
+    @Override
+    public Set<Resource> doImport(File file, Format format, GrammarModel grammar)
+        throws PortException {
+        Set<Resource> resources;
+        try {
+            FileInputStream stream = new FileInputStream(file);
+            resources =
+                doImport(format.stripExtension(file.getName()), stream, format,
+                    grammar);
+            stream.close();
+        } catch (IOException e) {
+            throw new PortException(e);
+        }
+        return resources;
+    }
+
+    @Override
+    public Set<Resource> doImport(String name, InputStream stream,
+            Format format, GrammarModel grammar) throws PortException {
         Map<String,DefaultNode> result = new HashMap<String,DefaultNode>();
+        BufferedReader reader =
+            new BufferedReader(new InputStreamReader(stream));
         int linenr = 0;
         try {
-            DefaultGraph graph = (DefaultGraph) origGraph;
+            DefaultGraph graph = new DefaultGraph(name);
             String line = reader.readLine();
             linenr++;
             int rootStart = line.indexOf('(') + 1;
@@ -120,28 +131,34 @@ public final class AutFormat extends AbstractExternalFileFormat<Graph<?,?>> {
                     graph.addEdge(sourceNode, label, targetNode);
                 }
             }
+
+            graph.setRole(GraphRole.HOST);
+            AspectGraph agraph = AspectGraph.newInstance(graph);
+
+            return Collections.singleton(new Resource(ResourceKind.HOST, name,
+                agraph));
         } catch (Exception e) {
-            throw new IOException(String.format("Format error in line %d: %s",
-                linenr, e.getMessage()));
+            throw new PortException(String.format(
+                "Format error in line %d: %s", linenr, e.getMessage()));
+        } finally {
+            try {
+                reader.close();
+            } catch (IOException e) {
+                throw new PortException(e);
+            }
         }
     }
 
     @Override
-    public void save(GraphJGraph jGraph, File file) throws IOException {
-        Graph<?,?> graph = ((GraphJModel<?,?>) jGraph.getModel()).getGraph();
-        this.save(graph, file);
-    }
-
-    @Override
-    public void save(Graph<?,?> graph, File file) throws IOException {
-        PrintWriter writer = null;
+    public void doExport(File file, Format format, Exportable exportable)
+        throws PortException {
+        Graph<?,?> graph = exportable.getGraph();
         try {
-            writer = new PrintWriter(file);
+            PrintWriter writer = new PrintWriter(file);
             this.save(graph, writer);
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
+            writer.close();
+        } catch (FileNotFoundException e) {
+            throw new PortException(e);
         }
     }
 
@@ -185,9 +202,16 @@ public final class AutFormat extends AbstractExternalFileFormat<Graph<?,?>> {
         }
     }
 
-    @Override
-    public DefaultGraph createGraph(String graphName) {
-        return new DefaultGraph(graphName);
+    private final List<Format> formats;
+
+    /** Returns the singleton instance of this class. */
+    public static final AutPorter getInstance() {
+        return instance;
     }
+
+    /** Label used to identify the start state, when reading in from .aut */
+    private static final String ROOT_LABEL = "$ROOT$";
+
+    private static final AutPorter instance = new AutPorter();
 
 }

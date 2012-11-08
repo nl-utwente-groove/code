@@ -26,7 +26,12 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.io.external.Exporter;
+import groove.io.external.Exporter.Exportable;
+import groove.io.external.Format;
+import groove.io.external.FormatExporter;
+import groove.io.external.PortException;
+import groove.io.external.format.RasterExporter;
+import groove.io.external.format.VectorExporter;
 import groove.io.xml.LayedOutXml;
 import groove.trans.ResourceKind;
 import groove.util.CommandLineOption;
@@ -42,11 +47,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -149,90 +156,94 @@ public class Imager extends CommandLineTool {
                 return;
             }
 
-            ExtensionFilter acceptingFilter = accept(inFile);
-            if (acceptingFilter != null) {
-                try {
-                    String imageFormat = getImageFormat();
-                    // if the format is not set, try to derive it
-                    // from the output file name
-                    if (imageFormat == null) {
-                        imageFormat = ExtensionFilter.getExtension(outFile);
-                        if (!getExporter().getExtensions().contains(imageFormat)) {
-                            // otherwise, use the default format
-                            imageFormat =
-                                getExporter().getDefaultFormat().getFilter().getExtension();
-                        }
-                    }
-                    // use the input file parent,
-                    // if the output file has no explicit parent
-                    File outFileParent = outFile.getParentFile();
-                    if (outFileParent == null) {
-                        outFileParent = inFile.getParentFile();
-                    }
-                    String outFileName =
-                        acceptingFilter.stripExtension(outFile.getName());
-                    outFile =
-                        new File(outFileParent, outFileName + imageFormat);
-                    DefaultGraph plainGraph =
-                        graphLoader.unmarshalGraph(inFile);
+            DefaultGraph plainGraph;
+            try {
+                plainGraph = graphLoader.unmarshalGraph(inFile);
+            } catch (IOException e) {
+                println("Problem reading " + inFile);
+                return;
+            }
+            if (plainGraph.size() == 0) {
+                // fix to skip empty graphs and rules, since
+                // they cause a null pointer exception.
+                printlnMedium("Skiping empty graph " + inFile);
+                return;
+            }
 
-                    if (plainGraph.size() == 0) {
-                        // fix to skip empty graphs and rules, since
-                        // they cause a null pointer exception.
-                        printlnMedium("Skiping empty graph " + inFile);
-                        return;
-                    }
-
-                    AspectGraph aspectGraph =
-                        AspectGraph.newInstance(plainGraph);
-                    Options options = new Options();
-                    options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(
-                        isEditorView());
-                    options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(
-                        isEditorView());
-                    DisplayKind kind =
-                        DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
-                    AspectJGraph jGraph = new AspectJGraph(null, kind, false);
-                    AspectJModel model = jGraph.newModel();
-                    model.loadGraph(aspectGraph);
-                    jGraph.setModel(model);
-                    // Ugly hack to prevent clipping of the image. We set the
-                    // jGraph size to twice its normal size. This does not
-                    // affect the final size of the exported figure, hence
-                    // it can be considered harmless... ;P
-                    Dimension oldPrefSize = jGraph.getPreferredSize();
-                    Dimension newPrefSize =
-                        new Dimension(oldPrefSize.width * 2,
-                            oldPrefSize.height * 2);
-                    jGraph.setSize(newPrefSize);
-                    printlnMedium("Imaging " + inFile + " as " + outFile);
-
-                    getExporter().export(jGraph, outFile);
-                    Thread.yield();
-                } catch (FileNotFoundException fnfe) {
-                    println("File " + outFile + "does not exist.");
-                } catch (IOException e) {
-                    println("Problem reading " + inFile);
-                    return;
+            String imageFormat = getImageFormat();
+            if (imageFormat == null) {
+                imageFormat = outFile.toString();
+            }
+            Map<String,Format> formats = getExtensions();
+            Format outputFormat = null;
+            for (Entry<String,Format> e : formats.entrySet()) {
+                if (imageFormat.endsWith(e.getKey())) {
+                    outputFormat = e.getValue();
+                    break;
                 }
+            }
+            if (outputFormat == null) {
+                // Pick first format as default
+                outputFormat = getExtensions().values().iterator().next();
+            }
+
+            // use the input file parent,
+            // if the output file has no explicit parent
+            File outFileParent = outFile.getParentFile();
+            if (outFileParent == null) {
+                outFileParent = inFile.getParentFile();
+            }
+            String outFileName = outputFormat.stripExtension(outFile.getName());
+            outFile = new File(outFileParent, outFileName + imageFormat);
+
+            AspectGraph aspectGraph = AspectGraph.newInstance(plainGraph);
+            Options options = new Options();
+            options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(
+                isEditorView());
+            options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(
+                isEditorView());
+            DisplayKind kind =
+                DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
+            AspectJGraph jGraph = new AspectJGraph(null, kind, false);
+            AspectJModel model = jGraph.newModel();
+            model.loadGraph(aspectGraph);
+            jGraph.setModel(model);
+            // Ugly hack to prevent clipping of the image. We set the
+            // jGraph size to twice its normal size. This does not
+            // affect the final size of the exported figure, hence
+            // it can be considered harmless... ;P
+            Dimension oldPrefSize = jGraph.getPreferredSize();
+            Dimension newPrefSize =
+                new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
+            jGraph.setSize(newPrefSize);
+            printlnMedium("Imaging " + inFile + " as " + outFile);
+
+            try {
+                Exportable exportable = new Exportable(jGraph);
+                ((FormatExporter) outputFormat.getFormatter()).doExport(
+                    outFile, outputFormat, exportable);
+            } catch (PortException e1) {
+                println("Error exporting graph: " + e1.getMessage());
             }
         }
     }
 
-    /**
-     * Determines if a given file is recognized by any of the filters regocnized
-     * by this <tt>Imager</tt>. In this implementation, these are the
-     * {@link Groove}gxl filter, state filter or rule filter.
-     * @param file the file to be tested for acceptance
-     * @return a filter that accepts <tt>file</tt>, or <tt>null</tt>.
-     */
-    public ExtensionFilter accept(File file) {
-        for (ExtensionFilter element : acceptFilters) {
-            if (element.accept(file)) {
-                return element;
+    /** Collects a mapping from file extensions to formats. */
+    public static Map<String,Format> getExtensions() {
+        Map<String,Format> formatMap = new HashMap<String,Format>();
+        // Passing null as jgraph. Current implementation does not care about the type of jgraph and doesnt check
+        for (Format format : RasterExporter.getInstance().getSupportedFormats()) {
+            for (String ext : format.getExtensions()) {
+                formatMap.put(ext.substring(1), format); //strip dot
             }
         }
-        return null;
+        for (Format format : VectorExporter.getInstance().getSupportedFormats()) {
+            for (String ext : format.getExtensions()) {
+                formatMap.put(ext.substring(1), format); //strip dot
+            }
+        }
+
+        return formatMap;
     }
 
     /** Returns the location of the file(s) to be imaged. */
@@ -337,11 +348,6 @@ public class Imager extends CommandLineTool {
         } else {
             this.imagerFrame.println(text);
         }
-    }
-
-    /** Returns the exporter associated with this Imager. */
-    private Exporter getExporter() {
-        return Exporter.getInstance();
     }
 
     /**
@@ -482,8 +488,6 @@ public class Imager extends CommandLineTool {
         /** Short description of the format option. */
         static public final String DESCRIPTION =
             "Output format extension. Supported formats are:";
-        /** File suffix for the default format. */
-        static public final String DEFAULT_SUFFIX = " (default)";
         /** Option parameter name. */
         static public final String PARAMETER_NAME = "name";
 
@@ -494,11 +498,9 @@ public class Imager extends CommandLineTool {
         public String[] getDescription() {
             List<String> result = new LinkedList<String>();
             result.add(DESCRIPTION);
-            for (String formatName : getExporter().getExtensions()) {
+            Map<String,Format> exts = getExtensions();
+            for (String formatName : exts.keySet()) {
                 String format = "* " + formatName;
-                if (format.equals(getExporter().getDefaultFormat().getFilter().getExtension())) {
-                    format += DEFAULT_SUFFIX;
-                }
                 result.add(format);
             }
             return result.toArray(new String[result.size()]);
@@ -517,9 +519,12 @@ public class Imager extends CommandLineTool {
          * a valid format name.
          */
         public void parse(String parameter) {
-            String extension = ExtensionFilter.SEPARATOR + parameter;
+            String extension = parameter;
+
+            Map<String,Format> exts = getExtensions();
+
             // first check if parameter is a valid format name
-            if (!getExporter().getExtensions().contains(extension)) {
+            if (!exts.containsKey(extension)) {
                 throw new IllegalArgumentException("Unknown format: "
                     + parameter);
             }
@@ -796,6 +801,6 @@ public class Imager extends CommandLineTool {
 
         /** Combo box for the available image formats. */
         final JComboBox formatBox = new JComboBox(
-            Imager.this.getExporter().getExtensions().toArray());
+            Imager.getExtensions().keySet().toArray());
     }
 }

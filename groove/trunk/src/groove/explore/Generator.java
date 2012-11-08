@@ -25,11 +25,13 @@ import groove.explore.util.ExplorationStatistics;
 import groove.graph.DefaultGraph;
 import groove.io.FileType;
 import groove.io.external.Exporter;
-import groove.io.external.format.ExternalFileFormat;
+import groove.io.external.Exporter.Exportable;
+import groove.io.external.Format;
+import groove.io.external.FormatExporter;
+import groove.io.external.PortException;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
-import groove.trans.HostGraph;
 import groove.trans.ResourceKind;
 import groove.util.CommandLineTool;
 import groove.util.GenerateProgressMonitor;
@@ -458,12 +460,14 @@ public class Generator extends CommandLineTool {
                     ltsFilename = path + "/" + outFilename;
                 }
                 File ltsFile = new File(ltsFilename);
-                @SuppressWarnings("unchecked")
-                ExternalFileFormat<DefaultGraph> gtsEff =
-                    (ExternalFileFormat<DefaultGraph>) Exporter.getInstance().getAcceptingFormat(
-                        ltsFile);
-                if (gtsEff != null) {
-                    gtsEff.save(lts, ltsFile);
+                Format gtsFormat = Exporter.getAcceptingFormat(lts, ltsFile);
+                if (gtsFormat != null) {
+                    try {
+                        ((FormatExporter) gtsFormat.getFormatter()).doExport(
+                            ltsFile, gtsFormat, new Exportable(lts));
+                    } catch (PortException e1) {
+                        throw new IOException(e1);
+                    }
                 } else {
                     Groove.saveGraph(lts, ltsFile);
                 }
@@ -479,12 +483,16 @@ public class Generator extends CommandLineTool {
                         path + "/" + rs.prefix + state.getNumber() + rs.suffix
                             + rs.type.getExtension();
                     File stateFile = new File(stateFilename);
-                    @SuppressWarnings("unchecked")
-                    ExternalFileFormat<HostGraph> stateEff =
-                        (ExternalFileFormat<HostGraph>) Exporter.getInstance().getAcceptingFormat(
-                            stateFile);
-                    if (stateEff != null) {
-                        stateEff.save(state.getGraph(), stateFile);
+                    Format stateFormat =
+                        Exporter.getAcceptingFormat(state.getGraph(), stateFile);
+                    if (stateFormat != null) {
+                        try {
+                            ((FormatExporter) stateFormat.getFormatter()).doExport(
+                                stateFile, stateFormat,
+                                new Exportable(state.getGraph()));
+                        } catch (PortException e1) {
+                            throw new IOException(e1);
+                        }
                     } else {
                         Groove.saveGraph(state.getGraph(), stateFile);
                     }

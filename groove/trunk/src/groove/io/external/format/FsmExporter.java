@@ -19,13 +19,16 @@ package groove.io.external.format;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.GraphJModel;
-import groove.io.FileType;
+import groove.io.external.AbstractFormatExporter;
+import groove.io.external.Exporter.Exportable;
+import groove.io.external.Format;
+import groove.io.external.PortException;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,43 +39,31 @@ import java.util.Map;
  * 
  * @author Arend Rensink 
  */
-
-public class FsmFormat extends AbstractExternalFileFormat<Graph<?,?>> {
-
-    private static final FsmFormat INSTANCE = new FsmFormat();
-
-    /** Returns the singleton instance of this class. */
-    public static final FsmFormat getInstance() {
-        return INSTANCE;
-    }
-
-    private FsmFormat() {
-        super(FileType.FSM);
-    }
-
-    // Methods from FileFormat.
-
-    @Override
-    public void load(Graph<?,?> graph, File file) throws IOException {
-        throw new UnsupportedOperationException();
+public final class FsmExporter extends AbstractFormatExporter {
+    private FsmExporter() {
+        this.fsmformat = new Format(this, "FSM layout files", ".fsm");
     }
 
     @Override
-    public void save(GraphJGraph jGraph, File file) throws IOException {
-        Graph<?,?> graph = ((GraphJModel<?,?>) jGraph.getModel()).getGraph();
-        this.save(graph, file);
+    public Kind getFormatKind() {
+        return Kind.GRAPH;
     }
 
     @Override
-    public void save(Graph<?,?> graph, File file) throws IOException {
-        PrintWriter writer = null;
+    public Collection<? extends Format> getSupportedFormats() {
+        return Collections.singletonList(this.fsmformat);
+    }
+
+    @Override
+    public void doExport(File file, Format format, Exportable exportable)
+        throws PortException {
+        Graph<?,?> graph = exportable.getGraph();
         try {
-            writer = new PrintWriter(file);
+            PrintWriter writer = new PrintWriter(file);
             this.save(graph, writer);
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
+            writer.close();
+        } catch (FileNotFoundException e) {
+            throw new PortException(e);
         }
     }
 
@@ -94,11 +85,13 @@ public class FsmFormat extends AbstractExternalFileFormat<Graph<?,?>> {
         }
     }
 
-    // Methods from Xml
+    private final Format fsmformat;
 
-    @Override
-    public Graph<?,?> createGraph(String graphName) {
-        throw new UnsupportedOperationException();
+    /** Returns the singleton instance of this class. */
+    public static final FsmExporter getInstance() {
+        return instance;
     }
+
+    private static final FsmExporter instance = new FsmExporter();
 
 }
