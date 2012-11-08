@@ -13,7 +13,6 @@ import groove.gui.ResourceTab;
 import groove.gui.Simulator;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
-import groove.io.external.ConceptualPorter;
 import groove.io.external.Exporter;
 import groove.io.external.Exporter.Exportable;
 import groove.view.ResourceModel;
@@ -37,7 +36,7 @@ public class ExportAction extends SimulatorAction {
         this.isGraph = this.displayKind.isGraphBased();
 
         // TODO: Init the exporter, hacky
-        ConceptualPorter.initSimulator(simulator);
+        //ConceptualPorter.initSimulator(simulator);
     }
 
     /** Constructs an instance of the action. */

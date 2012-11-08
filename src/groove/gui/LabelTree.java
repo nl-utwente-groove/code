@@ -68,7 +68,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
 
 import org.jgraph.event.GraphModelEvent;
@@ -661,30 +660,6 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      */
     public void setShowsAllLabels(boolean show) {
         this.showsAllLabels = show;
-    }
-
-    @Override
-    public void fireTreeExpanded(TreePath path) {
-        // TODO Auto-generated method stub
-        super.fireTreeExpanded(path);
-    }
-
-    @Override
-    public void fireTreeCollapsed(TreePath path) {
-        // TODO Auto-generated method stub
-        super.fireTreeCollapsed(path);
-    }
-
-    @Override
-    public void fireTreeWillExpand(TreePath path) throws ExpandVetoException {
-        // TODO Auto-generated method stub
-        //super.fireTreeWillExpand(path);
-    }
-
-    @Override
-    public void fireTreeWillCollapse(TreePath path) throws ExpandVetoException {
-        // TODO Auto-generated method stub
-        //super.fireTreeWillCollapse(path);
     }
 
     /**
