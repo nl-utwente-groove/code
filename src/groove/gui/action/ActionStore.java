@@ -360,10 +360,7 @@ public class ActionStore implements SimulatorListener {
     /** Returns the export action appropriate for a given simulator tab kind. */
     public ExportAction getExportAction(DisplayKind kind) {
         if (!this.exportActionMap.containsKey(kind)) {
-            ExportAction result = null;
-            if (kind.isGraphBased()) {
-                result = new ExportAction(getSimulator(), kind);
-            }
+            ExportAction result = new ExportAction(getSimulator(), kind);
             // also put it in the map when the result is null,
             // so we don't try to compute it again
             this.exportActionMap.put(kind, result);

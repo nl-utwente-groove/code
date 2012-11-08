@@ -16,15 +16,20 @@
  */
 package groove.io.external.format;
 
-import groove.graph.Graph;
 import groove.gui.jgraph.GraphJGraph;
 import groove.io.FileType;
+import groove.io.external.AbstractFormatExporter;
+import groove.io.external.Exporter.Exportable;
+import groove.io.external.Format;
+import groove.io.external.PortException;
 import groove.io.external.util.GraphToTikz;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Collections;
 
 /** 
  * Class that implements saving graphs in the Tikz format.
@@ -32,43 +37,41 @@ import java.io.PrintWriter;
  * 
  * @author Eduardo Zambon 
  */
-public class TikzFormat extends AbstractExternalFileFormat<Graph<?,?>> {
-
-    private static final TikzFormat INSTANCE = new TikzFormat();
+public final class TikzExporter extends AbstractFormatExporter {
+    private static final TikzExporter instance = new TikzExporter();
 
     /** Returns the singleton instance of this class. */
-    public static final TikzFormat getInstance() {
-        return INSTANCE;
+    public static final TikzExporter getInstance() {
+        return instance;
     }
 
-    private TikzFormat() {
-        super(FileType.TIKZ);
-    }
+    private static Format tikzformat;
 
-    // Methods from FileFormat.
-
-    @Override
-    public void load(Graph<?,?> graph, File file) throws IOException {
-        throw new UnsupportedOperationException();
+    private TikzExporter() {
+        tikzformat = new Format(this, FileType.TIKZ);
     }
 
     @Override
-    public void save(GraphJGraph jGraph, File file) throws IOException {
-        PrintWriter writer = new PrintWriter(new FileWriter(file));
-        GraphToTikz.export(jGraph, writer);
-        writer.close();
+    public Kind getFormatKind() {
+        return Kind.JGRAPH;
     }
 
     @Override
-    public void save(Graph<?,?> graph, File file) throws IOException {
-        throw new UnsupportedOperationException();
+    public Collection<? extends Format> getSupportedFormats() {
+        return Collections.singletonList(tikzformat);
     }
 
-    // Methods from Xml
-
     @Override
-    public Graph<?,?> createGraph(String graphName) {
-        throw new UnsupportedOperationException();
+    public void doExport(File file, Format format, Exportable exportable)
+        throws PortException {
+        GraphJGraph jGraph = exportable.getJGraph();
+        try {
+            PrintWriter writer = new PrintWriter(new FileWriter(file));
+            GraphToTikz.export(jGraph, writer);
+            writer.close();
+        } catch (IOException e) {
+            throw new PortException(e);
+        }
     }
 
 }

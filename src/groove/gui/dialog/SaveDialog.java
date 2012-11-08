@@ -30,6 +30,8 @@ public class SaveDialog {
     /**
      * Brings up a save dialog based on a given file chooser filter. The chosen
      * filename is appended with the required extension.
+     * @param chooser the (non-{@code null}) file chooser to be used
+     * @param parent parent for the dialog; may be {@code null}.
      * @param originalFile the file from which the object to be saved has been
      *        loaded; <code>null</code> if there is none such
      * @return the chosen file, if any; if null, no file has been chosen

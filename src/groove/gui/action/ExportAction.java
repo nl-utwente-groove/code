@@ -11,19 +11,19 @@ import groove.gui.Options;
 import groove.gui.ResourceDisplay;
 import groove.gui.ResourceTab;
 import groove.gui.Simulator;
-import groove.gui.dialog.ErrorDialog;
-import groove.gui.dialog.SaveDialog;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
+import groove.io.external.ConceptualPorter;
 import groove.io.external.Exporter;
-
-import java.io.File;
-import java.io.IOException;
+import groove.io.external.Exporter.Exportable;
+import groove.view.ResourceModel;
 
 /**
  * Action to save the content of a {@link GraphJGraph},
  * as a graph or in some export format.
- * @see Exporter#export(GraphJGraph, File)
+ * There is a discrepancy between exporter action for JGraphs and for displays: JGraph exports have no access to the original resource (if any)
+ * and so an export initiated from a JGraph directly (as opposed for example form the menu) will never show an export option that requires a resource 
+ * @see Exporter#doExport
  */
 public class ExportAction extends SimulatorAction {
     /** Constructs an instance of the action for a given display. */
@@ -34,7 +34,10 @@ public class ExportAction extends SimulatorAction {
         this.displayKind = displayKind;
         this.display = simulator.getDisplaysPanel().getDisplay(displayKind);
         this.jGraph = null;
-        assert this.displayKind.isGraphBased();
+        this.isGraph = this.displayKind.isGraphBased();
+
+        // TODO: Init the exporter, hacky
+        ConceptualPorter.initSimulator(simulator);
     }
 
     /** Constructs an instance of the action. */
@@ -46,55 +49,82 @@ public class ExportAction extends SimulatorAction {
         this.display = null;
         this.displayKind = null;
         this.jGraph = jGraph;
+        this.isGraph = true;
     }
 
     @Override
     public void execute() {
-        GraphJGraph jGraph = getJGraph();
-        String fileName = jGraph.getModel().getName();
-        if (fileName != null) {
-            this.exporter.getFileChooser().setSelectedFile(new File(fileName));
-        }
-        File selectedFile =
-            SaveDialog.show(this.exporter.getFileChooser(), jGraph, null);
-        // now save, if so required
-        if (selectedFile != null) {
-            try {
-                this.exporter.export(jGraph, selectedFile);
-            } catch (IOException exc) {
-                new ErrorDialog(jGraph, "Error while exporting to "
-                    + selectedFile, exc).setVisible(true);
+        Exportable exportable;
+        if (this.isGraph) {
+            // Export graph
+            if (getResource() != null) {
+                exportable = new Exportable(getJGraph(), getResource());
+            } else {
+                exportable = new Exportable(getJGraph());
             }
-
+        } else {
+            // Export resource
+            exportable = new Exportable(getResource());
         }
+        Exporter.instance().doExport(getFrame(), exportable);
     }
 
     /** Refreshes the name of this action. */
     @Override
     public void refresh() {
-        GraphJGraph jGraph = getJGraph();
-        boolean enabled = jGraph != null && jGraph.isEnabled();
-        setEnabled(enabled);
-        if (enabled) {
+        boolean setenabled = getSimulatorModel().getGrammar() != null;
+        if (this.isGraph && setenabled) {
+            GraphJGraph jGraph = getJGraph();
+            setenabled = jGraph != null && jGraph.isEnabled();
+        } else if (setenabled) {
+            setenabled = getResource() != null;
+        }
+        setEnabled(setenabled);
+        if (setenabled) {
             // there is certainly a graph, so now we can set the real action name
-            Graph<?,?> graph = jGraph.getModel().getGraph();
-            GraphRole role = graph.getRole();
-            putValue(NAME, getActionName(role));
-            putValue(SHORT_DESCRIPTION, getActionName(role));
+            putValue(NAME, getActionName());
+            putValue(SHORT_DESCRIPTION, getActionName());
+        } else {
+            // When disabled, use generic description
+            putValue(NAME, "Export...");
+            putValue(SHORT_DESCRIPTION, "Export...");
         }
     }
 
     /** Returns the export action name for a given JGraph being saved. */
-    private String getActionName(GraphRole role) {
-        GraphJGraph jGraph = getJGraph();
-        boolean isState =
-            jGraph instanceof AspectJGraph
-                && ((AspectJGraph) jGraph).isForState();
-        String type = isState ? "State" : role.getDescription();
+    private String getActionName() {
+        String type = null;
+        if (this.isGraph) {
+            GraphJGraph jGraph = getJGraph();
+            Graph<?,?> graph = jGraph.getModel().getGraph();
+            GraphRole role = graph.getRole();
+            boolean isState =
+                jGraph instanceof AspectJGraph
+                    && ((AspectJGraph) jGraph).isForState();
+            type = isState ? "State" : role.getDescription();
+        } else {
+            type = this.displayKind.getResource().getDescription();
+        }
         return "Export " + type + " ...";
     }
 
+    /** Get active resource if any */
+    private final ResourceModel<?> getResource() {
+        if (!(this.display instanceof ResourceDisplay)) {
+            return null;
+        }
+
+        ResourceTab tab = ((ResourceDisplay) this.display).getSelectedTab();
+        if (tab == null) {
+            return null;
+        }
+        return getGrammarModel().getResource(this.displayKind.getResource(),
+            tab.getName());
+    }
+
+    // Get active graph if any
     private final GraphJGraph getJGraph() {
+        assert (this.isGraph);
         if (this.jGraph == null) {
             switch (this.displayKind) {
             case HOST:
@@ -130,5 +160,6 @@ public class ExportAction extends SimulatorAction {
     private final Display display;
     /** The display kind, if the display is set. */
     private final DisplayKind displayKind;
-    private final Exporter exporter = Exporter.getInstance();
+    /** True if exporter for jgraphs, false otherwise. */
+    private boolean isGraph;
 }
