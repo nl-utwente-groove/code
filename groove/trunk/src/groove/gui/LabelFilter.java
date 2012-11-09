@@ -520,13 +520,34 @@ public class LabelFilter extends Observable {
 
         @Override
         public int compareTo(Entry o) {
-            assert o instanceof TypeEntry;
-            return getType().compareTo(((TypeEntry) o).getType());
+            TypeEntry other = (TypeEntry) o;
+            TypeElement type = getType();
+            TypeElement otherType = other.getType();
+            if (type instanceof TypeNode) {
+                return type.compareTo(otherType);
+            }
+            if (otherType instanceof TypeNode) {
+                return otherType.compareTo(type);
+            }
+            TypeEdge edge = (TypeEdge) type;
+            TypeEdge otherEdge = (TypeEdge) otherType;
+            int result =
+                edge.source().label().compareTo(otherEdge.source().label());
+            if (result == 0) {
+                result = edge.label().compareTo(otherEdge.label());
+            }
+            return result;
         }
 
         @Override
         public int hashCode() {
-            return this.type.hashCode();
+            if (this.type instanceof TypeNode) {
+                return this.type.hashCode();
+            } else {
+                TypeEdge edge = (TypeEdge) this.type;
+                return edge.source().label().hashCode()
+                    ^ edge.label().hashCode();
+            }
         }
 
         @Override
@@ -544,11 +565,17 @@ public class LabelFilter extends Observable {
                 return false;
             }
             if (this.type instanceof TypeNode) {
-                return true;
+                return other.type instanceof TypeNode;
             }
-            TypeNode mySource = ((TypeEdge) this.type).source();
-            TypeNode otherSource = ((TypeEdge) other.type).source();
-            return mySource.label().equals(otherSource.label());
+            if (other.type instanceof TypeNode) {
+                return false;
+            }
+            TypeEdge edge = (TypeEdge) this.type;
+            TypeEdge otherEdge = (TypeEdge) other.type;
+            if (!edge.source().label().equals(otherEdge.source().label())) {
+                return false;
+            }
+            return true;
         }
 
         @Override
