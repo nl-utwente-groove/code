@@ -271,6 +271,12 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         return storeEdge(edge);
     }
 
+    /** Creates a host edge with given source and target nodes, and edge type. */
+    public HostEdge createEdge(HostNode source, TypeEdge type, HostNode target) {
+        HostEdge edge = newEdge(source, type, target, getEdgeCount());
+        return storeEdge(edge);
+    }
+
     @Override
     protected HostNode newNode(int nr) {
         return new DefaultHostNode(nr, getLastNodeType());

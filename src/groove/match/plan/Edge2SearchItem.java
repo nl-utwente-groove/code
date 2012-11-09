@@ -309,8 +309,8 @@ class Edge2SearchItem extends AbstractSearchItem {
             assert targetFind != null : String.format(
                 "Target node of %s has not been found",
                 Edge2SearchItem.this.edge);
-            return this.host.getFactory().createEdge(sourceFind,
-                getType().label(), targetFind);
+            return this.host.getFactory().createEdge(sourceFind, getType(),
+                targetFind);
         }
 
         /** Callback method to determine the label of the edge image. */

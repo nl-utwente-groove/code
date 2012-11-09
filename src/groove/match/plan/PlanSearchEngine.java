@@ -74,7 +74,8 @@ public class PlanSearchEngine extends SearchEngine {
     }
 
     @Override
-    public PlanSearchStrategy createMatcher(Condition condition, Anchor seed, ValueOracle oracle) {
+    public PlanSearchStrategy createMatcher(Condition condition, Anchor seed,
+            ValueOracle oracle) {
         Set<AnchorKey> anchorKeys = new HashSet<AnchorKey>();
         if (condition.hasRule()) {
             anchorKeys.addAll(condition.getRule().getAnchor());
@@ -728,6 +729,10 @@ public class PlanSearchEngine extends SearchEngine {
         int getRating(SearchItem item) {
             int result = 0;
             Class<?> itemClass = item.getClass();
+            if (itemClass == RegExprEdgeSearchItem.class
+                && ((RegExprEdgeSearchItem) item).getEdgeExpr().isAcceptsEmptyWord()) {
+                return result;
+            }
             if (itemClass == NodeTypeSearchItem.class) {
                 return result;
             }
