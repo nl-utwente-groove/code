@@ -492,13 +492,18 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                 topNode.add(nodeTypeNode);
                 newNodes.add(nodeTypeNode);
                 addRelatedTypes(typeNodes, nodeTypeNode, relatedMap, newNodes);
+                // check duplicates due to equi-labelled edges to different targets
+                Set<Entry> entries = new HashSet<Entry>();
                 for (TypeEdge edge : new TreeSet<TypeEdge>(
                     getTypeGraph().outEdgeSet(node))) {
                     if (typeEdges.contains(edge)) {
                         Entry edgeEntry = getFilter().getEntry(edge);
-                        EntryNode edgeTypeNode = new EntryNode(edgeEntry, true);
-                        nodeTypeNode.add(edgeTypeNode);
-                        newNodes.add(edgeTypeNode);
+                        if (entries.add(edgeEntry)) {
+                            EntryNode edgeTypeNode =
+                                new EntryNode(edgeEntry, true);
+                            nodeTypeNode.add(edgeTypeNode);
+                            newNodes.add(edgeTypeNode);
+                        }
                     }
                 }
             }
@@ -712,6 +717,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
          */
         EntryNode(TypeElement key, boolean topNode) {
             this(getFilter().getEntry(key), topNode);
+            assert key != null;
         }
 
         /**
