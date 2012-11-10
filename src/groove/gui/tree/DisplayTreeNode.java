@@ -14,26 +14,57 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.tree;
 
 import groove.util.Strings;
 
 import java.util.Comparator;
 
+import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
-/** Tree node that adds children using a natural string sorter for their names. */
-public class SortingTreeNode extends DefaultMutableTreeNode {
-    /** Creates an empty node. */
-    protected SortingTreeNode() {
-        super();
+/** Superclass for tree nodes in a display-related list. */
+public class DisplayTreeNode extends DefaultMutableTreeNode {
+    /** Constructor for an empty node. */
+    DisplayTreeNode() {
+        // empty
     }
 
-    /** Creates a new node with a given used object and ability to have children. */
-    protected SortingTreeNode(Object userObject, boolean allowsChildren) {
+    /** Constructs a node. */
+    protected DisplayTreeNode(Object userObject, boolean allowsChildren) {
         super(userObject, allowsChildren);
+    }
+
+    /** Returns the icon to be used when rendering this tree node. */
+    public Icon getIcon() {
+        return null;
+    }
+
+    /** Indicates if this tree node contains an error. */
+    public boolean isError() {
+        return false;
+    }
+
+    /** Indicates if this tree node represent a transient state or partial transition. */
+    public boolean isTransient() {
+        return false;
+    }
+
+    /** Indicates if this tree node is enabled. */
+    public boolean isEnabled() {
+        return true;
+    }
+
+    /** Returns the text to be displayed on the tree node. */
+    public String getText() {
+        return toString();
+    }
+
+    /** Returns the tooltip to be used when rendering this tree node. */
+    public String getTip() {
+        return null;
     }
 
     /**

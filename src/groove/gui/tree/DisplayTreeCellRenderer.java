@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.tree;
 
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JAttr.ColorSet;
@@ -58,7 +58,9 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
             error = node.isError();
             isTransient = node.isTransient();
         }
-        setIcon(icon);
+        if (icon != null) {
+            setIcon(icon);
+        }
         setText(text);
         setToolTipText(tip);
         ColorSet colors =

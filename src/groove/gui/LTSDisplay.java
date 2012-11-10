@@ -33,6 +33,7 @@ import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.gui.jgraph.LTSJVertex;
+import groove.gui.tree.LabelTree;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;

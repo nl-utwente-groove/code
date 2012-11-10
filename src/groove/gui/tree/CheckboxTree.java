@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.tree;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

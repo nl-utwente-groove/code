@@ -23,14 +23,14 @@ import groove.graph.TypeLabel;
 import groove.gui.GraphTab;
 import groove.gui.Icons;
 import groove.gui.JGraphPanel;
-import groove.gui.LabelTree;
-import groove.gui.LabelTree.EntryNode;
 import groove.gui.Options;
 import groove.gui.ResourceDisplay;
 import groove.gui.Simulator;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.list.SearchResult;
+import groove.gui.tree.LabelTree;
+import groove.gui.tree.LabelTree.EntryNode;
 import groove.util.Duo;
 
 import java.io.IOException;

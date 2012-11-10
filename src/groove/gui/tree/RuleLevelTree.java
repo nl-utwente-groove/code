@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.tree;
 
 import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJGraph;

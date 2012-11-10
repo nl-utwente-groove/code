@@ -18,13 +18,13 @@ package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Element;
-import groove.gui.LabelTree;
 import groove.gui.ModelCheckingMenu;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
 import groove.gui.Simulator;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
+import groove.gui.tree.LabelTree;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;

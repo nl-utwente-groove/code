@@ -35,6 +35,8 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JAttr;
 import groove.gui.list.ErrorListPanel;
+import groove.gui.tree.LabelTree;
+import groove.gui.tree.StateTree;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
@@ -110,7 +112,7 @@ public class StateDisplay extends Display {
 
     @Override
     protected JTree createList() {
-        return new StateList(getSimulator());
+        return new StateTree(getSimulator());
     }
 
     @Override

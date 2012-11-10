@@ -14,7 +14,7 @@
  * 
  * $Id: LabelList.java,v 1.20 2007-12-03 08:56:08 rensink Exp $
  */
-package groove.gui;
+package groove.gui.tree;
 
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.ITALIC_TAG;
@@ -27,8 +27,12 @@ import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
+import groove.gui.Icons;
+import groove.gui.LabelFilter;
 import groove.gui.LabelFilter.Entry;
 import groove.gui.LabelFilter.TypeEntry;
+import groove.gui.Options;
+import groove.gui.ShowHideMenu;
 import groove.gui.action.ActionStore;
 import groove.gui.action.CollapseAllAction;
 import groove.gui.jgraph.AspectJGraph;
@@ -122,7 +126,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     }
 
     /** Creates a tool bar for the label tree. */
-    JToolBar createToolBar() {
+    public JToolBar createToolBar() {
         JToolBar result = null;
         if (this.toolBar) {
             result = Options.createToolBar();

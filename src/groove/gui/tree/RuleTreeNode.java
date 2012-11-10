@@ -14,11 +14,12 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.tree;
 
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphProperties.Key;
+import groove.gui.ResourceDisplay;
 import groove.io.HTMLConverter;
 import groove.view.RuleModel;
 
@@ -28,7 +29,7 @@ import java.util.Map;
 /**
  * Rule nodes (= level 1 nodes) of the directory
  */
-class RuleTreeNode extends ResourceTreeNode {
+class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
     /**
      * Creates a new rule node based on a given rule name. The node can have
      * children.
@@ -114,7 +115,7 @@ class RuleTreeNode extends ResourceTreeNode {
         if (showEnabled) {
             showEnabled =
                 !hasRecipe() || (getParent() instanceof RecipeTreeNode)
-                    || (getParent() instanceof StateList.StateTreeNode);
+                    || (getParent() instanceof StateTree.StateTreeNode);
         }
         return getDisplay().getLabelText(getName(), showEnabled);
     }

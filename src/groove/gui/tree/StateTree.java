@@ -14,9 +14,16 @@
  * 
  * $Id$
  */
-package groove.gui;
+package groove.gui.tree;
 
 import static groove.trans.ResourceKind.RULE;
+import groove.gui.DisplayKind;
+import groove.gui.Icons;
+import groove.gui.Options;
+import groove.gui.ResourceDisplay;
+import groove.gui.Simulator;
+import groove.gui.SimulatorListener;
+import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.JAttr;
@@ -69,11 +76,11 @@ import javax.swing.tree.TreeSelectionModel;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class StateList extends JTree implements SimulatorListener {
+public class StateTree extends JTree implements SimulatorListener {
     /**
      * Creates a new state list.
      */
-    protected StateList(Simulator simulator) {
+    public StateTree(Simulator simulator) {
         this.simulator = simulator;
         setEnabled(false);
         setLargeModel(true);
@@ -106,12 +113,12 @@ public class StateList extends JTree implements SimulatorListener {
         addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
-                StateList.this.repaint();
+                StateTree.this.repaint();
             }
 
             @Override
             public void focusGained(FocusEvent e) {
-                StateList.this.repaint();
+                StateTree.this.repaint();
             }
         });
         addTreeWillExpandListener(new TreeWillExpandListener() {
@@ -521,7 +528,7 @@ public class StateList extends JTree implements SimulatorListener {
          */
         public int getUpper() {
             return Math.min(getLower() + RANGE_SIZE,
-                StateList.this.states.length) - 1;
+                StateTree.this.states.length) - 1;
         }
 
         @Override
@@ -656,7 +663,7 @@ public class StateList extends JTree implements SimulatorListener {
                 TreeNode selectedNode =
                     selectedPath == null ? null
                             : (TreeNode) selectedPath.getLastPathComponent();
-                StateList.this.requestFocus();
+                StateTree.this.requestFocus();
                 createPopupMenu(selectedNode).show(evt.getComponent(),
                     evt.getX(), evt.getY());
             }

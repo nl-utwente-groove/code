@@ -24,7 +24,6 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Node;
-import groove.gui.LabelTree;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
 import groove.gui.ShowHideMenu;
@@ -36,6 +35,7 @@ import groove.gui.action.ExportAction;
 import groove.gui.action.LayoutAction;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
+import groove.gui.tree.LabelTree;
 import groove.trans.SystemProperties;
 import groove.util.Colors;
 

@@ -20,6 +20,7 @@ import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
+import groove.gui.tree.LabelTree;
 import groove.util.Pair;
 
 import java.awt.BorderLayout;
@@ -45,7 +46,7 @@ import org.jgraph.event.GraphSelectionListener;
 
 /**
  * A panel that combines a {@link groove.gui.jgraph.GraphJGraph}and (optionally) a
- * {@link groove.gui.LabelTree}.
+ * {@link groove.gui.tree.LabelTree}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
  * @version $Revision$
