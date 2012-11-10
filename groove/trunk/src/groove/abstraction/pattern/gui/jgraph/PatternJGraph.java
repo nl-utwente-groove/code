@@ -17,7 +17,6 @@
 package groove.abstraction.pattern.gui.jgraph;
 
 import groove.abstraction.MyHashSet;
-import groove.gui.LabelTree;
 import groove.gui.Simulator;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
@@ -25,6 +24,7 @@ import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.layout.AbstractLayouter;
 import groove.gui.layout.Layouter;
+import groove.gui.tree.LabelTree;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;

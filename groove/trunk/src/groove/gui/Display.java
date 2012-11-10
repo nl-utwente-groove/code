@@ -157,12 +157,12 @@ abstract public class Display extends JPanel {
     }
 
     /** Convenience method to retrieve the simulator model. */
-    final protected SimulatorModel getSimulatorModel() {
+    final public SimulatorModel getSimulatorModel() {
         return getSimulator().getModel();
     }
 
     /** Convenience method to retrieve the action store. */
-    final protected ActionStore getActions() {
+    final public ActionStore getActions() {
         return getSimulator().getActions();
     }
 

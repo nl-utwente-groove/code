@@ -13,6 +13,8 @@ import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
+import groove.gui.tree.LabelTree;
+import groove.gui.tree.RuleLevelTree;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 

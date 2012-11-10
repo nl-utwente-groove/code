@@ -14,8 +14,10 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.tree;
 
+import groove.gui.Icons;
+import groove.gui.SimulatorModel;
 import groove.io.HTMLConverter;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;

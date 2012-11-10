@@ -212,6 +212,8 @@ public final class Icons {
     /** Special icon denoting choice e/a. */
     public static final ImageIcon E_A_CHOICE_ICON =
         createIcon("e-a-choice.gif");
+    /** Empty icon. */
+    public static final ImageIcon EMPTY_ICON = new ImageIcon();
     /** Collapse all icon. */
     public static final ImageIcon COLLAPSE_ALL_ICON =
         createIcon("collapse-all.gif");

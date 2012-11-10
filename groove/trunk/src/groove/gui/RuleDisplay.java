@@ -18,6 +18,7 @@ package groove.gui;
 
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.CollapseAllAction;
+import groove.gui.tree.RuleTree;
 import groove.lts.GraphState;
 import groove.trans.ResourceKind;
 
@@ -61,16 +62,16 @@ final public class RuleDisplay extends ResourceDisplay {
     }
 
     @Override
-    public RuleJTree getList() {
-        return (RuleJTree) super.getList();
+    public RuleTree getList() {
+        return (RuleTree) super.getList();
     }
 
     /**
      * Returns the tree of rules and matches displayed in the simulator.
      */
     @Override
-    public RuleJTree createList() {
-        return new RuleJTree(this);
+    public RuleTree createList() {
+        return new RuleTree(this);
     }
 
     @Override

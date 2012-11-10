@@ -22,6 +22,7 @@ import groove.gui.action.CopyAction;
 import groove.gui.action.EnableUniqueAction;
 import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
+import groove.gui.tree.ResourceTree;
 import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
@@ -102,32 +103,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     protected void resetList() {
         ResourceTree list = (ResourceTree) getList();
         if (list != null) {
-            list.suspendListeners();
+            list.dispose();
         }
         super.resetList();
-    }
-
-    /** 
-     * Creates a popup menu for the label list.
-     * @param overResource flag indicating that the mouse is over a 
-     * resource in the label list. This displays more items 
-     */
-    protected JPopupMenu createListPopupMenu(boolean overResource) {
-        JPopupMenu res = new JPopupMenu();
-        res.setFocusable(false);
-        res.add(getNewAction());
-        if (overResource) {
-            res.add(getEditAction());
-            res.addSeparator();
-            res.add(getCopyAction());
-            res.add(getDeleteAction());
-            res.add(getRenameAction());
-            if (getResourceKind().isEnableable()) {
-                res.addSeparator();
-                res.add(getEnableAction());
-            }
-        }
-        return res;
     }
 
     /** 
@@ -638,7 +616,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * Callback method to construct the label for a given (named) graph
      * that should be used in the label list.
      */
-    final protected Icon getListIcon(String name) {
+    final public Icon getListIcon(String name) {
         Icon result;
         if (this.editorMap.containsKey(name)) {
             result = Icons.EDIT_ICON;
@@ -653,7 +631,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * given (named) resource that should be used in the label list and
      * tab component.
      */
-    protected String getLabelText(String name) {
+    public final String getLabelText(String name) {
         return getLabelText(name, getResource(name).isEnabled());
     }
 
@@ -664,7 +642,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * decoration
      * @param enabled flag indicating if the name should be shown as enabled
      */
-    protected String getLabelText(String name, boolean enabled) {
+    public String getLabelText(String name, boolean enabled) {
         StringBuilder result =
             new StringBuilder(getResource(name).getLastName());
         if (isEdited(name)) {
@@ -713,7 +691,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /** Indicates if a given (named) resource has errors. */
-    final protected boolean hasError(String name) {
+    final public boolean hasError(String name) {
         boolean result;
         if (this.editorMap.containsKey(name)) {
             result = this.editorMap.get(name).hasErrors();
@@ -725,7 +703,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /** Retrieves the resource model for a given name from the grammar. */
-    protected final ResourceModel<?> getResource(String name) {
+    public final ResourceModel<?> getResource(String name) {
         return getSimulatorModel().getGrammar().getResource(getResourceKind(),
             name);
     }

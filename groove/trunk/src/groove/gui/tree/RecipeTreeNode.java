@@ -14,8 +14,9 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.tree;
 
+import groove.gui.Icons;
 import groove.io.HTMLConverter;
 import groove.trans.Recipe;
 
@@ -24,7 +25,7 @@ import javax.swing.Icon;
 /**
  * Transaction nodes (= level 1 nodes) of the directory
  */
-class RecipeTreeNode extends DisplayTreeNode {
+class RecipeTreeNode extends DisplayTreeNode implements ActionTreeNode {
     /**
      * Creates a new transaction node based on a given control automaton.
      */
@@ -44,6 +45,7 @@ class RecipeTreeNode extends DisplayTreeNode {
         return Icons.RECIPE_LIST_ICON;
     }
 
+    @Override
     public String getName() {
         return getRecipe().getFullName();
     }

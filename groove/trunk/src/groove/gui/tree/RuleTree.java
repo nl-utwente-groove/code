@@ -14,7 +14,7 @@
  * 
  * $Id: RuleJTree.java,v 1.33 2008-03-18 12:54:42 iovka Exp $
  */
-package groove.gui;
+package groove.gui.tree;
 
 import static groove.gui.SimulatorModel.Change.GRAMMAR;
 import static groove.gui.SimulatorModel.Change.GTS;
@@ -22,8 +22,14 @@ import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.RULE;
 import static groove.gui.SimulatorModel.Change.STATE;
 import groove.control.CtrlTransition;
+import groove.gui.ControlDisplay;
+import groove.gui.DisplayKind;
+import groove.gui.Icons;
+import groove.gui.Options;
+import groove.gui.RuleDisplay;
+import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.action.ActionStore;
+import groove.gui.TextTab;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
@@ -37,13 +43,11 @@ import groove.view.GrammarModel;
 import groove.view.ResourceModel;
 import groove.view.RuleModel;
 
-import java.awt.Color;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,12 +61,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.ActionMap;
+import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JTree;
 import javax.swing.ToolTipManager;
-import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -76,10 +79,10 @@ import javax.swing.tree.TreeSelectionModel;
  * @version $Revision$
  * @author Arend Rensink
  */
-public class RuleJTree extends JTree implements SimulatorListener {
+public class RuleTree extends AbstractResourceTree {
     /** Creates an instance for a given simulator. */
-    protected RuleJTree(RuleDisplay display) {
-        this.display = display;
+    public RuleTree(RuleDisplay display) {
+        super(display);
         // the following is the easiest way to ensure that changes in
         // tree labels will be correctly reflected in the display
         // A cleaner way is to invoke DefaultTreeModel.nodeChanged,
@@ -96,7 +99,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
         DefaultTreeCellRenderer renderer =
             (DefaultTreeCellRenderer) this.cellRenderer;
         renderer.setLeafIcon(Icons.GRAPH_MATCH_ICON);
-        this.topDirectoryNode = new SortingTreeNode();
+        this.topDirectoryNode = new DisplayTreeNode();
         this.ruleDirectory = new DefaultTreeModel(this.topDirectoryNode, true);
         setModel(this.ruleDirectory);
         // set key bindings
@@ -111,10 +114,76 @@ public class RuleJTree extends JTree implements SimulatorListener {
         ToolTipManager.sharedInstance().registerComponent(this);
     }
 
+    @Override
+    void activateListeners() {
+        super.activateListeners();
+        getSimulatorModel().addListener(this, STATE, MATCH);
+    }
+
+    @Override
+    TreeSelectionListener createSelectionListener() {
+        return new RuleSelectionListener();
+    }
+
+    @Override
+    MouseListener createMouseListener() {
+        return new MyMouseListener();
+    }
+
+    @Override
+    JPopupMenu createPopupMenu(TreeNode node) {
+        JPopupMenu res = super.createPopupMenu(node);
+        if (node instanceof RuleTreeNode) {
+            res.add(getActions().getSetPriorityAction());
+            res.add(getActions().getShiftPriorityAction(true));
+            res.add(getActions().getShiftPriorityAction(false));
+            res.add(getActions().getEditRulePropertiesAction());
+        } else if (node instanceof MatchTreeNode) {
+            res.addSeparator();
+            res.add(getActions().getApplyMatchAction());
+        }
+        return res;
+    }
+
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        suspendListeners();
+        boolean renewSelection = false;
+        if (changes.contains(GRAMMAR)) {
+            GrammarModel grammar = source.getGrammar();
+            if (grammar == null) {
+                this.clearAllMaps();
+                this.topDirectoryNode.removeAllChildren();
+                this.ruleDirectory.reload();
+            } else {
+                loadGrammar(grammar);
+            }
+            refresh(source.getState());
+            renewSelection = true;
+        } else {
+            if (changes.contains(GTS) || changes.contains(STATE)) {
+                // if the GTS has changed, this may mean that the state 
+                // displayed here has been closed, in which case we have to refresh
+                // since the rule events have been changed into transitions
+                refresh(source.getState());
+                renewSelection = true;
+            }
+            if (changes.contains(MATCH) || changes.contains(RULE)) {
+                renewSelection = true;
+            }
+        }
+        if (renewSelection) {
+            ResourceModel<?> ruleModel = source.getResource(ResourceKind.RULE);
+            selectMatch((RuleModel) ruleModel, source.getMatch());
+        }
+        activateListeners();
+    }
+
     /** Clears all maps of the tree. */
     private void clearAllMaps() {
         this.ruleNodeMap.clear();
-        this.actionMap.clear();
+        this.recipeMap.clear();
         this.matchNodeMap.clear();
     }
 
@@ -126,14 +195,14 @@ public class RuleJTree extends JTree implements SimulatorListener {
         setShowAnchorsOptionListener();
         this.clearAllMaps();
         this.topDirectoryNode.removeAllChildren();
-        SortingTreeNode topNode = this.topDirectoryNode;
+        DisplayTreeNode topNode = this.topDirectoryNode;
         Map<Integer,Set<ActionEntry>> priorityMap = getPriorityMap(grammar);
         List<TreePath> expandedPaths = new ArrayList<TreePath>();
         List<TreePath> selectedPaths = new ArrayList<TreePath>();
         for (Map.Entry<Integer,Set<ActionEntry>> priorityEntry : priorityMap.entrySet()) {
             int priority = priorityEntry.getKey();
-            Map<String,DirectoryTreeNode> dirNodeMap =
-                new HashMap<String,DirectoryTreeNode>();
+            Map<String,FolderTreeNode> dirNodeMap =
+                new HashMap<String,FolderTreeNode>();
             // if the rule system has multiple priorities, we want an extra
             // level of nodes
             if (priorityMap.size() > 1) {
@@ -148,8 +217,10 @@ public class RuleJTree extends JTree implements SimulatorListener {
             for (ActionEntry action : priorityEntry.getValue()) {
                 if (action instanceof RecipeEntry) {
                     recipes.add((RecipeEntry) action);
+                    this.recipeMap.put(action.getName(),
+                        ((RecipeEntry) action).getRecipe());
                 } else {
-                    ruleEntryMap.put(action.getName(), ((RuleEntry) action));
+                    ruleEntryMap.put(action.getName(), (RuleEntry) action);
                 }
             }
             List<String> subruleNames = new ArrayList<String>();
@@ -157,7 +228,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             for (RecipeEntry recipe : recipes) {
                 String name = recipe.getName();
                 // recursively add parent directory nodes as required
-                SortingTreeNode parentNode =
+                DisplayTreeNode parentNode =
                     addParentNode(topNode, dirNodeMap, QualName.getParent(name));
                 DisplayTreeNode recipeNode =
                     createActionNode(recipe, expandedPaths, selectedPaths);
@@ -167,10 +238,10 @@ public class RuleJTree extends JTree implements SimulatorListener {
                     for (Rule sr : subrules) {
                         String srName = sr.getFullName();
                         RuleEntry srEntry = ruleEntryMap.get(srName);
-                        DisplayTreeNode srNode =
-                            createActionNode(srEntry, expandedPaths,
-                                selectedPaths);
-                        if (srNode != null) {
+                        if (srEntry != null) {
+                            DisplayTreeNode srNode =
+                                createActionNode(srEntry, expandedPaths,
+                                    selectedPaths);
                             recipeNode.insertSorted(srNode);
                         }
                         subruleNames.add(srName);
@@ -182,7 +253,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
             for (RuleEntry ruleEntry : ruleEntryMap.values()) {
                 String name = ruleEntry.getName();
                 // recursively add parent directory nodes as required
-                SortingTreeNode parentNode =
+                DisplayTreeNode parentNode =
                     addParentNode(topNode, dirNodeMap, QualName.getParent(name));
                 DisplayTreeNode ruleNode =
                     createActionNode(ruleEntry, expandedPaths, selectedPaths);
@@ -204,7 +275,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
         Collection<String> selection =
             getSimulatorModel().getSelectSet(ResourceKind.RULE);
         String name = action.getName();
-        this.actionMap.put(name, action);
         // create the rule node and register it
         DisplayTreeNode node = action.createTreeNode();
         TreePath path = new TreePath(node.getPath());
@@ -257,130 +327,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
         return result;
     }
 
-    /** Unhooks this object from all observables. */
-    public void dispose() {
-        getSimulatorModel().removeListener(this);
-    }
-
-    @Override
-    public void update(SimulatorModel source, SimulatorModel oldModel,
-            Set<Change> changes) {
-        suspendListeners();
-        boolean renewSelection = false;
-        if (changes.contains(GRAMMAR)) {
-            GrammarModel grammar = source.getGrammar();
-            if (grammar == null) {
-                this.clearAllMaps();
-                this.topDirectoryNode.removeAllChildren();
-                this.ruleDirectory.reload();
-            } else {
-                loadGrammar(grammar);
-            }
-            refresh(source.getState());
-            renewSelection = true;
-        } else {
-            if (changes.contains(GTS) || changes.contains(STATE)) {
-                // if the GTS has changed, this may mean that the state 
-                // displayed here has been closed, in which case we have to refresh
-                // since the rule events have been changed into transitions
-                refresh(source.getState());
-                renewSelection = true;
-            }
-            if (changes.contains(MATCH) || changes.contains(RULE)) {
-                renewSelection = true;
-            }
-        }
-        if (renewSelection) {
-            ResourceModel<?> ruleModel = source.getResource(ResourceKind.RULE);
-            selectMatch((RuleModel) ruleModel, source.getMatch());
-        }
-        activateListeners();
-    }
-
-    private void installListeners() {
-        addFocusListener(new FocusListener() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                RuleJTree.this.repaint();
-            }
-
-            @Override
-            public void focusGained(FocusEvent e) {
-                RuleJTree.this.repaint();
-            }
-        });
-        addMouseListener(new MyMouseListener());
-        activateListeners();
-    }
-
-    private void activateListeners() {
-        if (this.listening) {
-            throw new IllegalStateException();
-        }
-        addTreeSelectionListener(createRuleSelectionListener());
-        getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, RULE, MATCH);
-        this.listening = true;
-    }
-
-    private void suspendListeners() {
-        if (!this.listening) {
-            throw new IllegalStateException();
-        }
-        removeTreeSelectionListener(createRuleSelectionListener());
-        getSimulatorModel().removeListener(this);
-        this.listening = false;
-    }
-
-    /**
-     * In addition to delegating the method to <tt>super</tt>, sets the
-     * background color to <tt>null</tt> when disabled and back to the default
-     * when enabled.
-     */
-    @Override
-    public void setEnabled(boolean enabled) {
-        if (enabled != isEnabled()) {
-            if (!enabled) {
-                this.enabledBackground = getBackground();
-                setBackground(null);
-            } else if (this.enabledBackground != null) {
-                setBackground(this.enabledBackground);
-            }
-        }
-        super.setEnabled(enabled);
-    }
-
-    /** Returns the list of currently selected action names. */
-    private Set<String> getSelectedActions() {
-        Set<String> result = new HashSet<String>();
-        int[] selectedRows = getSelectionRows();
-        if (selectedRows != null) {
-            for (int selectedRow : selectedRows) {
-                Object[] nodes = getPathForRow(selectedRow).getPath();
-                for (int i = nodes.length - 1; i >= 0; i--) {
-                    if (!(nodes[i] instanceof MatchTreeNode)) {
-                        collectActions((TreeNode) nodes[i], result);
-                        break;
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    /** Collects all action names corresponding to a given tree node or its children. */
-    private void collectActions(TreeNode node, Set<String> result) {
-        if (node instanceof RuleTreeNode) {
-            result.add(((RuleTreeNode) node).getName());
-        } else if (node instanceof RecipeTreeNode) {
-            result.add(((RecipeTreeNode) node).getName());
-        } else if (node instanceof PriorityTreeNode
-            || node instanceof DirectoryTreeNode) {
-            for (int i = 0; i < node.getChildCount(); i++) {
-                collectActions(node.getChildAt(i), result);
-            }
-        }
-    }
-
     /**
      * Sets a listener to the anchor image option, if that has not yet been
      * done.
@@ -404,24 +350,23 @@ public class RuleJTree extends JTree implements SimulatorListener {
     }
 
     /** Adds tree nodes for all levels of a structured rule name. */
-    private SortingTreeNode addParentNode(SortingTreeNode topNode,
-            Map<String,DirectoryTreeNode> dirNodeMap, String parentName) {
+    private DisplayTreeNode addParentNode(DisplayTreeNode topNode,
+            Map<String,FolderTreeNode> dirNodeMap, String parentName) {
         //        QualName parent = ruleName.parent();
         if (parentName.isEmpty()) {
             // there is no parent rule name; the parent node is the top node
             return topNode;
         } else {
             // there is a proper parent rule; look it up in the node map
-            DirectoryTreeNode result = dirNodeMap.get(parentName);
+            FolderTreeNode result = dirNodeMap.get(parentName);
             if (result == null) {
                 // the parent node did not yet exist in the tree
                 // check recursively for the grandparent
-                SortingTreeNode grandParentNode =
+                DisplayTreeNode grandParentNode =
                     addParentNode(topNode, dirNodeMap,
                         QualName.getParent(parentName));
                 // make the parent node and register it
-                result =
-                    new DirectoryTreeNode(QualName.getLastName(parentName));
+                result = new FolderTreeNode(QualName.getLastName(parentName));
                 grandParentNode.insertSorted(result);
                 dirNodeMap.put(parentName, result);
             }
@@ -551,35 +496,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
         return result;
     }
 
-    /**
-     * Returns the listener used to propagate changes in the tree selection.
-     */
-    private TreeSelectionListener createRuleSelectionListener() {
-        if (this.ruleSelectionListener == null) {
-            this.ruleSelectionListener = new RuleSelectionListener();
-        }
-        return this.ruleSelectionListener;
-    }
-
-    /**
-     * Creates a popup menu for this panel.
-     * @param node the node for which the menu is created
-     */
-    private JPopupMenu createPopupMenu(TreeNode node) {
-        boolean overRule = node instanceof RuleTreeNode;
-        JPopupMenu res = this.display.createListPopupMenu(overRule);
-        if (overRule) {
-            res.add(getActions().getSetPriorityAction());
-            res.add(getActions().getShiftPriorityAction(true));
-            res.add(getActions().getShiftPriorityAction(false));
-            res.add(getActions().getEditRulePropertiesAction());
-        } else if (node instanceof MatchTreeNode) {
-            res.addSeparator();
-            res.add(getActions().getApplyMatchAction());
-        }
-        return res;
-    }
-
     @Override
     public String convertValueToText(Object value, boolean selected,
             boolean expanded, boolean leaf, int row, boolean hasFocus) {
@@ -594,36 +510,11 @@ public class RuleJTree extends JTree implements SimulatorListener {
         return result;
     }
 
-    /** Convenience method to retrieve the current grammar view. */
-    private final GrammarModel getGrammar() {
-        return getSimulatorModel().getGrammar();
-    }
-
-    /** Returns the associated simulator. */
-    private final Simulator getSimulator() {
-        return this.display.getSimulator();
-    }
-
-    /** Convenience method to retrieve the simulator model. */
-    private final SimulatorModel getSimulatorModel() {
-        return this.display.getSimulatorModel();
-    }
-
-    /** Convenience method to retrieve the simulator action store. */
-    private final ActionStore getActions() {
-        return this.display.getActions();
-    }
-
     /** Convenience method to retrieve the control display. */
     private final ControlDisplay getControlDisplay() {
         return (ControlDisplay) getSimulator().getDisplaysPanel().getDisplay(
             DisplayKind.CONTROL);
     }
-
-    private final RuleDisplay display;
-
-    private boolean listening;
-    private RuleSelectionListener ruleSelectionListener;
 
     /**
      * Directory of production rules and their matchings to the current state.
@@ -636,7 +527,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * Alias for the top node in <tt>ruleDirectory</tt>.
      * @invariant <tt>topDirectoryNode == ruleDirectory.getRoot()</tt>
      */
-    private final SortingTreeNode topDirectoryNode;
+    private final DisplayTreeNode topDirectoryNode;
     /**
      * Mapping from rule names in the current grammar to rule nodes in the
      * current rule directory.
@@ -646,8 +537,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
     /**
      * Mapping from action names in the current grammar to entries in this tree.
      */
-    private final Map<String,ActionEntry> actionMap =
-        new HashMap<String,ActionEntry>();
+    private final Map<String,Recipe> recipeMap = new HashMap<String,Recipe>();
 
     /**
      * Mapping from RuleMatches in the current LTS to match nodes in the rule
@@ -656,10 +546,6 @@ public class RuleJTree extends JTree implements SimulatorListener {
     private final Map<MatchResult,MatchTreeNode> matchNodeMap =
         new HashMap<MatchResult,MatchTreeNode>();
 
-    /**
-     * The background colour of this component when it is enabled.
-     */
-    private Color enabledBackground;
     /** Flag to indicate that the anchor image option listener has been set. */
     private boolean anchorImageOptionListenerSet = false;
 
@@ -691,11 +577,11 @@ public class RuleJTree extends JTree implements SimulatorListener {
         @Override
         public RuleTreeNode createTreeNode() {
             RuleTreeNode result =
-                new RuleTreeNode(RuleJTree.this.display, getName());
+                new RuleTreeNode(getParentDisplay(), getName());
             Collection<RuleTreeNode> nodes =
-                RuleJTree.this.ruleNodeMap.get(getName());
+                RuleTree.this.ruleNodeMap.get(getName());
             if (nodes == null) {
-                RuleJTree.this.ruleNodeMap.put(getName(), nodes =
+                RuleTree.this.ruleNodeMap.put(getName(), nodes =
                     new ArrayList<RuleTreeNode>());
             }
             nodes.add(result);
@@ -753,7 +639,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
      * selected, and <tt>setDerivation</tt> if a match node is selected.
      * @see SimulatorModel#setMatch
      */
-    private class RuleSelectionListener implements TreeSelectionListener {
+    private class RuleSelectionListener extends MySelectionListener {
         /**
          * Empty constructor with the correct visibility.
          */
@@ -761,37 +647,24 @@ public class RuleJTree extends JTree implements SimulatorListener {
             // Empty
         }
 
-        /**
-         * Triggers a rule or match selection update by the simulator
-         * based on the current selection in the tree.
-         */
-        public void valueChanged(TreeSelectionEvent evt) {
-            suspendListeners();
-            TreePath[] paths = getSelectionPaths();
+        @Override
+        void setSelection(Collection<TreeNode> selectedNodes) {
             boolean done = false;
-            // select a match if appropriate
-            for (int i = 0; paths != null && i < paths.length; i++) {
-                Object selectedNode = paths[i].getLastPathComponent();
-                if (selectedNode instanceof MatchTreeNode) {
+            for (TreeNode node : selectedNodes) {
+                if (node instanceof MatchTreeNode) {
                     // selected tree node is a match (level 2 node)
-                    MatchResult result =
-                        ((MatchTreeNode) selectedNode).getMatch();
+                    MatchResult result = ((MatchTreeNode) node).getMatch();
                     getSimulatorModel().setMatch(result);
                     done = true;
                     break;
                 }
             }
-            Set<String> selectedRules = new HashSet<String>();
             if (!done) {
                 // otherwise, select a recipe if appropriate
-                for (String actionName : getSelectedActions()) {
-                    ActionEntry action =
-                        RuleJTree.this.actionMap.get(actionName);
-                    assert action != null;
-                    if (action instanceof RuleEntry) {
-                        selectedRules.add(actionName);
-                    } else {
-                        Recipe recipe = ((RecipeEntry) action).getRecipe();
+                for (TreeNode node : selectedNodes) {
+                    if (node instanceof RecipeTreeNode) {
+                        String name = ((RecipeTreeNode) node).getName();
+                        Recipe recipe = RuleTree.this.recipeMap.get(name);
                         getSimulatorModel().doSelectSet(ResourceKind.RULE,
                             Collections.<String>emptySet());
                         getSimulatorModel().doSelect(ResourceKind.CONTROL,
@@ -800,15 +673,13 @@ public class RuleJTree extends JTree implements SimulatorListener {
                             (TextTab) getControlDisplay().getSelectedTab();
                         controlTab.select(recipe.getStartLine(), 0);
                         done = true;
+                        break;
                     }
                 }
             }
             if (!done) {
-                // otherwise, select rules
-                getSimulatorModel().doSelectSet(ResourceKind.RULE,
-                    selectedRules);
+                super.setSelection(selectedNodes);
             }
-            activateListeners();
         }
     }
 
@@ -875,7 +746,7 @@ public class RuleJTree extends JTree implements SimulatorListener {
                 TreeNode selectedNode =
                     selectedPath == null ? null
                             : (TreeNode) selectedPath.getLastPathComponent();
-                RuleJTree.this.requestFocus();
+                RuleTree.this.requestFocus();
                 createPopupMenu(selectedNode).show(evt.getComponent(),
                     evt.getX(), evt.getY());
             }
@@ -885,40 +756,18 @@ public class RuleJTree extends JTree implements SimulatorListener {
     /**
      * Priority nodes (used only if the rule system has multiple priorities)
      */
-    private static class PriorityTreeNode extends SortingTreeNode {
+    private static class PriorityTreeNode extends FolderTreeNode {
         /**
          * Creates a new priority node based on a given priority. The node can
          * (and will) have children.
          */
         public PriorityTreeNode(int priority) {
-            super("Priority " + priority, true);
-        }
-    }
-
-    /**
-     * Directory nodes (= level 0 nodes) of the directory
-     */
-    private static class DirectoryTreeNode extends SortingTreeNode {
-        /**
-         * Creates a new directory node with a given name.
-         */
-        public DirectoryTreeNode(String name) {
-            super(name, true);
+            super("Priority " + priority);
         }
 
-        /**
-         * Convenience method to retrieve the user object as a rule name.
-         */
-        public String name() {
-            return (String) getUserObject();
-        }
-
-        /**
-         * To display, show child name only
-         */
         @Override
-        public String toString() {
-            return name();
+        public Icon getIcon() {
+            return Icons.EMPTY_ICON;
         }
     }
 }

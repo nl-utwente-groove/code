@@ -36,6 +36,7 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraphMode;
+import groove.gui.tree.LabelTree;
 import groove.rel.RegExpr;
 import groove.util.Pair;
 import groove.view.GrammarModel;
