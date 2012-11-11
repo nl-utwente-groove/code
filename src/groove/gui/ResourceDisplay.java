@@ -209,6 +209,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             if (upperInfoPanel != null) {
                 getSingleInfoPanel().add(upperInfoPanel, BorderLayout.CENTER);
                 getSingleInfoPanel().validate();
+                getSingleInfoPanel().repaint();
             }
             key = this.SINGLE_INFO_KEY;
         } else {
