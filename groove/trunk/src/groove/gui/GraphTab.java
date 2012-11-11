@@ -181,7 +181,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         AspectJModel jModel = this.jModelMap.get(name);
         if (jModel == null && name != null) {
             AspectGraph graph =
-                (AspectGraph) getSimulatorModel().getResource(getResourceKind()).getSource();
+                getSimulatorModel().getStore().getGraphs(getResourceKind()).get(
+                    name);
             if (graph != null) {
                 if (DEBUG) {
                     GraphPreviewDialog.showGraph(graph.normalise(null));
