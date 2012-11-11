@@ -115,6 +115,7 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
             result = this.vars = new HashSet<LabelVar>();
             for (TypeGuard guard : getTypeGuards()) {
                 assert guard.isNamed();
+                result.add(guard.getVar());
             }
         }
         return result;

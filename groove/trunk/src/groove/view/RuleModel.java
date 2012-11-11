@@ -1329,13 +1329,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     this.nacEdgeSet.add(ruleEdge);
                 }
                 if (edgeKind.inRHS()) {
+                    // creator edge
                     if (getType().isNodeType(ruleEdge)
                         && this.lhs.containsNode(ruleEdge.source())) {
                         throw new FormatException(
                             "Node type %s cannot be created", ruleEdge.label(),
                             modelEdge.source());
                     }
-                    // creator edge
                     this.rhs.addEdge(ruleEdge);
                     if (isRhsAsNac()) {
                         this.nacEdgeSet.add(ruleEdge);
