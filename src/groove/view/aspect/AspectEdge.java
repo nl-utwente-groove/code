@@ -200,19 +200,25 @@ public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
         RuleLabel ruleLabel = this.ruleLabel;
         boolean simple =
             ruleLabel == null || ruleLabel.isAtom() || ruleLabel.isSharp()
-                || ruleLabel.isWildcard();
+                || ruleLabel.isWildcard()
+                && ruleLabel.getWildcardGuard().isNamed();
         if (!simple) {
             AspectKind kind = getKind();
             assert kind.isRole();
-            if (kind.isCreator() && !ruleLabel.isEmpty()) {
-                throw new FormatException(
-                    "Regular expression label %s not allowed in creators",
-                    ruleLabel, this);
+            String message = null;
+            if (kind.isCreator()) {
+                if (ruleLabel.isWildcard()) {
+                    message = "Unnamed wildcard %s not allowed on creators";
+                } else if (!ruleLabel.isEmpty()) {
+                    message =
+                        "Regular expression label %s not allowed on creators";
+                }
             } else if (kind.isEraser() && !source().getKind().isEraser()
-                && !target().getKind().isEraser()) {
-                throw new FormatException(
-                    "Regular expression label %s not allowed in erasers",
-                    ruleLabel, this);
+                && !target().getKind().isEraser() && !ruleLabel.isWildcard()) {
+                message = "Regular expression label %s not allowed on erasers";
+            }
+            if (message != null) {
+                throw new FormatException(message, ruleLabel, this);
             }
         }
     }
