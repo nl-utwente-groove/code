@@ -181,8 +181,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         AspectJModel jModel = this.jModelMap.get(name);
         if (jModel == null && name != null) {
             AspectGraph graph =
-                getSimulatorModel().getStore().getGraphs(getResourceKind()).get(
-                    name);
+                (AspectGraph) getSimulatorModel().getResource(getResourceKind()).getSource();
             if (graph != null) {
                 if (DEBUG) {
                     GraphPreviewDialog.showGraph(graph.normalise(null));
@@ -201,6 +200,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         getEditArea().setJModel(jModel);
         if (jModel != null) {
             jModel.addUndoableEditListener(this);
+            getPropertiesPanel().setProperties(jModel.getProperties());
         }
         setName(name);
         getTabLabel().setTitle(name);
@@ -213,7 +213,6 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         AspectGraph graphClone = graph.clone();
         graphClone.setFixed();
         jModel.loadGraph(graphClone);
-        getPropertiesPanel().setProperties(graphClone.getInfo().getProperties());
     }
 
     @Override
@@ -244,7 +243,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
                 getJModel().syncGraph();
                 AspectGraph graph = getJModel().getGraph();
                 getSimulatorModel().doAddGraph(getResourceKind(), graph, true);
-                loadGraphIntoJModel(GraphTab.this.getJModel(), graph);
+                loadGraphIntoJModel(getJModel(), graph);
+                getPropertiesPanel().setProperties(getJModel().getProperties());
             } catch (IOException e1) {
                 // do nothing
             }
