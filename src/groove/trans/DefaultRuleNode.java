@@ -40,6 +40,7 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
      * @param nr the number for this node
      * @param type the node type; may be {@code null}
      * @param sharp if {@code true}, the node is sharply typed
+     * @param typeGuards collection of named and unnamed type guards for this node
      */
     protected DefaultRuleNode(int nr, TypeNode type, boolean sharp,
             List<TypeGuard> typeGuards) {
@@ -51,7 +52,7 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
             this.typeGuards = Collections.emptyList();
             this.matchingTypes = type.getSubtypes();
         } else {
-            this.typeGuards = new ArrayList<TypeGuard>(typeGuards);
+            this.typeGuards = new ArrayList<TypeGuard>();
             this.matchingTypes = new HashSet<TypeNode>();
             if (sharp) {
                 this.matchingTypes.add(type);
@@ -61,6 +62,9 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
             // restrict the matching types to those that satisfy all label guards
             for (TypeGuard guard : typeGuards) {
                 guard.filter(this.matchingTypes);
+                if (guard.isNamed()) {
+                    this.typeGuards.add(guard);
+                }
             }
         }
     }
@@ -100,10 +104,6 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
         return this.type;
     }
 
-    /** 
-     * Returns the set of type guards associated with this rule node.
-     * @return the set of guards; not {@code null} but possibly empty
-     */
     public List<TypeGuard> getTypeGuards() {
         return this.typeGuards;
     }
@@ -114,9 +114,7 @@ public class DefaultRuleNode extends AbstractNode implements RuleNode,
         if (result == null) {
             result = this.vars = new HashSet<LabelVar>();
             for (TypeGuard guard : getTypeGuards()) {
-                if (guard.isNamed()) {
-                    result.add(guard.getVar());
-                }
+                assert guard.isNamed();
             }
         }
         return result;

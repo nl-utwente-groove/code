@@ -39,7 +39,9 @@ public class RuleEdge extends AbstractEdge<RuleNode,RuleLabel> implements
         this.type = type;
         TypeGuard guard = label.getWildcardGuard();
         if (guard != null) {
-            this.typeGuards = Collections.singletonList(guard);
+            this.typeGuards =
+                guard.isNamed() ? Collections.singletonList(guard)
+                        : Collections.<TypeGuard>emptyList();
             TypeGraph typeGraph = source.getType().getGraph();
             if (typeGraph == null) {
                 this.matchingTypes = Collections.emptySet();
