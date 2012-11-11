@@ -122,8 +122,10 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
     private void addBinders(RuleElement element) {
         for (TypeGuard guard : element.getTypeGuards()) {
             LabelVar var = guard.getVar();
-            addKey(this.varMap, var).add(element);
-            addKey(this.binderMap, var).add(element);
+            if (var.hasName()) {
+                addKey(this.varMap, var).add(element);
+                addKey(this.binderMap, var).add(element);
+            }
         }
     }
 
