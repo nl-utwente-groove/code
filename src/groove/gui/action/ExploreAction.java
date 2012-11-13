@@ -8,6 +8,7 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
+import groove.gui.dialog.ExploreWarningDialog;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
@@ -90,6 +91,7 @@ public class ExploreAction extends SimulatorAction {
         }
         // unhook the lts' jmodel from the lts, for efficiency's sake
         gts.removeLTSListener(ltsJModel);
+        this.bound = INITIAL_STATE_BOUND;
         // create a thread to do the work in the background
         Thread generateThread = new ExploreThread(exploration);
         // go!
@@ -248,6 +250,38 @@ public class ExploreAction extends SimulatorAction {
     }
 
     /**
+     * If the number of states now exeeds a bound, ask whether we 
+     * should continue exploring (and by how much).
+     */
+    final void checkContinue(final GTS gts) {
+        if (gts.nodeCount() >= this.bound && !isInterrupted()) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        ExploreWarningDialog dialog =
+                            ExploreWarningDialog.instance();
+                        dialog.setBound(ExploreAction.this.bound);
+                        if (dialog.ask(getFrame())) {
+                            ExploreAction.this.bound = dialog.getBound();
+                        } else {
+                            setInterrupted(true);
+                        }
+                    }
+                });
+            } catch (InterruptedException e) {
+                setInterrupted(true);
+            } catch (InvocationTargetException e) {
+                e.getCause().printStackTrace();
+                assert false;
+            }
+            if (isInterrupted()) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    /**
      * @return the explore-strategy for exploring a single state
      */
     private Exploration getStateExploration() {
@@ -270,6 +304,22 @@ public class ExploreAction extends SimulatorAction {
     private final boolean animated;
     /** Animation speed (between 1 and 10). */
     private int speed = 2;
+    /** Number of states after which exploration should halt. */
+    private int bound;
+
+    private boolean isInterrupted() {
+        return this.interrupted;
+    }
+
+    private void setInterrupted(boolean interrupted) {
+        this.interrupted = interrupted;
+    }
+
+    /** Interrupt flag set during the progress warning. */
+    private boolean interrupted;
+
+    /** Initial number of states after which exploration should halt. */
+    private static final int INITIAL_STATE_BOUND = 1000;
 
     private final class AnimateListener extends GTSAdapter {
         @Override
@@ -302,6 +352,7 @@ public class ExploreAction extends SimulatorAction {
         @Override
         public void addUpdate(GTS gts, final GraphState state) {
             displayProgress(gts);
+            checkContinue(gts);
         }
 
         @Override
@@ -349,6 +400,7 @@ public class ExploreAction extends SimulatorAction {
             GTS gts = simulatorModel.getGts();
             displayProgress(gts);
             gts.addLTSListener(this.progressListener);
+            setInterrupted(false);
             GraphState state = simulatorModel.getState();
             try {
                 this.exploration.play(gts, state);
