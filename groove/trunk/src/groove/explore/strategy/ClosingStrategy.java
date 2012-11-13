@@ -47,8 +47,9 @@ abstract public class ClosingStrategy extends AbstractStrategy {
         if (state.setFlag(Flag.KNOWN, false)) {
             for (RuleTransition out : state.getRuleTransitions()) {
                 GraphState target = out.target();
-                assert target.hasFlag(Flag.KNOWN);
-                addExplorable(target);
+                if (target.hasFlag(Flag.KNOWN)) {
+                    addExplorable(target);
+                }
             }
         }
         for (MatchResult next : matches) {
