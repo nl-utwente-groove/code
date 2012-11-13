@@ -426,7 +426,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     }
 
     /** Indicates if the model is currently executing {@link #loadGraph(Graph)}. */
-    final boolean isLoading() {
+    @Override
+    final protected boolean isLoading() {
         return this.loading;
     }
 

@@ -114,11 +114,21 @@ public class UserSettings {
         String display = userPrefs.get(DISPLAY_KEY, "");
         final DisplayKind kind =
             display.isEmpty() ? null : DisplayKind.valueOf(display);
+        int stateBoundValue;
+        try {
+            stateBoundValue =
+                Integer.parseInt(userPrefs.get(STATE_BOUND_KEY, "1000"));
+        } catch (NumberFormatException e) {
+            stateBoundValue = 1000;
+        }
+        final int stateBound = stateBoundValue;
         if (kind != null) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     simulator.getModel().setDisplay(kind);
+                    ((LTSDisplay) simulator.getDisplaysPanel().getDisplay(
+                        DisplayKind.LTS)).setStateBound(stateBound);
                 }
             });
         }
@@ -166,24 +176,29 @@ public class UserSettings {
     private static void syncDisplaySettings(Simulator simulator) {
         Object display = simulator.getModel().getDisplay().name();
         userPrefs.put(DISPLAY_KEY, display.toString());
+        Integer stateBound =
+            ((LTSDisplay) simulator.getDisplaysPanel().getDisplay(
+                DisplayKind.LTS)).getStateBound();
+        userPrefs.put(STATE_BOUND_KEY, stateBound.toString());
     }
 
     /** The persistently stored user preferences. */
     private static final Preferences userPrefs = Options.userPrefs;
-    /** Key for the grammar location. */
-    private static final String LOCATION_KEY = "Grammar location";
     /** Key for the selected display. */
     private static final String DISPLAY_KEY = "Selected display";
-    static private final String SIM_MAX_KEY = "Simulator maximized";
-    static private final String SIM_WIDTH_KEY = "Simulator width";
-    static private final String SIM_HEIGHT_KEY = "Simulator height";
-    /** Key for the divider position in the lists panel. */
-    static private final String LISTS_DIV_POS_KEY =
-        "Rule-Graph divider position";
-    /** Key for the divider position in the main panel. */
-    static private final String GRAMMAR_DIV_POS_KEY =
-        "Main panel divider position";
     /** Key for the divider position in the grammar panel. */
     static private final String DISPLAYS_INFO_DIV_POS_KEY =
         "Displays+info panel divider position";
+    /** Key for the divider position in the main panel. */
+    static private final String GRAMMAR_DIV_POS_KEY =
+        "Main panel divider position";
+    /** Key for the divider position in the lists panel. */
+    static private final String LISTS_DIV_POS_KEY =
+        "Rule-Graph divider position";
+    /** Key for the grammar location. */
+    private static final String LOCATION_KEY = "Grammar location";
+    static private final String SIM_HEIGHT_KEY = "Simulator height";
+    static private final String SIM_MAX_KEY = "Simulator maximized";
+    static private final String SIM_WIDTH_KEY = "Simulator width";
+    static private final String STATE_BOUND_KEY = "Maximum state displayed";
 }

@@ -94,6 +94,8 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     public void loadGraph(Graph<GraphState,GraphTransition> gts) {
         // temporarily remove the model as a graph listener
         this.listening = false;
+        this.maxStateNr = -1;
+        this.stateLowerBound = 0;
         GTS oldGTS = getGraph();
         if (oldGTS != null && gts != oldGTS) {
             oldGTS.removeLTSListener(this);
@@ -103,6 +105,41 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
             ((GTS) gts).addLTSListener(this);
         }
         this.listening = true;
+    }
+
+    /** Loads all graph elements from the current highest actual state number to the current upper bound. */
+    public void loadFurther() {
+        this.stateLowerBound = this.maxStateNr + 1;
+        addElements(getGraph().nodeSet(), getGraph().edgeSet(), false);
+    }
+
+    /** Only add nodes that do not exceed the maximum state number. */
+    @Override
+    protected GraphJVertex addNode(GraphState node) {
+        GraphJVertex result = null;
+        int nr = node.getNumber();
+        if (!isLoading() || isWithinBounds(nr)) {
+            result = super.addNode(node);
+            if (nr > this.maxStateNr) {
+                this.maxStateNr = nr;
+            }
+        }
+        return result;
+    }
+
+    @Override
+    protected GraphJCell addEdge(GraphTransition edge,
+            boolean mergeBidirectional) {
+        GraphJCell result = null;
+        int sourceNr = edge.source().getNumber();
+        int targetNr = edge.target().getNumber();
+        if (!isLoading() || sourceNr <= this.stateUpperBound
+            && targetNr <= this.stateUpperBound) {
+            if (isWithinBounds(sourceNr) || isWithinBounds(targetNr)) {
+                result = super.addEdge(edge, mergeBidirectional);
+            }
+        }
+        return result;
     }
 
     /** Set the filtering flag of this model to the given value. */
@@ -118,6 +155,29 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     private boolean listening = true;
 
     private boolean filtering = false;
+
+    /**
+     * Sets the maximum state number to be added.
+     * @return the previous bound
+     */
+    public int setStateBound(int bound) {
+        int result = this.stateUpperBound;
+        this.stateUpperBound = bound;
+        return result;
+    }
+
+    /** Tests if a number is within the state lower and upper bounds. */
+    private boolean isWithinBounds(int nr) {
+        return nr <= this.stateUpperBound && nr >= this.stateLowerBound;
+    }
+
+    /** The minimum state number to be added. */
+    private int stateLowerBound;
+    /** The maximum state number to be added. */
+    private int stateUpperBound;
+
+    /** Maximum state number currently added to the JGraph. */
+    private int maxStateNr;
 
     /** Default name of an LTS model. */
     static public final String DEFAULT_LTS_NAME = "lts";

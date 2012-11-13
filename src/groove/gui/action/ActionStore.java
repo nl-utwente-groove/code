@@ -602,6 +602,21 @@ public class ActionStore implements SimulatorListener {
     private RedoSimulatorAction redoAction;
 
     /**
+     * Returns the LTS reload action permanently associated with this simulator.
+     */
+    public ReloadLTSAction getReloadLTSAction() {
+        if (this.reloadLTSAction == null) {
+            this.reloadLTSAction = new ReloadLTSAction(this.simulator);
+        }
+        return this.reloadLTSAction;
+    }
+
+    /**
+     * The LTS reload permanently associated with this simulator.
+     */
+    private ReloadLTSAction reloadLTSAction;
+
+    /**
      * Returns the grammar refresh action permanently associated with this
      * simulator.
      */

@@ -42,17 +42,28 @@ import groove.lts.GraphTransition;
 import groove.view.GrammarModel;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.JSpinner.NumberEditor;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Window that displays and controls the current lts graph. Auxiliary class for
@@ -65,6 +76,7 @@ public class LTSDisplay extends Display {
     /** Creates a LTS panel for a given simulator. */
     public LTSDisplay(Simulator simulator) {
         super(simulator, DisplayKind.LTS);
+        setStateBound(100);
     }
 
     @Override
@@ -121,8 +133,9 @@ public class LTSDisplay extends Display {
         result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
         result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
         result.addSeparator();
-        result.add(getShowHideLTSButton());
         result.add(getFilterLTSButton());
+        result.add(getBoundSpinnerPanel());
+        result.add(Box.createGlue());
     }
 
     private JToggleButton getShowHideLTSButton() {
@@ -132,6 +145,9 @@ public class LTSDisplay extends Display {
         }
         return this.showHideLTSButton;
     }
+
+    /** Toggle buttons */
+    private JToggleButton showHideLTSButton;
 
     /** Returns true if the LTS JGraph is hidden. */
     public boolean isHidingLts() {
@@ -146,9 +162,78 @@ public class LTSDisplay extends Display {
         return this.filterLTSButton;
     }
 
+    private JToggleButton filterLTSButton;
+
     /** Returns true if the LTS JGraph is filtered. */
     public boolean isFilteringLts() {
         return getFilterLTSButton().isSelected();
+    }
+
+    private JPanel getBoundSpinnerPanel() {
+        JPanel result = this.boundSpinnerPanel;
+        if (result == null) {
+            result = new JPanel();
+            result.setLayout(new BoxLayout(result, BoxLayout.X_AXIS));
+            result.add(Box.createRigidArea(new Dimension(5, 0)));
+            result.add(new JLabel("Show states up to"));
+            result.add(Box.createRigidArea(new Dimension(5, 0)));
+            result.add(getBoundSpinner());
+            result.add(Box.createGlue());
+            this.boundSpinnerPanel = result;
+        }
+        return this.boundSpinnerPanel;
+    }
+
+    private JPanel boundSpinnerPanel;
+
+    private JSpinner getBoundSpinner() {
+        if (this.boundSpinner == null) {
+            this.boundSpinner = new JSpinner(getBoundSpinnerModel());
+            this.boundSpinner.setMaximumSize(new Dimension(10, 100));
+            this.boundSpinner.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    if (getJModel() != null) {
+                        getActions().getReloadLTSAction().execute();
+                    }
+                }
+            });
+        }
+        return this.boundSpinner;
+    }
+
+    private JSpinner boundSpinner;
+
+    private SpinnerNumberModel getBoundSpinnerModel() {
+        if (this.boundSpinnerModel == null) {
+            this.boundSpinnerModel = new SpinnerNumberModel();
+            this.boundSpinnerModel.setMinimum(100);
+            this.boundSpinnerModel.setMaximum(100000);
+            this.boundSpinnerModel.setStepSize(100);
+            this.boundSpinnerModel.setValue(100);
+        }
+        return this.boundSpinnerModel;
+    }
+
+    private SpinnerNumberModel boundSpinnerModel;
+
+    /** Sets the maximum state number to be displayed. */
+    public void setStateBound(int bound) {
+        getBoundSpinnerModel().setValue(bound);
+    }
+
+    /** Retrieves the maximum state number to be displayed. */
+    public int getStateBound() {
+        return (Integer) getBoundSpinnerModel().getValue();
+    }
+
+    /* Also changes the enabled status of the spinner. */
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        getBoundSpinner().setEnabled(enabled);
+        ((NumberEditor) getBoundSpinner().getEditor()).getTextField().setBackground(
+            enabled ? getGraphPanel().getEnabledBackground() : null);
     }
 
     /**
@@ -205,9 +290,6 @@ public class LTSDisplay extends Display {
      */
     private final MyLTSListener ltsListener = new MyLTSListener();
     private LTSGraphPanel graphPanel;
-    /** Toggle buttons */
-    private JToggleButton showHideLTSButton;
-    private JToggleButton filterLTSButton;
 
     /** Returns an LTS display for a given simulator. */
     public static LTSDisplay newInstance(Simulator simulator) {
@@ -375,6 +457,7 @@ public class LTSDisplay extends Display {
                 getJModel().setFiltering(true);
                 getJGraph().refreshFiltering();
             }
+            refreshBackground();
             setEnabled(true);
         }
 
@@ -405,6 +488,7 @@ public class LTSDisplay extends Display {
                     if (gts != oldModel.getGts()) {
                         ltsModel = getJGraph().newModel();
                         ltsModel.setFiltering(isFilteringLts());
+                        ltsModel.setStateBound(getStateBound());
                         ltsModel.loadGraph(gts);
                         setJModel(ltsModel);
                     } else {
@@ -414,6 +498,7 @@ public class LTSDisplay extends Display {
                             ltsModel.loadGraph(gts);
                         }
                     }
+                    refreshBackground();
                     getJGraph().refreshFiltering();
                     getJGraph().freeze();
                     getJGraph().getLayouter().start(false);
@@ -493,6 +578,21 @@ public class LTSDisplay extends Display {
                 text.append(" transitions");
             }
             return text.toString();
+        }
+
+        /**
+         * Refreshes the background colour, based on the question whether the LTS is
+         * filtered or incompletely displayed. 
+         */
+        public void refreshBackground() {
+            boolean incomplete = isFilteringLts();
+            if (!incomplete) {
+                incomplete = getJModel().size() < getJModel().getGraph().size();
+            }
+            Color background =
+                incomplete ? JAttr.FILTER_BACKGROUND : JAttr.STATE_BACKGROUND;
+            setEnabledBackground(background);
+            setEnabled(isEnabled());
         }
     }
 }
