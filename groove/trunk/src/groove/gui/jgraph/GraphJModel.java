@@ -30,6 +30,7 @@ import groove.gui.layout.LayoutMap;
 
 import java.awt.Color;
 import java.awt.Rectangle;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -160,15 +161,21 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      */
     public void loadGraph(Graph<N,E> graph) {
         prepareLoad(graph);
+        addElements(graph.nodeSet(), graph.edgeSet(), true);
+    }
+
+    /** Adds a set of new graph elements from the current graph to this JModel. */
+    protected void addElements(Collection<? extends N> nodeSet,
+            Collection<? extends E> edgeSet, boolean replace) {
         prepareInsert();
         boolean merge = mergeBidirectionalEdges();
-        for (N node : graph.nodeSet()) {
+        for (N node : nodeSet) {
             addNode(node);
         }
-        for (E edge : graph.edgeSet()) {
+        for (E edge : edgeSet) {
             addEdge(edge, merge);
         }
-        doInsert(true, false);
+        doInsert(replace, false);
     }
 
     /**
@@ -176,7 +183,6 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      */
     protected void prepareLoad(Graph<N,E> graph) {
         this.graph = graph;
-        this.loading = true;
         this.layoutMap = GraphInfo.getInfo(graph, true).getLayoutMap();
         this.nodeJCellMap.clear();
         this.edgeJCellMap.clear();
@@ -256,7 +262,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
 
     @Override
     protected void fireGraphChanged(Object source, GraphModelChange edit) {
-        if (!this.loading) {
+        if (!isLoading()) {
             // if we're loading, the layout is actually taken from the graph
             // so no synchronisation is necessary
             for (Object jCell : edit.getChanged()) {
@@ -478,6 +484,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         this.addedJCells.clear();
         this.addedOutJEdges.clear();
         this.connections = new ConnectionSet();
+        setLoading(true);
     }
 
     /**
@@ -493,7 +500,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
             // new edges should be behind the nodes
             toBack(addedCells);
         }
-        this.loading = false;
+        setLoading(false);
     }
 
     /**
@@ -522,6 +529,17 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * layed out graph.
      */
     private LayoutMap<N,E> layoutMap;
+
+    /** Changes the loading status of the JGraph. */
+    private void setLoading(boolean loading) {
+        this.loading = loading;
+    }
+
+    /** Indicates if the JModel is currently in the process of loading a graph. */
+    protected boolean isLoading() {
+        return this.loading;
+    }
+
     /** Flag that indicates we're in the process of loading a graph. */
     private boolean loading;
     /**
