@@ -73,6 +73,8 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
+import java.util.Stack;
+import java.util.WeakHashMap;
 
 import javax.swing.JComponent;
 import javax.swing.JSplitPane;
@@ -377,7 +379,7 @@ public class StateDisplay extends Display {
 
         private void startSimulation(GTS gts) {
             // clear the states from the aspect and model maps
-            this.graphToJModel.clear();
+            this.stateToJModel.clear();
             this.stateToAspectMap.clear();
             // only change the displayed model if we are currently displaying a
             // state
@@ -490,20 +492,20 @@ public class StateDisplay extends Display {
 
         /**
          * Returns a graph model for a given state graph. The graph model is
-         * retrieved from {@link #graphToJModel}; if there is no image for the requested
+         * retrieved from {@link #stateToJModel}; if there is no image for the requested
          * state then one is created.
          */
         private AspectJModel getAspectJModel(GraphState state) {
             HostToAspectMap aspectMap = getAspectMap(state);
             AspectGraph aspectGraph = aspectMap.getAspectGraph();
-            AspectJModel result = this.graphToJModel.get(aspectGraph);
+            AspectJModel result = this.stateToJModel.get(state);
             if (result == null) {
                 result = createAspectJModel(aspectGraph);
                 assert result != null;
-                this.graphToJModel.put(aspectGraph, result);
+                this.stateToJModel.put(state, result);
                 // try to find layout information for the model
                 if (state instanceof GraphNextState) {
-                    transferLayout((GraphNextState) state);
+                    setNextStateLayout((GraphNextState) state, result);
                 } else {
                     assert state instanceof StartGraphState;
                     // this is the start state
@@ -513,141 +515,174 @@ public class StateDisplay extends Display {
             return result;
         }
 
-        /** Transfers colours and layout from the source to the target of a given transition. */
-        private void transferLayout(GraphTransition trans) {
-            GraphState source = trans.source();
-            AspectJModel sourceJModel = getAspectJModel(source);
-            HostToAspectMap sourceAspectMap = getAspectMap(source);
-            GraphState target = trans.target();
-            AspectJModel targetJModel = getAspectJModel(target);
-            HostToAspectMap targetAspectMap = getAspectMap(target);
-            HostGraphMorphism morphism = trans.getMorphism();
-            // find out newly created colours
-            Map<HostNode,Color> newColorMap = extractColors(trans);
-            // compute target node attributes
-            Set<HostNode> newNodes =
-                new HashSet<HostNode>(target.getGraph().nodeSet());
-            Map<AspectNode,Attributes> nodeAttrMap =
-                new HashMap<AspectNode,Attributes>();
-            for (Map.Entry<HostNode,HostNode> entry : morphism.nodeMap().entrySet()) {
-                AspectNode sourceAspectNode =
-                    sourceAspectMap.getNode(entry.getKey());
-                if (sourceAspectNode == null) {
-                    continue;
-                }
-                AspectJVertex sourceCell =
-                    sourceJModel.getJCellForNode(sourceAspectNode);
-                assert sourceCell != null : "Source element "
-                    + sourceAspectNode + " unknown";
-                HostNode targetNode = entry.getValue();
-                newNodes.remove(targetNode);
-                Attributes attr =
-                    new Attributes(
-                        GraphConstants.getBounds(sourceCell.getAttributes()),
-                        sourceCell.isGrayedOut(), newColorMap.get(targetNode));
-                AspectNode targetAspectNode =
-                    targetAspectMap.getNode(targetNode);
-                if (targetAspectNode == null) {
-                    continue;
-                }
-                nodeAttrMap.put(targetAspectNode, attr);
+        private void setNextStateLayout(GraphNextState state,
+                AspectJModel result) {
+            Stack<GraphTransition> stack = new Stack<GraphTransition>();
+            GraphState source = state.source();
+            while (!this.stateToJModel.containsKey(source)) {
+                GraphTransition trans = (GraphTransition) source;
+                stack.push(trans);
+                source = trans.source();
             }
-            // add colours for new nodes
-            for (HostNode targetNode : newNodes) {
-                Attributes attr =
-                    new Attributes(null, false, newColorMap.get(targetNode));
-                AspectNode targetAspectNode =
-                    targetAspectMap.getNode(targetNode);
-                if (targetAspectNode == null) {
-                    continue;
-                }
-                nodeAttrMap.put(targetAspectNode, attr);
+            AspectJModel model = this.stateToJModel.get(source);
+            AttributesMap map = extractAttributes(model, getAspectMap(source));
+            while (!stack.isEmpty()) {
+                map = transferAttributes(map, stack.pop());
             }
-            // compute target edge attributes
-            Map<AspectEdge,Attributes> edgeAttrMap =
-                new HashMap<AspectEdge,Attributes>();
-            for (Map.Entry<HostEdge,HostEdge> entry : morphism.edgeMap().entrySet()) {
-                AspectEdge sourceAspectEdge =
-                    sourceAspectMap.getEdge(entry.getKey());
-                if (sourceAspectEdge == null) {
-                    continue;
-                }
-                AspectJCell sourceCell =
-                    sourceJModel.getJCellForEdge(sourceAspectEdge);
-                if (sourceCell instanceof AspectJVertex) {
-                    continue;
-                }
-                AttributeMap sourceAttributes = sourceCell.getAttributes();
-                Attributes attr =
-                    new Attributes(GraphConstants.getPoints(sourceAttributes),
-                        GraphConstants.getLabelPosition(sourceAttributes),
-                        GraphConstants.getLineStyle(sourceAttributes),
-                        sourceCell.isGrayedOut());
-                AspectEdge targetAspectEdge =
-                    targetAspectMap.getEdge(entry.getValue());
-                edgeAttrMap.put(targetAspectEdge, attr);
-            }
-            // store target node attributes
-            for (Map.Entry<AspectNode,Attributes> e : nodeAttrMap.entrySet()) {
-                AspectNode targetAspectNode = e.getKey();
-                Attributes attr = e.getValue();
-                AspectJVertex targetCell =
-                    targetJModel.getJCellForNode(targetAspectNode);
-                assert targetCell != null : "Target element "
-                    + targetAspectNode + " unknown";
-                if (attr.bounds != null) {
-                    GraphConstants.setBounds(targetCell.getAttributes(),
-                        attr.bounds);
-                }
-                targetCell.setGrayedOut(attr.grayedOut);
-                if (attr.color != null) {
-                    targetCell.setColor(attr.color);
-                }
-                targetCell.setLayoutable(attr.bounds == null);
-                targetJModel.synchroniseLayout(targetCell);
-            }
-            // store target edge attributes
-            for (Map.Entry<AspectEdge,Attributes> e : edgeAttrMap.entrySet()) {
-                AspectEdge targetAspectEdge = e.getKey();
-                AspectJCell targetCell =
-                    targetJModel.getJCellForEdge(targetAspectEdge);
-                if (targetCell instanceof AspectJVertex) {
-                    continue;
-                }
-                assert targetCell != null : "Target element "
-                    + targetAspectEdge + " unknown";
-                AttributeMap targetAttributes = targetCell.getAttributes();
-                Attributes attr = e.getValue();
-                if (attr.points != null) {
-                    GraphConstants.setPoints(targetAttributes,
-                        new LinkedList<Object>(attr.points));
-                }
-                if (attr.labelPosition != null) {
-                    GraphConstants.setLabelPosition(targetAttributes,
-                        attr.labelPosition);
-                }
-                GraphConstants.setLineStyle(targetAttributes, attr.lineStyle);
-                targetCell.setGrayedOut(attr.grayedOut);
-                targetCell.setLayoutable(attr.points == null);
-                targetJModel.synchroniseLayout(targetCell);
-            }
+            applyAttributes(map, result, getAspectMap(state));
         }
 
         /**
-         * Extracts the colours that were created for the target graph
-         * in the course of a given graph transition.
+         * Returns a map from host graph elements to layout attributes,
+         * extracted from a given aspect model under a host-to-aspect map.
          */
-        private Map<HostNode,Color> extractColors(GraphTransition trans) {
-            Map<HostNode,Color> result = new HashMap<HostNode,Color>();
-            // extract colours from source graph
-            GraphState source = trans.source();
-            AspectJModel sourceJModel = getAspectJModel(source);
-            HostToAspectMap sourceAspectMap = getAspectMap(source);
-            for (Map.Entry<HostNode,? extends AspectNode> entry : sourceAspectMap.nodeMap().entrySet()) {
-                AspectJVertex sourceCell =
-                    sourceJModel.getJCellForNode(entry.getValue());
-                result.put(entry.getKey(), sourceCell.getColor());
+        private AttributesMap extractAttributes(AspectJModel model,
+                HostToAspectMap aspectMap) {
+            AttributesMap result = new AttributesMap();
+            for (Map.Entry<HostNode,? extends AspectNode> entry : aspectMap.nodeMap().entrySet()) {
+                AspectNode aspectNode = entry.getValue();
+                AspectJVertex jCell = model.getJCellForNode(aspectNode);
+                assert jCell != null : "Source element " + aspectNode
+                    + " unknown";
+                Attributes attr =
+                    new Attributes(
+                        GraphConstants.getBounds(jCell.getAttributes()),
+                        jCell.isGrayedOut(), jCell.getColor());
+                result.nodeMap.put(entry.getKey(), attr);
             }
+            // compute target edge attributes
+            for (Map.Entry<HostEdge,? extends AspectEdge> entry : aspectMap.edgeMap().entrySet()) {
+                AspectEdge aspectEdge = entry.getValue();
+                AspectJCell jCell = model.getJCellForEdge(aspectEdge);
+                if (jCell instanceof AspectJVertex) {
+                    continue;
+                }
+                AttributeMap jCellAttrs = jCell.getAttributes();
+                Attributes attr =
+                    new Attributes(GraphConstants.getPoints(jCellAttrs),
+                        GraphConstants.getLabelPosition(jCellAttrs),
+                        GraphConstants.getLineStyle(jCellAttrs),
+                        jCell.isGrayedOut());
+                result.edgeMap.put(entry.getKey(), attr);
+            }
+            return result;
+        }
+
+        /** Creates a mapping from host elements to layout attributes for
+         * the target graph of a transition, given the attributes mapping for
+         * the source graph.
+         */
+        private AttributesMap transferAttributes(AttributesMap map,
+                GraphTransition trans) {
+            AttributesMap result = new AttributesMap();
+            HostGraphMorphism morphism = trans.getMorphism();
+            Map<HostNode,Attributes> sourceNodeMap = map.nodeMap;
+            Map<HostNode,Attributes> resultNodeMap = result.nodeMap;
+            Map<HostNode,Color> newColorMap = extractNewColors(trans);
+            Set<HostNode> newNodes =
+                new HashSet<HostNode>(trans.target().getGraph().nodeSet());
+            // transfer node attributes
+            for (Map.Entry<HostNode,HostNode> entry : morphism.nodeMap().entrySet()) {
+                HostNode sourceNode = entry.getKey();
+                Attributes attr = sourceNodeMap.get(sourceNode);
+                HostNode targetNode = entry.getValue();
+                Color newColor = newColorMap.get(targetNode);
+                if (newColor != null) {
+                    if (attr == null) {
+                        attr = new Attributes(null, false, newColor);
+                    } else {
+                        attr.color = newColor;
+                    }
+                }
+                if (attr != null) {
+                    resultNodeMap.put(targetNode, attr);
+                }
+                newNodes.remove(targetNode);
+            }
+            // add node colours for the new nodes
+            for (HostNode newNode : newNodes) {
+                Color newColor = newColorMap.get(newNode);
+                if (newColor != null) {
+                    Attributes attr = new Attributes(null, false, newColor);
+                    resultNodeMap.put(newNode, attr);
+                }
+            }
+            // transfer edge attributes
+            Map<HostEdge,Attributes> sourceEdgeMap = map.edgeMap;
+            Map<HostEdge,Attributes> resultEdgeMap = result.edgeMap;
+            for (Map.Entry<HostEdge,HostEdge> entry : morphism.edgeMap().entrySet()) {
+                HostEdge sourceEdge = entry.getKey();
+                Attributes attr = sourceEdgeMap.get(sourceEdge);
+                if (attr != null) {
+                    HostEdge targetEdge = entry.getValue();
+                    resultEdgeMap.put(targetEdge, attr);
+                }
+            }
+            return result;
+        }
+
+        /** Stores the computed attributes into an aspect model. */
+        private void applyAttributes(AttributesMap map, AspectJModel result,
+                HostToAspectMap aspectMap) {
+            // store target node attributes
+            for (Map.Entry<HostNode,Attributes> e : map.nodeMap.entrySet()) {
+                Attributes attrs = e.getValue();
+                AspectNode aspectNode = aspectMap.getNode(e.getKey());
+                AspectJVertex jCell = result.getJCellForNode(aspectNode);
+                assert jCell != null : "Target element " + aspectNode
+                    + " unknown";
+                if (attrs.bounds != null) {
+                    GraphConstants.setBounds(jCell.getAttributes(),
+                        attrs.bounds);
+                }
+                jCell.setGrayedOut(attrs.grayedOut);
+                if (attrs.color != null) {
+                    jCell.setColor(attrs.color);
+                }
+                jCell.setLayoutable(attrs.bounds == null);
+                result.synchroniseLayout(jCell);
+            }
+            // store target edge attributes
+            for (Map.Entry<HostEdge,Attributes> e : map.edgeMap.entrySet()) {
+                AspectEdge aspectEdge = aspectMap.getEdge(e.getKey());
+                AspectJCell jCell = result.getJCellForEdge(aspectEdge);
+                if (jCell instanceof AspectJVertex) {
+                    continue;
+                }
+                assert jCell != null : "Target element " + aspectEdge
+                    + " unknown";
+                AttributeMap attrs = jCell.getAttributes();
+                Attributes attr = e.getValue();
+                if (attr.points != null) {
+                    GraphConstants.setPoints(attrs, new LinkedList<Object>(
+                        attr.points));
+                }
+                if (attr.labelPosition != null) {
+                    GraphConstants.setLabelPosition(attrs, attr.labelPosition);
+                }
+                GraphConstants.setLineStyle(attrs, attr.lineStyle);
+                jCell.setGrayedOut(attr.grayedOut);
+                jCell.setLayoutable(attr.points == null);
+                result.synchroniseLayout(jCell);
+            }
+        }
+
+        /** Transfers colours and layout from the source to the target of a given transition. */
+        private void transferLayout(GraphTransition trans) {
+            AttributesMap map =
+                extractAttributes(this.stateToJModel.get(trans.source()),
+                    getAspectMap(trans.source()));
+            map = transferAttributes(map, trans);
+            applyAttributes(map, this.stateToJModel.get(trans.target()),
+                getAspectMap(trans.target()));
+        }
+
+        /**
+         * Creates a mapping from host nodes to colours 
+         * as newly generated by a given transition.
+         */
+        private Map<HostNode,Color> extractNewColors(GraphTransition trans) {
+            Map<HostNode,Color> result = new HashMap<HostNode,Color>();
             // transfer colours along transition
             if (trans instanceof RuleTransition) {
                 result = transferColors(result, (RuleTransition) trans);
@@ -697,7 +732,7 @@ public class StateDisplay extends Display {
         private void setStartGraphLayout(AspectJModel result) {
             AspectGraph startGraph =
                 getGrammar().getStartGraphModel().getSource();
-            AspectJModel startModel = getAspectJModel(startGraph);
+            AspectJModel startModel = createAspectJModel(startGraph);
             for (AspectNode node : startGraph.nodeSet()) {
                 AspectJVertex stateVertex = result.getJCellForNode(node);
                 // meta nodes are not in the state;
@@ -729,21 +764,6 @@ public class StateDisplay extends Display {
             }
         }
 
-        /**
-         * Returns a graph model for a given graph view. The graph model is
-         * retrieved from {@link #graphToJModel}; if there is no image for the
-         * requested state then one is created using
-         * {@link #createAspectJModel(AspectGraph)}.
-         */
-        private AspectJModel getAspectJModel(AspectGraph graph) {
-            AspectJModel result = this.graphToJModel.get(graph);
-            if (result == null) {
-                result = createAspectJModel(graph);
-                this.graphToJModel.put(graph, result);
-            }
-            return result;
-        }
-
         /** Creates a j-model for a given aspect graph. */
         private AspectJModel createAspectJModel(AspectGraph graph) {
             AspectJModel result = getJGraph().newModel();
@@ -773,13 +793,13 @@ public class StateDisplay extends Display {
         /**
          * Mapping from graphs to the corresponding graph models.
          */
-        private final Map<AspectGraph,AspectJModel> graphToJModel =
-            new HashMap<AspectGraph,AspectJModel>();
+        private final Map<GraphState,AspectJModel> stateToJModel =
+            new WeakHashMap<GraphState,AspectJModel>();
         /**
          * Mapping from graphs to the corresponding graph models.
          */
         private final Map<GraphState,HostToAspectMap> stateToAspectMap =
-            new HashMap<GraphState,HostToAspectMap>();
+            new WeakHashMap<GraphState,HostToAspectMap>();
 
         /** Flag indicating that the listeners are activated. */
         private boolean listening;
@@ -814,10 +834,18 @@ public class StateDisplay extends Display {
         }
 
         final Rectangle2D bounds;
-        final Color color;
+        Color color;
         final boolean grayedOut;
         final List<?> points;
         final Point2D labelPosition;
         final int lineStyle;
+    }
+
+    /** Mapping from host elements to attributes. */
+    private static class AttributesMap {
+        final Map<HostNode,Attributes> nodeMap =
+            new HashMap<HostNode,StateDisplay.Attributes>();
+        final Map<HostEdge,Attributes> edgeMap =
+            new HashMap<HostEdge,StateDisplay.Attributes>();
     }
 }
