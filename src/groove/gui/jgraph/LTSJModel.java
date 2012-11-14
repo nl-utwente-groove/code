@@ -36,7 +36,13 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         super(jGraph, jVertexProt, jEdgeProt);
     }
 
-    /** Specialises the return type. */
+    /* Specialises the return type. */
+    @Override
+    public LTSJGraph getJGraph() {
+        return (LTSJGraph) super.getJGraph();
+    }
+
+    /* Specialises the return type. */
     @Override
     public GTS getGraph() {
         return (GTS) super.getGraph();
@@ -104,6 +110,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         if (gts != null && gts != oldGTS) {
             ((GTS) gts).addLTSListener(this);
         }
+        getJGraph().reactivate();
         this.listening = true;
     }
 

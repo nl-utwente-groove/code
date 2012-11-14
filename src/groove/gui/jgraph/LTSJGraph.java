@@ -259,6 +259,32 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         }
     }
 
+    /**
+     * Refreshes the active state and transition, if any.
+     * This is necessary after reloading the LTS.
+     */
+    void reactivate() {
+        List<GraphJCell> activeCells = new ArrayList<GraphJCell>();
+        GraphState activeState = getActiveState();
+        if (activeState != null) {
+            LTSJCell activeCell =
+                (LTSJCell) getModel().getJCellForNode(activeState);
+            activeCell.setActive(true);
+            activeCells.add(activeCell);
+        }
+        GraphTransition activeTrans = getActiveTransition();
+        if (activeTrans != null) {
+            LTSJCell activeCell =
+                (LTSJCell) getModel().getJCellForEdge(activeTrans);
+            activeCell.setActive(true);
+            activeCells.add(activeCell);
+        }
+        if (!activeCells.isEmpty()) {
+            setSelectionCells(activeCells.toArray());
+            refreshCells(activeCells);
+        }
+    }
+
     /** Collects all cells for a given transition and its subtransitions. */
     private Collection<LTSJCell> getTransitionCells(GraphTransition trans) {
         Collection<LTSJCell> result = new ArrayList<LTSJCell>();

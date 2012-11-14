@@ -497,6 +497,9 @@ public class LTSDisplay extends Display {
                         if (ltsModel.size() != gts.size()) {
                             ltsModel.loadGraph(gts);
                         }
+                        GraphState state = source.getState();
+                        GraphTransition transition = source.getTransition();
+                        getJGraph().setActive(state, transition);
                     }
                     refreshBackground();
                     getJGraph().refreshFiltering();
