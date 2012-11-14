@@ -249,7 +249,11 @@ public class SystemRecord {
      * @param reuse if <code>true</code>, events are stored and reused
      */
     public void setReuseEvents(Reuse reuse) {
-        this.reuse = reuse;
+        if (this.eventMap.isEmpty()) {
+            // only change the reuse policy if there are not yet any events
+            // generated, otherwise their equals test will break down
+            this.reuse = reuse;
+        }
     }
 
     /**
