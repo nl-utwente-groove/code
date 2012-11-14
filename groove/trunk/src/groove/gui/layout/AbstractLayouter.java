@@ -20,6 +20,7 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JEdgeView;
+import groove.util.Pair;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -245,7 +246,8 @@ abstract public class AbstractLayouter implements Layouter {
                         if (point instanceof Point2D) {
                             Layoutable layoutable =
                                 new PointLayoutable((Point2D) point);
-                            this.toLayoutableMap.put(point, layoutable);
+                            this.toLayoutableMap.put(Pair.newPair(jCell, p),
+                                layoutable);
                             if (immovable) {
                                 this.immovableSet.add(layoutable);
                             }
@@ -333,7 +335,8 @@ abstract public class AbstractLayouter implements Layouter {
     protected GraphJModel<?,?> jmodel;
 
     /**
-     * A map from the cells and edge points to layoutables. This is a transient
+     * A map from the vertex cells and pairs of edge cells/point indices to layoutables.
+     * This is a transient
      * value, computed by <tt>prepare()</tt>. The layoutable for a cell
      * contains that cell's bounds; the layoutable for an edge point contains
      * the point.

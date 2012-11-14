@@ -19,6 +19,7 @@ package groove.gui.layout;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJGraph;
+import groove.util.Pair;
 
 import java.awt.geom.Point2D;
 import java.util.HashMap;
@@ -26,10 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphLayoutCache;
-import org.jgraph.graph.PortView;
 
 /**
  * Action to set up the standard touchgraph layout algorithm on a given
@@ -174,9 +173,7 @@ public class SpringLayouter extends AbstractLayouter {
         this.layoutables = new Layoutable[this.toLayoutableMap.size()];
         this.positions = new Point2D.Double[this.toLayoutableMap.size()];
         this.deltas = new Point2D.Float[this.toLayoutableMap.size()];
-        for (Map.Entry<Object,Layoutable> toLayoutableEntry : this.toLayoutableMap.entrySet()) {
-            // Object key = toLayoutableEntry.getKey();
-            Layoutable layoutable = toLayoutableEntry.getValue();
+        for (Layoutable layoutable : this.toLayoutableMap.values()) {
             this.layoutables[layoutableIndex] = layoutable;
             // CellView vertexView = jview.getMapping(cell, false);
             // assert vertexView != null : "Node " + graphVertices[i] + " does
@@ -199,12 +196,19 @@ public class SpringLayouter extends AbstractLayouter {
             GraphJCell jCell = (GraphJCell) this.jmodel.getRootAt(i);
             if (jCell instanceof GraphJEdge && jCell.isVisible()
                 && !jCell.isGrayedOut()) {
+                GraphJEdge jEdge = (GraphJEdge) jCell;
                 EdgeView edgeView =
-                    (EdgeView) layoutCache.getMapping(jCell, false);
-                List<?> edgePoints = edgeView.getPoints();
-                for (int j = 0; j < edgePoints.size() - 1; j++) {
-                    edgeFragmentSourceList.add(getLayoutableFor(edgePoints.get(j)));
-                    edgeFragmentTargetList.add(getLayoutableFor(edgePoints.get(j + 1)));
+                    (EdgeView) layoutCache.getMapping(jEdge, false);
+                List<?> points = edgeView.getPoints();
+                for (int j = 0; j < points.size() - 1; j++) {
+                    Object efs =
+                        j == 0 ? jEdge.getSourceVertex() : Pair.newPair(jEdge,
+                            j);
+                    edgeFragmentSourceList.add(this.toLayoutableMap.get(efs));
+                    Object eft =
+                        j == points.size() - 1 ? jEdge.getTargetVertex()
+                                : Pair.newPair(jEdge, j + 1);
+                    edgeFragmentTargetList.add(this.toLayoutableMap.get(eft));
                 }
             }
         }
@@ -214,23 +218,6 @@ public class SpringLayouter extends AbstractLayouter {
             edgeFragmentSourceList.toArray(new Layoutable[edgeFragmentSourceList.size()]);
         this.edgeFragmentTargets =
             edgeFragmentTargetList.toArray(new Layoutable[edgeFragmentTargetList.size()]);
-    }
-
-    /**
-     * Returns the layoutable corresponding to a given <tt>PortView</tt> or
-     * <tt>Point</tt>.
-     * @param point the <tt>PortView</tt> or <tt>Point</tt>
-     * @ensure <tt>result == null || result instanceof Layoutable</tt>
-     */
-    private Layoutable getLayoutableFor(Object point) {
-        if (point instanceof Point2D) {
-            return this.toLayoutableMap.get(point);
-        } else {
-            assert point instanceof PortView;
-            Object cell = ((PortView) point).getParentView().getCell();
-            assert cell instanceof DefaultGraphCell;
-            return this.toLayoutableMap.get(cell);
-        }
     }
 
     private void damp() {

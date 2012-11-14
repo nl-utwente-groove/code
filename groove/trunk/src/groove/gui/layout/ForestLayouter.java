@@ -21,6 +21,7 @@ import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJVertex;
 import groove.util.CollectionOfCollections;
 import groove.util.NestedIterator;
+import groove.util.Pair;
 import groove.util.TransformIterator;
 
 import java.util.Arrays;
@@ -168,88 +169,13 @@ public class ForestLayouter extends AbstractLayouter {
                     // as well as its end node (if any)
                     List<?> points = edgeView.getPoints();
                     GraphJVertex targetVertex = edge.getTargetVertex();
-                    Iterator<?> pointsIter = points.iterator();
                     // the first point is the (port of the) source node
                     // itself; skip it
-                    pointsIter.next();
-                    while (pointsIter.hasNext()) {
-                        Object nextPoint = pointsIter.next();
-                        if (!pointsIter.hasNext() && targetVertex != null) {
-                            // this (last) point is the target node
-                            branchSet.add(this.toLayoutableMap.get(targetVertex));
-                        } else {
-                            branchSet.add(this.toLayoutableMap.get(nextPoint));
-                        }
+                    for (int i = 1; i < points.size() - 1; i++) {
+                        branchSet.add(this.toLayoutableMap.get(Pair.newPair(
+                            edge, i)));
                     }
-                }
-                // add the cell to the count map
-                Integer inEdgeCountKey = Integer.valueOf(inEdgeCount);
-                Set<Layoutable> cellsWithInEdgeCount =
-                    this.inDegreeMap.get(inEdgeCountKey);
-                if (cellsWithInEdgeCount == null) {
-                    this.inDegreeMap.put(inEdgeCountKey, cellsWithInEdgeCount =
-                        new LinkedHashSet<Layoutable>());
-                }
-                cellsWithInEdgeCount.add(cellLayoutable);
-            }
-        }
-    }
-
-    /**
-     * Updates the full branching structure from the layout map, and stores it
-     * in {@link #branchMap}.
-     */
-    @SuppressWarnings("unused")
-    private void updateBranchMap() {
-        // the old indegree- and branch maps are kept and updated
-        // count the incoming edges and compose the branch map
-        for (Map.Entry<Object,Layoutable> cellLayoutableEntry : this.toLayoutableMap.entrySet()) {
-            Object key = cellLayoutableEntry.getKey();
-            Layoutable cellLayoutable = cellLayoutableEntry.getValue();
-            // add the layoutable to the leaves and the branch map
-            Set<Layoutable> branchSet = new LinkedHashSet<Layoutable>();
-            if (key instanceof GraphJVertex && ((GraphJVertex) key).isVisible()) {
-                // Initialise the incoming edge count
-                int inEdgeCount = 0;
-                // calculate the incoming edge count and outgoing edge map
-                // iterate over the incident edges
-                Iterator<?> edgeIter = ((GraphJVertex) key).getPort().edges();
-                while (edgeIter.hasNext()) {
-                    GraphJEdge edge = (GraphJEdge) edgeIter.next();
-                    if (edge.isVisible() && !edge.isGrayedOut()) {
-                        // the edge source is a node for sure
-                        GraphJVertex sourceVertex = edge.getSourceVertex();
-                        // the edge target may be a point only
-                        if (sourceVertex.equals(key)) {
-                            // add all the points on the edge to the branches of
-                            // the
-                            // source node
-                            // as well as its end node (if any)
-                            List<?> points =
-                                ((EdgeView) this.jgraph.getGraphLayoutCache().getMapping(
-                                    edge, false)).getPoints();
-                            GraphJVertex targetVertex = edge.getTargetVertex();
-                            Iterator<?> pointsIter = points.iterator();
-                            // the first point is the (port of the) source node
-                            // itself; skip it
-                            pointsIter.next();
-                            while (pointsIter.hasNext()) {
-                                Object nextPoint = pointsIter.next();
-                                if (!pointsIter.hasNext()
-                                    && targetVertex != null) {
-                                    // this (last) point is the target node
-                                    branchSet.add(this.toLayoutableMap.get(targetVertex));
-                                } else {
-                                    branchSet.add(this.toLayoutableMap.get(nextPoint));
-                                }
-                            }
-                        } else {
-                            // the key vertex is the target and not the source,
-                            // so this it must be an incoming (non-self) edge of
-                            // the key
-                            inEdgeCount++;
-                        }
-                    }
+                    branchSet.add(this.toLayoutableMap.get(targetVertex));
                 }
                 // add the cell to the count map
                 Integer inEdgeCountKey = Integer.valueOf(inEdgeCount);
