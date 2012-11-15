@@ -126,12 +126,11 @@ public class TestMultiplicity {
         Multiplicity onePlus = getMultiplicity(1, OMEGA, NODE_MULT);
         Multiplicity twoPlus = getMultiplicity(2, OMEGA, NODE_MULT);
         Multiplicity threePlus = getMultiplicity(3, OMEGA, NODE_MULT);
-        assertEquals(zero, zero.sub(zero));
-        assertEquals(zero, zero.sub(one));
-        assertEquals(one, one.sub(zero));
-        assertEquals(zeroOne, oneTwo.sub(one));
-        assertEquals(twoPlus, threePlus.sub(one));
-        assertEquals(onePlus, threePlus.sub(oneTwo));
+        assertEquals(zero, zero.sub(0));
+        assertEquals(zero, zero.sub(1));
+        assertEquals(one, one.sub(0));
+        assertEquals(zeroOne, oneTwo.sub(1));
+        assertEquals(twoPlus, threePlus.sub(1));
     }
 
     @Test

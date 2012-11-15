@@ -786,8 +786,7 @@ public final class Shape extends ShapeGraph {
 
         // Adjust the multiplicity of the original node.
         Multiplicity oldMult = this.getNodeMult(collectorNode);
-        Multiplicity newMult =
-            oldMult.sub(Multiplicity.scale(ONE_NODE_MULT, copies));
+        Multiplicity newMult = oldMult.sub(copies);
         assert !newMult.isZero();
         this.setNodeMult(collectorNode, newMult);
 

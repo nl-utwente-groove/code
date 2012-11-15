@@ -17,7 +17,6 @@
 package groove.abstraction.pattern.trans;
 
 import groove.abstraction.Multiplicity;
-import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.PatternAbsParam;
@@ -48,6 +47,7 @@ import java.util.Stack;
  * 
  * @author Eduardo Zambon
  */
+@SuppressWarnings("all")
 public final class Materialisation {
 
     private static final boolean USE_GUI = false;
@@ -262,7 +262,7 @@ public final class Materialisation {
 
     private PatternNode extractNode(PatternNode origNode,
             Multiplicity newNodeMult) {
-        // There are two cases:
+        /*// There are two cases:
         // - if the original node has a multiplicity smaller then the wanted
         //   multiplicity then we just return it.
         // - if the original node is a collector then we extract a copy.
@@ -286,12 +286,13 @@ public final class Materialisation {
             // well.
             newNode = origNode;
         }
-        return newNode;
+        return newNode;*/
+        return null;
     }
 
     private PatternEdge extractEdge(PatternEdge origEdge, PatternNode newSrc,
             PatternNode newTgt, Multiplicity newEdgeMult, boolean keepOrigEdge) {
-        PatternNode origSrc = origEdge.source();
+        /*PatternNode origSrc = origEdge.source();
         PatternNode origTgt = origEdge.target();
         boolean sameSrc = origSrc.equals(newSrc);
         boolean sameTgt = origTgt.equals(newTgt);
@@ -327,7 +328,8 @@ public final class Materialisation {
 
         adjustMorphism(newEdge, origEdge);
 
-        return newEdge;
+        return newEdge;*/
+        return null;
     }
 
     private void adjustMorphism(PatternEdge newEdge, PatternEdge origEdge) {
@@ -510,7 +512,7 @@ public final class Materialisation {
     private PatternNode traverseUp(PatternEdge origEdge,
             Multiplicity origEdgeMult, PatternNode newSrc, PatternNode newTgt,
             Multiplicity newTgtMult) {
-        Multiplicity newEdgeMult;
+        /*Multiplicity newEdgeMult;
         boolean wasSrcMaterialised = false;
         // Check if we need to materialise the source and other special cases.
         if (this.shape.getMult(newSrc).isCollector()) {
@@ -544,7 +546,8 @@ public final class Materialisation {
             }
             computeTraversal(newSrc);
         }
-        return newSrc;
+        return newSrc;*/
+        return null;
     }
 
     private void traverseDown(Stack<Materialisation> toProcess) {
@@ -1035,7 +1038,7 @@ public final class Materialisation {
     // EDUARDO: Probably refactor this method...
     private boolean isAdmissable(PatternNode tgt, boolean acceptNonWellFormed,
             boolean nGtE) {
-        Multiplicity tgtMult = this.shape.getMult(tgt);
+        /*Multiplicity tgtMult = this.shape.getMult(tgt);
         for (TypeEdge typeEdge : this.shape.getTypeGraph().inEdgeSet(
             tgt.getType())) {
             Multiplicity acc =
@@ -1076,7 +1079,8 @@ public final class Materialisation {
                 }
             }
         }
-        return true;
+        return true;*/
+        return false;
     }
 
     // ------------------------------------------------------------------------
