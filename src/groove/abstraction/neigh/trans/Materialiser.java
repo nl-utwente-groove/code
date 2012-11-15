@@ -357,7 +357,8 @@ public class Materialiser {
                             // multiplicity is already known. Subtract this
                             // value from the equation constant.
                             Multiplicity oppMult = shape.getNodeMult(opposite);
-                            constMult = constMult.sub(oppMult);
+                            int lb = oppMult.getLowerBound();
+                            constMult = constMult.sub(lb);
                         } else { // vars != null.
                             varList.add(vars);
                             // Check for a special case.

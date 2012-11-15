@@ -107,23 +107,18 @@ public final class Multiplicity {
 
     /** Returns the proper bound value for the given multiplicity kind. */
     public static int getBound(MultKind kind) {
-        int bound = 0;
         AbsParameters params = getSetAbsParameters();
         switch (kind) {
         case NODE_MULT:
-            bound = params.getNodeMultBound();
-            break;
+            return params.getNodeMultBound();
         case EDGE_MULT:
-            bound = params.getEdgeMultBound();
-            break;
+            return params.getEdgeMultBound();
         case EQSYS_MULT:
-            bound =
-                ((params.getNodeMultBound() + 1) * (params.getEdgeMultBound() + 1)) - 1;
-            break;
+            return ((params.getNodeMultBound() + 1) * (params.getEdgeMultBound() + 1)) - 1;
         default:
             assert false;
+            return 0;
         }
-        return bound;
     }
 
     /** Returns true if the given number is in \Nat^\omega. */
@@ -232,33 +227,28 @@ public final class Multiplicity {
      */
     public static int add(int i, int j) {
         assert isInNOmega(i) && isInNOmega(j);
-        int result;
         if (i != OMEGA && j != OMEGA) { // i, j \in N.
-            result = i + j;
+            return i + j;
         } else { // otherwise
-            result = OMEGA;
+            return OMEGA;
         }
-        return result;
     }
 
     /**
      * Returns the subtraction of the two given values.
-     * Both i and j must be in \Nat^\omega but \omega - \omega is undefined.
+     * \omega - \omega is undefined.
      */
     public static int sub(int i, int j) {
-        assert isInNOmega(i) && isInNOmega(j);
-        int result;
+        assert isInNOmega(i) && isInN(j);
         if (i != OMEGA) { // i \in N.
             if (j < i) {
-                result = i - j;
+                return i - j;
             } else { // j >= i.
-                result = 0;
+                return 0;
             }
         } else { // i == \omega.
-            assert isInN(j) : "Subtraction undefined.";
-            result = OMEGA;
+            return OMEGA;
         }
-        return result;
     }
 
     /**
@@ -267,15 +257,13 @@ public final class Multiplicity {
      */
     public static int times(int i, int j) {
         assert isInNOmega(i) && isInNOmega(j);
-        int result;
         if (i == 0 || j == 0) {
-            result = 0;
+            return 0;
         } else if (i != OMEGA && j != OMEGA) { // i, j \in N+.
-            result = i * j;
+            return i * j;
         } else { // otherwise
-            result = OMEGA;
+            return OMEGA;
         }
-        return result;
     }
 
     /**
@@ -459,10 +447,9 @@ public final class Multiplicity {
     }
 
     /** Returns the subtraction of the two given multiplicities. */
-    public Multiplicity sub(Multiplicity other) {
-        assert this.kind == other.kind;
-        return getMultiplicity(sub(this.i, other.j), sub(this.j, other.i),
-            this.kind);
+    public Multiplicity sub(int k) {
+        assert isInN(k);
+        return getMultiplicity(sub(this.i, k), sub(this.j, k), this.kind);
     }
 
     /** Returns the bounded multiplication of the two given multiplicities. */
@@ -476,12 +463,6 @@ public final class Multiplicity {
     public boolean le(Multiplicity other) {
         assert this.kind == other.kind;
         return this.j <= other.j;
-    }
-
-    /** Returns true if this multiplicity is greater or equal than the other. */
-    public boolean ge(Multiplicity other) {
-        assert this.kind == other.kind;
-        return this.i >= other.i;
     }
 
     /** Returns true if this multiplicity subsumes the other. */

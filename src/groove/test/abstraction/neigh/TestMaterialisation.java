@@ -651,7 +651,7 @@ public class TestMaterialisation {
         for (Proof preMatch : preMatches) {
             Set<Materialisation> mats =
                 Materialisation.getMaterialisations(shape, preMatch);
-            assertTrue(mats.size() == 3 || mats.size() == 0);
+            assertTrue(mats.size() == 2 || mats.size() == 0);
         }
     }
 
