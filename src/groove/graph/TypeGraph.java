@@ -484,6 +484,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             for (VariableNode arg : opNode.getArguments()) {
                 VariableNode argImage = (VariableNode) result.getNode(arg);
                 if (argImage == null) {
+                    // since we should have already added all variable nodes
+                    // presumably this means that the argument contains an error
                     imageOk = false;
                     break;
                 }

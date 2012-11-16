@@ -305,7 +305,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         for (AspectEdge edge : predEdges) {
             try {
                 AspectNode source = edge.source();
-                boolean nac = edge.getKind().inNAC();
+                boolean nac =
+                    edge.getKind().inNAC() && !source.getKind().inNAC();
                 Object predicate = edge.getPredicate();
                 AspectNode outcome;
                 if (predicate instanceof Assignment) {

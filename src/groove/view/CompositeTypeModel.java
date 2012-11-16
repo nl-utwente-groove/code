@@ -45,11 +45,13 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
      * @see #toResource()
      */
     public TypeGraph getTypeGraph() {
+        TypeGraph result;
         try {
-            return toResource();
+            result = toResource();
         } catch (FormatException e) {
-            return getImplicitTypeGraph();
+            result = getImplicitTypeGraph();
         }
+        return result;
     }
 
     @Override
