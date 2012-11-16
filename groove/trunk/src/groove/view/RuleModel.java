@@ -187,7 +187,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     public Set<TypeLabel> getLabels() {
         if (this.labelSet == null) {
             this.labelSet = new HashSet<TypeLabel>();
-            for (AspectEdge edge : getNormalSource().edgeSet()) {
+            for (AspectEdge edge : getSource().edgeSet()) {
                 RuleLabel label = edge.getRuleLabel();
                 if (label != null) {
                     RegExpr labelExpr = label.getMatchExpr();
@@ -1403,7 +1403,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 // construct the NAC graph
                 RuleGraph nac =
                     createGraph(this.lhs.getName() + "-nac-" + result.size());
-                nac.addNodeSet(cell.getNodes());
+                for (RuleNode node : cell.getNodes()) {
+                    nac.addNode(node);
+                    if (node instanceof OperatorNode) {
+                        nac.addNodeSet(((OperatorNode) node).getArguments());
+                    }
+                }
                 nac.addEdgeSet(cell.getEdges());
                 result.add(nac);
             }
