@@ -82,6 +82,8 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import javax.swing.SwingUtilities;
+
 /**
  * Provides a graph-based resource model for a production rule. 
  * The nodes and edges are divided
@@ -187,7 +189,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     public Set<TypeLabel> getLabels() {
         if (this.labelSet == null) {
             this.labelSet = new HashSet<TypeLabel>();
-            for (AspectEdge edge : getSource().edgeSet()) {
+            for (AspectEdge edge : getNormalSource().edgeSet()) {
                 RuleLabel label = edge.getRuleLabel();
                 if (label != null) {
                     RegExpr labelExpr = label.getMatchExpr();
@@ -373,7 +375,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         if (this.normalSource == null) {
             this.normalSource = getSource().normalise(null);
             if (NORMALISE_DEBUG) {
-                GraphPreviewDialog.showGraph(this.normalSource);
+                // defer in order to avoid circularities in the derivation of the type graph
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        GraphPreviewDialog.showGraph(RuleModel.this.normalSource);
+                    }
+                });
             }
         }
         return this.normalSource;
