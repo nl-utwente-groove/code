@@ -78,7 +78,7 @@ public class ActionStore implements SimulatorListener {
      * refresh themselves.
      */
     public void refreshActions() {
-        for (Refreshable action : this.refreshables) {
+        for (Refreshable action : new ArrayList<Refreshable>(this.refreshables)) {
             action.refresh();
         }
     }
