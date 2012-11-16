@@ -20,7 +20,6 @@ import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.neigh.explore.ShapeGenerator;
 import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.PatternAbstraction;
-import groove.abstraction.pattern.explore.util.PatternShapeMatchApplier.ApplicationMethod;
 import groove.abstraction.pattern.lts.PSTS;
 import groove.explore.Generator;
 import groove.util.CommandLineOption;
@@ -42,12 +41,6 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
     /** Usage message for the generator. */
     private static final String USAGE_MESSAGE =
         "Usage: PatternShapeGenerator [options] <grammar> <start-graph-name> <type-graph-name>";
-
-    // ------------------------------------------------------------------------
-    // Object fields
-    // ------------------------------------------------------------------------
-
-    private ApplicationMethod method = ApplicationMethod.MATERIALISATION;
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -84,7 +77,7 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
     @Override
     public PSTS getPGTS() {
         if (pgts == null) {
-            pgts = new PSTS(getGrammar(), this.method);
+            pgts = new PSTS(getGrammar());
         }
         return (PSTS) pgts;
     }

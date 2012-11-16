@@ -19,7 +19,6 @@ package groove.abstraction.pattern.lts;
 import groove.abstraction.neigh.lts.AGTS;
 import groove.abstraction.pattern.explore.util.PatternRuleEventApplier;
 import groove.abstraction.pattern.explore.util.PatternShapeMatchApplier;
-import groove.abstraction.pattern.explore.util.PatternShapeMatchApplier.ApplicationMethod;
 import groove.abstraction.pattern.explore.util.PatternShapeMatchSetCollector;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternShape;
@@ -38,7 +37,6 @@ public final class PSTS extends PGTS {
     // Object fields
     // ------------------------------------------------------------------------
 
-    private final ApplicationMethod method;
     /** Number of states marked as subsumed. */
     private int subsumedStatesCount;
     /** Number of transitions marked as subsumed. */
@@ -49,9 +47,8 @@ public final class PSTS extends PGTS {
     // ------------------------------------------------------------------------
 
     /** Constructs a PSTS for the given grammar. */
-    public PSTS(PatternGraphGrammar grammar, ApplicationMethod method) {
+    public PSTS(PatternGraphGrammar grammar) {
         super(grammar);
-        this.method = method;
         this.subsumedStatesCount = 0;
         this.subsumedTransitionsCount = 0;
     }
@@ -114,11 +111,6 @@ public final class PSTS extends PGTS {
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
-
-    /** Returns the method to be used for rule application. */
-    public ApplicationMethod getApplicationMethod() {
-        return this.method;
-    }
 
     /** Returns the number of states marked as subsumed. */
     public int getSubsumedStatesCount() {
