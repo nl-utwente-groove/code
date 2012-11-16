@@ -28,8 +28,6 @@ import groove.abstraction.pattern.lts.PatternTransition;
 import groove.abstraction.pattern.match.PreMatch;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.trans.MaterialisingRuleApplication;
-import groove.abstraction.pattern.trans.NonBranchingRuleApplication;
-import groove.abstraction.pattern.trans.PatternShapeRuleApplication;
 import groove.lts.MatchApplier;
 
 import java.util.Collection;
@@ -78,8 +76,9 @@ public class PatternShapeMatchApplier implements PatternRuleEventApplier {
             PatternPreviewDialog.showPatternGraph(source.getGraph());
         }
 
-        PatternShapeRuleApplication app =
-            createApplication((PatternShape) source.getGraph(), preMatch);
+        MaterialisingRuleApplication app =
+            new MaterialisingRuleApplication((PatternShape) source.getGraph(),
+                preMatch);
         Collection<PatternShape> transShapes = app.transform();
         // We must have at least one materialisation for each pre-match;
         assert !transShapes.isEmpty();
@@ -113,35 +112,10 @@ public class PatternShapeMatchApplier implements PatternRuleEventApplier {
     // Other methods
     // ------------------------------------------------------------------------
 
-    private PatternShapeRuleApplication createApplication(PatternShape pShape,
-            PreMatch preMatch) {
-        switch (this.psts.getApplicationMethod()) {
-        case MATERIALISATION:
-            return new MaterialisingRuleApplication(pShape, preMatch);
-        case NON_BRANCHING:
-            return new NonBranchingRuleApplication(pShape, preMatch);
-        default:
-            assert false;
-            return null;
-        }
-    }
-
     private void println(String s) {
         if (DEBUG) {
             System.out.println(s);
         }
-    }
-
-    // ------------------------------------------------------------------------
-    // Inner Classes
-    // ------------------------------------------------------------------------
-
-    /** Different kinds of rule application. */
-    public enum ApplicationMethod {
-        /** Computes the shape materialisation, branches. */
-        MATERIALISATION,
-        /** Less precise over-approximation that only modifies multiplicities. */
-        NON_BRANCHING
     }
 
 }

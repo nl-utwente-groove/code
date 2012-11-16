@@ -28,8 +28,7 @@ import java.util.List;
  * 
  * @author Eduardo Zambon
  */
-public final class MaterialisingRuleApplication implements
-        PatternShapeRuleApplication {
+public final class MaterialisingRuleApplication {
 
     private final PatternShape pShape;
     private final PreMatch match;
