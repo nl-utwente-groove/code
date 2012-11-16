@@ -331,10 +331,7 @@ public class StateDisplay extends Display {
             boolean transferLayout =
                 oldTtrans != null && oldTtrans != source.getTransition()
                     && oldTtrans.target() == source.getState();
-            if (changes.contains(Change.GRAMMAR)) {
-                updateGrammar(source.getGrammar());
-            } else if (changes.contains(GTS)
-                && source.getGts() != oldModel.getGts()) {
+            if (changes.contains(GTS) && source.getGts() != oldModel.getGts()) {
                 startSimulation(source.getGts());
             } else if (changes.contains(STATE)) {
                 GraphState newState = source.getState();
@@ -363,18 +360,6 @@ public class StateDisplay extends Display {
                 refreshStatus();
             }
             activateListening();
-        }
-
-        /**
-         * Sets the underlying model of this state frame to the initial graph of the
-         * new grammar.
-         */
-        public void updateGrammar(GrammarModel grammar) {
-            if (grammar.hasErrors()) {
-                displayState(null);
-            } else {
-                startSimulation(getSimulatorModel().getGts());
-            }
         }
 
         private void startSimulation(GTS gts) {
@@ -518,16 +503,18 @@ public class StateDisplay extends Display {
         private void setNextStateLayout(GraphNextState state,
                 AspectJModel result) {
             Stack<GraphTransition> stack = new Stack<GraphTransition>();
-            GraphState source = state.source();
-            while (!this.stateToJModel.containsKey(source)) {
+            GraphState source = state;
+            do {
                 GraphTransition trans = (GraphTransition) source;
                 stack.push(trans);
                 source = trans.source();
-            }
-            AspectJModel model = this.stateToJModel.get(source);
+            } while (source instanceof GraphNextState
+                && !this.stateToJModel.containsKey(source));
+            AspectJModel model = getAspectJModel(source);
             AttributesMap map = extractAttributes(model, getAspectMap(source));
             while (!stack.isEmpty()) {
-                map = transferAttributes(map, stack.pop());
+                GraphTransition trans = stack.pop();
+                map = transferAttributes(map, trans);
             }
             applyAttributes(map, result, getAspectMap(state));
         }
@@ -586,6 +573,7 @@ public class StateDisplay extends Display {
                 HostNode sourceNode = entry.getKey();
                 Attributes attr = sourceNodeMap.get(sourceNode);
                 HostNode targetNode = entry.getValue();
+                assert trans.target().getGraph().containsNode(targetNode);
                 Color newColor = newColorMap.get(targetNode);
                 if (newColor != null) {
                     if (attr == null) {
@@ -626,11 +614,13 @@ public class StateDisplay extends Display {
                 HostToAspectMap aspectMap) {
             // store target node attributes
             for (Map.Entry<HostNode,Attributes> e : map.nodeMap.entrySet()) {
-                Attributes attrs = e.getValue();
                 AspectNode aspectNode = aspectMap.getNode(e.getKey());
+                assert aspectNode != null : "Target element " + e.getKey()
+                    + " unknown";
                 AspectJVertex jCell = result.getJCellForNode(aspectNode);
                 assert jCell != null : "Target element " + aspectNode
                     + " unknown";
+                Attributes attrs = e.getValue();
                 if (attrs.bounds != null) {
                     GraphConstants.setBounds(jCell.getAttributes(),
                         attrs.bounds);
@@ -645,6 +635,8 @@ public class StateDisplay extends Display {
             // store target edge attributes
             for (Map.Entry<HostEdge,Attributes> e : map.edgeMap.entrySet()) {
                 AspectEdge aspectEdge = aspectMap.getEdge(e.getKey());
+                assert aspectEdge != null : "Target element " + e.getKey()
+                    + " unknown";
                 AspectJCell jCell = result.getJCellForEdge(aspectEdge);
                 if (jCell instanceof AspectJVertex) {
                     continue;
