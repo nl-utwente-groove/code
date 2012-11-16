@@ -518,12 +518,12 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
         }
     }
 
-    /** Returns the parameter aspect of this node, if any. */
+    /** Returns the attribute aspect of this node, if any. */
     public Aspect getAttrAspect() {
         return this.attr;
     }
 
-    /** Indicates if this represents a rule parameter. */
+    /** Indicates if this represents a data attribute. */
     public boolean hasAttrAspect() {
         return this.attr != null && this.attr.getKind() != DEFAULT;
     }
