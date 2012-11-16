@@ -269,15 +269,19 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         if (activeState != null) {
             LTSJCell activeCell =
                 (LTSJCell) getModel().getJCellForNode(activeState);
-            activeCell.setActive(true);
-            activeCells.add(activeCell);
+            if (activeCell != null) {
+                activeCell.setActive(true);
+                activeCells.add(activeCell);
+            }
         }
         GraphTransition activeTrans = getActiveTransition();
         if (activeTrans != null) {
             LTSJCell activeCell =
                 (LTSJCell) getModel().getJCellForEdge(activeTrans);
-            activeCell.setActive(true);
-            activeCells.add(activeCell);
+            if (activeCell != null) {
+                activeCell.setActive(true);
+                activeCells.add(activeCell);
+            }
         }
         if (!activeCells.isEmpty()) {
             setSelectionCells(activeCells.toArray());

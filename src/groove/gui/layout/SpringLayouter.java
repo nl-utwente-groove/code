@@ -206,7 +206,7 @@ public class SpringLayouter extends AbstractLayouter {
                             j);
                     edgeFragmentSourceList.add(this.toLayoutableMap.get(efs));
                     Object eft =
-                        j == points.size() - 1 ? jEdge.getTargetVertex()
+                        j == points.size() - 2 ? jEdge.getTargetVertex()
                                 : Pair.newPair(jEdge, j + 1);
                     edgeFragmentTargetList.add(this.toLayoutableMap.get(eft));
                 }
