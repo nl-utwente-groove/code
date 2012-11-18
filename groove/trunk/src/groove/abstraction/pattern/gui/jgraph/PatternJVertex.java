@@ -16,21 +16,11 @@
  */
 package groove.abstraction.pattern.gui.jgraph;
 
-import groove.abstraction.pattern.shape.AbstractPatternNode;
-import groove.abstraction.pattern.shape.PatternNode;
-import groove.abstraction.pattern.shape.PatternShape;
-import groove.graph.Graph;
-import groove.graph.Node;
-import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
-import groove.gui.jgraph.JAttr;
+import groove.gui.look.Look;
 
 import java.util.Collections;
 import java.util.List;
-
-import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.GraphConstants;
 
 /**
  * Class that connects to the JGraph library for displaying pattern nodes.
@@ -44,8 +34,8 @@ public class PatternJVertex extends GraphJVertex {
     // ------------------------------------------------------------------------
 
     // Private constructor. Use the prototype.
-    private PatternJVertex(PatternJModel jModel, AbstractPatternNode pNode) {
-        super(jModel, pNode);
+    private PatternJVertex() {
+        super(null);
     }
 
     // ------------------------------------------------------------------------
@@ -55,12 +45,6 @@ public class PatternJVertex extends GraphJVertex {
     @Override
     public PatternJGraph getJGraph() {
         return (PatternJGraph) super.getJGraph();
-    }
-
-    @Override
-    public PatternJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
-        assert node instanceof AbstractPatternNode;
-        return new PatternJVertex((PatternJModel) jModel, (AbstractPatternNode) node);
     }
 
     @Override
@@ -74,49 +58,17 @@ public class PatternJVertex extends GraphJVertex {
         return Collections.emptyList();
     }
 
-    @Override
-    public String getAdornment() {
-        AbstractPatternNode node = (AbstractPatternNode) getNode();
-        String result = node.getAdornment();
-        Graph<?,?> graph = getJModel().getGraph();
-        if (graph instanceof PatternShape) {
-            PatternShape pShape = (PatternShape) graph;
-            result += "(" + pShape.getMult((PatternNode) node) + ")";
-        }
-        return result;
-    }
-
-    /**
-     * Callback method for creating the core attributes.
-     * These might be modified by other parameters; don't call this
-     * method directly.
-     */
-    @Override
-    protected AttributeMap createAttributes() {
-        return DEFAULT_PNODE_ATTR.clone();
-    }
-
     // ------------------------------------------------------------------------
     // Static methods and fields
     // ------------------------------------------------------------------------
 
-    /** Returns a prototype {@link PatternJVertex} for a given {@link PatternJGraph}. */
-    public static PatternJVertex getPrototype(PatternJGraph jGraph) {
-        return new PatternJVertex(null, null);
+    @Override
+    protected Look getStructuralLook() {
+        return Look.PATTERN;
     }
 
-    /**
-     * The standard jgraph attributes used for representing equivalence classes.
-     */
-    private static final JAttr.AttributeMap DEFAULT_PNODE_ATTR;
-
-    static {
-        DEFAULT_PNODE_ATTR = GraphJGraph.DEFAULT_NODE_ATTR.clone();
-        DEFAULT_PNODE_ATTR.remove(GraphConstants.BACKGROUND);
-        GraphConstants.setAutoSize(DEFAULT_PNODE_ATTR, true);
-        GraphConstants.setGroupOpaque(DEFAULT_PNODE_ATTR, true);
-        GraphConstants.setInset(DEFAULT_PNODE_ATTR, 8);
-        GraphConstants.setDashPattern(DEFAULT_PNODE_ATTR, JAttr.NESTED_DASH);
+    /** Returns a new instance of this class. */
+    public static PatternJVertex newInstance() {
+        return new PatternJVertex();
     }
-
 }

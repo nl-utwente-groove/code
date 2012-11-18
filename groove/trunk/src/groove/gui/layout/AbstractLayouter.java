@@ -20,10 +20,13 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JEdgeView;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualMap;
 import groove.util.Pair;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -236,8 +239,7 @@ abstract public class AbstractLayouter implements Layouter {
                 if (cellView instanceof JEdgeView) {
                     // all true points (i.e., that are not PortViews) are
                     // subject to layouting
-                    List<Object> points =
-                        ((JEdgeView) cellView).getViewPoints();
+                    List<?> points = ((JEdgeView) cellView).getPoints();
                     // failed attempt to store edges beck so they will be layed
                     // out live
                     // GraphConstants.setPoints(cell.getAttributes(),points);
@@ -280,19 +282,32 @@ abstract public class AbstractLayouter implements Layouter {
             if (view instanceof VertexView || view instanceof EdgeView) {
                 GraphJCell cell = (GraphJCell) view.getCell();
                 GraphConstants.setMoveable(cell.getAttributes(), true);
-                AttributeMap modelAttr = new AttributeMap();
+                VisualMap visuals = new VisualMap();
                 if (view instanceof VertexView) {
                     // store the bounds back into the model
-                    GraphConstants.setBounds(modelAttr,
+                    visuals.put(VisualKey.BOUNDS,
                         ((VertexView) view).getCachedBounds());
                 } else {
                     // store the points back into the model
                     List<?> points = ((EdgeView) view).getPoints();
                     if (points != null) {
-                        GraphConstants.setPoints(modelAttr, points);
+                        List<Point2D> newPoints =
+                            new ArrayList<Point2D>(points.size());
+                        for (Object p : points) {
+                            if (p instanceof CellView) {
+                                Rectangle2D bounds = ((CellView) p).getBounds();
+                                Point2D point = new Point2D.Double();
+                                point.setLocation(bounds.getCenterX(),
+                                    bounds.getCenterY());
+                                newPoints.add(point);
+                            } else {
+                                newPoints.add((Point2D) p);
+                            }
+                        }
+                        visuals.put(VisualKey.POINTS, newPoints);
                     }
                 }
-                change.put(cell, modelAttr);
+                change.put(cell, visuals.getAttributes());
             }
         }
         // do the following in the event dispatch thread

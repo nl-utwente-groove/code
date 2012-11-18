@@ -29,6 +29,8 @@ import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JAttr;
 import groove.gui.layout.JVertexLayout;
+import groove.gui.look.Look;
+import groove.gui.look.VisualKey;
 import groove.trans.HostEdge;
 import groove.trans.HostFactory;
 import groove.trans.HostGraph;
@@ -42,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.ParentMap;
 
 /**
@@ -55,12 +56,6 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
     // ------------------------------------------------------------------------
     // Object fields
     // ------------------------------------------------------------------------
-
-    /** Prototype for creating new pattern nodes. */
-    private final PatternJVertex pJVertexProt;
-    /** Prototype for creating new pattern edges. */
-    private final PatternJEdge pJEdgeProt;
-
     /**
      * Map from pattern graph nodes to JGraph cells.
      */
@@ -94,12 +89,8 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
     // ------------------------------------------------------------------------
 
     /** Creates a new jModel with the given prototypes. */
-    PatternJModel(PatternJGraph jGraph, GraphJVertex sJVertexProt,
-            GraphJEdge sJEdgeProt, PatternJVertex pJVertexProt,
-            PatternJEdge pJEdgeProt) {
-        super(jGraph, sJVertexProt, sJEdgeProt);
-        this.pJVertexProt = pJVertexProt;
-        this.pJEdgeProt = pJEdgeProt;
+    PatternJModel(PatternJGraph jGraph) {
+        super(jGraph);
     }
 
     // ------------------------------------------------------------------------
@@ -171,7 +162,8 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
         }
         for (GraphJEdge jEdge : outJEdges) {
             if (jEdge.getTargetNode() == target
-                && isLayoutCompatible(jEdge, edge) && jEdge.addEdge(edge)) {
+                && isLayoutCompatible(jEdge, edge) && jEdge.isCompatible(pEdge)) {
+                jEdge.addEdge(edge);
                 // yes, the edge could be added here; we're done
                 this.edgeJCellMap.put(edge, jEdge);
                 return jEdge;
@@ -247,20 +239,17 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
     /** Creates a new vertex for the given pattern node. */
     private PatternJVertex computeJVertex(AbstractPatternNode pNode) {
         PatternJVertex result = createJVertex(pNode);
-        result.refreshAttributes();
-        if (GraphConstants.isMoveable(result.getAttributes())) {
-            JVertexLayout layout = getLayoutMap().getLayout(pNode);
-            if (layout != null) {
-                result.getAttributes().applyMap(layout.toJAttr());
-            } else {
-                Rectangle newBounds =
-                    new Rectangle(this.nodeX, this.nodeY,
-                        JAttr.DEFAULT_NODE_BOUNDS.width,
-                        JAttr.DEFAULT_NODE_BOUNDS.height);
-                GraphConstants.setBounds(result.getAttributes(), newBounds);
-                this.nodeX = randomCoordinate();
-                this.nodeY = randomCoordinate();
-            }
+        JVertexLayout layout = getLayoutMap().getLayout(pNode);
+        if (layout != null) {
+            result.getVisuals().putAll(layout.toVisuals());
+        } else {
+            Rectangle newBounds =
+                new Rectangle(this.nodeX, this.nodeY,
+                    JAttr.DEFAULT_NODE_BOUNDS.width,
+                    JAttr.DEFAULT_NODE_BOUNDS.height);
+            result.getVisuals().put(VisualKey.BOUNDS, newBounds);
+            this.nodeX = randomCoordinate();
+            this.nodeY = randomCoordinate();
         }
         createPattern(pNode, result);
         return result;
@@ -301,8 +290,7 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
     /** Creates a new jEdge for the given pattern edge. */
     private PatternJEdge computeJEdge(AbstractPatternEdge<?> pEdge) {
         PatternJEdge result = createJEdge(pEdge);
-        result.setBidirectional(false);
-        result.refreshAttributes();
+        result.setLook(Look.BIDIRECTIONAL, true);
         return result;
     }
 
@@ -311,7 +299,10 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
      * @param pNode graph node for which a corresponding j-node is to be created
      */
     private PatternJVertex createJVertex(AbstractPatternNode pNode) {
-        return this.pJVertexProt.newJVertex(this, pNode);
+        PatternJVertex result = PatternJVertex.newInstance();
+        result.setJModel(this);
+        result.setNode(pNode);
+        return result;
     }
 
     /**
@@ -321,7 +312,9 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
      * may be {@code null} if there is initially no edge
      */
     private PatternJEdge createJEdge(AbstractPatternEdge<?> pEdge) {
-        return this.pJEdgeProt.newJEdge(this, pEdge);
+        PatternJEdge result = PatternJEdge.newInstance();
+        result.addEdge(pEdge);
+        return result;
     }
 
 }

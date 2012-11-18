@@ -19,9 +19,9 @@ package groove.gui.list;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.jgraph.JAttr;
+import groove.gui.look.Values;
+import groove.gui.look.Values.ColorSet;
 
-import java.awt.Color;
 import java.util.Set;
 
 /** List panel for search results. */
@@ -37,33 +37,8 @@ public final class SearchResultListPanel extends ListPanel implements
     }
 
     @Override
-    protected Color getNormalBackground() {
-        return JAttr.NORMAL_BACKGROUND;
-    }
-
-    @Override
-    protected Color getNormalForeground() {
-        return JAttr.NORMAL_FOREGROUND;
-    }
-
-    @Override
-    protected Color getFocusBackground() {
-        return JAttr.FOCUS_BACKGROUND;
-    }
-
-    @Override
-    protected Color getFocusForeground() {
-        return JAttr.FOCUS_FOREGROUND;
-    }
-
-    @Override
-    protected Color getSelectBackground() {
-        return JAttr.SELECT_BACKGROUND;
-    }
-
-    @Override
-    protected Color getSelectForeground() {
-        return JAttr.SELECT_FOREGROUND;
+    protected ColorSet getColors() {
+        return Values.NORMAL_COLORS;
     }
 
     @Override
@@ -74,5 +49,4 @@ public final class SearchResultListPanel extends ListPanel implements
             this.parent.adjustVisibility();
         }
     }
-
 }

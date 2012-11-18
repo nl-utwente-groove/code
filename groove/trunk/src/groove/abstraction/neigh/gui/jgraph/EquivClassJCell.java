@@ -19,49 +19,42 @@ package groove.abstraction.neigh.gui.jgraph;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Element;
+import groove.gui.jgraph.AbstractJCell;
 import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.JAttr;
+import groove.gui.look.Look;
 
-import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.DefaultGraphCell;
-import org.jgraph.graph.GraphConstants;
-
 /**
  * @author Eduardo Zambon
  */
-public class EquivClassJCell extends DefaultGraphCell implements GraphJCell {
-
-    private boolean layoutable;
-    private final ShapeJGraph jgraph;
-    private final ShapeJModel jModel;
-
-    private EquivClassJCell(ShapeJGraph jgraph, ShapeJModel jModel,
-            EquivClass<ShapeNode> ec) {
-        this.jgraph = jgraph;
-        this.jModel = jModel;
-        this.setUserObject(ec);
-        this.setAttributes(this.createAttributes());
+public class EquivClassJCell extends AbstractJCell {
+    private EquivClassJCell() {
+        // empty
     }
 
     @Override
+    public Collection<? extends GraphJCell> getContext() {
+        return Collections.emptyList();
+    }
+
+    /** Returns the equivalence class wrapped in this JCell. */
     @SuppressWarnings("unchecked")
-    public EquivClass<ShapeNode> getUserObject() {
-        return (EquivClass<ShapeNode>) super.getUserObject();
+    public EquivClass<ShapeNode> getEquivClass() {
+        return (EquivClass<ShapeNode>) getUserObject();
+    }
+
+    /** Sets the equivalence class wrapped in this JCell. */
+    public void setEquivClass(EquivClass<ShapeNode> ec) {
+        setUserObject(ec);
+        initialise();
     }
 
     @Override
     public ShapeJGraph getJGraph() {
-        return this.jgraph;
-    }
-
-    @Override
-    public ShapeJModel getJModel() {
-        return this.jModel;
+        return (ShapeJGraph) super.getJGraph();
     }
 
     @Override
@@ -75,42 +68,8 @@ public class EquivClassJCell extends DefaultGraphCell implements GraphJCell {
     }
 
     @Override
-    public boolean isVisible() {
-        return true;
-    }
-
-    @Override
     public Collection<? extends Element> getKeys() {
         return Collections.emptyList();
-    }
-
-    @Override
-    final public boolean isLayoutable() {
-        return this.layoutable;
-    }
-
-    @Override
-    final public boolean setLayoutable(boolean layedOut) {
-        boolean result = layedOut != this.layoutable;
-        if (result) {
-            this.layoutable = layedOut;
-        }
-        return result;
-    }
-
-    @Override
-    public boolean isGrayedOut() {
-        return false;
-    }
-
-    @Override
-    public boolean setGrayedOut(boolean gray) {
-        return false;
-    }
-
-    @Override
-    public boolean hasError() {
-        return false;
     }
 
     @Override
@@ -119,44 +78,15 @@ public class EquivClassJCell extends DefaultGraphCell implements GraphJCell {
     }
 
     @Override
-    public void refreshAttributes() {
-        // Empty by design.
+    protected Look getStructuralLook() {
+        return Look.PATTERN;
     }
 
     /** 
-     * Factory method, in case this object is used as a prototype.
-     * Returns a fresh {@link EquivClassJCell} of the same type as this one. 
+     * Returns a fresh, uninitialised instance of this class.
+     * To initialise, set the JModel and the user object
      */
-    public EquivClassJCell newJCell(ShapeJModel jModel, EquivClass<ShapeNode> ec) {
-        return new EquivClassJCell(getJGraph(), jModel, ec);
-    }
-
-    /**
-     * Callback method for creating the core attributes.
-     * These might be modified by other parameters; don't call this
-     * method directly.
-     */
-    private AttributeMap createAttributes() {
-        return DEFAULT_EC_ATTR;
-    }
-
-    /**
-     * The standard jgraph attributes used for representing equivalence classes.
-     */
-    public static final JAttr.AttributeMap DEFAULT_EC_ATTR;
-
-    static {
-        DEFAULT_EC_ATTR = new JAttr.AttributeMap();
-        GraphConstants.setBounds(DEFAULT_EC_ATTR, new Rectangle2D.Double(20,
-            20, 40, 20));
-        GraphConstants.setAutoSize(DEFAULT_EC_ATTR, true);
-        GraphConstants.setGroupOpaque(DEFAULT_EC_ATTR, true);
-        GraphConstants.setInset(DEFAULT_EC_ATTR, 8);
-        GraphConstants.setBorder(DEFAULT_EC_ATTR, JAttr.NESTED_BORDER);
-    }
-
-    /** Returns a prototype {@link EquivClassJCell} for a given {@link ShapeJGraph}. */
-    public static EquivClassJCell getPrototype(ShapeJGraph jGraph) {
-        return new EquivClassJCell(jGraph, null, null);
+    public static EquivClassJCell newInstance() {
+        return new EquivClassJCell();
     }
 }

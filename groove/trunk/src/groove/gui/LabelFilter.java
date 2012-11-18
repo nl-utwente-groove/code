@@ -26,6 +26,7 @@ import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJVertex;
+import groove.gui.look.VisualKey;
 import groove.view.aspect.AspectEdge;
 
 import java.util.Collection;
@@ -288,6 +289,13 @@ public class LabelFilter extends Observable {
      */
     private void notifyIfNonempty(Set<GraphJCell> changedCells) {
         if (changedCells != null && !changedCells.isEmpty()) {
+            // stale the visibility of the affected cells
+            for (GraphJCell jCell : changedCells) {
+                jCell.setStale(changedKeys);
+                for (GraphJCell c : jCell.getContext()) {
+                    c.setStale(changedKeys);
+                }
+            }
             setChanged();
             notifyObservers(changedCells);
         }
@@ -440,6 +448,9 @@ public class LabelFilter extends Observable {
     private boolean labelBased = true;
     /** Field used to test consistency of the type entries. */
     private TypeGraph typeGraph;
+    /** The keys that may change if a filter is (de)selected. */
+    private static VisualKey[] changedKeys = new VisualKey[] {
+        VisualKey.VISIBLE, VisualKey.LABEL};
 
     /** Type of the keys in a label filter. */
     public static interface Entry extends Comparable<Entry> {

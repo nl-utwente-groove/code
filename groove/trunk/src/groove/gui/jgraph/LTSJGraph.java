@@ -18,6 +18,7 @@ package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Element;
+import groove.graph.GraphRole;
 import groove.gui.ModelCheckingMenu;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
@@ -30,9 +31,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.RecipeTransition;
 import groove.lts.RuleTransition;
-import groove.util.Colors;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.Serializable;
@@ -47,7 +46,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 
-import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphModel;
 
 /**
@@ -65,6 +63,11 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
     }
 
     @Override
+    public GraphRole getGraphRole() {
+        return GraphRole.LTS;
+    }
+
+    @Override
     public void setModel(GraphModel model) {
         // reset the active state and transition
         this.activeState = null;
@@ -76,12 +79,6 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
     @Override
     public LTSJModel getModel() {
         return (LTSJModel) this.graphModel;
-    }
-
-    @Override
-    public LTSJModel newModel() {
-        return new LTSJModel(this, LTSJVertex.getPrototype(this),
-            LTSJEdge.getPrototype(this));
     }
 
     @Override
@@ -338,12 +335,12 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
                 findTraces(getModel().getGraph().getResultStates());
             for (Object element : getRoots()) {
                 LTSJCell jCell = (LTSJCell) element;
-                jCell.setVisible(trace.isEmpty() || trace.contains(jCell));
+                jCell.setVisibleFlag(trace.isEmpty() || trace.contains(jCell));
             }
         } else {
             for (Object element : getRoots()) {
                 LTSJCell jCell = (LTSJCell) element;
-                jCell.setVisible(true);
+                jCell.setVisibleFlag(true);
             }
         }
         refreshAllCells();
@@ -396,125 +393,6 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
      */
     private final ScrollToCurrentAction scrollToCurrentAction =
         new ScrollToCurrentAction();
-    /** The default node attributes of the LTS */
-    static public final JAttr.AttributeMap LTS_NODE_ATTR;
-    /** The start node attributes of the LTS */
-    static public final JAttr.AttributeMap LTS_START_NODE_ATTR;
-    /** Unexplored node attributes */
-    static public final JAttr.AttributeMap LTS_OPEN_NODE_ATTR;
-    /** Final node attributes */
-    static public final JAttr.AttributeMap LTS_FINAL_NODE_ATTR;
-    /** Result node attributes */
-    static public final JAttr.AttributeMap LTS_RESULT_NODE_ATTR;
-    /** Error node attributes */
-    static public final JAttr.AttributeMap LTS_ERROR_NODE_ATTR;
-    /** The default edge attributes of the LTS */
-    static public final JAttr.AttributeMap LTS_EDGE_ATTR;
-    /** Transient node attributes of the LTS */
-    static public final JAttr.AttributeMap LTS_NODE_TRANSIENT_CHANGE;
-    /** Transient edge attributes of the LTS */
-    static public final JAttr.AttributeMap LTS_EDGE_TRANSIENT_CHANGE;
-    /** Absent node attributes of the LTS */
-    static public final JAttr.AttributeMap LTS_NODE_ABSENT_CHANGE;
-    /** Absent edge attributes of the LTS */
-    static public final JAttr.AttributeMap LTS_EDGE_ABSENT_CHANGE;
-    /** Active node attributes of the LTS */
-    static public final JAttr.AttributeMap LTS_NODE_ACTIVE_CHANGE;
-    /** Active edge attributes of the LTS */
-    static public final JAttr.AttributeMap LTS_EDGE_ACTIVE_CHANGE;
-    /** Transient active node attributes of the LTS */
-    static public final JAttr.AttributeMap LTS_NODE_TRANSIENT_ACTIVE_CHANGE;
-    /** Transient active edge attributes of the LTS */
-    static public final JAttr.AttributeMap LTS_EDGE_TRANSIENT_ACTIVE_CHANGE;
-
-    static private final Color FINAL_BACK = Color.red;
-    static private final Color OPEN_BACK = Color.gray.brighter();
-    static private final Color START_BACK = Color.green;
-    static private final Color RESULT_BACK = Colors.findColor("255 165 0");
-    static private final Color ACTIVE_COLOR = Color.BLUE;
-    static private final Color TRANSIENT_ACTIVE_COLOR =
-        Colors.findColor("165 42 149");
-    // set the emphasis attributes
-    static {
-        // Ordinary LTS nodes and edges
-        JAttr ltsValues = new JAttr() {
-            {
-                this.connectable = false;
-                this.lineEnd = GraphConstants.ARROW_SIMPLE;
-            }
-        };
-        LTS_NODE_ATTR = ltsValues.getNodeAttrs();
-        LTS_EDGE_ATTR = ltsValues.getEdgeAttrs();
-        LTS_START_NODE_ATTR = new JAttr() {
-            {
-                this.backColour = START_BACK;
-            }
-        }.getNodeAttrs();
-
-        // Special LTS  nodes
-        LTS_OPEN_NODE_ATTR = new JAttr() {
-            {
-                this.backColour = OPEN_BACK;
-            }
-        }.getNodeAttrs();
-        LTS_FINAL_NODE_ATTR = new JAttr() {
-            {
-                this.backColour = FINAL_BACK;
-            }
-        }.getNodeAttrs();
-        LTS_RESULT_NODE_ATTR = new JAttr() {
-            {
-                this.backColour = RESULT_BACK;
-            }
-        }.getNodeAttrs();
-        LTS_ERROR_NODE_ATTR = new JAttr() {
-            {
-                this.backColour = this.lineColour = ERROR_COLOR;
-            }
-        }.getNodeAttrs();
-
-        // active LTS nodes and edges
-        JAttr ltsActive = new JAttr() {
-            {
-                this.lineColour = this.foreColour = ACTIVE_COLOR;
-                this.linewidth = 3;
-                this.lineEnd = GraphConstants.ARROW_SIMPLE;
-            }
-        };
-        LTS_NODE_ACTIVE_CHANGE = ltsActive.getNodeAttrs().diff(LTS_NODE_ATTR);
-        LTS_EDGE_ACTIVE_CHANGE = ltsActive.getEdgeAttrs().diff(LTS_EDGE_ATTR);
-        // transient LTS nodes and edges
-        JAttr ltsTransient = new JAttr() {
-            {
-                this.shape = JVertexShape.DIAMOND;
-                this.foreColour = this.lineColour = TRANSIENT_COLOR;
-            }
-        };
-        LTS_NODE_TRANSIENT_CHANGE =
-            ltsTransient.getNodeAttrs().diff(LTS_NODE_ATTR);
-        LTS_EDGE_TRANSIENT_CHANGE =
-            ltsTransient.getEdgeAttrs().diff(LTS_EDGE_ATTR);
-        // transient active LTS nodes and edges
-        JAttr ltsTransientActive = new JAttr() {
-            {
-                this.lineColour = this.foreColour = TRANSIENT_ACTIVE_COLOR;
-                this.linewidth = 3;
-                this.lineEnd = GraphConstants.ARROW_SIMPLE;
-            }
-        };
-        LTS_NODE_TRANSIENT_ACTIVE_CHANGE =
-            ltsTransientActive.getNodeAttrs().diff(LTS_NODE_ATTR);
-        LTS_EDGE_TRANSIENT_ACTIVE_CHANGE =
-            ltsTransientActive.getEdgeAttrs().diff(LTS_EDGE_ATTR);
-        // absent LTS nodes and edges
-        JAttr ltsAbsent = new JAttr() {
-            {
-                this.dash = JAttr.ABSENT_DASH;
-            }
-        };
-        LTS_NODE_ABSENT_CHANGE = ltsAbsent.getNodeAttrs().diff(LTS_NODE_ATTR);
-        LTS_EDGE_ABSENT_CHANGE = ltsAbsent.getEdgeAttrs().diff(LTS_EDGE_ATTR);
-    }
 
     /**
      * Action to scroll the LTS display to a (previously set) node or edge.
@@ -581,6 +459,32 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         @Override
         public Layouter newInstance(GraphJGraph jGraph) {
             return new MyForestLayouter(this.name, jGraph);
+        }
+    }
+
+    @Override
+    protected JGraphFactory createFactory() {
+        return new MyFactory();
+    }
+
+    private class MyFactory extends GraphJGraphFactory {
+        public MyFactory() {
+            super(LTSJGraph.this);
+        }
+
+        @Override
+        public LTSJVertex newJVertex() {
+            return LTSJVertex.newInstance();
+        }
+
+        @Override
+        public LTSJEdge newJEdge() {
+            return LTSJEdge.newInstance();
+        }
+
+        @Override
+        public LTSJModel newModel() {
+            return new LTSJModel((LTSJGraph) getJGraph());
         }
     }
 }

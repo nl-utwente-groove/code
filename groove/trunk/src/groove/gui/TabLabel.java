@@ -16,8 +16,8 @@
  */
 package groove.gui;
 
-import groove.gui.jgraph.JAttr;
 import groove.gui.list.ListTabbedPane;
+import groove.gui.look.Values;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -91,7 +91,7 @@ public class TabLabel extends JPanel {
         this.kind = tabKind;
         this.hasButton = button;
         this.iconLabel = new JLabel(title, icon, JLabel.LEFT);
-        this.iconLabel.setBackground(JAttr.ERROR_COLOR);
+        this.iconLabel.setBackground(Values.ERROR_COLOR);
         this.iconLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0,
             tabKind.getHGap()));
         if (tabKind != Kind.RESOURCE) {

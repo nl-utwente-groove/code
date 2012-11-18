@@ -129,7 +129,8 @@ public class ForestLayouter extends AbstractLayouter {
             // add the layoutable to the leaves and the branch map
             Set<Layoutable> branchSet = new LinkedHashSet<Layoutable>();
             this.branchMap.put(cellLayoutable, branchSet);
-            if (key instanceof GraphJVertex && ((GraphJVertex) key).isVisible()) {
+            if (key instanceof GraphJVertex
+                && ((GraphJVertex) key).getVisuals().isVisible()) {
                 // Initialise the incoming edge count
                 int inEdgeCount = 0;
                 // calculate the incoming edge count and outgoing edge map
@@ -144,7 +145,7 @@ public class ForestLayouter extends AbstractLayouter {
                     EdgeView edgeView =
                         (EdgeView) this.jgraph.getGraphLayoutCache().getMapping(
                             edge, false);
-                    if (edgeView != null && edge.isVisible()
+                    if (edgeView != null && edge.getVisuals().isVisible()
                         && !edge.isGrayedOut()) {
                         // the edge source is a node for sure
                         GraphJVertex sourceVertex = edge.getSourceVertex();

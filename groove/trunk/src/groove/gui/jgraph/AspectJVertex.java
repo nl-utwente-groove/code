@@ -15,8 +15,8 @@ import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.VariableNode;
-import groove.gui.jgraph.JAttr.AttributeMap;
-import groove.gui.tree.RuleLevelTree;
+import groove.gui.look.Look;
+import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
 import groove.io.Util;
@@ -32,31 +32,23 @@ import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectParser;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.jgraph.graph.GraphConstants;
 
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
 public class AspectJVertex extends GraphJVertex implements AspectJCell {
-    /** Creates a j-vertex on the basis of a given (aspectual) node. */
-    public AspectJVertex(AspectJModel jModel, AspectNode node) {
-        super(jModel, node);
+    /** 
+     * Creates a fresh, uninitialised JVertex.
+     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(Node)}
+     * to initialise.
+     */
+    private AspectJVertex() {
         setUserObject(null);
-        if (node != null) {
-            this.aspect = node.getKind();
-            this.errors.addAll(node.getErrors());
-        }
-        if (jModel != null) {
-            resetTracker();
-        }
     }
 
     @Override
@@ -81,47 +73,32 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Set<AspectEdge> getJVertexLabels() {
-        return (Set<AspectEdge>) super.getJVertexLabels();
-    }
-
-    /** Clears the errors and the aspect, in addition to calling the super method. */
-    @Override
-    void reset(GraphJModel<?,?> jModel, Node node) {
-        assert jModel instanceof AspectJModel;
-        super.reset(jModel, node);
-        this.errors.clear();
-        clearExtraErrors();
-        this.aspect = AspectKind.DEFAULT;
-        resetTracker();
+    public Set<AspectEdge> getEdges() {
+        return (Set<AspectEdge>) super.getEdges();
     }
 
     @Override
-    public AspectJVertex clone() {
-        AspectJVertex result = (AspectJVertex) super.clone();
-        result.errors = new ArrayList<FormatError>();
-        result.extraErrors = new ArrayList<FormatError>();
-        result.resetTracker();
-        return result;
+    protected void initialise() {
+        super.initialise();
+        if (getNode() != null) {
+            this.aspect = getNode().getKind();
+            getErrors().addErrors(getNode().getErrors(), true);
+        }
+        resetJModelTracker();
     }
 
     @Override
-    public AspectJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
-        return new AspectJVertex((AspectJModel) jModel, (AspectNode) node);
-    }
-
-    @Override
-    public boolean addJVertexLabel(Edge edge) {
-        boolean result = super.addJVertexLabel(edge);
+    public boolean addEdge(Edge edge) {
+        boolean result = super.addEdge(edge);
         if (result) {
-            this.errors.addAll(((AspectEdge) edge).getErrors());
+            getErrors().addErrors(((AspectEdge) edge).getErrors(), true);
         }
         return result;
     }
 
     @Override
-    protected boolean isJVertexLabel(Edge edge) {
-        return super.isJVertexLabel(edge)
+    protected boolean isCompatible(Edge edge) {
+        return super.isCompatible(edge)
             || ((AspectEdge) edge).getKind() == REMARK;
     }
 
@@ -132,10 +109,10 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
      * have this JVertex as their source label and for which
      * {@link AspectJEdge#isSourceLabel()} holds.
      */
-    private Set<AspectEdge> getExtraSelfEdges() {
+    public Set<AspectEdge> getExtraSelfEdges() {
         Set<AspectEdge> result = new TreeSet<AspectEdge>();
         // add all outgoing JEdges that are source labels
-        for (Object edgeObject : getPort().getEdges()) {
+        for (GraphJEdge edgeObject : getJEdges()) {
             AspectJEdge jEdge = (AspectJEdge) edgeObject;
             if (jEdge.getSourceVertex() == this && jEdge.isSourceLabel()) {
                 result.addAll(jEdge.getEdges());
@@ -151,7 +128,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     private TypeNode getNodeType() {
         TypeNode result = null;
         TypeGraph typeGraph = getJModel().getTypeGraph();
-        for (AspectEdge edge : getJVertexLabels()) {
+        for (AspectEdge edge : getEdges()) {
             if (typeGraph.isNodeType(edge)) {
                 result = typeGraph.getNode(edge.getTypeLabel());
                 break;
@@ -162,8 +139,10 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     void setNodeFixed() {
         getNode().setFixed();
-        this.errors.addAll(getNode().getErrors());
-        refreshAttributes();
+        if (getNode().hasErrors()) {
+            getErrors().addErrors(getNode().getErrors(), true);
+            setStale(VisualKey.ERROR);
+        }
     }
 
     @Override
@@ -197,14 +176,14 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     @Override
     StringBuilder getNodeDescription() {
         StringBuilder result = new StringBuilder();
-        if (hasError()) {
-            for (FormatError error : this.extraErrors) {
+        if (hasErrors()) {
+            for (FormatError error : getErrors()) {
                 if (result.length() > 0) {
                     result.append("<br>");
                 }
                 result.append(error.toString());
             }
-            HTMLConverter.red.on(result);
+            HTMLConverter.EMBARGO_TAG.on(result);
         } else {
             if (getNode().getAttrKind().hasSignature()) {
                 if (getNode().getAttrAspect().hasContent()) {
@@ -246,7 +225,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
      * if the model has been modified in the meantime.
      */
     private void updateCachedValues() {
-        if (this.keys == null || this.jModelTracker.isStale()) {
+        if (this.keys == null || getJModelTracker().isStale()) {
             this.keys = computeKeys();
             this.lines = computeLines();
         }
@@ -280,7 +259,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 getNode().hasId()
                         ? ITALIC_TAG.on(getNode().getId().getContent()) : null;
             boolean unshownId = id != null && !this.aspect.isQuantifier();
-            for (AspectEdge edge : getJVertexLabels()) {
+            for (AspectEdge edge : getEdges()) {
                 if (!isFiltered(edge)) {
                     StringBuilder line = getLine(edge);
                     if (unshownId && edge.getDisplayLabel().isNodeType()) {
@@ -455,19 +434,19 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         text.insert(0, edgeRole.getDisplayPrefix());
         switch (edgeRole) {
         case ERASER:
-            HTMLConverter.blue.on(text);
+            HTMLConverter.ERASER_TAG.on(text);
             break;
         case ADDER:
-            HTMLConverter.green.on(text);
+            HTMLConverter.CREATOR_TAG.on(text);
             break;
         case LET:
-            HTMLConverter.green.on(text);
+            HTMLConverter.CREATOR_TAG.on(text);
             break;
         case CREATOR:
-            HTMLConverter.green.on(text);
+            HTMLConverter.CREATOR_TAG.on(text);
             break;
         case EMBARGO:
-            HTMLConverter.red.on(text);
+            HTMLConverter.EMBARGO_TAG.on(text);
             break;
         case REMARK:
             // replace all newlines by // as well
@@ -478,7 +457,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                     REMARK.getDisplayPrefix());
                 lineStart = text.indexOf(NEWLINE, lineStart + NEWLINE.length());
             }
-            HTMLConverter.remark.on(text);
+            HTMLConverter.REMARK_TAG.on(text);
             break;
         }
     }
@@ -488,7 +467,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         getNode().testFixed(true);
         Collection<Element> result = new ArrayList<Element>();
         if (!this.aspect.isMeta()) {
-            for (Edge edge : getJVertexLabels()) {
+            for (Edge edge : getEdges()) {
                 Edge key = getKey(edge);
                 if (key != null) {
                     result.add(key);
@@ -516,106 +495,20 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     @Override
-    protected Edge getKey(Edge edge) {
+    public Edge getKey(Edge edge) {
         TypeModelMap typeMap = getJModel().getResourceModel().getTypeMap();
         return typeMap == null ? edge : typeMap.getEdge((AspectEdge) edge);
     }
 
     @Override
-    public boolean isVisible() {
-        // remark nodes are always visible
-        if (this.aspect == REMARK) {
-            return true;
-        }
-        // anything explicitly filtered by the level tree is not visible
-        RuleLevelTree levelTree = getJGraph().getLevelTree();
-        if (levelTree != null && !levelTree.isVisible(this)) {
-            return false;
-        }
-        // parameter nodes, quantifiers and error nodes are always visible
-        if (getNode().hasParam() || this.aspect.isQuantifier() || hasError()) {
-            return true;
-        }
-        // anything declared invisible by the super method is not visible
-        if (!super.isVisible()) {
-            return false;
-        }
-        Aspect attr = getNode().getAttrAspect();
-        // explicit product nodes should be visible
-        if (!attr.getKind().hasSignature()) {
-            return true;
-        }
-        // in addition, value nodes or data type nodes may be filtered
-        if (getJGraph().isShowValueNodes()) {
-            return true;
-        }
-        // data type nodes in type graphs should never be shown
-        if (getNode().getGraphRole() == GraphRole.TYPE) {
-            return false;
-        }
-        // we are now sure that the underlying node has a data type;
-        // variable nodes should be shown
-        if (!attr.hasContent()) {
-            return true;
-        }
-        // any regular expression edge on the node makes it visible
-        for (Object jEdge : getPort().getEdges()) {
-            AspectEdge edge = ((AspectJEdge) jEdge).getEdge();
-            if (edge.getRuleLabel() != null && !edge.getRuleLabel().isAtom()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public final boolean hasError() {
-        return !this.extraErrors.isEmpty() || !this.errors.isEmpty();
-    }
-
-    @Override
-    public void clearExtraErrors() {
-        this.extraErrors.clear();
-    }
-
-    @Override
-    public void addExtraError(FormatError error) {
-        this.extraErrors.add(error);
-        refreshAttributes();
-    }
-
-    /** Returns the (possibly empty) set of errors in this JVertex. */
-    public Collection<FormatError> getErrors() {
-        return this.errors;
-    }
-
-    @Override
-    public String getAdornment() {
-        if (getNode().hasParam()) {
-            Aspect param = getNode().getParam();
-            StringBuilder result = new StringBuilder(5);
-            switch (param.getKind()) {
-            case PARAM_IN:
-                result.append("?");
-                break;
-            case PARAM_OUT:
-                result.append("!");
-            }
-            result.append(param.getContentString());
-            return result.toString();
+    protected Look getStructuralLook() {
+        if (isEdge()) {
+            return Look.NODIFIED;
+        } else if (getNode().hasAttrAspect()) {
+            return Look.getLookFor(getNode().getAttrKind());
         } else {
-            return null;
+            return Look.getLookFor(getAspect());
         }
-    }
-
-    @Override
-    protected AttributeMap createAttributes() {
-        AttributeMap result;
-        result = AspectJGraph.ASPECT_NODE_ATTR.get(this.aspect).clone();
-        if (getJGraph().hasActiveEditor()) {
-            GraphConstants.setEditable(result, true);
-        }
-        return result;
     }
 
     /** Indicates if this vertex is in fact a nodified edge. */
@@ -637,32 +530,18 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         return result;
     }
 
-    /** Retrieves a node colour from the model's label store, if any. */
-    @Override
-    public Color getColor() {
-        Color result = super.getColor();
-        if (result == null && getNode().getGraphRole() != GraphRole.RULE) {
-            if (getNode() != null && getNode().getColor() != null) {
-                result = (Color) getNode().getColor().getContent();
-            } else {
-                result = getNodeType().getColor();
-            }
-        }
-        return result;
-    }
-
     public void saveToUserObject() {
         // collect the node and edge information
         AspectJObject userObject = getUserObject();
         userObject.clear();
         userObject.addLabels(getNode().getNodeLabels());
-        userObject.addEdges(getJVertexLabels());
+        userObject.addEdges(getEdges());
     }
 
     @Override
-    public void loadFromUserObject(AspectJModel jModel, GraphRole role) {
+    public void loadFromUserObject(GraphRole role) {
         AspectNode node = new AspectNode(getNode().getNumber(), role);
-        reset(jModel, node);
+        setNode(node);
         AspectParser parser = AspectParser.getInstance();
         List<AspectLabel> edgeLabels = new ArrayList<AspectLabel>();
         for (String text : getUserObject()) {
@@ -689,7 +568,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 }
                 remarkText.append(label.getInnerText());
             } else {
-                boolean added = addJVertexLabel(edge);
+                boolean added = addEdge(edge);
                 assert added;
             }
         }
@@ -700,9 +579,10 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 new AspectEdge(node, parser.parse(remarkText.toString(), role),
                     node);
             edge.setFixed();
-            boolean added = addJVertexLabel(edge);
+            boolean added = addEdge(edge);
             assert added;
         }
+        setStale(VisualKey.refreshables());
         // attributes will be refreshed upon the call to setNodeFixed()
     }
 
@@ -728,16 +608,25 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         return (AspectJObject) super.getUserObject();
     }
 
-    /** 
-     * Sets the {@link #jModelTracker} to a fresh value.
-     * This is delegated to a separate method because it needs
-     * to be invoked upon cloning as well as in the constructor.
-     * @see #clone()
-     */
-    private void resetTracker() {
-        this.jModelTracker =
-            getJModel() == null ? ChangeCount.DUMMY_TRACKER
-                    : getJModel().getModCount().createTracker();
+    /** Resets the model tracker. */
+    private void resetJModelTracker() {
+        this.jModelTracker = null;
+        getJModelTracker();
+    }
+
+    /** Lazily creates and returns a change tracker for the underlying JModel. */
+    private Tracker getJModelTracker() {
+        Tracker result = this.jModelTracker;
+        if (result == null || result == ChangeCount.DUMMY_TRACKER) {
+            AspectJModel jModel = getJModel();
+            if (jModel == null) {
+                result = ChangeCount.DUMMY_TRACKER;
+            } else {
+                result = jModel.getModCount().createTracker();
+            }
+            this.jModelTracker = result;
+        }
+        return result;
     }
 
     /** Cached lines. */
@@ -748,12 +637,13 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     private Tracker jModelTracker;
     /** The role of the underlying rule node. */
     private AspectKind aspect;
-    private Collection<FormatError> errors = new LinkedHashSet<FormatError>();
-    private List<FormatError> extraErrors = new ArrayList<FormatError>();
 
-    /** Returns a prototype {@link AspectJVertex} for a given {@link AspectJGraph}. */
-    public static AspectJVertex getPrototype(AspectJGraph jGraph) {
-        return new AspectJVertex(null, null);
+    /** 
+     * Returns a fresh, uninitialised instance.
+     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(Node)} to initialise. 
+     */
+    public static AspectJVertex newInstance() {
+        return new AspectJVertex();
     }
 
     static private final String ASSIGN_TEXT = " = ";

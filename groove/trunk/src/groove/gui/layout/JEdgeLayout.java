@@ -16,7 +16,9 @@
  */
 package groove.gui.layout;
 
-import groove.gui.jgraph.JAttr;
+import groove.gui.look.LineStyle;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualMap;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
@@ -62,7 +64,16 @@ public class JEdgeLayout implements JCellLayout {
             }
         }
         return new JEdgeLayout(points, GraphConstants.getLabelPosition(attr),
-            GraphConstants.getLineStyle(attr));
+            LineStyle.getStyle(GraphConstants.getLineStyle(attr)));
+    }
+
+    /**
+     * Constructs an edge layout from a visual map.
+     * @param visuals the visual map
+     */
+    static public JEdgeLayout newInstance(VisualMap visuals) {
+        return new JEdgeLayout(visuals.getPoints(), visuals.getLabelPos(),
+            visuals.getLineStyle());
     }
 
     /**
@@ -77,17 +88,6 @@ public class JEdgeLayout implements JCellLayout {
     }
 
     /**
-     * Indicates whether a given line style is the default line style, i.e., the
-     * orthogonal style.
-     * @param lineStyle the line style to be tested
-     * @return <code>true</code> if <code>lineStyle</code> is the default
-     *         line style
-     */
-    static public boolean isDefaultLineStyle(int lineStyle) {
-        return lineStyle == JAttr.DEFAULT_LINE_STYLE;
-    }
-
-    /**
      * Constructs an edge layout with a given list of intermediate points, a
      * given label position and a given linestyle.
      * @param points the list of intermediate points; not <code>null</code>
@@ -98,7 +98,7 @@ public class JEdgeLayout implements JCellLayout {
      *         <code>getLineStyle() == lineStyle</code>
      */
     public JEdgeLayout(List<Point2D> points, Point2D labelPosition,
-            int lineStyle) {
+            LineStyle lineStyle) {
         this.points = new LinkedList<Point2D>(points);
         if (labelPosition == null) {
             this.labelPosition = defaultLabelPosition;
@@ -133,7 +133,7 @@ public class JEdgeLayout implements JCellLayout {
      * <code>STYLE_BEZIER</code> or <code>STYLE_QUADRATIC</code>
      * @return the linestyle of this edge layout.
      */
-    public int getLineStyle() {
+    public LineStyle getLineStyle() {
         return this.lineStyle;
     }
 
@@ -146,9 +146,22 @@ public class JEdgeLayout implements JCellLayout {
     public AttributeMap toJAttr() {
         AttributeMap result = new AttributeMap();
         GraphConstants.setPoints(result, this.points);
-        GraphConstants.setLineStyle(result, this.lineStyle);
+        GraphConstants.setLineStyle(result, this.lineStyle.getCode());
         GraphConstants.setLabelPosition(result, this.labelPosition == null
                 ? defaultLabelPosition : this.labelPosition);
+        return result;
+    }
+
+    @Override
+    public VisualMap toVisuals() {
+        VisualMap result = new VisualMap();
+        if (this.points != null) {
+            result.put(VisualKey.POINTS, this.points);
+        }
+        result.put(VisualKey.LINE_STYLE, this.lineStyle);
+        if (this.labelPosition != null) {
+            result.put(VisualKey.LABEL_POS, this.labelPosition);
+        }
         return result;
     }
 
@@ -157,8 +170,8 @@ public class JEdgeLayout implements JCellLayout {
      * position is default.
      */
     public boolean isDefault() {
-        return isDefaultLabelPosition(getLabelPosition())
-            && isDefaultLineStyle(this.lineStyle) && getPoints().size() == 2;
+        return VisualKey.LABEL_POS.getDefaultValue().equals(getLabelPosition())
+            && this.lineStyle.isDefault() && getPoints().size() == 2;
     }
 
     /**
@@ -184,7 +197,7 @@ public class JEdgeLayout implements JCellLayout {
     @Override
     public int hashCode() {
         return getPoints().hashCode() + getLabelPosition().hashCode()
-            + getLineStyle();
+            + getLineStyle().hashCode();
     }
 
     /** The label position of this edge layout. */
@@ -192,5 +205,5 @@ public class JEdgeLayout implements JCellLayout {
     /** The list of intermediate points of this edge layout. */
     private final List<Point2D> points;
     /** The line style of this edge layout. */
-    private final int lineStyle;
+    private final LineStyle lineStyle;
 }

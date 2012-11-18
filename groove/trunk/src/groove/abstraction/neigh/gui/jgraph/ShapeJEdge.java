@@ -17,7 +17,6 @@
 package groove.abstraction.neigh.gui.jgraph;
 
 import groove.abstraction.neigh.shape.ShapeEdge;
-import groove.graph.Edge;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
@@ -36,12 +35,24 @@ public class ShapeJEdge extends GraphJEdge {
     private boolean mainSrc;
     private boolean mainTgt;
 
+    private ShapeJEdge() {
+        // empty
+    }
+
     private ShapeJEdge(ShapeJModel jModel) {
-        super(jModel);
+        this();
+        setJModel(jModel);
     }
 
     private ShapeJEdge(ShapeJModel jModel, ShapeEdge edge) {
-        super(jModel, edge);
+        this();
+        setJModel(jModel);
+        addEdge(edge);
+    }
+
+    @Override
+    protected void initialise() {
+        super.initialise();
         this.mainSrc = false;
         this.mainTgt = false;
     }
@@ -49,16 +60,6 @@ public class ShapeJEdge extends GraphJEdge {
     @Override
     public ShapeJGraph getJGraph() {
         return (ShapeJGraph) super.getJGraph();
-    }
-
-    /** 
-     * Factory method, in case this object is used as a prototype.
-     * Returns a fresh {@link GraphJEdge} of the same type as this one. 
-     */
-    @Override
-    public GraphJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
-        assert edge instanceof ShapeEdge;
-        return new ShapeJEdge((ShapeJModel) jModel, (ShapeEdge) edge);
     }
 
     /** Toggles the mainSrc flag. */
@@ -87,8 +88,16 @@ public class ShapeJEdge extends GraphJEdge {
         return this.mainTgt;
     }
 
+    /** 
+     * Returns fresh, uninitialised instance.
+     * Call {@link #setJModel(GraphJModel)} to initialise.
+     */
+    public static ShapeJEdge newInstance() {
+        return new ShapeJEdge();
+    }
+
     /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */
-    public static ShapeJEdge getPrototype(ShapeJGraph jGraph) {
-        return new ShapeJEdge(null);
+    public static ShapeJEdge getPrototype() {
+        return new ShapeJEdge();
     }
 }

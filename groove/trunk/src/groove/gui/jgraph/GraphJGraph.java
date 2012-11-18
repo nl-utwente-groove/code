@@ -35,9 +35,11 @@ import groove.gui.action.ExportAction;
 import groove.gui.action.LayoutAction;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualMap;
+import groove.gui.look.VisualValue;
 import groove.gui.tree.LabelTree;
 import groove.trans.SystemProperties;
-import groove.util.Colors;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -49,15 +51,15 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Dimension2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -87,8 +89,6 @@ import org.jgraph.event.GraphModelListener;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.CellView;
-import org.jgraph.graph.DefaultGraphModel;
-import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.GraphModel;
@@ -127,17 +127,14 @@ public class GraphJGraph extends org.jgraph.JGraph {
         setDisconnectable(false);
     }
 
+    /** Returns the graph role of the graphs expected for this JGraph. */
+    public GraphRole getGraphRole() {
+        return GraphRole.NONE;
+    }
+
     /** Indicates if the JGraph allows filtering of labels. */
     final public boolean isFiltering() {
         return this.filtering;
-    }
-
-    /**
-     * Indicates if a given jCell key is currently being filtered from view. This is
-     * the case if it is in the set of filtered labels.
-     */
-    public boolean isFiltering(GraphJCell jCell) {
-        return getLabelTree().isFiltered(jCell, isShowUnfilteredEdges());
     }
 
     /**
@@ -219,12 +216,16 @@ public class GraphJGraph extends org.jgraph.JGraph {
     @Override
     public String convertValueToString(Object value) {
         String result;
+        GraphJCell jCell = null;
         if (value instanceof JVertexView) {
-            result = ((JVertexView) value).getCell().getText();
+            jCell = ((JVertexView) value).getCell();
         } else if (value instanceof JEdgeView) {
-            result = ((JEdgeView) value).getCell().getText();
+            jCell = ((JEdgeView) value).getCell();
         } else if (value instanceof GraphJCell) {
-            result = ((GraphJCell) value).getText();
+            jCell = (GraphJCell) value;
+        }
+        if (jCell != null) {
+            result = jCell.getVisuals().getLabel();
         } else if (value == null) {
             result = "";
         } else {
@@ -245,7 +246,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     @Override
     public String getToolTipText(MouseEvent evt) {
         GraphJCell jCell = getFirstCellForLocation(evt.getX(), evt.getY());
-        if (jCell != null && jCell.isVisible()) {
+        if (jCell != null && jCell.getVisuals().isVisible()) {
             return jCell.getToolTipText();
         } else {
             return null;
@@ -330,74 +331,44 @@ public class GraphJGraph extends org.jgraph.JGraph {
     /** Refreshes the visibility and view of a given set of JCells. */
     public void refreshCells(final Collection<? extends GraphJCell> jCellSet) {
         if (!jCellSet.isEmpty()) {
-            final Collection<GraphJCell> visibleCells =
-                new ArrayList<GraphJCell>(jCellSet.size());
-            final Collection<GraphJCell> invisibleCells =
-                new ArrayList<GraphJCell>(jCellSet.size());
-            final Collection<GraphJCell> grayedOutCells =
-                new ArrayList<GraphJCell>(jCellSet.size());
+            JGraphLayoutCache cache = getGraphLayoutCache();
+            Collection<GraphJCell> visibleCells =
+                new HashSet<GraphJCell>(jCellSet.size());
+            Collection<GraphJCell> hiddenCells =
+                new HashSet<GraphJCell>(jCellSet.size());
             for (GraphJCell jCell : jCellSet) {
-                CellView jView = getGraphLayoutCache().getMapping(jCell, false);
-                if (jView != null) {
-                    if (!jCell.isVisible()) {
-                        invisibleCells.add(jCell);
-                        getSelectionModel().removeSelectionCell(jCell);
-                        // test context for visibility
-                        if (jCell instanceof GraphJVertex) {
-                            for (Object edge : ((GraphJVertex) jCell).getPort().getEdges()) {
-                                GraphJEdge jEdge = (GraphJEdge) edge;
-                                if (!jEdge.isVisible()) {
-                                    invisibleCells.add(jEdge);
-                                }
-                            }
-                        } else if (jCell instanceof GraphJEdge) {
-                            GraphJEdge jEdge = (GraphJEdge) jCell;
-                            if (!jEdge.getSourceVertex().isVisible()) {
-                                invisibleCells.add(jEdge.getSourceVertex());
-                            }
-                            if (!jEdge.getTargetVertex().isVisible()) {
-                                invisibleCells.add(jEdge.getTargetVertex());
-                            }
-                        }
-                    } else {
-                        // the display modus might have changed,
-                        // like for data edges; hence reaffirm the visibility
-                        visibleCells.add(jCell);
-                    }
-                } else {
-                    if (jCell.isVisible()) {
-                        visibleCells.add(jCell);
-                        if (jCell instanceof GraphJVertex) {
-                            for (Object edge : ((GraphJVertex) jCell).getPort().getEdges()) {
-                                GraphJEdge jEdge = (GraphJEdge) edge;
-                                if (jEdge.isVisible()) {
-                                    visibleCells.add(jEdge);
-                                }
-                            }
-                        } else if (jCell instanceof GraphJEdge) {
-                            GraphJEdge jEdge = (GraphJEdge) jCell;
-                            if (jEdge.getSourceVertex().isVisible()) {
-                                visibleCells.add(jEdge.getSourceVertex());
-                            }
-                            if (jEdge.getTargetVertex().isVisible()) {
-                                visibleCells.add(jEdge.getTargetVertex());
+                CellView jView = cache.getMapping(jCell, false);
+                boolean wasVisible = jView != null;
+                boolean isVisible = jCell.getVisuals().isVisible();
+                Collection<GraphJCell> changeCells =
+                    wasVisible ? hiddenCells : visibleCells;
+                if (isVisible != wasVisible) {
+                    changeCells.add(jCell);
+                    // test context for visibility
+                    if (jCell instanceof GraphJVertex) {
+                        for (GraphJCell c : jCell.getContext()) {
+                            if (c.getVisuals().isVisible() != wasVisible) {
+                                changeCells.add(c);
                             }
                         }
                     }
                 }
-                if (jCell.isGrayedOut()) {
-                    grayedOutCells.add(jCell);
+                // add the cell in any case if it is visible,
+                // to allow the view to refreshed itself
+                if (isVisible) {
+                    visibleCells.add(jCell);
                 }
             }
             GraphJGraph.this.modelRefreshing = true;
+            Object[] visibleArray = visibleCells.toArray();
+            Object[] hiddenArray = hiddenCells.toArray();
+            // unselect all hidden cells
+            getSelectionModel().removeSelectionCells(hiddenArray);
             // make sure refreshed cells are not selected
-            boolean selectsInsertedCells =
-                getGraphLayoutCache().isSelectsLocalInsertedCells();
-            getGraphLayoutCache().setSelectsLocalInsertedCells(false);
-            getGraphLayoutCache().setVisible(visibleCells.toArray(),
-                invisibleCells.toArray());
-            getGraphLayoutCache().setSelectsLocalInsertedCells(
-                selectsInsertedCells);
+            boolean selectsInsertedCells = cache.isSelectsLocalInsertedCells();
+            cache.setSelectsLocalInsertedCells(false);
+            cache.setVisible(visibleArray, hiddenArray);
+            cache.setSelectsLocalInsertedCells(selectsInsertedCells);
             if (getSelectionCount() > 0) {
                 Rectangle2D scope =
                     (Rectangle2D) getCellBounds(getSelectionCells()).clone();
@@ -579,7 +550,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
             if (newJModel != null) {
                 newJModel.addGraphModelListener(getCancelEditListener());
             }
-            getLabelTree().synchroniseModel();
             setEnabled(newJModel != null);
             if (newJModel != null && getActions() != null) {
                 // create the popup menu to create and activate the actions therein
@@ -615,9 +585,37 @@ public class GraphJGraph extends org.jgraph.JGraph {
      * instance for this JGraph.
      */
     public GraphJModel<?,?> newModel() {
-        return new GraphJModel<Node,Edge>(this,
-            GraphJVertex.getPrototype(this), GraphJEdge.getPrototype(this));
+        return getFactory().newModel();
     }
+
+    /**
+     * Returns the factory for JGraph-related objects.
+     * The factory is initialised either through {@link #createFactory()}
+     * or through {@link #setFactory(JGraphFactory)}
+     * @return the factory to be used for this JGraph
+     */
+    final public JGraphFactory getFactory() {
+        if (this.factory == null) {
+            this.factory = createFactory();
+        }
+        return this.factory;
+    }
+
+    /** 
+     * Sets the factory to be used.
+     * Must be called before the first invocation of {@link #getFactory()}.
+     */
+    final public void setFactory(JGraphFactory factory) {
+        assert this.factory == null;
+        this.factory = factory;
+    }
+
+    /** Callback factory method for the JGraphFactory to be used. */
+    protected JGraphFactory createFactory() {
+        return new GraphJGraphFactory(this);
+    }
+
+    private JGraphFactory factory;
 
     /**
      * In addition to delegating the method to the label list and to
@@ -916,9 +914,12 @@ public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     @Override
-    public GraphLayoutCache getGraphLayoutCache() {
-        GraphLayoutCache result = super.getGraphLayoutCache();
-        if (!(result instanceof MyGraphLayoutCache)) {
+    public JGraphLayoutCache getGraphLayoutCache() {
+        JGraphLayoutCache result;
+        GraphLayoutCache superCache = super.getGraphLayoutCache();
+        if (superCache instanceof JGraphLayoutCache) {
+            result = (JGraphLayoutCache) superCache;
+        } else {
             result = createGraphLayoutCache();
             if (getModel() != null) {
                 result.setModel(getModel());
@@ -930,11 +931,11 @@ public class GraphJGraph extends org.jgraph.JGraph {
 
     /**
      * Factory method for the graph layout cache. This implementation returns a
-     * {@link groove.gui.jgraph.GraphJGraph.MyGraphLayoutCache}.
+     * {@link groove.gui.jgraph.JGraphLayoutCache}.
      * @return the new graph layout cache
      */
-    protected GraphLayoutCache createGraphLayoutCache() {
-        return new MyGraphLayoutCache();
+    protected JGraphLayoutCache createGraphLayoutCache() {
+        return new JGraphLayoutCache(createViewFactory());
     }
 
     /**
@@ -1160,6 +1161,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
         return this.modeActionMap.get(mode);
     }
 
+    private Map<JGraphMode,Action> modeActionMap;
+
     /** 
      * Lazily creates and returns a button wrapping
      * {@link #getModeAction(JGraphMode)}.
@@ -1186,6 +1189,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
         return this.modeButtonMap;
     }
 
+    private Map<JGraphMode,JToggleButton> modeButtonMap;
+
     @Override
     public void startEditingAtCell(Object cell) {
         firePropertyChange(CELL_EDIT_PROPERTY, null, cell);
@@ -1206,15 +1211,11 @@ public class GraphJGraph extends org.jgraph.JGraph {
             new HashMap<GraphJCell,AttributeMap>();
         for (GraphJCell jCell : getModel().getRoots()) {
             if (jCell instanceof GraphJEdge) {
-                GraphJEdge jEdge = (GraphJEdge) jCell;
-                JEdgeView jEdgeView =
-                    (JEdgeView) getGraphLayoutCache().getMapping(jCell, false);
-                if (jEdgeView != null) {
-                    AttributeMap jEdgeAttr = new AttributeMap();
-                    List<?> points = jEdgeView.getExtremePoints();
-                    GraphConstants.setPoints(jEdgeAttr, points);
-                    change.put(jEdge, jEdgeAttr);
-                }
+                VisualMap visuals = jCell.getVisuals();
+                List<Point2D> points = visuals.getPoints();
+                visuals.setPoints(Arrays.asList(points.get(0),
+                    points.get(points.size() - 1)));
+                change.put(jCell, visuals.getAttributes());
             }
         }
         getModel().edit(change, null, null, null);
@@ -1230,9 +1231,26 @@ public class GraphJGraph extends org.jgraph.JGraph {
         return this.layouting;
     }
 
-    private Map<JGraphMode,Action> modeActionMap;
+    /** Flag indicating if the JGraph is being layouted. */
+    private boolean layouting;
 
-    private Map<JGraphMode,JToggleButton> modeButtonMap;
+    /** Sets the visual refreshed to be used for a given visual key. */
+    final protected void setVisualValue(VisualKey key, VisualValue value) {
+        this.visualValueMap.put(key, value);
+    }
+
+    /** Returns the visual refresher used for a given visual key. */
+    final protected VisualValue getVisualValue(VisualKey key) {
+        VisualValue result = this.visualValueMap.get(key);
+        if (result == null) {
+            this.visualValueMap.put(key,
+                result = getFactory().newVisualValue(key));
+        }
+        return result;
+    }
+
+    private final Map<VisualKey,VisualValue> visualValueMap =
+        new EnumMap<VisualKey,VisualValue>(VisualKey.class);
 
     /** Simulator tool to which this JGraph belongs. */
     private final Simulator simulator;
@@ -1240,8 +1258,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     private final Options options;
     /** Flag indicating if the JGraph is filtering labels. */
     private final boolean filtering;
-    /** Flag indicating if the JGraph is being layouted. */
-    private boolean layouting;
+
     /** The manipulation mode of the JGraph. */
     private JGraphMode mode;
     private CancelEditListener cancelListener;
@@ -1285,16 +1302,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
     private final Layouter incrementalLayouter =
         new SpringLayouter().newInstance(this);
 
-    /** Creates a plain JGraph for a given GROOVE graph. */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    static public GraphJGraph createJGraph(Graph<?,?> graph) {
-        GraphJGraph result = new GraphJGraph(null, false);
-        GraphJModel<?,?> jModel = result.newModel();
-        jModel.loadGraph((Graph) graph);
-        result.setModel(jModel);
-        return result;
-    }
-
     /**
      * Constructs a JGraph for a given graph,
      * using a given {@link AttributeFactory}
@@ -1303,7 +1310,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     @SuppressWarnings({"unchecked", "rawtypes"})
     static public GraphJGraph createJGraph(Graph<?,?> graph,
             AttributeFactory factory) {
-        GraphJGraph result = new AttrJGraph(factory);
+        GraphJGraph result = new GraphJGraph(null, false);
         GraphJModel<?,?> jModel = result.newModel();
         jModel.loadGraph((Graph) graph);
         result.setModel(jModel);
@@ -1312,19 +1319,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
 
     /** Maximum duration for layouting a new model. */
     static private final long MAX_LAYOUT_DURATION = 1000;
-
-    /**
-     * The standard jgraph attributes used for graying out nodes and edges.
-     */
-    static public final JAttr.AttributeMap GRAYED_OUT_ATTR;
-    /**
-     * The standard jgraph attributes used for representing nodes.
-     */
-    public static final JAttr.AttributeMap DEFAULT_NODE_ATTR;
-    /**
-     * The standard jgraph attributes used for representing edges.
-     */
-    public static final JAttr.AttributeMap DEFAULT_EDGE_ATTR;
 
     /** The factor by which the zoom is adapted. */
     public static final float ZOOM_FACTOR = 1.4f;
@@ -1336,20 +1330,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
     static public final String JGRAPH_MODE_PROPERTY = "JGraphMode";
     /** Property name for the pseudo-property that signals a cell edit has started. */
     static public final String CELL_EDIT_PROPERTY = "editedCell";
-
-    static {
-        // graying out
-        GRAYED_OUT_ATTR = new JAttr() {
-            {
-                this.foreColour = Colors.findColor("200 200 200 100");
-                this.opaque = false;
-            }
-        }.getEdgeAttrs();
-        // set default node and edge attributes
-        JAttr defaultValues = new JAttr();
-        DEFAULT_EDGE_ATTR = defaultValues.getEdgeAttrs();
-        DEFAULT_NODE_ATTR = defaultValues.getNodeAttrs();
-    }
 
     /** Listener class that cancels the edge adding mode on various occasions. */
     private final class CancelEditListener extends KeyAdapter implements
@@ -1373,103 +1353,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * A layout cache that, for efficiency, does not pass on all change events,
-     * and sets a {@link JCellViewFactory}. It should be possible to use the
-     * partiality of the cache to hide elements, but this seems unnecessarily
-     * complicated.
-     */
-    private class MyGraphLayoutCache extends GraphLayoutCache {
-        /** Constructs an instance of the cache. */
-        MyGraphLayoutCache() {
-            super(null, GraphJGraph.this.createViewFactory(), true);
-            setSelectsLocalInsertedCells(false);
-            setShowsExistingConnections(false);
-            setShowsChangedConnections(false);
-            setShowsInsertedConnections(false);
-            setHidesExistingConnections(false);
-            setHidesDanglingConnections(false);
-        }
-
-        /**
-         * Make sure all views are correctly inserted
-         */
-        @Override
-        public void setModel(GraphModel model) {
-            this.partial = false;
-            super.setModel(model);
-            this.partial = true;
-        }
-
-        @Override
-        public boolean isVisible(Object cell) {
-            if (cell instanceof GraphJCell) {
-                return ((GraphJCell) cell).isVisible();
-            } else if (cell instanceof DefaultPort) {
-                return isVisible(((DefaultPort) cell).getParent());
-            } else {
-                return super.isVisible(cell);
-            }
-        }
-
-        /**
-         * Overwritten to reduce refreshing
-         */
-        @Override
-        protected void reloadRoots() {
-            // Reorder roots
-            Object[] orderedCells = DefaultGraphModel.getAll(this.graphModel);
-            List<CellView> newRoots = new ArrayList<CellView>();
-            for (Object element : orderedCells) {
-                CellView view = getMapping(element, true);
-                if (view != null) {
-                    // the following line is commented out wrt the super implementation
-                    // to prevent over-enthousiastic refreshing
-                    // view.refresh(this, this, true);
-                    if (view.getParentView() == null) {
-                        newRoots.add(view);
-                    }
-                }
-            }
-            this.roots = newRoots;
-        }
-
-        /**
-         * Overwritten to prevent NPE in case some roots have no view.
-         */
-        @Override
-        public synchronized void reload() {
-            List<CellView> newRoots = new ArrayList<CellView>();
-            @SuppressWarnings("unchecked")
-            Map<?,?> oldMapping = new Hashtable<Object,Object>(this.mapping);
-            this.mapping.clear();
-            @SuppressWarnings("unchecked")
-            Set<Object> rootsSet = new HashSet<Object>(this.roots);
-            for (Map.Entry<?,?> entry : oldMapping.entrySet()) {
-                Object cell = entry.getKey();
-                CellView oldView = (CellView) entry.getValue();
-                CellView newView = getMapping(cell, true);
-                // thr following test is the only change wrt the super-implementation
-                if (newView != null) {
-                    newView.changeAttributes(this, oldView.getAttributes());
-                    // newView.refresh(getModel(), this, false);
-                    if (rootsSet.contains(oldView)) {
-                        newRoots.add(newView);
-                    }
-                }
-            }
-            // replace hidden
-            this.hiddenMapping.clear();
-            this.roots = newRoots;
-        }
-
-        @Override
-        public CellView getMapping(Object cell, boolean create) {
-            CellView result = super.getMapping(cell, create);
-            return result;
-        }
-    }
-
-    /**
      * Mouse listener that creates the popup menu and adds and deletes points on
      * appropriate events.
      */
@@ -1487,90 +1370,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
         @Override
         public void mouseReleased(MouseEvent evt) {
             maybeShowPopup(evt);
-        }
-    }
-
-    /**
-     * Specialisation of JGraph that allows a simple modification of the
-     * display attributes.
-     */
-    static private class AttrJGraph extends GraphJGraph {
-        AttrJGraph(final AttributeFactory factory) {
-            super(null, false);
-            this.factory = factory;
-            this.jVertexPrototype = new AttrJVertex(null, null);
-            this.jEdgePrototype = new AttrJEdge(null);
-        }
-
-        @Override
-        public GraphJModel<?,?> newModel() {
-            return new GraphJModel<Node,Edge>(this, this.jVertexPrototype,
-                this.jEdgePrototype);
-        }
-
-        private final AttributeFactory factory;
-        private final GraphJVertex jVertexPrototype;
-        private final GraphJEdge jEdgePrototype;
-
-        /** JVertex specialisation that can be used as a prototype. */
-        private class AttrJVertex extends GraphJVertex {
-            /**
-             * Creates a new instance.
-             */
-            public AttrJVertex(GraphJModel<?,?> jModel, Node node) {
-                super(jModel, node);
-            }
-
-            @Override
-            public GraphJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
-                return new AttrJVertex(jModel, node);
-            }
-
-            @Override
-            protected AttributeMap createAttributes() {
-                AttributeMap result = super.createAttributes();
-                AttributeMap modification =
-                    AttrJGraph.this.factory.getAttributes(getNode());
-                if (modification != null) {
-                    result.applyMap(modification);
-                }
-                return result;
-            }
-
-        }
-
-        /** JEdge specialisation that can be used as a prototype. */
-        private class AttrJEdge extends GraphJEdge {
-            /**
-             * Constructor for a prototype.
-             */
-            private AttrJEdge(GraphJModel<?,?> jModel) {
-                super(jModel);
-            }
-
-            /**
-             * Creates a new instance.
-             */
-            public AttrJEdge(GraphJModel<?,?> jModel, Edge edge) {
-                super(jModel, edge);
-            }
-
-            @Override
-            public GraphJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
-                return new AttrJEdge(jModel, edge);
-            }
-
-            @Override
-            protected AttributeMap createAttributes() {
-                AttributeMap result = super.createAttributes();
-                AttributeMap modification =
-                    AttrJGraph.this.factory.getAttributes(getEdge());
-                if (modification != null) {
-                    result.applyMap(modification);
-                }
-                return result;
-            }
-
         }
     }
 

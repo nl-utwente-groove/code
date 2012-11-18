@@ -64,7 +64,7 @@ public final class ShapePreviewDialog extends GraphPreviewDialog {
     @Override
     protected ShapeJGraph createJGraph() {
         ShapeJGraph jGraph = new ShapeJGraph(this.simulator);
-        ShapeJModel model = jGraph.newModel();
+        ShapeJModel model = (ShapeJModel) jGraph.newModel();
         model.loadGraph(((Shape) this.graph).downcast());
         jGraph.setModel(model);
         // EDUARDO says: this is some fine tuning of the layout algorithm

@@ -21,59 +21,86 @@ import static groove.io.HTMLConverter.ITALIC_TAG;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
+import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultPort;
-import org.jgraph.graph.GraphConstants;
 
 /**
- * Extends DefaultGraphCell to use a Node as user object but send the toString
- * method to a set of self-edge labels. Provides a convenience method to
- * retrieve the user object as a Node. Also provides a single default port for
- * the graph cell, and a convenience method to retrieve it.
+ * JGraph vertex wrapping a single graph node and a set of graph edges.
+ * Uses a single port to connect all JEdges.
+ * @author Arend Rensink
+ * @version $Revision $
  */
-public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
+public class GraphJVertex extends AbstractJCell {
     /**
-     * Constructs a model node on top of a graph node.
-     * @param node the underlying graph node for this model node. Note that this
-     *        may be null.
-     * @ensure getUserObject() == node, labels().isEmpty()
+     * Constructs a fresh, uninitialised JVertex.
+     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(Node)}
+     * to initialise.
      */
-    protected GraphJVertex(GraphJModel<?,?> jModel, Node node) {
-        this.jModel = jModel;
+    protected GraphJVertex() {
         add(new DefaultPort());
-        this.node = node;
-    }
-
-    @Override
-    public GraphJGraph getJGraph() {
-        return getJModel().getJGraph();
-    }
-
-    @Override
-    public GraphJModel<?,?> getJModel() {
-        return this.jModel;
     }
 
     /**
-     * Sets the node wrapped in this GraphJVertex<?,?> to a new one,
-     * and clears the set of self-edges. 
+     * Constructs a fresh JVertex, for a given JModel.
+     * After construction and before invoking any other method, {@link #setNode(Node)}
+     * should be called to provide a node
+     * @param jModel the graph model to which this node is connected
      */
-    void reset(GraphJModel<?,?> jModel, Node node) {
-        this.jModel = jModel;
+    protected GraphJVertex(GraphJModel<?,?> jModel) {
+        this();
+        setJModel(jModel);
+    }
+
+    @Override
+    protected void initialise() {
+        super.initialise();
+        this.edges = new TreeSet<Edge>();
+    }
+
+    /**
+     * Sets a new node in this JVertex, and resets all other structures
+     * to their initial values.
+     */
+    final public void setNode(Node node) {
         this.node = node;
-        this.jVertexLabels.clear();
+        initialise();
+    }
+
+    /**
+     * Returns the graph node wrapped by this {@link GraphJVertex}.
+     */
+    public Node getNode() {
+        return this.node;
+    }
+
+    /** The graph node modelled by this jgraph node. */
+    private Node node;
+
+    /**
+     * Returns this graph node's one and only port.
+     */
+    public DefaultPort getPort() {
+        return (DefaultPort) getFirstChild();
+    }
+
+    /** Returns an iterator over the current incident JEdges of this JVertex. */
+    @SuppressWarnings("unchecked")
+    public Set<GraphJEdge> getJEdges() {
+        return getPort().getEdges();
+    }
+
+    @Override
+    public Collection<? extends GraphJCell> getContext() {
+        return getJEdges();
     }
 
     /** 
@@ -82,23 +109,8 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     @Override
     public GraphJVertex clone() {
         GraphJVertex clone = (GraphJVertex) super.clone();
-        clone.jVertexLabels = new TreeSet<Edge>();
+        clone.initialise();
         return clone;
-    }
-
-    /** 
-     * Factory method, in case this object is used as a prototype.
-     * Returns a fresh {@link GraphJEdge} of the same type as this one. 
-     */
-    public GraphJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
-        return new GraphJVertex(jModel, node);
-    }
-
-    /**
-     * Returns the graph node wrapped by this {@link GraphJVertex}.
-     */
-    public Node getNode() {
-        return this.node;
     }
 
     /**
@@ -110,10 +122,11 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      *         <tt>edge</tt> is not compatible with this j-vertex and cannot be
      *         added.
      */
-    public boolean addJVertexLabel(Edge edge) {
+    public boolean addEdge(Edge edge) {
         assert edge.source() == edge.target() && edge.source() == getNode();
-        if (isJVertexLabel(edge)) {
-            this.jVertexLabels.add(edge);
+        if (isCompatible(edge)) {
+            this.edges.add(edge);
+            setStale(VisualKey.COLOR);
             return true;
         } else {
             return false;
@@ -121,41 +134,23 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
     }
 
     /** Tests if a given edge can be added as label to this {@link GraphJVertex}. */
-    protected boolean isJVertexLabel(Edge edge) {
+    protected boolean isCompatible(Edge edge) {
         return edge.getRole() != BINARY
             || getJGraph().isShowLoopsAsNodeLabels();
     }
 
     /**
-     * Returns an unmodifiable view on the self edges.
-     * These are the edges added using {@link #addJVertexLabel(Edge)}.
+     * Returns the set of graph edges wrapped in this JVertex.
      */
-    public Set<? extends Edge> getJVertexLabels() {
-        return Collections.unmodifiableSet(this.jVertexLabels);
-    }
-
-    @Override
-    public boolean isVisible() {
-        return !getJGraph().isFiltering(this)
-            || getJGraph().isShowUnfilteredEdges() && hasVisibleIncidentEdge();
-    }
-
-    /**
-     * Callback method to test if this node has an incident edge
-     * with nonempty (unfiltered) label text, as determined
-     * by {@link GraphJEdge#getLines()}.
-     * This is to determine the visibility of the node.
-     */
-    protected boolean hasVisibleIncidentEdge() {
-        boolean result = false;
-        for (Object jEdge : getPort().getEdges()) {
-            if (!getJGraph().isFiltering((GraphJEdge) jEdge)) {
-                result = true;
-                break;
-            }
+    public Set<? extends Edge> getEdges() {
+        if (this.edges == null) {
+            this.edges = new TreeSet<Edge>();
         }
-        return result;
+        return this.edges;
     }
+
+    /** Set of graph edges mapped to this JEdge. */
+    private Set<Edge> edges = new TreeSet<Edge>();
 
     /** This implementation adds the data edges to the super result. */
     public List<StringBuilder> getLines() {
@@ -163,7 +158,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         // show the node identity if required
         result.addAll(getNodeIdLines());
         // only add edges that have an unfiltered label
-        for (Edge edge : getJVertexLabels()) {
+        for (Edge edge : getEdges()) {
             if (!isFiltered(edge)) {
                 result.add(new StringBuilder(getLine(edge)));
             }
@@ -216,7 +211,7 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
      */
     public Collection<Element> getKeys() {
         Collection<Element> result = new ArrayList<Element>();
-        for (Edge edge : getJVertexLabels()) {
+        for (Edge edge : getEdges()) {
             Edge key = getKey(edge);
             if (key != null) {
                 result.add(key);
@@ -264,13 +259,6 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         return result;
     }
 
-    /**
-     * Returns this graph node's one and only port.
-     */
-    public DefaultPort getPort() {
-        return (DefaultPort) getFirstChild();
-    }
-
     /** Returns the number with which this vertex was initialised. */
     public int getNumber() {
         return getNode().getNumber();
@@ -303,99 +291,12 @@ public class GraphJVertex extends DefaultGraphCell implements GraphJCell {
         return HTMLConverter.HTML_TAG.on(getNodeDescription()).toString();
     }
 
-    @Override
-    public void refreshAttributes() {
-        AttributeMap result = createAttributes();
-        if (isGrayedOut()) {
-            result.applyMap(GraphJGraph.GRAYED_OUT_ATTR);
-        }
-        Color color = getColor();
-        if (color != null) {
-            GraphConstants.setForeground(result, color);
-            GraphConstants.setLineColor(result, color);
-            GraphConstants.setBackground(result, JAttr.whitewash(color));
-        }
-        if (getAttributes() != null) {
-            getAttributes().applyMap(result);
-        } else {
-            setAttributes(result);
-        }
-    }
-
-    /**
-     * Callback method for creating the core attributes.
-     * These might be modified by other parameters; don't call this
-     * method directly.
-     */
-    protected AttributeMap createAttributes() {
-        return GraphJGraph.DEFAULT_NODE_ATTR.clone();
-    }
-
-    @Override
-    final public boolean isLayoutable() {
-        return this.layoutable;
-    }
-
-    @Override
-    final public boolean setLayoutable(boolean layedOut) {
-        boolean result = layedOut != this.layoutable;
-        if (result) {
-            this.layoutable = layedOut;
-        }
-        return result;
-    }
-
-    @Override
-    final public boolean isGrayedOut() {
-        return this.grayedOut;
-    }
-
-    @Override
-    final public boolean setGrayedOut(boolean grayedOut) {
-        boolean result = grayedOut != this.grayedOut;
-        if (result) {
-            this.grayedOut = grayedOut;
-            refreshAttributes();
-        }
-        return result;
-    }
-
-    /** Sets an explicit foreground colour for this vertex. */
-    final public void setColor(Color color) {
-        this.color = color;
-    }
-
-    /** Returns the explicit foreground colour for this vertex. */
-    public Color getColor() {
-        return this.color;
-    }
-
-    public boolean hasError() {
-        return false;
-    }
-
     /** 
-     * Returns the adornment text, to be placed in the
-     * vertex' upper left hand corner.
-     * Is only taken into account when non-{@code null}.
+     * Returns a fresh, uninitialised instance of this class.
+     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(Node)}
+     * to initialise.
      */
-    public String getAdornment() {
-        return null;
-    }
-
-    /** The fixed jModel to which this jVertex belongs. */
-    private GraphJModel<?,?> jModel;
-    private boolean layoutable;
-    private boolean grayedOut;
-    /** Explicitly set foreground colour. */
-    private Color color;
-    /** The graph node modelled by this jgraph node. */
-    private Node node;
-    /** Set of graph edges mapped to this JEdge. */
-    private Set<Edge> jVertexLabels = new TreeSet<Edge>();
-
-    /** Returns a prototype {@link GraphJVertex} for a given {@link GraphJGraph}. */
-    public static GraphJVertex getPrototype(GraphJGraph jGraph) {
-        return new GraphJVertex(null, null);
+    public static GraphJVertex newInstance() {
+        return new GraphJVertex();
     }
 }

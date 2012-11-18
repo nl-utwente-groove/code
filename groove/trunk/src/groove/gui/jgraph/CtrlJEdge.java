@@ -2,9 +2,8 @@ package groove.gui.jgraph;
 
 import groove.control.CtrlTransition;
 import groove.graph.Edge;
-import groove.gui.jgraph.JAttr.AttributeMap;
+import groove.gui.look.Look;
 import groove.io.HTMLConverter;
-import groove.lts.RuleTransition;
 import groove.util.Groove;
 
 /**
@@ -14,16 +13,8 @@ import groove.util.Groove;
  */
 public class CtrlJEdge extends GraphJEdge {
     /** Constructor for a prototype object. */
-    CtrlJEdge(GraphJModel<?,?> jModel) {
-        super(jModel);
-    }
-
-    /**
-     * Creates a new instance from a given edge (required to be a
-     * {@link RuleTransition}).
-     */
-    CtrlJEdge(GraphJModel<?,?> jModel, CtrlTransition edge) {
-        super(jModel, edge);
+    private CtrlJEdge() {
+        // empty
     }
 
     @Override
@@ -32,19 +23,14 @@ public class CtrlJEdge extends GraphJEdge {
     }
 
     @Override
-    public CtrlJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
-        return new CtrlJEdge(jModel, (CtrlTransition) edge);
-    }
-
-    @Override
     public CtrlTransition getEdge() {
         return (CtrlTransition) super.getEdge();
     }
 
     @Override
-    public boolean addEdge(Edge edge) {
-        CtrlTransition trans = (CtrlTransition) edge;
-        return trans.isStart() == getEdge().isStart() && super.addEdge(edge);
+    public boolean isCompatible(Edge edge) {
+        return super.isCompatible(edge)
+            && ((CtrlTransition) edge).isStart() == getEdge().isStart();
     }
 
     @Override
@@ -75,23 +61,24 @@ public class CtrlJEdge extends GraphJEdge {
     }
 
     @Override
-    protected AttributeMap createAttributes() {
-        AttributeMap result;
+    protected Look getStructuralLook() {
+        Look result;
         boolean omega = getEdge().getCall().isOmega();
-        if (getEdge().isStart() && getEdge().source().isTransient()) {
-            result =
-                omega ? CtrlJGraph.CONTROL_OMEGA_EXIT_EDGE_ATTR
-                        : CtrlJGraph.CONTROL_EXIT_EDGE_ATTR;
+        boolean exitsRecipe =
+            getEdge().isStart() && getEdge().source().isTransient();
+        if (exitsRecipe) {
+            result = omega ? Look.CTRL_OMEGA_EXIT_TRANS : Look.CTRL_EXIT_TRANS;
         } else {
-            result =
-                omega ? CtrlJGraph.CONTROL_OMEGA_EDGE_ATTR
-                        : CtrlJGraph.CONTROL_EDGE_ATTR;
+            result = omega ? Look.CTRL_OMEGA_TRANS : Look.BASIC;
         }
-        return result.clone();
+        return result;
     }
 
-    /** Returns a prototype {@link CtrlJEdge} for a given {@link CtrlJGraph}. */
-    public static CtrlJEdge getPrototype(CtrlJGraph jGraph) {
-        return new CtrlJEdge(null);
+    /** 
+     * Returns a fresh, uninitialised instance.
+     * Call {@link #setJModel(GraphJModel)} to initialise.
+     */
+    public static CtrlJEdge newInstance() {
+        return new CtrlJEdge();
     }
 }

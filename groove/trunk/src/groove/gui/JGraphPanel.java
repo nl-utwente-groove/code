@@ -18,8 +18,10 @@ package groove.gui;
 
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
+import groove.gui.look.VisualKey;
 import groove.gui.tree.LabelTree;
 import groove.util.Pair;
 
@@ -369,6 +371,9 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
             PropertyChangeListener {
         public void itemStateChanged(ItemEvent e) {
             if (isEnabled()) {
+                for (GraphJCell jCell : getJModel().getRoots()) {
+                    jCell.setStale(VisualKey.VISIBLE, VisualKey.LABEL);
+                }
                 refresh();
             }
         }

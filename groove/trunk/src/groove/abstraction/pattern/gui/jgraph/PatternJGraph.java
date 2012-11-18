@@ -17,13 +17,21 @@
 package groove.abstraction.pattern.gui.jgraph;
 
 import groove.abstraction.MyHashSet;
+import groove.abstraction.pattern.gui.look.PatternAdornmentValue;
+import groove.abstraction.pattern.gui.look.PatternLabelValue;
+import groove.graph.GraphRole;
 import groove.gui.Simulator;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.GraphJGraphFactory;
+import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
+import groove.gui.jgraph.JGraphFactory;
 import groove.gui.layout.AbstractLayouter;
 import groove.gui.layout.Layouter;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualValue;
 import groove.gui.tree.LabelTree;
 
 import java.awt.event.MouseAdapter;
@@ -59,17 +67,15 @@ public final class PatternJGraph extends GraphJGraph {
     // Overridden methods
     // ------------------------------------------------------------------------
 
+    @Override
+    public GraphRole getGraphRole() {
+        return GraphRole.SHAPE;
+    }
+
     /** Specialises the return type to a {@link PatternJModel}. */
     @Override
     public PatternJModel getModel() {
         return (PatternJModel) this.graphModel;
-    }
-
-    @Override
-    public PatternJModel newModel() {
-        return new PatternJModel(this, GraphJVertex.getPrototype(this),
-            GraphJEdge.getPrototype(this), PatternJVertex.getPrototype(this),
-            PatternJEdge.getPrototype(this));
     }
 
     /** Callback method to create the label tree. */
@@ -193,4 +199,46 @@ public final class PatternJGraph extends GraphJGraph {
         }
     }
 
+    @Override
+    protected JGraphFactory createFactory() {
+        return new MyFactory();
+    }
+
+    private class MyFactory extends GraphJGraphFactory {
+        public MyFactory() {
+            super(PatternJGraph.this);
+        }
+
+        @Override
+        public PatternJGraph getJGraph() {
+            return (PatternJGraph) super.getJGraph();
+        }
+
+        @Override
+        public GraphJVertex newJVertex() {
+            return PatternJVertex.newInstance();
+        }
+
+        @Override
+        public GraphJEdge newJEdge() {
+            return PatternJEdge.newInstance();
+        }
+
+        @Override
+        public GraphJModel<?,?> newModel() {
+            return new PatternJModel(getJGraph());
+        }
+
+        @Override
+        public VisualValue newVisualValue(VisualKey key) {
+            switch (key) {
+            case ADORNMENT:
+                return new PatternAdornmentValue();
+            case LABEL:
+                return new PatternLabelValue(getJGraph());
+            default:
+                return super.newVisualValue(key);
+            }
+        }
+    }
 }

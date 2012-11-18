@@ -28,12 +28,13 @@ import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Graph;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualMap;
 import groove.util.Duo;
 
 import java.awt.geom.Point2D;
 import java.util.Map;
 
-import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.ParentMap;
 
@@ -53,16 +54,12 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
      * and shape nodes.
      */
     private ParentMap parentMap;
-    /** Prototype for creating new equivalence classes JCells. */
-    private final EquivClassJCell ecJCellProt;
     /** Map from edge signatures to outgoing ports. */
     private final Map<EdgeSignature,ShapeJPort> esMap;
 
     /** Creates a new jModel with the given prototypes. */
-    ShapeJModel(ShapeJGraph jGraph, ShapeJVertex jVertexProt,
-            ShapeJEdge jEdgeProt, EquivClassJCell ecJCellProt) {
-        super(jGraph, jVertexProt, jEdgeProt);
-        this.ecJCellProt = ecJCellProt;
+    ShapeJModel(ShapeJGraph jGraph) {
+        super(jGraph);
         this.esMap = new MyHashMap<EdgeSignature,ShapeJPort>();
     }
 
@@ -175,9 +172,11 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
             if (!"".equals(labels[1])) {
                 jEdge.setMainSrc(true);
             }
-            AttributeMap attrMap = jEdge.getAttributes();
-            GraphConstants.setExtraLabelPositions(attrMap, labelPositions);
-            GraphConstants.setExtraLabels(attrMap, labels);
+            VisualMap visuals = jEdge.getVisuals();
+            visuals.put(VisualKey.EDGE_SOURCE_POS, labelPositions[0]);
+            visuals.put(VisualKey.EDGE_SOURCE_LABEL, duo.one());
+            visuals.put(VisualKey.EDGE_TARGET_POS, labelPositions[1]);
+            visuals.put(VisualKey.EDGE_TARGET_LABEL, duo.two());
         }
     }
 
@@ -185,7 +184,9 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
         Shape shape = this.getGraph();
         EquivRelation<ShapeNode> er = shape.getEquivRelation();
         for (EquivClass<ShapeNode> ec : er) {
-            EquivClassJCell ecJCell = this.ecJCellProt.newJCell(this, ec);
+            EquivClassJCell ecJCell = EquivClassJCell.newInstance();
+            ecJCell.setJModel(this);
+            ecJCell.setEquivClass(ec);
             for (ShapeNode node : ec) {
                 this.parentMap.addEntry(this.getJCellForNode(node), ecJCell);
             }

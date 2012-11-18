@@ -27,6 +27,9 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
+import groove.gui.look.Look;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualMap;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -43,7 +46,6 @@ import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultGraphModel;
-import org.jgraph.graph.GraphConstants;
 
 /**
  * Implements jgraph's GraphModel interface on top of a groove graph. The
@@ -57,14 +59,9 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * Creates a new GraphJModel instance on top of a given GraphJGraph, with given
      * node and edge attributes, and an indication whether self-edges should be
      * displayed as node labels. The node and edge attribute maps are cloned.
-     * @param jVertexProt prototype object for JVertices of this model
-     * @param jEdgeProt prototype object for JEdges of this model
      */
-    protected GraphJModel(GraphJGraph jGraph, GraphJVertex jVertexProt,
-            GraphJEdge jEdgeProt) {
+    protected GraphJModel(GraphJGraph jGraph) {
         this.jGraph = jGraph;
-        this.jVertexProt = jVertexProt;
-        this.jEdgeProt = jEdgeProt;
     }
 
     /** Returns the JGraph in which this model belongs. */
@@ -95,7 +92,6 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     public AttributeMap getAttributes(Object node) {
         AttributeMap result;
         if (node instanceof GraphJCell) {
-            ((GraphJCell) node).refreshAttributes();
             result = ((GraphJCell) node).getAttributes();
         } else {
             result = super.getAttributes(node);
@@ -234,11 +230,11 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         LayoutMap<N,E> currentLayout = GraphInfo.getLayoutMap(getGraph());
         if (jCell instanceof GraphJEdge) {
             for (Edge edge : ((GraphJEdge) jCell).getEdges()) {
-                currentLayout.putEdge((E) edge, jCell.getAttributes());
+                currentLayout.putEdge((E) edge, jCell.getVisuals());
             }
         } else if (jCell instanceof GraphJVertex) {
             currentLayout.putNode((N) ((GraphJVertex) jCell).getNode(),
-                jCell.getAttributes());
+                jCell.getVisuals());
         }
     }
 
@@ -250,8 +246,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         Map<N,Color> result = new HashMap<N,Color>();
         for (GraphJCell jCell : getRoots()) {
             if (jCell instanceof GraphJVertex) {
-                Color foreground =
-                    GraphConstants.getForeground(jCell.getAttributes());
+                Color foreground = jCell.getVisuals().getForeground();
                 if (foreground != null) {
                     result.put((N) ((GraphJVertex) jCell).getNode(), foreground);
                 }
@@ -333,7 +328,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         if (edge.source() == edge.target()
             && (edge.getRole() != BINARY || getLayoutMap().getLayout(edge) == null)) {
             GraphJVertex jVertex = getJCellForNode(edge.source());
-            if (jVertex.addJVertexLabel(edge)) {
+            if (jVertex.addEdge(edge)) {
                 // yes, the edge could be added here; we're done
                 this.edgeJCellMap.put(edge, jVertex);
                 return jVertex;
@@ -361,8 +356,10 @@ public class GraphJModel<N extends Node,E extends Edge> extends
             }
             for (GraphJEdge jEdge : outJEdges) {
                 if (jEdge.getTargetNode() == target
-                    && isLayoutCompatible(jEdge, edge) && jEdge.addEdge(edge)) {
+                    && isLayoutCompatible(jEdge, edge)
+                    && jEdge.isCompatible(edge)) {
                     // yes, the edge could be added here; we're done
+                    jEdge.addEdge(edge);
                     this.edgeJCellMap.put(edge, jEdge);
                     return jEdge;
                 }
@@ -409,48 +406,45 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     }
 
     /**
-     * Creates a new j-edge using {@link #createJEdge(Edge)}, and sets the
-     * attributes using {@link GraphJEdge#createAttributes()} and adds available
+     * Creates a new j-edge using {@link #createJEdge(Edge)},  and adds available
      * layout information from the layout map stored in this model.
      * @param edge graph edge for which a corresponding j-edge is to be created
      * @param bidirectional flag that indicates if the edge is bidirectional
      */
     protected GraphJEdge computeJEdge(E edge, boolean bidirectional) {
         GraphJEdge result = createJEdge(edge);
-        result.setBidirectional(bidirectional);
-        result.refreshAttributes();
+        result.setLook(Look.BIDIRECTIONAL, bidirectional);
         JEdgeLayout layout = this.layoutMap.getLayout(edge);
         if (layout != null) {
-            result.getAttributes().applyMap(layout.toJAttr());
+            result.getVisuals().putAll(layout.toVisuals());
         }
         return result;
     }
 
     /**
-     * Creates a new j-vertex using {@link #createJVertex(Node)}, and sets the
-     * attributes using {@link GraphJVertex#createAttributes()} and adds available
+     * Creates a new j-vertex using {@link #createJVertex()}, and adds available
      * layout information from the layout map stored in this model; or adds a
      * random position otherwise.
      * @param node graph node for which a corresponding j-vertex is to be
      *        created
      */
     protected GraphJVertex computeJVertex(N node) {
-        GraphJVertex result = createJVertex(node);
-        result.refreshAttributes();
-        if (GraphConstants.isMoveable(result.getAttributes())) {
-            JVertexLayout layout = this.layoutMap.getLayout(node);
-            if (layout != null) {
-                result.getAttributes().applyMap(layout.toJAttr());
-            } else {
-                Rectangle newBounds =
-                    new Rectangle(this.nodeX, this.nodeY,
-                        JAttr.DEFAULT_NODE_BOUNDS.width,
-                        JAttr.DEFAULT_NODE_BOUNDS.height);
-                GraphConstants.setBounds(result.getAttributes(), newBounds);
-                this.nodeX = randomCoordinate();
-                this.nodeY = randomCoordinate();
-            }
+        GraphJVertex result = createJVertex();
+        result.setNode(node);
+        VisualMap visuals = result.getVisuals();
+        JVertexLayout layout = this.layoutMap.getLayout(node);
+        if (layout != null) {
+            visuals.putAll(layout.toVisuals());
+        } else {
+            Rectangle newBounds =
+                new Rectangle(this.nodeX, this.nodeY,
+                    JAttr.DEFAULT_NODE_BOUNDS.width,
+                    JAttr.DEFAULT_NODE_BOUNDS.height);
+            visuals.put(VisualKey.BOUNDS, newBounds);
+            this.nodeX = randomCoordinate();
+            this.nodeY = randomCoordinate();
         }
+        result.setStale(VisualKey.VISIBLE);
         return result;
     }
 
@@ -460,20 +454,24 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * @param edge graph edge for which a corresponding JEdge is to be created;
      * may be {@code null} if there is initially no edge
      * @return j-edge corresponding to <tt>edge</tt>
-     * @ensure <tt>result.getEdgeSet().contains(edge)</tt>
      */
     protected GraphJEdge createJEdge(E edge) {
-        return this.jEdgeProt.newJEdge(this, edge);
+        GraphJEdge result = getJGraph().getFactory().newJEdge();
+        result.setJModel(this);
+        if (edge != null) {
+            result.addEdge(edge);
+        }
+        return result;
     }
 
     /**
-     * Factory method for jgraph nodes.
-     * @param node graph node for which a corresponding j-node is to be created
-     * @return j-node corresponding to <tt>node</tt>
-     * @ensure <tt>result.getNode().equals(node)</tt>
+     * Factory method for JVertices initialised on this JModel.
+     * The wrapped node is initially empty.
      */
-    protected GraphJVertex createJVertex(N node) {
-        return this.jVertexProt.newJVertex(this, node);
+    protected GraphJVertex createJVertex() {
+        GraphJVertex result = getJGraph().getFactory().newJVertex();
+        result.setJModel(this);
+        return result;
     }
 
     /**
@@ -512,10 +510,6 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         return randomGenerator.nextInt((this.nodeJCellMap.size() + this.edgeJCellMap.size()) * 5 + 1);
     }
 
-    /** Prototype object for {@link GraphJEdge}s. */
-    protected final GraphJEdge jEdgeProt;
-    /** Prototype object for {@link GraphJVertex}s. */
-    protected final GraphJVertex jVertexProt;
     /** The JGraph to which this model belongs. */
     private final GraphJGraph jGraph;
     /**

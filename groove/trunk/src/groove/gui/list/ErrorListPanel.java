@@ -16,9 +16,8 @@
  */
 package groove.gui.list;
 
-import groove.gui.jgraph.JAttr;
-
-import java.awt.Color;
+import groove.gui.look.Values;
+import groove.gui.look.Values.ColorSet;
 
 /** List panel for showing errors. */
 public final class ErrorListPanel extends ListPanel {
@@ -29,33 +28,7 @@ public final class ErrorListPanel extends ListPanel {
     }
 
     @Override
-    protected Color getNormalBackground() {
-        return JAttr.ERROR_NORMAL_BACKGROUND;
+    protected ColorSet getColors() {
+        return Values.ERROR_COLORS;
     }
-
-    @Override
-    protected Color getNormalForeground() {
-        return JAttr.ERROR_NORMAL_FOREGROUND;
-    }
-
-    @Override
-    protected Color getFocusBackground() {
-        return JAttr.ERROR_FOCUS_BACKGROUND;
-    }
-
-    @Override
-    protected Color getFocusForeground() {
-        return JAttr.ERROR_FOCUS_FOREGROUND;
-    }
-
-    @Override
-    protected Color getSelectBackground() {
-        return JAttr.ERROR_SELECT_BACKGROUND;
-    }
-
-    @Override
-    protected Color getSelectForeground() {
-        return JAttr.ERROR_SELECT_FOREGROUND;
-    }
-
 }

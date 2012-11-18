@@ -284,7 +284,7 @@ public enum AspectKind {
     }
 
     /** 
-     * Returns the (possibly {@code null} signature of this aspect kind.
+     * Returns the (possibly {@code null}) signature of this aspect kind.
      * @see #hasSignature()
      */
     public SignatureKind getSignature() {

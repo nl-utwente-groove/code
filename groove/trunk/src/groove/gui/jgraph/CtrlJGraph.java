@@ -19,17 +19,15 @@ package groove.gui.jgraph;
 import groove.control.CtrlAut;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
+import groove.graph.GraphRole;
 import groove.gui.SetLayoutMenu;
 import groove.gui.Simulator;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.gui.tree.LabelTree;
 
-import java.awt.Color;
 import java.util.Collection;
 import java.util.Collections;
-
-import org.jgraph.graph.GraphConstants;
 
 /**
  * This is the JGraph representation of a ControlAutomaton.
@@ -53,19 +51,20 @@ public class CtrlJGraph extends GraphJGraph {
         setToolTipEnabled(true);
     }
 
+    @Override
+    public GraphRole getGraphRole() {
+        return GraphRole.CTRL;
+    }
+
     /** Creates a new model based on a given control automaton. */
     public void setModel(CtrlAut aut) {
         if (getModel() == null || getModel().getGraph() != aut) {
-            GraphJModel<CtrlState,CtrlTransition> newModel = newModel();
+            @SuppressWarnings("unchecked")
+            GraphJModel<CtrlState,CtrlTransition> newModel =
+                (GraphJModel<CtrlState,CtrlTransition>) newModel();
             newModel.loadGraph(aut);
             setModel(newModel);
         }
-    }
-
-    @Override
-    public GraphJModel<CtrlState,CtrlTransition> newModel() {
-        return new GraphJModel<CtrlState,CtrlTransition>(this,
-            CtrlJVertex.getPrototype(this), CtrlJEdge.getPrototype(this));
     }
 
     @Override
@@ -102,74 +101,6 @@ public class CtrlJGraph extends GraphJGraph {
         return result;
     }
 
-    /** The default node attributes of the control automaton */
-    static public final JAttr.AttributeMap CONTROL_NODE_ATTR;
-    /** The start node attributes of the control automaton */
-    static public final JAttr.AttributeMap CONTROL_START_NODE_ATTR;
-    /** The success node attributes of the control automaton */
-    static public final JAttr.AttributeMap CONTROL_SUCCESS_NODE_ATTR;
-    /** The transient node attributes of the control automaton */
-    static public final JAttr.AttributeMap CONTROL_TRANSIENT_NODE_ATTR;
-    /** The default edge attributes of the control automaton */
-    static public final JAttr.AttributeMap CONTROL_EDGE_ATTR;
-    /** The edge attributes for transient-exiting edges of the control automaton */
-    static public final JAttr.AttributeMap CONTROL_EXIT_EDGE_ATTR;
-    /** The guarded edge attributes of the control automaton */
-    static public final JAttr.AttributeMap CONTROL_OMEGA_EDGE_ATTR;
-    /** The edge attributes for guarded transient-exiting edges of the control automaton */
-    static public final JAttr.AttributeMap CONTROL_OMEGA_EXIT_EDGE_ATTR;
-
-    static {
-        JAttr ctrlValues = new JAttr() {
-            {
-                this.connectable = false;
-                this.lineEnd = GraphConstants.ARROW_CLASSIC;
-            }
-        };
-        CONTROL_NODE_ATTR = ctrlValues.getNodeAttrs();
-        CONTROL_EDGE_ATTR = ctrlValues.getEdgeAttrs();
-
-        // special nodes
-        CONTROL_START_NODE_ATTR = new JAttr() {
-            {
-                this.backColour = Color.green;
-            }
-        }.getNodeAttrs();
-        CONTROL_TRANSIENT_NODE_ATTR = new JAttr() {
-            {
-                this.shape = JVertexShape.DIAMOND;
-            }
-        }.getNodeAttrs();
-        CONTROL_SUCCESS_NODE_ATTR = new JAttr() {
-            {
-                this.borderColour = Color.RED;
-                this.backColour = Color.RED;
-                this.linewidth = 3;
-                this.lineColour = Color.BLUE;
-            }
-        }.getNodeAttrs();
-
-        // special edges
-        CONTROL_OMEGA_EDGE_ATTR = new JAttr() {
-            {
-                this.lineColour = Color.RED;
-                this.foreColour = Color.RED;
-            }
-        }.getEdgeAttrs();
-        CONTROL_EXIT_EDGE_ATTR = new JAttr() {
-            {
-                this.lineBegin = GraphConstants.ARROW_DOUBLELINE;
-            }
-        }.getEdgeAttrs();
-        CONTROL_OMEGA_EXIT_EDGE_ATTR = new JAttr() {
-            {
-                this.lineColour = Color.RED;
-                this.foreColour = Color.RED;
-                this.lineBegin = GraphConstants.ARROW_DOUBLELINE;
-            }
-        }.getEdgeAttrs();
-    }
-
     private class MyForestLayouter extends groove.gui.layout.ForestLayouter {
         /**
          * Creates a prototype layouter
@@ -202,5 +133,37 @@ public class CtrlJGraph extends GraphJGraph {
         public Layouter newInstance(GraphJGraph jGraph) {
             return new MyForestLayouter(this.name, (CtrlJGraph) jGraph);
         }
+    }
+
+    @Override
+    protected JGraphFactory createFactory() {
+        return new MyFactory();
+    }
+
+    private class MyFactory extends GraphJGraphFactory {
+        public MyFactory() {
+            super(CtrlJGraph.this);
+        }
+
+        @Override
+        public CtrlJGraph getJGraph() {
+            return (CtrlJGraph) super.getJGraph();
+        }
+
+        @Override
+        public CtrlJVertex newJVertex() {
+            return CtrlJVertex.newInstance();
+        }
+
+        @Override
+        public GraphJModel<?,?> newModel() {
+            return new GraphJModel<CtrlState,CtrlTransition>(getJGraph());
+        }
+
+        @Override
+        public CtrlJEdge newJEdge() {
+            return CtrlJEdge.newInstance();
+        }
+
     }
 }

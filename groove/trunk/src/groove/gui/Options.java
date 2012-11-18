@@ -16,7 +16,6 @@
  */
 package groove.gui;
 
-import groove.gui.jgraph.JAttr;
 import groove.trans.ResourceKind;
 import groove.util.ExprParser;
 import groove.view.FormatException;
@@ -57,8 +56,6 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-
-import org.jgraph.graph.GraphConstants;
 
 import com.jgoodies.looks.plastic.theme.DesertBlue;
 
@@ -837,14 +834,6 @@ public class Options implements Cloneable {
     static public final String SUBTYPE_LABEL_TEXT = "(subtype)";
     /** Indication for no label in a list of labels. */
     static public final String NO_LABEL_TEXT = "(none)";
-    /** The name of the Bezier line style. */
-    static public final String BEZIER_LINE_STYLE_NAME = "Bezier";
-    /** The name of the Spline line style. */
-    static public final String SPLINE_LINE_STYLE_NAME = "Spline";
-    /** The name of the Orthogonal line style. */
-    static public final String ORTHOGONAL_LINE_STYLE_NAME = "Orthogonal";
-    /** The name of the Manhattan line style. */
-    static public final String MANHATTAN_LINE_STYLE_NAME = "Manhattan";
     /** Name for the imaging action. */
     static public final String IMAGE_ACTION_NAME = "Image";
 
@@ -988,58 +977,6 @@ public class Options implements Cloneable {
             }
         } catch (BackingStoreException exc) {
             // don't do anything
-        }
-    }
-
-    /**
-     * Convenience method to convert line style codes to names. The line style
-     * should equal one of the styles in {@link GraphConstants}.
-     * @param lineStyle the integer value representing a line style
-     * @return the String representing of the corresponding line style
-     * @throws IllegalArgumentException if the line style is not recognized
-     * @see GraphConstants#STYLE_BEZIER
-     * @see GraphConstants#STYLE_SPLINE
-     * @see GraphConstants#STYLE_ORTHOGONAL
-     */
-    static public String getLineStyleName(int lineStyle) {
-        switch (lineStyle) {
-        case GraphConstants.STYLE_BEZIER:
-            return BEZIER_LINE_STYLE_NAME;
-        case GraphConstants.STYLE_SPLINE:
-            return SPLINE_LINE_STYLE_NAME;
-        case GraphConstants.STYLE_ORTHOGONAL:
-            return ORTHOGONAL_LINE_STYLE_NAME;
-        case JAttr.STYLE_MANHATTAN:
-            return MANHATTAN_LINE_STYLE_NAME;
-        default:
-            throw new IllegalArgumentException("" + lineStyle
-                + " is not a recognized line style");
-        }
-    }
-
-    /**
-     * Convenience method to convert line style codes to key strokes. The line
-     * style should equal one of the styles in {@link GraphConstants}.
-     * @param lineStyle the integer value representing a line style
-     * @return the keystroke of the corresponding line style
-     * @throws IllegalArgumentException if the line style is not recognized
-     * @see GraphConstants#STYLE_BEZIER
-     * @see GraphConstants#STYLE_SPLINE
-     * @see GraphConstants#STYLE_ORTHOGONAL
-     */
-    static public KeyStroke getLineStyleKey(int lineStyle) {
-        switch (lineStyle) {
-        case GraphConstants.STYLE_BEZIER:
-            return BEZIER_LINE_STYLE_KEY;
-        case GraphConstants.STYLE_SPLINE:
-            return SPLINE_LINE_STYLE_KEY;
-        case GraphConstants.STYLE_ORTHOGONAL:
-            return ORTHOGONAL_LINE_STYLE_KEY;
-        case JAttr.STYLE_MANHATTAN:
-            return MANHATTAN_LINE_STYLE_KEY;
-        default:
-            throw new IllegalArgumentException("" + lineStyle
-                + " is not a recognized line style");
         }
     }
 

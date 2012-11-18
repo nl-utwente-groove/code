@@ -16,13 +16,20 @@
  */
 package groove.abstraction.neigh.gui.jgraph;
 
+import groove.abstraction.neigh.gui.look.ShapeLabelValue;
 import groove.abstraction.neigh.shape.Shape;
+import groove.graph.GraphRole;
 import groove.gui.Simulator;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.GraphJGraphFactory;
+import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JCellViewFactory;
+import groove.gui.jgraph.JGraphFactory;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualValue;
 
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
@@ -44,16 +51,15 @@ public final class ShapeJGraph extends GraphJGraph {
         this.addMouseListener(new MyMouseListener());
     }
 
+    @Override
+    public GraphRole getGraphRole() {
+        return GraphRole.SHAPE;
+    }
+
     /** Specialises the return type to a {@link ShapeJModel}. */
     @Override
     public ShapeJModel getModel() {
         return (ShapeJModel) this.graphModel;
-    }
-
-    @Override
-    public ShapeJModel newModel() {
-        return new ShapeJModel(this, ShapeJVertex.getPrototype(this),
-            ShapeJEdge.getPrototype(this), EquivClassJCell.getPrototype(this));
     }
 
     @Override
@@ -144,6 +150,47 @@ public final class ShapeJGraph extends GraphJGraph {
         public void mouseReleased(MouseEvent evt) {
             maybeShowPopup(evt);
             ShapeJGraph.this.refresh();
+        }
+    }
+
+    @Override
+    protected JGraphFactory createFactory() {
+        return new MyFactory();
+    }
+
+    private class MyFactory extends GraphJGraphFactory {
+        public MyFactory() {
+            super(ShapeJGraph.this);
+        }
+
+        @Override
+        public ShapeJGraph getJGraph() {
+            return (ShapeJGraph) super.getJGraph();
+        }
+
+        @Override
+        public GraphJVertex newJVertex() {
+            return ShapeJVertex.newInstance();
+        }
+
+        @Override
+        public GraphJModel<?,?> newModel() {
+            return new ShapeJModel(getJGraph());
+        }
+
+        @Override
+        public GraphJEdge newJEdge() {
+            return ShapeJEdge.newInstance();
+        }
+
+        @Override
+        public VisualValue newVisualValue(VisualKey key) {
+            switch (key) {
+            case LABEL:
+                return new ShapeLabelValue(getJGraph());
+            default:
+                return super.newVisualValue(key);
+            }
         }
     }
 }

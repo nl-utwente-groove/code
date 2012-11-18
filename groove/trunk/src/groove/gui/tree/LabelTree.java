@@ -46,6 +46,8 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -74,6 +76,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import org.jgraph.JGraph;
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
 
@@ -88,7 +91,6 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     /**
      * Constructs a label list associated with a given jgraph. A further
      * parameter indicates if the label tree should support subtypes.
-     * {@link #updateModel()} should be called before the list can be used.
      * @param jGraph the jgraph with which this list is to be associated
      * @param toolBar if {@code true}, the panel should have a tool bar
      * @param filtering if {@code true}, the panel has checkboxes to filter labels
@@ -98,18 +100,29 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         this.labelFilter = new LabelFilter();
         this.filtering = filtering;
         this.toolBar = toolBar;
-        if (filtering) {
+        // make sure tool tips get displayed
+        ToolTipManager.sharedInstance().registerComponent(this);
+        setEnabled(jGraph.isEnabled());
+        setLargeModel(true);
+        addListeners();
+    }
+
+    private void addListeners() {
+        getJGraph().addPropertyChangeListener(JGraph.GRAPH_MODEL_PROPERTY,
+            new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    updateModel();
+                }
+            });
+        if (this.filtering) {
             this.labelFilter.addObserver(new Observer() {
                 public void update(Observable o, Object arg) {
                     LabelTree.this.repaint();
                 }
             });
         }
-        // make sure tool tips get displayed
-        ToolTipManager.sharedInstance().registerComponent(this);
         addMouseListener(new MyMouseListener());
-        setEnabled(jGraph.isEnabled());
-        setLargeModel(true);
     }
 
     @Override
@@ -629,10 +642,11 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     }
 
     /** Indicates if a given jCell is entirely filtered. */
-    public boolean isFiltered(GraphJCell jCell, boolean showUnfilteredEdges) {
+    public boolean isFiltered(GraphJCell jCell) {
         synchroniseModel();
         return isFiltering()
-            && getFilter().isFiltered(jCell, showUnfilteredEdges);
+            && getFilter().isFiltered(jCell,
+                getJGraph().isShowUnfilteredEdges());
     }
 
     /** Indicates if a given key is entirely filtered. */

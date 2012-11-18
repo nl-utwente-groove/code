@@ -30,10 +30,10 @@ import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
-import groove.gui.jgraph.JAttr;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
+import groove.gui.look.LineStyle;
 import groove.io.LayoutIO;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -146,7 +146,8 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
         AttrType layoutAttr = this.factory.createAttrType();
         layoutAttr.setName(LAYOUT_ATTR_NAME);
         layoutAttr.setString(toString(layout.getLabelPosition()) + " "
-            + toString(layout.getPoints()) + " " + layout.getLineStyle());
+            + toString(layout.getPoints()) + " "
+            + layout.getLineStyle().getCode());
         gxl.getAttr().add(layoutAttr);
     }
 
@@ -410,11 +411,11 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
                                 "Edge layout needs at least 2 points");
                         }
                         lineStyle = Integer.parseInt(parts[parts.length - 1]);
-                        if (!JAttr.isLineStyle(lineStyle)) {
-                            lineStyle = JAttr.DEFAULT_LINE_STYLE;
+                        if (!LineStyle.isStyle(lineStyle)) {
+                            lineStyle = LineStyle.DEFAULT_VALUE.getCode();
                         }
-                        if (layoutMap.getLayout(sourceNode) != null &&
-                            layoutMap.getLayout(targetNode) != null) {
+                        if (layoutMap.getLayout(sourceNode) != null
+                            && layoutMap.getLayout(targetNode) != null) {
                             LayoutIO.correctPoints(points,
                                 layoutMap.getLayout(sourceNode),
                                 layoutMap.getLayout(targetNode));
@@ -424,7 +425,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
                                 LayoutIO.toPoint(parts, 0), points,
                                 LayoutIO.VERSION2, sourceNode == targetNode);
                         layoutMap.putEdge(edge, new JEdgeLayout(points,
-                            labelPosition, lineStyle));
+                            labelPosition, LineStyle.getStyle(lineStyle)));
                     }
                 }
 

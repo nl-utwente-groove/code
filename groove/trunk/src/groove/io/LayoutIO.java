@@ -20,10 +20,10 @@ import groove.graph.DefaultEdge;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Node;
-import groove.gui.jgraph.JAttr;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
+import groove.gui.look.LineStyle;
 import groove.util.ExprParser;
 import groove.view.FormatError;
 import groove.view.FormatErrorSet;
@@ -184,7 +184,7 @@ public class LayoutIO {
             int lineStyle;
             if (parts.length == 5) {
                 points = null;
-                lineStyle = JAttr.DEFAULT_LINE_STYLE;
+                lineStyle = LineStyle.DEFAULT_VALUE.getCode();
             } else {
                 points = toPoints(parts, 6);
                 // if we have fewer than 2 points, something is wrong
@@ -193,8 +193,8 @@ public class LayoutIO {
                         "Edge layout needs at least 2 points");
                 }
                 lineStyle = Integer.parseInt(parts[parts.length - 1]);
-                if (!JAttr.isLineStyle(lineStyle)) {
-                    lineStyle = JAttr.DEFAULT_LINE_STYLE;
+                if (!LineStyle.isStyle(lineStyle)) {
+                    lineStyle = LineStyle.DEFAULT_VALUE.getCode();
                 }
                 correctPoints(points, layoutMap.getLayout(source),
                     layoutMap.getLayout(target));
@@ -203,7 +203,7 @@ public class LayoutIO {
                 calculateLabelPosition(toPoint(parts, 4), points, version,
                     source == target);
             layoutMap.putEdge(edge, new JEdgeLayout(points, labelPosition,
-                lineStyle));
+                LineStyle.getStyle(lineStyle)));
         } catch (NumberFormatException exc) {
             throw new FormatException("Number format error "
                 + HTMLConverter.toUppercase(exc.getMessage(), false));
@@ -417,7 +417,7 @@ public class LayoutIO {
             + " ");
         result.append(toString(layout.getLabelPosition()));
         result.append(toString(layout.getPoints()));
-        result.append("" + layout.getLineStyle());
+        result.append("" + layout.getLineStyle().getCode());
         return result.toString();
     }
 

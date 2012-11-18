@@ -1,7 +1,7 @@
 package groove.gui.jgraph;
 
 import groove.graph.Edge;
-import groove.gui.jgraph.JAttr.AttributeMap;
+import groove.gui.look.Look;
 import groove.io.HTMLConverter;
 import groove.lts.GraphTransition;
 import groove.lts.RuleTransition;
@@ -14,20 +14,17 @@ import groove.util.Groove;
  */
 public class LTSJEdge extends GraphJEdge implements LTSJCell {
     /**
-     * Constructor for a prototype object of this class.
+     * Constructs an uninitialised instance.
+     * Call {@link #setJModel(GraphJModel)} to initialise.
      */
-    LTSJEdge(LTSJModel jModel) {
-        super(jModel);
-        this.visible = true;
+    private LTSJEdge() {
+        super();
     }
 
-    /**
-     * Creates a new instance from a given edge (required to be a
-     * {@link RuleTransition}).
-     */
-    LTSJEdge(LTSJModel jModel, GraphTransition edge) {
-        super(jModel, edge);
-        this.visible = true;
+    @Override
+    protected void initialise() {
+        super.initialise();
+        this.visibleFlag = true;
     }
 
     @Override
@@ -38,11 +35,6 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     @Override
     public GraphTransition getEdge() {
         return (GraphTransition) super.getEdge();
-    }
-
-    @Override
-    public GraphJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
-        return new LTSJEdge((LTSJModel) jModel, (GraphTransition) edge);
     }
 
     @Override
@@ -86,7 +78,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
 
     /** Indicates that this edge is active. */
     final boolean isActive() {
-        return this.active;
+        return getLooks().contains(Look.ACTIVE);
     }
 
     /** Indicates that the node or target of this edge is absent. */
@@ -106,53 +98,32 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
         return result;
     }
 
-    public void setVisible(boolean visible) {
-        this.visible = visible;
+    public void setVisibleFlag(boolean visible) {
+        this.visibleFlag = visible;
     }
 
-    @Override
-    public boolean isVisible() {
-        boolean result =
-            getJGraph().isShowPartialTransitions() || !isPartial()
-                || !getEdge().source().isDone();
-        return result && this.visible && super.isVisible();
+    public boolean hasVisibleFlag() {
+        return this.visibleFlag;
     }
 
     /** Changes the active status of this edge.
      * @return {@code true} if the active status changed as a result of this call.
      */
     public final boolean setActive(boolean active) {
-        boolean result = active != this.active;
-        if (result) {
-            this.active = active;
-            refreshAttributes();
-        }
-        return result;
+        return setLook(Look.ACTIVE, active);
     }
 
     @Override
-    protected AttributeMap createAttributes() {
-        AttributeMap result = LTSJGraph.LTS_EDGE_ATTR.clone();
-        if (isAbsent()) {
-            result.applyMap(LTSJGraph.LTS_EDGE_ABSENT_CHANGE);
-        }
-        if (isPartial()) {
-            result.applyMap(isActive()
-                    ? LTSJGraph.LTS_EDGE_TRANSIENT_ACTIVE_CHANGE
-                    : LTSJGraph.LTS_EDGE_TRANSIENT_CHANGE);
-        } else if (isActive()) {
-            result.applyMap(LTSJGraph.LTS_EDGE_ACTIVE_CHANGE);
-        }
-        return result;
+    protected Look getStructuralLook() {
+        return Look.TRANS;
     }
 
-    private boolean active;
+    private boolean visibleFlag;
 
-    private boolean visible;
-
-    /** Returns a prototype {@link CtrlJEdge} for a given {@link CtrlJGraph}. */
-    public static LTSJEdge getPrototype(LTSJGraph jGraph) {
-        return new LTSJEdge(null);
+    /** Constructs a fresh instance.
+     * Call {@link #setJModel(GraphJModel)} to initialise.
+     */
+    public static LTSJEdge newInstance() {
+        return new LTSJEdge();
     }
-
 }

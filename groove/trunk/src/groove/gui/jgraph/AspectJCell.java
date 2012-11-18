@@ -17,7 +17,6 @@
 package groove.gui.jgraph;
 
 import groove.graph.GraphRole;
-import groove.view.FormatError;
 import groove.view.aspect.AspectKind;
 
 /**
@@ -44,19 +43,8 @@ public interface AspectJCell extends GraphJCell {
 
     /**
      * Resets the cell's nodes and edges from the user object.
-     * @param jModel TODO
      */
-    void loadFromUserObject(AspectJModel jModel, GraphRole role);
-
-    /** 
-     * Clears the extra errors in this cell.
-     */
-    void clearExtraErrors();
-
-    /** 
-     * Adds an error to the extra errors in this cell.
-     */
-    void addExtraError(FormatError error);
+    void loadFromUserObject(GraphRole role);
 
     /** Separator between level name and edge label. */
     static final char LEVEL_NAME_SEPARATOR = '@';

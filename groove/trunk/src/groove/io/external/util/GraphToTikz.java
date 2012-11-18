@@ -26,7 +26,6 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
-import groove.graph.Multiplicity;
 import groove.graph.Node;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJVertex;
@@ -37,11 +36,12 @@ import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
-import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.LTSJVertex;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
+import groove.gui.look.EdgeEnd;
+import groove.gui.look.VisualMap;
 import groove.io.HTMLConverter;
 import groove.io.Util;
 import groove.trans.RuleLabel;
@@ -63,7 +63,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.util.Bezier;
 
@@ -560,7 +559,7 @@ public final class GraphToTikz {
             for (Node node : this.graph.nodeSet()) {
                 AspectJVertex vertex =
                     (AspectJVertex) this.model.getJCellForNode(node);
-                Color color = vertex.getColor();
+                Color color = vertex.getVisuals().getColor();
                 if (color != null) {
                     result.put(vertex, color);
                 }
@@ -621,7 +620,7 @@ public final class GraphToTikz {
      */
     private void appendTikzNode(GraphJVertex node, JVertexLayout layout,
             boolean selected) {
-        if (node.isVisible()) {
+        if (node.getVisuals().isVisible()) {
             this.result.append(BEGIN_NODE);
 
             // Styles.
@@ -1007,7 +1006,7 @@ public final class GraphToTikz {
      */
     private void appendTikzEdge(GraphJEdge edge, JEdgeLayout layout,
             boolean selected) {
-        if (edge.isVisible()) {
+        if (edge.getVisuals().isVisible()) {
             Duo<String> styles = this.getEdgeStyles(edge, selected);
             String edgeStyle = styles.one();
             String labStyle = styles.two();
@@ -1017,16 +1016,16 @@ public final class GraphToTikz {
 
             if (layout != null) {
                 switch (layout.getLineStyle()) {
-                case GraphConstants.STYLE_ORTHOGONAL:
+                case ORTHOGONAL:
                     this.appendOrthogonalLayout(edge, layout, labStyle);
                     break;
-                case GraphConstants.STYLE_BEZIER:
+                case BEZIER:
                     this.appendBezierLayout(edge, layout, labStyle);
                     break;
-                case GraphConstants.STYLE_SPLINE:
+                case SPLINE:
                     this.appendSplineLayout(edge, layout, labStyle);
                     break;
-                case JAttr.STYLE_MANHATTAN:
+                case MANHATTAN:
                     this.appendManhattanLayout(edge, layout, labStyle);
                     break;
                 default:
@@ -1106,10 +1105,10 @@ public final class GraphToTikz {
         }
 
         // Check if we should draw the end arrow of the edge.
-        AttributeMap attrMap = edge.getAttributes();
-        if (GraphConstants.getLineEnd(attrMap) == GraphConstants.ARROW_NONE) {
+        VisualMap visuals = edge.getVisuals();
+        if (visuals.getEdgeTargetShape() == EdgeEnd.NONE) {
             styles.setOne(styles.one() + ", " + UNDIRECTED_EDGE_STYLE);
-        } else if (edge.isBidirectional()) {
+        } else if (visuals.getEdgeSourceShape() != EdgeEnd.NONE) {
             styles.setOne(styles.one() + ", " + BIDIRECTIONAL_EDGE_STYLE);
         }
 
@@ -1447,24 +1446,20 @@ public final class GraphToTikz {
      * at the "very near end" and "very near start" positions.
      */
     private void appendMultiplicities(GraphJEdge edge) {
-        Object[] multLabels =
-            GraphConstants.getExtraLabels(edge.getAttributes());
-        if (multLabels != null) {
-            assert multLabels.length == 2;
-            Multiplicity outMult = (Multiplicity) multLabels[0];
-            Multiplicity inMult = (Multiplicity) multLabels[1];
-            if (outMult != null) {
-                this.result.append(" ");
-                this.result.append(NODE);
-                this.result.append(encloseBrack(OUT_MULT_LABEL_STYLE));
-                this.result.append(encloseCurly(outMult.toString()));
-            }
-            if (inMult != null) {
-                this.result.append(" ");
-                this.result.append(NODE);
-                this.result.append(encloseBrack(IN_MULT_LABEL_STYLE));
-                this.result.append(encloseCurly(inMult.toString()));
-            }
+        VisualMap visuals = edge.getVisuals();
+        String sourceLabel = visuals.getEdgeSourceLabel();
+        if (sourceLabel != null) {
+            this.result.append(" ");
+            this.result.append(NODE);
+            this.result.append(encloseBrack(OUT_MULT_LABEL_STYLE));
+            this.result.append(encloseCurly(sourceLabel));
+        }
+        String targetLabel = visuals.getEdgeTargetLabel();
+        if (targetLabel != null) {
+            this.result.append(" ");
+            this.result.append(NODE);
+            this.result.append(encloseBrack(IN_MULT_LABEL_STYLE));
+            this.result.append(encloseCurly(targetLabel));
         }
     }
 
@@ -1472,25 +1467,18 @@ public final class GraphToTikz {
      * Creates extra paths to place the multiplicities.
      */
     private void appendMultiplicities(GraphJEdge edge, List<Point2D> points) {
-        Object[] multLabels =
-            GraphConstants.getExtraLabels(edge.getAttributes());
-        if (multLabels != null) {
-            assert multLabels.length == 2;
-            Multiplicity outMult = (Multiplicity) multLabels[0];
-            Multiplicity inMult = (Multiplicity) multLabels[1];
-            Point2D[] multLabelPos =
-                GraphConstants.getExtraLabelPositions(edge.getAttributes());
-            assert multLabelPos.length == 2;
-            if (outMult != null) {
-                appendMultiplicity(outMult, multLabelPos[0], points);
-            }
-            if (inMult != null) {
-                appendMultiplicity(inMult, multLabelPos[1], points);
-            }
+        VisualMap visuals = edge.getVisuals();
+        String sourceLabel = visuals.getEdgeSourceLabel();
+        if (sourceLabel != null) {
+            appendMultiplicity(sourceLabel, visuals.getEdgeSourcePos(), points);
+        }
+        String targetLabel = visuals.getEdgeSourceLabel();
+        if (targetLabel != null) {
+            appendMultiplicity(targetLabel, visuals.getEdgeTargetPos(), points);
         }
     }
 
-    private void appendMultiplicity(Multiplicity mult, Point2D pos,
+    private void appendMultiplicity(String mult, Point2D pos,
             List<Point2D> points) {
         Point2D inMultPos = convertRelativeLabelPositionToAbsolute(pos, points);
         // Extra path for the label position.

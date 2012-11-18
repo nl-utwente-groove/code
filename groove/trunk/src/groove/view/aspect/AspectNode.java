@@ -390,7 +390,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                     "Source node of %s-edge should be rule element", edgeLabel,
                     this);
             }
-            this.nestingLevel = edge.target();
+            this.nestingLevelEdge = edge;
         } else if (edge.isNestedIn()) {
             if (!getKind().isQuantifier()) {
                 throw new FormatException(
@@ -408,7 +408,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                 throw new FormatException(
                     "Circularity in the nesting hierarchy", this);
             }
-            this.nestingParent = edge.target();
+            this.nestingParentEdge = edge;
         } else if (edge.isNestedCount()) {
             if (getKind() != AspectKind.FORALL
                 && getKind() != AspectKind.FORALL_POS) {
@@ -704,10 +704,19 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
 
     /** 
      * Retrieves the nesting level of this aspect node.
-     * Only non-{@code null} if this node is an untyped or rule node. 
+     * Only non-{@code null} if this node is a rule node. 
      */
     public AspectNode getNestingLevel() {
-        return this.nestingLevel;
+        AspectEdge edge = getNestingLevelEdge();
+        return edge == null ? null : edge.target();
+    }
+
+    /** 
+     * Retrieves the edge to the nesting level of this aspect node.
+     * Only non-{@code null} if this node is a rule node. 
+     */
+    public AspectEdge getNestingLevelEdge() {
+        return this.nestingLevelEdge;
     }
 
     /**
@@ -715,7 +724,16 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
      * Only non-{@code null} if this node is a quantifier node. 
      */
     public AspectNode getNestingParent() {
-        return this.nestingParent;
+        AspectEdge edge = getNestingParentEdge();
+        return edge == null ? null : edge.target();
+    }
+
+    /**
+     * Retrieves edge to the parent of this node in the nesting hierarchy.
+     * Only non-{@code null} if this node is a quantifier node. 
+     */
+    public AspectEdge getNestingParentEdge() {
+        return this.nestingParentEdge;
     }
 
     /**
@@ -755,10 +773,10 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
     /** The import aspect of this node, if any. */
     private Aspect imported;
     /** The aspect node representing the nesting level of this node. */
-    private AspectNode nestingLevel;
+    private AspectEdge nestingLevelEdge;
     /** The aspect node representing the parent of this node in the nesting
      * hierarchy. */
-    private AspectNode nestingParent;
+    private AspectEdge nestingParentEdge;
     /** The aspect node representing the match count of a universal quantifier. */
     private AspectNode matchCount;
     /** A list of argument types, if this represents a product node. */

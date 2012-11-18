@@ -22,12 +22,8 @@ import groove.abstraction.pattern.shape.PatternShape;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.JAttr;
-
-import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.GraphConstants;
+import groove.gui.look.Look;
 
 /**
  * Class that connects to the JGraph library for displaying pattern edges.
@@ -41,13 +37,8 @@ public class PatternJEdge extends GraphJEdge {
     // ------------------------------------------------------------------------
 
     // Private constructor. Use the prototype.
-    private PatternJEdge(PatternJModel jModel) {
-        super(jModel);
-    }
-
-    // Private constructor. Use the prototype.
-    private PatternJEdge(PatternJModel jModel, AbstractPatternEdge<?> pEdge) {
-        super(jModel, pEdge);
+    private PatternJEdge() {
+        // empty
     }
 
     // ------------------------------------------------------------------------
@@ -76,41 +67,20 @@ public class PatternJEdge extends GraphJEdge {
         return sb;
     }
 
-    /** 
-     * Factory method, in case this object is used as a prototype.
-     * Returns a fresh {@link GraphJEdge} of the same type as this one. 
-     */
-    @Override
-    public PatternJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
-        assert edge instanceof AbstractPatternEdge<?>;
-        return new PatternJEdge((PatternJModel) jModel, (AbstractPatternEdge<?>) edge);
-    }
-
-    /**
-     * Callback method for creating the core attributes.
-     * These might be modified by other parameters; don't call this
-     * method directly.
-     */
-    @Override
-    protected AttributeMap createAttributes() {
-        return DEFAULT_PEDGE_ATTR.clone();
-    }
-
     // ------------------------------------------------------------------------
     // Static methods and fields
     // ------------------------------------------------------------------------
 
-    /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */
-    public static PatternJEdge getPrototype(PatternJGraph jGraph) {
-        return new PatternJEdge(null);
+    @Override
+    protected Look getStructuralLook() {
+        return Look.PATTERN;
     }
 
-    /** The standard jgraph attributes used for representing pattern edges. */
-    private static final JAttr.AttributeMap DEFAULT_PEDGE_ATTR;
-
-    static {
-        DEFAULT_PEDGE_ATTR = GraphJGraph.DEFAULT_EDGE_ATTR.clone();
-        GraphConstants.setDashPattern(DEFAULT_PEDGE_ATTR, JAttr.NESTED_DASH);
+    /** 
+     * Returns a fresh, uninitialised instance.
+     * Call {@link #setJModel(GraphJModel)} to initialise. 
+     */
+    public static PatternJEdge newInstance() {
+        return new PatternJEdge();
     }
-
 }

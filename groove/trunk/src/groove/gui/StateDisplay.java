@@ -35,6 +35,9 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JAttr;
 import groove.gui.list.ErrorListPanel;
+import groove.gui.look.LineStyle;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualMap;
 import groove.gui.tree.LabelTree;
 import groove.gui.tree.StateTree;
 import groove.io.HTMLConverter;
@@ -67,7 +70,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
@@ -83,8 +85,6 @@ import javax.swing.JTree;
 
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
-import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.GraphConstants;
 
 /**
  * Window that displays and controls the current lts graph. Auxiliary class for
@@ -178,8 +178,8 @@ public class StateDisplay extends Display {
         return getGraphPanel().getJGraph();
     }
 
-    /** Returns the state tab on this display. */
-    private StateGraphPanel getGraphPanel() {
+    /** Returns component on which the state graph is displayed. */
+    public StateGraphPanel getGraphPanel() {
         if (this.stateGraphPanel == null) {
             this.stateGraphPanel = new StateGraphPanel();
         }
@@ -531,10 +531,10 @@ public class StateDisplay extends Display {
                 AspectJVertex jCell = model.getJCellForNode(aspectNode);
                 assert jCell != null : "Source element " + aspectNode
                     + " unknown";
+                VisualMap visuals = jCell.getVisuals();
                 Attributes attr =
-                    new Attributes(
-                        GraphConstants.getBounds(jCell.getAttributes()),
-                        jCell.isGrayedOut(), jCell.getColor());
+                    new Attributes(visuals.getBounds(), jCell.isGrayedOut(),
+                        visuals.getColor());
                 result.nodeMap.put(entry.getKey(), attr);
             }
             // compute target edge attributes
@@ -544,12 +544,10 @@ public class StateDisplay extends Display {
                 if (jCell instanceof AspectJVertex) {
                     continue;
                 }
-                AttributeMap jCellAttrs = jCell.getAttributes();
+                VisualMap visuals = jCell.getVisuals();
                 Attributes attr =
-                    new Attributes(GraphConstants.getPoints(jCellAttrs),
-                        GraphConstants.getLabelPosition(jCellAttrs),
-                        GraphConstants.getLineStyle(jCellAttrs),
-                        jCell.isGrayedOut());
+                    new Attributes(visuals.getPoints(), visuals.getLabelPos(),
+                        visuals.getLineStyle(), jCell.isGrayedOut());
                 result.edgeMap.put(entry.getKey(), attr);
             }
             return result;
@@ -612,7 +610,6 @@ public class StateDisplay extends Display {
         /** Stores the computed attributes into an aspect model. */
         private void applyAttributes(AttributesMap map, AspectJModel result,
                 HostToAspectMap aspectMap) {
-            // store target node attributes
             for (Map.Entry<HostNode,Attributes> e : map.nodeMap.entrySet()) {
                 AspectNode aspectNode = aspectMap.getNode(e.getKey());
                 assert aspectNode != null : "Target element " + e.getKey()
@@ -620,14 +617,14 @@ public class StateDisplay extends Display {
                 AspectJVertex jCell = result.getJCellForNode(aspectNode);
                 assert jCell != null : "Target element " + aspectNode
                     + " unknown";
+                VisualMap visuals = jCell.getVisuals();
                 Attributes attrs = e.getValue();
                 if (attrs.bounds != null) {
-                    GraphConstants.setBounds(jCell.getAttributes(),
-                        attrs.bounds);
+                    visuals.setBounds(attrs.bounds);
                 }
                 jCell.setGrayedOut(attrs.grayedOut);
                 if (attrs.color != null) {
-                    jCell.setColor(attrs.color);
+                    visuals.setColor(attrs.color);
                 }
                 jCell.setLayoutable(attrs.bounds == null);
                 result.synchroniseLayout(jCell);
@@ -643,16 +640,15 @@ public class StateDisplay extends Display {
                 }
                 assert jCell != null : "Target element " + aspectEdge
                     + " unknown";
-                AttributeMap attrs = jCell.getAttributes();
+                VisualMap visuals = jCell.getVisuals();
                 Attributes attr = e.getValue();
                 if (attr.points != null) {
-                    GraphConstants.setPoints(attrs, new LinkedList<Object>(
-                        attr.points));
+                    visuals.put(VisualKey.POINTS, attr.points);
                 }
                 if (attr.labelPosition != null) {
-                    GraphConstants.setLabelPosition(attrs, attr.labelPosition);
+                    visuals.put(VisualKey.LABEL_POS, attr.labelPosition);
                 }
-                GraphConstants.setLineStyle(attrs, attr.lineStyle);
+                visuals.setLineStyle(attr.lineStyle);
                 jCell.setGrayedOut(attr.grayedOut);
                 jCell.setLayoutable(attr.points == null);
                 result.synchroniseLayout(jCell);
@@ -733,13 +729,10 @@ public class StateDisplay extends Display {
                     continue;
                 }
                 AspectJVertex graphVertex = startModel.getJCellForNode(node);
-                stateVertex.refreshAttributes();
-                stateVertex.getAttributes().applyMap(
-                    graphVertex.getAttributes());
+                stateVertex.getVisuals().putAll(graphVertex.getVisuals());
                 stateVertex.setGrayedOut(graphVertex.isGrayedOut());
                 result.synchroniseLayout(stateVertex);
                 stateVertex.setLayoutable(false);
-                stateVertex.setColor(graphVertex.getColor());
             }
             for (AspectEdge edge : startGraph.edgeSet()) {
                 AspectJCell stateEdge = result.getJCellForEdge(edge);
@@ -748,8 +741,7 @@ public class StateDisplay extends Display {
                     continue;
                 }
                 AspectJCell graphEdge = startModel.getJCellForEdge(edge);
-                stateEdge.refreshAttributes();
-                stateEdge.getAttributes().applyMap(graphEdge.getAttributes());
+                stateEdge.getVisuals().putAll(graphEdge.getVisuals());
                 stateEdge.setGrayedOut(graphEdge.isGrayedOut());
                 result.synchroniseLayout(stateEdge);
                 stateEdge.setLayoutable(false);
@@ -812,11 +804,11 @@ public class StateDisplay extends Display {
             this.color = color;
             this.points = null;
             this.labelPosition = null;
-            this.lineStyle = 0;
+            this.lineStyle = LineStyle.DEFAULT_VALUE;
         }
 
-        Attributes(List<?> points, Point2D labelPosition, int lineStyle,
-                boolean grayedOut) {
+        Attributes(List<Point2D> points, Point2D labelPosition,
+                LineStyle lineStyle, boolean grayedOut) {
             this.bounds = null;
             this.grayedOut = grayedOut;
             this.color = null;
@@ -828,9 +820,9 @@ public class StateDisplay extends Display {
         final Rectangle2D bounds;
         Color color;
         final boolean grayedOut;
-        final List<?> points;
+        final List<Point2D> points;
         final Point2D labelPosition;
-        final int lineStyle;
+        final LineStyle lineStyle;
     }
 
     /** Mapping from host elements to attributes. */
