@@ -165,15 +165,13 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     @Override
     protected JComponent getLowerInfoPanel() {
         JPanel result = this.levelTreePanel;
-        if (result == null) {
-            final RuleLevelTree levelTree = getJGraph().getLevelTree();
-            if (levelTree != null && levelTree.isEnabled()) {
-                this.levelTreePanel =
-                    result =
-                        new TitledPanel("Nesting levels", levelTree, null, true);
-            }
+        final RuleLevelTree levelTree = getJGraph().getLevelTree();
+        if (result == null && levelTree != null) {
+            this.levelTreePanel =
+                result =
+                    new TitledPanel("Nesting levels", levelTree, null, true);
         }
-        return result;
+        return levelTree != null && levelTree.isEnabled() ? result : null;
     }
 
     @Override

@@ -204,7 +204,13 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         }
         JPanel infoPanel = (JPanel) getInfoPanel();
         String key;
-        if (lowerInfoPanel == null) {
+        if (lowerInfoPanel == null || !lowerInfoPanel.isEnabled()) {
+            // if we switch from split to single, freeze the divider location
+            if (upperInfoPanel != null
+                && upperInfoPanel.getParent() == getSplitInfoPanel()) {
+                this.frozenDividerPos =
+                    getSplitInfoPanel().getDividerLocation();
+            }
             getSingleInfoPanel().removeAll();
             if (upperInfoPanel != null) {
                 getSingleInfoPanel().add(upperInfoPanel, BorderLayout.CENTER);
@@ -214,7 +220,11 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             key = this.SINGLE_INFO_KEY;
         } else {
             JSplitPane splitInfoPanel = getSplitInfoPanel();
-            int dividerPos = splitInfoPanel.getDividerLocation();
+            int dividerPos = this.frozenDividerPos;
+            this.frozenDividerPos = 0;
+            if (dividerPos == 0) {
+                dividerPos = splitInfoPanel.getDividerLocation();
+            }
             splitInfoPanel.setTopComponent(upperInfoPanel);
             splitInfoPanel.setBottomComponent(lowerInfoPanel);
             splitInfoPanel.setDividerLocation(dividerPos);
@@ -222,6 +232,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         }
         ((CardLayout) infoPanel.getLayout()).show(infoPanel, key);
     }
+
+    /** The divider location of the split info panel. */
+    private int frozenDividerPos;
 
     /** Gets the currently selected tab index of the upper or lower info panel. */
     int getInfoTabIndex(boolean upper) {
