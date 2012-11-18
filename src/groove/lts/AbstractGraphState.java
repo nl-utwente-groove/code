@@ -325,16 +325,15 @@ abstract public class AbstractGraphState extends
 
     /**
      * This implementation compares state numbers. The current state is either
-     * compared with the other, if that is a {@link AbstractGraphState}, or
-     * with its source state if it is a {@link DefaultRuleTransition}.
+     * compared with the other, if that is a {@link GraphState}, or
+     * with its source state if it is a {@link GraphTransition}.
      * Otherwise, the method throws an {@link UnsupportedOperationException}.
      */
     public int compareTo(Element obj) {
-        if (obj instanceof AbstractGraphState) {
-            return getNumber() - ((AbstractGraphState) obj).getNumber();
-        } else if (obj instanceof DefaultRuleTransition) {
-            return getNumber()
-                - ((AbstractGraphState) ((DefaultRuleTransition) obj).source()).getNumber();
+        if (obj instanceof GraphState) {
+            return getNumber() - ((GraphState) obj).getNumber();
+        } else if (obj instanceof GraphTransition) {
+            return getNumber() - ((GraphTransition) obj).source().getNumber();
         } else {
             throw new UnsupportedOperationException(String.format(
                 "Classes %s and %s cannot be compared", getClass(),
