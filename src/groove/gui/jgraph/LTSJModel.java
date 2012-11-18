@@ -17,6 +17,8 @@
 package groove.gui.jgraph;
 
 import groove.graph.Graph;
+import groove.gui.look.Look;
+import groove.gui.look.VisualKey;
 import groove.lts.GTS;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
@@ -32,8 +34,8 @@ import groove.lts.GraphTransition;
 final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         implements GTSListener {
     /** Creates a new model from a given LTS and set of display options. */
-    LTSJModel(LTSJGraph jGraph, LTSJVertex jVertexProt, LTSJEdge jEdgeProt) {
-        super(jGraph, jVertexProt, jEdgeProt);
+    LTSJModel(LTSJGraph jGraph) {
+        super(jGraph);
     }
 
     /* Specialises the return type. */
@@ -86,14 +88,38 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
             prepareInsert();
             // note that (as per GraphListener contract)
             // source and target Nodes (if any) have already been added
-            addEdge(transition, false);
+            GraphJCell edgeJCell = addEdge(transition, false);
             doInsert(false, true);
+            GraphJCell stateJCell = getJCellForNode(transition.target());
+            stateJCell.setStale(VisualKey.VISIBLE);
+            edgeJCell.setStale(VisualKey.VISIBLE);
         }
     }
 
     @Override
     public void statusUpdate(GTS lts, GraphState explored, Flag flag) {
-        // do nothing
+        GraphJVertex jCell = getJCellForNode(explored);
+        switch (flag) {
+        case ABSENT:
+            jCell.setLook(Look.ABSENT, true);
+            break;
+        case CLOSED:
+            jCell.setLook(Look.OPEN, false);
+            break;
+        case ERROR:
+            jCell.setStale(VisualKey.ERROR);
+            break;
+        case DONE:
+            if (explored.isAbsent()) {
+                for (GraphJEdge jEdge : jCell.getJEdges()) {
+                    jEdge.setLook(Look.ABSENT, true);
+                }
+                jCell.setLook(Look.ABSENT, true);
+            }
+            jCell.setLook(Look.TRANSIENT, explored.isTransient());
+            jCell.setLook(Look.FINAL, lts.isFinal(explored));
+            jCell.setLook(Look.RESULT, lts.isResult(explored));
+        }
     }
 
     @Override

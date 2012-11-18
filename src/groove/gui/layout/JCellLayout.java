@@ -16,7 +16,10 @@
  */
 package groove.gui.layout;
 
+import groove.gui.look.VisualMap;
+
 import java.awt.Point;
+import java.awt.geom.Point2D;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
@@ -31,13 +34,16 @@ public interface JCellLayout {
     /**
      * The default label position.
      */
-    public static final Point defaultLabelPosition =
-        new Point(GraphConstants.PERMILLE / 2, 0);
+    public static final Point2D defaultLabelPosition = new Point(
+        GraphConstants.PERMILLE / 2, 0);
 
     /**
      * The default node location.
      */
-    public static final Point defaultNodeLocation = new Point(0, 0);
+    public static final Point2D defaultNodeLocation = new Point(0, 0);
+
+    /** Converts the layout information into a visual map. */
+    public VisualMap toVisuals();
 
     /**
      * Converts the layout information to a <tt>jgraph</tt> attribute map.

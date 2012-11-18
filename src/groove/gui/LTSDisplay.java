@@ -336,12 +336,6 @@ public class LTSDisplay extends Display {
             if (getJModel() == null) {
                 return;
             }
-            GraphJCell jCell = getJModel().getJCellForNode(closed);
-            // during automatic generation, we do not always have vertices for
-            // all states
-            if (jCell != null) {
-                jCell.refreshAttributes();
-            }
             getGraphPanel().refreshStatus();
         }
     }
@@ -422,7 +416,7 @@ public class LTSDisplay extends Display {
         public void toggleShowHideLts() {
             if (!isHidingLts()) {
                 // Switch to show mode.
-                LTSJModel ltsModel = getJGraph().newModel();
+                LTSJModel ltsModel = (LTSJModel) getJGraph().newModel();
                 ltsModel.setFiltering(isFilteringLts());
                 GTS gts = getSimulatorModel().getGts();
                 if (gts != null) {
@@ -486,7 +480,7 @@ public class LTSDisplay extends Display {
                 } else {
                     LTSJModel ltsModel;
                     if (gts != oldModel.getGts()) {
-                        ltsModel = getJGraph().newModel();
+                        ltsModel = (LTSJModel) getJGraph().newModel();
                         ltsModel.setFiltering(isFilteringLts());
                         ltsModel.setStateBound(getStateBound());
                         ltsModel.loadGraph(gts);

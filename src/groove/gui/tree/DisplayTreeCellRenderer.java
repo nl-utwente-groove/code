@@ -16,8 +16,7 @@
  */
 package groove.gui.tree;
 
-import groove.gui.jgraph.JAttr;
-import groove.gui.jgraph.JAttr.ColorSet;
+import groove.gui.look.Values;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -63,9 +62,9 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
         }
         setText(text);
         setToolTipText(tip);
-        ColorSet colors =
-            isTransient ? JAttr.TRANSIENT_COLORS : error ? JAttr.ERROR_COLORS
-                    : JAttr.NORMAL_COLORS;
+        Values.ColorSet colors =
+            isTransient ? Values.TRANSIENT_COLORS : error ? Values.ERROR_COLORS
+                    : Values.NORMAL_COLORS;
         Color background = colors.getBackground(cellSelected, cellFocused);
         Color foreground = colors.getForeground(cellSelected, cellFocused);
         setForeground(enabled ? foreground : transparent(foreground));

@@ -3,6 +3,7 @@ package groove.gui.jgraph;
 import groove.control.CtrlState;
 import groove.graph.Edge;
 import groove.graph.Node;
+import groove.gui.look.Look;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -15,12 +16,11 @@ import groove.lts.GraphTransition;
  */
 public class LTSJVertex extends GraphJVertex implements LTSJCell {
     /**
-     * Creates a new instance for a given node (required to be a
-     * {@link GraphState}) in an LTS model.
+     * Creates a new, uninitialised instance.
+     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(Node)} to initialise.
      */
-    LTSJVertex(LTSJModel jModel, GraphState node) {
-        super(jModel, node);
-        this.visible = true;
+    LTSJVertex() {
+        // empty
     }
 
     @Override
@@ -29,13 +29,22 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     }
 
     @Override
-    public LTSJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
-        return new LTSJVertex((LTSJModel) jModel, (GraphState) node);
+    public GraphState getNode() {
+        return (GraphState) super.getNode();
     }
 
     @Override
-    public GraphState getNode() {
-        return (GraphState) super.getNode();
+    protected void initialise() {
+        super.initialise();
+        this.visibleFlag = true;
+        GraphState state = getNode();
+        if (state != null) {
+            setLook(Look.OPEN, !state.isClosed());
+            setLook(Look.ABSENT, state.isAbsent());
+            setLook(Look.TRANSIENT, state.isTransient());
+            setLook(Look.FINAL, state.getGTS().isFinal(state));
+            setLook(Look.RESULT, state.getGTS().isResult(state));
+        }
     }
 
     @Override
@@ -43,22 +52,18 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
         return null;
     }
 
-    /** A state is also visible if it is open, final, or the start state. */
-    @Override
-    public boolean isVisible() {
-        return (getJGraph().isShowPartialTransitions() || !isTransient() || !getNode().isDone())
-            && (isSpecialNode() || hasVisibleIncidentEdge()) && this.visible;
+    public void setVisibleFlag(boolean visible) {
+        this.visibleFlag = visible;
     }
 
-    public void setVisible(boolean visible) {
-        this.visible = visible;
+    public boolean hasVisibleFlag() {
+        return this.visibleFlag;
     }
 
     /**
-     * Tests if the state is the start state, a final state, or not yet
-     * closed.
+     * Tests if the state is the start state or a final state.
      */
-    private boolean isSpecialNode() {
+    public boolean isSpecialNode() {
         GraphState state = getNode();
         GTS lts = getNode().getGTS();
         return lts.startState().equals(state) // || !state.isClosed()
@@ -87,7 +92,8 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
     /**
      * @return true if the state is an error state.
      */
-    public boolean isError() {
+    @Override
+    public boolean hasErrors() {
         return getNode().isError();
     }
 
@@ -147,67 +153,34 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
 
     /** Indicates that this edge is active. */
     final boolean isActive() {
-        return this.active;
+        return getLooks().contains(Look.ACTIVE);
     }
 
     /** Changes the active status of this edge.
      * @return {@code true} if the active status changed as a result of this call.
      */
     public final boolean setActive(boolean active) {
-        boolean result = active != this.active;
-        if (result) {
-            this.active = active;
-            refreshAttributes();
-        }
-        return result;
+        return setLook(Look.ACTIVE, active);
     }
 
-    /**
-     * This implementation adds special attributes for the start state, open
-     * states, final states, and the active state.
-     * @see LTSJGraph#LTS_NODE_ATTR
-     * @see LTSJGraph#LTS_START_NODE_ATTR
-     * @see LTSJGraph#LTS_OPEN_NODE_ATTR
-     * @see LTSJGraph#LTS_FINAL_NODE_ATTR
-     * @see LTSJGraph#LTS_RESULT_NODE_ATTR
-     * @see LTSJGraph#LTS_NODE_ACTIVE_CHANGE
-     */
     @Override
-    protected JAttr.AttributeMap createAttributes() {
-        JAttr.AttributeMap result;
-        if (isError()) {
-            result = LTSJGraph.LTS_ERROR_NODE_ATTR;
-        } else if (isResult()) {
-            result = LTSJGraph.LTS_RESULT_NODE_ATTR;
-        } else if (isStart()) {
-            result = LTSJGraph.LTS_START_NODE_ATTR;
-        } else if (!isClosed()) {
-            result = LTSJGraph.LTS_OPEN_NODE_ATTR;
-        } else if (isFinal()) {
-            result = LTSJGraph.LTS_FINAL_NODE_ATTR;
+    protected Look getStructuralLook() {
+        if (isStart()) {
+            return Look.START;
+        } else if (hasErrors()) {
+            return Look.ERROR_STATE;
         } else {
-            result = LTSJGraph.LTS_NODE_ATTR;
+            return Look.STATE;
         }
-        result = result.clone();
-        if (getNode().isAbsent()) {
-            result.applyMap(LTSJGraph.LTS_NODE_ABSENT_CHANGE);
-        }
-        if (isTransient()) {
-            result.applyMap(isActive()
-                    ? LTSJGraph.LTS_NODE_TRANSIENT_ACTIVE_CHANGE
-                    : LTSJGraph.LTS_NODE_TRANSIENT_CHANGE);
-        } else if (isActive()) {
-            result.applyMap(LTSJGraph.LTS_NODE_ACTIVE_CHANGE);
-        }
-        return result;
     }
 
-    private boolean active;
+    private boolean visibleFlag;
 
-    private boolean visible;
-
-    /** Returns a prototype {@link LTSJVertex} for a given {@link LTSJGraph}. */
-    public static LTSJVertex getPrototype(LTSJGraph jGraph) {
-        return new LTSJVertex(null, null);
+    /** 
+     * Returns a fresh instance.
+     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(Node)} to initialise.
+     */
+    public static LTSJVertex newInstance() {
+        return new LTSJVertex();
     }
 }

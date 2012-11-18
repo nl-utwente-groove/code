@@ -581,7 +581,7 @@ public class ShowHideMenu extends JMenu {
             if (cell instanceof GraphJEdge) {
                 edgesInCell = ((GraphJEdge) cell).getEdges();
             } else {
-                edgesInCell = ((GraphJVertex) cell).getJVertexLabels();
+                edgesInCell = ((GraphJVertex) cell).getEdges();
             }
             boolean edgeFound = false;
             Iterator<? extends Edge> edgeInCellIter = edgesInCell.iterator();

@@ -16,8 +16,11 @@
  */
 package groove.gui.jgraph;
 
+import static groove.gui.look.Values.ERROR_COLOR;
 import groove.gui.Options;
-import groove.gui.jgraph.JAttr.AttributeMap;
+import groove.gui.look.LineStyle;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualMap;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -33,10 +36,11 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
+import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.CellHandle;
 import org.jgraph.graph.CellMapper;
 import org.jgraph.graph.CellView;
@@ -74,6 +78,29 @@ public class JEdgeView extends EdgeView {
     public JEdgeView(GraphJEdge jEdge, GraphJGraph jGraph) {
         super(jEdge);
         this.jGraph = jGraph;
+    }
+
+    /* Overridden to avoid inserting PortViews into the points list. */
+    @Override
+    public void setSource(CellView sourceView) {
+        this.sourceParentView = null;
+        this.source = sourceView;
+        if (this.source != null) {
+            setPoint(0, getCenterPoint(sourceView.getParentView()));
+        }
+        invalidate();
+    }
+
+    /* Overridden to avoid inserting PortViews into the points list. */
+    @Override
+    public void setTarget(CellView targetView) {
+        this.target = targetView;
+        this.targetParentView = null;
+        if (this.target != null) {
+            int ix = this.points.size() - 1;
+            setPoint(ix, getCenterPoint(targetView.getParentView()));
+        }
+        invalidate();
     }
 
     @Override
@@ -126,114 +153,6 @@ public class JEdgeView extends EdgeView {
     }
 
     /**
-     * Adds a point between the first and second points of the underlying
-     * j-edge. The point is offset from the straight edge between the current
-     * first and second points. Does not update the view; this is to be done by
-     * the client. Also adds the edge to the layoutables of the model.
-     * @return a copy of the points of the underlying j-edge with a point added
-     */
-    public List<Object> addPointBetween() {
-        getCell().setLayoutable(true);
-        List<Object> points = new LinkedList<Object>(getViewPoints());
-        points.add(1,
-            createPointBetween(toPoint(points.get(0)), toPoint(points.get(1))));
-        return points;
-    }
-
-    /**
-     * Adds a point at a given location to the underlying j-edge. The point is
-     * added between those two existing (adjacent) edge points for which the sum
-     * of the distances to the specified location is minimal. If the location is
-     * <tt>null</tt>,{@link #addPointBetween()}is invoked instead. Does not
-     * update the view; this is to be done by the client.
-     * @param location the location at which the new point should appear; if
-     *        <tt>null</tt>, a point is added at random
-     * @return a copy of the points of the underlying j-edge with a point added
-     */
-    public List<Object> addPointAt(Point2D location) {
-        if (location == null) {
-            return addPointBetween();
-        } else {
-            List<Object> points = new LinkedList<Object>(getViewPoints());
-            double closestDistance = Double.MAX_VALUE;
-            int closestIndex = 0;
-            for (int i = 1; i < points.size(); i++) {
-                double distance =
-                    location.distance(toPoint(points.get(i - 1)))
-                        + location.distance(toPoint(points.get(i)));
-                if (distance < closestDistance) {
-                    closestIndex = i;
-                    closestDistance = distance;
-                }
-            }
-            if (closestIndex > 0) {
-                points.add(closestIndex, location.clone());
-            }
-            return points;
-        }
-    }
-
-    /**
-     * Removes the first intermediate point from the underlying j-edge. Has no
-     * effect if the j-edge had only two points to start with, or if it is a
-     * self-edge with no more than three points. Does not update the view; this
-     * is to be done by the client.
-     * @return a copy of the points of the underlying j-edge with the first
-     *         point removed
-     */
-    public List<Object> removePoint() {
-        List<Object> points = new LinkedList<Object>(getViewPoints());
-        if (points.size() > 2
-            && (getSource() != getTarget() || points.size() > 3)) {
-            points.remove(1);
-        }
-        return points;
-    }
-
-    /** Return a list with the two extreme points of this edge. */
-    public List<Object> getExtremePoints() {
-        List<Object> points = new ArrayList<Object>(2);
-        points.add(0, getViewPoints().get(0));
-        points.add(1, getViewPoints().get(this.points.size() - 1));
-        return points;
-    }
-
-    /**
-     * Removes the intermediate point from the underlying j-edge that is closest
-     * to a given location. Has no effect if the j-edge had only two points to
-     * start with, or if it is a self-edge with no more than three points. If
-     * the location is <tt>null</tt>, {@link #removePoint()}is invoked
-     * instead. Does not update the view; this is to be done by the client.
-     * @param location the location at which the point to be removed is sought;
-     *        if <tt>null</tt>, the first available point is removed
-     * @return a copy of the points of the underlying j-edge, possibly with a
-     *         point removed
-     */
-    public List<Object> removePointAt(Point2D location) {
-        if (location == null) {
-            return removePoint();
-        } else {
-            List<Object> points = new LinkedList<Object>(getViewPoints());
-            if (points.size() > 2
-                && (getSource() != getTarget() || points.size() > 3)) {
-                double closestDistance = Double.MAX_VALUE;
-                int closestIndex = 0;
-                for (int i = 1; i < points.size() - 1; i++) {
-                    double distance = location.distance(toPoint(points.get(i)));
-                    if (distance < closestDistance) {
-                        closestIndex = i;
-                        closestDistance = distance;
-                    }
-                }
-                if (closestIndex > 0) {
-                    points.remove(closestIndex);
-                }
-            }
-            return points;
-        }
-    }
-
-    /**
      * Overrides the method to return a {@link MyEdgeHandle}.
      */
     @Override
@@ -241,16 +160,64 @@ public class JEdgeView extends EdgeView {
         return new MyEdgeHandle(this, context);
     }
 
-    /**
-     * Convenience method to return the points of the view as an instantiate
-     * list.
+    /*
+     * Overridden to avoid relying on PortViews in the point list
      */
-    @SuppressWarnings("unchecked")
-    public final List<Object> getViewPoints() {
-        return this.points;
+    @Override
+    public Point2D getPoint(int index) {
+        Point2D result = null;
+        if (index == 0) {
+            Point2D nearestPoint = getNearestPoint(true);
+            if (this.sourceParentView != null) {
+                result =
+                    this.sourceParentView.getPerimeterPoint(this,
+                        getCenterPoint(this.sourceParentView), nearestPoint);
+            } else if (this.source instanceof PortView) {
+                result =
+                    ((PortView) this.source).getLocation(this, nearestPoint);
+            }
+        } else if (index == getPointCount() - 1) {
+            Point2D nearestPoint = getNearestPoint(false);
+            if (this.targetParentView != null) {
+                result =
+                    this.targetParentView.getPerimeterPoint(this,
+                        getCenterPoint(this.targetParentView), nearestPoint);
+            } else if (this.target instanceof PortView) {
+                result =
+                    ((PortView) this.target).getLocation(this, nearestPoint);
+            }
+        }
+        Object obj = this.points.get(index);
+        if (result == null && obj instanceof Point2D) {
+            result = (Point2D) obj;
+        }
+        return result;
     }
 
-    /**
+    /*
+     * Overridden to avoid relying on PortViews in the point list
+     */
+    @Override
+    protected Point2D getPointLocation(int index) {
+        Point2D result = null;
+        if (index == 0 && this.source != null) {
+            CellView vertex = this.source.getParentView();
+            if (vertex != null) {
+                result = getCenterPoint(vertex);
+            }
+        } else if (index == getPointCount() - 1 && this.target != null) {
+            CellView vertex = this.target.getParentView();
+            if (vertex != null) {
+                result = getCenterPoint(vertex);
+            }
+        }
+        if (result == null) {
+            result = (Point2D) this.points.get(index);
+        }
+        return result;
+    }
+
+    /*
      * If we're doing this for the target point and the nearest point is the
      * source, take the corrected source point.
      */
@@ -261,7 +228,7 @@ public class JEdgeView extends EdgeView {
                 JVertexView sourceCellView =
                     (JVertexView) ((PortView) this.source).getParentView();
                 return sourceCellView.getPerimeterPoint(this, null,
-                    getCenterPoint(this.target));
+                    getPointLocation(getPointCount() - 1));
             }
         }
         return super.getNearestPoint(source);
@@ -274,7 +241,7 @@ public class JEdgeView extends EdgeView {
     public Point2D getLabelVector() {
         Point2D p0 = getPoint(0);
         Point2D p1 = getPoint(1);
-        if (JAttr.isManhattanStyle(getAllAttributes())
+        if (getCell().getVisuals().getLineStyle() == LineStyle.MANHATTAN
             && p1.getX() != p0.getX()) {
             p1 = new Point2D.Double(p1.getX(), p0.getY());
         }
@@ -292,27 +259,30 @@ public class JEdgeView extends EdgeView {
      * <code>getSource() == getTarget()</code>.
      */
     protected void routeSelfEdge() {
-        int lineStyle = GraphConstants.getLineStyle(getAllAttributes());
-        boolean isManhattan = lineStyle == JAttr.STYLE_MANHATTAN;
+        VisualMap visuals = getCell().getVisuals();
+        LineStyle lineStyle = visuals.getLineStyle();
+        boolean isManhattan = lineStyle == LineStyle.MANHATTAN;
         if (isManhattan ? getPointCount() == 2 : getPointCount() <= 3) {
-            List<Object> points = getViewPoints();
-            Point2D startPoint = toPoint(points.get(0));
-            Point2D endPoint = toPoint(points.get(1));
-            while (points.size() > 2) {
-                points.remove(1);
-            }
-            Rectangle2D vertexBounds = this.source.getParentView().getBounds();
+            List<Point2D> points = visuals.getPoints();
+            Point2D startPoint = points.get(0);
+            Point2D endPoint = points.get(1);
+            List<Point2D> newPoints = new ArrayList<Point2D>(4);
+            newPoints.add(startPoint);
+            Rectangle2D vertexBounds =
+                getCell().getSourceVertex().getVisuals().getBounds();
             if (vertexBounds.contains(endPoint)) {
                 endPoint.setLocation(endPoint.getX() + vertexBounds.getWidth()
                     * 2, endPoint.getY());
             }
-            points.add(1, createPointPerpendicular(startPoint, endPoint, true));
+            newPoints.add(1,
+                createPointPerpendicular(startPoint, endPoint, true));
             if (!isManhattan) {
-                points.add(1,
+                newPoints.add(1,
                     createPointPerpendicular(startPoint, endPoint, false));
-                setLineStyle(getPreferredLinestyle());
+                visuals.setLineStyle(LineStyle.BEZIER);
             }
-            GraphConstants.setPoints(getCell().getAttributes(), points);
+            newPoints.add(startPoint);
+            visuals.put(VisualKey.POINTS, newPoints);
         }
     }
 
@@ -334,15 +304,15 @@ public class JEdgeView extends EdgeView {
             }
         }
         if (parallelEdgeCount > 1) {
-            List<Object> points = getViewPoints();
+            VisualMap visuals = getCell().getVisuals();
+            List<Point2D> points = visuals.getPoints();
             assert points.size() > 1 : String.format(
                 "JEdge %s has only points %s", getCell(), points);
-            points.add(
-                1,
-                createPointBetween(toPoint(points.get(0)),
-                    toPoint(points.get(1))));
-            GraphConstants.setPoints(getCell().getAttributes(), points);
-            setLineStyle(getPreferredLinestyle());
+            Point2D startPoint = points.get(0);
+            Point2D endPoint = points.get(1);
+            Point2D midPoint = createPointBetween(startPoint, endPoint);
+            visuals.setPoints(Arrays.asList(startPoint, midPoint, endPoint));
+            visuals.setLineStyle(LineStyle.BEZIER);
         }
     }
 
@@ -353,7 +323,7 @@ public class JEdgeView extends EdgeView {
      * @return new point on the perpendicular of the line between <tt>p1</tt>
      *         and <tt>p2</tt>
      */
-    protected Point createPointBetween(Point2D p1, Point2D p2) {
+    private Point createPointBetween(Point2D p1, Point2D p2) {
         double distance = p1.distance(p2);
         int midX = (int) (p1.getX() + p2.getX()) / 2;
         int midY = (int) (p1.getY() + p2.getY()) / 2;
@@ -410,32 +380,11 @@ public class JEdgeView extends EdgeView {
 
     /**
      * Callback method to determine the line style for edges that have points
-     * added automaticalled.
+     * added automatically.
      * @return This method always returns {@link GraphConstants#STYLE_BEZIER}.
      */
-    protected int getPreferredLinestyle() {
-        return GraphConstants.STYLE_BEZIER;
-    }
-
-    /**
-     * Sets the line style of the view and the model edge.
-     */
-    protected void setLineStyle(int linestyle) {
-        GraphConstants.setLineStyle(getAllAttributes(), linestyle);
-        GraphConstants.setLineStyle(getCell().getAttributes(), linestyle);
-    }
-
-    /**
-     * Returns the point associated with a point or port view.
-     */
-    private Point2D toPoint(Object obj) {
-        if (obj instanceof Point2D) {
-            return (Point2D) obj;
-        } else if (obj instanceof PortView) {
-            return ((PortView) obj).getLocation(null);
-        } else {
-            return null;
-        }
+    protected LineStyle getPreferredLinestyle() {
+        return LineStyle.BEZIER;
     }
 
     static {
@@ -520,28 +469,31 @@ public class JEdgeView extends EdgeView {
                 "This renderer is only meant for %s", JEdgeView.class);
 
             JEdgeView theView = (JEdgeView) view;
-            AttributeMap secondMap =
-                (AttributeMap) theView.getAllAttributes().get("line2map");
-            if (secondMap != null) {
+            GraphJEdge jCell = theView.getCell();
+            VisualMap visuals = jCell.getVisuals();
+            Color innerLineColor = visuals.getInnerLine();
+            if (innerLineColor != null) {
                 this.twoLines = true;
-                this.line2color = GraphConstants.getLineColor(secondMap);
-                this.line2width = GraphConstants.getLineWidth(secondMap);
-                this.line2dash = GraphConstants.getDashPattern(secondMap);
-                this.line2map = secondMap;
+                this.line2color = innerLineColor;
+                this.line2width = 1;
+                this.line2dash = (float[]) VisualKey.DASH.getDefaultValue();
             } else {
                 this.twoLines = false;
             }
-            this.error = theView.getCell().hasError();
+
+            this.error = visuals.isError();
             if (this.error) {
                 Rectangle b = getLabelBounds(jGraph, theView).getBounds();
                 b.setRect(b.x - 1, b.y - 1, b.width, b.height + 1);
                 this.errorBounds = b;
             }
+            this.manhattan =
+                visuals.getLineStyle() == LineStyle.MANHATTAN
+                    && visuals.getPoints().size() > 2;
             // pretend to the superclass that this cell is not selected
             super.getRendererComponent(jGraph, view, sel, focus, preview);
             // treat selection as emphasis
-            float lineWidth =
-                GraphConstants.getLineWidth(theView.getAllAttributes());
+            float lineWidth = visuals.getLineWidth();
             if (sel) {
                 lineWidth += JAttr.EMPH_INCREMENT;
             }
@@ -549,6 +501,12 @@ public class JEdgeView extends EdgeView {
             // if the specified background is null, use the graph background
             this.defaultBackground = jGraph.getBackground();
             return this;
+        }
+
+        /* Always set the default background, regardless of what anyone tells you. */
+        @Override
+        public void setBackground(Color background) {
+            super.setBackground(this.defaultBackground);
         }
 
         @Override
@@ -579,7 +537,7 @@ public class JEdgeView extends EdgeView {
             if (this.error) {
                 // overlay with error colour
                 int s = JAttr.EXTRA_BORDER_SPACE;
-                g.setColor(JAttr.ERROR_COLOR);
+                g.setColor(ERROR_COLOR);
                 g2.setStroke(JAttr.createStroke(this.lineWidth + s, null));
                 g2.draw(this.view.lineShape);
                 if (this.view.endShape != null) {
@@ -587,7 +545,7 @@ public class JEdgeView extends EdgeView {
                     g2.draw(this.view.endShape);
                 }
                 paintLabels(g);
-                g.setColor(JAttr.ERROR_COLOR);
+                g.setColor(ERROR_COLOR);
                 g2.fill(this.errorBounds);
             }
         }
@@ -603,19 +561,16 @@ public class JEdgeView extends EdgeView {
         }
 
         /**
-         * Overrides the method to take {@link JAttr#STYLE_MANHATTAN} into
+         * Overrides the method to take {@link LineStyle#MANHATTAN} into
          * account.
          */
         @Override
         protected Shape createShape() {
-            if (JAttr.isManhattanStyle(this.view.getAllAttributes())) {
-                return createManhattanShape();
-            } else {
-                return super.createShape();
-            }
+            return this.manhattan ? createManhattanShape()
+                    : super.createShape();
         }
 
-        /** Creates a shape for the {@link JAttr#STYLE_MANHATTAN} line style. */
+        /** Creates a shape for the {@link LineStyle#MANHATTAN} line style. */
         protected Shape createManhattanShape() {
             int n = this.view.getPointCount();
             if (n > 1) {
@@ -708,6 +663,8 @@ public class JEdgeView extends EdgeView {
         private float line2width;
         private float[] line2dash;
         private AttributeMap line2map;
+        /** Flag indicating manhattan line style for the edge. */
+        private boolean manhattan;
         /** Flag indicating that the underlying edge has an error. */
         private boolean error;
         private Rectangle2D errorBounds;

@@ -15,11 +15,12 @@
 package groove.gui.list;
 
 import groove.graph.Element;
+import groove.gui.look.Values;
+import groove.gui.look.Values.Mode;
 import groove.io.HTMLConverter;
 import groove.trans.ResourceKind;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -138,10 +139,12 @@ public abstract class ListPanel extends JPanel {
     private JList getEntryArea() {
         if (this.entryArea == null) {
             JList result = this.entryArea = new JList();
-            result.setBackground(getNormalBackground());
-            result.setForeground(getNormalForeground());
-            result.setSelectionBackground(getFocusBackground());
-            result.setSelectionForeground(getFocusForeground());
+            result.setBackground(getColors().getBackground(Mode.NONE));
+            result.setForeground(getColors().getForeground(Mode.NONE));
+            result.setSelectionBackground(getColors().getBackground(
+                Mode.FOCUSED));
+            result.setSelectionForeground(getColors().getBackground(
+                Mode.FOCUSED));
             result.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             result.setCellRenderer(new CellRenderer());
         }
@@ -169,22 +172,7 @@ public abstract class ListPanel extends JPanel {
     }
 
     /** Normal background color for entries. */
-    protected abstract Color getNormalBackground();
-
-    /** Normal foreground color for entries. */
-    protected abstract Color getNormalForeground();
-
-    /** Focus background color for entries. */
-    protected abstract Color getFocusBackground();
-
-    /** Focus foreground color for entries. */
-    protected abstract Color getFocusForeground();
-
-    /** Select background color for entries. */
-    protected abstract Color getSelectBackground();
-
-    /** Select foreground color for entries. */
-    protected abstract Color getSelectForeground();
+    protected abstract Values.ColorSet getColors();
 
     /** The text area containing the messages. */
     private JList entryArea;
@@ -204,8 +192,8 @@ public abstract class ListPanel extends JPanel {
                 super.getListCellRendererComponent(list, value, index,
                     isSelected, false);
             if (isSelected && !cellHasFocus) {
-                result.setBackground(ListPanel.this.getSelectBackground());
-                result.setForeground(ListPanel.this.getSelectForeground());
+                result.setBackground(getColors().getBackground(Mode.SELECTED));
+                result.setForeground(getColors().getForeground(Mode.SELECTED));
             }
             return result;
         }

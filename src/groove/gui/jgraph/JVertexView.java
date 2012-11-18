@@ -21,11 +21,11 @@ import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.createColorTag;
 import static groove.io.HTMLConverter.createSpanTag;
-import static groove.view.aspect.AspectKind.PRODUCT;
-import groove.graph.GraphRole;
+import groove.gui.look.LineStyle;
+import groove.gui.look.Values;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualMap;
 import groove.io.HTMLConverter.HTMLTag;
-import groove.view.aspect.AspectKind;
-import groove.view.aspect.AspectNode;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -50,7 +50,6 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
-import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.CellMapper;
 import org.jgraph.graph.CellView;
 import org.jgraph.graph.CellViewRenderer;
@@ -80,7 +79,7 @@ public class JVertexView extends VertexView {
         this.jGraph = jGraph;
     }
 
-    /**
+    /*
      * Specialises the return type.
      */
     @Override
@@ -88,13 +87,12 @@ public class JVertexView extends VertexView {
         return (GraphJVertex) super.getCell();
     }
 
-    /** Indicates if the vertex is actually a nodified edge. */
-    private boolean isEdge() {
-        return getCell() instanceof AspectJVertex
-            && ((AspectJVertex) getCell()).isEdge();
+    /** Returns the visual attributes map of the viewed cell. */
+    public VisualMap getCellVisuals() {
+        return getCell().getVisuals();
     }
 
-    /**
+    /*
      * This implementation returns the (static) {@link JVertexView.MyRenderer}.
      */
     @Override
@@ -102,7 +100,7 @@ public class JVertexView extends VertexView {
         return renderer;
     }
 
-    /**
+    /*
      * This implementation returns the (static) {@link MultiLinedEditor}.
      */
     @Override
@@ -125,7 +123,7 @@ public class JVertexView extends VertexView {
     private String computeText() {
         StringBuilder result = new StringBuilder(getCell().getText());
         if (result.length() > 0) {
-            Color lineColor = GraphConstants.getLineColor(getAllAttributes());
+            Color lineColor = getCellVisuals().getForeground();
             if (lineColor != null && !lineColor.equals(Color.BLACK)) {
                 createColorTag(lineColor).on(result);
             }
@@ -133,39 +131,6 @@ public class JVertexView extends VertexView {
         } else {
             return "";
         }
-    }
-
-    /**
-     * Callback method indicating that a certain vertex is a data vertex (and so
-     * should be rendered differently).
-     */
-    private JVertexShape getVertexShape() {
-        JVertexShape result = JAttr.getVertexShape(getCell().getAttributes());
-        if (result == null) {
-            GraphRole graphRole = GraphRole.NONE;
-            AspectKind attrKind = AspectKind.DEFAULT;
-            if (getCell() instanceof AspectJVertex) {
-                AspectNode node = ((AspectJVertex) getCell()).getNode();
-                graphRole = node.getGraphRole();
-                attrKind = node.getAttrKind();
-            } else if (getCell() instanceof LTSJVertex) {
-                graphRole = GraphRole.LTS;
-            }
-            if (isEdge()) {
-                return JVertexShape.ELLIPSE;
-            } else if (graphRole == GraphRole.TYPE) {
-                return JVertexShape.RECTANGLE;
-            } else if (graphRole == GraphRole.LTS) {
-                return JVertexShape.OVAL;
-            } else if (attrKind.hasSignature()) {
-                return JVertexShape.ELLIPSE;
-            } else if (attrKind == PRODUCT) {
-                return JVertexShape.DIAMOND;
-            } else {
-                return JVertexShape.ROUNDED;
-            }
-        }
-        return result;
     }
 
     /** Stores the insets value for this view. */
@@ -183,23 +148,7 @@ public class JVertexView extends VertexView {
         return this.text;
     }
 
-    //    @Override
-    //    public Rectangle2D getBounds() {
-    //        Rectangle2D result = super.getBounds();
-    //        if (isEdge()) {
-    //            double x = result.getCenterX();
-    //            double y = result.getCenterY();
-    //            double radius = NODE_EDGE_RADIUS + EXTRA_BORDER_SPACE;
-    //            result.setRect(new Rectangle2D.Double(x - radius, y - radius,
-    //                2 * radius, 2 * radius));
-    //            //            result =
-    //            //                new Rectangle2D.Double(x - radius, y - radius, 2 * radius,
-    //            //                    2 * radius);
-    //        }
-    //        return result;
-    //    }
-
-    /*
+    /**
      * Overwrites the super method because we have a different renderer.
      */
     @Override
@@ -213,9 +162,7 @@ public class JVertexView extends VertexView {
             // revert to the actual borders by subtracting the
             // extra border space
             bounds = getBounds();
-            float extra =
-                EXTRA_BORDER_SPACE
-                    - GraphConstants.getLineWidth(getAllAttributes());
+            float extra = EXTRA_BORDER_SPACE - getCellVisuals().getLineWidth();
             bounds =
                 new Rectangle2D.Double(bounds.getX() + extra, bounds.getY()
                     + extra, bounds.getWidth() - 2 * extra, bounds.getHeight()
@@ -235,7 +182,7 @@ public class JVertexView extends VertexView {
             if (xAdjust || yAdjust) {
                 double x = xAdjust ? p.getX() : bounds.getCenterX();
                 double y = yAdjust ? p.getY() : bounds.getCenterY();
-                switch (getVertexShape()) {
+                switch (getCellVisuals().getNodeShape()) {
                 case DIAMOND:
                     result = getDiamondPerimeterPoint(bounds, x, y, p);
                     break;
@@ -247,7 +194,7 @@ public class JVertexView extends VertexView {
             }
         }
         if (result == null) {
-            switch (getVertexShape()) {
+            switch (getCellVisuals().getNodeShape()) {
             case ELLIPSE:
                 result = getEllipsePerimeterPoint(bounds, p);
                 break;
@@ -255,7 +202,7 @@ public class JVertexView extends VertexView {
                 result = getDiamondPerimeterPoint(bounds, p);
                 break;
             default:
-                if (JAttr.isManhattanStyle(edge.getAllAttributes())) {
+                if (getCellVisuals().getLineStyle() == LineStyle.MANHATTAN) {
                     result =
                         getRectanglePerimeterPoint(bounds, p,
                             this == edge.getSource().getParentView());
@@ -270,7 +217,7 @@ public class JVertexView extends VertexView {
     /** Returns the cell bounds including the parameter adornment, if any. */
     private Rectangle2D getAdornBounds() {
         Rectangle2D result = null;
-        String adornment = getCell().getAdornment();
+        String adornment = getCellVisuals().getAdornment();
         if (adornment != null) {
             result = getBounds();
             MyRenderer renderer =
@@ -596,7 +543,8 @@ public class JVertexView extends VertexView {
             assert view instanceof JVertexView : String.format(
                 "This renderer is only meant for %s", JVertexView.class);
             this.view = (JVertexView) view;
-            this.adornment = this.view.getCell().getAdornment();
+            VisualMap visuals = this.visuals = this.view.getCellVisuals();
+            this.adornment = this.visuals.getAdornment();
             if (this.adornment == null) {
                 this.adornHeight = 0;
                 this.adornWidth = 0;
@@ -605,32 +553,31 @@ public class JVertexView extends VertexView {
                 this.adornWidth = getAdornWidth(this.adornment);
             }
             this.selectionColor = graph.getHighlightColor();
-            AttributeMap attributes = view.getAllAttributes();
-            this.dash = GraphConstants.getDashPattern(attributes);
-            this.lineColor = GraphConstants.getLineColor(attributes);
+            this.dash = visuals.getDash();
+            this.lineColor = visuals.getForeground();
             this.selected = sel;
             boolean emph = this.view.armed || sel;
-            float lineWidth = GraphConstants.getLineWidth(attributes);
+            float lineWidth = visuals.getLineWidth();
             if (emph) {
                 lineWidth += JAttr.EMPH_INCREMENT;
             }
             this.lineWidth = lineWidth;
 
-            AttributeMap secondMap = (AttributeMap) attributes.get("line2map");
-            if (secondMap != null) {
+            Color innerLineColor = visuals.getInnerLine();
+            if (innerLineColor != null) {
                 this.twoLines = true;
-                this.line2color = GraphConstants.getLineColor(secondMap);
-                this.line2width = GraphConstants.getLineWidth(secondMap);
-                this.line2dash = GraphConstants.getDashPattern(secondMap);
+                this.line2color = innerLineColor;
+                this.line2width = 1;
+                this.line2dash = (float[]) VisualKey.DASH.getDefaultValue();
             } else {
                 this.twoLines = false;
             }
 
-            setOpaque(GraphConstants.isOpaque(attributes));
-            Color foreground = GraphConstants.getForeground(attributes);
+            setOpaque(visuals.isOpaque());
+            Color foreground = visuals.getForeground();
             setForeground((foreground != null) ? foreground
                     : graph.getForeground());
-            Color background = GraphConstants.getBackground(attributes);
+            Color background = visuals.getBackground();
             background =
                 (background != null) ? background : graph.getBackground();
             if (emph) {
@@ -643,11 +590,11 @@ public class JVertexView extends VertexView {
                         background.getAlpha());
             }
             setBackground(background);
-            Font font = GraphConstants.getFont(attributes);
+            Font font = JAttr.DEFAULT_FONT.deriveFont(visuals.getFont());
             setFont((font != null) ? font : graph.getFont());
             setBorder(createEmptyBorder());
             setText(this.view.getText());
-            this.error = this.view.getCell().hasError();
+            this.error = visuals.isError();
             return this;
         }
 
@@ -659,10 +606,8 @@ public class JVertexView extends VertexView {
         public void paint(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
             Shape shape = getShape(this.lineWidth / 2);
-            if (this.view.isEdge()) {
+            if (this.visuals.getLabel() == null) {
                 paintBorder(g2, shape);
-                //                g.setColor(this.lineColor);
-                //                g2.fill(shape);
             } else {
                 if (isOpaque()) {
                     paintBackground(g2, shape);
@@ -680,7 +625,7 @@ public class JVertexView extends VertexView {
         private void paintErrorOverlay(Graphics2D g2) {
             if (this.error) {
                 Shape shape = getShape(EXTRA_BORDER_SPACE);
-                g2.setColor(JAttr.ERROR_COLOR);
+                g2.setColor(Values.ERROR_COLOR);
                 g2.fill(shape);
             }
         }
@@ -847,13 +792,13 @@ public class JVertexView extends VertexView {
             // correct for the adornment space
             result.left += Math.max(0, this.adornWidth - 6);
             // correct for the predefined inset
-            int inset = GraphConstants.getInset(this.view.getAllAttributes());
+            int inset = this.visuals.getInset();
             result.left += inset;
             result.right += inset;
             result.top += inset;
             result.bottom += inset;
             // add space needed for non-rectangular shapes
-            switch (this.view.getVertexShape()) {
+            switch (this.visuals.getNodeShape()) {
             case ELLIPSE:
                 result.left += textWidth / 8;
                 result.right += textWidth / 8;
@@ -885,7 +830,7 @@ public class JVertexView extends VertexView {
             double y = extra;
             double width = s.getWidth() - 2 * extra;
             double height = s.getHeight() - 2 * extra;
-            switch (this.view.getVertexShape()) {
+            switch (this.visuals.getNodeShape()) {
             case ELLIPSE:
                 return new Ellipse2D.Double(x, y, width, height);
             case DIAMOND:
@@ -1047,6 +992,8 @@ public class JVertexView extends VertexView {
 
         /** The vertex view that is currently installed. */
         private JVertexView view;
+        /** The vertex that is currently installed. */
+        private VisualMap visuals;
         /** The underlying <code>JGraph</code>. */
         private Color selectionColor;
         /** Flag indicating that the vertex has been selected. */

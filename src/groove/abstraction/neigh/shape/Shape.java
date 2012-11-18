@@ -37,7 +37,6 @@ import groove.abstraction.neigh.equiv.ShapeNeighEquiv;
 import groove.abstraction.neigh.trans.Materialisation;
 import groove.abstraction.neigh.trans.RuleToShapeMap;
 import groove.graph.Graph;
-import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
@@ -88,11 +87,6 @@ public final class Shape extends ShapeGraph {
     // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
-
-    @Override
-    public GraphRole getRole() {
-        return GraphRole.SHAPE;
-    }
 
     @Override
     public Shape newGraph(String name) {

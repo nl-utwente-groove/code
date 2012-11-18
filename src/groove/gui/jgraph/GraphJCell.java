@@ -19,10 +19,14 @@ package groove.gui.jgraph;
 import groove.graph.EdgeRole;
 import groove.graph.Element;
 import groove.graph.TypeLabel;
+import groove.gui.look.Look;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualMap;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.jgraph.graph.GraphCell;
 
@@ -38,6 +42,9 @@ public interface GraphJCell extends GraphCell, Serializable {
     /** Returns the fixed jModel to which this jCell belongs. */
     public GraphJModel<?,?> getJModel();
 
+    /** Returns the end nodes (for an edge) or the incident edges (for a vertex). */
+    public Collection<? extends GraphJCell> getContext();
+
     /**
      * Returns the complete text that should be displayed upon the cell. This is
      * obtained from {@link #getLines()} by inserting appropriate line
@@ -51,9 +58,6 @@ public interface GraphJCell extends GraphCell, Serializable {
      * is html-formatted, but without the surrounding html-tag.
      */
     public abstract List<StringBuilder> getLines();
-
-    /** Indicates if the cell is currently visible in the j-model. */
-    public boolean isVisible();
 
     /**
      * Returns the set of keys to be associated with this cell in a label
@@ -82,22 +86,40 @@ public interface GraphJCell extends GraphCell, Serializable {
     boolean setGrayedOut(boolean gray);
 
     /** 
-     * Indicates if this cell contains an error.
-     * This affects the rendering.
+     * Indicates if there are errors in this JCell;
+     * i.e., if {@link #getErrors()} would return a non-empty object.
      */
-    public boolean hasError();
+    boolean hasErrors();
+
+    /** 
+     * Returns the errors in this jCell.
+     */
+    AspectJCellErrors getErrors();
 
     /**
      * Returns tool tip text for this j-cell.
      */
     public abstract String getToolTipText();
 
+    /** Returns the looks of this JCell. */
+    public Set<Look> getLooks();
+
+    /** Sets or resets a look value. */
+    public boolean setLook(Look look, boolean set);
+
     /** 
-     * Refreshes the attributes of this {@link GraphJCell}. 
-     * Should be called whenever a change in the model has occurred that may
-     * influence the rendering.
+     * Returns the visual aspects of this JCell.
+     * These are derived from the looks, together with the 
+     * layout information and text label(s) of the cell.
      */
-    public void refreshAttributes();
+    public VisualMap getVisuals();
+
+    /**
+     * Sets a number of refreshable visual keys to stale, meaning that 
+     * their values in the visual map should be refreshed.
+     * @param keys the keys to be refreshed
+     */
+    public void setStale(VisualKey... keys);
 
     /** Pseudo-label for cells with an empty list label set. */
     static public final TypeLabel NO_LABEL = TypeLabel.createLabel(

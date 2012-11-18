@@ -52,7 +52,6 @@ import javax.swing.text.Document;
 import org.jgraph.JGraph;
 import org.jgraph.graph.DefaultGraphCellEditor;
 import org.jgraph.graph.GraphCellEditor;
-import org.jgraph.graph.GraphConstants;
 
 /**
  * Multiline jcell editor, essentially taken from
@@ -113,7 +112,8 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             }
             JTextArea result = getEditorComponent();
             // scale with the jGraph
-            Font font = GraphConstants.getFont(jCell.getAttributes());
+            Font font =
+                JAttr.DEFAULT_FONT.deriveFont(jCell.getVisuals().getFont());
             font = (font != null) ? font : graph.getFont();
             if (graph.getScale() != 1) {
                 double scale = graph.getScale();

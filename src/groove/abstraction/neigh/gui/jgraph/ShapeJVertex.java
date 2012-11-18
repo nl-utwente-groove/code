@@ -20,9 +20,7 @@ import static groove.io.HTMLConverter.ITALIC_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.graph.Node;
 import groove.graph.TypeNode;
-import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.io.HTMLConverter;
 
@@ -38,8 +36,8 @@ import java.util.List;
 public class ShapeJVertex extends GraphJVertex {
 
     // Private constructor. Use the prototype.
-    private ShapeJVertex(ShapeJModel jModel, ShapeNode node) {
-        super(jModel, node);
+    private ShapeJVertex(ShapeJModel jModel) {
+        super(jModel);
         // Remove the default port that was added by the super constructor.
         this.remove(0);
     }
@@ -52,11 +50,6 @@ public class ShapeJVertex extends GraphJVertex {
     @Override
     public String toString() {
         return "ShapeJVertex: " + this.getNode().toString();
-    }
-
-    @Override
-    public ShapeJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
-        return new ShapeJVertex((ShapeJModel) jModel, (ShapeNode) node);
     }
 
     @Override
@@ -91,9 +84,14 @@ public class ShapeJVertex extends GraphJVertex {
         return result;
     }
 
+    /** Returns a prototype {@link ShapeJVertex}. */
+    public static ShapeJVertex newInstance() {
+        return new ShapeJVertex(null);
+    }
+
     /** Returns a prototype {@link ShapeJVertex} for a given {@link ShapeJGraph}. */
-    public static ShapeJVertex getPrototype(ShapeJGraph jGraph) {
-        return new ShapeJVertex(null, null);
+    public static ShapeJVertex getPrototype() {
+        return new ShapeJVertex(null);
     }
 
 }

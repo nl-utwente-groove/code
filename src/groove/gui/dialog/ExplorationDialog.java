@@ -477,7 +477,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
                 } catch (FormatException exc) {
                     enabled = false;
                     toolTip.append(HTMLConverter.HTML_LINEBREAK);
-                    toolTip.append(HTMLConverter.red.on(HTMLConverter.toHtml(new StringBuilder(
+                    toolTip.append(HTMLConverter.EMBARGO_TAG.on(HTMLConverter.toHtml(new StringBuilder(
                         exc.getMessage()))));
                 }
             }

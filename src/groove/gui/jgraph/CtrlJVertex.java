@@ -2,12 +2,10 @@ package groove.gui.jgraph;
 
 import groove.control.CtrlState;
 import groove.control.CtrlVar;
-import groove.graph.Node;
+import groove.gui.look.Look;
 import groove.io.HTMLConverter;
 
 import java.util.List;
-
-import org.jgraph.graph.AttributeMap;
 
 /**
  * JVertex class that describes the underlying node as a graph state.
@@ -16,21 +14,25 @@ import org.jgraph.graph.AttributeMap;
  */
 public class CtrlJVertex extends GraphJVertex {
     /**
-     * Creates a new instance for a given node (required to be a
-     * {@link CtrlState}) in an LTS model.
+     * Creates a new instance.
+     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(groove.graph.Node)}
+     * to initialise.
      */
-    CtrlJVertex(GraphJModel<?,?> jModel, CtrlState node) {
-        super(jModel, node);
+    private CtrlJVertex() {
+        // empty
+    }
+
+    @Override
+    protected void initialise() {
+        super.initialise();
+        if (isFinal()) {
+            setLook(Look.FINAL, true);
+        }
     }
 
     @Override
     public CtrlJGraph getJGraph() {
         return (CtrlJGraph) super.getJGraph();
-    }
-
-    @Override
-    public GraphJVertex newJVertex(GraphJModel<?,?> jModel, Node node) {
-        return new CtrlJVertex(jModel, (CtrlState) node);
     }
 
     @Override
@@ -62,41 +64,36 @@ public class CtrlJVertex extends GraphJVertex {
 
     /** Indicates if this jVertex represents the start state of the control automaton. */
     public boolean isStart() {
-        return getNode().getAut().getStart().equals(getNode());
+        return getNode() != null
+            && getNode().getAut().getStart().equals(getNode());
     }
 
     /** Indicates if this jVertex represents the start state of the control automaton. */
     public boolean isFinal() {
-        return getNode().getAut().getFinal().equals(getNode());
+        return getNode() != null
+            && getNode().getAut().getFinal().equals(getNode());
     }
 
     /** Indicates if this jVertex corresponds to a transient control state. */
     public boolean isTransient() {
-        return getNode().isTransient();
+        return getNode() != null && getNode().isTransient();
     }
 
-    /**
-     * This implementation adds special attributes for the start state, open
-     * states, final states, and the active state.
-     */
     @Override
-    protected AttributeMap createAttributes() {
-        AttributeMap result;
+    protected Look getStructuralLook() {
         if (isStart()) {
-            result = CtrlJGraph.CONTROL_START_NODE_ATTR.clone();
-        } else if (isFinal()) {
-            result = CtrlJGraph.CONTROL_SUCCESS_NODE_ATTR.clone();
+            return Look.START;
         } else if (isTransient()) {
-            result = CtrlJGraph.CONTROL_TRANSIENT_NODE_ATTR.clone();
+            return Look.CTRL_TRANSIENT_STATE;
         } else {
-            result = CtrlJGraph.CONTROL_NODE_ATTR.clone();
+            return super.getStructuralLook();
         }
-
-        return result;
     }
 
-    /** Returns a prototype {@link CtrlJVertex} for a given {@link CtrlJGraph}. */
-    public static CtrlJVertex getPrototype(CtrlJGraph jGraph) {
-        return new CtrlJVertex(null, null);
+    /** Returns a fresh, uninitialised instance.
+     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(groove.graph.Node)} to initialise. 
+     */
+    public static CtrlJVertex newInstance() {
+        return new CtrlJVertex();
     }
 }

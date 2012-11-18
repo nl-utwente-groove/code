@@ -145,7 +145,7 @@ public class ExploreAction extends SimulatorAction {
         if (compatibilityError != null) {
             toolTipText +=
                 HTMLConverter.HTML_LINEBREAK
-                    + HTMLConverter.red.on(HTMLConverter.toHtml(compatibilityError.getMessage()));
+                    + HTMLConverter.EMBARGO_TAG.on(HTMLConverter.toHtml(compatibilityError.getMessage()));
         }
         putValue(Action.SHORT_DESCRIPTION,
             HTMLConverter.HTML_TAG.on(toolTipText));

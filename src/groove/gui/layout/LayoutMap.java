@@ -19,6 +19,7 @@ package groove.gui.layout;
 import groove.graph.Edge;
 import groove.graph.ElementMap;
 import groove.graph.Node;
+import groove.gui.look.VisualMap;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -155,6 +156,26 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
     }
 
     /**
+     * Inserts layout information for a given key, on the basis of a
+     * visual map. Only really stores the information if it is not default
+     * (according to the layout information itself, i.e.,
+     * <code>{@link JCellLayout#isDefault}</code>.
+     */
+    public void putNode(N key, VisualMap visuals) {
+        putNode(key, JVertexLayout.newInstance(visuals));
+    }
+
+    /**
+     * Inserts layout information for a given key, on the basis of a
+     * visual map. Only really stores the information if it is not default
+     * (according to the layout information itself, i.e.,
+     * <code>{@link JCellLayout#isDefault}</code>.
+     */
+    public void putEdge(E key, VisualMap visuals) {
+        putEdge(key, JEdgeLayout.newInstance(visuals));
+    }
+
+    /**
      * Inserts layout information for a given key, on the basis of jgraph
      * attributes. Only really stores the information if it is not default
      * (according to the layout information itself, i.e.,
@@ -236,36 +257,37 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
     /**
      * Turns a relative label position into an absolute label position.
      */
-    static public Point toAbsPosition(List<Point> points, Point relPosition) {
+    static public Point2D toAbsPosition(List<Point2D> points,
+            Point2D relPosition) {
         Rectangle bounds = toBounds(points);
-        Point source = points.get(0);
-        Point target = points.get(points.size() - 1);
+        Point2D source = points.get(0);
+        Point2D target = points.get(points.size() - 1);
         bounds.add(target);
         int unit = GraphConstants.PERMILLE;
         int x0 = bounds.x;
         int xdir = 1;
-        if (source.x > target.x) {
+        if (source.getX() > target.getX()) {
             x0 += bounds.width;
             xdir = -1;
         }
         int y0 = bounds.y;
         int ydir = 1;
-        if (source.y > target.y) {
+        if (source.getY() > target.getY()) {
             y0 += bounds.height;
             ydir = -1;
         }
-        int x = x0 + xdir * (bounds.width * relPosition.x / unit);
-        int y = y0 + ydir * (bounds.height * relPosition.y / unit);
-        return new Point(x, y);
+        double x = x0 + xdir * (bounds.width * relPosition.getX() / unit);
+        double y = y0 + ydir * (bounds.height * relPosition.getY() / unit);
+        return new Point2D.Double(x, y);
     }
 
     /**
      * Converts a list of points to the minimal rectangle containing all of
      * them.
      */
-    static public Rectangle toBounds(List<Point> points) {
+    static public Rectangle toBounds(List<Point2D> points) {
         Rectangle bounds = new Rectangle();
-        for (Point point : points) {
+        for (Point2D point : points) {
             bounds.add(point);
         }
         return bounds;
@@ -275,30 +297,31 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
     /**
      * Turns an absolute label position into a relative label position.
      */
-    static public Point toRelPosition(List<Point> points, Point absPosition) {
+    static public Point2D toRelPosition(List<Point2D> points,
+            Point2D absPosition) {
         Rectangle bounds = toBounds(points);
-        Point source = points.get(0);
-        Point target = points.get(points.size() - 1);
+        Point2D source = points.get(0);
+        Point2D target = points.get(points.size() - 1);
         bounds.add(target);
         int unit = GraphConstants.PERMILLE;
         int x0 = bounds.x;
-        if (source.x > target.x) {
+        if (source.getX() > target.getX()) {
             x0 += bounds.width;
         }
         int y0 = bounds.y;
-        if (source.y > target.y) {
+        if (source.getY() > target.getY()) {
             y0 += bounds.height;
         }
-        int x = Math.abs(x0 - absPosition.x) * unit / bounds.width;
-        int y = Math.abs(y0 - absPosition.y) * unit / bounds.height;
-        return new Point(x, y);
+        double x = Math.abs(x0 - absPosition.getX()) * unit / bounds.width;
+        double y = Math.abs(y0 - absPosition.getY()) * unit / bounds.height;
+        return new Point2D.Double(x, y);
     }
 
     /** Main method to test the functionality of this class. */
     static public void main(String[] args) {
-        List<Point> points = new LinkedList<Point>();
-        Point relPosition1 = new Point(100, 900);
-        Point relPosition2 = new Point(1200, 50);
+        List<Point2D> points = new LinkedList<Point2D>();
+        Point2D relPosition1 = new Point(100, 900);
+        Point2D relPosition2 = new Point(1200, 50);
         points.add(new Point(100, 200));
         points.add(new Point(150, 50));
         testLabelPosition(points, JCellLayout.defaultLabelPosition);
@@ -318,9 +341,10 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
         testLabelPosition(points, relPosition2);
     }
 
-    static private void testLabelPosition(List<Point> points, Point relPosition) {
+    static private void testLabelPosition(List<Point2D> points,
+            Point2D relPosition) {
         System.out.print("Abs, rel, abs: ");
-        Point absPosition = toAbsPosition(points, relPosition);
+        Point2D absPosition = toAbsPosition(points, relPosition);
         System.out.print("" + absPosition + " ");
         relPosition = toRelPosition(points, absPosition);
         System.out.print("" + relPosition + " ");

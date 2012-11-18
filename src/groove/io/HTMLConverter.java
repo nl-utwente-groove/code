@@ -16,15 +16,11 @@
  */
 package groove.io;
 
-import static groove.view.aspect.AspectKind.REMARK;
-import groove.gui.jgraph.AspectJGraph;
-import groove.util.Colors;
+import groove.gui.look.Values;
 
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.jgraph.graph.GraphConstants;
 
 /**
  * Performs conversions to and from HTML code.
@@ -164,13 +160,13 @@ public class HTMLConverter {
     public static int removeColorTags(StringBuilder htmlLine) {
         String originalLine = htmlLine.toString();
         int result = 0;
-        if (!blue.off(htmlLine).equals(originalLine)) {
+        if (!ERASER_TAG.off(htmlLine).equals(originalLine)) {
             result = 1;
-        } else if (!green.off(htmlLine).equals(originalLine)) {
+        } else if (!CREATOR_TAG.off(htmlLine).equals(originalLine)) {
             result = 2;
-        } else if (!red.off(htmlLine).equals(originalLine)) {
+        } else if (!EMBARGO_TAG.off(htmlLine).equals(originalLine)) {
             result = 3;
-        } else if (!remark.off(htmlLine).equals(originalLine)) {
+        } else if (!REMARK_TAG.off(htmlLine).equals(originalLine)) {
             result = 4;
         }
         return result;
@@ -258,15 +254,17 @@ public class HTMLConverter {
     private static final int MAX_ALPHA = 255;
 
     /** Blue color tag. */
-    public static final HTMLTag blue = createColorTag(Colors.findColor("blue"));
+    public static final HTMLTag ERASER_TAG =
+        createColorTag(Values.ERASER_FOREGROUND);
     /** Green color tag. */
-    public static final HTMLTag green =
-        createColorTag(Colors.findColor("green.darker"));
+    public static final HTMLTag CREATOR_TAG =
+        createColorTag(Values.CREATOR_FOREGROUND);
     /** Red color tag. */
-    public static final HTMLTag red = createColorTag(Colors.findColor("red"));
+    public static final HTMLTag EMBARGO_TAG =
+        createColorTag(Values.EMBARGO_FOREGROUND);
     /** Remark color tag. */
-    public static final HTMLTag remark =
-        createColorTag(GraphConstants.getForeground(AspectJGraph.ASPECT_NODE_ATTR.get(REMARK)));
+    public static final HTMLTag REMARK_TAG =
+        createColorTag(Values.REMARK_FOREGROUND);
 
     /**
      * Class that allows some handling of HTML text.

@@ -564,17 +564,13 @@ final public class GraphEditorTab extends ResourceTab implements
      * with information about the currently edited graph.
      */
     private void updateStatus() {
-        if (!getJGraph().isInserting()) {
-            updateCopyPasteButtons();
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    if (!getJGraph().isInserting()) {
-                        updateErrors();
-                    }
-                }
-            });
-        }
+        updateCopyPasteButtons();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                updateErrors();
+            }
+        });
         updateDirty();
         getTabLabel().setError(hasErrors());
     }

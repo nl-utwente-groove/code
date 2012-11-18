@@ -189,6 +189,7 @@ public class JGraphUI extends BasicGraphUI {
             boolean addEdge = false;
             if (getJGraphMode() == EDIT_MODE && e.getButton() == BUTTON1) {
                 // this is an editing-related event
+                AspectJGraph jGraph = (AspectJGraph) getJGraph();
                 if (isEdgeAdding() && e.getClickCount() == 1) {
                     // finish edge adding
                     finishEdgeAdding(e);
@@ -199,11 +200,11 @@ public class JGraphUI extends BasicGraphUI {
                     if (selectedCell instanceof GraphJEdge) {
                         GraphJEdge selectedEdge = (GraphJEdge) selectedCell;
                         if (selectedCell == jEdge) {
-                            ((AspectJGraph) getJGraph()).removePoint(
-                                selectedEdge, e.getPoint());
+                            jGraph.getRemovePointAction(e.getPoint()).execute(
+                                selectedEdge);
                         } else {
-                            ((AspectJGraph) getJGraph()).addPoint(selectedEdge,
-                                e.getPoint());
+                            jGraph.getAddPointAction(e.getPoint()).execute(
+                                selectedEdge);
                         }
                     }
                 } else if (getJCellAt(e.getPoint()) != null) {
@@ -217,16 +218,16 @@ public class JGraphUI extends BasicGraphUI {
                                 && !e.isShiftDown();
                         break;
                     case 2:
-                        getJGraph().startEditingAtCell(jCell);
+                        jGraph.startEditingAtCell(jCell);
                     }
                 } else {
                     switch (e.getClickCount()) {
                     case 1:
-                        getJGraph().clearSelection();
+                        jGraph.clearSelection();
                         break;
                     case 2:
-                        if (getJGraph().isEditable()) {
-                            ((AspectJGraph) getJGraph()).addVertex(e.getPoint());
+                        if (jGraph.isEditable()) {
+                            jGraph.addVertex(e.getPoint());
                         }
                     }
                 }

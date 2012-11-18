@@ -27,9 +27,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.jgraph.graph.EdgeView;
-import org.jgraph.graph.GraphLayoutCache;
-
 /**
  * Action to set up the standard touchgraph layout algorithm on a given
  * MyJGraph. Adapted from <tt>jgraph.com.pad.Touch</tt>
@@ -188,18 +185,15 @@ public class SpringLayouter extends AbstractLayouter {
             layoutableIndex++;
         }
         // initialise the edge fragment arrays
-        GraphLayoutCache layoutCache = this.jgraph.getGraphLayoutCache();
         // Object[] graphEdges = jgraph.getEdges(jgraph.getRoots());
         List<Layoutable> edgeFragmentSourceList = new LinkedList<Layoutable>();
         List<Layoutable> edgeFragmentTargetList = new LinkedList<Layoutable>();
         for (int i = 0; i < this.jmodel.getRootCount(); i++) {
             GraphJCell jCell = (GraphJCell) this.jmodel.getRootAt(i);
-            if (jCell instanceof GraphJEdge && jCell.isVisible()
+            if (jCell instanceof GraphJEdge && jCell.getVisuals().isVisible()
                 && !jCell.isGrayedOut()) {
                 GraphJEdge jEdge = (GraphJEdge) jCell;
-                EdgeView edgeView =
-                    (EdgeView) layoutCache.getMapping(jEdge, false);
-                List<?> points = edgeView.getPoints();
+                List<Point2D> points = jEdge.getVisuals().getPoints();
                 for (int j = 0; j < points.size() - 1; j++) {
                     Object efs =
                         j == 0 ? jEdge.getSourceVertex() : Pair.newPair(jEdge,

@@ -25,14 +25,13 @@ import groove.io.HTMLConverter;
 import groove.util.Groove;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultPort;
 
 /**
@@ -40,34 +39,117 @@ import org.jgraph.graph.DefaultPort;
  * stored as a Set in the user object. In the latter case, toString() the user
  * object is the empty string.
  */
-public class GraphJEdge extends DefaultEdge implements GraphJCell {
+public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
     /**
      * Constructs an uninitialised model edge.
      */
-    protected GraphJEdge(GraphJModel<?,?> jModel) {
-        this.jModel = jModel;
+    protected GraphJEdge() {
+        // empty
+    }
+
+    @Override
+    protected void initialise() {
+        super.initialise();
+        this.edges = null;
+        this.source = null;
+        this.target = null;
+    }
+
+    @Override
+    public Collection<? extends GraphJCell> getContext() {
+        if (isLoop()) {
+            return Collections.singleton(getSourceVertex());
+        } else {
+            return Arrays.asList(getSourceVertex(), getTargetVertex());
+        }
+    }
+
+    /** 
+     * The cloned object is equal to this one after a reset. 
+     */
+    @Override
+    public GraphJEdge clone() {
+        GraphJEdge clone = (GraphJEdge) super.clone();
+        clone.initialise();
+        return clone;
     }
 
     /**
-     * Constructs a model edge based on a graph edge.
-     * @param edge the underlying graph edge of this model edge.
+     * Returns the source of the edge.
      */
-    protected GraphJEdge(GraphJModel<?,?> jModel, Edge edge) {
-        this(jModel);
-        this.source = edge.source();
-        this.target = edge.target();
-        this.edges.add(edge);
+    public DefaultPort getSource() {
+        return this.sourcePort;
     }
 
-    @Override
-    public GraphJGraph getJGraph() {
-        return getJModel().getJGraph();
+    /**
+     * Returns the target of the edge.
+     */
+    public DefaultPort getTarget() {
+        return this.targetPort;
     }
 
-    @Override
-    public GraphJModel<?,?> getJModel() {
-        return this.jModel;
+    /**
+     * Sets the source of the edge.
+     */
+    public void setSource(Object port) {
+        this.sourcePort = (DefaultPort) port;
     }
+
+    /**
+     * Returns the target of <code>edge</code>.
+     */
+    public void setTarget(Object port) {
+        this.targetPort = (DefaultPort) port;
+    }
+
+    /** Source port of the edge. */
+    private DefaultPort sourcePort;
+    /** Target port of the edge. */
+    private DefaultPort targetPort;
+
+    /**
+     * Returns the j-vertex that is the parent of the source port of this
+     * j-edge.
+     */
+    public GraphJVertex getSourceVertex() {
+        DefaultPort source = getSource();
+        return source == null ? null : (GraphJVertex) source.getParent();
+    }
+
+    /**
+     * Returns the j-vertex that is the parent of the target port of this
+     * j-edge.
+     */
+    public GraphJVertex getTargetVertex() {
+        DefaultPort target = getTarget();
+        return target == null ? null : (GraphJVertex) target.getParent();
+    }
+
+    /**
+     * Returns the common source of the underlying graph edges.
+     */
+    public Node getSourceNode() {
+        if (this.source == null) {
+            this.source = getSourceVertex().getNode();
+        }
+        return this.source;
+    }
+
+    /** Source node of the underlying graph edges. */
+    private Node source;
+
+    /**
+     * Returns the common target of the underlying graph edges.
+     */
+    public Node getTargetNode() {
+        if (this.target == null) {
+            this.target = getTargetVertex().getNode();
+        }
+        return this.target;
+    }
+
+    /** Target node of the underlying graph edges. */
+    private Node target;
 
     /**
      * This implementation delegates the method to the user object.
@@ -89,62 +171,35 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
             getKeys());
     }
 
-    /** 
-     * Clears the set of graph edges wrapped in this JEdge,
-     * and sets the source and target node from the source and target JVertex. 
-     * @param jModel TODO
-     */
-    void reset(AspectJModel jModel) {
-        this.jModel = jModel;
-        this.edges.clear();
-        this.source = null;
-        this.target = null;
-    }
-
     /**
      * Adds an edge to the underlying set of edges, if the edge is appropriate.
+     * The edge should be compatible, as tested by {@link #isCompatible(Edge)}.
      * Indicates in its return value if the edge has indeed been added.
      * @param edge the edge to be added
-     * @return <tt>true</tt> if the edge has been added; <tt>false</tt> if
-     *         <tt>edge</tt> is not compatible with this j-edge and cannot be
-     *         added. This implementation returns <tt>true</tt> always.
-     * @require <tt>edge.source() == getSourceNode</tt> and
-     *          <tt>edge.target() == getTargetNode()</tt>
-     * @ensure if <tt>result</tt> then <tt>getEdgeSet().contains(edge)</tt>
      */
-    public boolean addEdge(Edge edge) {
-        assert edge.source().equals(getSourceNode());
-        assert edge.target().equals(getTargetNode());
-        return this.edges.add(edge);
+    @SuppressWarnings("unchecked")
+    public void addEdge(Edge edge) {
+        // the edge should be compatible, but don't assert this
+        // as subclasses may choose to add incompatible edges while flagging an error
+        if (getEdges().isEmpty()) {
+            this.source = edge.source();
+            this.target = edge.target();
+        }
+        // there may be an edge already present which is equal (according to equals)
+        // but not the same as the new one; the new edge should override the old
+        // To achieve this, we first remove the edge
+        getEdges().remove(edge);
+        ((Set<Edge>) getEdges()).add(edge);
     }
 
-    /** Replaces an edge with another, equal one. */
-    void replaceEdge(Edge edge) {
-        this.edges.remove(edge);
-        this.edges.add(edge);
+    /** Tests if a new edge is compatible with those already wrapped by this JEdge. */
+    public boolean isCompatible(Edge edge) {
+        return true;
     }
 
     /** Returns true if source and target node coincide. */
     public boolean isLoop() {
         return this.source == this.target;
-    }
-
-    /** 
-     * The cloned object is equal to this one after a reset. 
-     */
-    @Override
-    public GraphJEdge clone() {
-        GraphJEdge clone = (GraphJEdge) super.clone();
-        clone.edges = new TreeSet<Edge>();
-        return clone;
-    }
-
-    /** 
-     * Factory method, in case this object is used as a prototype.
-     * Returns a fresh {@link GraphJEdge} of the same type as this one. 
-     */
-    public GraphJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
-        return new GraphJEdge(jModel, edge);
     }
 
     /**
@@ -155,127 +210,21 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
         // getLabelDescription());
     }
 
-    @Override
-    public void refreshAttributes() {
-        AttributeMap result = createAttributes();
-        if (isGrayedOut()) {
-            result.applyMap(GraphJGraph.GRAYED_OUT_ATTR);
-        }
-        if (getAttributes() != null) {
-            getAttributes().applyMap(result);
-        } else {
-            setAttributes(result);
-        }
-    }
-
-    /**
-     * Callback method for creating the core attributes.
-     * These might be modified by other parameters; don't call this
-     * method directly.
-     */
-    protected AttributeMap createAttributes() {
-        AttributeMap result = GraphJGraph.DEFAULT_EDGE_ATTR.clone();
-        return result;
-    }
-
-    @Override
-    final public boolean isLayoutable() {
-        return this.layoutable;
-    }
-
-    @Override
-    final public boolean setLayoutable(boolean layedOut) {
-        boolean result = layedOut != this.layoutable;
-        if (result) {
-            this.layoutable = layedOut;
-        }
-        return result;
-    }
-
-    @Override
-    final public boolean isGrayedOut() {
-        return this.grayedOut;
-    }
-
-    @Override
-    final public boolean setGrayedOut(boolean grayedOut) {
-        boolean result = grayedOut != this.grayedOut;
-        if (result) {
-            this.grayedOut = grayedOut;
-            refreshAttributes();
-        }
-        return result;
-    }
-
-    public boolean hasError() {
-        return false;
-    }
-
-    /**
-     * Returns <code>true</code> if the super method does so, and the edge has
-     * at least one non-filtered list label, and all end nodes are visible.
-     */
-    @Override
-    public boolean isVisible() {
-        if (getSourceVertex() == null || !getSourceVertex().isVisible()) {
-            return false;
-        }
-        if (getTargetVertex() == null || !getTargetVertex().isVisible()) {
-            return false;
-        }
-        return !getJGraph().isFiltering(this);
-    }
-
-    /**
-     * Returns the common source of the underlying graph edges.
-     */
-    public Node getSourceNode() {
-        if (this.source == null) {
-            this.source = getSourceVertex().getNode();
-        }
-        return this.source;
-    }
-
-    /**
-     * Returns the common target of the underlying graph edges.
-     */
-    public Node getTargetNode() {
-        if (this.target == null) {
-            this.target = getTargetVertex().getNode();
-        }
-        return this.target;
-    }
-
-    /**
-     * Returns the j-vertex that is the parent of the source port of this
-     * j-edge.
-     */
-    public GraphJVertex getSourceVertex() {
-        DefaultPort source = (DefaultPort) getSource();
-        return source == null ? null : (GraphJVertex) source.getParent();
-    }
-
-    /**
-     * Returns the j-vertex that is the parent of the target port of this
-     * j-edge.
-     */
-    public GraphJVertex getTargetVertex() {
-        DefaultPort target = (DefaultPort) getTarget();
-        return target == null ? null : (GraphJVertex) target.getParent();
-    }
-
     /**
      * Returns an unmodifiable view upon the set of underlying graph edges.
      */
     public Set<? extends Edge> getEdges() {
-        return Collections.unmodifiableSet(this.edges);
+        if (this.edges == null) {
+            this.edges = new TreeSet<Edge>();
+        }
+        return this.edges;
     }
 
     /**
      * Returns the first edge from the set of underlying edges.
      */
     public Edge getEdge() {
-        return this.edges.isEmpty() ? null : this.edges.iterator().next();
+        return getEdges().isEmpty() ? null : getEdges().iterator().next();
     }
 
     /**
@@ -377,34 +326,15 @@ public class GraphJEdge extends DefaultEdge implements GraphJCell {
         return result.toString();
     }
 
-    /** Sets the bidirectional flag. */
-    public void setBidirectional(boolean flag) {
-        this.bidirectional = flag;
-    }
-
-    /** Gets the bidirectional flag. */
-    public boolean isBidirectional() {
-        return this.bidirectional;
-    }
-
-    /** Source node of the underlying graph edges. */
-    private Node source;
-    /** Target node of the underlying graph edges. */
-    private Node target;
     /** Set of graph edges mapped to this JEdge. */
-    private Set<Edge> edges = new TreeSet<Edge>();
+    private Set<Edge> edges;
 
-    /** The fixed jModel to which this edge belongs. */
-    private GraphJModel<?,?> jModel;
-    private boolean layoutable;
-    private boolean grayedOut;
-
-    /** Display this edge as bidirectional. */
-    private boolean bidirectional = false;
-
-    /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */
-    public static GraphJEdge getPrototype(GraphJGraph jGraph) {
-        return new GraphJEdge(null);
+    /** 
+     * Returns a fresh, uninitialised instance.
+     * Call {@link #setJModel(GraphJModel)} to initialise. 
+     */
+    public static GraphJEdge newInstance() {
+        return new GraphJEdge();
     }
 
     /**

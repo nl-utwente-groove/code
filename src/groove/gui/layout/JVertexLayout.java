@@ -16,6 +16,10 @@
  */
 package groove.gui.layout;
 
+import groove.gui.jgraph.JAttr;
+import groove.gui.look.VisualKey;
+import groove.gui.look.VisualMap;
+
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 
@@ -36,9 +40,19 @@ public class JVertexLayout implements JCellLayout {
     static public JVertexLayout newInstance(AttributeMap jAttr) {
         Rectangle2D bounds = GraphConstants.getBounds(jAttr);
         if (bounds == null) {
-            bounds = new Rectangle(defaultLabelPosition);
+            bounds = new Rectangle(JAttr.DEFAULT_NODE_BOUNDS);
         }
         return new JVertexLayout(bounds);
+    }
+
+    /**
+     * Factory method to construct a new nod layout out of an attribute map.
+     * Parameters not provided in the attribute map receive a default value.
+     * @param visuals the visual attribute map
+     * @return a new node layout based on <code>jAttr</code>
+     */
+    static public JVertexLayout newInstance(VisualMap visuals) {
+        return new JVertexLayout(visuals.getBounds());
     }
 
     /**
@@ -67,6 +81,15 @@ public class JVertexLayout implements JCellLayout {
      */
     public Rectangle2D getBounds() {
         return (Rectangle2D) this.bounds.clone();
+    }
+
+    /** Converts the layout information into a visual map. */
+    public VisualMap toVisuals() {
+        VisualMap result = new VisualMap();
+        if (this.bounds != null) {
+            result.put(VisualKey.BOUNDS, this.bounds);
+        }
+        return result;
     }
 
     /**

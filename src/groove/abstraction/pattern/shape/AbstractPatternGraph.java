@@ -19,6 +19,7 @@ package groove.abstraction.pattern.shape;
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.Util;
 import groove.graph.GraphInfo;
+import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
@@ -60,6 +61,11 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
         super(name);
         this.depth = 0;
         this.layers = new ArrayList<Set<N>>();
+    }
+
+    @Override
+    public GraphRole getRole() {
+        return GraphRole.PATTERN;
     }
 
     // ------------------------------------------------------------------------

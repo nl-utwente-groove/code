@@ -6,7 +6,8 @@ import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.LabelPattern;
-import groove.gui.jgraph.JAttr.AttributeMap;
+import groove.gui.look.Look;
+import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -23,17 +24,10 @@ import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectParser;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.jgraph.graph.GraphConstants;
 
 /**
  * Specialized j-edge for rule graphs, with its own tool tip text.
@@ -42,24 +36,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     /** 
      * Creates an uninitialised instance.
      */
-    public AspectJEdge(AspectJModel jModel) {
-        super(jModel);
+    private AspectJEdge() {
         setUserObject(null);
-        this.aspect = DEFAULT;
-        if (jModel != null) {
-            resetTracker();
-            refreshAttributes();
-        }
-    }
-
-    /** Creates a j-edge on the basis of a given (aspectual) edge. */
-    public AspectJEdge(AspectJModel jModel, AspectEdge edge) {
-        super(jModel, edge);
-        resetTracker();
-        setUserObject(null);
-        this.aspect = edge.getKind();
-        this.errors.addAll(edge.getErrors());
-        refreshAttributes();
     }
 
     @Override
@@ -95,7 +73,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     /** Indicates if this is the incoming pars of a nodified edge. */
     public boolean isNodeEdgeOut() {
-        return ((AspectJVertex) getSourceVertex()).isEdge();
+        return getSourceVertex() != null
+            && ((AspectJVertex) getSourceVertex()).isEdge();
     }
 
     @SuppressWarnings("unchecked")
@@ -109,71 +88,24 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         return (AspectEdge) super.getEdge();
     }
 
-    /** Clears the errors and the aspect, in addition to calling the super method. */
     @Override
-    void reset(AspectJModel jModel) {
-        super.reset(jModel);
-        this.errors.clear();
-        clearExtraErrors();
+    protected void initialise() {
+        super.initialise();
         this.aspect = DEFAULT;
-        resetTracker();
-    }
-
-    @Override
-    public AspectJEdge clone() {
-        AspectJEdge result = (AspectJEdge) super.clone();
-        result.errors = new ArrayList<FormatError>();
-        result.extraErrors = new ArrayList<FormatError>();
-        result.resetTracker();
-        return result;
-    }
-
-    @Override
-    public AspectJEdge newJEdge(GraphJModel<?,?> jModel, Edge edge) {
-        if (edge == null) {
-            return new AspectJEdge((AspectJModel) jModel);
-        } else {
-            return new AspectJEdge((AspectJModel) jModel, (AspectEdge) edge);
+        if (getJModel() != null) {
+            resetJModelTracker();
         }
     }
 
-    /**
-     * Returns <tt>true</tt> only if {@code mustAdd} holds or if the aspect 
-     * values of the edge to be added equal those of this JEdge.
-     * @param mustAdd if {@code true}, the edge is added even if its
-     * aspects conflict with previously added edges (but an error is added
-     * to the edge).
-     */
-    private boolean addEdge(Edge edge, boolean mustAdd) {
-        AspectEdge aspectEdge = (AspectEdge) edge;
-        boolean first = getEdges().isEmpty();
-        AspectEdge oldEdge = getEdge();
-        boolean compatible = first || aspectEdge.equalsAspects(oldEdge);
-        boolean result = (compatible || mustAdd) && super.addEdge(aspectEdge);
+    @Override
+    public boolean isCompatible(Edge edge) {
+        boolean result =
+            (edge instanceof AspectEdge) && super.isCompatible(edge);
         if (result) {
-            if (first) {
-                this.aspect = aspectEdge.getKind();
+            AspectEdge oldEdge = getEdge();
+            if (oldEdge != null) {
+                result = ((AspectEdge) edge).equalsAspects(oldEdge);
             }
-            FormatError error = null;
-            if (edge.getRole() != EdgeRole.BINARY) {
-                error =
-                    new FormatError("Node label '%s' not allowed on edges",
-                        edge.label(), this);
-            } else if (!compatible) {
-                error =
-                    new FormatError(
-                        "Conflicting aspects in edge labels %s and %s",
-                        oldEdge.label(), edge.label(), this);
-            }
-            if (error != null) {
-                aspectEdge =
-                    new AspectEdge(aspectEdge.source(), aspectEdge.label(),
-                        aspectEdge.target());
-                aspectEdge.addError(error);
-                aspectEdge.setFixed();
-                replaceEdge(aspectEdge);
-            }
-            this.errors.addAll(aspectEdge.getErrors());
         }
         return result;
     }
@@ -183,8 +115,46 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
      * added equal those of this j-edge, and the superclass is also willing.
      */
     @Override
-    public boolean addEdge(Edge edge) {
-        return addEdge(edge, false);
+    public void addEdge(Edge e) {
+        AspectEdge edge = (AspectEdge) e;
+        AspectEdge oldEdge = getEdge();
+        if (oldEdge == null) {
+            this.aspect = edge.getKind();
+        }
+        FormatError error = null;
+        if (edge.getRole() != EdgeRole.BINARY) {
+            error =
+                new FormatError("Node label '%s' not allowed on edges",
+                    edge.label(), this);
+        } else if (oldEdge != null && !edge.equalsAspects(oldEdge)) {
+            error =
+                new FormatError("Conflicting aspects in edge labels %s and %s",
+                    oldEdge.label(), edge.label(), this);
+        }
+        if (error != null) {
+            edge = new AspectEdge(edge.source(), edge.label(), edge.target());
+            edge.addError(error);
+            edge.setFixed();
+        }
+        super.addEdge(edge);
+        updateLook(edge);
+    }
+
+    /** Update this cell's look due to the addition of an edge. */
+    private void updateLook(AspectEdge edge) {
+        // maybe update the look 
+        RuleLabel ruleLabel = edge.getRuleLabel();
+        if (ruleLabel != null) {
+            if (ruleLabel.isEmpty() && this.aspect != AspectKind.CREATOR
+                || ruleLabel.isNeg() && ruleLabel.getNegOperand().isEmpty()) {
+                // remove edge arrow
+                setLook(Look.NO_ARROW, true);
+            } else if (!ruleLabel.isAtom()) {
+                setLook(Look.REGULAR, true);
+            }
+        }
+        getErrors().addErrors(edge.getErrors(), true);
+        setStale(VisualKey.ERROR);
     }
 
     @Override
@@ -219,14 +189,14 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     StringBuilder getEdgeDescription() {
         getEdge().testFixed(true);
         StringBuilder result = new StringBuilder();
-        if (hasError()) {
-            for (FormatError error : this.extraErrors) {
+        if (hasErrors()) {
+            for (FormatError error : getErrors()) {
                 if (result.length() > 0) {
                     result.append("<br>");
                 }
                 result.append(error.toString());
             }
-            HTMLConverter.red.on(result);
+            HTMLConverter.EMBARGO_TAG.on(result);
         } else {
             AspectKind attrKind = getEdge().getAttrKind();
             if (attrKind == ARGUMENT) {
@@ -344,102 +314,18 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         }
         if (this.aspect.isRole() || this.aspect == AspectKind.NESTED) {
             // we're in a rule graph; watch for parameters and variable nodes
-            return !getTargetVertex().isVisible();
+            return !getTargetVertex().getVisuals().isVisible();
         }
         return getTargetNode().getAttrKind().hasSignature();
     }
 
     @Override
-    public boolean isVisible() {
-        boolean result = true;
-        if (getJGraph().getLevelTree() != null) {
-            result = getJGraph().getLevelTree().isVisible(this);
+    protected Look getStructuralLook() {
+        if (isNodeEdgeIn()) {
+            return Look.NODIFIED;
+        } else {
+            return Look.getLookFor(getAspect());
         }
-        if (result) {
-            result = super.isVisible();
-        }
-        return result;
-    }
-
-    @Override
-    public final boolean hasError() {
-        return !this.extraErrors.isEmpty() || !this.errors.isEmpty();
-    }
-
-    @Override
-    public void clearExtraErrors() {
-        this.extraErrors.clear();
-    }
-
-    @Override
-    public void addExtraError(FormatError error) {
-        this.extraErrors.add(error);
-        refreshAttributes();
-    }
-
-    /** Returns the (possibly empty) set of errors in this JEdge. */
-    public Collection<FormatError> getErrors() {
-        return this.errors;
-    }
-
-    @Override
-    protected AttributeMap createAttributes() {
-        AttributeMap result =
-            AspectJGraph.ASPECT_EDGE_ATTR.get(this.aspect).clone();
-        AspectEdge edge = getEdge();
-        RuleLabel ruleModelLabel = edge == null ? null : edge.getRuleLabel();
-        if (ruleModelLabel != null) {
-            if (ruleModelLabel.isEmpty() && this.aspect != AspectKind.CREATOR
-                || ruleModelLabel.isNeg()
-                && ruleModelLabel.getNegOperand().isEmpty()) {
-                // remove edge arrow
-                GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
-            } else if (!ruleModelLabel.isAtom()) {
-                setFontAttr(result, Font.ITALIC);
-            }
-        }
-        if (edge != null && edge.isComposite()) {
-            GraphConstants.setBeginSize(result, 15);
-            GraphConstants.setLineBegin(result, GraphConstants.ARROW_DIAMOND);
-        }
-        if (edge != null && isBidirectional()) {
-            GraphConstants.setLineBegin(result, GraphConstants.ARROW_CLASSIC);
-        } else if (edge != null && isNodeEdgeIn()) {
-            // only remove outgoing arrow point if the edge is not bidirectional
-            GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
-        }
-        if (edge != null) {
-            if (edge.getInMult() != null || edge.getOutMult() != null) {
-                GraphConstants.setExtraLabels(result,
-                    new Object[] {edge.getOutMult(), edge.getInMult()});
-                Point2D[] labelPositions =
-                    {new Point2D.Double(IN_MULT_DIST, MULT_X),
-                        new Point2D.Double(OUT_MULT_DIST, MULT_X)};
-                GraphConstants.setExtraLabelPositions(result, labelPositions);
-            } else {
-                GraphConstants.setRemoveAttributes(result, MULT_REMOVAL);
-            }
-        }
-        if (getJGraph().hasActiveEditor()) {
-            GraphConstants.setEditable(result, true);
-            GraphConstants.setConnectable(result, true);
-            GraphConstants.setDisconnectable(result, true);
-        }
-        if (getSourceVertex() != null && getEdge() != null
-            && getEdge().getGraphRole() != GraphRole.RULE) {
-            Color color = ((AspectJVertex) getSourceVertex()).getColor();
-            if (color != null) {
-                GraphConstants.setForeground(result, color);
-                GraphConstants.setLineColor(result, color);
-            }
-        }
-        return result;
-    }
-
-    /** Modifies the font attribute in the given attribute map. */
-    final protected void setFontAttr(AttributeMap result, int fontAttr) {
-        Font currentFont = GraphConstants.getFont(result);
-        GraphConstants.setFont(result, currentFont.deriveFont(fontAttr));
     }
 
     public void saveToUserObject() {
@@ -450,19 +336,17 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     }
 
     @Override
-    public void loadFromUserObject(AspectJModel jModel, GraphRole role) {
-        reset(jModel);
+    public void loadFromUserObject(GraphRole role) {
+        initialise();
         AspectParser parser = AspectParser.getInstance();
         for (String text : getUserObject()) {
             AspectLabel label = parser.parse(text, role);
             AspectEdge edge =
                 new AspectEdge(getSourceNode(), label, getTargetNode());
             edge.setFixed();
-            boolean added = addEdge(edge, true);
-            assert added : String.format("Could not add edge %s to jEdge %s",
-                edge, this);
+            addEdge(edge);
         }
-        refreshAttributes();
+        setStale(VisualKey.refreshables());
     }
 
     /**
@@ -491,9 +375,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
      * Sets the {@link #jModelTracker} to a fresh value.
      * This is delegated to a separate method because it needs
      * to be invoked upon cloning as well as in the constructor.
-     * @see #clone()
      */
-    private void resetTracker() {
+    private void resetJModelTracker() {
         this.jModelTracker =
             getJModel() == null ? ChangeCount.DUMMY_TRACKER
                     : getJModel().getModCount().createTracker();
@@ -507,24 +390,11 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     private Tracker jModelTracker;
     private AspectKind aspect;
 
-    private Collection<FormatError> errors = new LinkedHashSet<FormatError>();
-
-    private List<FormatError> extraErrors = new ArrayList<FormatError>();
-
-    /** Returns a prototype {@link AspectJEdge} for a given {@link AspectJGraph}. */
-    public static AspectJEdge getPrototype(AspectJGraph jGraph) {
-        return new AspectJEdge(null);
+    /** 
+     * Returns a fresh, uninitialised instance.
+     * Call {@link #setJModel(GraphJModel)} to initialise. 
+     */
+    public static AspectJEdge newInstance() {
+        return new AspectJEdge();
     }
-
-    /** Permille fractional distance of in multiplicity label from source node. */
-    private static final double IN_MULT_DIST =
-        GraphConstants.PERMILLE * 90 / 100;
-    /** Permille fractional distance of out multiplicity label from target node. */
-    private static final double OUT_MULT_DIST =
-        GraphConstants.PERMILLE * 10 / 100;
-    /** x-position of multiplicity labels. */
-    private static final double MULT_X = -11;
-    /** Multiplicity removal object. */
-    private static final Object[] MULT_REMOVAL = new Object[] {
-        GraphConstants.EXTRALABELPOSITIONS, GraphConstants.EXTRALABELS};
 }
