@@ -308,6 +308,10 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             } else if (selectedComponent instanceof JGraphPanel<?>) {
                 result = (JGraphPanel<?>) selectedComponent;
             }
+        } else if (display.getKind() == DisplayKind.LTS) {
+            result = ((LTSDisplay) display).getGraphPanel();
+        } else if (display.getKind() == DisplayKind.STATE) {
+            result = ((StateDisplay) display).getGraphPanel();
         }
         return result;
     }
