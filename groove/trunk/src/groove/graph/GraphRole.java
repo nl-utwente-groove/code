@@ -43,7 +43,9 @@ public enum GraphRole {
     /** Büchi automaton role. */
     BUCHI("büchi", "Büchi Automaton"),
     /** Shape role. */
-    SHAPE("shape", "Abstract graph");
+    SHAPE("shape", "Abstract graph"),
+    /** Shape role. */
+    PATTERN("pattern", "Pattern graph");
 
     private GraphRole(String name, String description) {
         this.name = name;
