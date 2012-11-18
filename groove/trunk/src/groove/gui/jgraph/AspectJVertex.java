@@ -402,6 +402,13 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             getJGraph().isShowAspects() ? aspectEdge.label()
                     : aspectEdge.getDisplayLabel();
         result.append(TypeLabel.toHtmlString(label));
+        // add the level name, if not already shown as an aspect
+        if (this.aspect.isRole()) {
+            String levelName = aspectEdge.getLevelName();
+            if (levelName != null && levelName.length() != 0) {
+                result.append(LEVEL_NAME_SEPARATOR + levelName);
+            }
+        }
         if (aspectEdge.getKind() == AspectKind.ABSTRACT && label.isNodeType()) {
             result = ITALIC_TAG.on(result);
         }
