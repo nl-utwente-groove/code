@@ -118,6 +118,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
                 edge.setFixed();
             }
             computeLayers();
+            assert isWellDefined();
             createClosureRules();
             if (getInfo() == null) {
                 setInfo(new GraphInfo<TypeNode,TypeEdge>());

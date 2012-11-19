@@ -31,7 +31,11 @@ public class Test {
     private static final String PATH =
         "/home/zambon/Work/workspace_groove/groove/junit/pattern/";
 
-    private static final String GRAMMAR = PATH + "pattern-list.gps/";
+    // private static final String GRAMMAR = PATH + "pattern-list.gps/";
+    // private static final String GRAMMAR = PATH + "circ-list-4.gps/";
+    // private static final String GRAMMAR = PATH + "trains.gps/";
+    // private static final String GRAMMAR = PATH + "equiv.gps/";
+    private static final String GRAMMAR = PATH + "match-test.gps/";
 
     private static final String TYPE_GRAPH = GRAMMAR + "ptgraph.gst";
 

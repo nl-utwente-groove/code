@@ -7,97 +7,39 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n0">
+        <node id="n5">
             <attr name="layout">
-                <string>138 199 66 32</string>
-            </attr>
-        </node>
-        <node id="n1">
-            <attr name="layout">
-                <string>230 129 66 32</string>
-            </attr>
-        </node>
-        <node id="n2">
-            <attr name="layout">
-                <string>316 72 66 32</string>
-            </attr>
-        </node>
-        <node id="n3">
-            <attr name="layout">
-                <string>134 22 66 32</string>
+                <string>152 82 36 48</string>
             </attr>
         </node>
         <node id="n4">
             <attr name="layout">
-                <string>14 92 56 32</string>
+                <string>24 84 36 48</string>
             </attr>
         </node>
-        <node id="n5">
+        <node id="n3">
             <attr name="layout">
-                <string>137 90 66 32</string>
+                <string>149 14 36 48</string>
             </attr>
         </node>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>type:Station</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n0">
-            <attr name="label">
-                <string>next</string>
-            </attr>
+        <node id="n2">
             <attr name="layout">
-                <string>500 31 171 215 413 38 167 38 14</string>
+                <string>316 64 66 48</string>
             </attr>
-        </edge>
-        <edge to="n3" from="n1">
-            <attr name="label">
-                <string>at</string>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>245 121 36 48</string>
             </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:Person</string>
+        </node>
+        <node id="n0">
+            <attr name="layout">
+                <string>153 191 36 48</string>
             </attr>
-        </edge>
-        <edge to="n0" from="n1">
+        </node>
+        <edge to="n5" from="n5">
             <attr name="label">
-                <string>dest</string>
-            </attr>
-        </edge>
-        <edge to="n5" from="n2">
-            <attr name="label">
-                <string>dest</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n2">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>type:Person</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>type:Station</string>
-            </attr>
-        </edge>
-        <edge to="n5" from="n3">
-            <attr name="label">
-                <string>next</string>
-            </attr>
-        </edge>
-        <edge to="n4" from="n4">
-            <attr name="label">
-                <string>type:Train</string>
-            </attr>
-        </edge>
-        <edge to="n5" from="n4">
-            <attr name="label">
-                <string>at</string>
+                <string>type:S</string>
             </attr>
         </edge>
         <edge to="n0" from="n5">
@@ -105,9 +47,67 @@
                 <string>next</string>
             </attr>
         </edge>
-        <edge to="n5" from="n5">
+        <edge to="n4" from="n4">
             <attr name="label">
-                <string>type:Station</string>
+                <string>type:T</string>
+            </attr>
+        </edge>
+        <edge to="n5" from="n4">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>type:S</string>
+            </attr>
+        </edge>
+        <edge to="n5" from="n3">
+            <attr name="label">
+                <string>next</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>type:P</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n2">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n5" from="n2">
+            <attr name="label">
+                <string>dest</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:P</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n1">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n1">
+            <attr name="label">
+                <string>dest</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>type:S</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n0">
+            <attr name="label">
+                <string>next</string>
+            </attr>
+            <attr name="layout">
+                <string>500 31 184 205 408 37 180 37 14</string>
             </attr>
         </edge>
     </graph>

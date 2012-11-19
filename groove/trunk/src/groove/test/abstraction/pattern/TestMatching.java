@@ -45,7 +45,7 @@ import org.junit.Test;
 public class TestMatching {
 
     static private final String GRAMMAR = "junit/pattern/match-test.gps/";
-    static private final String TYPE = "ptgraph.gxl";
+    static private final String TYPE = "ptgraph.gst";
     static private GrammarModel view;
     static private TypeGraph typeGraph;
 
