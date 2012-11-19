@@ -503,7 +503,7 @@ public final class GraphToTikz {
     }
 
     private static boolean hasNonEmptyLabel(GraphJEdge edge) {
-        return !"".equals(edge.getText());
+        return !"".equals(edge.getVisuals().getLabel());
     }
 
     // ------------------------------------------------------------------------
@@ -636,13 +636,14 @@ public final class GraphToTikz {
             }
 
             // Node Labels.
-            List<StringBuilder> lines = node.getLines();
-            if (lines.isEmpty() || isNodifiedEdge(node)) {
+            String text = node.getVisuals().getLabel();
+            String[] lines = text.split(HTMLConverter.HTML_LINEBREAK);
+            if (lines.length == 0 || isNodifiedEdge(node)) {
                 this.result.append(EMPTY_NODE_LAB);
             } else {
                 this.result.append(BEGIN_NODE_LAB);
-                for (StringBuilder line : lines) {
-                    this.appendNodeInscription(line);
+                for (String line : lines) {
+                    this.appendNodeInscription(new StringBuilder(line));
                 }
                 // Remove the last \\, if it exists
                 if (this.result.lastIndexOf(CRLF) == this.result.length() - 2) {
@@ -1407,18 +1408,20 @@ public final class GraphToTikz {
 
     private void appendEdgeLabel(GraphJEdge edge) {
         Edge e = edge.getEdge();
+        String text = edge.getVisuals().getLabel();
+        String escapedText = escapeSpecialChars(text);
         if (e instanceof AspectEdge) {
             RuleLabel ruleLabel = ((AspectEdge) e).getRuleLabel();
             if (ruleLabel != null && !ruleLabel.isAtom()
                 && !ruleLabel.isSharp()) {
                 // We have a regular expression on the label, make it italic.
-                this.result.append(encloseCurly(encloseItalicStyle(escapeSpecialChars(edge.getText()))));
+                this.result.append(encloseCurly(encloseItalicStyle(escapedText)));
             } else {
                 // This is a normal AspectEdge.
-                this.result.append(encloseCurly(escapeSpecialChars(edge.getText())));
+                this.result.append(encloseCurly(escapedText));
             }
         } else {
-            this.result.append(encloseCurly(escapeSpecialChars(edge.getText())));
+            this.result.append(encloseCurly(escapedText));
         }
     }
 
