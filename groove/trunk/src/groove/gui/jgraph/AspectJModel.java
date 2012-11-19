@@ -172,8 +172,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         Map<AspectEdge,GraphJCell> edgeJCellMap =
             new HashMap<AspectEdge,GraphJCell>();
         AspectGraph graph = new AspectGraph(getName(), role);
-        LayoutMap<AspectNode,AspectEdge> layoutMap =
-            new LayoutMap<AspectNode,AspectEdge>();
         for (GraphJCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex) {
                 AspectJVertex jVertex = (AspectJVertex) jCell;
@@ -184,29 +182,37 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                     edgeJCellMap.put(edge, jVertex);
                     graph.addEdge(edge);
                 }
-                layoutMap.putNode(jVertex.getNode(), jVertex.getVisuals());
             }
         }
         for (GraphJCell jCell : getRoots()) {
             if (jCell instanceof AspectJEdge) {
                 AspectJEdge jEdge = (AspectJEdge) jCell;
                 jEdge.loadFromUserObject(role);
-                VisualMap visuals = jEdge.getVisuals();
-                boolean attrIsDefault =
-                    JEdgeLayout.newInstance(visuals).isDefault();
                 for (AspectEdge edge : jEdge.getEdges()) {
                     edgeJCellMap.put(edge, jEdge);
                     graph.addEdge(edge);
-                    // add layout information if there is anything to be noted
-                    // about the edge
-                    if (!attrIsDefault) {
-                        layoutMap.putEdge(edge, visuals);
-                    }
                 }
             }
         }
         for (AspectJVertex jVertex : nodeJVertexMap.values()) {
             jVertex.setNodeFixed();
+        }
+        // collect the layout information
+        LayoutMap<AspectNode,AspectEdge> layoutMap =
+            new LayoutMap<AspectNode,AspectEdge>();
+        for (GraphJCell jCell : getRoots()) {
+            if (jCell instanceof AspectJVertex) {
+                AspectJVertex jVertex = (AspectJVertex) jCell;
+                layoutMap.putNode(jVertex.getNode(), jVertex.getVisuals());
+            } else {
+                AspectJEdge jEdge = (AspectJEdge) jCell;
+                VisualMap visuals = jEdge.getVisuals();
+                if (!JEdgeLayout.newInstance(visuals).isDefault()) {
+                    for (AspectEdge edge : jEdge.getEdges()) {
+                        layoutMap.putEdge(edge, visuals);
+                    }
+                }
+            }
         }
         GraphInfo.setLayoutMap(graph, layoutMap);
         GraphInfo.setProperties(graph, getProperties());
