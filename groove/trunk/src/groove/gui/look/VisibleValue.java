@@ -177,7 +177,7 @@ public class VisibleValue implements VisualValue {
             && jVertex.isTransient() && state.isDone()) {
             return false;
         }
-        if (jVertex.isSpecialNode()) {
+        if (jVertex.isStart() || jVertex.isFinal() || !jVertex.isClosed()) {
             return true;
         }
         if (hasVisibleIncidentEdge(jVertex)) {

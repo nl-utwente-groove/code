@@ -224,6 +224,7 @@ public class CheckboxTree extends JTree {
         public JComponent getTreeCellRendererComponent(JTree tree,
                 Object value, boolean sel, boolean expanded, boolean leaf,
                 int row, boolean hasFocus) {
+            this.initialising = true;
             JComponent result;
             this.jLabel.getTreeCellRendererComponent(tree, value, sel,
                 expanded, leaf, row, hasFocus);
@@ -243,6 +244,7 @@ public class CheckboxTree extends JTree {
             } else {
                 result = this.jLabel;
             }
+            this.initialising = false;
             return result;
         }
 
@@ -251,15 +253,47 @@ public class CheckboxTree extends JTree {
             return this.labelNode;
         }
 
+        /** 
+         * Indicates if the renderer is initialising on a component.
+         * This may let listeners know to ignore (checkbox) events.
+         */
+        boolean isInitialising() {
+            return this.initialising;
+        }
+
+        /** 
+         * Flag set to true during {@link #getTreeCellRendererComponent}
+         * to let listeners know to ignore (checkbox) events 
+         */
+        private boolean initialising;
+
         /** Returns the checkbox sub-component of this renderer. */
         public JCheckBox getCheckbox() {
             return this.checkbox;
         }
 
+        /** Checkbox on the right hand side of the panel. */
+        private final JCheckBox checkbox;
+
         /** Returns the inner renderer (for the label part). */
         public DefaultTreeCellRenderer getInner() {
             return this.jLabel;
         }
+
+        /**
+         * The tree on which this renderer operates.
+         */
+        private final CheckboxTree tree;
+        /** JLabel on the center of the panel. */
+        private final DefaultTreeCellRenderer jLabel;
+        /** Label node last rendered. */
+        private TreeNode labelNode;
+
+        /**
+         * Border to put some space to the left and right of the labels inside the
+         * list.
+         */
+        private static final Border INSET_BORDER = new EmptyBorder(0, 2, 0, 7);
 
         /**
          * Overridden for performance reasons. See the <a
@@ -356,23 +390,6 @@ public class CheckboxTree extends JTree {
                 boolean newValue) {
             // empty
         }
-
-        /**
-         * Comment for <code>tree</code>
-         */
-        private final CheckboxTree tree;
-        /** JLabel on the center of the panel. */
-        private final DefaultTreeCellRenderer jLabel;
-        /** Checkbox on the right hand side of the panel. */
-        private final JCheckBox checkbox;
-        /** Label node last rendered. */
-        private TreeNode labelNode;
-
-        /**
-         * Border to put some space to the left and right of the labels inside the
-         * list.
-         */
-        private static final Border INSET_BORDER = new EmptyBorder(0, 2, 0, 7);
     }
 
     /** Tree cell editor to be used by subclasses of the {@link CheckboxTree}. */
@@ -384,9 +401,11 @@ public class CheckboxTree extends JTree {
             this.editor = tree.createRenderer();
             ItemListener itemListener = new ItemListener() {
                 public void itemStateChanged(ItemEvent itemEvent) {
-                    stopCellEditing();
-                    TreeNode editedNode = getInner().getTreeNode();
-                    editedNode.setSelected(itemEvent.getStateChange() == ItemEvent.SELECTED);
+                    if (!CellEditor.this.editor.isInitialising()) {
+                        stopCellEditing();
+                        TreeNode editedNode = getInner().getTreeNode();
+                        editedNode.setSelected(itemEvent.getStateChange() == ItemEvent.SELECTED);
+                    }
                 }
             };
             getInner().getCheckbox().addItemListener(itemListener);

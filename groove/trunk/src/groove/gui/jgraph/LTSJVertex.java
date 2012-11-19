@@ -62,16 +62,6 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
         return this.visibleFlag;
     }
 
-    /**
-     * Tests if the state is the start state or a final state.
-     */
-    public boolean isSpecialNode() {
-        GraphState state = getNode();
-        GTS lts = getNode().getGTS();
-        return lts.startState().equals(state) // || !state.isClosed()
-            || lts.isFinal(state);
-    }
-
     @Override
     StringBuilder getNodeDescription() {
         StringBuilder result = new StringBuilder("State ");
