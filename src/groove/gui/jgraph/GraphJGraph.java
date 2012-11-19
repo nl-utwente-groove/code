@@ -60,7 +60,6 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -396,30 +395,18 @@ public class GraphJGraph extends org.jgraph.JGraph {
         for (GraphJCell jCell : jCells) {
             if (jCell.setGrayedOut(grayedOut)) {
                 changedJCells.add(jCell);
-                if (grayedOut) {
+                if (grayedOut && jCell instanceof GraphJVertex) {
                     // also gray out incident edges
-                    if (jCell instanceof GraphJVertex) {
-                        Iterator<?> jEdgeIter =
-                            ((GraphJVertex) jCell).getPort().edges();
-                        while (jEdgeIter.hasNext()) {
-                            GraphJEdge jEdge = (GraphJEdge) jEdgeIter.next();
-                            if (jEdge.setGrayedOut(true)) {
-                                changedJCells.add(jEdge);
-                            }
+                    for (GraphJCell c : jCell.getContext()) {
+                        if (c.setGrayedOut(true)) {
+                            changedJCells.add(c);
                         }
                     }
-                } else {
+                } else if (!grayedOut && jCell instanceof GraphJEdge) {
                     // also revive end nodes
-                    if (jCell instanceof GraphJEdge) {
-                        GraphJCell sourceJVertex =
-                            ((GraphJEdge) jCell).getSourceVertex();
-                        if (sourceJVertex.setGrayedOut(false)) {
-                            changedJCells.add(sourceJVertex);
-                        }
-                        GraphJCell targetJVertex =
-                            ((GraphJEdge) jCell).getTargetVertex();
-                        if (targetJVertex.setGrayedOut(false)) {
-                            changedJCells.add(targetJVertex);
+                    for (GraphJCell c : jCell.getContext()) {
+                        if (c.setGrayedOut(false)) {
+                            changedJCells.add(c);
                         }
                     }
                 }
