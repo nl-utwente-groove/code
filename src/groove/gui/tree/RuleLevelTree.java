@@ -143,7 +143,9 @@ public class RuleLevelTree extends CheckboxTree implements
                 // add all cells for this level according to the rule level tree
                 for (AspectElement elem : levelEntry.getValue()) {
                     GraphJCell jCell = jModel.getJCell(elem);
-                    levelCells.add(jCell);
+                    if (jCell != null) {
+                        levelCells.add(jCell);
+                    }
                 }
                 // now subtract the cells of the parent
                 // note that we go through the indices in an ordered fashion
@@ -154,10 +156,16 @@ public class RuleLevelTree extends CheckboxTree implements
                 // also add the nesting nodes and edges
                 AspectNode ruleLevelNode = index.getLevelNode();
                 if (ruleLevelNode != null) {
-                    levelCells.add(jModel.getJCell(ruleLevelNode));
+                    GraphJCell jCell = jModel.getJCell(ruleLevelNode);
+                    if (jCell != null) {
+                        levelCells.add(jCell);
+                    }
                     for (AspectEdge edge : this.rule.getSource().edgeSet(
                         ruleLevelNode)) {
-                        levelCells.add(jModel.getJCell(edge));
+                        jCell = jModel.getJCell(edge);
+                        if (jCell != null) {
+                            levelCells.add(jCell);
+                        }
                     }
                 }
                 this.levelCellMap.put(index, levelCells);

@@ -345,11 +345,9 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 if (isVisible != wasVisible) {
                     changeCells.add(jCell);
                     // test context for visibility
-                    if (jCell instanceof GraphJVertex) {
-                        for (GraphJCell c : jCell.getContext()) {
-                            if (c.getVisuals().isVisible() != wasVisible) {
-                                changeCells.add(c);
-                            }
+                    for (GraphJCell c : jCell.getContext()) {
+                        if (c.getVisuals().isVisible() != wasVisible) {
+                            changeCells.add(c);
                         }
                     }
                 }
