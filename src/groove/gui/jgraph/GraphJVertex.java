@@ -68,7 +68,7 @@ public class GraphJVertex extends AbstractJCell {
      * Sets a new node in this JVertex, and resets all other structures
      * to their initial values.
      */
-    final public void setNode(Node node) {
+    public void setNode(Node node) {
         this.node = node;
         initialise();
     }

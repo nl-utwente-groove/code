@@ -70,9 +70,7 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
 
     /** Sets or resets all auxiliary data structures to their initial values. */
     protected void initialise() {
-        if (this.looks != null) {
-            this.looks = EnumSet.copyOf(this.looks);
-        }
+        this.looks = null;
         VisualMap oldVisuals = this.visuals;
         this.visuals = new VisualMap();
         if (oldVisuals != null) {

@@ -70,11 +70,15 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     @Override
     protected void initialise() {
         super.initialise();
-        if (getNode() != null) {
-            this.aspect = getNode().getKind();
-            getErrors().addErrors(getNode().getErrors(), true);
-        }
         resetJModelTracker();
+    }
+
+    @Override
+    public void setNode(Node node) {
+        AspectNode aspectNode = (AspectNode) node;
+        this.aspect = aspectNode.getKind();
+        super.setNode(node);
+        getErrors().addErrors(aspectNode.getErrors(), true);
     }
 
     @Override
@@ -295,7 +299,6 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     @Override
     public void loadFromUserObject(GraphRole role) {
         AspectNode node = new AspectNode(getNode().getNumber(), role);
-        setNode(node);
         AspectParser parser = AspectParser.getInstance();
         List<AspectLabel> edgeLabels = new ArrayList<AspectLabel>();
         for (String text : getUserObject()) {
@@ -308,9 +311,10 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 edgeLabels.add(label);
             }
         }
-        this.aspect = node.getKind();
         // collect remark edges
         StringBuilder remarkText = new StringBuilder();
+        // collect edges to be added explicitly
+        List<AspectEdge> newEdges = new ArrayList<AspectEdge>();
         // now process the edge labels
         for (AspectLabel label : edgeLabels) {
             AspectEdge edge = new AspectEdge(node, label, node);
@@ -322,8 +326,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 }
                 remarkText.append(label.getInnerText());
             } else {
-                boolean added = addEdge(edge);
-                assert added;
+                newEdges.add(edge);
             }
         }
         // turn the collected remark text into a single edge
@@ -333,8 +336,11 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 new AspectEdge(node, parser.parse(remarkText.toString(), role),
                     node);
             edge.setFixed();
-            boolean added = addEdge(edge);
-            assert added;
+            newEdges.add(edge);
+        }
+        setNode(node);
+        for (AspectEdge edge : newEdges) {
+            addEdge(edge);
         }
         setStale(VisualKey.refreshables());
         // attributes will be refreshed upon the call to setNodeFixed()
