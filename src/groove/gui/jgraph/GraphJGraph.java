@@ -516,13 +516,9 @@ public class GraphJGraph extends org.jgraph.JGraph {
             if (newJModel != null) {
                 setName(newJModel.getName());
             }
-            if (newJModel != null && this.layouter != null) {
-                int layoutCount = freeze();
-                if (layoutCount > 0) {
-                    Layouter layouter =
-                        layoutCount == newJModel.getRootCount() ? this.layouter
-                                : this.incrementalLayouter;
-                    layouter.start(false);
+            if (newJModel != null) {
+                Layouter layouter = doLayout(false);
+                if (layouter != null) {
                     final Timer timer = new Timer();
                     timer.schedule(new TimerTask() {
                         @Override
@@ -544,23 +540,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 createPopupMenu(null);
             }
         }
-    }
-
-    /**
-     * Sets all jcells to unmoveable, except those that are marked
-     * as layoutable. This is done in preparation for layouting.
-     * @return the number of moveable cells
-     */
-    public int freeze() {
-        int result = 0;
-        for (GraphJCell jCell : getModel().getRoots()) {
-            boolean layoutable = jCell.setLayoutable(false);
-            GraphConstants.setMoveable(jCell.getAttributes(), layoutable);
-            if (layoutable) {
-                result++;
-            }
-        }
-        return result;
     }
 
     /** Specialises the return type to a {@link GraphJModel}. */
@@ -731,13 +710,45 @@ public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * Lays out this graph according to the currently set layouter (if any).
-     * @see Layouter#start(boolean)
+     * Lays out the graph completely or incrementally.
+     * The graph is layed out completely (according to the user-defined layouter)
+     * if explicitly requested, or if all cells need to be layed out;
+     * otherwise it is layed out incrementally.
+     * @param complete if {@code true}, the used-defined layouter is used
+     * if any, or the incremental layouter if none was defined
+     * @return the layouter that has been used
      */
-    public void doGraphLayout() {
-        if (this.layouter != null) {
-            this.layouter.start(true);
+    public Layouter doLayout(boolean complete) {
+        Layouter result = null;
+        // Test if we do any layouting, or complete layouting
+        // any means there is a layoutable
+        boolean any = false;
+        // all means all cells are layoutable
+        boolean all = true;
+        for (GraphJCell jCell : getModel().getRoots()) {
+            if (jCell.isLayoutable()) {
+                any = true;
+                if (!all) {
+                    break;
+                }
+            } else {
+                all = false;
+                if (any) {
+                    break;
+                }
+            }
         }
+        if (any) {
+            complete |= all;
+            if (complete) {
+                result = this.layouter;
+            }
+            if (result == null) {
+                result = this.incrementalLayouter;
+            }
+            result.start(complete);
+        }
+        return result;
     }
 
     /** Adds a listener to {@link #setMode(JGraphMode)} calls. */

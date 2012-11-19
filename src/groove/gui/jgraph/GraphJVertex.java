@@ -47,17 +47,6 @@ public class GraphJVertex extends AbstractJCell {
         add(new DefaultPort());
     }
 
-    /**
-     * Constructs a fresh JVertex, for a given JModel.
-     * After construction and before invoking any other method, {@link #setNode(Node)}
-     * should be called to provide a node
-     * @param jModel the graph model to which this node is connected
-     */
-    protected GraphJVertex(GraphJModel<?,?> jModel) {
-        this();
-        setJModel(jModel);
-    }
-
     @Override
     protected void initialise() {
         super.initialise();

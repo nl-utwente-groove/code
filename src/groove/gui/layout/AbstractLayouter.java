@@ -20,7 +20,6 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JEdgeView;
-import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
 import groove.util.Pair;
 
@@ -110,8 +109,7 @@ abstract public class AbstractLayouter implements Layouter {
     }
 
     /**
-     * Implements a layoutable that wraps a rectangle. Width and height are
-     * zero.
+     * Implements a layoutable that wraps a rectangle.
      */
     static final protected class VertexLayoutable implements Layoutable {
         /** Constructs a new layoutable from a given vertex. */
@@ -136,7 +134,7 @@ abstract public class AbstractLayouter implements Layouter {
         }
 
         public void setLocation(double x, double y) {
-            this.r.setRect(x, y, this.r.getWidth(), this.r.getHeight());
+            this.r.setRect(x, y, getWidth(), getHeight());
 
         }
 
@@ -222,8 +220,10 @@ abstract public class AbstractLayouter implements Layouter {
      * the current <tt>jmodel</tt>. This implementation calculates the
      * <tt>toLayoutableMap</tt>, and sets the line style to that preferred by
      * the layouter.
+     * @param complete if {@code true}, the {@link GraphJCell#isLayoutable()} setting
+     * is ignored
      */
-    protected void prepare() {
+    protected void prepare(boolean complete) {
         this.jmodel = this.jgraph.getModel();
         // clear the transient information
         this.toLayoutableMap.clear();
@@ -238,8 +238,7 @@ abstract public class AbstractLayouter implements Layouter {
             if (jCell.isGrayedOut()) {
                 continue;
             }
-            boolean immovable =
-                !GraphConstants.isMoveable(jCell.getAttributes());
+            boolean immovable = !complete && !jCell.isLayoutable();
             if (cellView instanceof JEdgeView) {
                 // all true points (i.e., that are not PortViews) are
                 // subject to layouting
@@ -247,7 +246,7 @@ abstract public class AbstractLayouter implements Layouter {
                 // failed attempt to store edges beck so they will be layed
                 // out live
                 // GraphConstants.setPoints(cell.getAttributes(),points);
-                for (int p = 1; p < points.size(); p++) {
+                for (int p = 1; p < points.size() - 1; p++) {
                     Object point = points.get(p);
                     if (point instanceof Point2D) {
                         Layoutable layoutable =
@@ -289,10 +288,8 @@ abstract public class AbstractLayouter implements Layouter {
                 if (view instanceof VertexView) {
                     // store the bounds back into the model
                     Rectangle2D bounds = ((VertexView) view).getCachedBounds();
-                    visuals.put(
-                        VisualKey.NODE_POS,
-                        new Point2D.Double(bounds.getCenterX(),
-                            bounds.getCenterY()));
+                    visuals.setNodePos(new Point2D.Double(bounds.getCenterX(),
+                        bounds.getCenterY()));
                 } else {
                     // store the points back into the model
                     List<?> points = ((EdgeView) view).getPoints();
@@ -310,10 +307,11 @@ abstract public class AbstractLayouter implements Layouter {
                                 newPoints.add((Point2D) p);
                             }
                         }
-                        visuals.put(VisualKey.POINTS, newPoints);
+                        visuals.setPoints(newPoints);
                     }
                 }
                 change.put(cell, visuals.getAttributes());
+                cell.setLayoutable(false);
             }
         }
         // do the following in the event dispatch thread

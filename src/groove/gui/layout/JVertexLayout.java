@@ -17,7 +17,6 @@
 package groove.gui.layout;
 
 import groove.gui.jgraph.JAttr;
-import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
 
 import java.awt.Rectangle;
@@ -56,7 +55,8 @@ public class JVertexLayout implements JCellLayout {
     static public JVertexLayout newInstance(VisualMap visuals) {
         Dimension2D size = visuals.getNodeSize();
         Point2D pos = visuals.getNodePos();
-        return new JVertexLayout(new Rectangle2D.Double(pos.getX(), pos.getY(),
+        return new JVertexLayout(new Rectangle2D.Double(pos.getX()
+            - size.getWidth() / 2, pos.getY() - size.getHeight() / 2,
             size.getWidth(), size.getHeight()));
     }
 
@@ -92,10 +92,8 @@ public class JVertexLayout implements JCellLayout {
     public VisualMap toVisuals() {
         VisualMap result = new VisualMap();
         if (this.bounds != null) {
-            result.put(
-                VisualKey.NODE_POS,
-                new Point2D.Double(this.bounds.getCenterX(),
-                    this.bounds.getCenterY()));
+            result.setNodePos(new Point2D.Double(this.bounds.getCenterX(),
+                this.bounds.getCenterY()));
         }
         return result;
     }

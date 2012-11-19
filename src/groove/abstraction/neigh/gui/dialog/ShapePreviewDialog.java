@@ -87,7 +87,7 @@ public final class ShapePreviewDialog extends GraphPreviewDialog {
         layout.setNodeDistance(50);
         layout.setLevelDistance(100.0);
         jGraph.setLayouter(layouter);
-        jGraph.doGraphLayout();
+        jGraph.doLayout(true);
         return jGraph;
     }
 

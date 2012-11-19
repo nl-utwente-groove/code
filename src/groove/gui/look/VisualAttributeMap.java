@@ -340,8 +340,12 @@ public class VisualAttributeMap extends AttributeMap {
             } else {
                 size = new Dimension((int) b.getWidth(), (int) b.getHeight());
             }
+            Point2D pos = (Point2D) value;
+            pos =
+                new Point2D.Double(pos.getX() - size.getWidth() / 2, pos.getY()
+                    - size.getHeight() / 2);
             b = new Rectangle();
-            b.setFrame((Point2D) value, size);
+            b.setFrame(pos, size);
             value = b;
             break;
         case POINTS:

@@ -79,6 +79,8 @@ import javax.swing.tree.TreePath;
 import org.jgraph.JGraph;
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
+import org.jgraph.event.GraphSelectionEvent;
+import org.jgraph.event.GraphSelectionListener;
 
 /**
  * Scroll pane showing the list of labels currently appearing in the graph
@@ -115,6 +117,12 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                     updateModel();
                 }
             });
+        getJGraph().addGraphSelectionListener(new GraphSelectionListener() {
+            @Override
+            public void valueChanged(GraphSelectionEvent e) {
+                clearSelection();
+            }
+        });
         if (this.filtering) {
             this.labelFilter.addObserver(new Observer() {
                 public void update(Observable o, Object arg) {

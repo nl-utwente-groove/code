@@ -119,7 +119,7 @@ public class GraphPreviewDialog extends JDialog {
         GraphJModel<?,?> model = jGraph.getFactory().newModel();
         model.loadGraph((Graph) this.graph);
         jGraph.setModel(model);
-        jGraph.doGraphLayout();
+        jGraph.doLayout(true);
         return jGraph;
     }
 
