@@ -34,6 +34,7 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -179,7 +180,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         for (E edge : edgeSet) {
             addEdge(edge, merge);
         }
-        doInsert(replace, false);
+        doInsert(replace);
     }
 
     /**
@@ -496,14 +497,17 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * Optionally sends the new elements to the back
      * @param replace if {@code true}, the old roots should be deleted
      */
-    protected void doInsert(boolean replace, boolean toBack) {
+    protected void doInsert(boolean replace) {
         Object[] addedCells = this.addedJCells.toArray();
         Object[] removedCells = replace ? getRoots().toArray() : null;
         createEdit(addedCells, removedCells, null, this.connections, null, null).execute();
-        if (toBack) {
-            // new edges should be behind the nodes
-            toBack(addedCells);
+        List<Object> edges = new ArrayList<Object>();
+        for (Object jCell : addedCells) {
+            if (jCell instanceof GraphJEdge) {
+                edges.add(jCell);
+            }
         }
+        toBack(edges.toArray());
         setLoading(false);
     }
 

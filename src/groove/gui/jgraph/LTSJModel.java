@@ -74,7 +74,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
             // add a corresponding GraphCell to the GraphModel
             addNode(state);
             // insert(cells.toArray(), connections, null, attributes);
-            doInsert(false, false);
+            doInsert(false);
         }
     }
 
@@ -89,7 +89,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
             // note that (as per GraphListener contract)
             // source and target Nodes (if any) have already been added
             GraphJCell edgeJCell = addEdge(transition, false);
-            doInsert(false, true);
+            doInsert(false);
             GraphJCell stateJCell = getJCellForNode(transition.target());
             stateJCell.setStale(VisualKey.VISIBLE);
             edgeJCell.setStale(VisualKey.VISIBLE);

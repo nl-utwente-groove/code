@@ -18,6 +18,7 @@ package groove.gui.action;
 
 import groove.gui.Icons;
 import groove.gui.Options;
+import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.layout.Layouter;
 
@@ -49,7 +50,22 @@ public class LayoutAction extends AbstractAction {
      * Starts the actual layouter.
      */
     public void doLayout() {
-        getLayouter().start(true);
+        // only layout selected cells, if there are any
+        Object[] selection = this.jGraph.getSelectionCells();
+        boolean complete = selection.length == 0;
+        if (!complete) {
+            for (Object jCell : this.jGraph.getRoots()) {
+                if (jCell instanceof GraphJCell) {
+                    ((GraphJCell) jCell).setLayoutable(false);
+                }
+            }
+            for (Object jCell : selection) {
+                if (jCell instanceof GraphJCell) {
+                    ((GraphJCell) jCell).setLayoutable(true);
+                }
+            }
+        }
+        getLayouter().start(complete);
     }
 
     /**
