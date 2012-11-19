@@ -4,6 +4,7 @@ import groove.control.CtrlState;
 import groove.graph.Edge;
 import groove.graph.Node;
 import groove.gui.look.Look;
+import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -54,6 +55,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
 
     public void setVisibleFlag(boolean visible) {
         this.visibleFlag = visible;
+        setStale(VisualKey.VISIBLE);
     }
 
     public boolean hasVisibleFlag() {

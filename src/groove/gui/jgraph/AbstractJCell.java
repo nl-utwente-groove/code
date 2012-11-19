@@ -118,13 +118,13 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
     }
 
     final public void putVisual(VisualKey key, Object value) {
-        assert key.getNature() == Nature.CONTROLLED;
+        assert key.getNature() != Nature.DERIVED;
         this.visuals.put(key, value);
     }
 
     final public void putVisuals(VisualMap map) {
-        for (VisualKey key : VisualKey.controlleds()) {
-            if (map.containsKey(key)) {
+        for (VisualKey key : map.keySet()) {
+            if (key.getNature() != Nature.DERIVED) {
                 putVisual(key, map.get(key));
             }
         }

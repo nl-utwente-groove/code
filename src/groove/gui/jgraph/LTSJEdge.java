@@ -2,6 +2,7 @@ package groove.gui.jgraph;
 
 import groove.graph.Edge;
 import groove.gui.look.Look;
+import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
 import groove.lts.GraphTransition;
 import groove.lts.RuleTransition;
@@ -100,6 +101,7 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
 
     public void setVisibleFlag(boolean visible) {
         this.visibleFlag = visible;
+        setStale(VisualKey.VISIBLE);
     }
 
     public boolean hasVisibleFlag() {
