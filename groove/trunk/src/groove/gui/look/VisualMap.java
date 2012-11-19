@@ -222,42 +222,6 @@ public class VisualMap extends DefaultFixable {
     }
 
     /** 
-     * Returns the node position stored in this attribute map.
-     * @return the stored node position, or the default value if
-     * there is nothing stored.
-     * @see VisualKey#NODE_POS
-     */
-    public Point2D getNodePos() {
-        return (Point2D) get(VisualKey.NODE_POS);
-    }
-
-    /**
-     * Sets a node position.
-     * @see VisualKey#NODE_POS
-     */
-    public void setNodePos(Point2D newValue) {
-        put(VisualKey.NODE_POS, newValue);
-    }
-
-    /** 
-     * Returns the node size stored in this attribute map.
-     * @return the stored node size, or the default value if
-     * there is nothing stored.
-     * @see VisualKey#NODE_SIZE
-     */
-    public Dimension2D getNodeSize() {
-        return (Dimension2D) get(VisualKey.NODE_SIZE);
-    }
-
-    /**
-     * Sets a node size.
-     * @see VisualKey#NODE_SIZE
-     */
-    public void setNodeSize(Dimension2D newValue) {
-        put(VisualKey.NODE_SIZE, newValue);
-    }
-
-    /** 
      * Returns the controlled colour stored in this attribute map.
      * @return the controlled colour, or {@code null} if
      * there is nothing stored.
@@ -517,6 +481,42 @@ public class VisualMap extends DefaultFixable {
      */
     public float getLineWidth() {
         return (Float) get(VisualKey.LINE_WIDTH);
+    }
+
+    /** 
+     * Returns the node position stored in this attribute map.
+     * @return the stored node position, or the default value if
+     * there is nothing stored.
+     * @see VisualKey#NODE_POS
+     */
+    public Point2D getNodePos() {
+        return (Point2D) get(VisualKey.NODE_POS);
+    }
+
+    /**
+     * Sets a node position.
+     * @see VisualKey#NODE_POS
+     */
+    public void setNodePos(Point2D newValue) {
+        put(VisualKey.NODE_POS, newValue);
+    }
+
+    /** 
+     * Returns the node size stored in this attribute map.
+     * @return the stored node size, or the default value if
+     * there is nothing stored.
+     * @see VisualKey#NODE_SIZE
+     */
+    public Dimension2D getNodeSize() {
+        return (Dimension2D) get(VisualKey.NODE_SIZE);
+    }
+
+    /**
+     * Sets a node size.
+     * @see VisualKey#NODE_SIZE
+     */
+    public void setNodeSize(Dimension2D newValue) {
+        put(VisualKey.NODE_SIZE, newValue);
     }
 
     /** 

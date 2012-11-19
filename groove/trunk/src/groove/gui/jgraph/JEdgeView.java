@@ -270,13 +270,15 @@ public class JEdgeView extends EdgeView {
             List<Point2D> newPoints = new ArrayList<Point2D>(4);
             newPoints.add(startPoint);
             VisualMap sourceVisuals = getCell().getSourceVertex().getVisuals();
-            Point2D vertexPos = sourceVisuals.getNodePos();
-            Dimension2D vertexSize = sourceVisuals.getNodeSize();
-            Rectangle2D vertexBounds = new Rectangle();
-            vertexBounds.setFrame(vertexPos, vertexSize);
-            if (vertexBounds.contains(endPoint)) {
-                endPoint.setLocation(endPoint.getX() + vertexSize.getWidth()
-                    * 2, endPoint.getY());
+            Point2D pos = sourceVisuals.getNodePos();
+            Dimension2D size = sourceVisuals.getNodeSize();
+            pos.setLocation(pos.getX() - size.getWidth() / 2,
+                pos.getY() - size.getHeight() / 2);
+            Rectangle2D bounds = new Rectangle();
+            bounds.setFrame(pos, size);
+            if (bounds.contains(endPoint)) {
+                endPoint.setLocation(endPoint.getX() + size.getWidth() * 2,
+                    endPoint.getY());
             }
             newPoints.add(1,
                 createPointPerpendicular(startPoint, endPoint, true));

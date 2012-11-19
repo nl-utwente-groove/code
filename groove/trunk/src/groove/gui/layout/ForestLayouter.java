@@ -88,7 +88,7 @@ public class ForestLayouter extends AbstractLayouter {
             reset();
         }
         synchronized (this.jgraph) {
-            prepare();
+            prepare(complete);
             computeBranchMap();
             computeRoots();
             layout(this.roots, 0);

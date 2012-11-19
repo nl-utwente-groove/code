@@ -70,7 +70,7 @@ public final class PatternPreviewDialog extends GraphPreviewDialog {
         jGraph.setModel(model);
         Layouter layouter = jGraph.createLayouter();
         jGraph.setLayouter(layouter);
-        jGraph.doGraphLayout();
+        jGraph.doLayout(true);
         return jGraph;
     }
 

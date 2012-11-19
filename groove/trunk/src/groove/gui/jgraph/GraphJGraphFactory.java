@@ -47,7 +47,7 @@ public class GraphJGraphFactory implements JGraphFactory {
 
     @Override
     public GraphJVertex newJVertex() {
-        return new GraphJVertex(null);
+        return new GraphJVertex();
     }
 
     @Override

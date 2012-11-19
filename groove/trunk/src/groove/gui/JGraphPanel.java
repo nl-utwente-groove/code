@@ -20,7 +20,6 @@ import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.tree.LabelTree;
 import groove.util.Pair;
 
 import java.awt.BorderLayout;
@@ -41,8 +40,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import org.jgraph.JGraph;
-import org.jgraph.event.GraphSelectionEvent;
-import org.jgraph.event.GraphSelectionListener;
 
 /**
  * A panel that combines a {@link groove.gui.jgraph.GraphJGraph}and (optionally) a
@@ -90,12 +87,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
 
     /** Callback method that adds the required listeners to this panel. */
     protected void installListeners() {
-        getJGraph().addGraphSelectionListener(new GraphSelectionListener() {
-            @Override
-            public void valueChanged(GraphSelectionEvent e) {
-                getLabelTree().clearSelection();
-            }
-        });
         getJGraph().addJGraphModeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -136,11 +127,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         return this.jGraph;
     }
 
-    /** Returns the label tree displayed on this panel. */
-    public LabelTree getLabelTree() {
-        return getJGraph().getLabelTree();
-    }
-
     /**
      * Changes the graph model displayed in this panel.
      * Also enables the panel if the new model is not {@code null},
@@ -148,7 +134,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      */
     public void setJModel(GraphJModel<?,?> jModel) {
         boolean enabled = jModel != null;
-        if (jModel == getJModel()) {
+        if (jModel == getJGraph().getModel()) {
             refresh();
         } else {
             getJGraph().setModel(jModel);
@@ -290,8 +276,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      */
     protected void refresh() {
         getJGraph().refreshAllCells();
-        getJGraph().setEnabled(getJModel() != null);
-        getLabelTree().updateModel();
         refreshStatus();
     }
 
@@ -369,7 +353,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
             PropertyChangeListener {
         public void itemStateChanged(ItemEvent e) {
             if (isEnabled()) {
-                getJModel().refreshVisuals();
+                getJGraph().getModel().refreshVisuals();
                 refresh();
             }
         }

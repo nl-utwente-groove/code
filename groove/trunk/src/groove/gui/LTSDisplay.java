@@ -72,7 +72,7 @@ import javax.swing.event.ChangeListener;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-05 13:28:06 $
  */
-public class LTSDisplay extends Display {
+public class LTSDisplay extends Display implements SimulatorListener {
     /** Creates a LTS panel for a given simulator. */
     public LTSDisplay(Simulator simulator) {
         super(simulator, DisplayKind.LTS);
@@ -90,7 +90,8 @@ public class LTSDisplay extends Display {
 
     @Override
     protected void installListeners() {
-        // nothing to be installed
+        getJGraph().addMouseListener(new MyMouseListener());
+        getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, MATCH);
     }
 
     @Override
@@ -285,6 +286,68 @@ public class LTSDisplay extends Display {
         return getJGraph().getModel();
     }
 
+    @Override
+    public void update(SimulatorModel source, SimulatorModel oldModel,
+            Set<Change> changes) {
+        if (source.getGts() != null && isHidingLts()) {
+            return;
+        }
+        if (changes.contains(GTS) || changes.contains(GRAMMAR)) {
+            GTS gts = source.getGts();
+            if (gts == null) {
+                getGraphPanel().setJModel(null);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        GrammarModel grammar = getSimulatorModel().getGrammar();
+                        if (grammar != null && grammar.getErrors().isEmpty()) {
+                            getActions().getStartSimulationAction().execute();
+                        }
+                    }
+                });
+            } else {
+                LTSJModel ltsModel;
+                if (gts != oldModel.getGts()) {
+                    ltsModel = (LTSJModel) getJGraph().newModel();
+                    ltsModel.setFiltering(isFilteringLts());
+                    ltsModel.setStateBound(getStateBound());
+                    ltsModel.loadGraph(gts);
+                    getGraphPanel().setJModel(ltsModel);
+                } else {
+                    ltsModel = getJModel();
+                    // (re)load the GTS if it is not the same size as the model
+                    if (ltsModel.size() != gts.size()) {
+                        ltsModel.loadGraph(gts);
+                    }
+                    GraphState state = source.getState();
+                    GraphTransition transition = source.getTransition();
+                    getJGraph().setActive(state, transition);
+                }
+                getGraphPanel().refreshBackground();
+                getJGraph().refreshFiltering();
+                getJGraph().doLayout(false);
+                setEnabled(true);
+            }
+            if (gts != oldModel.getGts()) {
+                if (oldModel.getGts() != null) {
+                    oldModel.getGts().removeLTSListener(
+                        LTSDisplay.this.ltsListener);
+                }
+                if (gts != null) {
+                    gts.addLTSListener(LTSDisplay.this.ltsListener);
+                }
+            }
+            getGraphPanel().refreshStatus();
+        }
+        if (changes.contains(STATE) || changes.contains(MATCH)) {
+            if (getJModel() != null) {
+                GraphState state = source.getState();
+                GraphTransition transition = source.getTransition();
+                getJGraph().setActive(state, transition);
+            }
+        }
+    }
+
     /**
      * The LTS listener permanently associated with this display.
      */
@@ -383,21 +446,12 @@ public class LTSDisplay extends Display {
      * @author Arend Rensink
      * @version $Revision$
      */
-    public class LTSGraphPanel extends JGraphPanel<LTSJGraph> implements
-            SimulatorListener {
+    public class LTSGraphPanel extends JGraphPanel<LTSJGraph> {
         /** Creates a LTS panel for a given simulator. */
         public LTSGraphPanel(LTSDisplay display) {
             super(new LTSJGraph(display.getSimulator()), true);
             getJGraph().setToolTipEnabled(true);
             setEnabledBackground(JAttr.STATE_BACKGROUND);
-        }
-
-        /**
-         * Used locally in this file, and gets the option for show/hide LTS 
-         */
-        public boolean getOptionValue(String option) {
-            return getOptions().getItem(option).isEnabled()
-                && getOptions().isSelected(option);
         }
 
         @Override
@@ -406,8 +460,6 @@ public class LTSDisplay extends Display {
             addRefreshListener(SHOW_ANCHORS_OPTION);
             addRefreshListener(SHOW_STATE_IDS_OPTION);
             addRefreshListener(SHOW_PARTIAL_GTS_OPTION);
-            getJGraph().addMouseListener(new MyMouseListener());
-            getSimulatorModel().addListener(this, GRAMMAR, GTS, STATE, MATCH);
         }
 
         /**
@@ -423,8 +475,7 @@ public class LTSDisplay extends Display {
                     ltsModel.loadGraph(gts);
                     setJModel(ltsModel);
                     getJGraph().refreshFiltering();
-                    getJGraph().freeze();
-                    getJGraph().getLayouter().start(false);
+                    getJGraph().doLayout(false);
                     getJGraph().setVisible(true);
                     setEnabled(true);
                 }
@@ -443,8 +494,7 @@ public class LTSDisplay extends Display {
                 setEnabledBackground(JAttr.STATE_BACKGROUND);
                 getJModel().setFiltering(false);
                 getJGraph().refreshFiltering();
-                getJGraph().freeze();
-                getJGraph().getLayouter().start(false);
+                getJGraph().doLayout(false);
                 getJGraph().setVisible(true);
             } else {
                 setEnabledBackground(JAttr.FILTER_BACKGROUND);
@@ -453,72 +503,6 @@ public class LTSDisplay extends Display {
             }
             refreshBackground();
             setEnabled(true);
-        }
-
-        @Override
-        public void update(SimulatorModel source, SimulatorModel oldModel,
-                Set<Change> changes) {
-            if (source.getGts() != null && isHidingLts()) {
-                return;
-            }
-            if (changes.contains(GTS) || changes.contains(GRAMMAR)) {
-                GTS gts = source.getGts();
-                if (gts == null) {
-                    setJModel(null);
-                    setEnabled(false);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            GrammarModel grammar =
-                                getSimulatorModel().getGrammar();
-                            if (grammar != null
-                                && grammar.getErrors().isEmpty()) {
-                                getActions().getStartSimulationAction().execute();
-                            }
-                        }
-                    });
-                } else {
-                    LTSJModel ltsModel;
-                    if (gts != oldModel.getGts()) {
-                        ltsModel = (LTSJModel) getJGraph().newModel();
-                        ltsModel.setFiltering(isFilteringLts());
-                        ltsModel.setStateBound(getStateBound());
-                        ltsModel.loadGraph(gts);
-                        setJModel(ltsModel);
-                    } else {
-                        ltsModel = getJModel();
-                        // (re)load the GTS if it is not the same size as the model
-                        if (ltsModel.size() != gts.size()) {
-                            ltsModel.loadGraph(gts);
-                        }
-                        GraphState state = source.getState();
-                        GraphTransition transition = source.getTransition();
-                        getJGraph().setActive(state, transition);
-                    }
-                    refreshBackground();
-                    getJGraph().refreshFiltering();
-                    getJGraph().freeze();
-                    getJGraph().getLayouter().start(false);
-                    setEnabled(true);
-                }
-                if (gts != oldModel.getGts()) {
-                    if (oldModel.getGts() != null) {
-                        oldModel.getGts().removeLTSListener(
-                            LTSDisplay.this.ltsListener);
-                    }
-                    if (gts != null) {
-                        gts.addLTSListener(LTSDisplay.this.ltsListener);
-                    }
-                }
-                refreshStatus();
-            }
-            if (changes.contains(STATE) || changes.contains(MATCH)) {
-                if (getJModel() != null) {
-                    GraphState state = source.getState();
-                    GraphTransition transition = source.getTransition();
-                    getJGraph().setActive(state, transition);
-                }
-            }
         }
 
         @Override

@@ -73,7 +73,7 @@ public class SpringLayouter extends AbstractLayouter {
      * Starts layouting in a parallel thread; or stops the current layouter
      * thread if one is running.
      */
-    public void start(boolean complete) {
+    public void start(final boolean complete) {
         if (getText() != null && getText().equals(STOP_ACTION_NAME)) {
             stop();
         } else {
@@ -86,7 +86,7 @@ public class SpringLayouter extends AbstractLayouter {
                 public void run() {
                     // Thread me = Thread.currentThread();
                     SpringLayouter.this.damper = 1.0;
-                    prepare();
+                    prepare(complete);
                     while (SpringLayouter.this.damper > 0) {
                         relax();
                         Thread.yield();
@@ -158,8 +158,8 @@ public class SpringLayouter extends AbstractLayouter {
     }
 
     @Override
-    protected void prepare() {
-        super.prepare();
+    protected void prepare(boolean complete) {
+        super.prepare(complete);
         if (DEBUG) {
             System.out.println("Starting automatic layout");
         }

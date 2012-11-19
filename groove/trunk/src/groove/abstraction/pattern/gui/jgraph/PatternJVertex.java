@@ -32,7 +32,7 @@ public class PatternJVertex extends GraphJVertex {
 
     // Private constructor. Use the prototype.
     private PatternJVertex() {
-        super(null);
+        // empty
     }
 
     // ------------------------------------------------------------------------

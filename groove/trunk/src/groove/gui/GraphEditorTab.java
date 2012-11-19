@@ -98,7 +98,7 @@ import org.jgraph.graph.GraphUndoManager;
 final public class GraphEditorTab extends ResourceTab implements
         GraphModelListener, PropertyChangeListener {
     /**
-     * Constructs an instance of the dialog, for a given graph or rule.
+     * Constructs a new tab instance.
      * @param parent the component on which this panel is placed
      * @param role the input graph for the editor
      */

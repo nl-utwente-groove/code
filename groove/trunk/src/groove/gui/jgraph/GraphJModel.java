@@ -31,7 +31,9 @@ import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -423,6 +425,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         JEdgeLayout layout = this.layoutMap.getLayout(edge);
         if (layout != null) {
             result.putVisuals(layout.toVisuals());
+        } else {
+            result.setLayoutable(true);
         }
         return result;
     }
@@ -445,6 +449,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
             result.putVisual(VisualKey.NODE_POS, nodePos);
             this.nodeX = randomCoordinate();
             this.nodeY = randomCoordinate();
+            result.setLayoutable(true);
         }
         return result;
     }
@@ -508,7 +513,13 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * information.
      */
     protected int randomCoordinate() {
-        return randomGenerator.nextInt((this.nodeJCellMap.size() + this.edgeJCellMap.size()) * 5 + 1);
+        Rectangle2D bounds = new Rectangle();
+        for (Object cell : getJGraph().getSelectionCells()) {
+            if (cell instanceof GraphJVertex) {
+                bounds.add(((GraphJVertex) cell).getVisuals().getNodePos());
+            }
+        }
+        return 25 + randomGenerator.nextInt((this.nodeJCellMap.size() + this.edgeJCellMap.size()) * 5 + 1);
     }
 
     /** The JGraph to which this model belongs. */
