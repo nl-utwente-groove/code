@@ -25,7 +25,6 @@ import groove.gui.look.Look;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Eduardo Zambon
@@ -55,16 +54,6 @@ public class EquivClassJCell extends AbstractJCell {
     @Override
     public ShapeJGraph getJGraph() {
         return (ShapeJGraph) super.getJGraph();
-    }
-
-    @Override
-    public String getText() {
-        return null;
-    }
-
-    @Override
-    public List<StringBuilder> getLines() {
-        return null;
     }
 
     @Override

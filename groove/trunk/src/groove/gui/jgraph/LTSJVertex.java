@@ -1,14 +1,12 @@
 package groove.gui.jgraph;
 
 import groove.control.CtrlState;
-import groove.graph.Edge;
 import groove.graph.Node;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 
 /**
  * JVertex class that describes the underlying node as a graph state.
@@ -127,20 +125,6 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
             result += "|" + ctrlState.toString();
         }
         return result;
-    }
-
-    /**
-     * This implementation returns either the transition label, or the event
-     * label, depending on #isShowAnchors().
-     */
-    @Override
-    public StringBuilder getLine(Edge edge) {
-        String text =
-            ((GraphTransition) edge).text(getJGraph().isShowAnchors());
-        StringBuilder result = new StringBuilder(text);
-        HTMLConverter.toHtml(result);
-        return result;
-
     }
 
     /** Indicates that this edge is active. */

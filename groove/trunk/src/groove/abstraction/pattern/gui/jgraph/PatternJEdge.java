@@ -16,11 +16,6 @@
  */
 package groove.abstraction.pattern.gui.jgraph;
 
-import groove.abstraction.pattern.shape.AbstractPatternEdge;
-import groove.abstraction.pattern.shape.PatternEdge;
-import groove.abstraction.pattern.shape.PatternShape;
-import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.look.Look;
@@ -53,18 +48,6 @@ public class PatternJEdge extends GraphJEdge {
     @Override
     public String toString() {
         return String.format("PatternJEdge with labels %s", getKeys());
-    }
-
-    @Override
-    protected StringBuilder getLine(Edge edge) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(((AbstractPatternEdge<?>) edge).getPrintableLabel());
-        Graph<?,?> graph = getJModel().getGraph();
-        if (graph instanceof PatternShape) {
-            PatternShape pShape = (PatternShape) graph;
-            sb.append("(" + pShape.getMult((PatternEdge) edge) + ")");
-        }
-        return sb;
     }
 
     // ------------------------------------------------------------------------
