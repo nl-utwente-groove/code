@@ -117,7 +117,7 @@ public class JGraphUI extends BasicGraphUI {
     @Override
     public Dimension2D getPreferredSize(JGraph graph, CellView view) {
         if (view.getCell() instanceof AspectJVertex
-            && ((AspectJVertex) view.getCell()).isEdge()) {
+            && ((AspectJVertex) view.getCell()).isNodeEdge()) {
             int diameter = (int) (2 * (NODE_EDGE_RADIUS + EXTRA_BORDER_SPACE));
             return new Dimension(diameter, diameter);
         } else {

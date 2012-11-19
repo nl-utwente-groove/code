@@ -5,18 +5,13 @@ import static groove.view.aspect.AspectKind.DEFAULT;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
-import groove.graph.LabelPattern;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
 import groove.trans.RuleLabel;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Tracker;
 import groove.view.FormatError;
-import groove.view.FormatException;
-import groove.view.GraphBasedModel;
 import groove.view.GraphBasedModel.TypeModelMap;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
@@ -26,7 +21,6 @@ import groove.view.aspect.AspectParser;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -68,13 +62,13 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     /** Indicates if this is the incoming part of a nodified edge. */
     public boolean isNodeEdgeIn() {
         return getTargetVertex() != null
-            && ((AspectJVertex) getTargetVertex()).isEdge();
+            && ((AspectJVertex) getTargetVertex()).isNodeEdge();
     }
 
     /** Indicates if this is the incoming pars of a nodified edge. */
     public boolean isNodeEdgeOut() {
         return getSourceVertex() != null
-            && ((AspectJVertex) getSourceVertex()).isEdge();
+            && ((AspectJVertex) getSourceVertex()).isNodeEdge();
     }
 
     @SuppressWarnings("unchecked")
@@ -158,34 +152,6 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     }
 
     @Override
-    public String getText() {
-        String result = null;
-        // if both source and target nodes are nodified, 
-        // test for source node first
-        if (isNodeEdgeOut()) {
-            result = "";
-        } else if (isNodeEdgeIn()) {
-            LabelPattern pattern =
-                ((AspectJVertex) getTargetVertex()).getEdgeLabelPattern();
-            @SuppressWarnings({"unchecked", "rawtypes"})
-            GraphBasedModel<HostGraph> resourceModel =
-                (GraphBasedModel) getJModel().getResourceModel();
-            try {
-                result =
-                    pattern.getLabel(
-                        resourceModel.toResource(),
-                        (HostNode) resourceModel.getMap().getNode(
-                            getTargetNode()));
-            } catch (FormatException e) {
-                // assert false;
-            }
-        } else {
-            result = super.getText();
-        }
-        return result;
-    }
-
-    @Override
     StringBuilder getEdgeDescription() {
         getEdge().testFixed(true);
         StringBuilder result = new StringBuilder();
@@ -226,56 +192,19 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     }
 
     @Override
-    public List<StringBuilder> getLines() {
-        updateCachedValues();
-        return this.lines;
-    }
-
-    @Override
     public Collection<Edge> getKeys() {
         updateCachedValues();
         return this.keys;
     }
 
     /** 
-     * Updates the cached values of {@link #lines} and {@link #keys},
+     * Updates the cached values of {@link #keys},
      * if the model has been modified in the meantime.
      */
     private void updateCachedValues() {
         if (this.keys == null || this.jModelTracker.isStale()) {
             this.keys = computeKeys();
-            this.lines = computeLines();
         }
-    }
-
-    /** Recomputes the set of node lines for this aspect node. */
-    private List<StringBuilder> computeLines() {
-        if (isSourceLabel()) {
-            return Collections.emptyList();
-        } else if (getJGraph().isShowAspects()) {
-            // used to include hasError() as a disjunct
-            return getUserObject().toLines();
-        } else {
-            return super.getLines();
-        }
-    }
-
-    /**
-     * On demand prefixes the label with the edge's aspect values.
-     */
-    @Override
-    public StringBuilder getLine(Edge edge) {
-        AspectEdge aspectEdge = (AspectEdge) edge;
-        StringBuilder result = new StringBuilder();
-        result.append(aspectEdge.getDisplayLabel().text());
-        // add the level name, if not already shown as an aspect
-        if (this.aspect.isRole()) {
-            String levelName = aspectEdge.getLevelName();
-            if (levelName != null && levelName.length() != 0) {
-                result.append(LEVEL_NAME_SEPARATOR + levelName);
-            }
-        }
-        return result;
     }
 
     /** Recomputes the set of keys for this aspect node. */
@@ -382,8 +311,6 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
                     : getJModel().getModCount().createTracker();
     }
 
-    /** Cached lines. */
-    private List<StringBuilder> lines;
     /** Cached tree entries. */
     private Collection<Edge> keys;
     /** JModel modification tracker. */

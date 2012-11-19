@@ -19,9 +19,6 @@ package groove.abstraction.pattern.gui.jgraph;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.look.Look;
 
-import java.util.Collections;
-import java.util.List;
-
 /**
  * Class that connects to the JGraph library for displaying pattern nodes.
  * 
@@ -51,11 +48,6 @@ public class PatternJVertex extends GraphJVertex {
     public String toString() {
         return String.format("PatternJVertex %d with labels %s", getNumber(),
             getKeys());
-    }
-
-    @Override
-    public List<StringBuilder> getLines() {
-        return Collections.emptyList();
     }
 
     // ------------------------------------------------------------------------

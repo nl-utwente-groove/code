@@ -118,7 +118,7 @@ public class JVertexView extends VertexView {
     /**
      * Retrieves the HTML text for the vertex, and adapts the text colour to the
      * line colour if the line colour is not black.
-     * @see GraphJVertex#getText()
+     * @see GraphJVertex#getVisuals()
      */
     private String computeText() {
         StringBuilder result = new StringBuilder(getCellVisuals().getLabel());

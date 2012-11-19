@@ -499,7 +499,7 @@ public final class GraphToTikz {
     // END
 
     private static boolean isNodifiedEdge(GraphJVertex node) {
-        return node instanceof AspectJVertex && ((AspectJVertex) node).isEdge();
+        return node instanceof AspectJVertex && ((AspectJVertex) node).isNodeEdge();
     }
 
     private static boolean hasNonEmptyLabel(GraphJEdge edge) {

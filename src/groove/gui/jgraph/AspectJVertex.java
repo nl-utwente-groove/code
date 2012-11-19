@@ -1,31 +1,21 @@
 package groove.gui.jgraph;
 
-import static groove.io.HTMLConverter.ITALIC_TAG;
-import static groove.io.HTMLConverter.STRONG_TAG;
-import static groove.io.HTMLConverter.toHtml;
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
-import groove.graph.EdgeRole;
 import groove.graph.Element;
 import groove.graph.GraphRole;
-import groove.graph.Label;
 import groove.graph.LabelPattern;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
-import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.graph.algebra.VariableNode;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
-import groove.io.HTMLConverter.HTMLTag;
-import groove.io.Util;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Tracker;
-import groove.util.Colors;
 import groove.view.FormatError;
 import groove.view.GraphBasedModel.TypeModelMap;
-import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectLabel;
@@ -207,13 +197,6 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         return result;
     }
 
-    /** Adds a quantifier, if the nesting aspect justifies this. */
-    @Override
-    final public List<StringBuilder> getLines() {
-        updateCachedValues();
-        return this.lines;
-    }
-
     @Override
     public Collection<Element> getKeys() {
         updateCachedValues();
@@ -221,244 +204,12 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     /** 
-     * Updates the cached values of {@link #lines} and {@link #keys},
+     * Updates the cached values of {@link #keys},
      * if the model has been modified in the meantime.
      */
     private void updateCachedValues() {
         if (this.keys == null || getJModelTracker().isStale()) {
             this.keys = computeKeys();
-            this.lines = computeLines();
-        }
-    }
-
-    /** Recomputes the set of node lines for this aspect node. */
-    private List<StringBuilder> computeLines() {
-        getNode().testFixed(true);
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
-        // show the node identity
-        result.addAll(getNodeIdLines());
-        // the following used to include hasError() as a disjunct
-        if (getJGraph().isShowAspects()) {
-            result.addAll(getUserObject().toLines());
-            for (AspectEdge edge : getExtraSelfEdges()) {
-                if (!isFiltered(edge)) {
-                    result.add(getLine(edge));
-                }
-            }
-            if (getNode().getGraphRole() == GraphRole.RULE
-                && getNode().getColor() != null) {
-                result.add(new StringBuilder(getNode().getColor().toString()));
-            }
-        } else {
-            // show the main aspect correctly
-            result.addAll(getAspectLines());
-            // show data constants and variables correctly
-            result.addAll(getDataLines());
-            // show the visible self-edges
-            String id =
-                getNode().hasId()
-                        ? ITALIC_TAG.on(getNode().getId().getContent()) : null;
-            boolean unshownId = id != null && !this.aspect.isQuantifier();
-            for (AspectEdge edge : getEdges()) {
-                if (!isFiltered(edge)) {
-                    StringBuilder line = getLine(edge);
-                    if (unshownId && edge.getDisplayLabel().isNodeType()) {
-                        line.insert(0, " : ");
-                        line.insert(0, id);
-                        unshownId = false;
-                    }
-                    result.add(line);
-                }
-            }
-            if (unshownId) {
-                // we're not going to have any node types:
-                // add the node id on a separate line
-                result.add(new StringBuilder(id));
-            }
-            for (AspectEdge edge : getExtraSelfEdges()) {
-                if (!isFiltered(edge)) {
-                    result.add(getLine(edge));
-                }
-            }
-            if (getNode().getGraphRole() == GraphRole.RULE
-                && getNode().hasColor()) {
-                StringBuilder line = new StringBuilder("& ");
-                line.append(AspectKind.COLOR.getName());
-                HTMLTag colorTag =
-                    HTMLConverter.createColorTag(Colors.findColor(getNode().getColor().getContentString()));
-                result.add(colorTag.on(line));
-            }
-            if (getNode().getGraphRole() == GraphRole.TYPE
-                && getNode().isEdge()) {
-                StringBuilder line = new StringBuilder();
-                LabelPattern pattern = getNode().getEdgePattern();
-                line.append(">> ");
-                line.append(pattern.getLabel(pattern.getArgNames().toArray()));
-                result.add(line);
-            }
-        }
-        return result;
-    }
-
-    @Override
-    protected List<StringBuilder> getNodeIdLines() {
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
-        // if the node has an ID, that will be displayed part of the type
-        if (!getNode().hasId()) {
-            result.addAll(super.getNodeIdLines());
-            if (getNode().hasImport()) {
-                result.add(new StringBuilder(ITALIC_TAG.on(IMPORT_TEXT)));
-            }
-        }
-        return result;
-    }
-
-    /** Returns lines describing any data content of the JVertex. */
-    private List<StringBuilder> getDataLines() {
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
-        Aspect attrAspect = getNode().getAttrAspect();
-        if (attrAspect.getKind().hasSignature()) {
-            String dataLine = null;
-            if (!attrAspect.hasContent()) {
-                dataLine =
-                    TypeLabel.toHtmlString(TypeLabel.createLabel(
-                        EdgeRole.NODE_TYPE, attrAspect.getKind().getName()));
-            } else if (!getJGraph().isShowNodeIdentities()) {
-                // show constants only if they are not already shown as node identities
-                dataLine = attrAspect.getContentString();
-            }
-            if (dataLine != null) {
-                result.add(new StringBuilder(dataLine));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns the lines describing this node's main aspect.
-     * Currently this just concerns a possible quantifier.
-     */
-    private List<StringBuilder> getAspectLines() {
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
-        if (this.aspect.isQuantifier()) {
-            StringBuilder line = new StringBuilder();
-            Aspect id = getNode().getId();
-            if (id != null) {
-                line.append(HTMLConverter.ITALIC_TAG.on(id.getContent()));
-                line.append(" : ");
-            }
-            switch (this.aspect) {
-            case FORALL:
-                line.append(HTML_FORALL);
-                break;
-            case FORALL_POS:
-                line.append(HTML_FORALL);
-                line.append(HTMLConverter.SUPER_TAG.on(HTML_GT + "0"));
-                break;
-            case EXISTS:
-                line.append(HTML_EXISTS);
-                break;
-            case EXISTS_OPT:
-                line.append(HTML_EXISTS);
-                line.append(HTMLConverter.SUPER_TAG.on("?"));
-            }
-            if (line.length() > 0) {
-                result.add(line);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * On demand prefixes the label with the edge's aspect values.
-     */
-    @Override
-    protected StringBuilder getLine(Edge edge) {
-        AspectEdge aspectEdge = (AspectEdge) edge;
-        aspectEdge.testFixed(true);
-        StringBuilder result = new StringBuilder();
-        Label label =
-            getJGraph().isShowAspects() ? aspectEdge.label()
-                    : aspectEdge.getDisplayLabel();
-        result.append(TypeLabel.toHtmlString(label));
-        // add the level name, if not already shown as an aspect
-        if (this.aspect.isRole()) {
-            String levelName = aspectEdge.getLevelName();
-            if (levelName != null && levelName.length() != 0) {
-                result.append(LEVEL_NAME_SEPARATOR + levelName);
-            }
-        }
-        if (aspectEdge.getKind() == AspectKind.ABSTRACT && label.isNodeType()) {
-            result = ITALIC_TAG.on(result);
-        }
-        if (edge.target() != edge.source()) {
-            // this is an attribute edge displayed as a node label
-            String suffix;
-            AspectNode actualTarget = aspectEdge.target();
-            if (getNode().getGraphRole() == GraphRole.TYPE) {
-                suffix = TYPE_TEXT + actualTarget.getAttrKind().getName();
-            } else {
-                suffix =
-                    ASSIGN_TEXT
-                        + actualTarget.getAttrAspect().getContentString();
-            }
-            result.append(HTMLConverter.toHtml(suffix));
-        } else {
-            if (getNode().getGraphRole() == GraphRole.TYPE
-                && aspectEdge.getAttrKind().hasSignature()) {
-                // this is a field declaration
-                result.append(TYPE_TEXT);
-                result.append(STRONG_TAG.on(aspectEdge.getAttrKind().getName()));
-            } else if (aspectEdge.getKind().isRole()) {
-                String levelName = aspectEdge.getLevelName();
-                if (levelName != null && levelName.length() != 0) {
-                    result.append(LEVEL_NAME_SEPARATOR + levelName);
-                }
-            }
-        }
-        // use special node label prefixes to indicate edge role
-        Aspect edgeAspect = aspectEdge.getAspect();
-        if (edgeAspect != null
-            && !edgeAspect.equals(getNode().getAspect())
-            && (getNode().getGraphRole() == GraphRole.RULE || edgeAspect.getKind() == REMARK)) {
-            addRoleIndicator(result, edgeAspect.getKind());
-        }
-        return result;
-    }
-
-    /**
-     * Adds a textual prefix and a HTML colour to a given node line,
-     * depending on an edge role.
-     */
-    private void addRoleIndicator(StringBuilder text, AspectKind edgeRole) {
-        text.insert(0, edgeRole.getDisplayPrefix());
-        switch (edgeRole) {
-        case ERASER:
-            HTMLConverter.ERASER_TAG.on(text);
-            break;
-        case ADDER:
-            HTMLConverter.CREATOR_TAG.on(text);
-            break;
-        case LET:
-            HTMLConverter.CREATOR_TAG.on(text);
-            break;
-        case CREATOR:
-            HTMLConverter.CREATOR_TAG.on(text);
-            break;
-        case EMBARGO:
-            HTMLConverter.EMBARGO_TAG.on(text);
-            break;
-        case REMARK:
-            // replace all newlines by // as well
-            String NEWLINE = HTMLConverter.HTML_LINEBREAK;
-            int lineStart = text.indexOf(NEWLINE);
-            while (lineStart >= 0) {
-                text.insert(lineStart + NEWLINE.length(),
-                    REMARK.getDisplayPrefix());
-                lineStart = text.indexOf(NEWLINE, lineStart + NEWLINE.length());
-            }
-            HTMLConverter.REMARK_TAG.on(text);
-            break;
         }
     }
 
@@ -502,7 +253,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     @Override
     protected Look getStructuralLook() {
-        if (isEdge()) {
+        if (isNodeEdge()) {
             return Look.NODIFIED;
         } else if (getNode().hasAttrAspect()) {
             return Look.getLookFor(getNode().getAttrKind());
@@ -515,7 +266,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     /** Indicates if this vertex is in fact a nodified edge. */
-    public boolean isEdge() {
+    public boolean isNodeEdge() {
         return getJGraph().getMode() != JGraphMode.EDIT_MODE
             && getEdgeLabelPattern() != null;
     }
@@ -632,8 +383,6 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         return result;
     }
 
-    /** Cached lines. */
-    private List<StringBuilder> lines;
     /** Cached tree entries. */
     private Collection<Element> keys;
     /** JModel modification tracker. */
@@ -648,13 +397,4 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     public static AspectJVertex newInstance() {
         return new AspectJVertex();
     }
-
-    static private final String ASSIGN_TEXT = " = ";
-    static private final String TYPE_TEXT = ": ";
-    static private final String IMPORT_TEXT = String.format("%simport%s",
-        HTMLConverter.toHtml(Util.FRENCH_QUOTES_OPEN),
-        HTMLConverter.toHtml(Util.FRENCH_QUOTES_CLOSED));
-    static private final String HTML_EXISTS = toHtml(Util.EXISTS);
-    static private final String HTML_FORALL = toHtml(Util.FORALL);
-    static private final String HTML_GT = toHtml('>');
 }

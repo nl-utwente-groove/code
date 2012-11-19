@@ -16,15 +16,8 @@
  */
 package groove.abstraction.neigh.gui.jgraph;
 
-import static groove.io.HTMLConverter.ITALIC_TAG;
-import static groove.io.HTMLConverter.STRONG_TAG;
-import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.graph.TypeNode;
 import groove.gui.jgraph.GraphJVertex;
-import groove.io.HTMLConverter;
-
-import java.util.List;
 
 /**
  * Class that connects to the JGraph library for displaying ShapeNodes.
@@ -57,41 +50,8 @@ public class ShapeJVertex extends GraphJVertex {
         return (ShapeNode) super.getNode();
     }
 
-    @Override
-    public List<StringBuilder> getLines() {
-        List<StringBuilder> result = super.getLines();
-        // Multiplicity.
-        StringBuilder multStr = new StringBuilder();
-        Shape shape = getJGraph().getShape();
-        ShapeNode node = getNode();
-        String mult = shape.getNodeMult(node).toString();
-        multStr.append(HTMLConverter.createSpanTag("color: rgb(50,50,255)").on(
-            ITALIC_TAG.on(mult)));
-        result.add(0, multStr);
-        // Node type.
-        TypeNode typeNode = node.getType();
-        if (!typeNode.isTopType()) {
-            StringBuilder typeStr = new StringBuilder();
-            typeStr.append(STRONG_TAG.on(typeNode.label().text()));
-            int pos;
-            if (getJGraph().isShowNodeIdentities()) {
-                pos = 2;
-            } else {
-                pos = 1;
-            }
-            result.add(pos, typeStr);
-        }
-        return result;
-    }
-
     /** Returns a prototype {@link ShapeJVertex}. */
     public static ShapeJVertex newInstance() {
         return new ShapeJVertex(null);
     }
-
-    /** Returns a prototype {@link ShapeJVertex} for a given {@link ShapeJGraph}. */
-    public static ShapeJVertex getPrototype() {
-        return new ShapeJVertex(null);
-    }
-
 }

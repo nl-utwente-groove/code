@@ -69,14 +69,6 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
         return result.toString();
     }
 
-    @Override
-    protected StringBuilder getLine(Edge edge) {
-        assert edge instanceof GraphTransition;
-        String text =
-            ((GraphTransition) edge).text(getJGraph().isShowAnchors());
-        return new StringBuilder(text);
-    }
-
     /** Indicates that this edge is active. */
     final boolean isActive() {
         return getLooks().contains(Look.ACTIVE);

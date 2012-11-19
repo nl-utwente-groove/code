@@ -1,11 +1,7 @@
 package groove.gui.jgraph;
 
 import groove.control.CtrlState;
-import groove.control.CtrlVar;
 import groove.gui.look.Look;
-import groove.io.HTMLConverter;
-
-import java.util.List;
 
 /**
  * JVertex class that describes the underlying node as a graph state.
@@ -38,28 +34,6 @@ public class CtrlJVertex extends GraphJVertex {
     @Override
     public CtrlState getNode() {
         return (CtrlState) super.getNode();
-    }
-
-    /**
-     * Appends the bound variables to the lines, if this list is not empty
-     */
-    @Override
-    public java.util.List<StringBuilder> getLines() {
-        List<StringBuilder> result = super.getLines();
-        List<CtrlVar> boundVars = getNode().getBoundVars();
-        if (boundVars.size() > 0) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(boundVars.toString());
-            result.add(sb);
-        }
-        if (isTransient()) {
-            StringBuilder action = new StringBuilder();
-            action.append(HTMLConverter.toHtml('<'));
-            action.append(getNode().getRecipe());
-            action.append(HTMLConverter.toHtml('>'));
-            result.add(action);
-        }
-        return result;
     }
 
     /** Indicates if this jVertex represents the start state of the control automaton. */

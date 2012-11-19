@@ -209,7 +209,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * Overrides the method to call {@link GraphJCell#getText()} whenever
+     * Overrides the method to call {@link GraphJCell#getVisuals} whenever
      * <code>object</code> is recognised as a {@link JVertexView},
      * {@link JEdgeView} or {@link GraphJCell}.
      */

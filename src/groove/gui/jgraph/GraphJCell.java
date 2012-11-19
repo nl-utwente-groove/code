@@ -25,7 +25,6 @@ import groove.gui.look.VisualMap;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import org.jgraph.graph.GraphCell;
@@ -44,20 +43,6 @@ public interface GraphJCell extends GraphCell, Serializable {
 
     /** Returns the end nodes (for an edge) or the incident edges (for a vertex). */
     public Collection<? extends GraphJCell> getContext();
-
-    /**
-     * Returns the complete text that should be displayed upon the cell. This is
-     * obtained from {@link #getLines()} by inserting appropriate line
-     * separators.
-     */
-    public String getText();
-
-    /**
-     * Returns the collection of lines to be displayed upon the cell. These are
-     * the lines that make up the text returned by {@link #getText()}. The test
-     * is html-formatted, but without the surrounding html-tag.
-     */
-    public abstract List<StringBuilder> getLines();
 
     /**
      * Returns the set of keys to be associated with this cell in a label

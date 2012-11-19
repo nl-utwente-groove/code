@@ -26,8 +26,6 @@ import groove.io.HTMLConverter;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -152,37 +150,6 @@ public class GraphJVertex extends AbstractJCell {
     /** Set of graph edges mapped to this JEdge. */
     private Set<Edge> edges = new TreeSet<Edge>();
 
-    /** This implementation adds the data edges to the super result. */
-    public List<StringBuilder> getLines() {
-        List<StringBuilder> result = new LinkedList<StringBuilder>();
-        // show the node identity if required
-        result.addAll(getNodeIdLines());
-        // only add edges that have an unfiltered label
-        for (Edge edge : getEdges()) {
-            if (!isFiltered(edge)) {
-                result.add(new StringBuilder(getLine(edge)));
-            }
-        }
-        return result;
-    }
-
-    /** 
-     * Returns the (possibly empty) list of lines 
-     * describing the node identity, if this is to be shown
-     * according to the current setting.
-     * @see GraphJGraph#isShowNodeIdentities()
-     */
-    protected List<StringBuilder> getNodeIdLines() {
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
-        if (getJGraph().isShowNodeIdentities()) {
-            String id = getNodeIdString();
-            if (id != null) {
-                result.add(ITALIC_TAG.on(new StringBuilder(id)));
-            }
-        }
-        return result;
-    }
-
     /** 
      * Tests if a given edge is currently being filtered.
      * This is the case if at least one of the list labels on it
@@ -192,16 +159,6 @@ public class GraphJVertex extends AbstractJCell {
     final protected boolean isFiltered(Edge edge) {
         Edge key = getKey(edge);
         return key != null && getJGraph().isFiltering(key);
-    }
-
-    /** 
-     * Returns the text to be shown for the node label of a given edge.
-     * This implementation delegates to {@link Edge#label()}. 
-     */
-    protected StringBuilder getLine(Edge edge) {
-        StringBuilder result = new StringBuilder(edge.label().text());
-        HTMLConverter.toHtml(result);
-        return result;
     }
 
     /**
@@ -262,20 +219,6 @@ public class GraphJVertex extends AbstractJCell {
     /** Returns the number with which this vertex was initialised. */
     public int getNumber() {
         return getNode().getNumber();
-    }
-
-    /**
-     * Returns HTML-formatted text, without a surrounding HTML tag.
-     */
-    public String getText() {
-        StringBuilder result = new StringBuilder();
-        for (StringBuilder line : getLines()) {
-            if (result.length() > 0) {
-                result.append(HTMLConverter.HTML_LINEBREAK);
-            }
-            result.append(line);
-        }
-        return result.toString();
     }
 
     @Override

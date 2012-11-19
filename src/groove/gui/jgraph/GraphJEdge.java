@@ -19,7 +19,6 @@ package groove.gui.jgraph;
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.Node;
 import groove.io.HTMLConverter;
 import groove.util.Groove;
@@ -151,20 +150,6 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
     /** Target node of the underlying graph edges. */
     private Node target;
 
-    /**
-     * This implementation delegates the method to the user object.
-     */
-    public String getText() {
-        StringBuilder result = new StringBuilder();
-        for (StringBuilder line : getLines()) {
-            if (result.length() > 0) {
-                result.append(PRINT_SEPARATOR);
-            }
-            result.append(line);
-        }
-        return result.toString();
-    }
-
     @Override
     public String toString() {
         return String.format("%s with labels %s", getClass().getName(),
@@ -225,31 +210,6 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
      */
     public Edge getEdge() {
         return getEdges().isEmpty() ? null : getEdges().iterator().next();
-    }
-
-    /**
-     * This implementation calls {@link #getLine(Edge)} on all edges in
-     * {@link #getEdges()} that are not being filtered by the model
-     * according to {@link GraphJGraph#isFiltering(Element)}.
-     */
-    public List<StringBuilder> getLines() {
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
-        for (Edge edge : getEdges()) {
-            // only add edges that have an unfiltered label
-            if (!getJGraph().isFiltering(edge)) {
-                result.add(getLine(edge));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Callback method to retrieve the line (as it should appear in an 
-     * edge label) from a given edge.
-     * @see #getLines()
-     */
-    protected StringBuilder getLine(Edge edge) {
-        return new StringBuilder(edge.label().text());
     }
 
     /**
