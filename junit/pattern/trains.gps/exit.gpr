@@ -7,24 +7,29 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n0">
+        <node id="n2">
             <attr name="layout">
-                <string>318 108 66 32</string>
+                <string>229 35 36 49</string>
             </attr>
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>187 143 39 30</string>
+                <string>173 134 67 48</string>
             </attr>
         </node>
-        <node id="n2">
+        <node id="n0">
             <attr name="layout">
-                <string>233 52 28 15</string>
+                <string>333 100 36 48</string>
             </attr>
         </node>
-        <edge to="n0" from="n0">
+        <edge to="n2" from="n2">
             <attr name="label">
-                <string>type:Station</string>
+                <string>type:T</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n2">
+            <attr name="label">
+                <string>at</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">
@@ -32,14 +37,9 @@
                 <string>del:</string>
             </attr>
         </edge>
-        <edge to="n0" from="n1">
-            <attr name="label">
-                <string>dest</string>
-            </attr>
-        </edge>
         <edge to="n1" from="n1">
             <attr name="label">
-                <string>type:Person</string>
+                <string>type:P</string>
             </attr>
         </edge>
         <edge to="n2" from="n1">
@@ -47,14 +47,14 @@
                 <string>at</string>
             </attr>
         </edge>
-        <edge to="n2" from="n2">
+        <edge to="n0" from="n1">
             <attr name="label">
-                <string>type:Train</string>
+                <string>dest</string>
             </attr>
         </edge>
-        <edge to="n0" from="n2">
+        <edge to="n0" from="n0">
             <attr name="label">
-                <string>at</string>
+                <string>type:S</string>
             </attr>
         </edge>
     </graph>

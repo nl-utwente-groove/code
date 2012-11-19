@@ -40,7 +40,7 @@ public class TestPatternGraphGenerator {
     public void testCircList() {
         final String GRAMMAR = "junit/pattern/circ-list-4";
         final String START_GRAPH = "start";
-        String typeGraph = "ptgraph.gxl";
+        String typeGraph = "ptgraph.gst";
         PatternGraphGenerator generator;
 
         generator =
@@ -52,7 +52,7 @@ public class TestPatternGraphGenerator {
         assertEquals(12, pgts.getTransitionCount());
         assertTrue(generator.compareGTSs());
 
-        typeGraph = "ptgraph-min.gxl";
+        typeGraph = "ptgraph-min.gst";
         generator =
             new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
         generator.processArguments();
@@ -67,7 +67,7 @@ public class TestPatternGraphGenerator {
     public void testTrains() {
         final String GRAMMAR = "junit/pattern/trains";
         final String START_GRAPH = "start";
-        String typeGraph = "ptgraph.gxl";
+        String typeGraph = "ptgraph.gst";
         PatternGraphGenerator generator;
 
         generator =

@@ -39,7 +39,7 @@ public class TestPatternEquiv {
     @Test
     public void testEquiv0() {
         final String GRAMMAR = "junit/pattern/pattern-list.gps/";
-        final String TYPE = "ptgraph.gxl";
+        final String TYPE = "ptgraph.gst";
 
         TypeGraph typeGraph = loadTypeGraph(GRAMMAR + TYPE);
         HostGraph sGraph = loadSimpleGraph(GRAMMAR, "start-5");
@@ -53,7 +53,7 @@ public class TestPatternEquiv {
     @Test
     public void testEquiv1() {
         final String GRAMMAR = "junit/pattern/equiv.gps/";
-        final String TYPE = "ptgraph.gxl";
+        final String TYPE = "ptgraph.gst";
 
         TypeGraph typeGraph = loadTypeGraph(GRAMMAR + TYPE);
         HostGraph sGraph = loadSimpleGraph(GRAMMAR, "start");

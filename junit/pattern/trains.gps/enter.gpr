@@ -7,21 +7,41 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n0">
+        <node id="n2">
             <attr name="layout">
-                <string>192 175 66 32</string>
+                <string>276 91 36 48</string>
             </attr>
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>130 91 56 32</string>
+                <string>140 83 36 48</string>
             </attr>
         </node>
-        <node id="n2">
+        <node id="n0">
             <attr name="layout">
-                <string>261 99 66 32</string>
+                <string>192 167 66 48</string>
             </attr>
         </node>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>type:S</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:T</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n1">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>type:P</string>
+            </attr>
+        </edge>
         <edge to="n2" from="n0">
             <attr name="label">
                 <string>del:at</string>
@@ -30,26 +50,6 @@
         <edge to="n1" from="n0">
             <attr name="label">
                 <string>new:at</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>type:Person</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n1">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:Train</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>type:Station</string>
             </attr>
         </edge>
     </graph>
