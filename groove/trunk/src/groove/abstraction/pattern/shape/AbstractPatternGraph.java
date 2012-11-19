@@ -162,6 +162,14 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     // Other methods
     // ------------------------------------------------------------------------
 
+    /**
+     * Checks if the conditions for each pattern graph type are satisfied.
+     * To be overriden in subclasses.
+     */
+    public boolean isWellDefined() {
+        return isWellFormed();
+    }
+
     /** Checks if this pattern graph is well-formed. */
     public boolean isWellFormed() {
         // Check node layer.
@@ -172,19 +180,13 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
                 return false;
             }
         }
-        // Check edge layer.
-        for (N pNode : getLayerNodes(1)) {
-            HostGraph pattern = pNode.getPattern();
-            if (Util.getBinaryEdgesCount(pattern) != 1) {
-                return false;
-            }
-            if (!isCovered(pNode)) {
-                return false;
-            }
-        }
         // Check the other layers.
-        for (int i = 2; i <= this.depth; i++) {
+        for (int i = 1; i <= this.depth; i++) {
             for (N pNode : getLayerNodes(i)) {
+                HostGraph pattern = pNode.getPattern();
+                if (Util.getBinaryEdgesCount(pattern) != i) {
+                    return false;
+                }
                 if (!isCovered(pNode)) {
                     return false;
                 }

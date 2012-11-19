@@ -21,7 +21,7 @@ import groove.abstraction.pattern.PatternAbstraction;
 import groove.abstraction.pattern.explore.strategy.PatternDFSStrategy;
 import groove.abstraction.pattern.explore.strategy.PatternStrategy;
 import groove.abstraction.pattern.explore.util.TransSystemChecker;
-import groove.abstraction.pattern.io.xml.TypeGraphJaxbGxlIO;
+import groove.abstraction.pattern.io.xml.TypeGraphGxl;
 import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PGTSAdapter;
 import groove.abstraction.pattern.lts.PatternState;
@@ -267,8 +267,7 @@ public class PatternGraphGenerator extends CommandLineTool {
             sGrammar.setFixed();
             File typeGraphFile = new File(grammarFile + ".gps/" + typeGraph);
             TypeGraph type =
-                TypeGraphJaxbGxlIO.getInstance().unmarshalTypeGraph(
-                    typeGraphFile);
+                TypeGraphGxl.getInstance().unmarshalTypeGraph(typeGraphFile);
             this.grammar = new PatternGraphGrammar(sGrammar, type);
         } catch (FormatException exc) {
             printError("Grammar format error: " + exc.getMessage(), false);

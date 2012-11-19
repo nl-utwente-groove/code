@@ -16,7 +16,9 @@
  */
 package groove.abstraction.pattern.gui.look;
 
+import groove.abstraction.pattern.gui.jgraph.PatternJEdge;
 import groove.abstraction.pattern.gui.jgraph.PatternJGraph;
+import groove.abstraction.pattern.gui.jgraph.PatternJVertex;
 import groove.abstraction.pattern.shape.AbstractPatternEdge;
 import groove.abstraction.pattern.shape.PatternEdge;
 import groove.abstraction.pattern.shape.PatternShape;
@@ -43,11 +45,23 @@ public class PatternLabelValue extends LabelValue {
 
     @Override
     protected List<StringBuilder> getLines(GraphJVertex jVertex) {
-        return Collections.emptyList();
+        if (jVertex instanceof PatternJVertex) {
+            return Collections.emptyList();
+        } else {
+            return super.getLines(jVertex);
+        }
     }
 
     @Override
     protected List<StringBuilder> getLines(GraphJEdge jEdge) {
+        if (jEdge instanceof PatternJEdge) {
+            return getLines((PatternJEdge) jEdge);
+        } else {
+            return super.getLines(jEdge);
+        }
+    }
+
+    private List<StringBuilder> getLines(PatternJEdge jEdge) {
         List<StringBuilder> result = new ArrayList<StringBuilder>();
         for (Edge edge : jEdge.getEdges()) {
             StringBuilder sb = new StringBuilder();

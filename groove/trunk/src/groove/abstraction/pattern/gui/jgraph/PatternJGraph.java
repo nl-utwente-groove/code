@@ -22,7 +22,6 @@ import groove.abstraction.pattern.gui.look.PatternLabelValue;
 import groove.graph.GraphRole;
 import groove.gui.Simulator;
 import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJGraphFactory;
 import groove.gui.jgraph.GraphJModel;
@@ -212,16 +211,6 @@ public final class PatternJGraph extends GraphJGraph {
         @Override
         public PatternJGraph getJGraph() {
             return (PatternJGraph) super.getJGraph();
-        }
-
-        @Override
-        public GraphJVertex newJVertex() {
-            return PatternJVertex.newInstance();
-        }
-
-        @Override
-        public GraphJEdge newJEdge() {
-            return PatternJEdge.newInstance();
         }
 
         @Override

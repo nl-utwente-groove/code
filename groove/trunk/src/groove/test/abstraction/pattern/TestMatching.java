@@ -18,7 +18,7 @@ package groove.test.abstraction.pattern;
 
 import static org.junit.Assert.assertEquals;
 import groove.abstraction.pattern.PatternAbstraction;
-import groove.abstraction.pattern.io.xml.TypeGraphJaxbGxlIO;
+import groove.abstraction.pattern.io.xml.TypeGraphGxl;
 import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
@@ -57,8 +57,7 @@ public class TestMatching {
         try {
             view = GrammarModel.newInstance(grammarFile, false);
             typeGraph =
-                TypeGraphJaxbGxlIO.getInstance().unmarshalTypeGraph(
-                    typeGraphFile);
+                TypeGraphGxl.getInstance().unmarshalTypeGraph(typeGraphFile);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -17,24 +17,11 @@
 package groove.abstraction.pattern;
 
 import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
-import groove.abstraction.pattern.io.xml.PatternShapeGxl;
-import groove.abstraction.pattern.io.xml.TypeGraphJaxbGxlIO;
-import groove.abstraction.pattern.lts.MatchResult;
-import groove.abstraction.pattern.match.Matcher;
-import groove.abstraction.pattern.match.MatcherFactory;
-import groove.abstraction.pattern.match.PreMatch;
-import groove.abstraction.pattern.shape.PatternShape;
+import groove.abstraction.pattern.io.xml.TypeGraphGxl;
 import groove.abstraction.pattern.shape.TypeGraph;
-import groove.abstraction.pattern.trans.Materialisation;
-import groove.abstraction.pattern.trans.PatternRule;
-import groove.trans.Rule;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * @author Eduardo Zambon
@@ -44,66 +31,22 @@ public class Test {
     private static final String PATH =
         "/home/zambon/Work/workspace_groove/groove/junit/pattern/";
 
-    private static final String GRAMMAR = PATH + "euler-0.gps/";
+    private static final String GRAMMAR = PATH + "pattern-list.gps/";
 
-    private static final String TYPE_GRAPH = GRAMMAR + "ptgraph-0.gxl";
-
-    private static final String RULE = "toOldArea00";
+    private static final String TYPE_GRAPH = GRAMMAR + "ptgraph.gst";
 
     /** Test method. */
     public static void main(String args[]) {
         TypeGraph pTGraph = null;
-        Rule sRule = null;
         try {
-            GrammarModel view =
-                GrammarModel.newInstance(new File(GRAMMAR), false);
-            sRule = view.getRuleModel(RULE).toResource();
-
             pTGraph =
-                TypeGraphJaxbGxlIO.getInstance().unmarshalTypeGraph(
+                TypeGraphGxl.getInstance().unmarshalTypeGraph(
                     new File(TYPE_GRAPH));
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
         }
 
-        PatternAbstraction.initialise();
-        //PatternAbsParam.getInstance().setUseThreeValues(true);
-        PatternAbsParam.getInstance().setNodeMultBound(1);
-        PatternAbsParam.getInstance().setEdgeMultBound(1);
+        PatternPreviewDialog.showPatternGraph(pTGraph);
 
-        PatternShapeGxl gxl = new PatternShapeGxl(pTGraph);
-        File outFile = new File(GRAMMAR + "error.gxl");
-        PatternShape pShape = gxl.loadPatternShape(outFile);
-        pShape.setFixed();
-
-        PatternPreviewDialog.showPatternGraph(pShape);
-
-        PatternRule pRule = pTGraph.lift(sRule);
-        Matcher matcher = MatcherFactory.instance().getMatcher(pRule, false);
-        List<MatchResult> matches = matcher.findMatches(pShape, null);
-        PreMatch preMatch = (PreMatch) matches.get(0).getMatch();
-
-        Collection<Materialisation> mats =
-            Materialisation.getMaterialisations(pShape, preMatch);
-        for (Materialisation mat : mats) {
-            PatternPreviewDialog.showPatternGraph(mat.getShape());
-            System.out.print(mat.getShape().nodeCount() + " ");
-            System.out.println(mat.getShape().edgeCount());
-        }
     }
 }
-
-/*PatternShapeGxl gxl = new PatternShapeGxl(pTGraph);
-File outFile = new File(GRAMMAR + "error.gxl");
-PatternShape pShape = gxl.loadPatternShape(outFile);
-System.out.println(pShape);
-PatternPreviewDialog.showPatternGraph(pShape);*/
-
-/*if (newState.getNumber() == 16) {
-PatternShape pShape = newState.getShape();
-PatternShapeGxl gxl = new PatternShapeGxl(pShape.getTypeGraph());
-File outFile = new File("error.gxl");
-gxl.saveShape(pShape, outFile);
-}*/
