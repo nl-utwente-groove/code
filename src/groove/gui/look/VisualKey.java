@@ -22,9 +22,10 @@ import static groove.gui.look.VisualKey.Nature.REFRESHABLE;
 import groove.gui.layout.JCellLayout;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,9 +49,6 @@ public enum VisualKey {
      * A {@code null} value means a whitewashed version of the foreground is used. 
      */
     BACKGROUND(Color.class, Values.DEFAULT_BACKGROUND),
-    /** Node bounds. */
-    BOUNDS(Rectangle2D.class, new Rectangle2D.Double(10, 10, 19, 19),
-            CONTROLLED),
     /** Controlled foreground colour, overriding {@link #FOREGROUND} if set. Defaults to {@code null}. */
     COLOR(Color.class, null, REFRESHABLE),
     /** Edge dash pattern. Defaults to no dash. */
@@ -97,8 +95,12 @@ public enum VisualKey {
     LINE_STYLE(LineStyle.class, LineStyle.ORTHOGONAL, CONTROLLED),
     /** Line width. Defaults to {@code 1}. */
     LINE_WIDTH(Float.class, 1f),
+    /** Node position. */
+    NODE_POS(Point2D.class, new Point2D.Double(10, 10), CONTROLLED),
     /** Node shape. Defaults to {@link NodeShape#RECTANGLE} */
     NODE_SHAPE(NodeShape.class, NodeShape.RECTANGLE),
+    /** Node bounds. */
+    NODE_SIZE(Dimension2D.class, new Dimension(19, 19), REFRESHABLE),
     /** Node opacity. Defaults to {@code false}. */
     OPAQUE(Boolean.class, false),
     /** Intermediate edge points. */

@@ -19,7 +19,11 @@ package groove.gui.look;
 import groove.gui.Options;
 import groove.gui.look.VisualKey.Nature;
 
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -198,6 +202,11 @@ public class VisualAttributeMap extends AttributeMap {
             case LINE_STYLE:
                 vValue = LineStyle.getStyle((Integer) value);
                 break;
+            case NODE_POS:
+                Rectangle2D bounds = (Rectangle2D) value;
+                vValue =
+                    new Point2D.Double(bounds.getCenterX(), bounds.getCenterY());
+                break;
             default:
                 vValue = value;
             }
@@ -323,6 +332,18 @@ public class VisualAttributeMap extends AttributeMap {
         case LINE_STYLE:
             value = ((LineStyle) value).getCode();
             break;
+        case NODE_POS:
+            Rectangle2D b = (Rectangle2D) super.get(GraphConstants.BOUNDS);
+            Dimension2D size;
+            if (b == null) {
+                size = (Dimension2D) VisualKey.NODE_SIZE.getDefaultValue();
+            } else {
+                size = new Dimension((int) b.getWidth(), (int) b.getHeight());
+            }
+            b = new Rectangle();
+            b.setFrame((Point2D) value, size);
+            value = b;
+            break;
         case POINTS:
             value = new ArrayList<Object>((List<?>) value);
         }
@@ -381,9 +402,6 @@ public class VisualAttributeMap extends AttributeMap {
             case BACKGROUND:
                 aKey = GraphConstants.BACKGROUND;
                 break;
-            case BOUNDS:
-                aKey = GraphConstants.BOUNDS;
-                break;
             case DASH:
                 aKey = GraphConstants.DASHPATTERN;
                 break;
@@ -428,6 +446,9 @@ public class VisualAttributeMap extends AttributeMap {
                 break;
             case POINTS:
                 aKey = GraphConstants.POINTS;
+                break;
+            case NODE_POS:
+                aKey = GraphConstants.BOUNDS;
                 break;
             case INNER_LINE:
             case NODE_SHAPE:

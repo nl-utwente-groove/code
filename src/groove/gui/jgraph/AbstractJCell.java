@@ -118,6 +118,7 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
     final public void putVisual(VisualKey key, Object value) {
         assert key.getNature() != Nature.DERIVED;
         this.visuals.put(key, value);
+        this.staleKeys.remove(key);
     }
 
     final public void putVisuals(VisualMap map) {
@@ -137,9 +138,12 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
         }
         if (!this.staleKeys.isEmpty()) {
             for (VisualKey key : VisualKey.refreshables()) {
-                if (this.staleKeys.remove(key)) {
+                if (this.staleKeys.contains(key)) {
                     VisualValue refresher = getRefresher(key);
-                    this.visuals.put(key, refresher.get(this));
+                    if (refresher != null) {
+                        this.visuals.put(key, refresher.get(this));
+                        this.staleKeys.remove(key);
+                    }
                 }
             }
         }
@@ -160,6 +164,11 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
             assert key.getNature() == Nature.REFRESHABLE;
             this.staleKeys.add(key);
         }
+    }
+
+    @Override
+    public boolean isStale(VisualKey key) {
+        return this.staleKeys.contains(key);
     }
 
     /** The set of (refreshable) visual keys to be refreshed. */

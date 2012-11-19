@@ -27,7 +27,6 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
-import groove.gui.jgraph.JAttr;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
@@ -36,7 +35,7 @@ import groove.trans.HostFactory;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 
-import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -243,11 +242,8 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
         if (layout != null) {
             result.getVisuals().putAll(layout.toVisuals());
         } else {
-            Rectangle newBounds =
-                new Rectangle(this.nodeX, this.nodeY,
-                    JAttr.DEFAULT_NODE_BOUNDS.width,
-                    JAttr.DEFAULT_NODE_BOUNDS.height);
-            result.getVisuals().put(VisualKey.BOUNDS, newBounds);
+            Point2D nodePos = new Point2D.Double(this.nodeX, this.nodeY);
+            result.putVisual(VisualKey.NODE_POS, nodePos);
             this.nodeX = randomCoordinate();
             this.nodeY = randomCoordinate();
         }

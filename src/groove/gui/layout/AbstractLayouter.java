@@ -231,39 +231,42 @@ abstract public class AbstractLayouter implements Layouter {
         // iterate over the cell views
         CellView[] cellViews = this.jgraph.getGraphLayoutCache().getRoots();
         for (CellView cellView : cellViews) {
-            if (cellView.getCell() instanceof GraphJCell
-                && !((GraphJCell) cellView.getCell()).isGrayedOut()) {
-                GraphJCell jCell = (GraphJCell) cellView.getCell();
-                boolean immovable =
-                    !GraphConstants.isMoveable(jCell.getAttributes());
-                if (cellView instanceof JEdgeView) {
-                    // all true points (i.e., that are not PortViews) are
-                    // subject to layouting
-                    List<?> points = ((JEdgeView) cellView).getPoints();
-                    // failed attempt to store edges beck so they will be layed
-                    // out live
-                    // GraphConstants.setPoints(cell.getAttributes(),points);
-                    for (int p = 1; p < points.size(); p++) {
-                        Object point = points.get(p);
-                        if (point instanceof Point2D) {
-                            Layoutable layoutable =
-                                new PointLayoutable((Point2D) point);
-                            this.toLayoutableMap.put(Pair.newPair(jCell, p),
-                                layoutable);
-                            if (immovable) {
-                                this.immovableSet.add(layoutable);
-                            }
+            if (!(cellView.getCell() instanceof GraphJCell)) {
+                continue;
+            }
+            GraphJCell jCell = (GraphJCell) cellView.getCell();
+            if (jCell.isGrayedOut()) {
+                continue;
+            }
+            boolean immovable =
+                !GraphConstants.isMoveable(jCell.getAttributes());
+            if (cellView instanceof JEdgeView) {
+                // all true points (i.e., that are not PortViews) are
+                // subject to layouting
+                List<?> points = ((JEdgeView) cellView).getPoints();
+                // failed attempt to store edges beck so they will be layed
+                // out live
+                // GraphConstants.setPoints(cell.getAttributes(),points);
+                for (int p = 1; p < points.size(); p++) {
+                    Object point = points.get(p);
+                    if (point instanceof Point2D) {
+                        Layoutable layoutable =
+                            new PointLayoutable((Point2D) point);
+                        this.toLayoutableMap.put(Pair.newPair(jCell, p),
+                            layoutable);
+                        if (immovable) {
+                            this.immovableSet.add(layoutable);
                         }
                     }
-                } else {
-                    assert cellView instanceof VertexView : String.format(
-                        "%s instance of %s", cellView, cellView.getClass());
-                    Layoutable layoutable =
-                        new VertexLayoutable((VertexView) cellView);
-                    this.toLayoutableMap.put(jCell, layoutable);
-                    if (immovable) {
-                        this.immovableSet.add(layoutable);
-                    }
+                }
+            } else {
+                assert cellView instanceof VertexView : String.format(
+                    "%s instance of %s", cellView, cellView.getClass());
+                Layoutable layoutable =
+                    new VertexLayoutable((VertexView) cellView);
+                this.toLayoutableMap.put(jCell, layoutable);
+                if (immovable) {
+                    this.immovableSet.add(layoutable);
                 }
             }
         }
@@ -285,8 +288,11 @@ abstract public class AbstractLayouter implements Layouter {
                 VisualMap visuals = new VisualMap();
                 if (view instanceof VertexView) {
                     // store the bounds back into the model
-                    visuals.put(VisualKey.BOUNDS,
-                        ((VertexView) view).getCachedBounds());
+                    Rectangle2D bounds = ((VertexView) view).getCachedBounds();
+                    visuals.put(
+                        VisualKey.NODE_POS,
+                        new Point2D.Double(bounds.getCenterX(),
+                            bounds.getCenterY()));
                 } else {
                     // store the points back into the model
                     List<?> points = ((EdgeView) view).getPoints();

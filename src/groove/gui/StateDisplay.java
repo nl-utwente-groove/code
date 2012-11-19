@@ -66,7 +66,6 @@ import groove.view.aspect.AspectNode;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -612,7 +611,7 @@ public class StateDisplay extends Display {
                 Attributes attrs = e.getValue();
                 jCell.putVisuals(attrs.toVisuals());
                 jCell.setGrayedOut(attrs.grayedOut);
-                jCell.setLayoutable(attrs.bounds == null);
+                jCell.setLayoutable(attrs.pos == null);
                 result.synchroniseLayout(jCell);
             }
             // store target edge attributes
@@ -779,7 +778,7 @@ public class StateDisplay extends Display {
     private static class Attributes {
         Attributes(AspectJVertex jVertex) {
             VisualMap visuals = jVertex.getVisuals();
-            this.bounds = visuals.getBounds();
+            this.pos = visuals.getNodePos();
             this.grayedOut = jVertex.isGrayedOut();
             this.color = visuals.getColor();
             this.points = null;
@@ -788,7 +787,7 @@ public class StateDisplay extends Display {
         }
 
         Attributes(Color color) {
-            this.bounds = null;
+            this.pos = null;
             this.grayedOut = false;
             this.color = color;
             this.points = null;
@@ -798,7 +797,7 @@ public class StateDisplay extends Display {
 
         Attributes(AspectJEdge jEdge) {
             VisualMap visuals = jEdge.getVisuals();
-            this.bounds = null;
+            this.pos = null;
             this.grayedOut = jEdge.isGrayedOut();
             this.color = null;
             this.points = visuals.getPoints();
@@ -808,8 +807,8 @@ public class StateDisplay extends Display {
 
         VisualMap toVisuals() {
             VisualMap result = new VisualMap();
-            if (this.bounds != null) {
-                result.setBounds(this.bounds);
+            if (this.pos != null) {
+                result.setNodePos(this.pos);
             }
             if (this.color != null) {
                 result.setColor(this.color);
@@ -826,7 +825,7 @@ public class StateDisplay extends Display {
             return result;
         }
 
-        final Rectangle2D bounds;
+        final Point2D pos;
         Color color;
         final boolean grayedOut;
         final List<Point2D> points;
