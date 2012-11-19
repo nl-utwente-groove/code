@@ -16,6 +16,7 @@
  */
 package groove.gui.look;
 
+import groove.gui.look.VisualKey.Nature;
 import groove.util.DefaultFixable;
 
 import java.awt.Color;
@@ -40,7 +41,7 @@ public class VisualMap extends DefaultFixable {
 
     /** Adds an the value for a controlled (i.e., non-derived) key to the map. */
     public void put(VisualKey key, Object value) {
-        assert !key.isDerived();
+        assert key.getNature() != Nature.DERIVED;
         put(key, value, true);
     }
 
@@ -80,7 +81,7 @@ public class VisualMap extends DefaultFixable {
     public void putControlled(VisualMap other) {
         testFixed(false);
         for (VisualKey key : VisualKey.values()) {
-            if (!key.isDerived()) {
+            if (key.getNature() != Nature.DERIVED) {
                 Object newValue = other.map.get(key);
                 if (newValue == null) {
                     this.map.remove(key);
@@ -101,7 +102,7 @@ public class VisualMap extends DefaultFixable {
         VisualMap newValues = Look.getVisualsFor(looks);
         Set<VisualKey> staleKeys = EnumSet.noneOf(VisualKey.class);
         for (VisualKey key : VisualKey.deriveds()) {
-            if (key.isDerived()) {
+            if (key.getNature() == Nature.DERIVED) {
                 Object newValue = newValues.map.get(key);
                 boolean refresh;
                 if (newValue == null) {
@@ -142,7 +143,7 @@ public class VisualMap extends DefaultFixable {
     }
 
     /** Indicates if a given key is in the map. */
-    public boolean has(VisualKey key) {
+    public boolean containsKey(VisualKey key) {
         return this.map.containsKey(key);
     }
 
