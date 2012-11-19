@@ -291,7 +291,7 @@ final public class AspectJGraph extends GraphJGraph {
         Rectangle2D bounds =
             new SerializableRectangle2D(corner.getX(), corner.getY(),
                 size.getWidth(), size.getHeight());
-        jVertex.getVisuals().put(VisualKey.BOUNDS, bounds.getBounds());
+        jVertex.putVisual(VisualKey.BOUNDS, bounds.getBounds());
         // add the cell to the jGraph
         Object[] insert = new Object[] {jVertex};
         getModel().insert(insert, null, null, null, null);
@@ -336,12 +336,13 @@ final public class AspectJGraph extends GraphJGraph {
         cs.connect(newEdge, fromPort, true);
         cs.connect(newEdge, toPort, false);
         // if we're drawing a self-edge, provide some intermediate points
-        VisualMap visuals = newEdge.getVisuals();
+        List<Point2D> points;
         if (toPort == fromPort) {
-            visuals.setPoints(Arrays.asList(from, to, to));
+            points = Arrays.asList(from, to, to);
         } else {
-            visuals.setPoints(Arrays.asList(from, to));
+            points = Arrays.asList(from, to);
         }
+        newEdge.putVisual(VisualKey.POINTS, points);
         // add the cell to the jGraph
         getModel().insert(insert, null, cs, null, null);
         setSelectionCell(newEdge);

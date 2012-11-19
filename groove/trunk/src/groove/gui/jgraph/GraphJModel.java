@@ -415,7 +415,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         result.setLook(Look.BIDIRECTIONAL, bidirectional);
         JEdgeLayout layout = this.layoutMap.getLayout(edge);
         if (layout != null) {
-            result.getVisuals().putAll(layout.toVisuals());
+            result.putVisuals(layout.toVisuals());
         }
         return result;
     }

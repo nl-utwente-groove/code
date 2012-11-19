@@ -142,6 +142,11 @@ public class VisualMap extends DefaultFixable {
         this.map.clear();
     }
 
+    /** Returns the set of keys that is currently in the map. */
+    public Set<VisualKey> keySet() {
+        return this.map.keySet();
+    }
+
     /** Indicates if a given key is in the map. */
     public boolean containsKey(VisualKey key) {
         return this.map.containsKey(key);
