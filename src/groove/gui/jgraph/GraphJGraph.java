@@ -522,6 +522,9 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 clearSelection();
                 oldJModel.removeGraphModelListener(getCancelEditListener());
             }
+            if (newJModel != null) {
+                newJModel.refreshVisuals();
+            }
             super.setModel(newJModel);
             if (newJModel != null) {
                 setName(newJModel.getName());

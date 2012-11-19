@@ -121,7 +121,7 @@ public class JVertexView extends VertexView {
      * @see GraphJVertex#getText()
      */
     private String computeText() {
-        StringBuilder result = new StringBuilder(getCell().getText());
+        StringBuilder result = new StringBuilder(getCellVisuals().getLabel());
         if (result.length() > 0) {
             Color lineColor = getCellVisuals().getForeground();
             if (lineColor != null && !lineColor.equals(Color.BLACK)) {

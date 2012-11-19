@@ -261,8 +261,9 @@ public class LabelValue implements VisualValue {
             String suffix =
                 ASSIGN_TEXT + edge.target().getAttrAspect().getContentString();
             result.append(HTMLConverter.toHtml(suffix));
+        } else {
+            addRoleIndicator(result, edge);
         }
-        addRoleIndicator(result, edge);
         return result;
     }
 
@@ -543,7 +544,9 @@ public class LabelValue implements VisualValue {
                 HTMLConverter.CREATOR_TAG.on(text);
                 break;
             case LET:
-                HTMLConverter.CREATOR_TAG.on(text);
+                if (edge.getGraphRole() == GraphRole.RULE) {
+                    HTMLConverter.CREATOR_TAG.on(text);
+                }
                 break;
             case CREATOR:
                 HTMLConverter.CREATOR_TAG.on(text);
