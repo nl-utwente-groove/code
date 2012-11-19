@@ -325,7 +325,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 }
                 getGraphPanel().refreshBackground();
                 getJGraph().refreshFiltering();
-                getJGraph().doLayout(false);
+                getJGraph().doLayout(true);
                 setEnabled(true);
             }
             if (gts != oldModel.getGts()) {

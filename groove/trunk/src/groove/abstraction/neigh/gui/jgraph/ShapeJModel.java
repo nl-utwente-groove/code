@@ -27,11 +27,14 @@ import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Graph;
 import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.look.VisualKey;
 import groove.util.Duo;
 
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.jgraph.graph.GraphConstants;
@@ -89,7 +92,7 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
         this.setVetoFireGraphChanged(false);
 
         // Call the jGraph method to perform the edit with all changes.
-        this.doInsert(true, true);
+        this.doInsert(true);
     }
 
     /**
@@ -98,15 +101,18 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
      * @param replace if {@code true}, the old roots should be deleted
      */
     @Override
-    protected void doInsert(boolean replace, boolean toBack) {
+    protected void doInsert(boolean replace) {
         Object[] addedCells = this.addedJCells.toArray();
         Object[] removedCells = replace ? getRoots().toArray() : null;
         createEdit(addedCells, removedCells, null, this.connections,
             this.parentMap, null).execute();
-        if (toBack) {
-            // new edges should be behind the nodes
-            toBack(addedCells);
+        List<Object> edges = new ArrayList<Object>();
+        for (Object jCell : addedCells) {
+            if (jCell instanceof GraphJEdge) {
+                edges.add(jCell);
+            }
         }
+        toBack(edges.toArray());
     }
 
     @Override
