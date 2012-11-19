@@ -43,6 +43,7 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectNode;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -374,15 +375,20 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         collectNodeNrs();
         // we reuse the JCells to keep their connection and user object intact;
         // however, all auxiliary structures need to be cleared
+        List<AspectJVertex> newJVertices = new ArrayList<AspectJVertex>();
         for (Object jCell : result.values()) {
             if (jCell instanceof AspectJVertex) {
                 AspectJVertex jVertex = ((AspectJVertex) jCell);
                 jVertex.setJModel(this);
                 jVertex.setNode(createAspectNode());
+                newJVertices.add(jVertex);
             } else if (jCell instanceof AspectJEdge) {
                 AspectJEdge jEdge = (AspectJEdge) jCell;
                 jEdge.setJModel(this);
             }
+        }
+        for (AspectJVertex jVertex : newJVertices) {
+            jVertex.setNodeFixed();
         }
         resetNodeNrs();
         return result;
