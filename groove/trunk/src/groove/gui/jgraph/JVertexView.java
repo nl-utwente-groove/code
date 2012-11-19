@@ -543,6 +543,7 @@ public class JVertexView extends VertexView {
             assert view instanceof JVertexView : String.format(
                 "This renderer is only meant for %s", JVertexView.class);
             this.view = (JVertexView) view;
+            this.cell = this.view.getCell();
             VisualMap visuals = this.visuals = this.view.getCellVisuals();
             this.adornment = this.visuals.getAdornment();
             if (this.adornment == null) {
@@ -708,6 +709,27 @@ public class JVertexView extends VertexView {
         @Override
         public Dimension getPreferredSize() {
             Dimension result = null;
+            if (this.cell.isStale(VisualKey.NODE_SIZE)) {
+                result = computePreferredSize();
+                this.cell.putVisual(VisualKey.NODE_SIZE, result);
+            } else {
+                result = new Dimension();
+                result.setSize(this.visuals.getNodeSize());
+            }
+            // adjust for view insets
+            Insets i = computeInsets(result.width, result.height);
+            result =
+                new Dimension(result.width + i.left + i.right + 2
+                    * EXTRA_BORDER_SPACE, result.height + i.top + i.bottom + 2
+                    * EXTRA_BORDER_SPACE);
+            // store the insets in the view, to be used
+            // when actually drawing the view
+            this.view.setInsets(i);
+            return result;
+        }
+
+        private Dimension computePreferredSize() {
+            Dimension result;
             String text = convertDigits(getText());
             result = this.sizeMap.get(text);
             if (result == null) {
@@ -727,15 +749,6 @@ public class JVertexView extends VertexView {
                 }
                 this.sizeMap.put(text, result);
             }
-            // adjust for view insets
-            Insets i = computeInsets(result.width, result.height);
-            result =
-                new Dimension(result.width + i.left + i.right + 2
-                    * EXTRA_BORDER_SPACE, result.height + i.top + i.bottom + 2
-                    * EXTRA_BORDER_SPACE);
-            // store the insets in the view, to be used
-            // when actually drawing the view
-            this.view.setInsets(i);
             return result;
         }
 
@@ -775,7 +788,7 @@ public class JVertexView extends VertexView {
                     array[i] = '0';
                 }
             }
-            return String.valueOf(array);
+            return String.valueOf(array).intern();
         }
 
         /**
@@ -993,6 +1006,8 @@ public class JVertexView extends VertexView {
         /** The vertex view that is currently installed. */
         private JVertexView view;
         /** The vertex that is currently installed. */
+        private GraphJCell cell;
+        /** The visual map of the vertex that is currently installed. */
         private VisualMap visuals;
         /** The underlying <code>JGraph</code>. */
         private Color selectionColor;

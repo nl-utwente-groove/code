@@ -31,6 +31,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Dimension2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
@@ -268,10 +269,13 @@ public class JEdgeView extends EdgeView {
             Point2D endPoint = points.get(1);
             List<Point2D> newPoints = new ArrayList<Point2D>(4);
             newPoints.add(startPoint);
-            Rectangle2D vertexBounds =
-                getCell().getSourceVertex().getVisuals().getBounds();
+            VisualMap sourceVisuals = getCell().getSourceVertex().getVisuals();
+            Point2D vertexPos = sourceVisuals.getNodePos();
+            Dimension2D vertexSize = sourceVisuals.getNodeSize();
+            Rectangle2D vertexBounds = new Rectangle();
+            vertexBounds.setFrame(vertexPos, vertexSize);
             if (vertexBounds.contains(endPoint)) {
-                endPoint.setLocation(endPoint.getX() + vertexBounds.getWidth()
+                endPoint.setLocation(endPoint.getX() + vertexSize.getWidth()
                     * 2, endPoint.getY());
             }
             newPoints.add(1,

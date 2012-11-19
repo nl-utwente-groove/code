@@ -20,8 +20,8 @@ import groove.gui.look.VisualKey.Nature;
 import groove.util.DefaultFixable;
 
 import java.awt.Color;
+import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -222,21 +222,39 @@ public class VisualMap extends DefaultFixable {
     }
 
     /** 
-     * Returns the node bound stored in this attribute map.
-     * @return the stored node bound, or the default value if
+     * Returns the node position stored in this attribute map.
+     * @return the stored node position, or the default value if
      * there is nothing stored.
-     * @see VisualKey#BOUNDS
+     * @see VisualKey#NODE_POS
      */
-    public Rectangle2D getBounds() {
-        return (Rectangle2D) get(VisualKey.BOUNDS);
+    public Point2D getNodePos() {
+        return (Point2D) get(VisualKey.NODE_POS);
     }
 
     /**
-     * Sets a new bounds rectangle.
-     * @see VisualKey#BOUNDS
+     * Sets a node position.
+     * @see VisualKey#NODE_POS
      */
-    public void setBounds(Rectangle2D newValue) {
-        put(VisualKey.BOUNDS, newValue);
+    public void setNodePos(Point2D newValue) {
+        put(VisualKey.NODE_POS, newValue);
+    }
+
+    /** 
+     * Returns the node size stored in this attribute map.
+     * @return the stored node size, or the default value if
+     * there is nothing stored.
+     * @see VisualKey#NODE_SIZE
+     */
+    public Dimension2D getNodeSize() {
+        return (Dimension2D) get(VisualKey.NODE_SIZE);
+    }
+
+    /**
+     * Sets a node size.
+     * @see VisualKey#NODE_SIZE
+     */
+    public void setNodeSize(Dimension2D newValue) {
+        put(VisualKey.NODE_SIZE, newValue);
     }
 
     /** 

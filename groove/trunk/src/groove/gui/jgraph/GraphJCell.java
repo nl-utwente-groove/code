@@ -122,6 +122,9 @@ public interface GraphJCell extends GraphCell, Serializable {
      */
     public void setStale(VisualKey... keys);
 
+    /** indicates if the value for a given key is currently stale. */
+    public boolean isStale(VisualKey key);
+
     /** Pseudo-label for cells with an empty list label set. */
     static public final TypeLabel NO_LABEL = TypeLabel.createLabel(
         EdgeRole.NODE_TYPE, "\u0000");

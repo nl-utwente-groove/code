@@ -35,11 +35,9 @@ import groove.gui.tree.RuleLevelTree;
 import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,7 +55,6 @@ import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
-import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphModel;
@@ -282,16 +279,7 @@ final public class AspectJGraph extends GraphJGraph {
         AspectJVertex jVertex = (AspectJVertex) getModel().createJVertex();
         jVertex.setNode(getModel().createAspectNode());
         jVertex.setNodeFixed();
-        // set the bounds and store them in the cell
-        Dimension size = JAttr.DEFAULT_NODE_SIZE;
-        Point2D corner =
-            new Point2D.Double(atPoint.getX() - (double) size.width / 2
-                - JAttr.EXTRA_BORDER_SPACE, atPoint.getY()
-                - (double) size.height / 2 - JAttr.EXTRA_BORDER_SPACE);
-        Rectangle2D bounds =
-            new SerializableRectangle2D(corner.getX(), corner.getY(),
-                size.getWidth(), size.getHeight());
-        jVertex.putVisual(VisualKey.BOUNDS, bounds.getBounds());
+        jVertex.putVisual(VisualKey.NODE_POS, atPoint);
         // add the cell to the jGraph
         Object[] insert = new Object[] {jVertex};
         getModel().insert(insert, null, null, null, null);

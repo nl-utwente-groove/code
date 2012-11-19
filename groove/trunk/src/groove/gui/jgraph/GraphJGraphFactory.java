@@ -78,6 +78,8 @@ public class GraphJGraphFactory implements JGraphFactory {
             return new ErrorValue();
         case LABEL:
             return new LabelValue(this.jGraph);
+        case NODE_SIZE:
+            return null;
         case VISIBLE:
             return new VisibleValue(this.jGraph);
         default:

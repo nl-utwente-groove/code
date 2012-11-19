@@ -64,7 +64,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Visible value for the {@link VisualKey#LABEL}.
+ * Visual value refresher for the {@link VisualKey#LABEL}.
  * @author Arend Rensink
  * @version $Revision $
  */

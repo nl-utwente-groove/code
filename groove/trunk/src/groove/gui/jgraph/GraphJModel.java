@@ -31,7 +31,7 @@ import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 
 import java.awt.Color;
-import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -441,11 +441,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         if (layout != null) {
             result.putVisuals(layout.toVisuals());
         } else {
-            Rectangle newBounds =
-                new Rectangle(this.nodeX, this.nodeY,
-                    JAttr.DEFAULT_NODE_BOUNDS.width,
-                    JAttr.DEFAULT_NODE_BOUNDS.height);
-            result.putVisual(VisualKey.BOUNDS, newBounds);
+            Point2D nodePos = new Point2D.Double(this.nodeX, this.nodeY);
+            result.putVisual(VisualKey.NODE_POS, nodePos);
             this.nodeX = randomCoordinate();
             this.nodeY = randomCoordinate();
         }

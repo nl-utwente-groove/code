@@ -21,6 +21,8 @@ import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
 
 import java.awt.Rectangle;
+import java.awt.geom.Dimension2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import org.jgraph.graph.AttributeMap;
@@ -52,7 +54,10 @@ public class JVertexLayout implements JCellLayout {
      * @return a new node layout based on <code>jAttr</code>
      */
     static public JVertexLayout newInstance(VisualMap visuals) {
-        return new JVertexLayout(visuals.getBounds());
+        Dimension2D size = visuals.getNodeSize();
+        Point2D pos = visuals.getNodePos();
+        return new JVertexLayout(new Rectangle2D.Double(pos.getX(), pos.getY(),
+            size.getWidth(), size.getHeight()));
     }
 
     /**
@@ -87,7 +92,10 @@ public class JVertexLayout implements JCellLayout {
     public VisualMap toVisuals() {
         VisualMap result = new VisualMap();
         if (this.bounds != null) {
-            result.put(VisualKey.BOUNDS, this.bounds);
+            result.put(
+                VisualKey.NODE_POS,
+                new Point2D.Double(this.bounds.getCenterX(),
+                    this.bounds.getCenterY()));
         }
         return result;
     }
