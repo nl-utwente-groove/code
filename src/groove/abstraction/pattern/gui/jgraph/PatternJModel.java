@@ -240,7 +240,7 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
         PatternJVertex result = createJVertex(pNode);
         JVertexLayout layout = getLayoutMap().getLayout(pNode);
         if (layout != null) {
-            result.getVisuals().putAll(layout.toVisuals());
+            result.putVisuals(layout.toVisuals());
         } else {
             Point2D nodePos = new Point2D.Double(this.nodeX, this.nodeY);
             result.putVisual(VisualKey.NODE_POS, nodePos);

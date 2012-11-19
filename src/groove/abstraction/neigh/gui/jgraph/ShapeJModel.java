@@ -29,7 +29,6 @@ import groove.graph.Graph;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.look.VisualKey;
-import groove.gui.look.VisualMap;
 import groove.util.Duo;
 
 import java.awt.geom.Point2D;
@@ -172,11 +171,10 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
             if (!"".equals(labels[1])) {
                 jEdge.setMainSrc(true);
             }
-            VisualMap visuals = jEdge.getVisuals();
-            visuals.put(VisualKey.EDGE_SOURCE_POS, labelPositions[0]);
-            visuals.put(VisualKey.EDGE_SOURCE_LABEL, duo.one());
-            visuals.put(VisualKey.EDGE_TARGET_POS, labelPositions[1]);
-            visuals.put(VisualKey.EDGE_TARGET_LABEL, duo.two());
+            jEdge.putVisual(VisualKey.EDGE_SOURCE_POS, labelPositions[0]);
+            jEdge.putVisual(VisualKey.EDGE_SOURCE_LABEL, duo.one());
+            jEdge.putVisual(VisualKey.EDGE_TARGET_POS, labelPositions[1]);
+            jEdge.putVisual(VisualKey.EDGE_TARGET_LABEL, duo.two());
         }
     }
 
