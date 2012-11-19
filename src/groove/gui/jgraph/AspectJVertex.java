@@ -506,6 +506,9 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             return Look.NODIFIED;
         } else if (getNode().hasAttrAspect()) {
             return Look.getLookFor(getNode().getAttrKind());
+        } else if (getNode().getGraphRole() == GraphRole.TYPE
+            && getAspect() == AspectKind.DEFAULT) {
+            return Look.TYPE;
         } else {
             return Look.getLookFor(getAspect());
         }
