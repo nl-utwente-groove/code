@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.PatternAbstraction;
 import groove.abstraction.pattern.io.xml.PatternShapeGxl;
-import groove.abstraction.pattern.io.xml.TypeGraphJaxbGxlIO;
+import groove.abstraction.pattern.io.xml.TypeGraphGxl;
 import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
@@ -179,7 +179,7 @@ public class TestMaterialisation {
             }
             sRule = view.getRuleModel(RULE).toResource();
             pTGraph =
-                TypeGraphJaxbGxlIO.getInstance().unmarshalTypeGraph(
+                TypeGraphGxl.getInstance().unmarshalTypeGraph(
                     new File(TYPE_GRAPH));
         } catch (IOException e) {
             e.printStackTrace();

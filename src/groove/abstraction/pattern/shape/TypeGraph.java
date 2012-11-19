@@ -165,19 +165,34 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         return result;
     }
 
+    @Override
+    public boolean isWellDefined() {
+        if (!super.isWellDefined()) {
+            return false;
+        }
+        for (int layer = 2; layer <= depth(); layer++) {
+            for (TypeNode node : getLayerNodes(layer)) {
+                if (inEdgeSet(node).size() != 2) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
 
     /** Creates a new empty simple graph with the given name. */
-    public HostGraph newSimpleGraph(String name) {
+    private HostGraph newSimpleGraph(String name) {
         HostGraph result = new DefaultHostGraph(protSimpleGraph);
         result.setName(name);
         return result;
     }
 
     /** Creates and returns an empty simple graph morphism. */
-    public SimpleMorphism newSimpleMorphism(String name, TypeNode source,
+    private SimpleMorphism newSimpleMorphism(String name, TypeNode source,
             TypeNode target) {
         return new SimpleMorphism(name, source, target);
     }
@@ -218,7 +233,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         lift(graph, result, nodeMap, null);
         // Compute the closure for the pattern graph we have so far.
         close(result);
-        assert result.isWellFormed();
+        assert result.isWellDefined();
         assert result.isCommuting();
         return result;
     }

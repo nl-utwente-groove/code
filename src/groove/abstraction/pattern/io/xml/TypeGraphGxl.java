@@ -16,10 +16,20 @@
  */
 package groove.abstraction.pattern.io.xml;
 
+import groove.abstraction.MyHashMap;
+import groove.abstraction.pattern.shape.TypeEdge;
 import groove.abstraction.pattern.shape.TypeGraph;
+import groove.abstraction.pattern.shape.TypeNode;
+import groove.trans.HostNode;
+import groove.util.Groove;
+import groove.view.aspect.AspectEdge;
+import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectKind;
+import groove.view.aspect.AspectNode;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Class to load pattern type graphs from GXL files.
@@ -32,6 +42,10 @@ public final class TypeGraphGxl {
     // Static fields
     // ------------------------------------------------------------------------
 
+    /** Prefixes used in identities. */
+    private static final char NODE_ID_PREFIX = 't';
+    private static final char EDGE_ID_PREFIX = 'm';
+
     private static final TypeGraphGxl instance = new TypeGraphGxl();
 
     // ------------------------------------------------------------------------
@@ -43,30 +57,53 @@ public final class TypeGraphGxl {
         return instance;
     }
 
+    private static int parseId(String id) {
+        return Integer.parseInt(id.substring(1));
+    }
+
+    private static int parseNodeId(String id) throws IOException {
+        if (id.charAt(0) != NODE_ID_PREFIX) {
+            throw new IOException(String.format(
+                "Cannot parse node ID: %s, invalid initial character.", id));
+        }
+        return parseId(id);
+    }
+
+    private static int parseEdgeId(String id) throws IOException {
+        if (id.charAt(0) != EDGE_ID_PREFIX) {
+            throw new IOException(String.format(
+                "Cannot parse edge ID: %s, invalid initial character.", id));
+        }
+        return parseId(id);
+    }
+
     // ------------------------------------------------------------------------
     // Object fields
     // ------------------------------------------------------------------------
 
-    /** Marshaller/unmarshaller. */
-    private final TypeGraphJaxbGxlIO io;
+    /** The type graph loaded. */
+    private TypeGraph tGraph;
+    /** Auxiliary maps. */
+    private Map<Integer,TypeNode> tNodeMap;
+    private Map<Integer,TypeEdge> tEdgeMap;
+    private Map<Integer,HostNode> sNodeMap;
+    private Map<AspectNode,TypeNode> aNodeMap;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     private TypeGraphGxl() {
-        // Private to avoid object creation. Use getInstance() method.
-        this.io = TypeGraphJaxbGxlIO.getInstance();
+        this.tGraph = null;
+        this.tNodeMap = new MyHashMap<Integer,TypeNode>();
+        this.tEdgeMap = new MyHashMap<Integer,TypeEdge>();
+        this.sNodeMap = new MyHashMap<Integer,HostNode>();
+        this.aNodeMap = new MyHashMap<AspectNode,TypeNode>();
     }
 
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
-
-    /** Loads a pattern type graph from the given file. */
-    public TypeGraph unmarshalTypeGraph(File file) throws IOException {
-        return this.io.unmarshalTypeGraph(file);
-    }
 
     /** Tries to load a pattern type graph from the given file. May return null. */
     public TypeGraph loadTypeGraph(File file) {
@@ -79,4 +116,104 @@ public final class TypeGraphGxl {
         return result;
     }
 
+    /** Loads a pattern type graph from the given file. */
+    public TypeGraph unmarshalTypeGraph(File file) throws IOException {
+        AspectGraph aGraph = AspectGraph.newInstance(Groove.loadGraph(file));
+        clearMaps();
+        createTypeGraph(aGraph.getName());
+        createTypeNodes(aGraph);
+        createTypeEdges(aGraph);
+        createPatterns(aGraph);
+        this.tGraph.setFixed();
+        return this.tGraph;
+    }
+
+    private void clearMaps() {
+        this.tNodeMap.clear();
+        this.tEdgeMap.clear();
+        this.sNodeMap.clear();
+        this.aNodeMap.clear();
+    }
+
+    private void createTypeGraph(String name) {
+        this.tGraph = new TypeGraph(name);
+    }
+
+    private void createTypeNodes(AspectGraph aGraph) throws IOException {
+        // Iterate only over the self-edges that are remarks.
+        for (AspectEdge aEdge : aGraph.edgeSet()) {
+            AspectNode aSrc = aEdge.source();
+            if (aEdge.getKind() == AspectKind.REMARK
+                && aSrc.equals(aEdge.target())) {
+                TypeNode tNode = getTypeNode(aEdge.getInnerText());
+                this.aNodeMap.put(aSrc, tNode);
+                // Also create the simple graph nodes because some may not
+                // have labels.
+                int sNodeNr = aSrc.getNumber();
+                HostNode sNode = tNode.getPattern().addNode(sNodeNr);
+                this.sNodeMap.put(sNodeNr, sNode);
+            }
+        }
+    }
+
+    private void createTypeEdges(AspectGraph aGraph) throws IOException {
+        // Iterate only over the binary edges that are remarks.
+        for (AspectEdge aEdge : aGraph.edgeSet()) {
+            AspectNode aSrc = aEdge.source();
+            if (aEdge.getKind() == AspectKind.REMARK
+                && !aSrc.equals(aEdge.target())) {
+                AspectNode aTgt = aEdge.target();
+                TypeEdge tEdge = getTypeEdge(aEdge.getInnerText(), aSrc, aTgt);
+                // Also update the simple graph morphism.
+                HostNode sSrc = this.sNodeMap.get(aSrc.getNumber());
+                HostNode sTgt = this.sNodeMap.get(aTgt.getNumber());
+                tEdge.getMorphism().putNode(sSrc, sTgt);
+            }
+        }
+    }
+
+    private void createPatterns(AspectGraph aGraph) throws IOException {
+        // Iterate over all normal edges.
+        for (AspectEdge aEdge : aGraph.edgeSet()) {
+            if (aEdge.getKind() == AspectKind.REMARK) {
+                continue;
+            }
+            AspectNode aSrc = aEdge.source();
+            AspectNode aTgt = aEdge.target();
+            TypeNode tSrc = this.aNodeMap.get(aSrc);
+            TypeNode tTgt = this.aNodeMap.get(aTgt);
+            if (tSrc != tTgt) {
+                throw new IOException(
+                    String.format(
+                        "Inconsistent pattern, source (%s) and target (%s) nodes are in distinct type nodes: %s, %s.",
+                        aSrc, aTgt, tSrc, tTgt));
+            }
+            HostNode sSrc = this.sNodeMap.get(aSrc.getNumber());
+            HostNode sTgt = this.sNodeMap.get(aTgt.getNumber());
+            tSrc.getPattern().addEdge(sSrc, aEdge.getInnerText(), sTgt);
+        }
+    }
+
+    private TypeNode getTypeNode(String IdStr) throws IOException {
+        int id = parseNodeId(IdStr);
+        TypeNode result = this.tNodeMap.get(id);
+        if (result == null) {
+            result = this.tGraph.addNode(id);
+            this.tNodeMap.put(id, result);
+        }
+        return result;
+    }
+
+    private TypeEdge getTypeEdge(String IdStr, AspectNode aSrc, AspectNode aTgt)
+        throws IOException {
+        int id = parseEdgeId(IdStr);
+        TypeEdge result = this.tEdgeMap.get(id);
+        if (result == null) {
+            TypeNode tSrc = this.aNodeMap.get(aSrc);
+            TypeNode tTgt = this.aNodeMap.get(aTgt);
+            result = this.tGraph.addEdge(id, tSrc, tTgt);
+            this.tEdgeMap.put(id, result);
+        }
+        return result;
+    }
 }

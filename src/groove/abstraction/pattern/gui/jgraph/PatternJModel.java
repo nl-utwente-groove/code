@@ -290,7 +290,7 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
     /** Creates a new jEdge for the given pattern edge. */
     private PatternJEdge computeJEdge(AbstractPatternEdge<?> pEdge) {
         PatternJEdge result = createJEdge(pEdge);
-        result.setLook(Look.BIDIRECTIONAL, true);
+        result.setLook(Look.BIDIRECTIONAL, false);
         return result;
     }
 
@@ -313,6 +313,7 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
      */
     private PatternJEdge createJEdge(AbstractPatternEdge<?> pEdge) {
         PatternJEdge result = PatternJEdge.newInstance();
+        result.setJModel(this);
         result.addEdge(pEdge);
         return result;
     }

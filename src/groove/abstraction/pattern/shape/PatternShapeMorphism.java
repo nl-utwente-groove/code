@@ -142,12 +142,7 @@ public final class PatternShapeMorphism extends
             Multiplicity nodeTMult = to.getMult(nodeT);
             Set<PatternNode> nodesS = getPreImages(nodeT);
             Multiplicity sum = from.getNodeSetMultSum(nodesS);
-            // EZ says: subsumption is too strong, we can only check for <=.
-            // This is due to the loss of precision when subtracting.
-            // For example, 3+ - 2+ = 0+ but then 2+ + 0+ = 2+ which is NOT
-            // subsumed by 3+! However, 2+ <= 3+ holds.
             if (!nodeTMult.subsumes(sum)) {
-                //if (!sum.le(nodeTMult)) {
                 return false;
             }
         }
@@ -156,9 +151,7 @@ public final class PatternShapeMorphism extends
             Multiplicity edgeTMult = to.getMult(edgeT);
             for (Set<PatternEdge> edgesS : getPreImagesMap(edgeT).values()) {
                 Multiplicity sum = from.getEdgeSetMultSum(edgesS);
-                // EZ says: see comment above.
                 if (!edgeTMult.subsumes(sum)) {
-                    //if (!sum.le(edgeTMult)) {
                     return false;
                 }
             }

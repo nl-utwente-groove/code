@@ -40,6 +40,7 @@ public enum Look {
             add(VisualKey.OPAQUE, true);
             add(VisualKey.NODE_SHAPE, NodeShape.ROUNDED);
             add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.ARROW);
+            add(VisualKey.FONT, Font.PLAIN);
         }
     },
     /** Bidirectional edge look change. */
@@ -308,9 +309,10 @@ public enum Look {
     PATTERN(true, BASIC) {
         @Override
         void init() {
-            add(VisualKey.BACKGROUND, null);
+            add(VisualKey.BACKGROUND, Values.NORMAL_BACKGROUND);
             add(VisualKey.DASH, Values.NESTED_DASH);
             add(VisualKey.INSET, 8);
+            add(VisualKey.FONT, Font.PLAIN);
         }
     },
     /**
