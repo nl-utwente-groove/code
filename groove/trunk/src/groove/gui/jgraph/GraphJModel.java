@@ -29,7 +29,6 @@ import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
-import groove.gui.look.VisualMap;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -431,20 +430,18 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     protected GraphJVertex computeJVertex(N node) {
         GraphJVertex result = createJVertex();
         result.setNode(node);
-        VisualMap visuals = result.getVisuals();
         JVertexLayout layout = this.layoutMap.getLayout(node);
         if (layout != null) {
-            visuals.putAll(layout.toVisuals());
+            result.putVisuals(layout.toVisuals());
         } else {
             Rectangle newBounds =
                 new Rectangle(this.nodeX, this.nodeY,
                     JAttr.DEFAULT_NODE_BOUNDS.width,
                     JAttr.DEFAULT_NODE_BOUNDS.height);
-            visuals.put(VisualKey.BOUNDS, newBounds);
+            result.putVisual(VisualKey.BOUNDS, newBounds);
             this.nodeX = randomCoordinate();
             this.nodeY = randomCoordinate();
         }
-        result.setStale(VisualKey.VISIBLE);
         return result;
     }
 

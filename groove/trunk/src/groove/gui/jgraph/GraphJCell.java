@@ -108,6 +108,22 @@ public interface GraphJCell extends GraphCell, Serializable {
     public boolean setLook(Look look, boolean set);
 
     /** 
+     * Copies the controlled values from a given map
+     * into this cell's visual map,
+     * without refreshing the entire map.
+     * @param other the visual map to be copied
+     */
+    public void putVisuals(VisualMap other);
+
+    /** 
+     * Changes a given (controlled) value in the visual map,
+     * without refreshing the entire map.
+     * @param key the key to be changed
+     * @param value the new value
+     */
+    public void putVisual(VisualKey key, Object value);
+
+    /** 
      * Returns the visual aspects of this JCell.
      * These are derived from the looks, together with the 
      * layout information and text label(s) of the cell.

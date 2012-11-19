@@ -16,6 +16,9 @@
  */
 package groove.gui.look;
 
+import static groove.gui.look.VisualKey.Nature.CONTROLLED;
+import static groove.gui.look.VisualKey.Nature.DERIVED;
+import static groove.gui.look.VisualKey.Nature.REFRESHABLE;
 import groove.gui.layout.JCellLayout;
 
 import java.awt.Color;
@@ -24,9 +27,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Visual attribute keys.
@@ -41,34 +42,35 @@ public enum VisualKey {
      * meaning no adornment. The empty string results in an adornment without
      * inscription.  
      */
-    ADORNMENT(String.class, null, true),
+    ADORNMENT(String.class, null, REFRESHABLE),
     /** 
      * Background colour for nodes. Defaults to {@link Values#DEFAULT_BACKGROUND}.
      * A {@code null} value means a whitewashed version of the foreground is used. 
      */
     BACKGROUND(Color.class, Values.DEFAULT_BACKGROUND),
     /** Node bounds. */
-    BOUNDS(Rectangle2D.class, new Rectangle2D.Double(10, 10, 19, 19), false),
+    BOUNDS(Rectangle2D.class, new Rectangle2D.Double(10, 10, 19, 19),
+            CONTROLLED),
     /** Controlled foreground colour, overriding {@link #FOREGROUND} if set. Defaults to {@code null}. */
-    COLOR(Color.class, null, true),
+    COLOR(Color.class, null, REFRESHABLE),
     /** Edge dash pattern. Defaults to no dash. */
     DASH(float[].class, Values.NO_DASH),
     /** Edge source decoration. Defaults to {@link EdgeEnd#NONE}. */
     EDGE_SOURCE_SHAPE(EdgeEnd.class, EdgeEnd.NONE),
     /** HTML-formatted optional edge source label. Defaults to {@code null}. */
-    EDGE_SOURCE_LABEL(String.class, null, true),
+    EDGE_SOURCE_LABEL(String.class, null, REFRESHABLE),
     /** Position of the optional edge source label. Defaults to {@link JCellLayout#defaultLabelPosition}. */
-    EDGE_SOURCE_POS(Point2D.class, JCellLayout.defaultLabelPosition, false),
+    EDGE_SOURCE_POS(Point2D.class, JCellLayout.defaultLabelPosition, CONTROLLED),
     /** Edge target decoration. Defaults to {@link EdgeEnd#ARROW}. */
     EDGE_TARGET_SHAPE(EdgeEnd.class, EdgeEnd.ARROW),
     /** HTML-formatted optional edge target label. Defaults to {@code null}. */
-    EDGE_TARGET_LABEL(String.class, null, true),
+    EDGE_TARGET_LABEL(String.class, null, REFRESHABLE),
     /** Position of the optional edge target label. Defaults to {@link JCellLayout#defaultLabelPosition}. */
-    EDGE_TARGET_POS(Point2D.class, JCellLayout.defaultLabelPosition, false),
+    EDGE_TARGET_POS(Point2D.class, JCellLayout.defaultLabelPosition, CONTROLLED),
     /** Node or edge visibility. Defaults to {@code false}. */
-    ERROR(Boolean.class, false, true),
+    ERROR(Boolean.class, false, REFRESHABLE),
     /** Node or edge emphasis. Defaults to {@code false}. */
-    EMPHASIS(Boolean.class, false, true),
+    EMPHASIS(Boolean.class, false, REFRESHABLE),
     /** Font setting for text, as a {@link Font} style value. Defaults to {@link Font#PLAIN}. */
     FONT(Integer.class, Font.PLAIN),
     /** Foreground colour. Defaults to {@link Values#DEFAULT_FOREGROUND}. */
@@ -88,11 +90,11 @@ public enum VisualKey {
      * HTML-formatted main label text. Defaults to the empty string.
      * A value of {@code null} on a node implies rendering it as a nodified edge.
      */
-    LABEL(String.class, "", true),
+    LABEL(String.class, "", REFRESHABLE),
     /** Position of the main edge label. Defaults to {@link JCellLayout#defaultLabelPosition}. */
-    LABEL_POS(Point2D.class, JCellLayout.defaultLabelPosition, false),
+    LABEL_POS(Point2D.class, JCellLayout.defaultLabelPosition, CONTROLLED),
     /** Edge layout line style. Defaults to {@link LineStyle#ORTHOGONAL}. */
-    LINE_STYLE(LineStyle.class, LineStyle.ORTHOGONAL, false),
+    LINE_STYLE(LineStyle.class, LineStyle.ORTHOGONAL, CONTROLLED),
     /** Line width. Defaults to {@code 1}. */
     LINE_WIDTH(Float.class, 1f),
     /** Node shape. Defaults to {@link NodeShape#RECTANGLE} */
@@ -101,27 +103,21 @@ public enum VisualKey {
     OPAQUE(Boolean.class, false),
     /** Intermediate edge points. */
     POINTS(List.class,
-            Arrays.asList(new Point2D.Double(), new Point2D.Double()), false),
+            Arrays.asList(new Point2D.Double(), new Point2D.Double()),
+            CONTROLLED),
     /** Node or edge visibility. Defaults to {@code true}. */
-    VISIBLE(Boolean.class, true, true);
+    VISIBLE(Boolean.class, true, REFRESHABLE);
 
     /** Constructs a derived visual key. */
     private VisualKey(Class<?> type, Object defaultValue) {
-        this(type, defaultValue, true, false);
-    }
-
-    /** Constructs a non-derived visual key that is possibly refreshable. */
-    private VisualKey(Class<?> type, Object defaultValue, boolean refreshable) {
-        this(type, defaultValue, false, refreshable);
+        this(type, defaultValue, DERIVED);
     }
 
     /** Constructs a visual key that is possibly derived from a looks value. */
-    private VisualKey(Class<?> type, Object defaultValue, boolean derived,
-            boolean refreshable) {
+    private VisualKey(Class<?> type, Object defaultValue, Nature nature) {
         this.type = type;
         this.defaultValue = defaultValue;
-        this.derived = derived;
-        this.refreshable = refreshable;
+        this.nature = nature;
         test(defaultValue);
     }
 
@@ -148,71 +144,75 @@ public enum VisualKey {
         return this.defaultValue;
     }
 
-    /** Indicates if the value for this key is derived from the looks. */
-    public boolean isDerived() {
-        return this.derived;
-    }
-
-    /** 
-     * Indicates, for a non-derived key, if its value
-     * is refreshed automatically.
-     */
-    public boolean isRefreshable() {
-        return this.refreshable;
+    /** Returns the nature of this key. */
+    public Nature getNature() {
+        return this.nature;
     }
 
     private final Class<?> type;
     private final Object defaultValue;
-    private final boolean derived;
-    private final boolean refreshable;
-
-    /**
-     * Creates a new visual key set.
-     * The set initially contains all refreshable keys.
-     */
-    public static Set<VisualKey> createRefreshableKeys() {
-        Set<VisualKey> result = EnumSet.noneOf(VisualKey.class);
-        for (VisualKey k : refreshables()) {
-            result.add(k);
-        }
-        return result;
-    }
+    private final Nature nature;
 
     /** 
      * Returns an array of automatically refreshable controlled keys.
-     * The list consists of all keys for which {@link #isRefreshable()} holds.
+     * The list consists of all {@link #REFRESHABLE} keys.
      */
     public static VisualKey[] refreshables() {
-        if (refreshables == null) {
-            List<VisualKey> result = new ArrayList<VisualKey>();
-            for (VisualKey key : VisualKey.values()) {
-                if (key.isRefreshable()) {
-                    result.add(key);
-                }
-            }
-            refreshables = result.toArray(new VisualKey[result.size()]);
-        }
-        return refreshables;
+        return REFRESHABLES;
     }
-
-    private static VisualKey[] refreshables;
 
     /** 
      * Returns an array of derived keys.
-     * The list consists of all keys for which {@link #isDerived()} holds.
+     * The list consists of all {@link #DERIVED} keys.
      */
     public static VisualKey[] deriveds() {
-        if (deriveds == null) {
-            List<VisualKey> result = new ArrayList<VisualKey>();
-            for (VisualKey key : VisualKey.values()) {
-                if (key.isDerived()) {
-                    result.add(key);
-                }
-            }
-            deriveds = result.toArray(new VisualKey[result.size()]);
-        }
-        return deriveds;
+        return DERIVEDS;
     }
 
-    private static VisualKey[] deriveds;
+    /** 
+     * Returns an array of controlled keys.
+     * The list consists of all {@link #CONTROLLED} keys.
+     */
+    public static VisualKey[] controlleds() {
+        return CONTROLLEDS;
+    }
+
+    /** The array of refreshable keys. */
+    private static final VisualKey[] REFRESHABLES;
+    /** The array of derived keys. */
+    private static final VisualKey[] DERIVEDS;
+    /** The array of controlled keys. */
+    private static final VisualKey[] CONTROLLEDS;
+
+    static {
+        List<VisualKey> deriveds = new ArrayList<VisualKey>();
+        List<VisualKey> refreshables = new ArrayList<VisualKey>();
+        List<VisualKey> controlleds = new ArrayList<VisualKey>();
+        for (VisualKey key : VisualKey.values()) {
+            switch (key.getNature()) {
+            case CONTROLLED:
+                controlleds.add(key);
+                break;
+            case DERIVED:
+                deriveds.add(key);
+                break;
+            case REFRESHABLE:
+                refreshables.add(key);
+                break;
+            }
+        }
+        DERIVEDS = deriveds.toArray(new VisualKey[deriveds.size()]);
+        REFRESHABLES = refreshables.toArray(new VisualKey[refreshables.size()]);
+        CONTROLLEDS = controlleds.toArray(new VisualKey[controlleds.size()]);
+    }
+
+    /** Nature of a visible key. */
+    public enum Nature {
+        /** Key that is derived from a {@link Look}. */
+        DERIVED,
+        /** Key that can be set directly by the user. */
+        CONTROLLED,
+        /** Key that is refreshed through a {@link VisualValue}. */
+        REFRESHABLE;
+    }
 }

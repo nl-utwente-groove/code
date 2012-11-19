@@ -16,6 +16,7 @@
  */
 package groove.gui.look;
 
+import groove.gui.look.VisualKey.Nature;
 import groove.util.Colors;
 import groove.view.aspect.AspectKind;
 
@@ -345,7 +346,7 @@ public enum Look {
 
     /** Adds a key-value pair to the attribute map of this look. */
     void add(VisualKey key, Object value) {
-        assert key.isDerived();
+        assert key.getNature() == Nature.DERIVED;
         this.visuals.put(key, value, false);
     }
 

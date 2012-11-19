@@ -17,6 +17,7 @@
 package groove.gui.look;
 
 import groove.gui.Options;
+import groove.gui.look.VisualKey.Nature;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -168,7 +169,7 @@ public class VisualAttributeMap extends AttributeMap {
         Object result;
         refreshIfRequired();
         VisualKey vKey = getVisualKey(key);
-        if (vKey != null && !vKey.isDerived()) {
+        if (vKey != null && vKey.getNature() != Nature.DERIVED) {
             Object vValue;
             // convert those values for which this is necessary
             switch (vKey) {
@@ -214,7 +215,7 @@ public class VisualAttributeMap extends AttributeMap {
         refreshIfRequired();
         VisualKey vKey = getVisualKey(key);
         if (vKey != null) {
-            if (vKey.isDerived()) {
+            if (vKey.getNature() == Nature.DERIVED) {
                 throw new UnsupportedOperationException();
             }
             // also remove supplementary keys
@@ -372,7 +373,7 @@ public class VisualAttributeMap extends AttributeMap {
         Map<VisualKey,String> v2a =
             new EnumMap<VisualKey,String>(VisualKey.class);
         for (VisualKey vKey : VisualKey.values()) {
-            if (vKey.isRefreshable()) {
+            if (vKey.getNature() == Nature.REFRESHABLE) {
                 continue;
             }
             String aKey;

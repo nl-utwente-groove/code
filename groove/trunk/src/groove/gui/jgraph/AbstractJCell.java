@@ -18,9 +18,11 @@ package groove.gui.jgraph;
 
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
+import groove.gui.look.VisualKey.Nature;
 import groove.gui.look.VisualMap;
 import groove.gui.look.VisualValue;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -77,7 +79,8 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
             this.visuals.putAll(oldVisuals);
         }
         this.looksChanged = true;
-        this.staleKeys = VisualKey.createRefreshableKeys();
+        this.staleKeys = EnumSet.noneOf(VisualKey.class);
+        this.staleKeys.addAll(Arrays.asList(VisualKey.refreshables()));
         this.errors = null;
     }
 
@@ -114,6 +117,19 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
         return Look.BASIC;
     }
 
+    final public void putVisual(VisualKey key, Object value) {
+        assert key.getNature() == Nature.CONTROLLED;
+        this.visuals.put(key, value);
+    }
+
+    final public void putVisuals(VisualMap map) {
+        for (VisualKey key : VisualKey.controlleds()) {
+            if (map.containsKey(key)) {
+                putVisual(key, map.get(key));
+            }
+        }
+    }
+
     @Override
     final public VisualMap getVisuals() {
         if (this.looksChanged || this.looks == null) {
@@ -143,7 +159,7 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
     @Override
     public void setStale(VisualKey... keys) {
         for (VisualKey key : keys) {
-            assert key.isRefreshable();
+            assert key.getNature() == Nature.REFRESHABLE;
             this.staleKeys.add(key);
         }
     }
