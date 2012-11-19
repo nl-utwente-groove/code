@@ -75,6 +75,13 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         return super.getRoots();
     }
 
+    /** Refreshes all refreshable visual keys in all cells of this model. */
+    public void refreshVisuals() {
+        for (GraphJCell jCell : getRoots()) {
+            jCell.setStale(VisualKey.refreshables());
+        }
+    }
+
     /** Returns the size of the graph, as a sum of the number of nodes and edges. */
     public int size() {
         return this.nodeJCellMap.size() + this.edgeJCellMap.size();
