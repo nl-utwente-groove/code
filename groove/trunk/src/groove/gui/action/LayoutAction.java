@@ -54,11 +54,7 @@ public class LayoutAction extends AbstractAction {
         Object[] selection = this.jGraph.getSelectionCells();
         boolean complete = selection.length == 0;
         if (!complete) {
-            for (Object jCell : this.jGraph.getRoots()) {
-                if (jCell instanceof GraphJCell) {
-                    ((GraphJCell) jCell).setLayoutable(false);
-                }
-            }
+            this.jGraph.getModel().setLayoutable(false);
             for (Object jCell : selection) {
                 if (jCell instanceof GraphJCell) {
                     ((GraphJCell) jCell).setLayoutable(true);

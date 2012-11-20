@@ -515,9 +515,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         // initially set all cells to layoutable,
         // (which is partially undone later)
         // so the new nodes and edges get a change of being layed out
-        for (GraphJCell jCell : result.getRoots()) {
-            jCell.setLayoutable(true);
-        }
+        result.setLayoutable(true);
         for (Map.Entry<HostNode,Attributes> e : map.nodeMap.entrySet()) {
             AspectNode aspectNode = aspectMap.getNode(e.getKey());
             assert aspectNode != null : "Target element " + e.getKey()

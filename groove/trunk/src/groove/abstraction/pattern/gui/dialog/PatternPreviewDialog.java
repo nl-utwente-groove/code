@@ -26,7 +26,6 @@ import groove.graph.Graph;
 import groove.graph.Node;
 import groove.gui.Simulator;
 import groove.gui.dialog.GraphPreviewDialog;
-import groove.gui.layout.Layouter;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,16 +71,8 @@ public final class PatternPreviewDialog extends GraphPreviewDialog {
         PatternJGraph jGraph = new PatternJGraph(this.simulator);
         PatternJModel model = (PatternJModel) jGraph.newModel();
         model.loadGraph((Graph<Node,Edge>) this.graph);
+        model.setLayoutable(true);
         jGraph.setModel(model);
-        Layouter layouter = jGraph.createLayouter();
-        jGraph.setLayouter(layouter);
-        // Don't call the method from GraphJGraph because we need a special
-        // way to layout.
-        // jGraph.doLayout(true);
-        // We just call our dedicated layouter.
-        // Cannot reuse the original reference because that's just a prototype.
-        layouter = jGraph.getLayouter();
-        layouter.start(true);
         return jGraph;
     }
 
