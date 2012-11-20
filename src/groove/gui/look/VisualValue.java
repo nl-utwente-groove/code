@@ -23,7 +23,7 @@ import groove.gui.jgraph.GraphJCell;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface VisualValue {
+public interface VisualValue<T> {
     /** Computes and returns a new value for the relevant key. */
-    Object get(GraphJCell cell);
+    T get(GraphJCell cell);
 }

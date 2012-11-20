@@ -202,7 +202,7 @@ public final class PatternJGraph extends GraphJGraph {
         }
 
         @Override
-        public VisualValue newVisualValue(VisualKey key) {
+        public VisualValue<?> newVisualValue(VisualKey key) {
             switch (key) {
             case ADORNMENT:
                 return new PatternAdornmentValue();

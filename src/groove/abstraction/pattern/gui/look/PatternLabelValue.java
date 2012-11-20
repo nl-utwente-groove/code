@@ -44,7 +44,7 @@ public class PatternLabelValue extends LabelValue {
     }
 
     @Override
-    protected List<StringBuilder> getLines(GraphJVertex jVertex) {
+    protected List<String> getLines(GraphJVertex jVertex) {
         if (jVertex instanceof PatternJVertex) {
             return Collections.emptyList();
         } else {
@@ -53,7 +53,7 @@ public class PatternLabelValue extends LabelValue {
     }
 
     @Override
-    protected List<StringBuilder> getLines(GraphJEdge jEdge) {
+    protected List<String> getLines(GraphJEdge jEdge) {
         if (jEdge instanceof PatternJEdge) {
             return getLines((PatternJEdge) jEdge);
         } else {
@@ -61,8 +61,8 @@ public class PatternLabelValue extends LabelValue {
         }
     }
 
-    private List<StringBuilder> getLines(PatternJEdge jEdge) {
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
+    private List<String> getLines(PatternJEdge jEdge) {
+        List<String> result = new ArrayList<String>();
         for (Edge edge : jEdge.getEdges()) {
             StringBuilder sb = new StringBuilder();
             sb.append(((AbstractPatternEdge<?>) edge).getPrintableLabel());
@@ -71,7 +71,7 @@ public class PatternLabelValue extends LabelValue {
                 PatternShape pShape = (PatternShape) graph;
                 sb.append("(" + pShape.getMult((PatternEdge) edge) + ")");
             }
-            result.add(sb);
+            result.add(sb.toString());
         }
         return result;
     }

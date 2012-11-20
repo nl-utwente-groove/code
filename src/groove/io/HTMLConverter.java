@@ -102,7 +102,7 @@ public class HTMLConverter {
     }
 
     /**
-     * Returns a HTML span tag that imposes a given color on a text.
+     * Returns a HTML span tag that imposes a given colour on a text.
      */
     static public HTMLTag createColorTag(Color color) {
         HTMLTag result = colorTagMap.get(color);
@@ -196,56 +196,35 @@ public class HTMLConverter {
     // them with the numeric codes - this fixes it. -- Maarten
     /** Non-breaking space character. */
     static public final String NBSP = "&#160;";
-    /** Name of the HTML tag (<code>html</code>). */
-    static public final String HTML_TAG_NAME = "html";
-    /** HTML tag. */
-    static public final HTMLTag HTML_TAG = new HTMLTag(HTML_TAG_NAME);
     /** Name of the span tag (<code>span</code>). */
     static public final String SPAN_TAG_NAME = "span";
     /** Name of the span tag (<code>div</code>). */
     static public final String DIV_TAG_NAME = "div";
+    /** Table tag. */
+    static public final String TABLE_TAG_NAME = "table";
     /** Name of the span style attribute. */
     static public final String STYLE_ATTR_NAME = "style";
-    /** Name of the linebreak tag (<code>br</code>). */
-    static public final String LINEBREAK_TAG_NAME = "br";
-    /** Name of the horizontal rule tag (<code>hr</code>). */
-    static public final String HORIZONTAL_LINE_TAG_NAME = "hr";
-    /** Name of the font underline tag (<code>u</code>). */
-    static public final String UNDERLINE_TAG_NAME = "u";
-    /** Font underline tag. */
-    static public final HTMLTag UNDERLINE_TAG = new HTMLTag(UNDERLINE_TAG_NAME);
-    /** Name of the font strikethrough tag (<code>s</code>). */
-    static public final String STRIKETHROUGH_TAG_NAME = "s";
-    /** Font strikethrough tag. */
-    static public final HTMLTag STRIKETHROUGH_TAG = new HTMLTag(
-        STRIKETHROUGH_TAG_NAME);
-    /** Name of the italic font tag (<code>i</code>). */
-    static public final String ITALIC_TAG_NAME = "i";
+    /** Tag to horizontally centre multiline text. */
+    static public final HTMLTag CENTER_TAG = new HTMLTag("center");
+    /** HTML tag. */
+    static public final HTMLTag HTML_TAG = new HTMLTag("html");
     /** Italic font tag. */
-    static public final HTMLTag ITALIC_TAG = new HTMLTag(ITALIC_TAG_NAME);
-    /** Name of the strong font tag (<code>strong</code>). */
-    static public final String STRONG_TAG_NAME = "strong";
+    static public final HTMLTag ITALIC_TAG = new HTMLTag("i");
+    /** Font strikethrough tag. */
+    static public final HTMLTag STRIKETHROUGH_TAG = new HTMLTag("s");
     /** Strong font tag. */
-    static public final HTMLTag STRONG_TAG = new HTMLTag(STRONG_TAG_NAME);
-    /** Name of the superscript font tag. */
-    static public final String SUPER_TAG_NAME = "sup";
-    /** Superscript font tag. */
-    static public final HTMLTag SUPER_TAG = new HTMLTag(SUPER_TAG_NAME);
-    /** Name of the subscript font tag. */
-    static public final String SUB_TAG_NAME = "sub";
+    static public final HTMLTag STRONG_TAG = new HTMLTag("strong");
     /** Subscript font tag. */
-    static public final HTMLTag SUB_TAG = new HTMLTag(SUB_TAG_NAME);
-    /** Name of the table tag. */
-    static public final String TABLE_TAG_NAME = "table";
-    /** Table tag. */
-    static public final HTMLTag TABLE_TAG = new HTMLTag(TABLE_TAG_NAME);
-
+    static public final HTMLTag SUB_TAG = new HTMLTag("sub");
+    /** Superscript font tag. */
+    static public final HTMLTag SUPER_TAG = new HTMLTag("sup");
+    /** Font underline tag. */
+    static public final HTMLTag UNDERLINE_TAG = new HTMLTag("u");
     /** The <code>html</code> tag to insert a line break. */
-    static public final String HTML_LINEBREAK =
-        createHtmlTag(LINEBREAK_TAG_NAME).tagBegin;
+    static public final String HTML_LINEBREAK = createHtmlTag("br").tagBegin;
     /** The <code>html</code> tag to insert a horizontal line. */
     static public final String HTML_HORIZONTAL_LINE =
-        createHtmlTag(HORIZONTAL_LINE_TAG_NAME).tagBegin;
+        createHtmlTag("hr").tagBegin;
 
     /** Map from colours to HTML tags imposing the colour on a text. */
     private static final Map<Color,HTMLTag> colorTagMap =
@@ -253,16 +232,16 @@ public class HTMLConverter {
     /** The maximum alpha value according to {@link Color#getAlpha()}. */
     private static final int MAX_ALPHA = 255;
 
-    /** Blue color tag. */
+    /** Blue colour tag. */
     public static final HTMLTag ERASER_TAG =
         createColorTag(Values.ERASER_FOREGROUND);
-    /** Green color tag. */
+    /** Green colour tag. */
     public static final HTMLTag CREATOR_TAG =
         createColorTag(Values.CREATOR_FOREGROUND);
-    /** Red color tag. */
+    /** Red colour tag. */
     public static final HTMLTag EMBARGO_TAG =
         createColorTag(Values.EMBARGO_FOREGROUND);
-    /** Remark color tag. */
+    /** Remark colour tag. */
     public static final HTMLTag REMARK_TAG =
         createColorTag(Values.REMARK_FOREGROUND);
 

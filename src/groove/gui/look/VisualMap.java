@@ -425,15 +425,16 @@ public class VisualMap extends DefaultFixable {
      * there is nothing stored
      * @see VisualKey#LABEL
      */
-    public String getLabel() {
-        return (String) get(VisualKey.LABEL);
+    @SuppressWarnings("unchecked")
+    public List<String> getLabel() {
+        return (List<String>) get(VisualKey.LABEL);
     }
 
     /**
      * Sets a new label value.
      * @see VisualKey#LABEL
      */
-    public void setLabel(String newValue) {
+    public void setLabel(List<String> newValue) {
         put(VisualKey.LABEL, newValue);
     }
 

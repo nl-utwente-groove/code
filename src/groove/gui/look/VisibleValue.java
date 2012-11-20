@@ -44,7 +44,7 @@ import groove.view.aspect.AspectNode;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class VisibleValue implements VisualValue {
+public class VisibleValue implements VisualValue<Boolean> {
     /** Constructs a value strategy for a given JGraph. */
     public VisibleValue(GraphJGraph jGraph) {
         this.options = jGraph.getOptions();

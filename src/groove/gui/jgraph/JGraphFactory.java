@@ -45,5 +45,5 @@ public interface JGraphFactory {
     GraphJEdge newJEdge();
 
     /** Creates a visual value refresher for a given key. */
-    VisualValue newVisualValue(VisualKey key);
+    VisualValue<?> newVisualValue(VisualKey key);
 }

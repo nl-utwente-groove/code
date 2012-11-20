@@ -261,15 +261,6 @@ public final class GraphToTikz {
     }
 
     /**
-     * Escapes the special LaTeX characters in the line and copies the rest.
-     * @param line the string to be escaped.
-     * @return the line with escaped characters, if any.
-     */
-    private static String escapeSpecialChars(String line) {
-        return escapeSpecialChars(new StringBuilder(line)).toString();
-    }
-
-    /**
      * Converts special HTML chars that show inside a node.
      * @param line the string to be converted.
      * @return the line with converted characters, if any.
@@ -499,7 +490,8 @@ public final class GraphToTikz {
     // END
 
     private static boolean isNodifiedEdge(GraphJVertex node) {
-        return node instanceof AspectJVertex && ((AspectJVertex) node).isNodeEdge();
+        return node instanceof AspectJVertex
+            && ((AspectJVertex) node).isNodeEdge();
     }
 
     private static boolean hasNonEmptyLabel(GraphJEdge edge) {
@@ -636,9 +628,8 @@ public final class GraphToTikz {
             }
 
             // Node Labels.
-            String text = node.getVisuals().getLabel();
-            String[] lines = text.split(HTMLConverter.HTML_LINEBREAK);
-            if (lines.length == 0 || isNodifiedEdge(node)) {
+            List<String> lines = node.getVisuals().getLabel();
+            if (lines.size() == 0 || isNodifiedEdge(node)) {
                 this.result.append(EMPTY_NODE_LAB);
             } else {
                 this.result.append(BEGIN_NODE_LAB);
@@ -1408,8 +1399,15 @@ public final class GraphToTikz {
 
     private void appendEdgeLabel(GraphJEdge edge) {
         Edge e = edge.getEdge();
-        String text = edge.getVisuals().getLabel();
-        String escapedText = escapeSpecialChars(text);
+        List<String> lines = edge.getVisuals().getLabel();
+        StringBuilder text = new StringBuilder();
+        for (String line : lines) {
+            if (text.length() > 0) {
+                text.append(", ");
+            }
+            text.append(line);
+        }
+        String escapedText = escapeSpecialChars(text).toString();
         if (e instanceof AspectEdge) {
             RuleLabel ruleLabel = ((AspectEdge) e).getRuleLabel();
             if (ruleLabel != null && !ruleLabel.isAtom()

@@ -46,10 +46,10 @@ public class AspectJObject extends ArrayList<String> {
      * Returns a list of lines constituting the node or edge label
      * in case this object is displayed directly.
      */
-    public List<StringBuilder> toLines() {
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
+    public List<String> toLines() {
+        List<String> result = new ArrayList<String>();
         for (String text : this) {
-            result.add(new StringBuilder(text));
+            result.add(text);
         }
         return result;
     }

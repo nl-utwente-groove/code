@@ -19,8 +19,11 @@ package groove.gui.jgraph;
 import static groove.gui.look.Values.ERROR_COLOR;
 import groove.gui.Options;
 import groove.gui.look.LineStyle;
+import groove.gui.look.Values;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
+import groove.io.HTMLConverter;
+import groove.io.Util;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -42,8 +45,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+
 import org.jgraph.JGraph;
-import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.CellHandle;
 import org.jgraph.graph.CellMapper;
 import org.jgraph.graph.CellView;
@@ -398,6 +403,12 @@ public class JEdgeView extends EdgeView {
         renderer = new MyEdgeRenderer();
     }
 
+    static private final String LA = HTMLConverter.toHtml(Util.LT);
+    static private final String RA = HTMLConverter.toHtml(Util.RT);
+    static private final String UA = HTMLConverter.toHtml(Util.UT);
+    static private final String DA = HTMLConverter.toHtml(Util.DT);
+    static private final String SP = HTMLConverter.toHtml(Util.THIN_SPACE);
+
     /**
      * This class is overridden to get the same port emphasis.
      */
@@ -468,39 +479,36 @@ public class JEdgeView extends EdgeView {
 
     /** Renderer subclass to enable our special line style. */
     static public class MyEdgeRenderer extends EdgeRenderer {
+        MyEdgeRenderer() {
+            this.jLabel = new JLabel();
+            this.jLabel.setBorder(null);
+            this.jLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        }
+
         @Override
         public Component getRendererComponent(org.jgraph.JGraph jGraph,
-                CellView view, boolean sel, boolean focus, boolean preview) {
+                CellView v, boolean sel, boolean focus, boolean preview) {
 
-            assert view instanceof JEdgeView : String.format(
+            assert v instanceof JEdgeView : String.format(
                 "This renderer is only meant for %s", JEdgeView.class);
 
-            JEdgeView theView = (JEdgeView) view;
-            GraphJEdge jCell = theView.getCell();
-            VisualMap visuals = jCell.getVisuals();
-            Color innerLineColor = visuals.getInnerLine();
-            if (innerLineColor != null) {
-                this.twoLines = true;
-                this.line2color = innerLineColor;
-                this.line2width = 1;
-                this.line2dash = (float[]) VisualKey.DASH.getDefaultValue();
-            } else {
-                this.twoLines = false;
-            }
-
+            JEdgeView view = this.view = (JEdgeView) v;
+            this.cell = this.view.getCell();
+            VisualMap visuals = this.visuals = this.cell.getVisuals();
+            this.line2color = visuals.getInnerLine();
+            this.twoLines = this.line2color != null;
             this.error = visuals.isError();
             if (this.error) {
-                Rectangle b = getLabelBounds(jGraph, theView).getBounds();
+                Rectangle b = getLabelBounds(jGraph, view).getBounds();
                 b.setRect(b.x - 1, b.y - 1, b.width, b.height + 1);
                 this.errorBounds = b;
             }
             this.manhattan =
                 visuals.getLineStyle() == LineStyle.MANHATTAN
                     && visuals.getPoints().size() > 2;
-            // pretend to the superclass that this cell is not selected
-            super.getRendererComponent(jGraph, view, sel, focus, preview);
+            super.getRendererComponent(jGraph, v, sel, focus, preview);
             // treat selection as emphasis
-            float lineWidth = visuals.getLineWidth();
+            float lineWidth = this.visuals.getLineWidth();
             if (sel) {
                 lineWidth += JAttr.EMPH_INCREMENT;
             }
@@ -528,17 +536,14 @@ public class JEdgeView extends EdgeView {
             if (this.twoLines) {
                 // draw the second line
                 g2.setColor(this.line2color);
-                g2.setStroke(JAttr.createStroke(this.line2width, this.line2dash));
+                g2.setStroke(JAttr.createStroke(1, Values.NO_DASH));
                 g2.draw(this.view.lineShape);
                 if (this.view.endShape != null) {
                     g2.fill(this.view.endShape);
                     g2.draw(this.view.endShape);
                 }
-
                 // write text again
-
                 g2.setStroke(new BasicStroke(1));
-                g.setFont(GraphConstants.getFont(this.line2map));
                 paintLabels(g);
             }
             if (this.error) {
@@ -583,7 +588,7 @@ public class JEdgeView extends EdgeView {
             if (n > 1) {
                 // Following block may modify static vars as side effect
                 // (Flyweight Design)
-                EdgeView tmp = this.view;
+                JEdgeView tmp = this.view;
                 Point2D[] p = null;
                 p = new Point2D[n];
                 for (int i = 0; i < n; i++) {
@@ -664,40 +669,216 @@ public class JEdgeView extends EdgeView {
             return null;
         }
 
+        /*
+         * Overwritten to capture drawing the main label in a JLabel, allowing the use
+         * of HTML! 
+         */
+        @Override
+        protected void paintLabel(Graphics g, String label, Point2D p,
+                boolean mainLabel) {
+            if (!mainLabel) {
+                super.paintLabel(g, label, p, mainLabel);
+            } else if (this.labelsEnabled && p != null) {
+                paintMainLabel(g, p);
+            }
+        }
+
+        /** Paints the main label in a JLabel, providing HTML formatting. */
+        private void paintMainLabel(Graphics g, Point2D p) {
+            Dimension size = setTextInJLabel(this.view);
+            if (size != null) {
+                this.jLabel.setSize(size);
+                int sw = (int) size.getWidth();
+                int sh = (int) size.getHeight();
+                Graphics2D g2 = (Graphics2D) g;
+                int dx = -sw / 2;
+                int offset =
+                    this.isMoveBelowZero ? 0 : Math.min(0,
+                        (int) (dx + p.getX()));
+                g2.translate(p.getX() - offset, p.getY());
+                if (isOpaque()) {
+                    g.setColor(getBackground());
+                    g.fillRect(-sw / 2 - 1, -sh / 2 - 1, sw + 2, sh + 2);
+                }
+                int dy = -sh / 2;
+                g.setColor(this.fontColor);
+                g.translate(dx, dy);
+                //the fontMetrics stringWidth and height can be replaced by
+                //getLabel().getPreferredSize() if needed
+                this.jLabel.paint(g);
+                g.translate(-dx, -dy);
+                g2.translate(-p.getX() + offset, -p.getY());
+            }
+        }
+
+        /**
+         * Sets a given string, wrapped in colour, font and HTML tags,
+         * into the JLabel component in charge of rendering, and
+         * returns the resulting size.
+         */
+        private Dimension setTextInJLabel(JEdgeView view) {
+            Dimension result = this.jLabelSize;
+            Color foreground = getForeground();
+            Orientation orientation = getOrientation(view);
+            // see if we can use the previously stored value
+            List<String> lines = view.getCell().getVisuals().getLabel();
+            if (lines.isEmpty()) {
+                result = this.jLabelSize = null;
+            } else if (lines != this.jLabelText
+                || foreground != this.jLabelColor
+                || orientation != this.jLabelOrientation) {
+                // no, the text or colour have changed; reload the jLabel component
+                StringBuilder text = computeText(lines, orientation);
+                this.jLabel.setText(JVertexView.toHtml(text, foreground));
+                this.jLabelColor = foreground;
+                this.jLabelOrientation = orientation;
+                result = this.jLabelSize = this.jLabel.getPreferredSize();
+            }
+            return result;
+        }
+
+        private StringBuilder computeText(List<String> lines,
+                Orientation orientation) {
+            StringBuilder result = new StringBuilder();
+            for (String line : lines) {
+                if (result.length() > 0) {
+                    result.append(HTMLConverter.HTML_LINEBREAK);
+                }
+                result.append(orientation.decorate(line));
+            }
+            return result;
+        }
+
+        /** Returns the orientation of the edge. */
+        private Orientation getOrientation(JEdgeView view) {
+            Point2D start = view.getPoint(0);
+            Point2D end = view.getPoint(view.getPointCount() - 1);
+            int dx = (int) (end.getX() - start.getX());
+            int dy = (int) (end.getY() - start.getY());
+            return Orientation.get(dx, dy);
+        }
+
         /* Overwritten so the bounds get computed correctly even
          * before {@link #getRendererComponent}
          * has been called for the first time.
          */
         @Override
         public Rectangle2D getLabelBounds(JGraph paintingContext, EdgeView view) {
-            // get the JGraph from the view rather than from the cached reference
-            if (paintingContext == null) {
-                paintingContext = ((JEdgeView) view).jGraph;
-            }
-            // No need to call setView as getLabelPosition will
-            String label =
-                (paintingContext != null)
-                        ? paintingContext.convertValueToString(view)
-                        : String.valueOf(view.getCell());
-            if (label != null) {
-                Point2D p = getLabelPosition(view);
-                Dimension d = getLabelSize(view, label);
-                return getLabelBounds(p, d, label);
-            } else {
-                return null;
-            }
+            Rectangle2D result = null;
+            Point2D p = getLabelPosition(view);
+            Dimension d = getLabelSize(view, null);
+            result = getLabelBounds(p, d, null);
+            return result;
         }
 
+        /* This implementation does not use the label parameter,
+         * but constructs the label from the visual map of the view's cell
+         */
+        @Override
+        public Dimension getLabelSize(EdgeView view, String label) {
+            Dimension result = null;
+            if (label != null) {
+                result = super.getLabelSize(view, label);
+            } else {
+                result = setTextInJLabel((JEdgeView) view);
+            }
+            return result;
+        }
+
+        private JEdgeView view;
+        private GraphJEdge cell;
+        private VisualMap visuals;
         // properties for drawing a second line
         private boolean twoLines = false;
         private Color line2color;
-        private float line2width;
-        private float[] line2dash;
-        private AttributeMap line2map;
         /** Flag indicating manhattan line style for the edge. */
         private boolean manhattan;
         /** Flag indicating that the underlying edge has an error. */
         private boolean error;
         private Rectangle2D errorBounds;
+
+        /** Component used for rendering HTML text. */
+        private final JLabel jLabel;
+        /** Last orientation set in the jLabel component. */
+        private Orientation jLabelOrientation;
+        /** Last inner text set in the jLabel component. */
+        private List<String> jLabelText;
+        /** Last colour set in the jLabel component. */
+        private Color jLabelColor;
+        /** Last computed preferred size of the jLabel component. */
+        private Dimension jLabelSize;
+    }
+
+    private static enum Orientation {
+        /** Pointing left. */
+        LEFT(LA, null),
+        /** Pointing right. */
+        RIGHT(null, RA),
+        /** Pointing both left and right. */
+        LEFT_RIGHT(LA, RA),
+        /** Pointing up. */
+        UP(UA, null),
+        /** Pointing down. */
+        DOWN(null, DA),
+        /** Pointing both up and down. */
+        UP_DOWN(UA, DA),
+        /** Pointing up left. */
+        UP_LEFT(UA, null),
+        /** Pointing down left. */
+        DOWN_LEFT(DA, null),
+        /** Pointing up right. */
+        UP_RIGHT(null, UA),
+        /** Pointing down right. */
+        DOWN_RIGHT(null, DA);
+
+        private Orientation(String left, String right) {
+            this.left = left;
+            this.right = right;
+        }
+
+        /** Inserts symbols in front and behing a given text, depending on this orientation. */
+        public StringBuilder decorate(String text) {
+            StringBuilder result = new StringBuilder(text);
+            if (this.left != null) {
+                result.insert(0, SP);
+                result.insert(0, this.left);
+            }
+            if (this.right != null) {
+                result.append(SP);
+                result.append(this.right);
+            }
+            return result;
+        }
+
+        /** String to place to the left side of the label. */
+        private final String left;
+        /** String to place to the right side of the label. */
+        private final String right;
+
+        public static Orientation get(int dx, int dy) {
+            if (dx < 0) {
+                if (dy < 0) {
+                    return UP_LEFT;
+                } else if (dy == 0) {
+                    return LEFT;
+                } else {
+                    return DOWN_LEFT;
+                }
+            } else if (dx == 0) {
+                if (dy < 0) {
+                    return UP;
+                } else {
+                    return DOWN;
+                }
+            } else {
+                if (dy < 0) {
+                    return UP_RIGHT;
+                } else if (dy == 0) {
+                    return RIGHT;
+                } else {
+                    return DOWN_RIGHT;
+                }
+            }
+        }
     }
 }

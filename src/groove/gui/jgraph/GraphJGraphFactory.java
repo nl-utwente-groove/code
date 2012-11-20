@@ -61,7 +61,7 @@ public class GraphJGraphFactory implements JGraphFactory {
     }
 
     @Override
-    public VisualValue newVisualValue(VisualKey key) {
+    public VisualValue<?> newVisualValue(VisualKey key) {
         switch (key) {
         case ADORNMENT:
             return new AdornmentValue();
@@ -73,7 +73,7 @@ public class GraphJGraphFactory implements JGraphFactory {
             return new EdgeTargetLabelValue();
         case EMPHASIS:
             // for now, the emphasis key is not used
-            return new ConstantValue(false);
+            return new ConstantValue<Boolean>(false);
         case ERROR:
             return new ErrorValue();
         case LABEL:

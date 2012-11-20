@@ -26,7 +26,7 @@ import groove.gui.jgraph.GraphJCell;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class AspectValue<T> implements VisualValue {
+public abstract class AspectValue<T> implements VisualValue<T> {
     @Override
     public T get(GraphJCell cell) {
         if (cell instanceof AspectJVertex) {

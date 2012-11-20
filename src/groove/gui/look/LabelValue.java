@@ -68,7 +68,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LabelValue implements VisualValue {
+public class LabelValue implements VisualValue<List<String>> {
     /** Constructs a value strategy for a given JGraph. */
     public LabelValue(GraphJGraph jGraph) {
         this.jGraph = jGraph;
@@ -83,32 +83,21 @@ public class LabelValue implements VisualValue {
     }
 
     @Override
-    public String get(GraphJCell cell) {
-        String result = null;
+    public List<String> get(GraphJCell cell) {
+        List<String> result = null;
         if (cell instanceof GraphJVertex) {
-            result = getVertexValue((GraphJVertex) cell);
+            result = getLines((GraphJVertex) cell);
         } else if (cell instanceof AspectJEdge) {
             result = getAspectEdgeValue((AspectJEdge) cell);
         } else if (cell instanceof GraphJEdge) {
-            result = getBasicEdgeValue((GraphJEdge) cell);
+            result = getLines((GraphJEdge) cell);
         }
         return result;
     }
 
-    private String getVertexValue(GraphJVertex jVertex) {
-        StringBuilder result = new StringBuilder();
-        for (StringBuilder line : getLines(jVertex)) {
-            if (result.length() > 0) {
-                result.append(HTMLConverter.HTML_LINEBREAK);
-            }
-            result.append(line);
-        }
-        return result.toString();
-    }
-
     /** Returns a list of lines together making up the label text of a vertex. */
-    protected List<StringBuilder> getLines(GraphJVertex jVertex) {
-        List<StringBuilder> result;
+    protected List<String> getLines(GraphJVertex jVertex) {
+        List<String> result;
         switch (this.role) {
         case HOST:
             result = getHostLines((AspectJVertex) jVertex);
@@ -131,47 +120,36 @@ public class LabelValue implements VisualValue {
         return result;
     }
 
-    private String getBasicEdgeValue(GraphJEdge jEdge) {
-        StringBuilder result = new StringBuilder();
-        for (StringBuilder line : getLines(jEdge)) {
-            if (result.length() > 0) {
-                result.append(", ");
-            }
-            result.append(line);
-        }
-        return result.toString();
-    }
-
-    private String getAspectEdgeValue(AspectJEdge jEdge) {
-        String result = null;
+    private List<String> getAspectEdgeValue(AspectJEdge jEdge) {
+        List<String> result = null;
         // if both source and target nodes are nodified, 
         // test for source node first
         if (jEdge.isNodeEdgeOut()) {
-            result = "";
+            result = Collections.emptyList();
         } else if (jEdge.isNodeEdgeIn()) {
+            result = new ArrayList<String>();
             LabelPattern pattern =
                 ((AspectJVertex) jEdge.getTargetVertex()).getEdgeLabelPattern();
             @SuppressWarnings({"unchecked", "rawtypes"})
             GraphBasedModel<HostGraph> resourceModel =
                 (GraphBasedModel) ((AspectJGraph) getJGraph()).getModel().getResourceModel();
             try {
-                result =
-                    pattern.getLabel(
-                        resourceModel.toResource(),
-                        (HostNode) resourceModel.getMap().getNode(
-                            jEdge.getTargetNode()));
+                result.add(pattern.getLabel(
+                    resourceModel.toResource(),
+                    (HostNode) resourceModel.getMap().getNode(
+                        jEdge.getTargetNode())));
             } catch (FormatException e) {
                 // assert false;
             }
         } else {
-            result = getBasicEdgeValue(jEdge);
+            result = getLines(jEdge);
         }
         return result;
     }
 
     /** Returns a list of lines together making up the label text of a vertex. */
-    protected List<StringBuilder> getLines(GraphJEdge jEdge) {
-        List<StringBuilder> result;
+    protected List<String> getLines(GraphJEdge jEdge) {
+        List<String> result;
         switch (this.role) {
         case HOST:
         case RULE:
@@ -188,29 +166,28 @@ public class LabelValue implements VisualValue {
     }
 
     /** This implementation adds the data edges to the super result. */
-    private List<StringBuilder> getBasicLines(GraphJVertex jVertex) {
-        List<StringBuilder> result = new LinkedList<StringBuilder>();
+    private List<String> getBasicLines(GraphJVertex jVertex) {
+        List<String> result = new LinkedList<String>();
         // show the node identity if required
         if (getOptionValue(Options.SHOW_NODE_IDS_OPTION)) {
-            result.add(ITALIC_TAG.on(new StringBuilder(
-                jVertex.getNode().toString())));
+            result.add(ITALIC_TAG.on(jVertex.getNode().toString()));
         }
         // only add edges that have an unfiltered label
         for (Edge edge : jVertex.getEdges()) {
             if (!isFiltered(edge)) {
                 StringBuilder line = new StringBuilder(edge.label().text());
                 HTMLConverter.toHtml(line);
-                result.add(line);
+                result.add(line.toString());
             }
         }
         return result;
     }
 
     /** Recomputes the set of node lines for this aspect node. */
-    private List<StringBuilder> getHostLines(AspectJVertex jVertex) {
+    private List<String> getHostLines(AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
         node.testFixed(true);
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
+        List<String> result = new ArrayList<String>();
         // show the node identity
         if (!node.hasId()) {
             result.addAll(getNodeIdLine(node));
@@ -232,18 +209,18 @@ public class LabelValue implements VisualValue {
                         line.insert(0, id);
                         id = null;
                     }
-                    result.add(line);
+                    result.add(line.toString());
                 }
             }
             if (id != null) {
                 // we're not going to have any node types:
                 // add the node id on a separate line
-                result.add(new StringBuilder(id));
+                result.add(id);
             }
         }
         for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
             if (!isFiltered(edge)) {
-                result.add(getHostLine(edge));
+                result.add(getHostLine(edge).toString());
             }
         }
         return result;
@@ -268,10 +245,10 @@ public class LabelValue implements VisualValue {
     }
 
     /** Recomputes the set of node lines for this aspect node. */
-    private List<StringBuilder> getTypeLines(AspectJVertex jVertex) {
+    private List<String> getTypeLines(AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
         node.testFixed(true);
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
+        List<String> result = new ArrayList<String>();
         if (getOptionValue(Options.SHOW_ASPECTS_OPTION)) {
             result.addAll(jVertex.getUserObject().toLines());
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
@@ -281,7 +258,7 @@ public class LabelValue implements VisualValue {
             }
         } else {
             if (node.hasImport()) {
-                result.add(new StringBuilder(ITALIC_TAG.on(IMPORT_TEXT)));
+                result.add(ITALIC_TAG.on(IMPORT_TEXT));
             }
             // show data constants and variables correctly
             result.addAll(getDataLines(node));
@@ -301,7 +278,7 @@ public class LabelValue implements VisualValue {
                 LabelPattern pattern = node.getEdgePattern();
                 line.append(">> ");
                 line.append(pattern.getLabel(pattern.getArgNames().toArray()));
-                result.add(line);
+                result.add(line.toString());
             }
         }
         return result;
@@ -310,7 +287,7 @@ public class LabelValue implements VisualValue {
     /**
      * On demand prefixes the label with the edge's aspect values.
      */
-    private StringBuilder getTypeLine(AspectEdge edge) {
+    private String getTypeLine(AspectEdge edge) {
         edge.testFixed(true);
         StringBuilder result = new StringBuilder();
         result.append(getLabel(edge));
@@ -327,14 +304,14 @@ public class LabelValue implements VisualValue {
             result.append(STRONG_TAG.on(edge.getAttrKind().getName()));
         }
         addRoleIndicator(result, edge);
-        return result;
+        return result.toString();
     }
 
     /** Recomputes the set of node lines for this aspect node. */
-    private List<StringBuilder> getRuleLines(AspectJVertex jVertex) {
+    private List<String> getRuleLines(AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
         node.testFixed(true);
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
+        List<String> result = new ArrayList<String>();
         // show the node identity
         if (!node.hasId()) {
             result.addAll(getNodeIdLine(node));
@@ -344,11 +321,11 @@ public class LabelValue implements VisualValue {
             result.addAll(jVertex.getUserObject().toLines());
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (!isFiltered(edge)) {
-                    result.add(getRuleLine(edge));
+                    result.add(getRuleLine(edge).toString());
                 }
             }
             if (node.hasColor()) {
-                result.add(new StringBuilder(node.getColor().toString()));
+                result.add(node.getColor().toString());
             }
         } else {
             // show the quantifier aspect correctly
@@ -370,17 +347,17 @@ public class LabelValue implements VisualValue {
                         line.insert(0, id);
                         unshownId = false;
                     }
-                    result.add(line);
+                    result.add(line.toString());
                 }
             }
             if (unshownId) {
                 // we're not going to have any node types:
                 // add the node id on a separate line
-                result.add(new StringBuilder(id));
+                result.add(id);
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (!isFiltered(edge)) {
-                    result.add(getRuleLine(edge));
+                    result.add(getRuleLine(edge).toString());
                 }
             }
             if (node.hasColor()) {
@@ -388,7 +365,7 @@ public class LabelValue implements VisualValue {
                 line.append(AspectKind.COLOR.getName());
                 HTMLTag colorTag =
                     HTMLConverter.createColorTag(Colors.findColor(node.getColor().getContentString()));
-                result.add(colorTag.on(line));
+                result.add(colorTag.on(line).toString());
             }
         }
         return result;
@@ -413,8 +390,8 @@ public class LabelValue implements VisualValue {
     }
 
     /** This implementation adds the data edges to the super result. */
-    private List<StringBuilder> getLTSLines(LTSJVertex jVertex) {
-        List<StringBuilder> result = new LinkedList<StringBuilder>();
+    private List<String> getLTSLines(LTSJVertex jVertex) {
+        List<String> result = new LinkedList<String>();
         // show the node identity if required
         if (getOptionValue(Options.SHOW_STATE_IDS_OPTION)) {
             GraphState state = jVertex.getNode();
@@ -423,7 +400,7 @@ public class LabelValue implements VisualValue {
             if (!ctrlState.getAut().isDefault() || !ctrlState.isStart()) {
                 id.append("|" + ctrlState.toString());
             }
-            result.add(ITALIC_TAG.on(id));
+            result.add(ITALIC_TAG.on(id).toString());
         }
         // only add edges that have an unfiltered label
         boolean isShowAnchors = getOptionValue(Options.SHOW_ANCHORS_OPTION);
@@ -432,7 +409,7 @@ public class LabelValue implements VisualValue {
                 String text = ((GraphTransition) edge).text(isShowAnchors);
                 StringBuilder line = new StringBuilder(text);
                 HTMLConverter.toHtml(line);
-                result.add(line);
+                result.add(line.toString());
             }
         }
         return result;
@@ -441,66 +418,69 @@ public class LabelValue implements VisualValue {
     /**
      * Appends the bound variables to the lines, if this list is not empty
      */
-    private List<StringBuilder> getCtrlLines(CtrlJVertex jVertex) {
-        List<StringBuilder> result = getBasicLines(jVertex);
+    private List<String> getCtrlLines(CtrlJVertex jVertex) {
+        List<String> result = getBasicLines(jVertex);
         CtrlState state = jVertex.getNode();
         List<CtrlVar> boundVars = state.getBoundVars();
         if (boundVars.size() > 0) {
             StringBuilder sb = new StringBuilder();
             sb.append(boundVars.toString());
-            result.add(sb);
+            result.add(sb.toString());
         }
         if (jVertex.isTransient()) {
             StringBuilder action = new StringBuilder();
             action.append(HTMLConverter.toHtml('<'));
             action.append(state.getRecipe());
             action.append(HTMLConverter.toHtml('>'));
-            result.add(action);
+            result.add(action.toString());
         }
         return result;
     }
 
-    private List<StringBuilder> getBasicLines(GraphJEdge jEdge) {
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
+    private List<String> getBasicLines(GraphJEdge jEdge) {
+        List<String> result = new ArrayList<String>();
         for (Edge edge : jEdge.getEdges()) {
             // only add edges that have an unfiltered label
             if (!isFiltered(edge)) {
-                result.add(new StringBuilder(edge.label().text()));
+                result.add(edge.label().text());
             }
         }
         return result;
     }
 
     /** Recomputes the set of node lines for this aspect node. */
-    private List<StringBuilder> getAspectLines(AspectJEdge jEdge) {
+    private List<String> getAspectLines(AspectJEdge jEdge) {
+        List<String> result;
         if (jEdge.isSourceLabel()) {
-            return Collections.emptyList();
+            result = Collections.emptyList();
         } else if (getOptionValue(Options.SHOW_ASPECTS_OPTION)) {
             // used to include hasError() as a disjunct
-            return jEdge.getUserObject().toLines();
+            result = jEdge.getUserObject().toLines();
         } else {
-            List<StringBuilder> result = new ArrayList<StringBuilder>();
+            result = new ArrayList<String>();
             for (AspectEdge edge : jEdge.getEdges()) {
                 // only add edges that have an unfiltered label
                 if (!isFiltered(edge)) {
                     StringBuilder line =
                         new StringBuilder(edge.getDisplayLabel().text());
                     addLevelName(line, edge);
-                    result.add(line);
+                    if (line.length() > 0) {
+                        result.add(line.toString());
+                    }
                 }
             }
-            return result;
         }
+        return result;
     }
 
-    private List<StringBuilder> getLTSLines(LTSJEdge jEdge) {
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
+    private List<String> getLTSLines(LTSJEdge jEdge) {
+        List<String> result = new ArrayList<String>();
         boolean isShowAnchors = getOptionValue(Options.SHOW_ANCHORS_OPTION);
         for (Edge edge : jEdge.getEdges()) {
             // only add edges that have an unfiltered label
             if (!isFiltered(edge)) {
                 GraphTransition trans = (GraphTransition) edge;
-                result.add(new StringBuilder(trans.text(isShowAnchors)));
+                result.add(trans.text(isShowAnchors));
             }
         }
         return result;
@@ -576,8 +556,8 @@ public class LabelValue implements VisualValue {
      * according to the current setting.
      * @see GraphJGraph#isShowNodeIdentities()
      */
-    private List<StringBuilder> getNodeIdLine(AspectNode node) {
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
+    private List<String> getNodeIdLine(AspectNode node) {
+        List<String> result = new ArrayList<String>();
         if (getOptionValue(Options.SHOW_NODE_IDS_OPTION)) {
             String id;
             if (node.getKind().isMeta()) {
@@ -599,7 +579,7 @@ public class LabelValue implements VisualValue {
                 id = node.toString();
             }
             if (id != null) {
-                result.add(ITALIC_TAG.on(new StringBuilder(id)));
+                result.add(ITALIC_TAG.on(new StringBuilder(id)).toString());
             }
         }
         return result;
@@ -609,8 +589,8 @@ public class LabelValue implements VisualValue {
      * Returns the lines describing this node's main aspect.
      * Currently this just concerns a possible quantifier.
      */
-    private List<StringBuilder> getQuantifierLines(AspectNode node) {
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
+    private List<String> getQuantifierLines(AspectNode node) {
+        List<String> result = new ArrayList<String>();
         StringBuilder line = new StringBuilder();
         Aspect id = node.getId();
         if (id != null) {
@@ -633,14 +613,14 @@ public class LabelValue implements VisualValue {
             line.append(HTMLConverter.SUPER_TAG.on("?"));
         }
         if (line.length() > 0) {
-            result.add(line);
+            result.add(line.toString());
         }
         return result;
     }
 
     /** Returns lines describing any data content of the JVertex. */
-    private List<StringBuilder> getDataLines(AspectNode node) {
-        List<StringBuilder> result = new ArrayList<StringBuilder>();
+    private List<String> getDataLines(AspectNode node) {
+        List<String> result = new ArrayList<String>();
         Aspect attrAspect = node.getAttrAspect();
         if (attrAspect.getKind().hasSignature()) {
             String dataLine = null;
@@ -653,7 +633,7 @@ public class LabelValue implements VisualValue {
                 dataLine = attrAspect.getContentString();
             }
             if (dataLine != null) {
-                result.add(new StringBuilder(dataLine));
+                result.add(dataLine);
             }
         }
         return result;
