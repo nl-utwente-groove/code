@@ -249,8 +249,10 @@ public class Util {
             return null;
         }
 
-        String[] dirParts = currentDir.toString().split("\\Q" + File.pathSeparator + "\\E");
-        String[] targetParts = target.toString().split("\\Q" + File.pathSeparator + "\\E");
+        String[] dirParts =
+            currentDir.toString().split("\\Q" + File.pathSeparator + "\\E");
+        String[] targetParts =
+            target.toString().split("\\Q" + File.pathSeparator + "\\E");
 
         int i = 0;
         int max = Math.max(dirParts.length, targetParts.length);
@@ -311,4 +313,30 @@ public class Util {
     static public final char RANGLE = '>'; // &#9002;
     /** HTML times symbol. */
     static public final char TIMES = '\u2A09';
+    /** Unicode right-triangle symbol. */
+    static public final char RT = '\u25B6';
+    /** Unicode left-triangle symbol. */
+    static public final char LT = '\u25C0';
+    /** Unicode up-triangle symbol. */
+    static public final char UT = '\u25B4';
+    /** Unicode down-triangle symbol. */
+    static public final char DT = '\u25BE';
+    /** Unicode right-arrow symbol. */
+    static public final char RA = '\u2192';
+    /** Unicode left-arrow symbol. */
+    static public final char LA = '\u2190';
+    /** Unicode up-arrow symbol. */
+    static public final char UA = '\u2191';
+    /** Unicode down-arrow symbol. */
+    static public final char DA = '\u2193';
+    /** Unicode up-right-arrow symbol. */
+    static public final char URA = '\u2197';
+    /** Unicode up-left-arrow symbol. */
+    static public final char ULA = '\u2196';
+    /** Unicode down-right-arrow symbol. */
+    static public final char DRA = '\u2198';
+    /** Unicode down-left-arrow symbol. */
+    static public final char DLA = '\u2199';
+    /** Unicode thin space symbol. */
+    static public final char THIN_SPACE = '\u2009';
 }

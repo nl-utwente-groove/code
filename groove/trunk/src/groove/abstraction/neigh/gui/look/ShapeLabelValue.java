@@ -42,8 +42,8 @@ public class ShapeLabelValue extends LabelValue {
     }
 
     @Override
-    protected List<StringBuilder> getLines(GraphJVertex jVertex) {
-        List<StringBuilder> result = super.getLines(jVertex);
+    protected List<String> getLines(GraphJVertex jVertex) {
+        List<String> result = super.getLines(jVertex);
         // Multiplicity.
         StringBuilder multStr = new StringBuilder();
         Shape shape = ((ShapeJGraph) getJGraph()).getShape();
@@ -51,7 +51,7 @@ public class ShapeLabelValue extends LabelValue {
         String mult = shape.getNodeMult(node).toString();
         multStr.append(HTMLConverter.createSpanTag("color: rgb(50,50,255)").on(
             ITALIC_TAG.on(mult)));
-        result.add(0, multStr);
+        result.add(0, multStr.toString());
         // Node type.
         TypeNode typeNode = node.getType();
         if (!typeNode.isTopType()) {
@@ -63,7 +63,7 @@ public class ShapeLabelValue extends LabelValue {
             } else {
                 pos = 1;
             }
-            result.add(pos, typeStr);
+            result.add(pos, typeStr.toString());
         }
         return result;
     }

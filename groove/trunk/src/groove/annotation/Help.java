@@ -20,7 +20,6 @@ import static groove.io.HTMLConverter.HTML_LINEBREAK;
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.ITALIC_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
-import static groove.io.HTMLConverter.TABLE_TAG_NAME;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
 import groove.util.Pair;
@@ -409,7 +408,7 @@ public class Help {
     private static HTMLTag DIV_TAG =
         HTMLConverter.createDivTag("width: 250px;");
     static private final HTMLTag TABLE_TAG = HTMLConverter.createHtmlTag(
-        TABLE_TAG_NAME, "cellpadding", "0");
+        HTMLConverter.TABLE_TAG_NAME, "cellpadding", "0");
     static private final HTMLTag SOURCE_TAG = HTMLConverter.createHtmlTag(
         "font", "color", "green");
 }

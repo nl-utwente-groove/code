@@ -29,7 +29,7 @@ import groove.gui.look.VisualValue;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PatternAdornmentValue implements VisualValue {
+public class PatternAdornmentValue implements VisualValue<String> {
     @Override
     public String get(GraphJCell cell) {
         String result = null;

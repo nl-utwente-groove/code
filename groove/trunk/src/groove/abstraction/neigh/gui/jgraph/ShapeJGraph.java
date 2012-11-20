@@ -184,7 +184,7 @@ public final class ShapeJGraph extends GraphJGraph {
         }
 
         @Override
-        public VisualValue newVisualValue(VisualKey key) {
+        public VisualValue<?> newVisualValue(VisualKey key) {
             switch (key) {
             case LABEL:
                 return new ShapeLabelValue(getJGraph());

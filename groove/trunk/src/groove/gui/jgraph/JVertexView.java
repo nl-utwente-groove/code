@@ -25,6 +25,7 @@ import groove.gui.look.LineStyle;
 import groove.gui.look.Values;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
+import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
 
 import java.awt.Color;
@@ -112,25 +113,14 @@ public class JVertexView extends VertexView {
     public void refresh(GraphLayoutCache cache, CellMapper mapper,
             boolean createDependentViews) {
         super.refresh(cache, mapper, createDependentViews);
-        this.text = computeText();
-    }
-
-    /**
-     * Retrieves the HTML text for the vertex, and adapts the text colour to the
-     * line colour if the line colour is not black.
-     * @see GraphJVertex#getVisuals()
-     */
-    private String computeText() {
-        StringBuilder result = new StringBuilder(getCellVisuals().getLabel());
-        if (result.length() > 0) {
-            Color lineColor = getCellVisuals().getForeground();
-            if (lineColor != null && !lineColor.equals(Color.BLACK)) {
-                createColorTag(lineColor).on(result);
+        StringBuilder text = new StringBuilder();
+        for (String line : getCellVisuals().getLabel()) {
+            if (text.length() > 0) {
+                text.append(HTMLConverter.HTML_LINEBREAK);
             }
-            return HTML_TAG.on(fontTag.on(result)).toString();
-        } else {
-            return "";
+            text.append(line);
         }
+        this.text = toHtml(text, getCellVisuals().getForeground());
     }
 
     /** Stores the insets value for this view. */
@@ -485,15 +475,32 @@ public class JVertexView extends VertexView {
         PortView.allowPortMagic = false;
     }
 
+    /** Puts an optional colour tag, a font tag and an HTML tag around a given text. */
+    public static String toHtml(String text, Color color) {
+        return toHtml(new StringBuilder(text), color);
+    }
+
+    /** Puts an optional colour tag, font tag and an HTML tag around a given text. */
+    public static String toHtml(StringBuilder text, Color color) {
+        if (text.length() > 0) {
+            if (color != null && !color.equals(Color.BLACK)) {
+                createColorTag(color).on(text);
+            }
+            return HTML_TAG.on(HTMLConverter.CENTER_TAG.on(fontTag.on(text))).toString();
+        } else {
+            return "";
+        }
+    }
+
     /** HTML tag for the text display font. */
-    private static final HTMLTag fontTag;
+    public static final HTMLTag fontTag;
 
     static {
         Font font = GraphConstants.DEFAULTFONT;
         String face;
         int size;
         if (font == null) {
-            face = "Arial";
+            face = "SansSerif";
             size = -1;
         } else {
             face = font.getFamily();

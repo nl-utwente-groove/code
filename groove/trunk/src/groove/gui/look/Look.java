@@ -39,7 +39,7 @@ public enum Look {
         void init() {
             add(VisualKey.OPAQUE, true);
             add(VisualKey.NODE_SHAPE, NodeShape.ROUNDED);
-            add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.ARROW);
+            //            add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.ARROW);
             add(VisualKey.FONT, Font.PLAIN);
         }
     },
@@ -122,7 +122,7 @@ public enum Look {
             add(VisualKey.BACKGROUND, Values.EMBARGO_BACKGROUND);
             add(VisualKey.LINE_WIDTH, 5f);
             add(VisualKey.DASH, Values.EMBARGO_DASH);
-            add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.UNFILLED);
+            //            add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.UNFILLED);
         }
 
     },
@@ -235,7 +235,7 @@ public enum Look {
     TRANS(true, BASIC) {
         @Override
         void init() {
-            add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.SIMPLE);
+            //            add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.SIMPLE);
         }
     },
     /** Change in look due to open state status. */

@@ -28,6 +28,7 @@ import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -88,7 +89,7 @@ public enum VisualKey {
      * HTML-formatted main label text. Defaults to the empty string.
      * A value of {@code null} on a node implies rendering it as a nodified edge.
      */
-    LABEL(String.class, "", REFRESHABLE),
+    LABEL(List.class, Collections.emptyList(), REFRESHABLE),
     /** Position of the main edge label. Defaults to {@link JCellLayout#defaultLabelPosition}. */
     LABEL_POS(Point2D.class, JCellLayout.defaultLabelPosition, CONTROLLED),
     /** Edge layout line style. Defaults to {@link LineStyle#ORTHOGONAL}. */

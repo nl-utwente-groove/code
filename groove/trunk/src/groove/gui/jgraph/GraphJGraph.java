@@ -208,33 +208,28 @@ public class GraphJGraph extends org.jgraph.JGraph {
         return this.simulator == null ? null : this.simulator.getActions();
     }
 
-    /**
+    /*
+     * Overridden; we are being clever about constructing labels,
+     * this method should be bypassed.
      * Overrides the method to call {@link GraphJCell#getVisuals} whenever
      * <code>object</code> is recognised as a {@link JVertexView},
      * {@link JEdgeView} or {@link GraphJCell}.
      */
     @Override
     public String convertValueToString(Object value) {
-        String result;
-        GraphJCell jCell = null;
-        if (value instanceof JVertexView) {
-            jCell = ((JVertexView) value).getCell();
+        String result = null;
+        List<String> lines = null;
+        if (value instanceof String) {
+            result = (String) value;
+        } else if (value instanceof GraphJVertex) {
+            lines = ((GraphJVertex) value).getVisuals().getLabel();
         } else if (value instanceof JEdgeView) {
-            jCell = ((JEdgeView) value).getCell();
-        } else if (value instanceof GraphJCell) {
-            jCell = (GraphJCell) value;
+            lines = ((JEdgeView) value).getCell().getVisuals().getLabel();
         }
-        if (jCell != null) {
-            result = jCell.getVisuals().getLabel();
-        } else if (value == null) {
-            result = "";
-        } else {
-            result = value.toString();
+        if (lines != null && !lines.isEmpty()) {
+            result = lines.toString();
         }
-        // set text to nonempty in case we have a node,
-        // so the size gets set properly
-        if (result == null || result.length() == 0
-            && !(value instanceof JEdgeView)) {
+        if (result == null || result.length() == 0) {
             result = " ";
         }
         return result;
@@ -1251,13 +1246,13 @@ public class GraphJGraph extends org.jgraph.JGraph {
     private boolean layouting;
 
     /** Sets the visual refreshed to be used for a given visual key. */
-    final protected void setVisualValue(VisualKey key, VisualValue value) {
+    final protected void setVisualValue(VisualKey key, VisualValue<?> value) {
         this.visualValueMap.put(key, value);
     }
 
     /** Returns the visual refresher used for a given visual key. */
-    final protected VisualValue getVisualValue(VisualKey key) {
-        VisualValue result = this.visualValueMap.get(key);
+    final protected VisualValue<?> getVisualValue(VisualKey key) {
+        VisualValue<?> result = this.visualValueMap.get(key);
         if (result == null) {
             this.visualValueMap.put(key,
                 result = getFactory().newVisualValue(key));
@@ -1265,8 +1260,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
         return result;
     }
 
-    private final Map<VisualKey,VisualValue> visualValueMap =
-        new EnumMap<VisualKey,VisualValue>(VisualKey.class);
+    private final Map<VisualKey,VisualValue<?>> visualValueMap =
+        new EnumMap<VisualKey,VisualValue<?>>(VisualKey.class);
 
     /** Simulator tool to which this JGraph belongs. */
     private final Simulator simulator;

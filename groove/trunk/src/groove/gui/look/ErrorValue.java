@@ -24,7 +24,7 @@ import groove.gui.jgraph.GraphJCell;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ErrorValue implements VisualValue {
+public class ErrorValue implements VisualValue<Boolean> {
     @Override
     public Boolean get(GraphJCell cell) {
         return cell.hasErrors();

@@ -23,17 +23,17 @@ import groove.gui.jgraph.GraphJCell;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ConstantValue implements VisualValue {
+public class ConstantValue<T> implements VisualValue<T> {
     /** Constructs a constant refresher for a given value. */
-    public ConstantValue(Object value) {
+    public ConstantValue(T value) {
         super();
         this.value = value;
     }
 
     @Override
-    public Object get(GraphJCell cell) {
+    public T get(GraphJCell cell) {
         return this.value;
     }
 
-    private final Object value;
+    private final T value;
 }
