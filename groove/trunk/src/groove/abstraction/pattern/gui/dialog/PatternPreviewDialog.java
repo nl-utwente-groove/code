@@ -18,13 +18,18 @@ package groove.abstraction.pattern.gui.dialog;
 
 import groove.abstraction.pattern.gui.jgraph.PatternJGraph;
 import groove.abstraction.pattern.gui.jgraph.PatternJModel;
+import groove.abstraction.pattern.io.xml.TypeGraphGxl;
 import groove.abstraction.pattern.shape.AbstractPatternGraph;
+import groove.abstraction.pattern.shape.TypeGraph;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.gui.Simulator;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.gui.layout.Layouter;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Dialog for displaying pattern graphs.
@@ -70,8 +75,32 @@ public final class PatternPreviewDialog extends GraphPreviewDialog {
         jGraph.setModel(model);
         Layouter layouter = jGraph.createLayouter();
         jGraph.setLayouter(layouter);
-        jGraph.doLayout(true);
+        // Don't call the method from GraphJGraph because we need a special
+        // way to layout.
+        // jGraph.doLayout(true);
+        // We just call our dedicated layouter.
+        // Cannot reuse the original reference because that's just a prototype.
+        layouter = jGraph.getLayouter();
+        layouter.start(true);
         return jGraph;
+    }
+
+    /** Test method. */
+    public static void main(String args[]) {
+        final String PATH = "junit/pattern/";
+        final String GRAMMAR = PATH + "pattern-list.gps/";
+        final String TYPE_GRAPH = GRAMMAR + "ptgraph.gst";
+
+        TypeGraph pTGraph = null;
+        try {
+            pTGraph =
+                TypeGraphGxl.getInstance().unmarshalTypeGraph(
+                    new File(TYPE_GRAPH));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        PatternPreviewDialog.showPatternGraph(pTGraph);
     }
 
 }
