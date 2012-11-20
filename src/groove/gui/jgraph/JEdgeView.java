@@ -25,6 +25,7 @@ import groove.gui.look.VisualMap;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -41,11 +42,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jgraph.JGraph;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.CellHandle;
 import org.jgraph.graph.CellMapper;
 import org.jgraph.graph.CellView;
-import org.jgraph.graph.CellViewRenderer;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.EdgeRenderer;
@@ -110,8 +111,8 @@ public class JEdgeView extends EdgeView {
     }
 
     @Override
-    public CellViewRenderer getRenderer() {
-        return super.getRenderer();
+    public MyEdgeRenderer getRenderer() {
+        return (MyEdgeRenderer) super.getRenderer();
     }
 
     /**
@@ -661,6 +662,32 @@ public class JEdgeView extends EdgeView {
                 return this.view.sharedPath;
             }
             return null;
+        }
+
+        /**
+         * Returns the label bounds of the specified view in the given graph.
+         */
+        @Override
+        public Rectangle2D getLabelBounds(JGraph paintingContext, EdgeView view) {
+            if (paintingContext == null && this.graph != null) {
+                JGraph graph = (JGraph) this.graph.get();
+                paintingContext = graph;
+            }
+            if (paintingContext == null) {
+                paintingContext = ((JEdgeView) view).jGraph;
+            }
+            // No need to call setView as getLabelPosition will
+            String label =
+                (paintingContext != null)
+                        ? paintingContext.convertValueToString(view)
+                        : String.valueOf(view.getCell());
+            if (label != null) {
+                Point2D p = getLabelPosition(view);
+                Dimension d = getLabelSize(view, label);
+                return getLabelBounds(p, d, label);
+            } else {
+                return null;
+            }
         }
 
         // properties for drawing a second line

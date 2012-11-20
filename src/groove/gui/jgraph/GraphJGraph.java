@@ -501,8 +501,8 @@ public class GraphJGraph extends org.jgraph.JGraph {
             GraphJModel<?,?> oldJModel = getModel();
             GraphJModel<?,?> newJModel = (GraphJModel<?,?>) model;
             if (oldJModel != null) {
-                if (this.layouter != null) {
-                    this.layouter.stop();
+                if (getLayouter() != null) {
+                    getLayouter().stop();
                 }
                 // if we don't clear the selection, the old selection
                 // gives trouble when setting the model
@@ -523,7 +523,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
                     timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
-                            GraphJGraph.this.layouter.stop();
+                            getLayouter().stop();
                             // cancel the timer, because it may otherwise
                             // keep the entire program from terminating
                             timer.cancel();
@@ -688,15 +688,23 @@ public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * @return the current layout action for this jgraph.
+     * @return the current layouter for this JGraph.
      * @see #setLayouter(Layouter)
      */
     public Layouter getLayouter() {
+        if (this.layouter == null) {
+            this.layouter = createLayouter().newInstance(this);
+        }
         return this.layouter;
     }
 
+    /** Prototype factory method to create a layouter for this JGraph. */
+    protected Layouter createLayouter() {
+        return null;
+    }
+
     /**
-     * Sets (but does not start) the layout action for this jgraph. First stops
+     * Sets (but does not start) the layout action for this JGraph. First stops
      * the current layout action, if it is running.
      * @param prototypeLayouter prototype for the new layout action; the actual
      *        layout action is obtained by calling <tt>newInstance(this)</tt>
@@ -722,7 +730,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
         Layouter result = null;
         // Test if we do any layouting, or complete layouting
         // any means there is a layoutable
-        boolean any = false;
+        boolean any = complete;
         // all means all cells are layoutable
         boolean all = true;
         for (GraphJCell jCell : getModel().getRoots()) {
@@ -741,7 +749,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
         if (any) {
             complete |= all;
             if (complete) {
-                result = this.layouter;
+                result = getLayouter();
             }
             if (result == null) {
                 result = this.incrementalLayouter;
@@ -1071,11 +1079,24 @@ public class GraphJGraph extends org.jgraph.JGraph {
 
     /**
      * Returns a menu consisting of the menu items from the layouter 
-     * setting menu of this jgraph.
+     * setting menu of this JGraph.
      */
     public SetLayoutMenu getSetLayoutMenu() {
+        if (this.setLayoutMenu == null) {
+            this.setLayoutMenu = createSetLayoutMenu();
+        }
         return this.setLayoutMenu;
     }
+
+    /** Creates and returns a fresh layout setting menu upon this JGraph. */
+    public SetLayoutMenu createSetLayoutMenu() {
+        return new SetLayoutMenu(this);
+    }
+
+    /**
+     * A standard layouter setting menu over this JGraph.
+     */
+    private SetLayoutMenu setLayoutMenu;
 
     /**
      * Returns a layout menu for this jgraph.
@@ -1102,11 +1123,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
      */
     public ShowHideMenu createShowHideMenu() {
         return new ShowHideMenu(this);
-    }
-
-    /** Creates and returns a fresh layout setting menu upon this j-graph. */
-    public SetLayoutMenu createSetLayoutMenu() {
-        return new SetLayoutMenu(this);
     }
 
     private Action getShowLayoutDialogAction() {
@@ -1263,10 +1279,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
     private CancelEditListener cancelListener;
     /** Flag indicating that a model refresh is being executed. */
     private boolean modelRefreshing;
-    /**
-     * A standard layouter setting menu over this jgraph.
-     */
-    private final SetLayoutMenu setLayoutMenu = createSetLayoutMenu();
 
     /**
      * The label list associated with this jgraph.

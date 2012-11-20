@@ -247,6 +247,16 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         }
     }
 
+    /**
+     * Sets the layoutability of all cells. 
+     * @param layoutable the new value for {@link GraphJCell#setLayoutable(boolean)}
+     */
+    public void setLayoutable(boolean layoutable) {
+        for (GraphJCell jCell : getRoots()) {
+            jCell.setLayoutable(true);
+        }
+    }
+
     /** Retrieves a mapping from graph nodes to foreground colours
      * as stored in the corresponding {@link GraphJVertex} attributes.
      */

@@ -33,8 +33,6 @@ import groove.gui.look.VisualKey;
 import groove.gui.look.VisualValue;
 import groove.gui.tree.LabelTree;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,7 +57,6 @@ public final class PatternJGraph extends GraphJGraph {
     /** Constructs an instance of the j-graph for a given simulator. */
     public PatternJGraph(Simulator simulator) {
         super(simulator, false);
-        addMouseListener(new MyMouseListener());
     }
 
     // ------------------------------------------------------------------------
@@ -85,23 +82,9 @@ public final class PatternJGraph extends GraphJGraph {
         return new LabelTree(new GraphJGraph(null, false), false, false);
     }
 
-    /** Creates and returns a special layouter for pattern graphs. */
-    public Layouter createLayouter() {
+    @Override
+    protected Layouter createLayouter() {
         return new MyLayouter();
-    }
-
-    /** Mouse listener that refreshes the jGraph after every click. */
-    private class MyMouseListener extends MouseAdapter {
-
-        /** Empty constructor with the correct visibility. */
-        MyMouseListener() {
-            // empty
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent evt) {
-            refreshAllCells();
-        }
     }
 
     private static class MyLayouter extends AbstractLayouter {
