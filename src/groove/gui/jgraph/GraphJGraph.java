@@ -33,6 +33,7 @@ import groove.gui.ZoomMenu;
 import groove.gui.action.ActionStore;
 import groove.gui.action.ExportAction;
 import groove.gui.action.LayoutAction;
+import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.gui.look.VisualKey;
@@ -700,7 +701,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
 
     /** Prototype factory method to create a layouter for this JGraph. */
     protected Layouter createLayouter() {
-        return null;
+        return new ForestLayouter();
     }
 
     /**
