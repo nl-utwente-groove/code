@@ -42,6 +42,7 @@ public class GraphPreviewDialog extends JDialog {
         super(simulator == null ? null : simulator.getFrame());
         this.simulator = simulator;
         this.graph = graph;
+        setTitle(graph.getName());
         if (simulator != null) {
             Point p = simulator.getFrame().getLocation();
             setLocation(new Point(p.x + 50, p.y + 50));

@@ -41,7 +41,6 @@ public final class PatternPreviewDialog extends GraphPreviewDialog {
     private PatternPreviewDialog(Simulator simulator,
             AbstractPatternGraph<?,?> pGraph) {
         super(simulator, pGraph);
-        this.setTitle(pGraph.getName());
         setSize(1200, 600);
     }
 
