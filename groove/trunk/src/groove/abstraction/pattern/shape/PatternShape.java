@@ -24,13 +24,8 @@ import groove.abstraction.Multiplicity;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
-import groove.graph.GraphRole;
-import groove.trans.HostNode;
-import groove.util.UnmodifiableSetView;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -108,11 +103,6 @@ public final class PatternShape extends PatternGraph {
             sb.replace(sb.length() - 2, sb.length(), "]\n");
         }
         return sb.toString();
-    }
-
-    @Override
-    public GraphRole getRole() {
-        return GraphRole.SHAPE;
     }
 
     @Override
@@ -280,203 +270,6 @@ public final class PatternShape extends PatternGraph {
         }
 
         return result;
-    }
-
-    /**
-     * Returns the pattern edge outgoing from the given node, with the proper
-     * given type, or <code>null</code> if no such edge exists. 
-     */
-    public PatternEdge getOutEdgeWithType(PatternNode node, TypeEdge edgeType) {
-        for (PatternEdge outEdge : outEdgeSet(node)) {
-            // We assume the same pattern type graph is always used so object
-            // equality is sufficient.
-            if (outEdge.getType() == edgeType) {
-                return outEdge;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns true if there exists an pattern edge outgoing from the given 
-     * node, with the proper given type. 
-     */
-    public boolean hasOutEdgeWithType(PatternNode node, TypeEdge edgeType) {
-        return getOutEdgeWithType(node, edgeType) != null;
-    }
-
-    /**
-     * Returns a list of pattern edges incoming into the given node, with the
-     * proper given type.
-     */
-    public Set<PatternEdge> getInEdgesWithType(PatternNode node,
-            final TypeEdge edgeType) {
-        return new UnmodifiableSetView<PatternEdge>(inEdgeSet(node)) {
-            @Override
-            public boolean approves(Object obj) {
-                if (!(obj instanceof PatternEdge)) {
-                    return false;
-                }
-                PatternEdge pEdge = (PatternEdge) obj;
-                return pEdge.getType() == edgeType;
-            }
-        };
-    }
-
-    /**
-     * Returns true if there exists at least one pattern edge incoming to the 
-     * given node, with the proper given type. 
-     */
-    public boolean hasInEdgeWithType(PatternNode node, TypeEdge edgeType) {
-        return getInEdgesWithType(node, edgeType).size() > 0;
-    }
-
-    /**
-     * Returns true if the co-domain of the type edge given intersects with
-     * the co-domain of some other edge incoming into the given node.
-     */
-    public boolean hasIntersection(PatternNode node, TypeEdge edgeType) {
-        for (PatternEdge inEdge : inEdgeSet(node)) {
-            if (edgeType.intersects(inEdge.getType())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns true if the given node is uniquely covered by the incoming edge
-     * morphisms. Uniqueness corresponds to the absence of distinct incoming
-     * edges of the same type. While this is condition is always satisfied in
-     * pattern graphs, in pattern shapes it may be falsified due to pattern
-     * collapsing.  
-     */
-    public boolean isUniquelyCovered(PatternNode node) {
-        // Check the type graph for the incoming types.
-        for (TypeEdge edgeType : getTypeGraph().inEdgeSet(node.getType())) {
-            if (getInEdgesWithType(node, edgeType).size() > 1) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /** @see AbstractPatternGraph#isCommuting() */
-    public boolean isConcretePartCommuting(boolean acceptNonWellFormed) {
-        // First, check layer 1.
-        for (PatternNode pNode : getLayerNodes(1)) {
-            if (!getMult(pNode).isOne() || pNode.getSimpleEdge().isLoop()) {
-                // This edge is a collector or a self-edge, nothing to do.
-                continue;
-            }
-            HostNode sSrc = pNode.getSource();
-            HostNode sTgt = pNode.getTarget();
-            PatternEdge pEdgeSrc = getCoveringEdge(pNode, sSrc);
-            PatternEdge pEdgeTgt = getCoveringEdge(pNode, sTgt);
-            if (pEdgeSrc != null && pEdgeTgt != null) {
-                PatternNode pSrc = pEdgeSrc.source();
-                PatternNode pTgt = pEdgeTgt.source();
-                if (pSrc.equals(pTgt)) {
-                    // We have a binary edge with both source and target nodes
-                    // covered by the same node at layer 0.
-                    return false;
-                }
-            } else if (!acceptNonWellFormed) {
-                return false;
-            }
-
-        }
-        // Now, iterate from layer 2 on.
-        for (int layer = 2; layer <= depth(); layer++) {
-            // For each pattern node on this layer.
-            pNodeLoop: for (PatternNode pNode : getLayerNodes(layer)) {
-                if (!getMult(pNode).isOne()) {
-                    continue pNodeLoop;
-                }
-                // For each simple node in the pattern.
-                for (HostNode sNode : pNode.getPattern().nodeSet()) {
-                    int ancestorCount = getAncestors(pNode, sNode).size();
-                    if (ancestorCount > 1) {
-                        return false;
-                    } else if (ancestorCount == 0 && !acceptNonWellFormed) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
-
-    /** Makes the multiplicities more precise when possible. */
-    public void improvePrecision() {
-        // First traverse down.
-        for (int layer = 1; layer <= depth(); layer++) {
-            for (PatternNode tgt : getLayerNodes(layer)) {
-                Multiplicity tgtMult = getMult(tgt);
-                if (!tgtMult.isCollector() || !isUniquelyCovered(tgt)) {
-                    continue;
-                }
-                for (PatternEdge inEdge : inEdgeSet(tgt)) {
-                    Multiplicity srcMult = getMult(inEdge.source());
-                    Multiplicity edgeMult = getMult(inEdge);
-                    Multiplicity expectedTgtMult =
-                        srcMult.times(edgeMult).toNodeKind();
-                    if (expectedTgtMult != tgtMult
-                        && tgtMult.subsumes(expectedTgtMult)) {
-                        tgtMult = expectedTgtMult;
-                    }
-                }
-                this.setMult(tgt, tgtMult);
-            }
-        }
-        // Now traverse up and adjust multiplicities when possible.
-        for (int layer = depth(); layer >= 1; layer--) {
-            for (PatternNode tgt : getLayerNodes(layer)) {
-                Multiplicity tgtMult = getMult(tgt);
-                for (PatternEdge inEdge : inEdgeSet(tgt)) {
-                    PatternNode src = inEdge.source();
-                    Multiplicity srcMult = getMult(src);
-                    Multiplicity edgeMult = getMult(inEdge);
-                    if (srcMult.isOne()) {
-                        // The source is concrete so the edge multiplicity
-                        // must match the target.
-                        Multiplicity expectedEdgeMult = tgtMult.toEdgeKind();
-                        if (expectedEdgeMult != edgeMult
-                            && edgeMult.subsumes(expectedEdgeMult)) {
-                            setMult(inEdge, expectedEdgeMult);
-                        }
-                    } else { // the source is a collector.
-                        // Check if we can improve the precision of the source.
-                        Multiplicity expectedSrcMult =
-                            tgtMult.times(edgeMult).toNodeKind();
-                        if (expectedSrcMult != srcMult
-                            && srcMult.subsumes(expectedSrcMult)) {
-                            setMult(src, expectedSrcMult);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Removes nodes that cannot exist because they no longer have
-     * proper coverage.
-     */
-    public void removeUncoveredNodes() {
-        List<PatternNode> toRemove = new ArrayList<PatternNode>();
-        for (int layer = 1; layer <= depth(); layer++) {
-            toRemove.clear();
-            for (PatternNode pNode : getLayerNodes(layer)) {
-                if (!isCovered(pNode)) {
-                    assert getMult(pNode).isZeroPlus();
-                    toRemove.add(pNode);
-                }
-            }
-            for (PatternNode pNode : toRemove) {
-                removeNode(pNode);
-            }
-        }
     }
 
 }

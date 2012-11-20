@@ -54,22 +54,6 @@ public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
     // ------------------------------------------------------------------------
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof AbstractPatternEdge)) {
-            return false;
-        }
-        AbstractPatternEdge<?> other = (AbstractPatternEdge<?>) obj;
-        if (getNumber() != other.getNumber()) {
-            return false;
-        }
-        return source().equals(other.source())
-            && target().equals(other.target());
-    }
-
-    @Override
     public EdgeRole getRole() {
         return EdgeRole.BINARY;
     }
@@ -138,19 +122,6 @@ public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
     /** Returns true if the given node is the co-domain of the morphism. */
     public boolean isCod(HostNode node) {
         return getMorphism().isCod(node);
-    }
-
-    /**
-     * Returns true if the co-domain of the type edge given intersects with
-     * the co-domain of this edge.
-     */
-    public boolean intersects(AbstractPatternEdge<N> other) {
-        for (HostNode sNode : getMorphism().getCod()) {
-            if (other.isCod(sNode)) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }

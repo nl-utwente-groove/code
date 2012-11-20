@@ -26,11 +26,13 @@ import groove.graph.NodeSetEdgeSetGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+import groove.util.Duo;
 import groove.util.Pair;
 import groove.util.UnmodifiableSetView;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -265,7 +267,7 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
 
     /** Checks if the given node is properly covered. */
     @SuppressWarnings("unchecked")
-    protected boolean isCovered(N pNode) {
+    private boolean isCovered(N pNode) {
         HostGraph pattern = pNode.getPattern();
         Set<HostEdge> sEdges;
         if (pNode.getLayer() == 1) {
@@ -303,7 +305,7 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     }
 
     /** Adds the given node to the appropriate layer. */
-    protected void addToLayer(N pNode) {
+    final void addToLayer(N pNode) {
         int layer = pNode.getLayer();
         getLayerNodes(layer).add(pNode);
         if (this.depth < layer) {
@@ -396,22 +398,6 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     }
 
     /**
-     * Returns true if there are two paths ending at the given nodes with a
-     * single common ancestor.
-     */
-    public boolean haveCommonAncestor(N pNode1, HostNode sNode1, N pNode2,
-            HostNode sNode2) {
-        Set<N> ancestors1 = getAncestors(pNode1, sNode1);
-        Set<N> ancestors2 = getAncestors(pNode2, sNode2);
-        for (N ancestor1 : ancestors1) {
-            if (ancestors2.contains(ancestor1)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Returns the set of pattern nodes that are reachable from the ones given
      * on the list. Elements of the list are also included in the result set. 
      */
@@ -427,6 +413,16 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the set of pattern nodes that are reachable from the ones given
+     * on the list. Elements of the list are also included in the result set. 
+     */
+    public Set<N> getDownwardTraversal(N node) {
+        List<N> toTraverse = new LinkedList<N>();
+        toTraverse.add(node);
+        return getDownwardTraversal(toTraverse);
     }
 
     /** Returns the set of ancestors of the given node from the edge layer.*/
@@ -445,6 +441,20 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             }
         }
         return result;
+    }
+
+    /** Returns the two incoming edges of the node. */
+    public Duo<E> getIncomingEdges(N node) {
+        Iterator<E> iter = inEdgeSet(node).iterator();
+        E d1 = iter.next();
+        E d2;
+        if (iter.hasNext()) {
+            d2 = iter.next();
+        } else {
+            // Special case for level 1 nodes with only one incoming edge.
+            d2 = d1;
+        }
+        return new Duo<E>(d1, d2);
     }
 
     // ------------------------------------------------------------------------

@@ -18,14 +18,17 @@ package groove.abstraction.pattern.shape;
 
 import groove.abstraction.MyHashMap;
 import groove.graph.Edge;
-import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
+import groove.util.Duo;
+import groove.util.Pair;
+import groove.util.UnmodifiableSetView;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Pattern graph.
@@ -80,11 +83,6 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
     // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
-
-    @Override
-    public GraphRole getRole() {
-        return GraphRole.HOST;
-    }
 
     @Override
     protected boolean isTypeCorrect(Node node) {
@@ -142,15 +140,114 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
         return result;
     }
 
-    /** Returns a fresh pattern node. The node is not added to the shape. */
+    /** Returns a fresh pattern node. The node is not added to the graph. */
     public PatternNode createNode(TypeNode type) {
         return getFactory().createNode(type, nodeSet());
     }
 
-    /** Returns a fresh pattern edge. The edge is not added to the shape. */
+    /** Returns a fresh pattern edge. The edge is not added to the graph. */
     public PatternEdge createEdge(PatternNode source, TypeEdge type,
             PatternNode target) {
         return getFactory().createEdge(source, type, target);
     }
 
+    /**
+     * Returns a list of pattern edges incoming into the given node, with the
+     * proper given type.
+     */
+    public Set<PatternEdge> getInEdgesWithType(PatternNode node,
+            final TypeEdge edgeType) {
+        return new UnmodifiableSetView<PatternEdge>(inEdgeSet(node)) {
+            @Override
+            public boolean approves(Object obj) {
+                if (!(obj instanceof PatternEdge)) {
+                    return false;
+                }
+                PatternEdge pEdge = (PatternEdge) obj;
+                return pEdge.getType() == edgeType;
+            }
+        };
+    }
+
+    /**
+     * Returns true if there exists at least one pattern edge incoming to the 
+     * given node, with the proper given type. 
+     */
+    public boolean hasInEdgeWithType(PatternNode node, TypeEdge edgeType) {
+        return getInEdgesWithType(node, edgeType).size() > 0;
+    }
+
+    /**
+     * Returns true if the given node is uniquely covered by the incoming edge
+     * morphisms. Uniqueness corresponds to the absence of distinct incoming
+     * edges of the same type. While this is condition is always satisfied in
+     * pattern graphs, in pattern shapes it may be falsified due to pattern
+     * collapsing.  
+     */
+    public boolean isUniquelyCovered(PatternNode node) {
+        // Check the type graph for the incoming types.
+        for (TypeEdge edgeType : getTypeGraph().inEdgeSet(node.getType())) {
+            if (getInEdgesWithType(node, edgeType).size() > 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Pattern deletion operation. */
+    public boolean deletePattern(PatternNode node) {
+        if (!containsNode(node)) {
+            // The node may already be deleted by a domino removal.
+            return false;
+        }
+        Set<PatternNode> toDelete = getDownwardTraversal(node);
+        for (PatternNode delNode : toDelete) {
+            assert isUniquelyCovered(delNode);
+            removeNode(delNode);
+        }
+        return true;
+    }
+
+    /** Pattern addition operation for layer 0. */
+    public PatternNode addNodePattern(TypeNode tNode) {
+        assert tNode.isNodePattern();
+        PatternNode pNode = createNode(tNode);
+        addNode(pNode);
+        return pNode;
+    }
+
+    /** Pattern addition operation for layer 1. */
+    public Pair<PatternNode,Duo<PatternEdge>> addEdgePattern(TypeEdge m1,
+            TypeEdge m2, PatternNode p1, PatternNode p2) {
+        assert p1.isNodePattern() && p2.isNodePattern();
+        return addPattern(m1, m2, p1, p2);
+    }
+
+    /** Pattern closure. */
+    public Pair<PatternNode,Duo<PatternEdge>> closePattern(TypeEdge m1,
+            TypeEdge m2, PatternNode p1, PatternNode p2) {
+        // EDUARDO: Include consistency assertions.
+        return addPattern(m1, m2, p1, p2);
+    }
+
+    /** Common method for addition and closure operation. */
+    private Pair<PatternNode,Duo<PatternEdge>> addPattern(TypeEdge m1,
+            TypeEdge m2, PatternNode p1, PatternNode p2) {
+        assert containsNode(p1) && containsNode(p2);
+        assert m1.target().equals(m2.target());
+        assert m1.source().equals(p1.getType());
+        assert m2.source().equals(p2.getType());
+
+        TypeNode tNode = m1.target();
+        PatternNode pNode = createNode(tNode);
+        addNode(pNode);
+
+        PatternEdge d1 = createEdge(p1, m1, pNode);
+        PatternEdge d2 = createEdge(p2, m2, pNode);
+        addEdge(d1);
+        addEdge(d2);
+
+        Duo<PatternEdge> duo = new Duo<PatternEdge>(d1, d2);
+        return new Pair<PatternNode,Duo<PatternEdge>>(pNode, duo);
+    }
 }

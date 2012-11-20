@@ -18,13 +18,11 @@ package groove.abstraction.pattern.trans;
 
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.shape.PatternEdge;
-import groove.abstraction.pattern.shape.PatternFactory;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternNode;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import groove.abstraction.pattern.shape.TypeEdge;
+import groove.util.Duo;
+import groove.util.Pair;
 
 /**
  * Application of a matched pattern graph transformation rule.
@@ -47,8 +45,8 @@ public final class PatternGraphRuleApplication {
     /** Special method for computing the closure. */
     public void transformWithClosureRule() {
         assert this.pRule.isClosure();
-        createNodes(this.pGraph);
-        createEdges(this.pGraph);
+        RuleNode rNode = this.pRule.getCreatorNodes()[0];
+        createPattern(this.pGraph, rNode, true);
     }
 
     /** Executes the rule application and returns the result. */
@@ -69,47 +67,67 @@ public final class PatternGraphRuleApplication {
         // Pattern graphs are a particular graph in a sense that no pattern
         // edges can be erased without removing also the source or target
         // pattern nodes. This means that we need only to delete pattern nodes
-        // and the edges will be gone as well. Element creation goes are usual. 
-        eraseNodes(host);
-        createNodes(host);
-        createEdges(host);
+        // and the edges will be gone as well. The same holds for creation.
+        erasePatterns(host);
+        createPatterns(host);
         // This is a normal rule application. Close the transformed graph.
-        this.pRule.getTypeGraph().close(host);
+        close(host);
         return host;
     }
 
-    private void eraseNodes(PatternGraph host) {
-        for (PatternNode delNode : computeErasedNodes(host)) {
-            host.removeNode(delNode);
-        }
-    }
-
-    private Set<PatternNode> computeErasedNodes(PatternGraph host) {
-        List<PatternNode> toTraverse = new ArrayList<PatternNode>();
-        // The initial list of nodes to be deleted comes from the match.
+    private void erasePatterns(PatternGraph host) {
         for (RuleNode rNode : this.pRule.getEraserNodes()) {
-            toTraverse.add(this.match.getNode(rNode));
+            host.deletePattern(this.match.getNode(rNode));
         }
-        return host.getDownwardTraversal(toTraverse);
     }
 
-    private void createNodes(PatternGraph host) {
+    private void createPatterns(PatternGraph host) {
+        // First add layer 0 patterns.
         for (RuleNode rNode : this.pRule.getCreatorNodes()) {
-            PatternNode newNode = host.createNode(rNode.getType());
-            host.addNode(newNode);
+            if (!rNode.isNodePattern()) {
+                continue;
+            }
+            PatternNode newNode = host.addNodePattern(rNode.getType());
             this.match.putNode(rNode, newNode);
         }
-    }
 
-    private void createEdges(PatternGraph host) {
-        PatternFactory factory = host.getFactory();
-        for (RuleEdge rEdge : this.pRule.getCreatorEdges()) {
-            PatternNode source = this.match.getNode(rEdge.source());
-            PatternNode target = this.match.getNode(rEdge.target());
-            assert source != null && target != null;
-            PatternEdge newEdge =
-                factory.createEdge(source, rEdge.getType(), target);
-            host.addEdge(newEdge);
+        // Then add layer 1 patterns.
+        for (RuleNode rNode : this.pRule.getCreatorNodes()) {
+            if (!rNode.isEdgePattern()) {
+                continue;
+            }
+            createPattern(host, rNode, false);
         }
     }
+
+    private void createPattern(PatternGraph host, RuleNode rNode,
+            boolean closure) {
+        Duo<RuleEdge> inEdges = this.pRule.rhs().getIncomingEdges(rNode);
+
+        RuleEdge r1 = inEdges.one();
+        RuleEdge r2 = inEdges.two();
+        TypeEdge m1 = r1.getType();
+        TypeEdge m2 = r2.getType();
+        PatternNode p1 = this.match.getNode(r1.source());
+        PatternNode p2 = this.match.getNode(r2.source());
+
+        Pair<PatternNode,Duo<PatternEdge>> pair;
+        if (closure) {
+            pair = host.closePattern(m1, m2, p1, p2);
+        } else {
+            pair = host.addEdgePattern(m1, m2, p1, p2);
+        }
+
+        PatternNode newNode = pair.one();
+        PatternEdge d1 = pair.two().one();
+        PatternEdge d2 = pair.two().two();
+        this.match.putNode(rNode, newNode);
+        this.match.putEdge(r1, d1);
+        this.match.putEdge(r2, d2);
+    }
+
+    private void close(PatternGraph host) {
+        this.pRule.getTypeGraph().close(host);
+    }
+
 }

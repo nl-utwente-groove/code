@@ -16,41 +16,34 @@
  */
 package groove.abstraction.pattern;
 
-import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
-import groove.abstraction.pattern.io.xml.TypeGraphGxl;
-import groove.abstraction.pattern.shape.TypeGraph;
-
-import java.io.File;
-import java.io.IOException;
+import groove.abstraction.pattern.explore.PatternGraphGenerator;
+import groove.abstraction.pattern.lts.PGTS;
 
 /**
  * @author Eduardo Zambon
  */
 public class Test {
 
-    private static final String PATH =
-        "/home/zambon/Work/workspace_groove/groove/junit/pattern/";
+    /*private static final String PATH =
+        "/home/zambon/Work/workspace_groove/groove/junit/pattern/";*/
 
     // private static final String GRAMMAR = PATH + "pattern-list.gps/";
     // private static final String GRAMMAR = PATH + "circ-list-4.gps/";
     // private static final String GRAMMAR = PATH + "trains.gps/";
     // private static final String GRAMMAR = PATH + "equiv.gps/";
-    private static final String GRAMMAR = PATH + "match-test.gps/";
+    // private static final String GRAMMAR = PATH + "match-test.gps/";
 
-    private static final String TYPE_GRAPH = GRAMMAR + "ptgraph.gst";
+    // private static final String TYPE_GRAPH = GRAMMAR + "ptgraph.gst";
 
     /** Test method. */
     public static void main(String args[]) {
-        TypeGraph pTGraph = null;
-        try {
-            pTGraph =
-                TypeGraphGxl.getInstance().unmarshalTypeGraph(
-                    new File(TYPE_GRAPH));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        PatternPreviewDialog.showPatternGraph(pTGraph);
-
+        final String GRAMMAR = "junit/pattern/trains";
+        final String START_GRAPH = "start";
+        String typeGraph = "ptgraph.gst";
+        String myargs[] = new String[] {GRAMMAR, START_GRAPH, typeGraph};
+        PatternGraphGenerator generator = new PatternGraphGenerator(myargs);
+        generator.processArguments();
+        generator.explore();
+        PGTS pgts = generator.getPGTS();
     }
 }

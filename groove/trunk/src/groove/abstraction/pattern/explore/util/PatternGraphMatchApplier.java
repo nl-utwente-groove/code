@@ -16,6 +16,7 @@
  */
 package groove.abstraction.pattern.explore.util;
 
+import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
 import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PatternGraphNextState;
@@ -34,6 +35,15 @@ import groove.lts.MatchApplier;
  * See {@link MatchApplier}. 
  */
 public class PatternGraphMatchApplier implements PatternRuleEventApplier {
+
+    // ------------------------------------------------------------------------
+    // Static fields
+    // ------------------------------------------------------------------------
+
+    /** Debug flag. If set to true, text will be printed in stdout. */
+    private static final boolean DEBUG = false;
+    /** Debug flag. If set to true, the shapes will be shown in a dialog. */
+    private static final boolean USE_GUI = false;
 
     // ------------------------------------------------------------------------
     // Object fields
@@ -57,6 +67,10 @@ public class PatternGraphMatchApplier implements PatternRuleEventApplier {
 
     @Override
     public void apply(PatternState source, MatchResult match) {
+        if (USE_GUI && source.getNumber() == 0) {
+            PatternPreviewDialog.showPatternGraph(source.getGraph());
+        }
+
         PatternGraphRuleApplication app =
             new PatternGraphRuleApplication(source.getGraph(), match.getMatch());
         PatternGraph result = app.transform(false);
@@ -68,11 +82,27 @@ public class PatternGraphMatchApplier implements PatternRuleEventApplier {
         if (oldState != null) {
             // The state was not added as an equivalent state existed.
             trans = new PatternGraphTransition(source, match, oldState);
+            println("New transition: " + trans);
         } else {
             // The state was added as a next-state.
             trans = newState;
+            println("New state: " + source + "--" + match.getRule().getName()
+                + "-->" + newState);
+            if (USE_GUI) {
+                PatternPreviewDialog.showPatternGraph(newState.getGraph());
+            }
         }
         this.pgts.addTransition(trans);
+    }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    private void println(String s) {
+        if (DEBUG) {
+            System.out.println(s);
+        }
     }
 
 }
