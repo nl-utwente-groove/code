@@ -664,15 +664,13 @@ public class JEdgeView extends EdgeView {
             return null;
         }
 
-        /**
-         * Returns the label bounds of the specified view in the given graph.
+        /* Overwritten so the bounds get computed correctly even
+         * before {@link #getRendererComponent}
+         * has been called for the first time.
          */
         @Override
         public Rectangle2D getLabelBounds(JGraph paintingContext, EdgeView view) {
-            if (paintingContext == null && this.graph != null) {
-                JGraph graph = (JGraph) this.graph.get();
-                paintingContext = graph;
-            }
+            // get the JGraph from the view rather than from the cached reference
             if (paintingContext == null) {
                 paintingContext = ((JEdgeView) view).jGraph;
             }
