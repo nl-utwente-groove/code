@@ -20,7 +20,6 @@ import groove.graph.Edge;
 import groove.graph.Node;
 import groove.gui.look.AdornmentValue;
 import groove.gui.look.ColorValue;
-import groove.gui.look.ConstantValue;
 import groove.gui.look.EdgeSourceLabelValue;
 import groove.gui.look.EdgeTargetLabelValue;
 import groove.gui.look.ErrorValue;
@@ -71,14 +70,13 @@ public class GraphJGraphFactory implements JGraphFactory {
             return new EdgeSourceLabelValue();
         case EDGE_TARGET_LABEL:
             return new EdgeTargetLabelValue();
-        case EMPHASIS:
-            // for now, the emphasis key is not used
-            return new ConstantValue<Boolean>(false);
         case ERROR:
             return new ErrorValue();
         case LABEL:
             return new LabelValue(this.jGraph);
         case NODE_SIZE:
+            // this cannot be computed; instead it is refreshed
+            // in the vertex view, when the UI is around
             return null;
         case VISIBLE:
             return new VisibleValue(this.jGraph);

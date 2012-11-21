@@ -518,8 +518,8 @@ public class JVertexView extends VertexView {
             this.selectionColor = graph.getHighlightColor();
             this.dash = visuals.getDash();
             this.lineColor = visuals.getForeground();
-            this.selected = sel;
-            boolean emph = this.view.armed || sel;
+            this.selected = visuals.isEmphasised();
+            boolean emph = this.view.armed || this.selected;
             float lineWidth = visuals.getLineWidth();
             if (emph) {
                 lineWidth += JAttr.EMPH_INCREMENT;

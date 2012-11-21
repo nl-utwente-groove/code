@@ -87,6 +87,8 @@ import javax.swing.ToolTipManager;
 import org.jgraph.JGraph;
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
+import org.jgraph.event.GraphSelectionEvent;
+import org.jgraph.event.GraphSelectionListener;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.CellView;
@@ -123,6 +125,17 @@ public class GraphJGraph extends org.jgraph.JGraph {
         setInvokesStopCellEditing(true);
         addMouseListener(new MyMouseListener());
         addKeyListener(getCancelEditListener());
+        getSelectionModel().addGraphSelectionListener(
+            new GraphSelectionListener() {
+                @Override
+                public void valueChanged(GraphSelectionEvent e) {
+                    Object[] cells = e.getCells();
+                    for (int i = 0; i < cells.length; i++) {
+                        GraphJCell jCell = (GraphJCell) cells[i];
+                        jCell.putVisual(VisualKey.EMPHASIS, e.isAddedCell(i));
+                    }
+                }
+            });
         setEditable(false);
         setConnectable(false);
         setDisconnectable(false);
