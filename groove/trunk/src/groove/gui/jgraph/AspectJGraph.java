@@ -303,13 +303,16 @@ final public class AspectJGraph extends GraphJGraph {
         // translate screen coordinates to real coordinates
         PortView fromPortView =
             getPortViewAt(screenFrom.getX(), screenFrom.getY());
+        Point2D from = fromPortView.getLocation();
         PortView toPortView = getPortViewAt(screenTo.getX(), screenTo.getY());
+        Point2D to;
         // if toPortView is null, we're drawing a self-edge
         if (toPortView == null) {
             toPortView = fromPortView;
+            to = screenTo;
+        } else {
+            to = toPortView.getLocation();
         }
-        Point2D from = fromPortView.getLocation();
-        Point2D to = toPortView.getLocation();
         assert fromPortView != null : "addEdge should not be called with dangling source "
             + from;
         DefaultPort fromPort = (DefaultPort) fromPortView.getCell();
