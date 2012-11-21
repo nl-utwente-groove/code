@@ -48,11 +48,7 @@ public final class PatternPreviewDialog extends GraphPreviewDialog {
      * Creates a dialog for the given pattern graph, and sets it to visible.
      */
     public static void showPatternGraph(AbstractPatternGraph<?,?> pGraph) {
-        try {
-            showPatternGraph(null, pGraph);
-        } catch (Exception e) {
-            System.err.println("Dialog failed due to a bug in jGraph lib...");
-        }
+        showPatternGraph(null, pGraph);
     }
 
     /**
