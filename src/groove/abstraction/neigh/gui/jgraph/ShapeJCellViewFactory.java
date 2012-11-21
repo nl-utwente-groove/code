@@ -18,10 +18,8 @@ package groove.abstraction.neigh.gui.jgraph;
 
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.JCellViewFactory;
-import groove.gui.jgraph.JEdgeView;
 
 import org.jgraph.graph.PortView;
-import org.jgraph.graph.VertexView;
 
 /**
  * Cell view factory that dispatches to the proper view constructors
@@ -40,34 +38,11 @@ public class ShapeJCellViewFactory extends JCellViewFactory {
     }
 
     @Override
-    public ShapeJGraph getJGraph() {
-        return (ShapeJGraph) super.getJGraph();
-    }
-
-    @Override
     protected PortView createPortView(Object cell) {
         if (cell instanceof ShapeJPort) {
             return new ShapeJPortView(cell);
         } else {
             return super.createPortView(cell);
-        }
-    }
-
-    @Override
-    protected JEdgeView createEdgeView(Object cell) {
-        if (cell instanceof ShapeJEdge) {
-            return new ShapeJEdgeView((ShapeJEdge) cell, this.getJGraph());
-        } else {
-            return super.createEdgeView(cell);
-        }
-    }
-
-    @Override
-    protected VertexView createVertexView(Object cell) {
-        if (cell instanceof EquivClassJCell) {
-            return new EquivClassJCellView((EquivClassJCell) cell);
-        } else {
-            return super.createVertexView(cell);
         }
     }
 

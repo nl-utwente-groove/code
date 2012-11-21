@@ -169,9 +169,8 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
         Shape shape = this.getGraph();
         EquivRelation<ShapeNode> er = shape.getEquivRelation();
         for (EquivClass<ShapeNode> ec : er) {
-            EquivClassJCell ecJCell = EquivClassJCell.newInstance();
+            EcJVertex ecJCell = EcJVertex.newInstance();
             ecJCell.setJModel(this);
-            ecJCell.setEquivClass(ec);
             for (ShapeNode node : ec) {
                 this.parentMap.addEntry(getJCellForNode(node), ecJCell);
             }

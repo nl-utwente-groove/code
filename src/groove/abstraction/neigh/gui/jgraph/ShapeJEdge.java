@@ -16,10 +16,10 @@
  */
 package groove.abstraction.neigh.gui.jgraph;
 
-import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
+
+import org.jgraph.graph.CellView;
 
 /**
  * Class that connects to the JGraph library for displaying ShapeEdges.
@@ -37,17 +37,6 @@ public class ShapeJEdge extends GraphJEdge {
 
     private ShapeJEdge() {
         // empty
-    }
-
-    private ShapeJEdge(ShapeJModel jModel) {
-        this();
-        setJModel(jModel);
-    }
-
-    private ShapeJEdge(ShapeJModel jModel, ShapeEdge edge) {
-        this();
-        setJModel(jModel);
-        addEdge(edge);
     }
 
     @Override
@@ -96,8 +85,22 @@ public class ShapeJEdge extends GraphJEdge {
         return new ShapeJEdge();
     }
 
-    /** Returns a prototype {@link GraphJEdge} for a given {@link GraphJGraph}. */
-    public static ShapeJEdge getPrototype() {
-        return new ShapeJEdge();
+    /**
+     * Returns true if the vertex associated with the given vertex view
+     * corresponds to the source of this edge.
+     */
+    public boolean isSrcVertex(CellView vertexView) {
+        ShapeJVertex srcVertex = (ShapeJVertex) vertexView.getCell();
+        return srcVertex.equals(getSource().getParent());
     }
+
+    /**
+     * Returns true if the vertex associated with the given vertex view
+     * corresponds to the source of this edge.
+     */
+    public boolean isTgtVertex(CellView vertexView) {
+        ShapeJVertex tgtVertex = (ShapeJVertex) vertexView.getCell();
+        return tgtVertex.equals(getTarget().getParent());
+    }
+
 }
