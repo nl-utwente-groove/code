@@ -63,7 +63,7 @@ public class TestPatternGraphGenerator {
         assertTrue(generator.compareGTSs());
     }
 
-    @Test
+    /*@Test
     public void testTrains() {
         final String GRAMMAR = "junit/pattern/trains";
         final String START_GRAPH = "start";
@@ -78,6 +78,6 @@ public class TestPatternGraphGenerator {
         assertEquals(11, pgts.getStateCount());
         assertEquals(12, pgts.getTransitionCount());
         assertTrue(generator.compareGTSs());
-    }
+    }*/
 
 }

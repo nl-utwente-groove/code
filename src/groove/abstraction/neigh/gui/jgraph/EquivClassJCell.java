@@ -31,7 +31,7 @@ import java.util.Collections;
  */
 public class EquivClassJCell extends AbstractJCell {
     private EquivClassJCell() {
-        // empty
+        setLayoutable(true);
     }
 
     @Override

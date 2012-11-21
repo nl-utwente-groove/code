@@ -64,9 +64,7 @@ public class ShapeJCellViewFactory extends JCellViewFactory {
 
     @Override
     protected VertexView createVertexView(Object cell) {
-        if (cell instanceof ShapeJVertex) {
-            return new ShapeJVertexView((ShapeJVertex) cell, this.getJGraph());
-        } else if (cell instanceof EquivClassJCell) {
+        if (cell instanceof EquivClassJCell) {
             return new EquivClassJCellView((EquivClassJCell) cell);
         } else {
             return super.createVertexView(cell);

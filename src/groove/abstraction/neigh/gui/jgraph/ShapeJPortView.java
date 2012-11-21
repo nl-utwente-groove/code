@@ -102,15 +102,13 @@ public class ShapeJPortView extends PortView {
             CellView vertex) {
         boolean result = false;
         if (this.getCell().equals(edgeView.getSourcePort())) {
-            boolean isSrcVertex =
-                edgeView.isSrcVertex((ShapeJVertexView) vertex);
+            boolean isSrcVertex = edgeView.isSrcVertex(vertex);
             if (isSrcVertex
                 && (jEdge.isMainSrc() || this.getCell().isAlwaysMovable())) {
                 result = true;
             }
         } else if (this.getCell().equals(edgeView.getTargetPort())) {
-            boolean isTgtVertex =
-                edgeView.isTgtVertex((ShapeJVertexView) vertex);
+            boolean isTgtVertex = edgeView.isTgtVertex(vertex);
             if (isTgtVertex
                 && (jEdge.isMainTgt() || this.getCell().isAlwaysMovable())) {
                 result = true;
