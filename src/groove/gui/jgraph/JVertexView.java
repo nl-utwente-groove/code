@@ -20,6 +20,7 @@ import static groove.gui.jgraph.JAttr.ADORNMENT_FONT;
 import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
 import groove.gui.look.HTMLFormat;
 import groove.gui.look.LineStyle;
+import groove.gui.look.Look;
 import groove.gui.look.MultiLabel;
 import groove.gui.look.Values;
 import groove.gui.look.VisualKey;
@@ -534,7 +535,6 @@ public class JVertexView extends VertexView {
             } else {
                 this.twoLines = false;
             }
-
             setOpaque(visuals.isOpaque());
             Color foreground = visuals.getForeground();
             setForeground((foreground != null) ? foreground
@@ -557,6 +557,7 @@ public class JVertexView extends VertexView {
             setBorder(createEmptyBorder());
             setText(this.view.getText());
             this.error = visuals.isError();
+            this.nodeEdge = this.cell.getLooks().contains(Look.NODIFIED);
             return this;
         }
 
@@ -691,24 +692,28 @@ public class JVertexView extends VertexView {
 
         private Dimension computePreferredSize() {
             Dimension result;
-            String text = convertDigits(getText());
-            result = this.sizeMap.get(text);
-            if (result == null) {
-                if (text.length() == 0) {
-                    result = JAttr.DEFAULT_NODE_SIZE;
-                } else {
-                    Border border = getBorder();
-                    // reset the border to make sure only the text size gets 
-                    // measured
-                    setBorder(null);
-                    // set a large size to avoid spurious line breaks
-                    // which would mess up the size calculation
-                    // setSize(1000, 1000);
-                    result = super.getPreferredSize();
-                    // reset the border
-                    setBorder(border);
+            if (this.nodeEdge) {
+                result = JAttr.NODE_EDGE_DIMENSION;
+            } else {
+                String text = convertDigits(getText());
+                result = this.sizeMap.get(text);
+                if (result == null) {
+                    if (text.length() == 0) {
+                        result = JAttr.DEFAULT_NODE_SIZE;
+                    } else {
+                        Border border = getBorder();
+                        // reset the border to make sure only the text size gets 
+                        // measured
+                        setBorder(null);
+                        // set a large size to avoid spurious line breaks
+                        // which would mess up the size calculation
+                        // setSize(1000, 1000);
+                        result = super.getPreferredSize();
+                        // reset the border
+                        setBorder(border);
+                    }
+                    this.sizeMap.put(text, result);
                 }
-                this.sizeMap.put(text, result);
             }
             return result;
         }
@@ -970,6 +975,8 @@ public class JVertexView extends VertexView {
         private GraphJCell cell;
         /** The visual map of the vertex that is currently installed. */
         private VisualMap visuals;
+        /** Indicates if the cell is a nodified edge. */
+        private boolean nodeEdge;
         /** The underlying <code>JGraph</code>. */
         private Color selectionColor;
         /** Flag indicating that the vertex has been selected. */
