@@ -14,10 +14,14 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.display;
 
-import groove.gui.Display.ListPanel;
+import groove.gui.Options;
+import groove.gui.Simulator;
+import groove.gui.SimulatorListener;
+import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
+import groove.gui.display.Display.ListPanel;
 import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
 

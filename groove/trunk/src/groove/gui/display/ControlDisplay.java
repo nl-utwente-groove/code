@@ -14,9 +14,11 @@
  * 
  * $Id: CAPanel.java,v 1.18 2008-03-18 12:18:19 fladder Exp $
  */
-package groove.gui;
+package groove.gui.display;
 
 import groove.control.parse.CtrlDoc;
+import groove.gui.Simulator;
+import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
 import groove.trans.ResourceKind;
 

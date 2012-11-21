@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.display;
 
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.NBSP;

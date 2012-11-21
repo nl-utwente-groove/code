@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package groove.gui;
+package groove.gui.display;
 
 import gnu.prolog.io.TermWriter;
 import gnu.prolog.term.AtomTerm;
@@ -24,6 +24,8 @@ import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologException;
+import groove.gui.Options;
+import groove.gui.Simulator;
 import groove.lts.MatchResult;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.GrooveState;

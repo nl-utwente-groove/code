@@ -14,9 +14,11 @@
  * 
  * $Id: JGraphPanel.java,v 1.20 2008-01-30 09:33:36 iovka Exp $
  */
-package groove.gui;
+package groove.gui.display;
 
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
+import groove.gui.Options;
+import groove.gui.SimulatorModel;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;

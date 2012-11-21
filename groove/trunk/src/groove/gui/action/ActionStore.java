@@ -16,13 +16,12 @@
  */
 package groove.gui.action;
 
-import groove.gui.DisplayKind;
-import groove.gui.Refreshable;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.StateDisplay;
+import groove.gui.display.DisplayKind;
+import groove.gui.display.StateDisplay;
 import groove.trans.ResourceKind;
 
 import java.util.ArrayList;

@@ -16,12 +16,12 @@
  */
 package groove.gui.dialog;
 
-import groove.gui.DisplayKind;
-import groove.gui.SetLayoutMenu;
 import groove.gui.Simulator;
+import groove.gui.display.DisplayKind;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.layout.LayoutKind;
 import groove.gui.layout.LayouterItem;
+import groove.gui.menu.SetLayoutMenu;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

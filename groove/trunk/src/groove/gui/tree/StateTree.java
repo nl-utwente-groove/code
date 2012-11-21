@@ -17,15 +17,15 @@
 package groove.gui.tree;
 
 import static groove.trans.ResourceKind.RULE;
-import groove.gui.DisplayKind;
 import groove.gui.Icons;
 import groove.gui.Options;
-import groove.gui.ResourceDisplay;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
+import groove.gui.display.DisplayKind;
+import groove.gui.display.ResourceDisplay;
 import groove.gui.jgraph.JAttr;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;

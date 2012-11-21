@@ -1,4 +1,4 @@
-package groove.gui;
+package groove.io.store;
 
 /** Type of edits that are distinguished. */
 public enum EditType {

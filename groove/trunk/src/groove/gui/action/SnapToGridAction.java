@@ -1,9 +1,9 @@
 package groove.gui.action;
 
-import groove.gui.GraphEditorTab;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.gui.display.GraphEditorTab;
 
 import java.util.HashSet;
 import java.util.Set;

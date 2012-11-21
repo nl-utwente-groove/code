@@ -1,9 +1,9 @@
 package groove.gui.action;
 
 import static groove.trans.ResourceKind.HOST;
-import groove.gui.EditType;
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.io.store.EditType;
 import groove.trans.ResourceKind;
 
 /** Action to start editing the currently displayed resource. */

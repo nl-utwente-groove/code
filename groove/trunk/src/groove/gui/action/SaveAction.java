@@ -1,11 +1,11 @@
 package groove.gui.action;
 
-import groove.gui.GraphEditorTab;
 import groove.gui.Icons;
 import groove.gui.Options;
-import groove.gui.ResourceTab;
 import groove.gui.Simulator;
-import groove.gui.TextTab;
+import groove.gui.display.GraphEditorTab;
+import groove.gui.display.ResourceTab;
+import groove.gui.display.TextTab;
 import groove.io.ExtensionFilter;
 import groove.io.xml.AspectGxl;
 import groove.trans.ResourceKind;

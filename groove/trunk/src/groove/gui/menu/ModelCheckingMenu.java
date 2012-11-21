@@ -14,9 +14,13 @@
  * 
  * $Id$
  */
-package groove.gui;
+package groove.gui.menu;
 
 import groove.explore.StrategyValue;
+import groove.gui.Options;
+import groove.gui.Simulator;
+import groove.gui.SimulatorListener;
+import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.CheckLTLAction;
 import groove.gui.action.SimulatorAction;

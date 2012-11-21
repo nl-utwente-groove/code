@@ -19,7 +19,7 @@ package groove.gui.tree;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphProperties.Key;
-import groove.gui.ResourceDisplay;
+import groove.gui.display.ResourceDisplay;
 import groove.io.HTMLConverter;
 import groove.view.RuleModel;
 

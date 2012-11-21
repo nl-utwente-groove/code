@@ -19,7 +19,6 @@ package groove.io.store;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.trans.ResourceKind.PROPERTIES;
 import groove.graph.TypeLabel;
-import groove.gui.EditType;
 import groove.io.Util;
 import groove.trans.ResourceKind;
 import groove.trans.SystemProperties;

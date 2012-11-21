@@ -14,8 +14,12 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.display;
 
+import groove.gui.Icons;
+import groove.gui.Options;
+import groove.gui.Simulator;
+import groove.gui.SimulatorModel;
 import groove.gui.action.CancelEditAction;
 import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;

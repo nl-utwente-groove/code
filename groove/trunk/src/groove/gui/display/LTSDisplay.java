@@ -14,7 +14,7 @@
  * 
  * $Id: LTSPanel.java,v 1.21 2008-02-05 13:28:06 rensink Exp $
  */
-package groove.gui;
+package groove.gui.display;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_PARTIAL_GTS_OPTION;
@@ -25,6 +25,10 @@ import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.STATE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
+import groove.gui.Options;
+import groove.gui.Simulator;
+import groove.gui.SimulatorListener;
+import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.JAttr;

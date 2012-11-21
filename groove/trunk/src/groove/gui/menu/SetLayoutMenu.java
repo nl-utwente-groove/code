@@ -14,8 +14,9 @@
  * 
  * $Id: SetLayoutMenu.java,v 1.5 2008-01-30 09:33:35 iovka Exp $
  */
-package groove.gui;
+package groove.gui.menu;
 
+import groove.gui.Options;
 import groove.gui.action.LayoutAction;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.layout.ForestLayouter;

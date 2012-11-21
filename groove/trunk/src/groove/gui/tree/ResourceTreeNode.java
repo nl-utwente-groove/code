@@ -16,7 +16,7 @@
  */
 package groove.gui.tree;
 
-import groove.gui.ResourceDisplay;
+import groove.gui.display.ResourceDisplay;
 import groove.io.HTMLConverter;
 import groove.view.ResourceModel;
 

@@ -14,6 +14,8 @@
  */
 package groove.gui;
 
+import groove.gui.display.DisplayKind;
+import groove.gui.display.LTSDisplay;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 

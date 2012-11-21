@@ -14,8 +14,10 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.display;
 
+import groove.gui.Simulator;
+import groove.gui.SimulatorModel;
 import groove.gui.action.ActionStore;
 import groove.trans.ResourceKind;
 
@@ -184,6 +186,11 @@ abstract public class Display extends JPanel {
     /** Toolbar for the {@link #listPanel}. */
     private JToolBar listToolBar;
 
+    /**
+     * Minimum height of the rule tree component.
+     */
+    static final int START_LIST_MINIMUM_HEIGHT = 130;
+
     /** Creates and returns a fully built instance of the display for a given kind. */
     public static Display newDisplay(Simulator simulator, DisplayKind kind) {
         Display result = null;
@@ -233,7 +240,7 @@ abstract public class Display extends JPanel {
                 public Dimension getPreferredSize() {
                     Dimension superSize = super.getPreferredSize();
                     return new Dimension((int) superSize.getWidth(),
-                        Simulator.START_LIST_MINIMUM_HEIGHT);
+                        START_LIST_MINIMUM_HEIGHT);
                 }
             };
             this.scrollPane.setBackground(list.getBackground());

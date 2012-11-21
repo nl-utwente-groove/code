@@ -35,11 +35,19 @@ import groove.gui.action.AboutAction;
 import groove.gui.action.ActionStore;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.GraphPreviewDialog;
+import groove.gui.display.DisplayKind;
+import groove.gui.display.DisplaysPanel;
+import groove.gui.display.GraphEditorTab;
+import groove.gui.display.GraphTab;
+import groove.gui.display.JGraphPanel;
+import groove.gui.display.ResourceTab;
+import groove.gui.display.TextTab;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.list.ListPanel.SelectableListEntry;
 import groove.gui.list.ListTabbedPane;
 import groove.gui.list.SearchResult;
+import groove.gui.menu.ModelCheckingMenu;
 import groove.trans.ResourceKind;
 import groove.util.Groove;
 import groove.view.FormatError;
@@ -480,8 +488,7 @@ public class Simulator implements SimulatorListener {
         JMenu newMenu = new JMenu(Options.NEW_MENU_NAME);
         for (ResourceKind resource : ResourceKind.values()) {
             if (resource != ResourceKind.PROPERTIES
-                    && resource != ResourceKind.CONFIG
-                    ) {
+                && resource != ResourceKind.CONFIG) {
                 newMenu.add(this.actions.getNewAction(resource));
             }
         }
@@ -984,9 +991,4 @@ public class Simulator implements SimulatorListener {
 
     /** Name of this application. */
     private static final String APPLICATION_NAME = "Production Simulator";
-
-    /**
-     * Minimum height of the rule tree component.
-     */
-    static final int START_LIST_MINIMUM_HEIGHT = 130;
 }

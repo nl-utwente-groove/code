@@ -2,9 +2,9 @@ package groove.gui.action;
 
 import static groove.trans.ResourceKind.GROOVY;
 import groove.groovy.Util;
-import groove.gui.GroovyDisplay;
 import groove.gui.Icons;
 import groove.gui.Simulator;
+import groove.gui.display.GroovyDisplay;
 import groove.io.HTMLConverter;
 import groove.view.GroovyModel;
 

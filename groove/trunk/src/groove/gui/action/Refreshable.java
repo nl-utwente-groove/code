@@ -1,4 +1,4 @@
-package groove.gui;
+package groove.gui.action;
 
 /** 
  * Interface for visual components that should be refreshed upon changes in the simulator model. 

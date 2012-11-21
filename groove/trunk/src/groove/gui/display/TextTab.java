@@ -1,6 +1,8 @@
-package groove.gui;
+package groove.gui.display;
 
 import groove.control.parse.CtrlTokenMaker;
+import groove.gui.Icons;
+import groove.gui.Options;
 import groove.prolog.util.PrologTokenMaker;
 import groove.view.FormatError;
 import groove.view.GrammarModel;

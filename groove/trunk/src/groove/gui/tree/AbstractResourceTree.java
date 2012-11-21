@@ -18,12 +18,12 @@ package groove.gui.tree;
 
 import static groove.gui.SimulatorModel.Change.GRAMMAR;
 import static groove.gui.SimulatorModel.Change.GTS;
-import groove.gui.ResourceDisplay;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.ActionStore;
+import groove.gui.display.ResourceDisplay;
 import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
 

@@ -14,9 +14,10 @@
  * 
  * $Id: CAPanel.java,v 1.18 2008-03-18 12:18:19 fladder Exp $
  */
-package groove.gui;
+package groove.gui.display;
 
 import groove.groovy.GraphManager;
+import groove.gui.Simulator;
 import groove.io.FileType;
 import groove.trans.ResourceKind;
 import groovy.lang.Binding;
