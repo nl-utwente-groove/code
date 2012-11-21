@@ -36,4 +36,9 @@ public final class ShapeNode extends DefaultHostNode {
     ShapeNode(int nr, TypeNode type) {
         super(nr, type);
     }
+
+    /** String to be used when displaying the node in graphical mode.*/
+    public String getAdornment() {
+        return super.toString();
+    }
 }

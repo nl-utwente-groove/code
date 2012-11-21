@@ -16,6 +16,7 @@
  */
 package groove.abstraction.neigh.gui.jgraph;
 
+import groove.abstraction.neigh.gui.look.ShapeAdornmentValue;
 import groove.abstraction.neigh.gui.look.ShapeLabelValue;
 import groove.abstraction.neigh.shape.Shape;
 import groove.graph.GraphRole;
@@ -32,8 +33,6 @@ import groove.gui.look.VisualKey;
 import groove.gui.look.VisualValue;
 
 import java.awt.Rectangle;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import org.jgraph.graph.CellView;
 
@@ -47,8 +46,7 @@ public final class ShapeJGraph extends GraphJGraph {
     /** Constructs an instance of the j-graph for a given simulator. */
     public ShapeJGraph(Simulator simulator) {
         super(simulator, true);
-        this.setPortsVisible(true);
-        this.addMouseListener(new MyMouseListener());
+        setPortsVisible(true);
     }
 
     @Override
@@ -74,7 +72,7 @@ public final class ShapeJGraph extends GraphJGraph {
 
     /** Returns the shape from the model. */
     public Shape getShape() {
-        return this.getModel().getGraph();
+        return getModel().getGraph();
     }
 
     @Override
@@ -94,10 +92,9 @@ public final class ShapeJGraph extends GraphJGraph {
             }
             GraphJCell jCell = (GraphJCell) jCellView.getCell();
             boolean typeCorrect =
-                vertex
-                        ? (jCell instanceof GraphJVertex || jCell instanceof EquivClassJCell)
-                        : edge ? jCell instanceof GraphJEdge : true;
-            if (typeCorrect && jCell instanceof EquivClassJCell) {
+                vertex ? (jCell instanceof GraphJVertex) : edge
+                        ? jCell instanceof GraphJEdge : true;
+            if (typeCorrect && jCell instanceof EcJVertex) {
                 // We have an equivalence class.
                 for (CellView childView : jCellView.getChildViews()) {
                     // Check proximity with all nodes inside.
@@ -129,28 +126,6 @@ public final class ShapeJGraph extends GraphJGraph {
         GraphJCell result =
             vertexOrEdgeResult == null ? ecResult : vertexOrEdgeResult;
         return result;
-    }
-
-    /**
-     * Mouse listener that creates the popup menu and adds and deletes points on
-     * appropriate events.
-     */
-    private class MyMouseListener extends MouseAdapter {
-        /** Empty constructor wit the correct visibility. */
-        MyMouseListener() {
-            // empty
-        }
-
-        @Override
-        public void mousePressed(MouseEvent evt) {
-            maybeShowPopup(evt);
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent evt) {
-            maybeShowPopup(evt);
-            ShapeJGraph.this.refresh();
-        }
     }
 
     @Override
@@ -186,6 +161,8 @@ public final class ShapeJGraph extends GraphJGraph {
         @Override
         public VisualValue<?> newVisualValue(VisualKey key) {
             switch (key) {
+            case ADORNMENT:
+                return new ShapeAdornmentValue();
             case LABEL:
                 return new ShapeLabelValue(getJGraph());
             default:

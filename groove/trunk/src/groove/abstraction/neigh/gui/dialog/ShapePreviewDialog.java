@@ -22,16 +22,12 @@ import groove.abstraction.neigh.gui.jgraph.ShapeJModel;
 import groove.abstraction.neigh.shape.Shape;
 import groove.gui.Simulator;
 import groove.gui.dialog.GraphPreviewDialog;
-import groove.gui.layout.LayoutKind;
-import groove.gui.layout.LayouterItem;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostGraph;
 import groove.util.Groove;
 
 import java.io.File;
 import java.io.IOException;
-
-import com.jgraph.layout.tree.JGraphTreeLayout;
 
 /**
  * Dialog for displaying shapes.
@@ -67,15 +63,8 @@ public final class ShapePreviewDialog extends GraphPreviewDialog {
         ShapeJModel model = (ShapeJModel) jGraph.newModel();
         model.loadGraph(((Shape) this.graph).downcast());
         jGraph.setModel(model);
-
-        LayouterItem layouter =
-            LayoutKind.getLayouterItemProto(LayoutKind.BASIC_TREE);
-        JGraphTreeLayout layout = (JGraphTreeLayout) layouter.getLayout();
-        layout.setNodeDistance(50);
-        layout.setLevelDistance(100.0);
-        jGraph.setLayouter(layouter);
-        jGraph.doLayout(true);
-
+        model.setLayoutable(true);
+        jGraph.setModel(model);
         return jGraph;
     }
 

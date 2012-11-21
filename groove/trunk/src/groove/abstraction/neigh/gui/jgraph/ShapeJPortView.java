@@ -7,6 +7,8 @@
  */
 package groove.abstraction.neigh.gui.jgraph;
 
+import groove.gui.jgraph.JEdgeView;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
@@ -41,7 +43,7 @@ public class ShapeJPortView extends PortView {
     /** Basic constructor, defers to super class. */
     public ShapeJPortView(Object cell) {
         super(cell);
-        this.getGeometricShape();
+        getGeometricShape();
     }
 
     private Shape getGeometricShape() {
@@ -59,7 +61,7 @@ public class ShapeJPortView extends PortView {
 
     @Override
     public String toString() {
-        return "ShapeJPortView for " + this.getCell().toString();
+        return "ShapeJPortView for " + getCell().toString();
     }
 
     /** Returns the bounds for the port view. */
@@ -84,12 +86,11 @@ public class ShapeJPortView extends PortView {
     public Point2D getLocation(EdgeView edge, Point2D nearest) {
         CellView vertex = getParentView();
         Rectangle2D r = vertex.getBounds();
-        Point2D pos = this.getPortPosition(r);
+        Point2D pos = getPortPosition(r);
         if (edge != null) {
-            assert edge instanceof ShapeJEdgeView;
-            ShapeJEdgeView edgeView = (ShapeJEdgeView) edge;
-            ShapeJEdge jEdge = edgeView.getCell();
-            if (nearest != null && this.shouldMovePort(edgeView, jEdge, vertex)) {
+            assert edge instanceof JEdgeView;
+            JEdgeView edgeView = (JEdgeView) edge;
+            if (nearest != null && shouldMovePort(edgeView, vertex)) {
                 pos = vertex.getPerimeterPoint(edge, null, nearest);
                 Point2D newOffset = this.computeNewOffset(r, pos);
                 GraphConstants.setOffset(this.allAttributes, newOffset);
@@ -98,19 +99,19 @@ public class ShapeJPortView extends PortView {
         return pos;
     }
 
-    private boolean shouldMovePort(ShapeJEdgeView edgeView, ShapeJEdge jEdge,
-            CellView vertex) {
+    private boolean shouldMovePort(JEdgeView edgeView, CellView vertex) {
         boolean result = false;
-        if (this.getCell().equals(edgeView.getSourcePort())) {
-            boolean isSrcVertex = edgeView.isSrcVertex(vertex);
+        ShapeJEdge jEdge = (ShapeJEdge) edgeView.getCell();
+        if (getCell().equals(jEdge.getSource())) {
+            boolean isSrcVertex = jEdge.isSrcVertex(vertex);
             if (isSrcVertex
-                && (jEdge.isMainSrc() || this.getCell().isAlwaysMovable())) {
+                && (jEdge.isMainSrc() || getCell().isAlwaysMovable())) {
                 result = true;
             }
-        } else if (this.getCell().equals(edgeView.getTargetPort())) {
-            boolean isTgtVertex = edgeView.isTgtVertex(vertex);
+        } else if (getCell().equals(jEdge.getTarget())) {
+            boolean isTgtVertex = jEdge.isTgtVertex(vertex);
             if (isTgtVertex
-                && (jEdge.isMainTgt() || this.getCell().isAlwaysMovable())) {
+                && (jEdge.isMainTgt() || getCell().isAlwaysMovable())) {
                 result = true;
             }
         }
