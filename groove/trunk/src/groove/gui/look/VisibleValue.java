@@ -137,7 +137,7 @@ public class VisibleValue implements VisualValue<Boolean> {
             return true;
         }
         // in addition, value nodes or data type nodes may be filtered
-        if (getOptionValue(Options.SHOW_VALUE_NODES_OPTION)) {
+        if (jVertex.getJGraph().isShowValueNodes()) {
             return true;
         }
         // data type nodes in type graphs should never be shown

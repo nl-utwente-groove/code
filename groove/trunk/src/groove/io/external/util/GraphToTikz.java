@@ -41,6 +41,8 @@ import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.gui.look.EdgeEnd;
+import groove.gui.look.HTMLFormat;
+import groove.gui.look.MultiLabel;
 import groove.gui.look.VisualMap;
 import groove.io.HTMLConverter;
 import groove.io.Util;
@@ -628,14 +630,12 @@ public final class GraphToTikz {
             }
 
             // Node Labels.
-            List<String> lines = node.getVisuals().getLabel();
-            if (lines.size() == 0 || isNodifiedEdge(node)) {
+            MultiLabel lines = node.getVisuals().getLabel();
+            if (lines.isEmpty() || isNodifiedEdge(node)) {
                 this.result.append(EMPTY_NODE_LAB);
             } else {
                 this.result.append(BEGIN_NODE_LAB);
-                for (String line : lines) {
-                    this.appendNodeInscription(new StringBuilder(line));
-                }
+                this.appendNodeInscription(lines.toString(HTMLFormat.instance()));
                 // Remove the last \\, if it exists
                 if (this.result.lastIndexOf(CRLF) == this.result.length() - 2) {
                     this.result.deleteCharAt(this.result.length() - 1);
@@ -1399,13 +1399,13 @@ public final class GraphToTikz {
 
     private void appendEdgeLabel(GraphJEdge edge) {
         Edge e = edge.getEdge();
-        List<String> lines = edge.getVisuals().getLabel();
+        MultiLabel lines = edge.getVisuals().getLabel();
         StringBuilder text = new StringBuilder();
-        for (String line : lines) {
+        for (MultiLabel.Part part : lines.getParts()) {
             if (text.length() > 0) {
                 text.append(", ");
             }
-            text.append(line);
+            text.append(part.getLine().toString(HTMLFormat.instance()));
         }
         String escapedText = escapeSpecialChars(text).toString();
         if (e instanceof AspectEdge) {

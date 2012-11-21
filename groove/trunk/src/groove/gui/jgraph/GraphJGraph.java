@@ -33,6 +33,7 @@ import groove.gui.action.LayoutAction;
 import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
+import groove.gui.look.MultiLabel;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
 import groove.gui.look.VisualValue;
@@ -218,16 +219,15 @@ public class GraphJGraph extends org.jgraph.JGraph {
     @Override
     public String convertValueToString(Object value) {
         String result = null;
-        List<String> lines = null;
         if (value instanceof String) {
             result = (String) value;
         } else if (value instanceof GraphJVertex) {
-            lines = ((GraphJVertex) value).getVisuals().getLabel();
+            MultiLabel label = ((GraphJVertex) value).getVisuals().getLabel();
+            result = label.toString();
         } else if (value instanceof JEdgeView) {
-            lines = ((JEdgeView) value).getCell().getVisuals().getLabel();
-        }
-        if (lines != null && !lines.isEmpty()) {
-            result = lines.toString();
+            MultiLabel label =
+                ((JEdgeView) value).getCell().getVisuals().getLabel();
+            result = label.toString();
         }
         if (result == null || result.length() == 0) {
             result = " ";

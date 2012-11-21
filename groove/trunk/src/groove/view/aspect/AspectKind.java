@@ -57,19 +57,19 @@ public enum AspectKind {
         }
     },
     /** Used for comments/documentation. */
-    REMARK("rem", "// ", ContentKind.NONE),
+    REMARK("rem", ContentKind.NONE),
 
     // rule roles
     /** Indicates an unmodified element. */
     READER("use", ContentKind.LEVEL),
     /** Indicates an element to be deleted. */
-    ERASER("del", "- ", ContentKind.LEVEL),
+    ERASER("del", ContentKind.LEVEL),
     /** Indicates an element to be created. */
-    CREATOR("new", "+ ", ContentKind.LEVEL),
+    CREATOR("new", ContentKind.LEVEL),
     /** Indicates an element to be created if not yet present. */
-    ADDER("cnew", "!+ ", ContentKind.LEVEL),
+    ADDER("cnew", ContentKind.LEVEL),
     /** Indicates a forbidden element. */
-    EMBARGO("not", "! ", ContentKind.LEVEL),
+    EMBARGO("not", ContentKind.LEVEL),
     /** Connects two embargo sub-graphs. */
     CONNECT("or", ContentKind.EMPTY),
 
@@ -142,23 +142,11 @@ public enum AspectKind {
     /** Creates a new aspect kind.
      * @param name the aspect kind name; will be appended with {@link #SEPARATOR} to form
      * the prefix
-     * @param displayPrefix the prefix used for this aspect in display mode
-     * @param contentKind the kind of content for this aspect
-     */
-    private AspectKind(String name, String displayPrefix,
-            ContentKind contentKind) {
-        this.name = name;
-        this.displayPrefix = displayPrefix;
-        this.contentKind = contentKind;
-    }
-
-    /** Creates a new aspect kind, with empty display prefix
-     * @param name the aspect kind name; will be appended with {@link #SEPARATOR} to form
-     * the prefix
      * @param contentKind the kind of content for this aspect
      */
     private AspectKind(String name, ContentKind contentKind) {
-        this(name, "", contentKind);
+        this.name = name;
+        this.contentKind = contentKind;
     }
 
     @Override
@@ -178,15 +166,6 @@ public enum AspectKind {
      */
     public String getPrefix() {
         return getName() + SEPARATOR;
-    }
-
-    /**
-     * Returns the display prefix of this aspect kind.
-     * This is the prefix used in display mode when an edge of this
-     * kind is used as node label
-     */
-    public String getDisplayPrefix() {
-        return this.displayPrefix;
     }
 
     /** 
@@ -347,7 +326,6 @@ public enum AspectKind {
 
     private final ContentKind contentKind;
     private final String name;
-    private final String displayPrefix;
     private Aspect aspect;
 
     /** 

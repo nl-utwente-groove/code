@@ -18,6 +18,8 @@ package groove.gui.jgraph;
 
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
+import groove.gui.look.Line;
+import groove.gui.look.MultiLabel;
 import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
@@ -46,10 +48,10 @@ public class AspectJObject extends ArrayList<String> {
      * Returns a list of lines constituting the node or edge label
      * in case this object is displayed directly.
      */
-    public List<String> toLines() {
-        List<String> result = new ArrayList<String>();
+    public MultiLabel toLines() {
+        MultiLabel result = new MultiLabel();
         for (String text : this) {
-            result.add(text);
+            result.add(Line.atom(text));
         }
         return result;
     }
