@@ -16,8 +16,8 @@
  */
 package groove.abstraction.pattern;
 
-import groove.abstraction.pattern.explore.PatternGraphGenerator;
-import groove.abstraction.pattern.lts.PGTS;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 
 /**
  * @author Eduardo Zambon
@@ -37,13 +37,22 @@ public class Test {
 
     /** Test method. */
     public static void main(String args[]) {
-        final String GRAMMAR = "junit/pattern/trains";
+        /*final String GRAMMAR = "junit/pattern/trains";
         final String START_GRAPH = "start";
         String typeGraph = "ptgraph.gst";
         String myargs[] = new String[] {GRAMMAR, START_GRAPH, typeGraph};
         PatternGraphGenerator generator = new PatternGraphGenerator(myargs);
         generator.processArguments();
         generator.explore();
-        PGTS pgts = generator.getPGTS();
+        PGTS pgts = generator.getPGTS();*/
+
+        GraphicsEnvironment ge =
+            GraphicsEnvironment.getLocalGraphicsEnvironment();
+        for (Font font : ge.getAllFonts()) {
+            String fontName = font.getFontName();
+            boolean good = font.canDisplay(groove.io.Util.RT);
+            System.out.println(fontName + "\t\t" + good);
+        }
+
     }
 }
