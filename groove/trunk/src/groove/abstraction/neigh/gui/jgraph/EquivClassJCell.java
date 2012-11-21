@@ -68,7 +68,7 @@ public class EquivClassJCell extends AbstractJCell {
 
     @Override
     protected Look getStructuralLook() {
-        return Look.PATTERN;
+        return Look.EQUIV_CLASS;
     }
 
     /** 
