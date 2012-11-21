@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.tree;
 
 import groove.graph.Edge;
 import groove.graph.Element;

@@ -14,7 +14,7 @@
  * 
  * $Id: ZoomMenu.java,v 1.6 2008-01-30 09:33:37 iovka Exp $
  */
-package groove.gui;
+package groove.gui.menu;
 
 import groove.gui.jgraph.GraphJGraph;
 

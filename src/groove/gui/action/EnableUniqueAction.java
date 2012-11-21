@@ -16,9 +16,9 @@
  */
 package groove.gui.action;
 
-import groove.gui.EditType;
 import groove.gui.Icons;
 import groove.gui.Simulator;
+import groove.io.store.EditType;
 import groove.trans.ResourceKind;
 
 import java.io.IOException;

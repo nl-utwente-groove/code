@@ -1,4 +1,4 @@
-package groove.gui;
+package groove.gui.display;
 
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;

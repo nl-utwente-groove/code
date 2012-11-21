@@ -5,6 +5,7 @@ import groove.explore.util.ExplorationStatistics;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.TypeLabel;
+import groove.gui.display.DisplayKind;
 import groove.gui.list.SearchResult;
 import groove.io.store.DefaultFileSystemStore;
 import groove.io.store.SystemStore;

@@ -14,13 +14,14 @@
  * 
  * $Id: ShowHideMenu.java,v 1.13 2008-01-30 09:33:37 iovka Exp $
  */
-package groove.gui;
+package groove.gui.menu;
 
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
+import groove.gui.Options;
 import groove.gui.dialog.StringDialog;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;

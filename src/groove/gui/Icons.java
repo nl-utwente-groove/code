@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.io.store.EditType;
 import groove.trans.ResourceKind;
 import groove.util.Groove;
 

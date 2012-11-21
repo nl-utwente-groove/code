@@ -34,14 +34,13 @@ import java.awt.geom.Point2D;
  * @version $Revision $
  */
 public class MultiLabel {
-
     /**
      * Direction of a line of the multi-label.
      * This determines how the orientation decorations are placed.
      * @author rensink
      * @version $Revision $
      */
-    public enum Direct {
+    public static enum Direct {
         /** Undirected label. */
         NONE {
             @Override
@@ -53,7 +52,7 @@ public class MultiLabel {
         FORWARD {
             @Override
             public Orient getOrient(int dx, int dy) {
-                if (Math.abs(dx) >= Math.abs(dy) / 4) {
+                if (Math.abs(dx) >= Math.abs(dy) * 5) {
                     // vertical dimension negligible
                     return dx < 0 ? LEFT : RIGHT;
                 } else if (dy < 0) {
@@ -74,7 +73,7 @@ public class MultiLabel {
         BIRIDECTIONAL {
             @Override
             public Orient getOrient(int dx, int dy) {
-                if (Math.abs(dx) >= Math.abs(dy) / 4) {
+                if (Math.abs(dx) >= Math.abs(dy) * 5) {
                     // vertical dimension negligible
                     return Orient.LEFT_RIGHT;
                 } else if (dy < 0) {
@@ -129,7 +128,7 @@ public class MultiLabel {
             this.right = right;
         }
 
-        /** Inserts symbols in front and behing a given text, depending on this orientation. */
+        /** Inserts symbols in front and behind a given text, depending on this orientation. */
         public StringBuilder decorate(String text) {
             StringBuilder result = new StringBuilder(text);
             if (this.left != null) {

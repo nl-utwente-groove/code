@@ -20,10 +20,10 @@ import groove.control.CtrlAut;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.graph.GraphRole;
-import groove.gui.SetLayoutMenu;
 import groove.gui.Simulator;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
+import groove.gui.menu.SetLayoutMenu;
 import groove.gui.tree.LabelTree;
 
 import java.util.Collection;

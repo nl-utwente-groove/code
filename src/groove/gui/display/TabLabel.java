@@ -14,8 +14,10 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.display;
 
+import groove.gui.Icons;
+import groove.gui.Options;
 import groove.gui.list.ListTabbedPane;
 import groove.gui.look.Values;
 

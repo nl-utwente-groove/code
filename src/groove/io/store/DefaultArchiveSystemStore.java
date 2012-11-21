@@ -30,7 +30,6 @@ import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.TypeLabel;
-import groove.gui.EditType;
 import groove.gui.layout.LayoutMap;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;

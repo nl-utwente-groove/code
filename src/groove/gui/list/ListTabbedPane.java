@@ -17,7 +17,7 @@
 package groove.gui.list;
 
 import groove.gui.Icons;
-import groove.gui.TabLabel;
+import groove.gui.display.TabLabel;
 import groove.gui.list.ListPanel.SelectableListEntry;
 import groove.io.HTMLConverter;
 

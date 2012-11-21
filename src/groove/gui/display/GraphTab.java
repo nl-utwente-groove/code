@@ -1,4 +1,4 @@
-package groove.gui;
+package groove.gui.display;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
@@ -7,6 +7,8 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.GraphProperties;
+import groove.gui.Icons;
+import groove.gui.Options;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.gui.dialog.PropertiesTable;
 import groove.gui.jgraph.AspectJGraph;

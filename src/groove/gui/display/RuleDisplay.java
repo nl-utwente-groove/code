@@ -14,8 +14,11 @@
  *
  * $Id$
  */
-package groove.gui;
+package groove.gui.display;
 
+import groove.gui.Options;
+import groove.gui.Simulator;
+import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.action.CollapseAllAction;
 import groove.gui.tree.RuleTree;

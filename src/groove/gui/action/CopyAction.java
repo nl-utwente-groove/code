@@ -1,7 +1,7 @@
 package groove.gui.action;
 
-import groove.gui.EditType;
 import groove.gui.Simulator;
+import groove.io.store.EditType;
 import groove.trans.ResourceKind;
 import groove.view.aspect.AspectGraph;
 

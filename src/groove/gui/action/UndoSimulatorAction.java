@@ -1,10 +1,10 @@
 package groove.gui.action;
 
-import groove.gui.EditType;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorUndoManager;
+import groove.io.store.EditType;
 import groove.io.store.SystemStore;
 
 import javax.swing.Action;

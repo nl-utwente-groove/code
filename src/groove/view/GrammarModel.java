@@ -27,7 +27,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
-import groove.gui.EditType;
+import groove.io.store.EditType;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.prolog.GrooveEnvironment;

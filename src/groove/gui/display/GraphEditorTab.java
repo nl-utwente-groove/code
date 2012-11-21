@@ -14,7 +14,7 @@
  * 
  * $Id: EditorDialog.java,v 1.15 2008-01-30 09:33:35 iovka Exp $
  */
-package groove.gui;
+package groove.gui.display;
 
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
@@ -27,6 +27,8 @@ import groove.graph.EdgeRole;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
+import groove.gui.Icons;
+import groove.gui.Options;
 import groove.gui.action.SnapToGridAction;
 import groove.gui.dialog.PropertiesTable;
 import groove.gui.jgraph.AspectJEdge;

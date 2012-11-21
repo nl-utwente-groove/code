@@ -1,10 +1,10 @@
 package groove.gui.action;
 
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
-import groove.gui.DisplayKind;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.StringDialog;
+import groove.gui.display.DisplayKind;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.verify.DefaultMarker;

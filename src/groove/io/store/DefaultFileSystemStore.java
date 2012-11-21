@@ -16,14 +16,13 @@ t * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  */
 package groove.io.store;
 
-import static groove.gui.EditType.LAYOUT;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.PROPERTIES_FILTER;
+import static groove.io.store.EditType.LAYOUT;
 import static groove.trans.ResourceKind.PROPERTIES;
 import static groove.trans.ResourceKind.RULE;
 import groove.graph.DefaultGraph;
 import groove.graph.TypeLabel;
-import groove.gui.EditType;
 import groove.gui.Options;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
