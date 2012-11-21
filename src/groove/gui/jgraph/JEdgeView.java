@@ -270,9 +270,8 @@ public class JEdgeView extends EdgeView {
         LineStyle lineStyle = visuals.getLineStyle();
         boolean isManhattan = lineStyle == LineStyle.MANHATTAN;
         if (isManhattan ? getPointCount() == 2 : getPointCount() <= 3) {
-            List<Point2D> points = visuals.getPoints();
-            Point2D startPoint = points.get(0);
-            Point2D endPoint = points.get(1);
+            Point2D startPoint = getPoint(0);
+            Point2D endPoint = getPoint(1);
             List<Point2D> newPoints = new ArrayList<Point2D>(4);
             newPoints.add(startPoint);
             VisualMap sourceVisuals = getCell().getSourceVertex().getVisuals();
