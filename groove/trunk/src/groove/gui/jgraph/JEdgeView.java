@@ -19,11 +19,11 @@ package groove.gui.jgraph;
 import static groove.gui.look.Values.ERROR_COLOR;
 import groove.gui.Options;
 import groove.gui.look.LineStyle;
+import groove.gui.look.MultiLabel;
 import groove.gui.look.Values;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
 import groove.io.HTMLConverter;
-import groove.io.Util;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -403,12 +403,6 @@ public class JEdgeView extends EdgeView {
         renderer = new MyEdgeRenderer();
     }
 
-    static private final String LA = HTMLConverter.toHtml(Util.LT);
-    static private final String RA = HTMLConverter.toHtml(Util.RT);
-    static private final String UA = HTMLConverter.toHtml(Util.UT);
-    static private final String DA = HTMLConverter.toHtml(Util.DT);
-    static private final String SP = HTMLConverter.toHtml(Util.THIN_SPACE);
-
     /**
      * This class is overridden to get the same port emphasis.
      */
@@ -719,7 +713,7 @@ public class JEdgeView extends EdgeView {
         private Dimension setTextInJLabel(JEdgeView view) {
             Dimension result = this.jLabelSize;
             Color foreground = getForeground();
-            Orientation orientation = getOrientation(view);
+            MultiLabel.Orient orientation = getOrientation(view);
             // see if we can use the previously stored value
             List<String> lines = view.getCell().getVisuals().getLabel();
             if (lines.isEmpty()) {
@@ -738,7 +732,7 @@ public class JEdgeView extends EdgeView {
         }
 
         private StringBuilder computeText(List<String> lines,
-                Orientation orientation) {
+                MultiLabel.Orient orientation) {
             StringBuilder result = new StringBuilder();
             for (String line : lines) {
                 if (result.length() > 0) {
@@ -750,12 +744,10 @@ public class JEdgeView extends EdgeView {
         }
 
         /** Returns the orientation of the edge. */
-        private Orientation getOrientation(JEdgeView view) {
+        private MultiLabel.Orient getOrientation(JEdgeView view) {
             Point2D start = view.getPoint(0);
             Point2D end = view.getPoint(view.getPointCount() - 1);
-            int dx = (int) (end.getX() - start.getX());
-            int dy = (int) (end.getY() - start.getY());
-            return Orientation.get(dx, dy);
+            return MultiLabel.Direct.FORWARD.getOrient(start, end);
         }
 
         /* Overwritten so the bounds get computed correctly even
@@ -800,85 +792,12 @@ public class JEdgeView extends EdgeView {
         /** Component used for rendering HTML text. */
         private final JLabel jLabel;
         /** Last orientation set in the jLabel component. */
-        private Orientation jLabelOrientation;
+        private MultiLabel.Orient jLabelOrientation;
         /** Last inner text set in the jLabel component. */
         private List<String> jLabelText;
         /** Last colour set in the jLabel component. */
         private Color jLabelColor;
         /** Last computed preferred size of the jLabel component. */
         private Dimension jLabelSize;
-    }
-
-    private static enum Orientation {
-        /** Pointing left. */
-        LEFT(LA, null),
-        /** Pointing right. */
-        RIGHT(null, RA),
-        /** Pointing both left and right. */
-        LEFT_RIGHT(LA, RA),
-        /** Pointing up. */
-        UP(UA, null),
-        /** Pointing down. */
-        DOWN(null, DA),
-        /** Pointing both up and down. */
-        UP_DOWN(UA, DA),
-        /** Pointing up left. */
-        UP_LEFT(UA, null),
-        /** Pointing down left. */
-        DOWN_LEFT(DA, null),
-        /** Pointing up right. */
-        UP_RIGHT(null, UA),
-        /** Pointing down right. */
-        DOWN_RIGHT(null, DA);
-
-        private Orientation(String left, String right) {
-            this.left = left;
-            this.right = right;
-        }
-
-        /** Inserts symbols in front and behing a given text, depending on this orientation. */
-        public StringBuilder decorate(String text) {
-            StringBuilder result = new StringBuilder(text);
-            if (this.left != null) {
-                result.insert(0, SP);
-                result.insert(0, this.left);
-            }
-            if (this.right != null) {
-                result.append(SP);
-                result.append(this.right);
-            }
-            return result;
-        }
-
-        /** String to place to the left side of the label. */
-        private final String left;
-        /** String to place to the right side of the label. */
-        private final String right;
-
-        public static Orientation get(int dx, int dy) {
-            if (dx < 0) {
-                if (dy < 0) {
-                    return UP_LEFT;
-                } else if (dy == 0) {
-                    return LEFT;
-                } else {
-                    return DOWN_LEFT;
-                }
-            } else if (dx == 0) {
-                if (dy < 0) {
-                    return UP;
-                } else {
-                    return DOWN;
-                }
-            } else {
-                if (dy < 0) {
-                    return UP_RIGHT;
-                } else if (dy == 0) {
-                    return RIGHT;
-                } else {
-                    return DOWN_RIGHT;
-                }
-            }
-        }
     }
 }
