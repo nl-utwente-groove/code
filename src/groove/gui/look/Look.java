@@ -313,6 +313,18 @@ public enum Look {
             add(VisualKey.DASH, Values.NESTED_DASH);
             add(VisualKey.INSET, 8);
             add(VisualKey.FONT, Font.PLAIN);
+            add(VisualKey.NODE_SHAPE, NodeShape.RECTANGLE);
+        }
+    },
+    /** Equivalence class of a neighbourhood shape. */
+    EQUIV_CLASS(true, BASIC) {
+        @Override
+        void init() {
+            add(VisualKey.OPAQUE, false);
+            add(VisualKey.DASH, Values.NESTED_DASH);
+            add(VisualKey.INSET, 8);
+            add(VisualKey.NODE_SHAPE, NodeShape.RECTANGLE);
+            add(VisualKey.FOREGROUND, Values.DEFAULT_FOREGROUND);
         }
     },
     /**
