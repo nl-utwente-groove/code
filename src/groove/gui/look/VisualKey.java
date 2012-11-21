@@ -68,7 +68,7 @@ public enum VisualKey {
     /** Node or edge visibility. Defaults to {@code false}. */
     ERROR(Boolean.class, false, REFRESHABLE),
     /** Node or edge emphasis. Defaults to {@code false}. */
-    EMPHASIS(Boolean.class, false, REFRESHABLE),
+    EMPHASIS(Boolean.class, false, CONTROLLED),
     /** Font setting for text, as a {@link Font} style value. Defaults to {@link Font#PLAIN}. */
     FONT(Integer.class, Font.PLAIN),
     /** Foreground colour. Defaults to {@link Values#DEFAULT_FOREGROUND}. */

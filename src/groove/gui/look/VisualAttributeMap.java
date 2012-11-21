@@ -456,6 +456,7 @@ public class VisualAttributeMap extends AttributeMap {
                 break;
             case INNER_LINE:
             case NODE_SHAPE:
+            case EMPHASIS:
                 aKey = null;
                 break;
             default:

@@ -502,7 +502,7 @@ public class JEdgeView extends EdgeView {
             super.getRendererComponent(jGraph, v, sel, focus, preview);
             // treat selection as emphasis
             float lineWidth = this.visuals.getLineWidth();
-            if (sel) {
+            if (visuals.isEmphasised()) {
                 lineWidth += JAttr.EMPH_INCREMENT;
             }
             this.lineWidth = lineWidth;
