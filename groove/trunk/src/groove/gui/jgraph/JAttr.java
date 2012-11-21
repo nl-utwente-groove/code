@@ -82,7 +82,7 @@ public class JAttr {
     public static final int EXTRA_BORDER_SPACE = 6;
 
     /** Node radius for nodified edges. */
-    static final public double NODE_EDGE_RADIUS = 3;
+    static final public Dimension NODE_EDGE_DIMENSION = new Dimension(6, 6);
 
     /** The height of the adornment text box. */
     public static final int ADORNMENT_HEIGHT = 12;

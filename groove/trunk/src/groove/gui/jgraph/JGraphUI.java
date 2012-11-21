@@ -17,7 +17,6 @@
 package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
-import static groove.gui.jgraph.JAttr.NODE_EDGE_RADIUS;
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphUI.DragMode.EDGE;
@@ -52,7 +51,6 @@ import javax.swing.JComponent;
 import javax.swing.JViewport;
 import javax.swing.event.MouseInputAdapter;
 
-import org.jgraph.JGraph;
 import org.jgraph.graph.CellView;
 import org.jgraph.plaf.basic.BasicGraphUI;
 
@@ -114,16 +112,17 @@ public class JGraphUI extends BasicGraphUI {
         this.validCachedPreferredSize = true;
     }
 
-    @Override
-    public Dimension2D getPreferredSize(JGraph graph, CellView view) {
-        if (view.getCell() instanceof AspectJVertex
-            && ((AspectJVertex) view.getCell()).isNodeEdge()) {
-            int diameter = (int) (2 * (NODE_EDGE_RADIUS + EXTRA_BORDER_SPACE));
-            return new Dimension(diameter, diameter);
-        } else {
-            return super.getPreferredSize(graph, view);
-        }
-    }
+    //
+    //    @Override
+    //    public Dimension2D getPreferredSize(JGraph graph, CellView view) {
+    //        if (view.getCell() instanceof AspectJVertex
+    //            && ((AspectJVertex) view.getCell()).isNodeEdge()) {
+    //            int diameter = (int) (2 * (NODE_EDGE_RADIUS + EXTRA_BORDER_SPACE));
+    //            return new Dimension(diameter, diameter);
+    //        } else {
+    //            return super.getPreferredSize(graph, view);
+    //        }
+    //    }
 
     @Override
     protected Point2D getEditorLocation(Object cell, Dimension2D editorSize,

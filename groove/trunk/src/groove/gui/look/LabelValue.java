@@ -133,42 +133,44 @@ public class LabelValue implements VisualValue<MultiLabel> {
         AspectNode node = jVertex.getNode();
         node.testFixed(true);
         MultiLabel result = new MultiLabel();
-        // show the node identity
-        if (!node.hasId()) {
-            result.add(getNodeIdLine(node));
-        }
-        // the following used to include hasError() as a disjunct
-        if (getOptionValue(Options.SHOW_ASPECTS_OPTION)) {
-            result.add(jVertex.getUserObject().toLines());
-        } else {
-            // show data constants and variables correctly
-            result.add(getDataLines(node));
-            // show the visible self-edges
-            Line id =
-                node.hasId()
-                        ? Line.atom(node.getId().getContentString()).style(
-                            Style.ITALIC) : null;
-            for (AspectEdge edge : jVertex.getEdges()) {
-                if (!isFiltered(edge)) {
-                    Line line = getHostLine(edge);
-                    if (id != null && edge.getDisplayLabel().isNodeType()) {
-                        id = id.append(" : ");
-                        id = id.append(line);
-                        line = id;
-                        id = null;
+        if (!jVertex.getLooks().contains(Look.NODIFIED)) {
+            // show the node identity
+            if (!node.hasId()) {
+                result.add(getNodeIdLine(node));
+            }
+            // the following used to include hasError() as a disjunct
+            if (getOptionValue(Options.SHOW_ASPECTS_OPTION)) {
+                result.add(jVertex.getUserObject().toLines());
+            } else {
+                // show data constants and variables correctly
+                result.add(getDataLines(node));
+                // show the visible self-edges
+                Line id =
+                    node.hasId()
+                            ? Line.atom(node.getId().getContentString()).style(
+                                Style.ITALIC) : null;
+                for (AspectEdge edge : jVertex.getEdges()) {
+                    if (!isFiltered(edge)) {
+                        Line line = getHostLine(edge);
+                        if (id != null && edge.getDisplayLabel().isNodeType()) {
+                            id = id.append(" : ");
+                            id = id.append(line);
+                            line = id;
+                            id = null;
+                        }
+                        result.add(line);
                     }
-                    result.add(line);
+                }
+                if (id != null) {
+                    // we're not going to have any node types:
+                    // add the node id on a separate line
+                    result.add(id);
                 }
             }
-            if (id != null) {
-                // we're not going to have any node types:
-                // add the node id on a separate line
-                result.add(id);
-            }
-        }
-        for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-            if (!isFiltered(edge)) {
-                result.add(getHostLine(edge));
+            for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
+                if (!isFiltered(edge)) {
+                    result.add(getHostLine(edge));
+                }
             }
         }
         return result;
@@ -423,7 +425,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 ((AspectJVertex) jEdge.getTargetVertex()).getEdgeLabelPattern();
             @SuppressWarnings({"unchecked", "rawtypes"})
             GraphBasedModel<HostGraph> resourceModel =
-                (GraphBasedModel) ((AspectJGraph) getJGraph()).getModel().getResourceModel();
+                (GraphBasedModel) jEdge.getJModel().getResourceModel();
             try {
                 HostNode target =
                     (HostNode) resourceModel.getMap().getNode(
