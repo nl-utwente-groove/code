@@ -27,14 +27,11 @@ import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Graph;
 import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.look.VisualKey;
 import groove.util.Duo;
 
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.jgraph.graph.GraphConstants;
@@ -73,46 +70,31 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
     @Override
     public void loadGraph(Graph<ShapeNode,ShapeEdge> graph) {
         // Prepare the object fields.
-        this.setVetoFireGraphChanged(true);
+        setVetoFireGraphChanged(true);
         this.parentMap = new ParentMap();
         this.esMap.clear();
 
         // Ensure that the super class fields are also prepared.
-        this.prepareLoad(graph);
-        this.prepareInsert();
+        prepareLoad(graph);
+        prepareInsert();
 
         // Now load the shape elements in the proper order.
-        this.createNodes();
-        this.createEdgeSigPorts();
-        this.createEdges();
-        this.createEdgeMults();
-        this.createEquivClasses();
+        createNodes();
+        createEdgeSigPorts();
+        createEdges();
+        createEdgeMults();
+        createEquivClasses();
 
         // Loading is done.
-        this.setVetoFireGraphChanged(false);
+        setVetoFireGraphChanged(false);
 
         // Call the jGraph method to perform the edit with all changes.
-        this.doInsert(true);
+        doInsert(true);
     }
 
-    /**
-     * Executes the insertion prepared by node and edge additions.
-     * Optionally sends the new elements to the back
-     * @param replace if {@code true}, the old roots should be deleted
-     */
     @Override
-    protected void doInsert(boolean replace) {
-        Object[] addedCells = this.addedJCells.toArray();
-        Object[] removedCells = replace ? getRoots().toArray() : null;
-        createEdit(addedCells, removedCells, null, this.connections,
-            this.parentMap, null).execute();
-        List<Object> edges = new ArrayList<Object>();
-        for (Object jCell : addedCells) {
-            if (jCell instanceof GraphJEdge) {
-                edges.add(jCell);
-            }
-        }
-        toBack(edges.toArray());
+    protected ParentMap getParentMap() {
+        return this.parentMap;
     }
 
     @Override
@@ -120,13 +102,13 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
         GraphJCell jCell = super.addEdge(edge, mergeBidirectional);
         if (jCell instanceof ShapeJEdge) {
             ShapeJEdge jEdge = (ShapeJEdge) jCell;
-            Shape shape = this.getGraph();
+            Shape shape = getGraph();
             EdgeSignature outEs =
                 shape.getEdgeSignature(edge, EdgeMultDir.OUTGOING);
             EdgeSignature inEs =
                 shape.getEdgeSignature(edge, EdgeMultDir.INCOMING);
-            ShapeJPort srcPort = this.getPort(outEs);
-            ShapeJPort tgtPort = this.getPort(inEs);
+            ShapeJPort srcPort = getPort(outEs);
+            ShapeJPort tgtPort = getPort(inEs);
             assert srcPort != null && tgtPort != null;
             this.connections.connect(jEdge, srcPort, tgtPort);
         }
@@ -141,16 +123,15 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
     }
 
     private void createNodes() {
-        for (ShapeNode node : this.getGraph().nodeSet()) {
+        for (ShapeNode node : getGraph().nodeSet()) {
             addNode(node);
         }
     }
 
     private void createEdgeSigPorts() {
-        Shape shape = this.getGraph();
+        Shape shape = getGraph();
         for (EdgeSignature es : shape.getEdgeSigSet()) {
-            ShapeJVertex vertex =
-                (ShapeJVertex) this.getJCellForNode(es.getNode());
+            ShapeJVertex vertex = (ShapeJVertex) getJCellForNode(es.getNode());
             boolean alwaysMovable = shape.isEdgeSigUnique(es);
             ShapeJPort port = new ShapeJPort(vertex, es, alwaysMovable);
             this.esMap.put(es, port);
@@ -158,7 +139,7 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
     }
 
     private void createEdges() {
-        for (ShapeEdge edge : this.getGraph().edgeSet()) {
+        for (ShapeEdge edge : getGraph().edgeSet()) {
             addEdge(edge, false);
         }
     }
@@ -166,7 +147,7 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
     private void createEdgeMults() {
         Shape shape = this.getGraph();
         for (ShapeEdge edgeS : Util.getBinaryEdges(shape)) {
-            ShapeJEdge jEdge = (ShapeJEdge) this.getJCellForEdge(edgeS);
+            ShapeJEdge jEdge = (ShapeJEdge) getJCellForEdge(edgeS);
             Duo<String> duo = shape.getEdgeMultLabels(edgeS);
             String labels[] = new String[2];
             labels[0] = duo.one();
@@ -192,7 +173,7 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
             ecJCell.setJModel(this);
             ecJCell.setEquivClass(ec);
             for (ShapeNode node : ec) {
-                this.parentMap.addEntry(this.getJCellForNode(node), ecJCell);
+                this.parentMap.addEntry(getJCellForNode(node), ecJCell);
             }
             this.addedJCells.add(ecJCell);
         }

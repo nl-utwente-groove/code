@@ -18,6 +18,8 @@ package groove.abstraction.neigh.gui.jgraph;
 
 import groove.gui.jgraph.JEdgeView;
 
+import org.jgraph.graph.CellView;
+
 /**
  * View renderer for ShapeJEdges.
  * 
@@ -65,8 +67,8 @@ public class ShapeJEdgeView extends JEdgeView {
      * Returns true if the vertex associated with the given vertex view
      * corresponds to the source of this edge view.
      */
-    public boolean isSrcVertex(ShapeJVertexView vertexView) {
-        ShapeJVertex srcVertex = vertexView.getCell();
+    public boolean isSrcVertex(CellView vertexView) {
+        ShapeJVertex srcVertex = (ShapeJVertex) vertexView.getCell();
         ShapeJPort srcPort = this.getSourcePort();
         return srcVertex.equals(srcPort.getParent());
     }
@@ -75,8 +77,8 @@ public class ShapeJEdgeView extends JEdgeView {
      * Returns true if the vertex associated with the given vertex view
      * corresponds to the target of this edge view.
      */
-    public boolean isTgtVertex(ShapeJVertexView vertexView) {
-        ShapeJVertex tgtVertex = vertexView.getCell();
+    public boolean isTgtVertex(CellView vertexView) {
+        ShapeJVertex tgtVertex = (ShapeJVertex) vertexView.getCell();
         ShapeJPort tgtPort = this.getTargetPort();
         return tgtVertex.equals(tgtPort.getParent());
     }

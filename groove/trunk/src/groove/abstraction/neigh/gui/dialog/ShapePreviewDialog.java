@@ -67,20 +67,7 @@ public final class ShapePreviewDialog extends GraphPreviewDialog {
         ShapeJModel model = (ShapeJModel) jGraph.newModel();
         model.loadGraph(((Shape) this.graph).downcast());
         jGraph.setModel(model);
-        // EDUARDO says: this is some fine tuning of the layout algorithm
-        // that is better suited for shapes. Should be moved to some other place.
-        /*LayouterItem layouter =
-            LayoutKind.getLayouterItemProto(LayoutKind.HIERARCHICAL);
-        JGraphHierarchicalLayout layout =
-            (JGraphHierarchicalLayout) layouter.getLayout();
-        layout.setOrientation(SwingConstants.NORTH);
-        layout.setCompactLayout(false);*/
-        /*LayouterItem layouter =
-            LayoutKind.getLayouterItemProto(LayoutKind.FAST_ORGANIC);
-        JGraphFastOrganicLayout layout =
-            (JGraphFastOrganicLayout) layouter.getLayout();
-        layout.setInitialTemp(100.0);
-        layout.setForceConstant(150.0);*/
+
         LayouterItem layouter =
             LayoutKind.getLayouterItemProto(LayoutKind.BASIC_TREE);
         JGraphTreeLayout layout = (JGraphTreeLayout) layouter.getLayout();
@@ -88,6 +75,7 @@ public final class ShapePreviewDialog extends GraphPreviewDialog {
         layout.setLevelDistance(100.0);
         jGraph.setLayouter(layouter);
         jGraph.doLayout(true);
+
         return jGraph;
     }
 
@@ -111,7 +99,7 @@ public final class ShapePreviewDialog extends GraphPreviewDialog {
     /** Test method. */
     public static void main(String args[]) {
         NeighAbstraction.initialise();
-        String DIRECTORY = "junit/samples/abs-test.gps/";
+        String DIRECTORY = "junit/abstraction/basic-tests.gps/";
         File file = new File(DIRECTORY + "shape-build-test-0.gst");
         Shape shape = createShape(file);
         showShape(shape);
