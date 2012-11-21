@@ -65,7 +65,7 @@ public final class PatternJGraph extends GraphJGraph {
 
     @Override
     public GraphRole getGraphRole() {
-        return GraphRole.SHAPE;
+        return GraphRole.PATTERN;
     }
 
     /** Specialises the return type to a {@link PatternJModel}. */

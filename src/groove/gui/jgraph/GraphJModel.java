@@ -48,6 +48,7 @@ import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultGraphModel;
+import org.jgraph.graph.ParentMap;
 
 /**
  * Implements jgraph's GraphModel interface on top of a groove graph. The
@@ -450,7 +451,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      *        created
      */
     protected GraphJVertex computeJVertex(N node) {
-        GraphJVertex result = createJVertex();
+        GraphJVertex result = createJVertex(node);
         result.setNode(node);
         JVertexLayout layout = this.layoutMap.getLayout(node);
         if (layout != null) {
@@ -492,6 +493,14 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     }
 
     /**
+     * Factory method for JVertices initialised on this JModel.
+     * The wrapped node is initially empty.
+     */
+    protected GraphJVertex createJVertex(N node) {
+        return createJVertex();
+    }
+
+    /**
      * Sets the transient variables (cells, attributes and connections) to fresh
      * (empty) initial values.
      */
@@ -510,7 +519,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     protected void doInsert(boolean replace) {
         Object[] addedCells = this.addedJCells.toArray();
         Object[] removedCells = replace ? getRoots().toArray() : null;
-        createEdit(addedCells, removedCells, null, this.connections, null, null).execute();
+        createEdit(addedCells, removedCells, null, this.connections,
+            getParentMap(), null).execute();
         List<Object> edges = new ArrayList<Object>();
         for (Object jCell : addedCells) {
             if (jCell instanceof GraphJEdge) {
@@ -519,6 +529,14 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         }
         toBack(edges.toArray());
         setLoading(false);
+    }
+
+    /**
+     * Returns the parent map for hierarchical graphs, default to null.
+     * To be overriden in derived classes.
+     */
+    protected ParentMap getParentMap() {
+        return null;
     }
 
     /**

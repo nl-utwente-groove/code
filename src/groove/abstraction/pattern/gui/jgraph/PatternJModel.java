@@ -27,21 +27,15 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
-import groove.gui.layout.JVertexLayout;
-import groove.gui.look.Look;
-import groove.gui.look.VisualKey;
 import groove.trans.HostEdge;
 import groove.trans.HostFactory;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.jgraph.graph.ParentMap;
 
@@ -60,11 +54,6 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
      */
     private Map<Node,PatternJVertex> pNodeJCellMap =
         new HashMap<Node,PatternJVertex>();
-    /**
-     * Map from pattern graph edges to JGraph cells.
-     */
-    private Map<Edge,PatternJEdge> pEdgeJCellMap =
-        new HashMap<Edge,PatternJEdge>();
 
     /**
      * Map that stores the containment relation between simple graph elements
@@ -105,17 +94,7 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
     protected void prepareLoad(Graph<Node,Edge> graph) {
         super.prepareLoad(graph);
         this.pNodeJCellMap.clear();
-        this.pEdgeJCellMap.clear();
         this.hostFactory = HostFactory.newInstance();
-    }
-
-    @Override
-    public GraphJCell getJCellForEdge(Edge edge) {
-        if (isPatternTyped(edge)) {
-            return this.pEdgeJCellMap.get(edge);
-        } else {
-            return super.getJCellForEdge(edge);
-        }
     }
 
     @Override
@@ -140,52 +119,6 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
     }
 
     @Override
-    protected GraphJCell addEdge(Edge edge, boolean mergeBidirectional) {
-        if (!isPatternTyped(edge)) {
-            return super.addEdge(edge, mergeBidirectional);
-        }
-
-        AbstractPatternEdge<?> pEdge = (AbstractPatternEdge<?>) edge;
-        // check if edge was processed earlier
-        if (this.edgeJCellMap.containsKey(edge)) {
-            return this.edgeJCellMap.get(edge);
-        }
-        Node source = edge.source();
-        Node target = edge.target();
-        // maybe a JEdge between this source and target is already in the
-        // JGraph
-        Set<GraphJEdge> outJEdges = this.addedOutJEdges.get(source);
-        if (outJEdges == null) {
-            this.addedOutJEdges.put(source, outJEdges =
-                new HashSet<GraphJEdge>());
-        }
-        for (GraphJEdge jEdge : outJEdges) {
-            if (jEdge.getTargetNode() == target
-                && isLayoutCompatible(jEdge, edge) && jEdge.isCompatible(pEdge)) {
-                jEdge.addEdge(edge);
-                // yes, the edge could be added here; we're done
-                this.edgeJCellMap.put(edge, jEdge);
-                return jEdge;
-            }
-        }
-        // none of the above: so create a new JEdge
-        PatternJEdge jEdge = computeJEdge(pEdge);
-        // put the edge at the end to make sure it goes to the back
-        this.addedJCells.add(jEdge);
-        // store mapping of edge to jedge(s)
-        this.edgeJCellMap.put(edge, jEdge);
-        outJEdges.add(jEdge);
-        // verification
-        GraphJVertex sourceNode = getJCellForNode(source);
-        assert sourceNode != null : "No vertex for source node of " + edge;
-        GraphJVertex targetPort = getJCellForNode(target);
-        assert targetPort != null : "No vertex for target node of " + edge;
-        this.connections.connect(jEdge, sourceNode.getPort(),
-            targetPort.getPort());
-        return jEdge;
-    }
-
-    @Override
     protected void prepareInsert() {
         super.prepareInsert();
         this.parentMap = new ParentMap();
@@ -194,18 +127,30 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
     }
 
     @Override
-    protected void doInsert(boolean replace) {
-        Object[] addedCells = this.addedJCells.toArray();
-        Object[] removedCells = replace ? getRoots().toArray() : null;
-        createEdit(addedCells, removedCells, null, this.connections,
-            this.parentMap, null).execute();
-        List<Object> edges = new ArrayList<Object>();
-        for (Object jCell : addedCells) {
-            if (jCell instanceof GraphJEdge) {
-                edges.add(jCell);
-            }
+    protected ParentMap getParentMap() {
+        return this.parentMap;
+    }
+
+    @Override
+    protected GraphJVertex createJVertex(Node node) {
+        if (!isPatternTyped(node)) {
+            return super.createJVertex(node);
         }
-        toBack(edges.toArray());
+        PatternJVertex result = PatternJVertex.newInstance();
+        result.setJModel(this);
+        return result;
+    }
+
+    @Override
+    protected GraphJEdge createJEdge(Edge edge) {
+        if (!isPatternTyped(edge)) {
+            return super.createJEdge(edge);
+        }
+        AbstractPatternEdge<?> pEdge = (AbstractPatternEdge<?>) edge;
+        PatternJEdge result = PatternJEdge.newInstance();
+        result.setJModel(this);
+        result.addEdge(pEdge);
+        return result;
     }
 
     // ------------------------------------------------------------------------
@@ -241,16 +186,7 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
 
     /** Creates a new vertex for the given pattern node. */
     private PatternJVertex computeJVertex(AbstractPatternNode pNode) {
-        PatternJVertex result = createJVertex(pNode);
-        JVertexLayout layout = getLayoutMap().getLayout(pNode);
-        if (layout != null) {
-            result.putVisuals(layout.toVisuals());
-        } else {
-            Point2D nodePos = new Point2D.Double(this.nodeX, this.nodeY);
-            result.putVisual(VisualKey.NODE_POS, nodePos);
-            this.nodeX = randomCoordinate();
-            this.nodeY = randomCoordinate();
-        }
+        PatternJVertex result = (PatternJVertex) super.computeJVertex(pNode);
         createPattern(pNode, result);
         return result;
     }
@@ -285,37 +221,6 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
             this.reverseParentMap.put(pJVertex, cells);
         }
         cells.add(jCell);
-    }
-
-    /** Creates a new jEdge for the given pattern edge. */
-    private PatternJEdge computeJEdge(AbstractPatternEdge<?> pEdge) {
-        PatternJEdge result = createJEdge(pEdge);
-        result.setLook(Look.BIDIRECTIONAL, false);
-        return result;
-    }
-
-    /**
-     * Factory method for jgraph nodes.
-     * @param pNode graph node for which a corresponding j-node is to be created
-     */
-    private PatternJVertex createJVertex(AbstractPatternNode pNode) {
-        PatternJVertex result = PatternJVertex.newInstance();
-        result.setJModel(this);
-        result.setNode(pNode);
-        return result;
-    }
-
-    /**
-     * Factory method for jgraph edges.
-     * 
-     * @param pEdge graph edge for which a corresponding JEdge is to be created;
-     * may be {@code null} if there is initially no edge
-     */
-    private PatternJEdge createJEdge(AbstractPatternEdge<?> pEdge) {
-        PatternJEdge result = PatternJEdge.newInstance();
-        result.setJModel(this);
-        result.addEdge(pEdge);
-        return result;
     }
 
 }
