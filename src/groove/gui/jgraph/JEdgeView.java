@@ -18,12 +18,12 @@ package groove.gui.jgraph;
 
 import static groove.gui.look.Values.ERROR_COLOR;
 import groove.gui.Options;
+import groove.gui.look.HTMLFormat;
 import groove.gui.look.LineStyle;
 import groove.gui.look.MultiLabel;
 import groove.gui.look.Values;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
-import groove.io.HTMLConverter;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -680,7 +680,7 @@ public class JEdgeView extends EdgeView {
         /** Paints the main label in a JLabel, providing HTML formatting. */
         private void paintMainLabel(Graphics g, Point2D p) {
             Dimension size = setTextInJLabel(this.view);
-            if (size != null) {
+            if (size != null && (size.getWidth() != 0 || size.getHeight() != 0)) {
                 this.jLabel.setSize(size);
                 int sw = (int) size.getWidth();
                 int sh = (int) size.getHeight();
@@ -713,41 +713,22 @@ public class JEdgeView extends EdgeView {
         private Dimension setTextInJLabel(JEdgeView view) {
             Dimension result = this.jLabelSize;
             Color foreground = getForeground();
-            MultiLabel.Orient orientation = getOrientation(view);
             // see if we can use the previously stored value
-            List<String> lines = view.getCell().getVisuals().getLabel();
+            MultiLabel lines = view.getCell().getVisuals().getLabel();
             if (lines.isEmpty()) {
-                result = this.jLabelSize = null;
-            } else if (lines != this.jLabelText
-                || foreground != this.jLabelColor
-                || orientation != this.jLabelOrientation) {
+                result = this.jLabelSize = new Dimension();
+            } else if (lines != this.jLabelLines
+                || foreground != this.jLabelColor) {
                 // no, the text or colour have changed; reload the jLabel component
-                StringBuilder text = computeText(lines, orientation);
-                this.jLabel.setText(JVertexView.toHtml(text, foreground));
+                Point2D start = view.getPoint(0);
+                Point2D end = view.getPoint(view.getPointCount() - 1);
+                StringBuilder text =
+                    lines.toString(HTMLFormat.instance(), start, end);
+                this.jLabel.setText(HTMLFormat.toHtml(text, foreground));
                 this.jLabelColor = foreground;
-                this.jLabelOrientation = orientation;
                 result = this.jLabelSize = this.jLabel.getPreferredSize();
             }
             return result;
-        }
-
-        private StringBuilder computeText(List<String> lines,
-                MultiLabel.Orient orientation) {
-            StringBuilder result = new StringBuilder();
-            for (String line : lines) {
-                if (result.length() > 0) {
-                    result.append(HTMLConverter.HTML_LINEBREAK);
-                }
-                result.append(orientation.decorate(line));
-            }
-            return result;
-        }
-
-        /** Returns the orientation of the edge. */
-        private MultiLabel.Orient getOrientation(JEdgeView view) {
-            Point2D start = view.getPoint(0);
-            Point2D end = view.getPoint(view.getPointCount() - 1);
-            return MultiLabel.Direct.FORWARD.getOrient(start, end);
         }
 
         /* Overwritten so the bounds get computed correctly even
@@ -791,10 +772,8 @@ public class JEdgeView extends EdgeView {
 
         /** Component used for rendering HTML text. */
         private final JLabel jLabel;
-        /** Last orientation set in the jLabel component. */
-        private MultiLabel.Orient jLabelOrientation;
         /** Last inner text set in the jLabel component. */
-        private List<String> jLabelText;
+        private MultiLabel jLabelLines;
         /** Last colour set in the jLabel component. */
         private Color jLabelColor;
         /** Last computed preferred size of the jLabel component. */

@@ -18,15 +18,12 @@ package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JAttr.ADORNMENT_FONT;
 import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
-import static groove.io.HTMLConverter.HTML_TAG;
-import static groove.io.HTMLConverter.createColorTag;
-import static groove.io.HTMLConverter.createSpanTag;
+import groove.gui.look.HTMLFormat;
 import groove.gui.look.LineStyle;
+import groove.gui.look.MultiLabel;
 import groove.gui.look.Values;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
-import groove.io.HTMLConverter;
-import groove.io.HTMLConverter.HTMLTag;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -113,14 +110,10 @@ public class JVertexView extends VertexView {
     public void refresh(GraphLayoutCache cache, CellMapper mapper,
             boolean createDependentViews) {
         super.refresh(cache, mapper, createDependentViews);
-        StringBuilder text = new StringBuilder();
-        for (String line : getCellVisuals().getLabel()) {
-            if (text.length() > 0) {
-                text.append(HTMLConverter.HTML_LINEBREAK);
-            }
-            text.append(line);
-        }
-        this.text = toHtml(text, getCellVisuals().getForeground());
+        MultiLabel label = getCellVisuals().getLabel();
+        this.text =
+            HTMLFormat.toHtml(label.toString(HTMLFormat.instance()),
+                getCellVisuals().getForeground());
     }
 
     /** Stores the insets value for this view. */
@@ -473,45 +466,6 @@ public class JVertexView extends VertexView {
 
     static {
         PortView.allowPortMagic = false;
-    }
-
-    /** Puts an optional colour tag, a font tag and an HTML tag around a given text. */
-    public static String toHtml(String text, Color color) {
-        return toHtml(new StringBuilder(text), color);
-    }
-
-    /** Puts an optional colour tag, font tag and an HTML tag around a given text. */
-    public static String toHtml(StringBuilder text, Color color) {
-        if (text.length() > 0) {
-            if (color != null && !color.equals(Color.BLACK)) {
-                createColorTag(color).on(text);
-            }
-            return HTML_TAG.on(HTMLConverter.CENTER_TAG.on(fontTag.on(text))).toString();
-        } else {
-            return "";
-        }
-    }
-
-    /** HTML tag for the text display font. */
-    public static final HTMLTag fontTag;
-
-    static {
-        Font font = GraphConstants.DEFAULTFONT;
-        String face;
-        int size;
-        if (font == null) {
-            face = "SansSerif";
-            size = -1;
-        } else {
-            face = font.getFamily();
-            // actually a slightly smaller font is more in line with
-            // the edge font size, but then the forall symbol is not
-            // available
-            size = font.getSize() - 2;
-        }
-        String argument =
-            String.format("font-family:%s; font-size:%dpx", face, size);
-        fontTag = createSpanTag(argument);
     }
 
     /**

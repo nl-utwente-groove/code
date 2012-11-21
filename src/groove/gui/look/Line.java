@@ -23,13 +23,13 @@ import java.util.List;
 /**
  * Generic representation of a label line.
  * The representation can be converted to a String by providing
- * an appropriate {@link LineRenderer}.
+ * an appropriate {@link LineFormat}.
  * @author Arend Rensink
  * @version $Revision $
  */
 public abstract class Line {
     /** Converts this object to a string representation by applying a given renderer. */
-    abstract public StringBuilder toString(LineRenderer renderer);
+    abstract public StringBuilder toString(LineFormat renderer);
 
     /** Returns a coloured version of this line. */
     public Colored color(Color color) {
@@ -43,15 +43,46 @@ public abstract class Line {
 
     /** Returns a composed line consisting of this line and a sequence of others. */
     public Composed append(Line... lines) {
-        Line[] sublines = new Line[lines.length + 1];
-        sublines[0] = this;
-        System.arraycopy(lines, 0, sublines, 1, lines.length);
+        Line[] sublines;
+        if (this == empty) {
+            sublines = lines;
+        } else {
+            sublines = new Line[lines.length + 1];
+            sublines[0] = this;
+            System.arraycopy(lines, 0, sublines, 1, lines.length);
+        }
         return new Composed(sublines);
     }
 
+    /** Returns a composed line consisting of this line and an atomic line. */
+    public Line append(String atom) {
+        Line result;
+        Line atomLine = Line.atom(atom);
+        if (this == empty) {
+            result = atomLine;
+        } else {
+            result = new Composed(this, atomLine);
+        }
+        return result;
+    }
+
+    /** Tests if this is the empty line. */
+    public boolean isEmpty() {
+        return this == empty;
+    }
+
+    /** Returns the (fixed) empty line. */
+    public static Empty empty() {
+        return empty;
+    }
+
     /** Returns an atomic line consisting of a given string. */
-    public static Atomic atomic(String text) {
-        return new Atomic(text);
+    public static Line atom(String text) {
+        if (text == null || text.length() == 0) {
+            return empty;
+        } else {
+            return new Atomic(text);
+        }
     }
 
     /** Returns a multiline consisting of a list of sublines */
@@ -64,6 +95,8 @@ public abstract class Line {
         return new Composed(fragments);
     }
 
+    private final static Empty empty = new Empty();
+
     /** Multiline consisting of a sequence of sublines. */
     static public class Multi extends Line {
         /** Constructs an instance for a list of sublines. */
@@ -72,8 +105,13 @@ public abstract class Line {
             sublines.toArray(this.sublines);
         }
 
+        /** Returns the list of lines in this multiline. */
+        public List<Line> getSublines() {
+            return Arrays.asList(this.sublines);
+        }
+
         @Override
-        public StringBuilder toString(LineRenderer renderer) {
+        public StringBuilder toString(LineFormat renderer) {
             StringBuilder[] sublines = new StringBuilder[this.sublines.length];
             for (int i = 0; i < sublines.length; i++) {
                 sublines[i] = this.sublines[i].toString(renderer);
@@ -104,7 +142,7 @@ public abstract class Line {
         }
 
         @Override
-        public StringBuilder toString(LineRenderer renderer) {
+        public StringBuilder toString(LineFormat renderer) {
             StringBuilder[] fragments =
                 new StringBuilder[this.fragments.length];
             for (int i = 0; i < fragments.length; i++) {
@@ -131,7 +169,7 @@ public abstract class Line {
         }
 
         @Override
-        public StringBuilder toString(LineRenderer renderer) {
+        public StringBuilder toString(LineFormat renderer) {
             StringBuilder subline = this.subline.toString(renderer);
             return renderer.applyColored(this.color, subline);
         }
@@ -156,7 +194,7 @@ public abstract class Line {
         }
 
         @Override
-        public StringBuilder toString(LineRenderer renderer) {
+        public StringBuilder toString(LineFormat renderer) {
             StringBuilder subline = this.subline.toString(renderer);
             return renderer.applyStyled(this.style, subline);
         }
@@ -180,7 +218,7 @@ public abstract class Line {
         }
 
         @Override
-        public StringBuilder toString(LineRenderer renderer) {
+        public StringBuilder toString(LineFormat renderer) {
             return renderer.applyAtomic(this.text);
         }
 
@@ -192,6 +230,24 @@ public abstract class Line {
         private final String text;
     }
 
+    /** Empty line consisting of an atomic string. */
+    static public class Empty extends Line {
+        /** Constructs an instance for a non-{@code null} string. */
+        private Empty() {
+            // empty
+        }
+
+        @Override
+        public StringBuilder toString(LineFormat renderer) {
+            return new StringBuilder();
+        }
+
+        @Override
+        public String toString() {
+            return "Empty";
+        }
+    }
+
     /** Character style. */
     public static enum Style {
         /** Bold font. */
@@ -199,6 +255,8 @@ public abstract class Line {
         /** Italic font. */
         ITALIC,
         /** Strikethrough font. */
-        STRIKE;
+        STRIKE,
+        /** Superscript. */
+        SUPER;
     }
 }

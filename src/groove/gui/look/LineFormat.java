@@ -17,7 +17,6 @@
 package groove.gui.look;
 
 import groove.gui.look.Line.Style;
-import groove.io.HTMLConverter;
 
 import java.awt.Color;
 
@@ -26,7 +25,7 @@ import java.awt.Color;
  * @author Rensink
  * @version $Revision $
  */
-abstract public class LineRenderer {
+abstract public class LineFormat {
     /** Converts a given Line to a String representation. */
     public String toString(Line line) {
         return line.toString(this).toString();
@@ -65,7 +64,6 @@ abstract public class LineRenderer {
         } else {
             result = fragments[0];
             for (int i = 1; i < fragments.length; i++) {
-                result.append(HTMLConverter.HTML_LINEBREAK);
                 result.append(fragments[i]);
             }
         }

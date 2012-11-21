@@ -27,10 +27,8 @@ import groove.graph.Graph;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.look.LabelValue;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import groove.gui.look.Line;
+import groove.gui.look.MultiLabel;
 
 /**
  * Label value refresher for pattern graphs.
@@ -44,25 +42,25 @@ public class PatternLabelValue extends LabelValue {
     }
 
     @Override
-    protected List<String> getLines(GraphJVertex jVertex) {
+    protected MultiLabel getJVertexLabel(GraphJVertex jVertex) {
         if (jVertex instanceof PatternJVertex) {
-            return Collections.emptyList();
+            return new MultiLabel();
         } else {
-            return super.getLines(jVertex);
+            return super.getJVertexLabel(jVertex);
         }
     }
 
     @Override
-    protected List<String> getLines(GraphJEdge jEdge) {
+    protected MultiLabel getJEdgeLabel(GraphJEdge jEdge) {
         if (jEdge instanceof PatternJEdge) {
-            return getLines((PatternJEdge) jEdge);
+            return getPatternJEdgeLabel((PatternJEdge) jEdge);
         } else {
-            return super.getLines(jEdge);
+            return super.getJEdgeLabel(jEdge);
         }
     }
 
-    private List<String> getLines(PatternJEdge jEdge) {
-        List<String> result = new ArrayList<String>();
+    private MultiLabel getPatternJEdgeLabel(PatternJEdge jEdge) {
+        MultiLabel result = new MultiLabel();
         for (Edge edge : jEdge.getEdges()) {
             StringBuilder sb = new StringBuilder();
             sb.append(((AbstractPatternEdge<?>) edge).getPrintableLabel());
@@ -71,7 +69,7 @@ public class PatternLabelValue extends LabelValue {
                 PatternShape pShape = (PatternShape) graph;
                 sb.append("(" + pShape.getMult((PatternEdge) edge) + ")");
             }
-            result.add(sb.toString());
+            result.add(Line.atom(sb.toString()));
         }
         return result;
     }

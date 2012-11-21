@@ -22,10 +22,11 @@ import static groove.gui.look.MultiLabel.Orient.LEFT;
 import static groove.gui.look.MultiLabel.Orient.RIGHT;
 import static groove.gui.look.MultiLabel.Orient.UP_LEFT;
 import static groove.gui.look.MultiLabel.Orient.UP_RIGHT;
-import groove.io.HTMLConverter;
 import groove.io.Util;
 
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class wrapping the functionality to convert a multi-line label
@@ -34,6 +35,150 @@ import java.awt.geom.Point2D;
  * @version $Revision $
  */
 public class MultiLabel {
+    /** Adds an undirected line to this multiline label. */
+    public void add(Line line) {
+        if (!line.isEmpty()) {
+            this.parts.add(new Part(line, Direct.FORWARD));
+        }
+    }
+
+    /** Adds an undirected line to a given position of this multiline label. */
+    public void add(int pos, Line line) {
+        this.parts.add(pos, new Part(line, Direct.FORWARD));
+    }
+
+    /** Adds a directed line to this multiline label. */
+    public void add(Line line, Direct direct) {
+        this.parts.add(new Part(line, direct));
+    }
+
+    /** Adds a list of undirected lines to this multiline label. */
+    public void addAll(List<Line> lines) {
+        for (Line line : lines) {
+            add(line, Direct.FORWARD);
+        }
+    }
+
+    /** Adds a list of directed lines to this multiline label. */
+    public void addAll(List<Line> lines, Direct direct) {
+        for (Line line : lines) {
+            add(line, direct);
+        }
+    }
+
+    /** Adds all parts of another multiline label to this one. */
+    public void add(MultiLabel label) {
+        for (Part part : label.getParts()) {
+            this.parts.add(part);
+        }
+    }
+
+    /** Returns the line parts of this multiline label. */
+    public List<Part> getParts() {
+        return this.parts;
+    }
+
+    /** Indicates if the list of lines is empty. */
+    public boolean isEmpty() {
+        return this.parts.isEmpty();
+    }
+
+    /**
+     * Computes a string representation of this label, for a given renderer
+     * and with or without orientation decorations. 
+     */
+    public StringBuilder toString(LineFormat renderer, Point2D start,
+            Point2D end) {
+        StringBuilder result = new StringBuilder();
+        for (Part part : getParts()) {
+            if (result.length() != 0) {
+                result.append(renderer.getLineBreak());
+            }
+            Line line;
+            if (start != null) {
+                Orient orient = part.direct.getOrient(start, end);
+                line = orient.decorate(part.line);
+            } else {
+                line = part.line;
+            }
+            result.append(renderer.toString(line));
+        }
+        return result;
+    }
+
+    /**
+     * Computes a string representation of this label, for a given renderer
+     * and without orientation decorations. 
+     */
+    public StringBuilder toString(LineFormat renderer) {
+        return toString(renderer, null, null);
+    }
+
+    @Override
+    public String toString() {
+        return this.parts.toString();
+    }
+
+    private final List<Part> parts = new ArrayList<MultiLabel.Part>();
+
+    /**
+     * Constructs a label with a given line and direction,
+     * or empty if the line is {@code null}.
+     * @param line line for the new label;may be {@code null}
+     * @param direct direction for the new label; non-{@code null}
+     */
+    public static MultiLabel singleton(Line line, Direct direct) {
+        MultiLabel result = new MultiLabel();
+        if (line != null) {
+            result.add(line, direct);
+        }
+        return result;
+    }
+
+    /**
+     * Constructs a label with a given line and no direction,
+     * or empty if the line is {@code null}.
+     * @param line line for the new label;may be {@code null}
+     */
+    public static MultiLabel singleton(Line line) {
+        MultiLabel result = new MultiLabel();
+        if (line != null && !line.isEmpty()) {
+            result.add(line);
+        }
+        return result;
+    }
+
+    /** Single line of a multiline label. */
+    public static class Part {
+        /** Constructs a part consisting of a line and a direction. */
+        public Part(Line line, Direct direct) {
+            this.line = line;
+            this.direct = direct;
+        }
+
+        /** Returns the line of this label part. */
+        public Line getLine() {
+            return this.line;
+        }
+
+        /** Returns the direction of this label part. */
+        public Direct getDirect() {
+            return this.direct;
+        }
+
+        @Override
+        public String toString() {
+            String result = "\"" + this.line + "\"";
+            if (this.direct != Direct.NONE) {
+                result += " as " + this.direct;
+            }
+            return result;
+        }
+
+        private final Line line;
+        private final Direct direct;
+    }
+
     /**
      * Direction of a line of the multi-label.
      * This determines how the orientation decorations are placed.
@@ -52,7 +197,7 @@ public class MultiLabel {
         FORWARD {
             @Override
             public Orient getOrient(int dx, int dy) {
-                if (Math.abs(dx) >= Math.abs(dy) * 5) {
+                if (Math.abs(dx) >= Math.abs(dy) * 3) {
                     // vertical dimension negligible
                     return dx < 0 ? LEFT : RIGHT;
                 } else if (dy < 0) {
@@ -73,7 +218,7 @@ public class MultiLabel {
         BIRIDECTIONAL {
             @Override
             public Orient getOrient(int dx, int dy) {
-                if (Math.abs(dx) >= Math.abs(dy) * 5) {
+                if (Math.abs(dx) >= Math.abs(dy) * 3) {
                     // vertical dimension negligible
                     return Orient.LEFT_RIGHT;
                 } else if (dy < 0) {
@@ -111,46 +256,46 @@ public class MultiLabel {
         /** Pointing both left and right. */
         LEFT_RIGHT(LA, RA),
         /** Pointing up-left and down-right. */
-        UP_DOWN(UA, DA),
+        UP_DOWN(UAL, DAR),
         /** Pointing down-left and up-right. */
-        DOWN_UP(DA, UA),
+        DOWN_UP(DAL, UAR),
         /** Pointing up left. */
-        UP_LEFT(UA, null),
+        UP_LEFT(UAL, null),
         /** Pointing down left. */
-        DOWN_LEFT(DA, null),
+        DOWN_LEFT(DAL, null),
         /** Pointing up right. */
-        UP_RIGHT(null, UA),
+        UP_RIGHT(null, UAR),
         /** Pointing down right. */
-        DOWN_RIGHT(null, DA);
+        DOWN_RIGHT(null, DAR);
 
-        private Orient(String left, String right) {
+        private Orient(Line left, Line right) {
             this.left = left;
             this.right = right;
         }
 
         /** Inserts symbols in front and behind a given text, depending on this orientation. */
-        public StringBuilder decorate(String text) {
-            StringBuilder result = new StringBuilder(text);
+        public Line decorate(Line line) {
+            Line result = line;
             if (this.left != null) {
-                result.insert(0, SP);
-                result.insert(0, this.left);
+                result = this.left.append(result);
             }
             if (this.right != null) {
-                result.append(SP);
-                result.append(this.right);
+                result = result.append(this.right);
             }
             return result;
         }
 
         /** String to place to the left side of the label. */
-        private final String left;
+        private final Line left;
         /** String to place to the right side of the label. */
-        private final String right;
+        private final Line right;
     }
 
-    static private final String LA = HTMLConverter.toHtml(Util.LT);
-    static private final String RA = HTMLConverter.toHtml(Util.RT);
-    static private final String UA = HTMLConverter.toHtml(Util.UT);
-    static private final String DA = HTMLConverter.toHtml(Util.DT);
-    static private final String SP = HTMLConverter.toHtml(Util.THIN_SPACE);
+    static private final String SP = "" + Util.THIN_SPACE;
+    static private final Line LA = Line.atom("" + Util.LT + SP);
+    static private final Line RA = Line.atom(SP + Util.RT);
+    static private final Line UAL = Line.atom("" + Util.UT + SP);
+    static private final Line DAL = Line.atom("" + Util.DT + SP);
+    static private final Line UAR = Line.atom(SP + Util.UT);
+    static private final Line DAR = Line.atom(SP + Util.DT);
 }
