@@ -17,6 +17,7 @@
 package groove.gui.display;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
+import static groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
 import static groove.gui.Options.SHOW_PARTIAL_GTS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.SimulatorModel.Change.GRAMMAR;
@@ -464,6 +465,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
             addRefreshListener(SHOW_ANCHORS_OPTION);
             addRefreshListener(SHOW_STATE_IDS_OPTION);
             addRefreshListener(SHOW_PARTIAL_GTS_OPTION);
+            addRefreshListener(SHOW_ARROWS_ON_LABELS_OPTION);
         }
 
         /**

@@ -16,10 +16,9 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.DefaultLabel;
-import groove.graph.Label;
 import groove.gui.look.Line;
 import groove.gui.look.MultiLabel;
+import groove.gui.look.MultiLabel.Direct;
 import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
@@ -27,7 +26,6 @@ import groove.view.aspect.AspectLabel;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Content object that is a collection of strings, and can be reloaded from an
@@ -48,21 +46,10 @@ public class AspectJObject extends ArrayList<String> {
      * Returns a list of lines constituting the node or edge label
      * in case this object is displayed directly.
      */
-    public MultiLabel toLines() {
+    public MultiLabel toLines(Direct direct) {
         MultiLabel result = new MultiLabel();
         for (String text : this) {
-            result.add(Line.atom(text));
-        }
-        return result;
-    }
-
-    /** 
-     * Returns the content of this object as a list of labels.
-     */
-    public List<Label> toLabels() {
-        List<Label> result = new ArrayList<Label>();
-        for (String text : this) {
-            result.add(DefaultLabel.createLabel(text));
+            result.add(Line.atom(text), direct);
         }
         return result;
     }

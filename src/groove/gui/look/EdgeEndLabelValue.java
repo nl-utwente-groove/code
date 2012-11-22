@@ -23,11 +23,16 @@ import groove.gui.jgraph.AspectJVertex;
 import groove.view.aspect.AspectEdge;
 
 /**
- * Value of the edge target label (typically the incoming multiplicity).
+ * Value of the edge source or target label (typically the outgoing/incoming multiplicity).
  * @author Arend Rensink
  * @version $Revision $
  */
-public class EdgeTargetLabelValue extends AspectValue<String> {
+public class EdgeEndLabelValue extends AspectValue<String> {
+    /** Creates an label refresher for either the source or the target label. */
+    public EdgeEndLabelValue(boolean source) {
+        this.source = source;
+    }
+
     @Override
     protected String getForJVertex(AspectJVertex jVertex) {
         return null;
@@ -39,11 +44,14 @@ public class EdgeTargetLabelValue extends AspectValue<String> {
         AspectEdge edge = jEdge.getEdge();
         // the edge could be null, if we're in the process of adding a JEdge
         if (edge != null && edge.getGraphRole() == GraphRole.TYPE) {
-            Multiplicity inMult = edge.getInMult();
-            if (inMult != null) {
-                result = inMult.toString();
+            Multiplicity mult =
+                this.source ? edge.getOutMult() : edge.getInMult();
+            if (mult != null) {
+                result = mult.toString();
             }
         }
         return result;
     }
+
+    private final boolean source;
 }

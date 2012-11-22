@@ -20,8 +20,8 @@ import groove.graph.Edge;
 import groove.graph.Node;
 import groove.gui.look.AdornmentValue;
 import groove.gui.look.ColorValue;
-import groove.gui.look.EdgeSourceLabelValue;
-import groove.gui.look.EdgeTargetLabelValue;
+import groove.gui.look.EdgeEndLabelValue;
+import groove.gui.look.EdgeEndShapeValue;
 import groove.gui.look.ErrorValue;
 import groove.gui.look.LabelValue;
 import groove.gui.look.VisibleValue;
@@ -67,9 +67,13 @@ public class GraphJGraphFactory implements JGraphFactory {
         case COLOR:
             return new ColorValue();
         case EDGE_SOURCE_LABEL:
-            return new EdgeSourceLabelValue();
+            return new EdgeEndLabelValue(true);
+        case EDGE_SOURCE_SHAPE:
+            return new EdgeEndShapeValue(true);
         case EDGE_TARGET_LABEL:
-            return new EdgeTargetLabelValue();
+            return new EdgeEndLabelValue(false);
+        case EDGE_TARGET_SHAPE:
+            return new EdgeEndShapeValue(false);
         case ERROR:
             return new ErrorValue();
         case LABEL:

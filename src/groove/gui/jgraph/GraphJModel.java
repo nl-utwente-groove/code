@@ -27,7 +27,6 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 
 import java.awt.Color;
@@ -384,18 +383,18 @@ public class GraphJModel<N extends Node,E extends Edge> extends
                     return jEdge;
                 }
             }
+        } else {
+            GraphJEdge jEdge = (GraphJEdge) this.edgeJCellMap.get(opposite);
+            jEdge.addEdge(edge);
+            return jEdge;
         }
         // none of the above: so create a new JEdge
-        GraphJEdge jEdge = computeJEdge(edge, opposite != null);
+        GraphJEdge jEdge = computeJEdge(edge);
         // put the edge at the end to make sure it goes to the back
         this.addedJCells.add(jEdge);
         // store mapping of edge to jedge(s)
         this.edgeJCellMap.put(edge, jEdge);
-        if (opposite == null) {
-            outJEdges.add(jEdge);
-        } else {
-            this.edgeJCellMap.put(opposite, jEdge);
-        }
+        outJEdges.add(jEdge);
         // verification
         GraphJVertex sourceNode = getJCellForNode(source);
         assert sourceNode != null : "No vertex for source node of " + edge;
@@ -429,11 +428,9 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * Creates a new j-edge using {@link #createJEdge(Edge)},  and adds available
      * layout information from the layout map stored in this model.
      * @param edge graph edge for which a corresponding j-edge is to be created
-     * @param bidirectional flag that indicates if the edge is bidirectional
      */
-    protected GraphJEdge computeJEdge(E edge, boolean bidirectional) {
+    protected GraphJEdge computeJEdge(E edge) {
         GraphJEdge result = createJEdge(edge);
-        result.setLook(Look.BIDIRECTIONAL, bidirectional);
         JEdgeLayout layout = this.layoutMap.getLayout(edge);
         if (layout != null) {
             result.putVisuals(layout.toVisuals());

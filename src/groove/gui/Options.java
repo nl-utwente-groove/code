@@ -16,6 +16,7 @@
  */
 package groove.gui;
 
+import groove.io.Util;
 import groove.io.store.EditType;
 import groove.trans.ResourceKind;
 import groove.util.ExprParser;
@@ -58,6 +59,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
+import org.jgraph.graph.GraphConstants;
+
 import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
@@ -77,6 +80,7 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_PARTIAL_GTS_OPTION);
         addCheckbox(SHOW_STATE_IDS_OPTION);
         addCheckbox(SHOW_UNFILTERED_EDGES_OPTION);
+        addCheckbox(SHOW_ARROWS_ON_LABELS_OPTION);
         addCheckbox(SHOW_BIDIRECTIONAL_EDGES_OPTION);
         addBehaviour(DELETE_RESOURCE_OPTION, 2);
         addBehaviour(VERIFY_ALL_STATES_OPTION, 3);
@@ -90,15 +94,30 @@ public class Options implements Cloneable {
      */
     private final JCheckBoxMenuItem addCheckbox(final String name) {
         JCheckBoxMenuItem result = new JCheckBoxMenuItem(name);
-        result.setSelected(userPrefs.getBoolean(name,
-            boolOptionDefaults.get(name)));
+        boolean selected =
+            userPrefs.getBoolean(name, boolOptionDefaults.get(name));
+        boolean enabled = isEnabled(name);
+        result.setSelected(selected & enabled);
         this.itemMap.put(name, result);
-        result.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                userPrefs.putBoolean(name,
-                    e.getStateChange() == ItemEvent.SELECTED);
-            }
-        });
+        if (enabled) {
+            result.addItemListener(new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {
+                    userPrefs.putBoolean(name,
+                        e.getStateChange() == ItemEvent.SELECTED);
+                }
+            });
+        } else {
+            result.setEnabled(false);
+        }
+        return result;
+    }
+
+    /** Tests if a given option is structurally enabled on this machine. */
+    private boolean isEnabled(String name) {
+        boolean result = true;
+        if (SHOW_ARROWS_ON_LABELS_OPTION.equals(name)) {
+            result = isSupportsLabelArrows();
+        }
         return result;
     }
 
@@ -207,6 +226,14 @@ public class Options implements Cloneable {
         new LinkedHashMap<String,JMenuItem>();
 
     /**
+     * Tests if the font used for rendering labels supports
+     * the Unicode characters used for arrows-on-labels.
+     */
+    static public boolean isSupportsLabelArrows() {
+        return DEFAULT_FONT.canDisplay(Util.RT);
+    }
+
+    /**
      * Callback method to determine whether a mouse event could be intended to
      * edit edge points.
      */
@@ -308,7 +335,7 @@ public class Options implements Cloneable {
     }
 
     /** The default font set in the look-and-feel. */
-    public static Font DEFAULT_FONT = null;
+    public static final Font DEFAULT_FONT;
     // Menus
     /** Edit menu name */
     public static final String EDIT_MENU_NAME = "Edit";
@@ -881,6 +908,9 @@ public class Options implements Cloneable {
     /** Show data values as nodes rather than assignments. */
     static public final String SHOW_VALUE_NODES_OPTION =
         "Show data values as nodes";
+    /** Show data values as nodes rather than assignments. */
+    static public final String SHOW_ARROWS_ON_LABELS_OPTION =
+        "Show arrows on labels";
     /** Always delete resources without confirmation. */
     static public final String DELETE_RESOURCE_OPTION =
         "Delete seletected resource?";
@@ -906,6 +936,7 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_ASPECTS_OPTION, false);
         boolOptionDefaults.put(SHOW_VALUE_NODES_OPTION, false);
         boolOptionDefaults.put(SHOW_UNFILTERED_EDGES_OPTION, false);
+        boolOptionDefaults.put(SHOW_ARROWS_ON_LABELS_OPTION, false);
         boolOptionDefaults.put(SHOW_BIDIRECTIONAL_EDGES_OPTION, true);
         intOptionDefaults.put(DELETE_RESOURCE_OPTION, BehaviourOption.ASK);
         intOptionDefaults.put(VERIFY_ALL_STATES_OPTION, BehaviourOption.NEVER);
@@ -989,9 +1020,6 @@ public class Options implements Cloneable {
                 // LAF specific options that should be done before setting the LAF
                 // go here
                 MetalLookAndFeel.setCurrentTheme(new DesertBlue());
-                // set default font to LAF font
-                Options.DEFAULT_FONT =
-                    MetalLookAndFeel.getCurrentTheme().getUserTextFont();
                 // Set the look and feel
                 UIManager.setLookAndFeel(new com.jgoodies.looks.plastic.PlasticLookAndFeel());
             } catch (Exception e) {
@@ -1004,6 +1032,17 @@ public class Options implements Cloneable {
 
     static {
         initLookAndFeel();
+        // set default font to LAF font
+        DEFAULT_FONT = getDefaultFont();
+    }
+
+    private static Font getDefaultFont() {
+        Font result = GraphConstants.DEFAULTFONT;
+        if (result == null) {
+            result = UIManager.getDefaults().getFont("SansSerif");
+        }
+        // previously used: MetalLookAndFeel.getCurrentTheme().getUserTextFont();
+        return result;
     }
 
     /** Flag indicating if {@link #initLookAndFeel()} has already been invoked. */

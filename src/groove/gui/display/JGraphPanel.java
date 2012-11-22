@@ -365,6 +365,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
             if (evt.getPropertyName().equals(
                 AccessibleState.ENABLED.toDisplayString())) {
                 if (isEnabled()) {
+                    getJGraph().getModel().refreshVisuals();
                     refresh();
                 }
             }

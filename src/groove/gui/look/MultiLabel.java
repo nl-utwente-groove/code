@@ -35,27 +35,10 @@ import java.util.List;
  * @version $Revision $
  */
 public class MultiLabel {
-    /** Adds an undirected line to this multiline label. */
-    public void add(Line line) {
-        if (!line.isEmpty()) {
-            this.parts.add(new Part(line, Direct.FORWARD));
-        }
-    }
-
-    /** Adds an undirected line to a given position of this multiline label. */
-    public void add(int pos, Line line) {
-        this.parts.add(pos, new Part(line, Direct.FORWARD));
-    }
-
     /** Adds a directed line to this multiline label. */
     public void add(Line line, Direct direct) {
-        this.parts.add(new Part(line, direct));
-    }
-
-    /** Adds a list of undirected lines to this multiline label. */
-    public void addAll(List<Line> lines) {
-        for (Line line : lines) {
-            add(line, Direct.FORWARD);
+        if (!line.isEmpty()) {
+            add(new Part(line, direct));
         }
     }
 
@@ -69,13 +52,23 @@ public class MultiLabel {
     /** Adds all parts of another multiline label to this one. */
     public void add(MultiLabel label) {
         for (Part part : label.getParts()) {
-            this.parts.add(part);
+            add(part);
         }
+    }
+
+    private void add(Part part) {
+        this.parts.add(part);
+        this.direct = this.direct.union(part.getDirect());
     }
 
     /** Returns the line parts of this multiline label. */
     public List<Part> getParts() {
         return this.parts;
+    }
+
+    /** Returns the union of all directions in this label. */
+    public Direct getDirect() {
+        return this.direct;
     }
 
     /** Indicates if the list of lines is empty. */
@@ -120,6 +113,8 @@ public class MultiLabel {
     }
 
     private final List<Part> parts = new ArrayList<MultiLabel.Part>();
+    /** The combined direction of this label. */
+    private Direct direct = Direct.NONE;
 
     /**
      * Constructs a label with a given line and direction,
@@ -129,21 +124,8 @@ public class MultiLabel {
      */
     public static MultiLabel singleton(Line line, Direct direct) {
         MultiLabel result = new MultiLabel();
-        if (line != null) {
-            result.add(line, direct);
-        }
-        return result;
-    }
-
-    /**
-     * Constructs a label with a given line and no direction,
-     * or empty if the line is {@code null}.
-     * @param line line for the new label;may be {@code null}
-     */
-    public static MultiLabel singleton(Line line) {
-        MultiLabel result = new MultiLabel();
         if (line != null && !line.isEmpty()) {
-            result.add(line);
+            result.add(line, direct);
         }
         return result;
     }
@@ -228,6 +210,40 @@ public class MultiLabel {
                 }
             }
         };
+
+        /**
+         * Computes the union of this direction and another.
+         * Union means union of edge ends.
+         */
+        public Direct union(Direct other) {
+            Direct result;
+            switch (this) {
+            case BACKWARD:
+                if (other == BACKWARD || other == BIRIDECTIONAL) {
+                    result = BIRIDECTIONAL;
+                } else {
+                    result = this;
+                }
+                break;
+            case FORWARD:
+                if (other == FORWARD || other == BIRIDECTIONAL) {
+                    result = BIRIDECTIONAL;
+                } else {
+                    result = this;
+                }
+                break;
+            case NONE:
+                result = other;
+                break;
+            case BIRIDECTIONAL:
+                result = this;
+                break;
+            default:
+                assert false;
+                result = null;
+            }
+            return result;
+        }
 
         /**
          * Returns the correct orientation for a given vector.

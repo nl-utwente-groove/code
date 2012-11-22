@@ -48,19 +48,19 @@ public enum VisualKey {
      * Background colour for nodes. Defaults to {@link Values#DEFAULT_BACKGROUND}.
      * A {@code null} value means a whitewashed version of the foreground is used. 
      */
-    BACKGROUND(Color.class, Values.DEFAULT_BACKGROUND),
+    BACKGROUND(Color.class, Values.DEFAULT_BACKGROUND, DERIVED),
     /** Controlled foreground colour, overriding {@link #FOREGROUND} if set. Defaults to {@code null}. */
     COLOR(Color.class, null, REFRESHABLE),
     /** Edge dash pattern. Defaults to no dash. */
-    DASH(float[].class, Values.NO_DASH),
+    DASH(float[].class, Values.NO_DASH, DERIVED),
     /** Edge source decoration. Defaults to {@link EdgeEnd#NONE}. */
-    EDGE_SOURCE_SHAPE(EdgeEnd.class, EdgeEnd.NONE),
+    EDGE_SOURCE_SHAPE(EdgeEnd.class, EdgeEnd.NONE, REFRESHABLE),
     /** HTML-formatted optional edge source label. Defaults to {@code null}. */
     EDGE_SOURCE_LABEL(String.class, null, REFRESHABLE),
     /** Position of the optional edge source label. Defaults to {@link JCellLayout#defaultLabelPosition}. */
     EDGE_SOURCE_POS(Point2D.class, JCellLayout.defaultLabelPosition, CONTROLLED),
     /** Edge target decoration. Defaults to {@link EdgeEnd#ARROW}. */
-    EDGE_TARGET_SHAPE(EdgeEnd.class, EdgeEnd.ARROW),
+    EDGE_TARGET_SHAPE(EdgeEnd.class, EdgeEnd.ARROW, REFRESHABLE),
     /** HTML-formatted optional edge target label. Defaults to {@code null}. */
     EDGE_TARGET_LABEL(String.class, null, REFRESHABLE),
     /** Position of the optional edge target label. Defaults to {@link JCellLayout#defaultLabelPosition}. */
@@ -70,20 +70,20 @@ public enum VisualKey {
     /** Node or edge emphasis. Defaults to {@code false}. */
     EMPHASIS(Boolean.class, false, CONTROLLED),
     /** Font setting for text, as a {@link Font} style value. Defaults to {@link Font#PLAIN}. */
-    FONT(Integer.class, Font.PLAIN),
+    FONT(Integer.class, Font.PLAIN, DERIVED),
     /** Foreground colour. Defaults to {@link Values#DEFAULT_FOREGROUND}. */
-    FOREGROUND(Color.class, Values.DEFAULT_FOREGROUND),
+    FOREGROUND(Color.class, Values.DEFAULT_FOREGROUND, DERIVED),
     /**
      * Line colour for an <i>inner</i> line drawn inside the normal outline
      * Defaults to {@code null}, meaning there is no
      * inner line. 
      */
-    INNER_LINE(Color.class, null),
+    INNER_LINE(Color.class, null, DERIVED),
     /**
      * Extra space between text and border (needed if the node can have
      * a thicker border). Defaults to 0. 
      */
-    INSET(Integer.class, 0),
+    INSET(Integer.class, 0, DERIVED),
     /**
      * HTML-formatted main label text. Defaults to the empty string.
      * A value of {@code null} on a node implies rendering it as a nodified edge.
@@ -94,26 +94,21 @@ public enum VisualKey {
     /** Edge layout line style. Defaults to {@link LineStyle#ORTHOGONAL}. */
     LINE_STYLE(LineStyle.class, LineStyle.ORTHOGONAL, CONTROLLED),
     /** Line width. Defaults to {@code 1}. */
-    LINE_WIDTH(Float.class, 1f),
+    LINE_WIDTH(Float.class, 1f, DERIVED),
     /** Node position. */
     NODE_POS(Point2D.class, new Point2D.Double(10, 10), CONTROLLED),
     /** Node shape. Defaults to {@link NodeShape#RECTANGLE} */
-    NODE_SHAPE(NodeShape.class, NodeShape.RECTANGLE),
+    NODE_SHAPE(NodeShape.class, NodeShape.RECTANGLE, DERIVED),
     /** Node bounds. */
     NODE_SIZE(Dimension2D.class, new Dimension(19, 19), REFRESHABLE),
     /** Node opacity. Defaults to {@code false}. */
-    OPAQUE(Boolean.class, false),
+    OPAQUE(Boolean.class, false, DERIVED),
     /** Intermediate edge points. */
     POINTS(List.class,
             Arrays.asList(new Point2D.Double(), new Point2D.Double()),
             CONTROLLED),
     /** Node or edge visibility. Defaults to {@code true}. */
     VISIBLE(Boolean.class, true, REFRESHABLE);
-
-    /** Constructs a derived visual key. */
-    private VisualKey(Class<?> type, Object defaultValue) {
-        this(type, defaultValue, DERIVED);
-    }
 
     /** Constructs a visual key that is possibly derived from a looks value. */
     private VisualKey(Class<?> type, Object defaultValue, Nature nature) {
