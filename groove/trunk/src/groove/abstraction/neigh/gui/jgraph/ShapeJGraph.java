@@ -29,12 +29,20 @@ import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JCellViewFactory;
 import groove.gui.jgraph.JGraphFactory;
+import groove.gui.layout.AbstractLayouter;
+import groove.gui.layout.Layouter;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualValue;
 
 import java.awt.Rectangle;
+import java.util.Map;
+
+import javax.swing.SwingConstants;
 
 import org.jgraph.graph.CellView;
+
+import com.jgraph.layout.JGraphFacade;
+import com.jgraph.layout.tree.JGraphCompactTreeLayout;
 
 /**
  * JGraph class for displaying Shapes. 
@@ -68,6 +76,11 @@ public final class ShapeJGraph extends GraphJGraph {
     @Override
     public boolean isShowLoopsAsNodeLabels() {
         return false;
+    }
+
+    @Override
+    protected Layouter createLayouter() {
+        return new MyLayouter();
     }
 
     /** Returns the shape from the model. */
@@ -168,6 +181,59 @@ public final class ShapeJGraph extends GraphJGraph {
             default:
                 return super.newVisualValue(key);
             }
+        }
+    }
+
+    private static class MyLayouter extends AbstractLayouter {
+
+        JGraphFacade facade;
+        JGraphCompactTreeLayout treeLayout;
+
+        MyLayouter() {
+            super("ShapeJGraph Layouter");
+        }
+
+        MyLayouter(String name, ShapeJGraph jgraph) {
+            super(name, jgraph);
+        }
+
+        @Override
+        public Layouter newInstance(GraphJGraph jgraph) {
+            return new MyLayouter(this.name, (ShapeJGraph) jgraph);
+        }
+
+        @Override
+        public void start(boolean complete) {
+            prepareLayouting();
+            run();
+            finishLayouting();
+        }
+
+        @Override
+        public void stop() {
+            // Empty by design.
+        }
+
+        ShapeJGraph getJGraph() {
+            return (ShapeJGraph) this.jgraph;
+        }
+
+        void prepareLayouting() {
+            getJGraph().setLayouting(true);
+            this.facade = new JGraphFacade(getJGraph());
+            this.treeLayout = new JGraphCompactTreeLayout();
+            this.treeLayout.setOrientation(SwingConstants.NORTH);
+        }
+
+        void run() {
+            this.treeLayout.run(this.facade);
+        }
+
+        void finishLayouting() {
+            Map<?,?> nested = this.facade.createNestedMap(true, true);
+            getJGraph().getGraphLayoutCache().edit(nested);
+            getJGraph().setLayouting(false);
+            getJGraph().refreshAllCells();
         }
     }
 }

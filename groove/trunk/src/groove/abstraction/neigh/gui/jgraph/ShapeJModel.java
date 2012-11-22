@@ -28,13 +28,10 @@ import groove.abstraction.neigh.shape.ShapeNode;
 import groove.graph.Graph;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.look.VisualKey;
 import groove.util.Duo;
 
-import java.awt.geom.Point2D;
 import java.util.Map;
 
-import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.ParentMap;
 
 /**
@@ -43,10 +40,6 @@ import org.jgraph.graph.ParentMap;
  * @author Eduardo Zambon
  */
 public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
-
-    private static final Point2D[] labelPositions = {
-        new Point2D.Double(GraphConstants.PERMILLE * 90 / 100, -10),
-        new Point2D.Double(GraphConstants.PERMILLE * 10 / 100, -10)};
 
     /**
      * Map that stores the containment relation between equivalence classes
@@ -158,10 +151,6 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
             if (!"".equals(labels[1])) {
                 jEdge.setMainSrc(true);
             }
-            jEdge.putVisual(VisualKey.EDGE_SOURCE_POS, labelPositions[0]);
-            jEdge.putVisual(VisualKey.EDGE_SOURCE_LABEL, duo.one());
-            jEdge.putVisual(VisualKey.EDGE_TARGET_POS, labelPositions[1]);
-            jEdge.putVisual(VisualKey.EDGE_TARGET_LABEL, duo.two());
         }
     }
 
