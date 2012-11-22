@@ -224,10 +224,9 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
     }
 
     /** Pattern closure. */
-    public Pair<PatternNode,Duo<PatternEdge>> closePattern(TypeEdge m1,
-            TypeEdge m2, PatternNode p1, PatternNode p2) {
-        // EDUARDO: Include consistency assertions.
-        return addPattern(m1, m2, p1, p2);
+    public void closePattern(TypeEdge m1, TypeEdge m2, PatternNode p1,
+            PatternNode p2) {
+        addPattern(m1, m2, p1, p2);
     }
 
     /** Common method for addition and closure operation. */
