@@ -23,6 +23,7 @@ import groove.util.ExprParser;
 import groove.view.FormatException;
 
 import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -230,7 +231,7 @@ public class Options implements Cloneable {
      * the Unicode characters used for arrows-on-labels.
      */
     static public boolean isSupportsLabelArrows() {
-        return DEFAULT_FONT.canDisplay(Util.RT);
+        return SYMBOL_FONT != null;
     }
 
     /**
@@ -336,6 +337,10 @@ public class Options implements Cloneable {
 
     /** The default font set in the look-and-feel. */
     public static final Font DEFAULT_FONT;
+    /** The default font used for node and edge labels. */
+    public static final Font LABEL_FONT;
+    /** The font for special (arrow-like) characters. */
+    public static final Font SYMBOL_FONT;
     // Menus
     /** Edit menu name */
     public static final String EDIT_MENU_NAME = "Edit";
@@ -1034,14 +1039,36 @@ public class Options implements Cloneable {
         initLookAndFeel();
         // set default font to LAF font
         DEFAULT_FONT = getDefaultFont();
+        LABEL_FONT = getLabelFont();
+        SYMBOL_FONT = getSymbolFont();
     }
 
     private static Font getDefaultFont() {
+        return MetalLookAndFeel.getCurrentTheme().getUserTextFont();
+    }
+
+    private static Font getLabelFont() {
         Font result = GraphConstants.DEFAULTFONT;
         if (result == null) {
             result = UIManager.getDefaults().getFont("SansSerif");
         }
         // previously used: MetalLookAndFeel.getCurrentTheme().getUserTextFont();
+        return result;
+    }
+
+    private static Font getSymbolFont() {
+        Font result = getLabelFont();
+        if (!result.canDisplay(Util.DT)) {
+            result = UIManager.getDefaults().getFont("SansSerif");
+        }
+        if (result == null || !result.canDisplay(Util.DT)) {
+            for (Font font : GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts()) {
+                if (font.canDisplay(Util.DT)) {
+                    result = font.deriveFont((float) getLabelFont().getSize());
+                    break;
+                }
+            }
+        }
         return result;
     }
 

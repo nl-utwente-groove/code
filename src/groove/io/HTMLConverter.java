@@ -16,9 +16,11 @@
  */
 package groove.io;
 
+import groove.gui.Options;
 import groove.gui.look.Values;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,10 +30,9 @@ import java.util.Map;
  * @version $Revision: 3122 $
  */
 public class HTMLConverter {
-
     /** Converts a string representation of a unicode hex char to a HTML encoding thereof. */
     public static String toHtml(char unicode) {
-        return String.format("&#%d;", 0 + unicode);
+        return "&#" + ((int) unicode) + ";";
     }
 
     /**
@@ -59,6 +60,19 @@ public class HTMLConverter {
             case '\n':
                 html = HTML_LINEBREAK;
                 break;
+            case Util.DT:
+                html = HTML_DT;
+                break;
+            case Util.UT:
+                html = HTML_UT;
+                break;
+            case Util.LT:
+                html = HTML_LT;
+                break;
+            case Util.RT:
+                html = HTML_RT;
+                break;
+
             default:
                 if (c > 0xFF) {
                     html = toHtml(c);
@@ -70,6 +84,39 @@ public class HTMLConverter {
             }
         }
         return text;
+    }
+
+    private static final String HTML_UT;
+    private static final String HTML_DT;
+    private static final String HTML_RT;
+    private static final String HTML_LT;
+
+    static {
+        HTMLTag symbolTag = null;
+        if (Options.SYMBOL_FONT != null
+            && Options.SYMBOL_FONT != Options.LABEL_FONT) {
+            Font font = Options.SYMBOL_FONT;
+            String face = font.getFamily();
+            int size = font.getSize();
+            // actually a slightly smaller font is more in line with
+            // the edge font size, but then the forall symbol is not
+            // available
+            String argument =
+                String.format("font-family:%s; font-size:%dpx", face, size);
+            symbolTag = createSpanTag(argument);
+        }
+        HTML_UT = tagOn(symbolTag, Util.UT);
+        HTML_DT = tagOn(symbolTag, Util.DT);
+        HTML_LT = tagOn(symbolTag, Util.LT);
+        HTML_RT = tagOn(symbolTag, Util.RT);
+    }
+
+    private static final String tagOn(HTMLTag tag, char c) {
+        if (tag == null) {
+            return toHtml(c);
+        } else {
+            return tag.on(toHtml(c));
+        }
     }
 
     /**

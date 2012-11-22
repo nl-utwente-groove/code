@@ -102,7 +102,7 @@ public class HTMLFormat extends LineFormat {
     public static final HTMLTag fontTag;
 
     static {
-        Font font = Options.DEFAULT_FONT;
+        Font font = Options.LABEL_FONT;
         String face = font.getFamily();
         int size = font.getSize() - 2;
         // actually a slightly smaller font is more in line with

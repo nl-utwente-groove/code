@@ -60,8 +60,6 @@ public class JAttr {
     /** The size of the rounded corners for strongly rounded-rectangle vertices. */
     public static final int STRONG_ARC_SIZE = 20;
 
-    /** The default font used in the j-graphs. */
-    static public final Font DEFAULT_FONT = Options.DEFAULT_FONT;
     /**
      * The standard bounds used for nodes.
      */
@@ -87,7 +85,7 @@ public class JAttr {
     /** The height of the adornment text box. */
     public static final int ADORNMENT_HEIGHT = 12;
     /** The font used for adornment text. */
-    public static final Font ADORNMENT_FONT = DEFAULT_FONT;
+    public static final Font ADORNMENT_FONT = Options.LABEL_FONT;
     /** Foreground (= border) colour of the rubber band selector. */
     static public final Color RUBBER_FOREGROUND = new Color(150, 150, 150);
     /** Foreground (= border) colour of the rubber band selector. */

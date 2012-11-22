@@ -16,7 +16,9 @@
  */
 package groove.gui.look;
 
+import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.GraphJCell;
+import groove.view.aspect.AspectKind;
 
 import java.util.Set;
 
@@ -33,22 +35,27 @@ public class EdgeEndShapeValue implements VisualValue<EdgeEnd> {
 
     @Override
     public EdgeEnd get(GraphJCell cell) {
-        EdgeEnd result;
+        // first see what the looks have to say
+        VisualMap looksMap = Look.getVisualsFor(cell.getLooks());
+        EdgeEnd result =
+            this.source ? looksMap.getEdgeSourceShape()
+                    : looksMap.getEdgeTargetShape();
         Set<Look> looks = cell.getLooks();
-        // if arrows are shown on labels, do not show them on edges
-        if (cell.getJGraph().isShowArrowsOnLabels()
-            || looks.contains(Look.NO_ARROW)) {
+        if (looks.contains(Look.NO_ARROW)) {
             result = EdgeEnd.NONE;
-        } else {
-            // first see what the looks have to say
-            VisualMap looksMap = Look.getVisualsFor(cell.getLooks());
-            if (cell.getLooks().contains(Look.BIDIRECTIONAL) || !this.source) {
-                // use the target end
-                result = looksMap.getEdgeTargetShape();
-            } else {
-                // use the source end
-                result = looksMap.getEdgeSourceShape();
+        } else if (cell.getJGraph().isShowArrowsOnLabels()) {
+            // only show some arrows
+            if (cell instanceof AspectJEdge) {
+                AspectJEdge jEdge = (AspectJEdge) cell;
+                if (jEdge.getAspect() != AspectKind.SUBTYPE
+                    && !(this.source && jEdge.getEdge().isComposite())
+                    && !jEdge.isNodeEdgeOut()) {
+                    result = EdgeEnd.NONE;
+                }
             }
+        } else if (looks.contains(Look.BIDIRECTIONAL)) {
+            // use the target end
+            result = looksMap.getEdgeTargetShape();
         }
         return result;
     }
