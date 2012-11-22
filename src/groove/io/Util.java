@@ -313,10 +313,10 @@ public class Util {
     static public final char RANGLE = '>'; // &#9002;
     /** HTML times symbol. */
     static public final char TIMES = '\u2A09';
-    /** Unicode right-triangle symbol. */
-    static public final char RT = '\u25B6';
-    /** Unicode left-triangle symbol. */
-    static public final char LT = '\u25C0';
+    /** Unicode right-triangle symbol; large/small = ..B6/B8. */
+    static public final char RT = '\u25B8';
+    /** Unicode left-triangle symbol; large/small = ..C0/C2. */
+    static public final char LT = '\u25C2';
     /** Unicode up-triangle symbol; large/small = ..B2/B4. */
     static public final char UT = '\u25B4';
     /** Unicode down-triangle symbol; large/small = ..BC/BE. */
