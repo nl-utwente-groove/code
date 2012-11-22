@@ -20,10 +20,11 @@ import groove.io.Util;
 import groove.io.store.EditType;
 import groove.trans.ResourceKind;
 import groove.util.ExprParser;
+import groove.util.Groove;
 import groove.view.FormatException;
 
 import java.awt.Font;
-import java.awt.GraphicsEnvironment;
+import java.awt.FontFormatException;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -31,6 +32,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -1062,12 +1066,27 @@ public class Options implements Cloneable {
             result = UIManager.getDefaults().getFont("SansSerif");
         }
         if (result == null || !result.canDisplay(Util.DT)) {
-            for (Font font : GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts()) {
-                if (font.canDisplay(Util.DT)) {
-                    result = font.deriveFont((float) getLabelFont().getSize());
-                    break;
-                }
-            }
+            result =
+                loadFont("stixgeneralregular.ttf").deriveFont(
+                    getLabelFont().getSize2D());
+        }
+        return result;
+    }
+
+    /** Loads in a TrueType font of a given name. */
+    public static Font loadFont(String name) {
+        Font result = null;
+        try {
+            result =
+                Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(
+                    Groove.getResource(name).getFile()));
+            result = result.deriveFont(getLabelFont().getSize2D());
+        } catch (FileNotFoundException e) {
+            // do nothing
+        } catch (FontFormatException e) {
+            // do nothing
+        } catch (IOException e) {
+            // do nothing
         }
         return result;
     }
