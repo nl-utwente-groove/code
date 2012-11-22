@@ -303,8 +303,11 @@ public class JGraphUI extends BasicGraphUI {
                 if (this.dragStart != null) {
                     // there is a focused cell, or we wouldn't be in move mode
                     // select it if currently not selected
+                    // we give preference to selected cells, since otherwise
+                    // we will never be able to drag edge points
                     GraphJCell cell = getJEdgeAt(this.dragStart.getPoint());
-                    if (cell == null) {
+                    if (cell == null
+                        || !getJGraph().getSelectionModel().isCellSelected(cell)) {
                         cell = getJCellAt(this.dragStart.getPoint());
                         getJGraph().setCursor(Icons.HAND_CLOSED_CURSOR);
                     }
