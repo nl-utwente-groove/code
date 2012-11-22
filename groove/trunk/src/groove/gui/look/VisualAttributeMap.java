@@ -325,7 +325,7 @@ public class VisualAttributeMap extends AttributeMap {
             super.put(GraphConstants.ENDFILL, targetShape.isFilled());
             break;
         case FONT:
-            value = Options.DEFAULT_FONT.deriveFont((Integer) value);
+            value = Options.LABEL_FONT.deriveFont((Integer) value);
             break;
         case FOREGROUND:
             // additionally set the line colour

@@ -19,6 +19,7 @@ package groove.gui.jgraph;
 import groove.graph.EdgeRole;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
+import groove.gui.Options;
 import groove.view.aspect.AspectKind;
 
 import java.awt.Component;
@@ -113,7 +114,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             JTextArea result = getEditorComponent();
             // scale with the jGraph
             Font font =
-                JAttr.DEFAULT_FONT.deriveFont(jCell.getVisuals().getFont());
+                Options.LABEL_FONT.deriveFont(jCell.getVisuals().getFont());
             font = (font != null) ? font : graph.getFont();
             if (graph.getScale() != 1) {
                 double scale = graph.getScale();

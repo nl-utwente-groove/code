@@ -317,9 +317,9 @@ public class Util {
     static public final char RT = '\u25B6';
     /** Unicode left-triangle symbol. */
     static public final char LT = '\u25C0';
-    /** Unicode up-triangle symbol. */
+    /** Unicode up-triangle symbol; large/small = ..B2/B4. */
     static public final char UT = '\u25B4';
-    /** Unicode down-triangle symbol. */
+    /** Unicode down-triangle symbol; large/small = ..BC/BE. */
     static public final char DT = '\u25BE';
     /** Unicode right-arrow symbol. */
     static public final char RA = '\u2192';

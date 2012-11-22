@@ -18,6 +18,7 @@ package groove.gui.jgraph;
 
 import static groove.gui.jgraph.JAttr.ADORNMENT_FONT;
 import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
+import groove.gui.Options;
 import groove.gui.look.HTMLFormat;
 import groove.gui.look.LineStyle;
 import groove.gui.look.Look;
@@ -552,7 +553,7 @@ public class JVertexView extends VertexView {
                         background.getAlpha());
             }
             setBackground(background);
-            Font font = JAttr.DEFAULT_FONT.deriveFont(visuals.getFont());
+            Font font = Options.LABEL_FONT.deriveFont(visuals.getFont());
             setFont((font != null) ? font : graph.getFont());
             setBorder(createEmptyBorder());
             setText(this.view.getText());
