@@ -126,16 +126,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
         addMouseListener(new MyMouseListener());
         addKeyListener(getCancelEditListener());
         getSelectionModel().addGraphSelectionListener(
-            new GraphSelectionListener() {
-                @Override
-                public void valueChanged(GraphSelectionEvent e) {
-                    Object[] cells = e.getCells();
-                    for (int i = 0; i < cells.length; i++) {
-                        GraphJCell jCell = (GraphJCell) cells[i];
-                        jCell.putVisual(VisualKey.EMPHASIS, e.isAddedCell(i));
-                    }
-                }
-            });
+            new MyGraphSelectionListener());
         setEditable(false);
         setConnectable(false);
         setDisconnectable(false);
@@ -1398,6 +1389,21 @@ public class GraphJGraph extends org.jgraph.JGraph {
         @Override
         public void mouseReleased(MouseEvent evt) {
             maybeShowPopup(evt);
+        }
+    }
+
+    /** Listener that pushes selection values into the visual map. */
+    private class MyGraphSelectionListener implements GraphSelectionListener {
+        @Override
+        public void valueChanged(GraphSelectionEvent e) {
+            Object[] cells = e.getCells();
+            for (int i = 0; i < cells.length; i++) {
+                Object c = cells[i];
+                if (c instanceof GraphJCell) {
+                    GraphJCell jCell = (GraphJCell) c;
+                    jCell.putVisual(VisualKey.EMPHASIS, e.isAddedCell(i));
+                }
+            }
         }
     }
 
