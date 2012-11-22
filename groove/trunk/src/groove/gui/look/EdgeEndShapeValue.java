@@ -45,13 +45,15 @@ public class EdgeEndShapeValue implements VisualValue<EdgeEnd> {
             result = EdgeEnd.NONE;
         } else if (cell.getJGraph().isShowArrowsOnLabels()) {
             // only show some arrows
+            boolean show = false;
             if (cell instanceof AspectJEdge) {
                 AspectJEdge jEdge = (AspectJEdge) cell;
-                if (jEdge.getAspect() != AspectKind.SUBTYPE
-                    && !(this.source && jEdge.getEdge().isComposite())
-                    && !jEdge.isNodeEdgeOut()) {
-                    result = EdgeEnd.NONE;
-                }
+                show |= jEdge.getAspect() == AspectKind.SUBTYPE;
+                show |= this.source && jEdge.getEdge().isComposite();
+                show |= jEdge.isNodeEdgeOut();
+            }
+            if (!show) {
+                result = EdgeEnd.NONE;
             }
         } else if (looks.contains(Look.BIDIRECTIONAL)) {
             // use the target end
