@@ -111,19 +111,18 @@ public final class PatternGraphRuleApplication {
         PatternNode p1 = this.match.getNode(r1.source());
         PatternNode p2 = this.match.getNode(r2.source());
 
-        Pair<PatternNode,Duo<PatternEdge>> pair;
         if (closure) {
-            pair = host.closePattern(m1, m2, p1, p2);
+            host.closePattern(m1, m2, p1, p2);
         } else {
-            pair = host.addEdgePattern(m1, m2, p1, p2);
+            Pair<PatternNode,Duo<PatternEdge>> pair =
+                host.addEdgePattern(m1, m2, p1, p2);
+            PatternNode newNode = pair.one();
+            PatternEdge d1 = pair.two().one();
+            PatternEdge d2 = pair.two().two();
+            this.match.putNode(rNode, newNode);
+            this.match.putEdge(r1, d1);
+            this.match.putEdge(r2, d2);
         }
-
-        PatternNode newNode = pair.one();
-        PatternEdge d1 = pair.two().one();
-        PatternEdge d2 = pair.two().two();
-        this.match.putNode(rNode, newNode);
-        this.match.putEdge(r1, d1);
-        this.match.putEdge(r2, d2);
     }
 
     private void close(PatternGraph host) {
