@@ -485,8 +485,8 @@ public class JEdgeView extends EdgeView {
             assert v instanceof JEdgeView : String.format(
                 "This renderer is only meant for %s", JEdgeView.class);
 
-            JEdgeView view = this.view = (JEdgeView) v;
-            this.cell = this.view.getCell();
+            JEdgeView view = this.jView = (JEdgeView) v;
+            this.cell = this.jView.getCell();
             VisualMap visuals = this.visuals = this.cell.getVisuals();
             this.line2color = visuals.getInnerLine();
             this.twoLines = this.line2color != null;
@@ -496,9 +496,6 @@ public class JEdgeView extends EdgeView {
                 b.setRect(b.x - 1, b.y - 1, b.width, b.height + 1);
                 this.errorBounds = b;
             }
-            this.manhattan =
-                visuals.getLineStyle() == LineStyle.MANHATTAN
-                    && visuals.getPoints().size() > 2;
             super.getRendererComponent(jGraph, v, sel, focus, preview);
             // treat selection as emphasis
             float lineWidth = this.visuals.getLineWidth();
@@ -571,8 +568,12 @@ public class JEdgeView extends EdgeView {
          */
         @Override
         protected Shape createShape() {
-            return this.manhattan ? createManhattanShape()
-                    : super.createShape();
+            if (this.lineStyle == Values.STYLE_MANHATTAN
+                && this.view.getPointCount() > 2) {
+                return createManhattanShape();
+            } else {
+                return super.createShape();
+            }
         }
 
         /** Creates a shape for the {@link LineStyle#MANHATTAN} line style. */
@@ -581,7 +582,7 @@ public class JEdgeView extends EdgeView {
             if (n > 1) {
                 // Following block may modify static vars as side effect
                 // (Flyweight Design)
-                JEdgeView tmp = this.view;
+                JEdgeView tmp = (JEdgeView) this.view;
                 Point2D[] p = null;
                 p = new Point2D[n];
                 for (int i = 0; i < n; i++) {
@@ -678,7 +679,7 @@ public class JEdgeView extends EdgeView {
 
         /** Paints the main label in a JLabel, providing HTML formatting. */
         private void paintMainLabel(Graphics g, Point2D p) {
-            Dimension size = setTextInJLabel(this.view);
+            Dimension size = setTextInJLabel(this.jView);
             if (size != null && (size.getWidth() != 0 || size.getHeight() != 0)) {
                 this.jLabel.setSize(size);
                 int sw = (int) size.getWidth();
@@ -761,14 +762,12 @@ public class JEdgeView extends EdgeView {
             return result;
         }
 
-        private JEdgeView view;
+        private JEdgeView jView;
         private GraphJEdge cell;
         private VisualMap visuals;
         // properties for drawing a second line
         private boolean twoLines = false;
         private Color line2color;
-        /** Flag indicating manhattan line style for the edge. */
-        private boolean manhattan;
         /** Flag indicating that the underlying edge has an error. */
         private boolean error;
         private Rectangle2D errorBounds;
