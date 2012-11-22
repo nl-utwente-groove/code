@@ -20,7 +20,11 @@ import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.graph.Edge;
 import groove.graph.Node;
+import groove.gui.look.Look;
+import groove.gui.look.MultiLabel.Direct;
 import groove.io.HTMLConverter;
+import groove.trans.RuleEdge;
+import groove.trans.RuleLabel;
 import groove.util.Groove;
 
 import java.util.ArrayList;
@@ -175,6 +179,12 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
         // To achieve this, we first remove the edge
         getEdges().remove(edge);
         ((Set<Edge>) getEdges()).add(edge);
+        Direct direct = getDirect(edge);
+        if (direct == Direct.NONE) {
+            setLook(Look.NO_ARROW, true);
+        } else if (direct == Direct.BACKWARD) {
+            setLook(Look.BIDIRECTIONAL, true);
+        }
     }
 
     /** Tests if a new edge is compatible with those already wrapped by this JEdge. */
@@ -210,6 +220,35 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
      */
     public Edge getEdge() {
         return getEdges().isEmpty() ? null : getEdges().iterator().next();
+    }
+
+    /**
+     * Determines the direction corresponding to a given edge
+     * wrapped into this JEdge, to be displayed on the JEdge label.
+     * This is {@link Direct#NONE} if {@link GraphJGraph#isShowArrowsOnLabels()}
+     * is {@code false}, otherwise {@link Direct#BIRIDECTIONAL} if the edge
+     * look is {@link Look#BIDIRECTIONAL}; otherwise it is determined
+     * by the relative direction of the edge with respect to this JEdge.
+     * @param edge the edge of which the direction should be returned; if {@code null},
+     * it is assumed to be a forward edge
+     */
+    public Direct getDirect(Edge edge) {
+        Direct result;
+        boolean regular = false;
+        if (edge instanceof RuleEdge) {
+            RuleLabel label = ((RuleEdge) edge).label();
+            regular =
+                label.isEmpty() || label.isNeg()
+                    && label.getNegOperand().isEmpty();
+        }
+        if (regular) {
+            result = Direct.NONE;
+        } else if (edge == null || getSourceNode().equals(edge.source())) {
+            result = Direct.FORWARD;
+        } else {
+            result = Direct.BACKWARD;
+        }
+        return result;
     }
 
     /**

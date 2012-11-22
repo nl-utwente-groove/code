@@ -69,7 +69,7 @@ public class PatternLabelValue extends LabelValue {
                 PatternShape pShape = (PatternShape) graph;
                 sb.append("(" + pShape.getMult((PatternEdge) edge) + ")");
             }
-            result.add(Line.atom(sb.toString()));
+            result.add(Line.atom(sb.toString()), jEdge.getDirect(edge));
         }
         return result;
     }

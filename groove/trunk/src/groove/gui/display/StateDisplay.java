@@ -17,6 +17,7 @@
 package groove.gui.display;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
+import static groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
@@ -717,6 +718,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             addRefreshListener(SHOW_VALUE_NODES_OPTION);
             addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
             addRefreshListener(SHOW_BIDIRECTIONAL_EDGES_OPTION);
+            addRefreshListener(SHOW_ARROWS_ON_LABELS_OPTION);
         }
 
         /**

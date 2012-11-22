@@ -31,7 +31,10 @@ import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
 
-/** Map of look attributes to corresponding values. */
+/**
+ * Map of visual attributes to corresponding values.
+ * The map maintains a JGraph-style attribute map, which is kept in sync.
+ */
 public class VisualMap extends DefaultFixable {
     /** Constructs a new, empty attribute map. */
     public VisualMap() {
@@ -46,8 +49,10 @@ public class VisualMap extends DefaultFixable {
     }
 
     /**
-     * Adds an attribute to the map.
-     * @param refresh if {@code true}, the key value should be marked as changed.
+     * Adds an attribute to the map, and on request set the corresponding
+     * key in the attribute map to stale.
+     * @param refresh if {@code true}, the key value should be marked as changed
+     * in the attribute map
      */
     void put(VisualKey key, Object value, boolean refresh) {
         testFixed(false);
@@ -75,10 +80,10 @@ public class VisualMap extends DefaultFixable {
     }
 
     /**
-     * Copies all controlled (i.e., non-derived) attributes
+     * Copies all non-derived visual attributes
      * from another map to this one.
      */
-    public void putControlled(VisualMap other) {
+    public void putNonDerived(VisualMap other) {
         testFixed(false);
         for (VisualKey key : VisualKey.values()) {
             if (key.getNature() != Nature.DERIVED) {
@@ -112,6 +117,8 @@ public class VisualMap extends DefaultFixable {
                     Object oldValue = this.map.put(key, newValue);
                     refresh = !newValue.equals(oldValue);
                 }
+                // tell the attribute to refresh 
+                // if something actually changed
                 if (refresh) {
                     staleKeys.add(key);
                 }

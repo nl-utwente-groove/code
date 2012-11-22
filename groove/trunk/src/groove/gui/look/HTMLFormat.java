@@ -19,14 +19,13 @@ package groove.gui.look;
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.createColorTag;
 import static groove.io.HTMLConverter.createSpanTag;
+import groove.gui.Options;
 import groove.gui.look.Line.Style;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
 
 import java.awt.Color;
 import java.awt.Font;
-
-import org.jgraph.graph.GraphConstants;
 
 /**
  * HTML renderer for lines.
@@ -103,19 +102,12 @@ public class HTMLFormat extends LineFormat {
     public static final HTMLTag fontTag;
 
     static {
-        Font font = GraphConstants.DEFAULTFONT;
-        String face;
-        int size;
-        if (font == null) {
-            face = "SansSerif";
-            size = -1;
-        } else {
-            face = font.getFamily();
-            // actually a slightly smaller font is more in line with
-            // the edge font size, but then the forall symbol is not
-            // available
-            size = font.getSize() - 2;
-        }
+        Font font = Options.DEFAULT_FONT;
+        String face = font.getFamily();
+        int size = font.getSize() - 2;
+        // actually a slightly smaller font is more in line with
+        // the edge font size, but then the forall symbol is not
+        // available
         String argument =
             String.format("font-family:%s; font-size:%dpx", face, size);
         fontTag = createSpanTag(argument);

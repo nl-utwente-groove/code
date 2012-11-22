@@ -203,6 +203,14 @@ public class GraphJGraph extends org.jgraph.JGraph {
         return getProperties() == null || getProperties().isShowLoopsAsLabels();
     }
 
+    /**
+     * Indicates whether arrow head should be shown on labels, rather than
+     * on edges. 
+     */
+    public boolean isShowArrowsOnLabels() {
+        return getOptionValue(Options.SHOW_ARROWS_ON_LABELS_OPTION);
+    }
+
     /** 
      * The properties of the grammar to which the displayed graph belongs.
      * May return {@code null} if the simulator is not set.

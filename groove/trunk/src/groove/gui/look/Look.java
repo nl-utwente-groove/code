@@ -359,9 +359,10 @@ public enum Look {
         // does nothing
     }
 
-    /** Adds a key-value pair to the attribute map of this look. */
+    /** Adds a derived or refreshable key-value pair to the attribute map of this look. */
     void add(VisualKey key, Object value) {
-        assert key.getNature() == Nature.DERIVED;
+        assert key.getNature() == Nature.DERIVED
+            || key.getNature() == Nature.REFRESHABLE;
         this.visuals.put(key, value, false);
     }
 

@@ -60,7 +60,7 @@ public class ShapeLabelValue extends LabelValue {
             StringBuilder sb = new StringBuilder();
             sb.append(shape.getEdgeMult(e, OUTGOING) + ":" + e.label() + ":"
                 + shape.getEdgeMult(e, INCOMING));
-            result.add(Line.atom(sb.toString()));
+            result.add(Line.atom(sb.toString()), jEdge.getDirect(edge));
         }
         return result;
     }

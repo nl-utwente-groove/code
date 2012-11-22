@@ -719,10 +719,14 @@ public class JEdgeView extends EdgeView {
             } else if (lines != this.jLabelLines
                 || foreground != this.jLabelColor) {
                 // no, the text or colour have changed; reload the jLabel component
-                Point2D start = view.getPoint(0);
-                Point2D end = view.getPoint(view.getPointCount() - 1);
-                StringBuilder text =
-                    lines.toString(HTMLFormat.instance(), start, end);
+                StringBuilder text;
+                if (view.getCell().getJGraph().isShowArrowsOnLabels()) {
+                    Point2D start = view.getPoint(0);
+                    Point2D end = view.getPoint(view.getPointCount() - 1);
+                    text = lines.toString(HTMLFormat.instance(), start, end);
+                } else {
+                    text = lines.toString(HTMLFormat.instance());
+                }
                 this.jLabel.setText(HTMLFormat.toHtml(text, foreground));
                 this.jLabelColor = foreground;
                 result = this.jLabelSize = this.jLabel.getPreferredSize();

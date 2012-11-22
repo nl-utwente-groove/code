@@ -32,36 +32,67 @@ public abstract class Line {
     abstract public StringBuilder toString(LineFormat renderer);
 
     /** Returns a coloured version of this line. */
-    public Colored color(Color color) {
-        return new Colored(color, this);
+    public Line color(Color color) {
+        if (isEmpty()) {
+            return this;
+        } else {
+            return new Colored(color, this);
+        }
     }
 
     /** Returns a styled version of this line. */
-    public Styled style(Style style) {
-        return new Styled(style, this);
+    public Line style(Style style) {
+        if (isEmpty()) {
+            return this;
+        } else {
+            return new Styled(style, this);
+        }
     }
 
     /** Returns a composed line consisting of this line and a sequence of others. */
-    public Composed append(Line... lines) {
-        Line[] sublines;
+    public Line append(Line... args) {
+        Line result;
         if (this == empty) {
-            sublines = lines;
+            if (args.length == 0) {
+                result = this;
+            } else if (args.length == 1) {
+                result = args[0];
+            } else {
+                result = new Composed(args);
+            }
+        } else if (this instanceof Composed) {
+            Line[] oldFragments = ((Composed) this).fragments;
+            Line[] newFragments = new Line[oldFragments.length + args.length];
+            System.arraycopy(oldFragments, 0, newFragments, 0,
+                oldFragments.length);
+            System.arraycopy(args, 0, newFragments, oldFragments.length,
+                args.length);
+            result = new Composed(newFragments);
         } else {
-            sublines = new Line[lines.length + 1];
-            sublines[0] = this;
-            System.arraycopy(lines, 0, sublines, 1, lines.length);
+            Line[] newFragments = new Line[args.length + 1];
+            newFragments[0] = this;
+            System.arraycopy(args, 0, newFragments, 1, args.length);
+            result = new Composed(newFragments);
         }
-        return new Composed(sublines);
+        return result;
     }
 
     /** Returns a composed line consisting of this line and an atomic line. */
     public Line append(String atom) {
         Line result;
-        Line atomLine = Line.atom(atom);
         if (this == empty) {
-            result = atomLine;
+            result = Line.atom(atom);
+        } else if (this instanceof Atomic) {
+            result = Line.atom(((Atomic) this).text + atom);
+        } else if (this instanceof Composed) {
+            Line[] oldFragments = ((Composed) this).fragments;
+            Line[] newFragments = new Line[oldFragments.length + 1];
+            System.arraycopy(oldFragments, 0, newFragments, 0,
+                oldFragments.length);
+            newFragments[oldFragments.length] = Line.atom(atom);
+            result = new Composed(newFragments);
         } else {
-            result = new Composed(this, atomLine);
+            result = new Composed(this, Line.atom(atom));
         }
         return result;
     }
@@ -85,48 +116,12 @@ public abstract class Line {
         }
     }
 
-    /** Returns a multiline consisting of a list of sublines */
-    public static Multi multi(List<Line> sublines) {
-        return new Multi(sublines);
-    }
-
     /** Returns a composed line consisting of a list of fragments. */
     public static Composed composed(List<Line> fragments) {
         return new Composed(fragments);
     }
 
     private final static Empty empty = new Empty();
-
-    /** Multiline consisting of a sequence of sublines. */
-    static public class Multi extends Line {
-        /** Constructs an instance for a list of sublines. */
-        public Multi(List<Line> sublines) {
-            this.sublines = new Line[sublines.size()];
-            sublines.toArray(this.sublines);
-        }
-
-        /** Returns the list of lines in this multiline. */
-        public List<Line> getSublines() {
-            return Arrays.asList(this.sublines);
-        }
-
-        @Override
-        public StringBuilder toString(LineFormat renderer) {
-            StringBuilder[] sublines = new StringBuilder[this.sublines.length];
-            for (int i = 0; i < sublines.length; i++) {
-                sublines[i] = this.sublines[i].toString(renderer);
-            }
-            return renderer.applyMulti(sublines);
-        }
-
-        @Override
-        public String toString() {
-            return "Multi[" + Arrays.toString(this.sublines) + "]";
-        }
-
-        /** The sublines of this multiline. */
-        private final Line[] sublines;
-    }
 
     /** Composed line consisting of a sequence of subline fragments. */
     static public class Composed extends Line {

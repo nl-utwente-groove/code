@@ -173,8 +173,10 @@ public class VisualAttributeMap extends AttributeMap {
         Object result;
         refreshIfRequired();
         VisualKey vKey = getVisualKey(key);
+        // do nothing for derived keys or keys that are unknown in the visual map
         if (vKey != null && vKey.getNature() != Nature.DERIVED) {
             Object vValue;
+            // also update the backing visual map
             // convert those values for which this is necessary
             switch (vKey) {
             case EDGE_SOURCE_LABEL:
@@ -398,9 +400,6 @@ public class VisualAttributeMap extends AttributeMap {
         Map<VisualKey,String> v2a =
             new EnumMap<VisualKey,String>(VisualKey.class);
         for (VisualKey vKey : VisualKey.values()) {
-            if (vKey.getNature() == Nature.REFRESHABLE) {
-                continue;
-            }
             String aKey;
             switch (vKey) {
             case BACKGROUND:
@@ -460,7 +459,7 @@ public class VisualAttributeMap extends AttributeMap {
                 aKey = null;
                 break;
             default:
-                assert false;
+                assert vKey.getNature() == Nature.REFRESHABLE;
                 aKey = null;
             }
             if (aKey != null) {

@@ -1,6 +1,7 @@
 package groove.gui.display;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
+import static groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
@@ -89,6 +90,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
             result.addRefreshListener(SHOW_VALUE_NODES_OPTION);
             result.addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
             result.addRefreshListener(SHOW_BIDIRECTIONAL_EDGES_OPTION);
+            result.addRefreshListener(SHOW_ARROWS_ON_LABELS_OPTION);
         }
         return result;
     }
