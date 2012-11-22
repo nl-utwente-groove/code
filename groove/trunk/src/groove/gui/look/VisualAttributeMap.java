@@ -174,7 +174,7 @@ public class VisualAttributeMap extends AttributeMap {
         refreshIfRequired();
         VisualKey vKey = getVisualKey(key);
         // do nothing for derived keys or keys that are unknown in the visual map
-        if (vKey != null && vKey.getNature() != Nature.DERIVED) {
+        if (vKey != null && vKey.getNature() == Nature.CONTROLLED) {
             Object vValue;
             // also update the backing visual map
             // convert those values for which this is necessary
