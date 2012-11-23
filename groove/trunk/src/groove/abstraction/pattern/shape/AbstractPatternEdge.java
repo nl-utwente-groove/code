@@ -19,6 +19,7 @@ package groove.abstraction.pattern.shape;
 import groove.graph.AbstractEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.EdgeRole;
+import groove.trans.HostEdge;
 import groove.trans.HostNode;
 import groove.util.Fixable;
 
@@ -100,9 +101,14 @@ public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
         return getToStringPrefix() + this.nr;
     }
 
-    /** Returns the non-null image of the given node in the morphism. */
+    /** Returns the image of the given node in the morphism. */
     public HostNode getImage(HostNode node) {
         return getMorphism().getImage(node);
+    }
+
+    /** Returns the image of the given edge in the morphism. */
+    public HostEdge getImage(HostEdge edge) {
+        return getMorphism().getImage(edge);
     }
 
     /**
@@ -114,14 +120,33 @@ public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
         return getMorphism().getPreImage(node);
     }
 
-    /** Returns true if the given node is the domain of the morphism. */
+    /**
+     * Returns the pre-image of the given edge in the morphism. The returned
+     * result is a single element instead of a set because the morphism is
+     * injective. May return null if the edge has no pre-image. 
+     */
+    public HostEdge getPreImage(HostEdge edge) {
+        return getMorphism().getPreImage(edge);
+    }
+
+    /** Returns true if the given node is in the domain of the morphism. */
     public boolean isDom(HostNode node) {
         return getMorphism().isDom(node);
     }
 
-    /** Returns true if the given node is the co-domain of the morphism. */
+    /** Returns true if the given edge is in the domain of the morphism. */
+    public boolean isDom(HostEdge edge) {
+        return getMorphism().isDom(edge);
+    }
+
+    /** Returns true if the given node is in the co-domain of the morphism. */
     public boolean isCod(HostNode node) {
         return getMorphism().isCod(node);
+    }
+
+    /** Returns true if the given edge is in the co-domain of the morphism. */
+    public boolean isCod(HostEdge edge) {
+        return getMorphism().isCod(edge);
     }
 
 }

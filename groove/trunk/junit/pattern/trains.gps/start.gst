@@ -9,32 +9,32 @@
         </attr>
         <node id="n5">
             <attr name="layout">
-                <string>152 82 36 48</string>
+                <string>51 80 7 16</string>
             </attr>
         </node>
         <node id="n4">
             <attr name="layout">
-                <string>24 84 36 48</string>
+                <string>50 8 9 16</string>
             </attr>
         </node>
         <node id="n3">
             <attr name="layout">
-                <string>149 14 36 48</string>
+                <string>247 150 7 16</string>
             </attr>
         </node>
         <node id="n2">
             <attr name="layout">
-                <string>316 64 66 48</string>
+                <string>139 8 8 16</string>
             </attr>
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>245 121 36 48</string>
+                <string>227 8 8 16</string>
             </attr>
         </node>
         <node id="n0">
             <attr name="layout">
-                <string>153 191 36 48</string>
+                <string>51 152 7 16</string>
             </attr>
         </node>
         <edge to="n5" from="n5">
@@ -72,14 +72,14 @@
                 <string>type:P</string>
             </attr>
         </edge>
-        <edge to="n3" from="n2">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
         <edge to="n5" from="n2">
             <attr name="label">
                 <string>dest</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n2">
+            <attr name="label">
+                <string>at</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">
@@ -87,14 +87,14 @@
                 <string>type:P</string>
             </attr>
         </edge>
-        <edge to="n3" from="n1">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
         <edge to="n0" from="n1">
             <attr name="label">
                 <string>dest</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n1">
+            <attr name="label">
+                <string>at</string>
             </attr>
         </edge>
         <edge to="n0" from="n0">
@@ -105,9 +105,6 @@
         <edge to="n3" from="n0">
             <attr name="label">
                 <string>next</string>
-            </attr>
-            <attr name="layout">
-                <string>500 31 184 205 408 37 180 37 14</string>
             </attr>
         </edge>
     </graph>

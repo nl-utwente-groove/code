@@ -124,6 +124,7 @@ public final class TypeGraphGxl {
         createTypeNodes(aGraph);
         createTypeEdges(aGraph);
         createPatterns(aGraph);
+        createMorphisms();
         this.tGraph.setFixed();
         return this.tGraph;
     }
@@ -191,6 +192,14 @@ public final class TypeGraphGxl {
             HostNode sSrc = this.sNodeMap.get(aSrc.getNumber());
             HostNode sTgt = this.sNodeMap.get(aTgt.getNumber());
             tSrc.getPattern().addEdge(sSrc, aEdge.getInnerText(), sTgt);
+        }
+    }
+
+    private void createMorphisms() {
+        // Go over all patterns from layer 2+ and extend the existing node
+        // morphisms to edges.
+        for (TypeEdge tEdge : this.tGraph.edgeSet()) {
+            tEdge.extendMorphism();
         }
     }
 

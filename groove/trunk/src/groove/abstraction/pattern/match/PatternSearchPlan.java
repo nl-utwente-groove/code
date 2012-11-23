@@ -239,6 +239,8 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
             }
             // Create a negated search item if we have a closure rule.
             if (this.pRule.isClosure()) {
+                // EDUARDO: THE BUG IS HERE!!!
+                // We need a full sub-graph condition, not a single edge.
                 RuleEdge edge = this.pRule.getCreatorEdges()[0];
                 SearchItem negatedEdge = createNegatedSearchItem(edge);
                 result.add(negatedEdge);

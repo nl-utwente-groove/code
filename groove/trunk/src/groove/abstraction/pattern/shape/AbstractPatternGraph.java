@@ -18,6 +18,7 @@ package groove.abstraction.pattern.shape;
 
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.Util;
+import groove.graph.EdgeRole;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Label;
@@ -226,6 +227,12 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
                         return false;
                     }
                 }
+                // For each simple edge in the pattern.
+                for (HostEdge sEdge : pNode.getPattern().edgeSet()) {
+                    if (!hasCommonAncestor(pNode, sEdge)) {
+                        return false;
+                    }
+                }
             }
         }
         return true;
@@ -339,6 +346,20 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
         };
     }
 
+    /** Returns the set of pattern edges that cover the given simple edge. */
+    private Set<E> getCoveringEdges(N pNode, final HostEdge sNode) {
+        return new UnmodifiableSetView<E>(inEdgeSet(pNode)) {
+            @Override
+            public boolean approves(Object obj) {
+                if (!(obj instanceof AbstractPatternEdge<?>)) {
+                    return false;
+                }
+                AbstractPatternEdge<?> pEdge = (AbstractPatternEdge<?>) obj;
+                return pEdge.isCod(sNode);
+            }
+        };
+    }
+
     /** Returns the pattern edge that covers the given simple node. */
     public E getCoveringEdge(N pNode, HostNode sNode) {
         assert pNode.isEdgePattern();
@@ -398,10 +419,61 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     }
 
     /**
+     * Checks if the given simple edge (from the given pattern node) has a
+     * single common ancestor.
+     */
+    private boolean hasCommonAncestor(N pNode, HostEdge sEdge) {
+        if (sEdge.getRole() != EdgeRole.BINARY) {
+            // We don't care about types and flags.
+            return true;
+        }
+        return getAncestors(pNode, sEdge).size() == 1;
+    }
+
+    /**
+     * Returns a list of ancestors for the given simple edge (from the given
+     * pattern node).
+     */
+    public Set<N> getAncestors(N pNode, HostEdge sEdge) {
+        Set<N> result = new MyHashSet<N>();
+        List<Pair<N,HostEdge>> queue = new LinkedList<Pair<N,HostEdge>>();
+        Set<E> coveringEdges = getCoveringEdges(pNode, sEdge);
+        for (E pEdge : coveringEdges) {
+            N pN = pEdge.source();
+            HostEdge sE = pEdge.getPreImage(sEdge);
+            if (pN.getLayer() == 1 && pN.introduces(sE)) {
+                result.add(pN);
+            } else {
+                queue.add(new Pair<N,HostEdge>(pN, sE));
+            }
+        }
+        while (!queue.isEmpty()) {
+            Pair<N,HostEdge> pair = queue.remove(0);
+            N pN = pair.one();
+            HostEdge sE = pair.two();
+            coveringEdges = getCoveringEdges(pN, sE);
+            for (E pEdge : coveringEdges) {
+                N newPN = pEdge.source();
+                HostEdge newSE = pEdge.getPreImage(sE);
+                if (newPN.getLayer() == 1 && newPN.introduces(newSE)) {
+                    result.add(newPN);
+                } else {
+                    Pair<N,HostEdge> newPair =
+                        new Pair<N,HostEdge>(newPN, newSE);
+                    if (!queue.contains(newPair)) {
+                        queue.add(newPair);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns the set of pattern nodes that are reachable from the ones given
      * on the list. Elements of the list are also included in the result set. 
      */
-    public Set<N> getDownwardTraversal(List<N> toTraverse) {
+    private Set<N> getDownwardTraversal(List<N> toTraverse) {
         Set<N> result = new MyHashSet<N>();
         while (!toTraverse.isEmpty()) {
             N node = toTraverse.remove(toTraverse.size() - 1);

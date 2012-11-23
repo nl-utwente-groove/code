@@ -27,7 +27,6 @@ import groove.abstraction.pattern.lts.PatternState;
 import groove.abstraction.pattern.lts.PatternTransition;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.trans.PatternGraphRuleApplication;
-import groove.gui.dialog.GraphPreviewDialog;
 import groove.lts.MatchApplier;
 
 /**
@@ -70,7 +69,6 @@ public class PatternGraphMatchApplier implements PatternRuleEventApplier {
     public void apply(PatternState source, MatchResult match) {
         if (USE_GUI && source.getNumber() == 0) {
             PatternPreviewDialog.showPatternGraph(source.getGraph());
-            GraphPreviewDialog.showGraph(source.getGraph().flatten());
         }
 
         PatternGraphRuleApplication app =
@@ -92,7 +90,6 @@ public class PatternGraphMatchApplier implements PatternRuleEventApplier {
                 + "-->" + newState);
             if (USE_GUI) {
                 PatternPreviewDialog.showPatternGraph(newState.getGraph());
-                GraphPreviewDialog.showGraph(newState.getGraph().flatten());
             }
         }
         this.pgts.addTransition(trans);
