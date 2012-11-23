@@ -112,4 +112,9 @@ public abstract class AbstractPatternNode extends AbstractNode implements
     public String getAdornment() {
         return super.toString();
     }
+
+    /** Returns true if this node is a layer 1 node with the given edge. */
+    public boolean introduces(HostEdge sEdge) {
+        return getSimpleEdge().equals(sEdge);
+    }
 }

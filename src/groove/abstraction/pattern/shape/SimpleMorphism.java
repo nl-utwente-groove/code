@@ -17,10 +17,10 @@
 package groove.abstraction.pattern.shape;
 
 import groove.abstraction.MyHashMap;
+import groove.trans.HostEdge;
 import groove.trans.HostNode;
 import groove.util.Fixable;
 
-import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -36,7 +36,9 @@ public class SimpleMorphism implements Fixable {
     private final TypeNode source;
     private final TypeNode target;
     private final Map<HostNode,HostNode> nodeMap;
+    private final Map<HostEdge,HostEdge> edgeMap;
     private final Map<HostNode,HostNode> inverseNodeMap;
+    private final Map<HostEdge,HostEdge> inverseEdgeMap;
     private boolean fixed;
 
     /** Default constructor. */
@@ -45,7 +47,9 @@ public class SimpleMorphism implements Fixable {
         this.source = source;
         this.target = target;
         this.nodeMap = new MyHashMap<HostNode,HostNode>();
+        this.edgeMap = new MyHashMap<HostEdge,HostEdge>();
         this.inverseNodeMap = new MyHashMap<HostNode,HostNode>();
+        this.inverseEdgeMap = new MyHashMap<HostEdge,HostEdge>();
         this.fixed = false;
     }
 
@@ -72,8 +76,12 @@ public class SimpleMorphism implements Fixable {
 
     @Override
     public String toString() {
-        return this.getName() + ": " + this.nodeMap;
+        return this.getName() + ": " + this.nodeMap + ", " + this.edgeMap;
     }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
 
     /** Basic getter method. */
     public String getName() {
@@ -97,10 +105,29 @@ public class SimpleMorphism implements Fixable {
         this.inverseNodeMap.put(target, source);
     }
 
+    /** Updates the morphism. */
+    public void putEdge(HostEdge edge1, HostEdge edge2) {
+        assert !isFixed();
+        HostNode src1 = getImage(edge1.source());
+        HostNode tgt1 = getImage(edge1.target());
+        HostNode src2 = edge2.source();
+        HostNode tgt2 = edge2.target();
+        assert src1.equals(src2) && tgt1.equals(tgt2);
+        assert edge1.label().equals(edge2.label());
+        this.edgeMap.put(edge1, edge2);
+        this.inverseEdgeMap.put(edge2, edge1);
+    }
+
     /** Returns the non-null image of the given node in the morphism. */
     public HostNode getImage(HostNode source) {
-        assert isFixed();
         HostNode target = this.nodeMap.get(source);
+        assert target != null;
+        return target;
+    }
+
+    /** Returns the non-null image of the given edge in the morphism. */
+    public HostEdge getImage(HostEdge source) {
+        HostEdge target = this.edgeMap.get(source);
         assert target != null;
         return target;
     }
@@ -111,8 +138,16 @@ public class SimpleMorphism implements Fixable {
      * injective. May return null if the node has no pre-image. 
      */
     public HostNode getPreImage(HostNode target) {
-        assert isFixed();
         return this.inverseNodeMap.get(target);
+    }
+
+    /**
+     * Returns the pre-image of the given edge in the morphism. The returned
+     * result is a single element instead of a set because the morphism is
+     * injective. May return null if the edge has no pre-image. 
+     */
+    public HostEdge getPreImage(HostEdge target) {
+        return this.inverseEdgeMap.get(target);
     }
 
     /** Returns true if the given node is the domain of the morphism. */
@@ -120,13 +155,19 @@ public class SimpleMorphism implements Fixable {
         return this.nodeMap.keySet().contains(node);
     }
 
+    /** Returns true if the given edge is the domain of the morphism. */
+    public boolean isDom(HostEdge edge) {
+        return this.edgeMap.keySet().contains(edge);
+    }
+
     /** Returns true if the given node is the co-domain of the morphism. */
     public boolean isCod(HostNode node) {
         return this.nodeMap.values().contains(node);
     }
 
-    /** Returns the Co-domain of this morphism. */
-    public Collection<HostNode> getCod() {
-        return this.nodeMap.values();
+    /** Returns true if the given edge is the co-domain of the morphism. */
+    public boolean isCod(HostEdge edge) {
+        return this.edgeMap.values().contains(edge);
     }
+
 }

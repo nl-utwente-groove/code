@@ -17,6 +17,9 @@
 package groove.abstraction.pattern.shape;
 
 import groove.graph.DefaultLabel;
+import groove.trans.HostEdge;
+import groove.trans.HostGraph;
+import groove.trans.HostNode;
 
 /**
  * Pattern edge of a pattern type graph.
@@ -81,6 +84,25 @@ public final class TypeEdge extends AbstractPatternEdge<TypeNode> {
     @Override
     public String getPrintableLabel() {
         return getIdStr();
+    }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    /** Extends the morphism to edges based on the node morphisms. */
+    public void extendMorphism() {
+        HostGraph srcPattern = source().getPattern();
+        HostGraph tgtPattern = target().getPattern();
+        for (HostEdge edge1 : srcPattern.edgeSet()) {
+            HostNode src2 = getImage(edge1.source());
+            HostNode tgt2 = getImage(edge1.target());
+            for (HostEdge edge2 : tgtPattern.labelEdgeSet(edge1.label())) {
+                if (edge2.source().equals(src2) && edge2.target().equals(tgt2)) {
+                    getMorphism().putEdge(edge1, edge2);
+                }
+            }
+        }
     }
 
 }
