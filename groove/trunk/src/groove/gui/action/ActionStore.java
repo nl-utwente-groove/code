@@ -296,19 +296,6 @@ public class ActionStore implements SimulatorListener {
      */
     private ExploreAction exploreAction;
 
-    /**
-     * Returns the showing/hiding LTS action that is associated with the
-     * simulator.
-     */
-    public ShowHideLTSAction getShowHideLTSAction() {
-        if (this.showHideLTSAction == null) {
-            this.showHideLTSAction = new ShowHideLTSAction(this.simulator);
-        }
-        return this.showHideLTSAction;
-    }
-
-    private ShowHideLTSAction showHideLTSAction;
-
     /** Returns the filter LTS action that is associated with the simulator. */
     public FilterLTSAction getFilterLTSAction() {
         if (this.filterLTSAction == null) {
@@ -932,7 +919,6 @@ public class ActionStore implements SimulatorListener {
      * the refreshables list in time.
      */
     public void initialiseRemainingActions() {
-        getShowHideLTSAction();
         getFilterLTSAction();
     }
 }

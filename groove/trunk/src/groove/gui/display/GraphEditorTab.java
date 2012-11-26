@@ -445,7 +445,7 @@ final public class GraphEditorTab extends ResourceTab implements
         if (this.jGraphPanel == null) {
             JGraphPanel<?> result =
                 this.jGraphPanel =
-                    new JGraphPanel<AspectJGraph>(getJGraph(), false);
+                    new JGraphPanel<AspectJGraph>(getJGraph());
             result.setEnabledBackground(JAttr.EDITOR_BACKGROUND);
             result.initialise();
             result.addRefreshListener(SHOW_NODE_IDS_OPTION);
