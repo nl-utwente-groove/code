@@ -15,14 +15,12 @@ public class FilterLTSAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        getLtsDisplay().getGraphPanel().toggleFilterLts();
+        getLtsDisplay().toggleFilterLts();
     }
 
     @Override
     public void refresh() {
-        boolean enabled =
-            getSimulatorModel().getGts() != null
-                && !getLtsDisplay().isHidingLts();
+        boolean enabled = getSimulatorModel().getGts() != null;
         setEnabled(enabled);
     }
 

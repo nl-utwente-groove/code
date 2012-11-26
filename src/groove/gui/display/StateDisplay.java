@@ -16,9 +16,7 @@
  */
 package groove.gui.display;
 
-import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
-import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
@@ -38,7 +36,6 @@ import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JAttr;
 import groove.gui.list.ErrorListPanel;
 import groove.gui.look.LineStyle;
@@ -204,7 +201,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         if (result == null) {
             this.displayPanel =
                 result = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-            result.setTopComponent(getStatePanel());
+            result.setTopComponent(getGraphPanel());
             result.setBottomComponent(getErrorPanel());
             result.setDividerSize(0);
             result.setContinuousLayout(true);
@@ -220,39 +217,44 @@ public class StateDisplay extends Display implements SimulatorListener {
         return getJGraph().getModel().getGraph();
     }
 
-    /** Returns the JGraph component of the state display. */
-    final public AspectJGraph getJGraph() {
-        return getGraphPanel().getJGraph();
-    }
-
-    private void setJModel(GraphJModel<?,?> jModel) {
-        getGraphPanel().setJModel(jModel);
-        setEnabled(jModel != null);
-    }
-
     /** Returns component on which the state graph is displayed. */
-    public StateGraphPanel getGraphPanel() {
-        if (this.stateGraphPanel == null) {
-            this.stateGraphPanel = new StateGraphPanel();
+    public JGraphPanel<AspectJGraph> getGraphPanel() {
+        JGraphPanel<AspectJGraph> result = this.stateGraphPanel;
+        if (result == null) {
+            result =
+                this.stateGraphPanel =
+                    new JGraphPanel<AspectJGraph>(getJGraph());
+            result.initialise();
+            result.addRefreshListener(SHOW_NODE_IDS_OPTION);
+            result.addRefreshListener(SHOW_VALUE_NODES_OPTION);
+            result.addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
+            result.addRefreshListener(SHOW_BIDIRECTIONAL_EDGES_OPTION);
+            result.addRefreshListener(SHOW_ARROWS_ON_LABELS_OPTION);
+            result.setBorder(null);
+            result.setEnabledBackground(JAttr.STATE_BACKGROUND);
+            result.getJGraph().setToolTipEnabled(true);
         }
-        return this.stateGraphPanel;
-    }
-
-    /** Gets the state panel, creating it (lazily) if necessary. */
-    private JComponent getStatePanel() {
-        if (this.statePanel == null) {
-            this.statePanel = getGraphPanel().createGraphPane();
-        }
-        return this.statePanel;
+        return result;
     }
 
     /** Gets the error panel, creating it (lazily) if necessary. */
-    ErrorListPanel getErrorPanel() {
+    private ErrorListPanel getErrorPanel() {
         if (this.errorPanel == null) {
             this.errorPanel = new ErrorListPanel("Errors in state graph");
             this.errorPanel.addSelectionListener(createErrorListener());
         }
         return this.errorPanel;
+    }
+
+    /** Returns the JGraph component of the state display. */
+    final public AspectJGraph getJGraph() {
+        AspectJGraph result = this.jGraph;
+        if (result == null) {
+            result =
+                this.jGraph =
+                    new AspectJGraph(getSimulator(), getKind(), false);
+        }
+        return result;
     }
 
     /** Creates the listener of the error panel. */
@@ -309,6 +311,7 @@ public class StateDisplay extends Display implements SimulatorListener {
                     source.getState().getGraph()));
             }
         }
+        updateStatus();
         activateListening();
     }
 
@@ -347,8 +350,38 @@ public class StateDisplay extends Display implements SimulatorListener {
             }
         }
         getJGraph().setSelectionCells(emphElems.toArray());
-        getGraphPanel().refreshStatus();
         this.matchSelected = true;
+    }
+
+    /** Updates the display status bar. */
+    private void updateStatus() {
+        StringBuilder result = new StringBuilder();
+        result.append("Current state");
+        if (getSimulatorModel().getState() != null) {
+            result.append(": ");
+            String stateID = getSimulatorModel().getState().toString();
+            result.append(HTMLConverter.STRONG_TAG.on(stateID));
+            if (stateID.equals("s0")) {
+                HostModel startGraph =
+                    getSimulatorModel().getGrammar().getStartGraphModel();
+                if (startGraph != null) {
+                    result.append("=");
+                    result.append(startGraph.getLastName());
+                }
+            }
+            MatchResult match = getSimulatorModel().getMatch();
+            if (match != null) {
+                if (getJGraph().isShowAnchors()) {
+                    result.append(String.format(" (with match %s)",
+                        match.getEvent()));
+                } else {
+                    result.append(String.format(" (with match of %s)",
+                        match.getEvent().getRule().getFullName()));
+                }
+            }
+        }
+        getGraphPanel().getStatusBar().setText(
+            HTMLConverter.HTML_TAG.on(result).toString());
     }
 
     /** Changes the display to a given state. */
@@ -356,10 +389,10 @@ public class StateDisplay extends Display implements SimulatorListener {
         clearSelectedMatch(true);
         Collection<? extends FormatError> errors = null;
         if (state == null) {
-            setJModel(null);
+            getJGraph().setModel(null);
         } else {
             AspectJModel model = getAspectJModel(state);
-            setJModel(model);
+            getJGraph().setModel(model);
             errors = model.getResourceModel().getErrors();
         }
         if (state != null && state.isError()) {
@@ -387,7 +420,7 @@ public class StateDisplay extends Display implements SimulatorListener {
                 getJGraph().clearSelection();
             }
             getSimulatorModel().setMatch(null);
-            getGraphPanel().refreshStatus();
+            updateStatus();
         }
         return result;
     }
@@ -683,80 +716,16 @@ public class StateDisplay extends Display implements SimulatorListener {
     /** Flag indicating that the listeners are activated. */
     private boolean listening;
     private GraphSelectionListener graphSelectionListener;
-
-    /** The currently emphasised match (nullable). */
+    /** Flag indicating if there is any match selected. */
     private boolean matchSelected;
+    /** Split pane containing the {@link #stateGraphPanel} and the {@link #errorPanel}. */
     private JSplitPane displayPanel;
-    private JComponent statePanel;
+    /** JGraph panel on this display. */
+    private JGraphPanel<AspectJGraph> stateGraphPanel;
+    /** List of state errors, only shown if there are any errors in the current state. */
     private ErrorListPanel errorPanel;
-    private StateGraphPanel stateGraphPanel;
-
-    /**
-     * Window that displays and controls the current state graph.
-     * @author Arend Rensink
-     * @version $Revision$
-     */
-    private class StateGraphPanel extends JGraphPanel<AspectJGraph> {
-
-        // --------------------- INSTANCE DEFINITIONS ----------------------
-
-        /** Constructs a new state panel. */
-        public StateGraphPanel() {
-            super(new AspectJGraph(getSimulator(), getKind(), false), true);
-            initialise();
-            setBorder(null);
-            setEnabledBackground(JAttr.STATE_BACKGROUND);
-            getJGraph().setToolTipEnabled(true);
-        }
-
-        @Override
-        protected void installListeners() {
-            super.installListeners();
-            addRefreshListener(SHOW_NODE_IDS_OPTION);
-            addRefreshListener(SHOW_ASPECTS_OPTION);
-            addRefreshListener(SHOW_ANCHORS_OPTION);
-            addRefreshListener(SHOW_VALUE_NODES_OPTION);
-            addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
-            addRefreshListener(SHOW_BIDIRECTIONAL_EDGES_OPTION);
-            addRefreshListener(SHOW_ARROWS_ON_LABELS_OPTION);
-        }
-
-        /**
-         * Text to indicate which state is chosen and which match is emphasised.
-         */
-        @Override
-        protected String getStatusText() {
-            StringBuilder result = new StringBuilder();
-            result.append(FRAME_NAME);
-            if (getSimulatorModel().getState() != null) {
-                result.append(": ");
-                String stateID = getSimulatorModel().getState().toString();
-                result.append(HTMLConverter.STRONG_TAG.on(stateID));
-                if (stateID.equals("s0")) {
-                    HostModel startGraph =
-                        getSimulatorModel().getGrammar().getStartGraphModel();
-                    if (startGraph != null) {
-                        result.append("=");
-                        result.append(startGraph.getLastName());
-                    }
-                }
-                MatchResult match = getSimulatorModel().getMatch();
-                if (match != null) {
-                    if (getOptions().isSelected(SHOW_ANCHORS_OPTION)) {
-                        result.append(String.format(" (with match %s)",
-                            match.getEvent()));
-                    } else {
-                        result.append(String.format(" (with match of %s)",
-                            match.getEvent().getRule().getFullName()));
-                    }
-                }
-            }
-            return HTMLConverter.HTML_TAG.on(result).toString();
-        }
-
-        /** Display name of this panel. */
-        private static final String FRAME_NAME = "Current state";
-    }
+    /** JGraph showing the current state. */
+    private AspectJGraph jGraph;
 
     /** Temporary record of graph element attributes. */
     private static class Attributes {

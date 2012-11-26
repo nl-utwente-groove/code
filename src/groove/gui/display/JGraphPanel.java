@@ -35,7 +35,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.accessibility.AccessibleState;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -55,11 +54,9 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      * Constructs a view upon a given jgraph, possibly with a status bar.
      * 
      * @param jGraph the jgraph on which this panel is a view
-     * @param withStatusBar <tt>true</tt> if a status bar should be added to the
-     *        panel
      * @ensure <tt>getJGraph() == jGraph</tt>
      */
-    public JGraphPanel(JG jGraph, boolean withStatusBar) {
+    public JGraphPanel(JG jGraph) {
         super(false);
         this.simulatorModel = jGraph.getSimulatorModel();
         setFocusable(false);
@@ -67,7 +64,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         // right now we always want label panels; keep this option
         this.jGraph = jGraph;
         this.options = jGraph.getOptions();
-        this.statusBar = withStatusBar ? new JLabel(" ") : null;
     }
 
     /** 
@@ -79,10 +75,8 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         // a main pane containing the graph, label tree and (possibly)
         // error panel, and an optional status bar.
         setLayout(new BorderLayout());
-        add(createGraphPane());
-        if (this.statusBar != null) {
-            add(this.statusBar, BorderLayout.SOUTH);
-        }
+        add(getScrollPane(), BorderLayout.CENTER);
+        add(getStatusBar(), BorderLayout.SOUTH);
         installListeners();
         setEnabled(false);
     }
@@ -96,18 +90,15 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
                     evt.getNewValue() != PAN_MODE);
             }
         });
-    }
-
-    /**
-     * Creates and returns a new pane, on which only the jgraph is shown (and no
-     * label list).
-     */
-    protected JComponent createGraphPane() {
-        // set up the real editor pane
-        JScrollPane result = getScrollPane();
-        result.setDoubleBuffered(false);
-        result.setPreferredSize(new Dimension(500, 400));
-        return result;
+        getJGraph().addPropertyChangeListener(GraphJGraph.GRAPH_MODEL_PROPERTY,
+            new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    GraphJModel<?,?> jModel =
+                        (GraphJModel<?,?>) evt.getNewValue();
+                    setEnabled(jModel != null);
+                }
+            });
     }
 
     /**
@@ -115,11 +106,25 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      * is displayed.
      */
     protected JScrollPane getScrollPane() {
-        if (this.scrollPane == null) {
-            this.scrollPane = new JScrollPane(getJGraph());
-            this.scrollPane.getVerticalScrollBar().setUnitIncrement(10);
+        JScrollPane result = this.scrollPane;
+        if (result == null) {
+            result = this.scrollPane = new JScrollPane(getJGraph());
+            result.getVerticalScrollBar().setUnitIncrement(10);
+            result.setDoubleBuffered(false);
+            result.setPreferredSize(new Dimension(500, 400));
         }
-        return this.scrollPane;
+        return result;
+    }
+
+    /** Lazily creates and returns the status bar component of the panel. */
+    public JLabel getStatusBar() {
+        JLabel result = this.statusBar;
+        if (result == null) {
+            result = new JLabel();
+            result.setBorder(null);
+            this.statusBar = result;
+        }
+        return result;
     }
 
     /**
@@ -137,31 +142,11 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     public void setJModel(GraphJModel<?,?> jModel) {
         boolean enabled = jModel != null;
         if (jModel == getJGraph().getModel()) {
-            refresh();
+            getJGraph().refreshAllCells();
         } else {
             getJGraph().setModel(jModel);
         }
         setEnabled(enabled);
-        refreshStatus();
-    }
-
-    /**
-     * Returns the underlying {@link GraphJModel}, or <code>null</code> if the jgraph
-     * is currently disabled.
-     */
-    public GraphJModel<?,?> getJModel() {
-        if (isEnabled()) {
-            return this.jGraph.getModel();
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Returns the status bar of this panel, if any.
-     */
-    private JLabel getStatusBar() {
-        return this.statusBar;
     }
 
     /**
@@ -268,36 +253,6 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
                 oldModel.cloneWithNewGraph(oldModel.getGraph());
             getJGraph().setModel(newModel);
         }
-        refresh();
-    }
-
-    /**
-     * Refreshes everything on the panel, for instance in reaction to a change
-     * in one of the visualisation options. This implementation calls
-     * {@link GraphJGraph#refreshAllCells()} and {@link #refreshStatus()}.
-     */
-    protected void refresh() {
-        getJGraph().refreshAllCells();
-        refreshStatus();
-    }
-
-    /**
-     * If the panel has a status bar, refreshes it with the text obtained from
-     * {@link #getStatusText()}.
-     */
-    protected void refreshStatus() {
-        if (getStatusBar() != null) {
-            getStatusBar().setText(getStatusText());
-        }
-    }
-
-    /**
-     * Callback method from {@link #refreshStatus()} to obtain the current
-     * status text, which is to be printed on the status bar (if any). This
-     * implementation returns the empty string.
-     */
-    protected String getStatusText() {
-        return "";
     }
 
     /**
@@ -330,13 +285,13 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     private Color enabledBackground = Color.WHITE;
     /** Options for this panel. */
     private final Options options;
-    /** Change listener that calls {@link #refresh()} when activated. */
+    /** Change listener that refreshes the JGraph cells when activated. */
     private RefreshListener refreshListener;
 
     /**
      * Panel for showing status messages
      */
-    private final JLabel statusBar;
+    private JLabel statusBar;
 
     private final List<Pair<JMenuItem,RefreshListener>> listeners =
         new LinkedList<Pair<JMenuItem,RefreshListener>>();
@@ -356,7 +311,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         public void itemStateChanged(ItemEvent e) {
             if (isEnabled()) {
                 getJGraph().getModel().refreshVisuals();
-                refresh();
+                getJGraph().refreshAllCells();
             }
         }
 
@@ -366,7 +321,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
                 AccessibleState.ENABLED.toDisplayString())) {
                 if (isEnabled()) {
                     getJGraph().getModel().refreshVisuals();
-                    refresh();
+                    getJGraph().refreshAllCells();
                 }
             }
         }

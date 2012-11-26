@@ -144,22 +144,6 @@ public class LTSDisplay extends Display implements SimulatorListener {
         result.add(Box.createGlue());
     }
 
-    private JToggleButton getShowHideLTSButton() {
-        if (this.showHideLTSButton == null) {
-            this.showHideLTSButton =
-                Options.createToggleButton(getActions().getShowHideLTSAction());
-        }
-        return this.showHideLTSButton;
-    }
-
-    /** Toggle buttons */
-    private JToggleButton showHideLTSButton;
-
-    /** Returns true if the LTS JGraph is hidden. */
-    public boolean isHidingLts() {
-        return getShowHideLTSButton().isSelected();
-    }
-
     private JToggleButton getFilterLTSButton() {
         if (this.filterLTSButton == null) {
             this.filterLTSButton =
@@ -274,16 +258,25 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     /** Returns the LTS tab on this display. */
     public LTSGraphPanel getGraphPanel() {
-        if (this.graphPanel == null) {
-            this.graphPanel = new LTSGraphPanel(this);
-            this.graphPanel.initialise();
+        LTSGraphPanel result = this.graphPanel;
+        if (result == null) {
+            result = this.graphPanel = new LTSGraphPanel(getJGraph());
+            result.initialise();
+            result.addRefreshListener(SHOW_ANCHORS_OPTION);
+            result.addRefreshListener(SHOW_STATE_IDS_OPTION);
+            result.addRefreshListener(SHOW_PARTIAL_GTS_OPTION);
+            result.addRefreshListener(SHOW_ARROWS_ON_LABELS_OPTION);
         }
-        return this.graphPanel;
+        return result;
     }
 
     /** Returns the LTS' JGraph. */
     public LTSJGraph getJGraph() {
-        return getGraphPanel().getJGraph();
+        LTSJGraph result = this.jGraph;
+        if (result == null) {
+            result = this.jGraph = new LTSJGraph(getSimulator());
+        }
+        return result;
     }
 
     /** Returns the model of the LTS' JGraph. */
@@ -294,13 +287,10 @@ public class LTSDisplay extends Display implements SimulatorListener {
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
             Set<Change> changes) {
-        if (source.getGts() != null && isHidingLts()) {
-            return;
-        }
         if (changes.contains(GTS) || changes.contains(GRAMMAR)) {
             GTS gts = source.getGts();
             if (gts == null) {
-                getGraphPanel().setJModel(null);
+                getJGraph().setModel(null);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -317,7 +307,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     ltsModel.setFiltering(isFilteringLts());
                     ltsModel.setStateBound(getStateBound());
                     ltsModel.loadGraph(gts);
-                    getGraphPanel().setJModel(ltsModel);
+                    getJGraph().setModel(ltsModel);
                 } else {
                     ltsModel = getJModel();
                     // (re)load the GTS if it is not the same size as the model
@@ -335,14 +325,13 @@ public class LTSDisplay extends Display implements SimulatorListener {
             }
             if (gts != oldModel.getGts()) {
                 if (oldModel.getGts() != null) {
-                    oldModel.getGts().removeLTSListener(
-                        LTSDisplay.this.ltsListener);
+                    oldModel.getGts().removeLTSListener(this.ltsListener);
                 }
                 if (gts != null) {
-                    gts.addLTSListener(LTSDisplay.this.ltsListener);
+                    gts.addLTSListener(this.ltsListener);
+                    updateStatus(gts);
                 }
             }
-            getGraphPanel().refreshStatus();
         }
         if (changes.contains(STATE) || changes.contains(MATCH)) {
             if (getJModel() != null) {
@@ -354,10 +343,25 @@ public class LTSDisplay extends Display implements SimulatorListener {
     }
 
     /**
+     * Toggles the filtering of the LTS display.
+     */
+    public void toggleFilterLts() {
+        boolean isFiltering = isFilteringLts();
+        getJGraph().getModel().setFiltering(isFiltering);
+        getJGraph().refreshFiltering();
+        if (!isFiltering) {
+            getJGraph().doLayout(false);
+        }
+        getGraphPanel().refreshBackground();
+        setEnabled(true);
+    }
+
+    /**
      * The LTS listener permanently associated with this display.
      */
     private final MyLTSListener ltsListener = new MyLTSListener();
     private LTSGraphPanel graphPanel;
+    private LTSJGraph jGraph;
 
     /** Returns an LTS display for a given simulator. */
     public static LTSDisplay newInstance(Simulator simulator) {
@@ -383,7 +387,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         @Override
         public void addUpdate(GTS gts, GraphState state) {
             assert gts == getSimulatorModel().getGts() : "I want to listen only to my lts";
-            getGraphPanel().refreshStatus();
+            updateStatus(gts);
         }
 
         /**
@@ -393,19 +397,48 @@ public class LTSDisplay extends Display implements SimulatorListener {
         @Override
         public void addUpdate(GTS gts, GraphTransition transition) {
             assert gts == getSimulatorModel().getGts() : "I want to listen only to my lts";
-            getGraphPanel().refreshStatus();
+            updateStatus(gts);
         }
 
         /**
          * If a state is closed, its background should be reset.
          */
         @Override
-        public void statusUpdate(GTS lts, GraphState closed, Flag flag) {
-            if (getJModel() == null) {
-                return;
-            }
-            getGraphPanel().refreshStatus();
+        public void statusUpdate(GTS gts, GraphState closed, Flag flag) {
+            assert gts == getSimulatorModel().getGts() : "I want to listen only to my lts";
+            updateStatus(gts);
         }
+    }
+
+    /**
+     * Writes a line to the status bar.
+     */
+    private void updateStatus(GTS gts) {
+        StringBuilder text = new StringBuilder();
+        if (gts == null) {
+            text.append("No start state loaded");
+        } else {
+            text.append("Currently explored: ");
+            text.append(gts.nodeCount());
+            text.append(" states");
+            if (gts.openStateCount() > 0 || gts.hasFinalStates()) {
+                text.append(" (");
+                if (gts.openStateCount() > 0) {
+                    text.append(gts.openStateCount() + " open");
+                    if (gts.hasFinalStates()) {
+                        text.append(", ");
+                    }
+                }
+                if (gts.hasFinalStates()) {
+                    text.append(gts.getFinalStates().size() + " final");
+                }
+                text.append(")");
+            }
+            text.append(", ");
+            text.append(gts.edgeCount());
+            text.append(" transitions");
+        }
+        getGraphPanel().getStatusBar().setText(text.toString());
     }
 
     /**
@@ -453,62 +486,10 @@ public class LTSDisplay extends Display implements SimulatorListener {
      */
     public class LTSGraphPanel extends JGraphPanel<LTSJGraph> {
         /** Creates a LTS panel for a given simulator. */
-        public LTSGraphPanel(LTSDisplay display) {
-            super(new LTSJGraph(display.getSimulator()), true);
+        public LTSGraphPanel(LTSJGraph jGraph) {
+            super(jGraph);
             getJGraph().setToolTipEnabled(true);
             setEnabledBackground(JAttr.STATE_BACKGROUND);
-        }
-
-        @Override
-        protected void installListeners() {
-            super.installListeners();
-            addRefreshListener(SHOW_ANCHORS_OPTION);
-            addRefreshListener(SHOW_STATE_IDS_OPTION);
-            addRefreshListener(SHOW_PARTIAL_GTS_OPTION);
-            addRefreshListener(SHOW_ARROWS_ON_LABELS_OPTION);
-        }
-
-        /**
-         * Toggles the state of the LTS display.
-         */
-        public void toggleShowHideLts() {
-            if (!isHidingLts()) {
-                // Switch to show mode.
-                LTSJModel ltsModel = (LTSJModel) getJGraph().newModel();
-                ltsModel.setFiltering(isFilteringLts());
-                GTS gts = getSimulatorModel().getGts();
-                if (gts != null) {
-                    ltsModel.loadGraph(gts);
-                    setJModel(ltsModel);
-                    getJGraph().refreshFiltering();
-                    getJGraph().doLayout(false);
-                    getJGraph().setVisible(true);
-                    setEnabled(true);
-                }
-            } else {
-                // Hide the LTS.
-                getJGraph().setVisible(false);
-                setEnabled(false);
-            }
-        }
-
-        /**
-         * Toggles the filtering of the LTS display.
-         */
-        public void toggleFilterLts() {
-            if (!isFilteringLts()) {
-                setEnabledBackground(JAttr.STATE_BACKGROUND);
-                getJModel().setFiltering(false);
-                getJGraph().refreshFiltering();
-                getJGraph().doLayout(false);
-                getJGraph().setVisible(true);
-            } else {
-                setEnabledBackground(JAttr.FILTER_BACKGROUND);
-                getJModel().setFiltering(true);
-                getJGraph().refreshFiltering();
-            }
-            refreshBackground();
-            setEnabled(true);
         }
 
         @Override
@@ -523,58 +504,14 @@ public class LTSDisplay extends Display implements SimulatorListener {
         }
 
         /**
-         * Specialises the return type to a {@link LTSJModel}.
-         */
-        @Override
-        public LTSJModel getJModel() {
-            if (getJGraph().isEnabled()) {
-                return getJGraph().getModel();
-            } else {
-                return null;
-            }
-        }
-
-        /**
-         * Writes a line to the status bar.
-         */
-        @Override
-        protected String getStatusText() {
-            StringBuilder text = new StringBuilder();
-            GTS gts = getSimulatorModel().getGts();
-            if (gts == null) {
-                text.append("No start state loaded");
-            } else {
-                text.append("Currently explored: ");
-                text.append(gts.nodeCount());
-                text.append(" states");
-                if (gts.openStateCount() > 0 || gts.hasFinalStates()) {
-                    text.append(" (");
-                    if (gts.openStateCount() > 0) {
-                        text.append(gts.openStateCount() + " open");
-                        if (gts.hasFinalStates()) {
-                            text.append(", ");
-                        }
-                    }
-                    if (gts.hasFinalStates()) {
-                        text.append(gts.getFinalStates().size() + " final");
-                    }
-                    text.append(")");
-                }
-                text.append(", ");
-                text.append(gts.edgeCount());
-                text.append(" transitions");
-            }
-            return text.toString();
-        }
-
-        /**
          * Refreshes the background colour, based on the question whether the LTS is
          * filtered or incompletely displayed. 
          */
         public void refreshBackground() {
             boolean incomplete = isFilteringLts();
+            LTSJModel jModel = getJGraph().getModel();
             if (!incomplete) {
-                incomplete = getJModel().size() < getJModel().getGraph().size();
+                incomplete = jModel.size() < jModel.getGraph().size();
             }
             Color background =
                 incomplete ? JAttr.FILTER_BACKGROUND : JAttr.STATE_BACKGROUND;

@@ -48,7 +48,7 @@ public class GraphPreviewDialog extends JDialog {
             setLocation(new Point(p.x + 50, p.y + 50));
         }
         JGraphPanel<GraphJGraph> autPanel =
-            new JGraphPanel<GraphJGraph>(getJGraph(), true);
+            new JGraphPanel<GraphJGraph>(getJGraph());
         autPanel.initialise();
         autPanel.setEnabled(true);
         add(autPanel);
