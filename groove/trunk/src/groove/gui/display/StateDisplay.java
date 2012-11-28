@@ -395,7 +395,7 @@ public class StateDisplay extends Display implements SimulatorListener {
                 }
             }
         }
-        getGraphPanel().getStatusBar().setText(
+        getGraphPanel().getStatusLabel().setText(
             HTMLConverter.HTML_TAG.on(result).toString());
     }
 

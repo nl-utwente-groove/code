@@ -224,6 +224,7 @@ abstract public class AbstractLayouter implements Layouter {
      * is ignored
      */
     protected void prepare(boolean complete) {
+        this.jgraph.notifyProgress("Layouting");
         this.jmodel = this.jgraph.getModel();
         // clear the transient information
         this.toLayoutableMap.clear();
@@ -323,6 +324,7 @@ abstract public class AbstractLayouter implements Layouter {
                     // certainly performance impacting
                     //                    AbstractLayouter.this.jgraph.refresh();
                 }
+                AbstractLayouter.this.jgraph.notifyProgress("");
             }
         };
         // do this now (if invoked from the event thread) or defer to event thread
