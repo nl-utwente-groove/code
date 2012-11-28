@@ -16,9 +16,6 @@
  */
 package groove.abstraction.pattern;
 
-import groove.abstraction.pattern.explore.PatternGraphGenerator;
-import groove.abstraction.pattern.lts.PGTS;
-
 /**
  * @author Eduardo Zambon
  */
@@ -37,13 +34,6 @@ public class Test {
 
     /** Test method. */
     public static void main(String args[]) {
-        final String GRAMMAR = "junit/pattern/trains";
-        final String START_GRAPH = "start";
-        String typeGraph = "ptgraph.gst";
-        String myargs[] = new String[] {GRAMMAR, START_GRAPH, typeGraph};
-        PatternGraphGenerator generator = new PatternGraphGenerator(myargs);
-        generator.processArguments();
-        generator.explore();
-        PGTS pgts = generator.getPGTS();
+        // empty
     }
 }
