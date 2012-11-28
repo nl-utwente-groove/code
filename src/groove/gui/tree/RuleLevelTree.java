@@ -41,6 +41,9 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 
+import org.jgraph.event.GraphSelectionEvent;
+import org.jgraph.event.GraphSelectionListener;
+
 /**
  * Checkbox tree controlling the visibility of rule levels.
  * @author Arend Rensink
@@ -51,12 +54,20 @@ public class RuleLevelTree extends CheckboxTree implements
     /** Creates a new tree, for a given rule model. */
     public RuleLevelTree(AspectJGraph jGraph) {
         this.jGraph = jGraph;
-        addMouseListener(new MyMouseListener());
         setLargeModel(true);
         setEnabled(jGraph.isEnabled());
         setShowsRootHandles(false);
         getUI().setCollapsedIcon(null);
         getUI().setExpandedIcon(null);
+        addMouseListener(new MyMouseListener());
+        // deselect the level tree whenever the graph
+        // selection changes
+        jGraph.addGraphSelectionListener(new GraphSelectionListener() {
+            @Override
+            public void valueChanged(GraphSelectionEvent e) {
+                clearSelection();
+            }
+        });
     }
 
     /**

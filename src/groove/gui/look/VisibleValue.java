@@ -18,10 +18,8 @@ package groove.gui.look;
 
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.GraphRole;
-import groove.gui.Options;
 import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJEdge;
-import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
@@ -45,25 +43,6 @@ import groove.view.aspect.AspectNode;
  * @version $Revision $
  */
 public class VisibleValue implements VisualValue<Boolean> {
-    /** Constructs a value strategy for a given JGraph. */
-    public VisibleValue(GraphJGraph jGraph) {
-        this.options = jGraph.getOptions();
-        this.labelTree = jGraph.getLabelTree();
-        if (jGraph instanceof AspectJGraph) {
-            this.levelTree = ((AspectJGraph) jGraph).getLevelTree();
-        }
-    }
-
-    /** Sets a label-filtering tree to be taken into account for computing the visibility. */
-    public void setLabelTree(LabelTree labelTree) {
-        this.labelTree = labelTree;
-    }
-
-    /** Sets a quantifier nesting to be taken into account for computing the visibility. */
-    public void setLevelTree(RuleLevelTree levelTree) {
-        this.levelTree = levelTree;
-    }
-
     @Override
     public Boolean get(GraphJCell cell) {
         boolean result = true;
@@ -85,16 +64,18 @@ public class VisibleValue implements VisualValue<Boolean> {
     }
 
     private boolean getBasicVertexValue(GraphJVertex jVertex) {
-        boolean result = true;
-        if (this.labelTree != null) {
-            result = !this.labelTree.isFiltered(jVertex);
+        GraphJGraph jGraph = jVertex.getJGraph();
+        LabelTree labelTree = jGraph.getLabelTree();
+        if (labelTree == null || !labelTree.isFiltered(jVertex)) {
+            return true;
         }
-        if (!result) {
-            result =
-                getOptionValue(Options.SHOW_UNFILTERED_EDGES_OPTION)
-                    && hasVisibleIncidentEdge(jVertex);
+        if (!jGraph.isShowUnfilteredEdges()) {
+            return false;
         }
-        return result;
+        if (hasVisibleIncidentEdge(jVertex)) {
+            return true;
+        }
+        return false;
     }
 
     private boolean getBasicEdgeValue(GraphJEdge jEdge) {
@@ -102,11 +83,14 @@ public class VisibleValue implements VisualValue<Boolean> {
         GraphJVertex source = jEdge.getSourceVertex();
         GraphJVertex target = jEdge.getTargetVertex();
         if (source == null || !source.getVisuals().isVisible()) {
-            result = false;
-        } else if (target == null || !target.getVisuals().isVisible()) {
-            result = false;
-        } else if (this.labelTree != null) {
-            result = !this.labelTree.isFiltered(jEdge);
+            return false;
+        }
+        if (target == null || !target.getVisuals().isVisible()) {
+            return false;
+        }
+        LabelTree labelTree = jEdge.getJGraph().getLabelTree();
+        if (labelTree != null) {
+            result = !labelTree.isFiltered(jEdge);
         }
         return result;
     }
@@ -119,7 +103,7 @@ public class VisibleValue implements VisualValue<Boolean> {
             return true;
         }
         // anything explicitly filtered by the level tree is not visible
-        RuleLevelTree levelTree = this.levelTree;
+        RuleLevelTree levelTree = jVertex.getJGraph().getLevelTree();
         if (levelTree != null && !levelTree.isVisible(jVertex)) {
             return false;
         }
@@ -161,7 +145,7 @@ public class VisibleValue implements VisualValue<Boolean> {
 
     private boolean getAspectEdgeValue(AspectJEdge jEdge) {
         // anything explicitly filtered by the level tree is not visible
-        RuleLevelTree levelTree = this.levelTree;
+        RuleLevelTree levelTree = jEdge.getJGraph().getLevelTree();
         if (levelTree != null && !levelTree.isVisible(jEdge)) {
             return false;
         }
@@ -173,7 +157,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         if (!jVertex.hasVisibleFlag()) {
             return false;
         }
-        if (!getOptionValue(Options.SHOW_PARTIAL_GTS_OPTION)
+        if (!jVertex.getJGraph().isShowPartialTransitions()
             && jVertex.isTransient() && state.isDone()) {
             return false;
         }
@@ -191,8 +175,8 @@ public class VisibleValue implements VisualValue<Boolean> {
         if (!jEdge.hasVisibleFlag()) {
             return false;
         }
-        if (!getOptionValue(Options.SHOW_PARTIAL_GTS_OPTION)
-            && trans.isPartial() && trans.source().isDone()) {
+        if (!jEdge.getJGraph().isShowPartialTransitions() && trans.isPartial()
+            && trans.source().isDone()) {
             return false;
         }
         if (!getBasicEdgeValue(jEdge)) {
@@ -208,26 +192,13 @@ public class VisibleValue implements VisualValue<Boolean> {
      */
     private boolean hasVisibleIncidentEdge(GraphJVertex jVertex) {
         boolean result = false;
+        LabelTree labelTree = jVertex.getJGraph().getLabelTree();
         for (GraphJEdge jEdge : jVertex.getJEdges()) {
-            if (this.labelTree == null || !this.labelTree.isFiltered(jEdge)) {
+            if (labelTree == null || !labelTree.isFiltered(jEdge)) {
                 result = true;
                 break;
             }
         }
         return result;
     }
-
-    /**
-     * Retrieves the value for a given option from the options object, or
-     * <code>null</code> if the options are not set (i.e., <code>null</code>).
-     * @param option the name of the option
-     */
-    private boolean getOptionValue(String option) {
-        return this.options.getItem(option).isEnabled()
-            && this.options.isSelected(option);
-    }
-
-    private final Options options;
-    private LabelTree labelTree;
-    private RuleLevelTree levelTree;
 }

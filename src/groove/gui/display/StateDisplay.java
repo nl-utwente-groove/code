@@ -16,11 +16,6 @@
  */
 package groove.gui.display;
 
-import static groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
-import static groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
-import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
-import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
-import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.SimulatorModel.Change.GRAMMAR;
 import static groove.gui.SimulatorModel.Change.GTS;
 import static groove.gui.SimulatorModel.Change.MATCH;
@@ -126,7 +121,7 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     @Override
     protected JComponent createInfoPanel() {
-        LabelTree labelTree = getJGraph().getLabelTree();
+        LabelTree labelTree = getLabelTree();
         TitledPanel result =
             new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
                 labelTree.createToolBar(), true);
@@ -212,6 +207,9 @@ public class StateDisplay extends Display implements SimulatorListener {
         return result;
     }
 
+    /** Split pane containing the {@link #stateGraphPanel} and the {@link #errorPanel}. */
+    private JSplitPane displayPanel;
+
     /** Returns the currently displayed state graph. */
     public AspectGraph getStateGraph() {
         return getJGraph().getModel().getGraph();
@@ -225,17 +223,15 @@ public class StateDisplay extends Display implements SimulatorListener {
                 this.stateGraphPanel =
                     new JGraphPanel<AspectJGraph>(getJGraph());
             result.initialise();
-            result.addRefreshListener(SHOW_NODE_IDS_OPTION);
-            result.addRefreshListener(SHOW_VALUE_NODES_OPTION);
-            result.addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
-            result.addRefreshListener(SHOW_BIDIRECTIONAL_EDGES_OPTION);
-            result.addRefreshListener(SHOW_ARROWS_ON_LABELS_OPTION);
             result.setBorder(null);
             result.setEnabledBackground(JAttr.STATE_BACKGROUND);
             result.getJGraph().setToolTipEnabled(true);
         }
         return result;
     }
+
+    /** JGraph panel on this display. */
+    private JGraphPanel<AspectJGraph> stateGraphPanel;
 
     /** Gets the error panel, creating it (lazily) if necessary. */
     private ErrorListPanel getErrorPanel() {
@@ -246,6 +242,9 @@ public class StateDisplay extends Display implements SimulatorListener {
         return this.errorPanel;
     }
 
+    /** List of state errors, only shown if there are any errors in the current state. */
+    private ErrorListPanel errorPanel;
+
     /** Returns the JGraph component of the state display. */
     final public AspectJGraph getJGraph() {
         AspectJGraph result = this.jGraph;
@@ -253,9 +252,25 @@ public class StateDisplay extends Display implements SimulatorListener {
             result =
                 this.jGraph =
                     new AspectJGraph(getSimulator(), getKind(), false);
+            result.setLabelTree(getLabelTree());
         }
         return result;
     }
+
+    /** JGraph showing the current state. */
+    private AspectJGraph jGraph;
+
+    /** Lazily creates and returns the label tree for the display. */
+    private LabelTree getLabelTree() {
+        LabelTree result = this.labelTree;
+        if (result == null) {
+            result = this.labelTree = new LabelTree(getJGraph(), false, true);
+        }
+        return result;
+    }
+
+    /** The tree component showing (and allowing filtering of) the transitions in the LTS. */
+    private LabelTree labelTree;
 
     /** Creates the listener of the error panel. */
     private Observer createErrorListener() {
@@ -718,14 +733,6 @@ public class StateDisplay extends Display implements SimulatorListener {
     private GraphSelectionListener graphSelectionListener;
     /** Flag indicating if there is any match selected. */
     private boolean matchSelected;
-    /** Split pane containing the {@link #stateGraphPanel} and the {@link #errorPanel}. */
-    private JSplitPane displayPanel;
-    /** JGraph panel on this display. */
-    private JGraphPanel<AspectJGraph> stateGraphPanel;
-    /** List of state errors, only shown if there are any errors in the current state. */
-    private ErrorListPanel errorPanel;
-    /** JGraph showing the current state. */
-    private AspectJGraph jGraph;
 
     /** Temporary record of graph element attributes. */
     private static class Attributes {

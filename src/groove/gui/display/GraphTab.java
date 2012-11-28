@@ -1,12 +1,5 @@
 package groove.gui.display;
 
-import static groove.gui.Options.SHOW_ANCHORS_OPTION;
-import static groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
-import static groove.gui.Options.SHOW_ASPECTS_OPTION;
-import static groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
-import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
-import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
-import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.GraphProperties;
 import groove.gui.Icons;
 import groove.gui.Options;
@@ -18,6 +11,7 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.tree.LabelTree;
 import groove.gui.tree.RuleLevelTree;
+import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
@@ -46,8 +40,6 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
      */
     public GraphTab(ResourceDisplay display) {
         super(display);
-        this.jGraph =
-            new AspectJGraph(getSimulator(), display.getKind(), false);
         setFocusable(false);
         setEnabled(false);
         start();
@@ -77,23 +69,18 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
 
     @Override
     public JGraphPanel<AspectJGraph> getEditArea() {
-        JGraphPanel<AspectJGraph> result = this.graphPanel;
+        JGraphPanel<AspectJGraph> result = this.editArea;
         if (result == null) {
-            this.graphPanel =
-                result = new JGraphPanel<AspectJGraph>(getJGraph());
+            this.editArea = result = new JGraphPanel<AspectJGraph>(getJGraph());
             result.setFocusable(false);
             result.setEnabled(false);
             result.initialise();
-            result.addRefreshListener(SHOW_ANCHORS_OPTION);
-            result.addRefreshListener(SHOW_ASPECTS_OPTION);
-            result.addRefreshListener(SHOW_NODE_IDS_OPTION);
-            result.addRefreshListener(SHOW_VALUE_NODES_OPTION);
-            result.addRefreshListener(SHOW_UNFILTERED_EDGES_OPTION);
-            result.addRefreshListener(SHOW_BIDIRECTIONAL_EDGES_OPTION);
-            result.addRefreshListener(SHOW_ARROWS_ON_LABELS_OPTION);
         }
         return result;
     }
+
+    /** Graph panel of this tab. */
+    private JGraphPanel<AspectJGraph> editArea;
 
     @Override
     public boolean isDirty() {
@@ -142,6 +129,9 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         return result;
     }
 
+    /** Label panel of this tab. */
+    private JTabbedPane upperInfoPanel;
+
     private TitledPanel getLabelPanel() {
         TitledPanel result = this.labelPanel;
         if (result == null) {
@@ -155,6 +145,9 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         return result;
     }
 
+    /** Label panel of this tab. */
+    private TitledPanel labelPanel;
+
     private PropertiesTable getPropertiesPanel() {
         PropertiesTable result = this.propertiesPanel;
         if (result == null) {
@@ -166,17 +159,33 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         return result;
     }
 
+    /** Properties panel of this tab. */
+    private PropertiesTable propertiesPanel;
+
     @Override
     protected JComponent getLowerInfoPanel() {
-        JPanel result = this.levelTreePanel;
-        final RuleLevelTree levelTree = getJGraph().getLevelTree();
+        JPanel result = this.lowerInfoPanel;
+        RuleLevelTree levelTree = getLevelTree();
         if (result == null && levelTree != null) {
-            this.levelTreePanel =
+            this.lowerInfoPanel =
                 result =
                     new TitledPanel("Nesting levels", levelTree, null, true);
         }
         return levelTree != null && levelTree.isEnabled() ? result : null;
     }
+
+    /** Level tree panel of this tab, if any. */
+    private JPanel lowerInfoPanel;
+
+    private RuleLevelTree getLevelTree() {
+        RuleLevelTree result = this.levelTree;
+        if (result == null && getResourceKind() == ResourceKind.RULE) {
+            result = this.levelTree = new RuleLevelTree(getJGraph());
+        }
+        return result;
+    }
+
+    private RuleLevelTree levelTree;
 
     @Override
     public boolean setResource(String name) {
@@ -257,31 +266,26 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
 
     /** Returns the underlying JGraph of this tab. */
     public final AspectJGraph getJGraph() {
-        return this.jGraph;
+        AspectJGraph result = this.jGraph;
+        if (result == null) {
+            result =
+                this.jGraph =
+                    new AspectJGraph(getSimulator(), getDisplay().getKind(),
+                        false);
+            result.setLabelTree(new LabelTree(getJGraph(), false, true));
+            result.setLevelTree(getLevelTree());
+        }
+        return result;
     }
+
+    /** The jgraph instance used in this tab. */
+    private AspectJGraph jGraph;
 
     /** Returns the underlying JGraph of this tab. */
     public final AspectJModel getJModel() {
         return getJGraph().getModel();
     }
 
-    /** Returns the label tree associated with this tab. */
-    public final LabelTree getLabelTree() {
-        return getJGraph().getLabelTree();
-    }
-
-    /** Graph panel of this tab. */
-    private JGraphPanel<AspectJGraph> graphPanel;
-    /** Label panel of this tab. */
-    private JTabbedPane upperInfoPanel;
-    /** Properties panel of this tab. */
-    private PropertiesTable propertiesPanel;
-    /** Label panel of this tab. */
-    private TitledPanel labelPanel;
-    /** Level tree panel of this tab, if any. */
-    private JPanel levelTreePanel;
-    /** The jgraph instance used in this tab. */
-    private final AspectJGraph jGraph;
     /** Mapping from resource names to aspect models. */
     private final Map<String,AspectJModel> jModelMap =
         new HashMap<String,AspectJModel>();

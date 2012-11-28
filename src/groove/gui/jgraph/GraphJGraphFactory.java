@@ -83,7 +83,7 @@ public class GraphJGraphFactory implements JGraphFactory {
             // in the vertex view, when the UI is around
             return null;
         case VISIBLE:
-            return new VisibleValue(this.jGraph);
+            return new VisibleValue();
         default:
             assert false;
             return null;

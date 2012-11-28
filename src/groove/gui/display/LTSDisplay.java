@@ -16,10 +16,6 @@
  */
 package groove.gui.display;
 
-import static groove.gui.Options.SHOW_ANCHORS_OPTION;
-import static groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
-import static groove.gui.Options.SHOW_PARTIAL_GTS_OPTION;
-import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.SimulatorModel.Change.GRAMMAR;
 import static groove.gui.SimulatorModel.Change.GTS;
 import static groove.gui.SimulatorModel.Change.MATCH;
@@ -116,7 +112,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     @Override
     protected JComponent createInfoPanel() {
-        LabelTree labelTree = getJGraph().getLabelTree();
+        LabelTree labelTree = getLabelTree();
         TitledPanel result =
             new TitledPanel("Transition labels", labelTree,
                 labelTree.createToolBar(), true);
@@ -262,27 +258,39 @@ public class LTSDisplay extends Display implements SimulatorListener {
         if (result == null) {
             result = this.graphPanel = new LTSGraphPanel(getJGraph());
             result.initialise();
-            result.addRefreshListener(SHOW_ANCHORS_OPTION);
-            result.addRefreshListener(SHOW_STATE_IDS_OPTION);
-            result.addRefreshListener(SHOW_PARTIAL_GTS_OPTION);
-            result.addRefreshListener(SHOW_ARROWS_ON_LABELS_OPTION);
         }
         return result;
     }
+
+    private LTSGraphPanel graphPanel;
 
     /** Returns the LTS' JGraph. */
     public LTSJGraph getJGraph() {
         LTSJGraph result = this.jGraph;
         if (result == null) {
             result = this.jGraph = new LTSJGraph(getSimulator());
+            result.setLabelTree(getLabelTree());
         }
         return result;
     }
+
+    private LTSJGraph jGraph;
 
     /** Returns the model of the LTS' JGraph. */
     public LTSJModel getJModel() {
         return getJGraph().getModel();
     }
+
+    private LabelTree getLabelTree() {
+        LabelTree result = this.labelTree;
+        if (result == null) {
+            result = this.labelTree = new LabelTree(getJGraph(), false, true);
+        }
+        return result;
+    }
+
+    /** The tree component showing (and allowing filtering of) the transitions in the LTS. */
+    private LabelTree labelTree;
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
@@ -360,8 +368,6 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * The LTS listener permanently associated with this display.
      */
     private final MyLTSListener ltsListener = new MyLTSListener();
-    private LTSGraphPanel graphPanel;
-    private LTSJGraph jGraph;
 
     /** Returns an LTS display for a given simulator. */
     public static LTSDisplay newInstance(Simulator simulator) {
