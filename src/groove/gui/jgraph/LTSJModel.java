@@ -124,11 +124,11 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
 
     @Override
     public void loadGraph(Graph<GraphState,GraphTransition> gts) {
-        // temporarily remove the model as a graph listener
         this.listening = false;
         this.maxStateNr = -1;
         this.stateLowerBound = 0;
         GTS oldGTS = getGraph();
+        // temporarily remove the model as a graph listener
         if (oldGTS != null && gts != oldGTS) {
             oldGTS.removeLTSListener(this);
         }
@@ -175,19 +175,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         return result;
     }
 
-    /** Set the filtering flag of this model to the given value. */
-    public void setFiltering(boolean filtering) {
-        this.filtering = filtering;
-    }
-
-    /** Returns the filtering flag of this model. */
-    public boolean isFiltering() {
-        return this.filtering;
-    }
-
     private boolean listening = true;
-
-    private boolean filtering = false;
 
     /**
      * Sets the maximum state number to be added.

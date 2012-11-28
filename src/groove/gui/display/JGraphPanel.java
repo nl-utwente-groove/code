@@ -110,12 +110,13 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     private JScrollPane scrollPane;
 
     /** Lazily creates and returns the status bar component of the panel. */
-    public JLabel getStatusBar() {
-        JLabel result = this.statusBar;
+    public JPanel getStatusBar() {
+        JPanel result = this.statusBar;
         if (result == null) {
-            result = new JLabel();
+            result = this.statusBar = new JPanel();
             result.setBorder(null);
-            this.statusBar = result;
+            result.setLayout(new BorderLayout());
+            result.add(getStatusLabel(), BorderLayout.CENTER);
         }
         return result;
     }
@@ -128,7 +129,22 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     /**
      * Panel for showing status messages
      */
-    private JLabel statusBar;
+    private JPanel statusBar;
+
+    /** Lazily creates and returns the status bar component of the panel. */
+    public JLabel getStatusLabel() {
+        JLabel result = this.statusLabel;
+        if (result == null) {
+            result = this.statusLabel = new JLabel();
+            result.setBorder(null);
+        }
+        return result;
+    }
+
+    /**
+     * Panel for showing status messages
+     */
+    private JLabel statusLabel;
 
     /**
      * Returns the underlying {@link GraphJGraph}.

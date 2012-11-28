@@ -48,6 +48,7 @@ import groove.trans.SystemProperties;
 import groove.util.Pair;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -72,6 +73,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -83,6 +86,7 @@ import javax.swing.ActionMap;
 import javax.swing.ButtonGroup;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
@@ -120,6 +124,13 @@ public class GraphJGraph extends org.jgraph.JGraph {
         this.simulator = simulator;
         this.options =
             simulator == null ? new Options() : simulator.getOptions();
+        this.progressObservable = new Observable() {
+            @Override
+            public void notifyObservers(Object arg) {
+                setChanged();
+                super.notifyObservers(arg);
+            }
+        };
         // make sure the layout cache has been created
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setMarqueeHandler(createMarqueeHandler());
@@ -256,6 +267,21 @@ public class GraphJGraph extends org.jgraph.JGraph {
         return getOptionValue(SHOW_ARROWS_ON_LABELS_OPTION);
     }
 
+    /** Returns the (possibly {@code null}) simulator associated with this JGraph. */
+    final protected Simulator getSimulator() {
+        return this.simulator;
+    }
+
+    /** Convenience method to retrieve the state of the simulator, if any. */
+    final public SimulatorModel getSimulatorModel() {
+        return getSimulator() == null ? null : getSimulator().getModel();
+    }
+
+    /** Convenience method to retrieve the state of the simulator, if any. */
+    final public ActionStore getActions() {
+        return getSimulator() == null ? null : getSimulator().getActions();
+    }
+
     /** 
      * The properties of the grammar to which the displayed graph belongs.
      * May return {@code null} if the simulator is not set.
@@ -265,15 +291,32 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 : getSimulatorModel().getGrammar().getProperties();
     }
 
-    /** Convenience method to retrieve the state of the simulator, if any. */
-    final public SimulatorModel getSimulatorModel() {
-        return this.simulator == null ? null : this.simulator.getModel();
+    /**
+     * Adds a progress observer.
+     * The observer will be notified on progress in loading or laying out
+     * an LTS.
+     */
+    public void addProgressObserver(Observer observer) {
+        this.progressObservable.addObserver(observer);
     }
 
-    /** Convenience method to retrieve the state of the simulator, if any. */
-    final public ActionStore getActions() {
-        return this.simulator == null ? null : this.simulator.getActions();
+    /**
+     * Removes a progress observer.
+     * @see #addProgressObserver(Observer)
+     */
+    public void removeProgressObserver(Observer observer) {
+        this.progressObservable.deleteObserver(observer);
     }
+
+    /**
+     * Notifies all progress observers of progress,
+     * with a message identifying the nature of the progress,
+     */
+    public void notifyProgress(String message) {
+        this.progressObservable.notifyObservers(message);
+    }
+
+    private final Observable progressObservable;
 
     /*
      * Overridden; we are being clever about constructing labels,
@@ -701,10 +744,27 @@ public class GraphJGraph extends org.jgraph.JGraph {
      */
     protected JViewport getViewPort() {
         JViewport result = null;
-        for (JComponent parent = this; parent != null && result == null; parent =
-            (JComponent) parent.getParent()) {
+        for (Component parent = this; parent != null; parent =
+            parent.getParent()) {
             if (parent instanceof JViewport) {
                 result = (JViewport) parent;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /** 
+     * Returns the nearest ancestor that is a {@link JFrame},
+     * if there is any.
+     */
+    protected JFrame getFrame() {
+        JFrame result = null;
+        for (Component parent = this; parent != null; parent =
+            parent.getParent()) {
+            if (parent instanceof JFrame) {
+                result = (JFrame) parent;
+                break;
             }
         }
         return result;

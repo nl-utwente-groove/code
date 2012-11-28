@@ -49,6 +49,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.Box;
@@ -56,6 +58,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JSpinner;
 import javax.swing.JSpinner.NumberEditor;
 import javax.swing.JToggleButton;
@@ -270,6 +273,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         if (result == null) {
             result = this.jGraph = new LTSJGraph(getSimulator());
             result.setLabelTree(getLabelTree());
+            result.addProgressObserver(new ProgressObserver());
         }
         return result;
     }
@@ -312,7 +316,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 LTSJModel ltsModel;
                 if (gts != oldModel.getGts()) {
                     ltsModel = (LTSJModel) getJGraph().newModel();
-                    ltsModel.setFiltering(isFilteringLts());
+                    getJGraph().setFiltering(isFilteringLts());
                     ltsModel.setStateBound(getStateBound());
                     ltsModel.loadGraph(gts);
                     getJGraph().setModel(ltsModel);
@@ -355,7 +359,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
      */
     public void toggleFilterLts() {
         boolean isFiltering = isFilteringLts();
-        getJGraph().getModel().setFiltering(isFiltering);
+        getJGraph().setFiltering(isFiltering);
         getJGraph().refreshFiltering();
         if (!isFiltering) {
             getJGraph().doLayout(false);
@@ -444,7 +448,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
             text.append(gts.edgeCount());
             text.append(" transitions");
         }
-        getGraphPanel().getStatusBar().setText(text.toString());
+        getGraphPanel().getStatusLabel().setText(text.toString());
     }
 
     /**
@@ -524,5 +528,37 @@ public class LTSDisplay extends Display implements SimulatorListener {
             setEnabledBackground(background);
             setEnabled(isEnabled());
         }
+    }
+
+    /** Class showing a progress bar on the status bar on demand. */
+    private class ProgressObserver implements Observer {
+        ProgressObserver() {
+            this.bar = new JProgressBar();
+            this.bar.setStringPainted(true);
+            this.bar.setIndeterminate(true);
+            getGraphPanel().getStatusBar().add(this.bar, BorderLayout.EAST);
+            this.bar.setVisible(false);
+        }
+
+        @Override
+        public void update(Observable o, Object arg) {
+            String message = (String) arg;
+            if (message.length() == 0) {
+                hideProgressBar();
+            } else {
+                showProgressBar(message);
+            }
+        }
+
+        private void showProgressBar(String message) {
+            this.bar.setVisible(true);
+            this.bar.setString(message);
+        }
+
+        private void hideProgressBar() {
+            this.bar.setVisible(false);
+        }
+
+        private final JProgressBar bar;
     }
 }

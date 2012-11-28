@@ -333,7 +333,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
 
     /** Filters the LTS. */
     public void refreshFiltering() {
-        if (getModel().isFiltering()) {
+        if (isFiltering()) {
             Set<GraphJCell> trace =
                 findTraces(getModel().getGraph().getResultStates());
             for (Object element : getRoots()) {
@@ -348,6 +348,18 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         }
         refreshAllCells();
     }
+
+    /** Set the filtering flag of this model to the given value. */
+    public void setFiltering(boolean filtering) {
+        this.filtering = filtering;
+    }
+
+    /** Returns the filtering flag of this model. */
+    private boolean isFiltering() {
+        return this.filtering;
+    }
+
+    private boolean filtering = false;
 
     /**
      * The active state of the LTS. Is null if there is no active state.

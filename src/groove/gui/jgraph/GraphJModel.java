@@ -93,7 +93,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     /**
      * Sends a set of cells to the back (in the z-order) without posting an edit.
      */
-    void toBackSilent(Set<GraphJCell> jCells) {
+    void toBackSilent(Collection<? extends GraphJCell> jCells) {
         createLayerEdit(jCells.toArray(), GraphModelLayerEdit.BACK).execute();
     }
 
@@ -173,6 +173,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     protected void addElements(Collection<? extends N> nodeSet,
             Collection<? extends E> edgeSet, boolean replace) {
         prepareInsert();
+        getJGraph().notifyProgress("Loading");
         boolean merge = mergeBidirectionalEdges();
         for (N node : nodeSet) {
             addNode(node);
@@ -180,7 +181,9 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         for (E edge : edgeSet) {
             addEdge(edge, merge);
         }
+        getJGraph().notifyProgress("Rendering");
         doInsert(replace);
+        getJGraph().notifyProgress("");
     }
 
     /**
@@ -518,13 +521,13 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         Object[] removedCells = replace ? getRoots().toArray() : null;
         createEdit(addedCells, removedCells, null, this.connections,
             getParentMap(), null).execute();
-        List<Object> edges = new ArrayList<Object>();
+        List<GraphJEdge> edges = new ArrayList<GraphJEdge>();
         for (Object jCell : addedCells) {
             if (jCell instanceof GraphJEdge) {
-                edges.add(jCell);
+                edges.add((GraphJEdge) jCell);
             }
         }
-        toBack(edges.toArray());
+        toBackSilent(edges);
         setLoading(false);
     }
 
