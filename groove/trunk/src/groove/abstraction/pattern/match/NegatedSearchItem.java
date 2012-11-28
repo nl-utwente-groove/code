@@ -23,7 +23,6 @@ import groove.abstraction.pattern.trans.RuleEdge;
 import groove.abstraction.pattern.trans.RuleNode;
 
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * A search item that negates two edge search items.
@@ -39,10 +38,6 @@ final class NegatedSearchItem extends SearchItem {
     final SearchItem inner2;
     /** Needed source nodes. */
     private final Collection<RuleNode> neededNodes;
-    /** Binded target node. */
-    private final Collection<RuleNode> boundNode;
-    /** Binded edges. */
-    private final Collection<RuleEdge> boundEdges;
 
     /**
      * Constructs a new search item. The item will match (precisely once) if and
@@ -59,12 +54,6 @@ final class NegatedSearchItem extends SearchItem {
         this.neededNodes = new MyHashSet<RuleNode>();
         this.neededNodes.add(this.edge1.source());
         this.neededNodes.add(this.edge2.source());
-
-        this.boundNode = Collections.singleton(this.edge1.target());
-
-        this.boundEdges = new MyHashSet<RuleEdge>();
-        this.boundEdges.add(edge1);
-        this.boundEdges.add(edge2);
     }
 
     @Override
@@ -80,16 +69,6 @@ final class NegatedSearchItem extends SearchItem {
     @Override
     public Collection<RuleNode> needsNodes() {
         return this.neededNodes;
-    }
-
-    @Override
-    public Collection<RuleNode> bindsNodes() {
-        return this.boundNode;
-    }
-
-    @Override
-    public Collection<RuleEdge> bindsEdges() {
-        return this.boundEdges;
     }
 
     /**
