@@ -19,31 +19,52 @@ package groove.abstraction.pattern.match;
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.match.Matcher.Search;
 import groove.abstraction.pattern.shape.PatternGraph;
+import groove.abstraction.pattern.trans.RuleEdge;
 import groove.abstraction.pattern.trans.RuleNode;
 
 import java.util.Collection;
+import java.util.Collections;
 
 /**
- * A search item that negates another search item.
+ * A search item that negates two edge search items.
  * @author Arend Rensink and Eduardo Zambon
  */
 final class NegatedSearchItem extends SearchItem {
 
-    /** The inner search item, for which we test for the negation. */
-    final SearchItem inner;
-    /** Union of the needed and bound nodes of the inner condition. */
+    /** The edges composing this item. */
+    private final RuleEdge edge1;
+    private final RuleEdge edge2;
+    /** The inner search items, for which we test for the negation. */
+    final SearchItem inner1;
+    final SearchItem inner2;
+    /** Needed source nodes. */
     private final Collection<RuleNode> neededNodes;
+    /** Binded target node. */
+    private final Collection<RuleNode> boundNode;
+    /** Binded edges. */
+    private final Collection<RuleEdge> boundEdges;
 
     /**
      * Constructs a new search item. The item will match (precisely once) if and
      * only the underlying item does not match.
-     * @param item the underlying, negated item
      */
-    public NegatedSearchItem(SearchItem item) {
-        this.inner = item;
+    public NegatedSearchItem(RuleEdge edge1, RuleEdge edge2) {
+        assert edge1.target().equals(edge2.target());
+
+        this.edge1 = edge1;
+        this.edge2 = edge2;
+        this.inner1 = new PatternEdgeSearchItem(edge1);
+        this.inner2 = new PatternEdgeSearchItem(edge2);
+
         this.neededNodes = new MyHashSet<RuleNode>();
-        this.neededNodes.addAll(item.needsNodes());
-        this.neededNodes.addAll(item.bindsNodes());
+        this.neededNodes.add(this.edge1.source());
+        this.neededNodes.add(this.edge2.source());
+
+        this.boundNode = Collections.singleton(this.edge1.target());
+
+        this.boundEdges = new MyHashSet<RuleEdge>();
+        this.boundEdges.add(edge1);
+        this.boundEdges.add(edge2);
     }
 
     @Override
@@ -53,15 +74,22 @@ final class NegatedSearchItem extends SearchItem {
 
     @Override
     public String toString() {
-        return String.format("Negation of %s", this.inner);
+        return String.format("Negation of [%s && %s]", this.inner1, this.inner2);
     }
 
-    /**
-     * Returns the inner condition's needed nodes.
-     */
     @Override
     public Collection<RuleNode> needsNodes() {
         return this.neededNodes;
+    }
+
+    @Override
+    public Collection<RuleNode> bindsNodes() {
+        return this.boundNode;
+    }
+
+    @Override
+    public Collection<RuleEdge> bindsEdges() {
+        return this.boundEdges;
     }
 
     /**
@@ -77,26 +105,31 @@ final class NegatedSearchItem extends SearchItem {
     /** This implementation propagates the call to the inner item. */
     @Override
     public void activate(Matcher matcher) {
-        this.inner.activate(matcher);
+        this.inner1.activate(matcher);
+        this.inner2.activate(matcher);
     }
 
     /** Record for the negated search item. */
     private class NegatedSearchRecord extends SingularRecord {
 
         /** The record of the inner (negated) item. */
-        private final SearchItem.Record innerRecord;
+        private final SearchItem.Record innerRecord1;
+        private final SearchItem.Record innerRecord2;
 
         /** Constructs a new record, for a given matcher. */
         NegatedSearchRecord(Search search) {
             super(search);
-            this.innerRecord =
-                NegatedSearchItem.this.inner.createRecord(search);
+            this.innerRecord1 =
+                NegatedSearchItem.this.inner1.createRecord(search);
+            this.innerRecord2 =
+                NegatedSearchItem.this.inner2.createRecord(search);
         }
 
         @Override
         public void initialise(PatternGraph host) {
             super.initialise(host);
-            this.innerRecord.initialise(host);
+            this.innerRecord1.initialise(host);
+            this.innerRecord2.initialise(host);
         }
 
         /**
@@ -105,9 +138,24 @@ final class NegatedSearchItem extends SearchItem {
          */
         @Override
         boolean find() {
-            boolean result = !this.innerRecord.next();
-            this.innerRecord.reset();
-            return result;
+            boolean edge1Found = false;
+            boolean edge2Found = false;
+
+            edge1Found = this.innerRecord1.next();
+            while (edge1Found) {
+                edge2Found = this.innerRecord2.next();
+                if (edge2Found) {
+                    break;
+                } else {
+                    this.innerRecord2.reset();
+                    edge1Found = this.innerRecord1.next();
+                }
+            }
+
+            this.innerRecord1.reset();
+            this.innerRecord2.reset();
+
+            return !(edge1Found && edge2Found);
         }
 
         @Override

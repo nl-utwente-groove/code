@@ -239,10 +239,9 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
             }
             // Create a negated search item if we have a closure rule.
             if (this.pRule.isClosure()) {
-                // EDUARDO: THE BUG IS HERE!!!
-                // We need a full sub-graph condition, not a single edge.
-                RuleEdge edge = this.pRule.getCreatorEdges()[0];
-                SearchItem negatedEdge = createNegatedSearchItem(edge);
+                RuleEdge edges[] = this.pRule.getCreatorEdges();
+                SearchItem negatedEdge =
+                    createNegatedSearchItem(edges[0], edges[1]);
                 result.add(negatedEdge);
             }
             return result;
@@ -265,8 +264,8 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
         /**
          * Callback factory method for creating a negated search item.
          */
-        SearchItem createNegatedSearchItem(RuleEdge edge) {
-            return new NegatedSearchItem(createEdgeSearchItem(edge));
+        SearchItem createNegatedSearchItem(RuleEdge edge1, RuleEdge edge2) {
+            return new NegatedSearchItem(edge1, edge2);
         }
     }
 
@@ -415,10 +414,10 @@ public final class PatternSearchPlan extends ArrayList<SearchItem> {
          */
         public int compare(SearchItem item1, SearchItem item2) {
             if (item1 instanceof NegatedSearchItem) {
-                item1 = ((NegatedSearchItem) item1).inner;
+                item1 = ((NegatedSearchItem) item1).inner1;
             }
             if (item2 instanceof NegatedSearchItem) {
-                item2 = ((NegatedSearchItem) item2).inner;
+                item2 = ((NegatedSearchItem) item2).inner1;
             }
             RuleNode node1 = null;
             RuleNode node2 = null;
