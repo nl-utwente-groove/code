@@ -33,7 +33,7 @@ public final class TypeEdge extends AbstractPatternEdge<TypeNode> {
     // ------------------------------------------------------------------------
 
     /** Prefix for string representations. */
-    public static final String PREFIX = "m";
+    static final String PREFIX = "m";
 
     // ------------------------------------------------------------------------
     // Object Fields

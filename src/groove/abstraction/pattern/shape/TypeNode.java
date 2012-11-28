@@ -31,7 +31,7 @@ public final class TypeNode extends AbstractPatternNode {
     // ------------------------------------------------------------------------
 
     /** Prefix for string representations. */
-    public static final String PREFIX = "t";
+    static final String PREFIX = "t";
 
     // ------------------------------------------------------------------------
     // Object Fields

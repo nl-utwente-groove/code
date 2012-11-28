@@ -177,6 +177,11 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
         return getInEdgesWithType(node, edgeType).size() > 0;
     }
 
+    /** Returns the set of incoming type edges for the given node. */
+    public Set<TypeEdge> getIncomingEdgeTypes(PatternNode pNode) {
+        return getTypeGraph().inEdgeSet(pNode.getType());
+    }
+
     /**
      * Returns true if the given node is uniquely covered by the incoming edge
      * morphisms. Uniqueness corresponds to the absence of distinct incoming
@@ -226,6 +231,7 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
     /** Pattern closure. */
     public void closePattern(TypeEdge m1, TypeEdge m2, PatternNode p1,
             PatternNode p2) {
+        assert isUniquelyCovered(p1) && isUniquelyCovered(p2);
         addPattern(m1, m2, p1, p2);
     }
 
@@ -249,4 +255,5 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
         Duo<PatternEdge> duo = new Duo<PatternEdge>(d1, d2);
         return new Pair<PatternNode,Duo<PatternEdge>>(pNode, duo);
     }
+
 }

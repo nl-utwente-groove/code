@@ -30,7 +30,7 @@ public final class PatternNode extends AbstractPatternNode {
     // ------------------------------------------------------------------------
 
     /** Prefix for string representations. */
-    public static final String PREFIX = "p";
+    private static final String PREFIX = "p";
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -73,7 +73,7 @@ public final class PatternNode extends AbstractPatternNode {
 
     @Override
     public String toString() {
-        return super.toString() + ":" + this.type.toString();
+        return getIdStr() + ":" + this.type.getIdStr();
     }
 
     @Override
