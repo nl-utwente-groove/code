@@ -78,6 +78,11 @@ public abstract class AbstractPatternNode extends AbstractNode implements
     /** Returns true if this pattern node is associated with a edge node. */
     abstract public boolean isEdgePattern();
 
+    /** Returns the Id of this edge as a string. */
+    public String getIdStr() {
+        return super.toString();
+    }
+
     /** Returns the single node associated with this pattern node. */
     public HostNode getSimpleNode() {
         assert isNodePattern();

@@ -21,6 +21,7 @@ import static groove.abstraction.Multiplicity.ONE_NODE_MULT;
 import static groove.abstraction.Multiplicity.ZERO_EDGE_MULT;
 import static groove.abstraction.Multiplicity.ZERO_NODE_MULT;
 import groove.abstraction.Multiplicity;
+import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
@@ -152,6 +153,29 @@ public final class PatternShape extends PatternGraph {
         return new PatternShape(this);
     }
 
+    @Override
+    public boolean isWellDefined() {
+        if (!super.isWellDefined()) {
+            return false;
+        }
+        for (PatternNode pNode : nodeSet()) {
+            Multiplicity pMult = getMult(pNode);
+            for (TypeEdge tEdge : getIncomingEdgeTypes(pNode)) {
+                Multiplicity acc =
+                    Multiplicity.getMultiplicity(0, 0, MultKind.EQSYS_MULT);
+                for (PatternEdge dEdge : getInEdgesWithType(pNode, tEdge)) {
+                    Multiplicity srcMult = getMult(dEdge.source());
+                    Multiplicity dMult = getMult(dEdge);
+                    acc = acc.add(srcMult.times(dMult));
+                }
+                if (!pMult.equals(acc.toNodeKind())) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
@@ -268,6 +292,8 @@ public final class PatternShape extends PatternGraph {
             } // else nothing to do, the multiplicity was already set when
               // the edge was added.
         }
+
+        assert result.isWellDefined();
 
         return result;
     }
