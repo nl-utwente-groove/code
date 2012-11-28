@@ -105,10 +105,10 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         ToolTipManager.sharedInstance().registerComponent(this);
         setEnabled(jGraph.isEnabled());
         setLargeModel(true);
-        addListeners();
+        installListeners();
     }
 
-    private void addListeners() {
+    private void installListeners() {
         getJGraph().addPropertyChangeListener(JGraph.GRAPH_MODEL_PROPERTY,
             new PropertyChangeListener() {
                 @Override
@@ -124,8 +124,10 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         });
         if (this.filtering) {
             this.labelFilter.addObserver(new Observer() {
+                @SuppressWarnings("unchecked")
                 public void update(Observable o, Object arg) {
                     LabelTree.this.repaint();
+                    getJGraph().refreshCells((Set<GraphJCell>) arg);
                 }
             });
         }

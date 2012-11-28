@@ -16,6 +16,9 @@
  */
 package groove.gui.jgraph;
 
+import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import static groove.gui.Options.SHOW_PARTIAL_GTS_OPTION;
+import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Element;
 import groove.graph.GraphRole;
@@ -25,7 +28,6 @@ import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.gui.menu.ModelCheckingMenu;
 import groove.gui.menu.SetLayoutMenu;
-import groove.gui.tree.LabelTree;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -56,10 +58,26 @@ import org.jgraph.graph.GraphModel;
 public class LTSJGraph extends GraphJGraph implements Serializable {
     /** Constructs an instance of the j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
-        super(simulator, true);
+        super(simulator);
         this.simulator = simulator;
         // turn off double buffering to improve performance
         setDoubleBuffered(false);
+    }
+
+    @Override
+    protected void installListeners() {
+        super.installListeners();
+        addOptionListener(SHOW_STATE_IDS_OPTION);
+        addOptionListener(SHOW_PARTIAL_GTS_OPTION);
+    }
+
+    @Override
+    protected RefreshListener getRefreshListener(String option) {
+        RefreshListener result = null;
+        if (!SHOW_NODE_IDS_OPTION.equals(option)) {
+            result = super.getRefreshListener(option);
+        }
+        return result;
     }
 
     @Override
@@ -81,23 +99,14 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         return (LTSJModel) this.graphModel;
     }
 
-    @Override
-    public boolean isShowNodeIdentities() {
+    /** Indicates if state identities should be shown on states. */
+    public boolean isShowStateIdentities() {
         return getOptionValue(Options.SHOW_STATE_IDS_OPTION);
     }
 
     /** Indicates if partial transitions and transient states should be shown. */
     public boolean isShowPartialTransitions() {
         return getOptionValue(Options.SHOW_PARTIAL_GTS_OPTION);
-    }
-
-    /**
-     * Node hiding doesn't mean much in the LTS, so always show the edges unless
-     * explicitly filtered.
-     */
-    @Override
-    public boolean isShowUnfilteredEdges() {
-        return true;
     }
 
     /**
@@ -175,12 +184,6 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
      */
     protected final JMenu createCheckerMenu() {
         return new ModelCheckingMenu(this.simulator);
-    }
-
-    @Override
-    protected LabelTree createLabelTree() {
-        // no tool bar on the label tree
-        return new LabelTree(this, false, isFiltering());
     }
 
     /**
@@ -344,19 +347,6 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
             }
         }
         refreshAllCells();
-    }
-
-    @Override
-    public boolean isFiltering(Element jCellKey) {
-        boolean result = super.isFiltering(jCellKey);
-        if (!result && !isShowPartialTransitions()) {
-            if (jCellKey instanceof RuleTransition) {
-                result = ((RuleTransition) jCellKey).isPartial();
-            } else if (jCellKey instanceof GraphState) {
-                result = ((GraphState) jCellKey).isTransient();
-            }
-        }
-        return result;
     }
 
     /**

@@ -53,7 +53,7 @@ public final class ShapeJGraph extends GraphJGraph {
 
     /** Constructs an instance of the j-graph for a given simulator. */
     public ShapeJGraph(Simulator simulator) {
-        super(simulator, true);
+        super(simulator);
         setPortsVisible(true);
     }
 

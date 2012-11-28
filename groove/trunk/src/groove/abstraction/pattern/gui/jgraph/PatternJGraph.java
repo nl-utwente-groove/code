@@ -31,7 +31,6 @@ import groove.gui.layout.AbstractLayouter;
 import groove.gui.layout.Layouter;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualValue;
-import groove.gui.tree.LabelTree;
 
 import java.util.List;
 import java.util.Map;
@@ -56,7 +55,7 @@ public final class PatternJGraph extends GraphJGraph {
 
     /** Constructs an instance of the j-graph for a given simulator. */
     public PatternJGraph(Simulator simulator) {
-        super(simulator, false);
+        super(simulator);
     }
 
     // ------------------------------------------------------------------------
@@ -72,14 +71,6 @@ public final class PatternJGraph extends GraphJGraph {
     @Override
     public PatternJModel getModel() {
         return (PatternJModel) this.graphModel;
-    }
-
-    /** Callback method to create the label tree. */
-    @Override
-    protected LabelTree createLabelTree() {
-        // EZ says: ugly hack to keep things moving...
-        // Create a pesky label tree...
-        return new LabelTree(new GraphJGraph(null, false), false, false);
     }
 
     @Override

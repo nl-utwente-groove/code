@@ -24,7 +24,6 @@ import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.LabelPattern;
 import groove.graph.algebra.VariableNode;
-import groove.gui.Options;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
@@ -66,14 +65,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /** Constructs a value strategy for a given JGraph. */
     public LabelValue(GraphJGraph jGraph) {
         this.jGraph = jGraph;
-        this.options = jGraph.getOptions();
-        this.labelTree = jGraph.getLabelTree();
         this.role = jGraph.getGraphRole();
-    }
-
-    /** Sets a label-filtering tree to be taken into account for computing the visibility. */
-    public void setLabelTree(LabelTree labelTree) {
-        this.labelTree = labelTree;
     }
 
     @Override
@@ -116,7 +108,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private MultiLabel getBasicVertexLabel(GraphJVertex jVertex) {
         MultiLabel result = new MultiLabel();
         // show the node identity if required
-        if (getOptionValue(Options.SHOW_NODE_IDS_OPTION)) {
+        if (jVertex.getJGraph().isShowNodeIdentities()) {
             result.add(
                 Line.atom(jVertex.getNode().toString()).style(Style.ITALIC),
                 Direct.NONE);
@@ -137,11 +129,11 @@ public class LabelValue implements VisualValue<MultiLabel> {
         MultiLabel result = new MultiLabel();
         if (!jVertex.getLooks().contains(Look.NODIFIED)) {
             // show the node identity
-            if (!node.hasId()) {
+            if (jVertex.getJGraph().isShowNodeIdentities() && !node.hasId()) {
                 result.add(getNodeIdLine(node));
             }
             // the following used to include hasError() as a disjunct
-            if (getOptionValue(Options.SHOW_ASPECTS_OPTION)) {
+            if (jVertex.getJGraph().isShowAspects()) {
                 result.add(jVertex.getUserObject().toLines(Direct.NONE));
             } else {
                 // show data constants and variables correctly
@@ -198,7 +190,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         AspectNode node = jVertex.getNode();
         node.testFixed(true);
         MultiLabel result = new MultiLabel();
-        if (getOptionValue(Options.SHOW_ASPECTS_OPTION)) {
+        if (jVertex.getJGraph().isShowAspects()) {
             result.add(jVertex.getUserObject().toLines(Direct.NONE));
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (!isFiltered(edge)) {
@@ -262,11 +254,11 @@ public class LabelValue implements VisualValue<MultiLabel> {
         node.testFixed(true);
         MultiLabel result = new MultiLabel();
         // show the node identity
-        if (!node.hasId()) {
+        if (jVertex.getJGraph().isShowNodeIdentities() && !node.hasId()) {
             result.add(getNodeIdLine(node));
         }
         // the following used to include hasError() as a disjunct
-        if (getOptionValue(Options.SHOW_ASPECTS_OPTION)) {
+        if (jVertex.getJGraph().isShowAspects()) {
             result.add(jVertex.getUserObject().toLines(Direct.NONE));
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (!isFiltered(edge)) {
@@ -341,7 +333,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private MultiLabel getLTSJVertexLabel(LTSJVertex jVertex) {
         MultiLabel result = new MultiLabel();
         // show the node identity if required
-        if (getOptionValue(Options.SHOW_STATE_IDS_OPTION)) {
+        if (jVertex.getJGraph().isShowStateIdentities()) {
             GraphState state = jVertex.getNode();
             StringBuilder id = new StringBuilder(state.toString());
             CtrlState ctrlState = state.getCtrlState();
@@ -352,7 +344,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 Direct.NONE);
         }
         // only add edges that have an unfiltered label
-        boolean isShowAnchors = getOptionValue(Options.SHOW_ANCHORS_OPTION);
+        boolean isShowAnchors = jVertex.getJGraph().isShowAnchors();
         for (Edge edge : jVertex.getEdges()) {
             if (!isFiltered(edge)) {
                 String text = ((GraphTransition) edge).text(isShowAnchors);
@@ -454,7 +446,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /** Computes the multi-line label for a given LSTJEdge. */
     private MultiLabel getLTSJEdgeLabel(LTSJEdge jEdge) {
         MultiLabel result = new MultiLabel();
-        boolean isShowAnchors = getOptionValue(Options.SHOW_ANCHORS_OPTION);
+        boolean isShowAnchors = jEdge.getJGraph().isShowAnchors();
         for (Edge edge : jEdge.getEdges()) {
             // only add edges that have an unfiltered label
             if (!isFiltered(edge)) {
@@ -469,7 +461,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /** Returns a line representing the label of a given edge. */
     private Line getAspectEdgeLine(AspectEdge edge) {
         Label label =
-            getOptionValue(Options.SHOW_ASPECTS_OPTION) ? edge.label()
+            ((AspectJGraph) getJGraph()).isShowAspects() ? edge.label()
                     : edge.getDisplayLabel();
         Line result = Line.atom(label.text());
         switch (label.getRole()) {
@@ -551,33 +543,30 @@ public class LabelValue implements VisualValue<MultiLabel> {
      * Returns the (possibly empty) list of lines 
      * describing the node identity, if this is to be shown
      * according to the current setting.
-     * @see GraphJGraph#isShowNodeIdentities()
      */
     private MultiLabel getNodeIdLine(AspectNode node) {
         MultiLabel result = new MultiLabel();
-        if (getOptionValue(Options.SHOW_NODE_IDS_OPTION)) {
-            String id;
-            if (node.getKind().isMeta()) {
-                id = null;
-            } else if (node.hasAttrAspect()) {
-                AspectKind attrKind = node.getAttrKind();
-                if (attrKind.hasSignature()) {
-                    Object content = node.getAttrAspect().getContent();
-                    if (content == null) {
-                        id = VariableNode.TO_STRING_PREFIX + node.getNumber();
-                    } else {
-                        id = content.toString();
-                    }
+        String id;
+        if (node.getKind().isMeta()) {
+            id = null;
+        } else if (node.hasAttrAspect()) {
+            AspectKind attrKind = node.getAttrKind();
+            if (attrKind.hasSignature()) {
+                Object content = node.getAttrAspect().getContent();
+                if (content == null) {
+                    id = VariableNode.TO_STRING_PREFIX + node.getNumber();
                 } else {
-                    assert attrKind == AspectKind.PRODUCT;
-                    id = "p" + node.getNumber();
+                    id = content.toString();
                 }
             } else {
-                id = node.toString();
+                assert attrKind == AspectKind.PRODUCT;
+                id = "p" + node.getNumber();
             }
-            if (id != null) {
-                result.add(Line.atom(id).style(Style.ITALIC), Direct.NONE);
-            }
+        } else {
+            id = node.toString();
+        }
+        if (id != null) {
+            result.add(Line.atom(id).style(Style.ITALIC), Direct.NONE);
         }
         return result;
     }
@@ -616,7 +605,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             if (!attrAspect.hasContent()) {
                 dataLine =
                     getSignatureLine(attrAspect.getKind().getSignature());
-            } else if (!getOptionValue(Options.SHOW_NODE_IDS_OPTION)) {
+            } else if (!this.jGraph.isShowNodeIdentities()) {
                 // show constants only if they are not already shown as node identities
                 dataLine = Line.atom(attrAspect.getContentString());
             }
@@ -631,12 +620,16 @@ public class LabelValue implements VisualValue<MultiLabel> {
      * Tests if a given edge is currently being filtered.
      */
     private boolean isFiltered(Edge key) {
-        TypeModelMap typeMap = getTypeMap();
-        if (typeMap != null) {
-            key = typeMap.getEdge((AspectEdge) key);
+        boolean result = false;
+        LabelTree labelTree = this.jGraph.getLabelTree();
+        if (labelTree != null) {
+            TypeModelMap typeMap = getTypeMap();
+            if (typeMap != null) {
+                key = typeMap.getEdge((AspectEdge) key);
+            }
+            result = key != null && labelTree.isFiltered(key);
         }
-        return key != null && this.labelTree != null
-            && this.labelTree.isFiltered(key);
+        return result;
     }
 
     /** Retrieves the type map from the underlying JGraph, if there is any. */
@@ -656,20 +649,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
         return this.jGraph;
     }
 
-    /**
-     * Retrieves the value for a given option from the options object, or
-     * <code>null</code> if the options are not set (i.e., <code>null</code>).
-     * @param option the name of the option
-     */
-    public boolean getOptionValue(String option) {
-        return this.options.getItem(option).isEnabled()
-            && this.options.isSelected(option);
-    }
-
     private final GraphJGraph jGraph;
     private final GraphRole role;
-    private final Options options;
-    private LabelTree labelTree;
 
     /** Returns the label prefix associated with a given role. */
     private static Line getSignatureLine(SignatureKind kind) {

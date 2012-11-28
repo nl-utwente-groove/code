@@ -64,9 +64,9 @@ public class FindReplaceAction extends SimulatorAction implements
      * of a given {@link JGraphPanel}.
      */
     private void addAsListener(ResourceDisplay display) {
-        GraphTab graphTab = (GraphTab) display.getMainTab();
-        graphTab.getJGraph().addGraphSelectionListener(this);
-        graphTab.getLabelTree().addTreeSelectionListener(this);
+        GraphJGraph jGraph = ((GraphTab) display.getMainTab()).getJGraph();
+        jGraph.addGraphSelectionListener(this);
+        jGraph.getLabelTree().addTreeSelectionListener(this);
     }
 
     @Override

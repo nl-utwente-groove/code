@@ -24,7 +24,6 @@ import groove.gui.Simulator;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.gui.menu.SetLayoutMenu;
-import groove.gui.tree.LabelTree;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -41,7 +40,7 @@ public class CtrlJGraph extends GraphJGraph {
      *        <code>null</code>.
      */
     public CtrlJGraph(Simulator simulator) {
-        super(simulator, true);
+        super(simulator);
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         getSetLayoutMenu().selectLayoutAction(
             createInitialLayouter().newInstance((this)));
@@ -82,12 +81,6 @@ public class CtrlJGraph extends GraphJGraph {
      */
     protected Layouter createInitialLayouter() {
         return new MyForestLayouter();
-    }
-
-    @Override
-    protected LabelTree createLabelTree() {
-        // no tool bar on the label tree
-        return new LabelTree(this, false, isFiltering());
     }
 
     /**

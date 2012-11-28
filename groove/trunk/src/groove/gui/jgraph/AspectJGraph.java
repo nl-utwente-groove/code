@@ -16,6 +16,9 @@
  */
 package groove.gui.jgraph;
 
+import static groove.gui.Options.SHOW_ASPECTS_OPTION;
+import static groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
+import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
 import groove.graph.Edge;
@@ -37,7 +40,9 @@ import groove.view.aspect.AspectGraph;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
 import java.awt.geom.Point2D;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,6 +52,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.accessibility.AccessibleState;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -71,7 +77,7 @@ final public class AspectJGraph extends GraphJGraph {
      * @param editing if {@code true}, the graph is editable
      */
     public AspectJGraph(Simulator simulator, DisplayKind kind, boolean editing) {
-        super(simulator, !editing && kind != DisplayKind.RULE);
+        super(simulator);
         this.editing = editing;
         this.forState = kind == DisplayKind.STATE;
         this.graphRole = this.forState ? GraphRole.HOST : kind.getGraphRole();
@@ -80,6 +86,14 @@ final public class AspectJGraph extends GraphJGraph {
         setCloneable(editing);
         setConnectable(editing);
         setDisconnectable(editing);
+    }
+
+    @Override
+    protected void installListeners() {
+        super.installListeners();
+        addOptionListener(SHOW_ASPECTS_OPTION);
+        addOptionListener(SHOW_VALUE_NODES_OPTION);
+        addOptionListener(SHOW_BIDIRECTIONAL_EDGES_OPTION);
     }
 
     @Override
@@ -116,6 +130,13 @@ final public class AspectJGraph extends GraphJGraph {
     }
 
     /**
+     * Indicates whether aspect prefixes should be shown for nodes and edges.
+     */
+    public final boolean isShowBidirectionalEdges() {
+        return getOptionValue(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION);
+    }
+
+    /**
      * Indicates whether data nodes should be shown in the JGraph.
      * This is certainly the case if this model is editable.
      */
@@ -124,29 +145,29 @@ final public class AspectJGraph extends GraphJGraph {
             || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
     }
 
+    /* Makes sure the JGraph is rebuilt rather than just refreshed, if necessary. */
+    @Override
+    protected RefreshListener getRefreshListener(String option) {
+        if (option.equals(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION)) {
+            return new RebuildListener();
+        } else {
+            return super.getRefreshListener(option);
+        }
+    }
+
+    /** Sets a level tree for this JGraph. */
+    public void setLevelTree(RuleLevelTree levelTree) {
+        assert levelTree == null || getGraphRole() == GraphRole.RULE
+            && !hasActiveEditor();
+        this.levelTree = levelTree;
+    }
+
     /**
      * Lazily creates and returns the rule level tree associated
      * with this JGraph, if any.
      */
     public RuleLevelTree getLevelTree() {
-        if (this.levelTree == null && getGraphRole() == GraphRole.RULE
-            && !hasActiveEditor()) {
-            this.levelTree = createLevelTree();
-            // deselect the level tree whenever the graph
-            // selection changes
-            addGraphSelectionListener(new GraphSelectionListener() {
-                @Override
-                public void valueChanged(GraphSelectionEvent e) {
-                    AspectJGraph.this.levelTree.clearSelection();
-                }
-            });
-        }
         return this.levelTree;
-    }
-
-    /** Callback method to create the rule level tree. */
-    protected RuleLevelTree createLevelTree() {
-        return new RuleLevelTree(this);
     }
 
     @Override
@@ -820,6 +841,40 @@ final public class AspectJGraph extends GraphJGraph {
         @Override
         public void graphChanged(GraphModelEvent e) {
             refresh();
+        }
+    }
+
+    /** 
+     * Special listener for the show bidirectional edges option, for which a
+     * refresh is not enough, but a rebuild is required.
+     */
+    private class RebuildListener extends RefreshListener {
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            if (isEnabled()) {
+                rebuild();
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(
+                AccessibleState.ENABLED.toDisplayString())
+                && isEnabled()) {
+                rebuild();
+            }
+        }
+
+        /**
+         * Rebuilds the underlying {@link AspectJGraph} from its underlying graph,
+         * and then refreshes. This is necessary when the 'showBidirectionalEdges'
+         * option is changed.
+         */
+        private void rebuild() {
+            AspectJModel oldModel = getModel();
+            AspectJModel newModel =
+                oldModel.cloneWithNewGraph(oldModel.getGraph());
+            setModel(newModel);
         }
     }
 

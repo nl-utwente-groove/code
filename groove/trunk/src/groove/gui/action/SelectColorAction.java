@@ -54,12 +54,12 @@ public class SelectColorAction extends SimulatorAction implements
      */
     private void addAsListener(ResourceDisplay display) {
         assert display.getResourceKind().isGraphBased();
-        GraphTab mainTab = (GraphTab) display.getMainTab();
-        mainTab.getJGraph().addGraphSelectionListener(this);
+        GraphJGraph jGraph = ((GraphTab) display.getMainTab()).getJGraph();
+        jGraph.addGraphSelectionListener(this);
         if (this.label == null) {
-            checkJGraph(mainTab.getJGraph());
+            checkJGraph(jGraph);
         }
-        LabelTree labelTree = mainTab.getLabelTree();
+        LabelTree labelTree = jGraph.getLabelTree();
         labelTree.addTreeSelectionListener(this);
         if (this.label == null) {
             checkLabelTree(labelTree);

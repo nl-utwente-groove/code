@@ -17,26 +17,16 @@
 package groove.gui.display;
 
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
-import groove.gui.Options;
-import groove.gui.SimulatorModel;
-import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
-import groove.util.Pair;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.LinkedList;
-import java.util.List;
 
-import javax.accessibility.AccessibleState;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -58,12 +48,10 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      */
     public JGraphPanel(JG jGraph) {
         super(false);
-        this.simulatorModel = jGraph.getSimulatorModel();
         setFocusable(false);
         setFocusCycleRoot(true);
         // right now we always want label panels; keep this option
         this.jGraph = jGraph;
-        this.options = jGraph.getOptions();
     }
 
     /** 
@@ -82,7 +70,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     }
 
     /** Callback method that adds the required listeners to this panel. */
-    protected void installListeners() {
+    private void installListeners() {
         getJGraph().addJGraphModeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -105,7 +93,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
      * Lazily creates and returns the scroll pane within which the {@link JGraph}
      * is displayed.
      */
-    protected JScrollPane getScrollPane() {
+    private JScrollPane getScrollPane() {
         JScrollPane result = this.scrollPane;
         if (result == null) {
             result = this.scrollPane = new JScrollPane(getJGraph());
@@ -115,6 +103,11 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         }
         return result;
     }
+
+    /**
+     * The scroll pane in which the JGraph is displayed.
+     */
+    private JScrollPane scrollPane;
 
     /** Lazily creates and returns the status bar component of the panel. */
     public JLabel getStatusBar() {
@@ -127,6 +120,16 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         return result;
     }
 
+    /** Tests if the status bar has been initialised. */
+    private boolean hasStatusBar() {
+        return this.statusBar != null;
+    }
+
+    /**
+     * Panel for showing status messages
+     */
+    private JLabel statusBar;
+
     /**
      * Returns the underlying {@link GraphJGraph}.
      */
@@ -135,19 +138,9 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     }
 
     /**
-     * Changes the graph model displayed in this panel.
-     * Also enables the panel if the new model is not {@code null},
-     * and disables it otherwise.  
+     * The {@link GraphJGraph}on which this panel provides a view.
      */
-    public void setJModel(GraphJModel<?,?> jModel) {
-        boolean enabled = jModel != null;
-        if (jModel == getJGraph().getModel()) {
-            getJGraph().refreshAllCells();
-        } else {
-            getJGraph().setModel(jModel);
-        }
-        setEnabled(enabled);
-    }
+    private final JG jGraph;
 
     /**
      * Delegates the method to the content pane and to super.
@@ -159,7 +152,7 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         this.jGraph.setEnabled(enabled);
         getScrollPane().getHorizontalScrollBar().setEnabled(enabled);
         getScrollPane().getVerticalScrollBar().setEnabled(enabled);
-        if (getStatusBar() != null) {
+        if (hasStatusBar()) {
             getStatusBar().setEnabled(enabled);
         }
         super.setEnabled(enabled);
@@ -181,172 +174,11 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
         this.enabledBackground = enabledBackground;
     }
 
-    /**
-     * Readies the panel for garbage collection, in particular unregistering all
-     * listeners.
-     */
-    public void dispose() {
-        removeOptionListeners();
-    }
-
-    /**
-     * Adds a refresh listener to the menu item associated with for an option
-     * with a given name.
-     * @see #getRefreshListener()
-     */
-    protected void addRefreshListener(String option) {
-        if (option.equals(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION)) {
-            addOptionListener(option, new RebuildListener());
-        } else {
-            addOptionListener(option, getRefreshListener());
-        }
-    }
-
-    /**
-     * Returns the refresh listener for this panel. Lazily creates the listener.
-     */
-    protected final RefreshListener getRefreshListener() {
-        if (this.refreshListener == null) {
-            this.refreshListener = new RefreshListener();
-        }
-        return this.refreshListener;
-    }
-
-    /**
-     * Adds a listener to the menu item associated with for an option with a
-     * given name. Throws an exception if no such option was in the options
-     * object passed in at construction time.
-     */
-    private void addOptionListener(String option, RefreshListener listener) {
-        JMenuItem optionItem = getOptionsItem(option);
-        if (optionItem == null) {
-            throw new IllegalArgumentException(String.format(
-                "Unknown option: %s", option));
-        }
-        optionItem.addItemListener(listener);
-        optionItem.addPropertyChangeListener(listener);
-        this.listeners.add(Pair.newPair(optionItem, listener));
-    }
-
-    /**
-     * Removes all listeners added by
-     * {@link #addOptionListener(String, RefreshListener)}.
-     */
-    private void removeOptionListeners() {
-        for (Pair<JMenuItem,RefreshListener> record : this.listeners) {
-            record.one().removeItemListener(record.two());
-            record.one().removePropertyChangeListener(record.two());
-        }
-        this.listeners.clear();
-    }
-
-    /**
-     * Rebuilds the underlying {@link GraphJGraph} from its underlying graph,
-     * and then refreshes. This is necessary when the 'showBidirectionalEdges'
-     * option is changed.
-     */
-    protected void rebuild() {
-        GraphJModel<?,?> model = getJGraph().getModel();
-        if (model instanceof AspectJModel) {
-            AspectJModel oldModel = (AspectJModel) model;
-            AspectJModel newModel =
-                oldModel.cloneWithNewGraph(oldModel.getGraph());
-            getJGraph().setModel(newModel);
-        }
-    }
-
-    /**
-     * Returns the options object passed in at construction time.
-     */
-    protected final Options getOptions() {
-        return this.options;
-    }
-
-    /**
-     * Retrieves the options item for a given option name, creating it first if
-     * necessary.
-     */
-    protected JMenuItem getOptionsItem(String option) {
-        Options options = getOptions();
-        return options == null ? null : options.getItem(option);
-    }
-
-    /** Convenience method to retrieve the simulator model. */
-    protected final SimulatorModel getSimulatorModel() {
-        return this.simulatorModel;
-    }
-
-    private final SimulatorModel simulatorModel;
-    /**
-     * The {@link GraphJGraph}on which this panel provides a view.
-     */
-    private final JG jGraph;
     /** The background colour in case the panel is enabled. */
     private Color enabledBackground = Color.WHITE;
-    /** Options for this panel. */
-    private final Options options;
-    /** Change listener that refreshes the JGraph cells when activated. */
-    private RefreshListener refreshListener;
-
-    /**
-     * Panel for showing status messages
-     */
-    private JLabel statusBar;
-
-    private final List<Pair<JMenuItem,RefreshListener>> listeners =
-        new LinkedList<Pair<JMenuItem,RefreshListener>>();
-    /**
-     * The scroll pane in which the JGraph is displayed.
-     */
-    private JScrollPane scrollPane;
-
     /**
      * The minimum width of the label pane. If the label list is empty, the
      * preferred width is set to the minimum width.
      */
     public final static int MINIMUM_LABEL_PANE_WIDTH = 100;
-
-    private class RefreshListener implements ItemListener,
-            PropertyChangeListener {
-        public void itemStateChanged(ItemEvent e) {
-            if (isEnabled()) {
-                getJGraph().getModel().refreshVisuals();
-                getJGraph().refreshAllCells();
-            }
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(
-                AccessibleState.ENABLED.toDisplayString())) {
-                if (isEnabled()) {
-                    getJGraph().getModel().refreshVisuals();
-                    getJGraph().refreshAllCells();
-                }
-            }
-        }
-    }
-
-    /** 
-     * Special listener for the show bidirectional edges option, for which a
-     * refresh() is not enough, but a rebuild is required.
-     */
-    private class RebuildListener extends RefreshListener {
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-            if (isEnabled()) {
-                rebuild();
-            }
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(
-                AccessibleState.ENABLED.toDisplayString())) {
-                if (isEnabled()) {
-                    rebuild();
-                }
-            }
-        }
-    }
 }

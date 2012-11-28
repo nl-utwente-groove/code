@@ -16,9 +16,6 @@
  */
 package groove.gui.display;
 
-import static groove.gui.Options.SHOW_ASPECTS_OPTION;
-import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
-import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
 import groove.algebra.Algebras;
@@ -107,7 +104,6 @@ final public class GraphEditorTab extends ResourceTab implements
     public GraphEditorTab(ResourceDisplay parent, final GraphRole role) {
         super(parent);
         this.role = role;
-        this.jgraph = new AspectJGraph(getSimulator(), parent.getKind(), true);
         setFocusCycleRoot(true);
         // start is called from the constructor;
         // this may go wrong in case of subclassing
@@ -319,8 +315,19 @@ final public class GraphEditorTab extends ResourceTab implements
 
     /** Returns the jgraph component of this editor. */
     public AspectJGraph getJGraph() {
-        return this.jgraph;
+        AspectJGraph result = this.jgraph;
+        if (result == null) {
+            result =
+                this.jgraph =
+                    new AspectJGraph(getSimulator(), getDisplay().getKind(),
+                        true);
+            result.setLabelTree(new LabelTree(getJGraph(), false, false));
+        }
+        return result;
     }
+
+    /** The jgraph instance used in this editor. */
+    private AspectJGraph jgraph;
 
     /**
      * @return the j-model currently being edited, or <tt>null</tt> if no editor
@@ -366,8 +373,7 @@ final public class GraphEditorTab extends ResourceTab implements
         super.dispose();
         // unregister listeners
         getSnapToGridAction().removeSnapListener(this);
-        getJGraph().removeFromListeners();
-        getEditArea().dispose();
+        getJGraph().removeListeners();
     }
 
     /** Initialises the graph selection listener and attributed graph listener. */
@@ -442,19 +448,18 @@ final public class GraphEditorTab extends ResourceTab implements
 
     @Override
     protected JGraphPanel<?> getEditArea() {
-        if (this.jGraphPanel == null) {
-            JGraphPanel<?> result =
-                this.jGraphPanel =
-                    new JGraphPanel<AspectJGraph>(getJGraph());
+        JGraphPanel<?> result = this.editArea;
+        if (result == null) {
+            result = this.editArea = new JGraphPanel<AspectJGraph>(getJGraph());
             result.setEnabledBackground(JAttr.EDITOR_BACKGROUND);
             result.initialise();
-            result.addRefreshListener(SHOW_NODE_IDS_OPTION);
-            result.addRefreshListener(SHOW_VALUE_NODES_OPTION);
-            result.addRefreshListener(SHOW_ASPECTS_OPTION);
             result.setEnabled(true);
         }
-        return this.jGraphPanel;
+        return result;
     }
+
+    /** The jgraph panel used in this editor. */
+    private JGraphPanel<AspectJGraph> editArea;
 
     @Override
     protected JComponent getUpperInfoPanel() {
@@ -478,6 +483,9 @@ final public class GraphEditorTab extends ResourceTab implements
         return result;
     }
 
+    /** Label panel of this tab. */
+    private JTabbedPane upperInfoPanel;
+
     private TitledPanel getLabelPanel() {
         TitledPanel result = this.labelPanel;
         if (result == null) {
@@ -491,6 +499,9 @@ final public class GraphEditorTab extends ResourceTab implements
         }
         return result;
     }
+
+    /** Label panel of this tab. */
+    private TitledPanel labelPanel;
 
     private PropertiesTable getPropertiesPanel() {
         PropertiesTable result = this.propertiesPanel;
@@ -512,6 +523,9 @@ final public class GraphEditorTab extends ResourceTab implements
         return result;
     }
 
+    /** Properties panel of this tab. */
+    private PropertiesTable propertiesPanel;
+
     @Override
     protected JComponent getLowerInfoPanel() {
         JComponent result = this.syntaxHelp;
@@ -521,84 +535,8 @@ final public class GraphEditorTab extends ResourceTab implements
         return result;
     }
 
-    /**
-     * Updates the Undo/Redo Button State based on Undo Manager. Also sets
-     * {@link #isDirty()} if no more undos are available.
-     */
-    private void updateHistoryButtons() {
-        getUndoAction().setEnabled(getUndoManager().canUndo());
-        getRedoAction().setEnabled(getUndoManager().canRedo());
-        updateDirty();
-    }
-
-    /** Sets the enabling of the transfer buttons. */
-    private void updateCopyPasteButtons() {
-        boolean previewing = getJGraph().getMode() == PREVIEW_MODE;
-        boolean hasSelection = !getJGraph().isSelectionEmpty();
-        getCopyAction().setEnabled(!previewing && hasSelection);
-        getCutAction().setEnabled(!previewing && hasSelection);
-        getDeleteAction().setEnabled(!previewing && hasSelection);
-        getPasteAction().setEnabled(!previewing && clipboardFilled);
-    }
-
-    /**
-     * Returns the button for setting selection mode, lazily creating it first.
-     */
-    private JToggleButton getSnapToGridButton() {
-        if (this.snapToGridButton == null) {
-            this.snapToGridButton = new JToggleButton(getSnapToGridAction());
-            this.snapToGridButton.setFocusable(false);
-            this.snapToGridButton.setText(null);
-        }
-        return this.snapToGridButton;
-    }
-
-    /** Refreshes the snap-to-grid status of this editor tab. */
-    public void setSnapToGrid() {
-        boolean snap = getSnapToGridAction().getSnap();
-        getSnapToGridButton().setSelected(snap);
-        getJGraph().setGridEnabled(snap);
-        getJGraph().setGridVisible(snap);
-    }
-
-    /**
-     * Updates the observers
-     * with information about the currently edited graph.
-     */
-    private void updateStatus() {
-        updateCopyPasteButtons();
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                updateErrors();
-            }
-        });
-        updateDirty();
-        getTabLabel().setError(hasErrors());
-    }
-
-    /** Undoes the last registered change to the Model or the View. */
-    private void undoLastEdit() {
-        setSelectInsertedCells(false);
-        getUndoManager().undo();
-        this.dirtCount--;
-        setSelectInsertedCells(true);
-        updateHistoryButtons();
-    }
-
-    /** Redoes the latest undone change to the Model or the View. */
-    private void redoLastEdit() {
-        setSelectInsertedCells(false);
-        getUndoManager().redo();
-        this.dirtCount++;
-        setSelectInsertedCells(true);
-        updateHistoryButtons();
-    }
-
-    /** Sets the property whether all inserted cells are automatically selected. */
-    private void setSelectInsertedCells(boolean select) {
-        this.jgraph.getGraphLayoutCache().setSelectsAllInsertedCells(select);
-    }
+    /** Syntax help panel. */
+    private JComponent syntaxHelp;
 
     /** Creates and returns a panel for the syntax descriptions. */
     private JComponent createSyntaxHelp() {
@@ -727,6 +665,85 @@ final public class GraphEditorTab extends ResourceTab implements
         }
     }
 
+    /**
+     * Updates the Undo/Redo Button State based on Undo Manager. Also sets
+     * {@link #isDirty()} if no more undos are available.
+     */
+    private void updateHistoryButtons() {
+        getUndoAction().setEnabled(getUndoManager().canUndo());
+        getRedoAction().setEnabled(getUndoManager().canRedo());
+        updateDirty();
+    }
+
+    /** Sets the enabling of the transfer buttons. */
+    private void updateCopyPasteButtons() {
+        boolean previewing = getJGraph().getMode() == PREVIEW_MODE;
+        boolean hasSelection = !getJGraph().isSelectionEmpty();
+        getCopyAction().setEnabled(!previewing && hasSelection);
+        getCutAction().setEnabled(!previewing && hasSelection);
+        getDeleteAction().setEnabled(!previewing && hasSelection);
+        getPasteAction().setEnabled(!previewing && clipboardFilled);
+    }
+
+    /**
+     * Returns the button for setting selection mode, lazily creating it first.
+     */
+    private JToggleButton getSnapToGridButton() {
+        if (this.snapToGridButton == null) {
+            this.snapToGridButton = new JToggleButton(getSnapToGridAction());
+            this.snapToGridButton.setFocusable(false);
+            this.snapToGridButton.setText(null);
+        }
+        return this.snapToGridButton;
+    }
+
+    /** Refreshes the snap-to-grid status of this editor tab. */
+    public void setSnapToGrid() {
+        boolean snap = getSnapToGridAction().getSnap();
+        getSnapToGridButton().setSelected(snap);
+        getJGraph().setGridEnabled(snap);
+        getJGraph().setGridVisible(snap);
+    }
+
+    /**
+     * Updates the observers
+     * with information about the currently edited graph.
+     */
+    private void updateStatus() {
+        updateCopyPasteButtons();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                updateErrors();
+            }
+        });
+        updateDirty();
+        getTabLabel().setError(hasErrors());
+    }
+
+    /** Undoes the last registered change to the Model or the View. */
+    private void undoLastEdit() {
+        setSelectInsertedCells(false);
+        getUndoManager().undo();
+        this.dirtCount--;
+        setSelectInsertedCells(true);
+        updateHistoryButtons();
+    }
+
+    /** Redoes the latest undone change to the Model or the View. */
+    private void redoLastEdit() {
+        setSelectInsertedCells(false);
+        getUndoManager().redo();
+        this.dirtCount++;
+        setSelectInsertedCells(true);
+        updateHistoryButtons();
+    }
+
+    /** Sets the property whether all inserted cells are automatically selected. */
+    private void setSelectInsertedCells(boolean select) {
+        this.jgraph.getGraphLayoutCache().setSelectsAllInsertedCells(select);
+    }
+
     /** Mapping from syntax documentation items to corresponding tool tips. */
     private Map<String,String> docMap;
     private Set<String> nodeKeys;
@@ -735,20 +752,6 @@ final public class GraphEditorTab extends ResourceTab implements
     /** Button for snap to grid. */
     transient JToggleButton snapToGridButton;
 
-    /** The jgraph instance used in this editor. */
-    private final AspectJGraph jgraph;
-
-    /** The jgraph panel used in this editor. */
-    private JGraphPanel<AspectJGraph> jGraphPanel;
-
-    /** Label panel of this tab. */
-    private JTabbedPane upperInfoPanel;
-    /** Properties panel of this tab. */
-    private PropertiesTable propertiesPanel;
-    /** Label panel of this tab. */
-    private TitledPanel labelPanel;
-    /** Syntax help panel. */
-    private JComponent syntaxHelp;
     /** 
      * The number of edit steps the editor state is removed
      * from a saved graph.

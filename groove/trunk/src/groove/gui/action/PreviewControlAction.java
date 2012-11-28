@@ -6,6 +6,7 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.gui.jgraph.CtrlJGraph;
+import groove.gui.tree.LabelTree;
 import groove.trans.GraphGrammar;
 import groove.trans.ResourceKind;
 import groove.view.ControlModel;
@@ -51,6 +52,7 @@ public class PreviewControlAction extends SimulatorAction {
         if (this.jGraph == null) {
             this.jGraph = new CtrlJGraph(getSimulator());
             this.jGraph.setModel(getCtrlAut());
+            this.jGraph.setLabelTree(new LabelTree(this.jGraph, false, true));
             this.jGraph.getLayouter().start(true);
         }
         return this.jGraph;

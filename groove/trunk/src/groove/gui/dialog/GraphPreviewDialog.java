@@ -108,14 +108,14 @@ public class GraphPreviewDialog extends JDialog {
                     DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
                 jGraph = new AspectJGraph(this.simulator, kind, false);
             } else {
-                jGraph = new GraphJGraph(this.simulator, false);
+                jGraph = new GraphJGraph(this.simulator);
             }
             break;
         case LTS:
             jGraph = new LTSJGraph(this.simulator);
             break;
         default:
-            jGraph = new GraphJGraph(this.simulator, false);
+            jGraph = new GraphJGraph(this.simulator);
         }
         GraphJModel<?,?> model = jGraph.getFactory().newModel();
         model.loadGraph((Graph) this.graph);

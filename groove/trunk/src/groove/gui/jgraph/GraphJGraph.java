@@ -16,11 +16,14 @@
  */
 package groove.gui.jgraph;
 
+import static groove.gui.Options.SHOW_ANCHORS_OPTION;
+import static groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
+import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
 import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Node;
@@ -42,12 +45,15 @@ import groove.gui.menu.ShowHideMenu;
 import groove.gui.menu.ZoomMenu;
 import groove.gui.tree.LabelTree;
 import groove.trans.SystemProperties;
+import groove.util.Pair;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -56,6 +62,7 @@ import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,12 +72,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.accessibility.AccessibleState;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -107,15 +113,13 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 public class GraphJGraph extends org.jgraph.JGraph {
     /**
      * Constructs a JGraph for a given simulator.
-     * @param simulator simulator to which the JGraph belongs.
-     * @param filtering indicates if this JGraph is to use label filtering.
+     * @param simulator simulator to which the JGraph belongs; may be {@code null}
      */
-    public GraphJGraph(Simulator simulator, boolean filtering) {
+    public GraphJGraph(Simulator simulator) {
         super((GraphJModel<?,?>) null);
         this.simulator = simulator;
         this.options =
             simulator == null ? new Options() : simulator.getOptions();
-        this.filtering = filtering;
         // make sure the layout cache has been created
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setMarqueeHandler(createMarqueeHandler());
@@ -123,31 +127,44 @@ public class GraphJGraph extends org.jgraph.JGraph {
         setPortsVisible(false);
         // Save edits to a cell whenever something else happens
         setInvokesStopCellEditing(true);
+        setEditable(false);
+        setConnectable(false);
+        setDisconnectable(false);
+        installListeners();
+    }
+
+    /**
+     * Installs listeners to this JGraph,
+     * and installs this JGraph as listener.
+     */
+    protected void installListeners() {
         addMouseListener(new MyMouseListener());
         addKeyListener(getCancelEditListener());
         getSelectionModel().addGraphSelectionListener(
             new MyGraphSelectionListener());
-        setEditable(false);
-        setConnectable(false);
-        setDisconnectable(false);
+        addOptionListener(SHOW_NODE_IDS_OPTION);
+        addOptionListener(SHOW_UNFILTERED_EDGES_OPTION);
+        addOptionListener(SHOW_ANCHORS_OPTION);
+        addOptionListener(SHOW_ARROWS_ON_LABELS_OPTION);
+    }
+
+    /**
+     * Removes this {@link JGraph} as listener,
+     * so as to avoid memory leaks. 
+     */
+    public void removeListeners() {
+        getActions().removeRefreshable(getExportAction());
+        for (Pair<JMenuItem,RefreshListener> record : this.optionListeners) {
+            record.one().removeItemListener(record.two());
+            record.one().removePropertyChangeListener(record.two());
+        }
+        this.optionListeners.clear();
+        this.exportAction = null;
     }
 
     /** Returns the graph role of the graphs expected for this JGraph. */
     public GraphRole getGraphRole() {
         return GraphRole.NONE;
-    }
-
-    /** Indicates if the JGraph allows filtering of labels. */
-    final public boolean isFiltering() {
-        return this.filtering;
-    }
-
-    /**
-     * Indicates if a given graph element is currently being filtered from view. This is
-     * the case if it is in the set of filtered labels.
-     */
-    public boolean isFiltering(Element jCellKey) {
-        return getLabelTree().isFiltered(jCellKey);
     }
 
     /** Returns the object holding the display options for this {@link GraphJGraph}. */
@@ -166,10 +183,47 @@ public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * Indicates whether aspect prefixes should be shown for nodes and edges.
+     * Adds a refresh listener to the menu item of an option
+     * with a given name.
+     * @see #getRefreshListener
+     */
+    public void addOptionListener(String option) {
+        JMenuItem optionItem = getOptions().getItem(option);
+        if (optionItem == null) {
+            throw new IllegalArgumentException(String.format(
+                "Unknown option: %s", option));
+        }
+        RefreshListener listener = getRefreshListener(option);
+        if (listener != null) {
+            optionItem.addItemListener(listener);
+            optionItem.addPropertyChangeListener(listener);
+            this.optionListeners.add(Pair.newPair(optionItem, listener));
+        }
+    }
+
+    private final List<Pair<JMenuItem,RefreshListener>> optionListeners =
+        new LinkedList<Pair<JMenuItem,RefreshListener>>();
+
+    /**
+     * Returns the refresh listener for a given option.
+     * @return the refresh listener, or {@code null} if this JGraph doesn't
+     * not need refreshing for a given option.
+     */
+    protected RefreshListener getRefreshListener(String option) {
+        if (this.refreshListener == null) {
+            this.refreshListener = new RefreshListener();
+        }
+        return this.refreshListener;
+    }
+
+    /** Change listener that refreshes the JGraph cells when activated. */
+    private RefreshListener refreshListener;
+
+    /**
+     * Indicates whether node identities should be shown on node labels.
      */
     public boolean isShowNodeIdentities() {
-        return getOptionValue(Options.SHOW_NODE_IDS_OPTION);
+        return getOptionValue(SHOW_NODE_IDS_OPTION);
     }
 
     /**
@@ -177,14 +231,14 @@ public class GraphJGraph extends org.jgraph.JGraph {
      * visible.
      */
     public boolean isShowUnfilteredEdges() {
-        return getOptionValue(Options.SHOW_UNFILTERED_EDGES_OPTION);
+        return getOptionValue(SHOW_UNFILTERED_EDGES_OPTION);
     }
 
     /**
      * Indicates whether anchors should be shown in the rule and lts views.
      */
     public boolean isShowAnchors() {
-        return getOptionValue(Options.SHOW_ANCHORS_OPTION);
+        return getOptionValue(SHOW_ANCHORS_OPTION);
     }
 
     /**
@@ -199,7 +253,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
      * on edges. 
      */
     public boolean isShowArrowsOnLabels() {
-        return getOptionValue(Options.SHOW_ARROWS_ON_LABELS_OPTION);
+        return getOptionValue(SHOW_ARROWS_ON_LABELS_OPTION);
     }
 
     /** 
@@ -777,14 +831,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
         removePropertyChangeListener(JGRAPH_MODE_PROPERTY, listener);
     }
 
-    /** Removes this {@link JGraph} from all its listeners,
-     * so as to avoid memory leaks. 
-     */
-    public void removeFromListeners() {
-        getActions().removeRefreshable(getExportAction());
-        this.exportAction = null;
-    }
-
     /**
      * Sets the JGraph mode to a new value.
      * Fires a property change event for {@link #JGRAPH_MODE_PROPERTY} if the
@@ -855,26 +901,19 @@ public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /**
-     * Lazily creates and returns the label list associated with this jgraph.
+     * Associates a label tree with this JGraph.
+     * Note: this method is called from the label tree constructor.
      */
-    public LabelTree getLabelTree() {
-        if (this.labelTree == null) {
-            this.labelTree = createLabelTree();
-            this.labelTree.getFilter().addObserver(new Observer() {
-                /** The method is called when a filtered set is changed. */
-                @SuppressWarnings({"unchecked"})
-                public void update(Observable o, Object arg) {
-                    assert arg instanceof Set;
-                    refreshCells((Set<GraphJCell>) arg);
-                }
-            });
-        }
-        return this.labelTree;
+    public void setLabelTree(LabelTree labelTree) {
+        this.labelTree = labelTree;
     }
 
-    /** Callback method to create the label tree. */
-    protected LabelTree createLabelTree() {
-        return new LabelTree(this, true, this.filtering);
+    /**
+     * Returns the label tree associated with this JGraph.
+     * @return the associated label tree, or {@code null} if there is none
+     */
+    public LabelTree getLabelTree() {
+        return this.labelTree;
     }
 
     /** 
@@ -951,6 +990,11 @@ public class GraphJGraph extends org.jgraph.JGraph {
      */
     protected JGraphLayoutCache createGraphLayoutCache() {
         return new JGraphLayoutCache(createViewFactory());
+    }
+
+    /** Creates the view factory for this jGraph. */
+    protected JCellViewFactory createViewFactory() {
+        return new JCellViewFactory(this);
     }
 
     /**
@@ -1071,7 +1115,9 @@ public class GraphJGraph extends org.jgraph.JGraph {
             }
             itemAdded = true;
         }
-        if (isFiltering() && cells != null && cells.length > 0) {
+        LabelTree labelTree = getLabelTree();
+        if (labelTree != null && labelTree.isFiltering() && cells != null
+            && cells.length > 0) {
             result.add(getLabelTree().createFilterAction(cells));
             itemAdded = true;
         }
@@ -1263,7 +1309,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     }
 
     /** Returns the visual refresher used for a given visual key. */
-    final protected VisualValue<?> getVisualValue(VisualKey key) {
+    final public VisualValue<?> getVisualValue(VisualKey key) {
         VisualValue<?> result = this.visualValueMap.get(key);
         if (result == null) {
             this.visualValueMap.put(key,
@@ -1279,9 +1325,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
     private final Simulator simulator;
     /** The options object with which this {@link GraphJGraph} was constructed. */
     private final Options options;
-    /** Flag indicating if the JGraph is filtering labels. */
-    private final boolean filtering;
-
     /** The manipulation mode of the JGraph. */
     private JGraphMode mode;
     private CancelEditListener cancelListener;
@@ -1329,7 +1372,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
     @SuppressWarnings({"unchecked", "rawtypes"})
     static public GraphJGraph createJGraph(Graph<?,?> graph,
             AttributeFactory factory) {
-        GraphJGraph result = new GraphJGraph(null, false);
+        GraphJGraph result = new GraphJGraph(null);
         GraphJModel<?,?> jModel = result.newModel();
         jModel.loadGraph((Graph) graph);
         result.setModel(jModel);
@@ -1366,11 +1409,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
         }
     }
 
-    /** Creates the view factory for this jGraph. */
-    protected JCellViewFactory createViewFactory() {
-        return new JCellViewFactory(this);
-    }
-
     /**
      * Mouse listener that creates the popup menu and adds and deletes points on
      * appropriate events.
@@ -1404,6 +1442,33 @@ public class GraphJGraph extends org.jgraph.JGraph {
                     jCell.putVisual(VisualKey.EMPHASIS, e.isAddedCell(i));
                 }
             }
+        }
+    }
+
+    /**
+     * Listener that causes all cells of this JGraph to be refreshed
+     * on activation.
+     */
+    protected class RefreshListener implements ItemListener,
+            PropertyChangeListener {
+        public void itemStateChanged(ItemEvent e) {
+            if (isEnabled()) {
+                doRefresh();
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(
+                AccessibleState.ENABLED.toDisplayString())
+                && isEnabled()) {
+                doRefresh();
+            }
+        }
+
+        private void doRefresh() {
+            getModel().refreshVisuals();
+            refreshAllCells();
         }
     }
 

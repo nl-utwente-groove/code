@@ -701,7 +701,7 @@ public class Simulator implements SimulatorListener {
                     add(jGraph.createZoomMenu());
                 } else {
                     // create a dummy JGraph to add the rest of the menu
-                    jGraph = new GraphJGraph(null, false);
+                    jGraph = new GraphJGraph(null);
                 }
                 jGraph.addSubmenu(this, createOptionsMenu());
                 super.menuSelectionChanged(selected);

@@ -139,17 +139,6 @@ public class GraphJVertex extends AbstractJCell {
     /** Set of graph edges mapped to this JEdge. */
     private Set<Edge> edges = new TreeSet<Edge>();
 
-    /** 
-     * Tests if a given edge is currently being filtered.
-     * This is the case if at least one of the list labels on it
-     * (as returned by {@link #getKeys()})
-     * is being filtered.
-     */
-    final protected boolean isFiltered(Edge edge) {
-        Edge key = getKey(edge);
-        return key != null && getJGraph().isFiltering(key);
-    }
-
     /**
      * This implementation returns a special constant label in case the node is
      * a constant, followed by the self-edge labels and data-edge labels; or
