@@ -29,6 +29,7 @@ import groove.gui.Options;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
 import groove.gui.look.VisualMap;
+import groove.trans.ResourceKind;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Derived;
 import groove.util.Groove;
@@ -135,10 +136,12 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         for (AspectJCell root : getRoots()) {
             root.saveToUserObject();
         }
-        loadViewErrors();
         this.properties = GraphInfo.getProperties(graph, false);
         this.jModelModCount.increase();
         this.graphModCount.increase();
+        // load the errors after increasing the modification counts,
+        // as otherwise the resource is refreshed more often than necessary
+        loadViewErrors();
         setLoading(false);
     }
 
@@ -522,7 +525,15 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         new Derived<GraphBasedModel<?>>(this.graphModCount) {
             @Override
             protected GraphBasedModel<?> computeValue() {
-                return getGrammar().createGraphModel(getGraph());
+                GraphBasedModel<?> result = null;
+                if (!getJGraph().isEditable() || getJGraph().isForState()) {
+                    result = getGrammar().createGraphModel(getGraph());
+                } else {
+                    ResourceKind kind =
+                        ResourceKind.toResource(getJGraph().getGraphRole());
+                    result = getGrammar().getGraphResource(kind, getName());
+                }
+                return result;
             }
         };
 
