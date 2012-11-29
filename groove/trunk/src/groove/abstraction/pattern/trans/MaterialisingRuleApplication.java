@@ -19,9 +19,7 @@ package groove.abstraction.pattern.trans;
 import groove.abstraction.pattern.match.PreMatch;
 import groove.abstraction.pattern.shape.PatternShape;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Application of a matched pattern graph transformation rule.
@@ -41,18 +39,7 @@ public final class MaterialisingRuleApplication {
 
     /** Executes the rule application and returns the result. */
     public Collection<PatternShape> transform() {
-        List<PatternShape> result = new ArrayList<PatternShape>();
-        for (Materialisation mat : Materialisation.getMaterialisations(
-            this.pShape, this.match)) {
-            result.add(applyMatch(mat));
-        }
-        return result;
+        return Materialisation.getMaterialisations(this.pShape, this.match);
     }
 
-    /** Executes the rule application for the given materialisation. */
-    public static PatternShape applyMatch(Materialisation mat) {
-        PatternGraphRuleApplication app =
-            new PatternGraphRuleApplication(mat.getShape(), mat.getMatch());
-        return (PatternShape) app.transform(true);
-    }
 }

@@ -168,7 +168,9 @@ public final class PatternShape extends PatternGraph {
                     Multiplicity dMult = getMult(dEdge);
                     acc = acc.add(srcMult.times(dMult));
                 }
-                if (!pMult.equals(acc.toNodeKind())) {
+                // EZ says: equality is too strong! The definition is wrong.
+                // if (!pMult.equals(acc.toNodeKind())) {
+                if (!pMult.subsumes(acc.toNodeKind())) {
                     return false;
                 }
             }

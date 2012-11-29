@@ -37,6 +37,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Common implementation of pattern graphs.
@@ -473,8 +475,8 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
      * Returns the set of pattern nodes that are reachable from the ones given
      * on the list. Elements of the list are also included in the result set. 
      */
-    private Set<N> getDownwardTraversal(List<N> toTraverse) {
-        Set<N> result = new MyHashSet<N>();
+    public SortedSet<N> getDownwardTraversal(List<N> toTraverse) {
+        SortedSet<N> result = new TreeSet<N>(AbstractPatternNode.comparator);
         while (!toTraverse.isEmpty()) {
             N node = toTraverse.remove(toTraverse.size() - 1);
             if (!result.contains(node)) {
@@ -491,7 +493,7 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
      * Returns the set of pattern nodes that are reachable from the ones given
      * on the list. Elements of the list are also included in the result set. 
      */
-    public Set<N> getDownwardTraversal(N node) {
+    public SortedSet<N> getDownwardTraversal(N node) {
         List<N> toTraverse = new LinkedList<N>();
         toTraverse.add(node);
         return getDownwardTraversal(toTraverse);

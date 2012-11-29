@@ -205,8 +205,7 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
             // The node may already be deleted by a domino removal.
             return false;
         }
-        Set<PatternNode> toDelete = getDownwardTraversal(node);
-        for (PatternNode delNode : toDelete) {
+        for (PatternNode delNode : getDownwardTraversal(node)) {
             assert isUniquelyCovered(delNode);
             removeNode(delNode);
         }
