@@ -117,8 +117,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     protected JComponent createInfoPanel() {
         LabelTree labelTree = getLabelTree();
         TitledPanel result =
-            new TitledPanel("Transition labels", labelTree,
-                labelTree.createToolBar(), true);
+            new TitledPanel("Transition labels", labelTree, null, true);
         result.setEnabledBackground(JAttr.STATE_BACKGROUND);
         return result;
     }
@@ -288,7 +287,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     private LabelTree getLabelTree() {
         LabelTree result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new LabelTree(getJGraph(), false, true);
+            result = this.labelTree = new LabelTree(getJGraph(), true);
         }
         return result;
     }

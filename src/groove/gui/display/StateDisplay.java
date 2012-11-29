@@ -264,7 +264,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     private LabelTree getLabelTree() {
         LabelTree result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new LabelTree(getJGraph(), false, true);
+            result = this.labelTree = new LabelTree(getJGraph(), true);
         }
         return result;
     }

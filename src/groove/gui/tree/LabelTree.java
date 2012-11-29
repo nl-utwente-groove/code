@@ -93,14 +93,12 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      * Constructs a label list associated with a given jgraph. A further
      * parameter indicates if the label tree should support subtypes.
      * @param jGraph the jgraph with which this list is to be associated
-     * @param toolBar if {@code true}, the panel should have a tool bar
      * @param filtering if {@code true}, the panel has checkboxes to filter labels
      */
-    public LabelTree(GraphJGraph jGraph, boolean toolBar, boolean filtering) {
+    public LabelTree(GraphJGraph jGraph, boolean filtering) {
         this.jGraph = jGraph;
         this.labelFilter = new LabelFilter();
         this.filtering = filtering;
-        this.toolBar = toolBar;
         // make sure tool tips get displayed
         ToolTipManager.sharedInstance().registerComponent(this);
         setEnabled(jGraph.isEnabled());
@@ -149,19 +147,16 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
 
     /** Creates a tool bar for the label tree. */
     public JToolBar createToolBar() {
-        JToolBar result = null;
-        if (this.toolBar) {
-            result = Options.createToolBar();
-            result.add(getShowSubtypesButton());
-            result.add(getShowSupertypesButton());
-            result.addSeparator();
-            result.add(getShowAllLabelsButton());
-            result.add(getCollapseAllButton());
-            // put the sub- and supertype buttons in a button group
-            ButtonGroup modeButtonGroup = new ButtonGroup();
-            modeButtonGroup.add(getShowSubtypesButton());
-            modeButtonGroup.add(getShowSupertypesButton());
-        }
+        JToolBar result = Options.createToolBar();
+        result.add(getShowSubtypesButton());
+        result.add(getShowSupertypesButton());
+        result.addSeparator();
+        result.add(getShowAllLabelsButton());
+        result.add(getCollapseAllButton());
+        // put the sub- and supertype buttons in a button group
+        ButtonGroup modeButtonGroup = new ButtonGroup();
+        modeButtonGroup.add(getShowSubtypesButton());
+        modeButtonGroup.add(getShowSupertypesButton());
         return result;
     }
 
@@ -705,8 +700,6 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     private GraphJModel<?,?> jModel;
     /** The type graph in the model, if any. */
     private TypeGraph typeGraph;
-    /** Flag indicating if a tool bar should be used. */
-    private final boolean toolBar;
     /** Flag indicating if label filtering should be used. */
     private final boolean filtering;
     /** Set of filtered labels. */
