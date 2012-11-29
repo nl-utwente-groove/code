@@ -526,7 +526,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
             @Override
             protected GraphBasedModel<?> computeValue() {
                 GraphBasedModel<?> result = null;
-                if (!getJGraph().isEditable() || getJGraph().isForState()) {
+                if (getJGraph().isEditable() || getJGraph().isForState()) {
                     result = getGrammar().createGraphModel(getGraph());
                 } else {
                     ResourceKind kind =

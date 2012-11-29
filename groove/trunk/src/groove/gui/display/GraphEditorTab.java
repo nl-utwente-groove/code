@@ -130,6 +130,7 @@ final public class GraphEditorTab extends ResourceTab implements
         newModel.addGraphModelListener(this);
         setClean();
         getUndoManager().discardAllEdits();
+        updateStatus();
         updateHistoryButtons();
     }
 
