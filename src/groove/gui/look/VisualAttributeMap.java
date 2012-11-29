@@ -283,7 +283,7 @@ public class VisualAttributeMap extends AttributeMap {
                 value =
                     new String[] {(String) value,
                         this.visuals.getEdgeTargetLabel()};
-                if (!containsKey(GraphConstants.EXTRALABELPOSITIONS)) {
+                if (!super.containsKey(GraphConstants.EXTRALABELPOSITIONS)) {
                     super.put(GraphConstants.EXTRALABELPOSITIONS,
                         EXTRA_LABEL_POSITIONS);
                 }
