@@ -147,6 +147,9 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
                 setLook(Look.REGULAR, true);
             }
         }
+        if (edge.isComposite()) {
+            setLook(Look.COMPOSITE, true);
+        }
         getErrors().addErrors(edge.getErrors(), true);
         setStale(VisualKey.ERROR);
     }
