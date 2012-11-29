@@ -16,23 +16,27 @@
  */
 package groove.abstraction.pattern.trans;
 
+import groove.abstraction.Multiplicity;
+import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.PreMatch;
+import groove.abstraction.pattern.shape.PatternEdge;
+import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.shape.PatternShape;
-import groove.abstraction.pattern.shape.PatternShapeMorphism;
+import groove.abstraction.pattern.shape.TypeEdge;
+import groove.abstraction.pattern.shape.TypeNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Materialisation of pattern shapes.
  * 
  * @author Eduardo Zambon
  */
-@SuppressWarnings("all")
 public final class Materialisation {
-
-    private static final boolean USE_GUI = false;
 
     // ------------------------------------------------------------------------
     // Static methods
@@ -41,18 +45,16 @@ public final class Materialisation {
     /**
      * Constructs and returns the set of all possible materialisations of the
      * given shape and pre-match. This method resolves all non-determinism
-     * in the materialisation phase, so the shapes in the returned
-     * materialisations are ready to be transformed by conventional rule
-     * application.
+     * in the materialisation phase.
      */
-    public static Collection<Materialisation> getMaterialisations(
+    public static Collection<PatternShape> getMaterialisations(
             PatternShape pShape, PreMatch preMatch) {
-        Collection<Materialisation> result = new ArrayList<Materialisation>();
-        Materialisation initialMat = new Materialisation(pShape, preMatch);
-        if (initialMat.isRuleModifying()) {
+        Collection<PatternShape> result = new ArrayList<PatternShape>();
+        if (preMatch.getRule().isModifying()) {
+            Materialisation initialMat = new Materialisation(pShape, preMatch);
             initialMat.getSolutions(result);
         } else {
-            result.add(initialMat);
+            result.add(pShape);
         }
         return result;
     }
@@ -62,15 +64,13 @@ public final class Materialisation {
     // ------------------------------------------------------------------------
 
     /**
-     * The shape we are trying to materialise.
-     * The field is final but the shape is modified by the materialisation.
+     * The original shape we are trying to materialise. Remains unchanged.
      */
-    private final PatternShape shape;
+    private final PatternShape origShape;
     /**
-     * The original shape that started the materialisation process.
-     * This is left unchanged during the materialisation.
+     * Auxiliar copy.
      */
-    private final PatternShape originalShape;
+    private final PatternShape pShape;
     /**
      * The pre-match that triggered this materialisation.
      */
@@ -80,110 +80,198 @@ public final class Materialisation {
      */
     private final PatternRule rule;
     /**
-     * The concrete match of the rule into the (partially) materialised shape.
-     * The field is final but the match is modified by the materialisation.
+     * The quasi-shape we are trying to materialise.
      */
-    private final Match match;
+    private QuasiShape qShape;
     /**
-     * The morphism from the (partially) materialised shape into the original
-     * shape.
-     * The field is final but the morphism is modified by the materialisation.
+     * The concrete match of the rule into the (partially) materialised
+     * quasi-shape.
      */
-    private final PatternShapeMorphism morph;
+    private Match match;
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
-     * Constructs the initial materialisation object given a shape and a
-     * pre-match of a rule into the shape. The pre-match given must be valid.
-     */
-    private Materialisation(PatternShape shape, PreMatch preMatch) {
-        assert shape.isFixed();
+    * Constructs the initial materialisation object given a shape and a
+    * pre-match of a rule into the shape. The pre-match given must be valid.
+    */
+    private Materialisation(PatternShape pShape, PreMatch preMatch) {
+        assert pShape.isFixed();
         assert preMatch.isFixed();
-        this.originalShape = shape;
+        this.origShape = pShape;
+        this.pShape = pShape.clone();
         this.preMatch = preMatch;
         this.rule = preMatch.getRule();
-        if (isRuleModifying()) {
-            this.shape = this.originalShape.clone();
-            this.match = new Match(this.rule, this.shape);
-            this.morph =
-                PatternShapeMorphism.createIdentityMorphism(this.shape,
-                    this.originalShape);
-        } else { // The rule is not modifying.
-            // Nothing to do, we just return immediately.
-            this.shape = shape;
-            this.match = preMatch;
-            this.morph = null;
-        }
-    }
-
-    /**
-     * Copying constructor. Clones the structures of the given materialisation
-     * object that can be modified. 
-     */
-    private Materialisation(Materialisation mat) {
-        // No need to clone the original objects since they are fixed.
-        this.originalShape = mat.originalShape;
-        this.preMatch = mat.preMatch;
-        this.rule = mat.rule;
-        // No need to clone the match either because the materialisation of the
-        // match is deterministic.
-        this.match = mat.match;
-        // Clone the shape and the morphism.
-        this.shape = mat.shape.clone();
-        this.morph = mat.morph.clone();
     }
 
     // ------------------------------------------------------------------------
     // Overriden methods
     // ------------------------------------------------------------------------
 
-    @Override
-    public String toString() {
-        return "\nMaterialisation:\n" + this.shape;
-    }
-
-    @Override
-    public Materialisation clone() {
-        return new Materialisation(this);
-    }
-
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
 
-    // ---------
-    // Main loop
-    // ---------
-
-    private void getSolutions(Collection<Materialisation> result) {
-        // EDUARDO: Implement this.
+    private void getSolutions(Collection<PatternShape> result) {
+        // Sequence of operations as defined in the canonical pattern shape
+        // transformation.
+        pullMatchAndDevolveShape();
+        disambiguate();
+        deletePatterns();
+        addPatterns();
+        close();
+        split();
+        branch(result);
     }
 
-    // ------------------------------------------------------------------------
-    // Basic interfacing methods
-    // ------------------------------------------------------------------------
+    private void pullMatchAndDevolveShape() {
+        this.match = new Match(this.rule, this.pShape);
+        PatternRuleGraph lhs = this.rule.lhs();
 
-    /** Basic inspection method. */
-    private boolean isRuleModifying() {
-        return this.rule.isModifying();
+        // Materialise node images.
+        for (RuleNode rNode : lhs.nodeSet()) {
+            PatternNode origNode = this.preMatch.getNode(rNode);
+            materialiseNode(rNode, origNode);
+        }
+        // Materialise edge images.
+        for (RuleEdge rEdge : lhs.edgeSet()) {
+            PatternEdge origEdge = this.preMatch.getEdge(rEdge);
+            materialiseEdge(rEdge, origEdge);
+        }
+
+        // Create extra outgoing edges.
+        for (RuleNode rNode : lhs.nodeSet()) {
+            PatternNode origNode = this.preMatch.getNode(rNode);
+            PatternNode matNode = this.match.getNode(rNode);
+            for (PatternEdge origEdge : this.origShape.outEdgeSet(origNode)) {
+                copyEdge(origEdge, matNode);
+            }
+        }
+
+        PatternPreviewDialog.showPatternGraph(this.pShape);
+
+        assert this.pShape.isWellDefined();
+        this.qShape = QuasiShape.devolve(this.pShape);
+        Match tempMatch = this.match;
+        this.match = new Match(this.rule, this.qShape);
+        this.match.putAll(tempMatch);
+        this.match.setFixed();
     }
 
-    /** Basic getter method. */
-    public PatternShape getShape() {
-        return this.shape;
+    private void disambiguate() {
+        // Make sure that everything in the deletion cone is unambiguous.
+        List<PatternNode> toTraverse = new LinkedList<PatternNode>();
+        for (RuleNode rNode : this.rule.getEraserNodes()) {
+            toTraverse.add(this.match.getNode(rNode));
+        }
+        for (PatternNode delNode : this.qShape.getDownwardTraversal(toTraverse)) {
+            if (!this.qShape.isUniquelyCovered(delNode)) {
+                disambiguate(delNode);
+            }
+        }
     }
 
-    /** Basic getter method. */
-    public Match getMatch() {
-        return this.match;
+    private void disambiguate(PatternNode delNode) {
+        System.out.println(delNode);
     }
 
-    // ------------------------------------------------------------------------
-    // Consistency check methods
-    // ------------------------------------------------------------------------
+    private void deletePatterns() {
+
+    }
+
+    private void addPatterns() {
+
+    }
+
+    private void close() {
+
+    }
+
+    private void split() {
+
+    }
+
+    private void branch(Collection<PatternShape> result) {
+
+    }
+
+    private void materialiseNode(RuleNode rNode, PatternNode origNode) {
+        PatternNode newNode;
+        // There are two cases:
+        // - if the original node is concrete we just use it.
+        // - if the original node is a collector then we extract a copy.
+        Multiplicity origMult = this.pShape.getMult(origNode);
+        if (origMult.isOne()) {
+            newNode = origNode;
+        } else {
+            // Extract a copy.
+            newNode = createNode(origNode.getType());
+            this.pShape.setMult(newNode, Multiplicity.ONE_NODE_MULT);
+            // Adjust the original node multiplicity.
+            this.pShape.setMult(origNode, origMult.sub(1));
+        }
+        this.match.putNode(rNode, newNode);
+    }
+
+    private void materialiseEdge(RuleEdge rEdge, PatternEdge origEdge) {
+        PatternNode origSrc = origEdge.source();
+        PatternNode origTgt = origEdge.target();
+        PatternNode newSrc = this.match.getNode(rEdge.source());
+        PatternNode newTgt = this.match.getNode(rEdge.target());
+        boolean sameSrc = origSrc.equals(newSrc);
+        boolean sameTgt = origTgt.equals(newTgt);
+
+        Multiplicity origMult = this.pShape.getMult(origEdge);
+        TypeEdge edgeType = origEdge.getType();
+        PatternEdge newEdge;
+
+        if (sameSrc && sameTgt) {
+            // The source and target nodes remained unchanged. Just return the
+            // original edge.
+            assert origMult.isOne();
+            newEdge = origEdge;
+        } else {
+            // In all other cases we need to create a new edge.
+            newEdge = createEdge(newSrc, edgeType, newTgt);
+            this.pShape.setMult(newEdge, Multiplicity.ONE_EDGE_MULT);
+            if (sameSrc && !sameTgt) {
+                // Same source node with new target. We need to adjust the
+                // multiplicity of the original edge that goes to the original
+                // target node to account for the newly materialised edge.
+                this.pShape.setMult(origEdge, origMult.sub(1));
+            }
+        }
+
+        this.match.putEdge(rEdge, newEdge);
+    }
+
+    private void copyEdge(PatternEdge origEdge, PatternNode newSrc) {
+        Multiplicity origMult = this.origShape.getMult(origEdge);
+        int preImageCount = this.preMatch.getPreImages(origEdge).size();
+        Multiplicity adjustedMult = origMult.sub(preImageCount);
+        if (adjustedMult.isZero()) {
+            // Nothing to create.
+            return;
+        }
+        PatternNode newTgt = origEdge.target();
+        PatternEdge newEdge = createEdge(newSrc, origEdge.getType(), newTgt);
+        this.pShape.setMult(newEdge, adjustedMult);
+    }
+
+    private PatternNode createNode(TypeNode type) {
+        PatternNode newNode = this.pShape.createNode(type);
+        this.pShape.addNode(newNode);
+        return newNode;
+    }
+
+    private PatternEdge createEdge(PatternNode source, TypeEdge type,
+            PatternNode target) {
+        PatternEdge newEdge = this.pShape.createEdge(source, type, target);
+        this.pShape.addEdge(newEdge);
+        return newEdge;
+    }
 
     // ------------------------------------------------------------------------
     // Inner classes

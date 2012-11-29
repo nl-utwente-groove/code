@@ -89,7 +89,7 @@ public final class QuasiShape extends PatternGraph {
         }
     }
 
-    /** Copying construction. */
+    /** Copying constructor. */
     private QuasiShape(QuasiShape qShape) {
         this((PatternGraph) qShape);
         for (Constraint constr : qShape.getConstraints()) {
@@ -110,16 +110,16 @@ public final class QuasiShape extends PatternGraph {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(super.toString());
-        sb.append("Node constraints: [");
+        sb.append("Node constraints: [\n");
         for (Constraint constr : getNodeConstraints()) {
             sb.append(constr.toString() + "\n");
         }
-        sb.replace(sb.length() - 2, sb.length(), "]\n");
-        sb.append("Edge constraints: [");
+        sb.replace(sb.length() - 1, sb.length(), "]\n");
+        sb.append("Edge constraints: [\n");
         for (Constraint constr : getEdgeConstraints()) {
             sb.append(constr.toString() + "\n");
         }
-        sb.replace(sb.length() - 2, sb.length(), "]\n");
+        sb.replace(sb.length() - 1, sb.length(), "]\n");
         return sb.toString();
     }
 
@@ -282,9 +282,6 @@ public final class QuasiShape extends PatternGraph {
             return this.node != null;
         }
 
-        boolean isEdgeVar() {
-            return this.edge != null;
-        }
     }
 
     // ----------

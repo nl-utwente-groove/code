@@ -24,6 +24,7 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.util.Fixable;
 
+import java.util.Comparator;
 import java.util.Set;
 
 /**
@@ -122,4 +123,30 @@ public abstract class AbstractPatternNode extends AbstractNode implements
     public boolean introduces(HostEdge sEdge) {
         return getSimpleEdge().equals(sEdge);
     }
+
+    // ------------------------------------------------------------------------
+    // Inner classes
+    // ------------------------------------------------------------------------
+
+    /** Sorting of nodes by layer. */
+    private static final class PatternNodeComparator implements
+            Comparator<AbstractPatternNode> {
+
+        @Override
+        public int compare(AbstractPatternNode o1, AbstractPatternNode o2) {
+            if (o1.getLayer() < o2.getLayer()) {
+                return -1;
+            } else if (o1.getLayer() > o2.getLayer()) {
+                return 1;
+            } else { // Same layer, use the node number to distinct.
+                return o1.getNumber() - o2.getNumber();
+            }
+        }
+    }
+
+    /**
+     * Singleton instance of the comparator.
+     */
+    public static final PatternNodeComparator comparator =
+        new PatternNodeComparator();
 }
