@@ -703,7 +703,9 @@ public class GraphJGraph extends org.jgraph.JGraph {
             } else if (this.enabledBackground != null) {
                 setBackground(this.enabledBackground);
             }
-            getLabelTree().setEnabled(enabled);
+            if (getLabelTree() != null) {
+                getLabelTree().setEnabled(enabled);
+            }
             for (JToggleButton button : getModeButtonMap().values()) {
                 button.setEnabled(enabled);
             }
