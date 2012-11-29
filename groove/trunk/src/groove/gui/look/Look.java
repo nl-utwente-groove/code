@@ -91,7 +91,7 @@ public enum Look {
 
     },
     /** Composite edge look. */
-    COMPOSITE(true, TYPE) {
+    COMPOSITE(TYPE) {
         @Override
         void init() {
             add(VisualKey.EDGE_SOURCE_SHAPE, EdgeEnd.COMPOSITE);
