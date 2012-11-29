@@ -272,7 +272,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
                 this.jGraph =
                     new AspectJGraph(getSimulator(), getDisplay().getKind(),
                         false);
-            result.setLabelTree(new LabelTree(getJGraph(), false, true));
+            result.setLabelTree(new LabelTree(getJGraph(), true));
             result.setLevelTree(getLevelTree());
         }
         return result;

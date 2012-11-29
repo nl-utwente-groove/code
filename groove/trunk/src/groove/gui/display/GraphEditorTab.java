@@ -322,7 +322,7 @@ final public class GraphEditorTab extends ResourceTab implements
                 this.jgraph =
                     new AspectJGraph(getSimulator(), getDisplay().getKind(),
                         true);
-            result.setLabelTree(new LabelTree(getJGraph(), false, false));
+            result.setLabelTree(new LabelTree(getJGraph(), false));
         }
         return result;
     }

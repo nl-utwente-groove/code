@@ -52,7 +52,7 @@ public class PreviewControlAction extends SimulatorAction {
         if (this.jGraph == null) {
             this.jGraph = new CtrlJGraph(getSimulator());
             this.jGraph.setModel(getCtrlAut());
-            this.jGraph.setLabelTree(new LabelTree(this.jGraph, false, true));
+            this.jGraph.setLabelTree(new LabelTree(this.jGraph, true));
             this.jGraph.getLayouter().start(true);
         }
         return this.jGraph;
