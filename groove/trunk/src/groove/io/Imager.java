@@ -316,6 +316,10 @@ public class Imager extends CommandLineTool {
             argsList.remove(0);
         }
         if (argsList.size() > 0) {
+            setOutFile(argsList.get(0));
+            argsList.remove(0);
+        }
+        if (argsList.size() > 0) {
             printError("Invalid number of arguments", true);
         }
     }
