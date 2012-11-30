@@ -16,13 +16,19 @@
  */
 package groove.test.abstraction.pattern;
 
+import static org.junit.Assert.assertEquals;
 import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.PatternAbstraction;
 import groove.abstraction.pattern.io.xml.PatternShapeGxl;
 import groove.abstraction.pattern.io.xml.TypeGraphGxl;
+import groove.abstraction.pattern.lts.MatchResult;
+import groove.abstraction.pattern.match.Matcher;
+import groove.abstraction.pattern.match.MatcherFactory;
+import groove.abstraction.pattern.match.PreMatch;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeGraph;
+import groove.abstraction.pattern.trans.Materialisation;
 import groove.abstraction.pattern.trans.PatternRule;
 import groove.trans.HostGraph;
 import groove.trans.Rule;
@@ -31,6 +37,8 @@ import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -68,24 +76,28 @@ public class TestMaterialisation {
 
     @Test
     public void testMaterialisation0() {
-        // EDUARDO: Restore tests.
+        testSingleResult(0, 7, 6, false);
     }
 
-    /*private void testSingleResult(int testNumber, int nodeCount, int edgeCount,
+    @Test
+    public void testMaterialisation1() {
+        testSingleResult(1, 6, 4, false);
+    }
+
+    private void testSingleResult(int testNumber, int nodeCount, int edgeCount,
             boolean hostIsShape) {
         loadTest(testNumber, hostIsShape);
         Matcher matcher = MatcherFactory.instance().getMatcher(pRule, false);
         List<MatchResult> matches = matcher.findMatches(pShape, null);
         assertEquals(1, matches.size());
         PreMatch preMatch = (PreMatch) matches.get(0).getMatch();
-        Collection<Materialisation> mats =
+        Collection<PatternShape> mats =
             Materialisation.getMaterialisations(pShape, preMatch);
         assertEquals(1, mats.size());
-        Materialisation mat = mats.iterator().next();
-        PatternShape matShape = mat.getShape();
+        PatternShape matShape = mats.iterator().next();
         assertEquals(nodeCount, matShape.nodeCount());
         assertEquals(edgeCount, matShape.edgeCount());
-    }*/
+    }
 
     /*private void testMultipleResults(int testNumber, int matchCount,
             int nodeCount[], int edgeCount[], boolean hostIsShape) {

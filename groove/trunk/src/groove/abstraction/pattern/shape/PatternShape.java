@@ -25,6 +25,7 @@ import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
+import groove.util.Duo;
 
 import java.util.Collections;
 import java.util.Map;
@@ -178,6 +179,12 @@ public final class PatternShape extends PatternGraph {
         return true;
     }
 
+    @Override
+    public Duo<PatternEdge> getIncomingEdges(PatternNode node) {
+        assert isUniquelyCovered(node);
+        return super.getIncomingEdges(node);
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
@@ -300,4 +307,33 @@ public final class PatternShape extends PatternGraph {
         return result;
     }
 
+    /** Compute the multiplicities from level 1 on.  */
+    public void propagateMults() {
+        for (int layer = 1; layer <= depth(); layer++) {
+            for (PatternNode pNode : getLayerNodes(layer)) {
+
+                Multiplicity acc[] = new Multiplicity[2];
+                int i = 0;
+                for (TypeEdge tEdge : getIncomingEdgeTypes(pNode)) {
+                    acc[i] =
+                        Multiplicity.getMultiplicity(0, 0, MultKind.EQSYS_MULT);
+                    for (PatternEdge dEdge : getInEdgesWithType(pNode, tEdge)) {
+                        Multiplicity srcMult = getMult(dEdge.source());
+                        Multiplicity dMult = getMult(dEdge);
+                        acc[i] = acc[i].add(srcMult.times(dMult));
+                    }
+                    i++;
+                }
+
+                Multiplicity finalMult;
+                if (acc[0].subsumes(acc[1])) {
+                    finalMult = acc[0].toNodeKind();
+                } else {
+                    assert acc[1].subsumes(acc[0]);
+                    finalMult = acc[1];
+                }
+                setMult(pNode, finalMult);
+            }
+        }
+    }
 }

@@ -44,17 +44,18 @@ public class Test {
     private static final String PATH =
         "/home/zambon/Work/workspace_groove/groove/junit/pattern/";
 
-    private static final String GRAMMAR = PATH + "pattern-list.gps/";
+    // private static final String GRAMMAR = PATH + "pattern-list.gps/";
     // private static final String GRAMMAR = PATH + "circ-list-4.gps/";
     // private static final String GRAMMAR = PATH + "trains.gps/";
     // private static final String GRAMMAR = PATH + "equiv.gps/";
     // private static final String GRAMMAR = PATH + "match-test.gps/";
+    private static final String GRAMMAR = PATH + "mat-test.gps/";
 
-    private static final String TYPE_GRAPH = GRAMMAR + "ptgraph-min.gst";
+    private static final String TYPE_GRAPH = GRAMMAR + "ptgraph-1.gst";
 
-    private static final String RULE = "get";
+    private static final String RULE = "rule-1";
 
-    private static final String HOST = "start-5";
+    private static final String HOST = "host-1";
 
     /** Test method. */
     public static void main(String args[]) {
