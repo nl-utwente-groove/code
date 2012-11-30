@@ -18,25 +18,29 @@ package groove.io;
 
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.GXL_FILTER;
+import static groove.io.FileType.RULE_FILTER;
 import static groove.io.FileType.STATE_FILTER;
 import static groove.io.FileType.TYPE_FILTER;
-import groove.graph.DefaultGraph;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.display.DisplayKind;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
+import groove.io.external.Exporter;
 import groove.io.external.Exporter.Exportable;
 import groove.io.external.Format;
 import groove.io.external.FormatExporter;
 import groove.io.external.PortException;
-import groove.io.external.format.RasterExporter;
-import groove.io.external.format.VectorExporter;
-import groove.io.xml.LayedOutXml;
+import groove.io.external.format.NativePorter;
+import groove.trans.QualName;
 import groove.trans.ResourceKind;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
+import groove.util.Pair;
+import groove.view.FormatException;
+import groove.view.GrammarModel;
+import groove.view.GraphBasedModel;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Dimension;
@@ -109,16 +113,20 @@ public class Imager extends CommandLineTool {
      * @require <tt>getLocation() != null</tt>
      */
     public void start() {
-        File inFile = getInFile();
-        File outFile = getOutFile();
-        if (inFile == null) {
-            println("No input file specified");
-        } else if (!inFile.exists()) {
-            println("Input file " + inFile + " does not exist");
-        } else if (outFile == null) {
-            makeImage(inFile, inFile);
-        } else {
-            makeImage(inFile, outFile);
+        try {
+            File inFile = getInFile();
+            File outFile = getOutFile();
+            if (inFile == null) {
+                println("No input file specified");
+            } else if (!inFile.exists()) {
+                println("Input file " + inFile + " does not exist");
+            } else if (outFile == null) {
+                makeImage(inFile, inFile);
+            } else {
+                makeImage(inFile, outFile);
+            }
+        } catch (IOException e) {
+            println(e.getMessage());
         }
     }
 
@@ -129,7 +137,32 @@ public class Imager extends CommandLineTool {
      * @param inFile the input file to be converted
      * @param outFile the intended output file
      */
-    public void makeImage(File inFile, File outFile) {
+    public void makeImage(File inFile, File outFile) throws IOException {
+        if (!inFile.exists()) {
+            throw new IOException("Input file " + inFile + " does not exist");
+        }
+        File grammarFile = getGrammarFile(inFile);
+        if (grammarFile == null) {
+            throw new IOException("Input file " + inFile
+                + " is not part of a grammar");
+        }
+        try {
+            GrammarModel grammar = GrammarModel.newInstance(grammarFile, false);
+            makeImage(grammar, inFile, outFile);
+        } catch (IllegalArgumentException e) {
+            throw new IOException(e.getMessage());
+        }
+    }
+
+    /**
+     * Makes an image file from the specified input file. If the input file is a
+     * directory, the method descends recursively. The types of input files
+     * recognized are: gxl, gps and gst
+     * @param inFile the input file to be converted
+     * @param outFile the intended output file
+     */
+    private void makeImage(GrammarModel grammar, File inFile, File outFile)
+        throws IOException {
         // if the given input-file is a directory, call this method recursively
         // for each file it contains but ensure:
         // --> output-file exists or can be created
@@ -137,10 +170,15 @@ public class Imager extends CommandLineTool {
             File[] files = inFile.listFiles();
             if (outFile.exists() || outFile.mkdir()) {
                 for (File element : files) {
-                    makeImage(element, new File(outFile, element.getName()));
+                    if (element.isDirectory() || parse(element) != null) {
+                        // only process c
+                        makeImage(grammar, element,
+                            new File(outFile, element.getName()));
+                    }
                 }
             } else {
-                println("Directory " + outFile + " could not be created");
+                throw new IOException("Directory " + outFile
+                    + " could not be created");
             }
         }
         // or the input-file is an ordinary Groove-file (state or rule)
@@ -148,64 +186,65 @@ public class Imager extends CommandLineTool {
         // --> output-file exists and will be overwritten or the directory in
         // which it will be placed exists or can be created
         else {
-            if (outFile.getParentFile() != null
-                && !outFile.getParentFile().exists()
-                && !outFile.getParentFile().mkdir()) {
-                JOptionPane.showMessageDialog(null,
-                    "Output file does not exist and directory can not be created.");
+            File outParent = outFile.getParentFile();
+            if (outParent == null) {
+                outParent = inFile.getParentFile();
+            } else if (!outParent.exists() && !outParent.mkdir()) {
+                JOptionPane.showMessageDialog(null, "Output directory "
+                    + outParent + " cannot be created");
                 return;
             }
 
-            DefaultGraph plainGraph;
-            try {
-                plainGraph = graphLoader.unmarshalGraph(inFile);
-            } catch (IOException e) {
-                println("Problem reading " + inFile);
-                return;
+            Pair<ResourceKind,QualName> resource = parse(inFile);
+            if (resource == null) {
+                throw new IOException("Input file " + inFile
+                    + " is not a resource file");
             }
-            if (plainGraph.size() == 0) {
-                // fix to skip empty graphs and rules, since
-                // they cause a null pointer exception.
-                printlnMedium("Skiping empty graph " + inFile);
-                return;
-            }
-
             String imageFormat = getImageFormat();
             if (imageFormat == null) {
                 imageFormat = outFile.toString();
             }
-            Map<String,Format> formats = getExtensions();
+            Map<String,Format> formats = getFormatMap();
             Format outputFormat = null;
+            String extension = null;
             for (Entry<String,Format> e : formats.entrySet()) {
                 if (imageFormat.endsWith(e.getKey())) {
+                    extension = e.getKey();
                     outputFormat = e.getValue();
                     break;
                 }
             }
+            String outFileName;
             if (outputFormat == null) {
                 // Pick first format as default
-                outputFormat = getExtensions().values().iterator().next();
+                Entry<String,Format> e =
+                    getFormatMap().entrySet().iterator().next();
+                extension = e.getKey();
+                outputFormat = e.getValue();
+                // maybe the output file was set to equal the input file;
+                // try stripping the input extension
+                outFileName = outFile.getName();
+            } else {
+                outFileName = outputFormat.stripExtension(outFile.getName());
             }
+            outFile =
+                new File(outParent, outFileName + ExtensionFilter.SEPARATOR
+                    + extension);
 
-            // use the input file parent,
-            // if the output file has no explicit parent
-            File outFileParent = outFile.getParentFile();
-            if (outFileParent == null) {
-                outFileParent = inFile.getParentFile();
-            }
-            String outFileName = outputFormat.stripExtension(outFile.getName());
-            outFile = new File(outFileParent, outFileName + imageFormat);
-
-            AspectGraph aspectGraph = AspectGraph.newInstance(plainGraph);
+            GraphBasedModel<?> resourceModel =
+                (GraphBasedModel<?>) grammar.getResource(resource.one(),
+                    resource.two().toString());
+            AspectGraph aspectGraph = resourceModel.getSource();
             Options options = new Options();
             options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(
                 isEditorView());
             options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(
                 isEditorView());
-            DisplayKind kind =
+            DisplayKind displayKind =
                 DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
-            AspectJGraph jGraph = new AspectJGraph(null, kind, false);
+            AspectJGraph jGraph = new AspectJGraph(null, displayKind, false);
             AspectJModel model = jGraph.newModel();
+            model.setGrammar(grammar);
             model.loadGraph(aspectGraph);
             jGraph.setModel(model);
             // Ugly hack to prevent clipping of the image. We set the
@@ -217,7 +256,6 @@ public class Imager extends CommandLineTool {
                 new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
             jGraph.setSize(newPrefSize);
             printlnMedium("Imaging " + inFile + " as " + outFile);
-
             try {
                 Exportable exportable = new Exportable(jGraph);
                 ((FormatExporter) outputFormat.getFormatter()).doExport(
@@ -226,24 +264,6 @@ public class Imager extends CommandLineTool {
                 println("Error exporting graph: " + e1.getMessage());
             }
         }
-    }
-
-    /** Collects a mapping from file extensions to formats. */
-    public static Map<String,Format> getExtensions() {
-        Map<String,Format> formatMap = new HashMap<String,Format>();
-        // Passing null as jgraph. Current implementation does not care about the type of jgraph and doesnt check
-        for (Format format : RasterExporter.getInstance().getSupportedFormats()) {
-            for (String ext : format.getExtensions()) {
-                formatMap.put(ext.substring(1), format); //strip dot
-            }
-        }
-        for (Format format : VectorExporter.getInstance().getSupportedFormats()) {
-            for (String ext : format.getExtensions()) {
-                formatMap.put(ext.substring(1), format); //strip dot
-            }
-        }
-
-        return formatMap;
     }
 
     /** Returns the location of the file(s) to be imaged. */
@@ -259,10 +279,9 @@ public class Imager extends CommandLineTool {
     }
 
     /**
-     * Sets the location where to look for the files to be imaged. No check is
+     * Sets the location of the file to be imaged. No check is
      * done if the location actually exists.
      * @param fileName the name of the files to be imaged
-     * @ensure <tt>getOutFile().getName().equals(fileName)</tt>
      */
     public void setInFile(String fileName) {
         this.inFile = new File(fileName);
@@ -276,6 +295,12 @@ public class Imager extends CommandLineTool {
     public void setOutFile(String outFileName) {
         this.outFile = new File(outFileName);
     }
+
+    /** The location of the file(s) to be imaged. */
+    private File inFile;
+
+    /** The  optional location of the output file(s) to be imaged. */
+    private File outFile;
 
     /**
      * Processes a list of arguments (which are <tt>String</tt>s) by setting the
@@ -291,17 +316,13 @@ public class Imager extends CommandLineTool {
             argsList.remove(0);
         }
         if (argsList.size() > 0) {
-            setOutFile(argsList.get(0));
-            argsList.remove(0);
-        }
-        if (argsList.size() > 0) {
             printError("Invalid number of arguments", true);
         }
     }
 
     @Override
     protected String getUsageMessage() {
-        return "Usage: Imager [options] filename [outlocation]";
+        return "Usage: Imager [options] inputfile";
     }
 
     /**
@@ -317,7 +338,7 @@ public class Imager extends CommandLineTool {
      */
     @Override
     protected boolean supportsOutputOption() {
-        return false;
+        return true;
     }
 
     /** Overwrites the method to write to the system output or to the GUI. */
@@ -384,10 +405,6 @@ public class Imager extends CommandLineTool {
      * command-line based.
      */
     private final ImagerFrame imagerFrame;
-    /** The location of the file(s) to be imaged. */
-    private File inFile;
-    /** The intended location of the image file(s). */
-    private File outFile;
 
     /** Lazily creates and returns the format option associated with this Imager. */
     private EditorViewOption getEditorViewOption() {
@@ -429,13 +446,79 @@ public class Imager extends CommandLineTool {
         }
     }
 
+    /** Returns the parent file of a given file that corresponds
+     * to a grammar directory, or {@code null} if the file is not
+     * within a grammar directory.
+     * @param file the file to be parsed
+     * @return a parent file of {@code file}, or {@code null}
+     */
+    private static File getGrammarFile(File file) {
+        while (file != null && !GRAMMAR_FILTER.accept(file)) {
+            file = file.getParentFile();
+        }
+        return file;
+    }
+
+    /**
+     * Decomposes the name of a file, supposedly within a grammar,
+     * into a pair consisting of its resource kind and the qualified name
+     * of the resource within the grammar.
+     */
+    private static Pair<ResourceKind,QualName> parse(File file) {
+        ResourceKind kind = null;
+        // find out the resource kind
+        for (ResourceKind k : ResourceKind.values()) {
+            if (k.isGraphBased() && k.getFilter().accept(file)) {
+                kind = k;
+                break;
+            }
+        }
+        QualName qualName = null;
+        if (kind != null) {
+            file = new File(kind.getFilter().stripExtension(file.toString()));
+            // break the filename into fragments, up to the containing grammar
+            List<String> fragments = new LinkedList<String>();
+            while (file != null && !GRAMMAR_FILTER.accept(file)) {
+                fragments.add(0, file.getName());
+                file = file.getParentFile();
+            }
+            // if file == null, there was no containing grammar
+            if (file != null) {
+                try {
+                    qualName = new QualName(fragments);
+                } catch (FormatException e) {
+                    // do nothing
+                }
+            }
+        }
+        return qualName == null ? null : Pair.newPair(kind, qualName);
+    }
+
+    /** Collects a mapping from file extensions to formats. */
+    public static Map<String,Format> getFormatMap() {
+        Map<String,Format> result = formatMap;
+        if (result == null) {
+            result = formatMap = new HashMap<String,Format>();
+            for (FormatExporter exporter : Exporter.getExporters()) {
+                if (exporter instanceof NativePorter) {
+                    continue;
+                }
+                for (Format format : exporter.getSupportedFormats()) {
+                    for (String ext : format.getExtensions()) {
+                        result.put(ext.substring(1), format); //strip dot
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private static Map<String,Format> formatMap;
+
     /** Name of the imager application. */
     static public final String APPLICATION_NAME = "Imager";
     /** Label for the browse buttons. */
     static public final String BROWSE_LABEL = "Browse...";
-
-    /** The loader used for the xml files. */
-    private static final LayedOutXml graphLoader = LayedOutXml.getInstance();
 
     /** An array of all filters identifying files that can be imaged. */
     private static final List<ExtensionFilter> acceptFilters;
@@ -444,6 +527,7 @@ public class Imager extends CommandLineTool {
         acceptFilters.add(GRAMMAR_FILTER);
         acceptFilters.add(TYPE_FILTER);
         acceptFilters.add(STATE_FILTER);
+        acceptFilters.add(RULE_FILTER);
         acceptFilters.add(GXL_FILTER);
     }
 
@@ -498,7 +582,7 @@ public class Imager extends CommandLineTool {
         public String[] getDescription() {
             List<String> result = new LinkedList<String>();
             result.add(DESCRIPTION);
-            Map<String,Format> exts = getExtensions();
+            Map<String,Format> exts = getFormatMap();
             for (String formatName : exts.keySet()) {
                 String format = "* " + formatName;
                 result.add(format);
@@ -521,7 +605,7 @@ public class Imager extends CommandLineTool {
         public void parse(String parameter) {
             String extension = parameter;
 
-            Map<String,Format> exts = getExtensions();
+            Map<String,Format> exts = getFormatMap();
 
             // first check if parameter is a valid format name
             if (!exts.containsKey(extension)) {
@@ -568,18 +652,22 @@ public class Imager extends CommandLineTool {
          * to the file named in {@link #outFileField}.
          */
         public void handleImageAction() {
-            File inFile = new File(this.inFileField.getText());
-            File outFile;
-            if (this.outFileField.isEditable()) {
-                outFile = new File(this.outFileField.getText());
-            } else {
-                outFile = inFile;
-            }
-            if (inFile.exists()) {
+            String error = null;
+            try {
+                File inFile = new File(this.inFileField.getText());
+                File outFile;
+                if (this.outFileField.isEditable()) {
+                    outFile = new File(this.outFileField.getText());
+                } else {
+                    outFile = inFile;
+                }
                 makeImage(inFile, outFile);
-            } else {
-                JOptionPane.showMessageDialog(this, "File " + inFile
-                    + " does not exist.", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (IOException e) {
+                error = e.getMessage();
+            }
+            if (error != null) {
+                JOptionPane.showMessageDialog(this, error, "Error",
+                    JOptionPane.ERROR_MESSAGE);
             }
         }
 
@@ -801,6 +889,6 @@ public class Imager extends CommandLineTool {
 
         /** Combo box for the available image formats. */
         final JComboBox formatBox = new JComboBox(
-            Imager.getExtensions().keySet().toArray());
+            Imager.getFormatMap().keySet().toArray());
     }
 }

@@ -65,6 +65,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -92,6 +93,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
 import org.jgraph.JGraph;
@@ -780,7 +782,6 @@ public class GraphJGraph extends org.jgraph.JGraph {
      */
     public BufferedImage toImage() {
         Rectangle2D bounds = getGraphBounds();
-
         if (bounds != null) {
             toScreen(bounds);
             // insert some extra space at the borders
@@ -790,7 +791,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
                 new BufferedImage((int) bounds.getWidth() + 2 * extraSpace,
                     (int) bounds.getHeight() + 2 * extraSpace,
                     BufferedImage.TYPE_INT_RGB);
-            Graphics2D graphics = img.createGraphics();
+            final Graphics2D graphics = img.createGraphics();
             graphics.setColor(getBackground());
             graphics.fillRect(0, 0, img.getWidth(), img.getHeight());
             graphics.translate(-bounds.getX() + extraSpace, -bounds.getY()
@@ -801,7 +802,25 @@ public class GraphJGraph extends org.jgraph.JGraph {
             setGridVisible(false);
             clearSelection();
 
-            paint(graphics);
+            // if we don't do the painting the event thread,
+            // strange and nondeterministic layout errors occur
+            Runnable paint = new Runnable() {
+                @Override
+                public void run() {
+                    paint(graphics);
+                }
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                paint.run();
+            } else {
+                try {
+                    SwingUtilities.invokeAndWait(paint);
+                } catch (InterruptedException e) {
+                    // do nothing
+                } catch (InvocationTargetException e) {
+                    // do nothing
+                }
+            }
 
             setSelectionCells(selection);
             setGridVisible(gridVisible);

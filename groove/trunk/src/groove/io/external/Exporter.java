@@ -19,6 +19,7 @@ package groove.io.external;
 import groove.graph.Graph;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.SaveDialog;
+import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJGraph;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
@@ -37,6 +38,7 @@ import groove.view.ResourceModel;
 import java.awt.Component;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -145,7 +147,11 @@ public class Exporter {
         return result;
     }
 
-    //TODO: ResourceFormatter too generic, use subtype for exporters
+    /** Returns the list of all known dedicated exporters. */
+    public static List<FormatExporter> getExporters() {
+        return Collections.unmodifiableList(exporters);
+    }
+
     /** List of available exporters. */
     private static final List<FormatExporter> exporters =
         new ArrayList<FormatExporter>();
@@ -189,7 +195,10 @@ public class Exporter {
             this.porterKinds = EnumSet.of(Kind.GRAPH, Kind.JGRAPH);
             this.jGraph = jGraph;
             this.graph = jGraph.getModel().getGraph();
-            this.model = null;
+            this.model =
+                jGraph instanceof AspectJGraph
+                        ? ((AspectJGraph) jGraph).getModel().getResourceModel()
+                        : null;
             this.name = this.graph.getName();
         }
 
