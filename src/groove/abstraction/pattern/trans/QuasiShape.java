@@ -224,6 +224,22 @@ public final class QuasiShape extends PatternGraph {
         constrs.add(constr);
     }
 
+    /** Compute the set of materialisations for this quasi-shape. */
+    public void getMaterialisations(Collection<PatternShape> result) {
+        for (Solution sol : computeSolutions()) {
+            PatternShape mat = sol.createShape();
+            result.add(mat);
+        }
+    }
+
+    private Set<Solution> computeSolutions() {
+        Set<Solution> result = new MyHashSet<Solution>();
+        for (Constraint constr : getConstraints()) {
+            constr.solve(result);
+        }
+        return result;
+    }
+
     // ------------------------------------------------------------------------
     // Inner Classes
     // ------------------------------------------------------------------------
@@ -335,6 +351,10 @@ public final class QuasiShape extends PatternGraph {
             return this.srcNode == null;
         }
 
+        boolean isTrivial() {
+            return this.vars.size() == 1;
+        }
+
         PatternNode getNode() {
             return this.vars.iterator().next().node;
         }
@@ -353,6 +373,93 @@ public final class QuasiShape extends PatternGraph {
             this.vars.add(var);
         }
 
+        void solve(Set<Solution> partialSols) {
+            Solution currSol = null;
+
+            if (partialSols.isEmpty()) {
+                currSol = new Solution();
+                partialSols.add(currSol);
+            } else if (partialSols.size() == 1) {
+                currSol = partialSols.iterator().next();
+            } else {
+                assert false : "Implement proper solving!";
+            }
+
+            if (isTrivial()) {
+                MultVar singleVar = this.vars.iterator().next();
+                currSol.setValue(singleVar, this.mult);
+            } else {
+                assert false : "Implement proper solving!";
+            }
+        }
+
+    }
+
+    // --------
+    // Solution
+    // --------
+
+    private final class Solution {
+
+        final Map<MultVar,Multiplicity> varToValues;
+
+        Solution() {
+            this.varToValues = new MyHashMap<MultVar,Multiplicity>();
+        }
+
+        Solution(Solution sol) {
+            this();
+            this.varToValues.putAll(sol.varToValues);
+        }
+
+        @Override
+        public Solution clone() {
+            return new Solution(this);
+        }
+
+        @Override
+        public String toString() {
+            return this.varToValues.toString();
+        }
+
+        void setValue(MultVar var, Multiplicity value) {
+            assert !isSet(var) : "Over-writting variable is solution!";
+            this.varToValues.put(var, value);
+        }
+
+        boolean isSet(MultVar var) {
+            return this.varToValues.get(var) != null;
+        }
+
+        MultVar getVar(PatternNode pNode) {
+            return QuasiShape.this.nodeVarMap.get(pNode);
+        }
+
+        MultVar getVar(PatternEdge pEdge) {
+            return QuasiShape.this.edgeVarMap.get(pEdge);
+        }
+
+        PatternShape createShape() {
+            QuasiShape qShape = QuasiShape.this;
+            PatternShape result = new PatternShape(qShape);
+            for (PatternNode pNode : qShape.getLayerNodes(0)) {
+                MultVar nodeVar = getVar(pNode);
+                Multiplicity nodeMult = this.varToValues.get(nodeVar);
+                assert nodeMult != null : String.format(
+                    "Node %s has no image.", pNode);
+                result.setMult(pNode, nodeMult);
+            }
+            for (PatternEdge pEdge : qShape.edgeSet()) {
+                MultVar edgeVar = getVar(pEdge);
+                Multiplicity edgeMult = this.varToValues.get(edgeVar);
+                assert edgeMult != null : String.format(
+                    "Edge %s has no image.", pEdge);
+                result.setMult(pEdge, edgeMult);
+            }
+            result.propagateMults();
+            assert result.isWellDefined();
+            return result;
+        }
     }
 
 }

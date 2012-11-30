@@ -17,7 +17,6 @@
 package groove.abstraction.pattern.trans;
 
 import groove.abstraction.Multiplicity;
-import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
 import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.match.PreMatch;
 import groove.abstraction.pattern.shape.PatternEdge;
@@ -25,6 +24,8 @@ import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeEdge;
 import groove.abstraction.pattern.shape.TypeNode;
+import groove.util.Duo;
+import groove.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -150,8 +151,6 @@ public final class Materialisation {
             }
         }
 
-        PatternPreviewDialog.showPatternGraph(this.pShape);
-
         assert this.pShape.isWellDefined();
         this.qShape = QuasiShape.devolve(this.pShape);
         Match tempMatch = this.match;
@@ -174,27 +173,44 @@ public final class Materialisation {
     }
 
     private void disambiguate(PatternNode delNode) {
-        System.out.println(delNode);
+        System.out.println("DISAMBIGUATE: " + delNode);
     }
 
     private void deletePatterns() {
-
+        for (RuleNode rNode : this.rule.getEraserNodes()) {
+            this.qShape.deletePattern(this.match.getNode(rNode));
+        }
     }
 
     private void addPatterns() {
+        // First add layer 0 patterns.
+        for (RuleNode rNode : this.rule.getCreatorNodes()) {
+            if (!rNode.isNodePattern()) {
+                continue;
+            }
+            PatternNode newNode = this.qShape.addNodePattern(rNode.getType());
+            this.match.putNode(rNode, newNode);
+        }
 
+        // Then add layer 1 patterns.
+        for (RuleNode rNode : this.rule.getCreatorNodes()) {
+            if (!rNode.isEdgePattern()) {
+                continue;
+            }
+            createPattern(rNode, false);
+        }
     }
 
     private void close() {
-
+        this.origShape.getTypeGraph().close(this.qShape);
     }
 
     private void split() {
-
+        // EDUARDO: Implement this...
     }
 
     private void branch(Collection<PatternShape> result) {
-
+        this.qShape.getMaterialisations(result);
     }
 
     private void materialiseNode(RuleNode rNode, PatternNode origNode) {
@@ -273,8 +289,28 @@ public final class Materialisation {
         return newEdge;
     }
 
-    // ------------------------------------------------------------------------
-    // Inner classes
-    // ------------------------------------------------------------------------
+    private void createPattern(RuleNode rNode, boolean closure) {
+        Duo<RuleEdge> inEdges = this.rule.rhs().getIncomingEdges(rNode);
+
+        RuleEdge r1 = inEdges.one();
+        RuleEdge r2 = inEdges.two();
+        TypeEdge m1 = r1.getType();
+        TypeEdge m2 = r2.getType();
+        PatternNode p1 = this.match.getNode(r1.source());
+        PatternNode p2 = this.match.getNode(r2.source());
+
+        if (closure) {
+            this.qShape.closePattern(m1, m2, p1, p2);
+        } else {
+            Pair<PatternNode,Duo<PatternEdge>> pair =
+                this.qShape.addEdgePattern(m1, m2, p1, p2);
+            PatternNode newNode = pair.one();
+            PatternEdge d1 = pair.two().one();
+            PatternEdge d2 = pair.two().two();
+            this.match.putNode(rNode, newNode);
+            this.match.putEdge(r1, d1);
+            this.match.putEdge(r2, d2);
+        }
+    }
 
 }

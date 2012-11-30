@@ -182,6 +182,11 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
         return getTypeGraph().inEdgeSet(pNode.getType());
     }
 
+    /** Returns the duo of incoming type edges for the given node. */
+    public Duo<TypeEdge> getDuoIncomingEdgeTypes(PatternNode pNode) {
+        return getTypeGraph().getIncomingEdges(pNode.getType());
+    }
+
     /**
      * Returns true if the given node is uniquely covered by the incoming edge
      * morphisms. Uniqueness corresponds to the absence of distinct incoming
