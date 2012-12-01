@@ -35,6 +35,7 @@ import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJVertex;
+import groove.gui.look.Line.ColorType;
 import groove.gui.look.Line.Style;
 import groove.gui.look.MultiLabel.Direct;
 import groove.gui.tree.LabelTree;
@@ -504,24 +505,24 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result = getRolePrefix(kind).append(result);
             switch (kind) {
             case ERASER:
-                result = result.color(Values.ERASER_FOREGROUND);
+                result = result.color(ColorType.ERASER);
                 break;
             case ADDER:
-                result = result.color(Values.CREATOR_FOREGROUND);
+                result = result.color(ColorType.CREATOR);
                 break;
             case LET:
                 if (edge.getGraphRole() == GraphRole.RULE) {
-                    result = result.color(Values.CREATOR_FOREGROUND);
+                    result = result.color(ColorType.CREATOR);
                 }
                 break;
             case CREATOR:
-                result = result.color(Values.CREATOR_FOREGROUND);
+                result = result.color(ColorType.CREATOR);
                 break;
             case EMBARGO:
-                result = result.color(Values.EMBARGO_FOREGROUND);
+                result = result.color(ColorType.EMBARGO);
                 break;
             case REMARK:
-                result = result.color(Values.REMARK_FOREGROUND);
+                result = result.color(ColorType.REMARK);
                 /* TODO test if there are errors caused by commenting out
                 // replace all newlines by // as well
                 String NEWLINE = HTMLConverter.HTML_LINEBREAK;

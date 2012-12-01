@@ -16,9 +16,6 @@
  */
 package groove.io.external.util;
 
-import static groove.io.HTMLConverter.SUB_TAG;
-import static groove.io.HTMLConverter.SUPER_TAG;
-import static groove.io.HTMLConverter.toHtml;
 import static groove.view.aspect.AspectKind.DEFAULT;
 import static groove.view.aspect.AspectKind.PRODUCT;
 import groove.control.CtrlTransition;
@@ -41,12 +38,8 @@ import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.gui.look.EdgeEnd;
-import groove.gui.look.HTMLFormat;
 import groove.gui.look.MultiLabel;
 import groove.gui.look.VisualMap;
-import groove.io.HTMLConverter;
-import groove.io.Util;
-import groove.trans.RuleLabel;
 import groove.util.Duo;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
@@ -128,26 +121,6 @@ public final class GraphToTikz {
         return new GraphToTikz(jGraph).doConvert();
     }
 
-    /**
-     * Square brackets are tricky because they are sometimes interpreted in
-     * different ways by LaTeX and Tikz and sometimes they need to be escaped.
-     * This method undoes the escaping on the given string. 
-     */
-    private static String unescapeSquareBrack(String string) {
-        StringBuilder result = new StringBuilder(string);
-        int i = result.indexOf(LEFT_SQUARE);
-        while (i > -1) {
-            result.replace(i, i + LEFT_SQUARE.length(), "[");
-            i = result.indexOf(LEFT_SQUARE);
-        }
-        i = result.indexOf(TEX_RIGHT_SQUARE);
-        while (i > -1) {
-            result.replace(i, i + TEX_RIGHT_SQUARE.length(), "]");
-            i = result.indexOf(TEX_RIGHT_SQUARE);
-        }
-        return result.toString();
-    }
-
     // BEGIN
     // Methods to enclose a string with extra characters.
 
@@ -171,142 +144,8 @@ public final class GraphToTikz {
         return enclose(string, " ", " ");
     }
 
-    private static String encloseItalicStyle(String string) {
-        return enclose(unescapeSquareBrack(string), ITALIC_STYLE, "}");
-    }
-
-    private static String encloseBoldStyle(String string) {
-        return enclose(unescapeSquareBrack(string), BOLD_STYLE, "}");
-    }
-
     // Methods to enclose a string with extra characters.
     // END
-
-    /**
-     * Escapes the special LaTeX characters in the line and copies the rest.
-     * @param line the string to be escaped.
-     * @return the line with escaped characters, if any.
-     */
-    private static StringBuilder escapeSpecialChars(StringBuilder line) {
-        StringBuilder result = new StringBuilder();
-
-        for (int i = 0; i < line.length(); i++) {
-            char c = line.charAt(i);
-            switch (c) {
-            case '&': // We have to check if the & is part of a special
-                // HTML char.
-                if (line.charAt(i + 1) == '#') {
-                    // Yes, it is. Keep it.
-                    result.append("&#");
-                    i++;
-                } else { // It's not.
-                    result.append(TEX_AMP);
-                }
-                break;
-            case '$':
-                result.append(TEX_DOLLAR);
-                break;
-            case '#':
-                result.append(TEX_HASH);
-                break;
-            case '|':
-                result.append(TEX_VERT_BAR);
-                break;
-            case '%':
-                result.append(TEX_PERCENT);
-                break;
-            case '_':
-                result.append(TEX_UNDERSCORE);
-                break;
-            case '{':
-                result.append(TEX_LEFT_CURLY);
-                break;
-            case '}':
-                result.append(TEX_RIGHT_CURLY);
-                break;
-            case '[':
-                result.append(LEFT_SQUARE);
-                break;
-            case ']':
-                result.append(TEX_RIGHT_SQUARE);
-                break;
-            case '^':
-                result.append(TEX_CIRCONFLEX);
-                break;
-            case '~':
-                result.append(TEX_TILDE);
-                break;
-            case '+':
-                result.append(TEX_PLUS);
-                break;
-            case '-':
-                result.append(TEX_MINUS);
-                break;
-            case '>':
-                result.append(TEX_GT);
-                break;
-            case '<':
-                result.append(TEX_LT);
-                break;
-            case '\\':
-                result.append(TEX_BACKSLASH);
-                break;
-            case Util.LC_PI:
-                result.append(TEX_PI);
-                break;
-            default:
-                result.append(c);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Converts special HTML chars that show inside a node.
-     * @param line the string to be converted.
-     * @return the line with converted characters, if any.
-     */
-    private static StringBuilder convertInscriptedHtml(StringBuilder line) {
-        replaceInline(line, Util.LC_PI);
-        replaceInline(line, '<');
-        replaceInline(line, '>');
-        replaceInline(line, '/');
-        return line;
-    }
-
-    /**
-     * Replaces all occurrences of a HTML character by the actual character.
-     * @param line the line to be operated on.
-     * @param c the character to be replaced.
-     */
-    private static void replaceInline(StringBuilder line, char c) {
-        String html = toHtml(c);
-        String text = "" + c;
-        int i = line.indexOf(html);
-        while (i != -1) {
-            line.replace(i, i + html.length(), text);
-            i = line.indexOf(html);
-        }
-    }
-
-    /**
-     * Removes all occurrences of the given tag on the given line.
-     * @param line the line to be processed.
-     * @param tag the tag to be removed.
-     * @return the original line that was passed to the method.
-     */
-    private static String removeAllTags(StringBuilder line,
-            HTMLConverter.HTMLTag tag) {
-        String origLine = line.toString();
-        StringBuilder newLine = new StringBuilder(line);
-        tag.off(newLine);
-        while (!newLine.toString().equals(origLine)) {
-            origLine = newLine.toString();
-            tag.off(newLine);
-        }
-        return origLine;
-    }
 
     /**
      * Checks on which side of a rectangle a point lies. To avoid anchoring in
@@ -635,12 +474,7 @@ public final class GraphToTikz {
                 this.result.append(EMPTY_NODE_LAB);
             } else {
                 this.result.append(BEGIN_NODE_LAB);
-                this.appendNodeInscription(lines.toString(HTMLFormat.instance()));
-                // Remove the last \\, if it exists
-                if (this.result.lastIndexOf(CRLF) == this.result.length() - 2) {
-                    this.result.deleteCharAt(this.result.length() - 1);
-                    this.result.deleteCharAt(this.result.length() - 1);
-                }
+                this.result.append(lines.toString(TeXLineFormat.instance()));
                 this.result.append(END_NODE_LAB);
             }
 
@@ -868,90 +702,6 @@ public final class GraphToTikz {
         StringBuilder s = new StringBuilder();
         appendPoint(x, y, usePar, s);
         return s.toString();
-    }
-
-    /**
-     * Scans the HTML string of a node and converts the tags to Tikz.
-     * @param htmlLine the HTML string to be converted.
-     */
-    private void appendNodeInscription(StringBuilder htmlLine) {
-        int color = HTMLConverter.removeColorTags(htmlLine);
-        int font = HTMLConverter.removeFontTags(htmlLine);
-        StringBuilder line =
-            escapeSpecialChars(convertInscriptedHtml(htmlLine));
-        String aux = "";
-        int i = line.indexOf(toHtml(Util.EXISTS));
-        if (i >= 0) {
-            this.result.append(line.substring(0, i));
-            appendQuantifierNodeInscription(true, line);
-        } else if ((i = line.indexOf(toHtml(Util.FORALL))) >= 0) {
-            this.result.append(line.substring(0, i));
-            appendQuantifierNodeInscription(false, line);
-        } else {
-            aux = line.toString();
-        }
-
-        switch (font) {
-        case 0:
-            // nothing to do.
-            break;
-        case 1:
-            aux = encloseBoldStyle(aux);
-            break;
-        case 2:
-            aux = encloseItalicStyle(aux);
-            break;
-        case 3:
-            aux = encloseBoldStyle(encloseItalicStyle(aux));
-            break;
-        }
-
-        switch (color) {
-        case 0:
-            this.result.append(aux);
-            break;
-        case 1:
-            this.result.append(enclose(aux, BEGIN_COLOR_BLUE, "}"));
-            break;
-        case 2:
-            this.result.append(enclose(aux, BEGIN_COLOR_GREEN, "}"));
-            break;
-        case 3:
-            this.result.append(enclose(aux, BEGIN_COLOR_RED, "}"));
-            break;
-        case 4:
-            this.result.append(enclose(aux, BEGIN_COLOR_ORANGE, "}"));
-            break;
-        }
-
-        this.result.append(CRLF);
-    }
-
-    /**
-     * Scans the HTML string of a quantified node label and converts the tags to Tikz.
-     * @param exists if {@code true}, the quantifier is existential
-     * @param line the HTML string to be converted.
-     */
-    private void appendQuantifierNodeInscription(boolean exists,
-            StringBuilder line) {
-        // open math environment
-        this.result.append('$');
-        // find out if this is a ...x quantifier
-        boolean special = line.indexOf(SUPER_TAG.tagBegin) >= 0;
-        if (exists) {
-            this.result.append(special ? EXISTSX_STR : EXISTS_STR);
-        } else {
-            this.result.append(special ? FORALLX_STR : FORALL_STR);
-        }
-        // append subscript, if there is one
-        int subIx = line.indexOf(SUB_TAG.tagBegin);
-        if (subIx >= 0) {
-            line = line.replace(0, subIx, "");
-            String sub = removeAllTags(line, SUB_TAG);
-            this.result.append("_\\mathsf{" + sub + "}");
-        }
-        // close math environment
-        this.result.append('$');
     }
 
     /**
@@ -1398,29 +1148,10 @@ public final class GraphToTikz {
     }
 
     private void appendEdgeLabel(GraphJEdge edge) {
-        Edge e = edge.getEdge();
         MultiLabel lines = edge.getVisuals().getLabel();
-        StringBuilder text = new StringBuilder();
-        for (MultiLabel.Part part : lines.getParts()) {
-            if (text.length() > 0) {
-                text.append(", ");
-            }
-            text.append(part.getLine().toString(HTMLFormat.instance()));
-        }
-        String escapedText = escapeSpecialChars(text).toString();
-        if (e instanceof AspectEdge) {
-            RuleLabel ruleLabel = ((AspectEdge) e).getRuleLabel();
-            if (ruleLabel != null && !ruleLabel.isAtom()
-                && !ruleLabel.isSharp()) {
-                // We have a regular expression on the label, make it italic.
-                this.result.append(encloseCurly(encloseItalicStyle(escapedText)));
-            } else {
-                // This is a normal AspectEdge.
-                this.result.append(encloseCurly(escapedText));
-            }
-        } else {
-            this.result.append(encloseCurly(escapedText));
-        }
+        this.result.append(BEGIN_EDGE_LAB);
+        this.result.append(lines.toString(TeXLineFormat.instance()));
+        this.result.append(END_EDGE_LAB);
     }
 
     /**
@@ -1530,7 +1261,6 @@ public final class GraphToTikz {
     // ------------------------------------------------------------------------
 
     private static final String ENTER = "\n";
-    private static final String CRLF = "\\\\";
     private static final String BEGIN_TIKZ_FIG_OPEN = "\\begin{tikzpicture}["
         + ENTER;
     private static final String BEGIN_TIKZ_FIG_CLOSE = "scale=\\tikzscale]"
@@ -1542,21 +1272,13 @@ public final class GraphToTikz {
     private static final String AT_KEYWORD = "at";
     private static final String BEGIN_NODE_LAB = " {\\ml{";
     private static final String END_NODE_LAB = "}};" + ENTER;
+    private static final String BEGIN_EDGE_LAB = " {\\ml{";
+    private static final String END_EDGE_LAB = "}}";
     private static final String EMPTY_NODE_LAB = "{};" + ENTER;
-    private static final String EXISTS_STR = "\\exists";
-    private static final String EXISTSX_STR = "\\exists^{?}";
-    private static final String FORALL_STR = "\\forall";
-    private static final String FORALLX_STR = "\\forall^{>0}";
-    private static final String ITALIC_STYLE = "\\textit{";
-    private static final String BOLD_STYLE = "\\textbf{";
     private static final String BEGIN_EDGE = "\\path";
     private static final String END_PATH = ";" + ENTER;
     private static final String END_EDGE = END_PATH;
     private static final String NODE = "node";
-    private static final String BEGIN_COLOR_BLUE = "{\\color{\\blue}";
-    private static final String BEGIN_COLOR_GREEN = "{\\color{\\green}";
-    private static final String BEGIN_COLOR_RED = "{\\color{\\red}";
-    private static final String BEGIN_COLOR_ORANGE = "{\\color{\\orange}";
     private static final String BASIC_NODE_STYLE = "node";
     private static final String BASIC_EDGE_STYLE = "edge";
     private static final String BASIC_LABEL_STYLE = "lab";
@@ -1609,24 +1331,6 @@ public final class GraphToTikz {
     private static final String BEGIN_CONTROLS = ".. controls ";
     private static final String END_CONTROLS = " .. ";
     private static final String AND = " and ";
-    private static final String TEX_AMP = "\\&";
-    private static final String TEX_DOLLAR = "\\$";
-    private static final String TEX_HASH = "\\#";
-    private static final String TEX_PERCENT = "\\%";
-    private static final String TEX_UNDERSCORE = "\\_";
-    private static final String TEX_LEFT_CURLY = "\\{";
-    private static final String TEX_RIGHT_CURLY = "\\}";
-    private static final String LEFT_SQUARE = "$[$";
-    private static final String TEX_RIGHT_SQUARE = "$]$";
-    private static final String TEX_CIRCONFLEX = "\\^{}";
-    private static final String TEX_PLUS = "$+$";
-    private static final String TEX_MINUS = "$-$";
-    private static final String TEX_TILDE = "\\~{}";
-    private static final String TEX_VERT_BAR = "$|$";
-    private static final String TEX_BACKSLASH = "$\\backslash$";
-    private static final String TEX_PI = "$\\pi$";
-    private static final String TEX_GT = "$>$";
-    private static final String TEX_LT = "$<$";
     private static final String NORTH = ".north -| ";
     private static final String SOUTH = ".south -| ";
     private static final String EAST = ".east |- ";

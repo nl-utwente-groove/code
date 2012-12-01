@@ -20,6 +20,7 @@ import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.createColorTag;
 import static groove.io.HTMLConverter.createSpanTag;
 import groove.gui.Options;
+import groove.gui.look.Line.ColorType;
 import groove.gui.look.Line.Style;
 import groove.io.HTMLConverter;
 import groove.io.HTMLConverter.HTMLTag;
@@ -32,24 +33,21 @@ import java.awt.Font;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class HTMLFormat extends LineFormat {
-    private HTMLFormat() {
+public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
+    private HTMLLineFormat() {
         // empty
     }
 
     @Override
-    protected String getLineBreak() {
-        return HTMLConverter.HTML_LINEBREAK;
-    }
-
-    @Override
-    public StringBuilder applyColored(Color color, StringBuilder subline) {
+    public HTMLBuilder applyColored(ColorType type, Color color,
+            HTMLBuilder subline) {
         HTMLTag colorTag = HTMLConverter.createColorTag(color);
-        return colorTag.on(subline);
+        colorTag.on(subline.getResult());
+        return subline;
     }
 
     @Override
-    public StringBuilder applyStyled(Style style, StringBuilder subline) {
+    public HTMLBuilder applyStyled(Style style, HTMLBuilder subline) {
         HTMLTag tag;
         switch (style) {
         case BOLD:
@@ -68,16 +66,26 @@ public class HTMLFormat extends LineFormat {
             assert false;
             tag = null;
         }
-        return tag.on(subline);
+        tag.on(subline.getResult());
+        return subline;
     }
 
     @Override
-    public StringBuilder applyAtomic(String text) {
-        return HTMLConverter.toHtml(new StringBuilder(text));
+    public HTMLBuilder applyAtomic(String text) {
+        HTMLBuilder result = createResult();
+        StringBuilder content = result.getResult();
+        content.append(text);
+        HTMLConverter.toHtml(content);
+        return result;
+    }
+
+    @Override
+    protected HTMLBuilder createResult() {
+        return new HTMLBuilder();
     }
 
     /** Returns the singleton instance of this renderer. */
-    public static HTMLFormat instance() {
+    public static HTMLLineFormat instance() {
         return instance;
     }
 
@@ -113,5 +121,29 @@ public class HTMLFormat extends LineFormat {
         fontTag = createSpanTag(argument);
     }
 
-    private static final HTMLFormat instance = new HTMLFormat();
+    private static final HTMLLineFormat instance = new HTMLLineFormat();
+
+    static class HTMLBuilder implements LineFormat.Builder<HTMLBuilder> {
+        @Override
+        public StringBuilder getResult() {
+            return this.content;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return this.content.length() == 0;
+        }
+
+        @Override
+        public void append(HTMLBuilder other) {
+            this.content.append(other.content);
+        }
+
+        @Override
+        public void appendLineBreak() {
+            this.content.append(HTMLConverter.HTML_LINEBREAK);
+        }
+
+        private final StringBuilder content = new StringBuilder();
+    }
 }

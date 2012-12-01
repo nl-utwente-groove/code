@@ -16,6 +16,7 @@
  */
 package groove.gui.look;
 
+import groove.gui.look.Line.ColorType;
 import groove.gui.look.Line.Style;
 
 import java.awt.Color;
@@ -25,7 +26,7 @@ import java.awt.Color;
  * @author Rensink
  * @version $Revision $
  */
-abstract public class LineFormat {
+abstract public class LineFormat<R extends LineFormat.Builder<R>> {
     /** Converts a given Line to a String representation. */
     public String toString(Line line) {
         return line.toString(this).toString();
@@ -36,31 +37,28 @@ abstract public class LineFormat {
      * This default implementation concatenates the fragments, while
      * inserting a #getLineBreak() in between.
      */
-    public StringBuilder applyMulti(StringBuilder[] sublines) {
-        StringBuilder result;
+    public R applyMulti(R[] sublines) {
+        R result;
         if (sublines.length == 0) {
-            result = new StringBuilder();
+            result = createResult();
         } else {
             result = sublines[0];
             for (int i = 1; i < sublines.length; i++) {
-                result.append(getLineBreak());
+                result.appendLineBreak();
                 result.append(sublines[i]);
             }
         }
         return result;
     }
 
-    /** String effecting a line break in a multiline rendering. */
-    abstract protected String getLineBreak();
-
     /** 
      * Constructs a composed rendering.
      * This default implementation just concatenates the fragments.
      */
-    public StringBuilder applyComposed(StringBuilder[] fragments) {
-        StringBuilder result;
+    public R applyComposed(R[] fragments) {
+        R result;
         if (fragments.length == 0) {
-            result = new StringBuilder();
+            result = createResult();
         } else {
             result = fragments[0];
             for (int i = 1; i < fragments.length; i++) {
@@ -71,12 +69,31 @@ abstract public class LineFormat {
     }
 
     /** Constructs a coloured rendering. */
-    abstract public StringBuilder applyColored(Color color,
-            StringBuilder subline);
+    abstract public R applyColored(ColorType type, Color color, R subline);
 
     /** Constructs a styled rendering. */
-    abstract public StringBuilder applyStyled(Style style, StringBuilder subline);
+    abstract public R applyStyled(Style style, R subline);
 
     /** Constructs a rendering of an unstructured string. */
-    abstract public StringBuilder applyAtomic(String text);
+    abstract public R applyAtomic(String text);
+
+    /** Callback method to create a result object. */
+    abstract protected R createResult();
+
+    /** Result type, to be passed around during the construction. */
+    public interface Builder<R extends Builder<R>> {
+        /** Indicates if the result is as yet empty. */
+        boolean isEmpty();
+
+        /** Returns a string representation of the result. */
+        StringBuilder getResult();
+
+        /** 
+         * Appends another result to this one.
+         */
+        void append(R other);
+
+        /** Appends a line break to this result. */
+        void appendLineBreak();
+    }
 }

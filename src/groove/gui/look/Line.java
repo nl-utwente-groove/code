@@ -16,6 +16,8 @@
  */
 package groove.gui.look;
 
+import groove.gui.look.LineFormat.Builder;
+
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.List;
@@ -29,14 +31,27 @@ import java.util.List;
  */
 public abstract class Line {
     /** Converts this object to a string representation by applying a given renderer. */
-    abstract public StringBuilder toString(LineFormat renderer);
+    abstract public <R extends Builder<R>> R toString(LineFormat<R> renderer);
 
-    /** Returns a coloured version of this line. */
+    /** Returns a coloured version of this line,
+     * where the colour is specified as a logical colour type. 
+     */
+    public Line color(ColorType type) {
+        if (isEmpty()) {
+            return this;
+        } else {
+            return new Colored(type, type.getColor(), this);
+        }
+    }
+
+    /** Returns a coloured version of this line,
+     * where the colour is specified as a user-provided RGB value. 
+     */
     public Line color(Color color) {
         if (isEmpty()) {
             return this;
         } else {
-            return new Colored(color, this);
+            return new Colored(ColorType.RGB, color, this);
         }
     }
 
@@ -137,9 +152,9 @@ public abstract class Line {
         }
 
         @Override
-        public StringBuilder toString(LineFormat renderer) {
-            StringBuilder[] fragments =
-                new StringBuilder[this.fragments.length];
+        public <R extends Builder<R>> R toString(LineFormat<R> renderer) {
+            @SuppressWarnings("unchecked")
+            R[] fragments = (R[]) new Builder[this.fragments.length];
             for (int i = 0; i < fragments.length; i++) {
                 fragments[i] = this.fragments[i].toString(renderer);
             }
@@ -158,15 +173,17 @@ public abstract class Line {
     /** Line consisting of a coloured subline. */
     static public class Colored extends Line {
         /** Constructs an instance for a non-{@code null} colour and subline. */
-        public Colored(Color color, Line subline) {
+        public Colored(ColorType type, Color color, Line subline) {
+            assert type == ColorType.RGB || color == type.getColor();
+            this.type = type;
             this.color = color;
             this.subline = subline;
         }
 
         @Override
-        public StringBuilder toString(LineFormat renderer) {
-            StringBuilder subline = this.subline.toString(renderer);
-            return renderer.applyColored(this.color, subline);
+        public <R extends Builder<R>> R toString(LineFormat<R> renderer) {
+            R subline = this.subline.toString(renderer);
+            return renderer.applyColored(this.type, this.color, subline);
         }
 
         @Override
@@ -174,6 +191,8 @@ public abstract class Line {
             return "Colored[" + this.color + ", " + this.subline + "]";
         }
 
+        /** Colour to apply. */
+        private final ColorType type;
         /** Colour to apply. */
         private final Color color;
         /** The subline to be coloured. */
@@ -189,8 +208,8 @@ public abstract class Line {
         }
 
         @Override
-        public StringBuilder toString(LineFormat renderer) {
-            StringBuilder subline = this.subline.toString(renderer);
+        public <R extends Builder<R>> R toString(LineFormat<R> renderer) {
+            R subline = this.subline.toString(renderer);
             return renderer.applyStyled(this.style, subline);
         }
 
@@ -213,7 +232,7 @@ public abstract class Line {
         }
 
         @Override
-        public StringBuilder toString(LineFormat renderer) {
+        public <R extends Builder<R>> R toString(LineFormat<R> renderer) {
             return renderer.applyAtomic(this.text);
         }
 
@@ -233,8 +252,8 @@ public abstract class Line {
         }
 
         @Override
-        public StringBuilder toString(LineFormat renderer) {
-            return new StringBuilder();
+        public <R extends Builder<R>> R toString(LineFormat<R> renderer) {
+            return renderer.createResult();
         }
 
         @Override
@@ -253,5 +272,34 @@ public abstract class Line {
         STRIKE,
         /** Superscript. */
         SUPER;
+    }
+
+    /** Logical text colours. */
+    public static enum ColorType {
+        /** Colour for eraser nodes and edges. */
+        ERASER(Values.ERASER_FOREGROUND),
+        /** Colour for creator nodes and edges. */
+        CREATOR(Values.CREATOR_FOREGROUND),
+        /** Colour for embargo nodes and edges. */
+        EMBARGO(Values.EMBARGO_FOREGROUND),
+        /** Colour for remark nodes and edges. */
+        REMARK(Values.REMARK_FOREGROUND),
+        /** User-specified RGB colour. */
+        RGB(null);
+
+        private ColorType(Color color) {
+            this.color = color;
+        }
+
+        /** Returns the fixed colour associated with this colour type, if any. */
+        public Color getColor() {
+            return this.color;
+        }
+
+        /**
+         * The fixed colour for the type, or {@code null}
+         * if the colour type has no fixed colour.
+         */
+        private final Color color;
     }
 }
