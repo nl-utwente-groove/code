@@ -22,6 +22,7 @@ import static groove.gui.look.MultiLabel.Orient.LEFT;
 import static groove.gui.look.MultiLabel.Orient.RIGHT;
 import static groove.gui.look.MultiLabel.Orient.UP_LEFT;
 import static groove.gui.look.MultiLabel.Orient.UP_RIGHT;
+import groove.gui.look.LineFormat.Builder;
 import groove.io.Util;
 
 import java.awt.geom.Point2D;
@@ -80,12 +81,12 @@ public class MultiLabel {
      * Computes a string representation of this label, for a given renderer
      * and with or without orientation decorations. 
      */
-    public StringBuilder toString(LineFormat renderer, Point2D start,
-            Point2D end) {
-        StringBuilder result = new StringBuilder();
+    public <R extends Builder<R>> StringBuilder toString(LineFormat<R> renderer,
+            Point2D start, Point2D end) {
+        R result = renderer.createResult();
         for (Part part : getParts()) {
-            if (result.length() != 0) {
-                result.append(renderer.getLineBreak());
+            if (!result.isEmpty()) {
+                result.appendLineBreak();
             }
             Line line;
             if (start != null) {
@@ -94,16 +95,16 @@ public class MultiLabel {
             } else {
                 line = part.line;
             }
-            result.append(renderer.toString(line));
+            result.append(line.toString(renderer));
         }
-        return result;
+        return result.getResult();
     }
 
     /**
      * Computes a string representation of this label, for a given renderer
      * and without orientation decorations. 
      */
-    public StringBuilder toString(LineFormat renderer) {
+    public <R extends Builder<R>> StringBuilder toString(LineFormat<R> renderer) {
         return toString(renderer, null, null);
     }
 

@@ -18,7 +18,7 @@ package groove.gui.jgraph;
 
 import static groove.gui.look.Values.ERROR_COLOR;
 import groove.gui.Options;
-import groove.gui.look.HTMLFormat;
+import groove.gui.look.HTMLLineFormat;
 import groove.gui.look.LineStyle;
 import groove.gui.look.MultiLabel;
 import groove.gui.look.Values;
@@ -724,11 +724,11 @@ public class JEdgeView extends EdgeView {
                 if (view.getCell().getJGraph().isShowArrowsOnLabels()) {
                     Point2D start = view.getPoint(0);
                     Point2D end = view.getPoint(view.getPointCount() - 1);
-                    text = lines.toString(HTMLFormat.instance(), start, end);
+                    text = lines.toString(HTMLLineFormat.instance(), start, end);
                 } else {
-                    text = lines.toString(HTMLFormat.instance());
+                    text = lines.toString(HTMLLineFormat.instance());
                 }
-                this.jLabel.setText(HTMLFormat.toHtml(text, foreground));
+                this.jLabel.setText(HTMLLineFormat.toHtml(text, foreground));
                 this.jLabelColor = foreground;
                 result = this.jLabelSize = this.jLabel.getPreferredSize();
             }

@@ -19,7 +19,7 @@ package groove.gui.jgraph;
 import static groove.gui.jgraph.JAttr.ADORNMENT_FONT;
 import static groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
 import groove.gui.Options;
-import groove.gui.look.HTMLFormat;
+import groove.gui.look.HTMLLineFormat;
 import groove.gui.look.LineStyle;
 import groove.gui.look.Look;
 import groove.gui.look.MultiLabel;
@@ -114,7 +114,7 @@ public class JVertexView extends VertexView {
         super.refresh(cache, mapper, createDependentViews);
         MultiLabel label = getCellVisuals().getLabel();
         this.text =
-            HTMLFormat.toHtml(label.toString(HTMLFormat.instance()),
+            HTMLLineFormat.toHtml(label.toString(HTMLLineFormat.instance()),
                 getCellVisuals().getForeground());
     }
 
