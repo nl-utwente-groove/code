@@ -16,6 +16,8 @@
  */
 package groove.io;
 
+import groove.util.Groove;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,12 +31,13 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
+import au.com.bytecode.opencsv.CSVReader;
+
 /**
  * Useful file system functionalities for performing I/O.
  * Source code adapted from from org.apache.commons.io.FileUtils class.
  */
 public class Util {
-
     /**
      * Copies a whole directory to a new location.
      * <p>
@@ -280,6 +283,20 @@ public class Util {
      * The number of bytes in a 50 MB.
      */
     private static final long FIFTY_MB = 1024 * 1024 * 50;
+
+    /** Reads a CSV file from the resources dir and returns its contents as a String matrix. */
+    public final static List<String[]> readCSV(String name, char sep) {
+        List<String[]> result = null;
+        try {
+            CSVReader reader =
+                new CSVReader(new FileReader(
+                    Groove.getResource(name + ".csv").getFile()), sep);
+            result = reader.readAll();
+        } catch (IOException e) {
+            // no result
+        }
+        return result;
+    }
 
     /** Unicode hex string for "there exists" (existential quantifier) */
     public final static char EXISTS = '\u2203';
