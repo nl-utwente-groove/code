@@ -20,9 +20,19 @@ import groove.io.HTMLConverter;
 import groove.trans.SystemProperties;
 import groove.util.Version;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextPane;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 
 /**
  * @author Eduardo Zambon
@@ -116,5 +126,37 @@ public class VersionDialog {
                 "Warning: loading old grammar", JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, options, save_as_text);
         return buttonPressed == JOptionPane.YES_OPTION;
+    }
+
+    /** Shows the about dialog from the help menu. */
+    public static void showAbout(final Component parent) {
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBorder(null);
+        buttonPanel.add(new JButton(new AbstractAction("External Libraries") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                LibrariesTable.instance().showDialog(parent);
+            }
+        }));
+        buttonPanel.add(new JButton(new AbstractAction("Contributors") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // do nothing for now
+            }
+        }));
+        Border aboutBorder =
+            new CompoundBorder(
+                BorderFactory.createBevelBorder(BevelBorder.LOWERED),
+                BorderFactory.createEmptyBorder(0, 5, 5, 5));
+        JTextPane aboutLabel = new JTextPane();
+        aboutLabel.setBorder(aboutBorder);
+        aboutLabel.setContentType("text/html");
+        aboutLabel.setText(Version.getAboutHTML());
+        aboutLabel.setEditable(false);
+        JPanel aboutPanel = new JPanel(new BorderLayout());
+        aboutPanel.add(aboutLabel);
+        aboutPanel.add(buttonPanel, BorderLayout.SOUTH);
+        JOptionPane.showMessageDialog(parent, aboutPanel, "About",
+            JOptionPane.INFORMATION_MESSAGE);
     }
 }

@@ -120,6 +120,13 @@ public class HTMLConverter {
     }
 
     /**
+     * Returns a hyperlink tag for the given URL.
+     */
+    static public HTMLTag createHyperlink(String url) {
+        return new HTMLTag(LINK_TAG_NAME, "name", url);
+    }
+
+    /**
      * Returns an HTML tag embedder.
      */
     static public HTMLTag createHtmlTag(String tag) {
@@ -243,6 +250,8 @@ public class HTMLConverter {
     // them with the numeric codes - this fixes it. -- Maarten
     /** Non-breaking space character. */
     static public final String NBSP = "&#160;";
+    /** Name of the link tag (<code>a</code>). */
+    static public final String LINK_TAG_NAME = "a";
     /** Name of the span tag (<code>span</code>). */
     static public final String SPAN_TAG_NAME = "span";
     /** Name of the span tag (<code>div</code>). */

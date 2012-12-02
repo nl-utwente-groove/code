@@ -823,7 +823,7 @@ public class Simulator implements SimulatorListener {
     private JMenu createHelpMenu() {
         JMenu result = new JMenu(HELP_MENU_NAME);
         result.setMnemonic(Options.HELP_MENU_MNEMONIC);
-        result.add(new JMenuItem(new AboutAction()));
+        result.add(new JMenuItem(new AboutAction(getFrame())));
         return result;
     }
 
