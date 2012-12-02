@@ -292,6 +292,7 @@ public class Util {
                 new CSVReader(new FileReader(
                     Groove.getResource(name + ".csv").getFile()), sep);
             result = reader.readAll();
+            reader.close();
         } catch (IOException e) {
             // no result
         }
