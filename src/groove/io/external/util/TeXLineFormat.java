@@ -209,7 +209,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
         addChar('_', "\\_", Mode.BOTH);
         addChar('#', "\\#", Mode.BOTH);
         addChar('$', "\\$", Mode.BOTH);
-        addChar('^', "\\^{}", Mode.MATH);
+        addChar('^', "\\^{}", Mode.TEXT);
         for (char c = '0'; c <= '9'; c++) {
             addChar(c, "" + c, Mode.BOTH);
         }
