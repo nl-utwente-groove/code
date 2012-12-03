@@ -26,8 +26,9 @@ import groove.gui.look.LineFormat.Builder;
 import groove.io.Util;
 
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Class wrapping the functionality to convert a multi-line label
@@ -39,32 +40,49 @@ public class MultiLabel {
     /** Adds a directed line to this multiline label. */
     public void add(Line line, Direct direct) {
         if (!line.isEmpty()) {
-            add(new Part(line, direct));
+            Map<Direct,Integer> dirMap = this.parts.get(line);
+            if (dirMap == null) {
+                this.parts.put(line, dirMap = createDirMap());
+            }
+            // combine forward and backward into bidirectional
+            switch (direct) {
+            case FORWARD:
+                int backCount = dirMap.get(Direct.BACKWARD);
+                if (backCount > 0) {
+                    direct = Direct.BIDIRECTIONAL;
+                    dirMap.put(Direct.BACKWARD, backCount - 1);
+                }
+                break;
+            case BACKWARD:
+                int foreCount = dirMap.get(Direct.FORWARD);
+                if (foreCount > 0) {
+                    direct = Direct.BIDIRECTIONAL;
+                    dirMap.put(Direct.FORWARD, foreCount - 1);
+                }
+                break;
+            }
+            dirMap.put(direct, dirMap.get(direct) + 1);
         }
     }
 
-    /** Adds a list of directed lines to this multiline label. */
-    public void addAll(List<Line> lines, Direct direct) {
-        for (Line line : lines) {
-            add(line, direct);
+    private Map<Direct,Integer> createDirMap() {
+        Map<Direct,Integer> result =
+            new EnumMap<MultiLabel.Direct,Integer>(Direct.class);
+        for (Direct dir : Direct.values()) {
+            result.put(dir, 0);
         }
+        return result;
     }
 
     /** Adds all parts of another multiline label to this one. */
     public void add(MultiLabel label) {
-        for (Part part : label.getParts()) {
-            add(part);
+        for (Map.Entry<Line,Map<Direct,Integer>> entry : label.parts.entrySet()) {
+            for (Map.Entry<Direct,Integer> dir : entry.getValue().entrySet()) {
+                for (int i = 0; i < dir.getValue(); i++) {
+                    add(entry.getKey(), dir.getKey());
+                }
+            }
         }
-    }
-
-    private void add(Part part) {
-        this.parts.add(part);
-        this.direct = this.direct.union(part.getDirect());
-    }
-
-    /** Returns the line parts of this multiline label. */
-    public List<Part> getParts() {
-        return this.parts;
     }
 
     /** Returns the union of all directions in this label. */
@@ -81,21 +99,23 @@ public class MultiLabel {
      * Computes a string representation of this label, for a given renderer
      * and with or without orientation decorations. 
      */
-    public <R extends Builder<R>> StringBuilder toString(LineFormat<R> renderer,
-            Point2D start, Point2D end) {
+    public <R extends Builder<R>> StringBuilder toString(
+            LineFormat<R> renderer, Point2D start, Point2D end) {
         R result = renderer.createResult();
-        for (Part part : getParts()) {
-            if (!result.isEmpty()) {
-                result.appendLineBreak();
+        for (Map.Entry<Line,Map<Direct,Integer>> entry : this.parts.entrySet()) {
+            Line line = entry.getKey();
+            for (Map.Entry<Direct,Integer> dir : entry.getValue().entrySet()) {
+                for (int i = 0; i < dir.getValue(); i++) {
+                    if (!result.isEmpty()) {
+                        result.appendLineBreak();
+                    }
+                    if (start != null) {
+                        Orient orient = dir.getKey().getOrient(start, end);
+                        line = orient.decorate(line);
+                    }
+                    result.append(line.toString(renderer));
+                }
             }
-            Line line;
-            if (start != null) {
-                Orient orient = part.direct.getOrient(start, end);
-                line = orient.decorate(part.line);
-            } else {
-                line = part.line;
-            }
-            result.append(line.toString(renderer));
         }
         return result.getResult();
     }
@@ -113,7 +133,8 @@ public class MultiLabel {
         return this.parts.toString();
     }
 
-    private final List<Part> parts = new ArrayList<MultiLabel.Part>();
+    private final Map<Line,Map<Direct,Integer>> parts =
+        new LinkedHashMap<Line,Map<Direct,Integer>>();
     /** The combined direction of this label. */
     private Direct direct = Direct.NONE;
 
@@ -129,37 +150,6 @@ public class MultiLabel {
             result.add(line, direct);
         }
         return result;
-    }
-
-    /** Single line of a multiline label. */
-    public static class Part {
-        /** Constructs a part consisting of a line and a direction. */
-        public Part(Line line, Direct direct) {
-            this.line = line;
-            this.direct = direct;
-        }
-
-        /** Returns the line of this label part. */
-        public Line getLine() {
-            return this.line;
-        }
-
-        /** Returns the direction of this label part. */
-        public Direct getDirect() {
-            return this.direct;
-        }
-
-        @Override
-        public String toString() {
-            String result = "\"" + this.line + "\"";
-            if (this.direct != Direct.NONE) {
-                result += " as " + this.direct;
-            }
-            return result;
-        }
-
-        private final Line line;
-        private final Direct direct;
     }
 
     /**
@@ -198,7 +188,7 @@ public class MultiLabel {
             }
         },
         /** Both forward and backward. */
-        BIRIDECTIONAL {
+        BIDIRECTIONAL {
             @Override
             public Orient getOrient(int dx, int dy) {
                 if (Math.abs(dx) >= Math.abs(dy) * 3) {
@@ -220,15 +210,15 @@ public class MultiLabel {
             Direct result;
             switch (this) {
             case BACKWARD:
-                if (other == BACKWARD || other == BIRIDECTIONAL) {
-                    result = BIRIDECTIONAL;
+                if (other == BACKWARD || other == BIDIRECTIONAL) {
+                    result = BIDIRECTIONAL;
                 } else {
                     result = this;
                 }
                 break;
             case FORWARD:
-                if (other == FORWARD || other == BIRIDECTIONAL) {
-                    result = BIRIDECTIONAL;
+                if (other == FORWARD || other == BIDIRECTIONAL) {
+                    result = BIDIRECTIONAL;
                 } else {
                     result = this;
                 }
@@ -236,7 +226,7 @@ public class MultiLabel {
             case NONE:
                 result = other;
                 break;
-            case BIRIDECTIONAL:
+            case BIDIRECTIONAL:
                 result = this;
                 break;
             default:

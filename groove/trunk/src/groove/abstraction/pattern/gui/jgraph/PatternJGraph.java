@@ -67,6 +67,11 @@ public final class PatternJGraph extends GraphJGraph {
         return GraphRole.PATTERN;
     }
 
+    @Override
+    public boolean isShowBidirectionalEdges() {
+        return false;
+    }
+
     /** Specialises the return type to a {@link PatternJModel}. */
     @Override
     public PatternJModel getModel() {

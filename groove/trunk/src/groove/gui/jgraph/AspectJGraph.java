@@ -17,7 +17,6 @@
 package groove.gui.jgraph;
 
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
-import static groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
@@ -93,7 +92,6 @@ final public class AspectJGraph extends GraphJGraph {
         super.installListeners();
         addOptionListener(SHOW_ASPECTS_OPTION);
         addOptionListener(SHOW_VALUE_NODES_OPTION);
-        addOptionListener(SHOW_BIDIRECTIONAL_EDGES_OPTION);
     }
 
     @Override
@@ -127,13 +125,6 @@ final public class AspectJGraph extends GraphJGraph {
      */
     public final boolean isShowAspects() {
         return getOptionValue(Options.SHOW_ASPECTS_OPTION);
-    }
-
-    /**
-     * Indicates whether aspect prefixes should be shown for nodes and edges.
-     */
-    public final boolean isShowBidirectionalEdges() {
-        return getOptionValue(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION);
     }
 
     /**

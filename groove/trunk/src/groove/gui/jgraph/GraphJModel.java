@@ -17,7 +17,6 @@
 
 package groove.gui.jgraph;
 
-import static groove.graph.EdgeRole.BINARY;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -174,12 +173,11 @@ public class GraphJModel<N extends Node,E extends Edge> extends
             Collection<? extends E> edgeSet, boolean replace) {
         prepareInsert();
         getJGraph().notifyProgress("Loading");
-        boolean merge = mergeBidirectionalEdges();
         for (N node : nodeSet) {
             addNode(node);
         }
         for (E edge : edgeSet) {
-            addEdge(edge, merge);
+            addEdge(edge);
         }
         getJGraph().notifyProgress("Rendering");
         doInsert(replace);
@@ -316,8 +314,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * enable this behavior.
      * @see AspectJModel
      */
-    public boolean mergeBidirectionalEdges() {
-        return false;
+    public boolean isShowBidirectionalEdges() {
+        return getJGraph().isShowBidirectionalEdges();
     }
 
     /**
@@ -329,6 +327,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         // we add nodes in front of the list to get them in front of the display
         this.addedJCells.add(0, jVertex);
         this.nodeJCellMap.put(node, jVertex);
+        this.addedJEdges.put(jVertex, new HashSet<GraphJEdge>());
         return jVertex;
     }
 
@@ -337,95 +336,46 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * j-vertex, if the edge can be graphically depicted by that vertex; or an
      * existing j-edge, if the edge can be represented by it. Otherwise, it will
      * be a new j-edge.
-     * @param mergeBidirectional flag to indicate whether bidirectional edges
-     *                           should be merged into one GraphJEdge
      */
-    @SuppressWarnings("unchecked")
-    protected GraphJCell addEdge(E edge, boolean mergeBidirectional) {
+    protected GraphJCell addEdge(E edge) {
+        GraphJCell result = this.edgeJCellMap.get(edge);
         // check if edge was processed earlier
-        if (this.edgeJCellMap.containsKey(edge)) {
-            return this.edgeJCellMap.get(edge);
-        }
-        // try to add the edge as vertex label to its source vertex
-        if (edge.source() == edge.target()
-            && (edge.getRole() != BINARY || getLayoutMap().getLayout(edge) == null)) {
-            GraphJVertex jVertex = getJCellForNode(edge.source());
-            if (jVertex.addEdge(edge)) {
+        GraphJVertex sourceJVertex = getJCellForNode(edge.source());
+        assert sourceJVertex != null : "No vertex for source node of " + edge;
+        if (result == null) {
+            // try to add the edge as vertex label to its source vertex
+            if (sourceJVertex.isCompatible(edge)) {
+                sourceJVertex.addEdge(edge);
                 // yes, the edge could be added here; we're done
-                this.edgeJCellMap.put(edge, jVertex);
-                return jVertex;
+                result = sourceJVertex;
             }
         }
-        N source = (N) edge.source();
-        N target = (N) edge.target();
-        // check for bidirectional edges
-        E opposite = null;
-        if (mergeBidirectional && !source.equals(target)) {
-            for (E candidate : this.graph.outEdgeSet(target)) {
-                if (candidate.target().equals(source)
-                    && candidate.label().equals(edge.label())
-                    && this.edgeJCellMap.containsKey(candidate)) {
-                    opposite = candidate;
-                }
-            }
-        }
-        // maybe a JEdge between this source and target is already in the
-        // JGraph
-        Set<GraphJEdge> outJEdges = this.addedOutJEdges.get(source);
-        if (opposite == null) {
-            if (outJEdges == null) {
-                this.addedOutJEdges.put(source, outJEdges =
-                    new HashSet<GraphJEdge>());
-            }
-            for (GraphJEdge jEdge : outJEdges) {
-                if (jEdge.getTargetNode() == target
-                    && isLayoutCompatible(jEdge, edge)
-                    && jEdge.isCompatible(edge)) {
+        if (result == null) {
+            // try to add the edge to an existing JEdge
+            for (GraphJEdge jEdge : this.addedJEdges.get(sourceJVertex)) {
+                if (jEdge.isCompatible(edge)) {
                     // yes, the edge could be added here; we're done
                     jEdge.addEdge(edge);
-                    this.edgeJCellMap.put(edge, jEdge);
-                    return jEdge;
+                    result = jEdge;
                 }
             }
-        } else {
-            GraphJEdge jEdge = (GraphJEdge) this.edgeJCellMap.get(opposite);
-            jEdge.addEdge(edge);
-            return jEdge;
         }
-        // none of the above: so create a new JEdge
-        GraphJEdge jEdge = computeJEdge(edge);
-        // put the edge at the end to make sure it goes to the back
-        this.addedJCells.add(jEdge);
-        // store mapping of edge to jedge(s)
-        this.edgeJCellMap.put(edge, jEdge);
-        outJEdges.add(jEdge);
-        // verification
-        GraphJVertex sourceNode = getJCellForNode(source);
-        assert sourceNode != null : "No vertex for source node of " + edge;
-        GraphJVertex targetNode = getJCellForNode(target);
-        assert targetNode != null : "No vertex for target node of " + edge;
-        this.connections.connect(jEdge, sourceNode.getPort(),
-            targetNode.getPort());
-        return jEdge;
-    }
-
-    /**
-     * Tests if a given edge may be added to an existing jedge, as far as the
-     * available layout information is concerned. The two are compatible if the
-     * layout information for the edge equals that for the (edges contained in
-     * the) jedge, or both are <tt>null</tt>.
-     * @param jEdge the jedge to which the edge is about to be added
-     * @param edge the edge that is investigated for compatibility
-     */
-    protected boolean isLayoutCompatible(GraphJEdge jEdge, E edge) {
-        JCellLayout edgeLayout = this.layoutMap.getLayout(edge);
-        @SuppressWarnings("unchecked")
-        JCellLayout jEdgeLayout = this.layoutMap.getLayout((E) jEdge.getEdge());
-        if (edgeLayout == null) {
-            return jEdgeLayout == null;
-        } else {
-            return jEdgeLayout != null && edgeLayout.equals(jEdgeLayout);
+        if (result == null) {
+            // none of the above: so create a new JEdge
+            GraphJEdge jEdge;
+            result = jEdge = computeJEdge(edge);
+            // put the edge at the end to make sure it goes to the back
+            this.addedJCells.add(result);
+            GraphJVertex targetJVertex = getJCellForNode(edge.target());
+            assert targetJVertex != null : "No vertex for target node of "
+                + edge;
+            this.connections.connect(result, sourceJVertex.getPort(),
+                targetJVertex.getPort());
+            this.addedJEdges.get(sourceJVertex).add(jEdge);
+            this.addedJEdges.get(targetJVertex).add(jEdge);
         }
+        this.edgeJCellMap.put(edge, result);
+        return result;
     }
 
     /**
@@ -507,7 +457,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      */
     protected void prepareInsert() {
         this.addedJCells.clear();
-        this.addedOutJEdges.clear();
+        this.addedJEdges.clear();
         this.connections = new ConnectionSet();
         setLoading(true);
     }
@@ -594,8 +544,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * Mapping from graph nodes to JEdges for outgoing edges.
      * Used in the process of constructing a GraphJModel.
      */
-    protected final Map<N,Set<GraphJEdge>> addedOutJEdges =
-        new HashMap<N,Set<GraphJEdge>>();
+    protected final Map<GraphJVertex,Set<GraphJEdge>> addedJEdges =
+        new HashMap<GraphJVertex,Set<GraphJEdge>>();
     /**
      * Set of GraphModel cells. Used in the process of constructing a
      * GraphJModel.

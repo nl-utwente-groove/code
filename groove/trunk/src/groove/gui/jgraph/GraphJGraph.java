@@ -18,6 +18,7 @@ package groove.gui.jgraph;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
+import static groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
@@ -159,6 +160,7 @@ public class GraphJGraph extends org.jgraph.JGraph {
         addOptionListener(SHOW_UNFILTERED_EDGES_OPTION);
         addOptionListener(SHOW_ANCHORS_OPTION);
         addOptionListener(SHOW_ARROWS_ON_LABELS_OPTION);
+        addOptionListener(SHOW_BIDIRECTIONAL_EDGES_OPTION);
     }
 
     /**
@@ -267,6 +269,13 @@ public class GraphJGraph extends org.jgraph.JGraph {
      */
     public boolean isShowArrowsOnLabels() {
         return getOptionValue(SHOW_ARROWS_ON_LABELS_OPTION);
+    }
+
+    /**
+     * Indicates whether a single JEdge may stand for edges in two directions.
+     */
+    public boolean isShowBidirectionalEdges() {
+        return getOptionValue(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION);
     }
 
     /** Returns the (possibly {@code null}) simulator associated with this JGraph. */

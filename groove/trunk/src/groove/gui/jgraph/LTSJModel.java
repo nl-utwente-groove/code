@@ -88,7 +88,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
             prepareInsert();
             // note that (as per GraphListener contract)
             // source and target Nodes (if any) have already been added
-            GraphJCell edgeJCell = addEdge(transition, false);
+            GraphJCell edgeJCell = addEdge(transition);
             doInsert(false);
             GraphJCell stateJCell = getJCellForNode(transition.target());
             stateJCell.setStale(VisualKey.VISIBLE);
@@ -161,15 +161,14 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     }
 
     @Override
-    protected GraphJCell addEdge(GraphTransition edge,
-            boolean mergeBidirectional) {
+    protected GraphJCell addEdge(GraphTransition edge) {
         GraphJCell result = null;
         int sourceNr = edge.source().getNumber();
         int targetNr = edge.target().getNumber();
         if (!isLoading() || sourceNr <= this.stateUpperBound
             && targetNr <= this.stateUpperBound) {
             if (isWithinBounds(sourceNr) || isWithinBounds(targetNr)) {
-                result = super.addEdge(edge, mergeBidirectional);
+                result = super.addEdge(edge);
             }
         }
         return result;

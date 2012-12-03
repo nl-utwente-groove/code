@@ -91,8 +91,8 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
     }
 
     @Override
-    protected GraphJCell addEdge(ShapeEdge edge, boolean mergeBidirectional) {
-        GraphJCell jCell = super.addEdge(edge, mergeBidirectional);
+    protected GraphJCell addEdge(ShapeEdge edge) {
+        GraphJCell jCell = super.addEdge(edge);
         if (jCell instanceof ShapeJEdge) {
             ShapeJEdge jEdge = (ShapeJEdge) jCell;
             Shape shape = getGraph();
@@ -133,7 +133,7 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
 
     private void createEdges() {
         for (ShapeEdge edge : getGraph().edgeSet()) {
-            addEdge(edge, false);
+            addEdge(edge);
         }
     }
 

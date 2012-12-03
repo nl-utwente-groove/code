@@ -243,7 +243,8 @@ abstract public class AbstractLayouter implements Layouter {
             if (cellView instanceof JEdgeView) {
                 // all true points (i.e., that are not PortViews) are
                 // subject to layouting
-                List<?> points = ((JEdgeView) cellView).getPoints();
+                List<Point2D> points =
+                    ((JEdgeView) cellView).getCell().getVisuals().getPoints();
                 // failed attempt to store edges beck so they will be layed
                 // out live
                 // GraphConstants.setPoints(cell.getAttributes(),points);

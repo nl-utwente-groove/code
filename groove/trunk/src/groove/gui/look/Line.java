@@ -166,6 +166,29 @@ public abstract class Line {
             return "Composed[" + Arrays.toString(this.fragments) + "]";
         }
 
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(this.fragments);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            Composed other = (Composed) obj;
+            if (!Arrays.equals(this.fragments, other.fragments)) {
+                return false;
+            }
+            return true;
+        }
+
         /** The fragments of this composed line. */
         private final Line[] fragments;
     }
@@ -189,6 +212,40 @@ public abstract class Line {
         @Override
         public String toString() {
             return "Colored[" + this.color + ", " + this.subline + "]";
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + this.color.hashCode();
+            result = prime * result + this.subline.hashCode();
+            result = prime * result + this.type.hashCode();
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            Colored other = (Colored) obj;
+            if (!this.color.equals(other.color)) {
+                return false;
+            }
+            if (!this.subline.equals(other.subline)) {
+                return false;
+            }
+            if (this.type != other.type) {
+                return false;
+            }
+            return true;
         }
 
         /** Colour to apply. */
@@ -241,6 +298,29 @@ public abstract class Line {
             return "Atomic[" + this.text + "]";
         }
 
+        @Override
+        public int hashCode() {
+            return this.text.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            Atomic other = (Atomic) obj;
+            if (!this.text.equals(other.text)) {
+                return false;
+            }
+            return true;
+        }
+
         private final String text;
     }
 
@@ -259,6 +339,16 @@ public abstract class Line {
         @Override
         public String toString() {
             return "Empty";
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return this == obj;
         }
     }
 
