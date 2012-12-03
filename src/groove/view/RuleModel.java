@@ -117,7 +117,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         boolean result = super.isShouldRebuild();
         // check for the properties to update the match constraints
         // check for the type graph to get the correct instance
-        result &=
+        result |=
             isStale(ResourceKind.PROPERTIES) | this.oldTypeGraph != getType();
         this.oldTypeGraph = getType();
         return result;
@@ -182,6 +182,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         super.notifyWillRebuild();
         this.labelSet = null;
         this.levelTree = null;
+        this.typeMap = null;
     }
 
     /** Returns the set of labels occurring in this rule. */
