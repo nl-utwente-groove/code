@@ -100,7 +100,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** Sets a grammar model, with respect to which typing is resolved. */
     public void setGrammar(GrammarModel grammar) {
-        assert this.grammar == null && grammar != null;
+        assert (this.grammar == null || this.grammar == grammar)
+            && grammar != null;
         this.grammar = grammar;
     }
 
