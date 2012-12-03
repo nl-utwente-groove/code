@@ -16,6 +16,11 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.Edge;
+import groove.graph.Node;
+import groove.gui.layout.JEdgeLayout;
+import groove.gui.layout.JVertexLayout;
+import groove.gui.layout.LayoutMap;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualKey.Nature;
@@ -25,6 +30,7 @@ import groove.gui.look.VisualValue;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.DefaultGraphCell;
@@ -68,8 +74,27 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
     /** The fixed jModel to which this jVertex belongs. */
     private GraphJModel<?,?> jModel;
 
+    /**
+     * Returns the (possibly {@code null}) layout information stored for
+     * a given graph node.
+     */
+    @SuppressWarnings("unchecked")
+    final protected JVertexLayout getLayout(Node node) {
+        return ((LayoutMap<Node,Edge>) getJModel().getLayoutMap()).getLayout(node);
+    }
+
+    /**
+     * Returns the (possibly {@code null}) layout information stored for
+     * a given graph edge.
+     */
+    @SuppressWarnings("unchecked")
+    final protected JEdgeLayout getLayout(Edge edge) {
+        return ((LayoutMap<Node,Edge>) getJModel().getLayoutMap()).getLayout(edge);
+    }
+
     /** Sets or resets all auxiliary data structures to their initial values. */
     protected void initialise() {
+        this.edges = null;
         this.looks = null;
         VisualMap oldVisuals = this.visuals;
         this.visuals = new VisualMap();
@@ -81,6 +106,30 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
         this.staleKeys.addAll(Arrays.asList(VisualKey.refreshables()));
         this.errors = null;
     }
+
+    @Override
+    public void addEdge(Edge edge) {
+        // the edge should be compatible, but don't assert this
+        // as subclasses may choose to add incompatible edges while flagging an error
+        @SuppressWarnings("unchecked")
+        Set<Edge> edges = (Set<Edge>) getEdges();
+        // there may be an edge already present which is equal (according to equals)
+        // but not the same as the new one; the new edge should override the old
+        // To achieve this, we first remove the edge
+        edges.remove(edge);
+        edges.add(edge);
+    }
+
+    @Override
+    public Set<? extends Edge> getEdges() {
+        if (this.edges == null) {
+            this.edges = new TreeSet<Edge>();
+        }
+        return this.edges;
+    }
+
+    /** Set of graph edges wrapped by this JCell. */
+    private Set<Edge> edges = new TreeSet<Edge>();
 
     /** Sets or resets a look value. */
     public boolean setLook(Look look, boolean set) {

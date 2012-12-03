@@ -25,7 +25,6 @@ import groove.graph.GraphRole;
 import groove.graph.ImplicitTypeGraph;
 import groove.graph.Node;
 import groove.graph.TypeGraph;
-import groove.gui.Options;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
 import groove.gui.look.VisualMap;
@@ -297,12 +296,11 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      * graph, and the grammar property is set to true.
      */
     @Override
-    public boolean mergeBidirectionalEdges() {
+    public boolean isShowBidirectionalEdges() {
         if (this.beingEdited || getGraph().getRole() != GraphRole.HOST) {
             return false;
         } else {
-            return getJGraph().getOptionValue(
-                Options.SHOW_BIDIRECTIONAL_EDGES_OPTION);
+            return super.isShowBidirectionalEdges();
         }
     }
 

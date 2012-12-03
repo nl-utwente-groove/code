@@ -20,6 +20,7 @@ import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.graph.Edge;
 import groove.graph.Node;
+import groove.gui.layout.JEdgeLayout;
 import groove.gui.look.Look;
 import groove.gui.look.MultiLabel.Direct;
 import groove.io.HTMLConverter;
@@ -32,8 +33,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.jgraph.graph.DefaultPort;
 
@@ -53,9 +52,8 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
     @Override
     protected void initialise() {
         super.initialise();
-        this.edges = null;
-        this.source = null;
-        this.target = null;
+        this.sourceNode = null;
+        this.targetNode = null;
     }
 
     @Override
@@ -132,27 +130,27 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
      * Returns the common source of the underlying graph edges.
      */
     public Node getSourceNode() {
-        if (this.source == null) {
-            this.source = getSourceVertex().getNode();
+        if (this.sourceNode == null) {
+            this.sourceNode = getSourceVertex().getNode();
         }
-        return this.source;
+        return this.sourceNode;
     }
 
     /** Source node of the underlying graph edges. */
-    private Node source;
+    private Node sourceNode;
 
     /**
      * Returns the common target of the underlying graph edges.
      */
     public Node getTargetNode() {
-        if (this.target == null) {
-            this.target = getTargetVertex().getNode();
+        if (this.targetNode == null) {
+            this.targetNode = getTargetVertex().getNode();
         }
-        return this.target;
+        return this.targetNode;
     }
 
     /** Target node of the underlying graph edges. */
-    private Node target;
+    private Node targetNode;
 
     @Override
     public String toString() {
@@ -166,19 +164,13 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
      * Indicates in its return value if the edge has indeed been added.
      * @param edge the edge to be added
      */
-    @SuppressWarnings("unchecked")
+    @Override
     public void addEdge(Edge edge) {
-        // the edge should be compatible, but don't assert this
-        // as subclasses may choose to add incompatible edges while flagging an error
         if (getEdges().isEmpty()) {
-            this.source = edge.source();
-            this.target = edge.target();
+            this.sourceNode = edge.source();
+            this.targetNode = edge.target();
         }
-        // there may be an edge already present which is equal (according to equals)
-        // but not the same as the new one; the new edge should override the old
-        // To achieve this, we first remove the edge
-        getEdges().remove(edge);
-        ((Set<Edge>) getEdges()).add(edge);
+        super.addEdge(edge);
         Direct direct = getDirect(edge);
         if (direct == Direct.NONE) {
             setLook(Look.NO_ARROW, true);
@@ -189,12 +181,44 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
 
     /** Tests if a new edge is compatible with those already wrapped by this JEdge. */
     public boolean isCompatible(Edge edge) {
-        return true;
+        //        if (!isLayoutCompatible(edge)) {
+        //            return false;
+        //        }
+        if (edge.source() == getSourceNode()
+            && edge.target() == getTargetNode()) {
+            return true;
+        }
+        if (edge.source() == getTargetNode()
+            && edge.target() == getSourceNode()) {
+            return getJGraph().isShowBidirectionalEdges()
+                && getEdges().size() == 1
+                && edge.label().equals(getEdge().label());
+        }
+        return false;
+    }
+
+    /** Tests if the layout data of a graph edge is compatible with
+     * that of this JEdge, so that the edge can be added.
+     */
+    protected boolean isLayoutCompatible(Edge edge) {
+        JEdgeLayout edgeLayout = getLayout(edge);
+        JEdgeLayout myLayout = getLayout(getEdge());
+        if (myLayout == null) {
+            return edgeLayout == null;
+        }
+        if (myLayout.equals(edgeLayout)) {
+            return true;
+        }
+        if (myLayout.getPoints().size() == 2
+            && (edgeLayout == null || edgeLayout.getPoints().size() == 2)) {
+            return true;
+        }
+        return false;
     }
 
     /** Returns true if source and target node coincide. */
     public boolean isLoop() {
-        return this.source == this.target;
+        return this.sourceNode == this.targetNode;
     }
 
     /**
@@ -203,16 +227,6 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
     public String getToolTipText() {
         return HTML_TAG.on(getEdgeDescription()).toString(); // +
         // getLabelDescription());
-    }
-
-    /**
-     * Returns an unmodifiable view upon the set of underlying graph edges.
-     */
-    public Set<? extends Edge> getEdges() {
-        if (this.edges == null) {
-            this.edges = new TreeSet<Edge>();
-        }
-        return this.edges;
     }
 
     /**
@@ -226,7 +240,7 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
      * Determines the direction corresponding to a given edge
      * wrapped into this JEdge, to be displayed on the JEdge label.
      * This is {@link Direct#NONE} if {@link GraphJGraph#isShowArrowsOnLabels()}
-     * is {@code false}, otherwise {@link Direct#BIRIDECTIONAL} if the edge
+     * is {@code false}, otherwise {@link Direct#BIDIRECTIONAL} if the edge
      * look is {@link Look#BIDIRECTIONAL}; otherwise it is determined
      * by the relative direction of the edge with respect to this JEdge.
      * @param edge the edge of which the direction should be returned; if {@code null},
@@ -324,9 +338,6 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
         }
         return result.toString();
     }
-
-    /** Set of graph edges mapped to this JEdge. */
-    private Set<Edge> edges;
 
     /** 
      * Returns a fresh, uninitialised instance.

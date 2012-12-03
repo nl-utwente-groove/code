@@ -82,16 +82,13 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     @Override
-    public boolean addEdge(Edge edge) {
-        boolean result = super.addEdge(edge);
-        if (result) {
-            getErrors().addErrors(((AspectEdge) edge).getErrors(), true);
-        }
-        return result;
+    public void addEdge(Edge edge) {
+        super.addEdge(edge);
+        getErrors().addErrors(((AspectEdge) edge).getErrors(), true);
     }
 
     @Override
-    protected boolean isCompatible(Edge edge) {
+    public boolean isCompatible(Edge edge) {
         return super.isCompatible(edge)
             || ((AspectEdge) edge).getKind() == REMARK;
     }

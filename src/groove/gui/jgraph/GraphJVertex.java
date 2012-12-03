@@ -86,7 +86,7 @@ public class GraphJVertex extends AbstractJCell {
     }
 
     @Override
-    public Collection<? extends GraphJCell> getContext() {
+    public Collection<GraphJEdge> getContext() {
         return getJEdges();
     }
 
@@ -100,35 +100,29 @@ public class GraphJVertex extends AbstractJCell {
         return clone;
     }
 
-    /**
-     * Adds an edge to the underlying self-edge set, if the edge is appropriate.
-     * Indicates in its return value if the edge has indeed been added.
-     * @param edge the edge to be added; it is assumed that this is a loop 
-     * on the node of this JVertex
-     * @return <tt>true</tt> if the edge has been added; <tt>false</tt> if
-     *         <tt>edge</tt> is not compatible with this j-vertex and cannot be
-     *         added.
-     */
-    public boolean addEdge(Edge edge) {
-        assert edge.source() == edge.target() && edge.source() == getNode();
-        if (isCompatible(edge)) {
-            this.edges.add(edge);
-            setStale(VisualKey.COLOR);
-            return true;
-        } else {
-            return false;
-        }
+    @Override
+    public void addEdge(Edge edge) {
+        super.addEdge(edge);
+        setStale(VisualKey.COLOR);
     }
 
     /** Tests if a given edge can be added as label to this {@link GraphJVertex}. */
-    protected boolean isCompatible(Edge edge) {
-        return edge.getRole() != BINARY
-            || getJGraph().isShowLoopsAsNodeLabels();
+    @Override
+    public boolean isCompatible(Edge edge) {
+        if (getLayout(edge) != null) {
+            return false;
+        }
+        if (edge.getRole() != BINARY) {
+            return true;
+        }
+        return getJGraph().isShowLoopsAsNodeLabels()
+            && edge.source() == edge.target() && edge.source() == getNode();
     }
 
     /**
      * Returns the set of graph edges wrapped in this JVertex.
      */
+    @Override
     public Set<? extends Edge> getEdges() {
         if (this.edges == null) {
             this.edges = new TreeSet<Edge>();

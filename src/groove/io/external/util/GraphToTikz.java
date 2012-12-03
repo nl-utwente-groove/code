@@ -1149,8 +1149,10 @@ public final class GraphToTikz {
 
     private void appendEdgeLabel(GraphJEdge edge) {
         MultiLabel lines = edge.getVisuals().getLabel();
+        List<Point2D> points = edge.getVisuals().getPoints();
         this.result.append(BEGIN_EDGE_LAB);
-        this.result.append(lines.toString(TeXLineFormat.instance()));
+        this.result.append(lines.toString(TeXLineFormat.instance(),
+            points.get(0), points.get(points.size() - 1)));
         this.result.append(END_EDGE_LAB);
     }
 

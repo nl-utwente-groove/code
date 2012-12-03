@@ -79,6 +79,11 @@ public final class ShapeJGraph extends GraphJGraph {
     }
 
     @Override
+    public boolean isShowBidirectionalEdges() {
+        return false;
+    }
+
+    @Override
     protected Layouter createLayouter() {
         return new MyLayouter();
     }

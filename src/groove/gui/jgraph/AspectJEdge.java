@@ -93,15 +93,13 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     @Override
     public boolean isCompatible(Edge edge) {
-        boolean result =
-            (edge instanceof AspectEdge) && super.isCompatible(edge);
-        if (result) {
-            AspectEdge oldEdge = getEdge();
-            if (oldEdge != null) {
-                result = ((AspectEdge) edge).equalsAspects(oldEdge);
-            }
+        if (!super.isCompatible(edge)) {
+            return false;
         }
-        return result;
+        if (!((AspectEdge) edge).equalsAspects(getEdge())) {
+            return false;
+        }
+        return true;
     }
 
     /**

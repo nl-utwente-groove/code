@@ -208,7 +208,7 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
             HostNode target = nodeMap.get(sEdge.target());
             HostEdge newSEdge =
                 this.hostFactory.createEdge(source, sEdge.label(), target);
-            GraphJCell sJEdge = addEdge(newSEdge, false);
+            GraphJCell sJEdge = addEdge(newSEdge);
             this.parentMap.addEntry(sJEdge, pJVertex);
             addToReverseMap(pJVertex, sJEdge);
         }

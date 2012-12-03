@@ -16,6 +16,7 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.Element;
 import groove.graph.TypeLabel;
@@ -80,6 +81,22 @@ public interface GraphJCell extends GraphCell, Serializable {
      * Returns the errors in this jCell.
      */
     AspectJCellErrors getErrors();
+
+    /**
+     * Adds an edge to those wrapped by this JCell.
+     * Should only be called with edges for which {@link #isCompatible(Edge)} holds;
+     * this is not tested by the method.
+     * @param edge the edge to be added
+     */
+    void addEdge(Edge edge);
+
+    /** Tests if a given edge can be added to this JCell. */
+    boolean isCompatible(Edge edge);
+
+    /**
+     * Returns the set of graph edges wrapped in this JCell.
+     */
+    public Set<? extends Edge> getEdges();
 
     /**
      * Returns tool tip text for this j-cell.
