@@ -363,7 +363,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         if (mergeBidirectional && !source.equals(target)) {
             for (E candidate : this.graph.outEdgeSet(target)) {
                 if (candidate.target().equals(source)
-                    && candidate.label().equals(edge.label())) {
+                    && candidate.label().equals(edge.label())
+                    && this.edgeJCellMap.containsKey(candidate)) {
                     opposite = candidate;
                 }
             }

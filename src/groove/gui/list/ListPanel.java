@@ -191,13 +191,11 @@ public abstract class ListPanel extends JPanel {
             Component result =
                 super.getListCellRendererComponent(list, value, index,
                     isSelected, false);
-            if (cellHasFocus) {
-                result.setBackground(getColors().getBackground(Mode.FOCUSED));
-                result.setForeground(getColors().getForeground(Mode.FOCUSED));
-            } else if (isSelected) {
-                result.setBackground(getColors().getBackground(Mode.SELECTED));
-                result.setForeground(getColors().getForeground(Mode.SELECTED));
-            }
+            Mode mode =
+                cellHasFocus ? Mode.FOCUSED : isSelected ? Mode.SELECTED
+                        : Mode.NONE;
+            result.setBackground(getColors().getBackground(mode));
+            result.setForeground(getColors().getForeground(mode));
             return result;
         }
     }
