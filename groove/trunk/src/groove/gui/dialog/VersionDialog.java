@@ -141,7 +141,7 @@ public class VersionDialog {
         buttonPanel.add(new JButton(new AbstractAction("Contributors") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // do nothing for now
+                ContributorsTable.instance().showDialog(parent, "Contributors");
             }
         }));
         Border aboutBorder =
