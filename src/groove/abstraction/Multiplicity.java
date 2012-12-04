@@ -84,6 +84,10 @@ public final class Multiplicity {
     public static final Multiplicity ONE_NODE_MULT =
         Multiplicity.getMultiplicity(1, 1, NODE_MULT);
 
+    /** The constant 0+ multiplicity for edges. */
+    public static final Multiplicity ZERO_PLUS_EDGE_MULT =
+        Multiplicity.getMultiplicity(0, OMEGA, EDGE_MULT);
+
     // ------------------------------------------------------------------------
     // Static Methods
     // ------------------------------------------------------------------------

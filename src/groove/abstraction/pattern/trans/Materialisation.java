@@ -108,10 +108,6 @@ public final class Materialisation {
     }
 
     // ------------------------------------------------------------------------
-    // Overriden methods
-    // ------------------------------------------------------------------------
-
-    // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
 
@@ -126,6 +122,23 @@ public final class Materialisation {
         split();
         branch(result);
     }
+
+    private PatternNode createNode(TypeNode type) {
+        PatternNode newNode = this.pShape.createNode(type);
+        this.pShape.addNode(newNode);
+        return newNode;
+    }
+
+    private PatternEdge createEdge(PatternNode source, TypeEdge type,
+            PatternNode target) {
+        PatternEdge newEdge = this.pShape.createEdge(source, type, target);
+        this.pShape.addEdge(newEdge);
+        return newEdge;
+    }
+
+    // ------------------------------------------------------------------------
+    // Operations pull and devol
+    // ------------------------------------------------------------------------
 
     private void pullMatchAndDevolveShape() {
         this.match = new Match(this.rule, this.pShape);
@@ -157,60 +170,6 @@ public final class Materialisation {
         this.match = new Match(this.rule, this.qShape);
         this.match.putAll(tempMatch);
         this.match.setFixed();
-    }
-
-    private void disambiguate() {
-        // Make sure that everything in the deletion cone is unambiguous.
-        List<PatternNode> toTraverse = new LinkedList<PatternNode>();
-        for (RuleNode rNode : this.rule.getEraserNodes()) {
-            toTraverse.add(this.match.getNode(rNode));
-        }
-        for (PatternNode delNode : this.qShape.getDownwardTraversal(toTraverse)) {
-            if (!this.qShape.isUniquelyCovered(delNode)) {
-                disambiguate(delNode);
-            }
-        }
-    }
-
-    private void disambiguate(PatternNode delNode) {
-        System.out.println("DISAMBIGUATE: " + delNode);
-    }
-
-    private void deletePatterns() {
-        for (RuleNode rNode : this.rule.getEraserNodes()) {
-            this.qShape.deletePattern(this.match.getNode(rNode));
-        }
-    }
-
-    private void addPatterns() {
-        // First add layer 0 patterns.
-        for (RuleNode rNode : this.rule.getCreatorNodes()) {
-            if (!rNode.isNodePattern()) {
-                continue;
-            }
-            PatternNode newNode = this.qShape.addNodePattern(rNode.getType());
-            this.match.putNode(rNode, newNode);
-        }
-
-        // Then add layer 1 patterns.
-        for (RuleNode rNode : this.rule.getCreatorNodes()) {
-            if (!rNode.isEdgePattern()) {
-                continue;
-            }
-            createPattern(rNode, false);
-        }
-    }
-
-    private void close() {
-        this.origShape.getTypeGraph().close(this.qShape);
-    }
-
-    private void split() {
-        // EDUARDO: Implement this...
-    }
-
-    private void branch(Collection<PatternShape> result) {
-        this.qShape.getMaterialisations(result);
     }
 
     private void materialiseNode(RuleNode rNode, PatternNode origNode) {
@@ -276,20 +235,61 @@ public final class Materialisation {
         this.pShape.setMult(newEdge, adjustedMult);
     }
 
-    private PatternNode createNode(TypeNode type) {
-        PatternNode newNode = this.pShape.createNode(type);
-        this.pShape.addNode(newNode);
-        return newNode;
+    // ------------------------------------------------------------------------
+    // Operation di
+    // ------------------------------------------------------------------------
+
+    private void disambiguate() {
+        // Make sure that everything in the deletion cone is unambiguous.
+        List<PatternNode> toTraverse = new LinkedList<PatternNode>();
+        for (RuleNode rNode : this.rule.getEraserNodes()) {
+            toTraverse.add(this.match.getNode(rNode));
+        }
+        for (PatternNode delNode : this.qShape.getDownwardTraversal(toTraverse)) {
+            if (delNode.getLayer() > 0) {
+                this.qShape.disambiguate(delNode);
+            }
+        }
     }
 
-    private PatternEdge createEdge(PatternNode source, TypeEdge type,
-            PatternNode target) {
-        PatternEdge newEdge = this.pShape.createEdge(source, type, target);
-        this.pShape.addEdge(newEdge);
-        return newEdge;
+    // ------------------------------------------------------------------------
+    // Operation del
+    // ------------------------------------------------------------------------
+
+    private void deletePatterns() {
+        for (RuleNode rNode : this.rule.getEraserNodes()) {
+            this.qShape.deletePattern(this.match.getNode(rNode));
+        }
     }
 
-    private void createPattern(RuleNode rNode, boolean closure) {
+    // ------------------------------------------------------------------------
+    // Operation add
+    // ------------------------------------------------------------------------
+
+    private void addPatterns() {
+        // First add layer 0 patterns.
+        for (RuleNode rNode : this.rule.getCreatorNodes()) {
+            if (!rNode.isNodePattern()) {
+                continue;
+            }
+            addNodePattern(rNode);
+        }
+
+        // Then add layer 1 patterns.
+        for (RuleNode rNode : this.rule.getCreatorNodes()) {
+            if (!rNode.isEdgePattern()) {
+                continue;
+            }
+            addEdgePattern(rNode);
+        }
+    }
+
+    private void addNodePattern(RuleNode rNode) {
+        PatternNode newNode = this.qShape.addNodePattern(rNode.getType());
+        this.match.putNode(rNode, newNode);
+    }
+
+    private void addEdgePattern(RuleNode rNode) {
         Duo<RuleEdge> inEdges = this.rule.rhs().getIncomingEdges(rNode);
 
         RuleEdge r1 = inEdges.one();
@@ -299,18 +299,38 @@ public final class Materialisation {
         PatternNode p1 = this.match.getNode(r1.source());
         PatternNode p2 = this.match.getNode(r2.source());
 
-        if (closure) {
-            this.qShape.closePattern(m1, m2, p1, p2);
-        } else {
-            Pair<PatternNode,Duo<PatternEdge>> pair =
-                this.qShape.addEdgePattern(m1, m2, p1, p2);
-            PatternNode newNode = pair.one();
-            PatternEdge d1 = pair.two().one();
-            PatternEdge d2 = pair.two().two();
-            this.match.putNode(rNode, newNode);
-            this.match.putEdge(r1, d1);
-            this.match.putEdge(r2, d2);
-        }
+        Pair<PatternNode,Duo<PatternEdge>> pair =
+            this.qShape.addEdgePattern(m1, m2, p1, p2);
+        PatternNode newNode = pair.one();
+        PatternEdge d1 = pair.two().one();
+        PatternEdge d2 = pair.two().two();
+        this.match.putNode(rNode, newNode);
+        this.match.putEdge(r1, d1);
+        this.match.putEdge(r2, d2);
+    }
+
+    // ------------------------------------------------------------------------
+    // Operation close
+    // ------------------------------------------------------------------------
+
+    private void close() {
+        this.origShape.getTypeGraph().close(this.qShape);
+    }
+
+    // ------------------------------------------------------------------------
+    // Operation sp
+    // ------------------------------------------------------------------------
+
+    private void split() {
+        // EDUARDO: Implement this...
+    }
+
+    // ------------------------------------------------------------------------
+    // Operation br
+    // ------------------------------------------------------------------------
+
+    private void branch(Collection<PatternShape> result) {
+        this.qShape.getMaterialisations(result);
     }
 
 }

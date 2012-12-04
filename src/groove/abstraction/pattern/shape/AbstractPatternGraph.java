@@ -528,6 +528,7 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
             // Special case for level 1 nodes with only one incoming edge.
             d2 = d1;
         }
+        assert !iter.hasNext();
         return new Duo<E>(d1, d2);
     }
 

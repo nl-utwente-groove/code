@@ -23,6 +23,7 @@ import static groove.abstraction.Multiplicity.ZERO_NODE_MULT;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.MyHashMap;
+import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.shape.PatternEquivRel.EdgeEquivClass;
 import groove.abstraction.pattern.shape.PatternEquivRel.NodeEquivClass;
 import groove.util.Duo;
@@ -183,6 +184,12 @@ public final class PatternShape extends PatternGraph {
     public Duo<PatternEdge> getIncomingEdges(PatternNode node) {
         assert isUniquelyCovered(node);
         return super.getIncomingEdges(node);
+    }
+
+    @Override
+    public void prepareClosure(Match match) {
+        throw new UnsupportedOperationException(
+            "Cannot close a pattern shape directly.");
     }
 
     // ------------------------------------------------------------------------
