@@ -216,6 +216,7 @@ public class SimulatorModel implements Cloneable {
      */
     public boolean doAddGraph(ResourceKind kind, AspectGraph newGraph,
             boolean layout) throws IOException {
+        assert newGraph.isFixed();
         start();
         try {
             String name = newGraph.getName();
