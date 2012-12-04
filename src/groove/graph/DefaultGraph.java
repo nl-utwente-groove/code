@@ -67,12 +67,12 @@ public class DefaultGraph extends AbstractGraph<DefaultNode,DefaultEdge>
     }
 
     @Override
-    public boolean containsNode(Node node) {
+    public boolean containsNode(DefaultNode node) {
         return this.edgeMap.containsKey(node);
     }
 
     @Override
-    public boolean containsEdge(Edge edge) {
+    public boolean containsEdge(DefaultEdge edge) {
         Set<DefaultEdge> edgeSet = this.edgeMap.get(edge.source());
         return edgeSet != null && edgeSet.contains(edge);
     }

@@ -55,6 +55,16 @@ public interface RegAut extends Graph<RegNode,RegEdge> {
     /** Changes the end node of the automaton. */
     void setEndNode(RegNode endNode);
 
+    /**
+     * Merges two nodes in this graph, by adding all edges to and from the first
+     * node to the second, and subsequently removing the first.
+     * @param from node to be deleted
+     * @param to node to receive copies of the edges to and from the other
+     * @return {@code true} if {@code from} is distinct from
+     *         {@code to}, so a merge actually took place
+     */
+    boolean mergeNodes(RegNode from, RegNode to);
+
     /** Indicates if the automaton will accept empty words. */
     boolean isAcceptsEmptyWord();
 

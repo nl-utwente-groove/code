@@ -486,7 +486,7 @@ public class RuleApplication implements DeltaApplier {
         if (target instanceof HostGraph) {
             ((HostGraph) target).removeNodeSetWithoutCheck(nodeSet);
         } else {
-            // apparently the target wasn't an InternalGraph
+            // apparently the target wasn't a HostGraph
             // so we can't do efficient edge removal
             for (HostNode node : nodeSet) {
                 target.removeNode(node);

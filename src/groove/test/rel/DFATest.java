@@ -75,7 +75,7 @@ public class DFATest {
             this.xVar = new LabelVar("x", EdgeRole.BINARY);
             TypeFactory factory = this.type.getFactory();
             Set<? extends TypeEdge> bEdges =
-                this.type.labelEdgeSet(factory.createLabel("b"));
+                this.type.edgeSet(factory.createLabel("b"));
             this.bEdge = bEdges.iterator().next();
             this.aLabel = TypeLabel.createLabel("a");
         } catch (FormatException e) {

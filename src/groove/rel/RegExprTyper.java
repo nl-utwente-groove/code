@@ -112,7 +112,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
                 result.add(subType, subType);
             }
         } else {
-            for (TypeEdge edgeType : this.typeGraph.labelEdgeSet(typeLabel)) {
+            for (TypeEdge edgeType : this.typeGraph.edgeSet(typeLabel)) {
                 Set<TypeNode> targetTypes = edgeType.target().getSubtypes();
                 for (TypeNode sourceType : edgeType.source().getSubtypes()) {
                     result.add(sourceType, targetTypes);
@@ -134,7 +134,7 @@ public class RegExprTyper implements RegExprCalculator<Result> {
                 result.add(subType, subType);
             }
         } else {
-            for (TypeEdge edgeType : this.typeGraph.labelEdgeSet(typeLabel)) {
+            for (TypeEdge edgeType : this.typeGraph.edgeSet(typeLabel)) {
                 result.add(edgeType.source(), edgeType.target());
             }
         }

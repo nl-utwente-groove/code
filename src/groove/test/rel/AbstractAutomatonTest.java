@@ -661,7 +661,7 @@ abstract public class AbstractAutomatonTest {
 
     protected static HostNode getNode(String selfLabel) {
         Collection<? extends HostEdge> edgeSet =
-            testGraph.labelEdgeSet(TypeLabel.createBinaryLabel(selfLabel));
+            testGraph.edgeSet(TypeLabel.createBinaryLabel(selfLabel));
         return edgeSet.iterator().next().source();
     }
 

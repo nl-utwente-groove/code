@@ -477,7 +477,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     private List<Edge> match(Graph<?,?> graph, Set<TypeLabel> srcLabels,
             TypeLabel edgeLabel, Set<TypeLabel> tgtLabels) {
         List<Edge> result = new ArrayList<Edge>();
-        for (Edge edge : graph.labelEdgeSet(edgeLabel)) {
+        for (Edge edge : graph.edgeSet(edgeLabel)) {
             if ((srcLabels.isEmpty() || match(graph, edge.source(), srcLabels))
                 && (tgtLabels.isEmpty() || match(graph, edge.target(),
                     tgtLabels))) {
@@ -552,11 +552,6 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
 
     @Override
     public boolean removeNodeSet(Collection<? extends TypeNode> nodeSet) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean addEdgeSetWithoutCheck(Collection<? extends TypeEdge> edgeSet) {
         throw new UnsupportedOperationException();
     }
 

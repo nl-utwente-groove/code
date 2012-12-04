@@ -213,7 +213,7 @@ public abstract class GraphTest<N extends Node,E extends Edge> {
     final public void testAddNode() {
         int oldNodeCount = this.matchDom[0].nodeCount();
         int oldEdgeCount = this.matchDom[0].edgeCount();
-        Node newNode = this.matchDom[0].addNode();
+        N newNode = this.matchDom[0].addNode();
         this.matchDom[0].containsNode(newNode);
         assertEquals(oldNodeCount + 1, this.matchDom[0].nodeCount());
         assertEquals(oldEdgeCount, this.matchDom[0].edgeCount());
@@ -307,13 +307,13 @@ public abstract class GraphTest<N extends Node,E extends Edge> {
         Set<E> bEdgeSet = new HashSet<E>();
         bEdgeSet.add(this.bEdge);
         Set<E> cEdgeSet = new HashSet<E>();
-        assertEquals(aEdgeSet, this.graph.labelEdgeSet(this.aLabel));
-        assertEquals(bEdgeSet, this.graph.labelEdgeSet(this.bLabel));
-        assertEquals(cEdgeSet, this.graph.labelEdgeSet(this.cLabel));
+        assertEquals(aEdgeSet, this.graph.edgeSet(this.aLabel));
+        assertEquals(bEdgeSet, this.graph.edgeSet(this.bLabel));
+        assertEquals(cEdgeSet, this.graph.edgeSet(this.cLabel));
         // if we add an edge to the graph, that should be visible
         E cEdge = this.graph.addEdge(this.bTarget, this.cLabel, this.aTarget);
         cEdgeSet.add(cEdge);
-        assertEquals(cEdgeSet, this.graph.labelEdgeSet(this.cLabel));
+        assertEquals(cEdgeSet, this.graph.edgeSet(this.cLabel));
     }
 
     @Test

@@ -480,7 +480,7 @@ class Edge2SearchItem extends AbstractSearchItem {
             // structures takes more
             // time than is saved by trying out fewer images
             Set<? extends HostEdge> labelEdgeSet =
-                this.host.labelEdgeSet(Edge2SearchItem.this.type.label());
+                this.host.edgeSet(Edge2SearchItem.this.type.label());
             if (this.sourceFind != null) {
                 Set<? extends HostEdge> nodeEdgeSet =
                     this.host.edgeSet(this.sourceFind);
