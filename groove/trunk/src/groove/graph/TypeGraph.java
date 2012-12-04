@@ -260,7 +260,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             // either in source type or in target type
             // also for all subtypes
             List<TypeEdge> edges =
-                new ArrayList<TypeEdge>(labelEdgeSet(edgeLabel));
+                new ArrayList<TypeEdge>(edgeSet(edgeLabel));
             for (int i = 0; i < edges.size() - 1; i++) {
                 TypeEdge edge1 = edges.get(i);
                 // abstract edge types are OK
@@ -306,7 +306,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                         this.nodeSubtypeMap.get(edge.source());
                     Set<TypeNode> targetSubnodes =
                         this.nodeSubtypeMap.get(edge.target());
-                    for (TypeEdge subEdge : labelEdgeSet(edge.label)) {
+                    for (TypeEdge subEdge : edgeSet(edge.label)) {
                         if (sourceSubnodes.contains(subEdge.source())
                             && targetSubnodes.contains(subEdge.target())) {
                             subtypes.add(subEdge);
@@ -907,7 +907,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     private TypeEdge findTypeEdge(TypeNode sourceType, TypeLabel label,
             TypeNode targetType, boolean precise) {
         TypeEdge result = null;
-        for (TypeEdge edge : labelEdgeSet(label)) {
+        for (TypeEdge edge : edgeSet(label)) {
             if (!isSubtype(sourceType, edge.source(), precise)) {
                 continue;
             }
@@ -1055,7 +1055,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             if (isNodeType(label) && !isImplicit()) {
                 result.add(getNode(label));
             } else {
-                result.addAll(labelEdgeSet(label.getSharpLabel()));
+                result.addAll(edgeSet(label.getSharpLabel()));
             }
         } else {
             assert label.isAtom();
@@ -1065,7 +1065,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     result.addAll(getSubtypes(tn));
                 }
             } else {
-                result.addAll(labelEdgeSet(label.getTypeLabel()));
+                result.addAll(edgeSet(label.getTypeLabel()));
             }
         }
         return result;
@@ -1077,7 +1077,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         if (isNodeType(label)) {
             result.add(getNode(label));
         } else {
-            result.addAll(labelEdgeSet(label));
+            result.addAll(edgeSet(label));
         }
         return result;
     }

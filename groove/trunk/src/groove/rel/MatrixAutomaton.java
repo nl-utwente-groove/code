@@ -378,7 +378,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
     private TypeEdge getLetter(String text) {
         TypeEdge result = null;
         TypeLabel label = TypeLabel.createLabel(text);
-        Set<? extends TypeEdge> letters = this.typeGraph.labelEdgeSet(label);
+        Set<? extends TypeEdge> letters = this.typeGraph.edgeSet(label);
         if (letters != null) {
             for (TypeEdge e : letters) {
                 if (e.target() == e.source()) {

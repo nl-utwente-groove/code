@@ -97,7 +97,7 @@ public final class TypeEdge extends AbstractPatternEdge<TypeNode> {
         for (HostEdge edge1 : srcPattern.edgeSet()) {
             HostNode src2 = getImage(edge1.source());
             HostNode tgt2 = getImage(edge1.target());
-            for (HostEdge edge2 : tgtPattern.labelEdgeSet(edge1.label())) {
+            for (HostEdge edge2 : tgtPattern.edgeSet(edge1.label())) {
                 if (edge2.source().equals(src2) && edge2.target().equals(tgt2)) {
                     getMorphism().putEdge(edge1, edge2);
                 }

@@ -332,7 +332,7 @@ public final class PatternEdgeSearchItem extends SearchItem {
         void initImages() {
             Set<? extends PatternEdge> result = null;
             Set<? extends PatternEdge> labelEdgeSet =
-                this.host.labelEdgeSet(PatternEdgeSearchItem.this.type.label());
+                this.host.edgeSet(PatternEdgeSearchItem.this.type.label());
             if (this.sourceFind != null) {
                 Set<? extends PatternEdge> nodeEdgeSet =
                     this.host.edgeSet(this.sourceFind);

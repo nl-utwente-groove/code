@@ -186,7 +186,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
             Set<? extends HostEdge> edgeSet;
             if (this.varFind != null) {
                 if (isGuardSatisfied(this.varFind)) {
-                    edgeSet = this.host.labelEdgeSet(this.varFind.label());
+                    edgeSet = this.host.edgeSet(this.varFind.label());
                 } else {
                     edgeSet = EMPTY_IMAGE_SET;
                 }

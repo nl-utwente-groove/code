@@ -16,8 +16,6 @@
  */
 package groove.graph;
 
-import groove.util.Fixable;
-
 import java.util.Collection;
 import java.util.Set;
 
@@ -25,9 +23,10 @@ import java.util.Set;
  * Provides a model of a graph whose nodes and edges are unstructured, in the
  * sense that they are immutable and edges are completely determined by source
  * and target nodes and edge label.
- * @version $Revision$ $Date: 2008-01-30 09:32:52 $
+ * @version $Revision: 4468 $ $Date: 2008-01-30 09:32:52 $
  */
-public interface Graph<N extends Node,E extends Edge> extends Fixable {
+public interface ModifiableGraph<N extends Node,E extends Edge> extends
+        Graph<N,E> {
     /**
      * Returns the set of nodes of this graph. The return value is an
      * unmodifiable view of the underlying node set, which is <i>not</i>
@@ -161,18 +160,18 @@ public interface Graph<N extends Node,E extends Edge> extends Fixable {
      * but aliased nodes and edges.
      * @ensure <tt>resultnodeSet().equals(this.nodeSet()) && result.edgeSet().equals(this.edgeSet()</tt>
      */
-    Graph<N,E> clone();
+    ModifiableGraph<N,E> clone();
 
     /**
      * Factory method: returns a fresh, empty graph with a new name.
      * @param name the (non-{@code null}) name of the new graph.
      */
-    Graph<N,E> newGraph(String name);
+    ModifiableGraph<N,E> newGraph(String name);
 
     /**
      * Generates a fresh node and adds it to this graph.
      * @return the new node
-     * @see Graph#addNode(Node)
+     * @see ModifiableGraph#addNode(Node)
      */
     N addNode();
 
@@ -180,7 +179,7 @@ public interface Graph<N extends Node,E extends Edge> extends Fixable {
      * Adds a node with a given number to this graph.
      * The node is required to be fresh within the graph.
      * @return the new node
-     * @see Graph#addNode(Node)
+     * @see ModifiableGraph#addNode(Node)
      */
     N addNode(int nr);
 
@@ -194,7 +193,7 @@ public interface Graph<N extends Node,E extends Edge> extends Fixable {
      * @param target the target node of the new edge
      * @return a binary edge between <tt>source</tt> and <tt>target</tt>,
      *         labelled <tt>label</tt>
-     * @see Graph#addEdge(Edge)
+     * @see ModifiableGraph#addEdge(Edge)
      */
     E addEdge(N source, String label, N target);
 
@@ -208,7 +207,7 @@ public interface Graph<N extends Node,E extends Edge> extends Fixable {
      * @param target the target node of the new edge
      * @return a binary edge between <tt>source</tt> and <tt>target</tt>,
      *         labelled <tt>label</tt>
-     * @see Graph#addEdge(Edge)
+     * @see ModifiableGraph#addEdge(Edge)
      */
     E addEdge(N source, Label label, N target);
 
@@ -349,6 +348,22 @@ public interface Graph<N extends Node,E extends Edge> extends Fixable {
      * @see #removeNodeSet(Collection)
      */
     boolean removeEdgeSet(Collection<? extends E> edgeSet);
+
+    /**
+     * Merges two nodes in this graph, by adding all edges to and from the first
+     * node to the second, and subsequently removing the first.
+     * @param from node to be deleted
+     * @param to node to receive copies of the edges to and from the other
+     * @return <tt>true</tt> if <code>first</code> is distinct from
+     *         <code>second</code>, so a merge actually took place
+     * @require <tt>containsElement(from) && containsElement(to)</tt>
+     * @ensure <tt>! containsElement(from)</tt> and
+     *         <tt>containsElement(to,l,n)</tt> if
+     *         <tt>old.containsElement(from,l,n)</tt> and
+     *         <tt>containsElement(n,l,to)</tt> if
+     *         <tt>old.containsElement(n,l,from)</tt> and
+     */
+    boolean mergeNodes(N from, N to);
 
     /**
      * More efficient addition of edges; for package use only. Avoids both the

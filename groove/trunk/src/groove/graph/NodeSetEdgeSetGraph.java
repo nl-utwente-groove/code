@@ -117,11 +117,6 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
         return result;
     }
 
-    @Override
-    public boolean addEdgeSetWithoutCheck(Collection<? extends E> edgeSet) {
-        return this.graphEdgeSet.addAll(edgeSet);
-    }
-
     public boolean removeNodeWithoutCheck(N node) {
         assert isTypeCorrect(node);
         boolean result;

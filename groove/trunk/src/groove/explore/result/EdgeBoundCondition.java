@@ -40,7 +40,7 @@ public class EdgeBoundCondition extends
         boolean result = true;
         HostGraph g = state.getGraph();
         for (Map.Entry<TypeLabel,Integer> entry : this.condition.entrySet()) {
-            Set<? extends HostEdge> labelSet = g.labelEdgeSet(entry.getKey());
+            Set<? extends HostEdge> labelSet = g.edgeSet(entry.getKey());
             if (labelSet != null) {
                 result = labelSet.size() <= entry.getValue();
             }

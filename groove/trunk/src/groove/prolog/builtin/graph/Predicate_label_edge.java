@@ -46,7 +46,7 @@ public class Predicate_label_edge extends GraphPrologCode {
                 Label label = (Label) ((JavaObjectTerm) args[1]).value;
 
                 PrologCollectionIterator it =
-                    new PrologCollectionIterator(graph.labelEdgeSet(label),
+                    new PrologCollectionIterator(graph.edgeSet(label),
                         args[2], interpreter.getUndoPosition());
                 return it.nextSolution(interpreter);
             } catch (Exception e) {

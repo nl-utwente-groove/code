@@ -293,7 +293,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
     }
 
     @Override
-    public Set<HostEdge> labelEdgeSet(Label label) {
+    public Set<HostEdge> edgeSet(Label label) {
         HostEdgeSet result = getLabelEdgeMap().get(label);
         return (ALIAS_SETS || this.copyData) && result != null ? result
                 : createEdgeSet(result);

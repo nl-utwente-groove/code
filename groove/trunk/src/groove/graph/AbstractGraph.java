@@ -57,7 +57,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
     /**
      * Defers the containment question to {@link #nodeSet()}
      */
-    public boolean containsNode(Node elem) {
+    public boolean containsNode(N elem) {
         assert isTypeCorrect(elem);
         return nodeSet().contains(elem);
     }
@@ -65,7 +65,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
     /**
      * Defers the containment question to {@link #edgeSet()}
      */
-    public boolean containsEdge(Edge elem) {
+    public boolean containsEdge(E elem) {
         assert isTypeCorrect(elem) : String.format(
             "Edge %s is not of correct type", elem);
         return edgeSet().contains(elem);
@@ -123,7 +123,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
         }
     }
 
-    public Set<? extends E> labelEdgeSet(Label label) {
+    public Set<? extends E> edgeSet(Label label) {
         assert isTypeCorrect(label);
         Set<? extends E> result = getCache().getLabelEdgeMap().get(label);
         if (result != null) {
@@ -330,18 +330,6 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
         return added;
     }
 
-    /** 
-     * This implementation calls {@link #addEdgeWithoutCheck(Edge)} for all
-     * elements of the given edge set.
-     */
-    public boolean addEdgeSetWithoutCheck(Collection<? extends E> edgeSet) {
-        boolean added = false;
-        for (E edge : edgeSet) {
-            added |= addEdgeWithoutCheck(edge);
-        }
-        return added;
-    }
-
     /**
      * This implementation calls {@link #addNode(Node)} and
      * {@link #addEdgeWithoutCheck(Edge)} for the actual addition of
@@ -401,6 +389,14 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
         return removed;
     }
 
+    /**
+     * Merges two nodes in this graph, by adding all edges to and from the first
+     * node to the second, and subsequently removing the first.
+     * @param from node to be deleted
+     * @param to node to receive copies of the edges to and from the other
+     * @return {@code true} if {@code from} is distinct from
+     *         {@code to}, so a merge actually took place
+     */
     @SuppressWarnings("unchecked")
     public boolean mergeNodes(N from, N to) {
         assert isTypeCorrect(from);

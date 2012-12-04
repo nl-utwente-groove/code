@@ -41,7 +41,7 @@ public class Predicate_label_edge_set extends GraphPrologCode {
             Label label = (Label) ((JavaObjectTerm) args[1]).value;
 
             Term edgeSetTerm =
-                CompoundTerm.getList(PrologUtils.createJOTlist(graph.labelEdgeSet(label)));
+                CompoundTerm.getList(PrologUtils.createJOTlist(graph.edgeSet(label)));
             return interpreter.unify(edgeSetTerm, args[2]);
         } catch (Exception e) {
             return FAIL;
