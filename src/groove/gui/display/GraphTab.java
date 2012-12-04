@@ -255,8 +255,10 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
                 getJModel().syncGraph();
                 AspectGraph graph = getJModel().getGraph();
                 // we need to clone the graph to properly freeze the next layout change
-                getSimulatorModel().doAddGraph(getResourceKind(),
-                    graph.clone(), true);
+                AspectGraph graphClone = graph.clone();
+                graphClone.setFixed();
+                getSimulatorModel().doAddGraph(getResourceKind(), graphClone,
+                    true);
                 getPropertiesPanel().setProperties(getJModel().getProperties());
             } catch (IOException e1) {
                 // do nothing

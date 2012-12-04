@@ -266,14 +266,6 @@ final public class GraphEditorTab extends ResourceTab implements
         return this.dirtMinor;
     }
 
-    /** Changes the edited graph. */
-    public void change(AspectGraph newGraph) {
-        assert newGraph.getName().equals(getGraph().getName())
-            && newGraph.getRole() == getGraph().getRole();
-        getJModel().loadGraph(newGraph);
-        updateStatus();
-    }
-
     /** Renames the edited graph. */
     public void rename(String newName) {
         AspectGraph newGraph = getGraph().clone();
