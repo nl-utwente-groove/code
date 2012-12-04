@@ -21,6 +21,7 @@ import groove.abstraction.MyHashMap;
 import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.Util;
+import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
 import groove.trans.HostEdge;
@@ -132,7 +133,8 @@ public class GraphNeighEquiv extends EquivRelation<HostNode> {
         }
         for (HostEdge edge : this.graph.edgeSet()) {
             TypeLabel label = edge.label();
-            if (!label.isBinary() && (abstractAll || absLabels.contains(label))) {
+            if (label.getRole() != EdgeRole.BINARY
+                && (abstractAll || absLabels.contains(label))) {
                 int nodeNr = edge.source().getNumber();
                 BitSet nodeLabels = nodeLabelStore[nodeNr];
                 nodeLabels.set(getLabelNr(labelNrs, label));

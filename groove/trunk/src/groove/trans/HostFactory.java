@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.algebra.Algebra;
+import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.StoreFactory;
@@ -66,7 +67,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
 
     /** Creates and returns a node with a given number and node type label. */
     public HostNode createNode(int nr, TypeLabel type) {
-        assert type.isNodeType();
+        assert type.getRole() == EdgeRole.NODE_TYPE;
         TypeNode typeNode = this.typeFactory.getNode(type);
         assert typeNode != null;
         setLastNodeType(typeNode);

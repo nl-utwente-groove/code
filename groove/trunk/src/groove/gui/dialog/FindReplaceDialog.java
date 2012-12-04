@@ -365,12 +365,14 @@ public class FindReplaceDialog {
         List<TypeLabel> flags = new ArrayList<TypeLabel>();
         List<TypeLabel> binary = new ArrayList<TypeLabel>();
         for (TypeLabel label : labels) {
-            if (label.isNodeType()) {
+            switch (label.getRole()) {
+            case NODE_TYPE:
                 nodeTypes.add(label);
-            } else if (label.isFlag()) {
+                break;
+            case FLAG:
                 flags.add(label);
-            } else {
-                assert label.isBinary();
+                break;
+            case BINARY:
                 binary.add(label);
             }
         }

@@ -20,7 +20,6 @@ import groove.control.CtrlTransition;
 import groove.graph.AbstractEdge;
 import groove.graph.AbstractGraph;
 import groove.graph.EdgeRole;
-import groove.graph.Element;
 import groove.graph.Morphism;
 import groove.graph.iso.IsoChecker;
 import groove.trans.AbstractRuleEvent;
@@ -276,35 +275,6 @@ public class DefaultRuleTransition extends
     protected int computeHashCode() {
         return System.identityHashCode(source())
             + System.identityHashCode(getEvent());
-    }
-
-    @Override
-    public int compareTo(Element obj) {
-        if (obj instanceof GraphTransition) {
-            GraphTransition other = (GraphTransition) obj;
-            int result = source().compareTo(other.source());
-            if (result == 0) {
-                result =
-                    getAction().getFullName().compareTo(
-                        other.getAction().getFullName());
-            }
-            if (result == 0) {
-                result =
-                    getEvent().compareTo(((RuleTransition) other).getEvent());
-                if (result == 0) {
-                    result = target().compareTo(other.target());
-                }
-            }
-            return result;
-        } else {
-            assert obj instanceof GraphState : String.format(
-                "Can't compare graph transition %s to element %s", this, obj);
-            int result = source().compareTo(obj);
-            if (result == 0) {
-                result = +1;
-            }
-            return result;
-        }
     }
 
     /** Returns the (possibly {@code null} underlying control transition. */

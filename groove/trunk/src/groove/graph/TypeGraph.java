@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import static groove.graph.EdgeRole.FLAG;
+import static groove.graph.EdgeRole.NODE_TYPE;
 import static groove.graph.GraphRole.TYPE;
 import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.ValueNode;
@@ -160,11 +162,11 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      * This method should not be combined with {@link #addNode(TypeNode)} to
      * the same type graph, as then there is no guarantee of distinct node
      * numbers.
-     * @param label the label for the type node; must satisfy {@link Label#isNodeType()}
+     * @param label the label for the type node; must be an {@link EdgeRole#NODE_TYPE}
      * @return the created and added node type
      */
     public TypeNode addNode(TypeLabel label) {
-        assert label.isNodeType() : String.format(
+        assert label.getRole() == EdgeRole.NODE_TYPE : String.format(
             "Label %s is not a node type", label);
         TypeNode result = this.typeNodeMap.get(label);
         if (result == null) {
@@ -242,15 +244,15 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         // Set of edge labels occurring in the type graph
         Set<TypeLabel> edgeLabels = new HashSet<TypeLabel>();
         for (TypeEdge typeEdge : edgeSet()) {
-            if (!typeEdge.label().isNodeType() && !typeEdge.isAbstract()) {
+            if (typeEdge.getRole() != NODE_TYPE && !typeEdge.isAbstract()) {
                 TypeNode source = typeEdge.source();
                 TypeLabel typeLabel = typeEdge.label();
                 TypeLabel sourceType = source.label();
                 // check for outgoing edge types from data types
                 if (sourceType.isDataType()) {
                     errors.add("Data type '%s' cannot have %s",
-                        sourceType.text(), typeLabel.isFlag() ? "flags"
-                                : "outgoing edges", source);
+                        sourceType.text(), typeLabel.getRole() == FLAG
+                                ? "flags" : "outgoing edges", source);
                 }
                 edgeLabels.add(typeEdge.label());
             }
@@ -259,8 +261,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             // non-abstract edge types must be distinguishable
             // either in source type or in target type
             // also for all subtypes
-            List<TypeEdge> edges =
-                new ArrayList<TypeEdge>(edgeSet(edgeLabel));
+            List<TypeEdge> edges = new ArrayList<TypeEdge>(edgeSet(edgeLabel));
             for (int i = 0; i < edges.size() - 1; i++) {
                 TypeEdge edge1 = edges.get(i);
                 // abstract edge types are OK
@@ -276,8 +277,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     if (hasCommonSubtype(edge1.source(), edge2.source())
                         && hasCommonSubtype(edge1.target(), edge2.target())) {
                         errors.add("Possible type confusion of %s-%ss",
-                            edgeLabel.text(), edgeLabel.isFlag() ? "flag"
-                                    : "edge", edge1, edge2);
+                            edgeLabel.text(), edgeLabel.getRole() == FLAG
+                                    ? "flag" : "edge", edge1, edge2);
                     }
                 }
             }
@@ -634,7 +635,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         TypeNode type = null;
         boolean sharp = false;
         for (RuleEdge edge : graph.outEdgeSet(node)) {
-            if (!edge.label().isNodeType()) {
+            if (edge.label().getRole() != NODE_TYPE) {
                 continue;
             }
             TypeGuard guard = edge.label().getWildcardGuard();
@@ -839,7 +840,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         // find a node type among the outgoing edges
         for (E edge : source.outEdgeSet(node)) {
             L label = edge.label();
-            if (label.isNodeType()) {
+            if (label.getRole() == NODE_TYPE) {
                 result.add(edge);
             }
         }
@@ -939,7 +940,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      * if the label is not a known node type.
      */
     public TypeNode getNode(Label label) {
-        assert label.isNodeType();
+        assert label.getRole() == NODE_TYPE;
         if (isImplicit()) {
             return this.factory.getTopNode();
         } else {

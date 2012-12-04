@@ -50,7 +50,6 @@ public class ControlUnitTest extends CtrlTester {
             assertFalse(start.equals(trans.target()));
             assertFalse(start.equals(null));
             assertFalse(start.equals(trans));
-            assertTrue(start.compareTo(trans) < 0);
             CtrlState state = trans.target();
             state = state.getTransitions().iterator().next().target();
             assertNull(state.getInit());

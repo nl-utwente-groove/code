@@ -16,6 +16,7 @@
  */
 package groove.gui.look;
 
+import static groove.graph.EdgeRole.NODE_TYPE;
 import groove.algebra.SignatureKind;
 import groove.control.CtrlState;
 import groove.control.CtrlVar;
@@ -147,7 +148,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 for (AspectEdge edge : jVertex.getEdges()) {
                     if (!isFiltered(edge)) {
                         Line line = getHostLine(edge);
-                        if (id != null && edge.getDisplayLabel().isNodeType()) {
+                        if (id != null
+                            && edge.getDisplayLabel().getRole() == NODE_TYPE) {
                             line = id.append(" : ").append(line);
                             id = null;
                         }
@@ -232,7 +234,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
     private Line getTypeLine(AspectEdge edge) {
         edge.testFixed(true);
         Line result = getAspectEdgeLine(edge);
-        if (edge.getKind() == AspectKind.ABSTRACT && edge.label().isNodeType()) {
+        if (edge.getKind() == AspectKind.ABSTRACT
+            && edge.label().getRole() == NODE_TYPE) {
             result = result.style(Style.ITALIC);
         }
         if (edge.target() != edge.source()) {
@@ -285,7 +288,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (!isFiltered(edge)) {
                     Line line = getRuleLine(edge);
-                    if (idLine != null && edge.getDisplayLabel().isNodeType()) {
+                    if (idLine != null
+                        && edge.getDisplayLabel().getRole() == NODE_TYPE) {
                         line = idLine.append(" : ").append(line);
                         idLine = null;
                     }

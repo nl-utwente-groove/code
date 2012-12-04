@@ -16,6 +16,8 @@
  */
 package groove.control;
 
+import groove.graph.EdgeComparator;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -59,7 +61,7 @@ public class CtrlGuard extends TreeSet<CtrlTransition> implements
             Iterator<CtrlTransition> myIter = iterator();
             Iterator<CtrlTransition> hisIter = o.iterator();
             while (result == 0 && myIter.hasNext()) {
-                result = myIter.next().compareTo(hisIter.next());
+                result = edgeComparator.compare(myIter.next(), hisIter.next());
             }
         }
         return result;
@@ -98,4 +100,6 @@ public class CtrlGuard extends TreeSet<CtrlTransition> implements
         return result;
     }
 
+    private static final EdgeComparator edgeComparator =
+        EdgeComparator.instance();
 }

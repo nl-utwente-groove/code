@@ -23,6 +23,7 @@ import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.algebra.SignatureKind;
 import groove.annotation.Help;
+import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.LabelPattern;
 import groove.graph.Multiplicity;
@@ -1546,7 +1547,8 @@ public enum AspectKind {
             Object result = content;
             if (this.signature != null && content instanceof String) {
                 // this is a field name
-                if (oldLabel.isBinary() && oldLabel.text().equals(content)) {
+                if (oldLabel.getRole() == EdgeRole.BINARY
+                    && oldLabel.text().equals(content)) {
                     result = newLabel.text();
                 }
             }

@@ -17,6 +17,7 @@
 package groove.lts;
 
 import groove.control.CtrlTransition;
+import groove.graph.EdgeComparator;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 
@@ -129,9 +130,12 @@ public class MatchResult implements GraphTransitionKey {
                 int result = o1.getEvent().compareTo(o2.getEvent());
                 if (result == 0) {
                     result =
-                        o1.getCtrlTransition().compareTo(o2.getCtrlTransition());
+                        edgeComparator.compare(o1.getCtrlTransition(),
+                            o2.getCtrlTransition());
                 }
                 return result;
             }
         };
+    private static final EdgeComparator edgeComparator =
+        EdgeComparator.instance();
 }

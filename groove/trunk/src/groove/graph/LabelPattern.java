@@ -153,7 +153,7 @@ public class LabelPattern {
      */
     public LabelPattern relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         LabelPattern result = this;
-        if (oldLabel.isBinary()) {
+        if (oldLabel.getRole() == EdgeRole.BINARY) {
             List<String> newArgNames = new ArrayList<String>();
             boolean isNew = false;
             for (int i = 0; i < getArgNames().size(); i++) {

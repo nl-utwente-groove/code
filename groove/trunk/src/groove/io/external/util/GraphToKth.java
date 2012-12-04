@@ -16,6 +16,7 @@
  */
 package groove.io.external.util;
 
+import static groove.graph.EdgeRole.NODE_TYPE;
 import groove.algebra.StringAlgebra;
 import groove.graph.EdgeRole;
 import groove.graph.Node;
@@ -212,7 +213,7 @@ public final class GraphToKth {
     private static String getType(AspectNode node) {
         String type = null;
         for (AspectEdge edge : graph.outEdgeSet(node)) {
-            if (edge.getDisplayLabel().isNodeType()) {
+            if (edge.getDisplayLabel().getRole() == NODE_TYPE) {
                 type = edge.label().text();
                 break;
             }

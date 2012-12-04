@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.graph.AbstractEdge;
+import groove.graph.EdgeRole;
 import groove.graph.TypeEdge;
 import groove.graph.TypeLabel;
 
@@ -29,7 +30,7 @@ public class HostEdge extends AbstractEdge<HostNode,TypeLabel> implements
     /** Constructor for a typed edge. */
     protected HostEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
         super(source, type.label(), target);
-        assert label().isBinary() || source == target : String.format(
+        assert label().getRole() == EdgeRole.BINARY || source == target : String.format(
             "Can't create %s label %s between distinct nodes %s and %s",
             label().getRole().getDescription(false), label(), source, target);
         this.nr = nr;

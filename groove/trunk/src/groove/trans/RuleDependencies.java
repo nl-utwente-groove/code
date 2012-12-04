@@ -389,7 +389,8 @@ public class RuleDependencies {
             TypeNode eraserType) {
         consumed.add(eraserType);
         if (!this.properties.isCheckDangling()) {
-            consumed.addAll(this.typeGraph.edgeSet(eraserType));
+            consumed.addAll(this.typeGraph.inEdgeSet(eraserType));
+            consumed.addAll(this.typeGraph.outEdgeSet(eraserType));
         }
     }
 
@@ -462,9 +463,9 @@ public class RuleDependencies {
             RuleGraph rhs = cond.getRule().rhs();
             for (RuleNode lhsNode : pattern.nodeSet()) {
                 if (!rhs.containsNode(lhsNode)) {
-                    Set<TypeEdge> danglingEdges =
-                        new HashSet<TypeEdge>(
-                            this.typeGraph.edgeSet(lhsNode.getType()));
+                    Set<TypeEdge> danglingEdges = new HashSet<TypeEdge>();
+                    danglingEdges.addAll(this.typeGraph.inEdgeSet(lhsNode.getType()));
+                    danglingEdges.addAll(this.typeGraph.outEdgeSet(lhsNode.getType()));
                     for (RuleEdge rhsEdge : pattern.edgeSet(lhsNode)) {
                         TypeEdge edgeType = rhsEdge.getType();
                         if (edgeType != null) {

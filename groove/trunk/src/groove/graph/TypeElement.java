@@ -25,7 +25,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface TypeElement extends Element, AnchorValue {
+public interface TypeElement extends Element, AnchorValue, Label {
     /** 
      * Returns the type label of this type element.
      * Note that for type edges, the label does not completely determine

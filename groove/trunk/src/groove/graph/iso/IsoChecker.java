@@ -22,6 +22,7 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
+import groove.graph.EdgeComparator;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
@@ -1138,7 +1139,7 @@ public class IsoChecker<N extends Node,E extends Edge> {
             int result = this.images.size() - o.images.size();
             if (result == 0) {
                 // no criteria; just take the key edge
-                result = this.key.compareTo(o.key);
+                result = EdgeComparator.instance().compare(this.key, o.key);
             }
             return result;
         }

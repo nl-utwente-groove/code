@@ -17,6 +17,7 @@
 package groove.match.rete;
 
 import groove.algebra.JavaIntAlgebra;
+import groove.graph.NodeComparator;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
 import groove.match.TreeMatch;
@@ -92,7 +93,7 @@ public class QuantifierCountChecker extends ReteNetworkNode implements
     private void makePattern() {
         ArrayList<RuleNode> rootNodes = new ArrayList<RuleNode>();
         rootNodes.addAll(this.condition.getRoot().nodeSet());
-        Collections.sort(rootNodes);
+        Collections.sort(rootNodes, NodeComparator.instance());
         this.pattern = new RuleElement[rootNodes.size() + 1];
         int i = 0;
         for (RuleNode n : rootNodes) {

@@ -98,52 +98,6 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
     }
 
     /**
-     * Implements the ordering rules for {@link Element}s from the perspective
-     * of an {@link Edge}.
-     * @see Element#compareTo(Element)
-     */
-    public int compareTo(Element obj) {
-        int result;
-        if (obj instanceof Node) {
-            result = compareToNode((Node) obj);
-        } else {
-            result = compareToEdge((Edge) obj);
-        }
-        return result;
-    }
-
-    /**
-     * Compares this edge to another edge.
-     */
-    protected int compareToEdge(Edge other) {
-        int result;
-        result = source().compareTo(other.source());
-        if (result != 0) {
-            return result;
-        }
-        result = label().compareTo(other.label());
-        if (result != 0) {
-            return result;
-        }
-        result = target().compareTo(other.target());
-        return result;
-    }
-
-    /**
-     * Compares this edge to a node.
-     */
-    protected int compareToNode(Node node) {
-        int result;
-        // for nodes, we just need to look at the source of this edge
-        result = source().compareTo(node);
-        // if the source equals the node, edges come later
-        if (result == 0) {
-            result++;
-        }
-        return result;
-    }
-
-    /**
      * Returns <tt>true</tt> if <tt>obj</tt> is also an edge with the same label
      * and number of endpoints, and equal endpoints at each index. The actual
      * test is delegated to {@link #isTypeEqual(Object)} and

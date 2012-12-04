@@ -27,7 +27,6 @@ import groove.io.HTMLConverter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.jgraph.graph.DefaultPort;
 
@@ -45,12 +44,6 @@ public class GraphJVertex extends AbstractJCell {
      */
     protected GraphJVertex() {
         add(new DefaultPort());
-    }
-
-    @Override
-    protected void initialise() {
-        super.initialise();
-        this.edges = new TreeSet<Edge>();
     }
 
     /**
@@ -118,20 +111,6 @@ public class GraphJVertex extends AbstractJCell {
         return getJGraph().isShowLoopsAsNodeLabels()
             && edge.source() == edge.target() && edge.source() == getNode();
     }
-
-    /**
-     * Returns the set of graph edges wrapped in this JVertex.
-     */
-    @Override
-    public Set<? extends Edge> getEdges() {
-        if (this.edges == null) {
-            this.edges = new TreeSet<Edge>();
-        }
-        return this.edges;
-    }
-
-    /** Set of graph edges mapped to this JEdge. */
-    private Set<Edge> edges = new TreeSet<Edge>();
 
     /**
      * This implementation returns a special constant label in case the node is

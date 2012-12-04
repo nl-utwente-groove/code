@@ -23,11 +23,11 @@ package groove.graph;
  */
 public interface Label extends Comparable<Label>, java.io.Serializable {
     /**
-     * Returns the text that this Label carries. As a rule, <code>text()</code>
-     * should equal <code>toString()</code>. The <tt>compareTo</tt> method of
+     * Returns the text that this Label carries. 
+     * The <tt>compareTo</tt> method of
      * <tt>Comparable</tt> will, in a standard implementation, be delegated to
-     * <code>text()</code>.
-     * @ensure result != null
+     * {@link #text()}.
+     * @return the (non-{@code null}) text of the label
      */
     String text();
 
@@ -35,25 +35,4 @@ public interface Label extends Comparable<Label>, java.io.Serializable {
      * Returns the edge role of this label.
      */
     EdgeRole getRole();
-
-    /**
-     * Indicates if this label stands for a node type. Convenience method for
-     * {@code getRole() == EdgeRole.NODE_TYPE}.
-     * @see EdgeRole#NODE_TYPE
-     */
-    boolean isNodeType();
-
-    /**
-     * Indicates if this label stands for a flag. Convenience method for
-     * {@code getRole() == EdgeRole.FLAG}.
-     * @see EdgeRole#FLAG
-     */
-    boolean isFlag();
-
-    /**
-     * Indicates if this is a (normal) binary edge label. Convenience method for
-     * {@code getRole() == EdgeRole.BINARY}.
-     * @see EdgeRole#BINARY
-     */
-    boolean isBinary();
 }

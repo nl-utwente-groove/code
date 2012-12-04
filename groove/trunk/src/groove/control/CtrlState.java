@@ -16,7 +16,6 @@
  */
 package groove.control;
 
-import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.trans.Recipe;
@@ -87,19 +86,6 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
             return false;
         }
         return true;
-    }
-
-    public int compareTo(Element obj) {
-        if (obj instanceof CtrlState) {
-            return getNumber() - ((CtrlState) obj).getNumber();
-        } else {
-            int result =
-                getNumber() - ((CtrlTransition) obj).source().getNumber();
-            if (result == 0) {
-                result = -1;
-            }
-            return result;
-        }
     }
 
     public int getNumber() {

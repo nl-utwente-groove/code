@@ -16,6 +16,8 @@
  */
 package groove.gui.layout;
 
+import groove.graph.EdgeComparator;
+import groove.graph.NodeComparator;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJVertex;
@@ -431,11 +433,16 @@ public class ForestLayouter extends AbstractLayouter {
         new Comparator<GraphJEdge>() {
             @Override
             public int compare(GraphJEdge o1, GraphJEdge o2) {
-                int result = o1.getTargetNode().compareTo(o2.getTargetNode());
-                if (result == 0) {
-                    result = o1.getEdge().compareTo(o2.getEdge());
+                int result =
+                    nodeComp.compare(o1.getTargetNode(), o2.getTargetNode());
+                if (result != 0) {
+                    return result;
                 }
+                result = edgeComp.compare(o1.getEdge(), o2.getEdge());
                 return result;
             }
         };
+
+    private final static NodeComparator nodeComp = NodeComparator.instance();
+    private final static EdgeComparator edgeComp = EdgeComparator.instance();
 }

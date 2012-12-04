@@ -21,6 +21,7 @@ import groove.abstraction.MyHashSet;
 import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
+import groove.graph.EdgeRole;
 import groove.graph.GraphCache;
 import groove.graph.TypeEdge;
 import groove.graph.TypeGraph;
@@ -205,7 +206,7 @@ public final class AGTS extends GTS {
         TypeGraph typeGraph = getGrammar().getTypeGraph();
         Set<TypeLabel> unaryLabels = new MyHashSet<TypeLabel>();
         for (TypeEdge typeEdge : typeGraph.edgeSet()) {
-            if (!typeEdge.label().isBinary()) {
+            if (typeEdge.getRole() != EdgeRole.BINARY) {
                 unaryLabels.add(typeEdge.label());
             }
         }

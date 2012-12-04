@@ -16,6 +16,7 @@
  */
 package groove.match.rete;
 
+import groove.graph.NodeComparator;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 import groove.trans.Condition;
 import groove.trans.HostEdge;
@@ -139,7 +140,7 @@ public class ConditionChecker extends ReteNetworkNode implements
         if (!c.getRoot().isEmpty()) {
             ArrayList<RuleNode> nodes = new ArrayList<RuleNode>();
             nodes.addAll(c.getRoot().nodeSet());
-            Collections.sort(nodes);
+            Collections.sort(nodes, NodeComparator.instance());
             this.conflictSetSearchTree = new SearchTree(nodes);
         }
     }

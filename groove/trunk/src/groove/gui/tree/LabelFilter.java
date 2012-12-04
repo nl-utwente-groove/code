@@ -17,6 +17,7 @@
 package groove.gui.tree;
 
 import groove.graph.Edge;
+import groove.graph.EdgeRole;
 import groove.graph.Element;
 import groove.graph.Label;
 import groove.graph.TypeEdge;
@@ -339,7 +340,7 @@ public class LabelFilter extends Observable {
                 hasUnfilteredElements = true;
             } else {
                 // the entry is unselected
-                if (entry.getLabel().isNodeType()) {
+                if (entry.getLabel().getRole() == EdgeRole.NODE_TYPE) {
                     hasFilteredNodeTypes = true;
                 }
             }

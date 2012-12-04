@@ -16,6 +16,7 @@
  */
 package groove.rel;
 
+import static groove.graph.EdgeRole.NODE_TYPE;
 import static groove.util.ExprParser.DOUBLE_QUOTE_CHAR;
 import static groove.util.ExprParser.LANGLE_CHAR;
 import static groove.util.ExprParser.LPAR_CHAR;
@@ -1637,7 +1638,7 @@ abstract public class RegExpr { // implements VarSetSupport {
                 }
                 if (atom instanceof Atom) {
                     Label label = atom.toLabel();
-                    if (!label.isBinary()) {
+                    if (label.getRole() != EdgeRole.BINARY) {
                         throw new FormatException(
                             "Label '%s' in constraint '%s' should not be prefixed",
                             part, parameter);
@@ -1691,7 +1692,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         public Sharp(TypeLabel typeLabel) {
             this();
-            assert typeLabel.isNodeType();
+            assert typeLabel.getRole() == NODE_TYPE;
             this.typeLabel = typeLabel;
         }
 
@@ -1699,7 +1700,7 @@ abstract public class RegExpr { // implements VarSetSupport {
         public RegExpr relabel(TypeLabel oldLabel, TypeLabel newLabel) {
             RegExpr result;
             if (getTypeLabel().equals(oldLabel)) {
-                if (newLabel.isNodeType()) {
+                if (newLabel.getRole() == NODE_TYPE) {
                     result = newInstance(newLabel);
                 } else {
                     result = new Atom(newLabel.text());
@@ -1733,7 +1734,7 @@ abstract public class RegExpr { // implements VarSetSupport {
          */
         @Override
         public String toString() {
-            return EdgeRole.NODE_TYPE.getPrefix() + super.toString()
+            return NODE_TYPE.getPrefix() + super.toString()
                 + getTypeLabel().text();
         }
 
@@ -1753,14 +1754,12 @@ abstract public class RegExpr { // implements VarSetSupport {
             Pair<EdgeRole,String> parsedExpr =
                 EdgeRole.parseLabel(expr.substring(0, index));
             String text = expr.substring(index + 1);
-            if (parsedExpr.one() != EdgeRole.NODE_TYPE
-                || parsedExpr.two().length() != 0) {
+            if (parsedExpr.one() != NODE_TYPE || parsedExpr.two().length() != 0) {
                 throw new FormatException(
                     "Sharp operator '%s' must be preceded by '%s'",
-                    getOperator(), EdgeRole.NODE_TYPE.getPrefix());
+                    getOperator(), NODE_TYPE.getPrefix());
             }
-            return newInstance(TypeLabel.createLabel(EdgeRole.NODE_TYPE, text,
-                true));
+            return newInstance(TypeLabel.createLabel(NODE_TYPE, text, true));
         }
 
         /** Returns a {@link Wildcard} with a given identifier. */

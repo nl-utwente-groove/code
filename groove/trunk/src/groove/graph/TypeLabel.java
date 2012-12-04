@@ -16,6 +16,8 @@
  */
 package groove.graph;
 
+import static groove.graph.EdgeRole.BINARY;
+import static groove.graph.EdgeRole.NODE_TYPE;
 import groove.algebra.SignatureKind;
 import groove.io.HTMLConverter;
 import groove.trans.RuleLabel;
@@ -60,7 +62,8 @@ public final class TypeLabel extends AbstractLabel {
 
     /** Indicates if this label stands for a data type. */
     public boolean isDataType() {
-        return isNodeType() && SignatureKind.getNames().contains(text());
+        return getRole() == NODE_TYPE
+            && SignatureKind.getNames().contains(text());
     }
 
     /** The label text. */
@@ -96,7 +99,8 @@ public final class TypeLabel extends AbstractLabel {
     public static TypeLabel createLabelWithCheck(String prefixedText)
         throws FormatException {
         TypeLabel result = createLabel(prefixedText);
-        if (!result.isBinary() && !ExprParser.isIdentifier(result.text())) {
+        if (result.getRole() != BINARY
+            && !ExprParser.isIdentifier(result.text())) {
             throw new FormatException(
                 "%s label '%s' is not a valid identifier",
                 result.getRole().getDescription(true), result.text());
@@ -112,7 +116,7 @@ public final class TypeLabel extends AbstractLabel {
      * @return an existing or new label with the given text; non-null
      */
     public static TypeLabel createBinaryLabel(String text) {
-        return TypeFactory.instance().createLabel(EdgeRole.BINARY, text);
+        return TypeFactory.instance().createLabel(BINARY, text);
     }
 
     /**
@@ -131,7 +135,7 @@ public final class TypeLabel extends AbstractLabel {
      */
     public static TypeLabel createLabel(EdgeRole kind, String text, boolean test)
         throws FormatException {
-        if (test && kind != EdgeRole.BINARY && !ExprParser.isIdentifier(text)) {
+        if (test && kind != BINARY && !ExprParser.isIdentifier(text)) {
             throw new FormatException(
                 "%s label '%s' is not a valid identifier",
                 kind.getDescription(true), text);
@@ -159,14 +163,19 @@ public final class TypeLabel extends AbstractLabel {
      */
     static public String toHtmlString(Label label) {
         String result = HTMLConverter.toHtml(label.text());
-        if (label.isNodeType()) {
+        switch (label.getRole()) {
+        case NODE_TYPE:
             result = HTMLConverter.STRONG_TAG.on(result);
-        } else if (label.isFlag()) {
+            break;
+        case FLAG:
             result = HTMLConverter.ITALIC_TAG.on(result);
-        } else if (label instanceof RuleLabel) {
-            RuleLabel ruleLabel = (RuleLabel) label;
-            if (!ruleLabel.isAtom() && !ruleLabel.isSharp()) {
-                result = HTMLConverter.ITALIC_TAG.on(result);
+            break;
+        default:
+            if (label instanceof RuleLabel) {
+                RuleLabel ruleLabel = (RuleLabel) label;
+                if (!ruleLabel.isAtom() && !ruleLabel.isSharp()) {
+                    result = HTMLConverter.ITALIC_TAG.on(result);
+                }
             }
         }
         return result;
