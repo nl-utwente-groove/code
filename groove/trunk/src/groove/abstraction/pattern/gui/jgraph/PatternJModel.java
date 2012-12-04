@@ -34,6 +34,7 @@ import groove.trans.HostNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -115,6 +116,7 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
         // we add nodes in front of the list to get them in front of the display
         this.addedJCells.add(0, pJVertex);
         this.pNodeJCellMap.put(node, pJVertex);
+        this.addedJEdges.put(pJVertex, new HashSet<GraphJEdge>());
         return pJVertex;
     }
 
