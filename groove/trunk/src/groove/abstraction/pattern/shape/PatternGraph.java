@@ -17,6 +17,7 @@
 package groove.abstraction.pattern.shape;
 
 import groove.abstraction.MyHashMap;
+import groove.abstraction.pattern.match.Match;
 import groove.graph.Edge;
 import groove.graph.Node;
 import groove.trans.DefaultHostGraph;
@@ -232,11 +233,16 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
         return addPattern(m1, m2, p1, p2);
     }
 
+    /** Callback method to establish the pre-conditions for closure. */
+    public void prepareClosure(Match match) {
+        // Empty by design. To be overloaded in subclasses.
+    }
+
     /** Pattern closure. */
-    public void closePattern(TypeEdge m1, TypeEdge m2, PatternNode p1,
-            PatternNode p2) {
+    public Pair<PatternNode,Duo<PatternEdge>> closePattern(TypeEdge m1,
+            TypeEdge m2, PatternNode p1, PatternNode p2) {
         assert isUniquelyCovered(p1) && isUniquelyCovered(p2);
-        addPattern(m1, m2, p1, p2);
+        return addPattern(m1, m2, p1, p2);
     }
 
     /** Common method for addition and closure operation. */

@@ -51,11 +51,13 @@ public class Test {
     // private static final String GRAMMAR = PATH + "match-test.gps/";
     private static final String GRAMMAR = PATH + "mat-test.gps/";
 
-    private static final String TYPE_GRAPH = GRAMMAR + "ptgraph-1.gst";
+    private static final int nr = 2;
 
-    private static final String RULE = "rule-1";
+    private static final String TYPE_GRAPH = GRAMMAR + "ptgraph-" + nr + ".gst";
 
-    private static final String HOST = "host-1";
+    private static final String RULE = "rule-" + nr;
+
+    private static final String HOST = "host-" + nr;
 
     /** Test method. */
     public static void main(String args[]) {
@@ -90,6 +92,9 @@ public class Test {
         List<MatchResult> matches = matcher.findMatches(pShape, null);
         PreMatch preMatch = (PreMatch) matches.get(0).getMatch();
 
-        Materialisation.getMaterialisations(pShape, preMatch);
+        for (PatternShape mat : Materialisation.getMaterialisations(pShape,
+            preMatch)) {
+            PatternPreviewDialog.showPatternGraph(mat);
+        }
     }
 }

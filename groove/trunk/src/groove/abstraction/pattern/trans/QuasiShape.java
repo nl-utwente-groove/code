@@ -19,6 +19,7 @@ package groove.abstraction.pattern.trans;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.MyHashSet;
+import groove.abstraction.pattern.match.Match;
 import groove.abstraction.pattern.shape.PatternEdge;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternNode;
@@ -31,6 +32,7 @@ import groove.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -153,9 +155,134 @@ public final class QuasiShape extends PatternGraph {
         return pair;
     }
 
+    @Override
+    public void prepareClosure(Match match) {
+        PatternRule pRule = match.getRule();
+        RuleNode rNode = pRule.getCreatorNodes()[0];
+        Duo<RuleEdge> inEdges = pRule.rhs().getIncomingEdges(rNode);
+        RuleEdge r1 = inEdges.one();
+        RuleEdge r2 = inEdges.two();
+        PatternNode p1 = match.getNode(r1.source());
+        PatternNode p2 = match.getNode(r2.source());
+        disambiguate(p1);
+        disambiguate(p2);
+    }
+
+    @Override
+    public Pair<PatternNode,Duo<PatternEdge>> closePattern(TypeEdge m1,
+            TypeEdge m2, PatternNode p1, PatternNode p2) {
+        Pair<PatternNode,Duo<PatternEdge>> pair =
+            super.closePattern(m1, m2, p1, p2);
+        PatternEdge d1 = pair.two().one();
+        PatternEdge d2 = pair.two().two();
+        addEdgeConstraint(d1, Multiplicity.ZERO_PLUS_EDGE_MULT);
+        addEdgeConstraint(d2, Multiplicity.ZERO_PLUS_EDGE_MULT);
+        return pair;
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
+
+    /** Disambiguation operation. */
+    public void disambiguate(PatternNode p) {
+        Duo<TypeEdge> duo = getDuoIncomingEdgeTypes(p);
+        TypeEdge m1 = duo.one();
+        TypeEdge m2 = duo.two();
+        Collection<PatternNode> newNodes = disambiguate(p, m1);
+        for (PatternNode newNode : newNodes) {
+            // The new nodes are unambiguous w.r.t. m1, so now do m2.
+            disambiguate(newNode, m2);
+        }
+    }
+
+    private Collection<PatternNode> disambiguate(PatternNode p, TypeEdge m) {
+        if (getInEdgesWithType(p, m).size() == 1) {
+            // Nothing to do since m is already unambiguous in p.
+            return Collections.singleton(p);
+        }
+
+        // Create the new nodes.
+        Map<PatternEdge,PatternNode> origEdgeMap =
+            new MyHashMap<PatternEdge,PatternNode>();
+        for (PatternEdge inEdge : getInEdgesWithType(p, m)) {
+            PatternNode newNode = createNode(p.getType());
+            addNode(newNode);
+            origEdgeMap.put(inEdge, newNode);
+        }
+
+        Collection<PatternEdge> newEdges =
+            new ArrayList<PatternEdge>(origEdgeMap.values().size());
+
+        // Create the new incoming edges.
+        for (PatternEdge d : inEdgeSet(p)) {
+            PatternNode src = d.source();
+            TypeEdge type = d.getType();
+
+            Collection<PatternNode> tgts;
+            if (origEdgeMap.keySet().contains(d)) {
+                // Only create a single new edge.
+                tgts = Collections.singleton(origEdgeMap.get(d));
+            } else {
+                // Duplicate the d edge to all new nodes.
+                tgts = origEdgeMap.values();
+            }
+
+            newEdges.clear();
+            for (PatternNode tgt : tgts) {
+                PatternEdge newEdge = createEdge(src, type, tgt);
+                addEdge(newEdge);
+                newEdges.add(newEdge);
+            }
+
+            // Update the constraints.
+            for (Constraint constr : this.edgeConstrMap.get(src)) {
+                if (constr.contains(d)) {
+                    constr.replaceVar(d, newEdges);
+                }
+            }
+        }
+
+        Set<Constraint> origOutConstrs = this.edgeConstrMap.get(p);
+        if (origOutConstrs == null) {
+            origOutConstrs = Collections.emptySet();
+        }
+        Map<PatternEdge,PatternEdge> replacingMap =
+            new MyHashMap<PatternEdge,PatternEdge>();
+
+        // Create the new outgoing edges.
+        for (PatternNode newSrc : origEdgeMap.values()) {
+            replacingMap.clear();
+            for (PatternEdge d : outEdgeSet(p)) {
+                // Duplicate the d edge to all new nodes.
+                TypeEdge type = d.getType();
+                PatternNode tgt = d.target();
+                PatternEdge newEdge = createEdge(newSrc, type, tgt);
+                addEdge(newEdge);
+                replacingMap.put(d, newEdge);
+            }
+
+            // Duplicate the constraints.
+            for (Constraint origOutConstr : origOutConstrs) {
+                Iterator<MultVar> varsIter = origOutConstr.vars.iterator();
+                PatternEdge origEdge = varsIter.next().edge;
+                PatternEdge newEdge = replacingMap.get(origEdge);
+                Constraint newOutConstr =
+                    addEdgeConstraint(newEdge, origOutConstr.mult);
+                while (varsIter.hasNext()) {
+                    origEdge = varsIter.next().edge;
+                    newEdge = replacingMap.get(origEdge);
+                    newOutConstr.addVar(newEdge);
+                }
+            }
+        }
+
+        // Remove p and all adjacent edges.
+        removeNode(p);
+        this.edgeConstrMap.remove(p);
+
+        return origEdgeMap.values();
+    }
 
     private Iterable<Constraint> getConstraints() {
         Collection<Iterator<Constraint>> iters =
@@ -192,9 +319,10 @@ public final class QuasiShape extends PatternGraph {
         addToNodeConstraintMap(pNode, constr);
     }
 
-    private void addEdgeConstraint(PatternEdge dEdge, Multiplicity dMult) {
+    private Constraint addEdgeConstraint(PatternEdge dEdge, Multiplicity dMult) {
         Constraint constr = new Constraint(dEdge, dMult);
         addToEdgeConstraintMap(dEdge.source(), constr);
+        return constr;
     }
 
     private void copyConstraint(Constraint constr) {
@@ -310,7 +438,7 @@ public final class QuasiShape extends PatternGraph {
         final Set<MultVar> vars;
         final Multiplicity mult;
 
-        private Constraint(Multiplicity mult, PatternNode srcNode) {
+        Constraint(Multiplicity mult, PatternNode srcNode) {
             assert (srcNode == null && mult.isNodeKind())
                 || (srcNode != null && mult.isEdgeKind());
             this.srcNode = srcNode;
@@ -371,6 +499,25 @@ public final class QuasiShape extends PatternGraph {
             MultVar var = new MultVar(pEdge);
             QuasiShape.this.edgeVarMap.put(pEdge, var);
             this.vars.add(var);
+        }
+
+        void removeVar(PatternEdge pEdge) {
+            assert pEdge.source().equals(this.srcNode);
+            assert contains(pEdge);
+            MultVar var = QuasiShape.this.edgeVarMap.get(pEdge);
+            this.vars.remove(var);
+        }
+
+        void replaceVar(PatternEdge origEdge, Collection<PatternEdge> newEdges) {
+            for (PatternEdge newEdge : newEdges) {
+                addVar(newEdge);
+            }
+            removeVar(origEdge);
+        }
+
+        boolean contains(PatternEdge pEdge) {
+            MultVar var = QuasiShape.this.edgeVarMap.get(pEdge);
+            return this.vars.contains(var);
         }
 
         void solve(Set<Solution> partialSols) {
