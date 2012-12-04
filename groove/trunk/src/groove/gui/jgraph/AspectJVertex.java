@@ -89,8 +89,12 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     @Override
     public boolean isCompatible(Edge edge) {
-        return super.isCompatible(edge)
-            || ((AspectEdge) edge).getKind() == REMARK;
+        if (super.isCompatible(edge)) {
+            return true;
+        } else if (((AspectEdge) edge).getKind() == REMARK) {
+            return edge.source() == getNode() && edge.target() == getNode();
+        }
+        return false;
     }
 
     /** 
