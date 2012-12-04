@@ -16,6 +16,7 @@
  */
 package groove.graph;
 
+import static groove.graph.EdgeRole.NODE_TYPE;
 import groove.trans.AnchorKind;
 
 import java.awt.Color;
@@ -38,10 +39,9 @@ public class TypeNode implements Node, TypeElement {
      * @param type the non-{@code null} type label; for untyped graphs, the
      * default is {@link TypeLabel#NODE}
      * @param graph the type graph to which this node belongs; may be {@code null}
-     * @see Label#isNodeType() 
      */
     public TypeNode(int nr, TypeLabel type, TypeGraph graph) {
-        assert type.isNodeType() : String.format(
+        assert type.getRole() == NODE_TYPE : String.format(
             "Can't create type node for non-type label '%s'", type);
         this.nr = nr;
         this.type = type;
@@ -84,7 +84,7 @@ public class TypeNode implements Node, TypeElement {
     }
 
     @Override
-    public int compareTo(Element obj) {
+    public int compareTo(Label obj) {
         if (obj instanceof TypeNode) {
             return label().compareTo(((TypeNode) obj).label());
         } else {
@@ -96,6 +96,16 @@ public class TypeNode implements Node, TypeElement {
             }
             return result;
         }
+    }
+
+    @Override
+    public String text() {
+        return label().text();
+    }
+
+    @Override
+    public EdgeRole getRole() {
+        return EdgeRole.NODE_TYPE;
     }
 
     /** Returns the type of this node. */

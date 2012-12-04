@@ -16,6 +16,8 @@
  */
 package groove.trans;
 
+import groove.graph.EdgeComparator;
+import groove.graph.NodeComparator;
 import groove.graph.TypeElement;
 import groove.graph.TypeLabel;
 import groove.rel.LabelVar;
@@ -40,10 +42,14 @@ public enum AnchorKind implements Comparable<AnchorKind> {
         if (result == 0) {
             switch (one.getAnchorKind()) {
             case NODE:
-                result = AnchorKind.node(one).compareTo(AnchorKind.node(two));
+                result =
+                    NodeComparator.instance().compare(AnchorKind.node(one),
+                        AnchorKind.node(two));
                 break;
             case EDGE:
-                result = AnchorKind.edge(one).compareTo(AnchorKind.edge(two));
+                result =
+                    EdgeComparator.instance().compare(AnchorKind.edge(one),
+                        AnchorKind.edge(two));
                 break;
             case LABEL:
                 result = AnchorKind.label(one).compareTo(AnchorKind.label(two));

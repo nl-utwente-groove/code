@@ -50,7 +50,7 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
 
     /** Looks up or creates a node with a given (non-{@code null}) type label. */
     public TypeNode createNode(TypeLabel label) {
-        assert label.isNodeType();
+        assert label.getRole() == EdgeRole.NODE_TYPE;
         TypeNode result = this.typeNodeMap.get(label);
         if (result == null) {
             result = new TypeNode(getNextNodeNr(), label, this.typeGraph);
@@ -62,7 +62,7 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
 
     /** Looks up a node with a given (non-{@code null}) type label. */
     public TypeNode getNode(TypeLabel label) {
-        assert label.isNodeType();
+        assert label.getRole() == EdgeRole.NODE_TYPE;
         return this.typeNodeMap.get(label);
     }
 

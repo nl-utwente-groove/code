@@ -639,7 +639,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * Returns an aspect graph obtained from this one by changing the colour
      * of one of the node types.
      * This is only valid for type graphs.
-     * @param label the node type label to be changed; must satisfy {@link Label#isNodeType()}.
+     * @param label the node type label to be changed; must be a {@link EdgeRole#NODE_TYPE}.
      * @param colour the new colour for the node type; may be {@code null}
      * if the colour is to be reset to default
      * @return a clone of this aspect graph with changed labels, or this graph

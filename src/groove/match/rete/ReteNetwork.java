@@ -20,6 +20,7 @@ import groove.algebra.Constant;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
+import groove.graph.EdgeComparator;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.TypeGraph;
@@ -571,17 +572,9 @@ public class ReteNetwork {
      * @return A collection of edges of the given condition. 
      */
     protected Collection<RuleEdge> getEdgeCollection(Condition c) {
-
-        Collection<RuleEdge> result = c.getPattern().edgeSet();
-
-        result = new ArrayList<RuleEdge>(c.getPattern().edgeSet());
-        Collections.sort((List<RuleEdge>) result, new Comparator<RuleEdge>() {
-            @Override
-            public int compare(RuleEdge e1, RuleEdge e2) {
-                return e2.compareTo(e1);
-            }
-        });
-
+        List<RuleEdge> result =
+            new ArrayList<RuleEdge>(c.getPattern().edgeSet());
+        Collections.sort(result, EdgeComparator.instance());
         return result;
     }
 

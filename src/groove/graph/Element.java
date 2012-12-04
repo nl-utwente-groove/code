@@ -24,19 +24,6 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface Element extends Comparable<Element>, java.io.Serializable {
-    /**
-     * The rules for ordering {@link Element}s are as follows:
-     * <ul>
-     * <li> {@link Element}s are comparable to all other {@link Element}s, but
-     * to no other objects
-     * <li> {@link Node}s must define their own natural ordering
-     * <li> A {@link Node} is smaller than an {@link Edge} if and only if it
-     * smaller than or equal to the source node of the {@link Edge}
-     * <li> To compare two {@link Edge}s, first compare their source nodes,
-     * then their end count, then their labels and then the rest of their end
-     * points
-     * </ul>
-     */
-    public int compareTo(Element obj);
+public interface Element extends java.io.Serializable {
+    // empty
 }

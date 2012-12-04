@@ -18,6 +18,7 @@ package groove.trans;
 
 import groove.algebra.AlgebraFamily;
 import groove.control.CtrlPar.Var;
+import groove.graph.EdgeRole;
 import groove.graph.TypeGraph;
 import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.VariableNode;
@@ -674,7 +675,7 @@ public class Condition implements Fixable {
 
     private boolean hasBinaryEdges() {
         for (RuleEdge ruleEdge : getPattern().edgeSet()) {
-            if (ruleEdge.label().isBinary()) {
+            if (ruleEdge.getRole() == EdgeRole.BINARY) {
                 return true;
             }
         }

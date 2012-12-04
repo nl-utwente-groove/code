@@ -16,6 +16,7 @@
  */
 package groove.trans;
 
+import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.match.SearchEngine.SearchMode;
@@ -88,7 +89,7 @@ public class EdgeEmbargo extends Condition {
         case NORMAL:
             return true;
         case MINIMAL:
-            return !edgeLabel().isBinary();
+            return edgeLabel().getRole() != EdgeRole.BINARY;
         case REVERSE:
             // EZ says: here we always return false because either the embargo
             // is going to be discarded (if it was checked in minimal mode) or

@@ -18,7 +18,6 @@ package groove.lts;
 
 import groove.graph.AbstractEdge;
 import groove.graph.EdgeRole;
-import groove.graph.Element;
 import groove.trans.HostGraphMorphism;
 import groove.trans.Recipe;
 import groove.trans.RuleApplication;
@@ -233,38 +232,6 @@ public class RecipeTransition extends
     @Override
     protected boolean isTypeEqual(Object obj) {
         return obj instanceof RecipeTransition;
-    }
-
-    @Override
-    public int compareTo(Element obj) {
-        if (obj instanceof GraphTransition) {
-            GraphTransition other = (GraphTransition) obj;
-            int result = source().compareTo(other.source());
-            if (result == 0) {
-                result =
-                    getAction().getFullName().compareTo(
-                        other.getAction().getFullName());
-            }
-            if (result == 0) {
-                // the other must be a transition for the same recipe;
-                // compare the initial rule transitions
-                result =
-                    getInitial().compareTo(
-                        ((RecipeTransition) obj).getInitial());
-            }
-            if (result == 0) {
-                result = target().compareTo(other.target());
-            }
-            return result;
-        } else {
-            assert obj instanceof GraphState : String.format(
-                "Can't compare graph transition %s to element %s", this, obj);
-            int result = source().compareTo(obj);
-            if (result == 0) {
-                result = +1;
-            }
-            return result;
-        }
     }
 
     /**

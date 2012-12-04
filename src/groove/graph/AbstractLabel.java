@@ -25,21 +25,6 @@ import groove.util.Fixable;
  * @version $Revision$ $Date: 2008-01-30 09:32:57 $
  */
 public abstract class AbstractLabel implements Cloneable, Label, Fixable {
-    @Override
-    final public boolean isNodeType() {
-        return getRole() == EdgeRole.NODE_TYPE;
-    }
-
-    @Override
-    final public boolean isFlag() {
-        return getRole() == EdgeRole.FLAG;
-    }
-
-    @Override
-    final public boolean isBinary() {
-        return getRole() == EdgeRole.BINARY;
-    }
-
     /** Labels are binary by default. */
     @Override
     public EdgeRole getRole() {
@@ -52,25 +37,11 @@ public abstract class AbstractLabel implements Cloneable, Label, Fixable {
      */
     @Override
     public int compareTo(Label obj) {
-        /* All node type labels are smaller than all others. */
-        int result = boolToInt(obj.isNodeType()) - boolToInt(isNodeType());
-        /* All flag labels are smaller than all standard labels. */
-        if (result == 0) {
-            result = boolToInt(obj.isFlag()) - boolToInt(isFlag());
-        }
+        int result = getRole().compareTo(obj.getRole());
         if (result == 0) {
             result = text().compareTo(obj.text());
         }
         return result;
-    }
-
-    /**
-     * Converts a boolean value to an integer value.
-     * @return <code>1</code> if <code>bool</code> is <code>true</code>,
-     *         <code>0</code> otherwise.
-     */
-    private int boolToInt(boolean bool) {
-        return bool ? 1 : 0;
     }
 
     @Override

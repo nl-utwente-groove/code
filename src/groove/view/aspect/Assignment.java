@@ -16,6 +16,7 @@
  */
 package groove.view.aspect;
 
+import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
 import groove.view.FormatException;
 
@@ -90,7 +91,7 @@ public class Assignment {
      */
     public Assignment relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         Assignment result = this;
-        if (oldLabel.isBinary()) {
+        if (oldLabel.getRole() == EdgeRole.BINARY) {
             Expression newRhs = getRhs().relabel(oldLabel, newLabel);
             String newLhs =
                 oldLabel.text().equals(getLhs()) ? newLabel.text() : getLhs();

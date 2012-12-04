@@ -27,10 +27,12 @@ import groove.abstraction.pattern.trans.PatternRule;
 import groove.abstraction.pattern.trans.RuleFactory;
 import groove.abstraction.pattern.trans.RuleNode;
 import groove.graph.Edge;
+import groove.graph.EdgeComparator;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Node;
+import groove.graph.NodeComparator;
 import groove.graph.TypeLabel;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
@@ -470,7 +472,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
                 result.add(node);
             }
         }
-        Collections.sort(result);
+        Collections.sort(result, NodeComparator.instance());
         return result;
     }
 
@@ -484,7 +486,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
                 result.add(edge);
             }
         }
-        Collections.sort(result);
+        Collections.sort(result, EdgeComparator.instance());
         return result;
     }
 

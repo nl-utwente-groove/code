@@ -40,7 +40,7 @@ public class ImplicitTypeGraph extends TypeGraph {
     /** Adds type edges for a given type label. */
     public void addLabel(TypeLabel label) {
         TypeNode top = getTopNode();
-        if (label.isBinary()) {
+        if (label.getRole() == EdgeRole.BINARY) {
             for (TypeNode target : nodeSet()) {
                 addEdge(top, label, target);
             }

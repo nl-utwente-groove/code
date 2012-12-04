@@ -20,7 +20,6 @@ import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
-import groove.graph.Element;
 import groove.lts.AbstractGraphState;
 
 import java.util.Set;
@@ -55,23 +54,6 @@ public abstract class AbstractPatternState implements PatternState {
     @Override
     public int getNumber() {
         return this.nr;
-    }
-
-    /**
-     * This implementation compares state numbers.
-     */
-    @Override
-    public int compareTo(Element obj) {
-        if (obj instanceof AbstractPatternState) {
-            return getNumber() - ((AbstractPatternState) obj).getNumber();
-        } else if (obj instanceof PatternTransition) {
-            return getNumber()
-                - ((AbstractPatternState) ((PatternTransition) obj).source()).getNumber();
-        } else {
-            throw new UnsupportedOperationException(String.format(
-                "Classes %s and %s cannot be compared", getClass(),
-                obj.getClass()));
-        }
     }
 
     /**

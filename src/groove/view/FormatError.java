@@ -16,7 +16,11 @@
  */
 package groove.view;
 
+import groove.graph.Edge;
+import groove.graph.EdgeComparator;
 import groove.graph.Element;
+import groove.graph.Node;
+import groove.graph.NodeComparator;
 import groove.gui.list.ListPanel.SelectableListEntry;
 import groove.trans.Action;
 import groove.trans.ResourceKind;
@@ -136,7 +140,7 @@ public class FormatError implements Comparable<FormatError>,
         List<Element> otherElements = other.getElements();
         int upper = Math.min(myElements.size(), otherElements.size());
         for (int i = 0; result == 0 && i < upper; i++) {
-            result = myElements.get(i).compareTo(otherElements.get(i));
+            result = compare(myElements.get(i), otherElements.get(i));
         }
         if (result == 0) {
             result = myElements.size() - otherElements.size();
@@ -249,4 +253,21 @@ public class FormatError implements Comparable<FormatError>,
     /** The error message. */
     private final String message;
 
+    private static int compare(Element o1, Element o2) {
+        int result = o1.getClass().getName().compareTo(o2.getClass().getName());
+        if (result != 0) {
+            return result;
+        }
+        if (o1 instanceof Node) {
+            result = nodeComparator.compare((Node) o1, (Node) o2);
+        } else {
+            result = edgeComparator.compare((Edge) o1, (Edge) o2);
+        }
+        return result;
+    }
+
+    private static final NodeComparator nodeComparator =
+        NodeComparator.instance();
+    private static final EdgeComparator edgeComparator =
+        EdgeComparator.instance();
 }

@@ -207,7 +207,8 @@ public enum EdgeRole {
     private static Map<String,String> nameToSymbolMap =
         new HashMap<String,String>();
     /** Array of edge roles, in the order of their indices. */
-    private static final EdgeRole[] rolesArray = new EdgeRole[EdgeRole.values().length];
+    private static final EdgeRole[] rolesArray =
+        new EdgeRole[EdgeRole.values().length];
     static {
         int index = 0;
         for (EdgeRole role : EdgeRole.values()) {

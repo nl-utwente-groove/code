@@ -17,6 +17,7 @@
 package groove.abstraction.neigh.trans;
 
 import static groove.abstraction.Multiplicity.ONE_NODE_MULT;
+import static groove.graph.EdgeRole.BINARY;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.MyHashSet;
@@ -34,7 +35,6 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
 import groove.match.Matcher;
 import groove.match.MatcherFactory;
@@ -588,7 +588,7 @@ public final class Materialisation {
             }
         }
         for (ShapeEdge edgeS : map.edgeMap().values()) {
-            if (edgeS.label().isBinary()) {
+            if (edgeS.getRole() == BINARY) {
                 if (!shape.isEdgeConcrete(edgeS)) {
                     return false;
                 }
@@ -861,7 +861,7 @@ public final class Materialisation {
                     // Special case. We have to add all edges incident to this
                     // node.
                     for (ShapeEdge edge : this.shape.edgeSet(bundle.node)) {
-                        if (edge.getRole() == EdgeRole.BINARY
+                        if (edge.getRole() == BINARY
                             && !handledEdges.contains(edge)) {
                             toProcess.add(edge);
                         }

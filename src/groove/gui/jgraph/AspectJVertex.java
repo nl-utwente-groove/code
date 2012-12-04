@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
@@ -105,7 +104,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
      * {@link AspectJEdge#isSourceLabel()} holds.
      */
     public Set<AspectEdge> getExtraSelfEdges() {
-        Set<AspectEdge> result = new TreeSet<AspectEdge>();
+        Set<AspectEdge> result = createEdgeSet();
         // add all outgoing JEdges that are source labels
         for (GraphJEdge edgeObject : getJEdges()) {
             AspectJEdge jEdge = (AspectJEdge) edgeObject;

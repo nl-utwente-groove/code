@@ -1,5 +1,6 @@
 package groove.gui.action;
 
+import groove.graph.EdgeRole;
 import groove.graph.Element;
 import groove.graph.GraphRole;
 import groove.graph.Label;
@@ -94,7 +95,7 @@ public class SelectColorAction extends SimulatorAction implements
                     Label selectedLabel =
                         ((EntryNode) treeNode).getEntry().getLabel();
                     if (selectedLabel instanceof TypeLabel
-                        && selectedLabel.isNodeType()) {
+                        && selectedLabel.getRole() == EdgeRole.NODE_TYPE) {
                         this.label = (TypeLabel) selectedLabel;
                         break;
                     }

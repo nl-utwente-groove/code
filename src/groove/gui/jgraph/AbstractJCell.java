@@ -28,6 +28,7 @@ import groove.gui.look.VisualMap;
 import groove.gui.look.VisualValue;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -123,13 +124,13 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
     @Override
     public Set<? extends Edge> getEdges() {
         if (this.edges == null) {
-            this.edges = new TreeSet<Edge>();
+            this.edges = createEdgeSet();
         }
         return this.edges;
     }
 
     /** Set of graph edges wrapped by this JCell. */
-    private Set<Edge> edges = new TreeSet<Edge>();
+    private Set<Edge> edges;
 
     /** Sets or resets a look value. */
     public boolean setLook(Look look, boolean set) {
@@ -273,5 +274,23 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
     @Override
     public AttributeMap getAttributes() {
         return getVisuals().getAttributes();
+    }
+
+    /** Returns a label-sorted set of edges. */
+    protected <E extends Edge> Set<E> createEdgeSet() {
+        return new TreeSet<E>(new Comparator<E>() {
+            @Override
+            public int compare(E o1, E o2) {
+                int result = o1.label().compareTo(o2.label());
+                if (result == 0) {
+                    result = o1.source().getNumber() - o2.source().getNumber();
+                    if (result == 0) {
+                        result =
+                            o1.target().getNumber() - o2.target().getNumber();
+                    }
+                }
+                return result;
+            }
+        });
     }
 }

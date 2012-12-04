@@ -16,6 +16,7 @@
  */
 package groove.match.rete;
 
+import groove.graph.NodeComparator;
 import groove.match.rete.ClosurePathChecker.ClosureInfo;
 import groove.rel.Valuation;
 import groove.trans.HostEdge;
@@ -146,9 +147,9 @@ public class RetePathMatch extends AbstractReteMatch {
     public int compareTo(RetePathMatch m) {
         int result = this.hashCode() - m.hashCode();
         if (result == 0) {
-            result = this.start.compareTo(m.start);
+            result = nodeComparator.compare(this.start, m.start);
             if (result == 0) {
-                result = this.end.compareTo(m.end);
+                result = nodeComparator.compare(this.end, m.end);
             }
         }
         return result;
@@ -302,6 +303,9 @@ public class RetePathMatch extends AbstractReteMatch {
         result.valuation = m.valuation;
         return result;
     }
+
+    private static final NodeComparator nodeComparator =
+        NodeComparator.instance();
 
     /**
      * Represents an empty path match, equivalent of an empty word in regular

@@ -17,6 +17,7 @@
 package groove.view.aspect;
 
 import static groove.algebra.Precedence.NONE;
+import static groove.graph.EdgeRole.BINARY;
 import groove.algebra.Algebras;
 import groove.algebra.Constant;
 import groove.algebra.Operator;
@@ -382,7 +383,8 @@ abstract public class Expression {
 
         @Override
         public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel) {
-            if (oldLabel.isBinary() && oldLabel.text().equals(this.field)) {
+            if (oldLabel.getRole() == BINARY
+                && oldLabel.text().equals(this.field)) {
                 return new Field(getType(), getOwner(), newLabel.text());
             } else {
                 return this;
@@ -641,7 +643,7 @@ abstract public class Expression {
         @Override
         public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel) {
             Call result = this;
-            if (oldLabel.isBinary()) {
+            if (oldLabel.getRole() == BINARY) {
                 List<Expression> newArgs = new ArrayList<Expression>();
                 boolean isNew = false;
                 for (int i = 0; i < getArguments().size(); i++) {

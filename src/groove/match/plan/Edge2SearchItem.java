@@ -16,6 +16,7 @@
  */
 package groove.match.plan;
 
+import groove.graph.NodeComparator;
 import groove.graph.TypeEdge;
 import groove.graph.TypeNode;
 import groove.graph.algebra.ValueNode;
@@ -104,10 +105,14 @@ class Edge2SearchItem extends AbstractSearchItem {
             RuleEdge otherEdge = ((Edge2SearchItem) other).getEdge();
             result = getEdge().label().compareTo(otherEdge.label());
             if (result == 0) {
-                result = this.edge.source().compareTo(otherEdge.source());
+                result =
+                    nodeComparator.compare(this.edge.source(),
+                        otherEdge.source());
             }
             if (result == 0) {
-                result = this.edge.target().compareTo(otherEdge.target());
+                result =
+                    nodeComparator.compare(this.edge.target(),
+                        otherEdge.target());
             }
         }
         if (result == 0) {
@@ -239,6 +244,9 @@ class Edge2SearchItem extends AbstractSearchItem {
     boolean sourceFound;
     /** Indicates if the target is found before this item is invoked. */
     boolean targetFound;
+
+    private static final NodeComparator nodeComparator =
+        NodeComparator.instance();
 
     /**
      * Search record to be used if the edge image is completely determined by

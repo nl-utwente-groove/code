@@ -31,6 +31,7 @@ import groove.algebra.Operator;
 import groove.algebra.SignatureKind;
 import groove.graph.AbstractNode;
 import groove.graph.DefaultLabel;
+import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.LabelPattern;
 import groove.graph.TypeLabel;
@@ -474,7 +475,7 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                 }
             }
         } else if (edge.getKind() == ABSTRACT
-            && edge.getTypeLabel().isNodeType()) {
+            && edge.getTypeLabel().getRole() == EdgeRole.NODE_TYPE) {
             setAspect(ABSTRACT.getAspect());
         }
     }
