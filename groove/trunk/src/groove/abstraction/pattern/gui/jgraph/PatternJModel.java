@@ -34,7 +34,6 @@ import groove.trans.HostNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -109,15 +108,11 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
 
     @Override
     protected GraphJVertex addNode(Node node) {
-        if (!isPatternTyped(node)) {
-            return super.addNode(node);
+        GraphJVertex result = super.addNode(node);
+        if (isPatternTyped(node)) {
+            this.pNodeJCellMap.put(node, (PatternJVertex) result);
         }
-        PatternJVertex pJVertex = computeJVertex((AbstractPatternNode) node);
-        // we add nodes in front of the list to get them in front of the display
-        this.addedJCells.add(0, pJVertex);
-        this.pNodeJCellMap.put(node, pJVertex);
-        this.addedJEdges.put(pJVertex, new HashSet<GraphJEdge>());
-        return pJVertex;
+        return result;
     }
 
     @Override
@@ -155,6 +150,15 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
         return result;
     }
 
+    @Override
+    protected GraphJVertex computeJVertex(Node node) {
+        GraphJVertex result = super.computeJVertex(node);
+        if (isPatternTyped(node)) {
+            createPattern((AbstractPatternNode) node, (PatternJVertex) result);
+        }
+        return result;
+    }
+
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
@@ -184,13 +188,6 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
     /** Returns true if the given edge is a pattern graph edge. */
     private boolean isPatternTyped(Edge edge) {
         return edge instanceof AbstractPatternEdge<?>;
-    }
-
-    /** Creates a new vertex for the given pattern node. */
-    private PatternJVertex computeJVertex(AbstractPatternNode pNode) {
-        PatternJVertex result = (PatternJVertex) super.computeJVertex(pNode);
-        createPattern(pNode, result);
-        return result;
     }
 
     /** Creates the pattern elements of the given pattern node. */
