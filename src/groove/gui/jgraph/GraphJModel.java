@@ -352,11 +352,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         }
         if (result == null) {
             // try to add the edge to an existing JEdge
-            Set<GraphJEdge> jEdges = this.addedJEdges.get(sourceJVertex);
-            if (jEdges == null) {
-                jEdges = sourceJVertex.getJEdges();
-            }
-            for (GraphJEdge jEdge : jEdges) {
+            for (GraphJEdge jEdge : getJEdges(sourceJVertex)) {
                 if (jEdge.isCompatible(edge)) {
                     // yes, the edge could be added here; we're done
                     jEdge.addEdge(edge);
@@ -375,10 +371,18 @@ public class GraphJModel<N extends Node,E extends Edge> extends
                 + edge;
             this.connections.connect(result, sourceJVertex.getPort(),
                 targetJVertex.getPort());
-            this.addedJEdges.get(sourceJVertex).add(jEdge);
-            this.addedJEdges.get(targetJVertex).add(jEdge);
+            getJEdges(sourceJVertex).add(jEdge);
+            getJEdges(targetJVertex).add(jEdge);
         }
         this.edgeJCellMap.put(edge, result);
+        return result;
+    }
+
+    private Set<GraphJEdge> getJEdges(GraphJVertex jVertex) {
+        Set<GraphJEdge> result = this.addedJEdges.get(jVertex);
+        if (result == null) {
+            result = jVertex.getJEdges();
+        }
         return result;
     }
 
