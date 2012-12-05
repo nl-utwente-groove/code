@@ -1144,7 +1144,7 @@ public class Rule implements Action, Fixable {
     private RuleGraph computeCreatorGraph() {
         RuleGraph result = rhs().newGraph(getFullName() + "(creators)");
         result.addNodeSet(Arrays.asList(getCreatorNodes()));
-        result.addEdgeSet(Arrays.asList(getCreatorEdges()));
+        result.addEdgeSetContext(Arrays.asList(getCreatorEdges()));
         return result;
     }
 

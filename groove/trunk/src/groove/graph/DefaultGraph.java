@@ -121,7 +121,7 @@ public class DefaultGraph extends AbstractGraph<DefaultNode,DefaultEdge>
         return added;
     }
 
-    public boolean addEdgeWithoutCheck(DefaultEdge edge) {
+    public boolean addEdge(DefaultEdge edge) {
         assert isTypeCorrect(edge);
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         Set<DefaultEdge> sourceOutEdges = this.edgeMap.get(edge.source());
@@ -145,7 +145,7 @@ public class DefaultGraph extends AbstractGraph<DefaultNode,DefaultEdge>
 
     /** Reimplementation to improve performance. */
     @Override
-    public boolean removeNode(DefaultNode node) {
+    public boolean removeNodeContext(DefaultNode node) {
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean result = false;
@@ -172,7 +172,7 @@ public class DefaultGraph extends AbstractGraph<DefaultNode,DefaultEdge>
         return result;
     }
 
-    public boolean removeNodeWithoutCheck(DefaultNode node) {
+    public boolean removeNode(DefaultNode node) {
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean result = false;

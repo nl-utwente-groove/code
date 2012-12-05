@@ -298,6 +298,14 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
         return freshNode;
     }
 
+    public boolean addNodeSet(Collection<? extends N> nodeSet) {
+        boolean added = false;
+        for (N node : nodeSet) {
+            added |= addNode(node);
+        }
+        return added;
+    }
+
     /**
      * Creates its result using {@link #createEdge(Node, Label, Node)}.
      */
@@ -309,50 +317,44 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      * Creates its result using {@link #createEdge(Node, Label, Node)}.
      */
     public E addEdge(N source, Label label, N target) {
+        assert containsNode(source);
+        assert containsNode(target);
         E result = createEdge(source, label, target);
         addEdge(result);
         return result;
     }
 
-    public boolean addNodeSet(Collection<? extends N> nodeSet) {
-        boolean added = false;
-        for (N node : nodeSet) {
-            added |= addNode(node);
-        }
-        return added;
-    }
-
-    public boolean addEdgeSet(Collection<? extends E> edgeSet) {
-        boolean added = false;
-        for (E edge : edgeSet) {
-            added |= addEdge(edge);
-        }
-        return added;
-    }
-
     /**
      * This implementation calls {@link #addNode(Node)} and
-     * {@link #addEdgeWithoutCheck(Edge)} for the actual addition of
+     * {@link #addEdge(Edge)} for the actual addition of
      * the edge and its incident nodes.
      */
     @SuppressWarnings("unchecked")
-    public boolean addEdge(E edge) {
+    public boolean addEdgeContext(E edge) {
         assert !isFixed() : "Trying to add " + edge + " to unmodifiable graph";
         boolean added = !containsEdge(edge);
         if (added) {
             addNode((N) edge.source());
             addNode((N) edge.target());
-            addEdgeWithoutCheck(edge);
+            addEdge(edge);
         }
         return added;
     }
 
-    /**
+    public boolean addEdgeSetContext(Collection<? extends E> edgeSet) {
+        boolean added = false;
+        for (E edge : edgeSet) {
+            added |= addEdgeContext(edge);
+        }
+        return added;
+    }
+
+    /*
      * This implementation calls {@link #removeEdge(Edge)} and 
      * {@link #removeNodeWithoutCheck(Node)} for the actual removal
      * of the incident edges and the node.
      */
-    public boolean removeNode(N node) {
+    public boolean removeNodeContext(N node) {
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean removed = containsNode(node);
@@ -360,7 +362,15 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
             for (E edge : edgeSet(node)) {
                 removeEdge(edge);
             }
-            removeNodeWithoutCheck(node);
+            removeNode(node);
+        }
+        return removed;
+    }
+
+    public boolean removeNodeSetContext(Collection<? extends N> nodeSet) {
+        boolean removed = false;
+        for (N node : nodeSet) {
+            removed |= removeNodeContext(node);
         }
         return removed;
     }
@@ -369,14 +379,6 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
         boolean removed = false;
         for (N node : nodeSet) {
             removed |= removeNode(node);
-        }
-        return removed;
-    }
-
-    public boolean removeNodeSetWithoutCheck(Collection<? extends N> nodeSet) {
-        boolean removed = false;
-        for (N node : nodeSet) {
-            removed |= removeNodeWithoutCheck(node);
         }
         return removed;
     }
@@ -418,19 +420,19 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
                 if (changed) {
                     Label label = edge.label();
                     E newEdge = createEdge(source, label, target);
-                    addEdgeWithoutCheck(newEdge);
+                    addEdge(newEdge);
                     removeEdge(edge);
                 }
             }
             // delete the old node and edges
-            removeNodeWithoutCheck(from);
+            removeNode(from);
             return true;
         } else {
             return false;
         }
     }
 
-    /** This should return a <i>modifiable</i> clone of the graph. */
+    /* Overridden to rule out the CloneNotSupportedException */
     @Override
     public abstract AbstractGraph<N,E> clone();
 

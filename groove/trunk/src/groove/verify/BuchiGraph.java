@@ -69,12 +69,12 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition>
     }
 
     @Override
-    public boolean addEdgeWithoutCheck(BuchiTransition edge) {
+    public boolean addEdge(BuchiTransition edge) {
         return edge.source().addTransition(edge);
     }
 
     @Override
-    public boolean removeNodeWithoutCheck(BuchiLocation node) {
+    public boolean removeNode(BuchiLocation node) {
         throw new UnsupportedOperationException();
     }
 
@@ -91,7 +91,7 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition>
             result.addNode(node);
         }
         for (BuchiTransition edge : edgeSet()) {
-            result.addEdge(edge);
+            result.addEdgeContext(edge);
         }
         return result;
     }
@@ -147,7 +147,7 @@ public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition>
                 BuchiTransition transition =
                     new BuchiTransition(location, label, getLocation(
                         node2location, target));
-                result.addEdgeWithoutCheck(transition);
+                result.addEdge(transition);
                 newNodes.add(target);
             }
         }

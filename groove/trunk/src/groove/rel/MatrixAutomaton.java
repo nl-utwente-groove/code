@@ -68,6 +68,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         super("automaton");
         this.start = start;
         this.end = end;
+        addNode(start);
+        addNode(end);
         this.typeGraph = typeGraph;
         assert typeGraph != null;
     }

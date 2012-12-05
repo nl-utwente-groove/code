@@ -143,8 +143,8 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     }
 
     @Override
-    public boolean removeNode(N node) {
-        boolean result = super.removeNode(node);
+    public boolean removeNodeContext(N node) {
+        boolean result = super.removeNodeContext(node);
         if (result) {
             removeFromLayer(node);
         }
@@ -562,7 +562,7 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     }
 
     @Override
-    public boolean addEdgeSet(Collection<? extends E> edgeSet) {
+    public boolean addEdgeSetContext(Collection<? extends E> edgeSet) {
         throw new UnsupportedOperationException();
     }
 

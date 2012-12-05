@@ -174,7 +174,7 @@ public final class PatternRule {
     }
 
     private void addToLhs(RuleEdge rEdge) {
-        this.lhs.addEdge(rEdge);
+        this.lhs.addEdgeContext(rEdge);
     }
 
     private void addToRhs(RuleNode rNode) {
@@ -182,7 +182,7 @@ public final class PatternRule {
     }
 
     private void addToRhs(RuleEdge rEdge) {
-        this.rhs.addEdge(rEdge);
+        this.rhs.addEdgeContext(rEdge);
     }
 
     private RuleNode createNode(TypeNode tNode) {
@@ -314,8 +314,8 @@ public final class PatternRule {
         for (RuleEdge rEdge : rhs().outEdgeSet(from)) {
             addReaderEdge(to, rEdge.getType(), rEdge.target());
         }
-        lhs().removeNode(from);
-        rhs().removeNode(from);
+        lhs().removeNodeContext(from);
+        rhs().removeNodeContext(from);
     }
 
     /** Returns the simple rule out of which this pattern rule was created. */

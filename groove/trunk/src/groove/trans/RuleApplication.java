@@ -440,7 +440,7 @@ public class RuleApplication implements DeltaApplier {
     /**
      * Adds an edge to a delta target, if the edge is not <code>null</code>
      * and not already in the source graph. Optimises by trying to call
-     * {@link Graph#addEdgeWithoutCheck(Edge)} if the target is an
+     * {@link Graph#addEdge(Edge)} if the target is an
      * {@link Graph}.
      */
     private void addEdge(DeltaTarget target, HostEdge edge) {
@@ -454,7 +454,7 @@ public class RuleApplication implements DeltaApplier {
             }
         }
         if (target instanceof HostGraph) {
-            ((HostGraph) target).addEdgeWithoutCheck(edge);
+            ((HostGraph) target).addEdge(edge);
         } else {
             // apparently the target wasn't a HostGraph
             // so we can't do efficient edge addition
@@ -464,33 +464,21 @@ public class RuleApplication implements DeltaApplier {
 
     /**
      * Removes a node from a delta target. Optimises by trying to call
-     * {@link Graph#removeNodeWithoutCheck(Node)} if the target is an
+     * {@link Graph#removeNode(Node)} if the target is an
      * {@link Graph}.
      */
     private void removeNode(DeltaTarget target, HostNode node) {
-        if (target instanceof HostGraph) {
-            ((HostGraph) target).removeNodeWithoutCheck(node);
-        } else {
-            // apparently the target wasn't an InternalGraph
-            // so we can't do efficient edge removal
-            target.removeNode(node);
-        }
+        target.removeNode(node);
     }
 
     /**
      * Removes a set of nodes from a delta target. Optimizes by trying to call
-     * {@link Graph#removeNodeWithoutCheck(Node)} if the target is an
+     * {@link Graph#removeNode(Node)} if the target is an
      * {@link Graph}.
      */
     private void removeNodeSet(DeltaTarget target, Collection<HostNode> nodeSet) {
-        if (target instanceof HostGraph) {
-            ((HostGraph) target).removeNodeSetWithoutCheck(nodeSet);
-        } else {
-            // apparently the target wasn't a HostGraph
-            // so we can't do efficient edge removal
-            for (HostNode node : nodeSet) {
-                target.removeNode(node);
-            }
+        for (HostNode node : nodeSet) {
+            target.removeNode(node);
         }
     }
 

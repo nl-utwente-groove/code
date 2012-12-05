@@ -102,8 +102,8 @@ public class RuleGraph extends NodeSetEdgeSetGraph<RuleNode,RuleEdge> {
     }
 
     @Override
-    public boolean addEdgeWithoutCheck(RuleEdge edge) {
-        boolean result = super.addEdgeWithoutCheck(edge);
+    public boolean addEdge(RuleEdge edge) {
+        boolean result = super.addEdge(edge);
         if (result) {
             addBinders(edge);
             for (LabelVar var : edge.label().allVarSet()) {

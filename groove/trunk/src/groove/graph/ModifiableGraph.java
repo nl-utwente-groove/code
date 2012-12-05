@@ -193,7 +193,7 @@ public interface ModifiableGraph<N extends Node,E extends Edge> extends
      * @param target the target node of the new edge
      * @return a binary edge between <tt>source</tt> and <tt>target</tt>,
      *         labelled <tt>label</tt>
-     * @see ModifiableGraph#addEdge(Edge)
+     * @see ModifiableGraph#addEdgeContext(Edge)
      */
     E addEdge(N source, String label, N target);
 
@@ -207,7 +207,7 @@ public interface ModifiableGraph<N extends Node,E extends Edge> extends
      * @param target the target node of the new edge
      * @return a binary edge between <tt>source</tt> and <tt>target</tt>,
      *         labelled <tt>label</tt>
-     * @see ModifiableGraph#addEdge(Edge)
+     * @see ModifiableGraph#addEdgeContext(Edge)
      */
     E addEdge(N source, Label label, N target);
 
@@ -220,7 +220,7 @@ public interface ModifiableGraph<N extends Node,E extends Edge> extends
      *         present)
      * @require <tt>!isFixed()</tt>
      * @ensure <tt>nodeSet() = old.nodeSet() \cup node</tt>
-     * @see #addEdge(Edge)
+     * @see #addEdgeContext(Edge)
      * @see #isFixed()
      */
     boolean addNode(N node);
@@ -238,7 +238,7 @@ public interface ModifiableGraph<N extends Node,E extends Edge> extends
      * @see #addNode(Node)
      * @see #isFixed()
      */
-    boolean addEdge(E edge);
+    boolean addEdgeContext(E edge);
 
     /**
      * Adds a set of nodes to this graph. This is allowed only if the graph is
@@ -250,7 +250,7 @@ public interface ModifiableGraph<N extends Node,E extends Edge> extends
      * @require <tt>!isFixed()</tt>
      * @ensure <tt>nodeSet() = old.nodeSet() \cup nodeSet</tt>
      * @see #addNode(Node)
-     * @see #addEdgeSet(Collection)
+     * @see #addEdgeSetContext(Collection)
      * @see #isFixed()
      */
     boolean addNodeSet(Collection<? extends N> nodeSet);
@@ -265,11 +265,11 @@ public interface ModifiableGraph<N extends Node,E extends Edge> extends
      * @require <tt>isFixed()</tt>
      * @ensure <tt>edgeSet() = old.edgeSet() \cup edgeSet</tt> and
      *         <tt>nodeSet() = old.nodeSet() \cup edgeSet.parts()</tt>
-     * @see #addEdge(Edge)
+     * @see #addEdgeContext(Edge)
      * @see #addNodeSet(Collection)
      * @see #isFixed()
      */
-    boolean addEdgeSet(Collection<? extends E> edgeSet);
+    boolean addEdgeSetContext(Collection<? extends E> edgeSet);
 
     /**
      * Removes a given node from this graph, if it was in the graph to start
@@ -292,7 +292,7 @@ public interface ModifiableGraph<N extends Node,E extends Edge> extends
      * @see #isFixed()
      * @see #removeEdge(Edge)
      */
-    boolean removeNode(N node);
+    boolean removeNodeContext(N node);
 
     /**
      * Removes a given edge from this graph, if it was in the graph to start
@@ -308,7 +308,7 @@ public interface ModifiableGraph<N extends Node,E extends Edge> extends
      * @require <tt>isFixed()</tt>
      * @ensure <tt>edgeSet() = edgeSet() \setminus edge</tt>
      * @see #isFixed()
-     * @see #removeNode(Node)
+     * @see #removeNodeContext(Node)
      */
     boolean removeEdge(E edge);
 
@@ -328,10 +328,10 @@ public interface ModifiableGraph<N extends Node,E extends Edge> extends
      * @ensure <tt>this.nodeSet() = old.nodeSet() \setminus nodeSet</tt> and
      *         <tt>edgeSet() = old.edgeSet() \setminus { other | other.parts() \cap nodeSet }</tt>
      * @see #isFixed()
-     * @see #removeNode(Node)
+     * @see #removeNodeContext(Node)
      * @see #removeEdgeSet(Collection)
      */
-    boolean removeNodeSet(Collection<? extends N> nodeSet);
+    boolean removeNodeSetContext(Collection<? extends N> nodeSet);
 
     /**
      * Removes a set of edges from this graph, if they were in the graph to
@@ -345,7 +345,7 @@ public interface ModifiableGraph<N extends Node,E extends Edge> extends
      * @ensure <tt>this.edgeSet() = old.edgeSet() \setminus edgeSet</tt>
      * @see #isFixed()
      * @see #removeEdge(Edge)
-     * @see #removeNodeSet(Collection)
+     * @see #removeNodeSetContext(Collection)
      */
     boolean removeEdgeSet(Collection<? extends E> edgeSet);
 
@@ -370,9 +370,9 @@ public interface ModifiableGraph<N extends Node,E extends Edge> extends
      * class cast and especially the recursive addition of edge ends. Make sure
      * you satisfy the precondition, or an inconsistent graph may ensue!
      * @require <tt>edge instanceof Edge && containsAll(edge.ends())</tt>
-     * @see #addEdge(Edge)
+     * @see #addEdgeContext(Edge)
      */
-    boolean addEdgeWithoutCheck(E edge);
+    boolean addEdge(E edge);
 
     /**
      * More efficient removal of nodes; for package use only. Avoids both the
@@ -380,9 +380,9 @@ public interface ModifiableGraph<N extends Node,E extends Edge> extends
      * sure you satisfy the precondition, or an inconsistent graph may ensue!
      * @require <tt>node instanceof Node</tt> and the graph contains no
      *          incident edges.
-     * @see #removeNode(Node)
+     * @see #removeNodeContext(Node)
      */
-    boolean removeNodeWithoutCheck(N node);
+    boolean removeNode(N node);
 
     /**
      * More efficient removal of sets of nodes; for package use only. Avoids the
@@ -390,9 +390,9 @@ public interface ModifiableGraph<N extends Node,E extends Edge> extends
      * precondition, or an inconsistent graph may ensue!
      * @require <tt>nodeSet: 2^Node</tt> and the graph contains no incident
      *          edges.
-     * @see #removeNodeSet(Collection)
+     * @see #removeNodeSetContext(Collection)
      */
-    boolean removeNodeSetWithoutCheck(Collection<? extends N> nodeSet);
+    boolean removeNodeSet(Collection<? extends N> nodeSet);
 
     /** Returns the element factory used for elements of this graph. */
     ElementFactory<N,E> getFactory();

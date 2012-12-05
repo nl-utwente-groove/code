@@ -564,7 +564,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     }
 
     @Override
-    public boolean addEdgeWithoutCheck(GraphTransition edge) {
+    public boolean addEdge(GraphTransition edge) {
         if (edge instanceof RuleTransition) {
             addTransition(edge);
             return true;
@@ -574,7 +574,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     }
 
     @Override
-    public boolean removeNodeWithoutCheck(GraphState node) {
+    public boolean removeNode(GraphState node) {
         throw new UnsupportedOperationException();
     }
 

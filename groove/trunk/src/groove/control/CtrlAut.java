@@ -90,12 +90,12 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
     }
 
     @Override
-    public boolean addEdgeWithoutCheck(CtrlTransition edge) {
+    public boolean addEdge(CtrlTransition edge) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean removeNodeWithoutCheck(CtrlState node) {
+    public boolean removeNode(CtrlState node) {
         throw new UnsupportedOperationException();
     }
 

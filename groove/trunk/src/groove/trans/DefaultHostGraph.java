@@ -84,7 +84,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
             morphism.putNode(sn, tn);
         }
         for (HostEdge se : graph.edgeSet()) {
-            addEdge(morphism.mapEdge(se));
+            addEdgeContext(morphism.mapEdge(se));
         }
     }
 
@@ -147,7 +147,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
         }
         for (HostEdge edge : edgeSet()) {
             factory.addEdge(edge);
-            result.addEdge(edge);
+            result.addEdgeContext(edge);
         }
         GraphInfo.transfer(this, result, null);
         return result;
@@ -212,7 +212,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
             } else {
                 AspectEdge edgeImage = result.mapEdge(edge);
                 edgeImage.setFixed();
-                targetGraph.addEdge(edgeImage);
+                targetGraph.addEdgeContext(edgeImage);
             }
         }
         GraphInfo.transfer(this, targetGraph, result);

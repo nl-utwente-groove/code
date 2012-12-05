@@ -67,6 +67,8 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements
         this.end = end;
         this.typeGraph = typeGraph;
         assert typeGraph != null;
+        addNode(start);
+        addNode(end);
         this.dfas =
             new EnumMap<Direction,Map<List<TypeLabel>,DFA>>(Direction.class);
     }

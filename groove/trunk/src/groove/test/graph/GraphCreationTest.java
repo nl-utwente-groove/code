@@ -67,7 +67,7 @@ public class GraphCreationTest extends TestCase {
         }
 
         for (int i = 0; i < NR_EDGES; i++) {
-            this.g.addEdge(this.e[i]);
+            this.g.addEdgeContext(this.e[i]);
         }
     }
 
@@ -81,7 +81,7 @@ public class GraphCreationTest extends TestCase {
 
         for (int i = NR_EDGES - 1; i >= 0; i--) {
             assertTrue(!this.g.equals(g2));
-            g2.addEdge(this.e[i]);
+            g2.addEdgeContext(this.e[i]);
         }
 
         assertEquals(this.g.nodeSet(), g2.nodeSet());
@@ -114,13 +114,13 @@ public class GraphCreationTest extends TestCase {
 
         for (int i = 0; i < NR_NODES_TOTAL; i++) {
             assertTrue(this.g.containsNode(this.n[i]));
-            this.g.removeNode(this.n[i]);
+            this.g.removeNodeContext(this.n[i]);
             assertTrue(!this.g.containsNode(this.n[i]));
             this.g.addNode(this.n[i]);
         }
 
         for (int i = 0; i < NR_EDGES; i++) {
-            this.g.addEdge(this.e[i]);
+            this.g.addEdgeContext(this.e[i]);
         }
 
         assertEquals(this.g.nodeSet(), nodeSet);

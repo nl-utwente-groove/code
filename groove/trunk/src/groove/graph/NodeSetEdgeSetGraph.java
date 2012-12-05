@@ -68,7 +68,7 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
      * Improved implementation taking advantage of the edge set.
      */
     @Override
-    public boolean removeNode(N node) {
+    public boolean removeNodeContext(N node) {
         assert !isFixed() : "Trying to remove " + node
             + " from unmodifiable graph";
         boolean removed = this.graphNodeSet.contains(node);
@@ -80,7 +80,7 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
                     edgeIter.remove();
                 }
             }
-            removeNodeWithoutCheck(node);
+            removeNode(node);
         }
         return removed;
     }
@@ -92,7 +92,7 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
     }
 
     @Override
-    public boolean removeNodeSet(Collection<? extends N> nodeSet) {
+    public boolean removeNodeSetContext(Collection<? extends N> nodeSet) {
         boolean result;
         // first remove edges that depend on a node to be removed
         Iterator<E> edgeIter = this.graphEdgeSet.iterator();
@@ -104,20 +104,20 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
             }
         }
         // now remove the nodes
-        result = removeNodeSetWithoutCheck(nodeSet);
+        result = removeNodeSet(nodeSet);
         return result;
     }
 
     // -------------------- PackageGraph methods ---------------------
 
-    public boolean addEdgeWithoutCheck(E edge) {
+    public boolean addEdge(E edge) {
         assert isTypeCorrect(edge);
         boolean result;
         result = this.graphEdgeSet.add(edge);
         return result;
     }
 
-    public boolean removeNodeWithoutCheck(N node) {
+    public boolean removeNode(N node) {
         assert isTypeCorrect(node);
         boolean result;
         result = this.graphNodeSet.remove(node);
@@ -125,7 +125,7 @@ public class NodeSetEdgeSetGraph<N extends Node,E extends Edge> extends
     }
 
     @Override
-    public boolean removeNodeSetWithoutCheck(Collection<? extends N> nodeSet) {
+    public boolean removeNodeSet(Collection<? extends N> nodeSet) {
         return this.graphNodeSet.removeAll(nodeSet);
     }
 

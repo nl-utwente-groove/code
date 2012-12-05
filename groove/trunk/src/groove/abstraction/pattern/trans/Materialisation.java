@@ -132,7 +132,7 @@ public final class Materialisation {
     private PatternEdge createEdge(PatternNode source, TypeEdge type,
             PatternNode target) {
         PatternEdge newEdge = this.pShape.createEdge(source, type, target);
-        this.pShape.addEdge(newEdge);
+        this.pShape.addEdgeContext(newEdge);
         return newEdge;
     }
 

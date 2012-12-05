@@ -152,7 +152,7 @@ public class TypeGraphRep {
                 DefaultEdge edge =
                     factory.createEdge(this.eClassToNodeMap.get(aClass),
                         SUB_LABEL, this.eClassToNodeMap.get(superType));
-                this.tg.addEdge(edge);
+                this.tg.addEdgeContext(edge);
             }
         }
     }
@@ -190,7 +190,7 @@ public class TypeGraphRep {
             EEnum aEnum = literal.getEEnum();
             DefaultNode source = this.eEnumToNodeMap.get(aEnum);
             DefaultEdge edge = factory.createEdge(source, labelText, source);
-            this.tg.addEdge(edge);
+            this.tg.addEdgeContext(edge);
 
             // Add map of literal to the edge representing it
             this.eEnumLiteralToEdgeMap.put(literal, edge);

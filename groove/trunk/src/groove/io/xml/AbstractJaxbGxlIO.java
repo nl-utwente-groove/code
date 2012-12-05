@@ -430,7 +430,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
                 }
 
                 // Add the edge to the graph.
-                graph.addEdge(edge);
+                graph.addEdgeContext(edge);
             }
         }
         // add the graph attributes

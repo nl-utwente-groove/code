@@ -171,7 +171,8 @@ public interface Graph<N extends Node,E extends Edge> extends Fixable {
 
     /**
      * Generates a fresh node and adds it to this graph.
-     * @return the new node
+     * Convenience method; equivalent to {@code addNode(getFactory().createNode())}
+     * @return the new node; non-{@code null}
      * @see Graph#addNode(Node)
      */
     N addNode();
@@ -186,12 +187,14 @@ public interface Graph<N extends Node,E extends Edge> extends Fixable {
 
     /**
      * Adds a binary edge to the graph, between given nodes and with a given
-     * label text, and returns the edge. Also adds the end nodes if these are not yet
-     * in the graph. If an edge with these properties already exists, the method
+     * label text, and returns the edge. The end nodes are assumed to be in the
+     * graph already. 
+     * If an edge with these properties already exists, the method
      * returns the existing edge.
-     * @param source the source node of the new edge
-     * @param label the label text of the new edge
-     * @param target the target node of the new edge
+     * This method is equivalent to {@code addEdge(getFactory().createEdge(source,label,target))}.
+     * @param source the (non-{@code null}) source node of the new edge
+     * @param label the (non-{@code null}) label text of the new edge
+     * @param target the (non-{@code null}) target node of the new edge
      * @return a binary edge between <tt>source</tt> and <tt>target</tt>,
      *         labelled <tt>label</tt>
      * @see Graph#addEdge(Edge)
@@ -200,12 +203,13 @@ public interface Graph<N extends Node,E extends Edge> extends Fixable {
 
     /**
      * Adds a binary edge to the graph, between given nodes and with a given
-     * label, and returns the edge. Also adds the end nodes if these are not yet
-     * in the graph. If an edge with these properties already exists, the method
+     * label, and returns the edge. The end nodes are assumed to be in the
+     * graph already. If an edge with these properties already exists, the method
      * returns the existing edge.
-     * @param source the source node of the new edge
-     * @param label the label of the new edge
-     * @param target the target node of the new edge
+     * This method is equivalent to {@code addEdge(getFactory().createEdge(source,label,target))}.
+     * @param source the (non-{@code null}) source node of the new edge
+     * @param label the (non-{@code null}) label of the new edge
+     * @param target the (non-{@code null}) target node of the new edge
      * @return a binary edge between <tt>source</tt> and <tt>target</tt>,
      *         labelled <tt>label</tt>
      * @see Graph#addEdge(Edge)
@@ -219,81 +223,43 @@ public interface Graph<N extends Node,E extends Edge> extends Fixable {
      * @param node the node to be added.
      * @return <tt>true</tt> if the node was indeed added (and not yet
      *         present)
-     * @require <tt>!isFixed()</tt>
-     * @ensure <tt>nodeSet() = old.nodeSet() \cup node</tt>
      * @see #addEdge(Edge)
      * @see #isFixed()
      */
     boolean addNode(N node);
 
     /**
-     * Adds an edge and its end nodes to this graph. This is allowed only if the
-     * graph is not fixed. If the edge is already in the graph then the method
-     * has no effect. 
-     * @param edge the edge to be added.
-     * @return <tt>true</tt> if the edge was indeed added (and not yet
-     *         present)
-     * @require <tt>!isFixed()</tt>
-     * @ensure <tt>edgeSet() = old.edgeSet() \cup edge</tt> and
-     *         <tt>nodeSet() = old.nodeSet() \cup edge.parts()</tt>
+     * Convenience method to add an edge and its end nodes to this graph.
+     * The effect is equivalent to calling {@code addNod(edge.source())},
+     * {@code addNode(edge.target()} and {@code addEdge(edge)} in succession.
+     * @param edge the (non-{@code null}) edge to be added, together
+     * with its end nodes
+     * @return <tt>true</tt> if the graph changed as a result of this call
      * @see #addNode(Node)
-     * @see #isFixed()
      */
-    boolean addEdge(E edge);
+    boolean addEdgeContext(E edge);
 
     /**
      * Adds a set of nodes to this graph. This is allowed only if the graph is
      * modifiable (and not fixed). If all the nodes are already in the graph
-     * then the method has no effect. All GraphListeners are notified for evey
+     * then the method has no effect. All GraphListeners are notified for every
      * node that is actually added.
      * @param nodeSet the collection of nodes to be added.
-     * @return <tt>true</tt> if any node was indeed added
-     * @require <tt>!isFixed()</tt>
-     * @ensure <tt>nodeSet() = old.nodeSet() \cup nodeSet</tt>
+     * @return <tt>true</tt> if the graph changed as a result of this call
      * @see #addNode(Node)
-     * @see #addEdgeSet(Collection)
-     * @see #isFixed()
      */
     boolean addNodeSet(Collection<? extends N> nodeSet);
 
     /**
-     * Adds a set of edges and their end nodes to this graph. This is allowed
-     * only if the graph is modifiable (and not fixed). If all the edges are
-     * already in the graph then the method has no effect. All GraphListeners
-     * are notified for every edge that is actually added.
-     * @param edgeSet the collection of edges to be added.
-     * @return <tt>true</tt> if any edge was indeed added
-     * @require <tt>isFixed()</tt>
-     * @ensure <tt>edgeSet() = old.edgeSet() \cup edgeSet</tt> and
-     *         <tt>nodeSet() = old.nodeSet() \cup edgeSet.parts()</tt>
-     * @see #addEdge(Edge)
-     * @see #addNodeSet(Collection)
-     * @see #isFixed()
+     * Convenience method to add a set of edges and their end nodes to this graph.
+     * The effect is equivalent to calling {@link #addEdgeContext(Edge)} for
+     * every element of {@code edgeSet}.
+     * @param edgeSet the (non-{@code null}) set of edges to be added, together
+     * with their end nodes
+     * @return <tt>true</tt> if the graph changed as a result of this call
+     * @see #addEdgeContext(Edge)
      */
-    boolean addEdgeSet(Collection<? extends E> edgeSet);
-
-    /**
-     * Removes a given node from this graph, if it was in the graph to start
-     * with. All incident edges are also removed. This method is allowed only if
-     * the graph is modifiable. The method has no effect if the node is not in
-     * this graph. All GraphListeners are notified if the node is indeed
-     * removed. <i>Note:</i> It is <i>not</i> guaranteed that
-     * <tt>removeNode(Node)</tt> is called for the removal of all nodes, so
-     * overwriting it may not have the expected effect. Use
-     * <tt>GraphListener</tt> to ensure notification of all changes to the
-     * graph.
-     * @param node the node to be removed from the set. If
-     *        <tt>other.hasPart(node)</tt> for some other element such that
-     *        <tt>contains(other)</tt>, then <tt>other</tt> is also
-     *        removed.
-     * @return <tt>true</tt> if <tt>node</tt> was there in the first place
-     * @require <tt>isFixed()</tt>
-     * @ensure <tt>nodeSet() = old.nodeSet() \setminus node</tt> and
-     *         <tt>edgeSet() = old.edgeSet() \seminus { edge | node\in edge.parts() }</tt>
-     * @see #isFixed()
-     * @see #removeEdge(Edge)
-     */
-    boolean removeNode(N node);
+    boolean addEdgeSetContext(Collection<? extends E> edgeSet);
 
     /**
      * Removes a given edge from this graph, if it was in the graph to start
@@ -304,80 +270,71 @@ public interface Graph<N extends Node,E extends Edge> extends Fixable {
      * all edges, so overwriting it may not have the expected effect. Use
      * <tt>GraphListener</tt> to ensure notification of all changes to the
      * graph.
-     * @param edge the edge to be removed from the graph.
-     * @return <tt>true</tt> if <tt>edge</tt> was there in the first place
-     * @require <tt>isFixed()</tt>
-     * @ensure <tt>edgeSet() = edgeSet() \setminus edge</tt>
-     * @see #isFixed()
-     * @see #removeNode(Node)
+     * @param edge the (non-{@code null}) edge to be removed from the graph
+     * @return <tt>true</tt> if the graph changed as a result of this call
      */
     boolean removeEdge(E edge);
 
     /**
-     * Removes a set of nodes from this graph, if they were in the graph to
-     * start with. All incident edges are also removed. This method is allowed
-     * only if the graph is modifiable. The method has no effect if none of the
-     * nodes are in this graph. All GraphListeners are notified if the node is
-     * indeed removed.
-     * @param nodeSet the collection of nodes to be removed from the set. If
-     *        <tt>nodeSet.removeAll(other.parts())</tt> for some other element
-     *        such that <tt>contains(other)</tt>, then <tt>other</tt> is
-     *        also removed.
-     * @return <tt>true</tt> if <tt>old.nodeSet() \cap nodeSet</tt> was
-     *         nonempty
-     * @require <tt>isFixed()</tt>
-     * @ensure <tt>this.nodeSet() = old.nodeSet() \setminus nodeSet</tt> and
-     *         <tt>edgeSet() = old.edgeSet() \setminus { other | other.parts() \cap nodeSet }</tt>
-     * @see #isFixed()
-     * @see #removeNode(Node)
-     * @see #removeEdgeSet(Collection)
+     * Convenience method to remove a set of nodes together with
+     * their incident edges. This method is equivalent to a call
+     * of {{@link #removeNodeContext(Node)} for every node in {@code nodeSet}.
+     * @param nodeSet the (non-{@code null}) collection of nodes to be removed from the graph
+     * @return <tt>true</tt> if the graph changed as a result of this call
+     * @see #removeNodeContext(Node)
      */
-    boolean removeNodeSet(Collection<? extends N> nodeSet);
+    boolean removeNodeSetContext(Collection<? extends N> nodeSet);
+
+    /**
+     * Convenience method to remove both a node and its incident edges.
+     * Equivalent to a call of {@code removeEdgeSet(edgeSet(node))} followed
+     * by a call of {@code removeNode(node)}.
+     * @param node the (non-{@code null}) node to be removed from the graph,
+     * together with its incident edges
+     * @return <tt>true</tt> if the graph changed as a result of this call
+     */
+    boolean removeNodeContext(N node);
 
     /**
      * Removes a set of edges from this graph, if they were in the graph to
      * start with. This method is allowed only if the graph is modifiable. The
      * method has no effect if none of the edges are in this graph. All
-     * GraphListeners are notified if the edge is indeed removed.
-     * @param edgeSet the collection of edges to be removed from the graph.
-     * @return <tt>true</tt> if <tt>old.edgeSet() \cap edgeSet</tt> was
-     *         nonempty
-     * @require <tt>isFixed()</tt>
-     * @ensure <tt>this.edgeSet() = old.edgeSet() \setminus edgeSet</tt>
+     * GraphListeners are notified for all edges that are removed.
+     * @param edgeSet the (non-{@code null}) collection of edges to be removed from the graph
+     * @return <tt>true</tt> if the graph changed as a result of this call
      * @see #isFixed()
      * @see #removeEdge(Edge)
-     * @see #removeNodeSet(Collection)
+     * @see #removeNodeSetContext(Collection)
      */
     boolean removeEdgeSet(Collection<? extends E> edgeSet);
 
     /**
-     * More efficient addition of edges; for package use only. Avoids both the
-     * class cast and especially the recursive addition of edge ends. Make sure
-     * you satisfy the precondition, or an inconsistent graph may ensue!
-     * @require <tt>edge instanceof Edge && containsAll(edge.ends())</tt>
-     * @see #addEdge(Edge)
+     * Adds an edge to the graph.
+     * The end nodes are assumed to be in the graph already.
+     * @param edge the (non-{@code null}) edge to be added to the graph
+     * @return <tt>true</tt> if the graph changed as a result of this call
      */
-    boolean addEdgeWithoutCheck(E edge);
+    boolean addEdge(E edge);
 
     /**
-     * More efficient removal of nodes; for package use only. Avoids both the
-     * class cast and especially the recursive removal of incident edges. Make
-     * sure you satisfy the precondition, or an inconsistent graph may ensue!
-     * @require <tt>node instanceof Node</tt> and the graph contains no
-     *          incident edges.
-     * @see #removeNode(Node)
+     * Removes a node from the graph.
+     * The node is assumed to have no incident edges.
+     * @param node the (non-{@code null}) node to be removed from the graph
+     * @return <tt>true</tt> if the graph changed as a result of this call
+     * @see #removeNodeContext(Node)
      */
-    boolean removeNodeWithoutCheck(N node);
+    boolean removeNode(N node);
 
     /**
-     * More efficient removal of sets of nodes; for package use only. Avoids the
-     * recursive removal of incident edges. Make sure you satisfy the
-     * precondition, or an inconsistent graph may ensue!
-     * @require <tt>nodeSet: 2^Node</tt> and the graph contains no incident
-     *          edges.
-     * @see #removeNodeSet(Collection)
+     * Removes a set of nodes from the graph.
+     * The nodes are assumed to have no incident edges.
+     * The method is equivalent to calling {@link #removeNode(Node)}
+     * for every element of {@code nodeSet}.
+     * @param nodeSet the (non-{@code null}) set of nodes to be removed from the graph
+     * @return <tt>true</tt> if the graph changed as a result of this call
+     * @see #removeNodeSetContext(Collection)
      */
-    boolean removeNodeSetWithoutCheck(Collection<? extends N> nodeSet);
+    boolean removeNodeSet(Collection<? extends N> nodeSet);
 
     /** Returns the element factory used for elements of this graph. */
     ElementFactory<N,E> getFactory();

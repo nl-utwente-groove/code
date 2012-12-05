@@ -33,7 +33,7 @@ public class EdgeEmbargo extends Condition {
             SystemProperties properties) {
         super(name, Condition.Op.NOT, context.newGraph(name), null, properties);
         this.embargoEdge = embargoEdge;
-        getPattern().addEdge(embargoEdge);
+        getPattern().addEdgeContext(embargoEdge);
         getRoot().addNode(embargoEdge.source());
         getRoot().addNode(embargoEdge.target());
         for (LabelVar var : getPattern().varSet()) {

@@ -747,7 +747,7 @@ public class ReteNetwork {
             result.addNode(nodeMapping.getNode(n));
         }
         for (RuleEdge e : source.edgeSet()) {
-            result.addEdge(translate(rfact, nodeMapping, e));
+            result.addEdgeContext(translate(rfact, nodeMapping, e));
         }
         return result;
     }
@@ -1125,7 +1125,7 @@ public class ReteNetwork {
                 map.put(qcc, qccNode);
                 DefaultEdge[] flags = makeNNodeLabels(qcc, qccNode);
                 for (DefaultEdge f : flags) {
-                    graph.addEdge(f);
+                    graph.addEdgeContext(f);
                 }
                 String l = "count";
                 graph.addEdge(map.get(cc), l, map.get(qcc));
@@ -1142,7 +1142,7 @@ public class ReteNetwork {
                 map.put(cc, conditionCheckerNode);
                 DefaultEdge[] flags = makeNNodeLabels(cc, conditionCheckerNode);
                 for (DefaultEdge f : flags) {
-                    graph.addEdge(f);
+                    graph.addEdgeContext(f);
                 }
             }
         }
@@ -1184,7 +1184,7 @@ public class ReteNetwork {
                     DefaultEdge[] flags =
                         makeNNodeLabels(childNNode, childJNode);
                     for (DefaultEdge f : flags) {
-                        graph.addEdge(f);
+                        graph.addEdgeContext(f);
                     }
                     map.put(childNNode, childJNode);
                     navigate = true;

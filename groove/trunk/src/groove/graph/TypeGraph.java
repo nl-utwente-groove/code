@@ -199,7 +199,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     }
 
     @Override
-    public boolean removeNodeWithoutCheck(TypeNode node) {
+    public boolean removeNode(TypeNode node) {
         throw new UnsupportedOperationException(
             "Node removal not allowed in type graphs");
     }

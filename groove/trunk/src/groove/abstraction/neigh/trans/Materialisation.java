@@ -966,7 +966,7 @@ public final class Materialisation {
         // give rise to admissible configurations.
         this.createPossibleEdges(auxMorph, shape, shape, this.matNodes);
         for (ShapeEdge edgeToAdd : this.possibleEdges) {
-            shape.addEdgeWithoutCheck(edgeToAdd);
+            shape.addEdge(edgeToAdd);
             for (EdgeMultDir direction : EdgeMultDir.values()) {
                 EdgeBundle bundle = this.getBundle(edgeToAdd, direction);
                 bundle.addEdge(this.shape, edgeToAdd);
@@ -1021,7 +1021,7 @@ public final class Materialisation {
                     newBundle.addEdge(this.shape, newEdge);
                     newBundle.setEdgeAsFixed(newEdge);
                     // Add the new edge to the shape.
-                    this.shape.addEdgeWithoutCheck(newEdge);
+                    this.shape.addEdge(newEdge);
                     // Update the shape morphism.
                     this.morph.putEdge(newEdge, this.morph.getEdge(origEdge));
                     // Now handle the opposite bundle.
@@ -1113,7 +1113,7 @@ public final class Materialisation {
             this.markGarbageNodes(garbageNodes);
             while (!garbageNodes.isEmpty()) {
                 for (ShapeNode garbageNode : garbageNodes) {
-                    this.shape.removeNode(garbageNode);
+                    this.shape.removeNodeContext(garbageNode);
                 }
                 // Need to search for garbage nodes again because of possible
                 // new disconnections.
