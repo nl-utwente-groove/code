@@ -20,7 +20,6 @@ import static groove.graph.EdgeRole.NODE_TYPE;
 import groove.trans.AnchorKind;
 
 import java.awt.Color;
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -36,11 +35,11 @@ public class TypeNode implements Node, TypeElement {
      * The label must be a node type.
      * Should only be called from {@link TypeFactory}.
      * @param nr the number of the type node
-     * @param type the non-{@code null} type label; for untyped graphs, the
-     * default is {@link TypeLabel#NODE}
-     * @param graph the type graph to which this node belongs; may be {@code null}
+     * @param type the non-{@code null} type label
+     * @param graph the type graph to which this node belongs; non-{@code null}
      */
     public TypeNode(int nr, TypeLabel type, TypeGraph graph) {
+        assert graph != null;
         assert type.getRole() == NODE_TYPE : String.format(
             "Can't create type node for non-type label '%s'", type);
         this.nr = nr;
@@ -169,26 +168,13 @@ public class TypeNode implements Node, TypeElement {
     }
 
     @Override
-    public boolean hasGraph() {
-        return getGraph() != null;
-    }
-
-    @Override
     public Set<TypeNode> getSubtypes() {
-        if (hasGraph()) {
-            return getGraph().getSubtypes(this);
-        } else {
-            return Collections.singleton(this);
-        }
+        return getGraph().getSubtypes(this);
     }
 
     @Override
     public Set<TypeNode> getSupertypes() {
-        if (hasGraph()) {
-            return getGraph().getSupertypes(this);
-        } else {
-            return Collections.singleton(this);
-        }
+        return getGraph().getSupertypes(this);
     }
 
     /** Tests if another type satisfies the constraints of this one.

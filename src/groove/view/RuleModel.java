@@ -158,7 +158,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
     @Override
     Rule compute() throws FormatException {
-        this.ruleFactory = RuleFactory.newInstance(getType());
+        this.ruleFactory = RuleFactory.newInstance(getType().getFactory());
         this.modelMap = new RuleModelMap(this.ruleFactory);
         getSource().getErrors().throwException();
         AspectGraph normalSource = getNormalSource();
@@ -2291,13 +2291,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          */
         public RuleModelMap() {
             super(RuleFactory.newInstance());
-        }
-
-        /**
-         * Creates a new, empty map to a rule graph with a given type.
-         */
-        public RuleModelMap(TypeGraph type) {
-            super(RuleFactory.newInstance(type));
         }
 
         @Override

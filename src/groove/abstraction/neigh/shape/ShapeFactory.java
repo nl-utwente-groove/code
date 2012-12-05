@@ -19,7 +19,7 @@ package groove.abstraction.neigh.shape;
 import groove.abstraction.neigh.trans.RuleToShapeMap;
 import groove.graph.Label;
 import groove.graph.TypeEdge;
-import groove.graph.TypeGraph;
+import groove.graph.TypeFactory;
 import groove.graph.TypeLabel;
 import groove.trans.HostFactory;
 import groove.trans.HostNode;
@@ -38,8 +38,8 @@ public final class ShapeFactory extends HostFactory {
     // ------------------------------------------------------------------------
 
     /** Private constructor. */
-    private ShapeFactory(TypeGraph type) {
-        super(type);
+    private ShapeFactory(TypeFactory typeFactory) {
+        super(typeFactory);
     }
 
     // ------------------------------------------------------------------------
@@ -113,11 +113,11 @@ public final class ShapeFactory extends HostFactory {
     // ------------------------------------------------------------------------
     /** Returns a new, untyped instance of this factory. */
     public static ShapeFactory newInstance() {
-        return newInstance(null);
+        return newInstance(TypeFactory.newInstance());
     }
 
     /** Returns a new instance of this factory for a given type graph. */
-    public static ShapeFactory newInstance(TypeGraph type) {
-        return new ShapeFactory(type);
+    public static ShapeFactory newInstance(TypeFactory typeFactory) {
+        return new ShapeFactory(typeFactory);
     }
 }

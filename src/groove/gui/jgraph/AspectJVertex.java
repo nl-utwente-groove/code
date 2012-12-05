@@ -116,8 +116,8 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     /** 
-     * Retrieves the node type corresponding to the node type label,
-     * if the type graph is not implicit. 
+     * Retrieves the node type corresponding to the node type label.
+     * The node type may be {@code null} if the graph has typing errors. 
      */
     private TypeNode getNodeType() {
         TypeNode result = null;
@@ -128,7 +128,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
                 break;
             }
         }
-        return result == null ? typeGraph.getFactory().getTopNode() : result;
+        return result;
     }
 
     void setNodeFixed() {
@@ -283,7 +283,9 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         LabelPattern result = null;
         if (getNode().getGraphRole() == GraphRole.HOST) {
             TypeNode typeNode = getNodeType();
-            result = typeNode.getLabelPattern();
+            if (typeNode != null) {
+                result = typeNode.getLabelPattern();
+            }
         }
         return result;
     }

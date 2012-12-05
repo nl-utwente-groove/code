@@ -84,7 +84,7 @@ public final class TypeLabel extends AbstractLabel {
      * @return a label with label type determined by the prefix
      */
     public static TypeLabel createLabel(String prefixedText) {
-        return TypeFactory.instance().createLabel(prefixedText);
+        return typeFactory.createLabel(prefixedText);
     }
 
     /**
@@ -116,7 +116,7 @@ public final class TypeLabel extends AbstractLabel {
      * @return an existing or new label with the given text; non-null
      */
     public static TypeLabel createBinaryLabel(String text) {
-        return TypeFactory.instance().createLabel(BINARY, text);
+        return typeFactory.createLabel(BINARY, text);
     }
 
     /**
@@ -153,7 +153,7 @@ public final class TypeLabel extends AbstractLabel {
      * @see #getRole()
      */
     public static TypeLabel createLabel(EdgeRole kind, String text) {
-        return TypeFactory.instance().createLabel(kind, text);
+        return typeFactory.createLabel(kind, text);
     }
 
     /**
@@ -202,4 +202,9 @@ public final class TypeLabel extends AbstractLabel {
     static public final TypeLabel NODE = new TypeLabel("\u03A9",
         EdgeRole.NODE_TYPE);
 
+    /** 
+     * Unique type factory used for creating labels statically.
+     * For exception-free class initialisation, this needs to come after {@link #NODE}. 
+     */
+    private static TypeFactory typeFactory = TypeFactory.newInstance();
 }
