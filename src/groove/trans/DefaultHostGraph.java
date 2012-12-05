@@ -67,8 +67,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
      * Copies an existing host graph, including its element factory.
      */
     public DefaultHostGraph(HostGraph graph, AlgebraFamily family) {
-        super(graph.getName());
-        this.factory = graph.getFactory();
+        this(graph.getName(), graph.getFactory());
         HostGraphMorphism morphism = getFactory().createMorphism();
         for (HostNode sn : graph.nodeSet()) {
             HostNode tn;
