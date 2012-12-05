@@ -110,6 +110,7 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
             }
         }
         errors.throwException();
+        result.setFixed();
         return result;
     }
 
