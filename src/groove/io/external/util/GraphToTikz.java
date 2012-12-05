@@ -98,7 +98,7 @@ public final class GraphToTikz {
         this.model = (GraphJModel<Node,Edge>) this.jGraph.getModel();
         this.graph = (Graph<Node,Edge>) this.model.getGraph();
         this.layoutMap = GraphInfo.getLayoutMap(this.graph);
-        this.colorMap = this.createColorMap();
+        this.colorMap = createColorMap();
         this.result = new StringBuilder();
     }
 
@@ -335,19 +335,68 @@ public final class GraphToTikz {
             && ((AspectJVertex) node).isNodeEdge();
     }
 
+    private static boolean hasParameter(GraphJVertex node) {
+        return node instanceof AspectJVertex
+                ? ((AspectJVertex) node).getNode().hasParam() : false;
+    }
+
+    private static boolean isTypeGraphNode(GraphJVertex node) {
+        return node instanceof AspectJVertex
+                ? ((AspectJVertex) node).getNode().getGraphRole() == GraphRole.TYPE
+                : false;
+    }
+
+    private static boolean isControlNode(GraphJVertex node) {
+        return node instanceof CtrlJVertex;
+    }
+
+    private static boolean isControlEdge(GraphJEdge edge) {
+        return edge instanceof CtrlJEdge;
+    }
+
+    private static boolean isLTSNode(GraphJVertex node) {
+        return node instanceof LTSJVertex;
+    }
+
     private static boolean hasNonEmptyLabel(GraphJEdge edge) {
-        return !"".equals(edge.getVisuals().getLabel());
+        return !edge.getVisuals().getLabel().isEmpty();
+    }
+
+    private static AspectKind getNodeKind(GraphJVertex node) {
+        return node instanceof AspectJVertex
+                ? ((AspectJVertex) node).getNode().getKind() : DEFAULT;
+    }
+
+    private static AspectKind getAttributeKind(GraphJVertex node) {
+        return node instanceof AspectJVertex
+                ? ((AspectJVertex) node).getNode().getAttrKind() : DEFAULT;
+    }
+
+    private static boolean isProductNode(GraphJVertex node) {
+        return getAttributeKind(node) == PRODUCT;
     }
 
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
 
+    private void append(String string) {
+        this.result.append(string);
+    }
+
+    private void append(StringBuilder sb) {
+        this.result.append(sb);
+    }
+
+    private boolean isSelected(GraphJCell jCell) {
+        return this.jGraph.getSelectionModel().isCellSelected(jCell);
+    }
+
     /**
      * Performs the entire conversion to Tikz and returns the resulting string.
      */
     private String doConvert() {
-        this.appendTikzHeader();
+        appendTikzHeader();
 
         for (Node node : this.graph.nodeSet()) {
             GraphJVertex vertex = this.model.getJCellForNode(node);
@@ -356,8 +405,7 @@ public final class GraphToTikz {
             if (this.layoutMap != null) {
                 layout = this.layoutMap.getLayout(node);
             }
-            this.appendTikzNode(vertex, layout,
-                this.jGraph.getSelectionModel().isCellSelected(vertex));
+            appendTikzNode(vertex, layout, isSelected(vertex));
         }
 
         Set<GraphJCell> consumedEdges = new HashSet<GraphJCell>();
@@ -368,19 +416,18 @@ public final class GraphToTikz {
             }
             GraphJCell jCell = this.model.getJCellForEdge(edge);
             if (!consumedEdges.contains(jCell)) {
-                this.appendTikzEdge(jCell, layout,
-                    this.jGraph.getSelectionModel().isCellSelected(jCell));
+                appendTikzEdge(jCell, layout, isSelected(jCell));
                 consumedEdges.add(jCell);
             }
         }
 
-        this.appendTikzFooter();
+        appendTikzFooter();
 
         return this.result.toString();
     }
 
     /** Returns true is the graph to be exported can have personalized colors. */
-    private boolean hasExtraColors() {
+    private boolean mayHaveExtraColors() {
         GraphRole role = this.graph.getRole();
         return (role == GraphRole.HOST || role == GraphRole.TYPE);
     }
@@ -388,7 +435,7 @@ public final class GraphToTikz {
     /** Creates a map for the personalized colors. */
     private Map<GraphJVertex,Color> createColorMap() {
         Map<GraphJVertex,Color> result = new HashMap<GraphJVertex,Color>();
-        if (this.hasExtraColors()) {
+        if (mayHaveExtraColors()) {
             for (Node node : this.graph.nodeSet()) {
                 AspectJVertex vertex =
                     (AspectJVertex) this.model.getJCellForNode(node);
@@ -419,27 +466,27 @@ public final class GraphToTikz {
      * additional styles local to the figure.
      */
     private void appendTikzHeader() {
-        this.result.append(DOC);
+        append(DOC);
 
         // Special color definitions.
-        this.result.append(COLORS);
+        append(COLORS);
         for (Entry<GraphJVertex,Color> entry : this.colorMap.entrySet()) {
-            this.result.append(getColorDefStr(entry.getKey(), entry.getValue()));
+            append(getColorDefStr(entry.getKey(), entry.getValue()));
         }
 
-        this.result.append(BEGIN_TIKZ_FIG_OPEN);
+        append(BEGIN_TIKZ_FIG_OPEN);
 
         // Special color styles.
-        this.result.append(COLOR_STYLES);
+        append(COLOR_STYLES);
         for (GraphJVertex vertex : this.colorMap.keySet()) {
-            this.result.append(getColorStyleDefStr(vertex));
+            append(getColorStyleDefStr(vertex));
         }
 
-        this.result.append(BEGIN_TIKZ_FIG_CLOSE);
+        append(BEGIN_TIKZ_FIG_CLOSE);
     }
 
     private void appendTikzFooter() {
-        this.result.append(END_TIKZ_FIG + ENTER);
+        append(END_TIKZ_FIG + ENTER);
     }
 
     // -------------------------- Nodes ---------------------------------------
@@ -453,38 +500,35 @@ public final class GraphToTikz {
      */
     private void appendTikzNode(GraphJVertex node, JVertexLayout layout,
             boolean selected) {
-        if (node.getVisuals().isVisible()) {
-            this.result.append(BEGIN_NODE);
+        if (!node.getVisuals().isVisible()) {
+            return;
+        }
 
-            // Styles.
-            this.appendNodeStyles(node, selected);
+        append(BEGIN_NODE);
+        // Styles.
+        appendNodeStyles(node, selected);
+        // Node ID.
+        appendNode(node);
 
-            // Node ID.
-            this.appendNode(node);
+        // Node Coordinates.
+        if (layout != null) {
+            append(encloseSpace(AT_KEYWORD));
+            appendPoint(getCenterPoint(layout.getBounds()));
+        }
 
-            // Node Coordinates.
-            if (layout != null) {
-                this.result.append(encloseSpace(AT_KEYWORD));
-                this.appendPoint(getCenterPoint(layout.getBounds()));
-            }
+        // Node Labels.
+        MultiLabel lines = node.getVisuals().getLabel();
+        if (lines.isEmpty() || isNodifiedEdge(node)) {
+            append(EMPTY_NODE_LAB);
+        } else {
+            append(BEGIN_NODE_LAB);
+            append(lines.toString(TeXLineFormat.instance()));
+            append(END_NODE_LAB);
+        }
 
-            // Node Labels.
-            MultiLabel lines = node.getVisuals().getLabel();
-            if (lines.isEmpty() || isNodifiedEdge(node)) {
-                this.result.append(EMPTY_NODE_LAB);
-            } else {
-                this.result.append(BEGIN_NODE_LAB);
-                this.result.append(lines.toString(TeXLineFormat.instance()));
-                this.result.append(END_NODE_LAB);
-            }
-
-            // Add small parameter node, if needed.
-            boolean hasParameter =
-                node instanceof AspectJVertex
-                        ? ((AspectJVertex) node).getNode().hasParam() : false;
-            if (hasParameter) {
-                this.appendParameterNode((AspectJVertex) node);
-            }
+        // Add small parameter node, if needed.
+        if (hasParameter(node)) {
+            appendParameterNode((AspectJVertex) node);
         }
     }
 
@@ -492,14 +536,14 @@ public final class GraphToTikz {
         String nodeId = node.getNode().toString();
         String nr = node.getNode().getParamNr() + "";
         // New node line.
-        this.result.append(BEGIN_NODE + encloseBrack(PAR_NODE_STYLE));
+        append(BEGIN_NODE + encloseBrack(PAR_NODE_STYLE));
         // Node name.
-        this.result.append(encloseSpace(enclosePar(nodeId + PAR_NODE_SUFFIX)));
+        append(encloseSpace(enclosePar(nodeId + PAR_NODE_SUFFIX)));
         // Node Coordinates.
-        this.result.append(encloseSpace(AT_KEYWORD));
-        this.result.append(enclosePar(nodeId + NORTH_WEST));
+        append(encloseSpace(AT_KEYWORD));
+        append(enclosePar(nodeId + NORTH_WEST));
         // Parameter number.
-        this.result.append(" " + encloseCurly(nr) + ";\n");
+        append(" " + encloseCurly(nr) + ";\n");
     }
 
     /**
@@ -509,35 +553,26 @@ public final class GraphToTikz {
      */
     private void appendNodeStyles(GraphJVertex node, boolean selected) {
         ArrayList<String> styles = new ArrayList<String>();
-        boolean isControlNode = false;
-        boolean isTypeGraphNode =
-            node instanceof AspectJVertex
-                    ? ((AspectJVertex) node).getNode().getGraphRole() == GraphRole.TYPE
-                    : false;
 
-        if (node instanceof CtrlJVertex) {
-            // Node from control automaton.
-            this.getControlNodeStyles((CtrlJVertex) node, styles);
-            isControlNode = true;
+        if (isControlNode(node)) {
+            getControlNodeStyles((CtrlJVertex) node, styles);
         }
 
-        AspectKind nodeKind =
-            node instanceof AspectJVertex
-                    ? ((AspectJVertex) node).getNode().getKind() : DEFAULT;
+        AspectKind nodeKind = getNodeKind(node);
         switch (nodeKind) {
-        case ERASER: // Eraser node
+        case ERASER:
             styles.add(ERASER_NODE_STYLE);
             break;
-        case CREATOR: // Creator node
+        case CREATOR:
             styles.add(CREATOR_NODE_STYLE);
             break;
-        case EMBARGO: // Embargo node
+        case EMBARGO:
             styles.add(EMBARGO_NODE_STYLE);
             break;
-        case REMARK: // Remark node
+        case REMARK:
             styles.add(REMARK_NODE_STYLE);
             break;
-        case ABSTRACT: // Abstract type node
+        case ABSTRACT:
             styles.add(ABS_NODE_STYLE);
             break;
         case EXISTS:
@@ -552,20 +587,17 @@ public final class GraphToTikz {
             } else {
                 if (node.isGrayedOut()) {
                     styles.add(THIN_NODE_STYLE);
-                } else if (!isControlNode) {
+                } else if (!isControlNode(node)) {
                     styles.add(BASIC_NODE_STYLE);
                 }
             }
         }
 
-        if (node instanceof LTSJVertex) {
-            // Node from LTS.
-            this.getLTSNodeStyles((LTSJVertex) node, styles);
+        if (isLTSNode(node)) {
+            getLTSNodeStyles((LTSJVertex) node, styles);
         }
 
-        AspectKind attrKind =
-            node instanceof AspectJVertex
-                    ? ((AspectJVertex) node).getNode().getAttrKind() : DEFAULT;
+        AspectKind attrKind = getAttributeKind(node);
         if (attrKind.hasSignature()) {
             styles.add(ATTRIBUTE_NODE_STYLE);
         } else if (attrKind == PRODUCT) {
@@ -581,16 +613,16 @@ public final class GraphToTikz {
             }
         }
 
-        if (isTypeGraphNode) {
+        if (isTypeGraphNode(node)) {
             styles.add(TYPE_NODE_STYLE);
         }
 
-        String colorStyle = this.getVertexColorStyle(node);
+        String colorStyle = getVertexColorStyle(node);
         if (colorStyle != null) {
             styles.add(colorStyle);
         }
 
-        this.result.append(styles.toString());
+        append(styles.toString());
     }
 
     /**
@@ -625,7 +657,7 @@ public final class GraphToTikz {
 
     /** Appends the node name to the result string. */
     private void appendNode(GraphJVertex node) {
-        this.result.append(encloseSpace(enclosePar(node.getNode().toString())));
+        append(encloseSpace(enclosePar(node.getNode().toString())));
     }
 
     /**
@@ -634,32 +666,27 @@ public final class GraphToTikz {
      * with a node anchor that keeps the edge horizontal or vertical.
      */
     private void appendNode(GraphJVertex node, Point2D point) {
-        int side = this.getSide(node, point);
-        boolean isProductNode =
-            node instanceof AspectJVertex
-                    ? ((AspectJVertex) node).getNode().getAttrKind() == PRODUCT
-                    : false;
-        if (side == 0 || isProductNode) {
+        int side = getSide(node, point);
+        if (side == 0 || isProductNode(node) || isNodifiedEdge(node)) {
             // The point is not aligned with the node, just use normal routing.
-            this.appendNode(node);
+            appendNode(node);
         } else {
             String coord = getCoordString(side);
             String nodeName = node.getNode().toString();
-            this.result.append(enclosePar(nodeName + coord
-                + this.getPointString(point, false)));
+            append(enclosePar(nodeName + coord + getPointString(point, false)));
         }
     }
 
     /** Appends the point in position i of a list of points. */
     private void appendPoint(List<Point2D> points, int i) {
-        this.appendPoint(points.get(i));
+        appendPoint(points.get(i));
     }
 
     /** Appends the given point. */
     private void appendPoint(Point2D point) {
         double x = point.getX();
         double y = point.getY();
-        this.appendPoint(x, y, true, this.result);
+        appendPoint(x, y, true, this.result);
     }
 
     /** Computes and returns the centre point of a rectangle. */
@@ -735,8 +762,8 @@ public final class GraphToTikz {
     private void appendTikzEdge(GraphJCell cell, JEdgeLayout layout,
             boolean selected) {
         if (cell instanceof GraphJEdge) {
-            GraphJEdge graphCell = (GraphJEdge) cell;
-            this.appendTikzEdge(graphCell, layout, selected);
+            GraphJEdge edge = (GraphJEdge) cell;
+            appendTikzEdge(edge, layout, selected);
         }
     }
 
@@ -748,34 +775,36 @@ public final class GraphToTikz {
      */
     private void appendTikzEdge(GraphJEdge edge, JEdgeLayout layout,
             boolean selected) {
-        if (edge.getVisuals().isVisible()) {
-            Duo<String> styles = this.getEdgeStyles(edge, selected);
-            String edgeStyle = styles.one();
-            String labStyle = styles.two();
+        if (!edge.getVisuals().isVisible()) {
+            return;
+        }
 
-            this.result.append(BEGIN_EDGE);
-            this.result.append(encloseBrack(edgeStyle));
+        Duo<String> styles = getEdgeStyles(edge, selected);
+        String edgeStyle = styles.one();
+        String labStyle = styles.two();
 
-            if (layout != null) {
-                switch (layout.getLineStyle()) {
-                case ORTHOGONAL:
-                    this.appendOrthogonalLayout(edge, layout, labStyle);
-                    break;
-                case BEZIER:
-                    this.appendBezierLayout(edge, layout, labStyle);
-                    break;
-                case SPLINE:
-                    this.appendSplineLayout(edge, layout, labStyle);
-                    break;
-                case MANHATTAN:
-                    this.appendManhattanLayout(edge, layout, labStyle);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown line style!");
-                }
-            } else {
-                this.appendDefaultLayout(edge, labStyle);
+        append(BEGIN_EDGE);
+        append(encloseBrack(edgeStyle));
+
+        if (layout != null) {
+            switch (layout.getLineStyle()) {
+            case ORTHOGONAL:
+                appendOrthogonalLayout(edge, layout, labStyle);
+                break;
+            case BEZIER:
+                appendBezierLayout(edge, layout, labStyle);
+                break;
+            case SPLINE:
+                appendSplineLayout(edge, layout, labStyle);
+                break;
+            case MANHATTAN:
+                appendManhattanLayout(edge, layout, labStyle);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown line style!");
             }
+        } else {
+            appendDefaultLayout(edge, labStyle);
         }
     }
 
@@ -787,9 +816,10 @@ public final class GraphToTikz {
     private Duo<String> getEdgeStyles(GraphJEdge edge, boolean selected) {
         Duo<String> styles = new Duo<String>("", "");
 
-        if (edge instanceof CtrlJEdge) {
-            this.getControlEdgeStyles((CtrlJEdge) edge, styles);
+        if (isControlEdge(edge)) {
+            getControlEdgeStyles((CtrlJEdge) edge, styles);
         }
+
         AspectEdge aspectEdge =
             edge instanceof AspectJEdge ? ((AspectJEdge) edge).getEdge() : null;
         AspectKind edgeKind =
@@ -855,9 +885,10 @@ public final class GraphToTikz {
         }
 
         // Check if the edge has a special color.
-        String colorStyle = this.getVertexColorStyle(edge.getSourceVertex());
+        String colorStyle = getVertexColorStyle(edge.getSourceVertex());
         if (colorStyle != null) {
-            styles.setOne(styles.one() + ", " + colorStyle);
+            styles.setOne(styles.one() + ", " + colorStyle + ", fill="
+                + getColorName(edge.getSourceVertex()));
         }
 
         return styles;
@@ -886,12 +917,12 @@ public final class GraphToTikz {
     private void appendDefaultLayout(GraphJEdge edge, String labStyle) {
         GraphJVertex srcVertex = edge.getSourceVertex();
         GraphJVertex tgtVertex = edge.getTargetVertex();
-        this.appendSourceNode(srcVertex, tgtVertex);
-        this.result.append(encloseSpace(DOUBLE_DASH));
-        this.appendEdgeLabelInPath(edge, labStyle);
-        this.appendMultiplicities(edge);
-        this.appendTargetNode(srcVertex, tgtVertex);
-        this.result.append(END_EDGE);
+        appendSourceNode(srcVertex, tgtVertex);
+        append(encloseSpace(DOUBLE_DASH));
+        appendEdgeLabelInPath(edge, labStyle);
+        appendMultiplicities(edge);
+        appendTargetNode(srcVertex, tgtVertex);
+        append(END_EDGE);
     }
 
     /**
@@ -911,37 +942,37 @@ public final class GraphToTikz {
         List<Point2D> points = layout.getPoints();
 
         if (points.size() == 2) {
-            this.appendSourceNode(srcVertex, tgtVertex);
-            this.result.append(encloseSpace(connection));
-            this.appendTargetNode(srcVertex, tgtVertex);
+            appendSourceNode(srcVertex, tgtVertex);
+            append(encloseSpace(connection));
+            appendTargetNode(srcVertex, tgtVertex);
         } else {
             int firstPoint = 1;
             int lastPoint = points.size() - 2;
 
-            this.appendNode(srcVertex, points.get(firstPoint));
-            this.result.append(encloseSpace(connection));
+            appendNode(srcVertex, points.get(firstPoint));
+            append(encloseSpace(connection));
             // Intermediate points
             for (int i = firstPoint; i <= lastPoint; i++) {
-                this.appendPoint(points, i);
+                appendPoint(points, i);
                 // When using the MANHATTAN style sometimes we cannot use the ANGLE
                 // routing when going from the last point to the node because the
                 // arrow will be in the wrong direction.
                 // We test this condition here.
                 if (i == lastPoint && connection.equals(ANGLE)
-                    && this.isHorizontalOrVertical(points, i, tgtVertex)) {
+                    && isHorizontalOrVertical(points, i, tgtVertex)) {
                     // We are in this special case, use straight routing.
-                    this.result.append(encloseSpace(DOUBLE_DASH));
+                    append(encloseSpace(DOUBLE_DASH));
                 } else {
                     // A normal case, just use the provided connection string.
-                    this.result.append(encloseSpace(connection));
+                    append(encloseSpace(connection));
                 }
             }
-            this.appendNode(tgtVertex, points.get(lastPoint));
+            appendNode(tgtVertex, points.get(lastPoint));
         }
-        this.result.append(END_PATH);
-        this.appendEdgeLabel(edge, layout, labStyle, points);
-        this.result.append(END_EDGE);
-        this.appendMultiplicities(edge, points);
+        append(END_PATH);
+        appendEdgeLabel(edge, layout, labStyle, points);
+        append(END_EDGE);
+        appendMultiplicities(edge, points);
     }
 
     /**
@@ -954,7 +985,7 @@ public final class GraphToTikz {
      */
     private void appendOrthogonalLayout(GraphJEdge edge, JEdgeLayout layout,
             String labStyle) {
-        this.appendOrthogonalLayout(edge, layout, labStyle, DOUBLE_DASH);
+        appendOrthogonalLayout(edge, layout, labStyle, DOUBLE_DASH);
     }
 
     /**
@@ -980,7 +1011,7 @@ public final class GraphToTikz {
         if (bPoints == null) {
             // The edge is with a bezier style but it does not have any bezier
             // points, just use standard layout.
-            this.appendDefaultLayout(edge, labStyle);
+            appendDefaultLayout(edge, labStyle);
             return;
         }
 
@@ -991,11 +1022,11 @@ public final class GraphToTikz {
             // is shown in Groove. Otherwise, the bezier curve in Tikz is not
             // smooth enough.
             boolean isLoop = srcVertex.getNode().equals(tgtVertex.getNode());
-            this.appendNode(srcVertex);
+            appendNode(srcVertex);
             int i = 1; // Index for edge points.
             int j = 0; // Index for bezier points. Always j = i - 1;
             while (j < bPoints.length - 1) {
-                this.result.append(BEGIN_CONTROLS);
+                append(BEGIN_CONTROLS);
                 if (isLoop) {
                     // Drawing a loop edge is a special case, for the first and
                     // last control entry we need to use a point of the edge
@@ -1003,67 +1034,67 @@ public final class GraphToTikz {
                     // incorrectly.
                     if (i == points.size() - 1) {
                         // This is the LAST control entry.
-                        this.appendPoint(points, i - 1);
+                        appendPoint(points, i - 1);
                     } else {
                         // Not a special case, just use a bezier point.
-                        this.appendPoint(bPoints[j]);
+                        appendPoint(bPoints[j]);
                     }
-                    this.result.append(AND);
+                    append(AND);
                     if (i == 1) {
                         // This is the FIRST control entry.
-                        this.appendPoint(points, i);
+                        appendPoint(points, i);
                     } else {
                         // Not a special case, just use a bezier point.
-                        this.appendPoint(bPoints[j + 1]);
+                        appendPoint(bPoints[j + 1]);
                     }
                 } else {
                     // The edge is not a loop, just use the bezier points.
-                    this.appendPoint(bPoints[j]);
-                    this.result.append(AND);
-                    this.appendPoint(bPoints[j + 1]);
+                    appendPoint(bPoints[j]);
+                    append(AND);
+                    appendPoint(bPoints[j + 1]);
                 }
-                this.result.append(END_CONTROLS);
+                append(END_CONTROLS);
                 // Use the edge intermediate point as the next coordinate.
                 if (points.size() > 3 && i < points.size() - 1) {
-                    this.appendPoint(points, i);
+                    appendPoint(points, i);
                 }
                 i++;
                 j++;
             }
-            this.appendNode(tgtVertex);
+            appendNode(tgtVertex);
         } else {
             // General case, we have an edge with more than 4 points. We have
             // enough points to make the curve smooth, so just revert to
             // normal bezier calculation.
 
             // The first part of the curve is quadratic.
-            this.appendNode(srcVertex);
-            this.result.append(BEGIN_CONTROLS);
-            this.appendPoint(bPoints[0]);
-            this.result.append(END_CONTROLS);
-            this.appendPoint(points, 1);
+            appendNode(srcVertex);
+            append(BEGIN_CONTROLS);
+            appendPoint(bPoints[0]);
+            append(END_CONTROLS);
+            appendPoint(points, 1);
 
             // The middle part of the curve is cubic.
             for (int i = 2; i < points.size() - 1; i++) {
-                this.result.append(BEGIN_CONTROLS);
-                this.appendPoint(bPoints[2 * i - 3]);
-                this.result.append(AND);
-                this.appendPoint(bPoints[2 * i - 2]);
-                this.result.append(END_CONTROLS);
-                this.appendPoint(points, i);
+                append(BEGIN_CONTROLS);
+                appendPoint(bPoints[2 * i - 3]);
+                append(AND);
+                appendPoint(bPoints[2 * i - 2]);
+                append(END_CONTROLS);
+                appendPoint(points, i);
             }
 
             // The last part of the curve is again quadratic.
-            this.result.append(BEGIN_CONTROLS);
-            this.appendPoint(bPoints[bPoints.length - 1]);
-            this.result.append(END_CONTROLS);
-            this.appendNode(tgtVertex);
+            append(BEGIN_CONTROLS);
+            appendPoint(bPoints[bPoints.length - 1]);
+            append(END_CONTROLS);
+            appendNode(tgtVertex);
         }
 
-        this.result.append(END_PATH);
-        this.appendEdgeLabel(edge, layout, labStyle, points);
-        this.result.append(END_EDGE);
-        this.appendMultiplicities(edge, points);
+        append(END_PATH);
+        appendEdgeLabel(edge, layout, labStyle, points);
+        append(END_EDGE);
+        appendMultiplicities(edge, points);
     }
 
     /**
@@ -1076,7 +1107,7 @@ public final class GraphToTikz {
             String labStyle) {
         System.err.println("Sorry, the SPLINE line style is not yet "
             + "supported, using BEZIER style...");
-        this.appendBezierLayout(edge, layout, labStyle);
+        appendBezierLayout(edge, layout, labStyle);
     }
 
     /**
@@ -1089,7 +1120,7 @@ public final class GraphToTikz {
      */
     private void appendManhattanLayout(GraphJEdge edge, JEdgeLayout layout,
             String labStyle) {
-        this.appendOrthogonalLayout(edge, layout, labStyle, ANGLE);
+        appendOrthogonalLayout(edge, layout, labStyle, ANGLE);
     }
 
     /**
@@ -1107,10 +1138,10 @@ public final class GraphToTikz {
                 Point2D tgtCenter =
                     new Point2D.Double(tgtBounds.getCenterX(),
                         tgtBounds.getCenterY());
-                this.appendNode(srcNode, tgtCenter);
+                appendNode(srcNode, tgtCenter);
             }
         } else {
-            this.appendNode(srcNode);
+            appendNode(srcNode);
         }
     }
 
@@ -1131,29 +1162,38 @@ public final class GraphToTikz {
                 Point2D tgtCenter =
                     new Point2D.Double(tgtBounds.getCenterX(),
                         tgtBounds.getCenterY());
-                int side = this.getSide(srcNode, tgtCenter);
+                int side = getSide(srcNode, tgtCenter);
                 if (side == 0) {
                     Rectangle2D srcBounds = srcLayout.getBounds();
                     Point2D srcCenter =
                         new Point2D.Double(srcBounds.getCenterX(),
                             srcBounds.getCenterY());
-                    this.appendNode(tgtNode, srcCenter);
+                    appendNode(tgtNode, srcCenter);
                 } else {
-                    this.appendNode(tgtNode);
+                    appendNode(tgtNode);
                 }
             }
         } else {
-            this.appendNode(tgtNode);
+            appendNode(tgtNode);
         }
     }
 
     private void appendEdgeLabel(GraphJEdge edge) {
-        MultiLabel lines = edge.getVisuals().getLabel();
-        List<Point2D> points = edge.getVisuals().getPoints();
-        this.result.append(BEGIN_EDGE_LAB);
-        this.result.append(lines.toString(TeXLineFormat.instance(),
-            points.get(0), points.get(points.size() - 1)));
-        this.result.append(END_EDGE_LAB);
+        if (hasNonEmptyLabel(edge)) {
+            MultiLabel lines = edge.getVisuals().getLabel();
+            List<Point2D> points = edge.getVisuals().getPoints();
+            StringBuilder text;
+            if (this.jGraph.isShowArrowsOnLabels()) {
+                Point2D start = points.get(0);
+                Point2D end = points.get(points.size() - 1);
+                text = lines.toString(TeXLineFormat.instance(), start, end);
+            } else {
+                text = lines.toString(TeXLineFormat.instance());
+            }
+            append(BEGIN_EDGE_LAB);
+            append(text);
+            append(END_EDGE_LAB);
+        }
     }
 
     /**
@@ -1167,11 +1207,11 @@ public final class GraphToTikz {
                 convertRelativeLabelPositionToAbsolute(
                     layout.getLabelPosition(), points);
             // Extra path for the label position.
-            this.result.append(BEGIN_NODE);
-            this.result.append(encloseBrack(labStyle));
-            this.result.append(encloseSpace(AT_KEYWORD));
-            this.appendPoint(labelPos);
-            this.appendEdgeLabel(edge);
+            append(BEGIN_NODE);
+            append(encloseBrack(labStyle));
+            append(encloseSpace(AT_KEYWORD));
+            appendPoint(labelPos);
+            appendEdgeLabel(edge);
         }
     }
 
@@ -1183,17 +1223,17 @@ public final class GraphToTikz {
         VisualMap visuals = edge.getVisuals();
         String sourceLabel = visuals.getEdgeSourceLabel();
         if (sourceLabel != null) {
-            this.result.append(" ");
-            this.result.append(NODE);
-            this.result.append(encloseBrack(OUT_MULT_LABEL_STYLE));
-            this.result.append(encloseCurly(sourceLabel));
+            append(" ");
+            append(NODE);
+            append(encloseBrack(OUT_MULT_LABEL_STYLE));
+            append(encloseCurly(sourceLabel));
         }
         String targetLabel = visuals.getEdgeTargetLabel();
         if (targetLabel != null) {
-            this.result.append(" ");
-            this.result.append(NODE);
-            this.result.append(encloseBrack(IN_MULT_LABEL_STYLE));
-            this.result.append(encloseCurly(targetLabel));
+            append(" ");
+            append(NODE);
+            append(encloseBrack(IN_MULT_LABEL_STYLE));
+            append(encloseCurly(targetLabel));
         }
     }
 
@@ -1216,20 +1256,20 @@ public final class GraphToTikz {
             List<Point2D> points) {
         Point2D inMultPos = convertRelativeLabelPositionToAbsolute(pos, points);
         // Extra path for the label position.
-        this.result.append(BEGIN_NODE);
-        this.result.append(encloseBrack(BASIC_LABEL_STYLE));
-        this.result.append(encloseSpace(AT_KEYWORD));
-        this.appendPoint(inMultPos);
-        this.result.append(encloseCurly(mult.toString()));
-        this.result.append(END_EDGE);
+        append(BEGIN_NODE);
+        append(encloseBrack(BASIC_LABEL_STYLE));
+        append(encloseSpace(AT_KEYWORD));
+        appendPoint(inMultPos);
+        append(encloseCurly(mult.toString()));
+        append(END_EDGE);
     }
 
     /** Appends the edge label along the path that is being drawn. */
     private void appendEdgeLabelInPath(GraphJEdge edge, String labStyle) {
         if (!labStyle.equals(INHERITANCE_LABEL_STYLE) && hasNonEmptyLabel(edge)) {
-            this.result.append(NODE);
-            this.result.append(encloseBrack(labStyle));
-            this.appendEdgeLabel(edge);
+            append(NODE);
+            append(encloseBrack(labStyle));
+            appendEdgeLabel(edge);
         }
     }
 
