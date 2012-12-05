@@ -16,78 +16,24 @@
  */
 package groove.trans;
 
-import groove.graph.AbstractEdge;
-import groove.graph.EdgeRole;
+import groove.graph.Edge;
 import groove.graph.TypeEdge;
 import groove.graph.TypeLabel;
 
 /**
- * Class that implements the edges of a host graph.
+ * Type of the edges of a host graph.
  * @author Arend Rensink
  */
-public class HostEdge extends AbstractEdge<HostNode,TypeLabel> implements
-        HostElement, AnchorValue {
-    /** Constructor for a typed edge. */
-    protected HostEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
-        super(source, type.label(), target);
-        assert label().getRole() == EdgeRole.BINARY || source == target : String.format(
-            "Can't create %s label %s between distinct nodes %s and %s",
-            label().getRole().getDescription(false), label(), source, target);
-        this.nr = nr;
-        this.type = type;
-    }
+public interface HostEdge extends Edge, HostElement, AnchorValue {
+    /* Specialises the return type. */
+    HostNode source();
 
-    // ------------------------------------------------------------------------
-    // Overridden methods
-    // ------------------------------------------------------------------------
+    /* Specialises the return type. */
+    HostNode target();
 
-    /** Returns true if the edge is a loop. */
-    public boolean isLoop() {
-        return this.source().equals(this.target());
-    }
+    /* Specialises the return type. */
+    TypeLabel label();
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof HostEdge)) {
-            return false;
-        }
-        HostEdge other = (HostEdge) obj;
-        if (getType() != other.getType()) {
-            return false;
-        }
-        if (getNumber() != other.getNumber()) {
-            return false;
-        }
-        return source().equals(other.source())
-            && target().equals(other.target());
-    }
-
-    /** 
-     * Returns the number of this edge.
-     * The number is guaranteed to be unique for each canonical edge representative.
-     */
-    public int getNumber() {
-        return this.nr;
-    }
-
-    /** 
-     * Returns the (possibly {@code null}) type of this edge.
-     * The number is guaranteed to be unique for each canonical edge representative.
-     */
-    public TypeEdge getType() {
-        return this.type;
-    }
-
-    @Override
-    public AnchorKind getAnchorKind() {
-        return AnchorKind.EDGE;
-    }
-
-    /** The (unique) number of this edge. */
-    private final int nr;
-    /** Possibly {@code null} type of this edge. */
-    private final TypeEdge type;
+    /* Specialises the return type. */
+    TypeEdge getType();
 }

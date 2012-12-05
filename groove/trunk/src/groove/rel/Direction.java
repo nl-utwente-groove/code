@@ -66,6 +66,19 @@ public enum Direction {
         }
     }
 
+    /** Returns the opposite node of a host edge, according to this direction. */
+    public HostNode opposite(HostEdge edge) {
+        switch (this) {
+        case FORWARD:
+            return edge.target();
+        case BACKWARD:
+            return edge.source();
+        default:
+            assert false;
+            return null;
+        }
+    }
+
     /** Returns the set of edges connected to a given node, according to this direction. */
     public <N extends Node,E extends Edge,G extends AbstractGraph<N,E>> Set<? extends E> edges(
             G graph, N node) {

@@ -44,4 +44,7 @@ public interface Edge extends Element {
      * For most edge types, this is determined by (the edge role of) the label.
      */
     public EdgeRole getRole();
+
+    /** Convenience method to tests if the source and target nodes of this edge coincide. */
+    public boolean isLoop();
 }
