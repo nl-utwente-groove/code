@@ -109,7 +109,7 @@ public class TypeFactory implements ElementFactory<TypeNode,TypeEdge> {
     }
 
     /** Factory method to create a new edge. */
-    TypeEdge newEdge(TypeNode source, TypeLabel label, TypeNode target) {
+    private TypeEdge newEdge(TypeNode source, TypeLabel label, TypeNode target) {
         return new TypeEdge(source, label, target, this.typeGraph);
     }
 

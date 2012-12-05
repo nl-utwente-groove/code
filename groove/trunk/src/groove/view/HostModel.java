@@ -123,6 +123,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     void notifyWillRebuild() {
         super.notifyWillRebuild();
         this.labelSet = null;
+        this.typeMap = null;
     }
 
     @Override
