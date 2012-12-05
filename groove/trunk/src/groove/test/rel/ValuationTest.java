@@ -31,7 +31,7 @@ import org.junit.Test;
 public class ValuationTest {
     private static LabelVar xVar = new LabelVar("x", EdgeRole.BINARY);
     private static LabelVar yVar = new LabelVar("y", EdgeRole.BINARY);
-    private static TypeFactory factory = TypeFactory.instance();
+    private static TypeFactory factory = TypeFactory.newInstance();
     private static TypeNode top = factory.getTopNode();
     private static TypeEdge aEdge = factory.createEdge(top, "a", top);
     private static TypeEdge bEdge = factory.createEdge(top, "b", top);

@@ -64,8 +64,8 @@ abstract public class GraphBasedModel<R> extends ResourceModel<R> {
     /**
      * Returns a mapping from the nodes in the model source to the corresponding 
      * nodes in the resource that is constructed from it.
-     * @return the mapping from source graph to resource elements; empty if the model
-     *         contains errors.
+     * This method should only be called if the model contains no errors.
+     * @return the mapping from source graph to resource elements
      */
     abstract public ModelMap<?,?> getMap();
 

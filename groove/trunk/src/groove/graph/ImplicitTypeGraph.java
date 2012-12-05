@@ -29,7 +29,8 @@ public class ImplicitTypeGraph extends TypeGraph {
     /** Constructs a fresh implicit type graph. */
     public ImplicitTypeGraph() {
         super("implicit type graph", true);
-        addNode(getFactory().getTopNode());
+        // instantiate the top node
+        getFactory().getTopNode();
     }
 
     /** Returns the top node type. */

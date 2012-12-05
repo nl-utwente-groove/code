@@ -22,7 +22,6 @@ import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.TypeEdge;
 import groove.graph.TypeFactory;
-import groove.graph.TypeGraph;
 import groove.graph.TypeGuard;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
@@ -47,14 +46,14 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
     public DefaultRuleNode createNode(int nr, TypeLabel typeLabel,
             boolean sharp, List<TypeGuard> typeGuards) {
         updateMaxNodeNr(nr);
-        TypeNode type = this.typeFactory.getNode(typeLabel);
+        TypeNode type = getTypeFactory().createNode(typeLabel);
         return new DefaultRuleNode(nr, type, sharp, typeGuards);
     }
 
     /** Creates a variable node for a given algebra term, and with a given node number. */
     public VariableNode createVariableNode(int nr, Term term) {
         updateMaxNodeNr(nr);
-        TypeNode type = this.typeFactory.getDataType(term.getSignature());
+        TypeNode type = getTypeFactory().getDataType(term.getSignature());
         return new VariableNode(nr, term, type);
     }
 
@@ -79,19 +78,11 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
     @Override
     public RuleEdge createEdge(RuleNode source, Label label, RuleNode target) {
         RuleLabel ruleLabel = (RuleLabel) label;
-        //        if (ruleLabel.isArgument()) {
-        //            return new ArgumentEdge((ProductNode) source, ruleLabel,
-        //                (VariableNode) target);
-        //        } else if (ruleLabel.isOperator()) {
-        //            return new OperatorEdge((ProductNode) source, ruleLabel,
-        //                (VariableNode) target);
-        //        } else {
         TypeLabel typeLabel = ruleLabel.getTypeLabel();
         TypeEdge type =
-            typeLabel == null ? null : this.typeFactory.getEdge(
+            typeLabel == null ? null : getTypeFactory().createEdge(
                 source.getType(), typeLabel, target.getType(), false);
         return new RuleEdge(source, ruleLabel, type, target);
-        //        }
     }
 
     @Override
@@ -121,12 +112,11 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
 
     /** Returns a fresh instance of this factory, without type graph. */
     public static RuleFactory newInstance() {
-        return new RuleFactory(TypeFactory.instance());
+        return newInstance(TypeFactory.newInstance());
     }
 
     /** Returns a fresh instance of this factory, for a given type graph. */
-    public static RuleFactory newInstance(TypeGraph type) {
-        assert type != null;
-        return new RuleFactory(type.getFactory());
+    public static RuleFactory newInstance(TypeFactory typeFactory) {
+        return new RuleFactory(typeFactory);
     }
 }

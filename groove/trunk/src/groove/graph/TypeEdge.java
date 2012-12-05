@@ -19,7 +19,6 @@ package groove.graph;
 import static groove.graph.EdgeRole.BINARY;
 import groove.trans.AnchorKind;
 
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -36,6 +35,7 @@ public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> implements
      */
     TypeEdge(TypeNode source, TypeLabel label, TypeNode target, TypeGraph graph) {
         super(source, label, target);
+        assert graph != null;
         assert source.equals(target) || label.getRole() == BINARY : String.format(
             "Can't create %s label %s between distinct nodes %s and %s",
             label.getRole().getDescription(false), label, source, target);
@@ -126,26 +126,13 @@ public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> implements
     }
 
     @Override
-    public boolean hasGraph() {
-        return getGraph() != null;
-    }
-
-    @Override
     public Set<TypeEdge> getSubtypes() {
-        if (hasGraph()) {
-            return getGraph().getSubtypes(this);
-        } else {
-            return Collections.singleton(this);
-        }
+        return getGraph().getSubtypes(this);
     }
 
     @Override
     public Set<TypeEdge> getSupertypes() {
-        if (hasGraph()) {
-            return getGraph().getSupertypes(this);
-        } else {
-            return Collections.singleton(this);
-        }
+        return getGraph().getSupertypes(this);
     }
 
     @Override

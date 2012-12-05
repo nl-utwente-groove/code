@@ -54,6 +54,12 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
     }
 
     @Override
+    void notifyWillRebuild() {
+        super.notifyWillRebuild();
+        this.typeMap = null;
+    }
+
+    @Override
     boolean isShouldRebuild() {
         boolean result = super.isShouldRebuild();
         if (result) {
@@ -65,12 +71,16 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
     @Override
     public TypeModelMap getMap() {
         synchronise();
+        if (hasErrors()) {
+            throw new IllegalStateException();
+        }
         return this.modelMap;
     }
 
     @Override
     public TypeModelMap getTypeMap() {
-        return getMap();
+        synchronise();
+        return this.typeMap;
     }
 
     /** 
@@ -98,9 +108,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                 TypeLabel typeLabel =
                     TypeLabel.createLabel(NODE_TYPE, attrKind.getName());
                 try {
-                    TypeNode typeNode =
-                        getNodeType(modelNode, typeLabel, factory);
-                    result.addNode(typeNode);
+                    addNodeType(modelNode, typeLabel, factory);
                 } catch (FormatException e) {
                     errors.addAll(e.getErrors());
                 }
@@ -112,9 +120,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             if (typeLabel != null && typeLabel.getRole() == NODE_TYPE) {
                 AspectNode modelNode = modelEdge.source();
                 try {
-                    TypeNode typeNode =
-                        getNodeType(modelNode, typeLabel, factory);
-                    result.addNode(typeNode);
+                    addNodeType(modelNode, typeLabel, factory);
                 } catch (FormatException e) {
                     errors.addAll(e.getErrors());
                 }
@@ -153,30 +159,26 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                 }
             }
         }
-        if (errors.isEmpty()) {
-            try {
-                result.test();
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
-            }
+        transferErrors(errors, this.modelMap).throwException();
+        // transfer graph info such as layout from model to resource
+        GraphInfo.transfer(getSource(), result, this.modelMap);
+        result.setFixed();
+        try {
+            result.test();
+        } catch (FormatException exc) {
+            transferErrors(exc.getErrors(), this.modelMap).throwException();
         }
-        if (errors.isEmpty()) {
-            // transfer graph info such as layout from model to resource
-            GraphInfo.transfer(getSource(), result, this.modelMap);
-            result.setFixed();
-            return result;
-        } else {
-            throw new FormatException(transferErrors(errors, this.modelMap));
-        }
+        this.typeMap = this.modelMap;
+        return result;
     }
 
     /**
-     * Returns a node type for a given model node and type label.
-     * Also adds the type to the {@link #modelMap}.
+     * Adds a node type for a given model node and type label
+     * to the type graph and {@link #modelMap}.
      * @param modelNode the node in the aspect graph that stands for a node type
      * @param typeLabel the node type label
      */
-    private TypeNode getNodeType(AspectNode modelNode, TypeLabel typeLabel,
+    private void addNodeType(AspectNode modelNode, TypeLabel typeLabel,
             TypeFactory factory) throws FormatException {
         TypeNode oldTypeNode = this.modelMap.getNode(modelNode);
         if (oldTypeNode != null) {
@@ -216,7 +218,6 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
             typeNode.setLabelPattern(modelNode.getEdgePattern());
         }
         this.modelMap.putNode(modelNode, typeNode);
-        return typeNode;
     }
 
     /**
@@ -262,4 +263,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
 
     /** Map from model to resource nodes. */
     private TypeModelMap modelMap;
+    /** Map from source model to types; equals {@link #modelMap} if there are no errors,
+     * {@code null} otherwise. */
+    private TypeModelMap typeMap;
 }

@@ -43,20 +43,21 @@ import java.util.Set;
  * @version $Revision $
  */
 public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
-    /** Constructor for a fresh factory, based on a given type graph. */
-    protected HostFactory(TypeGraph type) {
-        if (type == null) {
-            this.typeFactory = TypeFactory.instance();
-        } else {
-            this.typeFactory = type.getFactory();
-        }
+    /** 
+     * Constructor for a fresh factory, based on a given type factory.
+     * @param typeFactory the (non-{@code null}) type factory to be used
+     */
+    protected HostFactory(TypeFactory typeFactory) {
+        this.typeFactory = typeFactory;
     }
 
-    /** This implementation creates a host node with top type. */
+    /** 
+     * This implementation creates a host node with top type.
+     * Should only be called if the graph is implicitly typed.
+     */
     @Override
     public HostNode createNode(int nr) {
-        assert !this.typeFactory.hasGraph()
-            || this.typeFactory.getGraph().isImplicit();
+        assert this.typeFactory.getGraph().isImplicit();
         return createNode(nr, this.typeFactory.getTopNode());
     }
 
@@ -265,7 +266,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     @Override
     public HostEdge createEdge(HostNode source, Label label, HostNode target) {
         TypeEdge type =
-            this.typeFactory.getEdge(source.getType(), (TypeLabel) label,
+            getTypeFactory().createEdge(source.getType(), (TypeLabel) label,
                 target.getType(), false);
         assert type != null;
         HostEdge edge = newEdge(source, type, target, getEdgeCount());
@@ -300,13 +301,13 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      */
     protected HostEdge newEdge(HostNode source, TypeEdge type, HostNode target,
             int nr) {
-        assert type.getGraph() == this.typeFactory.getGraph();
+        assert type.getGraph() == getTypeGraph();
         return new DefaultHostEdge(source, type, target, nr);
     }
 
     @Override
     public TypeLabel createLabel(String text) {
-        return this.typeFactory.createLabel(text);
+        return getTypeFactory().createLabel(text);
     }
 
     @Override
@@ -356,6 +357,11 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         return this.typeFactory;
     }
 
+    /** Returns the type graph used in this host factory. */
+    public TypeGraph getTypeGraph() {
+        return getTypeFactory().getGraph();
+    }
+
     /** 
      * Method to normalise an array of host nodes.
      * Normalised arrays reuse the same array object for an 
@@ -386,15 +392,14 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     /** Store of normalised host node arrays. */
     private Map<List<HostNode>,HostNode[]> normalHostNodeMap;
 
-    /** Returns a fresh instance of this factory, without type graph. */
+    /** Returns a fresh instance of this factory, with a fresh type graph. */
     public static HostFactory newInstance() {
-        return new HostFactory(null);
+        return newInstance(TypeFactory.newInstance());
     }
 
     /** Returns a fresh instance of this factory, for a given type graph. */
-    public static HostFactory newInstance(TypeGraph type) {
-        assert type != null;
-        return new HostFactory(type);
+    public static HostFactory newInstance(TypeFactory typeFactory) {
+        return new HostFactory(typeFactory);
     }
 
     /**

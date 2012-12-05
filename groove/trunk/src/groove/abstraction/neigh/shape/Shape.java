@@ -1109,7 +1109,7 @@ public final class Shape extends ShapeGraph {
     public static Shape createShape(HostGraph graph) {
         Shape shape =
             new Shape(graph.getName(),
-                ShapeFactory.newInstance(graph.getTypeGraph()));
+                ShapeFactory.newInstance(graph.getTypeGraph().getFactory()));
         HostToShapeMap map = new HostToShapeMap(shape.getFactory());
         int radius = NeighAbsParam.getInstance().getAbsRadius();
         // Compute the equivalence relation on the given graph.

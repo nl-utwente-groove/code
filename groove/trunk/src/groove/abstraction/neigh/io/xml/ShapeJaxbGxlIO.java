@@ -98,7 +98,8 @@ public final class ShapeJaxbGxlIO extends
 
     @Override
     protected Graph<ShapeNode,ShapeEdge> createGraph(String name) {
-        this.elementFactory = ShapeFactory.newInstance(this.typeGraph);
+        this.elementFactory =
+            ShapeFactory.newInstance(this.typeGraph.getFactory());
         return new Shape(name, this.elementFactory).downcast();
     }
 

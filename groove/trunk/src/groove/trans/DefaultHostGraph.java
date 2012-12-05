@@ -64,7 +64,12 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
     }
 
     /**
-     * Copies an existing host graph, including its element factory.
+     * Creates a new host graph from an existing one, while optionally
+     * changing the algebra being used.
+     * The host factory is shared.
+     * @param graph the non-{@code null} graph to be copied
+     * @param family possibly {@code null} set of algebras to draw
+     * data values from
      */
     public DefaultHostGraph(HostGraph graph, AlgebraFamily family) {
         this(graph.getName(), graph.getFactory());
@@ -211,7 +216,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
             } else {
                 AspectEdge edgeImage = result.mapEdge(edge);
                 edgeImage.setFixed();
-                targetGraph.addEdgeContext(edgeImage);
+                targetGraph.addEdge(edgeImage);
             }
         }
         GraphInfo.transfer(this, targetGraph, result);

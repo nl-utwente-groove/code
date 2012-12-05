@@ -134,22 +134,24 @@ public class HostModel extends GraphBasedModel<HostGraph> {
             computeModel(getSource());
         HostGraph result = modelPlusMap.one();
         GraphInfo.throwException(result);
-        this.hostModelMap = modelPlusMap.two();
-        this.typeMap = new TypeModelMap(result.getTypeGraph().getFactory());
-        for (Map.Entry<AspectNode,HostNode> nodeEntry : this.hostModelMap.nodeMap().entrySet()) {
-            this.typeMap.putNode(nodeEntry.getKey(),
-                nodeEntry.getValue().getType());
+        HostModelMap hostModelMap = modelPlusMap.two();
+        TypeModelMap typeMap =
+            new TypeModelMap(result.getTypeGraph().getFactory());
+        for (Map.Entry<AspectNode,HostNode> nodeEntry : hostModelMap.nodeMap().entrySet()) {
+            typeMap.putNode(nodeEntry.getKey(), nodeEntry.getValue().getType());
         }
         for (AspectEdge sourceEdge : getSource().edgeSet()) {
             AspectEdge normalEdge = this.normalMap.getEdge(sourceEdge);
             if (normalEdge == null) {
                 normalEdge = sourceEdge;
             }
-            HostEdge hostEdge = this.hostModelMap.getEdge(normalEdge);
+            HostEdge hostEdge = hostModelMap.getEdge(normalEdge);
             if (hostEdge != null) {
-                this.typeMap.putEdge(sourceEdge, hostEdge.getType());
+                typeMap.putEdge(sourceEdge, hostEdge.getType());
             }
         }
+        this.typeMap = typeMap;
+        this.hostModelMap = hostModelMap;
         return result;
     }
 

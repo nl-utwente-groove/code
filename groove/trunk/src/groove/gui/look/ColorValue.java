@@ -41,7 +41,10 @@ public class ColorValue extends AspectValue<Color> {
             if (node.getColor() != null) {
                 result = (Color) node.getColor().getContent();
             } else {
-                result = getNodeType(jVertex).getColor();
+                TypeNode nodeType = getNodeType(jVertex);
+                if (nodeType != null) {
+                    result = nodeType.getColor();
+                }
             }
         }
         return result;
@@ -67,7 +70,7 @@ public class ColorValue extends AspectValue<Color> {
                 break;
             }
         }
-        return result == null ? typeGraph.getFactory().getTopNode() : result;
+        return result;
     }
 
 }

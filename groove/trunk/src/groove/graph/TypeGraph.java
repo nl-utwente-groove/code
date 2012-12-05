@@ -76,8 +76,6 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         super(name);
         this.implicit = implicit;
         this.factory = new TypeFactory(this);
-        // always add the basic data types
-        addNodeSet(this.factory.getDataTypes());
     }
 
     @Override
@@ -170,8 +168,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             "Label %s is not a node type", label);
         TypeNode result = this.typeNodeMap.get(label);
         if (result == null) {
+            // the following implicitly adds the node to the graph
             result = getFactory().createNode(label);
-            addNode(result);
         }
         return result;
     }
@@ -391,20 +389,29 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     }
 
     /** Tests if one type node is a subtype of another. */
-    public boolean isSubtype(TypeNode subType, TypeNode superType) {
-        testFixed(true);
-        if (subType.equals(superType)) {
+    public boolean isSubtype(TypeNode subtype, TypeNode supertype) {
+        if (subtype.equals(supertype)) {
             return true;
         }
-        Set<TypeNode> allSubtypes = getSubtypes(superType);
+        if (isImplicit()) {
+            return false;
+        }
+        testFixed(true);
+        Set<TypeNode> allSubtypes = getSubtypes(supertype);
         if (allSubtypes.size() == 1) {
             return false;
         }
-        return getSubtypes(superType).contains(subType);
+        return getSubtypes(supertype).contains(subtype);
     }
 
     /** Tests if one edge type is a subtype of another. */
     public boolean isSubtype(TypeEdge subtype, TypeEdge supertype) {
+        if (subtype.equals(supertype)) {
+            return true;
+        }
+        if (isImplicit()) {
+            return false;
+        }
         testFixed(true);
         return getSubtypes(supertype).contains(subtype);
     }
@@ -739,7 +746,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     public HostGraphMorphism analyzeHost(HostGraph source)
         throws FormatException {
         testFixed(true);
-        HostFactory hostFactory = HostFactory.newInstance(this);
+        HostFactory hostFactory = HostFactory.newInstance(getFactory());
         HostGraphMorphism morphism = new HostGraphMorphism(hostFactory);
         FormatErrorSet errors = new FormatErrorSet();
         for (HostNode node : source.nodeSet()) {
@@ -969,6 +976,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         if (node1.equals(node2)) {
             return true;
         }
+        if (isImplicit()) {
+            return false;
+        }
         Set<TypeNode> sub1 = getSubtypes(node1);
         Set<TypeNode> sub2 = getSubtypes(node2);
         assert sub1 != null : String.format(
@@ -1012,22 +1022,42 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     /** Returns the set of subtypes of a given node type. */
     public Set<TypeNode> getSubtypes(TypeNode node) {
-        return this.nodeSubtypeMap.get(node);
+        if (isImplicit()) {
+            return Collections.singleton(node);
+        } else {
+            assert isFixed();
+            return this.nodeSubtypeMap.get(node);
+        }
     }
 
     /** Returns the set of subtypes of a given edge type. */
     public Set<TypeEdge> getSubtypes(TypeEdge edge) {
-        return this.edgeSubtypeMap.get(edge);
+        if (isImplicit()) {
+            return Collections.singleton(edge);
+        } else {
+            assert isFixed();
+            return this.edgeSubtypeMap.get(edge);
+        }
     }
 
     /** Returns the set of supertypes of a given node type. */
     public Set<TypeNode> getSupertypes(TypeNode node) {
-        return this.nodeSupertypeMap.get(node);
+        if (isImplicit()) {
+            return Collections.singleton(node);
+        } else {
+            assert isFixed();
+            return this.nodeSupertypeMap.get(node);
+        }
     }
 
     /** Returns the set of supertypes of a given edge type. */
     public Set<TypeEdge> getSupertypes(TypeEdge edge) {
-        return this.edgeSupertypeMap.get(edge);
+        if (isImplicit()) {
+            return Collections.singleton(edge);
+        } else {
+            assert isFixed();
+            return this.edgeSupertypeMap.get(edge);
+        }
     }
 
     /**

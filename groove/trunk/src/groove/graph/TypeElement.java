@@ -34,16 +34,10 @@ public interface TypeElement extends Element, AnchorValue, Label {
     public TypeLabel label();
 
     /**
-     * Returns the (possibly {@code null}) type graph to which
-     * this type element belongs.
-     * @return the associated type graph, or {@code null} if there is none.
+     * Returns the type graph to which this type element belongs.
+     * @return the associated type graph; non-{@code null}
      */
     public TypeGraph getGraph();
-
-    /** Indicates if this type element has an associated type graph.
-     * @see #getGraph() 
-     */
-    public boolean hasGraph();
 
     /** Returns the (reflexively and transitively closed) set of subtypes of this type element. */
     public Set<? extends TypeElement> getSubtypes();
