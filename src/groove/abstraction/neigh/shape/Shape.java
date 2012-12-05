@@ -154,8 +154,8 @@ public final class Shape extends ShapeGraph {
      * when necessary.
      */
     @Override
-    public boolean addEdgeWithoutCheck(HostEdge edge) {
-        boolean added = super.addEdgeWithoutCheck(edge);
+    public boolean addEdge(HostEdge edge) {
+        boolean added = super.addEdge(edge);
         if (added && edge.getRole() == BINARY) {
             ShapeEdge edgeS = (ShapeEdge) edge;
             EdgeSignatureStore store = getEdgeSigStore();
@@ -166,7 +166,7 @@ public final class Shape extends ShapeGraph {
 
     /** Removes the node from the shape and updates all related structures. */
     @Override
-    public boolean removeNode(HostNode node) {
+    public boolean removeNodeContext(HostNode node) {
         assert !this.isFixed();
         boolean result = containsNode(node);
         if (result) {
@@ -177,16 +177,16 @@ public final class Shape extends ShapeGraph {
             for (ShapeEdge edgeToRemove : toRemove) {
                 this.removeEdge(edgeToRemove);
             }
-            removeNodeWithoutCheck(node);
+            removeNode(node);
         }
         return result;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public boolean removeNodeWithoutCheck(HostNode node) {
+    public boolean removeNode(HostNode node) {
         // Remove node from graph.
-        boolean result = super.removeNodeWithoutCheck(node);
+        boolean result = super.removeNode(node);
         if (result) {
             // make sure the auxiliary structures get updated as well
             ShapeNode nodeS = (ShapeNode) node;
@@ -434,7 +434,7 @@ public final class Shape extends ShapeGraph {
             ShapeNode tgtS = map.getNode(tgtG);
             TypeLabel labelS = edgeG.label();
             ShapeEdge edgeS = this.createEdge(srcS, labelS, tgtS);
-            addEdgeWithoutCheck(edgeS);
+            addEdge(edgeS);
             // Update the abstraction morphism map.
             for (HostEdge eG : ecG) {
                 map.putEdge(eG, edgeS);
@@ -582,7 +582,7 @@ public final class Shape extends ShapeGraph {
         } else {
             // Setting a node multiplicity to zero is equivalent to removing
             // the node from the shape.
-            this.removeNode(node);
+            this.removeNodeContext(node);
         }
     }
 
@@ -828,7 +828,7 @@ public final class Shape extends ShapeGraph {
             ShapeEdge newEdge = this.createEdge(srcS, label, tgtS);
             // Add the new edge to the shape. The edge multiplicity maps are
             // properly adjusted.
-            this.addEdgeWithoutCheck(newEdge);
+            this.addEdge(newEdge);
             // Add the new edge to the materialisation.
             mat.addMatEdge(newEdge, inconsistentEdge, edgeR);
         }

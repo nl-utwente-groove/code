@@ -77,7 +77,7 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
             addNode(pNode);
         }
         for (PatternEdge pEdge : pGraph.edgeSet()) {
-            addEdge(pEdge);
+            addEdgeContext(pEdge);
         }
     }
 
@@ -213,7 +213,7 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
         }
         for (PatternNode delNode : getDownwardTraversal(node)) {
             assert isUniquelyCovered(delNode);
-            removeNode(delNode);
+            removeNodeContext(delNode);
         }
         return true;
     }
@@ -259,8 +259,8 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
 
         PatternEdge d1 = createEdge(p1, m1, pNode);
         PatternEdge d2 = createEdge(p2, m2, pNode);
-        addEdge(d1);
-        addEdge(d2);
+        addEdgeContext(d1);
+        addEdgeContext(d2);
 
         Duo<PatternEdge> duo = new Duo<PatternEdge>(d1, d2);
         return new Pair<PatternNode,Duo<PatternEdge>>(pNode, duo);

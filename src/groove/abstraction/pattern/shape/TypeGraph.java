@@ -206,7 +206,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         SimpleMorphism morph =
             newSimpleMorphism(TypeEdge.PREFIX + nr, source, target);
         TypeEdge edge = new TypeEdge(nr, source, target, morph);
-        addEdge(edge);
+        addEdgeContext(edge);
         return edge;
     }
 
@@ -302,13 +302,13 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
                 TypeEdge tEdge = getCoveringEdge(tTgt, pTgt.getSource());
                 PatternEdge pEdge =
                     createPatternEdge(result, pSrc, tEdge, pTgt);
-                result.addEdge(pEdge);
+                result.addEdgeContext(pEdge);
                 // Now repeat for the target of the simple edge.
                 if (!sEdge.source().equals(sEdge.target())) {
                     pSrc = nodeMap.get(sEdge.target());
                     tEdge = getCoveringEdge(tTgt, pTgt.getTarget());
                     pEdge = createPatternEdge(result, pSrc, tEdge, pTgt);
-                    result.addEdge(pEdge);
+                    result.addEdgeContext(pEdge);
                 }
             }
         }
@@ -543,7 +543,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     // ------------------------------------------------------------------------
 
     @Override
-    public boolean removeNode(TypeNode node) {
+    public boolean removeNodeContext(TypeNode node) {
         throw new UnsupportedOperationException();
     }
 
@@ -553,17 +553,17 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     }
 
     @Override
-    public boolean removeNodeSet(Collection<? extends TypeNode> nodeSet) {
+    public boolean removeNodeSetContext(Collection<? extends TypeNode> nodeSet) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean removeNodeWithoutCheck(TypeNode node) {
+    public boolean removeNode(TypeNode node) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean removeNodeSetWithoutCheck(
+    public boolean removeNodeSet(
             Collection<? extends TypeNode> nodeSet) {
         throw new UnsupportedOperationException();
     }

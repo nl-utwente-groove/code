@@ -86,7 +86,7 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
 
     // -------------------- PackageGraph methods ---------------------
 
-    public boolean addEdgeWithoutCheck(HostEdge edge) {
+    public boolean addEdge(HostEdge edge) {
         assert !isFixed();
         assert isTypeCorrect(edge);
         boolean result;
@@ -94,7 +94,7 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
         return result;
     }
 
-    public boolean removeNodeWithoutCheck(HostNode node) {
+    public boolean removeNode(HostNode node) {
         assert !isFixed();
         assert isTypeCorrect(node);
         boolean result;
@@ -103,7 +103,7 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
     }
 
     @Override
-    public boolean removeNodeSetWithoutCheck(
+    public boolean removeNodeSet(
             Collection<? extends HostNode> nodeSet) {
         return nodeSet().removeAll(nodeSet);
     }
@@ -226,7 +226,7 @@ public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
             } else {
                 AspectEdge edgeImage = result.mapEdge(edge);
                 edgeImage.setFixed();
-                targetGraph.addEdge(edgeImage);
+                targetGraph.addEdgeContext(edgeImage);
             }
         }
         GraphInfo.transfer(this, targetGraph, result);

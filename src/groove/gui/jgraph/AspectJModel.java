@@ -184,7 +184,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 nodeJVertexMap.put(jVertex.getNode(), jVertex);
                 for (AspectEdge edge : jVertex.getEdges()) {
                     edgeJCellMap.put(edge, jVertex);
-                    graph.addEdge(edge);
+                    graph.addEdgeContext(edge);
                 }
             }
         }
@@ -194,7 +194,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 jEdge.loadFromUserObject(role);
                 for (AspectEdge edge : jEdge.getEdges()) {
                     edgeJCellMap.put(edge, jEdge);
-                    graph.addEdge(edge);
+                    graph.addEdgeContext(edge);
                 }
             }
         }

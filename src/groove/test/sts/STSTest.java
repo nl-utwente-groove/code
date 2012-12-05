@@ -105,9 +105,9 @@ public class STSTest extends TestCase {
         }
 
         for (int i = 0; i < 2; i++) {
-            this.g1.addEdge(this.e1[i]);
-            this.g2.addEdge(this.e2[i]);
-            this.g3.addEdge(this.e3[i]);
+            this.g1.addEdgeContext(this.e1[i]);
+            this.g2.addEdgeContext(this.e2[i]);
+            this.g3.addEdgeContext(this.e3[i]);
         }
     }
 

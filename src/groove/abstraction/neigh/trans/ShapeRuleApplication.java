@@ -97,7 +97,7 @@ public final class ShapeRuleApplication extends RuleApplication {
                     }
                 }
                 // Remove the node and all incident edges.
-                shape.removeNode(node);
+                shape.removeNodeContext(node);
             }
         }
     }

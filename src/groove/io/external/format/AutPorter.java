@@ -120,12 +120,8 @@ public final class AutPorter extends AbstractFormatExporter implements
                     int target =
                         Integer.parseInt(line.substring(targetStart,
                             line.lastIndexOf(')')).trim());
-                    DefaultNode sourceNode =
-                        graph.getFactory().createNode(source);
-                    graph.addNode(sourceNode);
-                    DefaultNode targetNode =
-                        graph.getFactory().createNode(target);
-                    graph.addNode(targetNode);
+                    DefaultNode sourceNode = graph.addNode(source);
+                    DefaultNode targetNode = graph.addNode(target);
                     result.put("" + source, sourceNode);
                     result.put("" + target, targetNode);
                     graph.addEdge(sourceNode, label, targetNode);

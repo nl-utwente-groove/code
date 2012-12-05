@@ -385,7 +385,7 @@ public class TestMaterialisation {
             label = edge.label();
         }
         ShapeEdge newEdge = shape.createEdge(source, label, target);
-        shape.addEdgeWithoutCheck(newEdge);
+        shape.addEdge(newEdge);
         // END HACK
 
         Set<Materialisation> mats =

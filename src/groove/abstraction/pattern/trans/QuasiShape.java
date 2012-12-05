@@ -231,7 +231,7 @@ public final class QuasiShape extends PatternGraph {
             newEdges.clear();
             for (PatternNode tgt : tgts) {
                 PatternEdge newEdge = createEdge(src, type, tgt);
-                addEdge(newEdge);
+                addEdgeContext(newEdge);
                 newEdges.add(newEdge);
             }
 
@@ -258,7 +258,7 @@ public final class QuasiShape extends PatternGraph {
                 TypeEdge type = d.getType();
                 PatternNode tgt = d.target();
                 PatternEdge newEdge = createEdge(newSrc, type, tgt);
-                addEdge(newEdge);
+                addEdgeContext(newEdge);
                 replacingMap.put(d, newEdge);
             }
 
@@ -278,7 +278,7 @@ public final class QuasiShape extends PatternGraph {
         }
 
         // Remove p and all adjacent edges.
-        removeNode(p);
+        removeNodeContext(p);
         this.edgeConstrMap.remove(p);
 
         return origEdgeMap.values();

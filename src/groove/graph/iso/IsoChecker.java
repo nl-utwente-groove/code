@@ -1024,7 +1024,7 @@ public class IsoChecker<N extends Node,E extends Edge> {
                     nodeMap.putNode(node, newNode);
                 }
                 for (DefaultEdge edge : graph1.edgeSet()) {
-                    graph2.addEdge(nodeMap.mapEdge(edge));
+                    graph2.addEdgeContext(nodeMap.mapEdge(edge));
                 }
                 if (!checker.areIsomorphic(graph1, graph2)) {
                     System.out.println("Error! Graph not isomorphic to itself");

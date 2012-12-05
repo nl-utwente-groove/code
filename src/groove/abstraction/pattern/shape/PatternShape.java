@@ -68,7 +68,7 @@ public final class PatternShape extends PatternGraph {
             addNode(pNode);
         }
         for (PatternEdge pEdge : pGraph.edgeSet()) {
-            addEdgeWithoutCheck(pEdge);
+            addEdge(pEdge);
         }
     }
 
@@ -118,8 +118,8 @@ public final class PatternShape extends PatternGraph {
     }
 
     @Override
-    public boolean addEdgeWithoutCheck(PatternEdge edge) {
-        boolean result = super.addEdgeWithoutCheck(edge);
+    public boolean addEdge(PatternEdge edge) {
+        boolean result = super.addEdge(edge);
         if (result) {
             this.edgeMultMap.put(edge, ONE_EDGE_MULT);
         }
@@ -127,8 +127,8 @@ public final class PatternShape extends PatternGraph {
     }
 
     @Override
-    public boolean removeNodeWithoutCheck(PatternNode node) {
-        boolean result = super.removeNodeWithoutCheck(node);
+    public boolean removeNode(PatternNode node) {
+        boolean result = super.removeNode(node);
         if (result) {
             this.nodeMultMap.remove(node);
         }
@@ -251,7 +251,7 @@ public final class PatternShape extends PatternGraph {
         } else {
             // Setting a node multiplicity to zero is equivalent to removing
             // the node from the shape.
-            removeNode(node);
+            removeNodeContext(node);
         }
     }
 
@@ -301,7 +301,7 @@ public final class PatternShape extends PatternGraph {
             assert source != null && target != null;
             PatternEdge newEdge =
                 getFactory().createEdge(source, eEc.typeEdge, target);
-            result.addEdge(newEdge);
+            result.addEdgeContext(newEdge);
             Multiplicity eMult = eEc.mult;
             if (!eMult.isOne()) {
                 result.setMult(newEdge, eMult);

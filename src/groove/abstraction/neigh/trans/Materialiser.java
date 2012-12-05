@@ -463,7 +463,7 @@ public class Materialiser {
                 // The multiplicity is positive and this edge won't be
                 // duplicated in the next stage. We have to add the edge to
                 // the shape here.
-                shape.addEdge(positiveEdge);
+                shape.addEdgeContext(positiveEdge);
             }
         }
 

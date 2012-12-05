@@ -188,7 +188,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
      * Since the graph is fixed, this method always throws an exception.
      * @throws UnsupportedOperationException always.
      */
-    public boolean addEdgeWithoutCheck(HostEdge edge) {
+    public boolean addEdge(HostEdge edge) {
         throw new UnsupportedOperationException();
     }
 
@@ -196,7 +196,7 @@ public class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge> implements
      * Since the graph is fixed, this method always throws an exception.
      * @throws UnsupportedOperationException always.
      */
-    public boolean removeNodeWithoutCheck(HostNode node) {
+    public boolean removeNode(HostNode node) {
         throw new UnsupportedOperationException();
     }
 

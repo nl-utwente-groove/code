@@ -118,7 +118,11 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
         RegAut result = createAutomaton();
         for (RegEdge edge : arg.edgeSet()) {
             RuleLabel label = invert(edge.label());
-            result.addEdge(edge.target(), label, edge.source());
+            RegNode source = edge.source();
+            RegNode target = edge.target();
+            result.addNode(source);
+            result.addNode(target);
+            result.addEdge(target, label, source);
         }
         result.mergeNodes(arg.getEndNode(), result.getStartNode());
         result.mergeNodes(arg.getStartNode(), result.getEndNode());
@@ -139,20 +143,25 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
             RegAut next = argIter.next();
             // add the elements of next to result
             result.addNodeSet(next.nodeSet());
-            result.addEdgeSet(next.edgeSet());
+            result.addEdgeSetContext(next.edgeSet());
             if (result.isAcceptsEmptyWord()) {
                 // add initial edges for all the initial edges of next
                 for (RegEdge nextInitEdge : next.outEdgeSet(next.getStartNode())) {
+                    RegNode target = nextInitEdge.target();
+                    result.addNode(target);
                     result.addEdge(result.getStartNode(), nextInitEdge.label(),
-                        nextInitEdge.target());
+                        target);
                 }
                 result.setAcceptsEmptyWord(next.isAcceptsEmptyWord());
             }
             if (next.isAcceptsEmptyWord()) {
                 // add final edges for all the final edges of result
                 for (RegEdge resultFinalEdge : result.inEdgeSet(result.getEndNode())) {
-                    result.addEdge(resultFinalEdge.source(),
-                        resultFinalEdge.label(), next.getEndNode());
+                    RegNode source = resultFinalEdge.source();
+                    RegNode target = next.getEndNode();
+                    result.addNode(source);
+                    result.addNode(target);
+                    result.addEdge(source, resultFinalEdge.label(), target);
                 }
             }
             result.mergeNodes(result.getEndNode(), next.getStartNode());
@@ -172,7 +181,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
         while (argIter.hasNext()) {
             RegAut next = argIter.next();
             result.addNodeSet(next.nodeSet());
-            result.addEdgeSet(next.edgeSet());
+            result.addEdgeSetContext(next.edgeSet());
             result.mergeNodes(next.getStartNode(), result.getStartNode());
             result.mergeNodes(next.getEndNode(), result.getEndNode());
             if (next.isAcceptsEmptyWord()) {

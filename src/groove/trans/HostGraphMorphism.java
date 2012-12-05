@@ -61,7 +61,7 @@ public class HostGraphMorphism extends Morphism<HostNode,HostEdge> {
         DefaultHostGraph result =
             new DefaultHostGraph(name, getFactory());
         result.addNodeSet(nodeMap().values());
-        result.addEdgeSet(edgeMap().values());
+        result.addEdgeSetContext(edgeMap().values());
         return result;
     }
 }

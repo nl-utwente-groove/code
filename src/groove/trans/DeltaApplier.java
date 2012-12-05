@@ -16,7 +16,6 @@
  */
 package groove.trans;
 
-
 /**
  * Interface for an object that can process a {@link DeltaTarget}, by invoking
  * its {@link DeltaTarget#addNode(HostNode)} and

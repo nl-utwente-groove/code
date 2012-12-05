@@ -211,7 +211,7 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
     }
 
     @Override
-    public boolean addEdgeWithoutCheck(PatternTransition edge) {
+    public boolean addEdge(PatternTransition edge) {
         addTransition(edge);
         return true;
     }
@@ -389,7 +389,7 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
     }
 
     @Override
-    public boolean removeNodeWithoutCheck(PatternState node) {
+    public boolean removeNode(PatternState node) {
         throw new UnsupportedOperationException();
     }
 

@@ -153,7 +153,7 @@ public class GraphManager {
             // add self edge
             if (alabel.isEdgeOnly()) {
                 AspectEdge newEdge = new AspectEdge(newNode, alabel, newNode);
-                graph.addEdge(newEdge);
+                graph.addEdgeContext(newEdge);
             } else {
                 newNode.setAspects(alabel);
             }
@@ -216,7 +216,7 @@ public class GraphManager {
             if (alabel.isEdgeOnly()) {
                 AspectEdge newEdge =
                     new AspectEdge(nodeSource, alabel, nodeTarget);
-                graph.addEdge(newEdge);
+                graph.addEdgeContext(newEdge);
                 if (resultEdge == null) {
                     resultEdge = newEdge;
                 }

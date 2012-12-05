@@ -231,7 +231,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             }
         }
         for (AspectEdge edge : edgeSet()) {
-            result.addEdge(elementMap.mapEdge(edge));
+            result.addEdgeContext(elementMap.mapEdge(edge));
         }
         GraphInfo.transfer(this, result, elementMap);
         result.setFixed();
@@ -562,7 +562,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             }
             for (AspectEdge edge : edgeSet()) {
                 AspectEdge edgeImage = elementMap.mapEdge(edge);
-                result.addEdge(edgeImage);
+                result.addEdgeContext(edgeImage);
             }
             GraphInfo.transfer(this, result, elementMap);
             result.setFixed();
@@ -765,7 +765,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
         for (AspectEdge edge : edgeSet()) {
             AspectEdge edgeImage = map.mapEdge(edge);
-            result.addEdge(edgeImage);
+            result.addEdgeContext(edgeImage);
         }
         if (this.nodeIdMap != null) {
             Map<String,AspectNode> newNodeIdMap =
@@ -931,7 +931,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                         nodeMap.get(edge.target()));
                 newLayoutMap.copyEdgeWithOffset(fresh, edge, oldLayoutMap,
                     offsetX, offsetY);
-                result.addEdge(fresh);
+                result.addEdgeContext(fresh);
             }
             // Copy the errors
             FormatErrorSet oldErrors = GraphInfo.getErrors(graph);

@@ -125,7 +125,7 @@ public abstract class GraphTest<N extends Node,E extends Edge> {
         try {
             Graph graph = this.xml.unmarshalGraph(file);
             result.addNodeSet(graph.nodeSet());
-            result.addEdgeSet(graph.edgeSet());
+            result.addEdgeSetContext(graph.edgeSet());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -321,14 +321,14 @@ public abstract class GraphTest<N extends Node,E extends Edge> {
         assertEquals(5, this.graph.size());
         this.graph.addEdge(this.aTarget, this.cLabel, this.bTarget);
         assertEquals(6, this.graph.size());
-        this.graph.removeNode(this.aTarget);
+        this.graph.removeNodeContext(this.aTarget);
         assertEquals(3, this.graph.size());
     }
 
     @Test
     final public void testIsEmpty() {
         assertFalse(this.graph.isEmpty());
-        this.graph.removeNodeSet(new HashSet<N>(this.graph.nodeSet()));
+        this.graph.removeNodeSetContext(new HashSet<N>(this.graph.nodeSet()));
         assertTrue(this.graph.isEmpty());
         assertTrue(this.graph.newGraph("new").isEmpty());
     }
@@ -367,19 +367,19 @@ public abstract class GraphTest<N extends Node,E extends Edge> {
      */
     @Test
     final public void testAddEdgeEdge() {
-        assertFalse(this.graph.addEdge(this.aEdge));
-        assertFalse(this.graph.addEdge(this.graph.getFactory().createEdge(
+        assertFalse(this.graph.addEdgeContext(this.aEdge));
+        assertFalse(this.graph.addEdgeContext(this.graph.getFactory().createEdge(
             this.source, this.aLabel, this.aTarget)));
         E newEdge =
             this.graph.getFactory().createEdge(this.aTarget, this.cLabel,
                 this.bTarget);
-        assertTrue(this.graph.addEdge(newEdge));
+        assertTrue(this.graph.addEdgeContext(newEdge));
         assertTrue(this.graph.containsEdge(newEdge));
         N newNode = this.graph.addNode();
         newEdge =
             this.graph.getFactory().createEdge(this.bTarget, this.cLabel,
                 newNode);
-        assertTrue(this.newGraph.addEdge(newEdge));
+        assertTrue(this.newGraph.addEdgeContext(newEdge));
         assertTrue(this.newGraph.containsNode(newNode));
     }
 
@@ -398,31 +398,31 @@ public abstract class GraphTest<N extends Node,E extends Edge> {
     @Test
     final public void testAddEdgeSet() {
         Set<E> edgeSet = new HashSet<E>();
-        assertFalse(this.graph.addEdgeSet(edgeSet));
+        assertFalse(this.graph.addEdgeSetContext(edgeSet));
         edgeSet.add(this.aEdge);
-        assertFalse(this.graph.addEdgeSet(edgeSet));
+        assertFalse(this.graph.addEdgeSetContext(edgeSet));
         edgeSet.add(this.graph.getFactory().createEdge(this.source,
             this.bLabel, this.bTarget));
-        assertFalse(this.graph.addEdgeSet(edgeSet));
+        assertFalse(this.graph.addEdgeSetContext(edgeSet));
         N newNode = this.graph.addNode();
         E newEdge =
             this.graph.getFactory().createEdge(this.bTarget, this.cLabel,
                 newNode);
         edgeSet.add(newEdge);
-        assertTrue(this.newGraph.addEdgeSet(edgeSet));
+        assertTrue(this.newGraph.addEdgeSetContext(edgeSet));
         assertTrue(this.newGraph.containsNode(newNode));
     }
 
     @Test
     final public void testRemoveNode() {
         N newNode = this.graph.addNode();
-        assertFalse(this.newGraph.removeNode(newNode));
+        assertFalse(this.newGraph.removeNodeContext(newNode));
         this.newGraph.addNode(newNode);
-        assertTrue(this.newGraph.removeNode(newNode));
-        assertTrue(this.graph.removeNode(this.source));
+        assertTrue(this.newGraph.removeNodeContext(newNode));
+        assertTrue(this.graph.removeNodeContext(this.source));
         assertFalse(this.graph.containsNode(this.source));
         assertFalse(this.graph.containsEdge(this.aEdge));
-        assertFalse(this.graph.removeNode(this.source));
+        assertFalse(this.graph.removeNodeContext(this.source));
     }
 
     @Test
@@ -431,7 +431,7 @@ public abstract class GraphTest<N extends Node,E extends Edge> {
             this.graph.getFactory().createEdge(this.source, this.bLabel,
                 this.aTarget);
         assertFalse(this.graph.removeEdge(newEdge));
-        this.graph.addEdge(newEdge);
+        this.graph.addEdgeContext(newEdge);
         assertTrue(this.graph.removeEdge(newEdge));
         assertTrue(this.graph.removeEdge(this.aEdge));
         assertTrue(this.graph.containsNode(this.source));
@@ -444,15 +444,15 @@ public abstract class GraphTest<N extends Node,E extends Edge> {
     @Test
     final public void testRemoveNodeSet() {
         Set<N> nodeSet = new HashSet<N>();
-        assertFalse(this.graph.removeNodeSet(nodeSet));
+        assertFalse(this.graph.removeNodeSetContext(nodeSet));
         N newNode = this.graph.addNode();
         nodeSet.add(newNode);
-        assertFalse(this.newGraph.removeNodeSet(nodeSet));
+        assertFalse(this.newGraph.removeNodeSetContext(nodeSet));
         this.newGraph.addNode(newNode);
-        assertTrue(this.newGraph.removeNodeSet(nodeSet));
+        assertTrue(this.newGraph.removeNodeSetContext(nodeSet));
         assertFalse(this.newGraph.containsNode(newNode));
         nodeSet.add(this.source);
-        assertTrue(this.graph.removeNodeSet(nodeSet));
+        assertTrue(this.graph.removeNodeSetContext(nodeSet));
         assertFalse(this.graph.containsNode(this.source));
         assertFalse(this.graph.containsEdge(this.aEdge));
     }

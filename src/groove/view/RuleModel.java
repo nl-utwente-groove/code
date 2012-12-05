@@ -1301,11 +1301,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             }
             if (edgeKind.inLHS()) {
                 // flag indicating that the rule edge is fresh in the LHS
-                boolean freshInLhs = this.lhs.addEdge(ruleEdge);
+                boolean freshInLhs = this.lhs.addEdgeContext(ruleEdge);
                 if (freshInLhs) {
                     if (edgeKind.inRHS()) {
-                        this.rhs.addEdge(ruleEdge);
-                        this.mid.addEdge(ruleEdge);
+                        this.rhs.addEdgeContext(ruleEdge);
+                        this.mid.addEdgeContext(ruleEdge);
                     } else if (getType().isNodeType(ruleEdge)
                         && this.rhs.containsNode(ruleEdge.source())) {
                         throw new FormatException(
@@ -1333,7 +1333,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                             "Node type %s cannot be created", ruleEdge.label(),
                             modelEdge.source());
                     }
-                    this.rhs.addEdge(ruleEdge);
+                    this.rhs.addEdgeContext(ruleEdge);
                     if (isRhsAsNac()) {
                         this.nacEdgeSet.add(ruleEdge);
                     } else if (isCheckCreatorEdges()
@@ -1406,7 +1406,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                         nac.addNodeSet(((OperatorNode) node).getArguments());
                     }
                 }
-                nac.addEdgeSet(cell.getEdges());
+                nac.addEdgeSetContext(cell.getEdges());
                 result.add(nac);
             }
             return result;
@@ -1827,7 +1827,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     if (globalImage == null) {
                         this.globalTypeMap.putEdge(key, globalImage = image);
                     }
-                    result.addEdge(globalImage);
+                    result.addEdgeContext(globalImage);
                 }
                 result.addVarSet(graph.varSet());
             } catch (FormatException e) {
@@ -2018,7 +2018,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             }
             for (RuleEdge edge : parentGraph.edgeSet()) {
                 if (myGraph.containsEdge(edge)) {
-                    result.addEdge(edge);
+                    result.addEdgeContext(edge);
                 }
             }
             for (LabelVar var : parentGraph.varSet()) {
