@@ -301,7 +301,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     protected HostEdge newEdge(HostNode source, TypeEdge type, HostNode target,
             int nr) {
         assert type.getGraph() == this.typeFactory.getGraph();
-        return new HostEdge(source, type, target, nr);
+        return new DefaultHostEdge(source, type, target, nr);
     }
 
     @Override

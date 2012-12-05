@@ -33,8 +33,35 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
         this.target = target;
     }
 
+    public N source() {
+        return this.source;
+    }
+
+    /**
+     * The source node of this edge.
+     */
+    protected final N source;
+
     public N target() {
         return this.target;
+    }
+
+    /** The target node of this edge. */
+    protected final N target;
+
+    public L label() {
+        return this.label;
+    }
+
+    /**
+     * The label of this edge.
+     * @invariant label != null
+     */
+    protected final L label;
+
+    @Override
+    public boolean isLoop() {
+        return source() == target();
     }
 
     /**
@@ -49,14 +76,6 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
     /** Callback method in {@link #toString()} to print the label text. */
     protected String getLabelText() {
         return label().text();
-    }
-
-    public N source() {
-        return this.source;
-    }
-
-    public L label() {
-        return this.label;
     }
 
     /**
@@ -150,17 +169,6 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
         return label().getRole();
     }
 
-    /**
-     * The source node of this edge.
-     */
-    protected final N source;
-    /**
-     * The label of this edge.
-     * @invariant label != null
-     */
-    protected final L label;
-    /** The target node of this edge. */
-    protected final N target;
     /** The pre-computed hash code. */
     private int hashCode;
 

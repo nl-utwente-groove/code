@@ -161,6 +161,11 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     }
 
     @Override
+    public boolean isLoop() {
+        return source() == target();
+    }
+
+    @Override
     public GraphTransitionKey getKey(GraphState source) {
         if (source == source()) {
             return getKey();

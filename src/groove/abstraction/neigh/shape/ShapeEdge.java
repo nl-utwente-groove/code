@@ -17,6 +17,7 @@
 package groove.abstraction.neigh.shape;
 
 import groove.graph.TypeEdge;
+import groove.trans.DefaultHostEdge;
 import groove.trans.HostEdge;
 
 /**
@@ -26,7 +27,7 @@ import groove.trans.HostEdge;
  * 
  * @author Eduardo Zambon
  */
-public final class ShapeEdge extends HostEdge {
+public final class ShapeEdge extends DefaultHostEdge {
 
     // ------------------------------------------------------------------------
     // Constructors

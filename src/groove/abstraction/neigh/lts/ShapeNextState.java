@@ -81,6 +81,11 @@ public final class ShapeNextState extends ShapeState implements GraphNextState,
     }
 
     @Override
+    public boolean isLoop() {
+        return source() == target();
+    }
+
+    @Override
     public RuleTransitionLabel label() {
         return this.transition.label();
     }

@@ -834,13 +834,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      * @param node the node for which to discover the type
      * @throws FormatException on nonexistent, abstract or duplicate node types
      */
-    private <N extends Node,L extends Label,E extends AbstractEdge<N,L>> List<E> detectNodeType(
+    private <N extends Node,E extends Edge> List<E> detectNodeType(
             Graph<N,E> source, N node) throws FormatException {
         List<E> result = new ArrayList<E>();
         // find a node type among the outgoing edges
         for (E edge : source.outEdgeSet(node)) {
-            L label = edge.label();
-            if (label.getRole() == NODE_TYPE) {
+            if (edge.getRole() == NODE_TYPE) {
                 result.add(edge);
             }
         }

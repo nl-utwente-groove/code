@@ -52,6 +52,11 @@ public class PatternGraphNextState extends PatternGraphState implements
     }
 
     @Override
+    public boolean isLoop() {
+        return source() == target();
+    }
+
+    @Override
     public PatternTransitionLabel label() {
         return this.transition.label();
     }
