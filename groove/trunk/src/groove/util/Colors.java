@@ -97,9 +97,10 @@ public class Colors {
         }
         if (val != null) {
             if (val.length == 3) {
-                return new Color(val[0], val[1], val[2]);
+                return new Color(norm(val[0]), norm(val[1]), norm(val[2]));
             } else if (val.length == 4) {
-                return new Color(val[0], val[1], val[2], val[3]);
+                return new Color(norm(val[0]), norm(val[1]), norm(val[2]),
+                    norm(val[3]));
             }
         }
         return null;
@@ -129,6 +130,18 @@ public class Colors {
     private static final Map<String,Color> colorMap =
         new TreeMap<String,Color>();
 
+    /** Returns a normalised value, within the range 0..{@link #MAX}. */
+    private static int norm(int val) {
+        if (val < 0) {
+            return 0;
+        }
+        if (val > MAX) {
+            return MAX;
+        }
+        return val;
+    }
+
+    private static final int MAX = 255;
     static {
         Class<Color> colorClass = Color.class;
         Field[] colorFields = colorClass.getFields();
