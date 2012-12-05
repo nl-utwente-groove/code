@@ -19,7 +19,7 @@ package groove.trans;
 import groove.control.CtrlAut;
 import groove.graph.TypeGraph;
 import groove.prolog.GrooveEnvironment;
-import groove.view.FormatErrorSet;
+import groove.util.Fixable;
 import groove.view.FormatException;
 
 import java.util.Collections;
@@ -157,7 +157,8 @@ public class GraphGrammar {
      */
     public void add(Action action) {
         testFixed(false);
-        String ruleName = action.getFullName();
+        assert action instanceof Fixable ? ((Fixable) action).isFixed() : false;
+        String actionName = action.getFullName();
         int priority = action.getPriority();
         // add the rule to the priority map
         Set<Action> priorityRuleSet = this.priorityActionMap.get(priority);
@@ -172,12 +173,12 @@ public class GraphGrammar {
         switch (action.getKind()) {
         case RULE:
             Rule rule = (Rule) action;
-            this.nameRuleMap.put(ruleName, rule);
+            this.nameRuleMap.put(actionName, rule);
             this.allRules.add(rule);
             break;
         case RECIPE:
             Recipe recipe = (Recipe) action;
-            this.nameRecipeMap.put(ruleName, recipe);
+            this.nameRecipeMap.put(actionName, recipe);
             for (Rule subRule : recipe.getRules()) {
                 subRule.setPartial();
                 this.allRules.add(subRule);
@@ -200,24 +201,8 @@ public class GraphGrammar {
      * @throws FormatException if the rules are inconsistent with the system
      *         properties or there is some other reason why they cannot be used
      *         in derivations.
-     * @see #testConsistent()
      */
     public void setFixed() throws FormatException {
-        FormatErrorSet errors = new FormatErrorSet();
-        try {
-            testConsistent();
-        } catch (FormatException exc) {
-            errors.addAll(exc.getErrors());
-        }
-        for (Rule rule : getAllRules()) {
-            try {
-                rule.setFixed();
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
-            }
-        }
-        errors.throwException();
-        getStartGraph().setFixed();
         this.fixed = true;
     }
 
@@ -274,22 +259,14 @@ public class GraphGrammar {
      * @param type the combined type graph
      */
     public final void setTypeGraph(TypeGraph type) {
+        testFixed(false);
+        assert type.isFixed();
         this.typeGraph = type;
     }
 
     /** Returns the labels and subtypes of this rule system. */
     public final TypeGraph getTypeGraph() {
         return this.typeGraph;
-    }
-
-    /**
-     * Tests if the rule system is consistent. This is called in the course of
-     * {@link #setFixed()}.
-     */
-    public void testConsistent() throws FormatException {
-        FormatErrorSet errors = new FormatErrorSet();
-        // at the moment, nothing is checked
-        errors.throwException(); // if any exception was encountered, throw it
     }
 
     /**
@@ -311,9 +288,9 @@ public class GraphGrammar {
      * @throws IllegalStateException if the grammar is already fixed
      * @see #isFixed()
      */
-    public void setStartGraph(HostGraph startGraph)
-        throws IllegalStateException {
+    public void setStartGraph(HostGraph startGraph) {
         testFixed(false);
+        assert startGraph.isFixed();
         this.startGraph = startGraph;
     }
 
@@ -325,6 +302,7 @@ public class GraphGrammar {
      */
     public void setCtrlAut(CtrlAut aut) {
         testFixed(false);
+        assert aut.isFixed();
         this.ctrlAut = aut;
     }
 
