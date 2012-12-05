@@ -60,6 +60,7 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
             GraphInfo.throwException(result);
             result = result.normalise();
         }
+        result.setFixed();
         return result;
     }
 
