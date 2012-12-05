@@ -349,27 +349,15 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 Parameters parameters = new Parameters();
                 result.setSignature(parameters.getSignature(),
                     parameters.getHiddenPars());
-                // only fix if there were no errors in the subconditions
-                // as otherwise there may be false positives in the global rule
-                if (errors.isEmpty()) {
-                    try {
-                        result.setFixed();
-                        if (TO_RULE_DEBUG) {
-                            System.out.println("Constructed rule: " + result);
-                        }
-                    } catch (FormatException exc) {
-                        result = null;
-                        errors.addAll(exc.getErrors());
-                    }
-                }
             }
         }
-        if (errors.isEmpty()) {
-            return result;
-        } else {
-            throw new FormatException(transferErrors(errors,
-                levelTree.getModelMap()));
+        transferErrors(errors, levelTree.getModelMap()).throwException();
+        // only fix if there were no errors in the subconditions
+        result.setFixed();
+        if (TO_RULE_DEBUG) {
+            System.out.println("Constructed rule: " + result);
         }
+        return result;
     }
 
     private AspectGraph getNormalSource() {
