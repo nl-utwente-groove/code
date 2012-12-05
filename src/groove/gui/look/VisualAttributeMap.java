@@ -327,6 +327,7 @@ public class VisualAttributeMap extends AttributeMap {
         case FONT:
             value = Options.LABEL_FONT.deriveFont((Integer) value);
             break;
+        case COLOR:
         case FOREGROUND:
             // additionally set the line colour
             super.put(GraphConstants.LINECOLOR, value);
@@ -404,6 +405,9 @@ public class VisualAttributeMap extends AttributeMap {
             switch (vKey) {
             case BACKGROUND:
                 aKey = GraphConstants.BACKGROUND;
+                break;
+            case COLOR:
+                aKey = GraphConstants.FOREGROUND;
                 break;
             case DASH:
                 aKey = GraphConstants.DASHPATTERN;
