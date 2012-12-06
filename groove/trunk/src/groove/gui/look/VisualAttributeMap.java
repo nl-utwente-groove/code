@@ -330,7 +330,11 @@ public class VisualAttributeMap extends AttributeMap {
         case COLOR:
         case FOREGROUND:
             // additionally set the line colour
-            super.put(GraphConstants.LINECOLOR, value);
+            if (value == null) {
+                super.remove(GraphConstants.LINECOLOR);
+            } else {
+                super.put(GraphConstants.LINECOLOR, value);
+            }
             break;
         case LINE_STYLE:
             value = ((LineStyle) value).getCode();

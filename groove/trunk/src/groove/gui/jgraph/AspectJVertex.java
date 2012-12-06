@@ -22,6 +22,7 @@ import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectParser;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -78,6 +79,25 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         this.aspect = aspectNode.getKind();
         super.setNode(node);
         getErrors().addErrors(aspectNode.getErrors(), true);
+        setColor();
+    }
+
+    /** Sets a {@link VisualKey#COLOR} value for the JVertex, if any can be derived. */
+    private void setColor() {
+        Color color = null;
+        if (getJGraph().getGraphRole() != GraphRole.RULE) {
+            if (getNode().getColor() != null) {
+                color = (Color) getNode().getColor().getContent();
+            } else if (getTypeMap() != null) {
+                TypeNode nodeType = getTypeMap().getNode(getNode());
+                if (nodeType != null) {
+                    color = nodeType.getColor();
+                }
+            }
+        }
+        if (color != null) {
+            putVisual(VisualKey.COLOR, color);
+        }
     }
 
     @Override
@@ -110,22 +130,6 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             AspectJEdge jEdge = (AspectJEdge) edgeObject;
             if (jEdge.getSourceVertex() == this && jEdge.isSourceLabel()) {
                 result.addAll(jEdge.getEdges());
-            }
-        }
-        return result;
-    }
-
-    /** 
-     * Retrieves the node type corresponding to the node type label.
-     * The node type may be {@code null} if the graph has typing errors. 
-     */
-    private TypeNode getNodeType() {
-        TypeNode result = null;
-        TypeGraph typeGraph = getJModel().getTypeGraph();
-        for (AspectEdge edge : getEdges()) {
-            if (typeGraph.isNodeType(edge)) {
-                result = typeGraph.getNode(edge.getTypeLabel());
-                break;
             }
         }
         return result;
@@ -245,14 +249,18 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     @Override
     protected Node getNodeKey() {
-        TypeModelMap typeMap = getJModel().getResourceModel().getTypeMap();
+        TypeModelMap typeMap = getTypeMap();
         return typeMap == null ? getNode() : typeMap.getNode(getNode());
     }
 
     @Override
     public Edge getKey(Edge edge) {
-        TypeModelMap typeMap = getJModel().getResourceModel().getTypeMap();
+        TypeModelMap typeMap = getTypeMap();
         return typeMap == null ? edge : typeMap.getEdge((AspectEdge) edge);
+    }
+
+    private TypeModelMap getTypeMap() {
+        return getJModel().getResourceModel().getTypeMap();
     }
 
     @Override
@@ -285,6 +293,22 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
             TypeNode typeNode = getNodeType();
             if (typeNode != null) {
                 result = typeNode.getLabelPattern();
+            }
+        }
+        return result;
+    }
+
+    /** 
+     * Retrieves the node type corresponding to the node type label.
+     * The node type may be {@code null} if the graph has typing errors. 
+     */
+    private TypeNode getNodeType() {
+        TypeNode result = null;
+        TypeGraph typeGraph = getJModel().getTypeGraph();
+        for (AspectEdge edge : getEdges()) {
+            if (typeGraph.isNodeType(edge)) {
+                result = typeGraph.getNode(edge.getTypeLabel());
+                break;
             }
         }
         return result;

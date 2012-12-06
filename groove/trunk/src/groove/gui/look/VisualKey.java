@@ -50,7 +50,7 @@ public enum VisualKey {
      */
     BACKGROUND(Color.class, Values.DEFAULT_BACKGROUND, DERIVED),
     /** Controlled foreground colour, overriding {@link #FOREGROUND} if set. Defaults to {@code null}. */
-    COLOR(Color.class, null, REFRESHABLE),
+    COLOR(Color.class, null, CONTROLLED),
     /** Edge dash pattern. Defaults to no dash. */
     DASH(float[].class, Values.NO_DASH, DERIVED),
     /** Edge source decoration. Defaults to {@link EdgeEnd#NONE}. */
