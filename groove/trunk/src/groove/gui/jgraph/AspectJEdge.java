@@ -1,5 +1,6 @@
 package groove.gui.jgraph;
 
+import static groove.gui.look.VisualKey.COLOR;
 import static groove.view.aspect.AspectKind.ARGUMENT;
 import static groove.view.aspect.AspectKind.DEFAULT;
 import groove.graph.Edge;
@@ -130,6 +131,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         }
         super.addEdge(edge);
         updateLook(edge);
+        refreshVisual(COLOR);
     }
 
     /** Update this cell's look due to the addition of an edge. */

@@ -179,6 +179,15 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
         }
     }
 
+    /** Recomputes and stores the value for a given visual key. */
+    final protected void refreshVisual(VisualKey key) {
+        VisualValue<?> refresher = getRefresher(key);
+        if (refresher != null) {
+            this.visuals.put(key, refresher.get(this));
+            this.staleKeys.remove(key);
+        }
+    }
+
     @Override
     final public VisualMap getVisuals() {
         if (this.looksChanged || this.looks == null) {
@@ -189,11 +198,7 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
         if (!this.staleKeys.isEmpty()) {
             for (VisualKey key : VisualKey.refreshables()) {
                 if (this.staleKeys.contains(key)) {
-                    VisualValue<?> refresher = getRefresher(key);
-                    if (refresher != null) {
-                        this.visuals.put(key, refresher.get(this));
-                        this.staleKeys.remove(key);
-                    }
+                    refreshVisual(key);
                 }
             }
         }
@@ -204,7 +209,7 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
     private VisualMap visuals;
 
     /** Returns the visual refresher for a given (refreshable) key. */
-    private final VisualValue<?> getRefresher(VisualKey key) {
+    protected final VisualValue<?> getRefresher(VisualKey key) {
         return getJGraph().getVisualValue(key);
     }
 

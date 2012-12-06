@@ -31,9 +31,11 @@ import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.JAttr;
 import groove.gui.list.ErrorListPanel;
 import groove.gui.look.LineStyle;
+import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
 import groove.gui.tree.LabelTree;
 import groove.gui.tree.StateTree;
@@ -325,6 +327,9 @@ public class StateDisplay extends Display implements SimulatorListener {
                 selectMatch(source.getMatch().getEvent().getMatch(
                     source.getState().getGraph()));
             }
+            // all cells repainted, even though everything but the
+            // edge colour seems to be OK even without doing this
+            getJGraph().refreshAllCells();
         }
         updateStatus();
         activateListening();
@@ -580,6 +585,14 @@ public class StateDisplay extends Display implements SimulatorListener {
             jCell.setGrayedOut(attrs.grayedOut);
             jCell.setLayoutable(attrs.pos == null);
             result.synchroniseLayout(jCell);
+            if (attrs.color != null) {
+                // also colour all outgoing edges
+                for (GraphJEdge jEdge : jCell.getContext()) {
+                    if (jEdge.getSourceVertex() == jCell) {
+                        jEdge.putVisual(VisualKey.COLOR, attrs.color);
+                    }
+                }
+            }
         }
         // store target edge attributes
         for (Map.Entry<HostEdge,Attributes> e : map.edgeMap.entrySet()) {

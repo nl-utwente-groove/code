@@ -1,12 +1,12 @@
 package groove.gui.jgraph;
 
+import static groove.gui.look.VisualKey.COLOR;
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphRole;
 import groove.graph.LabelPattern;
 import groove.graph.Node;
-import groove.graph.TypeGraph;
 import groove.graph.TypeNode;
 import groove.graph.algebra.VariableNode;
 import groove.gui.look.Look;
@@ -22,7 +22,6 @@ import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectParser;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -79,25 +78,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         this.aspect = aspectNode.getKind();
         super.setNode(node);
         getErrors().addErrors(aspectNode.getErrors(), true);
-        setColor();
-    }
-
-    /** Sets a {@link VisualKey#COLOR} value for the JVertex, if any can be derived. */
-    private void setColor() {
-        Color color = null;
-        if (getJGraph().getGraphRole() != GraphRole.RULE) {
-            if (getNode().getColor() != null) {
-                color = (Color) getNode().getColor().getContent();
-            } else if (getTypeMap() != null) {
-                TypeNode nodeType = getTypeMap().getNode(getNode());
-                if (nodeType != null) {
-                    color = nodeType.getColor();
-                }
-            }
-        }
-        if (color != null) {
-            putVisual(VisualKey.COLOR, color);
-        }
+        refreshVisual(COLOR);
     }
 
     @Override
@@ -302,16 +283,9 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
      * Retrieves the node type corresponding to the node type label.
      * The node type may be {@code null} if the graph has typing errors. 
      */
-    private TypeNode getNodeType() {
-        TypeNode result = null;
-        TypeGraph typeGraph = getJModel().getTypeGraph();
-        for (AspectEdge edge : getEdges()) {
-            if (typeGraph.isNodeType(edge)) {
-                result = typeGraph.getNode(edge.getTypeLabel());
-                break;
-            }
-        }
-        return result;
+    public TypeNode getNodeType() {
+        TypeModelMap typeMap = getTypeMap();
+        return typeMap == null ? null : typeMap.getNode(getNode());
     }
 
     public void saveToUserObject() {
