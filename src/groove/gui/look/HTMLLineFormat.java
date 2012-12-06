@@ -89,11 +89,6 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
         return instance;
     }
 
-    /** Puts an optional colour tag, a font tag and an HTML tag around a given text. */
-    public static String toHtml(String text, Color color) {
-        return toHtml(new StringBuilder(text), color);
-    }
-
     /** Puts an optional colour tag, font tag and an HTML tag around a given text. */
     public static String toHtml(StringBuilder text, Color color) {
         if (text.length() > 0) {

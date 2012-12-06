@@ -21,7 +21,6 @@ import static groove.io.HTMLConverter.ITALIC_TAG;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
-import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
 
 import java.util.ArrayList;
@@ -91,12 +90,6 @@ public class GraphJVertex extends AbstractJCell {
         GraphJVertex clone = (GraphJVertex) super.clone();
         clone.initialise();
         return clone;
-    }
-
-    @Override
-    public void addEdge(Edge edge) {
-        super.addEdge(edge);
-        setStale(VisualKey.COLOR);
     }
 
     /** Tests if a given edge can be added as label to this {@link GraphJVertex}. */

@@ -50,13 +50,11 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
-import org.jgraph.graph.CellMapper;
 import org.jgraph.graph.CellView;
 import org.jgraph.graph.CellViewRenderer;
 import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphCellEditor;
 import org.jgraph.graph.GraphConstants;
-import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.PortView;
 import org.jgraph.graph.VertexRenderer;
 import org.jgraph.graph.VertexView;
@@ -108,16 +106,6 @@ public class JVertexView extends VertexView {
         return editor;
     }
 
-    @Override
-    public void refresh(GraphLayoutCache cache, CellMapper mapper,
-            boolean createDependentViews) {
-        super.refresh(cache, mapper, createDependentViews);
-        MultiLabel label = getCellVisuals().getLabel();
-        this.text =
-            HTMLLineFormat.toHtml(label.toString(HTMLLineFormat.instance()),
-                getCellVisuals().getForeground());
-    }
-
     /** Stores the insets value for this view. */
     void setInsets(Insets insets) {
         this.insets = insets;
@@ -130,6 +118,16 @@ public class JVertexView extends VertexView {
 
     /** Returns the (html formatted) text to be displayed in this vertex view. */
     final String getText() {
+        MultiLabel label = getCellVisuals().getLabel();
+        Color color = getCellVisuals().getForeground();
+        // refresh the text if label or colour have changed
+        if (label != this.label || color != this.color) {
+            this.text =
+                HTMLLineFormat.toHtml(
+                    label.toString(HTMLLineFormat.instance()), color);
+            this.label = label;
+            this.color = color;
+        }
         return this.text;
     }
 
@@ -453,7 +451,10 @@ public class JVertexView extends VertexView {
 
     /** Underlying graph model, used to construct the autosize. */
     private final GraphJGraph jGraph;
-    /** Flag indicating that the vertex is empty, i.e., there is no text inside. */
+    /** The color from which {@link #text} was derived. */
+    private Color color;
+    /** The label instance from which {@link #text} was derived. */
+    private MultiLabel label;
     /** The text on this vertex. */
     private String text;
     /** Additional space to add to view bounds to make room for special borders. */
@@ -973,7 +974,7 @@ public class JVertexView extends VertexView {
         /** The vertex view that is currently installed. */
         private JVertexView view;
         /** The vertex that is currently installed. */
-        private GraphJCell cell;
+        private GraphJVertex cell;
         /** The visual map of the vertex that is currently installed. */
         private VisualMap visuals;
         /** Indicates if the cell is a nodified edge. */
