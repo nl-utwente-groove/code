@@ -267,11 +267,11 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     protected Look getStructuralLook() {
         if (isNodeEdge()) {
             return Look.NODIFIED;
-        } else if (getNode().hasAttrAspect()) {
-            return Look.getLookFor(getNode().getAttrKind());
         } else if (getNode().getGraphRole() == GraphRole.TYPE
             && getAspect() == AspectKind.DEFAULT) {
             return Look.TYPE;
+        } else if (getNode().hasAttrAspect()) {
+            return Look.getLookFor(getNode().getAttrKind());
         } else {
             return Look.getLookFor(getAspect());
         }

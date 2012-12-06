@@ -248,7 +248,8 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         if (getTargetNode().hasParam()) {
             return false;
         }
-        if (!getTargetNode().getAttrAspect().hasContent()) {
+        if (getJGraph().getGraphRole() != GraphRole.TYPE
+            && !getTargetNode().getAttrAspect().hasContent()) {
             return false;
         }
         return true;
