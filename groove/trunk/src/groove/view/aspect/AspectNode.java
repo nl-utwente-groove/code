@@ -454,7 +454,8 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
                 throw new FormatException(
                     "Source node of %s-edge should be product node", edgeLabel,
                     this);
-            } else if (this.operatorEdge == null) {
+            }
+            if (this.operatorEdge == null) {
                 this.operatorEdge = edge;
             } else if (!this.operatorEdge.getOperator().getParamTypes().equals(
                 edge.getOperator().getParamTypes())) {
