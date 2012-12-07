@@ -18,9 +18,13 @@ package groove.gui.layout;
 
 import groove.gui.jgraph.GraphJGraph;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Map;
 
 import javax.swing.JPanel;
+
+import org.jgraph.JGraph;
 
 import com.jgraph.layout.JGraphFacade;
 import com.jgraph.layout.JGraphLayout;
@@ -32,27 +36,31 @@ public class LayouterItem implements Layouter {
     private final String actionName;
     private final JGraphLayout layout;
     private final GraphJGraph jGraph;
-    private final JGraphFacade facade;
+    private JGraphFacade facade;
     private final JPanel panel;
 
     /** Builds a prototype instance based on the given layout kind. */
     public LayouterItem(LayoutKind kind) {
-        this.kind = kind;
-        this.actionName = kind.getDisplayString();
-        this.layout = kind.getLayout();
-        this.jGraph = null;
-        this.facade = null;
-        this.panel = null;
+        this(kind, kind.getDisplayString(), kind.getLayout(), null, null);
     }
 
     private LayouterItem(LayoutKind kind, String actionName,
-            JGraphLayout layout, GraphJGraph jGraph, JGraphFacade facade) {
+            JGraphLayout layout, final GraphJGraph jGraph, JGraphFacade facade) {
         this.kind = kind;
         this.actionName = actionName;
         this.layout = layout;
         this.jGraph = jGraph;
         this.facade = facade;
-        this.panel = LayoutKind.createLayoutPanel(this);
+        this.panel = jGraph == null ? null : LayoutKind.createLayoutPanel(this);
+        if (jGraph != null) {
+            jGraph.addPropertyChangeListener(JGraph.GRAPH_MODEL_PROPERTY,
+                new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        LayouterItem.this.facade = new JGraphFacade(jGraph);
+                    }
+                });
+        }
     }
 
     @Override
