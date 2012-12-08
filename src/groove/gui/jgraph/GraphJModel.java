@@ -142,21 +142,6 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         this.graph = graph;
     }
 
-    /** 
-     * Changes the underlying graph to the one passed in as a parameter.
-     * Note that this should only be done as part of an action that also
-     * changes the {@link GraphJCell}s of the {@link GraphJModel}, as well as the
-     * mapping from graph elements to {@link GraphJCell}s. 
-     */
-    void setGraph(Graph<N,E> graph, Map<N,? extends GraphJVertex> nodeJCellMap,
-            Map<E,? extends GraphJCell> edgeJCellMap) {
-        setGraph(graph);
-        this.nodeJCellMap.clear();
-        this.nodeJCellMap.putAll(nodeJCellMap);
-        this.edgeJCellMap.clear();
-        this.edgeJCellMap.putAll(edgeJCellMap);
-    }
-
     /**
      * Loads in a given graph, adding any nodes and edges not yet in this
      * model. Also adds the model as a listener to the graph again. This may be
@@ -403,7 +388,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     }
 
     /**
-     * Creates a new j-vertex using {@link #createJVertex()}, and adds available
+     * Creates a new j-vertex using {@link #createJVertex(Node)}, and adds available
      * layout information from the layout map stored in this model; or adds a
      * random position otherwise.
      * @param node graph node for which a corresponding j-vertex is to be
@@ -426,14 +411,13 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     }
 
     /**
-     * Factory method for jgraph edges.
-     * 
+     * Factory method for JEdges.
      * @param edge graph edge for which a corresponding JEdge is to be created;
      * may be {@code null} if there is initially no edge
-     * @return j-edge corresponding to <tt>edge</tt>
+     * @return a fresh JEedge wrapping <tt>edge</tt>, initialised on this model
      */
     protected GraphJEdge createJEdge(E edge) {
-        GraphJEdge result = getJGraph().getFactory().newJEdge();
+        GraphJEdge result = getJGraph().getFactory().newJEdge(edge);
         result.setJModel(this);
         if (edge != null) {
             result.addEdge(edge);
@@ -443,20 +427,12 @@ public class GraphJModel<N extends Node,E extends Edge> extends
 
     /**
      * Factory method for JVertices initialised on this JModel.
-     * The wrapped node is initially empty.
-     */
-    protected GraphJVertex createJVertex() {
-        GraphJVertex result = getJGraph().getFactory().newJVertex();
-        result.setJModel(this);
-        return result;
-    }
-
-    /**
-     * Factory method for JVertices initialised on this JModel.
-     * The wrapped node is initially empty.
      */
     protected GraphJVertex createJVertex(N node) {
-        return createJVertex();
+        GraphJVertex result = getJGraph().getFactory().newJVertex(node);
+        result.setJModel(this);
+        result.setNode(node);
+        return result;
     }
 
     /**

@@ -18,7 +18,7 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
      * Creates a new, uninitialised instance.
      * Call {@link #setJModel(GraphJModel)} and {@link #setNode(Node)} to initialise.
      */
-    LTSJVertex() {
+    private LTSJVertex() {
         // empty
     }
 

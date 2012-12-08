@@ -17,14 +17,12 @@
 package groove.abstraction.pattern.gui.jgraph;
 
 import groove.abstraction.MyHashMap;
-import groove.abstraction.pattern.shape.AbstractPatternEdge;
 import groove.abstraction.pattern.shape.AbstractPatternGraph;
 import groove.abstraction.pattern.shape.AbstractPatternNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.trans.HostEdge;
@@ -129,28 +127,6 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
     }
 
     @Override
-    protected GraphJVertex createJVertex(Node node) {
-        if (!isPatternTyped(node)) {
-            return super.createJVertex(node);
-        }
-        PatternJVertex result = PatternJVertex.newInstance();
-        result.setJModel(this);
-        return result;
-    }
-
-    @Override
-    protected GraphJEdge createJEdge(Edge edge) {
-        if (!isPatternTyped(edge)) {
-            return super.createJEdge(edge);
-        }
-        AbstractPatternEdge<?> pEdge = (AbstractPatternEdge<?>) edge;
-        PatternJEdge result = PatternJEdge.newInstance();
-        result.setJModel(this);
-        result.addEdge(pEdge);
-        return result;
-    }
-
-    @Override
     protected GraphJVertex computeJVertex(Node node) {
         GraphJVertex result = super.computeJVertex(node);
         if (isPatternTyped(node)) {
@@ -183,11 +159,6 @@ public class PatternJModel extends GraphJModel<Node,Edge> {
     /** Returns true if the given node is a pattern graph node. */
     private boolean isPatternTyped(Node node) {
         return node instanceof AbstractPatternNode;
-    }
-
-    /** Returns true if the given edge is a pattern graph edge. */
-    private boolean isPatternTyped(Edge edge) {
-        return edge instanceof AbstractPatternEdge<?>;
     }
 
     /** Creates the pattern elements of the given pattern node. */

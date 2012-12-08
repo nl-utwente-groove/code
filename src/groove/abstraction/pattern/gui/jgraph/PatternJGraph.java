@@ -19,12 +19,16 @@ package groove.abstraction.pattern.gui.jgraph;
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.gui.look.PatternAdornmentValue;
 import groove.abstraction.pattern.gui.look.PatternLabelValue;
+import groove.abstraction.pattern.shape.AbstractPatternEdge;
+import groove.abstraction.pattern.shape.AbstractPatternNode;
+import groove.graph.Edge;
 import groove.graph.GraphRole;
+import groove.graph.Node;
 import groove.gui.Simulator;
 import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJGraphFactory;
-import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JGraphFactory;
 import groove.gui.layout.AbstractLayouter;
@@ -193,8 +197,30 @@ public final class PatternJGraph extends GraphJGraph {
         }
 
         @Override
-        public GraphJModel<?,?> newModel() {
+        public PatternJModel newModel() {
             return new PatternJModel(getJGraph());
+        }
+
+        @Override
+        public GraphJVertex newJVertex(Node node) {
+            GraphJVertex result;
+            if (node instanceof AbstractPatternNode) {
+                result = PatternJVertex.newInstance();
+            } else {
+                result = super.newJVertex(node);
+            }
+            return result;
+        }
+
+        @Override
+        public GraphJEdge newJEdge(Edge edge) {
+            GraphJEdge result;
+            if (edge instanceof AbstractPatternEdge<?>) {
+                result = PatternJEdge.newInstance();
+            } else {
+                result = super.newJEdge(edge);
+            }
+            return result;
         }
 
         @Override
