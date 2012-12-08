@@ -20,6 +20,7 @@ import groove.graph.Graph;
 import groove.gui.jgraph.GraphJGraph;
 import groove.view.ResourceModel;
 
+import java.awt.Frame;
 import java.util.Collection;
 
 /**
@@ -30,6 +31,9 @@ import java.util.Collection;
 public interface FormatPorter {
     /** Indicates what kind of objects this porter handles. */
     public Kind getFormatKind();
+
+    /** Sets the parent component to use in orienting dialogs. */
+    public void setParent(Frame parent);
 
     /**
      * Get list of formats this exporter can handle, for a given resource kind.

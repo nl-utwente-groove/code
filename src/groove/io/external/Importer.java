@@ -27,6 +27,7 @@ import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Component;
+import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -71,8 +72,7 @@ public class Importer {
      * Perform import. Show open dialog, and based on selected format import file.
      * @param parent Parent of open dialog.
      */
-    public void doImport(Component parent, GrammarModel grammar)
-        throws IOException {
+    public void doImport(Frame parent, GrammarModel grammar) throws IOException {
         int approve = this.formatChooser.showDialog(parent, "Import");
         // now load, if so required
         if (approve == JFileChooser.APPROVE_OPTION) {
@@ -84,11 +84,12 @@ public class Importer {
         }
     }
 
-    private void doChosenImport(Component parent, GrammarModel grammar)
+    private void doChosenImport(Frame parent, GrammarModel grammar)
         throws PortException, IOException {
         FormatFilter filter = (FormatFilter) this.formatChooser.getFileFilter();
         FormatImporter ri = (FormatImporter) filter.getFormat().getFormatter();
         File file = this.formatChooser.getSelectedFile();
+        ri.setParent(parent);
         Set<Resource> resources =
             ri.doImport(file, filter.getFormat(), grammar);
         if (resources != null) {
