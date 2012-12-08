@@ -35,7 +35,9 @@ import groove.gui.look.VisualMap;
 import groove.gui.menu.SetLayoutMenu;
 import groove.gui.tree.RuleLevelTree;
 import groove.trans.ResourceKind;
+import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectNode;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -288,8 +290,9 @@ final public class AspectJGraph extends GraphJGraph {
         stopEditing();
         Point2D atPoint = fromScreen(snap(screenPoint));
         // define the j-cell to be inserted
-        AspectJVertex jVertex = (AspectJVertex) getModel().createJVertex();
-        jVertex.setNode(getModel().createAspectNode());
+        AspectJVertex jVertex =
+            (AspectJVertex) getModel().createJVertex(
+                getModel().createAspectNode());
         jVertex.setNodeFixed();
         jVertex.putVisual(VisualKey.NODE_POS, atPoint);
         // add the cell to the jGraph
@@ -885,19 +888,20 @@ final public class AspectJGraph extends GraphJGraph {
         }
 
         @Override
-        public AspectJVertex newJVertex() {
+        public AspectJVertex newJVertex(Node node) {
+            assert node instanceof AspectNode;
             return AspectJVertex.newInstance();
         }
 
         @Override
-        public GraphJModel<?,?> newModel() {
-            return new AspectJModel(getJGraph());
-        }
-
-        @Override
-        public GraphJEdge newJEdge() {
+        public AspectJEdge newJEdge(Edge edge) {
+            assert edge == null || edge instanceof AspectEdge;
             return AspectJEdge.newInstance();
         }
 
+        @Override
+        public AspectJModel newModel() {
+            return new AspectJModel(getJGraph());
+        }
     }
 }

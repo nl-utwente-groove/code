@@ -341,14 +341,10 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
 
     /** 
      * Returns a fresh, uninitialised instance.
-     * Call {@link #setJModel(GraphJModel)} to initialise. 
+     * Call {@link #setJModel(GraphJModel)} and {@link #addEdge(Edge)} (in that order)
+     * to initialise.
      */
     public static GraphJEdge newInstance() {
         return new GraphJEdge();
     }
-
-    /**
-     * The string used to separate arguments when preparing for editing.
-     */
-    static public final String PRINT_SEPARATOR = ", ";
 }

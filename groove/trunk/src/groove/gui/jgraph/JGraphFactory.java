@@ -16,6 +16,8 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.Edge;
+import groove.graph.Node;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualValue;
 
@@ -30,19 +32,24 @@ public interface JGraphFactory {
     GraphJGraph getJGraph();
 
     /** 
-     * Creates a fresh instance of a JVertex.
-     * The result needs to be initialised with a JModel before it can be used.
+     * Creates a fresh, uninitialised instance of a JVertex.
+     * The JVertex is initialised with {@link GraphJVertex#setNode(Node)}.
+     * The result needs to be provided a JModel before it can be used.
+     * @param node a (non-{@code null}) node, 
+     * used to determine the type of JVertex needed
      */
-    GraphJVertex newJVertex();
+    GraphJVertex newJVertex(Node node);
+
+    /** 
+     * Creates a fresh, initialised instance of a JEdge.
+     * The result needs to provided a JModel before it can be used.
+     * @param edge a (possibly {@code null}) edge, 
+     * used to determine the type of JEdge needed
+     */
+    GraphJEdge newJEdge(Edge edge);
 
     /** Constructs a new JModel suitable for the JGraph of this factory. */
     GraphJModel<?,?> newModel();
-
-    /** 
-     * Creates a fresh instance of a JEdge.
-     * The result needs to be initialised with a JModel before it can be used.
-     */
-    GraphJEdge newJEdge();
 
     /** Creates a visual value refresher for a given key. */
     VisualValue<?> newVisualValue(VisualKey key);

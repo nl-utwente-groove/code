@@ -221,7 +221,11 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         GraphInfo.setLayoutMap(graph, layoutMap);
         GraphInfo.setProperties(graph, getProperties());
         graph.setFixed();
-        setGraph(graph, nodeJVertexMap, edgeJCellMap);
+        setGraph(graph);
+        this.nodeJCellMap.clear();
+        this.nodeJCellMap.putAll(nodeJVertexMap);
+        this.edgeJCellMap.clear();
+        this.edgeJCellMap.putAll(edgeJCellMap);
         this.jModelModCount.increase();
         this.graphModCount.increase();
         loadViewErrors();

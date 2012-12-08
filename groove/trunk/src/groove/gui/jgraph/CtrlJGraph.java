@@ -19,7 +19,9 @@ package groove.gui.jgraph;
 import groove.control.CtrlAut;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
+import groove.graph.Edge;
 import groove.graph.GraphRole;
+import groove.graph.Node;
 import groove.gui.Simulator;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
@@ -144,19 +146,20 @@ public class CtrlJGraph extends GraphJGraph {
         }
 
         @Override
-        public CtrlJVertex newJVertex() {
+        public CtrlJVertex newJVertex(Node node) {
+            assert node instanceof CtrlState;
             return CtrlJVertex.newInstance();
+        }
+
+        @Override
+        public CtrlJEdge newJEdge(Edge edge) {
+            assert edge instanceof CtrlTransition;
+            return CtrlJEdge.newInstance();
         }
 
         @Override
         public GraphJModel<?,?> newModel() {
             return new GraphJModel<CtrlState,CtrlTransition>(getJGraph());
         }
-
-        @Override
-        public CtrlJEdge newJEdge() {
-            return CtrlJEdge.newInstance();
-        }
-
     }
 }

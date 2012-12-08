@@ -20,8 +20,10 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_PARTIAL_GTS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
+import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphRole;
+import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.layout.Layouter;
@@ -474,13 +476,17 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
             super(LTSJGraph.this);
         }
 
+        /* The node is expected to be a non-null GraphState. */
         @Override
-        public LTSJVertex newJVertex() {
+        public LTSJVertex newJVertex(Node node) {
+            assert node instanceof GraphState;
             return LTSJVertex.newInstance();
         }
 
+        /* The edge is expected to be a non-null GraphTransition. */
         @Override
-        public LTSJEdge newJEdge() {
+        public LTSJEdge newJEdge(Edge edge) {
+            assert edge instanceof GraphTransition;
             return LTSJEdge.newInstance();
         }
 

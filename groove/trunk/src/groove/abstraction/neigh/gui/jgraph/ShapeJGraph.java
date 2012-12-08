@@ -19,7 +19,10 @@ package groove.abstraction.neigh.gui.jgraph;
 import groove.abstraction.neigh.gui.look.ShapeAdornmentValue;
 import groove.abstraction.neigh.gui.look.ShapeLabelValue;
 import groove.abstraction.neigh.shape.Shape;
+import groove.abstraction.neigh.shape.ShapeNode;
+import groove.graph.Edge;
 import groove.graph.GraphRole;
+import groove.graph.Node;
 import groove.gui.Simulator;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJEdge;
@@ -162,18 +165,19 @@ public final class ShapeJGraph extends GraphJGraph {
         }
 
         @Override
-        public GraphJVertex newJVertex() {
+        public ShapeJVertex newJVertex(Node node) {
+            assert node instanceof ShapeNode;
             return ShapeJVertex.newInstance();
+        }
+
+        @Override
+        public ShapeJEdge newJEdge(Edge edge) {
+            return ShapeJEdge.newInstance();
         }
 
         @Override
         public GraphJModel<?,?> newModel() {
             return new ShapeJModel(getJGraph());
-        }
-
-        @Override
-        public GraphJEdge newJEdge() {
-            return ShapeJEdge.newInstance();
         }
 
         @Override

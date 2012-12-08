@@ -51,14 +51,10 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
         // empty
     }
 
-    /** Constructs a cell for a given GraphJModel. */
-    protected AbstractJCell(GraphJModel<?,?> jModel) {
-        setJModel(jModel);
-    }
-
     @Override
     public GraphJGraph getJGraph() {
-        return getJModel().getJGraph();
+        // if this is called early, maybe there is no JModel yet
+        return getJModel() == null ? null : getJModel().getJGraph();
     }
 
     /** Sets a new JModel for this cell. */
@@ -210,7 +206,9 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
 
     /** Returns the visual refresher for a given (refreshable) key. */
     protected final VisualValue<?> getRefresher(VisualKey key) {
-        return getJGraph().getVisualValue(key);
+        // if this is called early, maybe there is no JGraph yet
+        GraphJGraph jGraph = getJGraph();
+        return jGraph == null ? null : jGraph.getVisualValue(key);
     }
 
     @Override

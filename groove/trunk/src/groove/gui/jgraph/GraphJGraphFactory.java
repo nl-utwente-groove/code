@@ -45,18 +45,18 @@ public class GraphJGraphFactory implements JGraphFactory {
     }
 
     @Override
-    public GraphJVertex newJVertex() {
-        return new GraphJVertex();
+    public GraphJVertex newJVertex(Node node) {
+        return GraphJVertex.newInstance();
+    }
+
+    @Override
+    public GraphJEdge newJEdge(Edge edge) {
+        return GraphJEdge.newInstance();
     }
 
     @Override
     public GraphJModel<?,?> newModel() {
         return new GraphJModel<Node,Edge>(this.jGraph);
-    }
-
-    @Override
-    public GraphJEdge newJEdge() {
-        return new GraphJEdge();
     }
 
     @Override

@@ -19,8 +19,6 @@ package groove.abstraction.neigh.gui.jgraph;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 
-import org.jgraph.graph.CellView;
-
 /**
  * Class that connects to the JGraph library for displaying ShapeEdges.
  * Objects of this class can be flagged as the main edge for the source and/or
@@ -83,24 +81,6 @@ public class ShapeJEdge extends GraphJEdge {
      */
     public static ShapeJEdge newInstance() {
         return new ShapeJEdge();
-    }
-
-    /**
-     * Returns true if the vertex associated with the given vertex view
-     * corresponds to the source of this edge.
-     */
-    public boolean isSrcVertex(CellView vertexView) {
-        ShapeJVertex srcVertex = (ShapeJVertex) vertexView.getCell();
-        return srcVertex.equals(getSource().getParent());
-    }
-
-    /**
-     * Returns true if the vertex associated with the given vertex view
-     * corresponds to the source of this edge.
-     */
-    public boolean isTgtVertex(CellView vertexView) {
-        ShapeJVertex tgtVertex = (ShapeJVertex) vertexView.getCell();
-        return tgtVertex.equals(getTarget().getParent());
     }
 
 }
