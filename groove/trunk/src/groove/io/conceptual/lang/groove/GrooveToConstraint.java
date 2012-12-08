@@ -1,0 +1,503 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2011 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
+ */
+package groove.io.conceptual.lang.groove;
+
+import groove.graph.GraphRole;
+import groove.io.conceptual.Id;
+import groove.io.conceptual.Name;
+import groove.io.conceptual.TypeModel;
+import groove.io.conceptual.configuration.Config;
+import groove.io.conceptual.configuration.schema.EnumModeType;
+import groove.io.conceptual.configuration.schema.TypeModel.Constraints;
+import groove.io.conceptual.graph.AbsEdge;
+import groove.io.conceptual.graph.AbsGraph;
+import groove.io.conceptual.graph.AbsNode;
+import groove.io.conceptual.lang.Message;
+import groove.io.conceptual.lang.Messenger;
+import groove.io.conceptual.lang.groove.GraphNodeTypes.ModelType;
+import groove.io.conceptual.property.DefaultValueProperty;
+import groove.io.conceptual.property.IdentityProperty;
+import groove.io.conceptual.property.KeysetProperty;
+import groove.io.conceptual.property.OppositeProperty;
+import groove.io.conceptual.type.BoolType;
+import groove.io.conceptual.type.Class;
+import groove.io.conceptual.type.Container;
+import groove.io.conceptual.type.CustomDataType;
+import groove.io.conceptual.type.Enum;
+import groove.io.conceptual.type.IntType;
+import groove.io.conceptual.type.RealType;
+import groove.io.conceptual.type.StringType;
+import groove.io.conceptual.type.Type;
+import groove.io.conceptual.value.BoolValue;
+import groove.io.conceptual.value.DataValue;
+import groove.io.conceptual.value.EnumValue;
+import groove.io.conceptual.value.IntValue;
+import groove.io.conceptual.value.RealValue;
+import groove.io.conceptual.value.StringValue;
+import groove.io.conceptual.value.Value;
+import groove.view.RuleModel;
+import groove.view.aspect.AspectEdge;
+import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectLabel;
+import groove.view.aspect.AspectNode;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+public class GrooveToConstraint implements Messenger {
+    private Collection<RuleModel> m_ruleModels;
+    private Config m_cfg;
+    private TypeModel m_typeModel;
+
+    List<Message> m_messages = new ArrayList<Message>();
+
+    private GraphNodeTypes m_types;
+
+    public GrooveToConstraint(Collection<RuleModel> ruleModels, GraphNodeTypes types, Config cfg, TypeModel typeModel) {
+        m_ruleModels = ruleModels;
+        m_types = types;
+        m_cfg = cfg;
+        m_typeModel = typeModel;
+
+        parseRules();
+    }
+
+    private void parseRules() {
+        Constraints constraints = m_cfg.getConfig().getTypeModel().getConstraints();
+        for (RuleModel model : m_ruleModels) {
+            String name = model.getFullName();
+            if (constraints.isCheckUniqueness() && name.contains("Unique")) {
+                if (!m_cfg.getConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
+                    parseUniqueRule(model);
+                }
+            } else if (constraints.isCheckOrdering() && name.contains("Ordered")) {
+                if (!m_cfg.getConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
+                    parseOrderedRule(model);
+                }
+            } else if (constraints.isCheckIdentifier() && name.contains("Identity")) {
+                if (m_cfg.getConfig().getTypeModel().getProperties().isUseIdentity()) {
+                    parseIdentityRule(model);
+                }
+            } else if (constraints.isCheckKeyset() && name.contains("Keyset")) {
+                if (m_cfg.getConfig().getTypeModel().getProperties().isUseKeyset()) {
+
+                    parseKeysetRule(model);
+                }
+            } else if (constraints.isCheckOpposite() && name.contains("Opposite")) {
+                if (m_cfg.getConfig().getTypeModel().getProperties().isUseOpposite()) {
+                    parseOppositeRule(model);
+                }
+            } else if (m_cfg.getConfig().getTypeModel().getFields().getDefaults().isUseRule() && name.contains("Default")) {
+                if (m_cfg.getConfig().getTypeModel().getProperties().isUseDefaultValue()) {
+                    parseDefaultRule(model);
+                }
+            }
+        }
+    }
+
+    @Override
+    public List<Message> getMessages() {
+        return m_messages;
+    }
+
+    @Override
+    public void clearMessages() {
+        m_messages.clear();
+    }
+
+    private void addMessage(Message msg) {
+        m_messages.add(msg);
+    }
+
+    // Determines subject of rule and sets container type to be unique
+    private void parseUniqueRule(RuleModel model) {
+        AbsGraph ruleGraph = parseRuleModel(model);
+
+        for (AbsNode n : ruleGraph.getNodes()) {
+            // Find root node
+            if (n.getTargetEdges().size() == 0 && getType(n) != null) {
+                // Get field of first outgoing edge and change its type to something unique
+                Class c = (Class) m_types.getType(getType(n));
+                if (n.getEdges().size() > 0) {
+                    Name fieldName = Name.getName(n.getEdges().get(0).getName());
+                    if (c.getField(fieldName).getType() instanceof Container) {
+                        ((Container) c.getField(fieldName).getType()).setUnique(true);
+                    }
+                }
+            }
+        }
+    }
+
+    // Determines subject of rule and sets container type to be ordered
+    private void parseOrderedRule(RuleModel model) {
+        AbsGraph ruleGraph = parseRuleModel(model);
+
+        for (AbsNode n : ruleGraph.getNodes()) {
+            // Find root node (NAC check is for edge roots)
+            if (n.getTargetEdges().size() == 0 && !isNAC(n) && getType(n) != null) {
+                // Get field of first outgoing edge and change its type to something ordered
+                Class c = (Class) m_types.getType(getType(n));
+                if (n.getEdges().size() > 0) {
+                    Name fieldName = Name.getName(n.getEdges().get(0).getName());
+                    if (c.getField(fieldName).getType() instanceof Container) {
+                        ((Container) c.getField(fieldName).getType()).setOrdered(true);
+                    }
+                }
+            }
+        }
+    }
+
+    // Determines subject of rule and creates IdentityProperty
+    private void parseIdentityRule(RuleModel model) {
+        AbsGraph ruleGraph = parseRuleModel(model);
+
+        AbsNode classNode = null;
+        Class idClass = null;
+
+        outloop: for (AbsNode node : ruleGraph.getNodes()) {
+            //Find the inequality edge, connects two class nodes for the identity property, with outgoing field names
+            //Use incoming edges, can be only one
+            for (AbsEdge edge : node.getTargetEdges()) {
+                if (edge.getName().equals("!=")) {
+                    classNode = edge.getSource();
+                    idClass = (Class) m_types.getType(getType(classNode));
+                    break outloop;
+                }
+            }
+        }
+
+        if (classNode != null) {
+            Set<Name> fieldNames = new HashSet<Name>();
+            for (AbsEdge e : classNode.getEdges()) {
+                Name fieldName = Name.getName(e.getName());
+                if (idClass.getField(fieldName) != null) {
+                    fieldNames.add(fieldName);
+                }
+            }
+            if (fieldNames.size() > 0) {
+                IdentityProperty ip = new IdentityProperty(idClass, fieldNames.toArray(new Name[fieldNames.size()]));
+                m_typeModel.addProperty(ip);
+            }
+        }
+    }
+
+    // Determines subject of rule and creates KeysetProperty
+    private void parseKeysetRule(RuleModel model) {
+        AbsGraph ruleGraph = parseRuleModel(model);
+
+        AbsNode relClassNode = null;
+        AbsNode classNode = null;
+        Class relClass = null;
+        Class keyClass = null;
+
+        // Find main class node for keyset relation. Node has no incoming edges
+        for (AbsNode node : ruleGraph.getNodes()) {
+            if (node.getTargetEdges().size() == 0) {
+                relClassNode = node;
+                relClass = (Class) m_types.getType(getType(node));
+                break;
+            }
+        }
+
+        if (relClassNode == null || relClass == null) {
+            return;
+        }
+
+        Name relField = Name.getName(relClassNode.getEdges().get(0).getName());
+
+        outloop: for (AbsNode node : ruleGraph.getNodes()) {
+            //Find the inequality edge, connects two class nodes for the identity property, with outgoing field names
+            //Use incoming edges, can be only one
+            for (AbsEdge edge : node.getTargetEdges()) {
+                if (edge.getName().equals("!=")) {
+                    classNode = edge.getSource();
+                    keyClass = (Class) m_types.getType(getType(node));
+                    break outloop;
+                }
+            }
+        }
+
+        if (classNode == null || keyClass == null) {
+            return;
+        }
+
+        Set<Name> fieldNames = new HashSet<Name>();
+        for (AbsEdge e : classNode.getEdges()) {
+            Name fieldName = Name.getName(e.getName());
+            if (keyClass.getField(fieldName) != null) {
+                fieldNames.add(fieldName);
+            }
+        }
+        if (fieldNames.size() > 0) {
+            Class c = (Class) m_types.getType(getType(classNode));
+            KeysetProperty kp = new KeysetProperty(relClass, relField, c, fieldNames.toArray(new Name[fieldNames.size()]));
+            m_typeModel.addProperty(kp);
+        }
+    }
+
+    // Determines subject of rule and creates OppositeProperty
+    private void parseOppositeRule(RuleModel model) {
+        AbsGraph ruleGraph = parseRuleModel(model);
+
+        /*
+         * Opposite rule always this shape (2 classes, 2 intermediate):
+         *    /-I1    -\
+         * C1           C2
+         *    \-NAC:I2-/
+         */
+
+        Class class1 = null, class2 = null;
+        Name field1 = null, field2 = null;
+
+        for (AbsNode node : ruleGraph.getNodes()) {
+            if (isNAC(node)) {
+                continue;
+            }
+            String type = getType(node);
+            if (type == null) {
+                continue;
+            }
+            if (m_types.getModelType(type) == ModelType.TypeClass) {
+                for (AbsEdge edge : node.getEdges()) {
+                    AbsNode targetNode = edge.getTarget();
+                    String targettype = getType(targetNode);
+                    if (targettype == null) {
+                        continue;
+                    }
+                    // If not class then intermediate. This should actually always hold
+                    if (m_types.getModelType(targettype) != ModelType.TypeClass) {
+                        if (!isNAC(targetNode)) {
+                            class1 = (Class) m_types.getType(type);
+                            field1 = Name.getName(edge.getName());
+                        } else {
+                            class2 = (Class) m_types.getType(type);
+                            field2 = Name.getName(edge.getName());
+                        }
+                    }
+                }
+            }
+
+        }
+
+        OppositeProperty op = new OppositeProperty(class1, field1, class2, field2);
+        m_typeModel.addProperty(op);
+    }
+
+    // Determines subject of rule and creates DefaultValueProperty
+    private void parseDefaultRule(RuleModel model) {
+        AbsGraph ruleGraph = parseRuleModel(model);
+
+        /*
+         * Default rule always this shape (1 class, 1 type, 1 value):
+         *   /-NAC:T1
+         * C1
+         *   \-NEW:V2
+         */
+
+        for (AbsNode node : ruleGraph.getNodes()) {
+            if (isNAC(node) || isNew(node)) {
+                continue;
+            }
+            String type = getType(node);
+            if (type == null) {
+                continue;
+            }
+            if (m_types.getModelType(type) == ModelType.TypeClass) {//Other option is data type, ignore that as it is the actual value
+                Class cmClass = (Class) m_types.getType(type);
+
+                for (AbsEdge edge : node.getEdges()) {
+                    AbsNode targetNode = edge.getTarget();
+                    String targettype = getType(targetNode);
+                    if (targettype == null) {
+                        continue;
+                    }
+                    if (isNew(targetNode)) {
+                        Name field = Name.getName(edge.getName().substring(4)); //remove the "new:" aspect
+                        Value value = getNodeValue(targetNode);
+
+                        DefaultValueProperty dp = new DefaultValueProperty(cmClass, field, value);
+                        m_typeModel.addProperty(dp);
+
+                        break;
+                    }
+                }
+                break;
+            }
+
+        }
+
+    }
+
+    // No parser needed for enum constraint rules
+    //private void parseEnumRule(RuleModel model) {}
+
+    private AbsGraph parseRuleModel(RuleModel rule) {
+        AspectGraph sourceGraph = rule.getSource();
+        AbsGraph resultGraph = new AbsGraph();
+
+        Map<AspectNode,AbsNode> nodeMap = new HashMap<AspectNode,AbsNode>();
+
+        for (AspectNode node : sourceGraph.nodeSet()) {
+            AbsNode aNode = new AbsNode();
+            for (AspectLabel aspectLabel : node.getNodeLabels()) {
+                aNode.addName(aspectLabel.toString());
+            }
+            nodeMap.put(node, aNode);
+
+            resultGraph.addNode(aNode);
+        }
+
+        for (AspectNode node : sourceGraph.nodeSet()) {
+            for (AspectEdge edge : sourceGraph.edgeSet(node)) {
+                if (edge.source() != node) {
+                    // Ignore edges of which the current node is the target, they will be treated by the source node
+                    continue;
+                }
+                if (edge.getAspect().isForNode(GraphRole.RULE) && edge.source() == edge.target()) {
+                    nodeMap.get(edge.source()).addName(edge.label().toString());
+                } else {
+                    /*AbsEdge aEdge = */new AbsEdge(nodeMap.get(edge.source()), nodeMap.get(edge.target()), edge.label().toString());
+                }
+            }
+        }
+
+        return resultGraph;
+    }
+
+    private String getType(AbsNode node) {
+        for (String name : node.getNames()) {
+            if (name.startsWith("type:")) {
+                return name.substring(5);
+            }
+            if (name.startsWith("bool:")) {
+                return "bool";
+            }
+            if (name.startsWith("int:")) {
+                return "int";
+            }
+            if (name.startsWith("real:")) {
+                return "real";
+            }
+            if (name.startsWith("string:")) {
+                return "string";
+            }
+        }
+        return null;
+    }
+
+    private boolean isNAC(AbsNode node) {
+        for (String name : node.getNames()) {
+            if (name.equals("not:")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isNew(AbsNode node) {
+        for (String name : node.getNames()) {
+            if (name.equals("new:")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Value getNodeValue(AbsNode node) {
+        Type nodeType = m_types.getType(getType(node));
+
+        if (nodeType == null) {
+            // Might be some intermediate node
+            if (m_types.getModelType(getType(node)) == ModelType.TypeIntermediate) {
+                String valueEdge = m_cfg.getStrings().getValueEdge();
+                AbsNode valueNode = null;
+                for (AbsEdge e : node.getEdges()) {
+                    if (e.getName().equals(valueEdge)) {
+                        valueNode = e.getTarget();
+                    }
+                }
+                if (valueNode != null) {
+                    return getNodeValue(valueNode);
+                } else {
+                    return null;
+                }
+
+            } else {
+                // ERROR
+                return null;
+            }
+        }
+
+        Value resultValue = null;
+
+        // Data types
+        if (nodeType instanceof BoolType) {
+            Boolean value = node.getNames()[0].substring(5).equals("true");
+            resultValue = new BoolValue(value);
+        } else if (nodeType instanceof IntType) {
+            Integer value = Integer.parseInt(node.getNames()[0].substring(4));
+            resultValue = new IntValue(value);
+        } else if (nodeType instanceof RealType) {
+            Float value = Float.parseFloat(node.getNames()[0].substring(5));
+            resultValue = new RealValue(value);
+        } else if (nodeType instanceof StringType) {
+            resultValue = new StringValue(node.getNames()[0].substring(7));
+        }
+        // Enum type
+        else if (nodeType instanceof Enum) {
+            Enum e = (Enum) nodeType;
+            if (m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
+                Id id = m_cfg.nameToId(getType(node));
+                EnumValue ev = new EnumValue(e, id.getName());
+                resultValue = ev;
+            } else {
+                for (AbsEdge enumEdge : node.getEdges()) {
+                    if (enumEdge.getName().startsWith("flag:")) {
+                        EnumValue ev = new EnumValue(e, Name.getName(enumEdge.getName().substring(5)));
+                        resultValue = ev;
+                        break;
+                    }
+                }
+            }
+        }
+        // Custom data type
+        else if (nodeType instanceof CustomDataType) {
+            CustomDataType cdt = (CustomDataType) nodeType;
+            String dataValueName = m_cfg.getStrings().getDataValue();
+            AbsNode valueNode = null;
+            for (AbsEdge e : node.getEdges()) {
+                if (e.getName().equals(dataValueName)) {
+                    valueNode = e.getTarget();
+                }
+            }
+            if (valueNode != null) {
+                String valueString = valueNode.getNames()[0].substring(7);
+                DataValue dv = new DataValue(cdt, valueString);
+                resultValue = dv;
+            }
+        }
+        // Containers & tuples
+        // Not supported, used by default value only
+
+        return resultValue;
+    }
+}

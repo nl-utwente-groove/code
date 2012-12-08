@@ -14,31 +14,34 @@
  *
  * $Id$
  */
-package groove.io.external;
+package groove.io.conceptual.value;
 
-import groove.graph.Graph;
-import groove.io.external.Exporter.Exportable;
+import groove.io.conceptual.Visitor;
+import groove.io.conceptual.type.Type;
 
-import java.awt.Frame;
-import java.io.File;
+import java.util.regex.Matcher;
 
-/** Abstract superclass for {@link FormatExporter}s, containing a few helper methods. */
-public abstract class AbstractFormatExporter implements FormatExporter {
-    @Override
-    public void doExport(File file, Format format, Graph<?,?> graph)
-        throws PortException {
-        doExport(file, format, new Exportable(graph));
-    }
+public class DataValue extends Value {
 
-    /** Returns the parent component for a dialog. */
-    protected Frame getParent() {
-        return this.parent;
+    String m_value;
+
+    public DataValue(Type type, String value) {
+        super(type);
+        m_value = value;
     }
 
     @Override
-    public void setParent(Frame parent) {
-        this.parent = parent;
+    public boolean doVisit(Visitor v, java.lang.Object param) {
+        v.visit(this, param);
+        return true;
     }
 
-    private Frame parent;
+    public String getValue() {
+        return m_value.replaceAll(Matcher.quoteReplacement("\\"), "\\\\\\\\").replaceAll(Matcher.quoteReplacement("\""), "\\\\\"");
+    }
+
+    @Override
+    public String toString() {
+        return "Data: " + m_value;
+    }
 }

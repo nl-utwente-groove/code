@@ -23,8 +23,8 @@ import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.io.FileType;
 import groove.io.external.Format;
-import groove.io.external.PortException;
 import groove.io.external.FormatImporter;
+import groove.io.external.PortException;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -32,14 +32,17 @@ import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
+import java.awt.Frame;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /** 
@@ -57,7 +60,7 @@ import java.util.Set;
  */
 public class ColImporter implements FormatImporter {
     private ColImporter() {
-        this.colFormat = new Format(this, FileType.COL);
+        this.formats = Arrays.asList(new Format(this, FileType.COL));
     }
 
     @Override
@@ -67,20 +70,20 @@ public class ColImporter implements FormatImporter {
 
     @Override
     public Collection<? extends Format> getSupportedFormats() {
-        return Collections.singleton(this.colFormat);
+        return this.formats;
     }
 
     // Methods from FileFormat.
 
     @Override
-    public Set<Resource> doImport(File file, Format format,
-            GrammarModel grammar) throws PortException {
+    public Set<Resource> doImport(File file, Format format, GrammarModel grammar)
+        throws PortException {
         Set<Resource> resources;
         try {
             FileInputStream stream = new FileInputStream(file);
             resources =
-                this.doImport(format.stripExtension(file.getName()),
-                    stream, format, grammar);
+                this.doImport(format.stripExtension(file.getName()), stream,
+                    format, grammar);
             stream.close();
         } catch (IOException e) {
             throw new PortException(e);
@@ -133,7 +136,18 @@ public class ColImporter implements FormatImporter {
         return node;
     }
 
-    private final Format colFormat;
+    /** Returns the parent component for a dialog. */
+    protected Frame getParent() {
+        return this.parent;
+    }
+
+    @Override
+    public void setParent(Frame parent) {
+        this.parent = parent;
+    }
+
+    private final List<Format> formats;
+    private Frame parent;
 
     /** Returns the singleton instance of this class. */
     public static final ColImporter getInstance() {
@@ -143,7 +157,7 @@ public class ColImporter implements FormatImporter {
     private static final ColImporter instance = new ColImporter();
 
     // Methods from FileFormat.
-    
+
     private static final TypeLabel LABEL = TypeLabel.createBinaryLabel("n");
 
 }

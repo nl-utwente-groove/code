@@ -1,0 +1,382 @@
+package groove.io.conceptual.lang.groove;
+
+import groove.algebra.Constant;
+import groove.graph.EdgeRole;
+import groove.graph.algebra.ValueNode;
+import groove.io.conceptual.Field;
+import groove.io.conceptual.Id;
+import groove.io.conceptual.InstanceModel;
+import groove.io.conceptual.Name;
+import groove.io.conceptual.Timer;
+import groove.io.conceptual.TypeModel;
+import groove.io.conceptual.configuration.Config;
+import groove.io.conceptual.configuration.schema.EnumModeType;
+import groove.io.conceptual.configuration.schema.OrderType;
+import groove.io.conceptual.lang.ImportException;
+import groove.io.conceptual.lang.InstanceImporter;
+import groove.io.conceptual.lang.groove.GraphNodeTypes.ModelType;
+import groove.io.conceptual.type.BoolType;
+import groove.io.conceptual.type.Class;
+import groove.io.conceptual.type.Container;
+import groove.io.conceptual.type.CustomDataType;
+import groove.io.conceptual.type.Enum;
+import groove.io.conceptual.type.IntType;
+import groove.io.conceptual.type.RealType;
+import groove.io.conceptual.type.StringType;
+import groove.io.conceptual.type.Tuple;
+import groove.io.conceptual.type.Type;
+import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.value.BoolValue;
+import groove.io.conceptual.value.ContainerValue;
+import groove.io.conceptual.value.DataValue;
+import groove.io.conceptual.value.EnumValue;
+import groove.io.conceptual.value.IntValue;
+import groove.io.conceptual.value.Object;
+import groove.io.conceptual.value.RealValue;
+import groove.io.conceptual.value.StringValue;
+import groove.io.conceptual.value.TupleValue;
+import groove.io.conceptual.value.Value;
+import groove.trans.HostEdge;
+import groove.trans.HostGraph;
+import groove.trans.HostGraph.HostToAspectMap;
+import groove.trans.HostNode;
+import groove.view.aspect.AspectNode;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+/*
+ * Should query some map of node id to NodeType
+ */
+public class GrooveToInstance extends InstanceImporter {
+    private GraphNodeTypes m_types;
+    private Config m_cfg;
+
+    private TypeModel m_typeModel;
+
+    private Map<HostNode,Object> m_objectNodes = new HashMap<HostNode,Object>();
+    private Map<HostNode,Value> m_nodeValues = new HashMap<HostNode,Value>();
+    private Map<HostNode,Set<HostEdge>> m_nodeEdges = new HashMap<HostNode,Set<HostEdge>>();
+
+    private int m_nodeCounter = 1;
+
+    //private Map<HostNode,String> m_nodeNames = new HashMap<HostNode,String>();
+
+    /**
+     * Creates instance models from a collection of host models
+     * @param hostGraph HostGraph to import
+     * @param types As filled by TypeGraphVisitor (when used without error)
+     * @param typeModel TypeModel for the generated InstanceModel
+     */
+    public GrooveToInstance(HostGraph hostGraph, GraphNodeTypes types, Config cfg, TypeModel typeModel) throws ImportException {
+        m_types = types;
+        m_cfg = cfg;
+
+        m_typeModel = typeModel;
+
+        int timer = Timer.start("GROOVE to IM");
+        buildInstanceModel(hostGraph);
+        Timer.stop(timer);
+    }
+
+    @Override
+    public InstanceModel getInstanceModel(String modelName) throws ImportException {
+        return m_instanceModels.get(modelName);
+    }
+
+    private void buildInstanceModel(HostGraph hostGraph) throws ImportException {
+        InstanceModel instanceModel = new InstanceModel(m_typeModel, hostGraph.getName());
+        m_cfg.setTypeModel(m_typeModel);
+
+        // Map nodes to edges
+        for (HostNode n : hostGraph.nodeSet()) {
+            m_nodeEdges.put(n, new HashSet<HostEdge>());
+        }
+        for (HostEdge e : hostGraph.edgeSet()) {
+            m_nodeEdges.get(e.source()).add(e);
+        }
+
+        // Set of Nodes that need to be walked through
+        Set<? extends HostNode> unvisitedNodes = new HashSet<HostNode>(hostGraph.nodeSet());
+
+        // Some trickery is required to obtain the ID of a node
+        // Find original aspect node and obtain ID from that
+        HostToAspectMap map = hostGraph.toAspectMap();
+        // Find all class instances
+        for (HostNode node : hostGraph.nodeSet()) {
+            AspectNode aspectNode = map.getNode(node);
+
+            Type t = getNodeType(node);
+            if (t instanceof Class) {
+                //it.remove();
+                unvisitedNodes.remove(node);
+                //Object nodeObj = new Object((Class) t, Name.getName(getNodeName(node)));
+                Object nodeObj = new Object((Class) t, Name.getName(getNodeName(aspectNode)));
+                m_objectNodes.put(node, nodeObj);
+                instanceModel.addObject(nodeObj);
+            } else {
+                // Ignore
+            }
+        }
+
+        // Find all attributes/references
+        for (Entry<HostNode,Object> entry : m_objectNodes.entrySet()) {
+            // Run through all the fields (this creates duplicate work for edges, but meh)
+            for (Field field : ((Class) entry.getValue().getType()).getAllFields()) {
+                String fieldName = field.getName().toString();
+                if (field.getType() instanceof Container) {
+                    if (!m_cfg.useIntermediate(field)) {
+                        ContainerValue cv = getFieldContainerValue(entry.getKey(), fieldName, (Container) field.getType());
+                        if (cv != null) {
+                            entry.getValue().setFieldValue(field, cv);
+                        }
+                    } else {
+                        ContainerValue cv = (ContainerValue) getContainerValue(entry.getKey(), fieldName);
+                        if (cv != null) {
+                            entry.getValue().setFieldValue(field, cv);
+                        }
+                    }
+                } else {
+                    Value fieldVal = getNodeValue(getEdgeNode(entry.getKey(), fieldName));
+                    entry.getValue().setFieldValue(field, fieldVal);
+                }
+            }
+        }
+
+        // And we're done
+
+        m_instanceModels.put(instanceModel.getName(), instanceModel);
+    }
+
+    private Type getNodeType(HostNode node) {
+        String label = node.getType().label().text();
+        return m_types.getType(label);
+    }
+
+    private String getNodeName(AspectNode node) {
+        if (m_cfg.getConfig().getInstanceModel().getObjects().isUseIdentifier() && node.getId() != null) {
+            return node.getId().getContentString();
+        } else {
+            return "node" + m_nodeCounter++;
+        }
+    }
+
+    // next edges: Returns INT_MAX - (0 for end, index for next node + 1)
+    // index value: Returns value of index attr
+    // Integer.MIN_VALUE on error
+    private int getNodeIndex(HostNode node) {
+        OrderType orderType = m_cfg.getConfig().getTypeModel().getFields().getContainers().getOrdering().getType();
+        if (orderType == OrderType.INDEX) {
+            String indexName = m_cfg.getStrings().getIndexEdge();
+            HostNode indexNode = getEdgeNode(node, indexName);
+            if (indexNode == null) {
+                return Integer.MIN_VALUE;
+            } else {
+                return (Integer) ((ValueNode) indexNode).getValue();
+            }
+        } else if (orderType == OrderType.EDGE) {
+            String nextName = m_cfg.getStrings().getNextEdge();
+            HostNode nextNode = getEdgeNode(node, nextName);
+            if (nextNode == null) {
+                return Integer.MAX_VALUE;
+            } else {
+                return getNodeIndex(nextNode) - 1;
+            }
+        }
+        return Integer.MIN_VALUE;
+    }
+
+    // TODO: check for cycles!
+    // TODO: groove was refactored to use Constant class as opposed to direct values. How will this work with state exploration exports?
+    private Value getNodeValue(HostNode node) {
+        // Might be some intermediate node
+        if (m_types.getModelType(node.getType().label().text()) == ModelType.TypeIntermediate) {
+            String valueEdge = m_cfg.getStrings().getValueEdge();
+            Value resultValue = getNodeValue(getEdgeNode(node, valueEdge));
+            m_nodeValues.put(node, resultValue);
+            return resultValue;
+        }
+        Type nodeType = getNodeType(node);
+
+        if (nodeType == null) {
+            // ERROR
+            return null;
+        }
+
+        Value resultValue = null;
+
+        if (nodeType instanceof Class) {
+            resultValue = m_objectNodes.get(node);
+        }
+        // Data types
+        else if (nodeType instanceof BoolType) {
+            ValueNode valNode = (ValueNode) node;
+            groove.algebra.Constant c = (Constant) valNode.getValue();
+            Boolean value = c.getSymbol().toLowerCase().equals("true");
+            resultValue = new BoolValue(value);
+        } else if (nodeType instanceof IntType) {
+            ValueNode valNode = (ValueNode) node;
+            //Integer value = (Integer) valNode.getValue();
+            groove.algebra.Constant c = (Constant) valNode.getValue();
+            Integer value = Integer.parseInt(c.getSymbol());
+            resultValue = new IntValue(value);
+        } else if (nodeType instanceof RealType) {
+            ValueNode valNode = (ValueNode) node;
+            groove.algebra.Constant c = (Constant) valNode.getValue();
+            Float value = Float.parseFloat(c.getSymbol());
+            resultValue = new RealValue(value);
+        } else if (nodeType instanceof StringType) {
+            ValueNode valNode = (ValueNode) node;
+            groove.algebra.Constant c = (Constant) valNode.getValue();
+            String value = c.getSymbol();
+            resultValue = new StringValue(value.substring(1, value.length() - 1));
+        }
+        // Enum type
+        else if (nodeType instanceof Enum) {
+            Enum e = (Enum) nodeType;
+            if (m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
+                Id id = m_cfg.nameToId(node.getType().label().text());
+                EnumValue ev = new EnumValue(e, id.getName());
+                resultValue = ev;
+            } else {
+                Set<HostEdge> edges = m_nodeEdges.get(node);
+                for (HostEdge enumEdge : edges) {
+                    if (enumEdge.getType().getRole() == EdgeRole.FLAG) {
+                        EnumValue ev = new EnumValue(e, Name.getName(enumEdge.label().text()));
+                        resultValue = ev;
+                        break;
+                    }
+                }
+            }
+        }
+        // Custom data type
+        else if (nodeType instanceof CustomDataType) {
+            CustomDataType cdt = (CustomDataType) nodeType;
+            String dataValueName = m_cfg.getStrings().getDataValue();
+            HostNode valueNode = getEdgeNode(node, dataValueName);
+            String valueString = (((ValueNode) valueNode).getValue().toString());
+            DataValue dv = new DataValue(cdt, valueString);
+            resultValue = dv;
+        }
+        // Containers & tuples
+        else if (nodeType instanceof Container) {
+            Container ct = (Container) nodeType;
+            ContainerValue cv = new ContainerValue(ct);
+            String valueEdge = m_cfg.getStrings().getValueEdge();
+            SortedMap<Integer,Value> containerValues = new TreeMap<Integer,Value>();
+            for (HostEdge e : m_nodeEdges.get(node)) {
+                if (e.label().text().equals(valueEdge)) {
+                    Value subVal = getNodeValue(e.target());
+                    int index = 0;
+                    if (ct.getContainerType() == ContainerType.ORD || ct.getContainerType() == ContainerType.SEQ) {
+                        index = getNodeIndex(e.target());
+                    }
+                    containerValues.put(index, subVal);
+                }
+            }
+            for (Value subVal : containerValues.values()) {
+                cv.addValue(subVal);
+            }
+            resultValue = cv;
+        } else if (nodeType instanceof Tuple) {
+            Tuple tup = (Tuple) nodeType;
+            TupleValue tv = new TupleValue(tup);
+            for (int i = 0; i < tup.getTypes().size(); i++) {
+                HostNode subValNode = getEdgeNode(node, "_" + (i + 1));
+                if (getNodeType(subValNode) instanceof Container) {
+                    Value subVal = getContainerValue(node, "_" + (i + 1));
+                    tv.setValue(i + 1, subVal);
+                } else {
+                    Value subVal = getNodeValue(subValNode);
+                    tv.setValue(i + 1, subVal);
+                }
+            }
+            resultValue = tv;
+        }
+
+        m_nodeValues.put(node, resultValue);
+
+        return resultValue;
+    }
+
+    private HostNode getEdgeNode(HostNode node, String edge) {
+        Set<HostEdge> nodeEdges = m_nodeEdges.get(node);
+        for (HostEdge e : nodeEdges) {
+            if (e.label().text().equals(edge)) {
+                return e.target();
+            }
+        }
+        return null;
+    }
+
+    // For container field w/o intermediate
+    private ContainerValue getFieldContainerValue(HostNode fieldNode, String fieldName, Container containerType) {
+        Set<HostEdge> nodeEdges = new HashSet<HostEdge>(m_nodeEdges.get(fieldNode));
+        for (Iterator<HostEdge> it = nodeEdges.iterator(); it.hasNext();) {
+            HostEdge e = it.next();
+            if (!e.label().text().equals(fieldName)) {
+                it.remove();
+            }
+        }
+
+        if (nodeEdges.size() == 0) {
+            return null;
+        }
+
+        ContainerValue cv = new ContainerValue(containerType);
+        for (HostEdge e : nodeEdges) {
+            cv.addValue(getNodeValue(e.target()));
+        }
+
+        return cv;
+
+    }
+
+    // For intermediate nodes for containers
+    private Value getContainerValue(HostNode node, String edgeName) {
+        Set<HostEdge> nodeEdges = new HashSet<HostEdge>(m_nodeEdges.get(node));
+        for (Iterator<HostEdge> it = nodeEdges.iterator(); it.hasNext();) {
+            HostEdge e = it.next();
+            if (!e.label().text().equals(edgeName)) {
+                it.remove();
+            }
+        }
+
+        if (nodeEdges.size() == 0) {
+            return null;
+        }
+
+        Type nextType = getNodeType(nodeEdges.iterator().next().target());
+
+        // 'Terminal', multiple values is wrong, single value just returns that
+        if (!(nextType instanceof Container)) {
+            if (nodeEdges.size() > 1) {
+                // Invalid, only possible at field level
+            } else {
+                // Must be 1, 0 already handled
+                return getNodeValue(nodeEdges.iterator().next().target());
+            }
+        }
+
+        ContainerValue cv = new ContainerValue((Container) nextType);
+        String valueName = m_cfg.getStrings().getValueEdge();
+
+        for (HostEdge e : nodeEdges) {
+            Type checkType = getNodeType(e.target());
+            if (!nextType.equals(checkType)) {
+                //TODO: message
+                return null;
+            } else {
+                cv.addValue(getContainerValue(e.target(), valueName));
+            }
+        }
+
+        return cv;
+    }
+}

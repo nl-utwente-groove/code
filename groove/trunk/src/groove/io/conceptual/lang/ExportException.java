@@ -14,31 +14,24 @@
  *
  * $Id$
  */
-package groove.io.external;
+package groove.io.conceptual.lang;
 
-import groove.graph.Graph;
-import groove.io.external.Exporter.Exportable;
+import groove.io.conceptual.AbstractionException;
 
-import java.awt.Frame;
-import java.io.File;
+public class ExportException extends AbstractionException {
+    public ExportException() {
 
-/** Abstract superclass for {@link FormatExporter}s, containing a few helper methods. */
-public abstract class AbstractFormatExporter implements FormatExporter {
-    @Override
-    public void doExport(File file, Format format, Graph<?,?> graph)
-        throws PortException {
-        doExport(file, format, new Exportable(graph));
     }
 
-    /** Returns the parent component for a dialog. */
-    protected Frame getParent() {
-        return this.parent;
+    public ExportException(String message) {
+        super(message);
     }
 
-    @Override
-    public void setParent(Frame parent) {
-        this.parent = parent;
+    public ExportException(Throwable cause) {
+        super(cause);
     }
 
-    private Frame parent;
+    public ExportException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

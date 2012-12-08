@@ -36,6 +36,7 @@ import groove.view.GraphBasedModel;
 import groove.view.ResourceModel;
 
 import java.awt.Component;
+import java.awt.Frame;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,7 +71,7 @@ public class Exporter {
      * @param parent parent of save dialog; may be {@code null}
      * @param exportable Container with object to export
      */
-    public void doExport(Component parent, Exportable exportable) {
+    public void doExport(Frame parent, Exportable exportable) {
         //JGraph first, then graph, then resource
         List<Format> formats = new ArrayList<Format>();
         for (FormatExporter rf : exporters) {
@@ -94,6 +95,7 @@ public class Exporter {
                 FormatFilter filter = (FormatFilter) chooser.getFileFilter();
                 Format format = filter.getFormat();
                 FormatPorter e = filter.getFormat().getFormatter();
+                e.setParent(parent);
                 ((FormatExporter) e).doExport(selectedFile, format, exportable);
             } catch (PortException e) {
                 showErrorDialog(parent, e, "Error while exporting to "
