@@ -333,7 +333,9 @@ final public class AspectJGraph extends GraphJGraph {
         DefaultPort fromPort = (DefaultPort) fromPortView.getCell();
         DefaultPort toPort = (DefaultPort) toPortView.getCell();
         // define the edge to be inserted
-        AspectJEdge newEdge = getModel().computeJEdge();
+        AspectJEdge newEdge = (AspectJEdge) getModel().createJEdge(null);
+        // add a single, empty label so the edge will be displayed
+        newEdge.getUserObject().add("");
         // to make sure there is at least one graph edge wrapped by this JEdge,
         // we add a dummy edge label to the JEdge's user object
         Object[] insert = new Object[] {newEdge};

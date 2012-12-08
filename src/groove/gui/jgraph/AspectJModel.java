@@ -460,16 +460,6 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         this.loading = loading;
     }
 
-    /**
-     * Callback factory method to create an empty, editable j-edge.
-     */
-    AspectJEdge computeJEdge() {
-        AspectJEdge result = (AspectJEdge) createJEdge(null);
-        // add a single, empty label so the edge will be displayed
-        result.getUserObject().add("");
-        return result;
-    }
-
     /** 
      * Creates a new aspect node, with a fresh node number and
      * the graph role taken from the editor.
