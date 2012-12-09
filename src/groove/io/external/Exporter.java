@@ -17,6 +17,7 @@
 package groove.io.external;
 
 import groove.graph.Graph;
+import groove.gui.Simulator;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.SaveDialog;
 import groove.gui.jgraph.AspectJGraph;
@@ -25,7 +26,10 @@ import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.external.FormatPorter.Kind;
 import groove.io.external.format.AutPorter;
+import groove.io.external.format.DotPorter;
+import groove.io.external.format.EcorePorter;
 import groove.io.external.format.FsmExporter;
+import groove.io.external.format.GxlPorter;
 import groove.io.external.format.KthExporter;
 import groove.io.external.format.NativePorter;
 import groove.io.external.format.RasterExporter;
@@ -36,7 +40,6 @@ import groove.view.GraphBasedModel;
 import groove.view.ResourceModel;
 
 import java.awt.Component;
-import java.awt.Frame;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,13 +71,13 @@ public class Exporter {
 
     /**
      * Exports object contained in exportable. Parent is used as parent of save dialog
-     * @param parent parent of save dialog; may be {@code null}
+     * @param simulator parent of save dialog; may be {@code null}
      * @param exportable Container with object to export
      */
-    public void doExport(Frame parent, Exportable exportable) {
+    public void doExport(Simulator simulator, Exportable exportable) {
         //JGraph first, then graph, then resource
         List<Format> formats = new ArrayList<Format>();
-        for (FormatExporter rf : exporters) {
+        for (FormatExporter rf : getExporters()) {
             if (exportable.containsKind(rf.getFormatKind())) {
                 formats.addAll(rf.getSupportedFormats());
             }
@@ -87,7 +90,8 @@ public class Exporter {
 
         GrooveFileChooser chooser = getChooser(formats);
         chooser.setSelectedFile(new File(exportable.getName()));
-        File selectedFile = SaveDialog.show(chooser, parent, null);
+        File selectedFile =
+            SaveDialog.show(chooser, simulator.getFrame(), null);
         // now save, if so required
         if (selectedFile != null) {
             try {
@@ -95,11 +99,11 @@ public class Exporter {
                 FormatFilter filter = (FormatFilter) chooser.getFileFilter();
                 Format format = filter.getFormat();
                 FormatPorter e = filter.getFormat().getFormatter();
-                e.setParent(parent);
+                e.setSimulator(simulator);
                 ((FormatExporter) e).doExport(selectedFile, format, exportable);
             } catch (PortException e) {
-                showErrorDialog(parent, e, "Error while exporting to "
-                    + selectedFile);
+                showErrorDialog(simulator.getFrame(), e,
+                    "Error while exporting to " + selectedFile);
             }
         }
     }
@@ -165,9 +169,9 @@ public class Exporter {
         exporters.add(KthExporter.getInstance());
         exporters.add(FsmExporter.getInstance());
         exporters.add(TikzExporter.getInstance());
-        //        exporters.add(EcorePorter.instance());
-        //        exporters.add(GxlPorter.instance());
-        //        exporters.add(DotPorter.getInstance());
+        exporters.add(EcorePorter.instance());
+        exporters.add(GxlPorter.instance());
+        exporters.add(DotPorter.getInstance());
     }
 
     /**
@@ -201,6 +205,9 @@ public class Exporter {
                 jGraph instanceof AspectJGraph
                         ? ((AspectJGraph) jGraph).getModel().getResourceModel()
                         : null;
+            if (this.model != null) {
+                this.porterKinds.add(Kind.RESOURCE);
+            }
             this.name = this.graph.getName();
         }
 

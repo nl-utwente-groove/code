@@ -17,7 +17,7 @@
 package groove.io.external;
 
 import groove.graph.GraphRole;
-import groove.gui.Simulator;
+import groove.gui.SimulatorModel;
 import groove.io.conceptual.InstanceModel;
 import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.configuration.Config;
@@ -55,14 +55,6 @@ import java.util.Set;
 /** Im- and exporter for conceptual model-based formats. */
 public abstract class ConceptualPorter extends AbstractFormatExporter implements
         FormatImporter {
-    private Simulator simulator;
-
-    /** Sets the porter to work on the basis of a given simulator. */
-    public void setSimulator(Simulator simulator) {
-        this.simulator = simulator;
-        setParent(simulator.getFrame());
-    }
-
     /** Constructs a porter with a given instance format and type format. */
     protected ConceptualPorter(String formatName, String extension) {
         this.instanceFormat =
@@ -148,15 +140,20 @@ public abstract class ConceptualPorter extends AbstractFormatExporter implements
         }
 
         ResourceKind kind = model.getKind();
-        boolean isHost = kind == ResourceKind.HOST;
-        Pair<TypeModel,InstanceModel> outcome;
-        if (isHost && format == getInstanceFormat()) {
+        Pair<TypeModel,InstanceModel> outcome = null;
+        switch (kind) {
+        case HOST:
+            assert format == getInstanceFormat();
             outcome = constructModels(cfg, grammar, namespace, null, name);
-        } else if (format == getTypeFormat()) {
-            assert kind == ResourceKind.TYPE;
+            break;
+        case RULE:
+            throw new PortException("Rules cannot be exported in this format");
+        case TYPE:
+            assert format == getTypeFormat();
             outcome = constructModels(cfg, grammar, namespace, name, null);
-        } else {
-            throw new PortException("Unknown resource and format combination");
+            break;
+        default:
+            assert false;
         }
         if (outcome == null) {
             return;
@@ -166,6 +163,7 @@ public abstract class ConceptualPorter extends AbstractFormatExporter implements
         if (tm == null) {
             throw new PortException("Unable to load type model");
         }
+        boolean isHost = kind == ResourceKind.HOST;
         if (isHost && im == null) {
             throw new PortException("Unable to load instance model");
         }
@@ -185,7 +183,7 @@ public abstract class ConceptualPorter extends AbstractFormatExporter implements
 
     /** Opens a configuration dialog and returns the resulting configuration object. */
     private Config loadConfig(GrammarModel grammar) {
-        JaxFrontDialog dlg = new JaxFrontDialog(this.simulator);
+        JaxFrontDialog dlg = new JaxFrontDialog(getSimulator());
         String cfg = dlg.getConfig();
         if (cfg != null) {
             return new Config(grammar, cfg);
@@ -229,9 +227,10 @@ public abstract class ConceptualPorter extends AbstractFormatExporter implements
     private Set<Resource> loadModel(Config cfg, TypeModel tm, InstanceModel im)
         throws PortException {
         Set<Resource> result = new HashSet<Resource>();
-        //TODO: passing null for simulator is safe for now as export is not called, but this is subject to change
-        //TODO: using empty namespace
-        GrooveResource grooveResource = new GrooveResource(cfg, null, "");
+        SimulatorModel simulatorModel =
+            getSimulator() == null ? null : getSimulator().getModel();
+        GrooveResource grooveResource =
+            new GrooveResource(cfg, simulatorModel, "");
         if (tm != null) {
             TypeToGroove ttg = new TypeToGroove(grooveResource);
             ttg.addTypeModel(tm);

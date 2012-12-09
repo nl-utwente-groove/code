@@ -22,8 +22,6 @@ package groove.io.conceptual.lang;
  * @version $Revision $
  */
 public abstract class ExportableResource {
-    // path may be either directory or file, depending on implementation. 
-    // Just make sure you have write access and file does not exist yet
+    /** Causes the resource to be exported to the predefined destination. */
     public abstract boolean export() throws ExportException;
-
 }

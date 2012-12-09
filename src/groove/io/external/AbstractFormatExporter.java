@@ -17,6 +17,7 @@
 package groove.io.external;
 
 import groove.graph.Graph;
+import groove.gui.Simulator;
 import groove.io.external.Exporter.Exportable;
 
 import java.awt.Frame;
@@ -32,13 +33,18 @@ public abstract class AbstractFormatExporter implements FormatExporter {
 
     /** Returns the parent component for a dialog. */
     protected Frame getParent() {
-        return this.parent;
+        return this.simulator == null ? null : this.simulator.getFrame();
+    }
+
+    /** Returns the simulator on which this exporter works. */
+    protected Simulator getSimulator() {
+        return this.simulator;
     }
 
     @Override
-    public void setParent(Frame parent) {
-        this.parent = parent;
+    public void setSimulator(Simulator simulator) {
+        this.simulator = simulator;
     }
 
-    private Frame parent;
+    private Simulator simulator;
 }

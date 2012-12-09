@@ -35,8 +35,10 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 
 public class EcoreResource extends groove.io.conceptual.lang.ExportableResource {
     private ResourceSet m_resourceSet;
-    private Map<String,Resource> m_typeResources = new HashMap<String,Resource>();
-    private Map<String,Resource> m_instanceResources = new HashMap<String,Resource>();
+    private Map<String,Resource> m_typeResources =
+        new HashMap<String,Resource>();
+    private Map<String,Resource> m_instanceResources =
+        new HashMap<String,Resource>();
 
     private File m_typeFile;
     private File m_instanceFile;
@@ -45,48 +47,55 @@ public class EcoreResource extends groove.io.conceptual.lang.ExportableResource 
 
     //files allowed null if instance or type not required
     public EcoreResource(File typeTarget, File instanceTarget) {
-        m_resourceSet = new ResourceSetImpl();
-        m_resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("*", new XMIResourceFactoryImpl());
+        this.m_resourceSet = new ResourceSetImpl();
+        this.m_resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put(
+            "*", new XMIResourceFactoryImpl());
 
-        m_typeFile = typeTarget;
-        m_instanceFile = instanceTarget;
+        this.m_typeFile = typeTarget;
+        this.m_instanceFile = instanceTarget;
 
-        if (m_typeFile == m_instanceFile || m_typeFile == null || m_instanceFile == null) {
-            relPath = "";
+        if (this.m_typeFile == this.m_instanceFile || this.m_typeFile == null
+            || this.m_instanceFile == null) {
+            this.relPath = "";
         } else {
-            relPath = groove.io.Util.getRelativePath(new File(m_instanceFile.getAbsoluteFile().getParent()), m_typeFile.getAbsoluteFile()).toString();
+            this.relPath =
+                groove.io.Util.getRelativePath(
+                    new File(this.m_instanceFile.getAbsoluteFile().getParent()),
+                    this.m_typeFile.getAbsoluteFile()).toString();
         }
     }
 
     public ResourceSet getResourceSet() {
-        return m_resourceSet;
+        return this.m_resourceSet;
     }
 
     public String getTypePath() {
-        return relPath;
+        return this.relPath;
     }
 
     public Resource getTypeResource(String resourceName) {
-        if (m_typeFile != null) {
-            resourceName = m_typeFile.toString();
+        if (this.m_typeFile != null) {
+            resourceName = this.m_typeFile.toString();
         }
-        if (m_typeResources.containsKey(resourceName)) {
-            m_typeResources.get(resourceName);
+        if (this.m_typeResources.containsKey(resourceName)) {
+            this.m_typeResources.get(resourceName);
         }
 
-        Resource newResource = m_resourceSet.createResource(URI.createURI(resourceName));
-        m_typeResources.put(resourceName, newResource);
+        Resource newResource =
+            this.m_resourceSet.createResource(URI.createURI(resourceName));
+        this.m_typeResources.put(resourceName, newResource);
 
         return newResource;
     }
 
     public Resource getInstanceResource(String resourceName) {
-        if (m_instanceResources.containsKey(resourceName)) {
-            m_instanceResources.get(resourceName);
+        if (this.m_instanceResources.containsKey(resourceName)) {
+            this.m_instanceResources.get(resourceName);
         }
 
-        Resource newResource = m_resourceSet.createResource(URI.createURI(resourceName));
-        m_instanceResources.put(resourceName, newResource);
+        Resource newResource =
+            this.m_resourceSet.createResource(URI.createURI(resourceName));
+        this.m_instanceResources.put(resourceName, newResource);
 
         return newResource;
     }
@@ -94,10 +103,11 @@ public class EcoreResource extends groove.io.conceptual.lang.ExportableResource 
     @Override
     public boolean export() throws ExportException {
         try {
-            if (m_typeFile != null) {
-                for (Entry<String,Resource> resourceEntry : m_typeResources.entrySet()) {
+            if (this.m_typeFile != null) {
+                for (Entry<String,Resource> resourceEntry : this.m_typeResources.entrySet()) {
 
-                    FileOutputStream out = new FileOutputStream(m_typeFile);
+                    FileOutputStream out =
+                        new FileOutputStream(this.m_typeFile);
                     try {
                         int timer = Timer.cont("Ecore save");
                         resourceEntry.getValue().save(out, null);
@@ -108,12 +118,13 @@ public class EcoreResource extends groove.io.conceptual.lang.ExportableResource 
                 }
             }
 
-            if (m_instanceFile != null) {
-                for (Entry<String,Resource> resourceEntry : m_instanceResources.entrySet()) {
-                    FileOutputStream out = new FileOutputStream(m_instanceFile);
+            if (this.m_instanceFile != null) {
+                for (Entry<String,Resource> resourceEntry : this.m_instanceResources.entrySet()) {
+                    FileOutputStream out =
+                        new FileOutputStream(this.m_instanceFile);
                     try {
                         Map<Object,Object> opts = new HashMap<Object,Object>();
-                        if (m_typeFile != null) {
+                        if (this.m_typeFile != null) {
                             // If a target type resource has been defined, use schemaLocation. Otherwise don't, because it will point to nothing
                             opts.put(XMIResource.OPTION_SCHEMA_LOCATION, true);
                         }

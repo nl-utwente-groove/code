@@ -69,7 +69,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent we) {
-                m_selectedModel = null;
+                ConfigDialog.this.m_selectedModel = null;
                 close();
             }
         });
@@ -80,9 +80,10 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
             }
         };
         KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        this.getRootPane().registerKeyboardAction(actionListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+        this.getRootPane().registerKeyboardAction(actionListener, stroke,
+            JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-        m_simulator = simulator;
+        this.m_simulator = simulator;
 
         buildGUI();
 
@@ -90,12 +91,12 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
     }
 
     public String getConfig() {
-        this.setLocationRelativeTo(m_simulator.getFrame());
-        m_selectedModel = null;
+        this.setLocationRelativeTo(this.m_simulator.getFrame());
+        this.m_selectedModel = null;
         setVisible(true);
 
         if (hasModels()) {
-            return m_selectedModel;
+            return this.m_selectedModel;
         }
         return null;
     }
@@ -105,17 +106,19 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
     }
 
     private void loadActions() {
-        m_newAction = getAction(ConfigActionType.New);
-        m_saveAction = getAction(ConfigActionType.Save);
-        m_copyAction = getAction(ConfigActionType.Copy);
-        m_deleteAction = getAction(ConfigActionType.Delete);
-        m_renameAction = getAction(ConfigActionType.Rename);
+        this.m_newAction = getAction(ConfigActionType.New);
+        this.m_saveAction = getAction(ConfigActionType.Save);
+        this.m_copyAction = getAction(ConfigActionType.Copy);
+        this.m_deleteAction = getAction(ConfigActionType.Delete);
+        this.m_renameAction = getAction(ConfigActionType.Rename);
     }
 
     private void buildGUI() {
-        m_schemaURL = this.getClass().getClassLoader().getResource(Config.g_xmlSchema);
-        if (m_schemaURL == null) {
-            throw new RuntimeException("Unable to load the XML schema resource " + Config.g_xmlSchema);
+        this.m_schemaURL =
+            this.getClass().getClassLoader().getResource(Config.g_xmlSchema);
+        if (this.m_schemaURL == null) {
+            throw new RuntimeException(
+                "Unable to load the XML schema resource " + Config.g_xmlSchema);
         }
 
         loadActions();
@@ -123,19 +126,19 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
 
-        toolBar.add(m_newAction);
+        toolBar.add(this.m_newAction);
         toolBar.addSeparator();
 
-        m_configsList = new JComboBox();
-        m_configsList.setEditable(false);
-        m_configsList.addActionListener(this);
-        toolBar.add(m_configsList);
-        toolBar.add(m_saveAction);
+        this.m_configsList = new JComboBox();
+        this.m_configsList.setEditable(false);
+        this.m_configsList.addActionListener(this);
+        toolBar.add(this.m_configsList);
+        toolBar.add(this.m_saveAction);
         toolBar.addSeparator();
 
-        toolBar.add(m_copyAction);
-        toolBar.add(m_deleteAction);
-        toolBar.add(m_renameAction);
+        toolBar.add(this.m_copyAction);
+        toolBar.add(this.m_deleteAction);
+        toolBar.add(this.m_renameAction);
 
         this.getContentPane().setLayout(new BorderLayout());
         this.getContentPane().add(toolBar, BorderLayout.NORTH);
@@ -145,8 +148,9 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         JButton okBtn = new JButton("OK");
         okBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                m_selectedModel = m_activeModel;
-                ((ConfigAction) m_saveAction).execute();
+                ConfigDialog.this.m_selectedModel =
+                    ConfigDialog.this.m_activeModel;
+                ((ConfigAction) ConfigDialog.this.m_saveAction).execute();
                 ConfigDialog.this.dispose();
             }
         });
@@ -155,7 +159,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         JButton cancelBtn = new JButton("Cancel");
         cancelBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                m_selectedModel = null;
+                ConfigDialog.this.m_selectedModel = null;
                 ConfigDialog.this.dispose();
             }
         });
@@ -169,7 +173,9 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         this.getContentPane().add(buttonPane, BorderLayout.SOUTH);
 
         if (hasModels()) {
-            m_activeModel = m_simulator.getModel().getGrammar().getNames(ResourceKind.CONFIG).iterator().next();
+            this.m_activeModel =
+                this.m_simulator.getModel().getGrammar().getNames(
+                    ResourceKind.CONFIG).iterator().next();
         }
 
         refreshGUI();
@@ -180,128 +186,142 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent ae) {
-        if (m_ignoreCombobox) {
+        if (this.m_ignoreCombobox) {
             return;
         }
-        if (ae.getSource() == m_configsList) {
-            Object current = m_configsList.getSelectedItem();
-            if (!current.equals(m_activeModel)) {
-                m_activeModel = (String) current;
+        if (ae.getSource() == this.m_configsList) {
+            Object current = this.m_configsList.getSelectedItem();
+            if (!current.equals(this.m_activeModel)) {
+                this.m_activeModel = (String) current;
                 loadModel();
             }
         }
     }
 
     private Action getAction(ConfigActionType type) {
-        Action newAct = new ConfigAction(m_simulator, type, this);
+        Action newAct = new ConfigAction(this.m_simulator, type, this);
         newAct.setEnabled(true);
         return newAct;
     }
 
     private void refreshGUI() {
-        m_renameAction.setEnabled(hasModels());
-        m_copyAction.setEnabled(hasModels());
-        m_deleteAction.setEnabled(hasModels());
+        this.m_renameAction.setEnabled(hasModels());
+        this.m_copyAction.setEnabled(hasModels());
+        this.m_deleteAction.setEnabled(hasModels());
 
         refreshList();
     }
 
     private void refreshList() {
-        m_ignoreCombobox = true;
-        m_configsList.removeAllItems();
+        this.m_ignoreCombobox = true;
+        this.m_configsList.removeAllItems();
 
-        Set<String> names = m_simulator.getModel().getGrammar().getNames(ResourceKind.CONFIG);
+        Set<String> names =
+            this.m_simulator.getModel().getGrammar().getNames(
+                ResourceKind.CONFIG);
 
         if (!hasModels()) {
             final String newStr = new String("<New>");
-            m_configsList.addItem(newStr);
-            m_configsList.setSelectedItem(newStr);
+            this.m_configsList.addItem(newStr);
+            this.m_configsList.setSelectedItem(newStr);
 
-            m_ignoreCombobox = false;
+            this.m_ignoreCombobox = false;
             return;
         }
 
         Object[] nameArray = names.toArray();
         Arrays.sort(nameArray);
         for (Object name : nameArray) {
-            m_configsList.addItem(name);
-            if (name.equals(m_activeModel)) {
-                m_configsList.setSelectedItem(name);
+            this.m_configsList.addItem(name);
+            if (name.equals(this.m_activeModel)) {
+                this.m_configsList.setSelectedItem(name);
             }
         }
 
-        m_ignoreCombobox = false;
+        this.m_ignoreCombobox = false;
     }
 
     public void executeAction(ConfigActionType type, String modelName) {
         try {
             switch (type) {
-                case New:
-                    m_activeModel = modelName;
-                    newModel();
-                    // Immediately save model with current model name
+            case New:
+                this.m_activeModel = modelName;
+                newModel();
+                // Immediately save model with current model name
+                saveModel();
+                refreshGUI();
+                break;
+            case Save:
+                if (!hasModels()) {
+                    this.m_activeModel = modelName;
                     saveModel();
                     refreshGUI();
-                    break;
-                case Save:
+                } else {
+                    saveModel();
+                }
+                break;
+            case Delete:
+                if (!hasModels()) {
+                    return;
+                }
+
+                try {
+                    this.m_simulator.getModel().getStore().deleteTexts(
+                        ResourceKind.CONFIG,
+                        Collections.singletonList(this.m_activeModel));
+
                     if (!hasModels()) {
-                        m_activeModel = modelName;
-                        saveModel();
-                        refreshGUI();
+                        this.m_activeModel = null;
                     } else {
-                        saveModel();
+                        this.m_activeModel =
+                            this.m_simulator.getModel().getGrammar().getNames(
+                                ResourceKind.CONFIG).iterator().next();
                     }
-                    break;
-                case Delete:
-                    if (!hasModels()) {
-                        return;
-                    }
-
-                    try {
-                        m_simulator.getModel().getStore().deleteTexts(ResourceKind.CONFIG, Collections.singletonList(m_activeModel));
-
-                        if (!hasModels()) {
-                            m_activeModel = null;
-                        } else {
-                            m_activeModel = m_simulator.getModel().getGrammar().getNames(ResourceKind.CONFIG).iterator().next();
-                        }
-                    } catch (IOException e) {
-                        new ErrorDialog(m_simulator.getFrame(), "Error deleting configuration", e).setVisible(true);
-                    }
-                    refreshGUI();
-                    loadModel();
-                    break;
-                case Rename:
-                    if (!hasModels()) {
-                        return;
-                    }
-                    try {
-                        m_simulator.getModel().getStore().rename(ResourceKind.CONFIG, m_activeModel, modelName);
-                        m_activeModel = modelName;
-                    } catch (IOException e) {
-                        new ErrorDialog(m_simulator.getFrame(), "Error renaming configuration", e).setVisible(true);
-                    }
-                    refreshGUI();
-                    loadModel();
-                    break;
-                case Copy:
-                    if (!hasModels()) {
-                        return;
-                    }
-                    String xmlString;
-                    try {
-                        xmlString = (String) m_simulator.getModel().getGrammar().getResource(ResourceKind.CONFIG, m_activeModel).toResource();
-                        m_simulator.getModel().getStore().putTexts(ResourceKind.CONFIG, Collections.singletonMap(modelName, xmlString));
-                        m_activeModel = modelName;
-                    } catch (FormatException e) {
-                        // FormatException not applicable to CONFIG resources
-                        return;
-                    } catch (IOException e) {
-                        new ErrorDialog(m_simulator.getFrame(), "Error copying configuration", e).setVisible(true);
-                    }
-                    refreshGUI();
-                    loadModel();
-                    break;
+                } catch (IOException e) {
+                    new ErrorDialog(this.m_simulator.getFrame(),
+                        "Error deleting configuration", e).setVisible(true);
+                }
+                refreshGUI();
+                loadModel();
+                break;
+            case Rename:
+                if (!hasModels()) {
+                    return;
+                }
+                try {
+                    this.m_simulator.getModel().getStore().rename(
+                        ResourceKind.CONFIG, this.m_activeModel, modelName);
+                    this.m_activeModel = modelName;
+                } catch (IOException e) {
+                    new ErrorDialog(this.m_simulator.getFrame(),
+                        "Error renaming configuration", e).setVisible(true);
+                }
+                refreshGUI();
+                loadModel();
+                break;
+            case Copy:
+                if (!hasModels()) {
+                    return;
+                }
+                String xmlString;
+                try {
+                    xmlString =
+                        (String) this.m_simulator.getModel().getGrammar().getResource(
+                            ResourceKind.CONFIG, this.m_activeModel).toResource();
+                    this.m_simulator.getModel().getStore().putTexts(
+                        ResourceKind.CONFIG,
+                        Collections.singletonMap(modelName, xmlString));
+                    this.m_activeModel = modelName;
+                } catch (FormatException e) {
+                    // FormatException not applicable to CONFIG resources
+                    return;
+                } catch (IOException e) {
+                    new ErrorDialog(this.m_simulator.getFrame(),
+                        "Error copying configuration", e).setVisible(true);
+                }
+                refreshGUI();
+                loadModel();
+                break;
             }
         } catch (ConfigurationException e) {
             //TODO:
@@ -319,7 +339,9 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
 
         String xmlString = null;
         try {
-            xmlString = (String) m_simulator.getModel().getGrammar().getResource(ResourceKind.CONFIG, m_activeModel).toResource();
+            xmlString =
+                (String) this.m_simulator.getModel().getGrammar().getResource(
+                    ResourceKind.CONFIG, this.m_activeModel).toResource();
         } catch (FormatException e) {
             // FormatException not applicable to CONFIG resources
             return;
@@ -333,7 +355,8 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         }
     }
 
-    protected abstract void loadModel(String xmlString) throws ConfigurationException;
+    protected abstract void loadModel(String xmlString)
+        throws ConfigurationException;
 
     private void saveModel() throws ConfigurationException {
         Document doc = getDocument();
@@ -353,7 +376,9 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
             transformer.transform(source, result);
             String xmlString = result.getWriter().toString();
 
-            m_simulator.getModel().getStore().putTexts(ResourceKind.CONFIG, Collections.singletonMap(m_activeModel, xmlString));
+            this.m_simulator.getModel().getStore().putTexts(
+                ResourceKind.CONFIG,
+                Collections.singletonMap(this.m_activeModel, xmlString));
         } catch (TransformerConfigurationException e) {
             exc = e;
         } catch (IOException e) {
@@ -362,14 +387,18 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
             exc = e;
         }
         if (exc != null) {
-            new ErrorDialog(m_simulator.getFrame(), "Error saving configuration resource " + m_activeModel, exc).setVisible(true);
+            new ErrorDialog(this.m_simulator.getFrame(),
+                "Error saving configuration resource " + this.m_activeModel,
+                exc).setVisible(true);
         }
     }
 
     protected abstract Document getDocument() throws ConfigurationException;
 
     public boolean hasModels() {
-        Set<String> names = m_simulator.getModel().getGrammar().getNames(ResourceKind.CONFIG);
+        Set<String> names =
+            this.m_simulator.getModel().getGrammar().getNames(
+                ResourceKind.CONFIG);
         return names.size() > 0;
     }
 }

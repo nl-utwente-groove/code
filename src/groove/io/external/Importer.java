@@ -16,18 +16,21 @@
  */
 package groove.io.external;
 
+import groove.gui.Simulator;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.external.FormatImporter.Resource;
 import groove.io.external.format.AutPorter;
 import groove.io.external.format.ColImporter;
+import groove.io.external.format.DotPorter;
+import groove.io.external.format.EcorePorter;
+import groove.io.external.format.GxlPorter;
 import groove.io.external.format.NativePorter;
 import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Component;
-import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,9 +56,9 @@ public class Importer {
         this.importers.add(NativePorter.getInstance());
         this.importers.add(AutPorter.getInstance());
         this.importers.add(ColImporter.getInstance());
-        //        this.importers.add(EcorePorter.instance());
-        //        this.importers.add(GxlPorter.instance());
-        //        this.importers.add(DotPorter.getInstance());
+        this.importers.add(EcorePorter.instance());
+        this.importers.add(GxlPorter.instance());
+        this.importers.add(DotPorter.getInstance());
         List<ExtensionFilter> filters = new ArrayList<ExtensionFilter>();
 
         for (FormatImporter ri : this.importers) {
@@ -70,26 +73,28 @@ public class Importer {
 
     /**
      * Perform import. Show open dialog, and based on selected format import file.
-     * @param parent Parent of open dialog.
+     * @param simulator Parent of open dialog.
      */
-    public void doImport(Frame parent, GrammarModel grammar) throws IOException {
-        int approve = this.formatChooser.showDialog(parent, "Import");
+    public void doImport(Simulator simulator, GrammarModel grammar)
+        throws IOException {
+        int approve =
+            this.formatChooser.showDialog(simulator.getFrame(), "Import");
         // now load, if so required
         if (approve == JFileChooser.APPROVE_OPTION) {
             try {
-                doChosenImport(parent, grammar);
+                doChosenImport(simulator, grammar);
             } catch (PortException e) {
                 throw new IOException(e);
             }
         }
     }
 
-    private void doChosenImport(Frame parent, GrammarModel grammar)
+    private void doChosenImport(Simulator simulator, GrammarModel grammar)
         throws PortException, IOException {
         FormatFilter filter = (FormatFilter) this.formatChooser.getFileFilter();
         FormatImporter ri = (FormatImporter) filter.getFormat().getFormatter();
         File file = this.formatChooser.getSelectedFile();
-        ri.setParent(parent);
+        ri.setSimulator(simulator);
         Set<Resource> resources =
             ri.doImport(file, filter.getFormat(), grammar);
         if (resources != null) {
@@ -102,7 +107,7 @@ public class Importer {
                 String name = resource.getName();
                 ResourceKind kind = resource.getKind();
                 if (grammar.getResource(kind, name) == null
-                    || confirmOverwrite(parent, kind, name)) {
+                    || confirmOverwrite(simulator.getFrame(), kind, name)) {
                     if (resource.isGraph()) {
                         AspectGraph graph = resource.getGraphResource();
                         Collection<AspectGraph> graphs = newGraphs.get(kind);
