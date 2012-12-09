@@ -27,6 +27,7 @@ import groove.io.Util;
 
 import java.awt.geom.Point2D;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -40,48 +41,39 @@ public class MultiLabel {
     /** Adds a directed line to this multiline label. */
     public void add(Line line, Direct direct) {
         if (!line.isEmpty()) {
-            Map<Direct,Integer> dirMap = this.parts.get(line);
-            if (dirMap == null) {
-                this.parts.put(line, dirMap = createDirMap());
+            DirectBag dirs = this.parts.get(line);
+            if (dirs == null) {
+                dirs = DirectBag.ZERO;
             }
             // combine forward and backward into bidirectional
             switch (direct) {
             case FORWARD:
-                int backCount = dirMap.get(Direct.BACKWARD);
+                int backCount = dirs.get(Direct.BACKWARD);
                 if (backCount > 0) {
                     direct = Direct.BIDIRECTIONAL;
-                    dirMap.put(Direct.BACKWARD, backCount - 1);
+                    dirs = dirs.dec(Direct.BACKWARD);
                 }
                 break;
             case BACKWARD:
-                int foreCount = dirMap.get(Direct.FORWARD);
+                int foreCount = dirs.get(Direct.FORWARD);
                 if (foreCount > 0) {
                     direct = Direct.BIDIRECTIONAL;
-                    dirMap.put(Direct.FORWARD, foreCount - 1);
+                    dirs = dirs.dec(Direct.FORWARD);
                 }
                 break;
             }
-            dirMap.put(direct, dirMap.get(direct) + 1);
+            dirs = dirs.inc(direct);
+            this.parts.put(line, dirs);
         }
-    }
-
-    private Map<Direct,Integer> createDirMap() {
-        Map<Direct,Integer> result =
-            new EnumMap<MultiLabel.Direct,Integer>(Direct.class);
-        for (Direct dir : Direct.values()) {
-            result.put(dir, 0);
-        }
-        return result;
     }
 
     /** Adds all parts of another multiline label to this one. */
     public void add(MultiLabel label) {
-        for (Map.Entry<Line,Map<Direct,Integer>> entry : label.parts.entrySet()) {
-            for (Map.Entry<Direct,Integer> dir : entry.getValue().entrySet()) {
-                for (int i = 0; i < dir.getValue(); i++) {
-                    add(entry.getKey(), dir.getKey());
-                }
-            }
+        for (Map.Entry<Line,DirectBag> entry : label.parts.entrySet()) {
+            Line line = entry.getKey();
+            DirectBag dirs = entry.getValue();
+            DirectBag myDirs = this.parts.get(line);
+            this.parts.put(line, myDirs == null ? dirs : myDirs.add(dirs));
         }
     }
 
@@ -102,15 +94,16 @@ public class MultiLabel {
     public <R extends Builder<R>> StringBuilder toString(
             LineFormat<R> renderer, Point2D start, Point2D end) {
         R result = renderer.createResult();
-        for (Map.Entry<Line,Map<Direct,Integer>> entry : this.parts.entrySet()) {
+        for (Map.Entry<Line,DirectBag> entry : this.parts.entrySet()) {
             Line line = entry.getKey();
-            for (Map.Entry<Direct,Integer> dir : entry.getValue().entrySet()) {
-                for (int i = 0; i < dir.getValue(); i++) {
+            DirectBag dirBag = entry.getValue();
+            for (Direct dir : Direct.values()) {
+                for (int i = 0; i < dirBag.get(dir); i++) {
                     if (!result.isEmpty()) {
                         result.appendLineBreak();
                     }
                     if (start != null) {
-                        Orient orient = dir.getKey().getOrient(start, end);
+                        Orient orient = dir.getOrient(start, end);
                         line = orient.decorate(line);
                     }
                     result.append(line.toString(renderer));
@@ -133,8 +126,8 @@ public class MultiLabel {
         return this.parts.toString();
     }
 
-    private final Map<Line,Map<Direct,Integer>> parts =
-        new LinkedHashMap<Line,Map<Direct,Integer>>();
+    private final Map<Line,DirectBag> parts =
+        new LinkedHashMap<Line,DirectBag>();
     /** The combined direction of this label. */
     private Direct direct = Direct.NONE;
 
@@ -296,6 +289,84 @@ public class MultiLabel {
         private final Line left;
         /** String to place to the right side of the label. */
         private final Line right;
+    }
+
+    /** Multiset of {@link Direct} values. */
+    private static class DirectBag {
+        /** Returns a fresh, empty instance. */
+        private DirectBag() {
+            for (Direct dir : Direct.values()) {
+                this.values.put(dir, 0);
+            }
+        }
+
+        /** Returns a fresh copy of a given multiset. */
+        private DirectBag(DirectBag orig) {
+            this.values.putAll(orig.values);
+        }
+
+        /** Returns a direction count. */
+        public int get(Direct dir) {
+            return this.values.get(dir);
+        }
+
+        /** Returns the multiset that equals this one, with one of the directions increased. */
+        public DirectBag inc(Direct dir) {
+            DirectBag result = this.incMap.get(dir);
+            if (result == null) {
+                result = new DirectBag(this);
+                result.values.put(dir, get(dir) + 1);
+                result = norm(result);
+                this.incMap.put(dir, result);
+            }
+            return result;
+        }
+
+        /** Returns the multiset that equals this one, with one of the directions decreased. */
+        public DirectBag dec(Direct dir) {
+            DirectBag result = this.decMap.get(dir);
+            if (result == null) {
+                result = new DirectBag(this);
+                result.values.put(dir, get(dir) - 1);
+                result = norm(result);
+                this.decMap.put(dir, result);
+            }
+            return result;
+        }
+
+        /** Returns the sum of this multiset and another. */
+        public DirectBag add(DirectBag other) {
+            DirectBag result = new DirectBag();
+            for (Direct dir : Direct.values()) {
+                result.values.put(dir, get(dir) + other.get(dir));
+            }
+            return norm(result);
+        }
+
+        /** Counts for each of the directions in this multiset. */
+        private final Map<Direct,Integer> values =
+            new EnumMap<MultiLabel.Direct,Integer>(Direct.class);
+        /** Successor multisets after increasing one of the directions. */
+        private final Map<Direct,DirectBag> incMap =
+            new EnumMap<MultiLabel.Direct,MultiLabel.DirectBag>(Direct.class);
+        /** Successor multisets after decreasing one of the directions. */
+        private final Map<Direct,DirectBag> decMap =
+            new EnumMap<MultiLabel.Direct,MultiLabel.DirectBag>(Direct.class);
+
+        /** Returns a normalised representation of a given multiset. */
+        public static DirectBag norm(DirectBag bag) {
+            DirectBag result = pool.get(bag);
+            if (result == null) {
+                pool.put(bag, result = bag);
+            }
+            return bag;
+        }
+
+        /** Pool of representatives. */
+        private final static Map<DirectBag,DirectBag> pool =
+            new HashMap<MultiLabel.DirectBag,MultiLabel.DirectBag>();
+        /** The zero element. */
+        public final static DirectBag ZERO = norm(new DirectBag());
     }
 
     static private final String SP = "" + Util.THIN_SPACE;
