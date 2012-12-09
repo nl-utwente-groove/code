@@ -34,9 +34,6 @@ public class ExportAction extends SimulatorAction {
         this.display = simulator.getDisplaysPanel().getDisplay(displayKind);
         this.jGraph = null;
         this.isGraph = this.displayKind.isGraphBased();
-
-        // TODO: Init the exporter, hacky
-        //ConceptualPorter.initSimulator(simulator);
     }
 
     /** Constructs an instance of the action. */
@@ -65,7 +62,7 @@ public class ExportAction extends SimulatorAction {
             // Export resource
             exportable = new Exportable(getResource());
         }
-        Exporter.instance().doExport(getFrame(), exportable);
+        Exporter.instance().doExport(getSimulator(), exportable);
     }
 
     /** Refreshes the name of this action. */

@@ -21,6 +21,7 @@ import groove.algebra.AlgebraFamily;
 import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
+import groove.gui.Simulator;
 import groove.io.FileType;
 import groove.io.external.Format;
 import groove.io.external.FormatImporter;
@@ -142,8 +143,8 @@ public class ColImporter implements FormatImporter {
     }
 
     @Override
-    public void setParent(Frame parent) {
-        this.parent = parent;
+    public void setSimulator(Simulator simulator) {
+        this.parent = simulator.getFrame();
     }
 
     private final List<Format> formats;

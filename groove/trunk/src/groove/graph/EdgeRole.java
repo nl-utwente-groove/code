@@ -37,13 +37,6 @@ import java.util.Map;
  * @version $Revision $
  */
 public enum EdgeRole {
-    /** An ordinary binary edge. */
-    @Syntax("label")
-    @ToolTipHeader("Binary edge")
-    @ToolTipBody("Represents a binary edge between nodes")
-    @ToolTipPars("the edge label")
-    BINARY("edge", ""),
-
     /** A node type edge, i.e., a self-loop determining the type of a node. */
     @Syntax("NODE_TYPE.COLON.label")
     @ToolTipHeader("Node type")
@@ -56,7 +49,14 @@ public enum EdgeRole {
     @ToolTipHeader("Flag")
     @ToolTipBody("Represents a node label (not a type)")
     @ToolTipPars("the text of the flag")
-    FLAG("flag", "flag");
+    FLAG("flag", "flag"),
+
+    /** An ordinary binary edge. */
+    @Syntax("label")
+    @ToolTipHeader("Binary edge")
+    @ToolTipBody("Represents a binary edge between nodes")
+    @ToolTipPars("the edge label")
+    BINARY("edge", "");
 
     private EdgeRole(String description, String name) {
         this.description = description;

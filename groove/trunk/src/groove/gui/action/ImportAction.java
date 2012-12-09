@@ -14,15 +14,12 @@ public class ImportAction extends SimulatorAction {
     /** Constructs an instance of the action for a given simulator. */
     public ImportAction(Simulator simulator) {
         super(simulator, Options.IMPORT_ACTION_NAME, Icons.IMPORT_ICON);
-
-        //TODO: Inits are pretty much a hack
-        //ConceptualPorter.initSimulator(getSimulator());
     }
 
     @Override
     public void execute() {
         try {
-            Importer.instance().doImport(getFrame(), getGrammarModel());
+            Importer.instance().doImport(getSimulator(), getGrammarModel());
             getSimulatorModel().doRefreshGrammar();
         } catch (IOException e) {
             showErrorDialog(e, "Error importing file");
