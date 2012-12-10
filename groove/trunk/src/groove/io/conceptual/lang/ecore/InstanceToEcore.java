@@ -240,12 +240,13 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
             containerClass.getEPackage().getEFactoryInstance().create(
                 containerClass);
         setElement(containerval, containerObject);
+        this.m_eObjects.add(containerObject);
 
         EStructuralFeature eFeature =
             containerClass.getEStructuralFeature("value");
         @SuppressWarnings("unchecked")
         EList<Object> objectList =
-            (EList<Object>) containerClass.eGet(eFeature);
+            (EList<Object>) containerObject.eGet(eFeature);
         for (Value val : containerval.getValues()) {
             Object eSubValue = getElement(val);
             objectList.add(eSubValue);
@@ -264,6 +265,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
         EObject tupleObject =
             tupleClass.getEPackage().getEFactoryInstance().create(tupleClass);
         setElement(tupleval, tupleObject);
+        this.m_eObjects.add(tupleObject);
 
         for (Entry<Integer,Value> entry : tupleval.getValues().entrySet()) {
             String indexName =
