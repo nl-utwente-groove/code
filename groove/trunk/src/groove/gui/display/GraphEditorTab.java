@@ -35,7 +35,7 @@ import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraphMode;
-import groove.gui.tree.LabelTree;
+import groove.gui.tree.TypeTree;
 import groove.rel.RegExpr;
 import groove.util.Pair;
 import groove.view.GrammarModel;
@@ -314,7 +314,7 @@ final public class GraphEditorTab extends ResourceTab implements
                 this.jgraph =
                     new AspectJGraph(getSimulator(), getDisplay().getKind(),
                         true);
-            result.setLabelTree(new LabelTree(getJGraph(), false));
+            result.setLabelTree(getLabelTree());
         }
         return result;
     }
@@ -482,7 +482,7 @@ final public class GraphEditorTab extends ResourceTab implements
     private TitledPanel getLabelPanel() {
         TitledPanel result = this.labelPanel;
         if (result == null) {
-            LabelTree labelTree = getJGraph().getLabelTree();
+            TypeTree labelTree = getLabelTree();
             this.labelPanel =
                 result =
                     new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
@@ -495,6 +495,17 @@ final public class GraphEditorTab extends ResourceTab implements
 
     /** Label panel of this tab. */
     private TitledPanel labelPanel;
+
+    /** Lazily creates and returns the (non-{@code null}) label tree. */
+    private TypeTree getLabelTree() {
+        TypeTree result = this.labelTree;
+        if (result == null) {
+            result = this.labelTree = new TypeTree(getJGraph(), false);
+        }
+        return result;
+    }
+
+    private TypeTree labelTree;
 
     private PropertiesTable getPropertiesPanel() {
         PropertiesTable result = this.propertiesPanel;

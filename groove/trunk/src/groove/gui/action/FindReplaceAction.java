@@ -16,7 +16,6 @@
  */
 package groove.gui.action;
 
-import groove.graph.Element;
 import groove.graph.Label;
 import groove.graph.TypeElement;
 import groove.graph.TypeLabel;
@@ -106,10 +105,10 @@ public class FindReplaceAction extends SimulatorAction implements
         this.oldLabel = null;
         Object[] selection = ((GraphJGraph) e.getSource()).getSelectionCells();
         if (selection != null && selection.length > 0) {
-            Collection<? extends Element> selectedEntries =
+            Collection<? extends Label> selectedEntries =
                 ((GraphJCell) selection[0]).getKeys();
             if (selectedEntries.size() > 0) {
-                Element selectedEntry = selectedEntries.iterator().next();
+                Label selectedEntry = selectedEntries.iterator().next();
                 if (selectedEntry instanceof TypeElement) {
                     this.oldLabel = ((TypeElement) selectedEntry).label();
                 }

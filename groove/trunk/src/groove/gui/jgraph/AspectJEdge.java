@@ -6,12 +6,12 @@ import static groove.view.aspect.AspectKind.DEFAULT;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
+import groove.graph.Label;
+import groove.graph.TypeEdge;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
 import groove.trans.RuleLabel;
-import groove.util.ChangeCount;
-import groove.util.ChangeCount.Tracker;
 import groove.view.FormatError;
 import groove.view.GraphBasedModel.TypeModelMap;
 import groove.view.aspect.AspectEdge;
@@ -87,9 +87,6 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     protected void initialise() {
         super.initialise();
         this.aspect = DEFAULT;
-        if (getJModel() != null) {
-            resetJModelTracker();
-        }
     }
 
     @Override
@@ -195,23 +192,7 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     }
 
     @Override
-    public Collection<Edge> getKeys() {
-        updateCachedValues();
-        return this.keys;
-    }
-
-    /** 
-     * Updates the cached values of {@link #keys},
-     * if the model has been modified in the meantime.
-     */
-    private void updateCachedValues() {
-        if (this.keys == null || this.jModelTracker.isStale()) {
-            this.keys = computeKeys();
-        }
-    }
-
-    /** Recomputes the set of keys for this aspect node. */
-    private Collection<Edge> computeKeys() {
+    public Collection<? extends Label> getKeys() {
         if (this.aspect.isMeta()) {
             return Collections.emptySet();
         } else {
@@ -220,15 +201,17 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     }
 
     @Override
-    public Edge getKey(Edge edge) {
-        Edge result;
-        TypeModelMap typeMap = getJModel().getResourceModel().getTypeMap();
+    public TypeEdge getKey(Edge edge) {
+        TypeEdge result = null;
+        TypeModelMap typeMap = getTypeMap();
         if (typeMap != null) {
             result = typeMap.getEdge((AspectEdge) edge);
-        } else {
-            result = edge;
         }
         return result;
+    }
+
+    private TypeModelMap getTypeMap() {
+        return getJModel().getResourceModel().getTypeMap();
     }
 
     /** 
@@ -309,21 +292,6 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
         return (AspectJObject) super.getUserObject();
     }
 
-    /** 
-     * Sets the {@link #jModelTracker} to a fresh value.
-     * This is delegated to a separate method because it needs
-     * to be invoked upon cloning as well as in the constructor.
-     */
-    private void resetJModelTracker() {
-        this.jModelTracker =
-            getJModel() == null ? ChangeCount.DUMMY_TRACKER
-                    : getJModel().getModCount().createTracker();
-    }
-
-    /** Cached tree entries. */
-    private Collection<Edge> keys;
-    /** JModel modification tracker. */
-    private Tracker jModelTracker;
     private AspectKind aspect;
 
     /** 

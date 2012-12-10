@@ -19,6 +19,7 @@ package groove.gui.jgraph;
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.graph.Edge;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.look.Look;
@@ -269,10 +270,10 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
      * This implementation calls {@link #getKey(Edge)} on all edges in
      * {@link #getEdges()}.
      */
-    public Collection<Edge> getKeys() {
-        List<Edge> result = new ArrayList<Edge>();
+    public Collection<? extends Label> getKeys() {
+        List<Label> result = new ArrayList<Label>();
         for (Edge edge : getEdges()) {
-            Edge entry = getKey(edge);
+            Label entry = getKey(edge);
             if (entry != null) {
                 result.add(entry);
             }
@@ -280,13 +281,8 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
         return result;
     }
 
-    /** 
-     * Returns the tree entry for a given graph edge.
-     * @return the entry foe {@code edge}; if {@code null}, the edge
-     * has no corresponding tree entry 
-     */
-    public Edge getKey(Edge edge) {
-        return edge;
+    public Label getKey(Edge edge) {
+        return edge.label();
     }
 
     StringBuilder getEdgeDescription() {

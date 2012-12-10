@@ -27,7 +27,6 @@ import groove.graph.LabelPattern;
 import groove.graph.algebra.VariableNode;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.CtrlJVertex;
 import groove.gui.jgraph.GraphJCell;
@@ -48,7 +47,6 @@ import groove.trans.HostNode;
 import groove.util.Colors;
 import groove.view.FormatException;
 import groove.view.GraphBasedModel;
-import groove.view.GraphBasedModel.TypeModelMap;
 import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectKind;
@@ -117,7 +115,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         }
         // only add edges that have an unfiltered label
         for (Edge edge : jVertex.getEdges()) {
-            if (!isFiltered(edge)) {
+            if (!isFiltered(jVertex, edge)) {
                 result.add(Line.atom(edge.label().text()), Direct.NONE);
             }
         }
@@ -146,7 +144,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                             ? Line.atom(node.getId().getContentString()).style(
                                 Style.ITALIC) : null;
                 for (AspectEdge edge : jVertex.getEdges()) {
-                    if (!isFiltered(edge)) {
+                    if (!isFiltered(jVertex, edge)) {
                         Line line = getHostLine(edge);
                         if (id != null
                             && edge.getDisplayLabel().getRole() == NODE_TYPE) {
@@ -163,7 +161,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 }
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (!isFiltered(edge)) {
+                if (!isFiltered(jVertex, edge)) {
                     result.add(getHostLine(edge), Direct.NONE);
                 }
             }
@@ -196,7 +194,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (jVertex.getJGraph().isShowAspects()) {
             result.add(jVertex.getUserObject().toLines(Direct.NONE));
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (!isFiltered(edge)) {
+                if (!isFiltered(jVertex, edge)) {
                     result.add(getTypeLine(edge), Direct.NONE);
                 }
             }
@@ -208,12 +206,12 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result.add(getDataLines(node));
             // show the visible self-edges
             for (AspectEdge edge : jVertex.getEdges()) {
-                if (!isFiltered(edge)) {
+                if (!isFiltered(jVertex, edge)) {
                     result.add(getTypeLine(edge), Direct.NONE);
                 }
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (!isFiltered(edge)) {
+                if (!isFiltered(jVertex, edge)) {
                     result.add(getTypeLine(edge), Direct.NONE);
                 }
             }
@@ -265,7 +263,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (jVertex.getJGraph().isShowAspects()) {
             result.add(jVertex.getUserObject().toLines(Direct.NONE));
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (!isFiltered(edge)) {
+                if (!isFiltered(jVertex, edge)) {
                     result.add(getRuleLine(edge), Direct.NONE);
                 }
             }
@@ -286,7 +284,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result.add(getDataLines(node));
             // show the visible self-edges
             for (AspectEdge edge : jVertex.getEdges()) {
-                if (!isFiltered(edge)) {
+                if (!isFiltered(jVertex, edge)) {
                     Line line = getRuleLine(edge);
                     if (idLine != null
                         && edge.getDisplayLabel().getRole() == NODE_TYPE) {
@@ -302,7 +300,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(idLine, Direct.NONE);
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (!isFiltered(edge)) {
+                if (!isFiltered(jVertex, edge)) {
                     result.add(getRuleLine(edge), Direct.NONE);
                 }
             }
@@ -351,7 +349,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         // only add edges that have an unfiltered label
         boolean isShowAnchors = jVertex.getJGraph().isShowAnchors();
         for (Edge edge : jVertex.getEdges()) {
-            if (!isFiltered(edge)) {
+            if (!isFiltered(jVertex, edge)) {
                 String text = ((GraphTransition) edge).text(isShowAnchors);
                 result.add(Line.atom(text), Direct.NONE);
             }
@@ -403,7 +401,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         MultiLabel result = new MultiLabel();
         for (Edge edge : jEdge.getEdges()) {
             // only add edges that have an unfiltered label
-            if (!isFiltered(edge)) {
+            if (!isFiltered(jEdge, edge)) {
                 result.add(Line.atom(edge.label().text()),
                     jEdge.getDirect(edge));
             }
@@ -440,7 +438,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result = new MultiLabel();
             for (AspectEdge edge : jEdge.getEdges()) {
                 // only add edges that have an unfiltered label
-                if (!isFiltered(edge)) {
+                if (!isFiltered(jEdge, edge)) {
                     result.add(getAspectEdgeLine(edge), jEdge.getDirect(edge));
                 }
             }
@@ -454,7 +452,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         boolean isShowAnchors = jEdge.getJGraph().isShowAnchors();
         for (Edge edge : jEdge.getEdges()) {
             // only add edges that have an unfiltered label
-            if (!isFiltered(edge)) {
+            if (!isFiltered(jEdge, edge)) {
                 GraphTransition trans = (GraphTransition) edge;
                 result.add(Line.atom(trans.text(isShowAnchors)),
                     jEdge.getDirect(edge));
@@ -624,27 +622,12 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /** 
      * Tests if a given edge is currently being filtered.
      */
-    private boolean isFiltered(Edge key) {
+    private boolean isFiltered(GraphJCell jCell, Edge edge) {
         boolean result = false;
-        LabelTree labelTree = this.jGraph.getLabelTree();
-        if (labelTree != null) {
-            TypeModelMap typeMap = getTypeMap();
-            if (typeMap != null) {
-                key = typeMap.getEdge((AspectEdge) key);
-            }
+        LabelTree labelTree = jCell.getJGraph().getLabelTree();
+        if (edge != null && labelTree != null) {
+            Label key = jCell.getKey(edge);
             result = key != null && labelTree.isFiltered(key);
-        }
-        return result;
-    }
-
-    /** Retrieves the type map from the underlying JGraph, if there is any. */
-    private TypeModelMap getTypeMap() {
-        TypeModelMap result = null;
-        if (this.jGraph instanceof AspectJGraph) {
-            AspectJModel jModel = ((AspectJGraph) this.jGraph).getModel();
-            if (jModel != null) {
-                result = jModel.getResourceModel().getTypeMap();
-            }
         }
         return result;
     }

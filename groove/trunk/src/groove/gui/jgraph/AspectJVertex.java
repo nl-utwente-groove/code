@@ -3,17 +3,17 @@ package groove.gui.jgraph;
 import static groove.gui.look.VisualKey.COLOR;
 import static groove.view.aspect.AspectKind.REMARK;
 import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.GraphRole;
+import groove.graph.Label;
 import groove.graph.LabelPattern;
 import groove.graph.Node;
+import groove.graph.TypeEdge;
+import groove.graph.TypeElement;
 import groove.graph.TypeNode;
 import groove.graph.algebra.VariableNode;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
-import groove.util.ChangeCount;
-import groove.util.ChangeCount.Tracker;
 import groove.view.FormatError;
 import groove.view.GraphBasedModel.TypeModelMap;
 import groove.view.aspect.AspectEdge;
@@ -64,12 +64,6 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     @Override
     public Set<AspectEdge> getEdges() {
         return (Set<AspectEdge>) super.getEdges();
-    }
-
-    @Override
-    protected void initialise() {
-        super.initialise();
-        resetJModelTracker();
     }
 
     @Override
@@ -187,57 +181,44 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     }
 
     @Override
-    public Collection<Element> getKeys() {
-        updateCachedValues();
-        return this.keys;
-    }
-
-    /** 
-     * Updates the cached values of {@link #keys},
-     * if the model has been modified in the meantime.
-     */
-    private void updateCachedValues() {
-        if (this.keys == null || getJModelTracker().isStale()) {
-            this.keys = computeKeys();
-        }
-    }
-
-    /** Recomputes the set of list labels for this aspect node. */
-    private Collection<Element> computeKeys() {
+    public Collection<? extends Label> getKeys() {
         getNode().testFixed(true);
-        Collection<Element> result = new ArrayList<Element>();
+        Collection<TypeElement> result = new ArrayList<TypeElement>();
         if (!this.aspect.isMeta()) {
             for (Edge edge : getEdges()) {
-                Edge key = getKey(edge);
+                TypeEdge key = getKey(edge);
                 if (key != null) {
                     result.add(key);
                 }
             }
             for (AspectEdge edge : getExtraSelfEdges()) {
-                Edge key = getKey(edge);
+                TypeEdge key = getKey(edge);
                 if (key != null) {
                     result.add(key);
                 }
             }
-            Node nodeKey = getNodeKey();
-            if (result.isEmpty() || nodeKey instanceof TypeNode
-                && !((TypeNode) nodeKey).isTopType()) {
-                result.add(nodeKey);
+            result.addAll(getNodeKeys(!result.isEmpty()));
+        }
+        return result;
+    }
+
+    @Override
+    protected Collection<TypeNode> getNodeKeys(boolean hasEdgeKeys) {
+        List<TypeNode> result = new ArrayList<TypeNode>();
+        TypeModelMap typeMap = getTypeMap();
+        if (typeMap != null) {
+            TypeNode type = typeMap.getNode(getNode());
+            if (!hasEdgeKeys || !type.isTopType()) {
+                result.addAll(type.getSupertypes());
             }
         }
         return result;
     }
 
     @Override
-    protected Node getNodeKey() {
+    public TypeEdge getKey(Edge edge) {
         TypeModelMap typeMap = getTypeMap();
-        return typeMap == null ? getNode() : typeMap.getNode(getNode());
-    }
-
-    @Override
-    public Edge getKey(Edge edge) {
-        TypeModelMap typeMap = getTypeMap();
-        return typeMap == null ? edge : typeMap.getEdge((AspectEdge) edge);
+        return typeMap == null ? null : typeMap.getEdge((AspectEdge) edge);
     }
 
     private TypeModelMap getTypeMap() {
@@ -368,31 +349,6 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         return (AspectJObject) super.getUserObject();
     }
 
-    /** Resets the model tracker. */
-    private void resetJModelTracker() {
-        this.jModelTracker = null;
-        getJModelTracker();
-    }
-
-    /** Lazily creates and returns a change tracker for the underlying JModel. */
-    private Tracker getJModelTracker() {
-        Tracker result = this.jModelTracker;
-        if (result == null || result == ChangeCount.DUMMY_TRACKER) {
-            AspectJModel jModel = getJModel();
-            if (jModel == null) {
-                result = ChangeCount.DUMMY_TRACKER;
-            } else {
-                result = jModel.getModCount().createTracker();
-            }
-            this.jModelTracker = result;
-        }
-        return result;
-    }
-
-    /** Cached tree entries. */
-    private Collection<Element> keys;
-    /** JModel modification tracker. */
-    private Tracker jModelTracker;
     /** The role of the underlying rule node. */
     private AspectKind aspect;
 

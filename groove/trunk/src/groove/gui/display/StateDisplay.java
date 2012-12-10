@@ -37,8 +37,8 @@ import groove.gui.list.ErrorListPanel;
 import groove.gui.look.LineStyle;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
-import groove.gui.tree.LabelTree;
 import groove.gui.tree.StateTree;
+import groove.gui.tree.TypeTree;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
@@ -123,7 +123,7 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     @Override
     protected JComponent createInfoPanel() {
-        LabelTree labelTree = getLabelTree();
+        TypeTree labelTree = getLabelTree();
         TitledPanel result =
             new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
                 labelTree.createToolBar(), true);
@@ -263,16 +263,16 @@ public class StateDisplay extends Display implements SimulatorListener {
     private AspectJGraph jGraph;
 
     /** Lazily creates and returns the label tree for the display. */
-    private LabelTree getLabelTree() {
-        LabelTree result = this.labelTree;
+    private TypeTree getLabelTree() {
+        TypeTree result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new LabelTree(getJGraph(), true);
+            result = this.labelTree = new TypeTree(getJGraph(), true);
         }
         return result;
     }
 
     /** The tree component showing (and allowing filtering of) the transitions in the LTS. */
-    private LabelTree labelTree;
+    private TypeTree labelTree;
 
     /** Creates the listener of the error panel. */
     private Observer createErrorListener() {

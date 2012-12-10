@@ -17,9 +17,7 @@
 package groove.gui.jgraph;
 
 import groove.graph.Edge;
-import groove.graph.EdgeRole;
-import groove.graph.Element;
-import groove.graph.TypeLabel;
+import groove.graph.Label;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
@@ -49,7 +47,14 @@ public interface GraphJCell extends GraphCell, Serializable {
      * Returns the set of keys to be associated with this cell in a label
      * tree.
      */
-    public abstract Collection<? extends Element> getKeys();
+    public abstract Collection<? extends Label> getKeys();
+
+    /** 
+     * Returns the label tree key for a given graph edge wrapped by this JCell.
+     * @return the key for {@code edge}; if {@code null}, the edge
+     * has no corresponding key
+     */
+    public Label getKey(Edge edge);
 
     /** Indicates if this cell is currently layed-out. */
     boolean isLayoutable();
@@ -141,8 +146,4 @@ public interface GraphJCell extends GraphCell, Serializable {
 
     /** indicates if the value for a given key is currently stale. */
     public boolean isStale(VisualKey key);
-
-    /** Pseudo-label for cells with an empty list label set. */
-    static public final TypeLabel NO_LABEL = TypeLabel.createLabel(
-        EdgeRole.NODE_TYPE, "\u0000");
 }

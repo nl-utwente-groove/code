@@ -19,12 +19,13 @@ package groove.gui.jgraph;
 import static groove.graph.EdgeRole.BINARY;
 import static groove.io.HTMLConverter.ITALIC_TAG;
 import groove.graph.Edge;
-import groove.graph.Element;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.io.HTMLConverter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import org.jgraph.graph.DefaultPort;
@@ -105,38 +106,29 @@ public class GraphJVertex extends AbstractJCell {
             && edge.source() == edge.target() && edge.source() == getNode();
     }
 
-    /**
-     * This implementation returns a special constant label in case the node is
-     * a constant, followed by the self-edge labels and data-edge labels; or
-     * {@link GraphJCell#NO_LABEL} if the result would otherwise be empty.
-     */
-    public Collection<Element> getKeys() {
-        Collection<Element> result = new ArrayList<Element>();
+    public Collection<? extends Label> getKeys() {
+        Collection<Label> result = new ArrayList<Label>();
         for (Edge edge : getEdges()) {
-            Edge key = getKey(edge);
+            Label key = getKey(edge);
             if (key != null) {
                 result.add(key);
             }
         }
-        if (result.isEmpty() && hasNodeKey()) {
-            result.add(getNodeKey());
-        }
+        result.addAll(getNodeKeys(!result.isEmpty()));
         return result;
     }
 
-    /** Tests if this vertex has a special key standing only for the node. */
-    private boolean hasNodeKey() {
-        return getNodeKey() != null;
-    }
-
-    /** Returns the key associated with the node itself. */
-    protected Node getNodeKey() {
-        return getNode();
+    /**
+     * Returns the keys associated with the node itself. 
+     * @param hasEdgeKeys if {@code true}, this vertex has at least one edge key.
+     */
+    protected Collection<? extends Label> getNodeKeys(boolean hasEdgeKeys) {
+        return Collections.emptySet();
     }
 
     /** This implementation delegates to {@link Edge#label()}. */
-    protected Edge getKey(Edge edge) {
-        return edge;
+    public Label getKey(Edge edge) {
+        return edge.label();
     }
 
     /**

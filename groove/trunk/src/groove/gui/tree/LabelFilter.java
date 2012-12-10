@@ -16,19 +16,10 @@
  */
 package groove.gui.tree;
 
-import groove.graph.Edge;
 import groove.graph.EdgeRole;
-import groove.graph.Element;
 import groove.graph.Label;
-import groove.graph.TypeEdge;
-import groove.graph.TypeElement;
-import groove.graph.TypeGraph;
-import groove.graph.TypeLabel;
-import groove.graph.TypeNode;
 import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJVertex;
 import groove.gui.look.VisualKey;
-import groove.view.aspect.AspectEdge;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -47,15 +38,6 @@ import java.util.Set;
  * @version $Revision $
  */
 public class LabelFilter extends Observable {
-    /** 
-     * Indicates if the filter is label- or type-based.
-     * @return {@code true} if the filter is label-based; {@code false}
-     * if it is type-based.
-     */
-    public boolean isLabelBased() {
-        return this.labelBased;
-    }
-
     /** Clears the inverse mapping from labels to {@link GraphJCell}s. */
     public void clearJCells() {
         for (Set<GraphJCell> jCellSet : this.entryJCellMap.values()) {
@@ -77,38 +59,8 @@ public class LabelFilter extends Observable {
     /** Computes the filter entries for a given jCell. */
     private Set<Entry> computeEntries(GraphJCell jCell) {
         Set<Entry> result = new HashSet<LabelFilter.Entry>();
-        // we only add a special entry for a node itself
-        // if it is not explicitly typed and has no edge self-labels
-        Element nodeKey = null;
-        for (Element key : jCell.getKeys()) {
-            if (isNodeKey(key)) {
-                nodeKey = key;
-            } else if (key instanceof TypeNode) {
-                for (TypeNode superType : ((TypeNode) key).getSupertypes()) {
-                    result.add(getEntry(superType));
-                }
-            } else {
-                result.add(getEntry(key));
-            }
-        }
-        if (result.isEmpty() && nodeKey != null) {
-            result.add(getEntry(nodeKey));
-        }
-        return result;
-    }
-
-    /** 
-     * Tests if a given key stands for a node itself, rather than an
-     * explicit label on the node. 
-     */
-    private boolean isNodeKey(Element key) {
-        boolean result;
-        if (key instanceof TypeNode) {
-            result = ((TypeNode) key).isTopType();
-        } else if (key instanceof Edge) {
-            result = ((Edge) key).label().equals(TypeLabel.NODE);
-        } else {
-            result = true;
+        for (Label key : jCell.getKeys()) {
+            result.add(getEntry(key));
         }
         return result;
     }
@@ -188,22 +140,16 @@ public class LabelFilter extends Observable {
 
     /** 
      * Clears the entire filter, and resets it to label- or type-based.
-     * @param labelBased if {@code true}, the filter becomes label-based;
-     * otherwise it becomes type-based
      */
-    public void clear(boolean labelBased) {
+    public void clear() {
         this.selected.clear();
         this.entryJCellMap.clear();
         this.jCellEntryMap.clear();
         this.labelEntryMap.clear();
-        this.nodeTypeEntryMap.clear();
-        this.edgeTypeEntryMap.clear();
-        this.typeGraph = null;
-        this.labelBased = labelBased;
     }
 
     /** Adds an entry to those known in this filter. */
-    public boolean addEntry(Element key) {
+    public boolean addEntry(Label key) {
         return addEntry(getEntry(key));
     }
 
@@ -356,76 +302,17 @@ public class LabelFilter extends Observable {
     }
 
     /** Lazily creates and returns a filter entry based on a given element. */
-    public Entry getEntry(Element element) {
-        Entry result = null;
-        if (isLabelBased()) {
-            Label key;
-            if (element instanceof TypeElement) {
-                key = ((TypeElement) element).label();
-            } else if (element instanceof AspectEdge) {
-                key = ((AspectEdge) element).getDisplayLabel();
-            } else if (element instanceof Edge) {
-                key = ((Edge) element).label();
-            } else {
-                key = GraphJVertex.NO_LABEL;
-            }
-            LabelEntry labelResult = this.labelEntryMap.get(key);
-            if (labelResult == null) {
-                this.labelEntryMap.put(key, labelResult = createEntry(key));
-            }
-            result = labelResult;
-        } else if (element instanceof TypeNode) {
-            TypeElement key = (TypeElement) element;
-            TypeLabel keyLabel = ((TypeNode) element).label();
-            TypeEntry typeResult = this.nodeTypeEntryMap.get(keyLabel);
-            if (typeResult == null) {
-                this.nodeTypeEntryMap.put(keyLabel, typeResult =
-                    createEntry(key));
-            }
-            result = typeResult;
-        } else if (element instanceof TypeEdge) {
-            TypeEdge key = (TypeEdge) element;
-            TypeLabel nodeKeyLabel = key.source().label();
-            Map<TypeLabel,TypeEntry> entryMap =
-                this.edgeTypeEntryMap.get(nodeKeyLabel);
-            if (entryMap == null) {
-                this.edgeTypeEntryMap.put(nodeKeyLabel, entryMap =
-                    new HashMap<TypeLabel,LabelFilter.TypeEntry>());
-            }
-            TypeLabel edgeKeyLabel = key.label();
-            TypeEntry typeResult = entryMap.get(edgeKeyLabel);
-            if (typeResult == null) {
-                entryMap.put(edgeKeyLabel, typeResult = createEntry(key));
-            }
-            result = typeResult;
+    public Entry getEntry(Label key) {
+        LabelEntry result = this.labelEntryMap.get(key);
+        if (result == null) {
+            this.labelEntryMap.put(key, result = createEntry(key));
         }
         return result;
     }
 
     /** Constructs a filter entry from a given object. */
     private LabelEntry createEntry(Label label) {
-        assert isLabelBased();
-        assert this.typeGraph == null;
         return new LabelEntry(label);
-    }
-
-    /** Constructs a filter entry from a given object. */
-    private TypeEntry createEntry(TypeElement type) {
-        assert !isLabelBased();
-        TypeEntry result = new TypeEntry(type);
-        assert isTypeGraphConsistent(result);
-        return result;
-    }
-
-    /** Helper method to check that all type entries are based on the same type graph. */
-    private boolean isTypeGraphConsistent(TypeEntry entry) {
-        TypeGraph typeGraph = entry.getType().getGraph();
-        if (this.typeGraph == null) {
-            this.typeGraph = typeGraph;
-            return true;
-        } else {
-            return this.typeGraph == typeGraph;
-        }
     }
 
     /** Set of currently selected (i.e., visible) labels. */
@@ -438,17 +325,7 @@ public class LabelFilter extends Observable {
         new HashMap<GraphJCell,Set<Entry>>();
     /** Mapping from known labels to corresponding label entries. */
     private final Map<Label,LabelEntry> labelEntryMap =
-        new HashMap<Label,LabelFilter.LabelEntry>();
-    /** Mapping from known node type labels to corresponding node type entries. */
-    private final Map<TypeLabel,TypeEntry> nodeTypeEntryMap =
-        new HashMap<TypeLabel,LabelFilter.TypeEntry>();
-    /** Mapping from known node type labels and edge type labels to corresponding edge type entries. */
-    private final Map<TypeLabel,Map<TypeLabel,TypeEntry>> edgeTypeEntryMap =
-        new HashMap<TypeLabel,Map<TypeLabel,TypeEntry>>();
-    /** Flag indicating if the filter is label-based. */
-    private boolean labelBased = true;
-    /** Field used to test consistency of the type entries. */
-    private TypeGraph typeGraph;
+        new HashMap<Label,LabelEntry>();
     /** The keys that may change if a filter is (de)selected. */
     private static VisualKey[] changedKeys = new VisualKey[] {
         VisualKey.VISIBLE, VisualKey.LABEL};
@@ -511,90 +388,5 @@ public class LabelFilter extends Observable {
 
         /** The label wrapped in this entry. */
         private final Label label;
-    }
-
-    /** Filter entry wrapping a label. */
-    public static class TypeEntry implements Entry {
-        /** Constructs a fresh label entry from a given label. */
-        public TypeEntry(TypeElement type) {
-            this.type = type;
-        }
-
-        /** Returns the type element wrapped in this entry. */
-        public TypeElement getType() {
-            return this.type;
-        }
-
-        @Override
-        public Label getLabel() {
-            return this.type.label();
-        }
-
-        @Override
-        public int compareTo(Entry o) {
-            TypeEntry other = (TypeEntry) o;
-            TypeElement type = getType();
-            TypeElement otherType = other.getType();
-            if (type instanceof TypeNode) {
-                return type.compareTo(otherType);
-            }
-            if (otherType instanceof TypeNode) {
-                return otherType.compareTo(type);
-            }
-            TypeEdge edge = (TypeEdge) type;
-            TypeEdge otherEdge = (TypeEdge) otherType;
-            int result =
-                edge.source().label().compareTo(otherEdge.source().label());
-            if (result == 0) {
-                result = edge.label().compareTo(otherEdge.label());
-            }
-            return result;
-        }
-
-        @Override
-        public int hashCode() {
-            if (this.type instanceof TypeNode) {
-                return this.type.hashCode();
-            } else {
-                TypeEdge edge = (TypeEdge) this.type;
-                return edge.source().label().hashCode()
-                    ^ edge.label().hashCode();
-            }
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (!(obj instanceof TypeEntry)) {
-                return false;
-            }
-            // test for label equality to avoid 
-            // comparing type elements from different type graphs
-            TypeEntry other = (TypeEntry) obj;
-            if (!this.type.label().equals(other.type.label())) {
-                return false;
-            }
-            if (this.type instanceof TypeNode) {
-                return other.type instanceof TypeNode;
-            }
-            if (other.type instanceof TypeNode) {
-                return false;
-            }
-            TypeEdge edge = (TypeEdge) this.type;
-            TypeEdge otherEdge = (TypeEdge) other.type;
-            if (!edge.source().label().equals(otherEdge.source().label())) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public String toString() {
-            return this.type.toString();
-        }
-
-        private final TypeElement type;
     }
 }

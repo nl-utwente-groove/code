@@ -17,28 +17,20 @@
 package groove.gui.tree;
 
 import static groove.io.HTMLConverter.HTML_TAG;
-import static groove.io.HTMLConverter.ITALIC_TAG;
-import static groove.io.HTMLConverter.STRONG_TAG;
-import groove.graph.Element;
-import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.TypeEdge;
 import groove.graph.TypeElement;
-import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
-import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.action.ActionStore;
-import groove.gui.action.CollapseAllAction;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJGraph;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.GraphJVertex;
 import groove.gui.menu.ShowHideMenu;
 import groove.gui.tree.LabelFilter.Entry;
-import groove.gui.tree.LabelFilter.TypeEntry;
+import groove.gui.tree.TypeFilter.TypeEntry;
 import groove.io.HTMLConverter;
 
 import java.awt.Color;
@@ -61,18 +53,13 @@ import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ButtonGroup;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import org.jgraph.JGraph;
@@ -97,7 +84,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      */
     public LabelTree(GraphJGraph jGraph, boolean filtering) {
         this.jGraph = jGraph;
-        this.labelFilter = new LabelFilter();
+        this.labelFilter = createLabelFilter();
         this.filtering = filtering;
         // make sure tool tips get displayed
         ToolTipManager.sharedInstance().registerComponent(this);
@@ -106,7 +93,12 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         installListeners();
     }
 
-    private void installListeners() {
+    /** Callback factory method for the label filter. */
+    LabelFilter createLabelFilter() {
+        return new LabelFilter();
+    }
+
+    void installListeners() {
         getJGraph().addPropertyChangeListener(JGraph.GRAPH_MODEL_PROPERTY,
             new PropertyChangeListener() {
                 @Override
@@ -120,15 +112,13 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                 clearSelection();
             }
         });
-        if (this.filtering) {
-            this.labelFilter.addObserver(new Observer() {
-                @SuppressWarnings("unchecked")
-                public void update(Observable o, Object arg) {
-                    LabelTree.this.repaint();
-                    getJGraph().refreshCells((Set<GraphJCell>) arg);
-                }
-            });
-        }
+        getFilter().addObserver(new Observer() {
+            @SuppressWarnings("unchecked")
+            public void update(Observable o, Object arg) {
+                LabelTree.this.repaint();
+                getJGraph().refreshCells((Set<GraphJCell>) arg);
+            }
+        });
         addMouseListener(new MyMouseListener());
     }
 
@@ -142,71 +132,11 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      * will filter all labels occurring in a given array of cells.
      */
     public Action createFilterAction(Object[] cells) {
-        return new FilterAction(cells);
-    }
-
-    /** Creates a tool bar for the label tree. */
-    public JToolBar createToolBar() {
-        JToolBar result = Options.createToolBar();
-        result.add(getShowSubtypesButton());
-        result.add(getShowSupertypesButton());
-        result.addSeparator();
-        result.add(getShowAllLabelsButton());
-        result.add(getCollapseAllButton());
-        // put the sub- and supertype buttons in a button group
-        ButtonGroup modeButtonGroup = new ButtonGroup();
-        modeButtonGroup.add(getShowSubtypesButton());
-        modeButtonGroup.add(getShowSupertypesButton());
-        return result;
-    }
-
-    /**
-     * Returns the button for the show-subtypes action, lazily creating it
-     * first.
-     */
-    private JToggleButton getShowSubtypesButton() {
-        if (this.showSubtypesButton == null) {
-            this.showSubtypesButton =
-                Options.createToggleButton(new ShowModeAction(true));
-            this.showSubtypesButton.setSelected(true);
+        if (isFiltering()) {
+            return new FilterAction(cells);
+        } else {
+            return null;
         }
-        return this.showSubtypesButton;
-    }
-
-    /**
-     * Returns the button for the show-supertypes action, lazily creating it
-     * first.
-     */
-    private JToggleButton getShowSupertypesButton() {
-        if (this.showSupertypesButton == null) {
-            this.showSupertypesButton =
-                Options.createToggleButton(new ShowModeAction(false));
-        }
-        return this.showSupertypesButton;
-    }
-
-    /**
-     * Returns the button for the show-supertypes action, lazily creating it
-     * first.
-     */
-    private JToggleButton getShowAllLabelsButton() {
-        if (this.showAllLabelsButton == null) {
-            this.showAllLabelsButton =
-                Options.createToggleButton(new ShowAllLabelsAction());
-        }
-        return this.showAllLabelsButton;
-    }
-
-    /**
-     * Returns the button for the collapse all action, lazily creating it
-     * first.
-     */
-    private JButton getCollapseAllButton() {
-        if (this.collapseAllButton == null) {
-            Action action = new CollapseAllAction(null, this);
-            this.collapseAllButton = Options.createButton(action);
-        }
-        return this.collapseAllButton;
     }
 
     /**
@@ -216,23 +146,19 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         return this.jGraph;
     }
 
-    /** 
-     * Convenience method to return the type graph of the grammar,
-     * or the graph in the jModel if that is a type graph. 
-     */
-    private TypeGraph getTypeGraph() {
-        TypeGraph result = null;
-        if (getJGraph() instanceof AspectJGraph
-            && getJGraph().getModel() != null) {
-            result = ((AspectJGraph) getJGraph()).getModel().getTypeGraph();
-        }
-        return result;
+    /** Returns the label filter associated with this label tree. */
+    LabelFilter getFilter() {
+        return this.labelFilter;
     }
 
-    /** Returns the label filter associated with this label tree. */
-    public LabelFilter getFilter() {
-        synchroniseModel();
-        return this.labelFilter;
+    /** Indicates if this label tree has a label filter. */
+    public boolean hasFilter() {
+        return getFilter() != null;
+    }
+
+    /** Indicates if this label tree is actively filtering. */
+    public boolean isFiltering() {
+        return this.filtering;
     }
 
     /**
@@ -252,10 +178,14 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      * if the jModel has changed.
      */
     public void synchroniseModel() {
-        if (this.jModel != getJGraph().getModel()
-            || this.typeGraph != getTypeGraph()) {
+        if (isModelStale()) {
             updateModel();
         }
+    }
+
+    /** Tests if the model underlying this label tree is stale w.r.t. the JGraph. */
+    boolean isModelStale() {
+        return this.jModel != getJGraph().getModel();
     }
 
     /**
@@ -268,50 +198,91 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             this.jModel.removeGraphModelListener(this);
         }
         this.jModel = getJGraph().getModel();
-        // determine if we want to reuse the entries in the filter
-        boolean reuse =
-            (getJGraph() instanceof AspectJGraph)
-                && this.typeGraph == getTypeGraph();
-        if (reuse) {
-            getFilter().clearJCells();
-        } else {
-            this.typeGraph = getTypeGraph();
-            getFilter().clear(
-                this.typeGraph == null || this.typeGraph.isImplicit());
+        if (hasFilter()) {
+            clearFilter();
         }
-        if (this.jModel == null) {
-            getFilter().clear(true);
-        } else {
+        if (this.jModel != null) {
             this.jModel.addGraphModelListener(this);
-            if (getTypeGraph() != null) {
-                for (TypeNode node : getTypeGraph().nodeSet()) {
-                    getFilter().addEntry(node);
-                }
-                for (TypeEdge edge : getTypeGraph().edgeSet()) {
-                    getFilter().addEntry(edge);
-                }
-            }
-            for (int i = 0; i < this.jModel.getRootCount(); i++) {
-                GraphJCell cell = (GraphJCell) this.jModel.getRootAt(i);
-                if (isListable(cell)) {
-                    getFilter().addJCell(cell);
-                }
+            if (hasFilter()) {
+                updateFilter();
             }
         }
         updateTree();
         setEnabled(this.jModel != null);
     }
 
-    /**
-     * Enables the buttons in addition to delegating the method to <tt>super</tt>.
+    /** 
+     * Clears the filter, in preparation to updating it from the model.
+     * Only called when {@link #hasFilter()} holds.
      */
-    @Override
-    public void setEnabled(boolean enabled) {
-        getShowAllLabelsButton().setEnabled(enabled);
-        getShowSubtypesButton().setEnabled(enabled);
-        getShowSupertypesButton().setEnabled(enabled);
-        getCollapseAllButton().setEnabled(enabled);
-        super.setEnabled(enabled);
+    void clearFilter() {
+        getFilter().clear();
+    }
+
+    /**
+     * Reloads the filter from the model.
+     * Only called when {@link #hasFilter()} holds.
+     */
+    void updateFilter() {
+        for (GraphJCell cell : this.jModel.getRoots()) {
+            getFilter().addJCell(cell);
+        }
+    }
+
+    /**
+     * Updates the list from the internally kept label collection.
+     */
+    void updateTree() {
+        // temporarily remove this component as selection listener
+        removeTreeSelectionListener(this);
+        // remember the collapsed paths
+        Set<TreeNode> collapsedNodes = new HashSet<TreeNode>();
+        for (int i = 0; i < getRowCount(); i++) {
+            if (isCollapsed(i)) {
+                TreeNode child =
+                    (TreeNode) getPathForRow(i).getLastPathComponent();
+                if (child.getChildCount() > 0) {
+                    collapsedNodes.add(child);
+                }
+            }
+        }
+        // clear the selection first
+        clearSelection();
+        // clear the list
+        getTopNode().removeAllChildren();
+        List<TreeNode> newNodes = fillTree();
+        getModel().reload(getTopNode());
+        // expand those paths that were not collapsed before
+        for (TreeNode newNode : newNodes) {
+            if (newNode.isLeaf()) {
+                continue;
+            }
+            boolean expand = true;
+            TreePath path = new TreePath(newNode.getPath());
+            for (Object node : path.getPath()) {
+                if (collapsedNodes.contains(node)) {
+                    expand = false;
+                    break;
+                }
+            }
+            if (expand) {
+                expandPath(path);
+            }
+        }
+        addTreeSelectionListener(this);
+    }
+
+    /** Updates the tree from the labels in the filter. */
+    List<TreeNode> fillTree() {
+        List<TreeNode> result = new ArrayList<TreeNode>();
+        Set<Entry> entries = new TreeSet<Entry>(getFilter().getEntries());
+        for (Entry entry : entries) {
+            if (getFilter().hasJCells(entry)) {
+                EntryNode labelNode = new EntryNode(entry, true);
+                getTopNode().add(labelNode);
+            }
+        }
+        return result;
     }
 
     /**
@@ -319,21 +290,17 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
      */
     public void graphChanged(GraphModelEvent e) {
         boolean changed = false;
-        if (getTypeGraph() != this.typeGraph) {
-            updateModel();
-        } else {
-            GraphModelEvent.GraphModelChange change = e.getChange();
-            changed = processRegularEdit(change, changed);
-            if (changed) {
-                updateTree();
-            }
+        GraphModelEvent.GraphModelChange change = e.getChange();
+        changed = processEdit(change, changed);
+        if (changed) {
+            updateTree();
         }
     }
 
     /**
      * Records the changes imposed by a graph change.
      */
-    private boolean processRegularEdit(GraphModelEvent.GraphModelChange change,
+    private boolean processEdit(GraphModelEvent.GraphModelChange change,
             boolean changed) {
         // insertions double as changes, so we do insertions first
         // and remove them from the change map
@@ -348,16 +315,16 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             for (Object element : addedArray) {
                 // the cell may be a port, so we have to check for
                 // JCell-hood
-                if (isListable(element)) {
+                if (element instanceof GraphJCell) {
                     changed |= getFilter().addJCell((GraphJCell) element);
                 }
                 changeMap.remove(element);
             }
         }
         for (Object changeEntry : changeMap.entrySet()) {
-            Object obj = ((Map.Entry<?,?>) changeEntry).getKey();
-            if (isListable(obj)) {
-                changed |= getFilter().modifyJCell((GraphJCell) obj);
+            Object element = ((Map.Entry<?,?>) changeEntry).getKey();
+            if (element instanceof GraphJCell) {
+                changed |= getFilter().modifyJCell((GraphJCell) element);
             }
         }
         // removed cells mean removed labels
@@ -366,21 +333,12 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             for (Object element : removedArray) {
                 // the cell may be a port, so we have to check for
                 // JCell-hood
-                if (isListable(element)) {
+                if (element instanceof GraphJCell) {
                     changed |= getFilter().removeJCell((GraphJCell) element);
                 }
             }
         }
         return changed;
-    }
-
-    /**
-     * Callback method to determine whether a given cell should be included in
-     * the label list. This should only be the case if the cell is a
-     * {@link GraphJCell}.
-     */
-    private boolean isListable(Object cell) {
-        return cell instanceof GraphJCell;
     }
 
     /**
@@ -406,168 +364,18 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
     }
 
     /**
-     * Updates the list from the internally kept label collection.
-     */
-    private void updateTree() {
-        // temporarily remove this component as selection listener
-        removeTreeSelectionListener(this);
-        // remember the collapsed paths
-        Set<TreeNode> collapsedNodes = new HashSet<TreeNode>();
-        for (int i = 0; i < getRowCount(); i++) {
-            if (isCollapsed(i)) {
-                TreeNode child =
-                    (TreeNode) getPathForRow(i).getLastPathComponent();
-                if (child.getChildCount() > 0) {
-                    collapsedNodes.add(child);
-                }
-            }
-        }
-        // clear the selection first
-        clearSelection();
-        // clear the list
-        getTopNode().removeAllChildren();
-        List<TreeNode> newNodes =
-            getFilter().isLabelBased() ? updateTreeFromLabels()
-                    : updateTreeFromTypeGraph();
-        getModel().reload(getTopNode());
-        // expand those paths that were not collapsed before
-        for (TreeNode newNode : newNodes) {
-            if (newNode.isLeaf()) {
-                continue;
-            }
-            boolean expand = true;
-            TreePath path = new TreePath(newNode.getPath());
-            for (Object node : path.getPath()) {
-                if (collapsedNodes.contains(node)) {
-                    expand = false;
-                    break;
-                }
-            }
-            if (expand) {
-                expandPath(path);
-            }
-        }
-        addTreeSelectionListener(this);
-    }
-
-    /** Updates the tree from the labels in the filter. */
-    private List<TreeNode> updateTreeFromLabels() {
-        List<TreeNode> result = new ArrayList<TreeNode>();
-        Set<Entry> entries = new TreeSet<Entry>(getFilter().getEntries());
-        for (Entry entry : entries) {
-            if (isShowsAllLabels() || getFilter().hasJCells(entry)) {
-                EntryNode labelNode = new EntryNode(entry, true);
-                getTopNode().add(labelNode);
-            }
-        }
-        return result;
-    }
-
-    /** Updates the tree from the information in the type graph map. */
-    private List<TreeNode> updateTreeFromTypeGraph() {
-        List<TreeNode> newNodes = new ArrayList<TreeNode>();
-        Collection<TypeGraph.Sub> typeGraphMap =
-            getTypeGraph().getComponentMap().values();
-        if (this.jModel.getGraph().getRole() == GraphRole.TYPE) {
-            newNodes =
-                updateTreeFromTypeGraph(getTopNode(), getTypeGraph().nodeSet(),
-                    getTypeGraph().edgeSet());
-        } else if (typeGraphMap.size() == 1) {
-            TypeGraph.Sub subTypeGraph = typeGraphMap.iterator().next();
-            newNodes =
-                updateTreeFromTypeGraph(getTopNode(), subTypeGraph.getNodes(),
-                    subTypeGraph.getEdges());
-        } else {
-            newNodes = new ArrayList<TreeNode>();
-            for (TypeGraph.Sub subTypeGraph : typeGraphMap) {
-                TypeGraphTreeNode typeGraphNode =
-                    new TypeGraphTreeNode(subTypeGraph);
-                newNodes.addAll(updateTreeFromTypeGraph(typeGraphNode,
-                    subTypeGraph.getNodes(), subTypeGraph.getEdges()));
-                // only add if there were any children
-                if (typeGraphNode.getChildCount() > 0) {
-                    getTopNode().add(typeGraphNode);
-                    newNodes.add(typeGraphNode);
-                }
-            }
-        }
-        return newNodes;
-    }
-
-    /** Updates the tree from the information in a given type graph. */
-    private List<TreeNode> updateTreeFromTypeGraph(
-            DefaultMutableTreeNode topNode, Set<? extends TypeNode> typeNodes,
-            Set<? extends TypeEdge> typeEdges) {
-        List<TreeNode> newNodes = new ArrayList<TreeNode>();
-        // mapping from type nodes to related types (in the combined type graph)
-        Map<TypeNode,Set<TypeNode>> relatedMap =
-            isShowsSubtypes() ? getTypeGraph().getDirectSubtypeMap()
-                    : getTypeGraph().getDirectSupertypeMap();
-        for (TypeNode node : new TreeSet<TypeNode>(typeNodes)) {
-            if (node.isDataType()) {
-                continue;
-            }
-            Entry entry = getFilter().getEntry(node);
-            if (isShowsAllLabels() || getFilter().hasJCells(entry)) {
-                EntryNode nodeTypeNode = new EntryNode(entry, true);
-                topNode.add(nodeTypeNode);
-                newNodes.add(nodeTypeNode);
-                addRelatedTypes(typeNodes, nodeTypeNode, relatedMap, newNodes);
-                // check duplicates due to equi-labelled edges to different targets
-                Set<Entry> entries = new HashSet<Entry>();
-                for (TypeEdge edge : new TreeSet<TypeEdge>(
-                    getTypeGraph().outEdgeSet(node))) {
-                    if (typeEdges.contains(edge)) {
-                        Entry edgeEntry = getFilter().getEntry(edge);
-                        if (entries.add(edgeEntry)) {
-                            EntryNode edgeTypeNode =
-                                new EntryNode(edgeEntry, true);
-                            nodeTypeNode.add(edgeTypeNode);
-                            newNodes.add(edgeTypeNode);
-                        }
-                    }
-                }
-            }
-        }
-        return newNodes;
-    }
-
-    /**
-     * Recursively adds related types to a given label node.
-     * Only first level subtypes are added.
-     * @param typeNodes set of type nodes from which the related types are taken
-     * @param typeNode tree node for the key type
-     * @param map mapping from key types to related node type (in the combined type graph)
-     * @param newNodes set that collects all newly created tree nodes  
-     */
-    private void addRelatedTypes(Set<? extends TypeNode> typeNodes,
-            EntryNode typeNode, Map<TypeNode,Set<TypeNode>> map,
-            List<TreeNode> newNodes) {
-        TypeNode type = (TypeNode) ((TypeEntry) typeNode.getEntry()).getType();
-        Set<TypeNode> relatedTypes = map.get(type);
-        assert relatedTypes != null : String.format(
-            "Node type '%s' does not occur in type graph '%s'", type,
-            map.keySet());
-        for (TypeNode relType : relatedTypes) {
-            // test if the node type label exists in the partial type graph
-            if (typeNodes.contains(relType)) {
-                EntryNode subTypeNode = new EntryNode(relType, false);
-                typeNode.add(subTypeNode);
-                if (newNodes != null) {
-                    newNodes.add(typeNode);
-                }
-                // change last parameter to newNodes if subtypes should be added
-                // to arbitrary depth
-                addRelatedTypes(typeNodes, subTypeNode, map, null);
-            }
-        }
-    }
-
-    /**
      * Creates a popup menu, consisting of show and hide actions.
      */
     private JPopupMenu createPopupMenu() {
         JPopupMenu result = new JPopupMenu();
+        addActionItems(result);
+        addFilterItems(result);
+        addShowHideItems(result);
+        return result;
+    }
+
+    /** Adds menu items for colouring and find/replace actions. */
+    private void addActionItems(JPopupMenu result) {
         TreePath[] selectedValues = getSelectionPaths();
         ActionStore actions = getJGraph().getActions();
         if (selectedValues != null && selectedValues.length == 1
@@ -579,17 +387,25 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             }
             result.addSeparator();
         }
+    }
+
+    /** Adds menu items to start or stop filtering the selected paths. */
+    void addFilterItems(JPopupMenu menu) {
+        TreePath[] selectedValues = getSelectionPaths();
         if (isFiltering() && selectedValues != null) {
-            result.add(new FilterAction(selectedValues, true));
-            result.add(new FilterAction(selectedValues, false));
-            result.addSeparator();
+            menu.add(new FilterAction(selectedValues, true));
+            menu.add(new FilterAction(selectedValues, false));
+            menu.addSeparator();
         }
+    }
+
+    /** Adds menu items for graying out. */
+    private void addShowHideItems(JPopupMenu result) {
         // add the show/hide menu
         JPopupMenu restMenu = new ShowHideMenu(this.jGraph).getPopupMenu();
         while (restMenu.getComponentCount() > 0) {
             result.add(restMenu.getComponent(0));
         }
-        return result;
     }
 
     /**
@@ -601,13 +417,6 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
             boolean expanded, boolean leaf, int row, boolean hasFocus) {
         if (value instanceof EntryNode) {
             return getText(((EntryNode) value).getEntry());
-        } else if (value instanceof TypeGraphTreeNode) {
-            StringBuilder result = new StringBuilder();
-            result.append("Type graph '");
-            result.append(((TypeGraphTreeNode) value).getName());
-            result.append("'");
-            return HTMLConverter.HTML_TAG.on(
-                ITALIC_TAG.on(STRONG_TAG.on(result))).toString();
         } else {
             return super.convertValueToText(value, selected, expanded, leaf,
                 row, hasFocus);
@@ -622,7 +431,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         StringBuilder text = new StringBuilder();
         Label label = entry.getLabel();
         boolean specialLabelColour = false;
-        if (label.equals(TypeLabel.NODE) || label.equals(GraphJVertex.NO_LABEL)) {
+        if (label.equals(TypeLabel.NODE)) {
             text.append(Options.NO_LABEL_TEXT);
             specialLabelColour = true;
         } else if (label.text().length() == 0) {
@@ -640,106 +449,40 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         return HTML_TAG.on(text).toString();
     }
 
-    /** Indicates if this label tree supports filtering of labels. */
-    public boolean isFiltering() {
-        return this.filtering;
-    }
-
     /** Indicates if a given jCell is entirely filtered. */
     public boolean isFiltered(GraphJCell jCell) {
         synchroniseModel();
-        return isFiltering()
+        return hasFilter()
             && getFilter().isFiltered(jCell,
                 getJGraph().isShowUnfilteredEdges());
     }
 
-    /** Indicates if a given key is entirely filtered. */
-    public boolean isFiltered(Element key) {
+    /** Indicates if a given key is actively filtered. */
+    public boolean isFiltered(Label key) {
         synchroniseModel();
-        return isFiltering()
+        return hasFilter()
             && !getFilter().isSelected(getFilter().getEntry(key));
     }
 
     /**
-     * Indicates if this tree is currently showing subtype relations.
-     */
-    boolean isShowsSubtypes() {
-        return this.showsSubtypes;
-    }
-
-    /**
-     * Changes the value of the show-subtype flag.
-     */
-    private void setShowsSubtypes(boolean show) {
-        this.showsSubtypes = show;
-    }
-
-    /**
-     * Indicates if this tree is currently showing all labels, or just those
-     * existing in the graph.
-     */
-    public boolean isShowsAllLabels() {
-        return this.showsAllLabels;
-    }
-
-    /**
-     * Changes the value of the show-all-labels flag.
-     */
-    public void setShowsAllLabels(boolean show) {
-        this.showsAllLabels = show;
-    }
-
-    /**
-     * The {@link GraphJGraph}associated to this label list.
+     * The JGraph permanently associated with this label list.
      */
     private final GraphJGraph jGraph;
 
     /**
-     * The {@link GraphJModel}currently being viewed by this label list.
+     * The {@link GraphJModel} currently being viewed by this label list.
      */
     private GraphJModel<?,?> jModel;
-    /** The type graph in the model, if any. */
-    private TypeGraph typeGraph;
-    /** Flag indicating if label filtering should be used. */
-    private final boolean filtering;
     /** Set of filtered labels. */
     private final LabelFilter labelFilter;
-    /** Mode of the label tree: showing all labels or just those in the graph. */
-    private boolean showsAllLabels = false;
-    /** Mode of the label tree: showing subtypes or supertypes. */
-    private boolean showsSubtypes = true;
-    /** Button for setting the show subtypes mode. */
-    private JToggleButton showSubtypesButton;
-    /** Button for setting the show supertypes mode. */
-    private JToggleButton showSupertypesButton;
-    /** Button for setting the show all actions mode. */
-    private JToggleButton showAllLabelsButton;
-    /** Button for collapsing the label tree. */
-    private JButton collapseAllButton;
-
-    /**
-     * Returns the icon for subtype or supertype mode, depending on the
-     * parameter.
-     */
-    static Icon getModeIcon(boolean subtypes) {
-        return subtypes ? Icons.ARROW_OPEN_UP_ICON : Icons.ARROW_OPEN_DOWN_ICON;
-    }
+    /** Flag indicating if there is active filtering. */
+    private final boolean filtering;
 
     /** Colour HTML tag for the foreground colour of special labels. */
     private static final Color SPECIAL_COLOR = Color.LIGHT_GRAY;
 
     /** Tree node wrapping a filter entry. */
     public class EntryNode extends TreeNode {
-        /**
-         * Constructs a new node, for a given type element.
-         * @param key the key element wrapped in this node
-         * @param topNode flag indicating if this is a top type node in the tree
-         */
-        EntryNode(TypeElement key, boolean topNode) {
-            this(getFilter().getEntry(key), topNode);
-            assert key != null;
-        }
-
         /**
          * Constructs a new node, for a given filter entry.
          * @param entry The label wrapped in this node
@@ -768,13 +511,18 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         }
 
         /** Returns the label of this tree node. */
-        public final Entry getEntry() {
+        public Entry getEntry() {
             return this.entry;
         }
 
         /** Indicates if this node is a top label type node in the tree. */
         public final boolean isTopNode() {
             return this.topNode;
+        }
+
+        /** Returns the (possibly {@code null}) icon of this node. */
+        public Icon getIcon() {
+            return null;
         }
 
         /** Indicates if this tree node has a node filtering checkbox. */
@@ -802,68 +550,6 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         private final boolean topNode;
     }
 
-    /** Tree node wrapping a type graph. */
-    public class TypeGraphTreeNode extends TreeNode {
-        /**
-         * Constructs a new node, for a given type graph component
-         * @param subTypeGraph the type graph component
-         */
-        TypeGraphTreeNode(TypeGraph.Sub subTypeGraph) {
-            this.name = subTypeGraph.getName();
-            for (TypeNode node : subTypeGraph.getNodes()) {
-                this.entries.add(getFilter().getEntry(node));
-            }
-            for (TypeEdge edge : subTypeGraph.getEdges()) {
-                this.entries.add(getFilter().getEntry(edge));
-            }
-        }
-
-        @Override
-        public int hashCode() {
-            return this.name.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (!(obj instanceof TypeGraphTreeNode)) {
-                return false;
-            }
-            TypeGraphTreeNode other = (TypeGraphTreeNode) obj;
-            return this.name.equals(other.name);
-        }
-
-        /** Returns the name of this type graph. */
-        public final String getName() {
-            return this.name;
-        }
-
-        @Override
-        public boolean hasCheckbox() {
-            return true;
-        }
-
-        @Override
-        public boolean isSelected() {
-            return getFilter().isSelected(this.entries);
-        }
-
-        @Override
-        public void setSelected(boolean selected) {
-            getFilter().setSelected(this.entries, selected);
-        }
-
-        @Override
-        public final String toString() {
-            return String.format("Type graph '%s'", this.name);
-        }
-
-        private final String name;
-        private final Set<Entry> entries = new HashSet<Entry>();
-    }
-
     /** Class to deal with mouse events over the label list. */
     private class MyMouseListener extends MouseAdapter {
         @Override
@@ -873,7 +559,7 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            if (isFiltering() && e.getClickCount() == 2) {
+            if (hasFilter() && e.getClickCount() == 2) {
                 TreePath path =
                     getPathForLocation(e.getPoint().x, e.getPoint().y);
                 if (path != null) {
@@ -925,70 +611,6 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
         private final Collection<Entry> entries;
     }
 
-    /** Action changing the show mode to showing subtypes or supertypes. */
-    private class ShowModeAction extends AbstractAction {
-        /**
-         * Creates an action, with a parameter indicating if it is subtypes or
-         * supertypes that should be shown.
-         * @param subtypes if <code>true</code>, the action should show
-         *        subtypes; otherwise, it should show supertypes.
-         */
-        public ShowModeAction(boolean subtypes) {
-            super(null, getModeIcon(subtypes));
-            this.subtypes = subtypes;
-            putValue(Action.SHORT_DESCRIPTION, computeName());
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (isShowsSubtypes() != this.subtypes) {
-                setShowsSubtypes(this.subtypes);
-                updateTree();
-            }
-        }
-
-        /**
-         * Returns the appropriate name for this action, based on the current
-         * value of {@link #subtypes}
-         */
-        private String computeName() {
-            return this.subtypes ? Options.SHOW_SUBTYPES_ACTION_NAME
-                    : Options.SHOW_SUPERTYPES_ACTION_NAME;
-        }
-
-        /** Flag indicating if this action should show subtypes. */
-        private final boolean subtypes;
-    }
-
-    /**
-     * Action flipping the show mode between all labels and just the labels in
-     * the current graph.
-     */
-    private class ShowAllLabelsAction extends AbstractAction {
-        public ShowAllLabelsAction() {
-            super(null, Icons.E_A_CHOICE_ICON);
-            putValue(Action.SHORT_DESCRIPTION, computeName());
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            setShowsAllLabels(!isShowsAllLabels());
-            setName(computeName());
-            putValue(Action.SHORT_DESCRIPTION, computeName());
-            updateTree();
-        }
-
-        /**
-         * Returns the appropriate name for this action, based on the current
-         * value of {@link #isShowsAllLabels()}
-         */
-        private String computeName() {
-            return isShowsAllLabels()
-                    ? Options.SHOW_EXISTING_LABELS_ACTION_NAME
-                    : Options.SHOW_ALL_LABELS_ACTION_NAME;
-        }
-    }
-
     /** Adds an icon, tool tip text and label colour. */
     private class MyTreeCellRenderer extends CellRenderer {
         public MyTreeCellRenderer() {
@@ -1004,14 +626,10 @@ public class LabelTree extends CheckboxTree implements GraphModelListener,
                     leaf, row, hasFocus);
             // set a sub- or supertype icon if the node label is a subnode
             Icon labelIcon = null;
-            Entry entry = null;
-            boolean topNode = false;
             if (getTreeNode() instanceof EntryNode) {
-                entry = ((EntryNode) getTreeNode()).getEntry();
-                topNode = ((EntryNode) getTreeNode()).isTopNode();
-                if (!topNode) {
-                    labelIcon = LabelTree.getModeIcon(isShowsSubtypes());
-                }
+                EntryNode entryNode = (EntryNode) getTreeNode();
+                Entry entry = entryNode.getEntry();
+                labelIcon = entryNode.getIcon();
                 // set tool tip text
                 StringBuilder toolTipText = new StringBuilder();
                 Set<GraphJCell> occurrences = getFilter().getJCells(entry);

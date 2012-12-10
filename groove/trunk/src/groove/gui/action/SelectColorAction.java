@@ -1,7 +1,6 @@
 package groove.gui.action;
 
 import groove.graph.EdgeRole;
-import groove.graph.Element;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.TypeLabel;
@@ -73,7 +72,7 @@ public class SelectColorAction extends SimulatorAction implements
         Object[] selection = jGraph.getSelectionCells();
         if (selection != null) {
             choose: for (Object cell : selection) {
-                for (Element entry : ((GraphJCell) cell).getKeys()) {
+                for (Label entry : ((GraphJCell) cell).getKeys()) {
                     if (entry instanceof TypeNode) {
                         this.label = ((TypeNode) entry).label();
                         break choose;

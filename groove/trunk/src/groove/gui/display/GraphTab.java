@@ -9,8 +9,8 @@ import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJCell;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.tree.LabelTree;
 import groove.gui.tree.RuleLevelTree;
+import groove.gui.tree.TypeTree;
 import groove.trans.ResourceKind;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
@@ -135,7 +135,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     private TitledPanel getLabelPanel() {
         TitledPanel result = this.labelPanel;
         if (result == null) {
-            LabelTree labelTree = getJGraph().getLabelTree();
+            TypeTree labelTree = getLabelTree();
             this.labelPanel =
                 result =
                     new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
@@ -177,6 +177,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     /** Level tree panel of this tab, if any. */
     private JPanel lowerInfoPanel;
 
+    /** Lazily creates and returns the (possibly {@code null}) rule level tree. */
     private RuleLevelTree getLevelTree() {
         RuleLevelTree result = this.levelTree;
         if (result == null && getResourceKind() == ResourceKind.RULE) {
@@ -186,6 +187,17 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     }
 
     private RuleLevelTree levelTree;
+
+    /** Lazily creates and returns the (non-{@code null}) label tree. */
+    private TypeTree getLabelTree() {
+        TypeTree result = this.labelTree;
+        if (result == null) {
+            result = this.labelTree = new TypeTree(getJGraph(), true);
+        }
+        return result;
+    }
+
+    private TypeTree labelTree;
 
     @Override
     public boolean setResource(String name) {
@@ -274,7 +286,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
                 this.jGraph =
                     new AspectJGraph(getSimulator(), getDisplay().getKind(),
                         false);
-            result.setLabelTree(new LabelTree(getJGraph(), true));
+            result.setLabelTree(getLabelTree());
             result.setLevelTree(getLevelTree());
         }
         return result;

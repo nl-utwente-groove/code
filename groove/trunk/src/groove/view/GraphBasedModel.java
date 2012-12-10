@@ -83,7 +83,7 @@ abstract public class GraphBasedModel<R> extends ResourceModel<R> {
      * @return a mapping from the elements of {@link #getSource()} to types in the
      * associated type graph, or {@code null} if {@link #hasErrors()} holds 
      */
-    abstract public groove.view.GraphBasedModel.TypeModelMap getTypeMap();
+    abstract public TypeModelMap getTypeMap();
 
     /** 
      * Transfers a collection of errors according to the
