@@ -208,7 +208,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
         TypeModelMap typeMap = getTypeMap();
         if (typeMap != null) {
             TypeNode type = typeMap.getNode(getNode());
-            if (!hasEdgeKeys || !type.isTopType()) {
+            if (type != null && (!hasEdgeKeys || !type.isTopType())) {
                 result.addAll(type.getSupertypes());
             }
         }
