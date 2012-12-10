@@ -1206,10 +1206,12 @@ public class GraphJGraph extends org.jgraph.JGraph {
             itemAdded = true;
         }
         LabelTree labelTree = getLabelTree();
-        if (labelTree != null && labelTree.isFiltering() && cells != null
-            && cells.length > 0) {
-            result.add(getLabelTree().createFilterAction(cells));
-            itemAdded = true;
+        if (labelTree != null && cells != null && cells.length > 0) {
+            Action filterAction = labelTree.createFilterAction(cells);
+            if (filterAction != null) {
+                result.add(filterAction);
+                itemAdded = true;
+            }
         }
         if (itemAdded) {
             result.addSeparator();

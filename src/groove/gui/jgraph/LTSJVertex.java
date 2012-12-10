@@ -46,11 +46,6 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
         }
     }
 
-    @Override
-    protected Node getNodeKey() {
-        return null;
-    }
-
     public void setVisibleFlag(boolean visible) {
         this.visibleFlag = visible;
         setStale(VisualKey.VISIBLE);
