@@ -72,42 +72,51 @@ public class GrooveToConstraint implements Messenger {
 
     private GraphNodeTypes m_types;
 
-    public GrooveToConstraint(Collection<RuleModel> ruleModels, GraphNodeTypes types, Config cfg, TypeModel typeModel) {
-        m_ruleModels = ruleModels;
-        m_types = types;
-        m_cfg = cfg;
-        m_typeModel = typeModel;
+    public GrooveToConstraint(Collection<RuleModel> ruleModels,
+            GraphNodeTypes types, Config cfg, TypeModel typeModel) {
+        this.m_ruleModels = ruleModels;
+        this.m_types = types;
+        this.m_cfg = cfg;
+        this.m_typeModel = typeModel;
 
         parseRules();
     }
 
     private void parseRules() {
-        Constraints constraints = m_cfg.getConfig().getTypeModel().getConstraints();
-        for (RuleModel model : m_ruleModels) {
+        Constraints constraints =
+            this.m_cfg.getConfig().getTypeModel().getConstraints();
+        for (RuleModel model : this.m_ruleModels) {
+            if (!model.isEnabled() || model.hasErrors()) {
+                continue;
+            }
             String name = model.getFullName();
             if (constraints.isCheckUniqueness() && name.contains("Unique")) {
-                if (!m_cfg.getConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
+                if (!this.m_cfg.getConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
                     parseUniqueRule(model);
                 }
-            } else if (constraints.isCheckOrdering() && name.contains("Ordered")) {
-                if (!m_cfg.getConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
+            } else if (constraints.isCheckOrdering()
+                && name.contains("Ordered")) {
+                if (!this.m_cfg.getConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
                     parseOrderedRule(model);
                 }
-            } else if (constraints.isCheckIdentifier() && name.contains("Identity")) {
-                if (m_cfg.getConfig().getTypeModel().getProperties().isUseIdentity()) {
+            } else if (constraints.isCheckIdentifier()
+                && name.contains("Identity")) {
+                if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseIdentity()) {
                     parseIdentityRule(model);
                 }
             } else if (constraints.isCheckKeyset() && name.contains("Keyset")) {
-                if (m_cfg.getConfig().getTypeModel().getProperties().isUseKeyset()) {
+                if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseKeyset()) {
 
                     parseKeysetRule(model);
                 }
-            } else if (constraints.isCheckOpposite() && name.contains("Opposite")) {
-                if (m_cfg.getConfig().getTypeModel().getProperties().isUseOpposite()) {
+            } else if (constraints.isCheckOpposite()
+                && name.contains("Opposite")) {
+                if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseOpposite()) {
                     parseOppositeRule(model);
                 }
-            } else if (m_cfg.getConfig().getTypeModel().getFields().getDefaults().isUseRule() && name.contains("Default")) {
-                if (m_cfg.getConfig().getTypeModel().getProperties().isUseDefaultValue()) {
+            } else if (this.m_cfg.getConfig().getTypeModel().getFields().getDefaults().isUseRule()
+                && name.contains("Default")) {
+                if (this.m_cfg.getConfig().getTypeModel().getProperties().isUseDefaultValue()) {
                     parseDefaultRule(model);
                 }
             }
@@ -116,16 +125,16 @@ public class GrooveToConstraint implements Messenger {
 
     @Override
     public List<Message> getMessages() {
-        return m_messages;
+        return this.m_messages;
     }
 
     @Override
     public void clearMessages() {
-        m_messages.clear();
+        this.m_messages.clear();
     }
 
     private void addMessage(Message msg) {
-        m_messages.add(msg);
+        this.m_messages.add(msg);
     }
 
     // Determines subject of rule and sets container type to be unique
@@ -136,9 +145,10 @@ public class GrooveToConstraint implements Messenger {
             // Find root node
             if (n.getTargetEdges().size() == 0 && getType(n) != null) {
                 // Get field of first outgoing edge and change its type to something unique
-                Class c = (Class) m_types.getType(getType(n));
+                Class c = (Class) this.m_types.getType(getType(n));
                 if (n.getEdges().size() > 0) {
-                    Name fieldName = Name.getName(n.getEdges().get(0).getName());
+                    Name fieldName =
+                        Name.getName(n.getEdges().get(0).getName());
                     if (c.getField(fieldName).getType() instanceof Container) {
                         ((Container) c.getField(fieldName).getType()).setUnique(true);
                     }
@@ -153,11 +163,13 @@ public class GrooveToConstraint implements Messenger {
 
         for (AbsNode n : ruleGraph.getNodes()) {
             // Find root node (NAC check is for edge roots)
-            if (n.getTargetEdges().size() == 0 && !isNAC(n) && getType(n) != null) {
+            if (n.getTargetEdges().size() == 0 && !isNAC(n)
+                && getType(n) != null) {
                 // Get field of first outgoing edge and change its type to something ordered
-                Class c = (Class) m_types.getType(getType(n));
+                Class c = (Class) this.m_types.getType(getType(n));
                 if (n.getEdges().size() > 0) {
-                    Name fieldName = Name.getName(n.getEdges().get(0).getName());
+                    Name fieldName =
+                        Name.getName(n.getEdges().get(0).getName());
                     if (c.getField(fieldName).getType() instanceof Container) {
                         ((Container) c.getField(fieldName).getType()).setOrdered(true);
                     }
@@ -179,7 +191,7 @@ public class GrooveToConstraint implements Messenger {
             for (AbsEdge edge : node.getTargetEdges()) {
                 if (edge.getName().equals("!=")) {
                     classNode = edge.getSource();
-                    idClass = (Class) m_types.getType(getType(classNode));
+                    idClass = (Class) this.m_types.getType(getType(classNode));
                     break outloop;
                 }
             }
@@ -194,8 +206,10 @@ public class GrooveToConstraint implements Messenger {
                 }
             }
             if (fieldNames.size() > 0) {
-                IdentityProperty ip = new IdentityProperty(idClass, fieldNames.toArray(new Name[fieldNames.size()]));
-                m_typeModel.addProperty(ip);
+                IdentityProperty ip =
+                    new IdentityProperty(idClass,
+                        fieldNames.toArray(new Name[fieldNames.size()]));
+                this.m_typeModel.addProperty(ip);
             }
         }
     }
@@ -213,7 +227,7 @@ public class GrooveToConstraint implements Messenger {
         for (AbsNode node : ruleGraph.getNodes()) {
             if (node.getTargetEdges().size() == 0) {
                 relClassNode = node;
-                relClass = (Class) m_types.getType(getType(node));
+                relClass = (Class) this.m_types.getType(getType(node));
                 break;
             }
         }
@@ -230,7 +244,7 @@ public class GrooveToConstraint implements Messenger {
             for (AbsEdge edge : node.getTargetEdges()) {
                 if (edge.getName().equals("!=")) {
                     classNode = edge.getSource();
-                    keyClass = (Class) m_types.getType(getType(node));
+                    keyClass = (Class) this.m_types.getType(getType(node));
                     break outloop;
                 }
             }
@@ -248,9 +262,11 @@ public class GrooveToConstraint implements Messenger {
             }
         }
         if (fieldNames.size() > 0) {
-            Class c = (Class) m_types.getType(getType(classNode));
-            KeysetProperty kp = new KeysetProperty(relClass, relField, c, fieldNames.toArray(new Name[fieldNames.size()]));
-            m_typeModel.addProperty(kp);
+            Class c = (Class) this.m_types.getType(getType(classNode));
+            KeysetProperty kp =
+                new KeysetProperty(relClass, relField, c,
+                    fieldNames.toArray(new Name[fieldNames.size()]));
+            this.m_typeModel.addProperty(kp);
         }
     }
 
@@ -276,7 +292,7 @@ public class GrooveToConstraint implements Messenger {
             if (type == null) {
                 continue;
             }
-            if (m_types.getModelType(type) == ModelType.TypeClass) {
+            if (this.m_types.getModelType(type) == ModelType.TypeClass) {
                 for (AbsEdge edge : node.getEdges()) {
                     AbsNode targetNode = edge.getTarget();
                     String targettype = getType(targetNode);
@@ -284,12 +300,12 @@ public class GrooveToConstraint implements Messenger {
                         continue;
                     }
                     // If not class then intermediate. This should actually always hold
-                    if (m_types.getModelType(targettype) != ModelType.TypeClass) {
+                    if (this.m_types.getModelType(targettype) != ModelType.TypeClass) {
                         if (!isNAC(targetNode)) {
-                            class1 = (Class) m_types.getType(type);
+                            class1 = (Class) this.m_types.getType(type);
                             field1 = Name.getName(edge.getName());
                         } else {
-                            class2 = (Class) m_types.getType(type);
+                            class2 = (Class) this.m_types.getType(type);
                             field2 = Name.getName(edge.getName());
                         }
                     }
@@ -298,8 +314,9 @@ public class GrooveToConstraint implements Messenger {
 
         }
 
-        OppositeProperty op = new OppositeProperty(class1, field1, class2, field2);
-        m_typeModel.addProperty(op);
+        OppositeProperty op =
+            new OppositeProperty(class1, field1, class2, field2);
+        this.m_typeModel.addProperty(op);
     }
 
     // Determines subject of rule and creates DefaultValueProperty
@@ -321,8 +338,8 @@ public class GrooveToConstraint implements Messenger {
             if (type == null) {
                 continue;
             }
-            if (m_types.getModelType(type) == ModelType.TypeClass) {//Other option is data type, ignore that as it is the actual value
-                Class cmClass = (Class) m_types.getType(type);
+            if (this.m_types.getModelType(type) == ModelType.TypeClass) {//Other option is data type, ignore that as it is the actual value
+                Class cmClass = (Class) this.m_types.getType(type);
 
                 for (AbsEdge edge : node.getEdges()) {
                     AbsNode targetNode = edge.getTarget();
@@ -334,8 +351,9 @@ public class GrooveToConstraint implements Messenger {
                         Name field = Name.getName(edge.getName().substring(4)); //remove the "new:" aspect
                         Value value = getNodeValue(targetNode);
 
-                        DefaultValueProperty dp = new DefaultValueProperty(cmClass, field, value);
-                        m_typeModel.addProperty(dp);
+                        DefaultValueProperty dp =
+                            new DefaultValueProperty(cmClass, field, value);
+                        this.m_typeModel.addProperty(dp);
 
                         break;
                     }
@@ -372,10 +390,13 @@ public class GrooveToConstraint implements Messenger {
                     // Ignore edges of which the current node is the target, they will be treated by the source node
                     continue;
                 }
-                if (edge.getAspect().isForNode(GraphRole.RULE) && edge.source() == edge.target()) {
+                if (edge.getAspect().isForNode(GraphRole.RULE)
+                    && edge.source() == edge.target()) {
                     nodeMap.get(edge.source()).addName(edge.label().toString());
                 } else {
-                    /*AbsEdge aEdge = */new AbsEdge(nodeMap.get(edge.source()), nodeMap.get(edge.target()), edge.label().toString());
+                    /*AbsEdge aEdge = */new AbsEdge(
+                        nodeMap.get(edge.source()), nodeMap.get(edge.target()),
+                        edge.label().toString());
                 }
             }
         }
@@ -423,12 +444,12 @@ public class GrooveToConstraint implements Messenger {
     }
 
     private Value getNodeValue(AbsNode node) {
-        Type nodeType = m_types.getType(getType(node));
+        Type nodeType = this.m_types.getType(getType(node));
 
         if (nodeType == null) {
             // Might be some intermediate node
-            if (m_types.getModelType(getType(node)) == ModelType.TypeIntermediate) {
-                String valueEdge = m_cfg.getStrings().getValueEdge();
+            if (this.m_types.getModelType(getType(node)) == ModelType.TypeIntermediate) {
+                String valueEdge = this.m_cfg.getStrings().getValueEdge();
                 AbsNode valueNode = null;
                 for (AbsEdge e : node.getEdges()) {
                     if (e.getName().equals(valueEdge)) {
@@ -465,14 +486,16 @@ public class GrooveToConstraint implements Messenger {
         // Enum type
         else if (nodeType instanceof Enum) {
             Enum e = (Enum) nodeType;
-            if (m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
-                Id id = m_cfg.nameToId(getType(node));
+            if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
+                Id id = this.m_cfg.nameToId(getType(node));
                 EnumValue ev = new EnumValue(e, id.getName());
                 resultValue = ev;
             } else {
                 for (AbsEdge enumEdge : node.getEdges()) {
                     if (enumEdge.getName().startsWith("flag:")) {
-                        EnumValue ev = new EnumValue(e, Name.getName(enumEdge.getName().substring(5)));
+                        EnumValue ev =
+                            new EnumValue(e,
+                                Name.getName(enumEdge.getName().substring(5)));
                         resultValue = ev;
                         break;
                     }
@@ -482,7 +505,7 @@ public class GrooveToConstraint implements Messenger {
         // Custom data type
         else if (nodeType instanceof CustomDataType) {
             CustomDataType cdt = (CustomDataType) nodeType;
-            String dataValueName = m_cfg.getStrings().getDataValue();
+            String dataValueName = this.m_cfg.getStrings().getDataValue();
             AbsNode valueNode = null;
             for (AbsEdge e : node.getEdges()) {
                 if (e.getName().equals(dataValueName)) {

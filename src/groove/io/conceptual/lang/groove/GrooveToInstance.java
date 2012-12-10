@@ -14,6 +14,8 @@ import groove.io.conceptual.configuration.schema.EnumModeType;
 import groove.io.conceptual.configuration.schema.OrderType;
 import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.InstanceImporter;
+import groove.io.conceptual.lang.Message;
+import groove.io.conceptual.lang.Message.MessageType;
 import groove.io.conceptual.lang.groove.GraphNodeTypes.ModelType;
 import groove.io.conceptual.type.BoolType;
 import groove.io.conceptual.type.Class;
@@ -134,32 +136,31 @@ public class GrooveToInstance extends InstanceImporter {
             // Run through all the fields (this creates duplicate work for edges, but meh)
             for (Field field : ((Class) entry.getValue().getType()).getAllFields()) {
                 String fieldName = field.getName().toString();
+                Value fieldValue = null;
                 if (field.getType() instanceof Container) {
                     if (!this.m_cfg.useIntermediate(field)) {
-                        ContainerValue cv =
+                        fieldValue =
                             getFieldContainerValue(entry.getKey(), fieldName,
                                 (Container) field.getType());
-                        if (cv != null) {
-                            entry.getValue().setFieldValue(field, cv);
-                        }
                     } else {
-                        ContainerValue cv =
-                            (ContainerValue) getContainerValue(entry.getKey(),
-                                fieldName);
-                        if (cv != null) {
-                            entry.getValue().setFieldValue(field, cv);
-                        }
+                        fieldValue =
+                            getContainerValue(entry.getKey(), fieldName);
                     }
                 } else {
-                    Value fieldVal =
+                    fieldValue =
                         getNodeValue(getEdgeNode(entry.getKey(), fieldName));
-                    entry.getValue().setFieldValue(field, fieldVal);
+
+                }
+                if (fieldValue != null) {
+                    entry.getValue().setFieldValue(field, fieldValue);
+                } else {
+                    addMessage(new Message("Cannot obtain value for field "
+                        + field.getName(), MessageType.WARN));
                 }
             }
         }
 
         // And we're done
-
         this.m_instanceModels.put(instanceModel.getName(), instanceModel);
     }
 
@@ -189,7 +190,10 @@ public class GrooveToInstance extends InstanceImporter {
             if (indexNode == null) {
                 return Integer.MIN_VALUE;
             } else {
-                return (Integer) ((ValueNode) indexNode).getValue();
+                ValueNode valNode = (ValueNode) indexNode;
+                groove.algebra.Constant c = (Constant) valNode.getValue();
+                Integer value = Integer.parseInt(c.getSymbol());
+                return value;
             }
         } else if (orderType == OrderType.EDGE) {
             String nextName = this.m_cfg.getStrings().getNextEdge();
@@ -348,9 +352,20 @@ public class GrooveToInstance extends InstanceImporter {
             return null;
         }
 
-        ContainerValue cv = new ContainerValue(containerType);
+        SortedMap<Integer,Value> containerValues = new TreeMap<Integer,Value>();
         for (HostEdge e : nodeEdges) {
-            cv.addValue(getNodeValue(e.target()));
+            Value subVal = getNodeValue(e.target());
+            int index = 0;
+            if (containerType.getContainerType() == ContainerType.ORD
+                || containerType.getContainerType() == ContainerType.SEQ) {
+                index = getNodeIndex(e.target());
+            }
+            containerValues.put(index, subVal);
+        }
+
+        ContainerValue cv = new ContainerValue(containerType);
+        for (Value subVal : containerValues.values()) {
+            cv.addValue(subVal);
         }
 
         return cv;
@@ -374,27 +389,40 @@ public class GrooveToInstance extends InstanceImporter {
 
         Type nextType = getNodeType(nodeEdges.iterator().next().target());
 
-        // 'Terminal', multiple values is wrong, single value just returns that
+        // Value is not a container value
         if (!(nextType instanceof Container)) {
-            if (nodeEdges.size() > 1) {
-                // Invalid, only possible at field level
-            } else {
-                // Must be 1, 0 already handled
+            // Simply return the direct value if its just the one
+            if (nodeEdges.size() == 1) {
                 return getNodeValue(nodeEdges.iterator().next().target());
             }
+            // multiple values: improvise and create container type by guessing
+            nextType = new Container(ContainerType.SET, nextType);
         }
 
         ContainerValue cv = new ContainerValue((Container) nextType);
         String valueName = this.m_cfg.getStrings().getValueEdge();
 
+        SortedMap<Integer,Value> containerValues = new TreeMap<Integer,Value>();
         for (HostEdge e : nodeEdges) {
             Type checkType = getNodeType(e.target());
             if (!nextType.equals(checkType)) {
-                //TODO: message
+                // Inconsistent types between container values
+                addMessage(new Message("Invalid container value, type "
+                    + nextType + " does not correspond with type " + checkType));
                 return null;
             } else {
-                cv.addValue(getContainerValue(e.target(), valueName));
+                Value subVal = getContainerValue(e.target(), valueName);
+                int index = 0;
+                if (((Container) nextType).getContainerType() == ContainerType.ORD
+                    || ((Container) nextType).getContainerType() == ContainerType.SEQ) {
+                    index = getNodeIndex(e.target());
+                }
+                containerValues.put(index, subVal);
             }
+        }
+
+        for (Value subVal : containerValues.values()) {
+            cv.addValue(subVal);
         }
 
         return cv;
