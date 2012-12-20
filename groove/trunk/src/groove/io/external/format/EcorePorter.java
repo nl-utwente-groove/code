@@ -39,7 +39,7 @@ import javax.swing.JFileChooser;
 /** Importer and exporter for the ECORE format. */
 public class EcorePorter extends ConceptualPorter {
     private EcorePorter() {
-        super("Ecore ", ".xmi");
+        super("Ecore ", ".ecore", ".xmi");
 
         FormatFilter typeFilter = new FormatFilter(getTypeFormat());
         this.typemodelChooser = GrooveFileChooser.getFileChooser(typeFilter);
