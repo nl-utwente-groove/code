@@ -55,12 +55,21 @@ import java.util.Set;
 /** Im- and exporter for conceptual model-based formats. */
 public abstract class ConceptualPorter extends AbstractFormatExporter implements
         FormatImporter {
-    /** Constructs a porter with a given instance format and type format. */
+    /** 
+     * Constructs a porter for a given format, with equal instance and
+     * type extension.
+     */
     protected ConceptualPorter(String formatName, String extension) {
+        this(formatName, extension, extension);
+    }
+
+    /** Constructs a porter for a given format, with given instance format and type extensions. */
+    protected ConceptualPorter(String formatName, String typeExtension,
+            String instanceExtension) {
         this.instanceFormat =
-            new Format(this, formatName + " instance model", extension);
+            new Format(this, formatName + " instance model", instanceExtension);
         this.typeFormat =
-            new Format(this, formatName + " type model", extension);
+            new Format(this, formatName + " type model", typeExtension);
 
         this.formats = Arrays.asList(this.instanceFormat, this.typeFormat);
     }
