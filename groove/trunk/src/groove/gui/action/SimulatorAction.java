@@ -34,6 +34,7 @@ import groove.view.GrammarModel;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,6 +45,7 @@ import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /**
  * Abstract action class for simulator actions.
@@ -308,7 +310,24 @@ public abstract class SimulatorAction extends AbstractAction implements
      */
     final protected void showErrorDialog(Throwable exc, String message,
             Object... args) {
-        new ErrorDialog(getFrame(), String.format(message, args), exc).setVisible(true);
+        final ErrorDialog dialog =
+            new ErrorDialog(getFrame(), String.format(message, args), exc);
+        if (SwingUtilities.isEventDispatchThread()) {
+            dialog.setVisible(true);
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.setVisible(true);
+                    }
+                });
+            } catch (InterruptedException e) {
+                // do nothing
+            } catch (InvocationTargetException e) {
+                // do nothing
+            }
+        }
     }
 
     /**

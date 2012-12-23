@@ -404,16 +404,15 @@ public class ExploreAction extends SimulatorAction {
             GraphState state = simulatorModel.getState();
             try {
                 this.exploration.play(gts, state);
-                disposeCancelDialog();
             } catch (FormatException exc) {
                 // this should not occur, as the exploration and the
                 // grammar in the simulator model should always be compatible
-                disposeCancelDialog();
                 showErrorDialog(exc,
                     "Exploration strategy %s incompatible with grammar",
                     this.exploration.getIdentifier());
             }
             gts.removeLTSListener(this.progressListener);
+            disposeCancelDialog();
         }
 
         /**
