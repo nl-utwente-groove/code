@@ -74,7 +74,7 @@ public class CheckLTLAction extends ExploreAction {
                 return;
             }
             strategy =
-                this.strategyType.getTemplate().toSerialized(boundary, property);
+                this.strategyType.getTemplate().toSerialized(property, boundary);
         }
         Exploration exploration =
             new Exploration(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
