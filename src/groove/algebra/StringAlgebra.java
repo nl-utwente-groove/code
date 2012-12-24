@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
+ * Copyright 2003--2011 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -16,89 +16,9 @@
  */
 package groove.algebra;
 
-import groove.util.ExprParser;
-import groove.view.FormatException;
-
-/**
- * Default implementation of the string signature.
- * @author Arend Rensink
- * @version $Revision $
- */
-public class StringAlgebra extends StringSignature<String,Boolean,Integer>
-        implements Algebra<String> {
-    /** Empty constructor for the singleton instance. */
-    private StringAlgebra() {
-        // empty
-    }
-
-    @Override
-    public String concat(String arg0, String arg1) {
-        return arg0.concat(arg1);
-    }
-
-    @Override
-    public Boolean eq(String arg0, String arg1) {
-        return arg0.equals(arg1);
-    }
-
-    @Override
-    public Boolean neq(String arg0, String arg1) {
-        return !arg0.equals(arg1);
-    }
-
-    @Override
-    public Boolean ge(String arg0, String arg1) {
-        return arg0.compareTo(arg1) >= 0;
-    }
-
-    @Override
-    public Boolean gt(String arg0, String arg1) {
-        return arg0.compareTo(arg1) > 0;
-    }
-
-    @Override
-    public Boolean le(String arg0, String arg1) {
-        return arg0.compareTo(arg1) <= 0;
-    }
-
-    @Override
-    public Boolean lt(String arg0, String arg1) {
-        return arg0.compareTo(arg1) < 0;
-    }
-
-    @Override
-    public Integer length(String arg) {
-        return arg.length();
-    }
-
-    public String getName() {
-        return NAME;
-    }
-
-    @Override
-    public AlgebraFamily getFamily() {
-        return AlgebraFamily.DEFAULT;
-    }
-
-    public String getSymbol(Object value) {
-        return ExprParser.toQuoted((String) value, ExprParser.DOUBLE_QUOTE_CHAR);
-    }
-
-    public String getValueFromString(String constant) {
-        try {
-            return ExprParser.toUnquoted(constant, ExprParser.DOUBLE_QUOTE_CHAR);
-        } catch (FormatException e) {
-            return null;
-        }
-    }
-
-    @Override
-    protected String toValue(String constant) {
-        return constant;
-    }
-
-    /** The name of this algebra. */
-    static public final String NAME = "string";
-    /** The singleton instance of this class. */
-    static public final StringAlgebra instance = new StringAlgebra();
+/** Abstract superclass of all string algebras. */
+@SuppressWarnings("hiding")
+public abstract class StringAlgebra<String,Bool,Int> extends
+        StringSignature<String,Bool,Int> implements Algebra<String> {
+    // no body
 }

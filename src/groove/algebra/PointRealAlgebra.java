@@ -22,7 +22,7 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointRealAlgebra extends RealSignature<Object,Object,Object>
+public class PointRealAlgebra extends RealAlgebra<Object,Object,Object>
         implements PointAlgebra<Object> {
     /** Private constructor for the singleton instance. */
     private PointRealAlgebra() {
