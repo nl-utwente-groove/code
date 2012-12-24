@@ -306,26 +306,6 @@ public class RegExprTyper implements RegExprCalculator<Result> {
             return result;
         }
 
-        /** Returns the intersection of this relation with another. */
-        public Result getIntersection(Result other) {
-            Result result = new Result();
-            for (Map.Entry<TypeNode,Set<TypeNode>> entry : this.map.entrySet()) {
-                TypeNode left = entry.getKey();
-                Set<TypeNode> otherRight = other.getAll(left);
-                if (otherRight != null) {
-                    Set<TypeNode> right =
-                        new HashSet<TypeNode>(entry.getValue());
-                    right.retainAll(otherRight);
-                    if (!right.isEmpty()) {
-                        result.add(left, right);
-                    }
-                }
-            }
-            result.addErrors(getErrors());
-            result.addErrors(other.getErrors());
-            return result;
-        }
-
         /** Returns the limit of the intersection of this relation with itself. */
         public Result getClosure() {
             Result result = this;
