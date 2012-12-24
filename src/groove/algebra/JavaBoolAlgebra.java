@@ -21,35 +21,10 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultBoolAlgebra extends BoolAlgebra<Boolean> {
+public class JavaBoolAlgebra extends AbstractBoolAlgebra {
     /** Private constructor for the singleton instance. */
-    private DefaultBoolAlgebra() {
+    private JavaBoolAlgebra() {
         // empty
-    }
-
-    @Override
-    public Boolean and(Boolean arg0, Boolean arg1) {
-        return arg0 && arg1;
-    }
-
-    @Override
-    public Boolean not(Boolean arg) {
-        return !arg;
-    }
-
-    @Override
-    public Boolean eq(Boolean arg0, Boolean arg1) {
-        return arg0.equals(arg1);
-    }
-
-    @Override
-    public Boolean neq(Boolean arg0, Boolean arg1) {
-        return !arg0.equals(arg1);
-    }
-
-    @Override
-    public Boolean or(Boolean arg0, Boolean arg1) {
-        return arg0 || arg1;
     }
 
     public String getName() {
@@ -61,21 +36,8 @@ public class DefaultBoolAlgebra extends BoolAlgebra<Boolean> {
         return AlgebraFamily.DEFAULT;
     }
 
-    public String getSymbol(Object value) {
-        return value.toString();
-    }
-
-    public Boolean getValueFromString(String constant) {
-        return constant.equals("true");
-    }
-
-    @Override
-    protected Boolean toValue(Boolean constant) {
-        return constant;
-    }
-
     /** The name of this algebra. */
-    static public final String NAME = "sbool";
+    static public final String NAME = "jbool";
     /** Singleton instance of this algebra. */
-    public static final DefaultBoolAlgebra instance = new DefaultBoolAlgebra();
+    public static final JavaBoolAlgebra instance = new JavaBoolAlgebra();
 }

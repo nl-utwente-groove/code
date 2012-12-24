@@ -23,20 +23,20 @@ package groove.algebra;
  */
 public interface Algebra<T> extends Signature {
     /**
-     * Conversion of string representations of algebra constants to
-     * the corresponding algebra values. May throw an exception
+     * Converts the string representations of an algebra value to
+     * the corresponding algebra representation. May throw an exception
      * or return <code>null</code> if the string constant does not satisfy
      * {@link Signature#isValue(String)}.
      */
-    T getValueFromString(String constant);
+    T getValueFromSymbol(String constant);
 
     /**
-     * Conversion of native Java representations of algebra constants to
-     * the corresponding algebra values.
+     * Converts the native Java representation of a data value to
+     * its corresponding algebra representation.
      */
     T getValueFromJava(Object constant);
 
-    /** Conversion of algebra values to their string representations. */
+    /** Converts an algebra value to its symbolic string representation. */
     String getSymbol(Object value);
 
     /** 

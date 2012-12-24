@@ -112,7 +112,7 @@ public class JavaIntAlgebra extends IntAlgebra<Integer,Boolean,String> {
     /**
      * Delegates to {@link BigInteger#intValue()}.
      */
-    public Integer getValueFromString(String symbol) {
+    public Integer getValueFromSymbol(String symbol) {
         return new BigInteger(symbol).intValue();
     }
 

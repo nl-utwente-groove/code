@@ -17,7 +17,6 @@
 package groove.algebra;
 
 import groove.annotation.Help;
-import groove.view.FormatException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,37 +35,6 @@ import java.util.TreeMap;
  * @version $Revision $
  */
 public class Algebras {
-    /** Parses a string as a combination {@code sig:name}, where
-     * {@code sig} is a signature name and {@code name} the name of
-     * an operator or constant in that signature. 
-     * @param text the text to be parsed
-     * @return the indicated {@link Constant} or {@link Operator}.
-     * @throws FormatException if the text is not of the expected form
-     */
-    public static Object parseElement(String text) throws FormatException {
-        int pos = text.indexOf(':');
-        if (pos < 0) {
-            throw new FormatException("No separator character ':' in '%s'",
-                text);
-        }
-        String sigName = text.substring(0, pos);
-        String elemName = text.substring(pos + 1);
-        SignatureKind sigKind = SignatureKind.getKind(sigName);
-        if (sigKind == null) {
-            throw new FormatException("Unknown signature '%s'", sigName);
-        }
-        Object result = getConstant(sigKind, elemName);
-        if (result == null) {
-            result = getOperator(sigKind, elemName);
-        }
-        if (result == null) {
-            throw new FormatException(
-                "No constant or operator '%s' in signature '%s'", elemName,
-                sigName);
-        }
-        return result;
-    }
-
     /**
      * Returns the operator for a given signature name and operator name,
      * or {@code null} if the signature or operator does not exist.
@@ -96,22 +64,6 @@ public class Algebras {
             }
         }
         return null;
-    }
-
-    /**
-     * Tests if a string represents a constant in any signature.
-     * @return {@code true} if the symbol represents
-     * a known value in some signature
-     */
-    static public boolean isConstant(String symbol) {
-        boolean result = false;
-        for (Class<? extends Signature> signature : signatureMap.values()) {
-            result = isConstant(signature, symbol);
-            if (result) {
-                break;
-            }
-        }
-        return result;
     }
 
     /**

@@ -70,7 +70,7 @@ public class TermBoolAlgebra extends BoolAlgebra<Term> {
         return ((Constant) value).getSymbol();
     }
 
-    public Constant getValueFromString(String constant) {
+    public Constant getValueFromSymbol(String constant) {
         return Algebras.getConstant(SignatureKind.BOOL, constant);
     }
 

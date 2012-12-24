@@ -157,7 +157,7 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
     /**
      * Conversion of native Java representation of integer constants to
      * the corresponding algebra values.
-     * @throws IllegalArgumentException if the parameter is not of type {@link Integer}
+     * @throws IllegalArgumentException if the parameter is not of type {@link Double}
      */
     final public Real getValueFromJava(Object constant) {
         if (!(constant instanceof Double)) {
@@ -169,7 +169,7 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
     }
 
     /** 
-     * Callback method to convert from the native ({@link Integer})
+     * Callback method to convert from the native ({@link Double})
      * representation to the algebra representation.
      */
     protected abstract Real toValue(Double constant);

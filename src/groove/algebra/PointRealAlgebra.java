@@ -47,7 +47,7 @@ public class PointRealAlgebra extends RealAlgebra<Object,Object,Object>
         return singleReal;
     }
 
-    public Object getValueFromString(String constant) {
+    public Object getValueFromSymbol(String constant) {
         return singleReal;
     }
 

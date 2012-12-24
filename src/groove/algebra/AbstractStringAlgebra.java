@@ -20,13 +20,15 @@ import groove.util.ExprParser;
 import groove.view.FormatException;
 
 /**
- * Default implementation of the string signature.
+ * Abstract implementation of the string algebra.
+ * The only non-implemented features are the methods concerning integers.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultStringAlgebra extends StringAlgebra<String,Boolean,Integer> {
+public abstract class AbstractStringAlgebra<Int> extends
+        StringAlgebra<String,Boolean,Int> {
     /** Empty constructor for the singleton instance. */
-    private DefaultStringAlgebra() {
+    AbstractStringAlgebra() {
         // empty
     }
 
@@ -65,25 +67,11 @@ public class DefaultStringAlgebra extends StringAlgebra<String,Boolean,Integer> 
         return arg0.compareTo(arg1) < 0;
     }
 
-    @Override
-    public Integer length(String arg) {
-        return arg.length();
-    }
-
-    public String getName() {
-        return NAME;
-    }
-
-    @Override
-    public AlgebraFamily getFamily() {
-        return AlgebraFamily.DEFAULT;
-    }
-
     public String getSymbol(Object value) {
         return ExprParser.toQuoted((String) value, ExprParser.DOUBLE_QUOTE_CHAR);
     }
 
-    public String getValueFromString(String constant) {
+    public String getValueFromSymbol(String constant) {
         try {
             return ExprParser.toUnquoted(constant, ExprParser.DOUBLE_QUOTE_CHAR);
         } catch (FormatException e) {
@@ -95,10 +83,4 @@ public class DefaultStringAlgebra extends StringAlgebra<String,Boolean,Integer> 
     protected String toValue(String constant) {
         return constant;
     }
-
-    /** The name of this algebra. */
-    static public final String NAME = "string";
-    /** The singleton instance of this class. */
-    static public final DefaultStringAlgebra instance =
-        new DefaultStringAlgebra();
 }

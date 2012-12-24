@@ -71,7 +71,7 @@ public class PointBoolAlgebra extends BoolAlgebra<Object> implements
         return singleBool;
     }
 
-    public Object getValueFromString(String constant) {
+    public Object getValueFromSymbol(String constant) {
         return singleBool;
     }
 

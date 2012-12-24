@@ -20,5 +20,5 @@ package groove.algebra;
 @SuppressWarnings("hiding")
 public abstract class RealAlgebra<Real,Bool,String> extends
         RealSignature<Real,Bool,String> implements Algebra<Real> {
-    // no body
+    // empty
 }

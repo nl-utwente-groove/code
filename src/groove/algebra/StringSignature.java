@@ -122,7 +122,7 @@ public abstract class StringSignature<String,Bool,Int> implements Signature {
     }
 
     /** 
-     * Callback method to convert from the native ({@link Integer})
+     * Callback method to convert from the native ({@link java.lang.String})
      * representation to the algebra representation.
      */
     protected abstract String toValue(java.lang.String constant);

@@ -216,7 +216,7 @@ public abstract class CtrlPar {
          */
         public Const(Algebra<?> algebra, String repr) {
             this.algebra = algebra;
-            this.value = algebra.getValueFromString(repr);
+            this.value = algebra.getValueFromSymbol(repr);
             this.type = CtrlType.getDataType(Algebras.getSignatureFor(repr));
         }
 

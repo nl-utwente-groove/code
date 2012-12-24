@@ -3,7 +3,7 @@
  */
 package groove.samples;
 
-import groove.algebra.DefaultStringAlgebra;
+import groove.algebra.JavaStringAlgebra;
 import groove.graph.EdgeRole;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
@@ -136,7 +136,7 @@ public class AntlrGrapher {
             result);
         if (this.textTypes.get(tokenType) && tree.getText() != null) {
             ValueNode nameNode =
-                graph.addNode(DefaultStringAlgebra.instance, tree.getText());
+                graph.addNode(JavaStringAlgebra.instance, tree.getText());
             graph.addEdge(result, TEXT_LABEL, nameNode);
         }
         return result;

@@ -40,8 +40,8 @@ public enum AlgebraFamily {
      * {@link String} for {@code string}, 
      * {@link Double} for {@code real}, 
      */
-    DEFAULT("default", JavaIntAlgebra.instance, DefaultBoolAlgebra.instance,
-            DefaultStringAlgebra.instance, JavaDoubleAlgebra.instance),
+    DEFAULT("default", JavaIntAlgebra.instance, JavaBoolAlgebra.instance,
+            JavaStringAlgebra.instance, JavaDoubleAlgebra.instance),
     /** Point algebra family: every sort has a single value. */
     POINT("point", PointIntAlgebra.instance, PointBoolAlgebra.instance,
             PointStringAlgebra.instance, PointRealAlgebra.instance),
@@ -51,8 +51,8 @@ public enum AlgebraFamily {
      * {@link String} for {@code string}, 
      * {@link BigDecimal} for {@code real}, 
      */
-    BIG("big", BigIntAlgebra.instance, DefaultBoolAlgebra.instance,
-            DefaultStringAlgebra.instance, BigDoubleAlgebra.instance),
+    BIG("big", BigIntAlgebra.instance, BigBoolAlgebra.instance,
+            BigStringAlgebra.instance, BigDoubleAlgebra.instance),
     /** Term algebra: symbolic representations for all values. */
     TERM("term", TermIntAlgebra.instance, TermBoolAlgebra.instance,
             TermStringAlgebra.instance, TermRealAlgebra.instance);
@@ -122,7 +122,7 @@ public enum AlgebraFamily {
      * @see #getAlgebraFor(String)
      */
     public Object getValue(SignatureKind signature, String constant) {
-        return getAlgebra(signature).getValueFromString(constant);
+        return getAlgebra(signature).getValueFromSymbol(constant);
     }
 
     /** Indicates if this algebra family can assign definite values to variables. */
@@ -163,28 +163,6 @@ public enum AlgebraFamily {
             assert false;
             return null;
         }
-    }
-
-    /**
-     * Returns the operation associated with a certain signature name and operation
-     * name.
-     * @throws UnknownSymbolException if the signature name does not exist, or
-     *         the operation name does not occur in the signature.
-     */
-    public Operation getOperation(SignatureKind sigKind, String operation)
-        throws UnknownSymbolException {
-        Algebra<?> algebra = getAlgebra(sigKind);
-        if (algebra == null) {
-            throw new UnknownSymbolException(String.format(
-                "No algebra registered for signature '%s'", sigKind));
-        }
-        Operation result = getOperations(algebra).get(operation);
-        if (result == null) {
-            throw new UnknownSymbolException(String.format(
-                "Operation '%s' does not occur in signature '%s'", operation,
-                sigKind));
-        }
-        return result;
     }
 
     /**

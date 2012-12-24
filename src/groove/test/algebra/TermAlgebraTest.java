@@ -14,11 +14,15 @@
  *
  * $Id$
  */
-package groove.algebra;
+package groove.test.algebra;
 
-/** Abstract superclass of all string algebras. */
-@SuppressWarnings("hiding")
-public abstract class StringAlgebra<String,Bool,Int> extends
-        StringSignature<String,Bool,Int> implements Algebra<String> {
-    // empty
+import groove.algebra.AlgebraFamily;
+import groove.algebra.Term;
+
+/** Tests the functionality of the java algebra family. */
+public class TermAlgebraTest extends AlgebraTest<Term,Term,Term,Term> {
+    /** Creates a test. */
+    public TermAlgebraTest() {
+        super(AlgebraFamily.TERM);
+    }
 }
