@@ -21,8 +21,7 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TermBoolAlgebra extends BoolSignature<Term> implements
-        Algebra<Term> {
+public class TermBoolAlgebra extends BoolAlgebra<Term> {
     /** Private constructor for the singleton instance. */
     private TermBoolAlgebra() {
         // empty

@@ -46,6 +46,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
     public OperatorNodeSearchItem(OperatorNode node, AlgebraFamily family) {
         this.node = node;
         this.operation = family.getOperation(node.getOperator());
+        assert this.operation != null;
         this.arguments = node.getArguments();
         this.target = node.getTarget();
         this.boundNodes = new HashSet<RuleNode>();

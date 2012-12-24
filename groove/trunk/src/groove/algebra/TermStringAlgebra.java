@@ -23,8 +23,7 @@ import groove.util.ExprParser;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TermStringAlgebra extends StringSignature<Term,Term,Term>
-        implements Algebra<Term> {
+public class TermStringAlgebra extends StringAlgebra<Term,Term,Term> {
     /** Private constructor for the singleton instance. */
     private TermStringAlgebra() {
         // empty

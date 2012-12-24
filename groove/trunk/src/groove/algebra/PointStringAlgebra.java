@@ -22,7 +22,7 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointStringAlgebra extends StringSignature<Object,Object,Object>
+public class PointStringAlgebra extends StringAlgebra<Object,Object,Object>
         implements PointAlgebra<Object> {
     /** Private constructor for the singleton instance. */
     private PointStringAlgebra() {

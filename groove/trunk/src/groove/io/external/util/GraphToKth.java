@@ -258,7 +258,8 @@ public final class GraphToKth {
                     // We found a string attribute.
                     String key = possibleKey;
                     ValueNode target = (ValueNode) possibleTarget;
-                    String value = wrapValue((String) target.getValue(), node);
+                    String value =
+                        wrapValue(target.getValue().toString(), node);
                     attrs.put(key, value);
                 }
             }

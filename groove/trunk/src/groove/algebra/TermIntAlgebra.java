@@ -22,8 +22,7 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TermIntAlgebra extends IntSignature<Term,Term,Term> implements
-        Algebra<Term> {
+public class TermIntAlgebra extends IntAlgebra<Term,Term,Term> {
     /** Private constructor for the singleton instance. */
     private TermIntAlgebra() {
         // empty

@@ -23,8 +23,7 @@ import java.math.BigInteger;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class JavaIntAlgebra extends IntSignature<Integer,Boolean,String>
-        implements Algebra<Integer> {
+public class JavaIntAlgebra extends IntAlgebra<Integer,Boolean,String> {
     /** Private constructor for the singleton instance. */
     private JavaIntAlgebra() {
         // empty

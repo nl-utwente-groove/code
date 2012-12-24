@@ -22,8 +22,8 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointIntAlgebra extends IntSignature<Object,Object,Object>
-        implements PointAlgebra<Object> {
+public class PointIntAlgebra extends IntAlgebra<Object,Object,Object> implements
+        PointAlgebra<Object> {
     /** Private constructor for the singleton instance. */
     private PointIntAlgebra() {
         // empty

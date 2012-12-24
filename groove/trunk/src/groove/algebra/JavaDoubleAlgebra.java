@@ -23,8 +23,7 @@ import java.math.BigDecimal;
  * @author Arend Rensink
  * @version $Revision: 1577 $
  */
-public class JavaDoubleAlgebra extends RealSignature<Double,Boolean,String>
-        implements Algebra<Double> {
+public class JavaDoubleAlgebra extends RealAlgebra<Double,Boolean,String> {
     /** Private constructor for the singleton instance. */
     private JavaDoubleAlgebra() {
         // empty

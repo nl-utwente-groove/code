@@ -40,8 +40,8 @@ public enum AlgebraFamily {
      * {@link String} for {@code string}, 
      * {@link Double} for {@code real}, 
      */
-    DEFAULT("default", JavaIntAlgebra.instance, BoolAlgebra.instance,
-            StringAlgebra.instance, JavaDoubleAlgebra.instance),
+    DEFAULT("default", JavaIntAlgebra.instance, DefaultBoolAlgebra.instance,
+            DefaultStringAlgebra.instance, JavaDoubleAlgebra.instance),
     /** Point algebra family: every sort has a single value. */
     POINT("point", PointIntAlgebra.instance, PointBoolAlgebra.instance,
             PointStringAlgebra.instance, PointRealAlgebra.instance),
@@ -51,8 +51,8 @@ public enum AlgebraFamily {
      * {@link String} for {@code string}, 
      * {@link BigDecimal} for {@code real}, 
      */
-    BIG("big", BigIntAlgebra.instance, BoolAlgebra.instance,
-            StringAlgebra.instance, BigDoubleAlgebra.instance),
+    BIG("big", BigIntAlgebra.instance, DefaultBoolAlgebra.instance,
+            DefaultStringAlgebra.instance, BigDoubleAlgebra.instance),
     /** Term algebra: symbolic representations for all values. */
     TERM("term", TermIntAlgebra.instance, TermBoolAlgebra.instance,
             TermStringAlgebra.instance, TermRealAlgebra.instance);

@@ -25,8 +25,7 @@ import java.math.MathContext;
  * @author Arend Rensink
  * @version $Revision: 1577 $
  */
-public class BigDoubleAlgebra extends RealSignature<BigDecimal,Boolean,String>
-        implements Algebra<BigDecimal> {
+public class BigDoubleAlgebra extends RealAlgebra<BigDecimal,Boolean,String> {
     /** Private constructor for the singleton instance. */
     private BigDoubleAlgebra() {
         // empty

@@ -22,8 +22,7 @@ package groove.algebra;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TermRealAlgebra extends RealSignature<Term,Term,Term> implements
-        Algebra<Term> {
+public class TermRealAlgebra extends RealAlgebra<Term,Term,Term> {
     /** Private constructor for the singleton instance. */
     private TermRealAlgebra() {
         // empty

@@ -267,10 +267,8 @@ public class Algebras {
         }
         // find the implemented signature
         Class<?> signature = algebraClass.getSuperclass();
-        if (!Signature.class.isAssignableFrom(signature)) {
-            throw new IllegalArgumentException(String.format(
-                "Algebra '%s' is not a subclass of '%s'", algebra.getName(),
-                Signature.class));
+        while (Signature.class.isAssignableFrom(signature.getSuperclass())) {
+            signature = signature.getSuperclass();
         }
         int algebraModifiers = algebraClass.getModifiers();
         if (Modifier.isInterface(algebraModifiers)
