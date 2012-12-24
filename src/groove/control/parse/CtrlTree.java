@@ -49,12 +49,6 @@ public class CtrlTree extends CommonTree {
         return (CtrlTree) super.getChild(i);
     }
 
-    /** Overridden to specialise the type. */
-    @Override
-    public Tree getFirstChildWithType(int type) {
-        return super.getFirstChildWithType(type);
-    }
-
     /** Returns the derived type stored in this tree node, if any. */
     public CtrlType getCtrlType() {
         return this.type;
@@ -63,11 +57,6 @@ public class CtrlTree extends CommonTree {
     /** Stores a type in this tree node. */
     public void setCtrlType(CtrlType type) {
         this.type = type;
-    }
-
-    /** Copies the chart type from a given tree node. */
-    public void setCtrlType(CtrlTree tree) {
-        this.type = tree.type;
     }
 
     /** Returns the control variable stored in this tree node, if any. */

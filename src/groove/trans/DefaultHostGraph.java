@@ -139,24 +139,6 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
         return HOST;
     }
 
-    /**
-     * Returns a copy of this graph, which uses a given factory.
-     * Also makes sure the elements already in this graph are known to the factory. 
-     */
-    public DefaultHostGraph clone(HostFactory factory) {
-        DefaultHostGraph result = new DefaultHostGraph(getName(), factory);
-        for (HostNode node : nodeSet()) {
-            factory.addNode(node);
-            result.addNode(node);
-        }
-        for (HostEdge edge : edgeSet()) {
-            factory.addEdge(edge);
-            result.addEdgeContext(edge);
-        }
-        GraphInfo.transfer(this, result, null);
-        return result;
-    }
-
     @Override
     public DefaultHostGraph newGraph(String name) {
         return new DefaultHostGraph(getName(), getFactory());
