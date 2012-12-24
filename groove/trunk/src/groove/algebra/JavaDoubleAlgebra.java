@@ -107,7 +107,7 @@ public class JavaDoubleAlgebra extends RealAlgebra<Double,Boolean,String> {
     /**
      * Delegates to {@link BigDecimal#doubleValue()}.
      */
-    public Double getValueFromString(String symbol) {
+    public Double getValueFromSymbol(String symbol) {
         return new BigDecimal(symbol).doubleValue();
     }
 

@@ -47,7 +47,7 @@ public class PointIntAlgebra extends IntAlgebra<Object,Object,Object> implements
         return singleInt;
     }
 
-    public Object getValueFromString(String constant) {
+    public Object getValueFromSymbol(String constant) {
         return singleInt;
     }
 
@@ -143,13 +143,15 @@ public class PointIntAlgebra extends IntAlgebra<Object,Object,Object> implements
      * redefined literally to avoid class loading dependencies.
      * @see PointStringAlgebra#singleString
      */
-    public static final String singleString = PointStringAlgebra.singleString;
+    public static final String singleString =
+        SignatureKind.STRING.getDefaultValue();
     /** 
      * Representation of the point value of the boolean algebra;
      * redefined literally to avoid class loading dependencies.
      * @see PointBoolAlgebra#singleBool
      */
-    public static final String singleBool = PointBoolAlgebra.singleBool;
+    public static final String singleBool =
+        SignatureKind.BOOL.getDefaultValue();
     /** Point value of the int algebra. */
     public static final String singleInt = SignatureKind.INT.getDefaultValue();
     /** Singleton instance of this algebra. */

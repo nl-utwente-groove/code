@@ -104,7 +104,7 @@ public class ValueNodeChecker extends NodeChecker implements
             AlgebraFamily.getInstance().getAlgebra(varNode.getSignature());
         ValueNode valueNode =
             getOwner().getHostFactory().createValueNode(algebra,
-                algebra.getValueFromString(varNode.getConstant().getSymbol()));
+                algebra.getValueFromSymbol(varNode.getConstant().getSymbol()));
         ReteSimpleMatch match =
             new ReteSimpleMatch(this, valueNode, getOwner().isInjective());
         passDownMatchToSuccessors(match);

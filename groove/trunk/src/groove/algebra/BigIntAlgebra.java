@@ -110,9 +110,10 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,Boolean,String> {
     }
 
     /**
-     * Delegates to {@link BigInteger#intValue()}.
+     * Delegates to {@link BigInteger#BigInteger(String)}.
      */
-    public BigInteger getValueFromString(String symbol) {
+    @Override
+    public BigInteger getValueFromSymbol(String symbol) {
         return new BigInteger(symbol);
     }
 
@@ -122,13 +123,15 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,Boolean,String> {
     }
 
     /**
-     * Delegates to {@link Integer#toString()}.
+     * Delegates to {@link BigInteger#toString()}.
      */
+    @Override
     public String getSymbol(Object value) {
         return value.toString();
     }
 
     /** Returns {@link #NAME}. */
+    @Override
     public String getName() {
         return NAME;
     }
@@ -139,7 +142,7 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,Boolean,String> {
     }
 
     /** Name of the algebra. */
-    public static final String NAME = "jint";
+    public static final String NAME = "bint";
     /** Singleton instance of this algebra. */
     public static final BigIntAlgebra instance = new BigIntAlgebra();
 

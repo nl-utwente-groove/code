@@ -79,7 +79,7 @@ public abstract class BoolSignature<Bool> implements Signature {
     /**
      * Conversion of native Java representation of integer constants to
      * the corresponding algebra values.
-     * @throws IllegalArgumentException if the parameter is not of type {@link Integer}
+     * @throws IllegalArgumentException if the parameter is not of type {@link Boolean}
      */
     final public Bool getValueFromJava(Object constant) {
         if (!(constant instanceof Boolean)) {
@@ -91,7 +91,7 @@ public abstract class BoolSignature<Bool> implements Signature {
     }
 
     /** 
-     * Callback method to convert from the native ({@link Integer})
+     * Callback method to convert from the native ({@link Boolean})
      * representation to the algebra representation.
      */
     protected abstract Bool toValue(Boolean constant);

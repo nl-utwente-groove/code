@@ -41,7 +41,7 @@ public class TermIntAlgebra extends IntAlgebra<Term,Term,Term> {
         return ((Constant) value).getSymbol();
     }
 
-    public Constant getValueFromString(String constant) {
+    public Constant getValueFromSymbol(String constant) {
         return Algebras.getConstant(SignatureKind.INT, constant);
     }
 

@@ -20,5 +20,5 @@ package groove.algebra;
 @SuppressWarnings("hiding")
 public abstract class IntAlgebra<Int,Bool,String> extends
         IntSignature<Int,Bool,String> implements Algebra<Int> {
-    // no body
+    // empty
 }

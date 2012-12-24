@@ -203,7 +203,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      * @param value string representation of the value for the node to be created
      */
     public ValueNode createNodeFromString(Algebra<?> algebra, String value) {
-        return createValueNode(algebra, algebra.getValueFromString(value));
+        return createValueNode(algebra, algebra.getValueFromSymbol(value));
     }
 
     /**

@@ -82,7 +82,7 @@ public class PointStringAlgebra extends StringAlgebra<Object,Object,Object>
         return singleString;
     }
 
-    public Object getValueFromString(String constant) {
+    public Object getValueFromSymbol(String constant) {
         return singleString;
     }
 

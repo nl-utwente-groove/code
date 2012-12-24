@@ -90,7 +90,7 @@ public class TermStringAlgebra extends StringAlgebra<Term,Term,Term> {
         return ((Constant) value).getSymbol();
     }
 
-    public Constant getValueFromString(String symbol) {
+    public Constant getValueFromSymbol(String symbol) {
         return Algebras.getConstant(SignatureKind.STRING, symbol);
     }
 

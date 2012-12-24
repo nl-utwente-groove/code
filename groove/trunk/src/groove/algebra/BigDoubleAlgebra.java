@@ -113,7 +113,7 @@ public class BigDoubleAlgebra extends RealAlgebra<BigDecimal,Boolean,String> {
     /**
      * Creates a new {@link BigDecimal}.
      */
-    public BigDecimal getValueFromString(String symbol) {
+    public BigDecimal getValueFromSymbol(String symbol) {
         return new BigDecimal(symbol, MathContext.DECIMAL128);
     }
 
@@ -154,7 +154,7 @@ public class BigDoubleAlgebra extends RealAlgebra<BigDecimal,Boolean,String> {
     public static final double TOLERANCE = 1e-30;
 
     /** Name of the algebra. */
-    public static final String NAME = "jdouble";
+    public static final String NAME = "bdouble";
     /** Singleton instance of this algebra. */
     public static final BigDoubleAlgebra instance = new BigDoubleAlgebra();
 }
