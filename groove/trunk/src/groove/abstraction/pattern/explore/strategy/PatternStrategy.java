@@ -17,7 +17,6 @@
 package groove.abstraction.pattern.explore.strategy;
 
 import groove.abstraction.pattern.lts.PGTS;
-import groove.abstraction.pattern.lts.PatternState;
 import groove.explore.strategy.Strategy;
 
 /**
@@ -26,12 +25,8 @@ import groove.explore.strategy.Strategy;
  * See {@link Strategy}.
  */
 public interface PatternStrategy {
-
     /** Sets the PGTS to be explored. */
     public void prepare(PGTS pgts);
-
-    /** Sets the PGTS and start state to be explored. */
-    public void prepare(PGTS gts, PatternState state);
 
     /**
      * Executes one step of the strategy.
@@ -42,8 +37,4 @@ public interface PatternStrategy {
      *          guaranteed.
      */
     public boolean next();
-
-    /** Returns the next state to be explored by the strategy. */
-    public PatternState getState();
-
 }
