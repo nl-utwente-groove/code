@@ -75,10 +75,10 @@ public abstract class Boundary {
      */
     public void increaseDepth() {
         this.currentDepth++;
-        assert (this.currentDepth <= ModelChecking.CURRENT_ITERATION) : "the number of boundary-crossing transitions ("
+        assert (this.currentDepth <= ModelChecking.getIteration()) : "the number of boundary-crossing transitions ("
             + this.currentDepth
             + ") in the current path exceeded the maximum ("
-            + ModelChecking.CURRENT_ITERATION + ")";
+            + ModelChecking.getIteration() + ")";
     }
 
     /**

@@ -29,8 +29,7 @@ import groove.verify.ProductTransition;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class BoundedPocketLtlStrategy extends
-        BoundedLtlStrategy {
+public class BoundedPocketLtlStrategy extends BoundedLtlStrategy {
     @Override
     protected void processFinalState(BuchiTransition transition) {
         addProductTransition(null, transition.target());
@@ -61,12 +60,10 @@ public class BoundedPocketLtlStrategy extends
      *         neither cyan, blue, nor red, <tt>false</tt> otherwise
      */
     @Override
-    public boolean unexplored(ProductState newState) {
+    protected boolean isUnexplored(ProductState newState) {
         boolean result =
             (!newState.isPocket() || newState.colour() == ModelChecking.NO_COLOUR)
-                && newState.colour() != ModelChecking.cyan()
-                && newState.colour() != ModelChecking.blue()
-                && newState.colour() != ModelChecking.red();
+                && super.isUnexplored(newState);
         return result;
     }
 

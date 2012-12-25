@@ -18,17 +18,13 @@
 package groove.explore.strategy;
 
 import groove.explore.util.RandomChooserInSequence;
-import groove.graph.EdgeRole;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.lts.RuleTransition;
-import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
 import groove.verify.ProductState;
 import groove.verify.ProductTransition;
 
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * This class provides some default implementations for a bounded model checking
@@ -54,120 +50,59 @@ public class BoundedLtlStrategy extends LtlStrategy {
         return this.boundary;
     }
 
-    /**
-     * The next step makes atomic the full exploration of a state.
-     */
     @Override
-    public void next() {
-        if (getAtBuchiState() == null) {
-            while (getAtBuchiState() == null
-                && getProductGTS().hasOpenStates()
-                && ModelChecking.CURRENT_ITERATION <= ModelChecking.MAX_ITERATIONS) {
-                setNextStartState();
-            }
-            if (getAtBuchiState() == null) {
-                getProductGTS().removeListener(this.collector);
-                return;
-            }
-        }
-
-        // TODO: push the current state only on the stack when continuing with
-        // one of its successors
-        // this should therefore be done in the method updateAtState
-
-        // put current state on the stack
-        searchStack().push(getAtBuchiState());
-        // push the last transition on the transition stack;
-        if (getLastTransition() != null) {
-            pushTransition(getLastTransition());
-        }
-        // colour state cyan as being on the search stack
-        getAtBuchiState().setColour(ModelChecking.cyan());
-
-        // fully explore the current state
-        exploreState(getAtBuchiState().getGraphState());
-        this.collector.reset();
-
-        // now look in the GTS for the outgoing transitions of the
-        // current state with the current Buchi location and add
-        // the resulting combined transition to the product GTS
-
-        // if the state is already explored...
-        if (getAtBuchiState().isExplored()) {
-            for (ProductTransition transition : getAtBuchiState().outTransitions()) {
-                if (counterExample(getAtBuchiState(), transition.target())) {
-                    constructCounterExample();
-                    return;
+    protected boolean exploreCurrentLocation(ProductState prodState) {
+        boolean result = false;
+        if (prodState.isExplored()) {
+            // if the state is already explored...
+            for (ProductTransition prodTrans : getAtBuchiState().outTransitions()) {
+                result = findCounterExample(prodTrans.target());
+                if (result) {
+                    break;
                 }
             }
-        }
-        // else we have to do it now...
-        else {
-            Set<? extends GraphTransition> outTransitions =
-                getGTS().outEdgeSet(getState());
-            Set<String> applicableRules = filterRuleNames(outTransitions);
-
-            for (BuchiTransition nextPropertyTransition : getAtBuchiLocation().outTransitions()) {
-                if (nextPropertyTransition.isEnabled(applicableRules)) {
-                    boolean finalState = true;
-                    for (GraphTransition nextTransition : getGTS().outEdgeSet(
-                        getAtBuchiState().getGraphState())) {
-                        if (nextTransition.getRole() == EdgeRole.BINARY) {
-                            finalState = false;
-
-                            ProductTransition productTransition =
-                                addProductTransition(nextTransition,
-                                    nextPropertyTransition.target());
-                            if (counterExample(getAtBuchiState(),
-                                productTransition.target())) {
-                                // notify counter-example
-                                constructCounterExample();
-                                return;
-                            }
-                        }
-                    }
-                    if (finalState) {
-                        // the product transition will leave the graph-state
-                        // untouched
-                        // since it is a final state
-                        // the Buchi transition might nevertheless point to a
-                        // different location
-                        processFinalState(nextPropertyTransition);
-                    }
-                }
-                // if the transition of the property automaton is not enabled
-                // the states reached in the system automaton do not have to
-                // be explored further since all paths starting from here
-                // will never yield a counter-example
+        } else {
+            // else we have to do it now...
+            result = super.exploreCurrentLocation(prodState);
+            if (!result) {
+                prodState.setExplored();
             }
-            // this point will be reached for state that will never end
-            // in an accepting cycle since its graph-component is a final
-            // state and it has no outgoing transitions;
-            // it must not be included in further analysis
-
-            getAtBuchiState().setExplored();
         }
-
-        updateState();
+        return result;
     }
 
-    /**
-     * Sets the state from which to start the next iteration.
-     */
-    protected void setNextStartState() {
-        // increase the boundary
-        getBoundary().increase();
-        // next iteration
-        ModelChecking.nextIteration();
-        ModelChecking.toggle();
-        // from the initial state again
-        this.atBuchiState = startBuchiState();
-        // clear the search-stack
-        searchStack().clear();
-        transitionStack().clear();
-        this.lastTransition = null;
-        // start with depth zero again
-        getBoundary().setCurrentDepth(0);
+    @Override
+    protected ProductState getNextProductState() {
+        ProductState result = getAtBuchiState();
+        if (result == null) {
+            while (getAtBuchiState() == null && getProductGTS().hasOpenStates()
+                && ModelChecking.getIteration() <= ModelChecking.MAX_ITERATIONS) {
+                // increase the boundary
+                getBoundary().increase();
+                // next iteration
+                ModelChecking.nextIteration();
+                ModelChecking.toggle();
+                // from the initial state again
+                setStartBuchiState(startBuchiState());
+                // clear the search-stack
+                searchStack().clear();
+                transitionStack().clear();
+                this.lastTransition = null;
+                // start with depth zero again
+                getBoundary().setCurrentDepth(0);
+            }
+            result = getAtBuchiState();
+        }
+        return result;
+    }
+
+    @Override
+    protected void pushState(ProductState state) {
+        super.pushState(state);
+        if (getLastTransition() != null) {
+            // push the last transition on the transition stack;
+            pushTransition(getLastTransition());
+        }
     }
 
     @Override
@@ -182,7 +117,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
                 newState = outTransition.target();
 
                 // we only continue with freshly created states
-                if (unexplored(newState)) {
+                if (isUnexplored(newState)) {
                     if (newState.getGraphState() instanceof RuleTransition) {
                         // if the transition does not cross the boundary or its
                         // target-state is already explored in previous
@@ -254,8 +189,8 @@ public class BoundedLtlStrategy extends LtlStrategy {
                     getRandomOpenBuchiTransition(parent);
                 // make sure that the next open successor is not yet explored
                 if (openTransition != null) {
-                    assert (unexplored(openTransition.target())) : "We only continue from unexplored states";
-                    if (unexplored(openTransition.target())) {
+                    assert (isUnexplored(openTransition.target())) : "We only continue from unexplored states";
+                    if (isUnexplored(openTransition.target())) {
                         // if this transition is a boundary-crossing transition,
                         // the current depth of the boundary should be updated
                         getBoundary().crossingBoundary(openTransition, true);
@@ -289,12 +224,11 @@ public class BoundedLtlStrategy extends LtlStrategy {
     public ProductState processBoundaryCrossingTransition(
             ProductTransition transition) {
         // if the number of boundary-crossing transition on the current path
-        if (getBoundary().currentDepth() < ModelChecking.CURRENT_ITERATION - 1) {
+        if (getBoundary().currentDepth() < ModelChecking.getIteration() - 1) {
             return transition.target();
         } else {
             // set the iteration index of the graph properly
-            transition.target().setIteration(
-                ModelChecking.CURRENT_ITERATION + 1);
+            transition.target().setIteration(ModelChecking.getIteration() + 1);
             // leave it unexplored
             return null;
         }
@@ -319,7 +253,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
      * @return <tt>true</tt> if the state-colour is neither of black, cyan,
      *         blue, or red, <tt>false</tt> otherwise
      */
-    public boolean unexplored(ProductState newState) {
+    protected boolean isUnexplored(ProductState newState) {
         boolean result =
             newState.colour() != ModelChecking.cyan()
                 && newState.colour() != ModelChecking.blue()
@@ -328,21 +262,12 @@ public class BoundedLtlStrategy extends LtlStrategy {
     }
 
     /**
-     * Construct the counter-example as currently on the search-stack.
-     */
-    public void constructCounterExample() {
-        for (ProductState state : searchStack()) {
-            getResult().add(state.getGraphState());
-        }
-    }
-
-    /**
      * Checks whether all states have been fully explored.
      * @return <tt>true</tt> if there are states left, <tt>false</tt>
      *         otherwise
      */
     public boolean finished() {
-        if (ModelChecking.CURRENT_ITERATION > ModelChecking.MAX_ITERATIONS) {
+        if (ModelChecking.getIteration() > ModelChecking.MAX_ITERATIONS) {
             return true;
         } else {
             return !getProductGTS().hasOpenStates();
@@ -357,12 +282,12 @@ public class BoundedLtlStrategy extends LtlStrategy {
             new RandomChooserInSequence<ProductTransition>();
         for (ProductTransition p : state.outTransitions()) {
             ProductState buchiState = p.target();
-            if (unexplored(buchiState)) {
+            if (isUnexplored(buchiState)) {
                 if (!getBoundary().crossingBoundary(p, false)
                     || buchiState.isExplored()) {
                     chooser.show(p);
                 } else {
-                    buchiState.setIteration(ModelChecking.CURRENT_ITERATION + 1);
+                    buchiState.setIteration(ModelChecking.getIteration() + 1);
                 }
             }
         }
@@ -371,6 +296,24 @@ public class BoundedLtlStrategy extends LtlStrategy {
         return result;
     }
 
+    /**
+     * Returns the value of <code>lastTransition</code>.
+     * @return the value of <code>lastTransition</code>
+     */
+    public ProductTransition getLastTransition() {
+        return this.lastTransition;
+    }
+
+    /**
+     * Sets the last transition taken.
+     * @param transition the value for <code>lastTransition</code>
+     */
+    public void setLastTransition(ProductTransition transition) {
+        this.lastTransition = transition;
+    }
+
+    /** The transition by which the current Buchi graph-state is reached. */
+    private ProductTransition lastTransition;
     /**
      * The boundary to be used.
      */
