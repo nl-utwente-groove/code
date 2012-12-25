@@ -51,7 +51,6 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
      */
     public void setStrategy(LtlStrategy strategy) {
         this.strategy = strategy;
-        this.strategy.setResult(getResult());
     }
 
     @Override

@@ -39,16 +39,16 @@ public class BoundedPocketLtlStrategy extends BoundedLtlStrategy {
 
     @Override
     protected void colourState() {
-        checkPocket(getAtBuchiState());
+        checkPocket(getAtProductState());
         // if this state is a pocket-state we actually do not
         // not to further colour it blue or red
         // nevertheless, for correctness reasons we still do it
         // (in case the pocket detection is faulty, the colouring
         // is at least correct)
-        if (getAtBuchiState().getBuchiLocation().isAccepting()) {
-            getAtBuchiState().setColour(ModelChecking.red());
+        if (getAtProductState().getBuchiLocation().isAccepting()) {
+            getAtProductState().setColour(ModelChecking.red());
         } else {
-            getAtBuchiState().setColour(ModelChecking.blue());
+            getAtProductState().setColour(ModelChecking.blue());
         }
     }
 

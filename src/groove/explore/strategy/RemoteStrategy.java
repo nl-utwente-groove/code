@@ -49,10 +49,10 @@ public class RemoteStrategy extends SymbolicStrategy {
     }
 
     @Override
-    protected GraphState getNextState() {
+    protected GraphState computeNextState() {
         GraphState state = null;
         // Use the strategy to decide on the next state.
-        state = this.strategy.getNextState();
+        state = this.strategy.computeNextState();
         if (state != null) {
             this.sts.toLocation(this.sts.hostGraphToLocation(state.getGraph()));
         } else {

@@ -17,11 +17,13 @@
 package groove.explore.strategy;
 
 import static groove.trans.RuleEvent.Reuse.NONE;
+import groove.explore.result.Acceptor;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphState.Flag;
 import groove.lts.MatchResult;
+import groove.trans.SystemRecord;
 
 import java.util.Stack;
 
@@ -30,7 +32,7 @@ import java.util.Stack;
  * @author Iovka Boneva
  * 
  */
-public class LinearStrategy extends AbstractStrategy {
+public class LinearStrategy extends GTSStrategy {
     /**
      * Constructs a default instance of the strategy, in which states are only
      * closed if they have been fully explored
@@ -50,8 +52,20 @@ public class LinearStrategy extends AbstractStrategy {
     }
 
     @Override
-    public void next() {
-        GraphState state = getState();
+    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+        // We have to set the non-collapsing property before the first (start)
+        // state is generated, otherwise it is too late.
+        SystemRecord record = gts.getRecord();
+        record.setCollapse(false);
+        record.setCopyGraphs(false);
+        record.setReuseEvents(NONE);
+        super.prepare(gts, state, acceptor);
+        gts.addLTSListener(this.exploreListener);
+    }
+
+    @Override
+    public GraphState doNext() {
+        GraphState state = getNextState();
         MatchResult match = getMatch();
         // put the state back in the pool for backtracking of recipes
         if (!state.isClosed()) {
@@ -60,16 +74,17 @@ public class LinearStrategy extends AbstractStrategy {
         if (match != null) {
             state.applyMatch(match);
         }
-        updateState();
+        setNextState();
+        return state;
     }
 
     /** Callback method to return the single next match. */
     protected MatchResult getMatch() {
-        return getState().getMatch();
+        return getNextState().getMatch();
     }
 
     @Override
-    protected GraphState getNextState() {
+    protected GraphState computeNextState() {
         if (this.pool.isEmpty()) {
             return null;
         } else {
@@ -78,18 +93,7 @@ public class LinearStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected void prepare() {
-        // We have to set the non-collapsing property before the first (start)
-        // state is generated, otherwise it is too late.
-        getGTS().getRecord().setCollapse(false);
-        getGTS().getRecord().setCopyGraphs(false);
-        getGTS().getRecord().setReuseEvents(NONE);
-        super.prepare();
-        getGTS().addLTSListener(this.exploreListener);
-    }
-
-    @Override
-    protected void finish() {
+    public void finish() {
         getGTS().removeLTSListener(this.exploreListener);
     }
 
@@ -98,7 +102,7 @@ public class LinearStrategy extends AbstractStrategy {
      * for backtracking recipes. 
      */
     private void putBackInPool() {
-        this.pool.push(getState());
+        this.pool.push(getNextState());
     }
 
     private void putFreshInPool(GraphState state) {

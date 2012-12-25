@@ -17,6 +17,8 @@
 package groove.explore.strategy;
 
 import groove.algebra.AlgebraFamily;
+import groove.explore.result.Acceptor;
+import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
@@ -39,7 +41,7 @@ import java.util.Set;
  * @author Vincent de Bruijn
  * @version $Revision $
  */
-public class SymbolicStrategy extends AbstractStrategy {
+public class SymbolicStrategy extends GTSStrategy {
 
     /**
      * The strategy this SymbolicStrategy will use.
@@ -67,8 +69,8 @@ public class SymbolicStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected void prepare() {
-        super.prepare();
+    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+        super.prepare(gts, state, acceptor);
         // Check if the point algebra is set. This should be moved to the hook
         // in an upcoming feature
         if (getGTS().getGrammar().getProperties().getAlgebraFamily() != AlgebraFamily.POINT) {
@@ -80,19 +82,20 @@ public class SymbolicStrategy extends AbstractStrategy {
         if (this.strategy == null) {
             this.strategy = new BFSStrategy();
         }
-        this.strategy.prepare();
+        this.strategy.prepare(gts, state, acceptor);
         this.sts = new STS();
         this.sts.hostGraphToStartLocation(getGTS().getGrammar().getStartGraph());
     }
 
     @Override
-    public void next() {
-        assert hasState();
+    public GraphState doNext() {
+        GraphState state = getNextState();
+        assert state != null;
         // If the current location is new, determine its outgoing switch
         // relations
         Location current = this.sts.getCurrentLocation();
         // Get current rule matches
-        Collection<? extends MatchResult> matchSet = getState().getMatches();
+        Collection<? extends MatchResult> matchSet = state.getMatches();
         if (!matchSet.isEmpty()) {
             // Sort the matches in priority groups
             List<Collection<? extends MatchResult>> priorityGroups =
@@ -107,7 +110,7 @@ public class SymbolicStrategy extends AbstractStrategy {
                     try {
                         sr =
                             this.sts.ruleMatchToSwitchRelation(
-                                getState().getGraph(), next,
+                                getNextState().getGraph(), next,
                                 higherPriorityRelations);
                     } catch (STSException e) {
                         // TODO: handle this exception
@@ -117,7 +120,7 @@ public class SymbolicStrategy extends AbstractStrategy {
                         emptyGuard = true;
                     }
                     temp.add(sr);
-                    RuleTransition transition = getState().applyMatch(next);
+                    RuleTransition transition = getNextState().applyMatch(next);
                     Location l =
                         this.sts.hostGraphToLocation(transition.target().getGraph());
                     current.addSwitchRelation(sr, l);
@@ -131,14 +134,15 @@ public class SymbolicStrategy extends AbstractStrategy {
                 temp.clear();
             }
         }
-        updateState();
+        setNextState();
+        return state;
     }
 
     @Override
-    protected GraphState getNextState() {
+    protected GraphState computeNextState() {
         GraphState state = null;
         // Use the strategy to decide on the next state.
-        state = this.strategy.getNextState();
+        state = this.strategy.computeNextState();
         if (state != null) {
             this.sts.toLocation(this.sts.hostGraphToLocation(state.getGraph()));
         }

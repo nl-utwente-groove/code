@@ -20,9 +20,9 @@ import groove.explore.encode.Serialized;
 import groove.explore.result.Acceptor;
 import groove.explore.result.CycleAcceptor;
 import groove.explore.result.Result;
-import groove.explore.strategy.LtlStrategy;
 import groove.explore.strategy.Strategy;
 import groove.explore.strategy.Strategy.Halter;
+import groove.explore.strategy.LtlStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
@@ -107,10 +107,7 @@ public class Exploration {
      */
     public Strategy getParsedStrategy(GraphGrammar grammar)
         throws FormatException {
-        Strategy result =
-            StrategyEnumerator.parseStrategy(grammar, this.strategy);
-        result.checkCompatible(grammar);
-        return result;
+        return StrategyEnumerator.parseStrategy(grammar, this.strategy);
     }
 
     /**
@@ -135,30 +132,30 @@ public class Exploration {
     }
 
     /**
-     * Getter for the number of results.
+     * Returns the number of results of the most recent exploration.
      */
     public int getNrResults() {
         return this.nrResults;
     }
 
     /**
-     * Getter for the result of the last exploration. 
+     * Returns the result of the most recent exploration. 
      */
     public Result getLastResult() {
         return this.lastResult;
     }
 
     /**
-     * Getter for the state in which the last exploration ended. 
+     * Returns the state in which the most recent exploration ended. 
      */
     public GraphState getLastState() {
         return this.lastState;
     }
 
     /**
-     * Getter for the isInterrupted flag. 
+     * Indicates if the most recent exploration was manually interrupted. 
      */
-    public Boolean isInterrupted() {
+    public boolean isInterrupted() {
         return this.interrupted;
     }
 
@@ -189,8 +186,7 @@ public class Exploration {
     public void test(GraphGrammar grammar) throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
         try {
-            Strategy result = getParsedStrategy(grammar);
-            result.checkCompatible(grammar);
+            getParsedStrategy(grammar);
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
@@ -225,7 +221,7 @@ public class Exploration {
 
         // initialize profiling and prepare graph listener
         playReporter.start();
-        parsedStrategy.addGTSListener(parsedAcceptor);
+        parsedStrategy.setAcceptor(parsedAcceptor);
         parsedStrategy.play(new Halter() {
             @Override
             public boolean halt() {
@@ -233,8 +229,7 @@ public class Exploration {
             }
         });
         this.interrupted = parsedStrategy.isInterrupted();
-        // remove graph listener and stop profiling       
-        parsedStrategy.removeGTSListener(parsedAcceptor);
+        // stop profiling    
         playReporter.stop();
 
         // store result

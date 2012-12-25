@@ -19,33 +19,42 @@ package groove.explore.strategy;
 import groove.explore.result.Acceptor;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.trans.GraphGrammar;
-import groove.view.FormatException;
+import groove.lts.GraphState.Flag;
 
 /**
  * A strategy defines an order in which the states of a graph transition system
  * are to be explored. It can also determine which states are to be explored
- * either according to some condition (see {@link ConditionalStrategy}), or
  * because of the nature of the strategy (see for instance
  * {@link LinearStrategy}). Most often, a strategy starts its exploration at
  * some state, fixed by the {@link #setGTS(GTS, GraphState)} method.
  */
-public interface Strategy {
+public abstract class Strategy {
     /**
-     * Checks the strategy for compatibility with a given grammar. 
-     * This is a callback method that is invoked after the strategy has been 
-     * instantiated, but before it is applied. 
-     * If the method returns normally, the grammar is compatible
-     * @throws FormatException if a compatibility error is found
+     * Constructs a new strategy,
+     * under the assumption that the instantiated class
+     * is itself an instance of {@link ExploreIterator}.
      */
-    public void checkCompatible(GraphGrammar grammar) throws FormatException;
+    protected Strategy() {
+        this.iterator = (ExploreIterator) this;
+    }
+
+    /**
+     * Constructs a new strategy,
+     * for a given exploration iterator.
+     * @param iterator the exploration iterator to be used.
+     */
+    protected Strategy(ExploreIterator iterator) {
+        this.iterator = iterator;
+    }
 
     /**
      * Sets the GTS to be explored. Also sets the exploration start state to the
      * GTS start state. Convenience method for {@link #setGTS(GTS, GraphState)}.
      * @see #setGTS(GTS, GraphState)
      */
-    public void prepare(GTS gts);
+    final public void setGTS(GTS gts) {
+        this.setGTS(gts, null);
+    }
 
     /**
      * Sets the GTS and start state to be explored. This is done in preparation
@@ -55,7 +64,22 @@ public interface Strategy {
      * @param state the start state for the exploration; if <code>null</code>,
      * the GTS start state is used
      */
-    public void setGTS(GTS gts, GraphState state);
+    final public void setGTS(GTS gts, GraphState state) {
+        this.gts = gts;
+        this.startState = state;
+    }
+
+    /**
+     * Adds an acceptor to the strategy.
+     */
+    final public void setAcceptor(Acceptor listener) {
+        this.acceptor = listener;
+    }
+
+    /** Plays out this strategy, until the thread is interrupted or exploration is done. */
+    final public void play() {
+        play(null);
+    }
 
     /** 
      * Plays out this strategy, until a halting condition kicks in, 
@@ -63,27 +87,63 @@ public interface Strategy {
      * @param halter halting condition invoked after each state exploration;
      * ignored if {@code null} 
      */
-    public void play(Halter halter);
+    final public void play(Halter halter) {
+        this.iterator.prepare(this.gts, this.startState, this.acceptor);
+        collectKnownStates();
+        this.interrupted = false;
+        while ((halter == null || !halter.halt()) && this.iterator.hasNext()
+            && !testInterrupted()) {
+            this.lastState = this.iterator.doNext();
+        }
+        this.iterator.finish();
+    }
 
-    /** Plays out this strategy, until the thread is interrupted or exploration is done. */
-    public void play();
+    /**
+     * Sets all states already in the state space to Flag.KNOWN.
+     */
+    private void collectKnownStates() {
+        for (GraphState next : this.gts.nodeSet()) {
+            next.setFlag(Flag.KNOWN, true);
+        }
+    }
 
     /** Signals if the last invocation of {@link #play} finished because the thread was interrupted. */
-    public boolean isInterrupted();
+    final public boolean isInterrupted() {
+        return this.interrupted;
+    }
+
+    /** 
+     * Tests if the thread has been interrupted, and stores the
+     * result.
+     */
+    private boolean testInterrupted() {
+        boolean result = this.interrupted;
+        if (!result) {
+            result = this.interrupted = Thread.currentThread().isInterrupted();
+        }
+        return result;
+    }
 
     /** Returns the last state explored by the last invocation of {@link #play}. 
      */
-    public GraphState getLastState();
+    final public GraphState getLastState() {
+        return this.lastState;
+    }
 
+    private final ExploreIterator iterator;
+    /** Flag indicating that the last invocation of {@link #play} was interrupted. */
+    private boolean interrupted;
+    /** The graph transition system explored by the strategy. */
+    private GTS gts;
     /**
-     * Adds an acceptor to the strategy.
+     * Start state for exploration, set in the constructor.
+     * If {@code null}, the GTS start state is selected at exploration time.
      */
-    public void addGTSListener(Acceptor listener);
-
-    /**
-     * Removes an acceptor from the strategy.
-     */
-    public void removeGTSListener(Acceptor listener);
+    private GraphState startState;
+    /** The acceptor to be used at the next exploration. */
+    private Acceptor acceptor;
+    /** The state returned by the last call of {@link ExploreIterator#doNext()}. */
+    private GraphState lastState;
 
     /** Interface for a halting condition on exploration. */
     public interface Halter {

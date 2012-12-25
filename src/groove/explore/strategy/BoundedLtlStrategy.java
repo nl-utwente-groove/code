@@ -55,7 +55,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
         boolean result = false;
         if (prodState.isExplored()) {
             // if the state is already explored...
-            for (ProductTransition prodTrans : getAtBuchiState().outTransitions()) {
+            for (ProductTransition prodTrans : getAtProductState().outTransitions()) {
                 result = findCounterExample(prodTrans.target());
                 if (result) {
                     break;
@@ -73,25 +73,23 @@ public class BoundedLtlStrategy extends LtlStrategy {
 
     @Override
     protected ProductState getNextProductState() {
-        ProductState result = getAtBuchiState();
-        if (result == null) {
-            while (getAtBuchiState() == null && getProductGTS().hasOpenStates()
-                && ModelChecking.getIteration() <= ModelChecking.MAX_ITERATIONS) {
-                // increase the boundary
-                getBoundary().increase();
-                // next iteration
-                ModelChecking.nextIteration();
-                ModelChecking.toggle();
-                // from the initial state again
-                setStartBuchiState(startBuchiState());
-                // clear the search-stack
-                searchStack().clear();
-                transitionStack().clear();
-                this.lastTransition = null;
-                // start with depth zero again
-                getBoundary().setCurrentDepth(0);
-            }
-            result = getAtBuchiState();
+        ProductState result = getAtProductState();
+        if (result == null && getProductGTS().hasOpenStates()
+            && ModelChecking.getIteration() <= ModelChecking.MAX_ITERATIONS) {
+            // from the initial state again
+            result = getStartProductState();
+            setAtProductState(result);
+            // next iteration
+            ModelChecking.nextIteration();
+            ModelChecking.toggle();
+            // clear the stacks
+            searchStack().clear();
+            transitionStack().clear();
+            this.lastTransition = null;
+            // increase the boundary
+            getBoundary().increase();
+            // start with depth zero again
+            getBoundary().setCurrentDepth(0);
         }
         return result;
     }
@@ -106,9 +104,9 @@ public class BoundedLtlStrategy extends LtlStrategy {
     }
 
     @Override
-    protected GraphState getNextState() {
+    protected GraphState computeNextState() {
         Iterator<ProductTransition> outTransitionIter =
-            getAtBuchiState().outTransitions().iterator();
+            getAtProductState().outTransitions().iterator();
         if (outTransitionIter.hasNext()) {
             // select the first new state that does not cross the boundary
             ProductState newState = null;
@@ -124,7 +122,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
                         // iterations
                         // the transition must be traversed
                         if (!getBoundary().crossingBoundary(outTransition, true)) {
-                            setAtBuchiState(newState);
+                            setAtProductState(newState);
                             setLastTransition(outTransition);
                             return newState.getGraphState();
                         } else {
@@ -152,8 +150,8 @@ public class BoundedLtlStrategy extends LtlStrategy {
 
         // backtracking
         backtrack();
-        return getAtBuchiState() == null ? null
-                : getAtBuchiState().getGraphState();
+        return getAtProductState() == null ? null
+                : getAtProductState().getGraphState();
     }
 
     /**
@@ -166,13 +164,13 @@ public class BoundedLtlStrategy extends LtlStrategy {
             // pop the current state from the search-stack
             searchStack().pop();
             // close the current state
-            setClosed(getAtBuchiState());
+            setClosed(getAtProductState());
             colourState();
 
             ProductTransition previousTransition = null;
             if (transitionStack().isEmpty()) {
                 // the start state is reached and does not have open successors
-                setAtBuchiState(null);
+                setAtProductState(null);
                 return;
             } else {
                 previousTransition = transitionStack().pop();
@@ -184,7 +182,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
             // the parent is on top of the searchStack
             parent = peekSearchStack();
             if (parent != null) {
-                setAtBuchiState(parent);
+                setAtProductState(parent);
                 ProductTransition openTransition =
                     getRandomOpenBuchiTransition(parent);
                 // make sure that the next open successor is not yet explored
@@ -206,12 +204,12 @@ public class BoundedLtlStrategy extends LtlStrategy {
         // identify the reason of exiting the loop
         if (parent == null) {
             // the start state is reached and does not have open successors
-            setAtBuchiState(null);
+            setAtProductState(null);
             return;
         } else if (s != null) { // the current state has an open successor (is
             // not really backtracking, a sibling state is
             // fully explored)
-            setAtBuchiState(s);
+            setAtProductState(s);
             return;
         }
         // else, atState is open, so we continue exploring it
@@ -239,10 +237,10 @@ public class BoundedLtlStrategy extends LtlStrategy {
      * state then it must be coloured red, otherwise blue.
      */
     protected void colourState() {
-        if (getAtBuchiState().getBuchiLocation().isAccepting()) {
-            getAtBuchiState().setColour(ModelChecking.red());
+        if (getAtProductState().getBuchiLocation().isAccepting()) {
+            getAtProductState().setColour(ModelChecking.red());
         } else {
-            getAtBuchiState().setColour(ModelChecking.blue());
+            getAtProductState().setColour(ModelChecking.blue());
         }
     }
 

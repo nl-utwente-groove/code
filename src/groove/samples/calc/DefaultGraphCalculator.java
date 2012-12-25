@@ -24,8 +24,8 @@ import groove.lts.GraphState;
 import groove.trans.Action;
 import groove.trans.Condition;
 import groove.trans.DefaultHostGraph;
-import groove.trans.HostGraph;
 import groove.trans.GraphGrammar;
+import groove.trans.HostGraph;
 import groove.view.FormatException;
 
 import java.util.Collection;
