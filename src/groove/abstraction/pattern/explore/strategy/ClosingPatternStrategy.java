@@ -43,8 +43,8 @@ public abstract class ClosingPatternStrategy extends AbstractPatternStrategy {
     // ------------------------------------------------------------------------
 
     @Override
-    public void prepare(PGTS pgts, PatternState startState) {
-        super.prepare(pgts, startState);
+    public void prepare(PGTS pgts) {
+        super.prepare(pgts);
         getPGTS().addLTSListener(this.exploreListener);
         clearPool();
     }

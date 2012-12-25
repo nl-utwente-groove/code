@@ -47,14 +47,9 @@ public abstract class AbstractPatternStrategy implements PatternStrategy {
     // ------------------------------------------------------------------------
 
     @Override
-    public final void prepare(PGTS pgts) {
-        this.prepare(pgts, null);
-    }
-
-    @Override
-    public void prepare(PGTS pgts, PatternState state) {
+    public void prepare(PGTS pgts) {
         this.pgts = pgts;
-        this.atState = state == null ? pgts.startState() : state;
+        this.atState = pgts.startState();
     }
 
     @Override
@@ -73,8 +68,7 @@ public abstract class AbstractPatternStrategy implements PatternStrategy {
      * Returns the state that will be explored next. If <code>null</code>,
      * there is nothing left to explore. Is updated by {@link #getNextState()}.
      */
-    @Override
-    public PatternState getState() {
+    private PatternState getState() {
         return this.atState;
     }
 
@@ -114,7 +108,7 @@ public abstract class AbstractPatternStrategy implements PatternStrategy {
 
     /**
      * Returns a fresh match collector for this strategy, based on the current
-     * state and related information.
+     * state.
      */
     private PatternGraphMatchSetCollector createMatchCollector() {
         return getPGTS().createMatchCollector(getState());
