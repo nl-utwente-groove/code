@@ -28,6 +28,7 @@ import groove.explore.result.EdgeBoundCondition;
 import groove.explore.result.ExploreCondition;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.NodeBoundCondition;
+import groove.explore.strategy.Strategy;
 import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedLtlStrategy;
@@ -42,7 +43,6 @@ import groove.explore.strategy.RemoteStrategy;
 import groove.explore.strategy.ReteLinearStrategy;
 import groove.explore.strategy.ReteRandomLinearStrategy;
 import groove.explore.strategy.ReteStrategy;
-import groove.explore.strategy.Strategy;
 import groove.graph.TypeLabel;
 import groove.trans.Rule;
 import groove.view.GrammarModel;
@@ -399,7 +399,8 @@ public enum StrategyValue implements ParsableValue {
     }
 
     /** Specialised 1-parameter template that uses the strategy value's keyword, name and description. */
-    abstract private class MyTemplate1<T1> extends Template1<Strategy,T1> {
+    abstract private class MyTemplate1<T1> extends
+            Template1<Strategy,T1> {
         public MyTemplate1(SerializedParser parser, String name,
                 EncodedType<T1,String> type) {
             super(StrategyValue.this, parser, name, type);
@@ -407,7 +408,8 @@ public enum StrategyValue implements ParsableValue {
     }
 
     /** Specialised 2-parameter template that uses the strategy value's keyword, name and description. */
-    abstract private class MyTemplate2<T1,T2> extends Template2<Strategy,T1,T2> {
+    abstract private class MyTemplate2<T1,T2> extends
+            Template2<Strategy,T1,T2> {
         public MyTemplate2(SerializedParser parser, String name1,
                 EncodedType<T1,String> type1, String name2,
                 EncodedType<T2,String> type2) {

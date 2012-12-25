@@ -24,6 +24,7 @@ import groove.explore.result.Result;
 import groove.explore.util.RandomChooserInSequence;
 import groove.explore.util.RandomNewStateChooser;
 import groove.graph.EdgeRole;
+import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.verify.BuchiGraph;
@@ -47,52 +48,55 @@ import java.util.Stack;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class LtlStrategy extends AbstractStrategy {
-    /** This implementation initialises the product automaton as well. */
+public class LtlStrategy extends GTSStrategy {
     @Override
-    protected void prepare() {
-        super.prepare();
+    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+        // don't pass on the acceptor, we deal with this here
+        super.prepare(gts, state, null);
         this.productGTS = new ProductStateSet();
         this.productGTS.addListener(this.collector);
-        for (CycleAcceptor acceptor : this.acceptors) {
-            this.productGTS.addListener(acceptor);
-        }
+        assert acceptor instanceof CycleAcceptor;
+        this.acceptor = (CycleAcceptor) acceptor;
+        this.acceptor.setStrategy(this);
+        this.result = acceptor.getResult();
+        this.productGTS.addListener(this.acceptor);
         this.searchStack = new Stack<ProductState>();
         this.transitionStack = new Stack<ProductTransition>();
         assert (this.initialLocation != null) : "The property automaton should have an initial state";
         ProductState startState =
             new ProductState(getGTS().startState(), this.initialLocation);
-        setStartBuchiState(startState);
+        this.startProdState = startState;
+        this.atProductState = startState;
         this.productGTS.addState(startState);
-
     }
 
     @Override
-    protected void finish() {
+    public void finish() {
         super.finish();
         getProductGTS().removeListener(this.collector);
+        if (this.acceptor != null) {
+            getProductGTS().removeListener(this.acceptor);
+        }
     }
 
-    /**
-     * The next step makes atomic the full exploration of a state.
-     */
     @Override
-    public void next() {
-        ProductState buchiState = getNextProductState();
-        if (buchiState == null) {
-            return;
+    public GraphState doNext() {
+        ProductState prodState = getNextProductState();
+        if (prodState == null) {
+            return null;
         }
         // put current state on the stack
-        pushState(buchiState);
+        pushState(prodState);
         // colour state cyan as being on the search stack
-        buchiState.setColour(ModelChecking.cyan());
+        prodState.setColour(ModelChecking.cyan());
         // fully explore the current state
-        exploreState(buchiState.getGraphState());
+        exploreState(prodState.getGraphState());
         this.collector.reset();
 
-        if (!exploreCurrentLocation(buchiState)) {
-            updateState();
+        if (!exploreCurrentLocation(prodState)) {
+            setNextState();
         }
+        return prodState.getGraphState();
     }
 
     /** 
@@ -100,7 +104,7 @@ public class LtlStrategy extends AbstractStrategy {
      * Also pushes this state on the explored stack.
      */
     protected ProductState getNextProductState() {
-        ProductState result = getAtBuchiState();
+        ProductState result = getAtProductState();
         return result;
     }
 
@@ -121,7 +125,7 @@ public class LtlStrategy extends AbstractStrategy {
     protected boolean exploreCurrentLocation(ProductState prodState) {
         boolean result = false;
         Set<? extends GraphTransition> outTransitions =
-            getState().getTransitions();
+            getNextState().getTransitions();
         Set<String> applicableRules = filterRuleNames(outTransitions);
         trans: for (BuchiTransition buchiTrans : prodState.getBuchiLocation().outTransitions()) {
             if (buchiTrans.isEnabled(applicableRules)) {
@@ -150,10 +154,10 @@ public class LtlStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected GraphState getNextState() {
+    protected GraphState computeNextState() {
         if (this.collector.pickRandomNewState() != null) {
             ProductState newState = this.collector.pickRandomNewState();
-            this.atBuchiState = newState;
+            this.atProductState = newState;
         } else {
             ProductState s = null;
 
@@ -165,12 +169,12 @@ public class LtlStrategy extends AbstractStrategy {
                 // pop the current state from the search-stack
                 searchStack().pop();
                 // close the current state
-                setClosed(getAtBuchiState());
-                getAtBuchiState().setColour(ModelChecking.blue());
+                setClosed(getAtProductState());
+                getAtProductState().setColour(ModelChecking.blue());
                 // the parent is on top of the searchStack
                 parent = peekSearchStack();
                 if (parent != null) {
-                    this.atBuchiState = parent;
+                    this.atProductState = parent;
                     s = getRandomOpenBuchiSuccessor(parent);
                 }
             } while (parent != null && s == null); // ) &&
@@ -179,15 +183,15 @@ public class LtlStrategy extends AbstractStrategy {
             // identify the reason of exiting the loop
             if (parent == null) {
                 // the start state is reached and does not have open successors
-                this.atBuchiState = null;
+                this.atProductState = null;
             } else if (s != null) { // the current state has an open successor (is
                 // not really backtracking, a sibling state is
                 // fully explored)
-                this.atBuchiState = s;
+                this.atProductState = s;
             }
         }
-        return this.atBuchiState == null ? null
-                : this.atBuchiState.getGraphState();
+        return this.atProductState == null ? null
+                : this.atProductState.getGraphState();
     }
 
     /** Tests if a counterexample can be constructed from the 
@@ -197,7 +201,7 @@ public class LtlStrategy extends AbstractStrategy {
      * if so, it has also been added to the result
      */
     protected boolean findCounterExample(ProductState prodState) {
-        boolean result = counterExample(getAtBuchiState(), prodState);
+        boolean result = counterExample(getAtProductState(), prodState);
         if (result) {
             // notify counter-example
             for (ProductState state : searchStack()) {
@@ -214,18 +218,10 @@ public class LtlStrategy extends AbstractStrategy {
         if (transition == null) {
             // exclude the current state from further analysis
             // mark it red
-            getAtBuchiState().setColour(ModelChecking.RED);
+            getAtProductState().setColour(ModelChecking.RED);
         } else {
             addProductTransition(null, transition.target());
         }
-    }
-
-    /**
-     * Sets the result container for the strategy
-     * @param result the new result container; non-{@code null}
-     */
-    public void setResult(Result result) {
-        this.result = result;
     }
 
     /**
@@ -237,19 +233,12 @@ public class LtlStrategy extends AbstractStrategy {
     }
 
     /**
-     * Set the start Buchi state as well as the current Büchi state.
-     * @param startState the new start and current state
+     * Returns the start product state.
+     * @return the start product state; non-{@code null} after
+     * a call to {@link #prepare}.
      */
-    public void setStartBuchiState(ProductState startState) {
-        this.startBuchiState = startState;
-        this.atBuchiState = startState;
-    }
-
-    /**
-     * Returns the start Büchi graph-state
-     */
-    public final ProductState startBuchiState() {
-        return this.startBuchiState;
+    public final ProductState getStartProductState() {
+        return this.startProdState;
     }
 
     /**
@@ -300,31 +289,6 @@ public class LtlStrategy extends AbstractStrategy {
         }
     }
 
-    @Override
-    public void addGTSListener(Acceptor listener) {
-        if (listener instanceof CycleAcceptor) {
-            CycleAcceptor acceptor = (CycleAcceptor) listener;
-            acceptor.setStrategy(this);
-            if (this.productGTS == null) {
-                this.acceptors.add(acceptor);
-            } else {
-                this.productGTS.addListener(acceptor);
-            }
-        }
-    }
-
-    @Override
-    public void removeGTSListener(Acceptor listener) {
-        if (listener instanceof CycleAcceptor) {
-            CycleAcceptor acceptor = (CycleAcceptor) listener;
-            if (this.productGTS == null) {
-                this.acceptors.remove(acceptor);
-            } else {
-                this.productGTS.removeListener((CycleAcceptor) listener);
-            }
-        }
-    }
-
     /**
      * Returns a random open successor of a state, if any. Returns null
      * otherwise.
@@ -362,8 +326,8 @@ public class LtlStrategy extends AbstractStrategy {
      * @param state the state to be fully explored locally
      */
     public void exploreState(GraphState state) {
-        Strategy explore = new ExploreStateStrategy();
         if (getGTS().isOpen(state)) {
+            Strategy explore = new ExploreStateStrategy();
             explore.setGTS(getGTS(), state);
             explore.play();
         }
@@ -385,10 +349,10 @@ public class LtlStrategy extends AbstractStrategy {
         // if the current source state is already closed
         // the product-gts contains all transitions and
         // we do not have to add new transitions.
-        if (!getAtBuchiState().isClosed()) {
-            result = addTransition(getAtBuchiState(), transition, location);
+        if (!getAtProductState().isClosed()) {
+            result = addTransition(getAtProductState(), transition, location);
         } else {
-            for (ProductTransition nextTransition : getAtBuchiState().outTransitions()) {
+            for (ProductTransition nextTransition : getAtProductState().outTransitions()) {
                 if (nextTransition.graphTransition().equals(transition)
                     && nextTransition.target().getBuchiLocation().equals(
                         location)) {
@@ -451,7 +415,8 @@ public class LtlStrategy extends AbstractStrategy {
 
     /**
      * Returns the product GTS.
-     * @return the product GTS
+     * @return the product GTS; non-{@code null} after a
+     * call to {@link #prepare}
      */
     public ProductStateSet getProductGTS() {
         return this.productGTS;
@@ -460,23 +425,24 @@ public class LtlStrategy extends AbstractStrategy {
     /**
      * Returns the Büchi graph-state the strategy is currently at.
      */
-    public ProductState getAtBuchiState() {
-        return this.atBuchiState;
+    public ProductState getAtProductState() {
+        return this.atProductState;
     }
 
     /**
-     * Set the current buchi state
-     * @param atState the state to set
+     * Set the current product state
+     * @param atState the state to set; non-{@code null}.
      */
-    public void setAtBuchiState(ProductState atState) {
-        this.atBuchiState = atState;
+    public void setAtProductState(ProductState atState) {
+        assert atState != null;
+        this.atProductState = atState;
     }
 
     /**
      * Returns the current Büchi location.
      */
     public BuchiLocation getAtBuchiLocation() {
-        return getAtBuchiState().getBuchiLocation();
+        return getAtProductState().getBuchiLocation();
     }
 
     /**
@@ -523,13 +489,13 @@ public class LtlStrategy extends AbstractStrategy {
     }
 
     /** The Buchi start graph-state of the system. */
-    private ProductState startBuchiState;
-    /** Acceptors to be added to the product GTS, once it is created. */
-    private Set<CycleAcceptor> acceptors = new HashSet<CycleAcceptor>();
+    private ProductState startProdState;
+    /** Acceptor to be added to the product GTS, once it is created. */
+    private CycleAcceptor acceptor;
     /** The synchronised product of the system and the property. */
     private ProductStateSet productGTS;
     /** The current Buchi graph-state the system is at. */
-    private ProductState atBuchiState;
+    private ProductState atProductState;
     /** State collector which randomly provides unexplored states. */
     private RandomNewStateChooser collector = new RandomNewStateChooser();
 

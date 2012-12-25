@@ -24,17 +24,20 @@ import groove.lts.GraphState;
  * @author Iovka Boneva
  * 
  */
-public class ConditionalBFSStrategy extends BFSStrategy implements
-        ConditionalStrategy {
+public class ConditionalBFSStrategy extends BFSStrategy {
     @Override
-    protected GraphState getNextState() {
-        GraphState result = super.getNextState();
+    protected GraphState computeNextState() {
+        GraphState result = super.computeNextState();
         while (result != null && !getExplCond().isSatisfied(result)) {
-            result = super.getNextState();
+            result = super.computeNextState();
         }
         return result;
     }
 
+    /**
+     * The exploration condition that, when not satisfied by a state, forbids
+     * exploring this state.
+     */
     public void setExploreCondition(ExploreCondition<?> condition) {
         this.explCond = condition;
     }

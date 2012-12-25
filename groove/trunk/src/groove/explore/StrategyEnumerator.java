@@ -63,8 +63,8 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
      * by finding the template that starts
      * with the given keyword and then using its parse method.
      */
-    public static Strategy parseStrategy(GraphGrammar rules, Serialized source)
-        throws FormatException {
+    public static Strategy parseStrategy(GraphGrammar rules,
+            Serialized source) throws FormatException {
         return INSTANCE.parse(rules, source);
     }
 

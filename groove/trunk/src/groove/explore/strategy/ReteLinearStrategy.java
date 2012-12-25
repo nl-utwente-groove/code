@@ -16,7 +16,9 @@
  */
 package groove.explore.strategy;
 
+import groove.explore.result.Acceptor;
 import groove.lts.DefaultGraphNextState;
+import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine;
@@ -50,8 +52,17 @@ public class ReteLinearStrategy extends LinearStrategy {
     }
 
     @Override
-    protected GraphState getNextState() {
-        GraphState result = super.getNextState();
+    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+        super.prepare(gts, state, acceptor);
+        // initialise the RETE network
+        this.rete = new ReteSearchEngine(getGTS().getGrammar());
+        this.oldEngine = MatcherFactory.instance().getEngine();
+        MatcherFactory.instance().setEngine(this.rete);
+    }
+
+    @Override
+    protected GraphState computeNextState() {
+        GraphState result = super.computeNextState();
         DeltaStore d = new DeltaStore();
         if (result != null) {
             ((DefaultGraphNextState) result).getDelta().applyDelta(d);
@@ -60,20 +71,11 @@ public class ReteLinearStrategy extends LinearStrategy {
         return result;
     }
 
-    @Override
-    protected void prepare() {
-        super.prepare();
-        // initialise the RETE network
-        this.rete = new ReteSearchEngine(getGTS().getGrammar());
-        this.oldEngine = MatcherFactory.instance().getEngine();
-        MatcherFactory.instance().setEngine(this.rete);
-    }
-
     /**
      * Does some clean-up for when the full exploration is finished.
      */
     @Override
-    protected void finish() {
+    public void finish() {
         MatcherFactory.instance().setEngine(this.oldEngine);
         super.finish();
     }

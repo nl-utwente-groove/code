@@ -16,6 +16,7 @@
  */
 package groove.explore.strategy;
 
+import groove.explore.result.Acceptor;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
@@ -32,10 +33,10 @@ import java.util.Stack;
  * transitions of its parent. Subclasses must decide on the order of the pool;
  * e.g., breadth-first or depth-first.
  */
-abstract public class ClosingStrategy extends AbstractStrategy {
+abstract public class ClosingStrategy extends GTSStrategy {
     @Override
-    protected void next() {
-        GraphState state = getState();
+    public GraphState doNext() {
+        GraphState state = getNextState();
         List<MatchResult> matches = state.getMatches();
         if (!state.getSchedule().isFinished()) {
             assert !state.isTransient();
@@ -55,28 +56,29 @@ abstract public class ClosingStrategy extends AbstractStrategy {
         for (MatchResult next : matches) {
             state.applyMatch(next);
         }
-        updateState();
+        setNextState();
+        return state;
     }
 
     @Override
-    protected void prepare() {
-        super.prepare();
+    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+        super.prepare(gts, state, acceptor);
         // for the closing strategy, there is no problem in aliasing
         // the graph data structures. On the whole, this seems wise, to
         // avoid excessive garbage collection.
         // gts.getRecord().setCopyGraphs(true);
-        getGTS().addLTSListener(this.exploreListener);
+        gts.addLTSListener(this.exploreListener);
         clearPool();
     }
 
     @Override
-    protected void finish() {
+    public void finish() {
         super.finish();
         getGTS().removeLTSListener(this.exploreListener);
     }
 
     @Override
-    protected GraphState getNextState() {
+    protected GraphState computeNextState() {
         if (this.transientStack.isEmpty()) {
             return getFromPool();
         } else {

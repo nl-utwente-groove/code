@@ -16,6 +16,7 @@
  */
 package groove.explore.strategy;
 
+import groove.explore.result.Acceptor;
 import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
@@ -36,58 +37,56 @@ import java.util.Stack;
  * @author Amir Hossein Ghamarian 
  * @version $Revision $
  */
-public class ReteStrategy extends AbstractStrategy {
+public class ReteStrategy extends GTSStrategy {
     @Override
-    public void next() {
-        assert hasState();
-        ReteStrategyNextReporter.start();
-        Collection<? extends MatchResult> ruleMatches = getState().getMatches();
-        Collection<GraphState> outTransitions =
-            new ArrayList<GraphState>(ruleMatches.size());
-
-        for (MatchResult nextMatch : ruleMatches) {
-            RuleTransition trans = getState().applyMatch(nextMatch);
-            outTransitions.add(trans.target());
-        }
-
-        addToPool(outTransitions);
-        this.deltaAccumulator = new DeltaStore();
-        updateState();
-        ReteStrategyNextReporter.stop();
-    }
-
-    @Override
-    protected void prepare() {
-        getGTS().getRecord().setCopyGraphs(false);
-        super.prepare();
-        getGTS().addLTSListener(this.exploreListener);
+    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+        gts.getRecord().setCopyGraphs(false);
+        super.prepare(gts, state, acceptor);
+        gts.addLTSListener(this.exploreListener);
         clearPool();
         this.newStates.clear();
         // initialise the rete network
-        this.rete = new ReteSearchEngine(getGTS().getGrammar());
+        this.rete = new ReteSearchEngine(gts.getGrammar());
         this.oldEngine = MatcherFactory.instance().getEngine();
         MatcherFactory.instance().setEngine(this.rete);
         //this.rete.getNetwork().save("e:\\temp\\reg-exp.gst", "reg-exp");
     }
 
-    /**
-     * Does some clean-up for when the full exploration is finished.
-     */
     @Override
-    protected void finish() {
+    public GraphState doNext() {
+        GraphState state = getNextState();
+        ReteStrategyNextReporter.start();
+        Collection<? extends MatchResult> ruleMatches = state.getMatches();
+        Collection<GraphState> outTransitions =
+            new ArrayList<GraphState>(ruleMatches.size());
+
+        for (MatchResult nextMatch : ruleMatches) {
+            RuleTransition trans = getNextState().applyMatch(nextMatch);
+            outTransitions.add(trans.target());
+        }
+
+        addToPool(outTransitions);
+        this.deltaAccumulator = new DeltaStore();
+        setNextState();
+        ReteStrategyNextReporter.stop();
+        return state;
+    }
+
+    @Override
+    public void finish() {
         super.finish();
         MatcherFactory.instance().setEngine(this.oldEngine);
         getGTS().removeLTSListener(this.exploreListener);
     }
 
     @Override
-    protected GraphState getNextState() {
+    protected GraphState computeNextState() {
         GraphState result = topOfPool();
         GraphState triedState = null;
         if (result == null) {
             return result;
         }
-        if (getState() == result) {
+        if (getNextState() == result) {
             do {
                 ((DefaultGraphNextState) result).getDelta().applyDelta(
                     this.deltaAccumulator);
@@ -165,7 +164,7 @@ public class ReteStrategy extends AbstractStrategy {
      */
     static public final Reporter reporter =
         Reporter.register(ReteStrategy.class);
-    /** Handle for profiling {@link #next()}. */
+    /** Handle for profiling {@link #doNext()}. */
     static public final Reporter ReteStrategyNextReporter =
         reporter.register("ReteOptimized()");
 

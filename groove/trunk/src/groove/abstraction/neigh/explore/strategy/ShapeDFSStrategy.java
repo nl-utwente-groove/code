@@ -18,7 +18,9 @@ package groove.abstraction.neigh.explore.strategy;
 
 import groove.abstraction.neigh.lts.AGTS;
 import groove.abstraction.neigh.lts.ShapeState;
+import groove.explore.result.Acceptor;
 import groove.explore.strategy.DFSStrategy;
+import groove.lts.GTS;
 import groove.lts.GraphState;
 
 /**
@@ -33,19 +35,18 @@ import groove.lts.GraphState;
  * @author Eduardo Zambon
  */
 public final class ShapeDFSStrategy extends DFSStrategy {
-    /** Delegates to super.*/
     @Override
-    protected void prepare() {
-        assert getGTS() instanceof AGTS;
-        assert getStartState() instanceof ShapeState || getStartState() == null;
-        super.prepare();
+    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+        assert gts instanceof AGTS;
+        assert state instanceof ShapeState || state == null;
+        super.prepare(gts, state, acceptor);
     }
 
     @Override
-    protected GraphState getNextState() {
+    protected GraphState computeNextState() {
         ShapeState result;
         do {
-            result = (ShapeState) super.getNextState();
+            result = (ShapeState) super.computeNextState();
         } while (result != null && result.isSubsumed());
         return result;
     }

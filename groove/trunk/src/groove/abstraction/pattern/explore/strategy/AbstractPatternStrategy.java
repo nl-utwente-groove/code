@@ -21,13 +21,13 @@ import groove.abstraction.pattern.explore.util.PatternRuleEventApplier;
 import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PatternState;
-import groove.explore.strategy.AbstractStrategy;
+import groove.explore.strategy.Strategy;
 
 /**
  * Basic implementation of {@link PatternStrategy} interface with common
  * functionality shared by all sub-classes.
  * 
- * See {@link AbstractStrategy}. 
+ * See {@link Strategy}. 
  */
 public abstract class AbstractPatternStrategy implements PatternStrategy {
 

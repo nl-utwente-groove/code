@@ -29,8 +29,8 @@ import groove.abstraction.pattern.lts.PatternTransition;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.abstraction.pattern.trans.PatternGraphGrammar;
 import groove.explore.Generator;
-import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.Strategy;
+import groove.explore.strategy.DFSStrategy;
 import groove.lts.GTS;
 import groove.trans.GraphGrammar;
 import groove.trans.ResourceKind;
@@ -282,7 +282,7 @@ public class PatternGraphGenerator extends CommandLineTool {
         GraphGrammar sGrammar = getGrammar().getSimpleGrammar();
         GTS result = new GTS(sGrammar);
         Strategy strategy = new DFSStrategy();
-        strategy.prepare(result);
+        strategy.setGTS(result);
         strategy.play();
         return result;
     }
