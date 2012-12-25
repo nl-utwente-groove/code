@@ -77,7 +77,7 @@ public class ModelChecking {
     /** constant specifying the maximal number of iterations to be performed */
     public static final int MAX_ITERATIONS = -1;
     /** constant specifying the maximal number of iterations to be performed */
-    public static int CURRENT_ITERATION = 0;
+    private static int CURRENT_ITERATION = 0;
     /** constant specifying the maximal amount of time to spend */
     public static long MAX_TIME = 0;
     /** constant specifying the maximal amount of time to spend */
@@ -145,6 +145,13 @@ public class ModelChecking {
      */
     public static void nextIteration() {
         CURRENT_ITERATION++;
+    }
+
+    /**
+     * Increase the iteration count.
+     */
+    public static int getIteration() {
+        return CURRENT_ITERATION;
     }
 
     /**

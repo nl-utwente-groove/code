@@ -62,7 +62,7 @@ public class RuleSetBoundary extends Boundary {
             // this is a forbidden rule
             // the current depth now determines whether we may
             // traverse this transition, or not
-            result = currentDepth() >= ModelChecking.CURRENT_ITERATION - 2;
+            result = currentDepth() >= ModelChecking.getIteration() - 2;
             if (!result && traverse) {
                 increaseDepth();
             }

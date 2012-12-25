@@ -70,7 +70,7 @@ public class GraphNodeSizeBoundary extends Boundary {
     public int currentDepth() {
         // with graph-size boundaries, boundary-crossing
         // transitions are never allowed
-        return ModelChecking.CURRENT_ITERATION;
+        return ModelChecking.getIteration();
     }
 
     @Override
