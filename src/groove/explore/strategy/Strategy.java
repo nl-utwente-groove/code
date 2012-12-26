@@ -25,8 +25,9 @@ import groove.lts.GraphState.Flag;
  * A strategy defines an order in which the states of a graph transition system
  * are to be explored. It can also determine which states are to be explored
  * because of the nature of the strategy (see for instance
- * {@link LinearStrategy}). Most often, a strategy starts its exploration at
- * some state, fixed by the {@link #setGTS(GTS, GraphState)} method.
+ * {@link LinearStrategy}).
+ * To use, call {@link #setGTS} and optionally {@link #setState} and 
+ * {@link #setAcceptor}, and then call {@link #play()} or {@link #play(Halter)}.
  */
 public abstract class Strategy {
     /**
@@ -48,24 +49,23 @@ public abstract class Strategy {
     }
 
     /**
-     * Sets the GTS to be explored. Also sets the exploration start state to the
-     * GTS start state. Convenience method for {@link #setGTS(GTS, GraphState)}.
-     * @see #setGTS(GTS, GraphState)
+     * Sets the GTS to be explored, in preparation
+     * to a call of {@link #play()}.
+     * Also sets the state to be explored to {@code null},
+     * meaning that exploration will start at the start state of the GTS.
      */
     final public void setGTS(GTS gts) {
-        this.setGTS(gts, null);
+        this.gts = gts;
+        this.startState = null;
     }
 
     /**
-     * Sets the GTS and start state to be explored. This is done in preparation
+     * Sets the state to be explored, in preparation
      * to a call of {@link #play()}.
      * It is assumed that the state (if not {@code null} is already in the GTS.
-     * @param gts the GTS to be explored
-     * @param state the start state for the exploration; if <code>null</code>,
-     * the GTS start state is used
+     * @param state the start state for the exploration; non-{@code null}
      */
-    final public void setGTS(GTS gts, GraphState state) {
-        this.gts = gts;
+    final public void setState(GraphState state) {
         this.startState = state;
     }
 

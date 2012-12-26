@@ -74,7 +74,7 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
             int event = redDFS(state);
             if (event != ModelChecking.OK) {
                 // put the counter-example in the result
-                for (ProductState stackState : this.strategy.searchStack()) {
+                for (ProductState stackState : this.strategy.getStateStack()) {
                     getResult().add(stackState.getGraphState());
                 }
                 getResult().add(state.getGraphState());
