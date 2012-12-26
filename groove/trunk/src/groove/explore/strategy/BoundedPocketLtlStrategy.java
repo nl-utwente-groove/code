@@ -16,7 +16,6 @@
  */
 package groove.explore.strategy;
 
-import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
 import groove.verify.ProductState;
 import groove.verify.ProductTransition;
@@ -31,25 +30,14 @@ import groove.verify.ProductTransition;
  */
 public class BoundedPocketLtlStrategy extends BoundedLtlStrategy {
     @Override
-    protected void processFinalState(BuchiTransition transition) {
-        addProductTransition(null, transition.target());
-        // we should set the state to pocket but that is
-        // the case by default
-    }
-
-    @Override
-    protected void colourState() {
-        checkPocket(getAtProductState());
+    protected void colourState(ProductState state) {
+        checkPocket(state);
         // if this state is a pocket-state we actually do not
         // not to further colour it blue or red
         // nevertheless, for correctness reasons we still do it
         // (in case the pocket detection is faulty, the colouring
         // is at least correct)
-        if (getAtProductState().getBuchiLocation().isAccepting()) {
-            getAtProductState().setColour(ModelChecking.red());
-        } else {
-            getAtProductState().setColour(ModelChecking.blue());
-        }
+        super.colourState(state);
     }
 
     /**

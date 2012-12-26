@@ -51,44 +51,39 @@ import java.util.Stack;
  */
 public class LtlStrategy extends Strategy implements ExploreIterator {
     @Override
+    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+        MatcherFactory.instance().setDefaultEngine();
+        this.stateSet = new ProductStateSet();
+        this.stateSet.addListener(this.collector);
+        assert acceptor instanceof CycleAcceptor;
+        this.acceptor = (CycleAcceptor) acceptor;
+        this.acceptor.setStrategy(this);
+        this.result = acceptor.getResult();
+        this.stateSet.addListener(this.acceptor);
+        this.stateStack = new Stack<ProductState>();
+        assert (this.startLocation != null) : "The property automaton should have an initial state";
+        ProductState startState =
+            new ProductState(gts.startState(), this.startLocation);
+        this.startState = startState;
+        this.nextState = startState;
+        this.stateSet.addState(startState);
+        this.stateStrategy.setGTS(gts);
+    }
+
+    @Override
+    public void finish() {
+        getStateSet().removeListener(this.collector);
+        getStateSet().removeListener(this.acceptor);
+    }
+
+    @Override
     public boolean hasNext() {
         return getNextState() != null;
     }
 
     @Override
-    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
-        this.gts = gts;
-        this.nextState =
-            this.startState = state == null ? gts.startState() : state;
-        MatcherFactory.instance().setDefaultEngine();
-        this.productGTS = new ProductStateSet();
-        this.productGTS.addListener(this.collector);
-        assert acceptor instanceof CycleAcceptor;
-        this.acceptor = (CycleAcceptor) acceptor;
-        this.acceptor.setStrategy(this);
-        this.result = acceptor.getResult();
-        this.productGTS.addListener(this.acceptor);
-        this.searchStack = new Stack<ProductState>();
-        this.transitionStack = new Stack<ProductTransition>();
-        assert (this.initialLocation != null) : "The property automaton should have an initial state";
-        ProductState startState =
-            new ProductState(gts.startState(), this.initialLocation);
-        this.startProdState = startState;
-        this.atProductState = startState;
-        this.productGTS.addState(startState);
-    }
-
-    @Override
-    public void finish() {
-        getProductGTS().removeListener(this.collector);
-        if (this.acceptor != null) {
-            getProductGTS().removeListener(this.acceptor);
-        }
-    }
-
-    @Override
     public GraphState doNext() {
-        ProductState prodState = getNextProductState();
+        ProductState prodState = getNextState();
         if (prodState == null) {
             return null;
         }
@@ -107,27 +102,22 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
     }
 
     /**
-     * The graph transition system explored by the strategy.
-     * @return The graph transition system explored by the strategy.
+     * Sets the property to be verified.
+     * @param property the property to be verified. It is required
+     * that this property can be parsed correctly
      */
-    protected final GTS getGTS() {
-        return this.gts;
-    }
-
-    /**
-     * The start state set at construction time.
-     * @return the start state for exploration; may be {@code null}.
-     */
-    protected final GraphState getStartState() {
-        return this.startState;
-    }
-
-    /**
-     * Returns the state that will be explored next. If <code>null</code>,
-     * there is nothing left to explore.
-     */
-    protected GraphState getNextState() {
-        return this.nextState;
+    public void setProperty(String property) {
+        assert property != null;
+        try {
+            Formula<String> formula =
+                FormulaParser.parse(property).toLtlFormula();
+            BuchiGraph buchiGraph =
+                BuchiGraph.getPrototype().newBuchiGraph(Formula.Not(formula));
+            this.startLocation = buchiGraph.getInitial();
+        } catch (ParseException e) {
+            throw new IllegalStateException(String.format(
+                "Error in property '%s'", property), e);
+        }
     }
 
     /** 
@@ -142,9 +132,8 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
      * Callback method to return the next state to be explored.
      * Also pushes this state on the explored stack.
      */
-    protected ProductState getNextProductState() {
-        ProductState result = getAtProductState();
-        return result;
+    protected final ProductState getNextState() {
+        return this.nextState;
     }
 
     /** Pushes the current product state on the exploration stack. */
@@ -152,7 +141,7 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
         // TODO: push the current state only on the stack when continuing with
         // one of its successors
         // this should therefore be done in the method updateAtState
-        searchStack().push(state);
+        getStateStack().push(state);
     }
 
     /**
@@ -164,8 +153,8 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
     protected boolean exploreCurrentLocation(ProductState prodState) {
         boolean result = false;
         Set<? extends GraphTransition> outTransitions =
-            getNextState().getTransitions();
-        Set<String> applicableRules = filterRuleNames(outTransitions);
+            prodState.getGraphState().getTransitions();
+        Set<String> applicableRules = getLabels(outTransitions);
         trans: for (BuchiTransition buchiTrans : prodState.getBuchiLocation().outTransitions()) {
             if (buchiTrans.isEnabled(applicableRules)) {
                 boolean finalState = true;
@@ -173,15 +162,16 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
                     if (trans.getRole() == EdgeRole.BINARY) {
                         finalState = false;
                         ProductTransition prodTrans =
-                            addProductTransition(trans, buchiTrans.target());
-                        result = findCounterExample(prodTrans.target());
+                            addTransition(prodState, trans, buchiTrans.target());
+                        result =
+                            findCounterExample(prodState, prodTrans.target());
                         if (result) {
                             break trans;
                         }
                     }
                 }
                 if (finalState) {
-                    processFinalState(buchiTrans);
+                    processFinalState(prodState, buchiTrans);
                 }
             }
             // if the transition of the property automaton is not enabled
@@ -197,10 +187,10 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
      * satisfaction of the condition is to be tested.
      * @return The next state to be explored, or {@code null} if exploration is done.
      */
-    protected GraphState computeNextState() {
+    protected ProductState computeNextState() {
+        ProductState result = null;
         if (this.collector.pickRandomNewState() != null) {
-            ProductState newState = this.collector.pickRandomNewState();
-            this.atProductState = newState;
+            result = this.collector.pickRandomNewState();
         } else {
             ProductState s = null;
 
@@ -210,14 +200,14 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
 
             do {
                 // pop the current state from the search-stack
-                searchStack().pop();
+                ProductState previous = getStateStack().pop();
                 // close the current state
-                setClosed(getAtProductState());
-                getAtProductState().setColour(ModelChecking.blue());
+                getStateSet().setClosed(previous);
+                previous.setColour(ModelChecking.blue());
                 // the parent is on top of the searchStack
                 parent = peekSearchStack();
                 if (parent != null) {
-                    this.atProductState = parent;
+                    result = parent;
                     s = getRandomOpenBuchiSuccessor(parent);
                 }
             } while (parent != null && s == null); // ) &&
@@ -226,53 +216,49 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
             // identify the reason of exiting the loop
             if (parent == null) {
                 // the start state is reached and does not have open successors
-                this.atProductState = null;
+                result = null;
             } else if (s != null) { // the current state has an open successor (is
                 // not really backtracking, a sibling state is
                 // fully explored)
-                this.atProductState = s;
+                result = s;
             }
         }
-        return this.atProductState == null ? null
-                : this.atProductState.getGraphState();
+        return result;
     }
 
-    /** Tests if a counterexample can be constructed from the 
-     * current product state in combination with a given state.
-     * @param prodState the state to test for a counterexample
-     * @return {@code true} if a counterexample was found;
-     * if so, it has also been added to the result
+    /** Tests if a counterexample can be constructed between given
+     * source and target states; if so, adds the counterexample to the result.
+     * @param source source state of the potential counterexample
+     * @param target target state of the potential counterexample
+     * @return {@code true} if a counterexample was found
      */
-    protected boolean findCounterExample(ProductState prodState) {
-        boolean result = counterExample(getAtProductState(), prodState);
+    protected final boolean findCounterExample(ProductState source,
+            ProductState target) {
+        boolean result =
+            (target.colour() == ModelChecking.cyan())
+                && (source.getBuchiLocation().isAccepting() || target.getBuchiLocation().isAccepting());
         if (result) {
             // notify counter-example
-            for (ProductState state : searchStack()) {
-                getResult().add(state.getGraphState());
+            for (ProductState state : getStateStack()) {
+                this.result.add(state.getGraphState());
             }
         }
         return result;
     }
 
     /**
+     * @param state the final product state to be processed
      * @param transition may be null.
      */
-    protected void processFinalState(BuchiTransition transition) {
+    protected final void processFinalState(ProductState state,
+            BuchiTransition transition) {
         if (transition == null) {
             // exclude the current state from further analysis
             // mark it red
-            getAtProductState().setColour(ModelChecking.RED);
+            state.setColour(ModelChecking.RED);
         } else {
-            addProductTransition(null, transition.target());
+            addTransition(state, null, transition.target());
         }
-    }
-
-    /**
-     * Returns the result container.
-     * @return the result container; non-{@code null}
-     */
-    public Result getResult() {
-        return this.result;
     }
 
     /**
@@ -280,44 +266,8 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
      * @return the start product state; non-{@code null} after
      * a call to {@link #prepare}.
      */
-    public final ProductState getStartProductState() {
-        return this.startProdState;
-    }
-
-    /**
-     * Closes Büchi graph-states.
-     * @param state the Büchi graph-state to close
-     */
-    public void setClosed(ProductState state) {
-        getProductGTS().setClosed(state);
-    }
-
-    /**
-     * Identifies special cases of counter-examples.
-     * @param source the source Buchi graph-state
-     * @param target the target Buchi graph-state
-     * @return <tt>true</tt> if the target Buchi graph-state has colour
-     *         {@link ModelChecking#CYAN} and the buchi location of either the
-     *         <tt>source</tt> or <tt>target</tt> is accepting, <tt>false</tt>
-     *         otherwise.
-     */
-    public boolean counterExample(ProductState source, ProductState target) {
-        boolean result =
-            (target.colour() == ModelChecking.cyan())
-                && (source.getBuchiLocation().isAccepting() || target.getBuchiLocation().isAccepting());
-        return result;
-    }
-
-    /**
-     * Pops the top element from the search-stack
-     * @return the top element from the search-stack
-     */
-    protected ProductState popSearchStack() {
-        if (searchStack().isEmpty()) {
-            return null;
-        } else {
-            return searchStack().pop();
-        }
+    protected final ProductState getStartState() {
+        return this.startState;
     }
 
     /**
@@ -325,10 +275,10 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
      * @return the top element from the search-stack
      */
     protected ProductState peekSearchStack() {
-        if (searchStack().isEmpty()) {
+        if (getStateStack().isEmpty()) {
             return null;
         } else {
-            return searchStack().peek();
+            return getStateStack().peek();
         }
     }
 
@@ -349,15 +299,13 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
     }
 
     /**
-     * Constructs the set of rule names for which the iterator contains a match.
-     * @param graphTransitions a set of {@link groove.lts.RuleTransition}s
-     * @return the set of rule names contained in the given
-     *         <code>iterator</code>
+     * Extracts the labels from a given set of transitions.
+     * @param transitions a set of graph transitions
+     * @return the set of label texts of the transitions in {@code transitions}
      */
-    protected Set<String> filterRuleNames(
-            Set<? extends GraphTransition> graphTransitions) {
+    private Set<String> getLabels(Set<? extends GraphTransition> transitions) {
         Set<String> result = new HashSet<String>();
-        for (GraphTransition nextTransition : graphTransitions) {
+        for (GraphTransition nextTransition : transitions) {
             result.add(nextTransition.label().toString());
         }
         return result;
@@ -368,37 +316,48 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
      * afterwards.
      * @param state the state to be fully explored locally
      */
-    public void exploreState(GraphState state) {
-        if (getGTS().isOpen(state)) {
-            Strategy explore = new ExploreStateStrategy();
-            explore.setGTS(getGTS(), state);
-            explore.play();
+    private void exploreState(GraphState state) {
+        if (!state.isClosed()) {
+            this.stateStrategy.setState(state);
+            this.stateStrategy.play();
         }
     }
 
     /**
-     * Adds a product transition to the product gts. If the current state is
+     * Adds a product transition to the product GTS. If the source state is
      * already explored we do not have to add anything. In that case, we return
      * the corresponding transition.
+     * @param source source of the new transition
      * @param transition the graph-transition component for the
      *        product-transition
-     * @param location the location of the target Buechi graph-state
+     * @param targetLocation the location of the target Büchi graph-state
      * @see ProductState#addTransition(ProductTransition)
      */
-    public ProductTransition addProductTransition(GraphTransition transition,
-            BuchiLocation location) {
-        ProductTransition result = null; // new
-        // HashSet<ProductTransition>();
-        // if the current source state is already closed
-        // the product-gts contains all transitions and
-        // we do not have to add new transitions.
-        if (!getAtProductState().isClosed()) {
-            result = addTransition(getAtProductState(), transition, location);
+    private ProductTransition addTransition(ProductState source,
+            GraphTransition transition, BuchiLocation targetLocation) {
+        ProductTransition result = null;
+        if (!source.isClosed()) {
+            // we assume that we only add transitions for modifying graph
+            // transitions
+            ProductState target =
+                createState(source, transition, targetLocation);
+            ProductState isoTarget = getStateSet().addState(target);
+            if (isoTarget == null) {
+                // no isomorphic state found
+                result = createProductTransition(source, transition, target);
+            } else {
+                assert (isoTarget.iteration() <= ModelChecking.getIteration()) : "This state belongs to the next iteration and should not be explored now.";
+                result = createProductTransition(source, transition, isoTarget);
+            }
+            source.addTransition(result);
         } else {
-            for (ProductTransition nextTransition : getAtProductState().outTransitions()) {
+            // if the current source state is already closed
+            // the product-gts contains all transitions and
+            // we do not have to add new transitions.
+            for (ProductTransition nextTransition : source.outTransitions()) {
                 if (nextTransition.graphTransition().equals(transition)
                     && nextTransition.target().getBuchiLocation().equals(
-                        location)) {
+                        targetLocation)) {
                     result = nextTransition;
                     break;
                 }
@@ -407,35 +366,7 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
         return result;
     }
 
-    /**
-     * Adds a transition to the product gts given a source Buechi graph-state, a
-     * graph transition, and a target Buechi location.
-     * @param source the source Buechi graph-state
-     * @param transition the graph transition
-     * @param targetLocation the target Buechi location
-     * @return the added product transition
-     */
-    public ProductTransition addTransition(ProductState source,
-            GraphTransition transition, BuchiLocation targetLocation) {
-        // we assume that we only add transitions for modifying graph
-        // transitions
-        ProductState target =
-            createBuchiGraphState(source, transition, targetLocation);
-        ProductState isoTarget = getProductGTS().addState(target);
-        ProductTransition result = null;
-
-        if (isoTarget == null) {
-            // no isomorphic state found
-            result = createProductTransition(source, transition, target);
-        } else {
-            assert (isoTarget.iteration() <= ModelChecking.getIteration()) : "This state belongs to the next iteration and should not be explored now.";
-            result = createProductTransition(source, transition, isoTarget);
-        }
-        source.addTransition(result);
-        return result;
-    }
-
-    private ProductState createBuchiGraphState(ProductState source,
+    private ProductState createState(ProductState source,
             GraphTransition transition, BuchiLocation targetLocation) {
         if (transition == null) {
             // the system-state is a final one for which we assume an artificial
@@ -461,98 +392,30 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
      * @return the product GTS; non-{@code null} after a
      * call to {@link #prepare}
      */
-    public ProductStateSet getProductGTS() {
-        return this.productGTS;
-    }
-
-    /**
-     * Returns the Büchi graph-state the strategy is currently at.
-     */
-    public ProductState getAtProductState() {
-        return this.atProductState;
-    }
-
-    /**
-     * Set the current product state
-     * @param atState the state to set; non-{@code null}.
-     */
-    public void setAtProductState(ProductState atState) {
-        assert atState != null;
-        this.atProductState = atState;
-    }
-
-    /**
-     * Returns the current Büchi location.
-     */
-    public BuchiLocation getAtBuchiLocation() {
-        return getAtProductState().getBuchiLocation();
+    protected final ProductStateSet getStateSet() {
+        return this.stateSet;
     }
 
     /**
      * Returns the current search-stack.
      */
-    public Stack<ProductState> searchStack() {
-        return this.searchStack;
+    public final Stack<ProductState> getStateStack() {
+        return this.stateStack;
     }
 
-    /**
-     * Returns the transition stack.
-     */
-    public Stack<ProductTransition> transitionStack() {
-        return this.transitionStack;
-    }
-
-    /**
-     * Pushes a transition on the transition stack.
-     * @param transition the transition to push
-     */
-    public void pushTransition(ProductTransition transition) {
-        transitionStack().push(transition);
-        assert (transitionStack().size() == (searchStack().size() - 1)) : "search stacks out of sync ("
-            + transitionStack().size() + " vs " + searchStack().size() + ")";
-    }
-
-    /**
-     * Sets the property to be verified.
-     * @param property the property to be verified. It is required
-     * that this property can be parsed correctly
-     */
-    public void setProperty(String property) {
-        assert property != null;
-        try {
-            Formula<String> formula =
-                FormulaParser.parse(property).toLtlFormula();
-            BuchiGraph buchiGraph =
-                BuchiGraph.getPrototype().newBuchiGraph(Formula.Not(formula));
-            this.initialLocation = buchiGraph.getInitial();
-        } catch (ParseException e) {
-            throw new IllegalStateException(String.format(
-                "Error in property '%s'", property), e);
-        }
-    }
-
-    /** The graph transition system explored by the strategy. */
-    private GTS gts;
-    /**
-     * Start state for exploration, set in the constructor.
-     * If {@code null}, the GTS start state is selected at exploration time.
-     */
-    private GraphState startState;
-    /** The Buchi start graph-state of the system. */
-    private ProductState startProdState;
-    /** The state that will be explored by the next call of {@link #doNext()}. */
-    private GraphState nextState;
-    /** Acceptor to be added to the product GTS, once it is created. */
-    private CycleAcceptor acceptor;
+    private final Strategy stateStrategy = new ExploreStateStrategy();
     /** The synchronised product of the system and the property. */
-    private ProductStateSet productGTS;
+    private ProductStateSet stateSet;
     /** The current Buchi graph-state the system is at. */
-    private ProductState atProductState;
+    private ProductState nextState;
+    /** The Buchi start graph-state of the system. */
+    private ProductState startState;
+    /** Acceptor to be added to the product GTS. */
+    private CycleAcceptor acceptor;
     /** State collector which randomly provides unexplored states. */
     private RandomNewStateChooser collector = new RandomNewStateChooser();
-
-    private BuchiLocation initialLocation;
-    private Stack<ProductState> searchStack;
-    private Stack<ProductTransition> transitionStack;
+    /** Initial location of the Büchi graph encoding the property to be verified. */
+    private BuchiLocation startLocation;
+    private Stack<ProductState> stateStack;
     private Result result;
 }

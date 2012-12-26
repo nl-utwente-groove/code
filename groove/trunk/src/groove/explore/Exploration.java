@@ -20,9 +20,9 @@ import groove.explore.encode.Serialized;
 import groove.explore.result.Acceptor;
 import groove.explore.result.CycleAcceptor;
 import groove.explore.result.Result;
+import groove.explore.strategy.LtlStrategy;
 import groove.explore.strategy.Strategy;
 import groove.explore.strategy.Strategy.Halter;
-import groove.explore.strategy.LtlStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
@@ -217,7 +217,8 @@ public class Exploration {
 
         // initialize acceptor and GTS
         parsedAcceptor.setResult(new Result(this.nrResults));
-        parsedStrategy.setGTS(gts, state);
+        parsedStrategy.setGTS(gts);
+        parsedStrategy.setState(state);
 
         // initialize profiling and prepare graph listener
         playReporter.start();
