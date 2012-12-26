@@ -27,6 +27,7 @@ import groove.graph.EdgeRole;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.match.MatcherFactory;
 import groove.verify.BuchiGraph;
 import groove.verify.BuchiLocation;
 import groove.verify.BuchiTransition;
@@ -48,11 +49,18 @@ import java.util.Stack;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class LtlStrategy extends GTSStrategy {
+public class LtlStrategy extends Strategy implements ExploreIterator {
+    @Override
+    public boolean hasNext() {
+        return getNextState() != null;
+    }
+
     @Override
     public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
-        // don't pass on the acceptor, we deal with this here
-        super.prepare(gts, state, null);
+        this.gts = gts;
+        this.nextState =
+            this.startState = state == null ? gts.startState() : state;
+        MatcherFactory.instance().setDefaultEngine();
         this.productGTS = new ProductStateSet();
         this.productGTS.addListener(this.collector);
         assert acceptor instanceof CycleAcceptor;
@@ -64,7 +72,7 @@ public class LtlStrategy extends GTSStrategy {
         this.transitionStack = new Stack<ProductTransition>();
         assert (this.initialLocation != null) : "The property automaton should have an initial state";
         ProductState startState =
-            new ProductState(getGTS().startState(), this.initialLocation);
+            new ProductState(gts.startState(), this.initialLocation);
         this.startProdState = startState;
         this.atProductState = startState;
         this.productGTS.addState(startState);
@@ -72,7 +80,6 @@ public class LtlStrategy extends GTSStrategy {
 
     @Override
     public void finish() {
-        super.finish();
         getProductGTS().removeListener(this.collector);
         if (this.acceptor != null) {
             getProductGTS().removeListener(this.acceptor);
@@ -97,6 +104,38 @@ public class LtlStrategy extends GTSStrategy {
             setNextState();
         }
         return prodState.getGraphState();
+    }
+
+    /**
+     * The graph transition system explored by the strategy.
+     * @return The graph transition system explored by the strategy.
+     */
+    protected final GTS getGTS() {
+        return this.gts;
+    }
+
+    /**
+     * The start state set at construction time.
+     * @return the start state for exploration; may be {@code null}.
+     */
+    protected final GraphState getStartState() {
+        return this.startState;
+    }
+
+    /**
+     * Returns the state that will be explored next. If <code>null</code>,
+     * there is nothing left to explore.
+     */
+    protected GraphState getNextState() {
+        return this.nextState;
+    }
+
+    /** 
+     * Sets the next state to be explored.
+     * The next state is determined by a call to {@link #computeNextState()}.
+     */
+    protected final void setNextState() {
+        this.nextState = computeNextState();
     }
 
     /** 
@@ -153,7 +192,11 @@ public class LtlStrategy extends GTSStrategy {
         return result;
     }
 
-    @Override
+    /**
+     * Callback method to determine the next state to be explored. This is the place where
+     * satisfaction of the condition is to be tested.
+     * @return The next state to be explored, or {@code null} if exploration is done.
+     */
     protected GraphState computeNextState() {
         if (this.collector.pickRandomNewState() != null) {
             ProductState newState = this.collector.pickRandomNewState();
@@ -488,8 +531,17 @@ public class LtlStrategy extends GTSStrategy {
         }
     }
 
+    /** The graph transition system explored by the strategy. */
+    private GTS gts;
+    /**
+     * Start state for exploration, set in the constructor.
+     * If {@code null}, the GTS start state is selected at exploration time.
+     */
+    private GraphState startState;
     /** The Buchi start graph-state of the system. */
     private ProductState startProdState;
+    /** The state that will be explored by the next call of {@link #doNext()}. */
+    private GraphState nextState;
     /** Acceptor to be added to the product GTS, once it is created. */
     private CycleAcceptor acceptor;
     /** The synchronised product of the system and the property. */
