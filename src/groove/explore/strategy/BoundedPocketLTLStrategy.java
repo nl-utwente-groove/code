@@ -28,7 +28,7 @@ import groove.verify.ProductTransition;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class BoundedPocketLtlStrategy extends BoundedLtlStrategy {
+public class BoundedPocketLTLStrategy extends BoundedLTLStrategy {
     @Override
     protected void colourState(ProductState state) {
         checkPocket(state);

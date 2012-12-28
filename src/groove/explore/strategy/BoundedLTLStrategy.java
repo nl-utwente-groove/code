@@ -36,7 +36,7 @@ import java.util.Stack;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class BoundedLtlStrategy extends LtlStrategy {
+public class BoundedLTLStrategy extends LTLStrategy {
     @Override
     public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         super.prepare(gts, state, acceptor);
@@ -60,7 +60,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
     }
 
     @Override
-    protected boolean exploreCurrentLocation(ProductState prodState) {
+    protected boolean exploreState(ProductState prodState) {
         boolean result = false;
         if (prodState.isExplored()) {
             // if the state is already explored...
@@ -72,7 +72,7 @@ public class BoundedLtlStrategy extends LtlStrategy {
             }
         } else {
             // else we have to do it now...
-            result = super.exploreCurrentLocation(prodState);
+            result = super.exploreState(prodState);
             if (!result) {
                 prodState.setExplored();
             }
@@ -89,8 +89,43 @@ public class BoundedLtlStrategy extends LtlStrategy {
         }
     }
 
+    /**
+     * Pushes a transition on the transition stack.
+     * @param transition the transition to push
+     */
+    protected void pushTransition(ProductTransition transition) {
+        getTransitionStack().push(transition);
+        assert (getTransitionStack().size() == (getStateStack().size() - 1)) : "search stacks out of sync ("
+            + getTransitionStack().size()
+            + " vs "
+            + getStateStack().size()
+            + ")";
+    }
+
     @Override
     protected ProductState computeNextState() {
+        ProductState result = super.computeNextState();
+        if (result == null && getStateSet().hasOpenStates()
+            && ModelChecking.getIteration() <= ModelChecking.MAX_ITERATIONS) {
+            // from the initial state again
+            result = getStartState();
+            // next iteration
+            ModelChecking.nextIteration();
+            ModelChecking.toggle();
+            // clear the stacks
+            getStateStack().clear();
+            getTransitionStack().clear();
+            this.lastTransition = null;
+            // increase the boundary
+            getBoundary().increase();
+            // start with depth zero again
+            getBoundary().setCurrentDepth(0);
+        }
+        return result;
+    }
+
+    @Override
+    protected ProductState getFreshState() {
         ProductState result = null;
         Iterator<ProductTransition> outTransitionIter =
             getNextState().outTransitions().iterator();
@@ -134,33 +169,13 @@ public class BoundedLtlStrategy extends LtlStrategy {
             // it is a final state and will therefore never lead to an
             // accepting cycle
         }
-
-        // backtracking
-        if (result == null) {
-            result = backtrack();
-        }
-        if (result == null && getStateSet().hasOpenStates()
-            && ModelChecking.getIteration() <= ModelChecking.MAX_ITERATIONS) {
-            // from the initial state again
-            result = getStartState();
-            // next iteration
-            ModelChecking.nextIteration();
-            ModelChecking.toggle();
-            // clear the stacks
-            getStateStack().clear();
-            transitionStack().clear();
-            this.lastTransition = null;
-            // increase the boundary
-            getBoundary().increase();
-            // start with depth zero again
-            getBoundary().setCurrentDepth(0);
-        }
         return result;
     }
 
     /**
      * Backtrack to the next state to be explored.
      */
+    @Override
     protected ProductState backtrack() {
         ProductState result = null;
         ProductState parent = null;
@@ -173,13 +188,11 @@ public class BoundedLtlStrategy extends LtlStrategy {
             colourState(previous);
 
             ProductTransition previousTransition = null;
-            if (transitionStack().isEmpty()) {
+            if (getTransitionStack().isEmpty()) {
                 // the start state is reached and does not have open successors
                 break;
-            } else {
-                previousTransition = transitionStack().pop();
             }
-
+            previousTransition = getTransitionStack().pop();
             // backtrack the last transition
             getBoundary().backtrackTransition(previousTransition);
 
@@ -191,15 +204,13 @@ public class BoundedLtlStrategy extends LtlStrategy {
                 // make sure that the next open successor is not yet explored
                 if (openTransition != null) {
                     assert (isUnexplored(openTransition.target())) : "We only continue from unexplored states";
-                    if (isUnexplored(openTransition.target())) {
-                        // if this transition is a boundary-crossing transition,
-                        // the current depth of the boundary should be updated
-                        getBoundary().crossingBoundary(openTransition, true);
-                        // set the next transition to take
-                        this.lastTransition = openTransition;
-                        // and the state reached by that transition
-                        s = openTransition.target();
-                    }
+                    // if this transition is a boundary-crossing transition,
+                    // the current depth of the boundary should be updated
+                    getBoundary().crossingBoundary(openTransition, true);
+                    // set the next transition to take
+                    this.lastTransition = openTransition;
+                    // and the state reached by that transition
+                    s = openTransition.target();
                 }
             }
         } while (parent != null && s == null);
@@ -234,9 +245,10 @@ public class BoundedLtlStrategy extends LtlStrategy {
     }
 
     /**
-     * Colour the current state properly. If we backtracked from an accepting
-     * state then it must be coloured red, otherwise blue.
+     * If we backtracked from an accepting
+     * state then the Büchi location must be coloured red, otherwise blue.
      */
+    @Override
     protected void colourState(ProductState state) {
         if (state.getBuchiLocation().isAccepting()) {
             state.setColour(ModelChecking.red());
@@ -314,18 +326,8 @@ public class BoundedLtlStrategy extends LtlStrategy {
     /**
      * Returns the transition stack.
      */
-    protected Stack<ProductTransition> transitionStack() {
+    protected Stack<ProductTransition> getTransitionStack() {
         return this.transitionStack;
-    }
-
-    /**
-     * Pushes a transition on the transition stack.
-     * @param transition the transition to push
-     */
-    protected void pushTransition(ProductTransition transition) {
-        transitionStack().push(transition);
-        assert (transitionStack().size() == (getStateStack().size() - 1)) : "search stacks out of sync ("
-            + transitionStack().size() + " vs " + getStateStack().size() + ")";
     }
 
     private Stack<ProductTransition> transitionStack;

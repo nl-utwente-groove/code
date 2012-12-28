@@ -16,15 +16,14 @@
  */
 package groove.explore.result;
 
-import groove.explore.strategy.LtlStrategy;
 import groove.lts.GraphState;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
 
 /**
- * A set of objects that are the result of the execution of some
- * {@link LtlStrategy}. Whether the result is fully computed is defined by the
+ * A set of graph states that are the result of the execution of some
+ * exploration. Whether the result is fully computed is defined by the
  * {@link #done()} method. Typical such objects are elements of a graph
  * transition system (states, paths, etc.).
  */
