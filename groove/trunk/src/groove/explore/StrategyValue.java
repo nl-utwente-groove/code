@@ -31,13 +31,13 @@ import groove.explore.result.NodeBoundCondition;
 import groove.explore.strategy.Strategy;
 import groove.explore.strategy.BFSStrategy;
 import groove.explore.strategy.Boundary;
-import groove.explore.strategy.BoundedLtlStrategy;
-import groove.explore.strategy.BoundedPocketLtlStrategy;
+import groove.explore.strategy.BoundedLTLStrategy;
+import groove.explore.strategy.BoundedPocketLTLStrategy;
 import groove.explore.strategy.ConditionalBFSStrategy;
 import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.strategy.LinearStrategy;
-import groove.explore.strategy.LtlStrategy;
+import groove.explore.strategy.LTLStrategy;
 import groove.explore.strategy.RandomLinearStrategy;
 import groove.explore.strategy.RemoteStrategy;
 import groove.explore.strategy.ReteLinearStrategy;
@@ -293,7 +293,7 @@ public enum StrategyValue implements ParsableValue {
                 new EncodedLtlProperty()) {
                 @Override
                 public Strategy create(String property) {
-                    LtlStrategy result = new LtlStrategy();
+                    LTLStrategy result = new LTLStrategy();
                     result.setProperty(property);
                     return result;
                 }
@@ -310,7 +310,7 @@ public enum StrategyValue implements ParsableValue {
                 new EncodedLtlProperty(), "bound", new EncodedBoundary()) {
                 @Override
                 public Strategy create(String property, Boundary bound) {
-                    BoundedLtlStrategy result = new BoundedLtlStrategy();
+                    BoundedLTLStrategy result = new BoundedLTLStrategy();
                     result.setProperty(property);
                     result.setBoundary(bound);
                     return result;
@@ -328,7 +328,7 @@ public enum StrategyValue implements ParsableValue {
                 new EncodedLtlProperty(), "bound", new EncodedBoundary()) {
                 @Override
                 public Strategy create(String property, Boundary bound) {
-                    BoundedLtlStrategy result = new BoundedPocketLtlStrategy();
+                    BoundedLTLStrategy result = new BoundedPocketLTLStrategy();
                     result.setProperty(property);
                     result.setBoundary(bound);
                     return result;

@@ -17,7 +17,7 @@
 
 package groove.explore.result;
 
-import groove.explore.strategy.LtlStrategy;
+import groove.explore.strategy.LTLStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphState.Flag;
@@ -49,7 +49,7 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
     /** Sets the strategy to which this acceptor listens,
      * and which it invokes for the nested search.
      */
-    public void setStrategy(LtlStrategy strategy) {
+    public void setStrategy(LTLStrategy strategy) {
         this.strategy = strategy;
     }
 
@@ -119,7 +119,7 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
         return result;
     }
 
-    private LtlStrategy strategy;
+    private LTLStrategy strategy;
 
     /** 
      * Type of the result object for the {@link CycleAcceptor}.

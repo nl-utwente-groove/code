@@ -49,7 +49,7 @@ import java.util.Stack;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class LtlStrategy extends Strategy implements ExploreIterator {
+public class LTLStrategy extends Strategy implements ExploreIterator {
     @Override
     public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         MatcherFactory.instance().setDefaultEngine();
@@ -84,18 +84,16 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
     @Override
     public GraphState doNext() {
         ProductState prodState = getNextState();
-        if (prodState == null) {
-            return null;
-        }
+        assert prodState != null;
         // put current state on the stack
         pushState(prodState);
         // colour state cyan as being on the search stack
         prodState.setColour(ModelChecking.cyan());
         // fully explore the current state
-        exploreState(prodState.getGraphState());
+        exploreGraphState(prodState.getGraphState());
         this.collector.reset();
 
-        if (!exploreCurrentLocation(prodState)) {
+        if (!exploreState(prodState)) {
             setNextState();
         }
         return prodState.getGraphState();
@@ -150,7 +148,7 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
      * the resulting combined transition to the product GTS
      * @return {@code true} if a counterexample was found
      */
-    protected boolean exploreCurrentLocation(ProductState prodState) {
+    protected boolean exploreState(ProductState prodState) {
         boolean result = false;
         Set<? extends GraphTransition> outTransitions =
             prodState.getGraphState().getTransitions();
@@ -183,47 +181,67 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
     }
 
     /**
-     * Callback method to determine the next state to be explored. This is the place where
-     * satisfaction of the condition is to be tested.
+     * Callback method to determine the next state to be explored.
      * @return The next state to be explored, or {@code null} if exploration is done.
      */
     protected ProductState computeNextState() {
-        ProductState result = null;
-        if (this.collector.pickRandomNewState() != null) {
-            result = this.collector.pickRandomNewState();
-        } else {
-            ProductState s = null;
-
-            // backtracking
-
-            ProductState parent = null;
-
-            do {
-                // pop the current state from the search-stack
-                ProductState previous = getStateStack().pop();
-                // close the current state
-                getStateSet().setClosed(previous);
-                previous.setColour(ModelChecking.blue());
-                // the parent is on top of the searchStack
-                parent = peekSearchStack();
-                if (parent != null) {
-                    result = parent;
-                    s = getRandomOpenBuchiSuccessor(parent);
-                }
-            } while (parent != null && s == null); // ) &&
-            // !getProductGTS().isOpen(getAtBuchiState()));
-
-            // identify the reason of exiting the loop
-            if (parent == null) {
-                // the start state is reached and does not have open successors
-                result = null;
-            } else if (s != null) { // the current state has an open successor (is
-                // not really backtracking, a sibling state is
-                // fully explored)
-                result = s;
-            }
+        ProductState result = getFreshState();
+        if (result == null) {
+            result = backtrack();
         }
         return result;
+    }
+
+    /**
+     * Backtracks the state stack, and returns the
+     * topmost unexplored state.
+     * @return the topmost incompletely explored state on the 
+     * state stack, or {@code null} if there is none.
+     */
+    protected ProductState backtrack() {
+        ProductState result = null;
+        ProductState s = null;
+
+        // backtracking
+
+        ProductState parent = null;
+
+        do {
+            // pop the current state from the search-stack
+            ProductState previous = getStateStack().pop();
+            // close the current state
+            getStateSet().setClosed(previous);
+            colourState(previous);
+            // the parent is on top of the searchStack
+            parent = peekSearchStack();
+            if (parent != null) {
+                result = parent;
+                s = getRandomOpenBuchiSuccessor(parent);
+            }
+        } while (parent != null && s == null);
+
+        // identify the reason of exiting the loop
+        if (parent == null) {
+            // the start state is reached and does not have open successors
+            result = null;
+        } else if (s != null) { // the current state has an open successor (is
+            // not really backtracking, a sibling state is
+            // fully explored)
+            result = s;
+        }
+        return result;
+    }
+
+    /** Selects a state from the set of unexplored states. */
+    protected ProductState getFreshState() {
+        return this.collector.pickRandomNewState();
+    }
+
+    /**
+     * Colours a given state, in the course of backtracking.
+     */
+    protected void colourState(ProductState state) {
+        state.setColour(ModelChecking.blue());
     }
 
     /** Tests if a counterexample can be constructed between given
@@ -316,7 +334,7 @@ public class LtlStrategy extends Strategy implements ExploreIterator {
      * afterwards.
      * @param state the state to be fully explored locally
      */
-    private void exploreState(GraphState state) {
+    private void exploreGraphState(GraphState state) {
         if (!state.isClosed()) {
             this.stateStrategy.setState(state);
             this.stateStrategy.play();

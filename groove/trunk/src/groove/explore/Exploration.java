@@ -20,7 +20,7 @@ import groove.explore.encode.Serialized;
 import groove.explore.result.Acceptor;
 import groove.explore.result.CycleAcceptor;
 import groove.explore.result.Result;
-import groove.explore.strategy.LtlStrategy;
+import groove.explore.strategy.LTLStrategy;
 import groove.explore.strategy.Strategy;
 import groove.explore.strategy.Strategy.Halter;
 import groove.lts.GTS;
@@ -124,7 +124,7 @@ public class Exploration {
      */
     public Acceptor getParsedAcceptor(GraphGrammar grammar)
         throws FormatException {
-        if (getParsedStrategy(grammar) instanceof LtlStrategy) {
+        if (getParsedStrategy(grammar) instanceof LTLStrategy) {
             return new CycleAcceptor();
         } else {
             return AcceptorEnumerator.parseAcceptor(grammar, this.acceptor);
