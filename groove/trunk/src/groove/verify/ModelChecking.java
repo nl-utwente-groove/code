@@ -52,9 +52,6 @@ public class ModelChecking {
     /** the value for the colour red in the current colour-scheme. */
     private static int CURRENT_RED = RED;
 
-    /** constant to keep track of dynamic colour-schemes */
-    private static int NEXT_FREE_COLOUR = 6;
-
     /** the value for marking pocket states */
     public static int POCKET = 1;
     /** the value for marking non-pocket states */
@@ -74,8 +71,6 @@ public class ModelChecking {
 
     /** constant specifying whether to mark pocket-states */
     public static boolean MARK_POCKET_STATES;
-    /** constant specifying the maximal number of iterations to be performed */
-    public static final int MAX_ITERATIONS = -1;
     /** constant specifying the maximal number of iterations to be performed */
     private static int CURRENT_ITERATION = 0;
     /** constant specifying the maximal amount of time to spend */
@@ -154,22 +149,83 @@ public class ModelChecking {
         return CURRENT_ITERATION;
     }
 
-    /**
-     * Instantiate a fresh colour-scheme.
-     */
-    public static void nextColourScheme() {
-        assert (NEXT_FREE_COLOUR % 4 == 2) : "Faulty colour-scheme in use: constant for WHITE should be have value n*4+1";
-        CURRENT_WHITE = nextFreeColour();
-        CURRENT_CYAN = nextFreeColour();
-        CURRENT_BLUE = nextFreeColour();
-        CURRENT_RED = nextFreeColour();
+    private static enum Color {
+        NONE, WHITE, CYAN, BLUE, RED, ALT_WHITE, ALT_CYAN, ALT_BLUE, ALT_RED;
     }
 
-    /**
-     * Returns the next integer value that is available for colouring.
-     * @return the next integer value that is available for colouring.
-     */
-    private static int nextFreeColour() {
-        return NEXT_FREE_COLOUR++;
+    /** Record of a model checking run. */
+    public static class Record {
+        private Record(boolean altColour, boolean pocket) {
+            this.white = altColour ? Color.ALT_WHITE : Color.WHITE;
+            this.cyan = altColour ? Color.ALT_CYAN : Color.CYAN;
+            this.blue = altColour ? Color.ALT_BLUE : Color.BLUE;
+            this.red = altColour ? Color.ALT_RED : Color.RED;
+            this.pocket = pocket;
+        }
+
+        private void setToggle(Record toggled) {
+            this.toggled = toggled;
+        }
+
+        /** Returns the white value of this record. */
+        public Color white() {
+            return this.white;
+        }
+
+        /** Returns the cyan value of this record. */
+        public Color cyan() {
+            return this.cyan;
+        }
+
+        /** Returns the red value of this record. */
+        public Color red() {
+            return this.red;
+        }
+
+        /** Returns the blue value of this record. */
+        public Color blue() {
+            return this.blue;
+        }
+
+        /** Indicates if the model checking run is a pocket strategy. */
+        public boolean isPocket() {
+            return this.pocket;
+        }
+
+        /** Returns the record where the used colours are toggled. */
+        public Record toggle() {
+            return this.toggled;
+        }
+
+        private final Color white;
+        private final Color cyan;
+        private final Color red;
+        private final Color blue;
+        private final boolean pocket;
+        private Record toggled;
+    }
+
+    /** Returns a record for the current model checking run. */
+    public static Record getRecord(boolean pocket) {
+        return getRecord(false, pocket);
+    }
+
+    private static Record getRecord(boolean altColour, boolean pocket) {
+        if (altColour) {
+            return pocket ? altPocketRecord : altNonPocketRecord;
+        } else {
+            return pocket ? normPocketRecord : normNonPocketRecord;
+        }
+    }
+
+    private final static Record normNonPocketRecord = new Record(false, false);
+    private final static Record normPocketRecord = new Record(false, true);
+    private final static Record altNonPocketRecord = new Record(true, false);
+    private final static Record altPocketRecord = new Record(true, true);
+    static {
+        normPocketRecord.setToggle(altPocketRecord);
+        altPocketRecord.setToggle(normPocketRecord);
+        normNonPocketRecord.setToggle(altNonPocketRecord);
+        altNonPocketRecord.setToggle(normNonPocketRecord);
     }
 }

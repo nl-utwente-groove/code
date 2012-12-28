@@ -17,8 +17,6 @@
 package groove.verify;
 
 import groove.explore.result.CycleAcceptor;
-import groove.graph.Graph;
-import groove.graph.iso.IsoChecker;
 import groove.lts.GTS;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
@@ -34,15 +32,15 @@ import java.util.Set;
  */
 public class ProductStateSet {
     /**
-     * Adds a product state to the gts. If there exists an isomorphic state
-     * in the gts, nothing is done, and this isomorphic state is returned. If it
+     * Adds a product state to this set. If the state is already in the set,
+     * the existing object is returned. If it
      * is a new state, this method returns <code>null</code>.
      * @param newState the state to be added
-     * @return the isomorphic state if such a state is already in the gts,
+     * @return the existing state if it is already in the gts,
      *         <code>null</code> otherwise
      */
     public ProductState addState(ProductState newState) {
-        // see if isomorphic graph is already in the GTS
+        // test if this is a known state
         ProductState result = this.stateSet.put(newState);
         // new states are first considered open
         if (result == null) {
@@ -122,17 +120,6 @@ public class ProductStateSet {
         return stateCount() - this.closedCount;
     }
 
-    /**
-     * Checks whether a given state is contained in the current ProductGTS.
-     * @param state the state to check containment for
-     * @return <tt>true</tt> if the state is in the state-set, <tt>false</tt>
-     *         otherwise
-     * @see TreeHashSet#contains(Object)
-     */
-    public boolean containsState(ProductState state) {
-        return this.stateSet.contains(state);
-    }
-
     /** Returns the number of product states. */
     public int stateCount() {
         return this.stateSet.size();
@@ -144,31 +131,8 @@ public class ProductStateSet {
     private final Set<ProductListener> listeners =
         new HashSet<ProductListener>();
 
-    /** Specialised set implementation for storing states. */
+    /** Specialised set implementation for storing product states. */
     private class TreeHashStateSet extends TreeHashSet<ProductState> {
-        /** Constructs a new, empty state set. */
-        TreeHashStateSet() {
-            super(GTS.INITIAL_STATE_SET_SIZE, GTS.STATE_SET_RESOLUTION,
-                GTS.STATE_SET_ROOT_RESOLUTION);
-        }
-
-        /**
-         * First compares the control locations, then calls
-         * {@link IsoChecker#areIsomorphic(Graph, Graph)}.
-         */
-        @Override
-        protected boolean areEqual(ProductState stateKey,
-                ProductState otherStateKey) {
-            return stateKey.equals(otherStateKey);
-        }
-
-        /**
-         * Returns the hash code of the isomorphism certificate, modified by the
-         * control location (if any).
-         */
-        @Override
-        protected int getCode(ProductState stateKey) {
-            return stateKey.hashCode();
-        }
+        // empty
     }
 }
