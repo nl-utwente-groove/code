@@ -63,7 +63,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         this.stateStack = new Stack<ProductState>();
         assert (this.startLocation != null) : "The property automaton should have an initial state";
         ProductState startState =
-            new ProductState(gts.startState(), this.startLocation);
+            createState(gts.startState(), null, this.startLocation);
         this.startState = startState;
         this.nextState = startState;
         this.stateSet.addState(startState);
@@ -136,10 +136,21 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
 
     /** Pushes the current product state on the exploration stack. */
     protected void pushState(ProductState state) {
-        // TODO: push the current state only on the stack when continuing with
-        // one of its successors
-        // this should therefore be done in the method updateAtState
         getStateStack().push(state);
+    }
+
+    /** 
+     * Pops the top element of the state stack, and processes the fact
+     * that this is now completely explored, without finding a counterexample.
+     * @return the new top of the search stack, or {@code null} if
+     * the stack is empty.
+     */
+    protected ProductState rollbackState() {
+        ProductState previous = getStateStack().pop();
+        // close the current state
+        getStateSet().setClosed(previous);
+        colourState(previous);
+        return getStateStack().isEmpty() ? null : getStateStack().peek();
     }
 
     /**
@@ -169,7 +180,8 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
                     }
                 }
                 if (finalState) {
-                    processFinalState(prodState, buchiTrans);
+                    // add a fake self-loop for final states
+                    addTransition(prodState, null, buchiTrans.target());
                 }
             }
             // if the transition of the property automaton is not enabled
@@ -207,13 +219,8 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         ProductState parent = null;
 
         do {
-            // pop the current state from the search-stack
-            ProductState previous = getStateStack().pop();
-            // close the current state
-            getStateSet().setClosed(previous);
-            colourState(previous);
             // the parent is on top of the searchStack
-            parent = peekSearchStack();
+            parent = rollbackState();
             if (parent != null) {
                 result = parent;
                 s = getRandomOpenBuchiSuccessor(parent);
@@ -265,39 +272,12 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
     }
 
     /**
-     * @param state the final product state to be processed
-     * @param transition may be null.
-     */
-    protected final void processFinalState(ProductState state,
-            BuchiTransition transition) {
-        if (transition == null) {
-            // exclude the current state from further analysis
-            // mark it red
-            state.setColour(ModelChecking.RED);
-        } else {
-            addTransition(state, null, transition.target());
-        }
-    }
-
-    /**
      * Returns the start product state.
      * @return the start product state; non-{@code null} after
      * a call to {@link #prepare}.
      */
     protected final ProductState getStartState() {
         return this.startState;
-    }
-
-    /**
-     * Returns the top element from the search-stack.
-     * @return the top element from the search-stack
-     */
-    protected ProductState peekSearchStack() {
-        if (getStateStack().isEmpty()) {
-            return null;
-        } else {
-            return getStateStack().peek();
-        }
     }
 
     /**
@@ -358,7 +338,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
             // we assume that we only add transitions for modifying graph
             // transitions
             ProductState target =
-                createState(source, transition, targetLocation);
+                createState(source.getGraphState(), transition, targetLocation);
             ProductState isoTarget = getStateSet().addState(target);
             if (isoTarget == null) {
                 // no isomorphic state found
@@ -384,19 +364,17 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         return result;
     }
 
-    private ProductState createState(ProductState source,
+    /** Creates a product state from a graph state or transition, and
+     * a Büchi location.
+     */
+    private ProductState createState(GraphState state,
             GraphTransition transition, BuchiLocation targetLocation) {
         if (transition == null) {
-            // the system-state is a final one for which we assume an artificial
+            // the system-state is a final one for which we add an artificial
             // self-loop
-            // the resulting Büchi graph-state is nevertheless the product of
-            // the
-            // graph-state component of the source Büchi graph-state and the
-            // target
-            // Büchi-location
-            return new ProductState(source.getGraphState(), targetLocation);
+            return new ProductState(state, targetLocation);
         } else {
-            return new ProductState(transition.target(), targetLocation);
+            return new ProductState(transition, targetLocation);
         }
     }
 

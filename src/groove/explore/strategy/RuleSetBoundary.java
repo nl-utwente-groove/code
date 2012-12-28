@@ -16,6 +16,7 @@
  */
 package groove.explore.strategy;
 
+import groove.lts.GraphTransition;
 import groove.trans.Action;
 import groove.trans.Rule;
 import groove.verify.ModelChecking;
@@ -81,8 +82,9 @@ public class RuleSetBoundary extends Boundary {
     }
 
     @Override
-    public void backtrackTransition(ProductTransition transition) {
-        if (transition.rule() != null && containsAction(transition.rule())) {
+    public void backtrackTransition(GraphTransition transition) {
+        if (transition.getAction() != null
+            && containsAction(transition.getAction())) {
             decreaseDepth();
         }
     }

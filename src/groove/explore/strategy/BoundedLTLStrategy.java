@@ -17,17 +17,14 @@
  */
 package groove.explore.strategy;
 
-import groove.explore.result.Acceptor;
 import groove.explore.util.RandomChooserInSequence;
-import groove.lts.GTS;
-import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 import groove.lts.RuleTransition;
 import groove.verify.ModelChecking;
 import groove.verify.ProductState;
 import groove.verify.ProductTransition;
 
 import java.util.Iterator;
-import java.util.Stack;
 
 /**
  * This class provides some default implementations for a bounded model checking
@@ -37,12 +34,6 @@ import java.util.Stack;
  * @version $Revision$
  */
 public class BoundedLTLStrategy extends LTLStrategy {
-    @Override
-    public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
-        super.prepare(gts, state, acceptor);
-        this.transitionStack = new Stack<ProductTransition>();
-    }
-
     /**
      * Sets the boundary specification used in the strategy.
      * @param boundary the boundary specification to use
@@ -81,32 +72,9 @@ public class BoundedLTLStrategy extends LTLStrategy {
     }
 
     @Override
-    protected void pushState(ProductState state) {
-        super.pushState(state);
-        if (getLastTransition() != null) {
-            // push the last transition on the transition stack;
-            pushTransition(getLastTransition());
-        }
-    }
-
-    /**
-     * Pushes a transition on the transition stack.
-     * @param transition the transition to push
-     */
-    protected void pushTransition(ProductTransition transition) {
-        getTransitionStack().push(transition);
-        assert (getTransitionStack().size() == (getStateStack().size() - 1)) : "search stacks out of sync ("
-            + getTransitionStack().size()
-            + " vs "
-            + getStateStack().size()
-            + ")";
-    }
-
-    @Override
     protected ProductState computeNextState() {
         ProductState result = super.computeNextState();
-        if (result == null && getStateSet().hasOpenStates()
-            && ModelChecking.getIteration() <= ModelChecking.MAX_ITERATIONS) {
+        if (result == null && getStateSet().hasOpenStates()) {
             // from the initial state again
             result = getStartState();
             // next iteration
@@ -114,8 +82,6 @@ public class BoundedLTLStrategy extends LTLStrategy {
             ModelChecking.toggle();
             // clear the stacks
             getStateStack().clear();
-            getTransitionStack().clear();
-            this.lastTransition = null;
             // increase the boundary
             getBoundary().increase();
             // start with depth zero again
@@ -144,7 +110,6 @@ public class BoundedLTLStrategy extends LTLStrategy {
                         // iterations
                         // the transition must be traversed
                         if (!getBoundary().crossingBoundary(outTransition, true)) {
-                            setLastTransition(outTransition);
                             result = newState;
                             break;
                         } else {
@@ -181,23 +146,8 @@ public class BoundedLTLStrategy extends LTLStrategy {
         ProductState parent = null;
         ProductState s = null;
         do {
-            // pop the current state from the search-stack
-            ProductState previous = getStateStack().pop();
-            // close the current state
-            getStateSet().setClosed(previous);
-            colourState(previous);
-
-            ProductTransition previousTransition = null;
-            if (getTransitionStack().isEmpty()) {
-                // the start state is reached and does not have open successors
-                break;
-            }
-            previousTransition = getTransitionStack().pop();
-            // backtrack the last transition
-            getBoundary().backtrackTransition(previousTransition);
-
             // the parent is on top of the searchStack
-            parent = peekSearchStack();
+            parent = rollbackState();
             if (parent != null) {
                 ProductTransition openTransition =
                     getRandomOpenBuchiTransition(parent);
@@ -207,8 +157,6 @@ public class BoundedLTLStrategy extends LTLStrategy {
                     // if this transition is a boundary-crossing transition,
                     // the current depth of the boundary should be updated
                     getBoundary().crossingBoundary(openTransition, true);
-                    // set the next transition to take
-                    this.lastTransition = openTransition;
                     // and the state reached by that transition
                     s = openTransition.target();
                 }
@@ -231,7 +179,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
      * Process boundary-crossing transitions properly.
      * @param transition the boundary-crossing transition
      */
-    public ProductState processBoundaryCrossingTransition(
+    private ProductState processBoundaryCrossingTransition(
             ProductTransition transition) {
         // if the number of boundary-crossing transition on the current path
         if (getBoundary().currentDepth() < ModelChecking.getIteration() - 1) {
@@ -242,6 +190,16 @@ public class BoundedLTLStrategy extends LTLStrategy {
             // leave it unexplored
             return null;
         }
+    }
+
+    @Override
+    protected ProductState rollbackState() {
+        ProductState previous = getStateStack().peek();
+        GraphTransition origin = previous.getOrigin();
+        if (origin != null) {
+            getBoundary().backtrackTransition(origin);
+        }
+        return super.rollbackState();
     }
 
     /**
@@ -273,20 +231,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
     }
 
     /**
-     * Checks whether all states have been fully explored.
-     * @return <tt>true</tt> if there are states left, <tt>false</tt>
-     *         otherwise
-     */
-    public boolean finished() {
-        if (ModelChecking.getIteration() > ModelChecking.MAX_ITERATIONS) {
-            return true;
-        } else {
-            return !getStateSet().hasOpenStates();
-        }
-    }
-
-    /**
-     * Returns a random buchi transition from a given state.
+     * Returns a random product transition from a given state.
      */
     protected ProductTransition getRandomOpenBuchiTransition(ProductState state) {
         RandomChooserInSequence<ProductTransition> chooser =
@@ -307,32 +252,6 @@ public class BoundedLTLStrategy extends LTLStrategy {
         return result;
     }
 
-    /**
-     * Returns the value of <code>lastTransition</code>.
-     * @return the value of <code>lastTransition</code>
-     */
-    public ProductTransition getLastTransition() {
-        return this.lastTransition;
-    }
-
-    /**
-     * Sets the last transition taken.
-     * @param transition the value for <code>lastTransition</code>
-     */
-    public void setLastTransition(ProductTransition transition) {
-        this.lastTransition = transition;
-    }
-
-    /**
-     * Returns the transition stack.
-     */
-    protected Stack<ProductTransition> getTransitionStack() {
-        return this.transitionStack;
-    }
-
-    private Stack<ProductTransition> transitionStack;
-    /** The transition by which the current Buchi graph-state is reached. */
-    private ProductTransition lastTransition;
     /**
      * The boundary to be used.
      */

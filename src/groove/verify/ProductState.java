@@ -17,6 +17,7 @@
 package groove.verify;
 
 import groove.lts.GraphState;
+import groove.lts.GraphTransition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +30,27 @@ import java.util.List;
  */
 public class ProductState {
     /**
-     * Constructor.
+     * Constructs a state with an empty origin transition.
      * @param state the system-state component
      * @param buchiLocation the Büchi-location component
      */
     public ProductState(GraphState state, BuchiLocation buchiLocation) {
         this.state = state;
         this.buchiLocation = buchiLocation;
+        this.origin = null;
+        this.colour = ModelChecking.NO_COLOUR;
+    }
+
+    /**
+     * Constructs a product state based on a given graph transition and target Büchi location.
+     * @param origin the (non-{@code null}) graph transition along which this product state was
+     * discovered
+     * @param buchiLocation the Büchi-location component
+     */
+    public ProductState(GraphTransition origin, BuchiLocation buchiLocation) {
+        this.state = origin.target();
+        this.buchiLocation = buchiLocation;
+        this.origin = origin;
         this.colour = ModelChecking.NO_COLOUR;
     }
 
@@ -51,6 +66,14 @@ public class ProductState {
      */
     public BuchiLocation getBuchiLocation() {
         return this.buchiLocation;
+    }
+
+    /** Returns the incoming graph transition along which this 
+     * product state was discovered.
+     * May be {@code null} if this is the initial or a final product state.
+     */
+    public GraphTransition getOrigin() {
+        return this.origin;
     }
 
     /**
@@ -179,6 +202,8 @@ public class ProductState {
     private final GraphState state;
     /** the buchi location for this buchi graph state */
     private final BuchiLocation buchiLocation;
+    /** The incoming graph transition along which this product state was found. */
+    private final GraphTransition origin;
     private final List<ProductTransition> outTransitions =
         new ArrayList<ProductTransition>();
     /** the colour of this graph state (used in the nested DFS algorithm) */

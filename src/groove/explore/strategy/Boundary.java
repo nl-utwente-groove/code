@@ -16,6 +16,7 @@
  */
 package groove.explore.strategy;
 
+import groove.lts.GraphTransition;
 import groove.verify.ModelChecking;
 import groove.verify.ProductTransition;
 
@@ -85,7 +86,7 @@ public abstract class Boundary {
      * Backtrack the given transition.
      * @param transition the backtracked transition
      */
-    public void backtrackTransition(ProductTransition transition) {
+    public void backtrackTransition(GraphTransition transition) {
         // by default, do nothing
     }
 
