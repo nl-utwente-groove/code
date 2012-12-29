@@ -16,6 +16,7 @@
  */
 package groove.rel;
 
+import groove.graph.EdgeRole;
 import groove.graph.TypeEdge;
 import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
@@ -45,7 +46,11 @@ import java.util.Set;
 
 /** Calculates the possible types of a regular expression. */
 public class RegExprTyper implements RegExprCalculator<Result> {
-    /** Constructs a typer for a given type graph. */
+    /** 
+     * Constructs a typer for a given type graph and variable typing.
+     * @param typeGraph the (non-{@code null}) type graph over which results are computed
+     * @param varTyping the (non-{@code null}) mapping from type variables to type graph elements
+     */
     public RegExprTyper(TypeGraph typeGraph,
             Map<LabelVar,Set<? extends TypeElement>> varTyping) {
         this.typeGraph = typeGraph;
@@ -189,7 +194,11 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         for (TypeEdge typeEdge : guard.filter(candidates)) {
             Set<TypeNode> targetTypes = typeEdge.target().getSubtypes();
             for (TypeNode sourceType : typeEdge.source().getSubtypes()) {
-                result.add(sourceType, targetTypes);
+                if (expr.getKind() == EdgeRole.BINARY) {
+                    result.add(sourceType, targetTypes);
+                } else {
+                    result.add(sourceType, sourceType);
+                }
             }
         }
         return result;
@@ -197,7 +206,19 @@ public class RegExprTyper implements RegExprCalculator<Result> {
 
     @Override
     public Result computeEmpty(Empty expr) {
-        return new Result(this.typeGraph.nodeSet());
+        Result result = new Result();
+        // all node types with a common supertype can be unified
+        // find the highest types in the subtype ordering
+        for (TypeNode node : this.typeGraph.nodeSet()) {
+            if (node.getSupertypes().size() == 1) {
+                for (TypeNode node1 : node.getSubtypes()) {
+                    for (TypeNode node2 : node.getSubtypes()) {
+                        result.add(node1, node2);
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     /** The Predefined typing of the label variables. */
@@ -208,7 +229,10 @@ public class RegExprTyper implements RegExprCalculator<Result> {
 
     /** 
      * Outcome of the typing of a regular expression,
-     * consisting of a relation between node types.
+     * consisting of a relation between type nodes.
+     * Each pair in the relation consists of a potential source and target
+     * node of a path through the type graph of which the label sequence 
+     * is accepted by the regular expression.
      * @author Arend Rensink
      * @version $Revision $
      */
@@ -216,13 +240,6 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         /** Creates an empty relation. */
         public Result() {
             this.size = 0;
-        }
-
-        /** Creates a complete relation over a given set of nodes. */
-        public Result(Collection<? extends TypeNode> universe) {
-            for (TypeNode node : universe) {
-                add(node, universe);
-            }
         }
 
         /** Returns the number of pairs in the relation. */
@@ -235,9 +252,14 @@ public class RegExprTyper implements RegExprCalculator<Result> {
             return this.map.isEmpty();
         }
 
-        /** Returns all right hand elements related to a given left hand element.*/
+        /** Returns all target nodes related to a given source node.*/
         public Set<TypeNode> getAll(TypeNode left) {
             return this.map.get(left);
+        }
+
+        /** Returns the mapping from source nodes to sets of target nodes.*/
+        public Map<TypeNode,Set<TypeNode>> getMap() {
+            return this.map;
         }
 
         /** Adds a pair to the relation. */
