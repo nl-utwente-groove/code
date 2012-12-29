@@ -49,9 +49,13 @@ public class ColorValue extends AspectValue<Color> {
 
     @Override
     protected Color getForJEdge(AspectJEdge jEdge) {
+        Color result = null;
         AspectNode edgeSource = jEdge.getEdge().source();
         AspectJVertex jEdgeSource =
             jEdge.getJModel().getJCellForNode(edgeSource);
-        return getForJVertex(jEdgeSource);
+        if (jEdgeSource != null) {
+            result = getForJVertex(jEdgeSource);
+        }
+        return result;
     }
 }
