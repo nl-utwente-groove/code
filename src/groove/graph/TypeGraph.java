@@ -941,7 +941,18 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
     }
 
     /** 
-     * Returns the type node corresponding to a given node type label,
+     * Returns the type node with a node type label, given as a 
+     * string. The string should be in prefix form (see {@link TypeLabel#createLabel(String)}).
+     * @param label the label to look up.
+     * @return the type node labelled with {@code label}, or {@code null}
+     * if {@code label} does not correspond to a note type label.
+     */
+    public TypeNode getNode(String label) {
+        return getNode(TypeLabel.createLabel(label));
+    }
+
+    /** 
+     * Returns the type node with a given node type label,
      * if there is such a node in the type graph. Returns {@code null} 
      * if the label is not a known node type.
      */
