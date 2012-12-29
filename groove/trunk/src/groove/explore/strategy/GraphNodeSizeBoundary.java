@@ -17,7 +17,7 @@
 package groove.explore.strategy;
 
 import groove.trans.HostGraph;
-import groove.verify.ModelChecking;
+import groove.verify.ModelChecking.Record;
 import groove.verify.ProductTransition;
 
 /**
@@ -28,14 +28,32 @@ import groove.verify.ProductTransition;
  * @version $Revision$ $Date: 2008-02-20 08:37:54 $
  */
 public class GraphNodeSizeBoundary extends Boundary {
+    /**
+     * Constructs a prototype boundary object.
+     * To use, invoke {@link #instantiate(Record)}.
+     * @param size the initial boundary value
+     * @param step the increase at each step
+     */
+    public GraphNodeSizeBoundary(int size, int step) {
+        this(size, step, null);
+    }
 
     /**
      * {@link GraphNodeSizeBoundary} constructor.
-     * @param graphSizeBoundary value that defined the boundary
+     * @param size the initial boundary value
+     * @param step the increase at each step
+     * @param record record of the model checking run
      */
-    public GraphNodeSizeBoundary(int graphSizeBoundary, int step) {
-        this.size = graphSizeBoundary;
+    private GraphNodeSizeBoundary(int size, int step, Record record) {
+        super(record);
+        assert step > 0;
+        this.size = size;
         this.step = step;
+    }
+
+    @Override
+    public Boundary instantiate(Record record) {
+        return new GraphNodeSizeBoundary(this.size, this.step, record);
     }
 
     @Override
@@ -68,9 +86,7 @@ public class GraphNodeSizeBoundary extends Boundary {
 
     @Override
     public int currentDepth() {
-        // with graph-size boundaries, boundary-crossing
-        // transitions are never allowed
-        return ModelChecking.getIteration();
+        return getRecord().getIteration();
     }
 
     @Override

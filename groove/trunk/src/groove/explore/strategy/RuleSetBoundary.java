@@ -19,7 +19,7 @@ package groove.explore.strategy;
 import groove.lts.GraphTransition;
 import groove.trans.Action;
 import groove.trans.Rule;
-import groove.verify.ModelChecking;
+import groove.verify.ModelChecking.Record;
 import groove.verify.ProductTransition;
 
 import java.util.HashSet;
@@ -33,22 +33,27 @@ import java.util.Set;
  * @version $Revision$
  */
 public class RuleSetBoundary extends Boundary {
-
     /**
-     * {@link RuleSetBoundary} constructor.
-     * @param ruleSetBoundary the set of rules that constitute the boundary
+     * Constructs a prototype boundary object.
+     * To use, invoke {@link #instantiate(Record)}.
+     * @param rules the set of rules that constitute the boundary
      */
-    public RuleSetBoundary(Set<Rule> ruleSetBoundary) {
-        this.ruleSetBoundary.addAll(ruleSetBoundary);
+    public RuleSetBoundary(Set<Rule> rules) {
+        this(rules, null);
     }
 
     /**
-     * Add a rule to the set of boundary rules.
-     * @param rule the rule to be added
-     * @return see {@link java.util.Set#add(Object)}
+     * {@link RuleSetBoundary} constructor.
+     * @param rules the set of rules that constitute the boundary
      */
-    public boolean addRule(Rule rule) {
-        return this.ruleSetBoundary.add(rule);
+    private RuleSetBoundary(Set<Rule> rules, Record record) {
+        super(record);
+        this.rules = new HashSet<Rule>(rules);
+    }
+
+    @Override
+    public Boundary instantiate(Record record) {
+        return new RuleSetBoundary(this.rules, record);
     }
 
     @Override
@@ -63,7 +68,7 @@ public class RuleSetBoundary extends Boundary {
             // this is a forbidden rule
             // the current depth now determines whether we may
             // traverse this transition, or not
-            result = currentDepth() >= ModelChecking.getIteration() - 2;
+            result = currentDepth() >= getRecord().getIteration() - 2;
             if (!result && traverse) {
                 increaseDepth();
             }
@@ -77,8 +82,8 @@ public class RuleSetBoundary extends Boundary {
     }
 
     /** Returns whether this boundary contains the given rule. */
-    public boolean containsAction(Action action) {
-        return this.ruleSetBoundary.contains(action);
+    private boolean containsAction(Action action) {
+        return this.rules.contains(action);
     }
 
     @Override
@@ -92,7 +97,7 @@ public class RuleSetBoundary extends Boundary {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        for (Action rule : this.ruleSetBoundary) {
+        for (Action rule : this.rules) {
             if (result.length() > 0) {
                 result.append(",");
             }
@@ -102,5 +107,5 @@ public class RuleSetBoundary extends Boundary {
     }
 
     /** the set of rules that are initially forbidden to apply */
-    private final Set<Rule> ruleSetBoundary = new HashSet<Rule>();
+    private final Set<Rule> rules;
 }

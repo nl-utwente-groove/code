@@ -17,7 +17,7 @@
 package groove.explore.strategy;
 
 import groove.lts.GraphTransition;
-import groove.verify.ModelChecking;
+import groove.verify.ModelChecking.Record;
 import groove.verify.ProductTransition;
 
 /**
@@ -27,6 +27,18 @@ import groove.verify.ProductTransition;
  * @version $Revision $
  */
 public abstract class Boundary {
+    /** 
+     * Constructs a boundary with a given (possibly {@code null}) model checking run.
+     * @param record record of the model checking run; if {@code null}, this is a
+     * prototype boundary
+     */
+    protected Boundary(Record record) {
+        this.record = record;
+    }
+
+    /** Instantiates this boundary for a given (non-{@code null}) model checking run. */
+    abstract public Boundary instantiate(Record record);
+
     /**
      * Checks whether the given transition crosses the boundary. If so, it
      * return <tt>true</tt>, otherwise <tt>false</tt>.
@@ -52,6 +64,7 @@ public abstract class Boundary {
      * @return the number of boundary-crossing transitions in the current path
      */
     public int currentDepth() {
+        assert this.record != null;
         return this.currentDepth;
     }
 
@@ -60,6 +73,7 @@ public abstract class Boundary {
      * @param value the new value
      */
     public void setCurrentDepth(int value) {
+        assert this.record != null;
         this.currentDepth = value;
     }
 
@@ -67,6 +81,7 @@ public abstract class Boundary {
      * Decrease the <code>currentDepth</code>.
      */
     public void decreaseDepth() {
+        assert this.record != null;
         this.currentDepth--;
         assert (this.currentDepth >= 0) : "The value of currentDepth should not be negative.";
     }
@@ -76,10 +91,10 @@ public abstract class Boundary {
      */
     public void increaseDepth() {
         this.currentDepth++;
-        assert (this.currentDepth <= ModelChecking.getIteration()) : "the number of boundary-crossing transitions ("
+        assert (this.currentDepth <= getRecord().getIteration()) : "the number of boundary-crossing transitions ("
             + this.currentDepth
             + ") in the current path exceeded the maximum ("
-            + ModelChecking.getIteration() + ")";
+            + getRecord().getIteration() + ")";
     }
 
     /**
@@ -90,6 +105,12 @@ public abstract class Boundary {
         // by default, do nothing
     }
 
+    /** Returns the model checking record associated with the boundary. */
+    final protected Record getRecord() {
+        return this.record;
+    }
+
+    private Record record;
     /**
      * container for the number of boundary-crossing transitions in the current
      * path
