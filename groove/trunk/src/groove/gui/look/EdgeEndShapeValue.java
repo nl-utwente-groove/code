@@ -49,7 +49,9 @@ public class EdgeEndShapeValue implements VisualValue<EdgeEnd> {
             if (cell instanceof AspectJEdge) {
                 AspectJEdge jEdge = (AspectJEdge) cell;
                 show |= jEdge.getAspect() == AspectKind.SUBTYPE;
-                show |= this.source && jEdge.getEdge().isComposite();
+                show |=
+                    this.source && jEdge.getEdge() != null
+                        && jEdge.getEdge().isComposite();
                 show |= jEdge.isNodeEdgeOut();
             }
             if (!show) {
