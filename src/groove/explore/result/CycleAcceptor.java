@@ -21,7 +21,8 @@ import groove.explore.strategy.LTLStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphState.Flag;
-import groove.verify.ModelChecking;
+import groove.verify.ModelChecking.Outcome;
+import groove.verify.ModelChecking.Record;
 import groove.verify.ProductListener;
 import groove.verify.ProductState;
 import groove.verify.ProductStateSet;
@@ -51,6 +52,7 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
      */
     public void setStrategy(LTLStrategy strategy) {
         this.strategy = strategy;
+        this.record = strategy.getRecord();
     }
 
     @Override
@@ -71,8 +73,8 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
     @Override
     public void closeUpdate(ProductStateSet gts, ProductState state) {
         if (state.getBuchiLocation().isAccepting()) {
-            int event = redDFS(state);
-            if (event != ModelChecking.OK) {
+            Outcome event = redDFS(state);
+            if (event != Outcome.OK) {
                 // put the counter-example in the result
                 for (ProductState stackState : this.strategy.getStateStack()) {
                     getResult().add(stackState.getGraphState());
@@ -82,7 +84,7 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
         }
     }
 
-    private int redDFS(ProductState state) {
+    private Outcome redDFS(ProductState state) {
         for (ProductTransition nextTransition : state.outTransitions()) {
             // although the outgoing transition in the gts might cross the
             // boundary
@@ -96,17 +98,17 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
             // interesting
             // results for such states
             ProductState target = nextTransition.target();
-            if (target.colour() == ModelChecking.cyan()) {
-                return ModelChecking.COUNTER_EXAMPLE;
-            } else if (target.colour() == ModelChecking.blue()) {
-                target.setColour(ModelChecking.red());
-                int event = redDFS(target);
-                if (event != ModelChecking.OK) {
+            if (target.colour() == this.record.cyan()) {
+                return Outcome.ERROR;
+            } else if (target.colour() == this.record.blue()) {
+                target.setColour(this.record.red());
+                Outcome event = redDFS(target);
+                if (event != Outcome.OK) {
                     return event;
                 }
             }
         }
-        return ModelChecking.OK;
+        return Outcome.OK;
     }
 
     /**
@@ -120,6 +122,7 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
     }
 
     private LTLStrategy strategy;
+    private Record record;
 
     /** 
      * Type of the result object for the {@link CycleAcceptor}.

@@ -33,7 +33,7 @@ public class BoundedPocketLTLStrategy extends BoundedLTLStrategy {
     protected void colourState(ProductState state) {
         checkPocket(state);
         // if this state is a pocket-state we actually do not
-        // not to further colour it blue or red
+        // need to further colour it blue or red
         // nevertheless, for correctness reasons we still do it
         // (in case the pocket detection is faulty, the colouring
         // is at least correct)
@@ -56,12 +56,12 @@ public class BoundedPocketLTLStrategy extends BoundedLTLStrategy {
     }
 
     /**
-     * Determines whether a given state can be marked black. This is the case
+     * Determines whether a given state can be marked as a pocket state. This is the case
      * when either the state has no outgoing transitions, or when all its
-     * successor-states are marked black.
+     * successor-states are pocket states.
      * @param state the state to be marked black potentially
      */
-    protected void checkPocket(ProductState state) {
+    private void checkPocket(ProductState state) {
         for (ProductTransition transition : state.outTransitions()) {
             if (transition.graphTransition() != null
                 && !transition.target().isPocket()) {

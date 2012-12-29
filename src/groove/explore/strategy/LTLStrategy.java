@@ -32,7 +32,7 @@ import groove.verify.BuchiGraph;
 import groove.verify.BuchiLocation;
 import groove.verify.BuchiTransition;
 import groove.verify.FormulaParser;
-import groove.verify.ModelChecking;
+import groove.verify.ModelChecking.Record;
 import groove.verify.ParseException;
 import groove.verify.ProductState;
 import groove.verify.ProductStateSet;
@@ -88,7 +88,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         // put current state on the stack
         pushState(prodState);
         // colour state cyan as being on the search stack
-        prodState.setColour(ModelChecking.cyan());
+        prodState.setColour(getRecord().cyan());
         // fully explore the current state
         exploreGraphState(prodState.getGraphState());
         this.collector.reset();
@@ -212,30 +212,15 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      */
     protected ProductState backtrack() {
         ProductState result = null;
-        ProductState s = null;
-
-        // backtracking
-
         ProductState parent = null;
 
         do {
             // the parent is on top of the searchStack
             parent = rollbackState();
             if (parent != null) {
-                result = parent;
-                s = getRandomOpenBuchiSuccessor(parent);
+                result = getNextSuccessor(parent);
             }
-        } while (parent != null && s == null);
-
-        // identify the reason of exiting the loop
-        if (parent == null) {
-            // the start state is reached and does not have open successors
-            result = null;
-        } else if (s != null) { // the current state has an open successor (is
-            // not really backtracking, a sibling state is
-            // fully explored)
-            result = s;
-        }
+        } while (parent != null && result == null);
         return result;
     }
 
@@ -248,7 +233,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      * Colours a given state, in the course of backtracking.
      */
     protected void colourState(ProductState state) {
-        state.setColour(ModelChecking.blue());
+        state.setColour(getRecord().blue());
     }
 
     /** Tests if a counterexample can be constructed between given
@@ -260,7 +245,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
     protected final boolean findCounterExample(ProductState source,
             ProductState target) {
         boolean result =
-            (target.colour() == ModelChecking.cyan())
+            (target.colour() == getRecord().cyan())
                 && (source.getBuchiLocation().isAccepting() || target.getBuchiLocation().isAccepting());
         if (result) {
             // notify counter-example
@@ -284,7 +269,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      * Returns a random open successor of a state, if any. Returns null
      * otherwise.
      */
-    protected ProductState getRandomOpenBuchiSuccessor(ProductState state) {
+    protected ProductState getNextSuccessor(ProductState state) {
         RandomChooserInSequence<ProductState> chooser =
             new RandomChooserInSequence<ProductState>();
         for (ProductTransition trans : state.outTransitions()) {
@@ -344,7 +329,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
                 // no isomorphic state found
                 result = createProductTransition(source, transition, target);
             } else {
-                assert (isoTarget.iteration() <= ModelChecking.getIteration()) : "This state belongs to the next iteration and should not be explored now.";
+                assert (isoTarget.iteration() <= getRecord().getIteration()) : "This state belongs to the next iteration and should not be explored now.";
                 result = createProductTransition(source, transition, isoTarget);
             }
             source.addTransition(result);
@@ -399,6 +384,13 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         return this.stateStack;
     }
 
+    /** Returns the record for this model checking run. */
+    final public Record getRecord() {
+        return this.record;
+    }
+
+    /** Record of this model checking run. */
+    private Record record = new Record();
     private final Strategy stateStrategy = new ExploreStateStrategy();
     /** The synchronised product of the system and the property. */
     private ProductStateSet stateSet;

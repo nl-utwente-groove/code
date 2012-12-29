@@ -23,6 +23,9 @@ import groove.explore.Exploration;
 import groove.explore.Generator;
 import groove.explore.StrategyValue;
 import groove.explore.encode.Serialized;
+import groove.explore.encode.Template;
+import groove.explore.strategy.GraphNodeSizeBoundary;
+import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.view.FormatException;
 import junit.framework.Assert;
@@ -35,7 +38,9 @@ import org.junit.Test;
  * @version $Revision: 3219 $
  */
 public class LTLTest {
-    /** Transistion system used by this test. */
+    private StrategyValue strategyValue;
+    private Template<Strategy> strategyTemplate;
+    /** Transition system used by this test. */
     private GTS gts;
 
     /**
@@ -49,7 +54,27 @@ public class LTLTest {
 
     /** Test on a specially designed transition system. */
     @Test
-    public void testMC() {
+    public void testNormal() {
+        prepare(StrategyValue.LTL);
+        testMC();
+    }
+
+    /** Test on a specially designed transition system. */
+    @Test
+    public void testBounded() {
+        prepare(StrategyValue.LTL_BOUNDED);
+        testMC();
+    }
+
+    /** Test on a specially designed transition system. */
+    @Test
+    public void testPocket() {
+        prepare(StrategyValue.LTL_POCKET);
+        testMC();
+    }
+
+    /** Test on a specially designed transition system. */
+    private void testMC() {
         prepare("mc");
         testFormula("p U r", false);
         testFormula("p W r", true);
@@ -65,6 +90,12 @@ public class LTLTest {
         testFormula("X q", true);
     }
 
+    /** Sets the LTL strategy. */
+    private void prepare(StrategyValue ltlStrategy) {
+        this.strategyValue = ltlStrategy;
+        this.strategyTemplate = ltlStrategy.getTemplate();
+    }
+
     /** Sets the GTS to a given grammar in the JUnit samples. */
     private void prepare(String grammarName) {
         Generator generator =
@@ -76,8 +107,17 @@ public class LTLTest {
     /** Tests the number of counterexamples in the current;y
      * set GTS for a given formula. */
     private void testFormula(String formula, boolean succeed) {
-        Serialized strategy =
-            StrategyValue.LTL.getTemplate().toSerialized(formula);
+        Serialized strategy = null;
+        switch (this.strategyValue) {
+        case LTL:
+            strategy = this.strategyTemplate.toSerialized(formula);
+            break;
+        case LTL_BOUNDED:
+        case LTL_POCKET:
+            strategy =
+                this.strategyTemplate.toSerialized(formula,
+                    new GraphNodeSizeBoundary(0, 1));
+        }
         Exploration exploration =
             new Exploration(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
         try {
