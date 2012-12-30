@@ -43,7 +43,7 @@ public interface JCell<G extends Graph<?,?>> extends GraphCell,
     public JModel<G> getJModel();
 
     /** Returns the end nodes (for an edge) or the incident edges (for a vertex). */
-    public Collection<? extends JCell<G>> getContext();
+    public Set<? extends JCell<G>> getContext();
 
     /**
      * Returns the set of keys to be associated with this cell in a label

@@ -196,7 +196,7 @@ public class VisibleValue implements VisualValue<Boolean> {
             JVertex<G> jVertex) {
         boolean result = false;
         LabelTree<G> labelTree = jVertex.getJGraph().getLabelTree();
-        for (JEdge<G> jEdge : jVertex.getJEdges()) {
+        for (JEdge<G> jEdge : jVertex.getContext()) {
             if (labelTree == null || !labelTree.isFiltered(jEdge)) {
                 result = true;
                 break;

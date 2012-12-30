@@ -111,7 +111,7 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
             break;
         case DONE:
             if (explored.isAbsent()) {
-                for (JEdge<GTS> jEdge : jCell.getJEdges()) {
+                for (JEdge<GTS> jEdge : jCell.getContext()) {
                     jEdge.setLook(Look.ABSENT, true);
                 }
                 jCell.setLook(Look.ABSENT, true);

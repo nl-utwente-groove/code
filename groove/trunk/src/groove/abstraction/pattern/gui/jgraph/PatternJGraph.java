@@ -26,10 +26,9 @@ import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Simulator;
-import groove.gui.jgraph.JGraphFactory;
 import groove.gui.jgraph.JCell;
-import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JGraphFactory;
 import groove.gui.jgraph.JVertex;
 import groove.gui.layout.AbstractLayouter;
 import groove.gui.layout.Layouter;
@@ -132,7 +131,7 @@ public final class PatternJGraph extends JGraph<AbstractPatternGraph<?,?>> {
 
         void run() {
             // First layout each individual pattern.
-            for (List<JCell<AbstractPatternGraph<?,?>>> roots : getJGraph().getModel().getReverseParentMap().values()) {
+            for (List<PatternJCell> roots : getJGraph().getModel().getReverseParentMap().values()) {
                 layoutPattern(roots);
             }
             // The layout the pattern graph structure.
@@ -146,12 +145,12 @@ public final class PatternJGraph extends JGraph<AbstractPatternGraph<?,?>> {
             hLayout.run(this.facade);
         }
 
-        void layoutPattern(List<JCell<AbstractPatternGraph<?,?>>> roots) {
-            Set<JVertex<AbstractPatternGraph<?,?>>> verticesFilter =
-                new MyHashSet<JVertex<AbstractPatternGraph<?,?>>>();
-            for (JCell<AbstractPatternGraph<?,?>> jCell : roots) {
+        void layoutPattern(List<PatternJCell> roots) {
+            Set<PatternJVertex> verticesFilter =
+                new MyHashSet<PatternJVertex>();
+            for (PatternJCell jCell : roots) {
                 if (jCell instanceof JVertex) {
-                    verticesFilter.add((JVertex<AbstractPatternGraph<?,?>>) jCell);
+                    verticesFilter.add((PatternJVertex) jCell);
                 }
             }
             if (this.lineLayout == null) {
@@ -172,12 +171,11 @@ public final class PatternJGraph extends JGraph<AbstractPatternGraph<?,?>> {
     }
 
     private static class LineLayout {
-        void run(JGraphFacade facade,
-                Set<JVertex<AbstractPatternGraph<?,?>>> vertices) {
+        void run(JGraphFacade facade, Set<PatternJVertex> vertices) {
             int x = 0;
             int y = 0;
             int hSpace = 70;
-            for (JVertex<AbstractPatternGraph<?,?>> vertex : vertices) {
+            for (PatternJVertex vertex : vertices) {
                 facade.setLocation(vertex, x, y);
                 x += hSpace;
             }
@@ -189,8 +187,7 @@ public final class PatternJGraph extends JGraph<AbstractPatternGraph<?,?>> {
         return new MyFactory();
     }
 
-    private class MyFactory extends
-            JGraphFactory<AbstractPatternGraph<?,?>> {
+    private class MyFactory extends JGraphFactory<AbstractPatternGraph<?,?>> {
         public MyFactory() {
             super(PatternJGraph.this);
         }
@@ -206,25 +203,13 @@ public final class PatternJGraph extends JGraph<AbstractPatternGraph<?,?>> {
         }
 
         @Override
-        public JVertex<AbstractPatternGraph<?,?>> newJVertex(Node node) {
-            JVertex<AbstractPatternGraph<?,?>> result;
-            if (node instanceof AbstractPatternNode) {
-                result = PatternJVertex.newInstance();
-            } else {
-                result = super.newJVertex(node);
-            }
-            return result;
+        public PatternJVertex newJVertex(Node node) {
+            return PatternJVertex.newInstance(node instanceof AbstractPatternNode);
         }
 
         @Override
-        public JEdge<AbstractPatternGraph<?,?>> newJEdge(Edge edge) {
-            JEdge<AbstractPatternGraph<?,?>> result;
-            if (edge instanceof AbstractPatternEdge<?>) {
-                result = PatternJEdge.newInstance();
-            } else {
-                result = super.newJEdge(edge);
-            }
-            return result;
+        public PatternJEdge newJEdge(Edge edge) {
+            return PatternJEdge.newInstance(edge instanceof AbstractPatternEdge<?>);
         }
 
         @Override

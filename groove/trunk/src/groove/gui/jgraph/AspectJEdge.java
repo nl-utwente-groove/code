@@ -28,7 +28,9 @@ import java.util.Set;
 /**
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
-public class AspectJEdge extends JEdge<AspectGraph> implements AspectJCell {
+public class AspectJEdge extends
+        AJEdge<AspectGraph,AspectJGraph,AspectJModel,AspectJVertex> implements
+        AspectJCell {
     /** 
      * Creates an uninitialised instance.
      */
@@ -37,24 +39,8 @@ public class AspectJEdge extends JEdge<AspectGraph> implements AspectJCell {
     }
 
     @Override
-    public AspectJGraph getJGraph() {
-        return (AspectJGraph) super.getJGraph();
-    }
-
-    @Override
-    public AspectJModel getJModel() {
-        return (AspectJModel) super.getJModel();
-    }
-
-    @Override
     public AspectKind getAspect() {
         return this.aspect;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Collection<AspectJVertex> getContext() {
-        return (Collection<AspectJVertex>) super.getContext();
     }
 
     @Override
@@ -69,14 +55,12 @@ public class AspectJEdge extends JEdge<AspectGraph> implements AspectJCell {
 
     /** Indicates if this is the incoming part of a nodified edge. */
     public boolean isNodeEdgeIn() {
-        return getTargetVertex() != null
-            && ((AspectJVertex) getTargetVertex()).isNodeEdge();
+        return getTargetVertex() != null && getTargetVertex().isNodeEdge();
     }
 
     /** Indicates if this is the incoming pars of a nodified edge. */
     public boolean isNodeEdgeOut() {
-        return getSourceVertex() != null
-            && ((AspectJVertex) getSourceVertex()).isNodeEdge();
+        return getSourceVertex() != null && getSourceVertex().isNodeEdge();
     }
 
     @SuppressWarnings("unchecked")
@@ -305,7 +289,6 @@ public class AspectJEdge extends JEdge<AspectGraph> implements AspectJCell {
      * Returns a fresh, uninitialised instance.
      * Call {@link #setJModel} to initialise. 
      */
-    @SuppressWarnings("unchecked")
     public static AspectJEdge newInstance() {
         return new AspectJEdge();
     }

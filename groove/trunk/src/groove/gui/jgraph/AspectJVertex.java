@@ -31,7 +31,9 @@ import java.util.Set;
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
-public class AspectJVertex extends JVertex<AspectGraph> implements AspectJCell {
+public class AspectJVertex extends
+        AJVertex<AspectGraph,AspectJGraph,AspectJModel,AspectJEdge> implements
+        AspectJCell {
     /** 
      * Creates a fresh, uninitialised JVertex.
      * Call {@link #setJModel} and {@link #setNode(Node)}
@@ -42,16 +44,6 @@ public class AspectJVertex extends JVertex<AspectGraph> implements AspectJCell {
     }
 
     @Override
-    public AspectJGraph getJGraph() {
-        return (AspectJGraph) super.getJGraph();
-    }
-
-    @Override
-    public AspectJModel getJModel() {
-        return (AspectJModel) super.getJModel();
-    }
-
-    @Override
     public AspectNode getNode() {
         return (AspectNode) super.getNode();
     }
@@ -59,12 +51,6 @@ public class AspectJVertex extends JVertex<AspectGraph> implements AspectJCell {
     @Override
     public AspectKind getAspect() {
         return this.aspect;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Collection<AspectJEdge> getContext() {
-        return (Collection<AspectJEdge>) super.getContext();
     }
 
     @SuppressWarnings("unchecked")
@@ -362,7 +348,6 @@ public class AspectJVertex extends JVertex<AspectGraph> implements AspectJCell {
      * Returns a fresh, uninitialised instance.
      * Call {@link #setJModel} and {@link #setNode(Node)} to initialise. 
      */
-    @SuppressWarnings("unchecked")
     public static AspectJVertex newInstance() {
         return new AspectJVertex();
     }

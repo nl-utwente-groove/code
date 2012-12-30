@@ -12,15 +12,11 @@ import groove.util.Groove;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class CtrlJEdge extends JEdge<CtrlAut> {
+public class CtrlJEdge extends
+        AJEdge<CtrlAut,CtrlJGraph,JModel<CtrlAut>,CtrlJVertex> {
     /** Constructor for a prototype object. */
     private CtrlJEdge() {
         // empty
-    }
-
-    @Override
-    public CtrlJGraph getJGraph() {
-        return (CtrlJGraph) super.getJGraph();
     }
 
     @Override
@@ -79,7 +75,6 @@ public class CtrlJEdge extends JEdge<CtrlAut> {
      * Returns a fresh, uninitialised instance.
      * Call {@link #setJModel} to initialise.
      */
-    @SuppressWarnings("unchecked")
     public static CtrlJEdge newInstance() {
         return new CtrlJEdge();
     }

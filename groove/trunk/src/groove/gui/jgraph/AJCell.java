@@ -37,17 +37,17 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.DefaultGraphCell;
 
 /**
- * Abstract GraphJCell implementation, providing some of the basic functionality.
+ * Abstract JCell implementation, providing some of the basic functionality.
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class AbstractJCell<G extends Graph<?,?>> extends
-        DefaultGraphCell implements JCell<G> {
+public abstract class AJCell<G extends Graph<?,?>> extends DefaultGraphCell
+        implements JCell<G> {
     /** 
      * Constructs a new, uninitialised cell.
      * Call {@link #setJModel(JModel)} to initialise to a given model.
      */
-    protected AbstractJCell() {
+    protected AJCell() {
         // empty
     }
 

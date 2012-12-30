@@ -9,7 +9,8 @@ import groove.gui.look.Look;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class CtrlJVertex extends JVertex<CtrlAut> {
+public class CtrlJVertex extends
+        AJVertex<CtrlAut,CtrlJGraph,JModel<CtrlAut>,CtrlJEdge> {
     /**
      * Creates a new instance.
      * Call {@link #setJModel} and {@link #setNode(groove.graph.Node)}
@@ -25,11 +26,6 @@ public class CtrlJVertex extends JVertex<CtrlAut> {
         if (isFinal()) {
             setLook(Look.FINAL, true);
         }
-    }
-
-    @Override
-    public CtrlJGraph getJGraph() {
-        return (CtrlJGraph) super.getJGraph();
     }
 
     @Override
@@ -68,7 +64,6 @@ public class CtrlJVertex extends JVertex<CtrlAut> {
     /** Returns a fresh, uninitialised instance.
      * Call {@link #setJModel} and {@link #setNode(groove.graph.Node)} to initialise. 
      */
-    @SuppressWarnings("unchecked")
     public static CtrlJVertex newInstance() {
         return new CtrlJVertex();
     }

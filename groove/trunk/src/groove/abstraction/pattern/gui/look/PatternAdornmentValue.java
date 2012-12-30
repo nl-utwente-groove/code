@@ -33,7 +33,7 @@ public class PatternAdornmentValue implements VisualValue<String> {
     @Override
     public String get(JCell<?> cell) {
         String result = null;
-        if (cell instanceof PatternJVertex) {
+        if (cell instanceof PatternJVertex && ((PatternJVertex) cell).isOuter()) {
             PatternJVertex jVertex = (PatternJVertex) cell;
             AbstractPatternNode node = (AbstractPatternNode) jVertex.getNode();
             result = node.getAdornment();

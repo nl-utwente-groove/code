@@ -31,9 +31,7 @@ import groove.trans.RuleLabel;
 import groove.util.Groove;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.jgraph.graph.DefaultPort;
@@ -43,8 +41,8 @@ import org.jgraph.graph.DefaultPort;
  * stored as a Set in the user object. In the latter case, toString() the user
  * object is the empty string.
  */
-public class JEdge<G extends Graph<?,?>> extends AbstractJCell<G> implements
-        org.jgraph.graph.Edge {
+abstract public class JEdge<G extends Graph<?,?>> extends AJCell<G>
+        implements org.jgraph.graph.Edge {
     /**
      * Constructs an uninitialised model edge.
      */
@@ -57,16 +55,6 @@ public class JEdge<G extends Graph<?,?>> extends AbstractJCell<G> implements
         super.initialise();
         this.sourceNode = null;
         this.targetNode = null;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Collection<? extends JVertex<G>> getContext() {
-        if (isLoop()) {
-            return Collections.singleton(getSourceVertex());
-        } else {
-            return Arrays.asList(getSourceVertex(), getTargetVertex());
-        }
     }
 
     /** 
@@ -117,21 +105,13 @@ public class JEdge<G extends Graph<?,?>> extends AbstractJCell<G> implements
      * Returns the j-vertex that is the parent of the source port of this
      * j-edge.
      */
-    @SuppressWarnings("unchecked")
-    public JVertex<G> getSourceVertex() {
-        DefaultPort source = getSource();
-        return source == null ? null : (JVertex<G>) source.getParent();
-    }
+    abstract public JVertex<G> getSourceVertex();
 
     /**
      * Returns the j-vertex that is the parent of the target port of this
      * j-edge.
      */
-    @SuppressWarnings("unchecked")
-    public JVertex<G> getTargetVertex() {
-        DefaultPort target = getTarget();
-        return target == null ? null : (JVertex<G>) target.getParent();
-    }
+    abstract public JVertex<G> getTargetVertex();
 
     /**
      * Returns the common source of the underlying graph edges.
@@ -161,7 +141,7 @@ public class JEdge<G extends Graph<?,?>> extends AbstractJCell<G> implements
 
     @Override
     public String toString() {
-        return String.format("%s with labels %s", getClass().getName(),
+        return String.format("%s with labels %s", getClass().getSimpleName(),
             getKeys());
     }
 
@@ -339,14 +319,5 @@ public class JEdge<G extends Graph<?,?>> extends AbstractJCell<G> implements
                 " and "));
         }
         return result.toString();
-    }
-
-    /** 
-     * Returns a fresh, uninitialised instance.
-     * Call {@link #setJModel} and {@link #addEdge(Edge)} (in that order)
-     * to initialise.
-     */
-    public static <G extends Graph<?,?>> JEdge<G> newInstance() {
-        return new JEdge<G>();
     }
 }

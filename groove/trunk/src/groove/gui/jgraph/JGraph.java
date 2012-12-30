@@ -698,9 +698,7 @@ abstract public class JGraph<G extends Graph<?,?>> extends org.jgraph.JGraph {
     }
 
     /** Callback factory method for the JGraphFactory to be used. */
-    protected JGraphFactory<G> createFactory() {
-        return new JGraphFactory<G>(this);
-    }
+    abstract protected JGraphFactory<G> createFactory();
 
     private JGraphFactory<G> factory;
 

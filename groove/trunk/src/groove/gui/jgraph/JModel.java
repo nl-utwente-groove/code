@@ -34,6 +34,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -365,7 +366,7 @@ abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
     private Set<JEdge<G>> getJEdges(JVertex<G> jVertex) {
         Set<JEdge<G>> result = this.addedJEdges.get(jVertex);
         if (result == null) {
-            result = jVertex.getJEdges();
+            result = Collections.unmodifiableSet(jVertex.getContext());
         }
         return result;
     }
