@@ -25,8 +25,8 @@ import groove.gui.Simulator;
 import groove.gui.display.GraphTab;
 import groove.gui.display.JGraphPanel;
 import groove.gui.display.ResourceDisplay;
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JGraph;
 import groove.gui.list.SearchResult;
 import groove.gui.tree.LabelTree;
 import groove.gui.tree.LabelTree.EntryNode;
@@ -40,7 +40,6 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 
-import org.jgraph.JGraph;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
 
@@ -63,7 +62,7 @@ public class FindReplaceAction extends SimulatorAction implements
      * of a given {@link JGraphPanel}.
      */
     private void addAsListener(ResourceDisplay display) {
-        GraphJGraph jGraph = ((GraphTab) display.getMainTab()).getJGraph();
+        JGraph<?> jGraph = ((GraphTab) display.getMainTab()).getJGraph();
         jGraph.addGraphSelectionListener(this);
         jGraph.getLabelTree().addTreeSelectionListener(this);
     }
@@ -99,14 +98,14 @@ public class FindReplaceAction extends SimulatorAction implements
         }
     }
 
-    /** Sets {@link #oldLabel} based on the {@link GraphJGraph} selection. */
+    /** Sets {@link #oldLabel} based on the {@link JGraph} selection. */
     @Override
     public void valueChanged(GraphSelectionEvent e) {
         this.oldLabel = null;
-        Object[] selection = ((GraphJGraph) e.getSource()).getSelectionCells();
+        Object[] selection = ((JGraph<?>) e.getSource()).getSelectionCells();
         if (selection != null && selection.length > 0) {
             Collection<? extends Label> selectedEntries =
-                ((GraphJCell) selection[0]).getKeys();
+                ((JCell<?>) selection[0]).getKeys();
             if (selectedEntries.size() > 0) {
                 Label selectedEntry = selectedEntries.iterator().next();
                 if (selectedEntry instanceof TypeElement) {
@@ -119,7 +118,8 @@ public class FindReplaceAction extends SimulatorAction implements
     @Override
     public void valueChanged(TreeSelectionEvent e) {
         this.oldLabel = null;
-        TreePath[] selection = ((LabelTree) e.getSource()).getSelectionPaths();
+        TreePath[] selection =
+            ((LabelTree<?>) e.getSource()).getSelectionPaths();
         if (selection != null && selection.length > 0) {
             Object treeNode = selection[0].getLastPathComponent();
             if (treeNode instanceof EntryNode) {

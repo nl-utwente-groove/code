@@ -21,9 +21,6 @@ import groove.abstraction.pattern.gui.jgraph.PatternJModel;
 import groove.abstraction.pattern.io.xml.TypeGraphGxl;
 import groove.abstraction.pattern.shape.AbstractPatternGraph;
 import groove.abstraction.pattern.shape.TypeGraph;
-import groove.graph.Edge;
-import groove.graph.Graph;
-import groove.graph.Node;
 import groove.gui.Simulator;
 import groove.gui.dialog.GraphPreviewDialog;
 
@@ -35,7 +32,8 @@ import java.io.IOException;
  * 
  * @author Eduardo Zambon
  */
-public final class PatternPreviewDialog extends GraphPreviewDialog {
+public final class PatternPreviewDialog extends
+        GraphPreviewDialog<AbstractPatternGraph<?,?>> {
 
     /** Constructs a new dialog, for a given pattern graph. */
     private PatternPreviewDialog(Simulator simulator,
@@ -60,12 +58,11 @@ public final class PatternPreviewDialog extends GraphPreviewDialog {
         new PatternPreviewDialog(simulator, pGraph).setVisible(true);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected PatternJGraph createJGraph() {
         PatternJGraph jGraph = new PatternJGraph(this.simulator);
         PatternJModel model = (PatternJModel) jGraph.newModel();
-        model.loadGraph((Graph<Node,Edge>) this.graph);
+        model.loadGraph(this.graph);
         model.setLayoutable(true);
         jGraph.setModel(model);
         return jGraph;

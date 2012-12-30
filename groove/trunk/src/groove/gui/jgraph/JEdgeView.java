@@ -48,7 +48,6 @@ import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
-import org.jgraph.JGraph;
 import org.jgraph.graph.CellHandle;
 import org.jgraph.graph.CellMapper;
 import org.jgraph.graph.CellView;
@@ -74,7 +73,7 @@ public class JEdgeView extends EdgeView {
     /** The editor for all instances of <tt>JEdgeView</tt>. */
     static protected final MultiLinedEditor editor = new MultiLinedEditor();
 
-    private final GraphJGraph jGraph;
+    private final JGraph<?> jGraph;
 
     /**
      * Apart from constructing a new edge view, adds points to the edge if it is
@@ -82,7 +81,7 @@ public class JEdgeView extends EdgeView {
      * underlying model for edge attributes. (using
      * <tt>@link JModel#createEdgeAttributes</tt>).
      */
-    public JEdgeView(GraphJEdge jEdge, GraphJGraph jGraph) {
+    public JEdgeView(JEdge<?> jEdge, JGraph<?> jGraph) {
         super(jEdge);
         this.jGraph = jGraph;
     }
@@ -132,8 +131,8 @@ public class JEdgeView extends EdgeView {
      * Specialises the return type.
      */
     @Override
-    public GraphJEdge getCell() {
-        return (GraphJEdge) super.getCell();
+    public JEdge<?> getCell() {
+        return (JEdge<?>) super.getCell();
     }
 
     /**
@@ -724,7 +723,8 @@ public class JEdgeView extends EdgeView {
                 if (view.getCell().getJGraph().isShowArrowsOnLabels()) {
                     Point2D start = view.getPoint(0);
                     Point2D end = view.getPoint(view.getPointCount() - 1);
-                    text = lines.toString(HTMLLineFormat.instance(), start, end);
+                    text =
+                        lines.toString(HTMLLineFormat.instance(), start, end);
                 } else {
                     text = lines.toString(HTMLLineFormat.instance());
                 }
@@ -740,7 +740,8 @@ public class JEdgeView extends EdgeView {
          * has been called for the first time.
          */
         @Override
-        public Rectangle2D getLabelBounds(JGraph paintingContext, EdgeView view) {
+        public Rectangle2D getLabelBounds(org.jgraph.JGraph paintingContext,
+                EdgeView view) {
             Rectangle2D result = null;
             Point2D p = getLabelPosition(view);
             Dimension d = getLabelSize(view, null);
@@ -763,7 +764,7 @@ public class JEdgeView extends EdgeView {
         }
 
         private JEdgeView jView;
-        private GraphJEdge cell;
+        private JEdge<?> cell;
         private VisualMap visuals;
         // properties for drawing a second line
         private boolean twoLines = false;

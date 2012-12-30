@@ -34,7 +34,7 @@ import java.io.IOException;
  * 
  * @author Eduardo Zambon
  */
-public final class ShapePreviewDialog extends GraphPreviewDialog {
+public final class ShapePreviewDialog extends GraphPreviewDialog<Shape> {
 
     /** Constructs a new dialog, for a given shape. */
     private ShapePreviewDialog(Simulator simulator, Shape shape) {
@@ -61,7 +61,7 @@ public final class ShapePreviewDialog extends GraphPreviewDialog {
     protected ShapeJGraph createJGraph() {
         ShapeJGraph jGraph = new ShapeJGraph(this.simulator);
         ShapeJModel model = (ShapeJModel) jGraph.newModel();
-        model.loadGraph(((Shape) this.graph).downcast());
+        model.loadGraph(this.graph);
         jGraph.setModel(model);
         model.setLayoutable(true);
         jGraph.setModel(model);

@@ -31,8 +31,8 @@ import groove.gui.dialog.PropertiesTable;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraphMode;
 import groove.gui.tree.TypeTree;
@@ -145,7 +145,8 @@ final public class GraphEditorTab extends ResourceTab implements
             @Override
             public void update(Observable o, Object arg) {
                 if (arg != null) {
-                    GraphJCell errorCell = getJModel().getErrorMap().get(arg);
+                    JCell<?> errorCell =
+                        getJModel().getErrorMap().get(arg);
                     if (errorCell != null) {
                         getJGraph().setSelectionCell(errorCell);
                     }
@@ -346,10 +347,10 @@ final public class GraphEditorTab extends ResourceTab implements
 
     /**
      * We listen to the 
-     * {@link GraphJGraph#JGRAPH_MODE_PROPERTY}.
+     * {@link JGraph#JGRAPH_MODE_PROPERTY}.
      */
     public void propertyChange(PropertyChangeEvent evt) {
-        assert evt.getPropertyName().equals(GraphJGraph.JGRAPH_MODE_PROPERTY);
+        assert evt.getPropertyName().equals(JGraph.JGRAPH_MODE_PROPERTY);
         JGraphMode mode = getJGraph().getMode();
         if (mode == PREVIEW_MODE || evt.getOldValue() == PREVIEW_MODE) {
             this.refreshing = true;
@@ -443,7 +444,7 @@ final public class GraphEditorTab extends ResourceTab implements
     protected JGraphPanel<?> getEditArea() {
         JGraphPanel<?> result = this.editArea;
         if (result == null) {
-            result = this.editArea = new JGraphPanel<AspectJGraph>(getJGraph());
+            result = this.editArea = new JGraphPanel<AspectGraph>(getJGraph());
             result.setEnabledBackground(JAttr.EDITOR_BACKGROUND);
             result.initialise();
             result.setEnabled(true);
@@ -452,7 +453,7 @@ final public class GraphEditorTab extends ResourceTab implements
     }
 
     /** The jgraph panel used in this editor. */
-    private JGraphPanel<AspectJGraph> editArea;
+    private JGraphPanel<AspectGraph> editArea;
 
     @Override
     protected JComponent getUpperInfoPanel() {
@@ -567,7 +568,7 @@ final public class GraphEditorTab extends ResourceTab implements
         getJGraph().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName() == GraphJGraph.CELL_EDIT_PROPERTY) {
+                if (evt.getPropertyName() == JGraph.CELL_EDIT_PROPERTY) {
                     int index =
                         evt.getNewValue() instanceof AspectJEdge ? edgeTabIndex
                                 : nodeTabIndex;

@@ -18,7 +18,6 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.jgraph.JGraph;
 import org.jgraph.graph.CellView;
 import org.jgraph.graph.CellViewRenderer;
 import org.jgraph.graph.EdgeView;
@@ -141,8 +140,8 @@ public class ShapeJPortView extends PortView {
         private ShapeJPortView view;
 
         @Override
-        public Component getRendererComponent(JGraph graph, CellView view,
-                boolean sel, boolean focus, boolean preview) {
+        public Component getRendererComponent(org.jgraph.JGraph graph,
+                CellView view, boolean sel, boolean focus, boolean preview) {
             assert view instanceof ShapeJPortView;
             this.view = (ShapeJPortView) view;
             return this;

@@ -18,7 +18,7 @@ package groove.gui.action;
 
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 
@@ -44,7 +44,7 @@ public class ReloadLTSAction extends SimulatorAction {
             ltsJModel.loadGraph(getSimulatorModel().getGts());
         } else {
             LTSJGraph jGraph = getLtsDisplay().getJGraph();
-            for (GraphJCell jCell : ltsJModel.getRoots()) {
+            for (JCell<?> jCell : ltsJModel.getRoots()) {
                 GraphConstants.setMoveable(jCell.getAttributes(), false);
             }
             ltsJModel.loadFurther();

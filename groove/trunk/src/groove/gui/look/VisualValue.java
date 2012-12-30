@@ -16,7 +16,7 @@
  */
 package groove.gui.look;
 
-import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.JCell;
 
 /**
  * Strategy to compute a new value for a refreshable {@link VisualKey}.
@@ -25,5 +25,5 @@ import groove.gui.jgraph.GraphJCell;
  */
 public interface VisualValue<T> {
     /** Computes and returns a new value for the relevant key. */
-    T get(GraphJCell cell);
+    T get(JCell<?> cell);
 }

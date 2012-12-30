@@ -15,6 +15,7 @@ import groove.trans.RuleLabel;
 import groove.view.FormatError;
 import groove.view.GraphBasedModel.TypeModelMap;
 import groove.view.aspect.AspectEdge;
+import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
@@ -27,7 +28,7 @@ import java.util.Set;
 /**
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
-public class AspectJEdge extends GraphJEdge implements AspectJCell {
+public class AspectJEdge extends JEdge<AspectGraph> implements AspectJCell {
     /** 
      * Creates an uninitialised instance.
      */
@@ -48,6 +49,12 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
     @Override
     public AspectKind getAspect() {
         return this.aspect;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Collection<AspectJVertex> getContext() {
+        return (Collection<AspectJVertex>) super.getContext();
     }
 
     @Override
@@ -296,8 +303,9 @@ public class AspectJEdge extends GraphJEdge implements AspectJCell {
 
     /** 
      * Returns a fresh, uninitialised instance.
-     * Call {@link #setJModel(GraphJModel)} to initialise. 
+     * Call {@link #setJModel} to initialise. 
      */
+    @SuppressWarnings("unchecked")
     public static AspectJEdge newInstance() {
         return new AspectJEdge();
     }

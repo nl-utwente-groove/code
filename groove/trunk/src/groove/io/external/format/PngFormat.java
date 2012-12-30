@@ -17,7 +17,7 @@
 package groove.io.external.format;
 
 import groove.graph.Graph;
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 import groove.io.FileType;
 
 import java.awt.image.BufferedImage;
@@ -54,7 +54,8 @@ public class PngFormat extends AbstractExternalFileFormat<Graph<?,?>> {
     }
 
     @Override
-    public void save(GraphJGraph jGraph, File file) throws IOException {
+    public void save(JGraph<Graph<?,?>> jGraph, File file)
+        throws IOException {
         BufferedImage image = jGraph.toImage();
         if (image == null) {
             throw new IOException("Cannot export blank image");

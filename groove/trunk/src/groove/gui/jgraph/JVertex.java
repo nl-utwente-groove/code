@@ -19,6 +19,7 @@ package groove.gui.jgraph;
 import static groove.graph.EdgeRole.BINARY;
 import static groove.io.HTMLConverter.ITALIC_TAG;
 import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.io.HTMLConverter;
@@ -36,13 +37,13 @@ import org.jgraph.graph.DefaultPort;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class GraphJVertex extends AbstractJCell {
+public class JVertex<G extends Graph<?,?>> extends AbstractJCell<G> {
     /**
      * Constructs a fresh, uninitialised JVertex.
-     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(Node)}
+     * Call {@link #setJModel(JModel)} and {@link #setNode(Node)}
      * to initialise.
      */
-    protected GraphJVertex() {
+    protected JVertex() {
         add(new DefaultPort());
     }
 
@@ -56,7 +57,7 @@ public class GraphJVertex extends AbstractJCell {
     }
 
     /**
-     * Returns the graph node wrapped by this {@link GraphJVertex}.
+     * Returns the graph node wrapped by this {@link JVertex}.
      */
     public Node getNode() {
         return this.node;
@@ -74,12 +75,12 @@ public class GraphJVertex extends AbstractJCell {
 
     /** Returns an iterator over the current incident JEdges of this JVertex. */
     @SuppressWarnings("unchecked")
-    public Set<GraphJEdge> getJEdges() {
+    public Set<JEdge<G>> getJEdges() {
         return getPort().getEdges();
     }
 
     @Override
-    public Collection<GraphJEdge> getContext() {
+    public Collection<? extends JEdge<G>> getContext() {
         return getJEdges();
     }
 
@@ -87,13 +88,14 @@ public class GraphJVertex extends AbstractJCell {
      * The cloned object is equal to this one after a reset. 
      */
     @Override
-    public GraphJVertex clone() {
-        GraphJVertex clone = (GraphJVertex) super.clone();
+    public JVertex<G> clone() {
+        @SuppressWarnings("unchecked")
+        JVertex<G> clone = (JVertex<G>) super.clone();
         clone.initialise();
         return clone;
     }
 
-    /** Tests if a given edge can be added as label to this {@link GraphJVertex}. */
+    /** Tests if a given edge can be added as label to this {@link JVertex}. */
     @Override
     public boolean isCompatible(Edge edge) {
         if (getLayout(edge) != null) {
@@ -172,10 +174,10 @@ public class GraphJVertex extends AbstractJCell {
 
     /** 
      * Returns a fresh, uninitialised instance of this class.
-     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(Node)}
+     * Call {@link #setJModel(JModel)} and {@link #setNode(Node)}
      * to initialise.
      */
-    public static GraphJVertex newInstance() {
-        return new GraphJVertex();
+    public static <G extends Graph<?,?>> JVertex<G> newInstance() {
+        return new JVertex<G>();
     }
 }

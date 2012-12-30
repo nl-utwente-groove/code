@@ -16,7 +16,7 @@
  */
 package groove.gui.look;
 
-import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.JCell;
 
 /**
  * Refresher that always returns the same value.
@@ -31,7 +31,7 @@ public class ConstantValue<T> implements VisualValue<T> {
     }
 
     @Override
-    public T get(GraphJCell cell) {
+    public T get(JCell<?> cell) {
         return this.value;
     }
 

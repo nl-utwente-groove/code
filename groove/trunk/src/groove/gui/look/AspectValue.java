@@ -18,7 +18,7 @@ package groove.gui.look;
 
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJVertex;
-import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.JCell;
 
 /**
  * Visual value strategy that delegates its task to
@@ -28,7 +28,7 @@ import groove.gui.jgraph.GraphJCell;
  */
 public abstract class AspectValue<T> implements VisualValue<T> {
     @Override
-    public T get(GraphJCell cell) {
+    public T get(JCell<?> cell) {
         if (cell instanceof AspectJVertex) {
             return getForJVertex((AspectJVertex) cell);
         }

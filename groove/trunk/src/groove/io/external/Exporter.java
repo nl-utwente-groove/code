@@ -21,7 +21,7 @@ import groove.gui.Simulator;
 import groove.gui.dialog.ErrorDialog;
 import groove.gui.dialog.SaveDialog;
 import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.external.FormatPorter.Kind;
@@ -45,8 +45,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-
-import org.jgraph.JGraph;
 
 /**
  * Class used to export various resources and graphs to external formats.
@@ -184,7 +182,7 @@ public class Exporter {
         private final EnumSet<FormatPorter.Kind> porterKinds;
         private final String name;
         private final Graph<?,?> graph;
-        private final GraphJGraph jGraph;
+        private final JGraph<?> jGraph;
         private final ResourceModel<?> model;
 
         /** Constructs an exportable for a given {@link JGraph}. */
@@ -197,7 +195,7 @@ public class Exporter {
         }
 
         /** Constructs an exportable for a given {@link JGraph}. */
-        public Exportable(GraphJGraph jGraph) {
+        public Exportable(JGraph<?> jGraph) {
             this.porterKinds = EnumSet.of(Kind.GRAPH, Kind.JGRAPH);
             this.jGraph = jGraph;
             this.graph = jGraph.getModel().getGraph();
@@ -227,7 +225,7 @@ public class Exporter {
         }
 
         /** Constructs an exportable for a given {@link ResourceModel} that is displayed in a {@link JGraph}. */
-        public Exportable(GraphJGraph jGraph, ResourceModel<?> model) {
+        public Exportable(JGraph<?> jGraph, ResourceModel<?> model) {
             this.porterKinds =
                 EnumSet.of(Kind.GRAPH, Kind.JGRAPH, Kind.RESOURCE);
             this.name = model.getFullName();
@@ -252,7 +250,7 @@ public class Exporter {
         }
 
         /** Returns the {@link JGraph} wrapped by this exportable, if any. */
-        public GraphJGraph getJGraph() {
+        public JGraph<?> getJGraph() {
             return this.jGraph;
         }
 

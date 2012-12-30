@@ -16,7 +16,8 @@
  */
 package groove.abstraction.neigh.gui.jgraph;
 
-import groove.gui.jgraph.GraphJVertex;
+import groove.abstraction.neigh.shape.Shape;
+import groove.gui.jgraph.JVertex;
 import groove.gui.look.Look;
 
 /**
@@ -24,7 +25,7 @@ import groove.gui.look.Look;
  * 
  * @author Eduardo Zambon
  */
-public class EcJVertex extends GraphJVertex {
+public class EcJVertex extends JVertex<Shape> implements ShapeJCell {
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -60,6 +61,7 @@ public class EcJVertex extends GraphJVertex {
     }
 
     /** Returns a new instance of this class. */
+    @SuppressWarnings("unchecked")
     public static EcJVertex newInstance() {
         return new EcJVertex();
     }

@@ -25,9 +25,9 @@ import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.graph.Graph;
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJModel;
+import groove.graph.Edge;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JModel;
 import groove.util.Duo;
 
 import java.util.Map;
@@ -39,7 +39,7 @@ import org.jgraph.graph.ParentMap;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
+public class ShapeJModel extends JModel<Shape> {
 
     /**
      * Map that stores the containment relation between equivalence classes
@@ -61,7 +61,7 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
     }
 
     @Override
-    public void loadGraph(Graph<ShapeNode,ShapeEdge> graph) {
+    public void loadGraph(Shape graph) {
         // Prepare the object fields.
         setVetoFireGraphChanged(true);
         this.parentMap = new ParentMap();
@@ -91,15 +91,16 @@ public class ShapeJModel extends GraphJModel<ShapeNode,ShapeEdge> {
     }
 
     @Override
-    protected GraphJCell addEdge(ShapeEdge edge) {
-        GraphJCell jCell = super.addEdge(edge);
+    protected JCell<Shape> addEdge(Edge edge) {
+        JCell<Shape> jCell = super.addEdge(edge);
         if (jCell instanceof ShapeJEdge) {
+            ShapeEdge shapeEdge = (ShapeEdge) edge;
             ShapeJEdge jEdge = (ShapeJEdge) jCell;
             Shape shape = getGraph();
             EdgeSignature outEs =
-                shape.getEdgeSignature(edge, EdgeMultDir.OUTGOING);
+                shape.getEdgeSignature(shapeEdge, EdgeMultDir.OUTGOING);
             EdgeSignature inEs =
-                shape.getEdgeSignature(edge, EdgeMultDir.INCOMING);
+                shape.getEdgeSignature(shapeEdge, EdgeMultDir.INCOMING);
             ShapeJPort srcPort = getPort(outEs);
             ShapeJPort tgtPort = getPort(inEs);
             assert srcPort != null && tgtPort != null;

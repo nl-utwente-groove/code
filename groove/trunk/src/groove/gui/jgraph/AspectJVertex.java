@@ -17,6 +17,7 @@ import groove.io.HTMLConverter;
 import groove.view.FormatError;
 import groove.view.GraphBasedModel.TypeModelMap;
 import groove.view.aspect.AspectEdge;
+import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 import groove.view.aspect.AspectLabel;
 import groove.view.aspect.AspectNode;
@@ -30,10 +31,10 @@ import java.util.Set;
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
-public class AspectJVertex extends GraphJVertex implements AspectJCell {
+public class AspectJVertex extends JVertex<AspectGraph> implements AspectJCell {
     /** 
      * Creates a fresh, uninitialised JVertex.
-     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(Node)}
+     * Call {@link #setJModel} and {@link #setNode(Node)}
      * to initialise.
      */
     private AspectJVertex() {
@@ -58,6 +59,12 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     @Override
     public AspectKind getAspect() {
         return this.aspect;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Collection<AspectJEdge> getContext() {
+        return (Collection<AspectJEdge>) super.getContext();
     }
 
     @SuppressWarnings("unchecked")
@@ -101,8 +108,7 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
     public Set<AspectEdge> getExtraSelfEdges() {
         Set<AspectEdge> result = createEdgeSet();
         // add all outgoing JEdges that are source labels
-        for (GraphJEdge edgeObject : getJEdges()) {
-            AspectJEdge jEdge = (AspectJEdge) edgeObject;
+        for (AspectJEdge jEdge : getContext()) {
             if (jEdge.getSourceVertex() == this && jEdge.isSourceLabel()) {
                 result.addAll(jEdge.getEdges());
             }
@@ -354,8 +360,9 @@ public class AspectJVertex extends GraphJVertex implements AspectJCell {
 
     /** 
      * Returns a fresh, uninitialised instance.
-     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(Node)} to initialise. 
+     * Call {@link #setJModel} and {@link #setNode(Node)} to initialise. 
      */
+    @SuppressWarnings("unchecked")
     public static AspectJVertex newInstance() {
         return new AspectJVertex();
     }

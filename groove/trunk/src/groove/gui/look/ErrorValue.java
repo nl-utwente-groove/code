@@ -17,7 +17,7 @@
 package groove.gui.look;
 
 import groove.gui.jgraph.AspectJCell;
-import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.JCell;
 
 /** 
  * Refresher for the {@link VisualKey#ERROR} value of a {@link AspectJCell}.
@@ -26,7 +26,7 @@ import groove.gui.jgraph.GraphJCell;
  */
 public class ErrorValue implements VisualValue<Boolean> {
     @Override
-    public Boolean get(GraphJCell cell) {
+    public Boolean get(JCell<?> cell) {
         return cell.hasErrors();
     }
 }

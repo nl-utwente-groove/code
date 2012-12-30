@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.gui.jgraph;
 
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JCellViewFactory;
 
 import org.jgraph.graph.PortView;
@@ -30,7 +30,7 @@ import org.jgraph.graph.PortView;
 public class ShapeJCellViewFactory extends JCellViewFactory {
 
     /**
-     * Constructs a factory for creating views upon a particular {@link GraphJGraph}.
+     * Constructs a factory for creating views upon a particular {@link JGraph}.
      * @param jGraph the graph on which the views are to be displayed.
      */
     public ShapeJCellViewFactory(ShapeJGraph jGraph) {

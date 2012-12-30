@@ -16,7 +16,7 @@
  */
 package groove.io.external.util;
 
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 import groove.io.external.PortException;
 
 import java.awt.geom.Rectangle2D;
@@ -31,7 +31,8 @@ import net.sf.epsgraphics.EpsGraphics;
 /** Class offering the functionality to save a JGraph to EPS format. */
 public class GraphToEPS extends GraphToVector {
     @Override
-    public void renderGraph(GraphJGraph graph, File file) throws PortException {
+    public void renderGraph(JGraph<?> graph, File file)
+        throws PortException {
         // Get graph bounds. If not available, do nothing (probably empty graph)
         Rectangle2D bounds = graph.getGraphBounds();
         if (bounds == null) {

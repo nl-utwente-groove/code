@@ -1,6 +1,5 @@
 package groove.gui.dialog;
 
-import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.gui.Simulator;
@@ -8,17 +7,14 @@ import groove.gui.display.DisplayKind;
 import groove.gui.display.JGraphPanel;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.CtrlJGraph;
-import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.GraphJGraph.AttributeFactory;
-import groove.gui.jgraph.GraphJModel;
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJGraph;
+import groove.gui.jgraph.PlainJGraph;
 import groove.trans.HostGraph;
 import groove.trans.ResourceKind;
-import groove.verify.BuchiGraph;
-import groove.verify.BuchiLocation;
 import groove.view.aspect.AspectGraph;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -29,16 +25,13 @@ import java.util.TimerTask;
 
 import javax.swing.JDialog;
 
-import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.GraphConstants;
-
 /**
  * Dialog showing an given graph in the most appropriate
  * GUI component. 
  */
-public class GraphPreviewDialog extends JDialog {
+public class GraphPreviewDialog<G extends Graph<?,?>> extends JDialog {
     /** Constructs a new dialog, for a given graph. */
-    public GraphPreviewDialog(Simulator simulator, Graph<?,?> graph) {
+    public GraphPreviewDialog(Simulator simulator, G graph) {
         super(simulator == null ? null : simulator.getFrame());
         this.simulator = simulator;
         this.graph = graph;
@@ -47,8 +40,7 @@ public class GraphPreviewDialog extends JDialog {
             Point p = simulator.getFrame().getLocation();
             setLocation(new Point(p.x + 50, p.y + 50));
         }
-        JGraphPanel<GraphJGraph> autPanel =
-            new JGraphPanel<GraphJGraph>(getJGraph());
+        JGraphPanel<G> autPanel = new JGraphPanel<G>(getJGraph());
         autPanel.initialise();
         autPanel.setEnabled(true);
         add(autPanel);
@@ -58,7 +50,7 @@ public class GraphPreviewDialog extends JDialog {
         }
     }
 
-    private GraphJGraph getJGraph() {
+    private JGraph<G> getJGraph() {
         if (this.jGraph == null) {
             this.jGraph = createJGraph();
         }
@@ -67,32 +59,10 @@ public class GraphPreviewDialog extends JDialog {
 
     /** Returns the proper jGraph for the graph set in the constructor. */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    protected GraphJGraph createJGraph() {
-        GraphJGraph jGraph;
+    protected JGraph<G> createJGraph() {
+        JGraph jGraph;
         Graph<?,?> shownGraph = this.graph;
         switch (this.graph.getRole()) {
-        case BUCHI:
-            jGraph =
-                GraphJGraph.createJGraph(this.graph, new AttributeFactory() {
-                    @Override
-                    public AttributeMap getAttributes(Edge edge) {
-                        return null;
-                    }
-
-                    @Override
-                    public AttributeMap getAttributes(groove.graph.Node node) {
-                        BuchiLocation location = (BuchiLocation) node;
-                        AttributeMap result = new AttributeMap();
-                        if (location.isAccepting()) {
-                            GraphConstants.setBackground(result, Color.orange);
-                        }
-                        if (location.equals(((BuchiGraph) GraphPreviewDialog.this.graph).getInitial())) {
-                            GraphConstants.setLineWidth(result, 3);
-                        }
-                        return result;
-                    }
-                });
-            break;
         case CTRL:
             jGraph = new CtrlJGraph(this.simulator);
             break;
@@ -108,25 +78,25 @@ public class GraphPreviewDialog extends JDialog {
                     DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
                 jGraph = new AspectJGraph(this.simulator, kind, false);
             } else {
-                jGraph = new GraphJGraph(this.simulator);
+                jGraph = PlainJGraph.newInstance(this.simulator);
             }
             break;
         case LTS:
             jGraph = new LTSJGraph(this.simulator);
             break;
         default:
-            jGraph = new GraphJGraph(this.simulator);
+            jGraph = PlainJGraph.newInstance(this.simulator);
         }
-        GraphJModel<?,?> model = jGraph.getFactory().newModel();
-        model.loadGraph((Graph) this.graph);
+        JModel<G> model = jGraph.getFactory().newModel();
+        model.loadGraph(this.graph);
         jGraph.setModel(model);
         jGraph.doLayout(true);
         return jGraph;
     }
 
-    private GraphJGraph jGraph;
+    private JGraph<G> jGraph;
     /** The graph to be displayed in the dialog. */
-    protected final Graph<?,?> graph;
+    protected final G graph;
     /** The simulator reference, may be null. */
     protected final Simulator simulator;
 
@@ -149,12 +119,13 @@ public class GraphPreviewDialog extends JDialog {
      * Creates a dialog for the given graph and (possibly {@code null}) 
      * simulator, and sets it to visible.
      */
-    public static void showGraph(Simulator simulator, Graph<?,?> graph) {
+    public static <G extends Graph<?,?>> void showGraph(Simulator simulator,
+            G graph) {
         final GraphRole role = graph.getRole();
         final String name = graph.getName();
         synchronized (recentPreviews) {
             if (!TIMER || recentPreviews.get(role).add(name)) {
-                new GraphPreviewDialog(simulator, graph).setVisible(true);
+                new GraphPreviewDialog<G>(simulator, graph).setVisible(true);
                 if (TIMER) {
                     final Timer timer = new Timer();
                     timer.schedule(new TimerTask() {

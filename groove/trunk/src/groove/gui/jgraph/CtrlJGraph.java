@@ -35,7 +35,7 @@ import java.util.Collections;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class CtrlJGraph extends GraphJGraph {
+public class CtrlJGraph extends JGraph<CtrlAut> {
     /**
      * Creates a ControlJGraph given a ControlJModel
      * @param simulator the simulator that is the context of this jgraph; may be
@@ -60,9 +60,7 @@ public class CtrlJGraph extends GraphJGraph {
     /** Creates a new model based on a given control automaton. */
     public void setModel(CtrlAut aut) {
         if (getModel() == null || getModel().getGraph() != aut) {
-            @SuppressWarnings("unchecked")
-            GraphJModel<CtrlState,CtrlTransition> newModel =
-                (GraphJModel<CtrlState,CtrlTransition>) newModel();
+            JModel<CtrlAut> newModel = newModel();
             newModel.loadGraph(aut);
             setModel(newModel);
         }
@@ -105,7 +103,7 @@ public class CtrlJGraph extends GraphJGraph {
         }
 
         /**
-         * Creates a new instance, for a given {@link GraphJGraph}.
+         * Creates a new instance, for a given {@link JGraph}.
          */
         public MyForestLayouter(String name, CtrlJGraph jgraph) {
             super(name, jgraph);
@@ -125,24 +123,19 @@ public class CtrlJGraph extends GraphJGraph {
          * This implementation returns a {@link MyForestLayouter}.
          */
         @Override
-        public Layouter newInstance(GraphJGraph jGraph) {
+        public Layouter newInstance(JGraph<?> jGraph) {
             return new MyForestLayouter(this.name, (CtrlJGraph) jGraph);
         }
     }
 
     @Override
-    protected JGraphFactory createFactory() {
+    protected JGraphFactory<CtrlAut> createFactory() {
         return new MyFactory();
     }
 
-    private class MyFactory extends GraphJGraphFactory {
+    private class MyFactory extends JGraphFactory<CtrlAut> {
         public MyFactory() {
             super(CtrlJGraph.this);
-        }
-
-        @Override
-        public CtrlJGraph getJGraph() {
-            return (CtrlJGraph) super.getJGraph();
         }
 
         @Override
@@ -155,11 +148,6 @@ public class CtrlJGraph extends GraphJGraph {
         public CtrlJEdge newJEdge(Edge edge) {
             assert edge instanceof CtrlTransition;
             return CtrlJEdge.newInstance();
-        }
-
-        @Override
-        public GraphJModel<?,?> newModel() {
-            return new GraphJModel<CtrlState,CtrlTransition>(getJGraph());
         }
     }
 }

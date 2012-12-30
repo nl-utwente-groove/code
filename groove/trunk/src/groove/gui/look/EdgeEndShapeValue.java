@@ -17,7 +17,7 @@
 package groove.gui.look;
 
 import groove.gui.jgraph.AspectJEdge;
-import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.JCell;
 import groove.view.aspect.AspectKind;
 
 import java.util.Set;
@@ -34,7 +34,7 @@ public class EdgeEndShapeValue implements VisualValue<EdgeEnd> {
     }
 
     @Override
-    public EdgeEnd get(GraphJCell cell) {
+    public EdgeEnd get(JCell<?> cell) {
         // first see what the looks have to say
         VisualMap looksMap = Look.getVisualsFor(cell.getLooks());
         EdgeEnd result =

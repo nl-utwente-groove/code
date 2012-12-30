@@ -16,7 +16,8 @@
  */
 package groove.abstraction.pattern.gui.jgraph;
 
-import groove.gui.jgraph.GraphJVertex;
+import groove.abstraction.pattern.shape.AbstractPatternGraph;
+import groove.gui.jgraph.JVertex;
 import groove.gui.look.Look;
 
 /**
@@ -24,7 +25,7 @@ import groove.gui.look.Look;
  * 
  * @author Eduardo Zambon
  */
-public class PatternJVertex extends GraphJVertex {
+public class PatternJVertex extends JVertex<AbstractPatternGraph<?,?>> {
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -60,6 +61,7 @@ public class PatternJVertex extends GraphJVertex {
     }
 
     /** Returns a new instance of this class. */
+    @SuppressWarnings("unchecked")
     public static PatternJVertex newInstance() {
         return new PatternJVertex();
     }

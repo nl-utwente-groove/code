@@ -32,6 +32,7 @@ import groove.gui.layout.SpringLayouter;
 import groove.gui.look.LineStyle;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
+import groove.gui.menu.MyJMenu;
 import groove.gui.menu.SetLayoutMenu;
 import groove.gui.tree.RuleLevelTree;
 import groove.trans.ResourceKind;
@@ -68,9 +69,9 @@ import org.jgraph.graph.GraphModel;
 import org.jgraph.graph.PortView;
 
 /**
- * Extension of {@link GraphJGraph} for {@link AspectGraph}s.
+ * Extension of {@link JGraph} for {@link AspectGraph}s.
  */
-final public class AspectJGraph extends GraphJGraph {
+final public class AspectJGraph extends JGraph<AspectGraph> {
     /**
      * Creates a new instance, for a given graph role.
      * A flag determines whether the graph is editable.
@@ -164,7 +165,7 @@ final public class AspectJGraph extends GraphJGraph {
     }
 
     @Override
-    public void refreshCells(Collection<? extends GraphJCell> jCellSet) {
+    public void refreshCells(Collection<? extends JCell<AspectGraph>> jCellSet) {
         // tell the model it has been modified,
         // so refreshing actually changes the cell outlook
         getModel().getModCount().increase();
@@ -193,7 +194,7 @@ final public class AspectJGraph extends GraphJGraph {
 
     @Override
     public JMenu createPopupMenu(Point atPoint) {
-        JMenu result = new JMenu("Popup");
+        MyJMenu result = new MyJMenu("Popup");
         switch (getGraphRole()) {
         case HOST:
             result.add(getActions().getApplyMatchAction());
@@ -209,15 +210,15 @@ final public class AspectJGraph extends GraphJGraph {
                     ResourceKind.toResource(getGraphRole()));
         }
         result.add(editAction);
-        addSubmenu(result, createEditMenu(atPoint));
-        addSubmenu(result, super.createPopupMenu(atPoint));
+        result.addSubmenu(createEditMenu(atPoint));
+        result.addSubmenu(super.createPopupMenu(atPoint));
         return result;
     }
 
     @Override
     public JMenu createExportMenu() {
         // add a save graph action as the first action
-        JMenu result = new JMenu();
+        MyJMenu result = new MyJMenu();
         if (getActions() != null) {
             if (isForState()) {
                 result.add(getActions().getSaveStateAction());
@@ -227,7 +228,7 @@ final public class AspectJGraph extends GraphJGraph {
                 result.add(getActions().getSaveAsAction(resource));
             }
         }
-        addMenuItems(result, super.createExportMenu());
+        result.addMenuItems(super.createExportMenu());
         return result;
     }
 
@@ -268,14 +269,14 @@ final public class AspectJGraph extends GraphJGraph {
     }
 
     /** Convenience method to invoke an edit of a single visual attribute. */
-    void edit(GraphJCell jCell, VisualKey key, Object value) {
+    void edit(JCell<AspectGraph> jCell, VisualKey key, Object value) {
         VisualMap newVisuals = new VisualMap();
         newVisuals.put(key, value);
         edit(jCell, newVisuals);
     }
 
     /** Convenience method to invoke an edit of a set of visual attributes. */
-    void edit(GraphJCell jCell, VisualMap newVisuals) {
+    void edit(JCell<AspectGraph> jCell, VisualMap newVisuals) {
         getModel().edit(
             Collections.singletonMap(jCell, newVisuals.getAttributes()), null,
             null, null);
@@ -366,12 +367,12 @@ final public class AspectJGraph extends GraphJGraph {
     }
 
     /**
-     * If the underlying model is a {@link GraphJModel},
+     * If the underlying model is a {@link JModel},
      * selects the element corresponding to a given graph element.
-     * @return {@code true} if {@code elem} occurs in the {@link GraphJModel}.
+     * @return {@code true} if {@code elem} occurs in the {@link JModel}.
      */
     public boolean selectJCell(Element elem) {
-        GraphJCell cell = null;
+        JCell<?> cell = null;
         if (elem instanceof Node) {
             cell = getModel().getJCellForNode((Node) elem);
         } else if (elem instanceof Edge) {
@@ -404,7 +405,7 @@ final public class AspectJGraph extends GraphJGraph {
 
     /** The kind of graphs being displayed. */
     private final boolean forState;
-    /** The role for which this {@link GraphJGraph} will display graphs. */
+    /** The role for which this {@link JGraph} will display graphs. */
     private final GraphRole graphRole;
     /** The JTree of rule levels, if any. */
     private RuleLevelTree levelTree;
@@ -425,7 +426,7 @@ final public class AspectJGraph extends GraphJGraph {
             super(name);
             this.allCells = true;
             this.vertexOnly = true;
-            this.jCells = new ArrayList<GraphJCell>();
+            this.jCells = new ArrayList<AspectJCell>();
             refresh();
             addGraphSelectionListener(this);
         }
@@ -440,7 +441,7 @@ final public class AspectJGraph extends GraphJGraph {
             super(name);
             this.allCells = false;
             this.vertexOnly = vertexOnly;
-            this.jCells = new ArrayList<GraphJCell>();
+            this.jCells = new ArrayList<AspectJCell>();
             refresh();
             addGraphSelectionListener(this);
         }
@@ -457,9 +458,9 @@ final public class AspectJGraph extends GraphJGraph {
             this.jCell = null;
             this.jCells.clear();
             for (Object cell : AspectJGraph.this.getSelectionCells()) {
-                GraphJCell jCell = (GraphJCell) cell;
+                AspectJCell jCell = (AspectJCell) cell;
                 if (this.allCells
-                    || this.vertexOnly == (jCell instanceof GraphJVertex)) {
+                    || this.vertexOnly == (jCell instanceof JVertex)) {
                     this.jCell = jCell;
                     this.jCells.add(jCell);
                 }
@@ -553,9 +554,9 @@ final public class AspectJGraph extends GraphJGraph {
         /** Switch indication that the action is enabled for all j-vertices. */
         protected final boolean vertexOnly;
         /** The first currently selected j-cell of the right type. */
-        protected GraphJCell jCell;
+        protected AspectJCell jCell;
         /** List list of currently selected j-cells of the right type. */
-        protected final List<GraphJCell> jCells;
+        protected final List<AspectJCell> jCells;
         /** The currently set point location. */
         protected Point2D location;
     }
@@ -595,7 +596,7 @@ final public class AspectJGraph extends GraphJGraph {
         }
 
         /** Executes the action. */
-        public void execute(GraphJCell jCell) {
+        public void execute(AspectJCell jCell) {
             VisualMap visuals = jCell.getVisuals();
             List<Point2D> points =
                 addPointAt(visuals.getPoints(), this.location);
@@ -667,7 +668,7 @@ final public class AspectJGraph extends GraphJGraph {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            execute((GraphJEdge) this.jCell);
+            execute(this.jCell);
         }
 
         /**
@@ -676,7 +677,7 @@ final public class AspectJGraph extends GraphJGraph {
          * is <tt>null</tt>) or the one closest to the location.
          * @param jEdge the j-edge to be modified
          */
-        public void execute(GraphJEdge jEdge) {
+        public void execute(AspectJCell jEdge) {
             VisualMap visuals = jEdge.getVisuals();
             List<Point2D> points = visuals.getPoints();
             edit(jEdge, VisualKey.POINTS, removePointAt(points, this.location));
@@ -733,8 +734,8 @@ final public class AspectJGraph extends GraphJGraph {
 
         /** Resets the label positions of the selected cells. */
         public void actionPerformed(ActionEvent evt) {
-            for (GraphJCell jCell : this.jCells) {
-                execute((GraphJEdge) jCell);
+            for (AspectJCell jCell : this.jCells) {
+                execute(jCell);
             }
         }
 
@@ -743,7 +744,7 @@ final public class AspectJGraph extends GraphJGraph {
          * position.
          * @param jEdge the j-edge to be modified
          */
-        public void execute(GraphJEdge jEdge) {
+        public void execute(AspectJCell jEdge) {
             edit(jEdge, VisualKey.LABEL_POS,
                 VisualKey.LABEL_POS.getDefaultValue());
         }
@@ -776,7 +777,7 @@ final public class AspectJGraph extends GraphJGraph {
 
         public void actionPerformed(ActionEvent evt) {
             VisualMap newVisuals = new VisualMap();
-            for (GraphJCell jCell : this.jCells) {
+            for (AspectJCell jCell : this.jCells) {
                 VisualMap visuals = jCell.getVisuals();
                 newVisuals.setLineStyle(this.lineStyle);
                 List<Point2D> points = visuals.getPoints();
@@ -817,7 +818,7 @@ final public class AspectJGraph extends GraphJGraph {
         }
 
         public void valueChanged(GraphSelectionEvent e) {
-            this.setEnabled(getSelectionCell() instanceof GraphJEdge);
+            this.setEnabled(getSelectionCell() instanceof JEdge);
         }
     }
 
@@ -875,11 +876,11 @@ final public class AspectJGraph extends GraphJGraph {
     }
 
     @Override
-    protected JGraphFactory createFactory() {
+    protected JGraphFactory<AspectGraph> createFactory() {
         return new MyFactory();
     }
 
-    private class MyFactory extends GraphJGraphFactory {
+    private class MyFactory extends JGraphFactory<AspectGraph> {
         public MyFactory() {
             super(AspectJGraph.this);
         }

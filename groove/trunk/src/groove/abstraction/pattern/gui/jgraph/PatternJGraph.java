@@ -20,17 +20,17 @@ import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.gui.look.PatternAdornmentValue;
 import groove.abstraction.pattern.gui.look.PatternLabelValue;
 import groove.abstraction.pattern.shape.AbstractPatternEdge;
+import groove.abstraction.pattern.shape.AbstractPatternGraph;
 import groove.abstraction.pattern.shape.AbstractPatternNode;
 import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Simulator;
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.GraphJGraphFactory;
-import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JGraphFactory;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JVertex;
 import groove.gui.layout.AbstractLayouter;
 import groove.gui.layout.Layouter;
 import groove.gui.look.VisualKey;
@@ -51,7 +51,7 @@ import com.jgraph.layout.tree.JGraphCompactTreeLayout;
  * 
  * @author Eduardo Zambon
  */
-public final class PatternJGraph extends GraphJGraph {
+public final class PatternJGraph extends JGraph<AbstractPatternGraph<?,?>> {
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -102,7 +102,7 @@ public final class PatternJGraph extends GraphJGraph {
         }
 
         @Override
-        public Layouter newInstance(GraphJGraph jgraph) {
+        public Layouter newInstance(JGraph<?> jgraph) {
             return new MyLayouter(this.name, (PatternJGraph) jgraph);
         }
 
@@ -132,12 +132,13 @@ public final class PatternJGraph extends GraphJGraph {
 
         void run() {
             // First layout each individual pattern.
-            for (List<GraphJCell> roots : getJGraph().getModel().getReverseParentMap().values()) {
+            for (List<JCell<AbstractPatternGraph<?,?>>> roots : getJGraph().getModel().getReverseParentMap().values()) {
                 layoutPattern(roots);
             }
             // The layout the pattern graph structure.
             this.facade.setVerticesFilter(null);
-            List<GraphJCell> roots = getJGraph().getModel().getPatternRoots();
+            List<JCell<AbstractPatternGraph<?,?>>> roots =
+                getJGraph().getModel().getPatternRoots();
             this.facade.setRoots(roots);
             this.facade.setIgnoresCellsInGroups(true);
             JGraphHierarchicalLayout hLayout = new JGraphHierarchicalLayout();
@@ -145,11 +146,12 @@ public final class PatternJGraph extends GraphJGraph {
             hLayout.run(this.facade);
         }
 
-        void layoutPattern(List<GraphJCell> roots) {
-            Set<GraphJVertex> verticesFilter = new MyHashSet<GraphJVertex>();
-            for (GraphJCell jCell : roots) {
-                if (jCell instanceof GraphJVertex) {
-                    verticesFilter.add((GraphJVertex) jCell);
+        void layoutPattern(List<JCell<AbstractPatternGraph<?,?>>> roots) {
+            Set<JVertex<AbstractPatternGraph<?,?>>> verticesFilter =
+                new MyHashSet<JVertex<AbstractPatternGraph<?,?>>>();
+            for (JCell<AbstractPatternGraph<?,?>> jCell : roots) {
+                if (jCell instanceof JVertex) {
+                    verticesFilter.add((JVertex<AbstractPatternGraph<?,?>>) jCell);
                 }
             }
             if (this.lineLayout == null) {
@@ -170,11 +172,12 @@ public final class PatternJGraph extends GraphJGraph {
     }
 
     private static class LineLayout {
-        void run(JGraphFacade facade, Set<GraphJVertex> vertices) {
+        void run(JGraphFacade facade,
+                Set<JVertex<AbstractPatternGraph<?,?>>> vertices) {
             int x = 0;
             int y = 0;
             int hSpace = 70;
-            for (GraphJVertex vertex : vertices) {
+            for (JVertex<AbstractPatternGraph<?,?>> vertex : vertices) {
                 facade.setLocation(vertex, x, y);
                 x += hSpace;
             }
@@ -182,11 +185,12 @@ public final class PatternJGraph extends GraphJGraph {
     }
 
     @Override
-    protected JGraphFactory createFactory() {
+    protected JGraphFactory<AbstractPatternGraph<?,?>> createFactory() {
         return new MyFactory();
     }
 
-    private class MyFactory extends GraphJGraphFactory {
+    private class MyFactory extends
+            JGraphFactory<AbstractPatternGraph<?,?>> {
         public MyFactory() {
             super(PatternJGraph.this);
         }
@@ -202,8 +206,8 @@ public final class PatternJGraph extends GraphJGraph {
         }
 
         @Override
-        public GraphJVertex newJVertex(Node node) {
-            GraphJVertex result;
+        public JVertex<AbstractPatternGraph<?,?>> newJVertex(Node node) {
+            JVertex<AbstractPatternGraph<?,?>> result;
             if (node instanceof AbstractPatternNode) {
                 result = PatternJVertex.newInstance();
             } else {
@@ -213,8 +217,8 @@ public final class PatternJGraph extends GraphJGraph {
         }
 
         @Override
-        public GraphJEdge newJEdge(Edge edge) {
-            GraphJEdge result;
+        public JEdge<AbstractPatternGraph<?,?>> newJEdge(Edge edge) {
+            JEdge<AbstractPatternGraph<?,?>> result;
             if (edge instanceof AbstractPatternEdge<?>) {
                 result = PatternJEdge.newInstance();
             } else {

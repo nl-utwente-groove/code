@@ -16,8 +16,9 @@
  */
 package groove.abstraction.neigh.gui.jgraph;
 
-import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.GraphJModel;
+import groove.abstraction.neigh.shape.Shape;
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JModel;
 
 /**
  * Class that connects to the JGraph library for displaying ShapeEdges.
@@ -28,7 +29,7 @@ import groove.gui.jgraph.GraphJModel;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeJEdge extends GraphJEdge {
+public class ShapeJEdge extends JEdge<Shape> implements ShapeJCell {
 
     private boolean mainSrc;
     private boolean mainTgt;
@@ -77,8 +78,9 @@ public class ShapeJEdge extends GraphJEdge {
 
     /** 
      * Returns fresh, uninitialised instance.
-     * Call {@link #setJModel(GraphJModel)} to initialise.
+     * Call {@link #setJModel(JModel)} to initialise.
      */
+    @SuppressWarnings("unchecked")
     public static ShapeJEdge newInstance() {
         return new ShapeJEdge();
     }

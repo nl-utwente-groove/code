@@ -28,23 +28,23 @@ import org.jgraph.graph.VertexView;
  */
 public class JCellViewFactory extends DefaultCellViewFactory {
     /**
-     * Constructs a factory for creating views upon a particular {@link GraphJGraph}.
+     * Constructs a factory for creating views upon a particular {@link JGraph}.
      * @param jGraph the graph on which the views are to be displayed.
      */
-    public JCellViewFactory(GraphJGraph jGraph) {
+    public JCellViewFactory(JGraph<?> jGraph) {
         this.jGraph = jGraph;
     }
 
     /**
      * This implementation creates {@link JVertexView} if the cell to be viewed
-     * is a {@link GraphJVertex}. Otherwise, the method delegates to the super
+     * is a {@link JVertex}. Otherwise, the method delegates to the super
      * class.
      */
     @Override
     protected VertexView createVertexView(Object cell) {
-        if (cell instanceof GraphJVertex) {
+        if (cell instanceof JVertex) {
             JVertexView result =
-                new JVertexView((GraphJVertex) cell, this.jGraph);
+                new JVertexView((JVertex<?>) cell, this.jGraph);
             // the following is apparently necessary
             // to initialise the autosize correctly
             result.refresh(this.jGraph.getGraphLayoutCache(),
@@ -58,21 +58,21 @@ public class JCellViewFactory extends DefaultCellViewFactory {
 
     /**
      * This implementation creates {@link JEdgeView} if the cell to be viewed is
-     * a {@link GraphJEdge}. Otherwise, the method delegates to the super class.
+     * a {@link JEdge}. Otherwise, the method delegates to the super class.
      */
     @Override
     protected JEdgeView createEdgeView(Object edge) {
-        assert edge instanceof GraphJEdge;
-        return new JEdgeView((GraphJEdge) edge, this.jGraph);
+        assert edge instanceof JEdge;
+        return new JEdgeView((JEdge<?>) edge, this.jGraph);
     }
 
     /** Basic getter method. */
-    public GraphJGraph getJGraph() {
+    public JGraph<?> getJGraph() {
         return this.jGraph;
     }
 
     /**
      * The underlying graph on which all views are to be displayed.
      */
-    private final GraphJGraph jGraph;
+    private final JGraph<?> jGraph;
 }

@@ -13,10 +13,10 @@ import groove.lts.GraphState;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSJVertex extends GraphJVertex implements LTSJCell {
+public class LTSJVertex extends JVertex<GTS> implements LTSJCell {
     /**
      * Creates a new, uninitialised instance.
-     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(Node)} to initialise.
+     * Call {@link #setJModel(JModel)} and {@link #setNode(Node)} to initialise.
      */
     private LTSJVertex() {
         // empty
@@ -149,8 +149,9 @@ public class LTSJVertex extends GraphJVertex implements LTSJCell {
 
     /** 
      * Returns a fresh instance.
-     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(Node)} to initialise.
+     * Call {@link #setJModel(JModel)} and {@link #setNode(Node)} to initialise.
      */
+    @SuppressWarnings("unchecked")
     public static LTSJVertex newInstance() {
         return new LTSJVertex();
     }

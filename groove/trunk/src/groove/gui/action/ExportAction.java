@@ -12,13 +12,13 @@ import groove.gui.display.GraphTab;
 import groove.gui.display.ResourceDisplay;
 import groove.gui.display.ResourceTab;
 import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 import groove.io.external.Exporter;
 import groove.io.external.Exporter.Exportable;
 import groove.view.ResourceModel;
 
 /**
- * Action to save the content of a {@link GraphJGraph},
+ * Action to save the content of a {@link JGraph},
  * as a graph or in some export format.
  * There is a discrepancy between exporter action for JGraphs and for displays: JGraph exports have no access to the original resource (if any)
  * and so an export initiated from a JGraph directly (as opposed for example form the menu) will never show an export option that requires a resource 
@@ -37,7 +37,7 @@ public class ExportAction extends SimulatorAction {
     }
 
     /** Constructs an instance of the action. */
-    public ExportAction(GraphJGraph jGraph) {
+    public ExportAction(JGraph<?> jGraph) {
         // fill in a generic name, as the JGraph may not yet hold a graph.
         super(jGraph.getActions().getSimulator(), Options.EXPORT_ACTION_NAME,
             Icons.EXPORT_ICON);
@@ -70,7 +70,7 @@ public class ExportAction extends SimulatorAction {
     public void refresh() {
         boolean setenabled = getSimulatorModel().getGrammar() != null;
         if (this.isGraph && setenabled) {
-            GraphJGraph jGraph = getJGraph();
+            JGraph<?> jGraph = getJGraph();
             setenabled = jGraph != null && jGraph.isEnabled();
         } else if (setenabled) {
             setenabled = getResource() != null;
@@ -91,7 +91,7 @@ public class ExportAction extends SimulatorAction {
     private String getActionName() {
         String type = null;
         if (this.isGraph) {
-            GraphJGraph jGraph = getJGraph();
+            JGraph<?> jGraph = getJGraph();
             Graph<?,?> graph = jGraph.getModel().getGraph();
             GraphRole role = graph.getRole();
             boolean isState =
@@ -119,7 +119,7 @@ public class ExportAction extends SimulatorAction {
     }
 
     // Get active graph if any
-    private final GraphJGraph getJGraph() {
+    private final JGraph<?> getJGraph() {
         assert (this.isGraph);
         if (this.jGraph == null) {
             switch (this.displayKind) {
@@ -148,10 +148,10 @@ public class ExportAction extends SimulatorAction {
     /** The fixed JGraph with which this action is associated,
      * if it is not associated with a {@link Display}.
      */
-    private final GraphJGraph jGraph;
+    private final JGraph<?> jGraph;
     /** 
      * The display with which this action is associated,
-     * if it is not associated with a fixed {@link GraphJGraph}.
+     * if it is not associated with a fixed {@link JGraph}.
      */
     private final Display display;
     /** The display kind, if the display is set. */

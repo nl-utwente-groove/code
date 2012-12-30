@@ -16,7 +16,8 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.Graph;
+import groove.graph.Edge;
+import groove.graph.Node;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.lts.GTS;
@@ -31,8 +32,7 @@ import groove.lts.GraphTransition;
  * @author Arend Rensink
  * @version $Revision$
  */
-final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
-        implements GTSListener {
+final public class LTSJModel extends JModel<GTS> implements GTSListener {
     /** Creates a new model from a given LTS and set of display options. */
     LTSJModel(LTSJGraph jGraph) {
         super(jGraph);
@@ -88,9 +88,9 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
             prepareInsert();
             // note that (as per GraphListener contract)
             // source and target Nodes (if any) have already been added
-            GraphJCell edgeJCell = addEdge(transition);
+            JCell<GTS> edgeJCell = addEdge(transition);
             doInsert(false);
-            GraphJCell stateJCell = getJCellForNode(transition.target());
+            JCell<GTS> stateJCell = getJCellForNode(transition.target());
             stateJCell.setStale(VisualKey.VISIBLE);
             edgeJCell.setStale(VisualKey.VISIBLE);
         }
@@ -98,7 +98,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
 
     @Override
     public void statusUpdate(GTS lts, GraphState explored, Flag flag) {
-        GraphJVertex jCell = getJCellForNode(explored);
+        JVertex<GTS> jCell = getJCellForNode(explored);
         switch (flag) {
         case ABSENT:
             jCell.setLook(Look.ABSENT, true);
@@ -111,7 +111,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
             break;
         case DONE:
             if (explored.isAbsent()) {
-                for (GraphJEdge jEdge : jCell.getJEdges()) {
+                for (JEdge<GTS> jEdge : jCell.getJEdges()) {
                     jEdge.setLook(Look.ABSENT, true);
                 }
                 jCell.setLook(Look.ABSENT, true);
@@ -123,7 +123,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     }
 
     @Override
-    public void loadGraph(Graph<GraphState,GraphTransition> gts) {
+    public void loadGraph(GTS gts) {
         this.listening = false;
         this.maxStateNr = -1;
         this.stateLowerBound = 0;
@@ -134,7 +134,7 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
         }
         super.loadGraph(gts);
         if (gts != null && gts != oldGTS) {
-            ((GTS) gts).addLTSListener(this);
+            gts.addLTSListener(this);
         }
         getJGraph().reactivate();
         this.listening = true;
@@ -148,8 +148,8 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
 
     /** Only add nodes that do not exceed the maximum state number. */
     @Override
-    protected GraphJVertex addNode(GraphState node) {
-        GraphJVertex result = null;
+    protected JVertex<GTS> addNode(Node node) {
+        JVertex<GTS> result = null;
         int nr = node.getNumber();
         if (!isLoading() || isWithinBounds(nr)) {
             result = super.addNode(node);
@@ -161,8 +161,8 @@ final public class LTSJModel extends GraphJModel<GraphState,GraphTransition>
     }
 
     @Override
-    protected GraphJCell addEdge(GraphTransition edge) {
-        GraphJCell result = null;
+    protected JCell<GTS> addEdge(Edge edge) {
+        JCell<GTS> result = null;
         int sourceNr = edge.source().getNumber();
         int targetNr = edge.target().getNumber();
         if (!isLoading() || sourceNr <= this.stateUpperBound

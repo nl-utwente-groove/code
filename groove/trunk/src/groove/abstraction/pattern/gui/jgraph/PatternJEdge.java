@@ -16,8 +16,9 @@
  */
 package groove.abstraction.pattern.gui.jgraph;
 
-import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.GraphJModel;
+import groove.abstraction.pattern.shape.AbstractPatternGraph;
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JModel;
 import groove.gui.look.Look;
 
 /**
@@ -25,7 +26,7 @@ import groove.gui.look.Look;
  * 
  * @author Eduardo Zambon
  */
-public class PatternJEdge extends GraphJEdge {
+public class PatternJEdge extends JEdge<AbstractPatternGraph<?,?>> {
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -61,8 +62,9 @@ public class PatternJEdge extends GraphJEdge {
 
     /** 
      * Returns a fresh, uninitialised instance.
-     * Call {@link #setJModel(GraphJModel)} to initialise. 
+     * Call {@link #setJModel(JModel)} to initialise. 
      */
+    @SuppressWarnings("unchecked")
     public static PatternJEdge newInstance() {
         return new PatternJEdge();
     }

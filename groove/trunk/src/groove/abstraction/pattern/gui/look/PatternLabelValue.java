@@ -24,8 +24,8 @@ import groove.abstraction.pattern.shape.PatternEdge;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.GraphJVertex;
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JVertex;
 import groove.gui.look.LabelValue;
 import groove.gui.look.Line;
 import groove.gui.look.MultiLabel;
@@ -42,7 +42,7 @@ public class PatternLabelValue extends LabelValue {
     }
 
     @Override
-    protected MultiLabel getJVertexLabel(GraphJVertex jVertex) {
+    protected MultiLabel getJVertexLabel(JVertex<?> jVertex) {
         if (jVertex instanceof PatternJVertex) {
             return new MultiLabel();
         } else {
@@ -51,7 +51,7 @@ public class PatternLabelValue extends LabelValue {
     }
 
     @Override
-    protected MultiLabel getJEdgeLabel(GraphJEdge jEdge) {
+    protected MultiLabel getJEdgeLabel(JEdge<?> jEdge) {
         if (jEdge instanceof PatternJEdge) {
             return getPatternJEdgeLabel((PatternJEdge) jEdge);
         } else {

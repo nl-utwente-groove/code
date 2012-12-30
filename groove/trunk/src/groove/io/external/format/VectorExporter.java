@@ -16,7 +16,7 @@
  */
 package groove.io.external.format;
 
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 import groove.io.FileType;
 import groove.io.external.AbstractFormatExporter;
 import groove.io.external.Exporter.Exportable;
@@ -85,7 +85,7 @@ public class VectorExporter extends AbstractFormatExporter {
     @Override
     public void doExport(File file, Format format, Exportable exportable)
         throws PortException {
-        GraphJGraph jGraph = exportable.getJGraph();
+        JGraph<?> jGraph = exportable.getJGraph();
         this.formats.get(format).renderGraph(jGraph, file);
     }
 

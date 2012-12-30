@@ -17,7 +17,7 @@
 package groove.io.external.format;
 
 import groove.graph.Graph;
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.xml.Xml;
@@ -71,7 +71,8 @@ public abstract class AbstractExternalFileFormat<G extends Graph<?,?>>
     abstract public void save(G graph, File file) throws IOException;
 
     @Override
-    abstract public void save(GraphJGraph jGraph, File file) throws IOException;
+    abstract public void save(JGraph<G> jGraph, File file)
+        throws IOException;
 
     // Methods from Xml
 

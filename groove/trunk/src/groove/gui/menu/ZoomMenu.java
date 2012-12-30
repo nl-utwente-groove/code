@@ -16,7 +16,7 @@
  */
 package groove.gui.menu;
 
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -43,7 +43,7 @@ public class ZoomMenu extends JMenu {
      * Constructs a standard zoom menu with default name.
      * @see #ZOOM_MENU_NAME
      */
-    public ZoomMenu(GraphJGraph jgraph) {
+    public ZoomMenu(JGraph<?> jgraph) {
         super(ZOOM_MENU_NAME);
         this.jgraph = jgraph;
         add(this.zoomToFitAction);
@@ -135,7 +135,7 @@ public class ZoomMenu extends JMenu {
     };
 
     /** The component for which zooming is to be done. */
-    final GraphJGraph jgraph;
+    final JGraph<?> jgraph;
 
     /** Mnemonic key for the menu. */
     private static final int MENU_MNEMONIC = KeyEvent.VK_Z;

@@ -19,7 +19,6 @@ package groove.gui.tree;
 import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.gui.jgraph.GraphJCell;
 import groove.gui.look.VisualKey;
 import groove.view.RuleModel;
 import groove.view.RuleModel.Index;
@@ -85,7 +84,7 @@ public class RuleLevelTree extends CheckboxTree implements
                 this.rule = (RuleModel) jModel.getResourceModel();
             }
             boolean enabled = updateTree();
-            for (Set<GraphJCell> levelCells : this.levelCellMap.values()) {
+            for (Set<AspectJCell> levelCells : this.levelCellMap.values()) {
                 this.allCellSet.addAll(levelCells);
             }
             updateVisibleCells(this.levelNodeMap.values());
@@ -106,7 +105,7 @@ public class RuleLevelTree extends CheckboxTree implements
      */
     public void valueChanged(TreeSelectionEvent e) {
         synchroniseJModel();
-        Set<GraphJCell> emphSet = new HashSet<GraphJCell>();
+        Set<AspectJCell> emphSet = new HashSet<AspectJCell>();
         TreePath[] selectionPaths = getSelectionPaths();
         if (selectionPaths != null) {
             for (TreePath selectedPath : selectionPaths) {
@@ -150,10 +149,10 @@ public class RuleLevelTree extends CheckboxTree implements
                 }
                 this.levelNodeMap.put(index, levelNode);
                 AspectJModel jModel = getJGraph().getModel();
-                Set<GraphJCell> levelCells = new HashSet<GraphJCell>();
+                Set<AspectJCell> levelCells = new HashSet<AspectJCell>();
                 // add all cells for this level according to the rule level tree
                 for (AspectElement elem : levelEntry.getValue()) {
-                    GraphJCell jCell = jModel.getJCell(elem);
+                    AspectJCell jCell = jModel.getJCell(elem);
                     if (jCell != null) {
                         levelCells.add(jCell);
                     }
@@ -167,7 +166,7 @@ public class RuleLevelTree extends CheckboxTree implements
                 // also add the nesting nodes and edges
                 AspectNode ruleLevelNode = index.getLevelNode();
                 if (ruleLevelNode != null) {
-                    GraphJCell jCell = jModel.getJCell(ruleLevelNode);
+                    AspectJCell jCell = jModel.getJCell(ruleLevelNode);
                     if (jCell != null) {
                         levelCells.add(jCell);
                     }
@@ -195,12 +194,13 @@ public class RuleLevelTree extends CheckboxTree implements
      * level nodes.
      * @return the set of changed cells
      */
-    private Set<GraphJCell> updateVisibleCells(
+    private Set<AspectJCell> updateVisibleCells(
             Collection<LevelNode> changedNodes) {
-        Set<GraphJCell> selecteds = new HashSet<GraphJCell>();
-        Set<GraphJCell> unselecteds = new HashSet<GraphJCell>();
+        Set<AspectJCell> selecteds = new HashSet<AspectJCell>();
+        Set<AspectJCell> unselecteds = new HashSet<AspectJCell>();
         for (LevelNode node : changedNodes) {
-            Set<GraphJCell> levelCells = this.levelCellMap.get(node.getIndex());
+            Set<AspectJCell> levelCells =
+                this.levelCellMap.get(node.getIndex());
             if (node.isSelected()) {
                 selecteds.addAll(levelCells);
             } else {
@@ -210,14 +210,14 @@ public class RuleLevelTree extends CheckboxTree implements
         this.selectedSet.removeAll(unselecteds);
         this.selectedSet.addAll(selecteds);
         // Collect the changed cells
-        Set<GraphJCell> result =
-            new HashSet<GraphJCell>(selecteds.size() + unselecteds.size());
+        Set<AspectJCell> result =
+            new HashSet<AspectJCell>(selecteds.size() + unselecteds.size());
         result.addAll(selecteds);
         result.addAll(unselecteds);
         // now refresh the changed cells
-        for (GraphJCell jCell : result) {
+        for (AspectJCell jCell : result) {
             jCell.setStale(VisualKey.VISIBLE);
-            for (GraphJCell c : jCell.getContext()) {
+            for (AspectJCell c : jCell.getContext()) {
                 c.setStale(VisualKey.VISIBLE);
             }
         }
@@ -250,14 +250,14 @@ public class RuleLevelTree extends CheckboxTree implements
      */
     private AspectJModel jModel;
     /** Set of all rule elements. */
-    private final Set<GraphJCell> allCellSet = new HashSet<GraphJCell>();
+    private final Set<AspectJCell> allCellSet = new HashSet<AspectJCell>();
     /** Set of rule elements that are visible according to the currently selected
      * level nodes.
      */
-    private final Set<GraphJCell> selectedSet = new HashSet<GraphJCell>();
+    private final Set<AspectJCell> selectedSet = new HashSet<AspectJCell>();
     /** Mapping from level indices to jCells. */
-    private final Map<Index,Set<GraphJCell>> levelCellMap =
-        new TreeMap<Index,Set<GraphJCell>>();
+    private final Map<Index,Set<AspectJCell>> levelCellMap =
+        new TreeMap<Index,Set<AspectJCell>>();
 
     private class LevelNode extends TreeNode {
         /** Creates an instance for a given level index. */
@@ -308,7 +308,7 @@ public class RuleLevelTree extends CheckboxTree implements
         @Override
         public void setSelected(boolean selected) {
             this.selected = selected;
-            Set<GraphJCell> changes =
+            Set<AspectJCell> changes =
                 updateVisibleCells(Collections.singleton(this));
             getJGraph().refreshCells(changes);
         }

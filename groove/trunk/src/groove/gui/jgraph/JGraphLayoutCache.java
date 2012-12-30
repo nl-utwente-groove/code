@@ -60,8 +60,8 @@ public class JGraphLayoutCache extends GraphLayoutCache {
 
     @Override
     public boolean isVisible(Object cell) {
-        if (cell instanceof GraphJCell) {
-            return ((GraphJCell) cell).getVisuals().isVisible();
+        if (cell instanceof JCell) {
+            return ((JCell<?>) cell).getVisuals().isVisible();
         } else if (cell instanceof DefaultPort) {
             return isVisible(((DefaultPort) cell).getParent());
         } else {

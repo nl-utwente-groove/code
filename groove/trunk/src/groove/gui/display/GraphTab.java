@@ -7,8 +7,8 @@ import groove.gui.dialog.GraphPreviewDialog;
 import groove.gui.dialog.PropertiesTable;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJModel;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JModel;
 import groove.gui.tree.RuleLevelTree;
 import groove.gui.tree.TypeTree;
 import groove.trans.ResourceKind;
@@ -58,7 +58,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
             @Override
             public void update(Observable o, Object arg) {
                 if (arg != null) {
-                    GraphJCell errorCell = getJModel().getErrorMap().get(arg);
+                    JCell<?> errorCell =
+                        getJModel().getErrorMap().get(arg);
                     if (errorCell != null) {
                         getJGraph().setSelectionCell(errorCell);
                     }
@@ -68,10 +69,10 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     }
 
     @Override
-    public JGraphPanel<AspectJGraph> getEditArea() {
-        JGraphPanel<AspectJGraph> result = this.editArea;
+    public JGraphPanel<AspectGraph> getEditArea() {
+        JGraphPanel<AspectGraph> result = this.editArea;
         if (result == null) {
-            this.editArea = result = new JGraphPanel<AspectJGraph>(getJGraph());
+            this.editArea = result = new JGraphPanel<AspectGraph>(getJGraph());
             result.setFocusable(false);
             result.setEnabled(false);
             result.initialise();
@@ -80,7 +81,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     }
 
     /** Graph panel of this tab. */
-    private JGraphPanel<AspectJGraph> editArea;
+    private JGraphPanel<AspectGraph> editArea;
 
     @Override
     public boolean isDirty() {
@@ -217,7 +218,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         if (jModel == null) {
             name = null;
         }
-        GraphJModel<?,?> oldJModel = getJModel();
+        JModel<?> oldJModel = getJModel();
         if (oldJModel != null) {
             oldJModel.removeUndoableEditListener(this);
         }

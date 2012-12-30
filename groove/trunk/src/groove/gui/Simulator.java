@@ -44,11 +44,12 @@ import groove.gui.display.JGraphPanel;
 import groove.gui.display.ResourceTab;
 import groove.gui.display.TextTab;
 import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 import groove.gui.list.ListPanel.SelectableListEntry;
 import groove.gui.list.ListTabbedPane;
 import groove.gui.list.SearchResult;
 import groove.gui.menu.ModelCheckingMenu;
+import groove.gui.menu.MyJMenu;
 import groove.trans.ResourceKind;
 import groove.util.Groove;
 import groove.view.FormatError;
@@ -683,27 +684,22 @@ public class Simulator implements SimulatorListener {
      * out each time it gets selected so as to be sure it applies to the current
      * jgraph
      */
-    private JMenu createDisplayMenu() {
+    private MyJMenu createDisplayMenu() {
         // fills the menu depending on the currently displayed graph panel
-        JMenu result = new JMenu(Options.DISPLAY_MENU_NAME) {
+        MyJMenu result = new MyJMenu(Options.DISPLAY_MENU_NAME) {
             @Override
             public void menuSelectionChanged(boolean selected) {
                 removeAll();
-                GraphJGraph jGraph;
                 JGraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
                 if (panel != null) {
-                    jGraph = panel.getJGraph();
+                    JGraph<?> jGraph = panel.getJGraph();
                     if (jGraph instanceof AspectJGraph) {
-                        jGraph.addSubmenu(this,
-                            ((AspectJGraph) jGraph).createEditMenu(null));
+                        addSubmenu(((AspectJGraph) jGraph).createEditMenu(null));
                     }
                     add(jGraph.createShowHideMenu());
                     add(jGraph.createZoomMenu());
-                } else {
-                    // create a dummy JGraph to add the rest of the menu
-                    jGraph = new GraphJGraph(null);
                 }
-                jGraph.addSubmenu(this, createOptionsMenu());
+                addSubmenu(createOptionsMenu());
                 super.menuSelectionChanged(selected);
             }
         };
@@ -714,8 +710,8 @@ public class Simulator implements SimulatorListener {
     /**
      * Creates and returns an options menu for the menu bar.
      */
-    private JMenu createOptionsMenu() {
-        JMenu result = new JMenu(OPTIONS_MENU_NAME);
+    private MyJMenu createOptionsMenu() {
+        MyJMenu result = new MyJMenu(OPTIONS_MENU_NAME);
         result.setMnemonic(Options.OPTIONS_MENU_MNEMONIC);
         for (ResourceKind kind : Options.getOptionalTabs()) {
             String showTabOption = Options.getShowTabOption(kind);

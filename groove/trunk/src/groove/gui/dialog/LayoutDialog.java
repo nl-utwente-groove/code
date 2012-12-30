@@ -18,7 +18,7 @@ package groove.gui.dialog;
 
 import groove.gui.Simulator;
 import groove.gui.display.DisplayKind;
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 import groove.gui.layout.LayoutKind;
 import groove.gui.layout.LayouterItem;
 import groove.gui.menu.SetLayoutMenu;
@@ -57,7 +57,7 @@ public class LayoutDialog extends JDialog implements ActionListener,
     private final LayouterItem protoLayouterItems[];
     private final JComboBox layoutBox;
     private final JPanel panel;
-    private GraphJGraph jGraph;
+    private JGraph<?> jGraph;
 
     private LayoutDialog(Simulator simulator) {
         super(simulator.getFrame());
@@ -141,7 +141,7 @@ public class LayoutDialog extends JDialog implements ActionListener,
         }
     }
 
-    private GraphJGraph getJGraph() {
+    private JGraph<?> getJGraph() {
         return this.jGraph;
     }
 
