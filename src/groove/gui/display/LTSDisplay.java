@@ -27,7 +27,8 @@ import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraphMode;
 import groove.gui.jgraph.LTSJEdge;
@@ -115,7 +116,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     @Override
     protected JComponent createInfoPanel() {
-        LabelTree labelTree = getLabelTree();
+        LabelTree<GTS> labelTree = getLabelTree();
         TitledPanel result =
             new TitledPanel("Transition labels", labelTree, null, true);
         result.setEnabledBackground(JAttr.STATE_BACKGROUND);
@@ -237,7 +238,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         if (getJModel() == null) {
             return;
         }
-        Set<GraphJCell> jCells = new HashSet<GraphJCell>();
+        Set<JCell<GTS>> jCells = new HashSet<JCell<GTS>>();
         for (int i = 0; i < counterExamples.size(); i++) {
             GraphState state = counterExamples.get(i);
             jCells.add(getJModel().getJCellForNode(state));
@@ -284,16 +285,16 @@ public class LTSDisplay extends Display implements SimulatorListener {
         return getJGraph().getModel();
     }
 
-    private LabelTree getLabelTree() {
-        LabelTree result = this.labelTree;
+    private LabelTree<GTS> getLabelTree() {
+        LabelTree<GTS> result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new LabelTree(getJGraph(), true);
+            result = this.labelTree = new LabelTree<GTS>(getJGraph(), true);
         }
         return result;
     }
 
     /** The tree component showing (and allowing filtering of) the transitions in the LTS. */
-    private LabelTree labelTree;
+    private LabelTree<GTS> labelTree;
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel,
@@ -471,7 +472,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     // scale from screen to model
                     java.awt.Point loc = evt.getPoint();
                     // find cell in model coordinates
-                    GraphJCell cell =
+                    JCell<GTS> cell =
                         getJGraph().getFirstCellForLocation(loc.x, loc.y);
                     if (cell instanceof LTSJEdge) {
                         GraphTransition trans = ((LTSJEdge) cell).getEdge();
@@ -493,7 +494,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * @author Arend Rensink
      * @version $Revision$
      */
-    public class LTSGraphPanel extends JGraphPanel<LTSJGraph> {
+    public class LTSGraphPanel extends JGraphPanel<GTS> {
         /** Creates a LTS panel for a given simulator. */
         public LTSGraphPanel(LTSJGraph jGraph) {
             super(jGraph);
@@ -518,7 +519,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
          */
         public void refreshBackground() {
             boolean incomplete = isFilteringLts();
-            LTSJModel jModel = getJGraph().getModel();
+            JModel<GTS> jModel = getJGraph().getModel();
             if (!incomplete) {
                 incomplete = jModel.size() < jModel.getGraph().size();
             }

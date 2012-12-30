@@ -18,7 +18,7 @@ package groove.io.external;
 
 import groove.graph.Graph;
 import groove.gui.Simulator;
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 import groove.view.ResourceModel;
 
 import java.util.Collection;

@@ -24,14 +24,11 @@ import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Simulator;
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.GraphJGraphFactory;
-import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.GraphJVertex;
-import groove.gui.jgraph.JCellViewFactory;
 import groove.gui.jgraph.JGraphFactory;
+import groove.gui.jgraph.JCellViewFactory;
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JVertex;
 import groove.gui.layout.AbstractLayouter;
 import groove.gui.layout.Layouter;
 import groove.gui.look.VisualKey;
@@ -52,7 +49,7 @@ import com.jgraph.layout.tree.JGraphCompactTreeLayout;
  * 
  * @author Eduardo Zambon
  */
-public final class ShapeJGraph extends GraphJGraph {
+public final class ShapeJGraph extends JGraph<Shape> {
 
     /** Constructs an instance of the j-graph for a given simulator. */
     public ShapeJGraph(Simulator simulator) {
@@ -97,29 +94,29 @@ public final class ShapeJGraph extends GraphJGraph {
     }
 
     @Override
-    protected GraphJCell getFirstCellForLocation(double x, double y,
+    protected ShapeJCell getFirstCellForLocation(double x, double y,
             boolean vertex, boolean edge) {
         x /= this.scale;
         y /= this.scale;
-        GraphJCell vertexOrEdgeResult = null;
-        GraphJCell ecResult = null;
+        ShapeJCell vertexOrEdgeResult = null;
+        ShapeJCell ecResult = null;
         Rectangle xyArea = new Rectangle((int) (x - 2), (int) (y - 2), 4, 4);
         // iterate over the roots and query the visible ones
         CellView[] viewRoots = this.graphLayoutCache.getRoots();
         outerLoop: for (int i = viewRoots.length - 1; i >= 0; i--) {
             CellView jCellView = viewRoots[i];
-            if (!(jCellView.getCell() instanceof GraphJCell)) {
+            if (!(jCellView.getCell() instanceof ShapeJCell)) {
                 continue outerLoop;
             }
-            GraphJCell jCell = (GraphJCell) jCellView.getCell();
+            ShapeJCell jCell = (ShapeJCell) jCellView.getCell();
             boolean typeCorrect =
-                vertex ? (jCell instanceof GraphJVertex) : edge
-                        ? jCell instanceof GraphJEdge : true;
+                vertex ? (jCell instanceof JVertex) : edge
+                        ? jCell instanceof JEdge : true;
             if (typeCorrect && jCell instanceof EcJVertex) {
                 // We have an equivalence class.
                 for (CellView childView : jCellView.getChildViews()) {
                     // Check proximity with all nodes inside.
-                    GraphJCell jCellChild = (GraphJCell) childView.getCell();
+                    ShapeJCell jCellChild = (ShapeJCell) childView.getCell();
                     if (typeCorrect && !jCellChild.isGrayedOut()) {
                         // Now see if this child is sufficiently close to the point.
                         if (childView.intersects(this, xyArea)) {
@@ -144,17 +141,17 @@ public final class ShapeJGraph extends GraphJGraph {
                 }
             }
         }
-        GraphJCell result =
+        ShapeJCell result =
             vertexOrEdgeResult == null ? ecResult : vertexOrEdgeResult;
         return result;
     }
 
     @Override
-    protected JGraphFactory createFactory() {
+    protected JGraphFactory<Shape> createFactory() {
         return new MyFactory();
     }
 
-    private class MyFactory extends GraphJGraphFactory {
+    private class MyFactory extends JGraphFactory<Shape> {
         public MyFactory() {
             super(ShapeJGraph.this);
         }
@@ -176,7 +173,7 @@ public final class ShapeJGraph extends GraphJGraph {
         }
 
         @Override
-        public GraphJModel<?,?> newModel() {
+        public ShapeJModel newModel() {
             return new ShapeJModel(getJGraph());
         }
 
@@ -207,7 +204,7 @@ public final class ShapeJGraph extends GraphJGraph {
         }
 
         @Override
-        public Layouter newInstance(GraphJGraph jgraph) {
+        public Layouter newInstance(JGraph<?> jgraph) {
             return new MyLayouter(this.name, (ShapeJGraph) jgraph);
         }
 

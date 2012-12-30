@@ -1,5 +1,6 @@
 package groove.gui.jgraph;
 
+import groove.control.CtrlAut;
 import groove.control.CtrlTransition;
 import groove.graph.Edge;
 import groove.gui.look.Look;
@@ -11,7 +12,7 @@ import groove.util.Groove;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class CtrlJEdge extends GraphJEdge {
+public class CtrlJEdge extends JEdge<CtrlAut> {
     /** Constructor for a prototype object. */
     private CtrlJEdge() {
         // empty
@@ -76,8 +77,9 @@ public class CtrlJEdge extends GraphJEdge {
 
     /** 
      * Returns a fresh, uninitialised instance.
-     * Call {@link #setJModel(GraphJModel)} to initialise.
+     * Call {@link #setJModel} to initialise.
      */
+    @SuppressWarnings("unchecked")
     public static CtrlJEdge newInstance() {
         return new CtrlJEdge();
     }

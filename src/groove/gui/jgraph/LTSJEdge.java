@@ -4,6 +4,7 @@ import groove.graph.Edge;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
+import groove.lts.GTS;
 import groove.lts.GraphTransition;
 import groove.lts.RuleTransition;
 import groove.util.Groove;
@@ -13,10 +14,10 @@ import groove.util.Groove;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSJEdge extends GraphJEdge implements LTSJCell {
+public class LTSJEdge extends JEdge<GTS> implements LTSJCell {
     /**
      * Constructs an uninitialised instance.
-     * Call {@link #setJModel(GraphJModel)} to initialise.
+     * Call {@link #setJModel(JModel)} to initialise.
      */
     private LTSJEdge() {
         super();
@@ -115,8 +116,9 @@ public class LTSJEdge extends GraphJEdge implements LTSJCell {
     private boolean visibleFlag;
 
     /** Constructs a fresh instance.
-     * Call {@link #setJModel(GraphJModel)} to initialise.
+     * Call {@link #setJModel(JModel)} to initialise.
      */
+    @SuppressWarnings("unchecked")
     public static LTSJEdge newInstance() {
         return new LTSJEdge();
     }

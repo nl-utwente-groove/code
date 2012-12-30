@@ -17,28 +17,44 @@
 package groove.gui.jgraph;
 
 import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.Node;
+import groove.gui.look.AdornmentValue;
+import groove.gui.look.ColorValue;
+import groove.gui.look.EdgeEndLabelValue;
+import groove.gui.look.EdgeEndShapeValue;
+import groove.gui.look.ErrorValue;
+import groove.gui.look.LabelValue;
+import groove.gui.look.VisibleValue;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualValue;
 
 /**
- * Factory for JGraph vertices and edges,
- * as well as for visual value refreshers.
+ * Factory for {@link JGraph}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface JGraphFactory {
+public class JGraphFactory<G extends Graph<?,?>> {
+    /** Constructs a factory for a given JGraph. */
+    public JGraphFactory(JGraph<G> jGraph) {
+        this.jGraph = jGraph;
+    }
+
     /** JGraph instance for which this factory was created. */
-    GraphJGraph getJGraph();
+    public JGraph<G> getJGraph() {
+        return this.jGraph;
+    }
 
     /** 
      * Creates a fresh, uninitialised instance of a JVertex.
-     * The JVertex is initialised with {@link GraphJVertex#setNode(Node)}.
+     * The JVertex is initialised with {@link JVertex#setNode(Node)}.
      * The result needs to be provided a JModel before it can be used.
      * @param node a (non-{@code null}) node, 
      * used to determine the type of JVertex needed
      */
-    GraphJVertex newJVertex(Node node);
+    public JVertex<G> newJVertex(Node node) {
+        return JVertex.newInstance();
+    }
 
     /** 
      * Creates a fresh, initialised instance of a JEdge.
@@ -46,11 +62,47 @@ public interface JGraphFactory {
      * @param edge a (possibly {@code null}) edge, 
      * used to determine the type of JEdge needed
      */
-    GraphJEdge newJEdge(Edge edge);
+    public JEdge<G> newJEdge(Edge edge) {
+        return JEdge.newInstance();
+    }
 
     /** Constructs a new JModel suitable for the JGraph of this factory. */
-    GraphJModel<?,?> newModel();
+    public JModel<G> newModel() {
+        return new JModel<G>(getJGraph()) {
+            // empty
+        };
+    }
 
     /** Creates a visual value refresher for a given key. */
-    VisualValue<?> newVisualValue(VisualKey key);
+    public VisualValue<?> newVisualValue(VisualKey key) {
+        switch (key) {
+        case ADORNMENT:
+            return new AdornmentValue();
+        case COLOR:
+            return new ColorValue();
+        case EDGE_SOURCE_LABEL:
+            return new EdgeEndLabelValue(true);
+        case EDGE_SOURCE_SHAPE:
+            return new EdgeEndShapeValue(true);
+        case EDGE_TARGET_LABEL:
+            return new EdgeEndLabelValue(false);
+        case EDGE_TARGET_SHAPE:
+            return new EdgeEndShapeValue(false);
+        case ERROR:
+            return new ErrorValue();
+        case LABEL:
+            return new LabelValue(this.jGraph);
+        case NODE_SIZE:
+            // this cannot be computed; instead it is refreshed
+            // in the vertex view, when the UI is around
+            return null;
+        case VISIBLE:
+            return new VisibleValue();
+        default:
+            assert false;
+            return null;
+        }
+    }
+
+    private final JGraph<G> jGraph;
 }

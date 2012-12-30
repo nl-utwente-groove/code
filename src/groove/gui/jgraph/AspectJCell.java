@@ -17,15 +17,21 @@
 package groove.gui.jgraph;
 
 import groove.graph.GraphRole;
+import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 
+import java.util.Collection;
+
 /**
- * Instantiation of a {@link GraphJCell} with an {@link AspectJObject}
+ * Instantiation of a {@link JCell} with an {@link AspectJObject}
  * that stores the (editable) string representation of the node/edge label.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface AspectJCell extends GraphJCell {
+public interface AspectJCell extends JCell<AspectGraph> {
+    /** Returns the end nodes (for an edge) or the incident edges (for a vertex). */
+    public Collection<? extends AspectJCell> getContext();
+
     /** Returns the aspect kind of the element wrapped in this cell. */
     AspectKind getAspect();
 

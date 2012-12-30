@@ -16,9 +16,9 @@
  */
 package groove.gui.layout;
 
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JGraph;
 import groove.util.Pair;
 
 import java.awt.geom.Point2D;
@@ -49,14 +49,14 @@ public class SpringLayouter extends AbstractLayouter {
      * @require name != null, jgraph != null, rigidity > 0 jgraph.getModel()
      *          instanceof jgraph.GraphJModel
      */
-    private SpringLayouter(String name, GraphJGraph jgraph, float rigidity) {
+    private SpringLayouter(String name, JGraph<?> jgraph, float rigidity) {
         super(name, jgraph);
         // setEnabled(true);
         // setDuration(duration);
         setRigidity(rigidity);
     }
 
-    public Layouter newInstance(GraphJGraph jgraph) {
+    public Layouter newInstance(JGraph<?> jgraph) {
         return new SpringLayouter(this.name, jgraph, this.rigidity);
     }
 
@@ -189,10 +189,10 @@ public class SpringLayouter extends AbstractLayouter {
         List<Layoutable> edgeFragmentSourceList = new LinkedList<Layoutable>();
         List<Layoutable> edgeFragmentTargetList = new LinkedList<Layoutable>();
         for (int i = 0; i < this.jmodel.getRootCount(); i++) {
-            GraphJCell jCell = (GraphJCell) this.jmodel.getRootAt(i);
-            if (jCell instanceof GraphJEdge && jCell.getVisuals().isVisible()
+            JCell<?> jCell = (JCell<?>) this.jmodel.getRootAt(i);
+            if (jCell instanceof JEdge && jCell.getVisuals().isVisible()
                 && !jCell.isGrayedOut()) {
-                GraphJEdge jEdge = (GraphJEdge) jCell;
+                JEdge<?> jEdge = (JEdge<?>) jCell;
                 List<Point2D> points = jEdge.getVisuals().getPoints();
                 for (int j = 0; j < points.size() - 1; j++) {
                     Object efs =

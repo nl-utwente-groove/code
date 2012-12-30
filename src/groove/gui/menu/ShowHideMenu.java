@@ -23,16 +23,16 @@ import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.gui.Options;
 import groove.gui.dialog.StringDialog;
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.GraphJVertex;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.HTMLConverter;
+import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.rel.RegExpr;
 import groove.rel.RelationCalculator;
@@ -64,7 +64,7 @@ import javax.swing.JPopupMenu;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class ShowHideMenu extends JMenu {
+public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
     /**
      * Show mode for a {@link ShowHideAction}: involved cells are set to
      * visible.
@@ -135,7 +135,7 @@ public class ShowHideMenu extends JMenu {
      * @param jgraph the underlying jgraph of which the display should be
      *        controlled
      */
-    public ShowHideMenu(GraphJGraph jgraph) {
+    public ShowHideMenu(JGraph<G> jgraph) {
         super(Options.SHOW_HIDE_MENU_NAME);
         setMnemonic(MENU_MNEMONIC);
         this.jgraph = jgraph;
@@ -170,64 +170,64 @@ public class ShowHideMenu extends JMenu {
     /**
      * Factory method for <tt>AllAction</tt>s.
      */
-    protected ShowHideAction createAllAction(int showMode) {
-        return new AllAction(this.jgraph, showMode);
+    protected ShowHideAction<G> createAllAction(int showMode) {
+        return new AllAction<G>(this.jgraph, showMode);
     }
 
     /**
      * Factory method for <tt>InvertAction</tt>s.
      */
-    protected ShowHideAction createInvertAction(int showMode) {
-        return new InvertAction(this.jgraph, showMode);
+    protected ShowHideAction<G> createInvertAction(int showMode) {
+        return new InvertAction<G>(this.jgraph, showMode);
     }
 
     /**
      * Factory method for <tt>RegExprAction</tt>s.
      */
-    protected ShowHideAction createAddRegExprAction(int showMode) {
-        return new RegExprAction(this.jgraph, showMode);
+    protected ShowHideAction<G> createAddRegExprAction(int showMode) {
+        return new RegExprAction<G>(this.jgraph, showMode);
     }
 
     /**
      * Factory method for <tt>RegExprAction</tt>s.
      */
-    protected ShowHideAction createShowRegExprAction(int showMode) {
-        return new RegExprAction(this.jgraph, showMode);
+    protected ShowHideAction<G> createShowRegExprAction(int showMode) {
+        return new RegExprAction<G>(this.jgraph, showMode);
     }
 
     /**
      * Factory method for <tt>ContextAction</tt>s.
      */
-    protected ShowHideAction createContextAction(int showMode) {
-        return new ContextAction(this.jgraph, showMode);
+    protected ShowHideAction<G> createContextAction(int showMode) {
+        return new ContextAction<G>(this.jgraph, showMode);
     }
 
     /**
      * Factory method for {@link ShowHideMenu.SelectedAction}s.
      */
-    protected ShowHideAction createSelectedAction(int showMode) {
-        return new SelectedAction(this.jgraph, showMode);
+    protected ShowHideAction<G> createSelectedAction(int showMode) {
+        return new SelectedAction<G>(this.jgraph, showMode);
     }
 
     /**
      * Factory method for {@link ShowHideMenu.FromFileAction}s.
      */
-    protected ShowHideAction createFromFileAction(int showMode) {
-        return new FromFileAction(this.jgraph, showMode);
+    protected ShowHideAction<G> createFromFileAction(int showMode) {
+        return new FromFileAction<G>(this.jgraph, showMode);
     }
 
     /**
      * Factory method for {@link ShowHideMenu.TraceAction}s.
      */
-    protected ShowHideAction createTraceAction(int showMode) {
-        return new TraceAction(this.jgraph, showMode);
+    protected ShowHideAction<GTS> createTraceAction(int showMode) {
+        return new TraceAction((LTSJGraph) this.jgraph, showMode);
     }
 
     /**
      * Factory method for <tt>LabelAction</tt>s.
      */
-    protected ShowHideAction createLabelAction(int showMode, Label label) {
-        return new LabelAction(this.jgraph, showMode, label);
+    protected ShowHideAction<G> createLabelAction(int showMode, Label label) {
+        return new LabelAction<G>(this.jgraph, showMode, label);
     }
 
     /**
@@ -243,13 +243,13 @@ public class ShowHideMenu extends JMenu {
         return new LabelMenu(showMode);
     }
 
-    /** Returns the jgraph for which this menu works. */
-    GraphJGraph getJGraph() {
+    /** Returns the JGraph for which this menu works. */
+    JGraph<G> getJGraph() {
         return this.jgraph;
     }
 
-    /** The jgraph upon which this menu works. */
-    private final GraphJGraph jgraph;
+    /** The JGraph upon which this menu works. */
+    private final JGraph<G> jgraph;
 
     /** Mnemonic key for the {@link AllAction} */
     private static int ALL_MNEMONIC = KeyEvent.VK_A;
@@ -270,7 +270,7 @@ public class ShowHideMenu extends JMenu {
      * Abstract class that supports showing and hiding actions based on two
      * criteria:
      * <ul>
-     * <li>A method {@link ShowHideAction#isInvolved(GraphJCell)} to signal that a
+     * <li>A method {@link groove.gui.menu.ShowHideMenu.ShowHideAction#isInvolved(JCell)} to signal that a
      * certain cell is involved in the attempt to show or hide it;
      * <li>A show mode, which can be {@link #ADD_MODE} (the involved cells are
      * set to visible), {@link #HIDE_MODE} (the involved cells are hidden) or
@@ -278,14 +278,16 @@ public class ShowHideMenu extends JMenu {
      * hidden).
      * </ul>
      */
-    static abstract protected class ShowHideAction extends AbstractAction {
+    static abstract protected class ShowHideAction<G extends Graph<?,?>>
+            extends AbstractAction {
         /**
          * Constructs a nameless action.
          * @param jgraph the jgraph upon which this action works
          * @param showMode the show mode: one of {@link #ADD_MODE},
          *        {@link #HIDE_MODE} or {@link #ONLY_MODE}
          */
-        protected ShowHideAction(GraphJGraph jgraph, int showMode, String name) {
+        protected ShowHideAction(JGraph<G> jgraph, int showMode,
+                String name) {
             super(getModeName(showMode) + " " + name);
             this.jgraph = jgraph;
             this.showMode = showMode;
@@ -299,11 +301,9 @@ public class ShowHideMenu extends JMenu {
          * @see #isHiding
          */
         public void actionPerformed(ActionEvent e) {
-            Set<GraphJCell> hiddenCells = new HashSet<GraphJCell>();
-            Set<GraphJCell> shownCells = new HashSet<GraphJCell>();
-            Object[] roots = this.jgraph.getRoots();
-            for (Object element : roots) {
-                GraphJCell jCell = (GraphJCell) element;
+            Set<JCell<G>> hiddenCells = new HashSet<JCell<G>>();
+            Set<JCell<G>> shownCells = new HashSet<JCell<G>>();
+            for (JCell<G> jCell : this.jgraph.getModel().getRoots()) {
                 if (isHiding(jCell)) {
                     hiddenCells.add(jCell);
                 } else if (isShowing(jCell)) {
@@ -332,16 +332,16 @@ public class ShowHideMenu extends JMenu {
         /**
          * Indicates whether (according to this action) a given cell should be
          * hidden. This is the case if the cell is involved (according to
-         * {@link #isInvolved(GraphJCell)}) and the show mode of this action is
+         * {@link #isInvolved(JCell)}) and the show mode of this action is
          * {@link #HIDE_MODE}, or it is not involved and the show mode is
          * {@link #ONLY_MODE}.
          * @param jCell the cell for which the indication is given
          * @return <tt>true</tt> if (according to this action) <tt>cell</tt>
          *         should be hidden
-         * @see #isInvolved(GraphJCell)
+         * @see #isInvolved(JCell)
          * @see #getShowMode()
          */
-        protected boolean isHiding(GraphJCell jCell) {
+        protected boolean isHiding(JCell<G> jCell) {
             boolean involved = isInvolved(jCell);
             return (involved && getShowMode() == HIDE_MODE)
                 || (!involved && getShowMode() == ONLY_MODE);
@@ -350,15 +350,15 @@ public class ShowHideMenu extends JMenu {
         /**
          * Indicates whether (according to this action) a given cell should be
          * hidden. This is the case if the cell is involved (according to
-         * {@link #isInvolved(GraphJCell)}) and the show mode of this action is
+         * {@link #isInvolved(JCell)}) and the show mode of this action is
          * {@link #ADD_MODE} or {@link #ONLY_MODE}.
          * @param jCell the cell for which the indication is given
          * @return <tt>true</tt> if (according to this action) <tt>cell</tt>
          *         should be hidden
-         * @see #isInvolved(GraphJCell)
+         * @see #isInvolved(JCell)
          * @see #getShowMode()
          */
-        protected boolean isShowing(GraphJCell jCell) {
+        protected boolean isShowing(JCell<G> jCell) {
             return isInvolved(jCell) && getShowMode() != HIDE_MODE;
         }
 
@@ -368,7 +368,7 @@ public class ShowHideMenu extends JMenu {
          * @param cells the jcells to be changed
          * @param hidden <tt>true</tt> if the cells are to be changed to hidden
          */
-        protected final void setHidden(Set<GraphJCell> cells, boolean hidden) {
+        protected final void setHidden(Set<JCell<G>> cells, boolean hidden) {
             this.jgraph.changeGrayedOut(cells, hidden);
         }
 
@@ -380,10 +380,10 @@ public class ShowHideMenu extends JMenu {
          * @return <tt>true</tt> if <tt>cell</tt> should be shown/hidden by this
          *         action
          */
-        abstract protected boolean isInvolved(GraphJCell jCell);
+        abstract protected boolean isInvolved(JCell<G> jCell);
 
         /** The jgraph upon which this menu works. */
-        protected final GraphJGraph jgraph;
+        protected final JGraph<G> jgraph;
 
         /**
          * The show mode of this action.
@@ -395,7 +395,8 @@ public class ShowHideMenu extends JMenu {
     /**
      * Action that shows/hide all nodes and edges in the graph.
      */
-    static protected class AllAction extends ShowHideAction {
+    static protected class AllAction<G extends Graph<?,?>> extends
+            ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
@@ -403,7 +404,7 @@ public class ShowHideMenu extends JMenu {
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        protected AllAction(GraphJGraph jgraph, int showMode) {
+        protected AllAction(JGraph<G> jgraph, int showMode) {
             super(jgraph, showMode, ALL_ACTION_NAME);
             putValue(MNEMONIC_KEY, ALL_MNEMONIC);
         }
@@ -413,7 +414,7 @@ public class ShowHideMenu extends JMenu {
          * @return <tt>true</tt> always
          */
         @Override
-        protected boolean isInvolved(GraphJCell cell) {
+        protected boolean isInvolved(JCell<G> cell) {
             return true;
         }
     }
@@ -421,7 +422,8 @@ public class ShowHideMenu extends JMenu {
     /**
      * Action that inverts the shown/hidden nodes and edges in the graph.
      */
-    static protected class InvertAction extends ShowHideAction {
+    static protected class InvertAction<G extends Graph<?,?>> extends
+            ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
@@ -429,7 +431,7 @@ public class ShowHideMenu extends JMenu {
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        protected InvertAction(GraphJGraph jgraph, int showMode) {
+        protected InvertAction(JGraph<G> jgraph, int showMode) {
             super(jgraph, showMode, INVERT_ACTION_NAME);
         }
 
@@ -438,7 +440,7 @@ public class ShowHideMenu extends JMenu {
          * @return <tt>true</tt> always
          */
         @Override
-        protected boolean isInvolved(GraphJCell cell) {
+        protected boolean isInvolved(JCell<G> cell) {
             return !cell.isGrayedOut();
         }
     }
@@ -447,7 +449,8 @@ public class ShowHideMenu extends JMenu {
      * Action that shows all incident edges of non-hidden nodes, or hides all
      * endpoints of hidden edges.
      */
-    static protected class ContextAction extends ShowHideAction {
+    static protected class ContextAction<G extends Graph<?,?>> extends
+            ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
@@ -455,19 +458,19 @@ public class ShowHideMenu extends JMenu {
          * @param showMode one of {@link #ADD_MODE} or
          *        {@link #ONLY_MODE}
          */
-        protected ContextAction(GraphJGraph jgraph, int showMode) {
+        protected ContextAction(JGraph<G> jgraph, int showMode) {
             super(jgraph, showMode, CONTEXT_ACTION_NAME);
             assert showMode != HIDE_MODE : "Hiding not defined for context";
             putValue(MNEMONIC_KEY, CONTEXT_MNEMONIC);
         }
 
         @Override
-        protected boolean isInvolved(GraphJCell cell) {
+        protected boolean isInvolved(JCell<G> cell) {
             boolean result = false;
-            if (cell instanceof GraphJEdge) {
-                GraphJEdge edge = (GraphJEdge) cell;
-                GraphJCell sourceVertex = edge.getSourceVertex();
-                GraphJCell targetVertex = edge.getTargetVertex();
+            if (cell instanceof JEdge) {
+                JEdge<G> edge = (JEdge<G>) cell;
+                JCell<G> sourceVertex = edge.getSourceVertex();
+                JCell<G> targetVertex = edge.getTargetVertex();
                 Object[] selectedCellArray = this.jgraph.getSelectionCells();
                 if (selectedCellArray.length == 0) {
                     result =
@@ -488,7 +491,8 @@ public class ShowHideMenu extends JMenu {
     /**
      * Action that shows/hides all nodes and edges with a given label.
      */
-    static protected class LabelAction extends ShowHideAction {
+    static protected class LabelAction<G extends Graph<?,?>> extends
+            ShowHideAction<G> {
         /**
          * Creates a <tt>LabelAction</tt> that tests for an explicitly given
          * label.
@@ -499,7 +503,7 @@ public class ShowHideMenu extends JMenu {
          * @throws IllegalArgumentException if <tt>cell</tt> does not give rise
          *         to a valid label, i.e., <tt>getLabel(cell) == null</tt>
          */
-        protected LabelAction(GraphJGraph jgraph, int showMode, Label label)
+        protected LabelAction(JGraph<G> jgraph, int showMode, Label label)
             throws IllegalArgumentException {
             super(jgraph, showMode, "");
             putValue(
@@ -515,7 +519,7 @@ public class ShowHideMenu extends JMenu {
          * label of this action equals the inclusion condition of this action.
          */
         @Override
-        protected boolean isInvolved(GraphJCell cell) {
+        protected boolean isInvolved(JCell<G> cell) {
             // return getLabel(cell) != null && getLabel(cell).equals(label) ==
             // include;
             return cell.getKeys().contains(this.label);
@@ -531,7 +535,8 @@ public class ShowHideMenu extends JMenu {
      * Action that shows/hides elements on the basis of a regular expression
      * over edge labels.
      */
-    static protected class RegExprAction extends ShowHideAction {
+    static protected class RegExprAction<G extends Graph<?,?>> extends
+            ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
@@ -539,15 +544,14 @@ public class ShowHideMenu extends JMenu {
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        protected RegExprAction(GraphJGraph jgraph, int showMode) {
+        protected RegExprAction(JGraph<G> jgraph, int showMode) {
             super(jgraph, showMode, REGEXPR_ACTION_NAME);
             putValue(MNEMONIC_KEY, REG_EXPR_MNEMONIC);
         }
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            Graph<?,?> graph =
-                ((GraphJModel<?,?>) this.jgraph.getModel()).getGraph();
+            Graph<?,?> graph = this.jgraph.getModel().getGraph();
             String exprText = exprDialog.showDialog(null);
             if (exprText != null) {
                 try {
@@ -577,12 +581,12 @@ public class ShowHideMenu extends JMenu {
         }
 
         @Override
-        protected boolean isInvolved(GraphJCell cell) {
+        protected boolean isInvolved(JCell<G> cell) {
             Set<? extends Edge> edgesInCell;
-            if (cell instanceof GraphJEdge) {
-                edgesInCell = ((GraphJEdge) cell).getEdges();
+            if (cell instanceof JEdge) {
+                edgesInCell = ((JEdge<G>) cell).getEdges();
             } else {
-                edgesInCell = ((GraphJVertex) cell).getEdges();
+                edgesInCell = ((JVertex<G>) cell).getEdges();
             }
             boolean edgeFound = false;
             Iterator<? extends Edge> edgeInCellIter = edgesInCell.iterator();
@@ -613,7 +617,8 @@ public class ShowHideMenu extends JMenu {
      * @author Arend Rensink
      * @version $Revision$
      */
-    static protected class SelectedAction extends ShowHideAction {
+    static protected class SelectedAction<G extends Graph<?,?>> extends
+            ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
@@ -621,7 +626,7 @@ public class ShowHideMenu extends JMenu {
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        public SelectedAction(GraphJGraph jgraph, int showMode) {
+        public SelectedAction(JGraph<G> jgraph, int showMode) {
             super(jgraph, showMode, SELECTED_ACTION_NAME);
             putValue(MNEMONIC_KEY, EMPHASIZED_MNEMONIC);
         }
@@ -631,7 +636,7 @@ public class ShowHideMenu extends JMenu {
          * model.
          */
         @Override
-        protected boolean isInvolved(GraphJCell jCell) {
+        protected boolean isInvolved(JCell<G> jCell) {
             return this.jgraph.getSelectionModel().isCellSelected(jCell);
         }
     }
@@ -641,14 +646,15 @@ public class ShowHideMenu extends JMenu {
      * file format is one label per line.
      * @author Eduardo Zambon
      */
-    static protected class FromFileAction extends ShowHideAction {
+    static protected class FromFileAction<G extends Graph<?,?>> extends
+            ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph.
          * @param jgraph the underlying j-graph
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        public FromFileAction(GraphJGraph jgraph, int showMode) {
+        public FromFileAction(JGraph<G> jgraph, int showMode) {
             super(jgraph, showMode, FILE_ACTION_NAME);
             putValue(MNEMONIC_KEY, FILE_MNEMONIC);
         }
@@ -686,7 +692,7 @@ public class ShowHideMenu extends JMenu {
          * labels read from the file.
          */
         @Override
-        protected boolean isInvolved(GraphJCell jCell) {
+        protected boolean isInvolved(JCell<G> jCell) {
             boolean result = false;
             for (String label : this.labels) {
                 result |= jCell.getKeys().contains(label);
@@ -704,14 +710,14 @@ public class ShowHideMenu extends JMenu {
      * Show/hide action based on a trace from start state to current state.
      * @author Eduardo Zambon
      */
-    static protected class TraceAction extends ShowHideAction {
+    static protected class TraceAction extends ShowHideAction<GTS> {
         /**
          * Constructs an instance of the action for a given j-graph.
          * @param jgraph the underlying j-graph
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        public TraceAction(GraphJGraph jgraph, int showMode) {
+        public TraceAction(LTSJGraph jgraph, int showMode) {
             super(jgraph, showMode, TRACE_ACTION_NAME);
             putValue(MNEMONIC_KEY, TRACE_MNEMONIC);
         }
@@ -729,11 +735,11 @@ public class ShowHideMenu extends JMenu {
         }
 
         @Override
-        protected boolean isInvolved(GraphJCell jCell) {
+        protected boolean isInvolved(JCell<GTS> jCell) {
             return this.trace.contains(jCell);
         }
 
-        private Set<GraphJCell> trace;
+        private Set<JCell<GTS>> trace;
     }
 
     /**
@@ -774,7 +780,8 @@ public class ShowHideMenu extends JMenu {
                 // now (re-)fill the menu
                 removeAll();
                 for (Label labelAction : getJGraph().getLabelTree().getLabels()) {
-                    add(new LabelAction(getJGraph(), this.showMode, labelAction));
+                    add(new LabelAction<G>(getJGraph(), this.showMode,
+                        labelAction));
                 }
             }
             super.menuSelectionChanged(isIncluded);

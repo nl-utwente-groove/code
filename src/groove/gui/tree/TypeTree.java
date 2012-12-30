@@ -27,10 +27,10 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.action.CollapseAllAction;
 import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.GraphJGraph;
 import groove.gui.tree.LabelFilter.Entry;
 import groove.gui.tree.TypeFilter.TypeEntry;
 import groove.io.HTMLConverter;
+import groove.view.aspect.AspectGraph;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -58,16 +58,15 @@ import org.jgraph.event.GraphModelEvent;
  * @author Arend Rensink
  * @version $Revision: 1915 $
  */
-public class TypeTree extends LabelTree {
+public class TypeTree extends LabelTree<AspectGraph> {
     /**
      * Constructs a label list associated with a given jgraph. A further
      * parameter indicates if the label tree should support subtypes.
      * @param jGraph the jgraph with which this list is to be associated
      * @param filtering if {@code true}, the panel has checkboxes to filter labels
      */
-    public TypeTree(GraphJGraph jGraph, boolean filtering) {
+    public TypeTree(AspectJGraph jGraph, boolean filtering) {
         super(jGraph, filtering);
-        assert jGraph instanceof AspectJGraph;
     }
 
     /** Creates a tool bar for the label tree. */
@@ -264,7 +263,8 @@ public class TypeTree extends LabelTree {
             }
             TypeEntry entry = getFilter().getEntry(node);
             if (isShowsAllLabels() || getFilter().hasJCells(entry)) {
-                TypedEntryNode nodeTypeNode = new TypedEntryNode(entry, true);
+                TypedEntryNode nodeTypeNode =
+                    new TypedEntryNode(this, entry, true);
                 topNode.add(nodeTypeNode);
                 result.add(nodeTypeNode);
                 addRelatedTypes(typeNodes, nodeTypeNode, relatedMap, result);
@@ -273,10 +273,10 @@ public class TypeTree extends LabelTree {
                 for (TypeEdge edge : new TreeSet<TypeEdge>(
                     getTypeGraph().outEdgeSet(node))) {
                     if (typeEdges.contains(edge)) {
-                        Entry edgeEntry = getFilter().getEntry(edge);
+                        TypeEntry edgeEntry = getFilter().getEntry(edge);
                         if (entries.add(edgeEntry)) {
-                            EntryNode edgeTypeNode =
-                                new EntryNode(edgeEntry, true);
+                            TypedEntryNode edgeTypeNode =
+                                new TypedEntryNode(this, edgeEntry, true);
                             nodeTypeNode.add(edgeTypeNode);
                             result.add(edgeTypeNode);
                         }
@@ -306,7 +306,8 @@ public class TypeTree extends LabelTree {
         for (TypeNode relType : relatedTypes) {
             // test if the node type label exists in the partial type graph
             if (typeNodes.contains(relType)) {
-                TypedEntryNode subTypeNode = new TypedEntryNode(relType, false);
+                TypedEntryNode subTypeNode =
+                    new TypedEntryNode(this, relType, false);
                 typeNode.add(subTypeNode);
                 if (newNodes != null) {
                     newNodes.add(typeNode);
@@ -397,8 +398,8 @@ public class TypeTree extends LabelTree {
          * @param key the key element wrapped in this node
          * @param topNode flag indicating if this is a top type node in the tree
          */
-        TypedEntryNode(TypeElement key, boolean topNode) {
-            this(getFilter().getEntry(key), topNode);
+        TypedEntryNode(TypeTree tree, TypeElement key, boolean topNode) {
+            this(tree, getFilter().getEntry(key), topNode);
         }
 
         /**
@@ -406,8 +407,8 @@ public class TypeTree extends LabelTree {
          * @param entry The label wrapped in this node
          * @param topNode flag indicating if this is a top type node in the tree
          */
-        TypedEntryNode(TypeEntry entry, boolean topNode) {
-            super(entry, topNode);
+        TypedEntryNode(TypeTree tree, TypeEntry entry, boolean topNode) {
+            super(tree, entry, topNode);
         }
 
         @Override

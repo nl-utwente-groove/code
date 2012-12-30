@@ -50,7 +50,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 
-import org.jgraph.JGraph;
 import org.jgraph.graph.DefaultGraphCellEditor;
 import org.jgraph.graph.GraphCellEditor;
 
@@ -66,8 +65,8 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
      * edited view.
      */
     @Override
-    public Component getGraphCellEditorComponent(JGraph graph, Object cell,
-            boolean isSelected) {
+    public Component getGraphCellEditorComponent(org.jgraph.JGraph graph,
+            Object cell, boolean isSelected) {
         Component component =
             super.getGraphCellEditorComponent(graph, cell, isSelected);
         return component;
@@ -97,9 +96,9 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             GraphCellEditor, CaretListener {
         /**
          * Initialises the editor component with the edit string of the user
-         * object of <tt>value</tt> (which is required to be a {@link GraphJCell}).
+         * object of <tt>value</tt> (which is required to be a {@link JCell}).
          */
-        public Component getGraphCellEditorComponent(JGraph graph,
+        public Component getGraphCellEditorComponent(org.jgraph.JGraph graph,
                 Object value, boolean isSelected) {
             AspectJCell jCell = (AspectJCell) value;
             // fill the set of labels for autocompletion

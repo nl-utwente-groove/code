@@ -16,7 +16,7 @@
  */
 package groove.io.external.util;
 
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 import groove.io.external.PortException;
 
 import java.awt.Graphics;
@@ -31,11 +31,11 @@ import java.io.File;
  */
 public abstract class GraphToVector {
     /** Saves a given jGraph to a file according to this vector format. */
-    public abstract void renderGraph(GraphJGraph graph, File file)
+    public abstract void renderGraph(JGraph<?> graph, File file)
         throws PortException;
 
     /** Paints a given jGraph in a {@link Graphics} object. */
-    protected void toGraphics(GraphJGraph graph, Graphics2D graphics) {
+    protected void toGraphics(JGraph<?> graph, Graphics2D graphics) {
         Rectangle2D bounds = graph.getGraphBounds();
 
         graphics.translate(-bounds.getMinX(), -bounds.getMinY());

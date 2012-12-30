@@ -17,7 +17,7 @@
 package groove.io.external.format;
 
 import groove.graph.Graph;
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 import groove.io.ExtensionFilter;
 
 import java.io.File;
@@ -68,6 +68,6 @@ public interface ExternalFileFormat<G extends Graph<?,?>> {
      * @param jGraph the j-graph object to be saved.
      * @param file the file object to write.
      */
-    public void save(GraphJGraph jGraph, File file) throws IOException;
+    public void save(JGraph<G> jGraph, File file) throws IOException;
 
 }

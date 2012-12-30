@@ -16,7 +16,7 @@
  */
 package groove.io.external.util;
 
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 import groove.io.external.PortException;
 import groove.util.Version;
 
@@ -37,7 +37,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 /** Class offering the functionality to save a JGraph to PDF format. */
 public class GraphToPDF extends GraphToVector {
     @Override
-    public void renderGraph(GraphJGraph graph, File file)
+    public void renderGraph(JGraph<?> graph, File file)
         throws PortException {
         // Get graph bounds. If not available, do nothing (probably empty graph)
         Rectangle2D bounds = graph.getGraphBounds();

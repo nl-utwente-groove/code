@@ -18,7 +18,7 @@ package groove.gui.menu;
 
 import groove.gui.Options;
 import groove.gui.action.LayoutAction;
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.LayoutKind;
 import groove.gui.layout.Layouter;
@@ -46,7 +46,7 @@ public class SetLayoutMenu extends JMenu {
      * @param jgraph the jgraph upon which the actions in this menu should work
      * @param initialLayout the initial (only) layout action in the menu
      */
-    public SetLayoutMenu(GraphJGraph jgraph, Layouter initialLayout) {
+    public SetLayoutMenu(JGraph<?> jgraph, Layouter initialLayout) {
         super(Options.SET_LAYOUT_MENU_NAME);
         this.jgraph = jgraph;
         addLayoutItem(initialLayout);
@@ -57,7 +57,7 @@ public class SetLayoutMenu extends JMenu {
      * <tt>ForestLayout</tt>.
      * @param jgraph the jgraph upon which the actions in this menu should work
      */
-    public SetLayoutMenu(GraphJGraph jgraph) {
+    public SetLayoutMenu(JGraph<?> jgraph) {
         this(jgraph, new ForestLayouter());
         addLayoutItem(new SpringLayouter());
         this.addSeparator();
@@ -114,7 +114,7 @@ public class SetLayoutMenu extends JMenu {
     }
 
     /** The j-graph to be laid out. */
-    private final GraphJGraph jgraph;
+    private final JGraph<?> jgraph;
 
     /** Menu item whose label reflects the currently selected layouter. */
     private final JMenuItem layoutItem = new JMenuItem() {

@@ -16,9 +16,9 @@
  */
 package groove.gui.layout;
 
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.GraphJModel;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.JEdgeView;
 import groove.gui.look.VisualMap;
 import groove.util.Pair;
@@ -151,7 +151,7 @@ abstract public class AbstractLayouter implements Layouter {
     /**
      * Constructor to create a dummy, prototype layout action. Proper layout
      * actions are created using <tt>newInstance(MyJGraph)</tt>
-     * @see #newInstance(GraphJGraph)
+     * @see #newInstance(JGraph)
      */
     protected AbstractLayouter(String name) {
         this(name, null);
@@ -160,9 +160,9 @@ abstract public class AbstractLayouter implements Layouter {
     /**
      * Constructor to create a dummy, prototype layout action. Proper layout
      * actions are created using <tt>newInstance(MyJGraph)</tt>
-     * @see #newInstance(GraphJGraph)
+     * @see #newInstance(JGraph)
      */
-    protected AbstractLayouter(String name, GraphJGraph jgraph) {
+    protected AbstractLayouter(String name, JGraph<?> jgraph) {
         setName(name);
         this.jgraph = jgraph;
     }
@@ -220,7 +220,7 @@ abstract public class AbstractLayouter implements Layouter {
      * the current <tt>jmodel</tt>. This implementation calculates the
      * <tt>toLayoutableMap</tt>, and sets the line style to that preferred by
      * the layouter.
-     * @param complete if {@code true}, the {@link GraphJCell#isLayoutable()} setting
+     * @param complete if {@code true}, the {@link JCell#isLayoutable()} setting
      * is ignored
      */
     protected void prepare(boolean complete) {
@@ -232,10 +232,10 @@ abstract public class AbstractLayouter implements Layouter {
         // iterate over the cell views
         CellView[] cellViews = this.jgraph.getGraphLayoutCache().getRoots();
         for (CellView cellView : cellViews) {
-            if (!(cellView.getCell() instanceof GraphJCell)) {
+            if (!(cellView.getCell() instanceof JCell)) {
                 continue;
             }
-            GraphJCell jCell = (GraphJCell) cellView.getCell();
+            JCell<?> jCell = (JCell<?>) cellView.getCell();
             if (jCell.isGrayedOut()) {
                 continue;
             }
@@ -279,12 +279,12 @@ abstract public class AbstractLayouter implements Layouter {
      * the node bounds and edge points.
      */
     protected void finish() {
-        final Map<GraphJCell,AttributeMap> change =
-            new HashMap<GraphJCell,AttributeMap>();
+        final Map<JCell<?>,AttributeMap> change =
+            new HashMap<JCell<?>,AttributeMap>();
         CellView[] cellViews = this.jgraph.getGraphLayoutCache().getRoots();
         for (CellView view : cellViews) {
             if (view instanceof VertexView || view instanceof EdgeView) {
-                GraphJCell cell = (GraphJCell) view.getCell();
+                JCell<?> cell = (JCell<?>) view.getCell();
                 GraphConstants.setMoveable(cell.getAttributes(), true);
                 VisualMap visuals = new VisualMap();
                 if (view instanceof VertexView) {
@@ -349,12 +349,12 @@ abstract public class AbstractLayouter implements Layouter {
     /**
      * The underlying jgraph for this layout action.
      */
-    protected final GraphJGraph jgraph;
+    protected final JGraph<?> jgraph;
 
     /**
      * The model that has last been layed out.
      */
-    protected GraphJModel<?,?> jmodel;
+    protected JModel<?> jmodel;
 
     /**
      * A map from the vertex cells and pairs of edge cells/point indices to layoutables.

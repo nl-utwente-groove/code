@@ -16,15 +16,13 @@
  */
 package groove.gui.layout;
 
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JGraph;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
 
 import javax.swing.JPanel;
-
-import org.jgraph.JGraph;
 
 import com.jgraph.layout.JGraphFacade;
 import com.jgraph.layout.JGraphLayout;
@@ -35,7 +33,7 @@ public class LayouterItem implements Layouter {
     private final LayoutKind kind;
     private final String actionName;
     private final JGraphLayout layout;
-    private final GraphJGraph jGraph;
+    private final JGraph<?> jGraph;
     private JGraphFacade facade;
     private final JPanel panel;
 
@@ -45,7 +43,8 @@ public class LayouterItem implements Layouter {
     }
 
     private LayouterItem(LayoutKind kind, String actionName,
-            JGraphLayout layout, final GraphJGraph jGraph, JGraphFacade facade) {
+            JGraphLayout layout, final JGraph<?> jGraph,
+            JGraphFacade facade) {
         this.kind = kind;
         this.actionName = actionName;
         this.layout = layout;
@@ -53,7 +52,8 @@ public class LayouterItem implements Layouter {
         this.facade = facade;
         this.panel = jGraph == null ? null : LayoutKind.createLayoutPanel(this);
         if (jGraph != null) {
-            jGraph.addPropertyChangeListener(JGraph.GRAPH_MODEL_PROPERTY,
+            jGraph.addPropertyChangeListener(
+                org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
                 new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
@@ -64,7 +64,7 @@ public class LayouterItem implements Layouter {
     }
 
     @Override
-    public Layouter newInstance(GraphJGraph jGraph) {
+    public Layouter newInstance(JGraph<?> jGraph) {
         return new LayouterItem(this.kind, this.actionName, this.layout,
             jGraph, new JGraphFacade(jGraph));
     }

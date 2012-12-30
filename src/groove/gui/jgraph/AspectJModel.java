@@ -18,7 +18,6 @@ package groove.gui.jgraph;
 
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
@@ -70,7 +69,7 @@ import org.jgraph.graph.ParentMap;
  * @author Arend Rensink
  * @version $Revision: 2982 $
  */
-final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
+final public class AspectJModel extends JModel<AspectGraph> {
     /** 
      * Creates an new model, initially without a graph or grammar loaded.
      * Call {@link #setGrammar(GrammarModel)} to complete construction.
@@ -84,7 +83,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         return (AspectJGraph) super.getJGraph();
     }
 
-    /** Specialises the type to a list of {@link GraphJCell}s. */
+    /** Specialises the type to a list of {@link JCell}s. */
     @Override
     @SuppressWarnings("unchecked")
     public List<? extends AspectJCell> getRoots() {
@@ -130,7 +129,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
     }
 
     @Override
-    public void loadGraph(Graph<AspectNode,AspectEdge> graph) {
+    public void loadGraph(AspectGraph graph) {
         setLoading(true);
         super.loadGraph(graph);
         for (AspectJCell root : getRoots()) {
@@ -149,7 +148,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
      * Clones this model, and initialises the new model with the given
      * argument graph.
      */
-    public AspectJModel cloneWithNewGraph(Graph<AspectNode,AspectEdge> graph) {
+    public AspectJModel cloneWithNewGraph(AspectGraph graph) {
         AspectJModel result = getJGraph().newModel();
         if (getGrammar() != null) {
             result.setGrammar(getGrammar());
@@ -173,10 +172,10 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         GraphRole role = getGraph().getRole();
         Map<AspectNode,AspectJVertex> nodeJVertexMap =
             new HashMap<AspectNode,AspectJVertex>();
-        Map<AspectEdge,GraphJCell> edgeJCellMap =
-            new HashMap<AspectEdge,GraphJCell>();
+        Map<AspectEdge,AspectJCell> edgeJCellMap =
+            new HashMap<AspectEdge,AspectJCell>();
         AspectGraph graph = new AspectGraph(getName(), role);
-        for (GraphJCell jCell : getRoots()) {
+        for (AspectJCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex) {
                 AspectJVertex jVertex = (AspectJVertex) jCell;
                 jVertex.loadFromUserObject(role);
@@ -188,7 +187,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
                 }
             }
         }
-        for (GraphJCell jCell : getRoots()) {
+        for (AspectJCell jCell : getRoots()) {
             if (jCell instanceof AspectJEdge) {
                 AspectJEdge jEdge = (AspectJEdge) jCell;
                 jEdge.loadFromUserObject(role);
@@ -204,7 +203,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         // collect the layout information
         LayoutMap<AspectNode,AspectEdge> layoutMap =
             new LayoutMap<AspectNode,AspectEdge>();
-        for (GraphJCell jCell : getRoots()) {
+        for (AspectJCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex) {
                 AspectJVertex jVertex = (AspectJVertex) jCell;
                 layoutMap.putNode(jVertex.getNode(), jVertex.getVisuals());
@@ -273,7 +272,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
 
     /** 
      * Returns the mapping from errors to JCells with that error
-     * computed during the last call to {@link #loadGraph(Graph)} 
+     * computed during the last call to {@link #loadGraph(AspectGraph)} 
      * or {@link #syncGraph()}.
      */
     public Map<FormatError,AspectJCell> getErrorMap() {
@@ -450,7 +449,7 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         super.fireGraphChanged(source, edit);
     }
 
-    /** Indicates if the model is currently executing {@link #loadGraph(Graph)}. */
+    /** Indicates if the model is currently executing {@link #loadGraph(AspectGraph)}. */
     @Override
     final protected boolean isLoading() {
         return this.loading;
@@ -474,8 +473,8 @@ final public class AspectJModel extends GraphJModel<AspectNode,AspectEdge> {
         if (result) {
             this.usedNrs = new HashSet<Integer>();
             for (Object root : getRoots()) {
-                if (root instanceof GraphJVertex) {
-                    this.usedNrs.add(((GraphJVertex) root).getNumber());
+                if (root instanceof AspectJVertex) {
+                    this.usedNrs.add(((AspectJVertex) root).getNumber());
                 }
             }
         }

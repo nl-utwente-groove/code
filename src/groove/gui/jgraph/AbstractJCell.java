@@ -17,10 +17,10 @@
 package groove.gui.jgraph;
 
 import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.Node;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
-import groove.gui.layout.LayoutMap;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualKey.Nature;
@@ -41,52 +41,50 @@ import org.jgraph.graph.DefaultGraphCell;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class AbstractJCell extends DefaultGraphCell implements
-        GraphJCell {
+public abstract class AbstractJCell<G extends Graph<?,?>> extends
+        DefaultGraphCell implements JCell<G> {
     /** 
      * Constructs a new, uninitialised cell.
-     * Call {@link #setJModel(GraphJModel)} to initialise to a given model.
+     * Call {@link #setJModel(JModel)} to initialise to a given model.
      */
     protected AbstractJCell() {
         // empty
     }
 
     @Override
-    public GraphJGraph getJGraph() {
+    public JGraph<G> getJGraph() {
         // if this is called early, maybe there is no JModel yet
         return getJModel() == null ? null : getJModel().getJGraph();
     }
 
     /** Sets a new JModel for this cell. */
-    public void setJModel(GraphJModel<?,?> jModel) {
+    public void setJModel(JModel<G> jModel) {
         this.jModel = jModel;
         initialise();
     }
 
     @Override
-    public GraphJModel<?,?> getJModel() {
+    public JModel<G> getJModel() {
         return this.jModel;
     }
 
     /** The fixed jModel to which this jVertex belongs. */
-    private GraphJModel<?,?> jModel;
+    private JModel<G> jModel;
 
     /**
      * Returns the (possibly {@code null}) layout information stored for
      * a given graph node.
      */
-    @SuppressWarnings("unchecked")
     final protected JVertexLayout getLayout(Node node) {
-        return ((LayoutMap<Node,Edge>) getJModel().getLayoutMap()).getLayout(node);
+        return getJModel().getLayoutMap().getLayout(node);
     }
 
     /**
      * Returns the (possibly {@code null}) layout information stored for
      * a given graph edge.
      */
-    @SuppressWarnings("unchecked")
     final protected JEdgeLayout getLayout(Edge edge) {
-        return ((LayoutMap<Node,Edge>) getJModel().getLayoutMap()).getLayout(edge);
+        return getJModel().getLayoutMap().getLayout(edge);
     }
 
     /** Sets or resets all auxiliary data structures to their initial values. */
@@ -207,7 +205,7 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
     /** Returns the visual refresher for a given (refreshable) key. */
     protected final VisualValue<?> getRefresher(VisualKey key) {
         // if this is called early, maybe there is no JGraph yet
-        GraphJGraph jGraph = getJGraph();
+        JGraph<G> jGraph = getJGraph();
         return jGraph == null ? null : jGraph.getVisualValue(key);
     }
 
@@ -266,7 +264,7 @@ public abstract class AbstractJCell extends DefaultGraphCell implements
     @Override
     public AspectJCellErrors getErrors() {
         if (this.errors == null) {
-            this.errors = new AspectJCellErrors(this);
+            this.errors = new AspectJCellErrors((AspectJCell) this);
         }
         return this.errors;
     }

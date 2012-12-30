@@ -29,7 +29,9 @@ import groove.gui.Simulator;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.gui.menu.ModelCheckingMenu;
+import groove.gui.menu.MyJMenu;
 import groove.gui.menu.SetLayoutMenu;
+import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -57,7 +59,7 @@ import org.jgraph.graph.GraphModel;
  * an instance, setupPopupMenu() should be called after all global final
  * variables have been set.
  */
-public class LTSJGraph extends GraphJGraph implements Serializable {
+public class LTSJGraph extends JGraph<GTS> implements Serializable {
     /** Constructs an instance of the j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
         super(simulator);
@@ -115,7 +117,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
      * Scrolls the view to a given node or edge of the underlying graph model.
      */
     public void scrollTo(Element nodeOrEdge) {
-        GraphJCell cell = getModel().getJCell(nodeOrEdge);
+        JCell<GTS> cell = getModel().getJCell(nodeOrEdge);
         if (cell != null) {
             scrollCellToVisible(cell);
         }
@@ -128,25 +130,25 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
      */
     @Override
     public JMenu createPopupMenu(Point atPoint) {
-        JMenu result = new JMenu("Popup");
+        MyJMenu result = new MyJMenu("Popup");
         if (getMode() == SELECT_MODE) {
-            addSubmenu(result, createExploreMenu());
-            addSubmenu(result, createGotoMenu());
-            addSubmenu(result, super.createPopupMenu(atPoint));
+            result.addSubmenu(createExploreMenu());
+            result.addSubmenu(createGotoMenu());
+            result.addSubmenu(super.createPopupMenu(atPoint));
         } else {
-            addSubmenu(result, createGotoMenu());
-            addSubmenu(result, createShowHideMenu());
-            addSubmenu(result, createZoomMenu());
+            result.addSubmenu(createGotoMenu());
+            result.addSubmenu(createShowHideMenu());
+            result.addSubmenu(createZoomMenu());
         }
         return result;
     }
 
     @Override
     public JMenu createExportMenu() {
-        JMenu result = new JMenu();
+        MyJMenu result = new MyJMenu();
         result.add(getActions().getSaveLTSAsAction());
         result.add(getActions().getSaveStateAction());
-        addMenuItems(result, super.createExportMenu());
+        result.addMenuItems(super.createExportMenu());
         return result;
     }
 
@@ -214,8 +216,8 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
      * @param trans the new active transition
      */
     public void setActive(GraphState state, GraphTransition trans) {
-        List<GraphJCell> activeCells = new ArrayList<GraphJCell>();
-        List<GraphJCell> changedCells = new ArrayList<GraphJCell>();
+        List<JCell<GTS>> activeCells = new ArrayList<JCell<GTS>>();
+        List<JCell<GTS>> changedCells = new ArrayList<JCell<GTS>>();
         GraphTransition previousTrans = getActiveTransition();
         this.activeTransition = trans;
         if (previousTrans != null) {
@@ -266,7 +268,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
      * This is necessary after reloading the LTS.
      */
     void reactivate() {
-        List<GraphJCell> activeCells = new ArrayList<GraphJCell>();
+        List<JCell<GTS>> activeCells = new ArrayList<JCell<GTS>>();
         GraphState activeState = getActiveState();
         if (activeState != null) {
             LTSJCell activeCell =
@@ -315,10 +317,10 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
     }
 
     /** Returns the traces from the given set of states to the start state. */
-    public Set<GraphJCell> findTraces(Collection<GraphState> states) {
+    public Set<JCell<GTS>> findTraces(Collection<GraphState> states) {
         Set<RuleTransition> simulatorTrace = getSimulatorModel().getTrace();
         simulatorTrace.clear();
-        Set<GraphJCell> result = new HashSet<GraphJCell>();
+        Set<JCell<GTS>> result = new HashSet<JCell<GTS>>();
         LTSJModel model = getModel();
         for (GraphState finalState : states) {
             GraphState state = finalState;
@@ -336,7 +338,7 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
     /** Filters the LTS. */
     public void refreshFiltering() {
         if (isFiltering()) {
-            Set<GraphJCell> trace =
+            Set<JCell<GTS>> trace =
                 findTraces(getModel().getGraph().getResultStates());
             for (Object element : getRoots()) {
                 LTSJCell jCell = (LTSJCell) element;
@@ -441,9 +443,9 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
         }
 
         /**
-         * Creates a new instance, for a given {@link GraphJGraph}.
+         * Creates a new instance, for a given {@link JGraph}.
          */
-        public MyForestLayouter(String name, GraphJGraph jgraph) {
+        public MyForestLayouter(String name, JGraph<?> jgraph) {
             super(name, jgraph);
         }
 
@@ -461,17 +463,17 @@ public class LTSJGraph extends GraphJGraph implements Serializable {
          * This implementation returns a {@link MyForestLayouter}.
          */
         @Override
-        public Layouter newInstance(GraphJGraph jGraph) {
+        public Layouter newInstance(JGraph<?> jGraph) {
             return new MyForestLayouter(this.name, jGraph);
         }
     }
 
     @Override
-    protected JGraphFactory createFactory() {
+    protected JGraphFactory<GTS> createFactory() {
         return new MyFactory();
     }
 
-    private class MyFactory extends GraphJGraphFactory {
+    private class MyFactory extends JGraphFactory<GTS> {
         public MyFactory() {
             super(LTSJGraph.this);
         }

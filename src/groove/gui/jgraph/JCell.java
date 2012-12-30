@@ -17,6 +17,7 @@
 package groove.gui.jgraph;
 
 import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.Label;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
@@ -33,15 +34,16 @@ import org.jgraph.graph.GraphCell;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface GraphJCell extends GraphCell, Serializable {
+public interface JCell<G extends Graph<?,?>> extends GraphCell,
+        Serializable {
     /** Returns the fixed jGraph on which this jCell is displayed. */
-    public GraphJGraph getJGraph();
+    public JGraph<G> getJGraph();
 
     /** Returns the fixed jModel to which this jCell belongs. */
-    public GraphJModel<?,?> getJModel();
+    public JModel<G> getJModel();
 
     /** Returns the end nodes (for an edge) or the incident edges (for a vertex). */
-    public Collection<? extends GraphJCell> getContext();
+    public Collection<? extends JCell<G>> getContext();
 
     /**
      * Returns the set of keys to be associated with this cell in a label

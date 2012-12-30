@@ -17,8 +17,9 @@
 package groove.gui.display;
 
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
-import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.GraphJModel;
+import groove.graph.Graph;
+import groove.gui.jgraph.JModel;
+import groove.gui.jgraph.JGraph;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -30,23 +31,21 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import org.jgraph.JGraph;
-
 /**
- * A panel that combines a {@link groove.gui.jgraph.GraphJGraph}and (optionally) a
+ * A panel that combines a {@link groove.gui.jgraph.JGraph}and (optionally) a
  * {@link groove.gui.tree.LabelTree}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
  * @version $Revision$
  */
-public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
+public class JGraphPanel<G extends Graph<?,?>> extends JPanel {
     /**
      * Constructs a view upon a given jgraph, possibly with a status bar.
      * 
      * @param jGraph the jgraph on which this panel is a view
      * @ensure <tt>getJGraph() == jGraph</tt>
      */
-    public JGraphPanel(JG jGraph) {
+    public JGraphPanel(JGraph<G> jGraph) {
         super(false);
         setFocusable(false);
         setFocusCycleRoot(true);
@@ -78,12 +77,11 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
                     evt.getNewValue() != PAN_MODE);
             }
         });
-        getJGraph().addPropertyChangeListener(GraphJGraph.GRAPH_MODEL_PROPERTY,
+        getJGraph().addPropertyChangeListener(JGraph.GRAPH_MODEL_PROPERTY,
             new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    GraphJModel<?,?> jModel =
-                        (GraphJModel<?,?>) evt.getNewValue();
+                    JModel<?> jModel = (JModel<?>) evt.getNewValue();
                     setEnabled(jModel != null);
                 }
             });
@@ -147,16 +145,16 @@ public class JGraphPanel<JG extends GraphJGraph> extends JPanel {
     private JLabel statusLabel;
 
     /**
-     * Returns the underlying {@link GraphJGraph}.
+     * Returns the underlying {@link JGraph}.
      */
-    public JG getJGraph() {
+    public JGraph<G> getJGraph() {
         return this.jGraph;
     }
 
     /**
-     * The {@link GraphJGraph}on which this panel provides a view.
+     * The {@link JGraph}on which this panel provides a view.
      */
-    private final JG jGraph;
+    private final JGraph<G> jGraph;
 
     /**
      * Delegates the method to the content pane and to super.

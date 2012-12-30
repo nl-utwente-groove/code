@@ -16,6 +16,8 @@
  */
 package groove.gui.jgraph;
 
+import groove.lts.GTS;
+
 import java.io.Serializable;
 
 /**
@@ -23,7 +25,7 @@ import java.io.Serializable;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface LTSJCell extends GraphJCell, Serializable {
+public interface LTSJCell extends JCell<GTS>, Serializable {
     /** 
      * Sets this cell to active. This will result in 
      * special display attributes.

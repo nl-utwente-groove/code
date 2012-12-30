@@ -18,8 +18,8 @@ package groove.gui.action;
 
 import groove.gui.Icons;
 import groove.gui.Options;
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JGraph;
 import groove.gui.layout.Layouter;
 
 import java.awt.event.ActionEvent;
@@ -34,7 +34,7 @@ import javax.swing.AbstractAction;
  */
 public class LayoutAction extends AbstractAction {
     /** Constructs a layout action for a given layouter. */
-    public LayoutAction(GraphJGraph jGraph) {
+    public LayoutAction(JGraph<?> jGraph) {
         super(jGraph.getLayouter().getName(), Icons.LAYOUT_ICON);
         putValue(ACCELERATOR_KEY, Options.LAYOUT_KEY);
         this.jGraph = jGraph;
@@ -56,8 +56,8 @@ public class LayoutAction extends AbstractAction {
         if (!complete) {
             this.jGraph.getModel().setLayoutable(false);
             for (Object jCell : selection) {
-                if (jCell instanceof GraphJCell) {
-                    ((GraphJCell) jCell).setLayoutable(true);
+                if (jCell instanceof JCell) {
+                    ((JCell<?>) jCell).setLayoutable(true);
                 }
             }
         }
@@ -82,5 +82,5 @@ public class LayoutAction extends AbstractAction {
     }
 
     /** The JGraph on which this action works. */
-    private final GraphJGraph jGraph;
+    private final JGraph<?> jGraph;
 }

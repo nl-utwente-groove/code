@@ -30,8 +30,7 @@ import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.AspectJVertex;
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJEdge;
+import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JAttr;
 import groove.gui.list.ErrorListPanel;
 import groove.gui.look.LineStyle;
@@ -218,12 +217,12 @@ public class StateDisplay extends Display implements SimulatorListener {
     }
 
     /** Returns component on which the state graph is displayed. */
-    public JGraphPanel<AspectJGraph> getGraphPanel() {
-        JGraphPanel<AspectJGraph> result = this.stateGraphPanel;
+    public JGraphPanel<AspectGraph> getGraphPanel() {
+        JGraphPanel<AspectGraph> result = this.stateGraphPanel;
         if (result == null) {
             result =
                 this.stateGraphPanel =
-                    new JGraphPanel<AspectJGraph>(getJGraph());
+                    new JGraphPanel<AspectGraph>(getJGraph());
             result.initialise();
             result.setBorder(null);
             result.setEnabledBackground(JAttr.STATE_BACKGROUND);
@@ -233,7 +232,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     }
 
     /** JGraph panel on this display. */
-    private JGraphPanel<AspectJGraph> stateGraphPanel;
+    private JGraphPanel<AspectGraph> stateGraphPanel;
 
     /** Gets the error panel, creating it (lazily) if necessary. */
     private ErrorListPanel getErrorPanel() {
@@ -280,7 +279,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             @Override
             public void update(Observable o, Object arg) {
                 if (arg != null) {
-                    GraphJCell errorCell =
+                    AspectJCell errorCell =
                         getJGraph().getModel().getErrorMap().get(arg);
                     if (errorCell != null) {
                         getJGraph().setSelectionCell(errorCell);
@@ -587,7 +586,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             result.synchroniseLayout(jCell);
             if (attrs.color != null) {
                 // also colour all outgoing edges
-                for (GraphJEdge jEdge : jCell.getContext()) {
+                for (JEdge<AspectGraph> jEdge : jCell.getContext()) {
                     if (jEdge.getSourceVertex() == jCell) {
                         jEdge.putVisual(VisualKey.COLOR, attrs.color);
                     }

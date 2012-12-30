@@ -28,11 +28,11 @@ import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.CtrlJEdge;
 import groove.gui.jgraph.CtrlJVertex;
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.GraphJVertex;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
+import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJVertex;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
@@ -65,22 +65,22 @@ import org.jgraph.util.Bezier;
  * Class to perform the conversion from Groove graphs to Tikz format. 
  * @author Eduardo Zambon
  */
-public final class GraphToTikz {
+public final class GraphToTikz<G extends Graph<?,?>> {
 
     // ------------------------------------------------------------------------
     // Object fields
     // ------------------------------------------------------------------------
 
     /** The jGraph to be output. */
-    private final GraphJGraph jGraph;
+    private final JGraph<G> jGraph;
     /** The underlying model for jGraph. */
-    private final GraphJModel<Node,Edge> model;
+    private final JModel<G> model;
     /** The underlying Groove graph connected to the jGraph. */
     private final Graph<Node,Edge> graph;
     /** The layout map of the graph. */
     private final LayoutMap<Node,Edge> layoutMap;
     /** The color map of the graph. */
-    private final Map<GraphJVertex,Color> colorMap;
+    private final Map<JVertex<G>,Color> colorMap;
     /** The builder that holds the Tikz string. */
     private final StringBuilder result;
 
@@ -90,12 +90,12 @@ public final class GraphToTikz {
 
     /**
      * The constructor is private. To perform the conversion just call the
-     * static method {@link #convert(GraphJGraph)}.
+     * static method {@link #convert(JGraph)}.
      */
     @SuppressWarnings("unchecked")
-    private GraphToTikz(GraphJGraph jGraph) {
+    private GraphToTikz(JGraph<G> jGraph) {
         this.jGraph = jGraph;
-        this.model = (GraphJModel<Node,Edge>) this.jGraph.getModel();
+        this.model = this.jGraph.getModel();
         this.graph = (Graph<Node,Edge>) this.model.getGraph();
         this.layoutMap = GraphInfo.getLayoutMap(this.graph);
         this.colorMap = createColorMap();
@@ -108,7 +108,7 @@ public final class GraphToTikz {
 
     /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
     static public <N extends Node,E extends Edge> void export(
-            GraphJGraph graph, PrintWriter writer) {
+            JGraph<?> graph, PrintWriter writer) {
         writer.print(GraphToTikz.convert(graph));
     }
 
@@ -117,8 +117,8 @@ public final class GraphToTikz {
      * @param jGraph the graph to be converted.
      * @return a string with the Tikz encoding of the graph.
      */
-    public static String convert(GraphJGraph jGraph) {
-        return new GraphToTikz(jGraph).doConvert();
+    public static <G extends Graph<?,?>> String convert(JGraph<G> jGraph) {
+        return new GraphToTikz<G>(jGraph).doConvert();
     }
 
     // BEGIN
@@ -302,11 +302,11 @@ public final class GraphToTikz {
     // BEGIN
     // Methods to handle special colors.
 
-    private static String getColorName(GraphJVertex vertex) {
+    private static String getColorName(JVertex<?> vertex) {
         return "n" + vertex.getNumber() + COLOR_SUFFIX;
     }
 
-    private static String getColorStyle(GraphJVertex vertex) {
+    private static String getColorStyle(JVertex<?> vertex) {
         return getColorName(vertex) + COLOR_STYLE_SUFFIX;
     }
 
@@ -315,12 +315,12 @@ public final class GraphToTikz {
             + color.getBlue());
     }
 
-    private static String getColorDefStr(GraphJVertex vertex, Color color) {
+    private static String getColorDefStr(JVertex<?> vertex, Color color) {
         return DEF_COLOR + encloseCurly(getColorName(vertex)) + RGB
             + getRGBString(color) + ENTER;
     }
 
-    private static String getColorStyleDefStr(GraphJVertex vertex) {
+    private static String getColorStyleDefStr(JVertex<?> vertex) {
         String c = getColorName(vertex);
         return getColorStyle(vertex) + STYLE_DEF
             + encloseCurly(DRAW + c + TEXT + c + FILL + c + FILL_SUFFIX) + ","
@@ -330,49 +330,49 @@ public final class GraphToTikz {
     // Methods to handle special colors.
     // END
 
-    private static boolean isNodifiedEdge(GraphJVertex node) {
+    private static boolean isNodifiedEdge(JVertex<?> node) {
         return node instanceof AspectJVertex
             && ((AspectJVertex) node).isNodeEdge();
     }
 
-    private static boolean hasParameter(GraphJVertex node) {
+    private static boolean hasParameter(JVertex<?> node) {
         return node instanceof AspectJVertex
                 ? ((AspectJVertex) node).getNode().hasParam() : false;
     }
 
-    private static boolean isTypeGraphNode(GraphJVertex node) {
+    private static boolean isTypeGraphNode(JVertex<?> node) {
         return node instanceof AspectJVertex
                 ? ((AspectJVertex) node).getNode().getGraphRole() == GraphRole.TYPE
                 : false;
     }
 
-    private static boolean isControlNode(GraphJVertex node) {
+    private static boolean isControlNode(JVertex<?> node) {
         return node instanceof CtrlJVertex;
     }
 
-    private static boolean isControlEdge(GraphJEdge edge) {
+    private static boolean isControlEdge(JEdge<?> edge) {
         return edge instanceof CtrlJEdge;
     }
 
-    private static boolean isLTSNode(GraphJVertex node) {
+    private static boolean isLTSNode(JVertex<?> node) {
         return node instanceof LTSJVertex;
     }
 
-    private static boolean hasNonEmptyLabel(GraphJEdge edge) {
+    private static boolean hasNonEmptyLabel(JEdge<?> edge) {
         return !edge.getVisuals().getLabel().isEmpty();
     }
 
-    private static AspectKind getNodeKind(GraphJVertex node) {
+    private static AspectKind getNodeKind(JVertex<?> node) {
         return node instanceof AspectJVertex
                 ? ((AspectJVertex) node).getNode().getKind() : DEFAULT;
     }
 
-    private static AspectKind getAttributeKind(GraphJVertex node) {
+    private static AspectKind getAttributeKind(JVertex<?> node) {
         return node instanceof AspectJVertex
                 ? ((AspectJVertex) node).getNode().getAttrKind() : DEFAULT;
     }
 
-    private static boolean isProductNode(GraphJVertex node) {
+    private static boolean isProductNode(JVertex<?> node) {
         return getAttributeKind(node) == PRODUCT;
     }
 
@@ -388,7 +388,7 @@ public final class GraphToTikz {
         this.result.append(sb);
     }
 
-    private boolean isSelected(GraphJCell jCell) {
+    private boolean isSelected(JCell<G> jCell) {
         return this.jGraph.getSelectionModel().isCellSelected(jCell);
     }
 
@@ -399,7 +399,7 @@ public final class GraphToTikz {
         appendTikzHeader();
 
         for (Node node : this.graph.nodeSet()) {
-            GraphJVertex vertex = this.model.getJCellForNode(node);
+            JVertex<G> vertex = this.model.getJCellForNode(node);
             this.model.synchroniseLayout(vertex);
             JVertexLayout layout = null;
             if (this.layoutMap != null) {
@@ -408,13 +408,13 @@ public final class GraphToTikz {
             appendTikzNode(vertex, layout, isSelected(vertex));
         }
 
-        Set<GraphJCell> consumedEdges = new HashSet<GraphJCell>();
+        Set<JCell<G>> consumedEdges = new HashSet<JCell<G>>();
         for (Edge edge : this.graph.edgeSet()) {
             JEdgeLayout layout = null;
             if (this.layoutMap != null) {
                 layout = this.layoutMap.getLayout(edge);
             }
-            GraphJCell jCell = this.model.getJCellForEdge(edge);
+            JCell<G> jCell = this.model.getJCellForEdge(edge);
             if (!consumedEdges.contains(jCell)) {
                 appendTikzEdge(jCell, layout, isSelected(jCell));
                 consumedEdges.add(jCell);
@@ -433,12 +433,12 @@ public final class GraphToTikz {
     }
 
     /** Creates a map for the personalized colors. */
-    private Map<GraphJVertex,Color> createColorMap() {
-        Map<GraphJVertex,Color> result = new HashMap<GraphJVertex,Color>();
+    private Map<JVertex<G>,Color> createColorMap() {
+        Map<JVertex<G>,Color> result =
+            new HashMap<JVertex<G>,Color>();
         if (mayHaveExtraColors()) {
             for (Node node : this.graph.nodeSet()) {
-                AspectJVertex vertex =
-                    (AspectJVertex) this.model.getJCellForNode(node);
+                JVertex<G> vertex = this.model.getJCellForNode(node);
                 Color color = vertex.getVisuals().getColor();
                 if (color != null) {
                     result.put(vertex, color);
@@ -453,7 +453,7 @@ public final class GraphToTikz {
      * @return the name of the color style for the vertex if it is a key;
      *         null, otherwise.
      */
-    private String getVertexColorStyle(GraphJVertex vertex) {
+    private String getVertexColorStyle(JVertex<G> vertex) {
         if (this.colorMap.get(vertex) != null) {
             return getColorStyle(vertex);
         } else {
@@ -470,7 +470,7 @@ public final class GraphToTikz {
 
         // Special color definitions.
         append(COLORS);
-        for (Entry<GraphJVertex,Color> entry : this.colorMap.entrySet()) {
+        for (Entry<JVertex<G>,Color> entry : this.colorMap.entrySet()) {
             append(getColorDefStr(entry.getKey(), entry.getValue()));
         }
 
@@ -478,7 +478,7 @@ public final class GraphToTikz {
 
         // Special color styles.
         append(COLOR_STYLES);
-        for (GraphJVertex vertex : this.colorMap.keySet()) {
+        for (JVertex<G> vertex : this.colorMap.keySet()) {
             append(getColorStyleDefStr(vertex));
         }
 
@@ -498,7 +498,7 @@ public final class GraphToTikz {
      * @param selected flag to indicate that the node should be drawn as
      *                 selected.
      */
-    private void appendTikzNode(GraphJVertex node, JVertexLayout layout,
+    private void appendTikzNode(JVertex<G> node, JVertexLayout layout,
             boolean selected) {
         if (!node.getVisuals().isVisible()) {
             return;
@@ -551,7 +551,7 @@ public final class GraphToTikz {
      * @param node the node to be converted.
      * @param selected flag to indicate that the node should be drawn as selected
      */
-    private void appendNodeStyles(GraphJVertex node, boolean selected) {
+    private void appendNodeStyles(JVertex<G> node, boolean selected) {
         ArrayList<String> styles = new ArrayList<String>();
 
         if (isControlNode(node)) {
@@ -656,7 +656,7 @@ public final class GraphToTikz {
     }
 
     /** Appends the node name to the result string. */
-    private void appendNode(GraphJVertex node) {
+    private void appendNode(JVertex<G> node) {
         append(encloseSpace(enclosePar(node.getNode().toString())));
     }
 
@@ -665,7 +665,7 @@ public final class GraphToTikz {
      * the given node and appends the node to the string builder, together
      * with a node anchor that keeps the edge horizontal or vertical.
      */
-    private void appendNode(GraphJVertex node, Point2D point) {
+    private void appendNode(JVertex<G> node, Point2D point) {
         int side = getSide(node, point);
         if (side == 0 || isProductNode(node) || isNodifiedEdge(node)) {
             // The point is not aligned with the node, just use normal routing.
@@ -738,7 +738,7 @@ public final class GraphToTikz {
      * @return 1 if the point lies east, 2 if it lies north, 3 if it lies west,
      *         4 if it lies south, and 0 if its outside a proper position.
      */
-    private int getSide(GraphJVertex vertex, Point2D point) {
+    private int getSide(JVertex<G> vertex, Point2D point) {
         int side = 0;
         if (this.layoutMap != null) {
             JVertexLayout layout = this.layoutMap.getLayout(vertex.getNode());
@@ -759,10 +759,10 @@ public final class GraphToTikz {
      * @param selected flag to indicate that the edge should be drawn as
      *                 selected.
      */
-    private void appendTikzEdge(GraphJCell cell, JEdgeLayout layout,
+    private void appendTikzEdge(JCell<G> cell, JEdgeLayout layout,
             boolean selected) {
-        if (cell instanceof GraphJEdge) {
-            GraphJEdge edge = (GraphJEdge) cell;
+        if (cell instanceof JEdge) {
+            JEdge<G> edge = (JEdge<G>) cell;
             appendTikzEdge(edge, layout, selected);
         }
     }
@@ -773,7 +773,7 @@ public final class GraphToTikz {
      * @param layout information regarding layout of the edge.
      * @param selected flag to indicate that the edge should be drawn as selected
      */
-    private void appendTikzEdge(GraphJEdge edge, JEdgeLayout layout,
+    private void appendTikzEdge(JEdge<G> edge, JEdgeLayout layout,
             boolean selected) {
         if (!edge.getVisuals().isVisible()) {
             return;
@@ -813,7 +813,7 @@ public final class GraphToTikz {
      * @param edge the edge to be analysed.
      * @param selected flag to indicate that the edge should be drawn as selected
      */
-    private Duo<String> getEdgeStyles(GraphJEdge edge, boolean selected) {
+    private Duo<String> getEdgeStyles(JEdge<G> edge, boolean selected) {
         Duo<String> styles = new Duo<String>("", "");
 
         if (isControlEdge(edge)) {
@@ -914,9 +914,9 @@ public final class GraphToTikz {
      * @param edge the edge to be converted.
      * @param labStyle a string describing the style to be used in the label.
      */
-    private void appendDefaultLayout(GraphJEdge edge, String labStyle) {
-        GraphJVertex srcVertex = edge.getSourceVertex();
-        GraphJVertex tgtVertex = edge.getTargetVertex();
+    private void appendDefaultLayout(JEdge<G> edge, String labStyle) {
+        JVertex<G> srcVertex = edge.getSourceVertex();
+        JVertex<G> tgtVertex = edge.getTargetVertex();
         appendSourceNode(srcVertex, tgtVertex);
         append(encloseSpace(DOUBLE_DASH));
         appendEdgeLabelInPath(edge, labStyle);
@@ -934,11 +934,11 @@ public final class GraphToTikz {
      * @param labStyle a string describing the style to be used in the label.
      * @param connection the string with the type of Tikz connection to be used.
      */
-    private void appendOrthogonalLayout(GraphJEdge edge, JEdgeLayout layout,
+    private void appendOrthogonalLayout(JEdge<G> edge, JEdgeLayout layout,
             String labStyle, String connection) {
 
-        GraphJVertex srcVertex = edge.getSourceVertex();
-        GraphJVertex tgtVertex = edge.getTargetVertex();
+        JVertex<G> srcVertex = edge.getSourceVertex();
+        JVertex<G> tgtVertex = edge.getTargetVertex();
         List<Point2D> points = layout.getPoints();
 
         if (points.size() == 2) {
@@ -983,7 +983,7 @@ public final class GraphToTikz {
      * @param layout information regarding layout of the edge.
      * @param labStyle a string describing the style to be used in the label.
      */
-    private void appendOrthogonalLayout(GraphJEdge edge, JEdgeLayout layout,
+    private void appendOrthogonalLayout(JEdge<G> edge, JEdgeLayout layout,
             String labStyle) {
         appendOrthogonalLayout(edge, layout, labStyle, DOUBLE_DASH);
     }
@@ -998,10 +998,10 @@ public final class GraphToTikz {
      * @param layout information regarding layout of the edge.
      * @param labStyle a string describing the style to be used in the label.
      */
-    private void appendBezierLayout(GraphJEdge edge, JEdgeLayout layout,
+    private void appendBezierLayout(JEdge<G> edge, JEdgeLayout layout,
             String labStyle) {
-        GraphJVertex srcVertex = edge.getSourceVertex();
-        GraphJVertex tgtVertex = edge.getTargetVertex();
+        JVertex<G> srcVertex = edge.getSourceVertex();
+        JVertex<G> tgtVertex = edge.getTargetVertex();
         List<Point2D> points = layout.getPoints();
 
         // Compute the bezier line.
@@ -1103,7 +1103,7 @@ public final class GraphToTikz {
      * @param layout information regarding layout of the edge.
      * @param labStyle a string describing the style to be used in the label.
      */
-    private void appendSplineLayout(GraphJEdge edge, JEdgeLayout layout,
+    private void appendSplineLayout(JEdge<G> edge, JEdgeLayout layout,
             String labStyle) {
         System.err.println("Sorry, the SPLINE line style is not yet "
             + "supported, using BEZIER style...");
@@ -1118,7 +1118,7 @@ public final class GraphToTikz {
      * @param layout information regarding layout of the edge.
      * @param labStyle a string describing the style to be used in the label.
      */
-    private void appendManhattanLayout(GraphJEdge edge, JEdgeLayout layout,
+    private void appendManhattanLayout(JEdge<G> edge, JEdgeLayout layout,
             String labStyle) {
         appendOrthogonalLayout(edge, layout, labStyle, ANGLE);
     }
@@ -1129,7 +1129,8 @@ public final class GraphToTikz {
      * string builder, together with a node anchor that keeps the edge
      * horizontal or vertical.
      */
-    private void appendSourceNode(GraphJVertex srcNode, GraphJVertex tgtNode) {
+    private void appendSourceNode(JVertex<G> srcNode,
+            JVertex<G> tgtNode) {
         if (this.layoutMap != null) {
             JVertexLayout tgtLayout =
                 this.layoutMap.getLayout(tgtNode.getNode());
@@ -1151,7 +1152,8 @@ public final class GraphToTikz {
      * string builder, together with a node anchor that keeps the edge
      * horizontal or vertical.
      */
-    private void appendTargetNode(GraphJVertex srcNode, GraphJVertex tgtNode) {
+    private void appendTargetNode(JVertex<G> srcNode,
+            JVertex<G> tgtNode) {
         if (this.layoutMap != null) {
             JVertexLayout srcLayout =
                 this.layoutMap.getLayout(srcNode.getNode());
@@ -1178,7 +1180,7 @@ public final class GraphToTikz {
         }
     }
 
-    private void appendEdgeLabel(GraphJEdge edge) {
+    private void appendEdgeLabel(JEdge<G> edge) {
         if (hasNonEmptyLabel(edge)) {
             MultiLabel lines = edge.getVisuals().getLabel();
             List<Point2D> points = edge.getVisuals().getPoints();
@@ -1200,7 +1202,7 @@ public final class GraphToTikz {
      * Creates an extra path to place the edge label which has special
      * placement requirements.
      */
-    private void appendEdgeLabel(GraphJEdge edge, JEdgeLayout layout,
+    private void appendEdgeLabel(JEdge<G> edge, JEdgeLayout layout,
             String labStyle, List<Point2D> points) {
         if (!labStyle.equals(INHERITANCE_LABEL_STYLE) && hasNonEmptyLabel(edge)) {
             Point2D labelPos =
@@ -1219,7 +1221,7 @@ public final class GraphToTikz {
      * Places the multiplicities (if any) along an edge, aligned to the left, 
      * at the "very near end" and "very near start" positions.
      */
-    private void appendMultiplicities(GraphJEdge edge) {
+    private void appendMultiplicities(JEdge<G> edge) {
         VisualMap visuals = edge.getVisuals();
         String sourceLabel = visuals.getEdgeSourceLabel();
         if (sourceLabel != null) {
@@ -1240,7 +1242,7 @@ public final class GraphToTikz {
     /**
      * Creates extra paths to place the multiplicities.
      */
-    private void appendMultiplicities(GraphJEdge edge, List<Point2D> points) {
+    private void appendMultiplicities(JEdge<G> edge, List<Point2D> points) {
         VisualMap visuals = edge.getVisuals();
         String sourceLabel = visuals.getEdgeSourceLabel();
         if (sourceLabel != null) {
@@ -1265,7 +1267,7 @@ public final class GraphToTikz {
     }
 
     /** Appends the edge label along the path that is being drawn. */
-    private void appendEdgeLabelInPath(GraphJEdge edge, String labStyle) {
+    private void appendEdgeLabelInPath(JEdge<G> edge, String labStyle) {
         if (!labStyle.equals(INHERITANCE_LABEL_STYLE) && hasNonEmptyLabel(edge)) {
             append(NODE);
             append(encloseBrack(labStyle));
@@ -1282,7 +1284,7 @@ public final class GraphToTikz {
      * @return true if the edge is horizontal or vertical and false otherwise.
      */
     private boolean isHorizontalOrVertical(List<Point2D> points, int index,
-            GraphJVertex tgtVertex) {
+            JVertex<G> tgtVertex) {
         boolean result = false;
         if (this.layoutMap != null) {
             JVertexLayout layout =

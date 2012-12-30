@@ -9,8 +9,8 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.display.GraphTab;
 import groove.gui.display.ResourceDisplay;
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJGraph;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JGraph;
 import groove.gui.tree.LabelTree;
 import groove.gui.tree.LabelTree.EntryNode;
 import groove.trans.ResourceKind;
@@ -54,12 +54,12 @@ public class SelectColorAction extends SimulatorAction implements
      */
     private void addAsListener(ResourceDisplay display) {
         assert display.getResourceKind().isGraphBased();
-        GraphJGraph jGraph = ((GraphTab) display.getMainTab()).getJGraph();
+        JGraph<?> jGraph = ((GraphTab) display.getMainTab()).getJGraph();
         jGraph.addGraphSelectionListener(this);
         if (this.label == null) {
             checkJGraph(jGraph);
         }
-        LabelTree labelTree = jGraph.getLabelTree();
+        LabelTree<?> labelTree = jGraph.getLabelTree();
         labelTree.addTreeSelectionListener(this);
         if (this.label == null) {
             checkLabelTree(labelTree);
@@ -67,12 +67,12 @@ public class SelectColorAction extends SimulatorAction implements
     }
 
     /** Checks if in a given JGraph a type label is selected. */
-    private void checkJGraph(GraphJGraph jGraph) {
+    private void checkJGraph(JGraph<?> jGraph) {
         this.label = null;
         Object[] selection = jGraph.getSelectionCells();
         if (selection != null) {
             choose: for (Object cell : selection) {
-                for (Label entry : ((GraphJCell) cell).getKeys()) {
+                for (Label entry : ((JCell<?>) cell).getKeys()) {
                     if (entry instanceof TypeNode) {
                         this.label = ((TypeNode) entry).label();
                         break choose;
@@ -84,7 +84,7 @@ public class SelectColorAction extends SimulatorAction implements
     }
 
     /** Checks if in a given {@link LabelTree} a type label is selected. */
-    private void checkLabelTree(LabelTree tree) {
+    private void checkLabelTree(LabelTree<?> tree) {
         this.label = null;
         TreePath[] selection = tree.getSelectionPaths();
         if (selection != null) {
@@ -156,13 +156,13 @@ public class SelectColorAction extends SimulatorAction implements
 
     @Override
     public void valueChanged(TreeSelectionEvent e) {
-        checkLabelTree((LabelTree) e.getSource());
+        checkLabelTree((LabelTree<?>) e.getSource());
     }
 
-    /** Sets {@link #label} based on the {@link GraphJGraph} selection. */
+    /** Sets {@link #label} based on the {@link JGraph} selection. */
     @Override
     public void valueChanged(GraphSelectionEvent e) {
-        checkJGraph((GraphJGraph) e.getSource());
+        checkJGraph((JGraph<?>) e.getSource());
     }
 
     @Override

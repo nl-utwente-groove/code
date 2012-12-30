@@ -52,7 +52,7 @@ public class PreviewControlAction extends SimulatorAction {
         if (this.jGraph == null) {
             this.jGraph = new CtrlJGraph(getSimulator());
             this.jGraph.setModel(getCtrlAut());
-            this.jGraph.setLabelTree(new LabelTree(this.jGraph, true));
+            this.jGraph.setLabelTree(new LabelTree<CtrlAut>(this.jGraph, true));
             this.jGraph.getLayouter().start(true);
         }
         return this.jGraph;
@@ -61,7 +61,7 @@ public class PreviewControlAction extends SimulatorAction {
     private CtrlJGraph jGraph;
 
     private JDialog getDialog() throws FormatException {
-        return new GraphPreviewDialog(getSimulator(), getCtrlAut());
+        return new GraphPreviewDialog<CtrlAut>(getSimulator(), getCtrlAut());
     }
 
     /** Convenience method to obtain the currently selected control automaton. */

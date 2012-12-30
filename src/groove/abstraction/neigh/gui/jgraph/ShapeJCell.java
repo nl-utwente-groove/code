@@ -14,29 +14,16 @@
  *
  * $Id$
  */
-package groove.abstraction.neigh.gui.look;
+package groove.abstraction.neigh.gui.jgraph;
 
-import groove.abstraction.neigh.gui.jgraph.ShapeJVertex;
 import groove.abstraction.neigh.shape.Shape;
-import groove.abstraction.neigh.shape.ShapeNode;
 import groove.gui.jgraph.JCell;
-import groove.gui.look.VisualValue;
 
 /**
- * Returns the shape adornment 
- * @author Eduardo Zambon
+ * Supertype for shape JCells.
+ * @author Arend Rensink
+ * @version $Revision $
  */
-public class ShapeAdornmentValue implements VisualValue<String> {
-    @Override
-    public String get(JCell<?> cell) {
-        String result = null;
-        if (cell instanceof ShapeJVertex) {
-            ShapeJVertex jVertex = (ShapeJVertex) cell;
-            ShapeNode node = jVertex.getNode();
-            result = node.getAdornment();
-            Shape shape = jVertex.getJGraph().getShape();
-            result += "(" + shape.getNodeMult(node) + ")";
-        }
-        return result;
-    }
+public interface ShapeJCell extends JCell<Shape> {
+    // empty
 }

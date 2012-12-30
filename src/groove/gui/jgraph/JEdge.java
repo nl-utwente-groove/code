@@ -19,6 +19,7 @@ package groove.gui.jgraph;
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.gui.layout.JEdgeLayout;
@@ -42,11 +43,12 @@ import org.jgraph.graph.DefaultPort;
  * stored as a Set in the user object. In the latter case, toString() the user
  * object is the empty string.
  */
-public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
+public class JEdge<G extends Graph<?,?>> extends AbstractJCell<G> implements
+        org.jgraph.graph.Edge {
     /**
      * Constructs an uninitialised model edge.
      */
-    protected GraphJEdge() {
+    protected JEdge() {
         // empty
     }
 
@@ -57,8 +59,9 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
         this.targetNode = null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Collection<? extends GraphJCell> getContext() {
+    public Collection<? extends JVertex<G>> getContext() {
         if (isLoop()) {
             return Collections.singleton(getSourceVertex());
         } else {
@@ -70,8 +73,9 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
      * The cloned object is equal to this one after a reset. 
      */
     @Override
-    public GraphJEdge clone() {
-        GraphJEdge clone = (GraphJEdge) super.clone();
+    public JEdge<G> clone() {
+        @SuppressWarnings("unchecked")
+        JEdge<G> clone = (JEdge<G>) super.clone();
         clone.initialise();
         return clone;
     }
@@ -113,18 +117,20 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
      * Returns the j-vertex that is the parent of the source port of this
      * j-edge.
      */
-    public GraphJVertex getSourceVertex() {
+    @SuppressWarnings("unchecked")
+    public JVertex<G> getSourceVertex() {
         DefaultPort source = getSource();
-        return source == null ? null : (GraphJVertex) source.getParent();
+        return source == null ? null : (JVertex<G>) source.getParent();
     }
 
     /**
      * Returns the j-vertex that is the parent of the target port of this
      * j-edge.
      */
-    public GraphJVertex getTargetVertex() {
+    @SuppressWarnings("unchecked")
+    public JVertex<G> getTargetVertex() {
         DefaultPort target = getTarget();
-        return target == null ? null : (GraphJVertex) target.getParent();
+        return target == null ? null : (JVertex<G>) target.getParent();
     }
 
     /**
@@ -240,7 +246,7 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
     /**
      * Determines the direction corresponding to a given edge
      * wrapped into this JEdge, to be displayed on the JEdge label.
-     * This is {@link Direct#NONE} if {@link GraphJGraph#isShowArrowsOnLabels()}
+     * This is {@link Direct#NONE} if {@link JGraph#isShowArrowsOnLabels()}
      * is {@code false}, otherwise {@link Direct#BIDIRECTIONAL} if the edge
      * look is {@link Look#BIDIRECTIONAL}; otherwise it is determined
      * by the relative direction of the edge with respect to this JEdge.
@@ -337,10 +343,10 @@ public class GraphJEdge extends AbstractJCell implements org.jgraph.graph.Edge {
 
     /** 
      * Returns a fresh, uninitialised instance.
-     * Call {@link #setJModel(GraphJModel)} and {@link #addEdge(Edge)} (in that order)
+     * Call {@link #setJModel} and {@link #addEdge(Edge)} (in that order)
      * to initialise.
      */
-    public static GraphJEdge newInstance() {
-        return new GraphJEdge();
+    public static <G extends Graph<?,?>> JEdge<G> newInstance() {
+        return new JEdge<G>();
     }
 }

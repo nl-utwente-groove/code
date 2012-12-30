@@ -49,37 +49,35 @@ import org.jgraph.graph.DefaultGraphModel;
 import org.jgraph.graph.ParentMap;
 
 /**
- * Implements jgraph's GraphModel interface on top of a groove graph. The
- * resulting GraphModel should only be edited through the Graph interface.
+ * Implements JGraph's GraphModel interface on top of a GROOVE graph.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphJModel<N extends Node,E extends Edge> extends
-        DefaultGraphModel {
+abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
     /**
      * Creates a new GraphJModel instance on top of a given GraphJGraph, with given
      * node and edge attributes, and an indication whether self-edges should be
      * displayed as node labels. The node and edge attribute maps are cloned.
      */
-    protected GraphJModel(GraphJGraph jGraph) {
+    protected JModel(JGraph<G> jGraph) {
         this.jGraph = jGraph;
     }
 
     /** Returns the JGraph in which this model belongs. */
-    public GraphJGraph getJGraph() {
+    public JGraph<G> getJGraph() {
         return this.jGraph;
     }
 
-    /** Specialises the type to a list of {@link GraphJCell}s. */
+    /** Specialises the type to a list of {@link JCell}s. */
     @Override
     @SuppressWarnings("unchecked")
-    public List<? extends GraphJCell> getRoots() {
+    public List<? extends JCell<G>> getRoots() {
         return super.getRoots();
     }
 
     /** Refreshes all refreshable visual keys in all cells of this model. */
     public void refreshVisuals() {
-        for (GraphJCell jCell : getRoots()) {
+        for (JCell<G> jCell : getRoots()) {
             jCell.setStale(VisualKey.refreshables());
         }
     }
@@ -92,15 +90,15 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     /**
      * Sends a set of cells to the back (in the z-order) without posting an edit.
      */
-    void toBackSilent(Collection<? extends GraphJCell> jCells) {
+    void toBackSilent(Collection<? extends JCell<G>> jCells) {
         createLayerEdit(jCells.toArray(), GraphModelLayerEdit.BACK).execute();
     }
 
     @Override
     public AttributeMap getAttributes(Object node) {
         AttributeMap result;
-        if (node instanceof GraphJCell) {
-            result = ((GraphJCell) node).getAttributes();
+        if (node instanceof JCell) {
+            result = ((JCell<?>) node).getAttributes();
         } else {
             result = super.getAttributes(node);
         }
@@ -128,17 +126,17 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * Returns the (non-{@code null}) layout map of the graph.
      * This is retrieved from {@link GraphInfo#getLayoutMap(Graph)}. 
      */
-    public LayoutMap<N,E> getLayoutMap() {
+    public LayoutMap<Node,Edge> getLayoutMap() {
         return this.layoutMap;
     }
 
     /** 
      * Changes the underlying graph to the one passed in as a parameter.
      * Note that this should only be done as part of an action that also
-     * changes the {@link GraphJCell}s of the {@link GraphJModel}, as well as the
-     * mapping from graph elements to {@link GraphJCell}s. 
+     * changes the {@link JCell}s of the {@link JModel}, as well as the
+     * mapping from graph elements to {@link JCell}s. 
      */
-    void setGraph(Graph<N,E> graph) {
+    void setGraph(G graph) {
         this.graph = graph;
     }
 
@@ -148,20 +146,20 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * necessary if the model was removed as a graph listener, for instance for
      * the sake of efficiency.
      */
-    public void loadGraph(Graph<N,E> graph) {
+    public void loadGraph(G graph) {
         prepareLoad(graph);
         addElements(graph.nodeSet(), graph.edgeSet(), true);
     }
 
     /** Adds a set of new graph elements from the current graph to this JModel. */
-    protected void addElements(Collection<? extends N> nodeSet,
-            Collection<? extends E> edgeSet, boolean replace) {
+    protected void addElements(Collection<? extends Node> nodeSet,
+            Collection<? extends Edge> edgeSet, boolean replace) {
         prepareInsert();
         getJGraph().notifyProgress("Loading");
-        for (N node : nodeSet) {
+        for (Node node : nodeSet) {
             addNode(node);
         }
-        for (E edge : edgeSet) {
+        for (Edge edge : edgeSet) {
             addEdge(edge);
         }
         getJGraph().notifyProgress("Rendering");
@@ -172,22 +170,24 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     /**
      * Prepare the object fields for loading a new graph.
      */
-    protected void prepareLoad(Graph<N,E> graph) {
+    @SuppressWarnings("unchecked")
+    protected void prepareLoad(G graph) {
         this.graph = graph;
-        this.layoutMap = GraphInfo.getInfo(graph, true).getLayoutMap();
+        this.layoutMap =
+            GraphInfo.getInfo((Graph<Node,Edge>) graph, true).getLayoutMap();
         this.nodeJCellMap.clear();
         this.edgeJCellMap.clear();
     }
 
     /**
-     * Returns the {@link GraphJCell}associated with a given graph element. The
-     * result is a {@link GraphJVertex}for which the graph element is the
-     * underlying node or self-edge, or a {@link GraphJEdge}for which the graph
+     * Returns the {@link JCell}associated with a given graph element. The
+     * result is a {@link JVertex}for which the graph element is the
+     * underlying node or self-edge, or a {@link JEdge}for which the graph
      * element is an underlying edge.
      * @param elem the graph element for which the jcell is requested
      * @return the jcell associated with <tt>elem</tt>
      */
-    public GraphJCell getJCell(Element elem) {
+    public JCell<G> getJCell(Element elem) {
         if (elem instanceof Node) {
             return getJCellForNode((Node) elem);
         } else {
@@ -205,7 +205,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      *         || result instanceof JEdge &&
      *         result.labels().contains(edge.label())
      */
-    public GraphJCell getJCellForEdge(Edge edge) {
+    public JCell<G> getJCellForEdge(Edge edge) {
         return this.edgeJCellMap.get(edge);
     }
 
@@ -215,45 +215,43 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * @return the JNode modelling node (if node is known)
      * @ensure result == null || result.getUserObject() == node
      */
-    public GraphJVertex getJCellForNode(Node node) {
+    public JVertex<G> getJCellForNode(Node node) {
         return this.nodeJCellMap.get(node);
     }
 
     /** Stores the layout from the JModel back into the graph. */
-    @SuppressWarnings("unchecked")
-    public void synchroniseLayout(GraphJCell jCell) {
-        LayoutMap<N,E> currentLayout = GraphInfo.getLayoutMap(getGraph());
-        if (jCell instanceof GraphJEdge) {
-            for (Edge edge : ((GraphJEdge) jCell).getEdges()) {
-                currentLayout.putEdge((E) edge, jCell.getVisuals());
+    public void synchroniseLayout(JCell<G> jCell) {
+        LayoutMap<Node,Edge> currentLayout = GraphInfo.getLayoutMap(getGraph());
+        if (jCell instanceof JEdge) {
+            for (Edge edge : ((JEdge<G>) jCell).getEdges()) {
+                currentLayout.putEdge(edge, jCell.getVisuals());
             }
-        } else if (jCell instanceof GraphJVertex) {
-            currentLayout.putNode((N) ((GraphJVertex) jCell).getNode(),
+        } else if (jCell instanceof JVertex) {
+            currentLayout.putNode(((JVertex<G>) jCell).getNode(),
                 jCell.getVisuals());
         }
     }
 
     /**
      * Sets the layoutability of all cells. 
-     * @param layoutable the new value for {@link GraphJCell#setLayoutable(boolean)}
+     * @param layoutable the new value for {@link JCell#setLayoutable(boolean)}
      */
     public void setLayoutable(boolean layoutable) {
-        for (GraphJCell jCell : getRoots()) {
+        for (JCell<G> jCell : getRoots()) {
             jCell.setLayoutable(true);
         }
     }
 
     /** Retrieves a mapping from graph nodes to foreground colours
-     * as stored in the corresponding {@link GraphJVertex} attributes.
+     * as stored in the corresponding {@link JVertex} attributes.
      */
-    @SuppressWarnings("unchecked")
-    public Map<N,Color> getColorMap() {
-        Map<N,Color> result = new HashMap<N,Color>();
-        for (GraphJCell jCell : getRoots()) {
-            if (jCell instanceof GraphJVertex) {
+    public Map<Node,Color> getColorMap() {
+        Map<Node,Color> result = new HashMap<Node,Color>();
+        for (JCell<G> jCell : getRoots()) {
+            if (jCell instanceof JVertex) {
                 Color foreground = jCell.getVisuals().getForeground();
                 if (foreground != null) {
-                    result.put((N) ((GraphJVertex) jCell).getNode(), foreground);
+                    result.put(((JVertex<G>) jCell).getNode(), foreground);
                 }
             }
         }
@@ -266,8 +264,9 @@ public class GraphJModel<N extends Node,E extends Edge> extends
             // if we're loading, the layout is actually taken from the graph
             // so no synchronisation is necessary
             for (Object jCell : edit.getChanged()) {
-                if (jCell instanceof GraphJCell) {
-                    GraphJCell graphJCell = (GraphJCell) jCell;
+                if (jCell instanceof JCell) {
+                    @SuppressWarnings("unchecked")
+                    JCell<G> graphJCell = (JCell<G>) jCell;
                     synchroniseLayout(graphJCell);
                 }
             }
@@ -307,12 +306,12 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * Creates a j-cell corresponding to a given node in the graph. Adds the
      * j-cell to {@link #addedJCells}, and updates {@link #nodeJCellMap}.
      */
-    protected GraphJVertex addNode(N node) {
-        GraphJVertex jVertex = computeJVertex(node);
+    protected JVertex<G> addNode(Node node) {
+        JVertex<G> jVertex = computeJVertex(node);
         // we add nodes in front of the list to get them in front of the display
         this.addedJCells.add(0, jVertex);
         this.nodeJCellMap.put(node, jVertex);
-        this.addedJEdges.put(jVertex, new HashSet<GraphJEdge>());
+        this.addedJEdges.put(jVertex, new HashSet<JEdge<G>>());
         return jVertex;
     }
 
@@ -322,10 +321,10 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * existing j-edge, if the edge can be represented by it. Otherwise, it will
      * be a new j-edge.
      */
-    protected GraphJCell addEdge(E edge) {
-        GraphJCell result = this.edgeJCellMap.get(edge);
+    protected JCell<G> addEdge(Edge edge) {
+        JCell<G> result = this.edgeJCellMap.get(edge);
         // check if edge was processed earlier
-        GraphJVertex sourceJVertex = getJCellForNode(edge.source());
+        JVertex<G> sourceJVertex = getJCellForNode(edge.source());
         assert sourceJVertex != null : "No vertex for source node of " + edge;
         if (result == null) {
             // try to add the edge as vertex label to its source vertex
@@ -337,7 +336,7 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         }
         if (result == null) {
             // try to add the edge to an existing JEdge
-            for (GraphJEdge jEdge : getJEdges(sourceJVertex)) {
+            for (JEdge<G> jEdge : getJEdges(sourceJVertex)) {
                 if (jEdge.isCompatible(edge)) {
                     // yes, the edge could be added here; we're done
                     jEdge.addEdge(edge);
@@ -347,11 +346,11 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         }
         if (result == null) {
             // none of the above: so create a new JEdge
-            GraphJEdge jEdge;
+            JEdge<G> jEdge;
             result = jEdge = computeJEdge(edge);
             // put the edge at the end to make sure it goes to the back
             this.addedJCells.add(result);
-            GraphJVertex targetJVertex = getJCellForNode(edge.target());
+            JVertex<G> targetJVertex = getJCellForNode(edge.target());
             assert targetJVertex != null : "No vertex for target node of "
                 + edge;
             this.connections.connect(result, sourceJVertex.getPort(),
@@ -363,8 +362,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends
         return result;
     }
 
-    private Set<GraphJEdge> getJEdges(GraphJVertex jVertex) {
-        Set<GraphJEdge> result = this.addedJEdges.get(jVertex);
+    private Set<JEdge<G>> getJEdges(JVertex<G> jVertex) {
+        Set<JEdge<G>> result = this.addedJEdges.get(jVertex);
         if (result == null) {
             result = jVertex.getJEdges();
         }
@@ -376,8 +375,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * layout information from the layout map stored in this model.
      * @param edge graph edge for which a corresponding j-edge is to be created
      */
-    protected GraphJEdge computeJEdge(E edge) {
-        GraphJEdge result = createJEdge(edge);
+    protected JEdge<G> computeJEdge(Edge edge) {
+        JEdge<G> result = createJEdge(edge);
         JEdgeLayout layout = this.layoutMap.getLayout(edge);
         if (layout != null) {
             result.putVisuals(layout.toVisuals());
@@ -394,8 +393,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * @param node graph node for which a corresponding j-vertex is to be
      *        created
      */
-    protected GraphJVertex computeJVertex(N node) {
-        GraphJVertex result = createJVertex(node);
+    protected JVertex<G> computeJVertex(Node node) {
+        JVertex<G> result = createJVertex(node);
         result.setNode(node);
         JVertexLayout layout = this.layoutMap.getLayout(node);
         if (layout != null) {
@@ -416,8 +415,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * may be {@code null} if there is initially no edge
      * @return a fresh JEedge wrapping <tt>edge</tt>, initialised on this model
      */
-    protected GraphJEdge createJEdge(E edge) {
-        GraphJEdge result = getJGraph().getFactory().newJEdge(edge);
+    protected JEdge<G> createJEdge(Edge edge) {
+        JEdge<G> result = getJGraph().getFactory().newJEdge(edge);
         result.setJModel(this);
         if (edge != null) {
             result.addEdge(edge);
@@ -428,8 +427,8 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     /**
      * Factory method for JVertices initialised on this JModel.
      */
-    protected GraphJVertex createJVertex(N node) {
-        GraphJVertex result = getJGraph().getFactory().newJVertex(node);
+    protected JVertex<G> createJVertex(Node node) {
+        JVertex<G> result = getJGraph().getFactory().newJVertex(node);
         result.setJModel(this);
         result.setNode(node);
         return result;
@@ -451,15 +450,16 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * Optionally sends the new elements to the back
      * @param replace if {@code true}, the old roots should be deleted
      */
+    @SuppressWarnings("unchecked")
     protected void doInsert(boolean replace) {
         Object[] addedCells = this.addedJCells.toArray();
         Object[] removedCells = replace ? getRoots().toArray() : null;
         createEdit(addedCells, removedCells, null, this.connections,
             getParentMap(), null).execute();
-        List<GraphJEdge> edges = new ArrayList<GraphJEdge>();
+        List<JEdge<G>> edges = new ArrayList<JEdge<G>>();
         for (Object jCell : addedCells) {
-            if (jCell instanceof GraphJEdge) {
-                edges.add((GraphJEdge) jCell);
+            if (jCell instanceof JEdge) {
+                edges.add((JEdge<G>) jCell);
             }
         }
         toBackSilent(edges);
@@ -479,29 +479,30 @@ public class GraphJModel<N extends Node,E extends Edge> extends
      * generate a random position for any added j-vertex without layout
      * information.
      */
+    @SuppressWarnings("unchecked")
     protected int randomCoordinate() {
         Rectangle2D bounds = new Rectangle();
         for (Object cell : getJGraph().getSelectionCells()) {
-            if (cell instanceof GraphJVertex) {
-                bounds.add(((GraphJVertex) cell).getVisuals().getNodePos());
+            if (cell instanceof JVertex) {
+                bounds.add(((JVertex<G>) cell).getVisuals().getNodePos());
             }
         }
         return 25 + randomGenerator.nextInt((this.nodeJCellMap.size() + this.edgeJCellMap.size()) * 5 + 1);
     }
 
     /** The JGraph to which this model belongs. */
-    private final GraphJGraph jGraph;
+    private final JGraph<G> jGraph;
     /**
      * The underlying Graph of this GraphModel.
      * @invariant graph != null
      */
-    private Graph<N,E> graph;
+    private G graph;
     /**
      * The layout map for the underlying graph. It maps {@link Element}s to
      * {@link JCellLayout}s. This is set to an empty map if the graph is not a
      * layed out graph.
      */
-    private LayoutMap<N,E> layoutMap;
+    private LayoutMap<Node,Edge> layoutMap;
 
     /** Changes the loading status of the JGraph. */
     private void setLoading(boolean loading) {
@@ -518,24 +519,25 @@ public class GraphJModel<N extends Node,E extends Edge> extends
     /**
      * Map from graph nodes to JGraph cells.
      */
-    protected Map<N,GraphJVertex> nodeJCellMap = new HashMap<N,GraphJVertex>();
+    protected Map<Node,JVertex<G>> nodeJCellMap =
+        new HashMap<Node,JVertex<G>>();
     /**
      * Map from graph edges to JGraph cells.
      */
-    protected Map<E,GraphJCell> edgeJCellMap = new HashMap<E,GraphJCell>();
+    protected Map<Edge,JCell<G>> edgeJCellMap = new HashMap<Edge,JCell<G>>();
 
     /**
      * Mapping from graph nodes to JEdges for outgoing edges.
      * Used in the process of constructing a GraphJModel.
      */
-    protected final Map<GraphJVertex,Set<GraphJEdge>> addedJEdges =
-        new HashMap<GraphJVertex,Set<GraphJEdge>>();
+    protected final Map<JVertex<G>,Set<JEdge<G>>> addedJEdges =
+        new HashMap<JVertex<G>,Set<JEdge<G>>>();
     /**
      * Set of GraphModel cells. Used in the process of constructing a
      * GraphJModel.
      * @invariant addedCells \subseteq org.jgraph.graph.DefaultGraphCell
      */
-    protected final List<GraphJCell> addedJCells = new LinkedList<GraphJCell>();
+    protected final List<JCell<G>> addedJCells = new LinkedList<JCell<G>>();
     /**
      * Set of GraphModel connections. Used in the process of constructing a
      * GraphJModel.

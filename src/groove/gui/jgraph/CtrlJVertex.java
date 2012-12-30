@@ -1,5 +1,6 @@
 package groove.gui.jgraph;
 
+import groove.control.CtrlAut;
 import groove.control.CtrlState;
 import groove.gui.look.Look;
 
@@ -8,10 +9,10 @@ import groove.gui.look.Look;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class CtrlJVertex extends GraphJVertex {
+public class CtrlJVertex extends JVertex<CtrlAut> {
     /**
      * Creates a new instance.
-     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(groove.graph.Node)}
+     * Call {@link #setJModel} and {@link #setNode(groove.graph.Node)}
      * to initialise.
      */
     private CtrlJVertex() {
@@ -65,8 +66,9 @@ public class CtrlJVertex extends GraphJVertex {
     }
 
     /** Returns a fresh, uninitialised instance.
-     * Call {@link #setJModel(GraphJModel)} and {@link #setNode(groove.graph.Node)} to initialise. 
+     * Call {@link #setJModel} and {@link #setNode(groove.graph.Node)} to initialise. 
      */
+    @SuppressWarnings("unchecked")
     public static CtrlJVertex newInstance() {
         return new CtrlJVertex();
     }

@@ -32,7 +32,7 @@ import java.util.List;
  * @version $Revision $
  */
 public class AspectJCellErrors implements Iterable<FormatError> {
-    AspectJCellErrors(GraphJCell jCell) {
+    AspectJCellErrors(AspectJCell jCell) {
         this.jCell = jCell;
     }
 
@@ -70,7 +70,7 @@ public class AspectJCellErrors implements Iterable<FormatError> {
         return aspect ? this.aspectErrors : this.extraErrors;
     }
 
-    private final GraphJCell jCell;
+    private final AspectJCell jCell;
     private final List<FormatError> aspectErrors = new ArrayList<FormatError>();
     private final List<FormatError> extraErrors = new ArrayList<FormatError>();
 }

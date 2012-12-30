@@ -21,7 +21,7 @@ import groove.abstraction.pattern.shape.AbstractPatternNode;
 import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.graph.Graph;
-import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.JCell;
 import groove.gui.look.VisualValue;
 
 /**
@@ -31,7 +31,7 @@ import groove.gui.look.VisualValue;
  */
 public class PatternAdornmentValue implements VisualValue<String> {
     @Override
-    public String get(GraphJCell cell) {
+    public String get(JCell<?> cell) {
         String result = null;
         if (cell instanceof PatternJVertex) {
             PatternJVertex jVertex = (PatternJVertex) cell;

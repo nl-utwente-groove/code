@@ -72,7 +72,7 @@ public class JVertexView extends VertexView {
      * @param jNode the node underlying the view
      * @param jGraph the graph on which the node is to be displayed
      */
-    public JVertexView(GraphJVertex jNode, GraphJGraph jGraph) {
+    public JVertexView(JVertex<?> jNode, JGraph<?> jGraph) {
         super(jNode);
         this.jGraph = jGraph;
     }
@@ -81,8 +81,8 @@ public class JVertexView extends VertexView {
      * Specialises the return type.
      */
     @Override
-    public GraphJVertex getCell() {
-        return (GraphJVertex) super.getCell();
+    public JVertex<?> getCell() {
+        return (JVertex<?>) super.getCell();
     }
 
     /** Returns the visual attributes map of the viewed cell. */
@@ -450,7 +450,7 @@ public class JVertexView extends VertexView {
     }
 
     /** Underlying graph model, used to construct the autosize. */
-    private final GraphJGraph jGraph;
+    private final JGraph<?> jGraph;
     /** The color from which {@link #text} was derived. */
     private Color color;
     /** The label instance from which {@link #text} was derived. */
@@ -974,7 +974,7 @@ public class JVertexView extends VertexView {
         /** The vertex view that is currently installed. */
         private JVertexView view;
         /** The vertex that is currently installed. */
-        private GraphJVertex cell;
+        private JVertex<?> cell;
         /** The visual map of the vertex that is currently installed. */
         private VisualMap visuals;
         /** Indicates if the cell is a nodified edge. */

@@ -29,10 +29,10 @@ import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.CtrlJVertex;
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.GraphJVertex;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJVertex;
 import groove.gui.look.Line.ColorType;
@@ -63,24 +63,24 @@ import java.util.Map;
  */
 public class LabelValue implements VisualValue<MultiLabel> {
     /** Constructs a value strategy for a given JGraph. */
-    public LabelValue(GraphJGraph jGraph) {
+    public LabelValue(JGraph<?> jGraph) {
         this.jGraph = jGraph;
         this.role = jGraph.getGraphRole();
     }
 
     @Override
-    public MultiLabel get(GraphJCell cell) {
+    public MultiLabel get(JCell<?> cell) {
         MultiLabel result = null;
-        if (cell instanceof GraphJVertex) {
-            result = getJVertexLabel((GraphJVertex) cell);
-        } else if (cell instanceof GraphJEdge) {
-            result = getJEdgeLabel((GraphJEdge) cell);
+        if (cell instanceof JVertex) {
+            result = getJVertexLabel((JVertex<?>) cell);
+        } else if (cell instanceof JEdge) {
+            result = getJEdgeLabel((JEdge<?>) cell);
         }
         return result;
     }
 
     /** Returns a list of lines together making up the label text of a vertex. */
-    protected MultiLabel getJVertexLabel(GraphJVertex jVertex) {
+    protected MultiLabel getJVertexLabel(JVertex<?> jVertex) {
         MultiLabel result;
         switch (this.role) {
         case HOST:
@@ -105,7 +105,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     }
 
     /** This implementation adds the data edges to the super result. */
-    private MultiLabel getBasicVertexLabel(GraphJVertex jVertex) {
+    private MultiLabel getBasicVertexLabel(JVertex<?> jVertex) {
         MultiLabel result = new MultiLabel();
         // show the node identity if required
         if (jVertex.getJGraph().isShowNodeIdentities()) {
@@ -380,7 +380,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     }
 
     /** Returns a list of lines together making up the label text of a vertex. */
-    protected MultiLabel getJEdgeLabel(GraphJEdge jEdge) {
+    protected MultiLabel getJEdgeLabel(JEdge<?> jEdge) {
         MultiLabel result;
         switch (this.role) {
         case HOST:
@@ -397,7 +397,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         return result;
     }
 
-    private MultiLabel getBasicJEdgeLabel(GraphJEdge jEdge) {
+    private MultiLabel getBasicJEdgeLabel(JEdge<?> jEdge) {
         MultiLabel result = new MultiLabel();
         for (Edge edge : jEdge.getEdges()) {
             // only add edges that have an unfiltered label
@@ -622,9 +622,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /** 
      * Tests if a given edge is currently being filtered.
      */
-    private boolean isFiltered(GraphJCell jCell, Edge edge) {
+    private boolean isFiltered(JCell<?> jCell, Edge edge) {
         boolean result = false;
-        LabelTree labelTree = jCell.getJGraph().getLabelTree();
+        LabelTree<?> labelTree = jCell.getJGraph().getLabelTree();
         if (edge != null && labelTree != null) {
             Label key = jCell.getKey(edge);
             result = key != null && labelTree.isFiltered(key);
@@ -633,11 +633,11 @@ public class LabelValue implements VisualValue<MultiLabel> {
     }
 
     /** Returns the JGraph on which this label refresher is based. */
-    public GraphJGraph getJGraph() {
+    public JGraph<?> getJGraph() {
         return this.jGraph;
     }
 
-    private final GraphJGraph jGraph;
+    private final JGraph<?> jGraph;
     private final GraphRole role;
 
     /** Returns the label prefix associated with a given role. */

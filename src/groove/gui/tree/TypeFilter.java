@@ -22,7 +22,8 @@ import groove.graph.TypeElement;
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
 import groove.graph.TypeNode;
-import groove.gui.jgraph.GraphJCell;
+import groove.gui.jgraph.JCell;
+import groove.view.aspect.AspectGraph;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,12 +31,12 @@ import java.util.Map;
 /**
  * Class that maintains a set of filtered entries
  * (either edge labels or type elements) as well as an inverse
- * mapping of those labels to {@link GraphJCell}s bearing 
+ * mapping of those labels to {@link JCell}s bearing 
  * the entries.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeFilter extends LabelFilter {
+public class TypeFilter extends LabelFilter<AspectGraph> {
     /** 
      * Clears the entire filter, and resets it to label- or type-based.
      */

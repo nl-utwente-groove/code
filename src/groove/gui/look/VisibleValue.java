@@ -17,14 +17,15 @@
 package groove.gui.look;
 
 import static groove.view.aspect.AspectKind.REMARK;
+import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJVertex;
-import groove.gui.jgraph.GraphJCell;
-import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.GraphJGraph;
-import groove.gui.jgraph.GraphJVertex;
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJCell;
 import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJVertex;
@@ -44,9 +45,9 @@ import groove.view.aspect.AspectNode;
  */
 public class VisibleValue implements VisualValue<Boolean> {
     @Override
-    public Boolean get(GraphJCell cell) {
+    public Boolean get(JCell<?> cell) {
         boolean result = true;
-        boolean isVertex = cell instanceof GraphJVertex;
+        boolean isVertex = cell instanceof JVertex;
         if (cell instanceof AspectJCell) {
             result =
                 isVertex ? getAspectVertexValue((AspectJVertex) cell)
@@ -55,17 +56,18 @@ public class VisibleValue implements VisualValue<Boolean> {
             result =
                 isVertex ? getLTSVertexValue((LTSJVertex) cell)
                         : getLTSEdgeValue((LTSJEdge) cell);
-        } else if (cell instanceof GraphJVertex) {
+        } else if (cell instanceof JVertex) {
             result =
-                isVertex ? getBasicVertexValue((GraphJVertex) cell)
-                        : getBasicEdgeValue((GraphJEdge) cell);
+                isVertex ? getBasicVertexValue((JVertex<?>) cell)
+                        : getBasicEdgeValue((JEdge<?>) cell);
         }
         return result;
     }
 
-    private boolean getBasicVertexValue(GraphJVertex jVertex) {
-        GraphJGraph jGraph = jVertex.getJGraph();
-        LabelTree labelTree = jGraph.getLabelTree();
+    private <G extends Graph<?,?>> boolean getBasicVertexValue(
+            JVertex<G> jVertex) {
+        JGraph<G> jGraph = jVertex.getJGraph();
+        LabelTree<G> labelTree = jGraph.getLabelTree();
         if (labelTree == null || !labelTree.isFiltered(jVertex)) {
             return true;
         }
@@ -78,17 +80,17 @@ public class VisibleValue implements VisualValue<Boolean> {
         return false;
     }
 
-    private boolean getBasicEdgeValue(GraphJEdge jEdge) {
+    private <G extends Graph<?,?>> boolean getBasicEdgeValue(JEdge<G> jEdge) {
         boolean result = true;
-        GraphJVertex source = jEdge.getSourceVertex();
-        GraphJVertex target = jEdge.getTargetVertex();
+        JVertex<?> source = jEdge.getSourceVertex();
+        JVertex<?> target = jEdge.getTargetVertex();
         if (source == null || !source.getVisuals().isVisible()) {
             return false;
         }
         if (target == null || !target.getVisuals().isVisible()) {
             return false;
         }
-        LabelTree labelTree = jEdge.getJGraph().getLabelTree();
+        LabelTree<G> labelTree = jEdge.getJGraph().getLabelTree();
         if (labelTree != null) {
             result = !labelTree.isFiltered(jEdge);
         }
@@ -190,10 +192,11 @@ public class VisibleValue implements VisualValue<Boolean> {
      * with nonempty (unfiltered) label text.
      * This is to determine the visibility of the node.
      */
-    private boolean hasVisibleIncidentEdge(GraphJVertex jVertex) {
+    private <G extends Graph<?,?>> boolean hasVisibleIncidentEdge(
+            JVertex<G> jVertex) {
         boolean result = false;
-        LabelTree labelTree = jVertex.getJGraph().getLabelTree();
-        for (GraphJEdge jEdge : jVertex.getJEdges()) {
+        LabelTree<G> labelTree = jVertex.getJGraph().getLabelTree();
+        for (JEdge<G> jEdge : jVertex.getJEdges()) {
             if (labelTree == null || !labelTree.isFiltered(jEdge)) {
                 result = true;
                 break;

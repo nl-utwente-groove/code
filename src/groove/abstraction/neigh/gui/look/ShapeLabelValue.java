@@ -24,8 +24,8 @@ import groove.abstraction.neigh.gui.jgraph.ShapeJGraph;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.graph.Edge;
-import groove.gui.jgraph.GraphJEdge;
-import groove.gui.jgraph.GraphJVertex;
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JVertex;
 import groove.gui.look.LabelValue;
 import groove.gui.look.Line;
 import groove.gui.look.MultiLabel;
@@ -42,7 +42,7 @@ public class ShapeLabelValue extends LabelValue {
     }
 
     @Override
-    protected MultiLabel getJVertexLabel(GraphJVertex jVertex) {
+    protected MultiLabel getJVertexLabel(JVertex<?> jVertex) {
         if (jVertex instanceof EcJVertex) {
             return new MultiLabel();
         } else {
@@ -51,7 +51,7 @@ public class ShapeLabelValue extends LabelValue {
     }
 
     @Override
-    protected MultiLabel getJEdgeLabel(GraphJEdge jEdge) {
+    protected MultiLabel getJEdgeLabel(JEdge<?> jEdge) {
         MultiLabel result = new MultiLabel();
         assert jEdge instanceof ShapeJEdge;
         Shape shape = ((ShapeJEdge) jEdge).getJGraph().getShape();
