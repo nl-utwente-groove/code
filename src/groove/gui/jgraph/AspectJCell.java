@@ -20,7 +20,7 @@ import groove.graph.GraphRole;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectKind;
 
-import java.util.Collection;
+import java.util.Set;
 
 /**
  * Instantiation of a {@link JCell} with an {@link AspectJObject}
@@ -29,8 +29,8 @@ import java.util.Collection;
  * @version $Revision $
  */
 public interface AspectJCell extends JCell<AspectGraph> {
-    /** Returns the end nodes (for an edge) or the incident edges (for a vertex). */
-    public Collection<? extends AspectJCell> getContext();
+    @Override
+    public Set<? extends AspectJCell> getContext();
 
     /** Returns the aspect kind of the element wrapped in this cell. */
     AspectKind getAspect();

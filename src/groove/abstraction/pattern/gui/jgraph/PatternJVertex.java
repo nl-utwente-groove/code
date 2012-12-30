@@ -17,7 +17,7 @@
 package groove.abstraction.pattern.gui.jgraph;
 
 import groove.abstraction.pattern.shape.AbstractPatternGraph;
-import groove.gui.jgraph.JVertex;
+import groove.gui.jgraph.AJVertex;
 import groove.gui.look.Look;
 
 /**
@@ -25,30 +25,18 @@ import groove.gui.look.Look;
  * 
  * @author Eduardo Zambon
  */
-public class PatternJVertex extends JVertex<AbstractPatternGraph<?,?>> {
+public class PatternJVertex
+        extends
+        AJVertex<AbstractPatternGraph<?,?>,PatternJGraph,PatternJModel,PatternJEdge>
+        implements PatternJCell {
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     // Private constructor. Use the prototype.
-    private PatternJVertex() {
-        // empty
-    }
-
-    // ------------------------------------------------------------------------
-    // Overridden methods
-    // ------------------------------------------------------------------------
-
-    @Override
-    public PatternJGraph getJGraph() {
-        return (PatternJGraph) super.getJGraph();
-    }
-
-    @Override
-    public String toString() {
-        return String.format("PatternJVertex %d with labels %s", getNumber(),
-            getKeys());
+    private PatternJVertex(boolean outer) {
+        this.outer = outer;
     }
 
     // ------------------------------------------------------------------------
@@ -57,12 +45,18 @@ public class PatternJVertex extends JVertex<AbstractPatternGraph<?,?>> {
 
     @Override
     protected Look getStructuralLook() {
-        return Look.PATTERN;
+        return isOuter() ? Look.PATTERN : super.getStructuralLook();
     }
 
+    @Override
+    public boolean isOuter() {
+        return this.outer;
+    }
+
+    private final boolean outer;
+
     /** Returns a new instance of this class. */
-    @SuppressWarnings("unchecked")
-    public static PatternJVertex newInstance() {
-        return new PatternJVertex();
+    public static PatternJVertex newInstance(boolean outer) {
+        return new PatternJVertex(outer);
     }
 }

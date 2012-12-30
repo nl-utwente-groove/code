@@ -14,7 +14,8 @@ import groove.util.Groove;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSJEdge extends JEdge<GTS> implements LTSJCell {
+public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>
+        implements LTSJCell {
     /**
      * Constructs an uninitialised instance.
      * Call {@link #setJModel(JModel)} to initialise.
@@ -27,11 +28,6 @@ public class LTSJEdge extends JEdge<GTS> implements LTSJCell {
     protected void initialise() {
         super.initialise();
         this.visibleFlag = true;
-    }
-
-    @Override
-    public LTSJGraph getJGraph() {
-        return (LTSJGraph) super.getJGraph();
     }
 
     @Override
@@ -118,7 +114,6 @@ public class LTSJEdge extends JEdge<GTS> implements LTSJCell {
     /** Constructs a fresh instance.
      * Call {@link #setJModel(JModel)} to initialise.
      */
-    @SuppressWarnings("unchecked")
     public static LTSJEdge newInstance() {
         return new LTSJEdge();
     }

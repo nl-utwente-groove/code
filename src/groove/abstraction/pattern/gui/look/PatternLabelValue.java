@@ -43,7 +43,7 @@ public class PatternLabelValue extends LabelValue {
 
     @Override
     protected MultiLabel getJVertexLabel(JVertex<?> jVertex) {
-        if (jVertex instanceof PatternJVertex) {
+        if (((PatternJVertex) jVertex).isOuter()) {
             return new MultiLabel();
         } else {
             return super.getJVertexLabel(jVertex);
@@ -52,8 +52,9 @@ public class PatternLabelValue extends LabelValue {
 
     @Override
     protected MultiLabel getJEdgeLabel(JEdge<?> jEdge) {
-        if (jEdge instanceof PatternJEdge) {
-            return getPatternJEdgeLabel((PatternJEdge) jEdge);
+        PatternJEdge myJEdge = (PatternJEdge) jEdge;
+        if (myJEdge.isOuter()) {
+            return getPatternJEdgeLabel(myJEdge);
         } else {
             return super.getJEdgeLabel(jEdge);
         }

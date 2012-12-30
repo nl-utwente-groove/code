@@ -18,7 +18,7 @@ package groove.abstraction.neigh.gui.jgraph;
 
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.gui.jgraph.JVertex;
+import groove.gui.jgraph.AJVertex;
 
 /**
  * Class that connects to the JGraph library for displaying ShapeNodes.
@@ -27,16 +27,13 @@ import groove.gui.jgraph.JVertex;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeJVertex extends JVertex<Shape> implements ShapeJCell {
+public class ShapeJVertex extends
+        AJVertex<Shape,ShapeJGraph,ShapeJModel,ShapeJEdge> implements
+        ShapeJCell {
     // Private constructor. Use the prototype.
     private ShapeJVertex() {
         // Remove the default port that was added by the super constructor.
         this.remove(0);
-    }
-
-    @Override
-    public ShapeJGraph getJGraph() {
-        return (ShapeJGraph) super.getJGraph();
     }
 
     @Override
@@ -50,7 +47,6 @@ public class ShapeJVertex extends JVertex<Shape> implements ShapeJCell {
     }
 
     /** Returns a prototype {@link ShapeJVertex}. */
-    @SuppressWarnings("unchecked")
     public static ShapeJVertex newInstance() {
         return new ShapeJVertex();
     }

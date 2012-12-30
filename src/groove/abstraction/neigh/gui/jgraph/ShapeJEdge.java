@@ -17,7 +17,7 @@
 package groove.abstraction.neigh.gui.jgraph;
 
 import groove.abstraction.neigh.shape.Shape;
-import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.AJEdge;
 import groove.gui.jgraph.JModel;
 
 /**
@@ -29,7 +29,9 @@ import groove.gui.jgraph.JModel;
  * 
  * @author Eduardo Zambon
  */
-public class ShapeJEdge extends JEdge<Shape> implements ShapeJCell {
+public class ShapeJEdge extends
+        AJEdge<Shape,ShapeJGraph,ShapeJModel,ShapeJVertex> implements
+        ShapeJCell {
 
     private boolean mainSrc;
     private boolean mainTgt;
@@ -43,11 +45,6 @@ public class ShapeJEdge extends JEdge<Shape> implements ShapeJCell {
         super.initialise();
         this.mainSrc = false;
         this.mainTgt = false;
-    }
-
-    @Override
-    public ShapeJGraph getJGraph() {
-        return (ShapeJGraph) super.getJGraph();
     }
 
     /** Toggles the mainSrc flag. */
@@ -80,7 +77,6 @@ public class ShapeJEdge extends JEdge<Shape> implements ShapeJCell {
      * Returns fresh, uninitialised instance.
      * Call {@link #setJModel(JModel)} to initialise.
      */
-    @SuppressWarnings("unchecked")
     public static ShapeJEdge newInstance() {
         return new ShapeJEdge();
     }

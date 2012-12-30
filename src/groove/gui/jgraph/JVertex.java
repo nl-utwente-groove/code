@@ -37,7 +37,7 @@ import org.jgraph.graph.DefaultPort;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class JVertex<G extends Graph<?,?>> extends AbstractJCell<G> {
+abstract public class JVertex<G extends Graph<?,?>> extends AJCell<G> {
     /**
      * Constructs a fresh, uninitialised JVertex.
      * Call {@link #setJModel(JModel)} and {@link #setNode(Node)}
@@ -73,16 +73,8 @@ public class JVertex<G extends Graph<?,?>> extends AbstractJCell<G> {
         return (DefaultPort) getFirstChild();
     }
 
-    /** Returns an iterator over the current incident JEdges of this JVertex. */
-    @SuppressWarnings("unchecked")
-    public Set<JEdge<G>> getJEdges() {
-        return getPort().getEdges();
-    }
-
     @Override
-    public Collection<? extends JEdge<G>> getContext() {
-        return getJEdges();
-    }
+    abstract public Set<? extends JEdge<G>> getContext();
 
     /** 
      * The cloned object is equal to this one after a reset. 
@@ -161,8 +153,8 @@ public class JVertex<G extends Graph<?,?>> extends AbstractJCell<G> {
 
     @Override
     public String toString() {
-        return String.format("JVertex %d with labels %s", getNumber(),
-            getKeys());
+        return String.format("%s %d with labels %s",
+            getClass().getSimpleName(), getNumber(), getKeys());
     }
 
     /**
@@ -170,14 +162,5 @@ public class JVertex<G extends Graph<?,?>> extends AbstractJCell<G> {
      */
     public String getToolTipText() {
         return HTMLConverter.HTML_TAG.on(getNodeDescription()).toString();
-    }
-
-    /** 
-     * Returns a fresh, uninitialised instance of this class.
-     * Call {@link #setJModel(JModel)} and {@link #setNode(Node)}
-     * to initialise.
-     */
-    public static <G extends Graph<?,?>> JVertex<G> newInstance() {
-        return new JVertex<G>();
     }
 }

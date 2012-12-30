@@ -17,7 +17,7 @@
 package groove.abstraction.pattern.gui.jgraph;
 
 import groove.abstraction.pattern.shape.AbstractPatternGraph;
-import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.AJEdge;
 import groove.gui.jgraph.JModel;
 import groove.gui.look.Look;
 
@@ -26,29 +26,18 @@ import groove.gui.look.Look;
  * 
  * @author Eduardo Zambon
  */
-public class PatternJEdge extends JEdge<AbstractPatternGraph<?,?>> {
+public class PatternJEdge
+        extends
+        AJEdge<AbstractPatternGraph<?,?>,PatternJGraph,PatternJModel,PatternJVertex>
+        implements PatternJCell {
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     // Private constructor. Use the prototype.
-    private PatternJEdge() {
-        // empty
-    }
-
-    // ------------------------------------------------------------------------
-    // Overridden methods
-    // ------------------------------------------------------------------------
-
-    @Override
-    public PatternJGraph getJGraph() {
-        return (PatternJGraph) super.getJGraph();
-    }
-
-    @Override
-    public String toString() {
-        return String.format("PatternJEdge with labels %s", getKeys());
+    private PatternJEdge(boolean outer) {
+        this.outer = outer;
     }
 
     // ------------------------------------------------------------------------
@@ -57,15 +46,20 @@ public class PatternJEdge extends JEdge<AbstractPatternGraph<?,?>> {
 
     @Override
     protected Look getStructuralLook() {
-        return Look.PATTERN;
+        return isOuter() ? Look.PATTERN : super.getStructuralLook();
     }
+
+    public boolean isOuter() {
+        return this.outer;
+    }
+
+    private final boolean outer;
 
     /** 
      * Returns a fresh, uninitialised instance.
      * Call {@link #setJModel(JModel)} to initialise. 
      */
-    @SuppressWarnings("unchecked")
-    public static PatternJEdge newInstance() {
-        return new PatternJEdge();
+    public static PatternJEdge newInstance(boolean outer) {
+        return new PatternJEdge(outer);
     }
 }

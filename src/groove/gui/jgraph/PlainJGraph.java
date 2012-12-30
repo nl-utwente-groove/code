@@ -16,7 +16,9 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.Node;
 import groove.gui.Simulator;
 
 /**
@@ -34,6 +36,21 @@ public class PlainJGraph extends JGraph<Graph<?,?>> {
         super(simulator);
     }
 
+    @Override
+    protected JGraphFactory<Graph<?,?>> createFactory() {
+        return new JGraphFactory<Graph<?,?>>(this) {
+            @Override
+            public PlainJEdge newJEdge(Edge edge) {
+                return new PlainJEdge();
+            }
+
+            @Override
+            public PlainJVertex newJVertex(Node node) {
+                return new PlainJVertex();
+            }
+        };
+    }
+
     /**
      * Creates a new instance, based on a given simulator.
      * @param simulator the simulator to which the {@link JGraph} belongs;
@@ -41,5 +58,15 @@ public class PlainJGraph extends JGraph<Graph<?,?>> {
      */
     public static PlainJGraph newInstance(Simulator simulator) {
         return new PlainJGraph(simulator);
+    }
+
+    private class PlainJEdge extends
+            AJEdge<Graph<?,?>,PlainJGraph,JModel<Graph<?,?>>,PlainJVertex> {
+        // empty
+    }
+
+    private class PlainJVertex extends
+            AJVertex<Graph<?,?>,PlainJGraph,JModel<Graph<?,?>>,PlainJEdge> {
+        // empty
     }
 }

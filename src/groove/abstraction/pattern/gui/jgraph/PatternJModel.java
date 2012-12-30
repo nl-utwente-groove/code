@@ -57,7 +57,7 @@ public class PatternJModel extends JModel<AbstractPatternGraph<?,?>> {
      */
     private ParentMap parentMap;
 
-    private Map<PatternJVertex,List<JCell<AbstractPatternGraph<?,?>>>> reverseParentMap;
+    private Map<PatternJVertex,List<PatternJCell>> reverseParentMap;
 
     /**
      * Factory to create simple graph elements. We can't reuse the elements
@@ -103,10 +103,10 @@ public class PatternJModel extends JModel<AbstractPatternGraph<?,?>> {
     }
 
     @Override
-    protected JVertex<AbstractPatternGraph<?,?>> addNode(Node node) {
-        JVertex<AbstractPatternGraph<?,?>> result = super.addNode(node);
+    protected PatternJVertex addNode(Node node) {
+        PatternJVertex result = (PatternJVertex) super.addNode(node);
         if (isPatternTyped(node)) {
-            this.pNodeJCellMap.put(node, (PatternJVertex) result);
+            this.pNodeJCellMap.put(node, result);
         }
         return result;
     }
@@ -116,7 +116,7 @@ public class PatternJModel extends JModel<AbstractPatternGraph<?,?>> {
         super.prepareInsert();
         this.parentMap = new ParentMap();
         this.reverseParentMap =
-            new MyHashMap<PatternJVertex,List<JCell<AbstractPatternGraph<?,?>>>>();
+            new MyHashMap<PatternJVertex,List<PatternJCell>>();
     }
 
     @Override
@@ -125,11 +125,10 @@ public class PatternJModel extends JModel<AbstractPatternGraph<?,?>> {
     }
 
     @Override
-    protected JVertex<AbstractPatternGraph<?,?>> computeJVertex(Node node) {
-        JVertex<AbstractPatternGraph<?,?>> result =
-            super.computeJVertex(node);
+    protected PatternJVertex computeJVertex(Node node) {
+        PatternJVertex result = (PatternJVertex) super.computeJVertex(node);
         if (isPatternTyped(node)) {
-            createPattern((AbstractPatternNode) node, (PatternJVertex) result);
+            createPattern((AbstractPatternNode) node, result);
         }
         return result;
     }
@@ -152,7 +151,7 @@ public class PatternJModel extends JModel<AbstractPatternGraph<?,?>> {
     }
 
     /** Basic getter. */
-    public Map<PatternJVertex,List<JCell<AbstractPatternGraph<?,?>>>> getReverseParentMap() {
+    public Map<PatternJVertex,List<PatternJCell>> getReverseParentMap() {
         return this.reverseParentMap;
     }
 
@@ -169,8 +168,7 @@ public class PatternJModel extends JModel<AbstractPatternGraph<?,?>> {
         for (HostNode sNode : pattern.nodeSet()) {
             HostNode newSNode = this.hostFactory.createNode();
             nodeMap.put(sNode, newSNode);
-            JVertex<AbstractPatternGraph<?,?>> sJVertex =
-                addNode(newSNode);
+            PatternJVertex sJVertex = addNode(newSNode);
             this.parentMap.addEntry(sJVertex, pJVertex);
             addToReverseMap(pJVertex, sJVertex);
         }
@@ -179,18 +177,16 @@ public class PatternJModel extends JModel<AbstractPatternGraph<?,?>> {
             HostNode target = nodeMap.get(sEdge.target());
             HostEdge newSEdge =
                 this.hostFactory.createEdge(source, sEdge.label(), target);
-            JCell<AbstractPatternGraph<?,?>> sJEdge = addEdge(newSEdge);
+            PatternJCell sJEdge = (PatternJCell) addEdge(newSEdge);
             this.parentMap.addEntry(sJEdge, pJVertex);
             addToReverseMap(pJVertex, sJEdge);
         }
     }
 
-    private void addToReverseMap(PatternJVertex pJVertex,
-            JCell<AbstractPatternGraph<?,?>> jCell) {
-        List<JCell<AbstractPatternGraph<?,?>>> cells =
-            this.reverseParentMap.get(pJVertex);
+    private void addToReverseMap(PatternJVertex pJVertex, PatternJCell jCell) {
+        List<PatternJCell> cells = this.reverseParentMap.get(pJVertex);
         if (cells == null) {
-            cells = new ArrayList<JCell<AbstractPatternGraph<?,?>>>();
+            cells = new ArrayList<PatternJCell>();
             this.reverseParentMap.put(pJVertex, cells);
         }
         cells.add(jCell);

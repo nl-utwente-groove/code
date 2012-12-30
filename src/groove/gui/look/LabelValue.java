@@ -418,7 +418,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         } else if (jEdge.isNodeEdgeIn()) {
             result = new MultiLabel();
             LabelPattern pattern =
-                ((AspectJVertex) jEdge.getTargetVertex()).getEdgeLabelPattern();
+                jEdge.getTargetVertex().getEdgeLabelPattern();
             @SuppressWarnings({"unchecked", "rawtypes"})
             GraphBasedModel<HostGraph> resourceModel =
                 (GraphBasedModel) jEdge.getJModel().getResourceModel();
