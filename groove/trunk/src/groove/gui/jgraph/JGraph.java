@@ -106,6 +106,7 @@ import org.jgraph.event.GraphSelectionListener;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.CellView;
+import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.GraphModel;
@@ -389,8 +390,8 @@ abstract public class JGraph<G extends Graph<?,?>> extends org.jgraph.JGraph {
         List<Object> res = new LinkedList<Object>();
         for (Object element : cells) {
             res.add(element);
-            if (element instanceof JVertex) {
-                res.add(((JVertex<?>) element).getChildAt(0));
+            if (element instanceof DefaultGraphCell) {
+                res.add(((DefaultGraphCell) element).getChildAt(0));
             }
         }
         return res.toArray();

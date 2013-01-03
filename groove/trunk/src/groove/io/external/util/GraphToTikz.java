@@ -28,11 +28,11 @@ import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.CtrlJEdge;
 import groove.gui.jgraph.CtrlJVertex;
+import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
-import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJVertex;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
@@ -107,8 +107,8 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     // ------------------------------------------------------------------------
 
     /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
-    static public <N extends Node,E extends Edge> void export(
-            JGraph<?> graph, PrintWriter writer) {
+    static public <N extends Node,E extends Edge> void export(JGraph<?> graph,
+            PrintWriter writer) {
         writer.print(GraphToTikz.convert(graph));
     }
 
@@ -434,8 +434,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
 
     /** Creates a map for the personalized colors. */
     private Map<JVertex<G>,Color> createColorMap() {
-        Map<JVertex<G>,Color> result =
-            new HashMap<JVertex<G>,Color>();
+        Map<JVertex<G>,Color> result = new HashMap<JVertex<G>,Color>();
         if (mayHaveExtraColors()) {
             for (Node node : this.graph.nodeSet()) {
                 JVertex<G> vertex = this.model.getJCellForNode(node);
@@ -1129,8 +1128,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      * string builder, together with a node anchor that keeps the edge
      * horizontal or vertical.
      */
-    private void appendSourceNode(JVertex<G> srcNode,
-            JVertex<G> tgtNode) {
+    private void appendSourceNode(JVertex<G> srcNode, JVertex<G> tgtNode) {
         if (this.layoutMap != null) {
             JVertexLayout tgtLayout =
                 this.layoutMap.getLayout(tgtNode.getNode());
@@ -1152,8 +1150,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      * string builder, together with a node anchor that keeps the edge
      * horizontal or vertical.
      */
-    private void appendTargetNode(JVertex<G> srcNode,
-            JVertex<G> tgtNode) {
+    private void appendTargetNode(JVertex<G> srcNode, JVertex<G> tgtNode) {
         if (this.layoutMap != null) {
             JVertexLayout srcLayout =
                 this.layoutMap.getLayout(srcNode.getNode());

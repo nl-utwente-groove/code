@@ -23,10 +23,10 @@ import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.gui.Options;
 import groove.gui.dialog.StringDialog;
+import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.FileType;
@@ -286,8 +286,7 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
          * @param showMode the show mode: one of {@link #ADD_MODE},
          *        {@link #HIDE_MODE} or {@link #ONLY_MODE}
          */
-        protected ShowHideAction(JGraph<G> jgraph, int showMode,
-                String name) {
+        protected ShowHideAction(JGraph<G> jgraph, int showMode, String name) {
             super(getModeName(showMode) + " " + name);
             this.jgraph = jgraph;
             this.showMode = showMode;

@@ -45,7 +45,7 @@ public interface FormatPorter {
     public enum Kind {
         /** Instances of {@link Graph}. */
         GRAPH,
-        /** Instances of {@link GraphJGraph}. */
+        /** Instances of {@link JGraph}. */
         JGRAPH,
         /** Instances of {@link ResourceModel}. */
         RESOURCE;

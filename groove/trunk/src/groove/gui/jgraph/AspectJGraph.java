@@ -811,7 +811,7 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
             super(Options.SET_LINE_STYLE_MENU);
             valueChanged(null);
             addGraphSelectionListener(this);
-            // initialize the line style menu
+            // initialise the line style menu
             for (LineStyle lineStyle : LineStyle.values()) {
                 add(getSetLineStyleAction(lineStyle));
             }

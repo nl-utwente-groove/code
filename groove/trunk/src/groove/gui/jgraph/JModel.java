@@ -181,9 +181,9 @@ abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
     }
 
     /**
-     * Returns the {@link JCell}associated with a given graph element. The
-     * result is a {@link JVertex}for which the graph element is the
-     * underlying node or self-edge, or a {@link JEdge}for which the graph
+     * Returns the {@link JCell} associated with a given graph element. The
+     * result is a {@link JVertex} for which the graph element is the
+     * underlying node or self-edge, or a {@link JEdge} for which the graph
      * element is an underlying edge.
      * @param elem the graph element for which the jcell is requested
      * @return the jcell associated with <tt>elem</tt>

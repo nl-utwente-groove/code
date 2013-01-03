@@ -18,9 +18,9 @@ package groove.gui.layout;
 
 import groove.graph.EdgeComparator;
 import groove.graph.NodeComparator;
+import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JVertex;
 import groove.util.CollectionOfCollections;
 import groove.util.NestedIterator;
 import groove.util.Pair;
@@ -137,10 +137,8 @@ public class ForestLayouter extends AbstractLayouter {
                 int inEdgeCount = 0;
                 // calculate the incoming edge count and outgoing edge map
                 // iterate over the incident edges
-                Set<JEdge<?>> outEdges =
-                    new TreeSet<JEdge<?>>(edgeComparator);
-                Iterator<?> edgeIter =
-                    ((JVertex<?>) key).getPort().edges();
+                Set<JEdge<?>> outEdges = new TreeSet<JEdge<?>>(edgeComparator);
+                Iterator<?> edgeIter = ((JVertex<?>) key).getPort().edges();
                 while (edgeIter.hasNext()) {
                     JEdge<?> edge = (JEdge<?>) edgeIter.next();
                     // it's possible that the edge is displayed as node label
