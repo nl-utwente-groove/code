@@ -10,7 +10,8 @@ import java.util.Map;
 
 public abstract class TypeImporter implements Messenger {
     private List<Message> m_messages = new ArrayList<Message>();
-    protected Map<String,TypeModel> m_typeModels = new HashMap<String,TypeModel>();
+    protected Map<String,TypeModel> m_typeModels =
+        new HashMap<String,TypeModel>();
 
     /**
      * Returns a collection of strings representing each loaded type model. Use {@link TypeImporter#getTypeModel(String)} to retrieve the actual associated type
@@ -18,7 +19,7 @@ public abstract class TypeImporter implements Messenger {
      * @return A collection of strings representing each type model
      */
     public Collection<String> getTypeModelNames() {
-        return m_typeModels.keySet();
+        return this.m_typeModels.keySet();
     }
 
     /**
@@ -27,7 +28,8 @@ public abstract class TypeImporter implements Messenger {
      * @return The type model, or null if the model could not be found.
      * @throws ImportException When the conversion fails, an ImportException may be thrown.
      */
-    public abstract TypeModel getTypeModel(String modelName) throws ImportException;
+    public abstract TypeModel getTypeModel(String modelName)
+        throws ImportException;
 
     /**
      * Returns the first type model found.
@@ -43,14 +45,14 @@ public abstract class TypeImporter implements Messenger {
     }
 
     protected void addMessage(Message m) {
-        m_messages.add(m);
+        this.m_messages.add(m);
     }
 
     public List<Message> getMessages() {
-        return m_messages;
+        return this.m_messages;
     }
 
     public void clearMessages() {
-        m_messages.clear();
+        this.m_messages.clear();
     }
 }

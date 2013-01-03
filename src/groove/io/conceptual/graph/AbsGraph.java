@@ -10,7 +10,7 @@ import java.util.Set;
 
 /**
  * Thin layer between AspectGraph and the conceptual model. Keeps track of edges and nodes by means of references.
- * @author s0141844
+ * @author Harold Bruijntjes
  * 
  */
 public class AbsGraph {
@@ -23,23 +23,23 @@ public class AbsGraph {
     }
 
     public Set<AbsNode> getNodes() {
-        return m_nodes;
+        return this.m_nodes;
     }
 
     public Set<AbsEdge> getEdges() {
-        return m_edges;
+        return this.m_edges;
     }
 
     public void addNode(AbsNode node) {
         if (node.getParent() != null && node.getParent() != this) {
             throw new IllegalArgumentException("Node already added to graph!");
         }
-        if (m_nodes.contains(node)) {
+        if (this.m_nodes.contains(node)) {
             return;
         }
 
-        m_nodes.add(node);
-        node.addToGraph(this, m_nodes.size() + 1);
+        this.m_nodes.add(node);
+        node.addToGraph(this, this.m_nodes.size() + 1);
 
         for (AbsEdge e : node.getEdges()) {
             addEdge(e);
@@ -52,15 +52,15 @@ public class AbsGraph {
     }
 
     public void addEdge(AbsEdge edge) {
-        if (!m_edges.contains(edge)) {
-            m_edges.add(edge);
+        if (!this.m_edges.contains(edge)) {
+            this.m_edges.add(edge);
         }
     }
 
     public void clear() {
-        m_nodes.clear();
-        m_edges.clear();
-        m_aGraph = null;
+        this.m_nodes.clear();
+        this.m_edges.clear();
+        this.m_aGraph = null;
     }
 
     public void buildFromNode(AbsNode node) {
@@ -68,13 +68,13 @@ public class AbsGraph {
     }
 
     public AspectGraph toAspectGraph(String name, GraphRole role) {
-        if (m_aGraph != null) {
-            return m_aGraph;
+        if (this.m_aGraph != null) {
+            return this.m_aGraph;
         }
 
         AspectGraph ag = new AspectGraph(name, role);
 
-        for (AbsNode n : m_nodes) {
+        for (AbsNode n : this.m_nodes) {
             n.buildAspect(role);
             AspectNode an = n.getAspect();
             ag.addNode(an);
@@ -83,7 +83,7 @@ public class AbsGraph {
             }
         }
 
-        for (AbsEdge e : m_edges) {
+        for (AbsEdge e : this.m_edges) {
             e.buildAspect(role);
             for (AspectEdge ae : e.getAspect()) {
                 ag.addEdge(ae);
@@ -92,7 +92,7 @@ public class AbsGraph {
 
         ag.setFixed();
 
-        m_aGraph = ag;
+        this.m_aGraph = ag;
 
         return ag;
     }

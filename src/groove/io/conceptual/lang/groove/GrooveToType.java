@@ -188,7 +188,7 @@ public class GrooveToType extends TypeImporter {
 
         // Ought not to happen (unless misconfigured)
         for (TypeNode n : unvisitedNodes) {
-            addMessage(new Message("TypeNode unvisited: " + n + ": " + n.label().text(), MessageType.WARN));
+            addMessage(new Message("TypeNode unvisited: " + n + ": " + n.label().text(), MessageType.WARNING));
         }
 
         // Now all the node types are known, create conceptual model types from these nodes, also in multiple passes

@@ -54,54 +54,57 @@ public class GxlResource extends ExportableResource {
 
     public GxlResource(File typeTarget, File instanceTarget) {
         if (typeTarget != null) {
-            m_typeFile = typeTarget;
+            this.m_typeFile = typeTarget;
         }
         if (instanceTarget != null) {
             if (instanceTarget.equals(typeTarget)) {
-                m_instanceFile = m_typeFile;
+                this.m_instanceFile = this.m_typeFile;
             } else {
-                m_instanceFile = instanceTarget;
+                this.m_instanceFile = instanceTarget;
             }
         }
 
-        if (m_typeFile == m_instanceFile || m_typeFile == null) {
-            relPath = "";
+        if (this.m_typeFile == this.m_instanceFile || this.m_typeFile == null) {
+            this.relPath = "";
         } else {
-            relPath = groove.io.Util.getRelativePath(new File(m_instanceFile.getAbsoluteFile().getParent()), m_typeFile.getAbsoluteFile()).toString();
+            this.relPath =
+                groove.io.Util.getRelativePath(
+                    new File(this.m_instanceFile.getAbsoluteFile().getParent()),
+                    this.m_typeFile.getAbsoluteFile()).toString();
         }
 
-        m_gxlTypeType = new GxlType();
-        m_gxlTypeTemp = new GxlType();
-        if (m_typeFile == m_instanceFile) {
-            m_gxlTypeInstance = m_gxlTypeType;
+        this.m_gxlTypeType = new GxlType();
+        this.m_gxlTypeTemp = new GxlType();
+        if (this.m_typeFile == this.m_instanceFile) {
+            this.m_gxlTypeInstance = this.m_gxlTypeType;
         } else {
-            m_gxlTypeInstance = new GxlType();
+            this.m_gxlTypeInstance = new GxlType();
         }
     }
 
     public GraphType getTypeGraph(String graphId) {
-        if (m_graphs.containsKey(graphId)) {
-            return m_graphs.get(graphId);
+        if (this.m_graphs.containsKey(graphId)) {
+            return this.m_graphs.get(graphId);
         }
         GraphType graph = new GraphType();
         graph.setId(graphId);
         graph.setEdgeids(true);
         GxlUtil.setElemType(graph, GxlUtil.g_gxlTypeGraphURI + "#gxl-1.0");
 
-        if (m_typeFile != null) {
-            m_gxlTypeType.getGraph().add(graph);
+        if (this.m_typeFile != null) {
+            this.m_gxlTypeType.getGraph().add(graph);
         } else {
-            m_gxlTypeTemp.getGraph().add(graph);
+            this.m_gxlTypeTemp.getGraph().add(graph);
         }
 
-        m_graphs.put(graphId, graph);
+        this.m_graphs.put(graphId, graph);
 
         return graph;
     }
 
     public GraphType getInstanceGraph(String typeId, String name) {
-        if (m_graphs.containsKey(name)) {
-            return m_graphs.get(name);
+        if (this.m_graphs.containsKey(name)) {
+            return this.m_graphs.get(name);
         }
         GraphType graph = new GraphType();
         graph.setId(name);
@@ -110,15 +113,15 @@ public class GxlResource extends ExportableResource {
         graph.setEdgeids(false);
         graph.setEdgemode(EdgemodeType.DEFAULTDIRECTED);
 
-        m_gxlTypeInstance.getGraph().add(graph);
+        this.m_gxlTypeInstance.getGraph().add(graph);
 
-        m_graphs.put(name, graph);
+        this.m_graphs.put(name, graph);
 
         return graph;
     }
 
     public String getTypePath() {
-        return relPath;
+        return this.relPath;
     }
 
     @Override
@@ -129,24 +132,27 @@ public class GxlResource extends ExportableResource {
     public boolean export(boolean oldStyle) throws ExportException {
         // m_gxlType contains all graphs
         int timer = Timer.start("Save GXL");
-        JAXBElement<GxlType> mainElement = GxlUtil.g_objectFactory.createGxl(m_gxlTypeType);
+        JAXBElement<GxlType> mainElement =
+            GxlUtil.g_objectFactory.createGxl(this.m_gxlTypeType);
         JAXBElement<GxlType> instanceElement = null;
-        if (m_instanceFile != null && m_gxlTypeInstance != m_gxlTypeType) {
-            instanceElement = GxlUtil.g_objectFactory.createGxl(m_gxlTypeInstance);
+        if (this.m_instanceFile != null
+            && this.m_gxlTypeInstance != this.m_gxlTypeType) {
+            instanceElement =
+                GxlUtil.g_objectFactory.createGxl(this.m_gxlTypeInstance);
         }
 
         OutputStream os;
         try {
             if (!oldStyle) {
                 // Regular export
-                if (m_typeFile != null) {
-                    os = new FileOutputStream(m_typeFile);
+                if (this.m_typeFile != null) {
+                    os = new FileOutputStream(this.m_typeFile);
                     GxlUtil.g_marshaller.marshal(mainElement, os);
                     os.close();
                 }
 
-                if (m_instanceFile != null && instanceElement != null) {
-                    os = new FileOutputStream(m_instanceFile);
+                if (this.m_instanceFile != null && instanceElement != null) {
+                    os = new FileOutputStream(this.m_instanceFile);
                     GxlUtil.g_marshaller.marshal(instanceElement, os);
                     os.close();
                 }
@@ -154,26 +160,38 @@ public class GxlResource extends ExportableResource {
                 // Insert doctype, move xmlns:xlink around and remove standalone
                 // Really hacky, but the old gxlvalidator wont accept the document otherwise
                 // I'm no XML expert ;)
-                if (m_typeFile != null) {
+                if (this.m_typeFile != null) {
                     os = new ByteArrayOutputStream();
                     GxlUtil.g_marshaller.marshal(mainElement, os);
 
-                    String xmlString = ((ByteArrayOutputStream) os).toString("UTF-8");
-                    xmlString = xmlString.replaceAll("standalone=\"yes\"", "").replaceAll("xmlns:xlink=\"http://www.w3.org/1999/xlink\"", "").replaceAll("<gxl[^>]*>", "<!DOCTYPE gxl SYSTEM \"http://www.gupro.de/GXL/gxl-1.0.dtd\">\n" +
-                        "<gxl xmlns:xlink=\"http://www.w3.org/1999/xlink\">");
-                    BufferedWriter out = new BufferedWriter(new FileWriter(m_typeFile));
+                    String xmlString =
+                        ((ByteArrayOutputStream) os).toString("UTF-8");
+                    xmlString =
+                        xmlString.replaceAll("standalone=\"yes\"", "").replaceAll(
+                            "xmlns:xlink=\"http://www.w3.org/1999/xlink\"", "").replaceAll(
+                            "<gxl[^>]*>",
+                            "<!DOCTYPE gxl SYSTEM \"http://www.gupro.de/GXL/gxl-1.0.dtd\">\n"
+                                + "<gxl xmlns:xlink=\"http://www.w3.org/1999/xlink\">");
+                    BufferedWriter out =
+                        new BufferedWriter(new FileWriter(this.m_typeFile));
                     out.write(xmlString);
                     out.close();
                 }
 
-                if (m_instanceFile != null && instanceElement != null) {
+                if (this.m_instanceFile != null && instanceElement != null) {
                     os = new ByteArrayOutputStream();
                     GxlUtil.g_marshaller.marshal(instanceElement, os);
 
-                    String xmlString = ((ByteArrayOutputStream) os).toString("UTF-8");
-                    xmlString = xmlString.replaceAll("standalone=\"yes\"", "").replaceAll("xmlns:xlink=\"http://www.w3.org/1999/xlink\"", "").replaceAll("<gxl[^>]*>", "<!DOCTYPE gxl SYSTEM \"http://www.gupro.de/GXL/gxl-1.0.dtd\">\n" +
-                        "<gxl xmlns:xlink=\"http://www.w3.org/1999/xlink\">");
-                    BufferedWriter out = new BufferedWriter(new FileWriter(m_instanceFile));
+                    String xmlString =
+                        ((ByteArrayOutputStream) os).toString("UTF-8");
+                    xmlString =
+                        xmlString.replaceAll("standalone=\"yes\"", "").replaceAll(
+                            "xmlns:xlink=\"http://www.w3.org/1999/xlink\"", "").replaceAll(
+                            "<gxl[^>]*>",
+                            "<!DOCTYPE gxl SYSTEM \"http://www.gupro.de/GXL/gxl-1.0.dtd\">\n"
+                                + "<gxl xmlns:xlink=\"http://www.w3.org/1999/xlink\">");
+                    BufferedWriter out =
+                        new BufferedWriter(new FileWriter(this.m_instanceFile));
                     out.write(xmlString);
                     out.close();
                 }

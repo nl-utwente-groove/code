@@ -49,30 +49,31 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class InstanceExporter<E> implements Messenger, Visitor {
-    public abstract void addInstanceModel(InstanceModel instanceModel) throws PortException;
+    public abstract void addInstanceModel(InstanceModel instanceModel)
+        throws PortException;
 
     private List<Message> m_messages = new ArrayList<Message>();
     private Map<Acceptor,E> m_elements = new HashMap<Acceptor,E>();
 
     protected void addMessage(Message m) {
-        m_messages.add(m);
+        this.m_messages.add(m);
     }
 
     public List<Message> getMessages() {
-        return m_messages;
+        return this.m_messages;
     }
 
     public void clearMessages() {
-        m_messages.clear();
+        this.m_messages.clear();
     }
 
     protected void setElement(Acceptor acceptor, E element) {
-        assert !(m_elements.containsKey(acceptor));
-        m_elements.put(acceptor, element);
+        assert !(this.m_elements.containsKey(acceptor));
+        this.m_elements.put(acceptor, element);
     }
 
     protected boolean hasElement(Acceptor acceptor) {
-        return m_elements.containsKey(acceptor);
+        return this.m_elements.containsKey(acceptor);
     }
 
     protected E getElement(Acceptor acceptor) {
@@ -80,15 +81,16 @@ public abstract class InstanceExporter<E> implements Messenger, Visitor {
     }
 
     protected E getElement(Acceptor acceptor, java.lang.Object param) {
-        if (!m_elements.containsKey(acceptor)) {
+        if (!this.m_elements.containsKey(acceptor)) {
             acceptor.doVisit(this, param);
         }
 
-        if (!m_elements.containsKey(acceptor)) {
-            throw new IllegalArgumentException("Cannot get element for acceptor " + acceptor.toString());
+        if (!this.m_elements.containsKey(acceptor)) {
+            throw new IllegalArgumentException(
+                "Cannot get element for acceptor " + acceptor.toString());
         }
 
-        return m_elements.get(acceptor);
+        return this.m_elements.get(acceptor);
     }
 
     protected void visitInstanceModel(InstanceModel instanceModel, Config cfg) {

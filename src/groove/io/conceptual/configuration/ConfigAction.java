@@ -24,84 +24,99 @@ import groove.trans.ResourceKind;
 
 import javax.swing.Icon;
 
+/** Actions to manipulate configurations. */
 public class ConfigAction extends SimulatorAction {
-    public enum ConfigActionType {
-        New("New", Icons.NEW_ICON),
-        Save("Save", Icons.SAVE_ICON),
-        Copy("Copy", Icons.COPY_ICON),
-        Delete("Delete", Icons.DELETE_ICON),
-        Rename("Rename", Icons.RENAME_ICON);
-
-        private String m_text;
-        private Icon m_icon;
-
-        ConfigActionType(String text, Icon icon) {
-            m_text = text;
-            m_icon = icon;
-        }
-
-        public String getText() {
-            return m_text;
-        }
-
-        public Icon getIcon() {
-            return m_icon;
-        }
-    }
-
-    private ConfigActionType m_type;
+    private Type m_type;
     private ConfigDialog m_dlg;
 
-    protected ConfigAction(Simulator simulator, ConfigActionType type, ConfigDialog dlg) {
-        super(simulator, type.getText(), type.getIcon(), null, ResourceKind.CONFIG);
+    /** Constructs a new configuration manipulation action. */
+    protected ConfigAction(Simulator simulator, Type type, ConfigDialog dlg) {
+        super(simulator, type.getText(), type.getIcon(), null,
+            ResourceKind.CONFIG);
 
-        m_type = type;
-        m_dlg = dlg;
+        this.m_type = type;
+        this.m_dlg = dlg;
     }
 
     @Override
     public void execute() {
 
         String modelName = null;
-        switch (m_type) {
-            case New:
-                final String newName = askNewName(Options.getNewResourceName(getResourceKind()), true);
-                if (newName == null) {
+        switch (this.m_type) {
+        case NEW:
+            final String newName =
+                askNewName(Options.getNewResourceName(getResourceKind()), true);
+            if (newName == null) {
+                return;
+            }
+            modelName = newName;
+            break;
+        case SAVE:
+            if (!this.m_dlg.hasModels()) {
+                // Go into save as mode and ask for name
+                final String saveName =
+                    askNewName(Options.getNewResourceName(getResourceKind()),
+                        true);
+                if (saveName == null) {
                     return;
                 }
-                modelName = newName;
-                break;
-            case Save:
-                if (!m_dlg.hasModels()) {
-                    // Go into save as mode and ask for name
-                    final String saveName = askNewName(Options.getNewResourceName(getResourceKind()), true);
-                    if (saveName == null) {
-                        return;
-                    }
-                    modelName = saveName;
-                }
-                break;
-            case Delete:
-                break;
-            case Rename:
-                //TODO: find old name
-                String oldName = "configuration";
-                final String renameName = askNewName(oldName, false);
-                if (renameName == null) {
-                    return;
-                }
-                modelName = renameName;
-                break;
-            case Copy:
-                final String copyName = askNewName(Options.getNewResourceName(getResourceKind()), true);
-                if (copyName == null) {
-                    return;
-                }
-                modelName = copyName;
-                break;
+                modelName = saveName;
+            }
+            break;
+        case DELETE:
+            break;
+        case RENAME:
+            //TODO: find old name
+            String oldName = "configuration";
+            final String renameName = askNewName(oldName, false);
+            if (renameName == null) {
+                return;
+            }
+            modelName = renameName;
+            break;
+        case COPY:
+            final String copyName =
+                askNewName(Options.getNewResourceName(getResourceKind()), true);
+            if (copyName == null) {
+                return;
+            }
+            modelName = copyName;
+            break;
         }
 
-        m_dlg.executeAction(m_type, modelName);
+        this.m_dlg.executeAction(this.m_type, modelName);
+    }
+
+    /** Action type. */
+    static public enum Type {
+        /** Create a new configuration. */
+        NEW("New", Icons.NEW_ICON),
+        /** Save the current configuration. */
+        SAVE("Save", Icons.SAVE_ICON),
+        /** Copy the current configuration. */
+        COPY("Copy", Icons.COPY_ICON),
+        /** Delete the current configuration. */
+        DELETE("Delete", Icons.DELETE_ICON),
+        /** Rename the current configuration. */
+        RENAME("Rename", Icons.RENAME_ICON);
+
+        private String m_text;
+        private Icon m_icon;
+
+        Type(String text, Icon icon) {
+            this.m_text = text;
+            this.m_icon = icon;
+        }
+
+        /** Returns the name of this action. */
+        public String getText() {
+            return this.m_text;
+        }
+
+        /** Returns the icon used for this action. */
+        public Icon getIcon() {
+            return this.m_icon;
+        }
     }
 
 }

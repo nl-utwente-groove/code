@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * Node representation for wrapper around AspectGraph. Keeps track of incoming and outgoing edges (references set by AbsEdge).
- * @author s0141844
+ * @author Harold Bruijntjes
  * 
  */
 public class AbsNode {
@@ -32,7 +32,7 @@ public class AbsNode {
      * @param names Names of the node
      */
     public AbsNode(String... names) {
-        m_names = names;
+        this.m_names = names;
     }
 
     /**
@@ -40,7 +40,7 @@ public class AbsNode {
      * @param e Edge to add
      */
     public void addEdge(AbsEdge e) {
-        m_edges.add(e);
+        this.m_edges.add(e);
     }
 
     /**
@@ -48,7 +48,7 @@ public class AbsNode {
      * @param e Edge to add
      */
     public void addTargetEdge(AbsEdge e) {
-        m_targetEdges.add(e);
+        this.m_targetEdges.add(e);
     }
 
     /**
@@ -56,7 +56,7 @@ public class AbsNode {
      * @return List of outgoing edges
      */
     public List<AbsEdge> getEdges() {
-        return m_edges;
+        return this.m_edges;
     }
 
     /**
@@ -64,12 +64,12 @@ public class AbsNode {
      * @return List of incoming edges
      */
     public List<AbsEdge> getTargetEdges() {
-        return m_targetEdges;
+        return this.m_targetEdges;
     }
 
     @Override
     public String toString() {
-        return Arrays.toString(m_names);
+        return Arrays.toString(this.m_names);
     }
 
     /**
@@ -77,7 +77,7 @@ public class AbsNode {
      * @return Names of the node
      */
     public String[] getNames() {
-        return m_names;
+        return this.m_names;
     }
 
     /**
@@ -85,10 +85,10 @@ public class AbsNode {
      * @param name Name to add
      */
     public void addName(String name) {
-        String newNames[] = new String[m_names.length + 1];
-        System.arraycopy(m_names, 0, newNames, 0, m_names.length);
-        newNames[m_names.length] = name;
-        m_names = newNames;
+        String newNames[] = new String[this.m_names.length + 1];
+        System.arraycopy(this.m_names, 0, newNames, 0, this.m_names.length);
+        newNames[this.m_names.length] = name;
+        this.m_names = newNames;
     }
 
     /**
@@ -97,12 +97,13 @@ public class AbsNode {
      * @param id Id of the node within the graph
      */
     public void addToGraph(AbsGraph g, int id) {
-        if (m_parent != null && m_parent != g) {
-            throw new IllegalArgumentException("AbsNode already element of a graph");
+        if (this.m_parent != null && this.m_parent != g) {
+            throw new IllegalArgumentException(
+                "AbsNode already element of a graph");
         }
 
-        m_parent = g;
-        m_id = id;
+        this.m_parent = g;
+        this.m_id = id;
     }
 
     /**
@@ -110,7 +111,7 @@ public class AbsNode {
      * @return Graph node belongs to
      */
     public AbsGraph getParent() {
-        return m_parent;
+        return this.m_parent;
     }
 
     /**
@@ -118,38 +119,40 @@ public class AbsNode {
      * @return Id of the node
      */
     public int getId() {
-        return m_id;
+        return this.m_id;
     }
 
     public void buildAspect(GraphRole role) {
-        if (m_parent == null) {
+        if (this.m_parent == null) {
             throw new IllegalArgumentException("Node not part of graph");
         }
 
-        if (m_aspectNode != null) {
+        if (this.m_aspectNode != null) {
             return;
         }
 
-        String[] labels = m_names;
-        m_aspectNode = new AspectNode(m_id, role);
+        String[] labels = this.m_names;
+        this.m_aspectNode = new AspectNode(this.m_id, role);
 
         for (String sublabel : labels) {
-            AspectLabel alabel = AspectParser.getInstance().parse(sublabel, role);
+            AspectLabel alabel =
+                AspectParser.getInstance().parse(sublabel, role);
             // add self edge
             if (alabel.isEdgeOnly()) {
-                AspectEdge newEdge = new AspectEdge(m_aspectNode, alabel, m_aspectNode);
-                m_aspectEdges.add(newEdge);
+                AspectEdge newEdge =
+                    new AspectEdge(this.m_aspectNode, alabel, this.m_aspectNode);
+                this.m_aspectEdges.add(newEdge);
             } else {
-                m_aspectNode.setAspects(alabel);
+                this.m_aspectNode.setAspects(alabel);
             }
         }
     }
 
     public AspectNode getAspect() {
-        return m_aspectNode;
+        return this.m_aspectNode;
     }
 
     public List<AspectEdge> getAspectEdges() {
-        return m_aspectEdges;
+        return this.m_aspectEdges;
     }
 }

@@ -18,8 +18,11 @@ package groove.io.conceptual.lang;
 
 public class Message {
     public enum MessageType {
+        /** Ordinary message. */
         MSG,
-        WARN,
+        /** Warning message. */
+        WARNING,
+        /** Error message. */
         ERROR
     }
 
@@ -27,30 +30,30 @@ public class Message {
     private MessageType m_messageType;
 
     public Message(String message) {
-        m_message = message;
-        m_messageType = MessageType.MSG;
+        this.m_message = message;
+        this.m_messageType = MessageType.MSG;
     }
 
     public Message(String message, MessageType messageType) {
-        m_message = message;
-        m_messageType = messageType;
+        this.m_message = message;
+        this.m_messageType = messageType;
     }
 
     @Override
     public String toString() {
         String message = "";
-        switch (m_messageType) {
-            case MSG:
-                message += "[MSG] ";
-                break;
-            case WARN:
-                message += "[WARN] ";
-                break;
-            case ERROR:
-                message += "[ERROR] ";
-                break;
+        switch (this.m_messageType) {
+        case MSG:
+            message += "[MSG] ";
+            break;
+        case WARNING:
+            message += "[WARN] ";
+            break;
+        case ERROR:
+            message += "[ERROR] ";
+            break;
         }
-        message += m_message;
+        message += this.m_message;
         return message;
     }
 }

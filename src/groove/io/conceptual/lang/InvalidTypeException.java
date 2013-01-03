@@ -18,20 +18,10 @@ package groove.io.conceptual.lang;
 
 import groove.io.conceptual.AbstractionException;
 
+/** Special exception class to report typing errors. */
 public class InvalidTypeException extends AbstractionException {
-    public InvalidTypeException() {
-
-    }
-
+    /** Constructs an exception with a given message. */
     public InvalidTypeException(String message) {
         super(message);
-    }
-
-    public InvalidTypeException(Throwable cause) {
-        super(cause);
-    }
-
-    public InvalidTypeException(String message, Throwable cause) {
-        super(message, cause);
     }
 }

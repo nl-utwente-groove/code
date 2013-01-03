@@ -141,7 +141,7 @@ public class TypeToEcore extends TypeExporter<EObject> {
             this.m_packages.put(id, idPackage);
             addMessage(new Message(
                 "A package (ROOT) was generated for the root namespace, please check your identifiers",
-                MessageType.WARN));
+                MessageType.WARNING));
             this.m_rootPackages.add(idPackage);
             return idPackage;
         }

@@ -37,6 +37,7 @@ import com.jaxfront.swing.ui.editor.EditorPanel;
 import com.jaxfront.swing.ui.editor.TypeWorkspace;
 import com.jaxfront.swing.ui.wrapper.JAXJSplitPane;
 
+/** Dialog for constructing and saving configurations. */
 public class JaxFrontDialog extends ConfigDialog {
     private JPanel m_panel;
     private EditorPanel m_editor;
@@ -47,6 +48,7 @@ public class JaxFrontDialog extends ConfigDialog {
         s_tooltipObj = javax.swing.UIManager.get("ToolTipUI");
     }
 
+    /** Constructs a fresh dialog, for a given simulator. */
     public JaxFrontDialog(Simulator simulator) {
         super(simulator);
     }
@@ -61,44 +63,46 @@ public class JaxFrontDialog extends ConfigDialog {
 
     @Override
     protected JPanel getXMLPanel() {
-        m_panel = new JPanel();
-        m_panel.setLayout(new BorderLayout());
+        this.m_panel = new JPanel();
+        this.m_panel.setLayout(new BorderLayout());
 
         newModel();
 
-        return m_panel;
+        return this.m_panel;
     }
 
     private void setDocument(com.jaxfront.core.dom.Document doc) {
-        if (m_panelComponent != null) {
-            m_panel.remove(m_panelComponent);
+        if (this.m_panelComponent != null) {
+            this.m_panel.remove(this.m_panelComponent);
         }
-        m_editor = new EditorPanel(doc.getRootType(), null);
-        m_panelComponent = m_editor;
+        this.m_editor = new EditorPanel(doc.getRootType(), null);
+        this.m_panelComponent = this.m_editor;
         try {
-            JAXJSplitPane pane = (JAXJSplitPane) m_editor.getComponent(0);
+            JAXJSplitPane pane = (JAXJSplitPane) this.m_editor.getComponent(0);
             TypeWorkspace space = (TypeWorkspace) pane.getRightComponent();
             space.getButtonBar().setVisible(false);
             space.getHeaderPanel().setVisible(false);
             space.getMessageTablePanel().setVisible(false);
 
-            m_panelComponent = pane.getRightComponent();
-            m_panel.add(m_panelComponent);
+            this.m_panelComponent = pane.getRightComponent();
+            this.m_panel.add(this.m_panelComponent);
         } catch (ClassCastException ex) {
             // In case of an exception (the UI is changed) just add the editor itself
             // nothing to do here
         } catch (ArrayIndexOutOfBoundsException ex) {
             // nothing to do here
         }
-        m_panel.add(m_panelComponent);
-        m_panel.validate();
-        m_panel.repaint();
+        this.m_panel.add(this.m_panelComponent);
+        this.m_panel.validate();
+        this.m_panel.repaint();
     }
 
     @Override
     protected void newModel() {
         try {
-            com.jaxfront.core.dom.Document dom = DOMBuilder.getInstance().build(null, m_schemaURL, "configuration");
+            com.jaxfront.core.dom.Document dom =
+                DOMBuilder.getInstance().build(null, this.m_schemaURL,
+                    "configuration");
             setDocument(dom);
         } catch (SchemaCreationException e) {
             // Silently catch error
@@ -111,7 +115,9 @@ public class JaxFrontDialog extends ConfigDialog {
     protected void loadModel(String xmlString) throws ConfigurationException {
         try {
             Document xmlDoc = DOMHelper.createDocument(xmlString);
-            com.jaxfront.core.dom.Document doc = DOMBuilder.getInstance().build(null, m_schemaURL, xmlDoc, null, "configuration");
+            com.jaxfront.core.dom.Document doc =
+                DOMBuilder.getInstance().build(null, this.m_schemaURL, xmlDoc,
+                    null, "configuration");
             setDocument(doc);
         } catch (SAXException e) {
             throw new ConfigurationException(e);
@@ -127,7 +133,7 @@ public class JaxFrontDialog extends ConfigDialog {
     @Override
     protected Document getDocument() throws ConfigurationException {
         try {
-            return m_editor.getDOM().serializeToW3CDocument();
+            return this.m_editor.getDOM().serializeToW3CDocument();
         } catch (XMLParseException e) {
             throw new ConfigurationException(e);
         } catch (SAXException e) {

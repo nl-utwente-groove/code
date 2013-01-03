@@ -76,7 +76,8 @@ public class GxlToType extends TypeImporter {
 
     private boolean m_useComplex;
 
-    private static final Map<String,Type> g_simpleTypeMap = new HashMap<String,Type>();
+    private static final Map<String,Type> g_simpleTypeMap =
+        new HashMap<String,Type>();
     static {
         g_simpleTypeMap.put("Locator", StringType.get());
         g_simpleTypeMap.put("Bool", BoolType.get());
@@ -100,20 +101,22 @@ public class GxlToType extends TypeImporter {
         g_edgeTypes.add("CompositionClass");
     }
 
-    public GxlToType(String typeModel, boolean useComplex) throws ImportException {
-        m_useComplex = useComplex;
+    public GxlToType(String typeModel, boolean useComplex)
+        throws ImportException {
+        this.m_useComplex = useComplex;
         // Load the GXL
         try {
             FileInputStream in = new FileInputStream(typeModel);
             try {
                 int timer = Timer.start("Load GXL");
                 @SuppressWarnings("unchecked")
-                JAXBElement<GxlType> doc = (JAXBElement<GxlType>) GxlUtil.g_unmarshaller.unmarshal(in);
+                JAXBElement<GxlType> doc =
+                    (JAXBElement<GxlType>) GxlUtil.g_unmarshaller.unmarshal(in);
                 in.close();
                 for (GraphType g : doc.getValue().getGraph()) {
                     String type = GxlUtil.getElemType(g);
                     if ("gxl-1.0".equals(type)) {
-                        m_gxlTypeGraphs.add(g);
+                        this.m_gxlTypeGraphs.add(g);
                         break;
                     }
                 }
@@ -139,17 +142,19 @@ public class GxlToType extends TypeImporter {
     }
 
     private void buildTypeModels() {
-        for (GraphType graph : m_gxlTypeGraphs) {
+        for (GraphType graph : this.m_gxlTypeGraphs) {
             Map<NodeType,NodeWrapper> nodes = GxlUtil.wrapGraph(graph);
 
             TypeModel typeModel = new TypeModel(graph.getId());
 
             // Maps all graph elements in graph to a specific GraphClass node
-            Map<NodeType,Set<NodeWrapper>> graphElements = new HashMap<NodeType,Set<NodeWrapper>>();
+            Map<NodeType,Set<NodeWrapper>> graphElements =
+                new HashMap<NodeType,Set<NodeWrapper>>();
             for (GraphElementType elem : graph.getNodeOrEdgeOrRel()) {
                 if (elem instanceof NodeType) {
                     if ("GraphClass".equals(GxlUtil.getElemType(elem))) {
-                        graphElements.put((NodeType) elem, new HashSet<NodeWrapper>());
+                        graphElements.put((NodeType) elem,
+                            new HashSet<NodeWrapper>());
 
                         // Grab all the contained elements
                         for (EdgeWrapper ew : nodes.get(elem).getEdges()) {
@@ -163,11 +168,13 @@ public class GxlToType extends TypeImporter {
             }
 
             // Child -> Parent
-            Map<NodeType,NodeType> graphHierachy = new HashMap<NodeType,NodeType>();
+            Map<NodeType,NodeType> graphHierachy =
+                new HashMap<NodeType,NodeType>();
 
             // Fix graph hierarchy
             for (NodeType graphNode : graphElements.keySet()) {
-                for (Iterator<NodeWrapper> nwIt = graphElements.get(graphNode).iterator(); nwIt.hasNext();) {
+                for (Iterator<NodeWrapper> nwIt =
+                    graphElements.get(graphNode).iterator(); nwIt.hasNext();) {
                     NodeWrapper nw = nwIt.next();
                     String type = GxlUtil.getElemType(nw.getNode());
                     if (type == null) {
@@ -178,9 +185,11 @@ public class GxlToType extends TypeImporter {
                         for (EdgeWrapper ew : nw.getEdges()) {
                             if (ew.getType().equals("hasAsComponentGraph")) {
                                 if (graphHierachy.containsKey(ew.getTarget().getNode())) {
-                                    addMessage(new Message("Graph may only be contained by one other graph"));
+                                    addMessage(new Message(
+                                        "Graph may only be contained by one other graph"));
                                 }
-                                graphHierachy.put(ew.getTarget().getNode(), nw.getNode());
+                                graphHierachy.put(ew.getTarget().getNode(),
+                                    nw.getNode());
                                 // Node not to be treated as element in the graph any further
                                 nwIt.remove();
                             }
@@ -191,14 +200,14 @@ public class GxlToType extends TypeImporter {
 
             // Fix graph hierarchy namespaces
             for (NodeType graphClassNode : graphElements.keySet()) {
-                getGraphId(graphClassNode, graphHierachy, m_graphNamespaces);
+                getGraphId(graphClassNode, graphHierachy,
+                    this.m_graphNamespaces);
             }
 
             // Hierarchy done, build graphs
             for (NodeType graphNode : graphElements.keySet()) {
-                Id graphNamespace = m_graphNamespaces.get(graphNode.getId());
-
-                int count = 0;
+                Id graphNamespace =
+                    this.m_graphNamespaces.get(graphNode.getId());
 
                 for (NodeWrapper nw : graphElements.get(graphNode)) {
                     String type = GxlUtil.getElemType(nw.getNode());
@@ -207,10 +216,8 @@ public class GxlToType extends TypeImporter {
                     }
 
                     if (type.equals("NodeClass")) {
-                        count++;
                         visitClass(typeModel, nw, graphNamespace);
                     } else if (g_edgeTypes.contains(type)) {
-                        count++;
                         visitEdge(typeModel, nw, graphNamespace);
                     }
                 }
@@ -218,7 +225,7 @@ public class GxlToType extends TypeImporter {
                 typeModel.resolve();
 
                 // Store typegraph under ID of corresponding GraphClass node.
-                m_typeModels.put(graphNode.getId(), typeModel);
+                this.m_typeModels.put(graphNode.getId(), typeModel);
 
                 //System.out.println("GXL elem " + count + " (" + graphNode.getId() + ")");
             }
@@ -226,24 +233,33 @@ public class GxlToType extends TypeImporter {
 
     }
 
-    private void getGraphId(NodeType graphClassNode, Map<NodeType,NodeType> graphHierachy, Map<String,Id> graphNamespaces) {
+    private void getGraphId(NodeType graphClassNode,
+            Map<NodeType,NodeType> graphHierachy, Map<String,Id> graphNamespaces) {
         if (graphHierachy.containsKey(graphClassNode)) {
-            getGraphId(graphHierachy.get(graphClassNode), graphHierachy, graphNamespaces);
+            getGraphId(graphHierachy.get(graphClassNode), graphHierachy,
+                graphNamespaces);
 
-            Id parentId = graphNamespaces.get(graphHierachy.get(graphClassNode).getId());
+            Id parentId =
+                graphNamespaces.get(graphHierachy.get(graphClassNode).getId());
 
-            String graphName = (String) GxlUtil.getAttribute(graphClassNode, "name", AttrTypeEnum.STRING);
-            graphNamespaces.put(graphClassNode.getId(), Id.getId(parentId, Name.getName(graphName)));
+            String graphName =
+                (String) GxlUtil.getAttribute(graphClassNode, "name",
+                    AttrTypeEnum.STRING);
+            graphNamespaces.put(graphClassNode.getId(),
+                Id.getId(parentId, Name.getName(graphName)));
         } else {
-            String graphName = (String) GxlUtil.getAttribute(graphClassNode, "name", AttrTypeEnum.STRING);
-            graphNamespaces.put(graphClassNode.getId(), Id.getId(Id.ROOT, Name.getName(graphName)));
+            String graphName =
+                (String) GxlUtil.getAttribute(graphClassNode, "name",
+                    AttrTypeEnum.STRING);
+            graphNamespaces.put(graphClassNode.getId(),
+                Id.getId(Id.ROOT, Name.getName(graphName)));
         }
     }
 
     @Override
     public TypeModel getTypeModel(String model) {
-        if (m_typeModels.containsKey(model)) {
-            return m_typeModels.get(model);
+        if (this.m_typeModels.containsKey(model)) {
+            return this.m_typeModels.get(model);
         }
 
         return null;
@@ -313,20 +329,23 @@ public class GxlToType extends TypeImporter {
      * --<node id="name"> attribute 
      * ?--<node id="hasAsComponentGraph"> subgraph as element, only supported by graphs partially as package
      */
-    private Class visitClass(TypeModel mm, NodeWrapper nodeWrapper, Id graphNamespace) {
+    private Class visitClass(TypeModel mm, NodeWrapper nodeWrapper,
+            Id graphNamespace) {
         //assert ("NodeClass".equals(nodeWrapper.getType()));
         if (g_edgeTypes.contains(nodeWrapper.getType())) {
             return (Class) visitEdge(mm, nodeWrapper, graphNamespace);
         }
 
         NodeType node = nodeWrapper.getNode();
-        if (m_nodeValues.containsKey(node)) {
-            Object val = m_nodeValues.get(node);
+        if (this.m_nodeValues.containsKey(node)) {
+            Object val = this.m_nodeValues.get(node);
             assert (val instanceof Class);
             return (Class) val;
         }
 
-        String name = (String) GxlUtil.getAttribute(node, "name", GxlUtil.AttrTypeEnum.STRING);
+        String name =
+            (String) GxlUtil.getAttribute(node, "name",
+                GxlUtil.AttrTypeEnum.STRING);
         if (name == null) {
             addMessage(new Message("Class without name " + node.getId()));
             name = node.getId();
@@ -336,23 +355,28 @@ public class GxlToType extends TypeImporter {
         Id clsID = Id.getId(graphNamespace, clsName);
         Class cmClass = mm.getClass(clsID, true);
 
-        m_nodeValues.put(node, cmClass);
-        m_idToType.put(node.getId(), cmClass);
+        this.m_nodeValues.put(node, cmClass);
+        this.m_idToType.put(node.getId(), cmClass);
 
         //Run through attributes
         //Walk through inheritance chain
         for (EdgeWrapper edge : nodeWrapper.getEdges()) {
             if (edge.getType().equals("hasAttribute")) {
-                Field cmField = visitAttribute(mm, cmClass, edge.getTarget(), graphNamespace);
+                Field cmField =
+                    visitAttribute(mm, cmClass, edge.getTarget(),
+                        graphNamespace);
                 cmClass.addField(cmField);
             } else if (edge.getType().equals("isA")) {
-                Class superClass = visitClass(mm, edge.getTarget(), graphNamespace);
+                Class superClass =
+                    visitClass(mm, edge.getTarget(), graphNamespace);
                 cmClass.addSuperClass(superClass);
             }
             // Cannot directly handle references, they will be added on their own account (as they are nodes and will be visited independently)
         }
 
-        Boolean isAbstract = (Boolean) GxlUtil.getAttribute(node, "isabstract", AttrTypeEnum.BOOL);
+        Boolean isAbstract =
+            (Boolean) GxlUtil.getAttribute(node, "isabstract",
+                AttrTypeEnum.BOOL);
         if (isAbstract != null && isAbstract) {
             mm.addProperty(new AbstractProperty(cmClass));
         }
@@ -370,17 +394,20 @@ public class GxlToType extends TypeImporter {
      */
     // Class argument to apply default value property
     //TODO: return value used by assign, or assigned in visitor itself?
-    private Field visitAttribute(TypeModel tm, Class c, NodeWrapper nodeWrapper, Id graphNamespace) {
+    private Field visitAttribute(TypeModel tm, Class c,
+            NodeWrapper nodeWrapper, Id graphNamespace) {
         assert ("AttributeClass".equals(nodeWrapper.getType()));
 
         NodeType node = nodeWrapper.getNode();
-        if (m_nodeValues.containsKey(node)) {
-            Object val = m_nodeValues.get(node);
+        if (this.m_nodeValues.containsKey(node)) {
+            Object val = this.m_nodeValues.get(node);
             assert (val instanceof Field);
             return (Field) val;
         }
 
-        String name = (String) GxlUtil.getAttribute(nodeWrapper.getNode(), "name", GxlUtil.AttrTypeEnum.STRING);
+        String name =
+            (String) GxlUtil.getAttribute(nodeWrapper.getNode(), "name",
+                GxlUtil.AttrTypeEnum.STRING);
         Type t = null;
         for (EdgeWrapper ew : nodeWrapper.getEdges()) {
             if (ew.getType().equals("hasDomain")) {
@@ -396,16 +423,17 @@ public class GxlToType extends TypeImporter {
             upperBound = -1;
         }
         Field f = new Field(Name.getName(name), t, lowerBound, upperBound);
-        m_idToField.put(node.getId(), f);
+        this.m_idToField.put(node.getId(), f);
 
         //Note: actually visiting type before storing field, but not a problem since fields generally have no recursive behavior
-        m_nodeValues.put(node, f);
-        m_idToType.put(node.getId(), t);
+        this.m_nodeValues.put(node, f);
+        this.m_idToType.put(node.getId(), t);
 
         for (EdgeWrapper ew : nodeWrapper.getEdges()) {
             if (ew.getType().equals("hasDefaultValue")) {
                 Value v = visitValue(tm, ew.getTarget(), t, graphNamespace);
-                DefaultValueProperty p = new DefaultValueProperty(c, f.getName(), v);
+                DefaultValueProperty p =
+                    new DefaultValueProperty(c, f.getName(), v);
                 tm.addProperty(p);
             }
         }
@@ -428,14 +456,17 @@ public class GxlToType extends TypeImporter {
      * --<node id="isordered"> edge attr 
      * --<node id="isdirected"> edge attr
      */
-    private Object visitEdge(TypeModel tm, NodeWrapper nodeWrapper, Id graphNamespace) {
+    private Object visitEdge(TypeModel tm, NodeWrapper nodeWrapper,
+            Id graphNamespace) {
         NodeType node = nodeWrapper.getNode();
-        if (m_nodeValues.containsKey(node)) {
-            Object val = m_nodeValues.get(node);
+        if (this.m_nodeValues.containsKey(node)) {
+            Object val = this.m_nodeValues.get(node);
             return val;
         }
 
-        String name = (String) GxlUtil.getAttribute(nodeWrapper.getNode(), "name", GxlUtil.AttrTypeEnum.STRING);
+        String name =
+            (String) GxlUtil.getAttribute(nodeWrapper.getNode(), "name",
+                GxlUtil.AttrTypeEnum.STRING);
 
         Class sourceClass = null;
         Class targetClass = null;
@@ -450,17 +481,22 @@ public class GxlToType extends TypeImporter {
                 if (!fromLimits.isDefault()) {
                     isComplex = true;
                 }
-                fromOrdered = (Boolean) GxlUtil.getAttribute(ew.getEdge(), "isordered", AttrTypeEnum.BOOL);
+                fromOrdered =
+                    (Boolean) GxlUtil.getAttribute(ew.getEdge(), "isordered",
+                        AttrTypeEnum.BOOL);
             } else if (ew.getType().equals("to")) {
                 targetClass = visitClass(tm, ew.getTarget(), graphNamespace);
                 toLimits = getLimits(ew.getEdge());
-                toOrdered = (Boolean) GxlUtil.getAttribute(ew.getEdge(), "isordered", AttrTypeEnum.BOOL);
+                toOrdered =
+                    (Boolean) GxlUtil.getAttribute(ew.getEdge(), "isordered",
+                        AttrTypeEnum.BOOL);
             }
         }
 
         for (EdgeWrapper ew : nodeWrapper.getIncomingEdges()) {
             // If some other edge inherits from this edge, or connects to another edge, then this edge automatically becomes complex as well
-            if (ew.getType().equals("isA") || ew.getType().equals("to") || ew.getType().equals("from")) {
+            if (ew.getType().equals("isA") || ew.getType().equals("to")
+                || ew.getType().equals("from")) {
                 isComplex = true;
                 break;
             }
@@ -469,12 +505,15 @@ public class GxlToType extends TypeImporter {
         assert (sourceClass != null && targetClass != null);
 
         List<Class> superClasses = new ArrayList<Class>();
-        Boolean isAbstract = (Boolean) GxlUtil.getAttribute(nodeWrapper.getNode(), "isabstract", AttrTypeEnum.BOOL);
+        Boolean isAbstract =
+            (Boolean) GxlUtil.getAttribute(nodeWrapper.getNode(), "isabstract",
+                AttrTypeEnum.BOOL);
         boolean hasAttributes = false;
         for (EdgeWrapper ew : nodeWrapper.getEdges()) {
             if (ew.getType().equals("isA")) {
-                if (m_useComplex) {
-                    superClasses.add(visitClass(tm, ew.getTarget(), graphNamespace));
+                if (this.m_useComplex) {
+                    superClasses.add(visitClass(tm, ew.getTarget(),
+                        graphNamespace));
                 }
             } else if (ew.getType().equals("hasAttribute")) {
                 hasAttributes = true;
@@ -487,7 +526,9 @@ public class GxlToType extends TypeImporter {
             // Must be aggregate or composite
             isAggregate = true;
             // read the attribute, either "from" or "to"
-            String eVal = (String) GxlUtil.getAttribute(nodeWrapper.getNode(), "aggregate", GxlUtil.AttrTypeEnum.ENUM);
+            String eVal =
+                (String) GxlUtil.getAttribute(nodeWrapper.getNode(),
+                    "aggregate", GxlUtil.AttrTypeEnum.ENUM);
             if (eVal != null) {
                 if (eVal.equals("to")) {
                     reverseAggregate = true;
@@ -495,13 +536,17 @@ public class GxlToType extends TypeImporter {
             }
         }
 
-        isComplex = isComplex || (isAbstract != null && isAbstract) || hasAttributes || reverseAggregate || superClasses.size() != 0;
+        isComplex =
+            isComplex || (isAbstract != null && isAbstract) || hasAttributes
+                || reverseAggregate || superClasses.size() != 0;
         // The isorderedFrom attribute also makes a edge complex technically, but the fromOrder attribute is ignored in instances
         // so ignored here as well
 
-        if (m_useComplex && isComplex) {
+        if (this.m_useComplex && isComplex) {
             String edgeName = sourceClass.getId().getName() + "_" + name;
-            Class edgeClass = tm.getClass(Id.getId(graphNamespace, Name.getName(edgeName)), true);
+            Class edgeClass =
+                tm.getClass(Id.getId(graphNamespace, Name.getName(edgeName)),
+                    true);
 
             Type fromType = sourceClass;
             Type toType = targetClass;
@@ -540,34 +585,40 @@ public class GxlToType extends TypeImporter {
             if (hasAttributes) {
                 for (EdgeWrapper ew : nodeWrapper.getEdges()) {
                     if (ew.getType().equals("hasAttribute")) {
-                        Field attribField = visitAttribute(tm, edgeClass, ew.getTarget(), graphNamespace);
+                        Field attribField =
+                            visitAttribute(tm, edgeClass, ew.getTarget(),
+                                graphNamespace);
                         edgeClass.addField(attribField);
                     }
                 }
             }
             if (isAggregate) {
-                tm.addProperty(new ContainmentProperty(edgeClass, Name.getName(reverseAggregate ? "from" : "to")));
+                tm.addProperty(new ContainmentProperty(edgeClass,
+                    Name.getName(reverseAggregate ? "from" : "to")));
             }
 
-            m_nodeValues.put(node, edgeClass);
-            m_idToType.put(node.getId(), edgeClass);
-            m_complexEdgeIds.add(node.getId());
+            this.m_nodeValues.put(node, edgeClass);
+            this.m_idToType.put(node.getId(), edgeClass);
+            this.m_complexEdgeIds.add(node.getId());
 
             return edgeClass;
         }
 
         // From here on simple edge type
         if (isAggregate) {
-            tm.addProperty(new ContainmentProperty(sourceClass, Name.getName(name)));
+            tm.addProperty(new ContainmentProperty(sourceClass,
+                Name.getName(name)));
         }
 
         Type targetType = targetClass;
         if ((toLimits.upper > 1 || toLimits.upper == -1) && toOrdered) {
             targetType = new Container(ContainerType.ORD, targetType);
         }
-        Field f = new Field(Name.getName(name), targetType, toLimits.lower, toLimits.upper);
-        m_nodeValues.put(node, f);
-        m_idToField.put(node.getId(), f);
+        Field f =
+            new Field(Name.getName(name), targetType, toLimits.lower,
+                toLimits.upper);
+        this.m_nodeValues.put(node, f);
+        this.m_idToField.put(node.getId(), f);
 
         sourceClass.addField(f);
 
@@ -584,10 +635,11 @@ public class GxlToType extends TypeImporter {
      * @param nodeWrapper Node representing the type
      * @return The generated type, or null on error
      */
-    private Type visitType(TypeModel tm, NodeWrapper nodeWrapper, Id graphNamespace) {
+    private Type visitType(TypeModel tm, NodeWrapper nodeWrapper,
+            Id graphNamespace) {
         NodeType node = nodeWrapper.getNode();
-        if (m_nodeValues.containsKey(node)) {
-            Object val = m_nodeValues.get(node);
+        if (this.m_nodeValues.containsKey(node)) {
+            Object val = this.m_nodeValues.get(node);
             assert (val instanceof Type);
             return (Type) val;
         }
@@ -595,8 +647,8 @@ public class GxlToType extends TypeImporter {
         String type = nodeWrapper.getType();
 
         if (g_simpleTypeMap.containsKey(type)) {
-            m_nodeValues.put(node, g_simpleTypeMap.get(type));
-            m_idToType.put(node.getId(), g_simpleTypeMap.get(type));
+            this.m_nodeValues.put(node, g_simpleTypeMap.get(type));
+            this.m_idToType.put(node.getId(), g_simpleTypeMap.get(type));
             return g_simpleTypeMap.get(type);
         }
 
@@ -608,7 +660,8 @@ public class GxlToType extends TypeImporter {
             for (EdgeWrapper edge : nodeWrapper.getEdges()) {
                 if (edge.getType().equals("hasComponent")) {
                     // Make sure type is visited
-                    components.add(visitType(tm, edge.getTarget(), graphNamespace));
+                    components.add(visitType(tm, edge.getTarget(),
+                        graphNamespace));
                 }
             }
 
@@ -628,8 +681,8 @@ public class GxlToType extends TypeImporter {
                 }
             }
 
-            m_nodeValues.put(node, t);
-            m_idToType.put(node.getId(), t);
+            this.m_nodeValues.put(node, t);
+            this.m_idToType.put(node.getId(), t);
             return t;
         }
 
@@ -649,10 +702,11 @@ public class GxlToType extends TypeImporter {
      * @param nodeWrapper NodeWrapper representing the node in the GXL type model for the enum. Should be of type "Enum"
      * @return The created Enum, or null on error
      */
-    private Enum visitEnum(TypeModel tm, NodeWrapper nodeWrapper, Id graphNamespace) {
+    private Enum visitEnum(TypeModel tm, NodeWrapper nodeWrapper,
+            Id graphNamespace) {
         NodeType node = nodeWrapper.getNode();
-        if (m_nodeValues.containsKey(node)) {
-            Object val = m_nodeValues.get(node);
+        if (this.m_nodeValues.containsKey(node)) {
+            Object val = this.m_nodeValues.get(node);
             assert (val instanceof Enum);
             return (Enum) val;
         }
@@ -667,7 +721,9 @@ public class GxlToType extends TypeImporter {
                 NodeWrapper valueNode = ew.getTarget();
                 assert ("EnumVal".equals(valueNode.getType()));
 
-                String value = (String) GxlUtil.getAttribute(valueNode.getNode(), "value", GxlUtil.AttrTypeEnum.STRING);
+                String value =
+                    (String) GxlUtil.getAttribute(valueNode.getNode(), "value",
+                        GxlUtil.AttrTypeEnum.STRING);
                 values.add(Name.getName(value));
             }
         }
@@ -679,78 +735,105 @@ public class GxlToType extends TypeImporter {
             cmEnum.addLiteral(litName);
         }
 
-        m_nodeValues.put(node, cmEnum);
-        m_idToType.put(node.getId(), cmEnum);
+        this.m_nodeValues.put(node, cmEnum);
+        this.m_idToType.put(node.getId(), cmEnum);
 
         return cmEnum;
     }
 
-    private Value visitValue(TypeModel tm, NodeWrapper nodeWrapper, Type type, Id graphNamespace) {
+    private Value visitValue(TypeModel tm, NodeWrapper nodeWrapper, Type type,
+            Id graphNamespace) {
         String nodeType = nodeWrapper.getType();
         NodeType valueNode = nodeWrapper.getNode();
 
         // Locators treated as string
         if (nodeType.equals("LocatorVal")) {
-            String value = (String) GxlUtil.getAttribute(valueNode, "uri", AttrTypeEnum.STRING);
+            String value =
+                (String) GxlUtil.getAttribute(valueNode, "uri",
+                    AttrTypeEnum.STRING);
             if (type instanceof StringType) {
                 return new groove.io.conceptual.value.StringValue(value);
             } else {
-                addMessage(new Message("Trying to parse locator value " + value + " while expected type is " + type, MessageType.ERROR));
+                addMessage(new Message("Trying to parse locator value " + value
+                    + " while expected type is " + type, MessageType.ERROR));
                 return null;
             }
         } else if (type.equals("BoolVal")) {
-            String value = (String) GxlUtil.getAttribute(valueNode, "value", AttrTypeEnum.STRING);
+            String value =
+                (String) GxlUtil.getAttribute(valueNode, "value",
+                    AttrTypeEnum.STRING);
             if (type instanceof BoolType) {
-                return new groove.io.conceptual.value.BoolValue(Boolean.parseBoolean(value));
+                return new groove.io.conceptual.value.BoolValue(
+                    Boolean.parseBoolean(value));
             } else {
-                addMessage(new Message("Trying to parse bool value " + value + " while expected type is " + type, MessageType.ERROR));
+                addMessage(new Message("Trying to parse bool value " + value
+                    + " while expected type is " + type, MessageType.ERROR));
                 return null;
             }
         } else if (nodeType.equals("FloatVal")) {
-            String value = (String) GxlUtil.getAttribute(valueNode, "value", AttrTypeEnum.STRING);
+            String value =
+                (String) GxlUtil.getAttribute(valueNode, "value",
+                    AttrTypeEnum.STRING);
             try {
                 if (type instanceof RealType) {
-                    return new groove.io.conceptual.value.RealValue(Float.parseFloat(value));
+                    return new groove.io.conceptual.value.RealValue(
+                        Float.parseFloat(value));
                 } else {
-                    addMessage(new Message("Trying to parse real value " + value + " while expected type is " + type, MessageType.ERROR));
+                    addMessage(new Message("Trying to parse real value "
+                        + value + " while expected type is " + type,
+                        MessageType.ERROR));
                     return null;
                 }
             } catch (NumberFormatException e) {
-                addMessage(new Message("Unable to parse value " + value + " as float", MessageType.ERROR));
+                addMessage(new Message("Unable to parse value " + value
+                    + " as float", MessageType.ERROR));
                 return null;
             }
         } else if (nodeType.equals("IntVal")) {
-            String value = (String) GxlUtil.getAttribute(valueNode, "value", AttrTypeEnum.STRING);
+            String value =
+                (String) GxlUtil.getAttribute(valueNode, "value",
+                    AttrTypeEnum.STRING);
             try {
                 if (type instanceof IntType) {
-                    return new groove.io.conceptual.value.IntValue(Integer.parseInt(value));
+                    return new groove.io.conceptual.value.IntValue(
+                        Integer.parseInt(value));
                 } else {
-                    addMessage(new Message("Trying to parse int value " + value + " while expected type is " + type, MessageType.ERROR));
+                    addMessage(new Message("Trying to parse int value " + value
+                        + " while expected type is " + type, MessageType.ERROR));
                     return null;
                 }
             } catch (NumberFormatException e) {
-                addMessage(new Message("Unable to parse value " + value + " as integer", MessageType.ERROR));
+                addMessage(new Message("Unable to parse value " + value
+                    + " as integer", MessageType.ERROR));
                 return null;
             }
         } else if (nodeType.equals("StringVal")) {
-            String value = (String) GxlUtil.getAttribute(valueNode, "value", AttrTypeEnum.STRING);
+            String value =
+                (String) GxlUtil.getAttribute(valueNode, "value",
+                    AttrTypeEnum.STRING);
             if (type instanceof StringType) {
                 return new groove.io.conceptual.value.StringValue(value);
             } else {
-                addMessage(new Message("Trying to parse string value " + value + " while expected type is " + type, MessageType.ERROR));
+                addMessage(new Message("Trying to parse string value " + value
+                    + " while expected type is " + type, MessageType.ERROR));
                 return null;
             }
         } else if (nodeType.equals("EnumVal")) {
-            String value = (String) GxlUtil.getAttribute(valueNode, "value", AttrTypeEnum.STRING);
+            String value =
+                (String) GxlUtil.getAttribute(valueNode, "value",
+                    AttrTypeEnum.STRING);
             if (type instanceof Enum) {
-                return new groove.io.conceptual.value.EnumValue((Enum) type, Name.getName(value));
+                return new groove.io.conceptual.value.EnumValue((Enum) type,
+                    Name.getName(value));
             } else {
-                addMessage(new Message("Trying to parse enum value " + value + " while expected type is " + type, MessageType.ERROR));
+                addMessage(new Message("Trying to parse enum value " + value
+                    + " while expected type is " + type, MessageType.ERROR));
                 return null;
             }
         }
         // composite types
-        else if (nodeType.equals("BagVal") || nodeType.equals("SetVal") || nodeType.equals("SeqVal")) {
+        else if (nodeType.equals("BagVal") || nodeType.equals("SetVal")
+            || nodeType.equals("SeqVal")) {
             ContainerType ct = ContainerType.BAG;
             if (nodeType.equals("BagVal")) {
                 ct = ContainerType.BAG;
@@ -759,17 +842,22 @@ public class GxlToType extends TypeImporter {
             } else if (nodeType.equals("SeqVal")) {
                 ct = ContainerType.SEQ;
             }
-            if (type instanceof Container && ((Container) type).getContainerType() == ct) {
+            if (type instanceof Container
+                && ((Container) type).getContainerType() == ct) {
                 ContainerValue cv = new ContainerValue((Container) type);
                 for (EdgeWrapper ew : nodeWrapper.getEdges()) {
                     if (ew.getType().equals("hasComponentValue")) {
-                        Value v = visitValue(tm, ew.getTarget(), ((Container) type).getType(), graphNamespace);
+                        Value v =
+                            visitValue(tm, ew.getTarget(),
+                                ((Container) type).getType(), graphNamespace);
                         cv.addValue(v);
                     }
                 }
                 return cv;
             } else {
-                addMessage(new Message("Trying to parse " + nodeType + " container value, while expected type is " + type, MessageType.ERROR));
+                addMessage(new Message("Trying to parse " + nodeType
+                    + " container value, while expected type is " + type,
+                    MessageType.ERROR));
                 return null;
             }
         } else if (nodeType.equals("TupVal")) {
@@ -777,18 +865,25 @@ public class GxlToType extends TypeImporter {
                 List<Value> values = new ArrayList<Value>();
                 for (EdgeWrapper ew : nodeWrapper.getEdges()) {
                     if (ew.getType().equals("hasComponentValue")) {
-                        Value v = visitValue(tm, ew.getTarget(), ((Container) type).getType(), graphNamespace);
+                        Value v =
+                            visitValue(tm, ew.getTarget(),
+                                ((Container) type).getType(), graphNamespace);
                         values.add(v);
                     }
                 }
-                TupleValue tv = new TupleValue((Tuple) type, values.toArray(new Value[values.size()]));
+                TupleValue tv =
+                    new TupleValue((Tuple) type,
+                        values.toArray(new Value[values.size()]));
                 return tv;
             } else {
-                addMessage(new Message("Trying to parse tuple value while expected type is " + type, MessageType.ERROR));
+                addMessage(new Message(
+                    "Trying to parse tuple value while expected type is "
+                        + type, MessageType.ERROR));
                 return null;
             }
         } else {
-            addMessage(new Message("Unable to parse value node " + nodeType, MessageType.ERROR));
+            addMessage(new Message("Unable to parse value node " + nodeType,
+                MessageType.ERROR));
             return null;
         }
     }
@@ -798,45 +893,49 @@ public class GxlToType extends TypeImporter {
         public int upper;
 
         public Limits() {
-            lower = 0;
-            upper = -1;
+            this.lower = 0;
+            this.upper = -1;
         }
 
         public Limits(BigInteger lowerLimit, BigInteger upperLimit) {
-            lower = lowerLimit.intValue();
-            upper = upperLimit.intValue();
+            this.lower = lowerLimit.intValue();
+            this.upper = upperLimit.intValue();
         }
 
         public boolean isDefault() {
-            return lower == 0 && upper == -1;
+            return this.lower == 0 && this.upper == -1;
         }
     }
 
     private Limits getLimits(EdgeType edge) {
-        TupType limits = (TupType) GxlUtil.getAttribute(edge, "limits", GxlUtil.AttrTypeEnum.TUP);
+        TupType limits =
+            (TupType) GxlUtil.getAttribute(edge, "limits",
+                GxlUtil.AttrTypeEnum.TUP);
         if (limits == null || limits.getBagOrSetOrSeq().size() != 2) {
             return new Limits();
         }
 
-        BigInteger lower = (BigInteger) limits.getBagOrSetOrSeq().get(0).getValue();
-        BigInteger upper = (BigInteger) limits.getBagOrSetOrSeq().get(1).getValue();
+        BigInteger lower =
+            (BigInteger) limits.getBagOrSetOrSeq().get(0).getValue();
+        BigInteger upper =
+            (BigInteger) limits.getBagOrSetOrSeq().get(1).getValue();
 
         return new Limits(lower, upper);
     }
 
     public Type getIdType(String id) {
-        return m_idToType.get(id);
+        return this.m_idToType.get(id);
     }
 
     public Field getIdField(String id) {
-        return m_idToField.get(id);
+        return this.m_idToField.get(id);
     }
 
     public Id getGraphId(String graphId) {
-        return m_graphNamespaces.get(graphId);
+        return this.m_graphNamespaces.get(graphId);
     }
 
     public boolean isComplex(String edgeId) {
-        return m_complexEdgeIds.contains(edgeId);
+        return this.m_complexEdgeIds.contains(edgeId);
     }
 }

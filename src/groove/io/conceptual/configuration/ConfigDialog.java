@@ -2,7 +2,7 @@ package groove.io.conceptual.configuration;
 
 import groove.gui.Simulator;
 import groove.gui.dialog.ErrorDialog;
-import groove.io.conceptual.configuration.ConfigAction.ConfigActionType;
+import groove.io.conceptual.configuration.ConfigAction.Type;
 import groove.trans.ResourceKind;
 import groove.view.FormatException;
 
@@ -18,9 +18,10 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Set;
 
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -44,7 +45,7 @@ import org.w3c.dom.Document;
 //ActionListener: change selection
 //TODO: add area for exception messages, many errors are silently dropped
 public abstract class ConfigDialog extends JDialog implements ActionListener {
-    protected Simulator m_simulator;
+    protected final Simulator m_simulator;
 
     protected URL m_schemaURL;
     protected String m_activeModel;
@@ -53,13 +54,6 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
     private JComboBox m_configsList;
     // True if combobox events should be ignored
     private boolean m_ignoreCombobox = false;
-
-    // Various actions for toolbar buttons
-    private Action m_newAction;
-    private Action m_saveAction;
-    private Action m_copyAction;
-    private Action m_deleteAction;
-    private Action m_renameAction;
 
     public ConfigDialog(Simulator simulator) {
         super(simulator.getFrame(), "Config Dialog", true);
@@ -105,40 +99,30 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         super.dispose();
     }
 
-    private void loadActions() {
-        this.m_newAction = getAction(ConfigActionType.New);
-        this.m_saveAction = getAction(ConfigActionType.Save);
-        this.m_copyAction = getAction(ConfigActionType.Copy);
-        this.m_deleteAction = getAction(ConfigActionType.Delete);
-        this.m_renameAction = getAction(ConfigActionType.Rename);
-    }
-
     private void buildGUI() {
         this.m_schemaURL =
-            this.getClass().getClassLoader().getResource(Config.g_xmlSchema);
+            this.getClass().getClassLoader().getResource(Config.CONFIG_SCHEMA);
         if (this.m_schemaURL == null) {
             throw new RuntimeException(
-                "Unable to load the XML schema resource " + Config.g_xmlSchema);
+                "Unable to load the XML schema resource " + Config.CONFIG_SCHEMA);
         }
-
-        loadActions();
 
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
 
-        toolBar.add(this.m_newAction);
+        toolBar.add(getAction(Type.NEW));
         toolBar.addSeparator();
 
         this.m_configsList = new JComboBox();
         this.m_configsList.setEditable(false);
         this.m_configsList.addActionListener(this);
         toolBar.add(this.m_configsList);
-        toolBar.add(this.m_saveAction);
+        toolBar.add(getAction(Type.SAVE));
         toolBar.addSeparator();
 
-        toolBar.add(this.m_copyAction);
-        toolBar.add(this.m_deleteAction);
-        toolBar.add(this.m_renameAction);
+        toolBar.add(getAction(Type.COPY));
+        toolBar.add(getAction(Type.DELETE));
+        toolBar.add(getAction(Type.RENAME));
 
         this.getContentPane().setLayout(new BorderLayout());
         this.getContentPane().add(toolBar, BorderLayout.NORTH);
@@ -150,7 +134,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 ConfigDialog.this.m_selectedModel =
                     ConfigDialog.this.m_activeModel;
-                ((ConfigAction) ConfigDialog.this.m_saveAction).execute();
+                getAction(Type.SAVE).execute();
                 ConfigDialog.this.dispose();
             }
         });
@@ -198,16 +182,23 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         }
     }
 
-    private Action getAction(ConfigActionType type) {
-        Action newAct = new ConfigAction(this.m_simulator, type, this);
-        newAct.setEnabled(true);
-        return newAct;
+    private ConfigAction getAction(Type type) {
+        ConfigAction result = this.actionMap.get(type);
+        if (result == null) {
+            this.actionMap.put(type, result =
+                new ConfigAction(this.m_simulator, type, this));
+            result.setEnabled(true);
+        }
+        return result;
     }
 
+    private final Map<Type,ConfigAction> actionMap =
+        new EnumMap<ConfigAction.Type,ConfigAction>(Type.class);
+
     private void refreshGUI() {
-        this.m_renameAction.setEnabled(hasModels());
-        this.m_copyAction.setEnabled(hasModels());
-        this.m_deleteAction.setEnabled(hasModels());
+        getAction(Type.RENAME).setEnabled(hasModels());
+        getAction(Type.COPY).setEnabled(hasModels());
+        getAction(Type.DELETE).setEnabled(hasModels());
 
         refreshList();
     }
@@ -241,17 +232,18 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         this.m_ignoreCombobox = false;
     }
 
-    public void executeAction(ConfigActionType type, String modelName) {
+    /** Carries out the consequences of a given action. */
+    public void executeAction(Type type, String modelName) {
         try {
             switch (type) {
-            case New:
+            case NEW:
                 this.m_activeModel = modelName;
                 newModel();
                 // Immediately save model with current model name
                 saveModel();
                 refreshGUI();
                 break;
-            case Save:
+            case SAVE:
                 if (!hasModels()) {
                     this.m_activeModel = modelName;
                     saveModel();
@@ -260,7 +252,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
                     saveModel();
                 }
                 break;
-            case Delete:
+            case DELETE:
                 if (!hasModels()) {
                     return;
                 }
@@ -284,7 +276,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
                 refreshGUI();
                 loadModel();
                 break;
-            case Rename:
+            case RENAME:
                 if (!hasModels()) {
                     return;
                 }
@@ -299,7 +291,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
                 refreshGUI();
                 loadModel();
                 break;
-            case Copy:
+            case COPY:
                 if (!hasModels()) {
                     return;
                 }
