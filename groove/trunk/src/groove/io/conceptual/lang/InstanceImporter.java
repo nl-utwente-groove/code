@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class InstanceImporter implements Messenger {
-    protected Map<String,InstanceModel> m_instanceModels = new HashMap<String,InstanceModel>();
+    protected Map<String,InstanceModel> m_instanceModels =
+        new HashMap<String,InstanceModel>();
     private List<Message> m_messages = new ArrayList<Message>();
 
     /**
@@ -18,7 +19,7 @@ public abstract class InstanceImporter implements Messenger {
      * @return A collection of strings representing each instance model
      */
     public Collection<String> getInstanceModelNames() {
-        return m_instanceModels.keySet();
+        return this.m_instanceModels.keySet();
     }
 
     /**
@@ -27,7 +28,8 @@ public abstract class InstanceImporter implements Messenger {
      * @return The instance model, or null if the model could not be found.
      * @throws ImportException When the conversion fails, an ImportException may be thrown.
      */
-    public abstract InstanceModel getInstanceModel(String modelName) throws ImportException;
+    public abstract InstanceModel getInstanceModel(String modelName)
+        throws ImportException;
 
     /**
      * Returns the first instance model. Messages may be generated during this operation.
@@ -43,14 +45,14 @@ public abstract class InstanceImporter implements Messenger {
     }
 
     protected void addMessage(Message m) {
-        m_messages.add(m);
+        this.m_messages.add(m);
     }
 
     public List<Message> getMessages() {
-        return m_messages;
+        return this.m_messages;
     }
 
     public void clearMessages() {
-        m_messages.clear();
+        this.m_messages.clear();
     }
 }

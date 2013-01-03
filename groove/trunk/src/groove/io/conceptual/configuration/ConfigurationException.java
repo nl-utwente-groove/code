@@ -18,20 +18,10 @@ package groove.io.conceptual.configuration;
 
 import groove.io.conceptual.AbstractionException;
 
+/** Special exception class used in constructing configurations. */
 public class ConfigurationException extends AbstractionException {
-    public ConfigurationException() {
-
-    }
-
-    public ConfigurationException(String message) {
-        super(message);
-    }
-
-    public ConfigurationException(Throwable cause) {
+    /** Wraps a given exception. */
+    public ConfigurationException(Exception cause) {
         super(cause);
-    }
-
-    public ConfigurationException(String message, Throwable cause) {
-        super(message, cause);
     }
 }

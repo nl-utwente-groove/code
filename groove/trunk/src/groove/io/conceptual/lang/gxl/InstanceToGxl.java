@@ -66,13 +66,17 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     //private Map<Id,GraphType> m_packageGraphs = new HashMap<Id,GraphType>();
 
     public InstanceToGxl(TypeToGxl typeToGxl) {
-        m_typeToGxl = typeToGxl;
-        m_gxlResource = (GxlResource) m_typeToGxl.getResource();
+        this.m_typeToGxl = typeToGxl;
+        this.m_gxlResource = (GxlResource) this.m_typeToGxl.getResource();
     }
 
     @Override
-    public void addInstanceModel(InstanceModel instanceModel) throws PortException {
-        m_instanceGraph = m_gxlResource.getInstanceGraph("graph_" + instanceModel.getTypeModel().getName(), instanceModel.getName());
+    public void addInstanceModel(InstanceModel instanceModel)
+        throws PortException {
+        this.m_instanceGraph =
+            this.m_gxlResource.getInstanceGraph("graph_"
+                + instanceModel.getTypeModel().getName(),
+                instanceModel.getName());
 
         int timer = Timer.start("IM to GXL");
         visitInstanceModel(instanceModel);
@@ -87,35 +91,44 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
         }
 
         Class cmClass = (Class) object.getType();
-        String classNodeId = m_typeToGxl.getId(cmClass);
+        String classNodeId = this.m_typeToGxl.getId(cmClass);
 
         String id = object.getName();
         if (id == null) {
             id = getNodeId();
         }
-        NodeType objectNode = createNode(id, "#" + classNodeId, cmClass.getId().getNamespace());
+        NodeType objectNode =
+            createNode(id, "#" + classNodeId, cmClass.getId().getNamespace());
         setElement(object, objectNode);
 
         for (Entry<Field,Value> fieldEntry : object.getValues().entrySet()) {
             Value fieldValue = fieldEntry.getValue();
             // if unset value, dont set it in the Ecore model either
-            if (fieldValue == null || fieldValue == groove.io.conceptual.value.Object.NIL) {
+            if (fieldValue == null
+                || fieldValue == groove.io.conceptual.value.Object.NIL) {
                 continue;
             }
 
-            if (m_typeToGxl.isAttribute(fieldEntry.getKey())) {
-                JAXBElement<?> attrObject = (JAXBElement<?>) getElement(fieldValue);
-                GxlUtil.setAttribute(objectNode, fieldEntry.getKey().getName().toString(), attrObject.getValue(), AttrTypeEnum.AUTO);
+            if (this.m_typeToGxl.isAttribute(fieldEntry.getKey())) {
+                JAXBElement<?> attrObject =
+                    (JAXBElement<?>) getElement(fieldValue);
+                GxlUtil.setAttribute(objectNode,
+                    fieldEntry.getKey().getName().toString(),
+                    attrObject.getValue(), AttrTypeEnum.AUTO);
             } else {
                 // Create edge or edges
-                String fieldEdgeId = "#" + m_typeToGxl.getId(fieldEntry.getKey());
+                String fieldEdgeId =
+                    "#" + this.m_typeToGxl.getId(fieldEntry.getKey());
                 if (fieldValue instanceof ContainerValue) {
                     ContainerValue cv = (ContainerValue) fieldValue;
-                    boolean isordered = ((Container) cv.getType()).getContainerType() == ContainerType.ORD || ((Container) cv.getType()).getContainerType() == ContainerType.SEQ;
+                    boolean isordered =
+                        ((Container) cv.getType()).getContainerType() == ContainerType.ORD
+                            || ((Container) cv.getType()).getContainerType() == ContainerType.SEQ;
                     int index = 0;
                     for (Value subValue : cv.getValues()) {
                         NodeType valueNode = (NodeType) getElement(subValue);
-                        EdgeType edge = createEdge(objectNode, valueNode, fieldEdgeId);
+                        EdgeType edge =
+                            createEdge(objectNode, valueNode, fieldEdgeId);
                         if (isordered) {
                             edge.setToorder(BigInteger.valueOf(index++));
                         }
@@ -134,7 +147,8 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             return;
         }
 
-        JAXBElement<Float> floatElem = GxlUtil.g_objectFactory.createFloat(new Float(realval.getValue()));
+        JAXBElement<Float> floatElem =
+            GxlUtil.g_objectFactory.createFloat(new Float(realval.getValue()));
         setElement(realval, floatElem);
     }
 
@@ -144,7 +158,8 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             return;
         }
 
-        JAXBElement<String> stringElem = GxlUtil.g_objectFactory.createString(stringval.getValue());
+        JAXBElement<String> stringElem =
+            GxlUtil.g_objectFactory.createString(stringval.getValue());
         setElement(stringval, stringElem);
     }
 
@@ -154,7 +169,8 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             return;
         }
 
-        JAXBElement<BigInteger> intElem = GxlUtil.g_objectFactory.createInt(BigInteger.valueOf(intval.getValue()));
+        JAXBElement<BigInteger> intElem =
+            GxlUtil.g_objectFactory.createInt(BigInteger.valueOf(intval.getValue()));
         setElement(intval, intElem);
     }
 
@@ -164,7 +180,8 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             return;
         }
 
-        JAXBElement<Boolean> boolElem = GxlUtil.g_objectFactory.createBool(new Boolean(boolval.getValue()));
+        JAXBElement<Boolean> boolElem =
+            GxlUtil.g_objectFactory.createBool(new Boolean(boolval.getValue()));
         setElement(boolval, boolElem);
     }
 
@@ -174,7 +191,8 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             return;
         }
 
-        JAXBElement<String> enumElem = GxlUtil.g_objectFactory.createEnum(enumval.getValue().toString());
+        JAXBElement<String> enumElem =
+            GxlUtil.g_objectFactory.createEnum(enumval.getValue().toString());
         setElement(enumval, enumElem);
     }
 
@@ -189,19 +207,19 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
         JAXBElement<?> cntElem = null;
 
         switch (((Container) containerval.getType()).getContainerType()) {
-            case SET:
-                cntType = GxlUtil.g_objectFactory.createSetType();
-                cntElem = GxlUtil.g_objectFactory.createSet((SetType) cntType);
-                break;
-            case BAG:
-                cntType = GxlUtil.g_objectFactory.createBagType();
-                cntElem = GxlUtil.g_objectFactory.createBag((BagType) cntType);
-                break;
-            case ORD:
-            case SEQ:
-                cntType = GxlUtil.g_objectFactory.createSeqType();
-                cntElem = GxlUtil.g_objectFactory.createSeq((SeqType) cntType);
-                break;
+        case SET:
+            cntType = GxlUtil.g_objectFactory.createSetType();
+            cntElem = GxlUtil.g_objectFactory.createSet((SetType) cntType);
+            break;
+        case BAG:
+            cntType = GxlUtil.g_objectFactory.createBagType();
+            cntElem = GxlUtil.g_objectFactory.createBag((BagType) cntType);
+            break;
+        case ORD:
+        case SEQ:
+            cntType = GxlUtil.g_objectFactory.createSeqType();
+            cntElem = GxlUtil.g_objectFactory.createSeq((SeqType) cntType);
+            break;
         }
         setElement(containerval, cntElem);
 
@@ -217,22 +235,28 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             return;
         }
 
-        if (m_typeToGxl.isAttribute(tupleval.getType())) {
+        if (this.m_typeToGxl.isAttribute(tupleval.getType())) {
             TupType tupType = GxlUtil.g_objectFactory.createTupType();
-            JAXBElement<TupType> tupElem = GxlUtil.g_objectFactory.createTup(tupType);
+            JAXBElement<TupType> tupElem =
+                GxlUtil.g_objectFactory.createTup(tupType);
             setElement(tupleval, tupElem);
 
             for (Entry<Integer,Value> entry : tupleval.getValues().entrySet()) {
-                JAXBElement<?> tupValue = (JAXBElement<?>) getElement(entry.getValue());
+                JAXBElement<?> tupValue =
+                    (JAXBElement<?>) getElement(entry.getValue());
                 tupType.getBagOrSetOrSeq().add(tupValue);
             }
         } else {
             // Tuple represented by class
-            Class cmClass = m_typeToGxl.getTupleClass((Tuple) tupleval.getType());
-            groove.io.conceptual.value.Object o = new groove.io.conceptual.value.Object(cmClass, null);
+            Class cmClass =
+                this.m_typeToGxl.getTupleClass((Tuple) tupleval.getType());
+            groove.io.conceptual.value.Object o =
+                new groove.io.conceptual.value.Object(cmClass, null);
 
             for (Entry<Integer,Value> entry : tupleval.getValues().entrySet()) {
-                o.setFieldValue(cmClass.getField(Name.getName("_" + entry.getKey())), entry.getValue());
+                o.setFieldValue(
+                    cmClass.getField(Name.getName("_" + entry.getKey())),
+                    entry.getValue());
             }
 
             setElement(tupleval, getElement(o));
@@ -246,7 +270,8 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
         }
 
         //DataValue treated as string in GXL
-        JAXBElement<String> stringElem = GxlUtil.g_objectFactory.createString(dataval.getValue());
+        JAXBElement<String> stringElem =
+            GxlUtil.g_objectFactory.createString(dataval.getValue());
         setElement(dataval, stringElem);
     }
 
@@ -254,12 +279,13 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
         NodeType newNode = new NodeType();
         newNode.setId(id);
         if (type != null) {
-            GxlUtil.setElemType(newNode, m_gxlResource.getTypePath() + type);
+            GxlUtil.setElemType(newNode, this.m_gxlResource.getTypePath()
+                + type);
         }
 
         //getPackageGraph(packageId).getNodeOrEdgeOrRel().add(newNode);
         // Use the main graph, no subgraphs
-        m_instanceGraph.getNodeOrEdgeOrRel().add(newNode);
+        this.m_instanceGraph.getNodeOrEdgeOrRel().add(newNode);
 
         return newNode;
     }
@@ -307,7 +333,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
         }
 
         //TODO: if subgraphs are used, do it here as well
-        m_instanceGraph.getNodeOrEdgeOrRel().add(newEdge);
+        this.m_instanceGraph.getNodeOrEdgeOrRel().add(newEdge);
 
         return newEdge;
     }
@@ -317,6 +343,6 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     }*/
 
     private String getNodeId() {
-        return "n" + m_nextNode++;
+        return "n" + this.m_nextNode++;
     }
 }

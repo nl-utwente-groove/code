@@ -155,7 +155,7 @@ public class GrooveToInstance extends InstanceImporter {
                     entry.getValue().setFieldValue(field, fieldValue);
                 } else {
                     addMessage(new Message("Cannot obtain value for field "
-                        + field.getName(), MessageType.WARN));
+                        + field.getName(), MessageType.WARNING));
                 }
             }
         }

@@ -52,8 +52,10 @@ import de.gupro.gxl.gxl_1_0.NodeType;
 
 public class GxlToInstance extends InstanceImporter {
 
-    private Map<String,InstanceModel> m_models = new HashMap<String,InstanceModel>();
-    private Map<String,GraphType> m_instanceGraphs = new HashMap<String,GraphType>();
+    private Map<String,InstanceModel> m_models =
+        new HashMap<String,InstanceModel>();
+    private Map<String,GraphType> m_instanceGraphs =
+        new HashMap<String,GraphType>();
 
     private GxlToType m_gxlToType;
 
@@ -62,8 +64,9 @@ public class GxlToInstance extends InstanceImporter {
     // Also for complex edges
     private Map<EdgeType,Object> m_edgeValues = new HashMap<EdgeType,Object>();
 
-    public GxlToInstance(GxlToType gxlToType, String instanceModel) throws ImportException {
-        m_gxlToType = gxlToType;
+    public GxlToInstance(GxlToType gxlToType, String instanceModel)
+        throws ImportException {
+        this.m_gxlToType = gxlToType;
 
         // Load the GXL
         try {
@@ -71,12 +74,13 @@ public class GxlToInstance extends InstanceImporter {
             try {
                 int timer = Timer.cont("Load GXL");
                 @SuppressWarnings("unchecked")
-                JAXBElement<GxlType> doc = (JAXBElement<GxlType>) GxlUtil.g_unmarshaller.unmarshal(in);
+                JAXBElement<GxlType> doc =
+                    (JAXBElement<GxlType>) GxlUtil.g_unmarshaller.unmarshal(in);
                 in.close();
                 for (GraphType g : doc.getValue().getGraph()) {
                     String type = GxlUtil.getElemType(g);
                     if (!("gxl-1.0".equals(type))) {
-                        m_instanceGraphs.put(g.getId(), g);
+                        this.m_instanceGraphs.put(g.getId(), g);
                     }
                 }
                 Timer.stop(timer);
@@ -93,7 +97,7 @@ public class GxlToInstance extends InstanceImporter {
 
         // Preload Models
         int timer = Timer.start("GXL to IM");
-        for (String model : m_instanceGraphs.keySet()) {
+        for (String model : this.m_instanceGraphs.keySet()) {
             try {
                 getInstanceModel(model);
             } catch (ImportException e) {
@@ -105,30 +109,32 @@ public class GxlToInstance extends InstanceImporter {
 
     @Override
     public Collection<String> getInstanceModelNames() {
-        return m_models.keySet();
+        return this.m_models.keySet();
     }
 
     private int count = 0;
 
     @Override
-    public InstanceModel getInstanceModel(String modelName) throws ImportException {
-        if (m_models.containsKey(modelName)) {
-            return m_models.get(modelName);
+    public InstanceModel getInstanceModel(String modelName)
+        throws ImportException {
+        if (this.m_models.containsKey(modelName)) {
+            return this.m_models.get(modelName);
         }
 
-        if (m_instanceGraphs.containsKey(modelName)) {
+        if (this.m_instanceGraphs.containsKey(modelName)) {
             // Find the type of the graph
-            String type = GxlUtil.getElemType(m_instanceGraphs.get(modelName));
-            TypeModel mm = m_gxlToType.getTypeModel(type);
+            String type =
+                GxlUtil.getElemType(this.m_instanceGraphs.get(modelName));
+            TypeModel mm = this.m_gxlToType.getTypeModel(type);
             if (mm == null) {
                 return null;
             }
 
             InstanceModel m = new InstanceModel(mm, modelName);
 
-            count = 0;
-            visitGraph(m, m_instanceGraphs.get(modelName));
-            m_models.put(modelName, m);
+            this.count = 0;
+            visitGraph(m, this.m_instanceGraphs.get(modelName));
+            this.m_models.put(modelName, m);
             //System.out.println("GXL instance elem: " + count);
             return m;
         }
@@ -138,18 +144,18 @@ public class GxlToInstance extends InstanceImporter {
 
     @Override
     public InstanceModel getInstanceModel() throws ImportException {
-        return getInstanceModel(m_models.keySet().iterator().next());
+        return getInstanceModel(this.m_models.keySet().iterator().next());
     }
 
     private void visitGraph(InstanceModel m, GraphType graph) {
         Map<NodeType,NodeWrapper> nodes = GxlUtil.wrapGraph(graph);
         String type = GxlUtil.getElemType(graph);
-        Id graphId = m_gxlToType.getGraphId(type);//Id.getId(Id.ROOT, Name.getName(type));
+        Id graphId = this.m_gxlToType.getGraphId(type);//Id.getId(Id.ROOT, Name.getName(type));
         for (Entry<NodeType,NodeWrapper> entry : nodes.entrySet()) {
             NodeWrapper node = entry.getValue();
 
             if (node.getNode().getGraph().isEmpty()) {
-                count++;
+                this.count++;
                 Object cmObject = visitObject(m, node, graphId);
                 m.addObject(cmObject);
             } else {
@@ -162,11 +168,12 @@ public class GxlToInstance extends InstanceImporter {
         }
     }
 
-    private Object visitObject(InstanceModel m, NodeWrapper nodeWrapper, Id graphId) {
+    private Object visitObject(InstanceModel m, NodeWrapper nodeWrapper,
+            Id graphId) {
         NodeType node = nodeWrapper.getNode();
 
-        if (m_nodeValues.containsKey(node)) {
-            Object val = m_nodeValues.get(node);
+        if (this.m_nodeValues.containsKey(node)) {
+            Object val = this.m_nodeValues.get(node);
             return val;
         }
 
@@ -174,14 +181,14 @@ public class GxlToInstance extends InstanceImporter {
         Name name = Name.getName(node.getId());
 
         //Class cmClass = m.getTypeModel().getClass(Id.getId(graphId, Name.getName(type)));
-        Class cmClass = (Class) m_gxlToType.getIdType(type);
+        Class cmClass = (Class) this.m_gxlToType.getIdType(type);
         if (cmClass == null) {
             return null;
         }
 
         Object o = new Object(cmClass, name);
 
-        m_nodeValues.put(node, o);
+        this.m_nodeValues.put(node, o);
 
         List<AttrType> attrs = node.getAttr();
 
@@ -204,14 +211,14 @@ public class GxlToInstance extends InstanceImporter {
         nodeWrapper.sortEdges();
         for (EdgeWrapper ew : nodeWrapper.getEdges()) {
             String edgeType = GxlUtil.getElemType(ew.getEdge());
-            if (m_gxlToType.isComplex(edgeType)) {
+            if (this.m_gxlToType.isComplex(edgeType)) {
                 visitEdge(m, ew, graphId);
                 continue;
             }
 
             Object oTarget = visitObject(m, ew.getTarget(), graphId);
             String refName = GxlUtil.getElemType(ew.getEdge());
-            Field f = m_gxlToType.getIdField(refName);
+            Field f = this.m_gxlToType.getIdField(refName);
             assert (f != null);
 
             Value v = null;
@@ -237,18 +244,19 @@ public class GxlToInstance extends InstanceImporter {
         return o;
     }
 
-    private Object visitEdge(InstanceModel m, EdgeWrapper edgeWrapper, Id graphId) {
+    private Object visitEdge(InstanceModel m, EdgeWrapper edgeWrapper,
+            Id graphId) {
         EdgeType edge = edgeWrapper.getEdge();
 
-        if (m_edgeValues.containsKey(edge)) {
-            Object val = m_edgeValues.get(edge);
+        if (this.m_edgeValues.containsKey(edge)) {
+            Object val = this.m_edgeValues.get(edge);
             return val;
         }
 
         String type = GxlUtil.getElemType(edge);
         Name name = Name.getName(edge.getId());
 
-        Class cmClass = (Class) m_gxlToType.getIdType(type);
+        Class cmClass = (Class) this.m_gxlToType.getIdType(type);
         Object o = new Object(cmClass, name);
 
         Object oSource = null;
@@ -267,14 +275,16 @@ public class GxlToInstance extends InstanceImporter {
         assert (fieldFrom != null && fieldTo != null);
 
         if (fieldFrom.getType() instanceof Container) {
-            ContainerValue cv = new ContainerValue((Container) fieldFrom.getType());
+            ContainerValue cv =
+                new ContainerValue((Container) fieldFrom.getType());
             o.setFieldValue(fieldFrom, cv);
             cv.addValue(oSource);
         } else {
             o.setFieldValue(fieldFrom, oSource);
         }
         if (fieldTo.getType() instanceof Container) {
-            ContainerValue cv = new ContainerValue((Container) fieldTo.getType());
+            ContainerValue cv =
+                new ContainerValue((Container) fieldTo.getType());
             o.setFieldValue(fieldTo, cv);
             cv.addValue(oTarget);
         } else {
@@ -301,7 +311,7 @@ public class GxlToInstance extends InstanceImporter {
         }
 
         m.addObject(o);
-        m_edgeValues.put(edge, o);
+        this.m_edgeValues.put(edge, o);
 
         return o;
     }

@@ -40,9 +40,9 @@ public class GrooveToMeta implements Messenger {
             if (getNodeType(node) == MetaType.None) {
                 Set<TypeNode> superTypes = node.getGraph().getDirectSupertypeMap().get(node);
                 if (superTypes.size() > 1) {
-                    addMessage(new Message("Node has multiple supertypes in meta type graph: " + node.toString(), MessageType.WARN));
+                    addMessage(new Message("Node has multiple supertypes in meta type graph: " + node.toString(), MessageType.WARNING));
                 } else if (superTypes.size() == 0) {
-                    addMessage(new Message("Node has no meta type: " + node.toString(), MessageType.WARN));
+                    addMessage(new Message("Node has no meta type: " + node.toString(), MessageType.WARNING));
                 } else {
                     m_types.addModelType(node.label().text(), getModelType(getNodeType(superTypes.iterator().next())));
                 }

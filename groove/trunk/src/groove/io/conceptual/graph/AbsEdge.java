@@ -10,68 +10,73 @@ import java.util.List;
 
 /**
  * Edge class for wrapper around AspectGraph. Unidirectional and attaches itself to both source and target nodes.
- * @author s0141844
+ * @author Harold Bruijntjes
  *
  */
 public class AbsEdge {
     String m_name;
     AbsNode m_source, m_target;
-    
+
     List<AspectEdge> m_aspectEdges = new ArrayList<AspectEdge>();
-    
+
     public AbsEdge(AbsNode source, AbsNode target, String name) {
-        if (target == null)
+        if (target == null) {
             throw new NullPointerException();
-        m_source = source;
-        m_target = target;
-        m_name = name;
-        
+        }
+        this.m_source = source;
+        this.m_target = target;
+        this.m_name = name;
+
         source.addEdge(this);
         target.addTargetEdge(this);
     }
 
     public AbsNode getSource() {
-        return m_source;
+        return this.m_source;
     }
 
     public AbsNode getTarget() {
-        return m_target;
+        return this.m_target;
     }
-    
+
     public String getName() {
-        return m_name;
+        return this.m_name;
     }
-    
+
     public void setName(String name) {
-        m_name = name;
+        this.m_name = name;
     }
-    
+
     @Override
     public String toString() {
-        return m_name;
+        return this.m_name;
     }
-    
-    public void buildAspect(GraphRole role) {
-        if (m_aspectEdges.size() != 0)
-            return;
 
-        m_source.buildAspect(role);
-        m_target.buildAspect(role);
-        
-        String[] labels = m_name.split("\n");
+    public void buildAspect(GraphRole role) {
+        if (this.m_aspectEdges.size() != 0) {
+            return;
+        }
+
+        this.m_source.buildAspect(role);
+        this.m_target.buildAspect(role);
+
+        String[] labels = this.m_name.split("\n");
         for (String sublabel : labels) {
-            AspectLabel alabel = AspectParser.getInstance().parse(sublabel, role);
+            AspectLabel alabel =
+                AspectParser.getInstance().parse(sublabel, role);
             if (alabel.isEdgeOnly()) {
-                AspectEdge newEdge = new AspectEdge(m_source.getAspect(), alabel, m_target.getAspect()); 
-                m_aspectEdges.add(newEdge);
+                AspectEdge newEdge =
+                    new AspectEdge(this.m_source.getAspect(), alabel,
+                        this.m_target.getAspect());
+                this.m_aspectEdges.add(newEdge);
             } else {
                 // error
             }
         }
     }
-    
+
     public List<AspectEdge> getAspect() {
-        return m_aspectEdges;
+        return this.m_aspectEdges;
     }
 
 }

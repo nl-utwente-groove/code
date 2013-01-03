@@ -56,26 +56,26 @@ public abstract class TypeExporter<E> implements Messenger, Visitor {
     protected Map<Acceptor,E> m_elements = new HashMap<Acceptor,E>();
 
     protected void addMessage(Message m) {
-        m_messages.add(m);
+        this.m_messages.add(m);
     }
 
     public List<Message> getMessages() {
-        return m_messages;
+        return this.m_messages;
     }
 
     public void clearMessages() {
-        m_messages.clear();
+        this.m_messages.clear();
     }
 
     public abstract ExportableResource getResource();
 
     protected void setElement(Acceptor acceptor, E element) {
-        assert !(m_elements.containsKey(acceptor));
-        m_elements.put(acceptor, element);
+        assert !(this.m_elements.containsKey(acceptor));
+        this.m_elements.put(acceptor, element);
     }
 
     protected boolean hasElement(Acceptor acceptor) {
-        return m_elements.containsKey(acceptor);
+        return this.m_elements.containsKey(acceptor);
     }
 
     protected E getElement(Acceptor acceptor) {
@@ -87,19 +87,21 @@ public abstract class TypeExporter<E> implements Messenger, Visitor {
     }
 
     // If allowNull and element is not being set, returns null
-    protected E getElement(Acceptor acceptor, java.lang.Object param, boolean allowNull) {
-        if (!m_elements.containsKey(acceptor)) {
+    protected E getElement(Acceptor acceptor, java.lang.Object param,
+            boolean allowNull) {
+        if (!this.m_elements.containsKey(acceptor)) {
             acceptor.doVisit(this, param);
         }
 
-        if (!m_elements.containsKey(acceptor)) {
+        if (!this.m_elements.containsKey(acceptor)) {
             if (allowNull) {
                 return null;
             }
-            throw new IllegalArgumentException("Cannot get element for acceptor " + acceptor.toString());
+            throw new IllegalArgumentException(
+                "Cannot get element for acceptor " + acceptor.toString());
         }
 
-        return m_elements.get(acceptor);
+        return this.m_elements.get(acceptor);
     }
 
     protected void visitTypeModel(TypeModel typeModel, Config cfg) {
