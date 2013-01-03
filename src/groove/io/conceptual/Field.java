@@ -2,8 +2,8 @@ package groove.io.conceptual;
 
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
-import groove.io.conceptual.type.Type;
 import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.type.Type;
 
 /**
  * Represents Fields in the TypeModel
@@ -27,7 +27,7 @@ public class Field implements Acceptor {
      * @param upper Upper bound of field values. Should be >=lower, or -1 for unbounded
      */
     public Field(Name name, Type type, int lower, int upper) {
-        m_name = name;
+        this.m_name = name;
 
         // Force class to nullable or proper depending on bounds
         if (type instanceof Class) {
@@ -41,7 +41,9 @@ public class Field implements Acceptor {
         // If type not container and
         // - Upper > 1 : create container
         // - Lower == 0 and type not class : create container
-        if (((upper > 1 || upper == -1) || !(type instanceof Class) && lower == 0) && !(type instanceof Container)) {
+        if (((upper > 1 || upper == -1) || !(type instanceof Class)
+            && lower == 0)
+            && !(type instanceof Container)) {
             // Unique and non-ordered container (fits best into GROOVE, intermediate not required)
             type = new Container(ContainerType.SET, type);
         }
@@ -51,41 +53,41 @@ public class Field implements Acceptor {
             ((Container) type).setField(this);
         }
 
-        m_type = type;
-        m_lowerBound = lower;
-        m_upperBound = upper;
+        this.m_type = type;
+        this.m_lowerBound = lower;
+        this.m_upperBound = upper;
     }
 
     /**
-     * return the name of the field
+     * Returns the name of the field.
      * @return The name of the field
      */
     public Name getName() {
-        return m_name;
+        return this.m_name;
     }
 
     /**
-     * Get the upper bound
+     * Returns the upper bound of the field multiplicity.
      * @return The upper bound
      */
     public int getUpperBound() {
-        return m_upperBound;
+        return this.m_upperBound;
     }
 
     /**
-     * Get the lower bound
+     * Returns the lower bound of the field multiplicity.
      * @return The lower bound
      */
     public int getLowerBound() {
-        return m_lowerBound;
+        return this.m_lowerBound;
     }
 
     /**
-     * Get the type
+     * Returns the type of the field.
      * @return The type
      */
     public Type getType() {
-        return m_type;
+        return this.m_type;
     }
 
     /**
@@ -93,7 +95,7 @@ public class Field implements Acceptor {
      * @param cmClass The class to set as the defining class.
      */
     public void setDefiningClass(Class cmClass) {
-        m_class = cmClass;
+        this.m_class = cmClass;
     }
 
     /**
@@ -101,7 +103,7 @@ public class Field implements Acceptor {
      * @return The class that defined this Field.
      */
     public Class getDefiningClass() {
-        return m_class;
+        return this.m_class;
     }
 
     @Override
@@ -112,6 +114,6 @@ public class Field implements Acceptor {
 
     @Override
     public String toString() {
-        return m_class.getId().getName() + "." + m_name;
+        return this.m_class.getId().getName() + "." + this.m_name;
     }
 }

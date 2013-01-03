@@ -25,43 +25,43 @@ public class InstanceModel implements Serializable {
      * @param name Name of this InstanceModel
      */
     public InstanceModel(TypeModel tm, String name) {
-        m_tm = tm;
-        m_name = name;
+        this.m_tm = tm;
+        this.m_name = name;
     }
 
     /**
-     * Get the type model
+     * Returns the type model.
      * @return The type model
      */
     public TypeModel getTypeModel() {
-        return m_tm;
+        return this.m_tm;
     }
 
     /**
-     * Get the name
+     * Returns the name of the instance model.
      * @return The name
      */
     public String getName() {
-        return m_name;
+        return this.m_name;
     }
 
     /**
-     * Add an object to this instance model. Does nothing if Object was already added.
+     * Adds an object to this instance model. Does nothing if Object was already added.
      * @param o The object to add.
      */
     public Object addObject(Object o) {
-        if (m_objects.contains(o)) {
+        if (this.m_objects.contains(o)) {
             return o;
         }
-        m_objects.add(o);
+        this.m_objects.add(o);
         return o;
     }
 
     /**
-     * Return a collection of objects in this instance model.
+     * Returns a collection of objects in this instance model.
      * @return The collection of objects contained in this instance model.
      */
     public Collection<Object> getObjects() {
-        return m_objects;
+        return this.m_objects;
     }
 }

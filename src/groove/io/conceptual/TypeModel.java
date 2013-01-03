@@ -157,6 +157,7 @@ public class TypeModel implements Serializable {
         return this.m_enums.containsKey(id);
     }
 
+    /** Returns the datatype with a given identifier, or {@code null} if none such exists. */
     public CustomDataType getDatatype(Id id) {
         return getDatatype(id, false);
     }
@@ -282,6 +283,7 @@ public class TypeModel implements Serializable {
         return this.m_commonPrefix;
     }
 
+    /** Returns an auxiliary name for a given tuple. */
     public String getTupleName(Tuple tup) {
         if (!this.m_tupleNames.containsKey(tup)) {
             this.m_tupleNames.put(tup, "tup" + this.m_tupleNames.size() + 1);

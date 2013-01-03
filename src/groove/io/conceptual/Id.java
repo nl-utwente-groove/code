@@ -26,17 +26,17 @@ public class Id implements Serializable {
 
     // Create new id
     private Id(Id namespace, Name name) {
-        m_namespace = namespace;
-        m_name = name;
+        this.m_namespace = namespace;
+        this.m_name = name;
 
-        m_depth = namespace.m_depth + 1;
+        this.m_depth = namespace.m_depth + 1;
     }
 
     // Create root id
     private Id() {
-        m_name = null;
-        m_namespace = null;
-        m_depth = 0;
+        this.m_name = null;
+        this.m_namespace = null;
+        this.m_depth = 0;
     }
 
     /**
@@ -64,7 +64,9 @@ public class Id implements Serializable {
         if (this == ROOT) {
             return "";
         }
-        return (m_namespace == ROOT ? "" : m_namespace.toString() + ".") + m_name.toString();
+        return (this.m_namespace == ROOT ? "" : this.m_namespace.toString()
+            + ".")
+            + this.m_name.toString();
     }
 
     @Override
@@ -77,27 +79,28 @@ public class Id implements Serializable {
             return this == o;
         }
         Id other = (Id) o;
-        return other.m_name.equals(m_name) && other.m_namespace.equals(m_namespace);
+        return other.m_name.equals(this.m_name)
+            && other.m_namespace.equals(this.m_namespace);
     }
 
     /**
-     * Get the name of the Id
+     * Returns the name of the identifier.
      * @return The name
      */
     public Name getName() {
-        return m_name;
+        return this.m_name;
     }
 
     /**
-     * Get the namespace of the id
+     * Returns the namespace of the identifier.
      * @return The namespace
      */
     public Id getNamespace() {
-        return m_namespace;
+        return this.m_namespace;
     }
 
     /**
-     * returns the part of the namespace that both Ids share
+     * Returns the part of the namespace that both Ids share
      * So if this = a.b.c.d, and other = a.b.e.f, then result = a.b
      * @param other The other Id to intersect the namespace with
      * @return The intersecting namespace
@@ -159,10 +162,10 @@ public class Id implements Serializable {
 
     @Override
     public int hashCode() {
-        if (m_hashCode == 0) {
-            m_hashCode = toString().hashCode();
+        if (this.m_hashCode == 0) {
+            this.m_hashCode = toString().hashCode();
         }
-        return m_hashCode;
+        return this.m_hashCode;
     }
 
     /**
