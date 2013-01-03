@@ -34,10 +34,12 @@ import org.jgraph.graph.GraphCell;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface JCell<G extends Graph<?,?>> extends GraphCell,
-        Serializable {
+public interface JCell<G extends Graph<?,?>> extends GraphCell, Serializable {
     /** Returns the fixed jGraph on which this jCell is displayed. */
     public JGraph<G> getJGraph();
+
+    /** Sets a new JModel for this cell. */
+    public void setJModel(JModel<G> jModel);
 
     /** Returns the fixed jModel to which this jCell belongs. */
     public JModel<G> getJModel();

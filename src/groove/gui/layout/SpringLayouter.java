@@ -16,8 +16,8 @@
  */
 package groove.gui.layout;
 
-import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.util.Pair;
 

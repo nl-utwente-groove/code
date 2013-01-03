@@ -111,7 +111,7 @@ public class AspectJVertex extends
     }
 
     @Override
-    protected String getNodeIdString() {
+    public String getNodeIdString() {
         if (this.aspect.isMeta()) {
             return null;
         } else if (getNode().hasAttrAspect()) {

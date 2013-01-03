@@ -109,7 +109,7 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>
     }
 
     @Override
-    protected String getNodeIdString() {
+    public String getNodeIdString() {
         String result = super.getNodeIdString();
         CtrlState ctrlState = getNode().getCtrlState();
         if (!ctrlState.getAut().isDefault() || !ctrlState.isStart()) {
