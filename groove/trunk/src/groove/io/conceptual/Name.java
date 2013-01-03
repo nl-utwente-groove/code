@@ -40,7 +40,7 @@ public class Name implements Serializable {
 
     @Override
     public String toString() {
-        return m_name;
+        return this.m_name;
     }
 
     /**

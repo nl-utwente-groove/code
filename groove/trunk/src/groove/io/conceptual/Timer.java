@@ -21,17 +21,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+/** Helper class to record elapsed time. */
 public class Timer {
     private static int[] counts = new int[128];
     private static long[] times = new long[128];
     private static long[] wall = new long[128];
 
-    public static boolean ENABLED = true;
+    /** Boolean flag indicating that the timer is enabled. */
+    private static boolean ENABLED = true;
+    /** Flag switching on diagnostic messages. */
     public static boolean PRINT_MSG = true;
 
     // Probably list suffices but this works too
     private static Map<Integer,String> messages = new HashMap<Integer,String>();
 
+    /** Starts the timer for a given message. */
     public static int start(String message) {
         int index = messages.size();
         if (messages.containsValue(message)) {
@@ -47,6 +51,7 @@ public class Timer {
         return index;
     }
 
+    /** Starts a numbered timer. */
     public static void start(int timer) {
         if (!messages.containsKey(timer)) {
             throw new IllegalArgumentException("Nonexistant timer");
@@ -54,6 +59,7 @@ public class Timer {
         start(timer, "");
     }
 
+    /** Starts a numbered timer for a given message. */
     public static void start(int timer, String message) {
         if (!messages.containsKey(timer)) {
             messages.put(timer, message);
@@ -63,15 +69,18 @@ public class Timer {
         wall[timer] = System.nanoTime();
     }
 
+    /** Stops a numbered timer and stores the elapsed time. */
     public static void stop(int timer) {
         long delta = System.nanoTime() - wall[timer];
         times[timer] += delta;
     }
 
+    /** Continues a numbered timer. */
     public static void cont(int timer) {
         wall[timer] = System.nanoTime();
     }
 
+    /** Continues the timer for a given message. */
     public static int cont(String message) {
         int index = messages.size();
         if (messages.containsValue(message)) {
@@ -89,6 +98,7 @@ public class Timer {
         return index;
     }
 
+    /** Prints the recorded times and resets all timers. */
     public static void reset() {
         for (Entry<Integer,String> e : messages.entrySet()) {
             printTime(e.getKey(), e.getValue());
@@ -99,10 +109,12 @@ public class Timer {
         counts = new int[128];
     }
 
+    /** Prints the recorded time of a numbered timer. */
     public static void printTime(int timer) {
         printTime(timer, "");
     }
 
+    /** Prints the recorded time of a numbered timer and a given message. */
     public static void printTime(int timer, String message) {
         if (!Timer.ENABLED) {
             return;
