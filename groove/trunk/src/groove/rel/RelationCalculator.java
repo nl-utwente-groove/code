@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Calculator yielding a {@link groove.rel.NodeRelation}.
+ * Calculator yielding a {@link NodeRelation}.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -41,10 +41,10 @@ public class RelationCalculator extends GTSAdapter implements
         RegExprCalculator<NodeRelation> {
     /**
      * Creates a relation calculator based on a given graph. The relation
-     * factory will be set to a {@link SetNodeRelation} over that graph.
+     * factory will be set to a {@link NodeRelation} over that graph.
      */
     public RelationCalculator(Graph<?,?> graph) {
-        this(graph, new SetNodeRelation());
+        this(graph, new NodeRelation());
     }
 
     /**
@@ -120,7 +120,8 @@ public class RelationCalculator extends GTSAdapter implements
      * Computes the sequential composition of the relations associated with the
      * operands of <code>expr</code>, and stores it in the underlying mapping.
      */
-    public NodeRelation computeSeq(RegExpr.Seq expr, List<NodeRelation> argList) {
+    public NodeRelation computeSeq(RegExpr.Seq expr,
+            List<NodeRelation> argList) {
         Iterator<NodeRelation> argsIter = argList.iterator();
         NodeRelation result = argsIter.next();
         while (argsIter.hasNext()) {

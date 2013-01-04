@@ -23,10 +23,10 @@ import groove.graph.Label;
 import groove.graph.TypeLabel;
 import groove.gui.Options;
 import groove.gui.dialog.StringDialog;
-import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.FileType;
@@ -36,8 +36,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.rel.RegExpr;
 import groove.rel.RelationCalculator;
-import groove.rel.SupportedNodeRelation;
-import groove.rel.SupportedSetNodeRelation;
+import groove.rel.NodeRelation;
 import groove.view.FormatException;
 
 import java.awt.event.ActionEvent;
@@ -563,11 +562,10 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
                             }
                             this.calculator =
                                 new RelationCalculator(graph,
-                                    new SupportedSetNodeRelation());
+                                    new NodeRelation());
                             this.calculator.startListening();
                         }
-                        SupportedNodeRelation rel =
-                            (SupportedNodeRelation) expr.apply(this.calculator);
+                        NodeRelation rel = expr.apply(this.calculator);
                         this.elementSet = rel.getSupport();
                     }
                     super.actionPerformed(evt);
