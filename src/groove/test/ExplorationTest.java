@@ -23,7 +23,7 @@ import groove.explore.Exploration;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
 import groove.lts.GTS;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.HostGraph;
 import groove.trans.ResourceKind;
 import groove.util.Groove;
@@ -285,7 +285,7 @@ public class ExplorationTest {
     protected GTS testExploration(GrammarModel view, String strategyDescr,
             int nodeCount, int edgeCount, int openCount, boolean save) {
         try {
-            GraphGrammar gg = view.toGrammar();
+            Grammar gg = view.toGrammar();
             GTS lts = new GTS(gg);
 
             Exploration exploration;

@@ -22,7 +22,7 @@ import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.dialog.PropertiesTable;
-import groove.trans.SystemProperties;
+import groove.trans.GrammarProperties;
 import groove.view.GrammarModel;
 
 import java.awt.event.MouseAdapter;
@@ -68,7 +68,7 @@ public class PropertiesDisplay extends Display implements SimulatorListener {
     @Override
     protected PropertiesTable createList() {
         PropertiesTable result =
-            new PropertiesTable(SystemProperties.KEYS, false);
+            new PropertiesTable(GrammarProperties.KEYS, false);
         result.addMouseListener(new EditMouseListener());
         return result;
     }

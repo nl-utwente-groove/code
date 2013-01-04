@@ -45,7 +45,7 @@ public class CompositeEvent extends
      *        dependency tree of the events, meaning the the first element is
      *        the event corresponding to the top level of <code>rule</code>.
      */
-    public CompositeEvent(SystemRecord record, Rule rule,
+    public CompositeEvent(GrammarRecord record, Rule rule,
             Collection<BasicEvent> eventSet, Reuse reuse) {
         super(reference, rule);
         assert !eventSet.isEmpty();
@@ -211,7 +211,7 @@ public class CompositeEvent extends
     }
 
     /** Record from which to create new events. May be {@code null}. */
-    private final SystemRecord record;
+    private final GrammarRecord record;
     /** Indicator of the reuse quality of this event. */
     private final Reuse reuse;
     /** The (non-empty) array of sub-events constituting this event. */

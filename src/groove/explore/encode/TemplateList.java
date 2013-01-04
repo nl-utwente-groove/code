@@ -21,7 +21,7 @@ import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.explore.ParsableValue;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.util.Version;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -119,7 +119,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * with the given keyword and then using its parse method.
      */
     @Override
-    public A parse(GraphGrammar rules, Serialized source)
+    public A parse(Grammar rules, Serialized source)
         throws FormatException {
         for (Template<A> template : this.templates) {
             if (template.getKeyword().equals(source.getKeyword())) {

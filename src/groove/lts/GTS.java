@@ -35,12 +35,12 @@ import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.IsoChecker;
 import groove.lts.GraphState.Flag;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
+import groove.trans.GrammarRecord;
 import groove.trans.HostEdge;
 import groove.trans.HostFactory;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.trans.SystemRecord;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
 import groove.util.TreeHashSet;
@@ -96,28 +96,30 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     /**
      * Constructs a GTS from a (fixed) graph grammar.
      */
-    public GTS(GraphGrammar grammar) {
+    public GTS(Grammar grammar) {
         super(grammar.getName() + "-gts");
         grammar.testFixed(true);
         this.grammar = grammar;
-        this.record = new SystemRecord(this);
         this.postErrors = new HashMap<GraphState,Set<PostApplicationError>>();
         this.verifier = new EdgeMultiplicityVerifier(grammar.getTypeGraph());
-        this.matchApplier = createMatchApplier();
     }
 
-    /** Initialises the start state and corresponding host factory. */
-    protected void initialise() {
-        assert this.hostFactory == null && this.startState == null;
-        HostGraph startGraph = createStartGraph(this.grammar.getStartGraph());
-        this.hostFactory = startGraph.getFactory();
-        this.startState = createStartState(startGraph);
-        addState(this.startState);
+    /**
+     * Returns the start state of this LTS.
+     */
+    public GraphState startState() {
+        if (this.startState == null) {
+            HostGraph startGraph =
+                createStartGraph(this.grammar.getStartGraph());
+            this.startState = createStartState(startGraph);
+            addState(this.startState);
+        }
+        return this.startState;
     }
 
     /** 
-     * Returns a copy of the given graph with a fresh element factory.
-     * The resulting graph will be used as start graph state.
+     * Factory method to create a start graph for this GTS, by
+     * cloning a given host graph.
      */
     protected HostGraph createStartGraph(HostGraph startGraph) {
         HostGraph result = startGraph.clone(getAlgebraFamily());
@@ -126,27 +128,16 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     }
 
     /** 
-     * Creates the start state for this GTS.
-     * Makes sure that the start state graph has a fresh factory.
+     * Factory method to create the start state for this GTS, for a given start graph.
      */
     protected GraphState createStartState(HostGraph startGraph) {
-        return new StartGraphState(this.record, startGraph);
-    }
-
-    /**
-     * Returns the start state of this LTS.
-     */
-    public GraphState startState() {
-        if (this.startState == null) {
-            initialise();
-        }
-        return this.startState;
+        return new StartGraphState(this, startGraph);
     }
 
     /**
      * Returns the rule system underlying this GTS.
      */
-    public GraphGrammar getGrammar() {
+    public Grammar getGrammar() {
         return this.grammar;
     }
 
@@ -156,7 +147,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      */
     public HostFactory getHostFactory() {
         if (this.hostFactory == null) {
-            initialise();
+            this.hostFactory = this.grammar.getStartGraph().getFactory();
         }
         return this.hostFactory;
     }
@@ -326,8 +317,8 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
 
     /**
      * Method to determine the collapse strategy of the state set. This is
-     * determined by {@link SystemRecord#isCollapse()} and
-     * {@link SystemRecord#isCheckIso()}.
+     * determined by {@link GrammarRecord#isCollapse()} and
+     * {@link GrammarRecord#isCheckIso()}.
      */
     protected CollapseMode getCollapse() {
         CollapseMode result;
@@ -344,7 +335,10 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     /**
      * Returns the (fixed) derivation record for this GTS.
      */
-    public final SystemRecord getRecord() {
+    public final GrammarRecord getRecord() {
+        if (this.record == null) {
+            this.record = new GrammarRecord(this.grammar, getHostFactory());
+        }
         return this.record;
     }
 
@@ -589,7 +583,10 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     }
 
     /** Returns the match applier associated with this GTS. */
-    public MatchApplier getMatchApplier() {
+    public final MatchApplier getMatchApplier() {
+        if (this.matchApplier == null) {
+            this.matchApplier = createMatchApplier();
+        }
         return this.matchApplier;
     }
 
@@ -608,7 +605,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      * The rule system generating this LTS.
      * @invariant <tt>ruleSystem != null</tt>
      */
-    private final GraphGrammar grammar;
+    private final Grammar grammar;
     /** Unique factory for host elements, associated with this GTS. */
     private HostFactory hostFactory;
     /** The set of nodes of the GTS. */
@@ -628,9 +625,9 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     private final Set<GraphState> resultStates = new HashSet<GraphState>();
 
     /** The system record for this GTS. */
-    private final SystemRecord record;
+    private GrammarRecord record;
     /** The match applier associated with this GTS. */
-    private final MatchApplier matchApplier;
+    private MatchApplier matchApplier;
     /**
      * The number of closed states in the GTS.
      */

@@ -22,7 +22,7 @@ import groove.match.rete.ReteNetwork;
 import groove.match.rete.ReteNetworkNode;
 import groove.match.rete.ReteSearchEngine;
 import groove.match.rete.ReteSimpleMatch;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.ResourceKind;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -52,7 +52,7 @@ public class ReteNetworkTest extends TestCase {
      * Tests the static structure of the RETE network for an empty grammar.
      */
     public void testStaticEmptyGrammar() {
-        ReteSearchEngine g = new ReteSearchEngine(new GraphGrammar("empty"));
+        ReteSearchEngine g = new ReteSearchEngine(new Grammar("empty"));
         ReteNetwork network = g.getNetwork();
         assertEquals(0, network.getRoot().getSuccessors().size());
         assertEquals(0, network.getConditonCheckerNodes().size());
@@ -63,7 +63,7 @@ public class ReteNetworkTest extends TestCase {
      * Tests the static structure of the RETE network in the case of a rule with an empty LHS.
      */
     public void testStaticEmptyPriorRules() {
-        GraphGrammar g = loadGrammar("emptypriorules.gps", "start");
+        Grammar g = loadGrammar("emptypriorules.gps", "start");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         testNetworkStructure(network);
@@ -73,7 +73,7 @@ public class ReteNetworkTest extends TestCase {
      * RETE static structure test for the simple grammar.
      */
     public void testStaticSimple() {
-        GraphGrammar g = loadGrammar("simple.gps", "start");
+        Grammar g = loadGrammar("simple.gps", "start");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         testNetworkStructure(network);
@@ -83,7 +83,7 @@ public class ReteNetworkTest extends TestCase {
      * RETE static structure test for the Petri Net grammar.
      */
     public void testStaticPetriNet() {
-        GraphGrammar g = loadGrammar("petrinet.gps", "start");
+        Grammar g = loadGrammar("petrinet.gps", "start");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         testNetworkStructure(network);
@@ -93,7 +93,7 @@ public class ReteNetworkTest extends TestCase {
      * Testing the basic basic-regexp grammar for first step matches found - 1
      */
     public void testDynamicRegExp1() {
-        GraphGrammar g = loadGrammar("basic-regexp.gps", "g1");
+        Grammar g = loadGrammar("basic-regexp.gps", "g1");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
@@ -133,7 +133,7 @@ public class ReteNetworkTest extends TestCase {
      * Testing the basic basic-regexp grammar for first step matches found - 2
      */
     public void testDynamicRegExp2() {
-        GraphGrammar g = loadGrammar("basic-regexp.gps", "g2");
+        Grammar g = loadGrammar("basic-regexp.gps", "g2");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
@@ -174,7 +174,7 @@ public class ReteNetworkTest extends TestCase {
      * Testing the basic basic-regexp grammar for first step matches found - 3
      */
     public void testDynamicRegExp3() {
-        GraphGrammar g = loadGrammar("basic-regexp.gps", "g3");
+        Grammar g = loadGrammar("basic-regexp.gps", "g3");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
@@ -214,7 +214,7 @@ public class ReteNetworkTest extends TestCase {
      * Testing the basic basic-regexp grammar for first step matches found - 4
      */
     public void testDynamicRegExp4() {
-        GraphGrammar g = loadGrammar("basic-regexp.gps", "g4");
+        Grammar g = loadGrammar("basic-regexp.gps", "g4");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
@@ -254,7 +254,7 @@ public class ReteNetworkTest extends TestCase {
      * Testing closure's sufficient coverage
      */
     public void testDynamicRegExp5() {
-        GraphGrammar g = loadGrammar("basic-regexp.gps", "g5");
+        Grammar g = loadGrammar("basic-regexp.gps", "g5");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
@@ -292,7 +292,7 @@ public class ReteNetworkTest extends TestCase {
      * Dynamic behavior test of the RETE for an empty grammar.
      */
     public void testDynamicEmptyRule() {
-        GraphGrammar g = loadGrammar("emptypriorules.gps", "start");
+        Grammar g = loadGrammar("emptypriorules.gps", "start");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
@@ -306,7 +306,7 @@ public class ReteNetworkTest extends TestCase {
      * Dynamic behavior test of the RETE for a grammar with simple injective rules.
      */
     public void testDynamicSimpleInjectiveRule() {
-        GraphGrammar g = loadGrammar("simpleInjective.gps", "start");
+        Grammar g = loadGrammar("simpleInjective.gps", "start");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
@@ -325,7 +325,7 @@ public class ReteNetworkTest extends TestCase {
      * Dynamic behavior test of the RETE for the control grammar.
      */
     public void testDynamicControl() {
-        GraphGrammar g = loadGrammar("control.gps", "start");
+        Grammar g = loadGrammar("control.gps", "start");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
@@ -343,7 +343,7 @@ public class ReteNetworkTest extends TestCase {
      * Testing the basic count-to-n grammar for first step matches found - 1
      */
     public void testDynamicAttr1() {
-        GraphGrammar g = loadGrammar("attribute-count-to-n.gps", "start");
+        Grammar g = loadGrammar("attribute-count-to-n.gps", "start");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
@@ -366,7 +366,7 @@ public class ReteNetworkTest extends TestCase {
      * Testing the leader-election grammar for first step matches found - 1
      */
     public void testDynamicLeaderElection() {
-        GraphGrammar g = loadGrammar("leader-election.gps", "start-2");
+        Grammar g = loadGrammar("leader-election.gps", "start-2");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
@@ -392,7 +392,7 @@ public class ReteNetworkTest extends TestCase {
      * Tests the first step of the counting quantifier example
      */
     public void testDynamicQuantifierCount1() {
-        GraphGrammar g = loadGrammar("quantifierCounter.gps", "start");
+        Grammar g = loadGrammar("quantifierCounter.gps", "start");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
@@ -418,7 +418,7 @@ public class ReteNetworkTest extends TestCase {
      * Tests the first step of the counting quantifier example
      */
     public void testDynamicQuantifierCount2() {
-        GraphGrammar g = loadGrammar("quantifierCounter.gps", "twoAOneB");
+        Grammar g = loadGrammar("quantifierCounter.gps", "twoAOneB");
         ReteSearchEngine eng = new ReteSearchEngine(g);
         ReteNetwork network = eng.getNetwork();
         network.processGraph(g.getStartGraph());
@@ -446,8 +446,8 @@ public class ReteNetworkTest extends TestCase {
         }
     }
 
-    private GraphGrammar loadGrammar(String grammarName, String startGraphName) {
-        GraphGrammar result = null;
+    private Grammar loadGrammar(String grammarName, String startGraphName) {
+        Grammar result = null;
         try {
             GrammarModel model =
                 GrammarModel.newInstance(new File(INPUT_DIR, grammarName),

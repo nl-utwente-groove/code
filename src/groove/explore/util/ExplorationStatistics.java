@@ -30,7 +30,7 @@ import groove.lts.MatchApplier;
 import groove.lts.MatchCollector;
 import groove.trans.HostFactory;
 import groove.trans.Rule;
-import groove.trans.SystemRecord;
+import groove.trans.GrammarRecord;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
 import groove.util.CommandLineTool.VerbosityOption;
@@ -215,7 +215,7 @@ public class ExplorationStatistics {
         printf("\n\tTransitions:\n\t\tReused:\t\t%d%n",
             MatchCollector.getEventReuse());
         printf("\t\tConfluent:\t%d%n", MatchApplier.getConfluentDiamondCount());
-        printf("\t\tEvents:\t\t%d%n", SystemRecord.getEventCount());
+        printf("\t\tEvents:\t\t%d%n", GrammarRecord.getEventCount());
         printf("\tCoanchor reuse:\t%d/%d%n", HostFactory.getNormaliseGain(),
             HostFactory.getNormaliseCount());
     }

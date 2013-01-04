@@ -4,7 +4,6 @@ package groove.lts;
 import groove.control.CtrlAut;
 import groove.trans.DeltaHostGraph;
 import groove.trans.HostGraph;
-import groove.trans.SystemRecord;
 
 /**
  * @author Arend Rensink
@@ -14,9 +13,9 @@ public class StartGraphState extends AbstractGraphState {
     /**
      * Creates a start state based on a given system record and start graph.
      */
-    public StartGraphState(SystemRecord record, HostGraph graph) {
-        super(StateReference.newInstance(record), 0);
-        CtrlAut ctrlAut = record.getGrammar().getCtrlAut();
+    public StartGraphState(GTS gts, HostGraph graph) {
+        super(StateReference.newInstance(gts), 0);
+        CtrlAut ctrlAut = gts.getGrammar().getCtrlAut();
         setCtrlState(ctrlAut.getStart());
         setFrozenGraph(getCache().computeFrozenGraph(graph));
         this.graph = getCache().getGraph();

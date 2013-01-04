@@ -4,7 +4,7 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.PropertiesDialog;
-import groove.trans.SystemProperties;
+import groove.trans.GrammarProperties;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -24,9 +24,9 @@ public class EditSystemPropertiesAction extends SimulatorAction {
     public void execute() {
         Properties systemProperties = getGrammarModel().getProperties();
         PropertiesDialog dialog =
-            new PropertiesDialog(systemProperties, SystemProperties.KEYS);
+            new PropertiesDialog(systemProperties, GrammarProperties.KEYS);
         if (dialog.showDialog(getFrame())) {
-            SystemProperties newProperties = new SystemProperties();
+            GrammarProperties newProperties = new GrammarProperties();
             newProperties.putAll(dialog.getProperties());
             try {
                 getSimulatorModel().doSetProperties(newProperties);

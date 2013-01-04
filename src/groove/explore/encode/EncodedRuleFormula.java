@@ -18,7 +18,7 @@ package groove.explore.encode;
 
 import groove.explore.result.Predicate;
 import groove.lts.GraphState;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.Rule;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -39,7 +39,7 @@ public class EncodedRuleFormula implements
     private String text;
     private int i;
     private int last_i;
-    private GraphGrammar ruleSystem;
+    private Grammar ruleSystem;
 
     @Override
     public EncodedTypeEditor<Predicate<GraphState>,String> createEditor(
@@ -49,7 +49,7 @@ public class EncodedRuleFormula implements
     }
 
     @Override
-    public Predicate<GraphState> parse(GraphGrammar rules, String text)
+    public Predicate<GraphState> parse(Grammar rules, String text)
         throws FormatException {
         this.text = text;
         this.i = 0;

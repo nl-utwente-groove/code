@@ -29,7 +29,7 @@ import groove.control.CtrlLabel;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.Rule;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -50,7 +50,7 @@ import org.junit.Test;
 public class CtrlBuildTest extends CtrlTester {
     private static final String GRAMMAR_DIR = "junit/samples/";
 
-    private GraphGrammar prioGrammar;
+    private Grammar prioGrammar;
     {
         try {
             this.prioGrammar =

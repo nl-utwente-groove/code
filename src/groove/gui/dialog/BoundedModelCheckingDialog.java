@@ -22,7 +22,7 @@ import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.RuleSetBoundary;
 import groove.gui.layout.SpringUtilities;
 import groove.trans.Action;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.Rule;
 
 import java.awt.event.ActionEvent;
@@ -194,7 +194,7 @@ public class BoundedModelCheckingDialog {
     /**
      * Set the grammar for which a boundary is to be given.
      */
-    public void setGrammar(GraphGrammar grammar) {
+    public void setGrammar(Grammar grammar) {
         this.grammar = grammar;
         this.ruleNames = new ArrayList<String>();
         for (Action rule : grammar.getActions()) {
@@ -205,7 +205,7 @@ public class BoundedModelCheckingDialog {
     /**
      * The graph-grammar from which to obtain the rules.
      */
-    protected GraphGrammar grammar;
+    protected Grammar grammar;
     /**
      * The set of rules from which to select the boundary.
      */

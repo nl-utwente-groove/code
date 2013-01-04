@@ -36,7 +36,7 @@ import groove.rel.RegExpr;
 import groove.trans.Condition;
 import groove.trans.Condition.Op;
 import groove.trans.DefaultRuleNode;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.HostEdge;
 import groove.trans.HostFactory;
 import groove.trans.HostGraph;
@@ -116,7 +116,7 @@ public class ReteNetwork {
      * @param enableInjectivity determines if this RETE network should perform 
      *        injective matching.
      */
-    public ReteNetwork(ReteSearchEngine engine, GraphGrammar g,
+    public ReteNetwork(ReteSearchEngine engine, Grammar g,
             boolean enableInjectivity) {
         this.grammarName = g.getName();
         this.typeGraph = g.getTypeGraph();

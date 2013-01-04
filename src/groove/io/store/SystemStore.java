@@ -21,7 +21,7 @@ import static groove.trans.ResourceKind.PROPERTIES;
 import groove.graph.TypeLabel;
 import groove.io.Util;
 import groove.trans.ResourceKind;
-import groove.trans.SystemProperties;
+import groove.trans.GrammarProperties;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
 
@@ -143,14 +143,14 @@ abstract public class SystemStore extends UndoableEditSupport {
             String newName) throws IOException;
 
     /** The system properties object in the store (non-null). */
-    abstract public SystemProperties getProperties();
+    abstract public GrammarProperties getProperties();
 
     /**
      * Replaces the system properties in the store
      * @param properties the new system properties object
      * @throws IOException if an error occurred while storing the properties
      */
-    abstract public void putProperties(SystemProperties properties)
+    abstract public void putProperties(GrammarProperties properties)
         throws IOException;
 
     /**

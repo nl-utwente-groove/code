@@ -106,7 +106,7 @@ public final class TransSystemChecker {
             for (PatternState pState : this.pgts.nodeSet()) {
                 HostGraph pGraph = pState.getGraph().flatten();
                 AbstractGraphState newSState =
-                    new StartGraphState(this.sgts.getRecord(), pGraph);
+                    new StartGraphState(this.sgts, pGraph);
                 // We need to copy the control state otherwise the IsoCheck fails.
                 newSState.setCtrlState(pState.getCtrlState());
                 GraphState oldSState = this.sgts.addState(newSState);

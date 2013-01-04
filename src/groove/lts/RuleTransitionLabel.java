@@ -22,7 +22,7 @@ import groove.trans.AbstractRuleEvent;
 import groove.trans.HostNode;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
-import groove.trans.SystemRecord;
+import groove.trans.GrammarRecord;
 
 import java.util.Arrays;
 
@@ -134,14 +134,14 @@ public class RuleTransitionLabel extends AbstractLabel implements ActionLabel {
 
     /** 
      * Creates a normalised rule label.
-     * @see SystemRecord#normaliseLabel(RuleTransitionLabel)
+     * @see GrammarRecord#normaliseLabel(RuleTransitionLabel)
      */
     public static final RuleTransitionLabel createLabel(GraphState source,
             MatchResult match, HostNode[] addedNodes) {
         RuleTransitionLabel result =
             new RuleTransitionLabel(source, match, addedNodes);
         if (REUSE_LABELS) {
-            SystemRecord record = source.getGTS().getRecord();
+            GrammarRecord record = source.getGTS().getRecord();
             result = record.normaliseLabel(result);
         }
         return result;

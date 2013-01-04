@@ -116,7 +116,7 @@ public class Rule implements Action, Fixable {
     }
 
     /** Returns the system properties. */
-    public SystemProperties getSystemProperties() {
+    public GrammarProperties getSystemProperties() {
         return getCondition().getSystemProperties();
     }
 
@@ -632,8 +632,8 @@ public class Rule implements Action, Fixable {
 
     /**
      * In addition to calling the super method, adds implicit NACs as dictated
-     * by {@link SystemProperties#isCheckCreatorEdges()} and
-     * {@link SystemProperties#isRhsAsNac()}.
+     * by {@link GrammarProperties#isCheckCreatorEdges()} and
+     * {@link GrammarProperties#isRhsAsNac()}.
      */
     @Override
     public boolean setFixed() throws FormatException {

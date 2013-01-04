@@ -19,7 +19,7 @@ package groove.abstraction.pattern.trans;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.control.CtrlAut;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.Rule;
 
 import java.util.Map;
@@ -34,7 +34,7 @@ import java.util.TreeMap;
 public final class PatternGraphGrammar {
 
     /** Simple graph grammar used to construct this pattern graph grammar. */
-    private final GraphGrammar sGrammar;
+    private final Grammar sGrammar;
     /** Pattern type graph. */
     private final TypeGraph typeGraph;
     /** The name of this grammar. */
@@ -46,7 +46,7 @@ public final class PatternGraphGrammar {
     private PatternGraph startGraph;
 
     /** Default constructor. */
-    public PatternGraphGrammar(GraphGrammar sGrammar, TypeGraph typeGraph) {
+    public PatternGraphGrammar(Grammar sGrammar, TypeGraph typeGraph) {
         assert sGrammar.isFixed();
         this.sGrammar = sGrammar;
         this.typeGraph = typeGraph;
@@ -102,7 +102,7 @@ public final class PatternGraphGrammar {
     }
 
     /** Returns the simple grammar from which this pattern grammar was created.*/
-    public GraphGrammar getSimpleGrammar() {
+    public Grammar getSimpleGrammar() {
         return this.sGrammar;
     }
 

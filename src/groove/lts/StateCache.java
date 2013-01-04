@@ -25,7 +25,7 @@ import groove.trans.HostElement;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleApplication;
-import groove.trans.SystemRecord;
+import groove.trans.GrammarRecord;
 import groove.util.KeySet;
 import groove.util.Pair;
 import groove.util.SetView;
@@ -559,7 +559,7 @@ public class StateCache {
     /** The graph state of this cache. */
     private final AbstractGraphState state;
     /** The system record generating this state. */
-    private final SystemRecord record;
+    private final GrammarRecord record;
     /** The delta with respect to the state's parent. */
     private DeltaApplier delta;
     /** Cached map from events to target transitions. */

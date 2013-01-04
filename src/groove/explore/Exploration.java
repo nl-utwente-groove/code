@@ -25,7 +25,7 @@ import groove.explore.strategy.Strategy;
 import groove.explore.strategy.Strategy.Halter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.util.Reporter;
 import groove.view.FormatErrorSet;
 import groove.view.FormatException;
@@ -105,7 +105,7 @@ public class Exploration {
      * @throws FormatException if the grammar is incompatible with the (serialised)
      * strategy.
      */
-    public Strategy getParsedStrategy(GraphGrammar grammar)
+    public Strategy getParsedStrategy(Grammar grammar)
         throws FormatException {
         return StrategyEnumerator.parseStrategy(grammar, this.strategy);
     }
@@ -122,7 +122,7 @@ public class Exploration {
      * @throws FormatException if the grammar is incompatible with the (serialised)
      * acceptor.
      */
-    public Acceptor getParsedAcceptor(GraphGrammar grammar)
+    public Acceptor getParsedAcceptor(Grammar grammar)
         throws FormatException {
         if (getParsedStrategy(grammar) instanceof LTLStrategy) {
             return new CycleAcceptor();
@@ -183,7 +183,7 @@ public class Exploration {
      * If this method does not throw an exception, then neither will {@link #play(GTS, GraphState)}.
      * @throws FormatException if the rule system is not compatible
      */
-    public void test(GraphGrammar grammar) throws FormatException {
+    public void test(Grammar grammar) throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
         try {
             getParsedStrategy(grammar);
@@ -205,10 +205,10 @@ public class Exploration {
      * @param state - the state in which exploration will start (may be null)
      * @throws FormatException if the rule system of {@code gts} is not
      * compatible with this exploration
-     * @see #test(GraphGrammar)
+     * @see #test(Grammar)
      */
     final public void play(GTS gts, GraphState state) throws FormatException {
-        GraphGrammar grammar = gts.getGrammar();
+        Grammar grammar = gts.getGrammar();
         // parse the strategy
         Strategy parsedStrategy = getParsedStrategy(grammar);
 

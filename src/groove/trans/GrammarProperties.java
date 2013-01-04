@@ -30,19 +30,19 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SystemProperties extends java.util.Properties implements Fixable {
+public class GrammarProperties extends java.util.Properties implements Fixable {
 
     /**
      * Default constructor.
      */
-    public SystemProperties() {
+    public GrammarProperties() {
         this(false);
     }
 
     /**
      * Constructor that sets the grammar properties.  
      */
-    public SystemProperties(boolean useCurrentGrooveVersion) {
+    public GrammarProperties(boolean useCurrentGrooveVersion) {
         super();
         if (useCurrentGrooveVersion) {
             this.setCurrentVersionProperties();
@@ -420,8 +420,8 @@ public class SystemProperties extends java.util.Properties implements Fixable {
 
     /** Returns a non-fixed clone of the properties. */
     @Override
-    public SystemProperties clone() {
-        SystemProperties result = (SystemProperties) super.clone();
+    public GrammarProperties clone() {
+        GrammarProperties result = (GrammarProperties) super.clone();
         result.fixed = false;
         return result;
     }
@@ -434,8 +434,8 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * @return a clone of these properties, or the properties themselves if
      *         {@code oldLabel} did not occur
      */
-    public SystemProperties relabel(TypeLabel oldLabel, TypeLabel newLabel) {
-        SystemProperties result = clone();
+    public GrammarProperties relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+        GrammarProperties result = clone();
         boolean hasChanged = false;
         String oldText = oldLabel.text();
         // change the control labels
@@ -540,7 +540,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * Returns a default, fixed properties object, with a given value for
      * attribute support.
      */
-    static public SystemProperties getInstance() {
+    static public GrammarProperties getInstance() {
         return instance;
     }
 
@@ -552,7 +552,7 @@ public class SystemProperties extends java.util.Properties implements Fixable {
      * @return <true> if <code>properties</code> is not <code>null</code> and
      *         satisfies {@link #isCheckDangling()}
      */
-    static public boolean isCheckDangling(SystemProperties properties) {
+    static public boolean isCheckDangling(GrammarProperties properties) {
         return properties != null && properties.isCheckDangling();
     }
 
@@ -581,17 +581,17 @@ public class SystemProperties extends java.util.Properties implements Fixable {
     }
 
     /** Map storing default property instances. */
-    static private SystemProperties instance = new SystemProperties();
+    static private GrammarProperties instance = new GrammarProperties();
 
     /**
      * The default rule properties: not attributed and no control or common
      * labels.
      */
-    static public final SystemProperties DEFAULT_PROPERTIES = getInstance();
+    static public final GrammarProperties DEFAULT_PROPERTIES = getInstance();
 
     /** Mapping from resource kinds to corresponding property keys. */
     static private final Map<ResourceKind,Key> resourceKeyMap =
-        new EnumMap<ResourceKind,SystemProperties.Key>(ResourceKind.class);
+        new EnumMap<ResourceKind,GrammarProperties.Key>(ResourceKind.class);
     static {
         resourceKeyMap.put(ResourceKind.TYPE, Key.TYPE_NAMES);
         resourceKeyMap.put(ResourceKind.CONTROL, Key.CONTROL_NAMES);

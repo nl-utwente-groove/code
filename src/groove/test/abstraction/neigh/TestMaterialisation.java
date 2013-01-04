@@ -31,7 +31,7 @@ import groove.abstraction.neigh.shape.ShapeNode;
 import groove.abstraction.neigh.trans.Materialisation;
 import groove.graph.EdgeRole;
 import groove.graph.TypeLabel;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.HostGraph;
 import groove.trans.Proof;
 import groove.trans.Rule;
@@ -55,7 +55,7 @@ public class TestMaterialisation {
     static private final String DIRECTORY =
         "junit/abstraction/basic-tests.gps/";
     static private GrammarModel view;
-    static private GraphGrammar grammar;
+    static private Grammar grammar;
     static private ShapeGxl marshaller;
 
     @BeforeClass

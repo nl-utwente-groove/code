@@ -14,7 +14,6 @@ import groove.trans.DefaultHostGraph;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.trans.SystemRecord;
 import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -222,8 +221,7 @@ public class STSTest extends TestCase {
             HostGraph graph = view.getStartGraphModel().toHost();
             GTS gts =
                 new GTS(view.getStartGraphModel().getGrammar().toGrammar());
-            SystemRecord record = new SystemRecord(gts);
-            StartGraphState state = new StartGraphState(record, graph);
+            StartGraphState state = new StartGraphState(gts, graph);
             return state.getMatches();
         } catch (FormatException e) {
             Assert.fail(e.getMessage());

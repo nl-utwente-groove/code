@@ -31,12 +31,12 @@ import groove.io.store.EditType;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.prolog.GrooveEnvironment;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.HostGraph;
 import groove.trans.QualName;
 import groove.trans.ResourceKind;
-import groove.trans.SystemProperties;
-import groove.trans.SystemProperties.Key;
+import groove.trans.GrammarProperties;
+import groove.trans.GrammarProperties.Key;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Tracker;
 import groove.util.Groove;
@@ -94,7 +94,7 @@ public class GrammarModel implements Observer {
     }
 
     /** Returns the system properties of this grammar model. */
-    public SystemProperties getProperties() {
+    public GrammarProperties getProperties() {
         return this.store.getProperties();
     }
 
@@ -357,7 +357,7 @@ public class GrammarModel implements Observer {
      * used; the control name is implicitly set to <code>control</code>.
      * </ul>
      */
-    public GraphGrammar toGrammar() throws FormatException {
+    public Grammar toGrammar() throws FormatException {
         if (this.errors == null) {
             initGrammar();
         }
@@ -401,8 +401,8 @@ public class GrammarModel implements Observer {
      * Computes a graph grammar from this model.
      * @throws FormatException if there are syntax errors in the model
      */
-    private GraphGrammar computeGrammar() throws FormatException {
-        GraphGrammar result = new GraphGrammar(getName());
+    private Grammar computeGrammar() throws FormatException {
+        Grammar result = new Grammar(getName());
         FormatErrorSet errors = new FormatErrorSet();
         // Construct the composite type graph
         result.setTypeGraph(getTypeGraph());
@@ -660,7 +660,7 @@ public class GrammarModel implements Observer {
     /** Possibly empty list of errors found in the conversion to a grammar. */
     private FormatErrorSet errors;
     /** The graph grammar derived from the rule models. */
-    private GraphGrammar grammar;
+    private Grammar grammar;
     /** The prolog environment derived from the system store. */
     private GrooveEnvironment prologEnvironment;
     /** The start graph of the grammar. */

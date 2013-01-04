@@ -17,7 +17,7 @@
 package groove.gui.dialog;
 
 import groove.io.HTMLConverter;
-import groove.trans.SystemProperties;
+import groove.trans.GrammarProperties;
 import groove.util.Version;
 
 import java.awt.BorderLayout;
@@ -47,7 +47,7 @@ public class VersionDialog {
      * @return true if loading should continue, false otherwise
      */
     public static boolean showNew(Component parent,
-            SystemProperties grammarProperties) {
+            GrammarProperties grammarProperties) {
         String msg =
             "<HTML><FONT color=#770000>Warning: </FONT>"
                 + "loading grammar from newer GROOVE version (<FONT color=#000077>"
@@ -70,7 +70,7 @@ public class VersionDialog {
      *         -1 otherwise
      */
     public static int showOldFile(Component parent,
-            SystemProperties grammarProperties) {
+            GrammarProperties grammarProperties) {
         StringBuilder msg = new StringBuilder(HTMLConverter.HTML_TAG.tagBegin);
         msg.append("<FONT color=#770000>Warning: </FONT>");
         if (grammarProperties.getGrooveVersion().equals("0.0.0")) {
@@ -110,7 +110,7 @@ public class VersionDialog {
      *         false if loading should be canceled
      */
     public static boolean showOldURL(Component parent,
-            SystemProperties grammarProperties) {
+            GrammarProperties grammarProperties) {
         String msg =
             "<HTML><FONT color=#770000>Warning: </FONT>"
                 + "loading grammar from old GROOVE version (<FONT color=#000077>"

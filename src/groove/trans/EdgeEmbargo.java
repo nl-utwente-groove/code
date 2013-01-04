@@ -30,7 +30,7 @@ import groove.util.Groove;
  */
 public class EdgeEmbargo extends Condition {
     private EdgeEmbargo(String name, RuleGraph context, RuleEdge embargoEdge,
-            SystemProperties properties) {
+            GrammarProperties properties) {
         super(name, Condition.Op.NOT, context.newGraph(name), null, properties);
         this.embargoEdge = embargoEdge;
         getPattern().addEdgeContext(embargoEdge);
@@ -54,7 +54,7 @@ public class EdgeEmbargo extends Condition {
      * @param embargoEdge the edge that is forbidden
      */
     public EdgeEmbargo(RuleGraph graph, RuleEdge embargoEdge,
-            SystemProperties properties) {
+            GrammarProperties properties) {
         this(String.format("%s:!(%s)", graph.getName(), embargoEdge), graph,
             embargoEdge, properties);
     }

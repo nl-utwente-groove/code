@@ -10,7 +10,7 @@ import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.trans.QualName;
 import groove.trans.ResourceKind;
-import groove.trans.SystemProperties;
+import groove.trans.GrammarProperties;
 import groove.util.Version;
 import groove.view.GrammarModel;
 import groove.view.aspect.AspectGraph;
@@ -99,7 +99,7 @@ public class LoadGrammarAction extends SimulatorAction {
 
         // First we check if the versions are compatible.
         store.reload();
-        SystemProperties props = store.getProperties();
+        GrammarProperties props = store.getProperties();
         if (store.isEmpty()) {
             showErrorDialog(null, store.getLocation()
                 + " is not a GROOVE production system.");

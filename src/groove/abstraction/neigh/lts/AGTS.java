@@ -33,7 +33,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchApplier;
 import groove.lts.RuleTransition;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.HostGraph;
 import groove.trans.RuleEvent.Reuse;
 
@@ -72,7 +72,7 @@ public final class AGTS extends GTS {
     // ------------------------------------------------------------------------
 
     /** Constructs the GTS object for the given grammar. */
-    public AGTS(GraphGrammar grammar, boolean reachability) {
+    public AGTS(Grammar grammar, boolean reachability) {
         super(grammar);
         this.subsumedStatesCount = 0;
         this.subsumedTransitionsCount = 0;
@@ -182,7 +182,7 @@ public final class AGTS extends GTS {
     @Override
     protected ShapeState createStartState(HostGraph startGraph) {
         ShapeState result =
-            new ShapeState(getRecord(), (Shape) startGraph,
+            new ShapeState(this, (Shape) startGraph,
                 getGrammar().getCtrlAut().getStart(), 0);
         return result;
     }
@@ -319,7 +319,7 @@ public final class AGTS extends GTS {
                 // This can only happen on the first state.
                 assert !(origSrc instanceof ShapeNextState);
                 reducedSrc =
-                    new ShapeState(getRecord(), origSrcClosure.getGraph(),
+                    new ShapeState(AGTS.this, origSrcClosure.getGraph(),
                         origSrcClosure.getCtrlState(), 0);
                 addReducedState(result, origSrcClosure, reducedSrc);
                 stateMap.put(origSrcClosure, reducedSrc);

@@ -16,7 +16,7 @@
  */
 package groove.explore.encode;
 
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.view.FormatException;
@@ -56,7 +56,7 @@ public class EncodedEnabledRule extends EncodedEnumeratedType<Rule> {
      * not exist, or is not enabled, a FormatException is thrown.
      */
     @Override
-    public Rule parse(GraphGrammar rules, String name) throws FormatException {
+    public Rule parse(Grammar rules, String name) throws FormatException {
         Rule rule = rules.getRule(name);
         if (rule == null) {
             throw new FormatException("'" + name
