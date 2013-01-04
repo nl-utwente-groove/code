@@ -1,7 +1,7 @@
 /**
  * 
  */
-package groove.samples;
+package groove.util;
 
 import groove.algebra.JavaStringAlgebra;
 import groove.graph.EdgeRole;
@@ -12,7 +12,6 @@ import groove.graph.algebra.ValueNode;
 import groove.trans.DefaultHostGraph;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.util.ExprParser;
 import groove.view.FormatException;
 
 import java.util.BitSet;
