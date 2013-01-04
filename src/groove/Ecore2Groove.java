@@ -17,7 +17,7 @@ import java.io.IOException;
 
 /**
  * Wrapper class for the Ecore2Groove utility.
- * @see groove.ecore2groove.Transform
+ * @see groove.io.ecore2groove.Transform
  * @author Eduardo Zambon
  */
 public class Ecore2Groove {
@@ -27,7 +27,7 @@ public class Ecore2Groove {
      */
     static public void main(String[] args) {
         try {
-            groove.ecore2groove.Transform.main(args);
+            groove.io.ecore2groove.Transform.main(args);
         } catch (IOException e) {
             System.err.println("Error in the conversion.");
             e.printStackTrace();
