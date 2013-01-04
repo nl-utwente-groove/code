@@ -26,7 +26,7 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.trans.HostElement;
 import groove.trans.HostNode;
-import groove.trans.SystemRecord;
+import groove.trans.GrammarRecord;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
 
@@ -58,7 +58,7 @@ abstract public class AbstractGraphState extends
 
     @Override
     public GTS getGTS() {
-        return getRecord().getGTS();
+        return ((StateReference) getCacheReference()).getGTS();
     }
 
     final public Set<? extends GraphTransition> getTransitions() {
@@ -398,8 +398,8 @@ abstract public class AbstractGraphState extends
     }
 
     /** Returns the system record associated with this state. */
-    protected SystemRecord getRecord() {
-        return ((StateReference) getCacheReference()).getRecord();
+    protected GrammarRecord getRecord() {
+        return getGTS().getRecord();
     }
 
     /**

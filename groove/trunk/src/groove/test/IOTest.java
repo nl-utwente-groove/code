@@ -21,7 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import groove.explore.Exploration;
 import groove.lts.GTS;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.ResourceKind;
 import groove.util.Groove;
 import groove.view.FormatException;
@@ -129,7 +129,7 @@ public class IOTest {
             view.setLocalActiveNames(ResourceKind.HOST, startName);
 
             // now instantiate the grammar
-            GraphGrammar gg = view.toGrammar();
+            Grammar gg = view.toGrammar();
 
             assertEquals(grammarName, gg.getName());
             assertEquals(startName, view.getStartGraphModel().getFullName());

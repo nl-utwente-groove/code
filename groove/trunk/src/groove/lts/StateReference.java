@@ -16,7 +16,6 @@
  */
 package groove.lts;
 
-import groove.trans.SystemRecord;
 import groove.util.CacheHolder;
 import groove.util.CacheReference;
 
@@ -33,7 +32,7 @@ public class StateReference extends CacheReference<StateCache> {
     protected StateReference(CacheHolder<StateCache> holder,
             StateCache referent, StateReference template) {
         super(holder, referent, template);
-        this.record = template.record;
+        this.gts = template.gts;
     }
 
     /**
@@ -41,20 +40,20 @@ public class StateReference extends CacheReference<StateCache> {
      * system record.
      */
     protected StateReference(boolean strong, int incarnation,
-            StateReference template, SystemRecord record) {
+            StateReference template, GTS gts) {
         super(strong, incarnation, template);
-        this.record = record;
+        this.gts = gts;
     }
 
     /** Returns the system record associated with this reference. */
-    public SystemRecord getRecord() {
-        return this.record;
+    public GTS getGTS() {
+        return this.gts;
     }
 
     @Override
     protected CacheReference<StateCache> createNullInstance(boolean strong,
             int incarnation) {
-        return new StateReference(strong, incarnation, this, this.record);
+        return new StateReference(strong, incarnation, this, this.gts);
     }
 
     @Override
@@ -64,15 +63,15 @@ public class StateReference extends CacheReference<StateCache> {
     }
 
     /** The system record associated with this reference. */
-    private final SystemRecord record;
+    private final GTS gts;
 
     /**
      * Factory method for an uninitialised strong reference, i.e., with referent
      * <code>null</code>. This is a convenience method for
      * {@link #newInstance(boolean)} with parameter <code>true</code>.
      */
-    static public StateReference newInstance(SystemRecord record) {
-        return newInstance(record, true);
+    static public StateReference newInstance(GTS gts) {
+        return newInstance(gts, true);
     }
 
     /**
@@ -83,7 +82,7 @@ public class StateReference extends CacheReference<StateCache> {
      * @return a reference that is either strong or soft, depending on
      *         <code>strong</code>
      */
-    static public StateReference newInstance(SystemRecord record, boolean strong) {
-        return new StateReference(strong, 0, null, record);
+    static public StateReference newInstance(GTS gts, boolean strong) {
+        return new StateReference(strong, 0, null, gts);
     }
 }

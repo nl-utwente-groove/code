@@ -23,7 +23,7 @@ import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphState.Flag;
 import groove.lts.MatchResult;
-import groove.trans.SystemRecord;
+import groove.trans.GrammarRecord;
 
 import java.util.Stack;
 
@@ -55,7 +55,7 @@ public class LinearStrategy extends GTSStrategy {
     public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         // We have to set the non-collapsing property before the first (start)
         // state is generated, otherwise it is too late.
-        SystemRecord record = gts.getRecord();
+        GrammarRecord record = gts.getRecord();
         record.setCollapse(false);
         record.setCopyGraphs(false);
         record.setReuseEvents(NONE);

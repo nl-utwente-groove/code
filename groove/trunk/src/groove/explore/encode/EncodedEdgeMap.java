@@ -18,7 +18,7 @@ package groove.explore.encode;
 
 import groove.graph.TypeGraph;
 import groove.graph.TypeLabel;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 
@@ -81,7 +81,7 @@ public class EncodedEdgeMap implements
      * Throws a <code>FormatException</code> if parsing fails.
      */
     @Override
-    public Map<TypeLabel,Integer> parse(GraphGrammar rules, String source)
+    public Map<TypeLabel,Integer> parse(Grammar rules, String source)
         throws FormatException {
 
         // Disallow the empty string.

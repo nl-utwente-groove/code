@@ -16,7 +16,7 @@
  */
 package groove.explore.encode;
 
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.verify.FormulaParser;
 import groove.verify.ParseException;
 import groove.view.FormatException;
@@ -44,7 +44,7 @@ public class EncodedLtlProperty implements EncodedType<String,String> {
     }
 
     @Override
-    public String parse(GraphGrammar rules, String source)
+    public String parse(Grammar rules, String source)
         throws FormatException {
         try {
             FormulaParser.parse(source).toLtlFormula();

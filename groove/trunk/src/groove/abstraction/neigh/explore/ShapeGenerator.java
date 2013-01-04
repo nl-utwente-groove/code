@@ -36,7 +36,7 @@ import groove.graph.Node;
 import groove.graph.algebra.OperatorNode;
 import groove.graph.algebra.ValueNode;
 import groove.graph.algebra.VariableNode;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.ResourceKind;
 import groove.trans.Rule;
 import groove.trans.RuleEdge;
@@ -82,7 +82,7 @@ public final class ShapeGenerator extends CommandLineTool {
     /** String describing the start graph within the grammar. */
     private String startGraphName;
     /** The graph grammar used for the generation. */
-    private GraphGrammar grammar;
+    private Grammar grammar;
     /** The exploration to be used for the state space generation. */
     private Exploration exploration;
     /** The exploration statistics for the generated state space. */
@@ -291,7 +291,7 @@ public final class ShapeGenerator extends CommandLineTool {
      * lazily loaded in. The method throws an error and returns
      * <code>null</code> if the grammar could not be loaded.
      */
-    private GraphGrammar getGrammar() {
+    private Grammar getGrammar() {
         if (this.grammar == null) {
             this.loadGrammar(this.grammarLocation, this.startGraphName);
         }

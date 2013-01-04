@@ -37,7 +37,7 @@ import groove.io.LayoutIO;
 import groove.io.xml.DefaultJaxbGxlIO;
 import groove.trans.QualName;
 import groove.trans.ResourceKind;
-import groove.trans.SystemProperties;
+import groove.trans.GrammarProperties;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.view.FormatException;
@@ -210,13 +210,13 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
     }
 
     @Override
-    public SystemProperties getProperties() {
+    public GrammarProperties getProperties() {
         testInit();
         return this.properties;
     }
 
     @Override
-    public void putProperties(SystemProperties properties) throws IOException {
+    public void putProperties(GrammarProperties properties) throws IOException {
         throw createImmutable();
     }
 
@@ -406,7 +406,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      */
     private void loadProperties(ZipFile file, ZipEntry entry)
         throws IOException {
-        this.properties = new SystemProperties();
+        this.properties = new GrammarProperties();
         if (entry != null) {
             Properties grammarProperties = new Properties();
             InputStream s = file.getInputStream(entry);
@@ -520,7 +520,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         return this.hasSystemPropertiesFile;
     }
 
-    private SystemProperties properties;
+    private GrammarProperties properties;
     /** Map from entry name to layout entry. */
     private final Map<String,ZipEntry> layoutEntryMap =
         new HashMap<String,ZipEntry>();

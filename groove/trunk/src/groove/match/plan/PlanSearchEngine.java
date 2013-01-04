@@ -37,7 +37,7 @@ import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
-import groove.trans.SystemProperties;
+import groove.trans.GrammarProperties;
 import groove.util.Bag;
 import groove.util.HashBag;
 
@@ -397,7 +397,7 @@ public class PlanSearchEngine extends SearchEngine {
             result.add(new ConnectedPartsComparator(this.remainingNodes,
                 this.remainingVars));
             result.add(new IndegreeComparator(this.remainingEdges));
-            SystemProperties properties = this.condition.getSystemProperties();
+            GrammarProperties properties = this.condition.getSystemProperties();
             if (properties != null) {
                 List<String> controlLabels = properties.getControlLabels();
                 List<String> commonLabels = properties.getCommonLabels();

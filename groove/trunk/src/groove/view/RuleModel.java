@@ -55,7 +55,7 @@ import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
-import groove.trans.SystemProperties;
+import groove.trans.GrammarProperties;
 import groove.util.DefaultFixable;
 import groove.util.Groove;
 import groove.view.aspect.Aspect;
@@ -258,7 +258,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     /**
      * @return Returns the properties.
      */
-    final SystemProperties getSystemProperties() {
+    final GrammarProperties getSystemProperties() {
         return getGrammar().getProperties();
     }
 

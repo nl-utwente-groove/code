@@ -16,7 +16,7 @@
  */
 package groove.explore.encode;
 
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 
@@ -51,7 +51,7 @@ public class EncodedInt implements EncodedType<Integer,String> {
     }
 
     @Override
-    public Integer parse(GraphGrammar rules, String source) throws FormatException {
+    public Integer parse(Grammar rules, String source) throws FormatException {
         Integer value;
 
         try {

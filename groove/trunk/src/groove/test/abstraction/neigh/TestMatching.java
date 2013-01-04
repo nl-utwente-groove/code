@@ -24,7 +24,7 @@ import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.trans.Materialisation;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.HostGraph;
 import groove.trans.Proof;
 import groove.trans.Rule;
@@ -48,7 +48,7 @@ public class TestMatching {
 
     static private final String DIRECTORY = "junit/abstraction/match-test.gps/";
     static private GrammarModel view;
-    static private GraphGrammar grammar;
+    static private Grammar grammar;
 
     @BeforeClass
     public static void setUp() {

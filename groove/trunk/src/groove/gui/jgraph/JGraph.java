@@ -47,7 +47,7 @@ import groove.gui.menu.ShowHideMenu;
 import groove.gui.menu.ZoomMenu;
 import groove.gui.tree.LabelTree;
 import groove.lts.GTS;
-import groove.trans.SystemProperties;
+import groove.trans.GrammarProperties;
 import groove.util.Pair;
 
 import java.awt.Color;
@@ -299,7 +299,7 @@ abstract public class JGraph<G extends Graph<?,?>> extends org.jgraph.JGraph {
      * The properties of the grammar to which the displayed graph belongs.
      * May return {@code null} if the simulator is not set.
      */
-    private SystemProperties getProperties() {
+    private GrammarProperties getProperties() {
         return getSimulatorModel() == null ? null
                 : getSimulatorModel().getGrammar().getProperties();
     }

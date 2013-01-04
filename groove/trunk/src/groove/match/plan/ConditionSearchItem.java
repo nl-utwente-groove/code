@@ -31,7 +31,7 @@ import groove.trans.RuleEdge;
 import groove.trans.RuleGraph;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
-import groove.trans.SystemProperties;
+import groove.trans.GrammarProperties;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -52,7 +52,7 @@ class ConditionSearchItem extends AbstractSearchItem {
      */
     public ConditionSearchItem(Condition condition) {
         this.condition = condition;
-        SystemProperties properties = condition.getSystemProperties();
+        GrammarProperties properties = condition.getSystemProperties();
         this.matcher = MatcherFactory.instance().createMatcher(condition);
         if (condition.hasPattern()) {
             this.intAlgebra =

@@ -2,7 +2,6 @@
 package groove.trans;
 
 import static groove.trans.RuleEvent.Reuse.EVENT;
-import groove.lts.GTS;
 import groove.lts.RuleTransitionLabel;
 import groove.trans.RuleEvent.Reuse;
 import groove.util.TreeHashSet;
@@ -21,7 +20,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SystemRecord {
+public class GrammarRecord {
     /**
      * The total number of events (over all rules) created in
      * {@link #getEvent(Proof)}.
@@ -40,28 +39,24 @@ public class SystemRecord {
      * initial (fresh) node number is set to one higher than the highest node
      * number occurring in the start graph.
      * @throws IllegalStateException if the grammar is not fixed according to
-     *         {@link GraphGrammar#testFixed(boolean)}.
+     *         {@link Grammar#testFixed(boolean)}.
      */
-    public SystemRecord(GTS gts) throws IllegalStateException {
-        this.gts = gts;
-        GraphGrammar grammar = gts.getGrammar();
+    public GrammarRecord(Grammar grammar, HostFactory hostFactory)
+        throws IllegalStateException {
+        this.grammar = grammar;
+        this.hostFactory = hostFactory;
         grammar.testFixed(true);
         this.checkIso = grammar.getProperties().isCheckIsomorphism();
     }
 
-    /** Returns the transition system of which this is the record. */
-    public GTS getGTS() {
-        return this.gts;
-    }
-
     /** Returns the stored rule system on which the derivations are based. */
-    public GraphGrammar getGrammar() {
-        return getGTS().getGrammar();
+    public Grammar getGrammar() {
+        return this.grammar;
     }
 
     /** Returns the host factory associated with the GTS. */
     public HostFactory getFactory() {
-        return getGTS().getHostFactory();
+        return this.hostFactory;
     }
 
     /**
@@ -163,9 +158,13 @@ public class SystemRecord {
      */
     private RuleDependencies dependencies;
     /**
-     * The associated transition system.
+     * The associated graph grammar.
      */
-    private final GTS gts;
+    private final Grammar grammar;
+    /**
+     * The associated host factory.
+     */
+    private final HostFactory hostFactory;
     /**
      * Identity map for events that have been encountered during exploration.
      * Events are stored only if {@link #getReuse()} is set.

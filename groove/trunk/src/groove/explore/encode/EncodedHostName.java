@@ -16,7 +16,7 @@
  */
 package groove.explore.encode;
 
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 
@@ -45,7 +45,7 @@ public class EncodedHostName implements EncodedType<String,String> {
     }
 
     @Override
-    public String parse(GraphGrammar rules, String source)
+    public String parse(Grammar rules, String source)
         throws FormatException {
         Pattern pattern =
             Pattern.compile("^https?\\://[a-zA-Z0-9\\-\\.]+(\\.[a-zA-Z]{2,3})?\\:[0-9]{4}(/\\S*)?$");

@@ -20,7 +20,7 @@ import groove.explore.encode.Serialized;
 import groove.explore.encode.Template;
 import groove.explore.encode.TemplateList;
 import groove.explore.result.Acceptor;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.view.FormatException;
 
 /**
@@ -56,7 +56,7 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
      * by finding the template that starts
      * with the given keyword and then using its parse method.
      */
-    public static Acceptor parseAcceptor(GraphGrammar rules, Serialized source)
+    public static Acceptor parseAcceptor(Grammar rules, Serialized source)
         throws FormatException {
         return INSTANCE.parse(rules, source);
     }

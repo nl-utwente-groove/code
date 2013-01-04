@@ -126,7 +126,7 @@ public class RuleDependencies {
     }
 
     /** Constructs a new dependencies object, for a given rule system. */
-    public RuleDependencies(GraphGrammar ruleSystem) {
+    public RuleDependencies(Grammar ruleSystem) {
         this.rules = ruleSystem.getAllRules();
         this.properties = ruleSystem.getProperties();
         this.typeGraph = ruleSystem.getTypeGraph();
@@ -566,7 +566,7 @@ public class RuleDependencies {
     /** The set of rules for which the analysis is done. */
     private final Collection<Rule> rules;
     /** The system properties of the rules. */
-    private final SystemProperties properties;
+    private final GrammarProperties properties;
     /** Alphabet of the rule system. */
     private final TypeGraph typeGraph;
     /**

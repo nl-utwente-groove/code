@@ -35,7 +35,6 @@ import groove.trans.HostElement;
 import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.Rule;
-import groove.trans.SystemRecord;
 import groove.util.CacheReference;
 
 import java.util.ArrayList;
@@ -101,9 +100,8 @@ public class ShapeState extends AbstractGraphState {
      * transitions.
      * @param number the number of the state; required to be non-negative
      */
-    public ShapeState(SystemRecord record, Shape shape, CtrlState ctrlState,
-            int number) {
-        this(StateReference.newInstance(record), shape, ctrlState, number);
+    public ShapeState(AGTS gts, Shape shape, CtrlState ctrlState, int number) {
+        this(StateReference.newInstance(gts), shape, ctrlState, number);
     }
 
     // ------------------------------------------------------------------------

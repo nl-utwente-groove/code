@@ -31,7 +31,7 @@ import groove.io.xml.LayedOutXml;
 import groove.io.xml.Xml;
 import groove.trans.QualName;
 import groove.trans.ResourceKind;
-import groove.trans.SystemProperties;
+import groove.trans.GrammarProperties;
 import groove.util.Groove;
 import groove.view.FormatErrorSet;
 import groove.view.FormatException;
@@ -127,7 +127,7 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     private void createVersionProperties() {
-        SystemProperties prop = new SystemProperties();
+        GrammarProperties prop = new GrammarProperties();
         prop.setCurrentVersionProperties();
         try {
             this.saveProperties(prop);
@@ -183,8 +183,8 @@ public class DefaultFileSystemStore extends SystemStore {
                 oldTexts.put(name, oldText);
             }
         }
-        SystemProperties oldProps = getProperties();
-        SystemProperties newProps = doEnableDefaultName(kind, newNames);
+        GrammarProperties oldProps = getProperties();
+        GrammarProperties newProps = doEnableDefaultName(kind, newNames);
         return new TextBasedEdit(kind, oldTexts.isEmpty() ? EditType.CREATE
                 : EditType.MODIFY, oldTexts, newTexts, oldProps, newProps);
     }
@@ -195,9 +195,9 @@ public class DefaultFileSystemStore extends SystemStore {
      * and no resource of that kind is currently active.
      * @return the new stored) properties, or {@code null} if no change was made 
      */
-    private SystemProperties doEnableDefaultName(ResourceKind kind,
+    private GrammarProperties doEnableDefaultName(ResourceKind kind,
             Set<String> newNames) throws IOException {
-        SystemProperties result = null;
+        GrammarProperties result = null;
         String defaultName = kind.getDefaultName();
         if (defaultName != null
             && getProperties().getActiveNames(kind).isEmpty()
@@ -243,8 +243,8 @@ public class DefaultFileSystemStore extends SystemStore {
             }
         }
         // change the control-related system properties, if necessary
-        SystemProperties oldProps = null;
-        SystemProperties newProps = null;
+        GrammarProperties oldProps = null;
+        GrammarProperties newProps = null;
         if (activeChanged) {
             oldProps = getProperties();
             newProps = getProperties().clone();
@@ -285,8 +285,8 @@ public class DefaultFileSystemStore extends SystemStore {
         assert previous == null;
         newTexts.put(newName, text);
         // check if this affects the system properties
-        SystemProperties oldProps = null;
-        SystemProperties newProps = null;
+        GrammarProperties oldProps = null;
+        GrammarProperties newProps = null;
         Set<String> activeNames =
             new TreeSet<String>(getProperties().getActiveNames(kind));
         if (activeNames.remove(oldName)) {
@@ -319,8 +319,8 @@ public class DefaultFileSystemStore extends SystemStore {
             createFile(kind, newName));
         deleteEmptyDirectories(oldFile.getParentFile());
         // change the properties if there is a change in the enabled types
-        SystemProperties oldProps = null;
-        SystemProperties newProps = null;
+        GrammarProperties oldProps = null;
+        GrammarProperties newProps = null;
         if (kind != RULE) {
             Set<String> activeNames =
                 new TreeSet<String>(getProperties().getActiveNames(kind));
@@ -396,8 +396,8 @@ public class DefaultFileSystemStore extends SystemStore {
                 oldGraphs.add(oldGraph);
             }
         }
-        SystemProperties oldProps = getProperties();
-        SystemProperties newProps = doEnableDefaultName(kind, newNames);
+        GrammarProperties oldProps = getProperties();
+        GrammarProperties newProps = doEnableDefaultName(kind, newNames);
         EditType type;
         if (oldGraphs.isEmpty()) {
             type = EditType.CREATE;
@@ -445,8 +445,8 @@ public class DefaultFileSystemStore extends SystemStore {
             deletedGraphs.add(graph);
             activeChanged |= activeNames != null && activeNames.remove(name);
         }
-        SystemProperties oldProps = null;
-        SystemProperties newProps = null;
+        GrammarProperties oldProps = null;
+        GrammarProperties newProps = null;
         if (activeChanged) {
             oldProps = getProperties();
             newProps = getProperties().clone();
@@ -458,8 +458,8 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public SystemProperties getProperties() {
-        SystemProperties properties = null;
+    public GrammarProperties getProperties() {
+        GrammarProperties properties = null;
         if (!this.initialised) {
             try {
                 properties = this.loadGrammarProperties();
@@ -473,7 +473,7 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     @Override
-    public void putProperties(SystemProperties properties) throws IOException {
+    public void putProperties(GrammarProperties properties) throws IOException {
         PutPropertiesEdit edit = doPutProperties(properties);
         if (edit != null) {
             edit.checkAndSetVersion();
@@ -482,13 +482,13 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     /**
-     * Implements the functionality of {@link #putProperties(SystemProperties)}.
+     * Implements the functionality of {@link #putProperties(GrammarProperties)}.
      * Returns an undoable edit wrapping this functionality.
      */
-    private PutPropertiesEdit doPutProperties(SystemProperties properties)
+    private PutPropertiesEdit doPutProperties(GrammarProperties properties)
         throws IOException {
         testInit();
-        SystemProperties oldProperties = this.properties;
+        GrammarProperties oldProperties = this.properties;
         this.properties = properties;
         saveProperties();
         return new PutPropertiesEdit(oldProperties, properties);
@@ -523,7 +523,7 @@ public class DefaultFileSystemStore extends SystemStore {
                 result.addEdit(doPutGraphs(kind, newGraphs, false));
             }
         }
-        SystemProperties newProperties =
+        GrammarProperties newProperties =
             this.properties.relabel(oldLabel, newLabel);
         if (newProperties != this.properties) {
             Edit edit = doPutProperties(newProperties);
@@ -760,8 +760,8 @@ public class DefaultFileSystemStore extends SystemStore {
     /**
      * Loads the properties file from file (if any), and returns them.
      */
-    private SystemProperties loadGrammarProperties() throws IOException {
-        SystemProperties properties = new SystemProperties();
+    private GrammarProperties loadGrammarProperties() throws IOException {
+        GrammarProperties properties = new GrammarProperties();
         File propertiesFile = getDefaultPropertiesFile();
         // backwards compatibility: <grammar name>.properties
         if (!propertiesFile.exists()) {
@@ -809,7 +809,7 @@ public class DefaultFileSystemStore extends SystemStore {
         saveProperties(this.properties);
     }
 
-    private void saveProperties(SystemProperties properties) throws IOException {
+    private void saveProperties(GrammarProperties properties) throws IOException {
         File propertiesFile = getDefaultPropertiesFile();
         Writer propertiesWriter = new FileWriter(propertiesFile);
         try {
@@ -863,7 +863,7 @@ public class DefaultFileSystemStore extends SystemStore {
         return this.hasSystemPropertiesFile;
     }
 
-    private SystemProperties properties;
+    private GrammarProperties properties;
     /**
      * The location from which the source is loaded. If <code>null</code>, the
      * location was specified by file rather than url.
@@ -991,7 +991,7 @@ public class DefaultFileSystemStore extends SystemStore {
          */
         private final Set<ResourceKind> change;
 
-        private SystemProperties origProp = null;
+        private GrammarProperties origProp = null;
     }
 
     /** Edit wrapping a relabelling. */
@@ -1050,7 +1050,7 @@ public class DefaultFileSystemStore extends SystemStore {
     private class TextBasedEdit extends MyEdit {
         public TextBasedEdit(ResourceKind kind, EditType type,
                 Map<String,String> oldTexts, Map<String,String> newTexts,
-                SystemProperties oldProps, SystemProperties newProps) {
+                GrammarProperties oldProps, GrammarProperties newProps) {
             super(type, kind);
             this.oldTexts = oldTexts;
             this.newTexts = newTexts;
@@ -1114,17 +1114,17 @@ public class DefaultFileSystemStore extends SystemStore {
         /** The added texts. */
         private final Map<String,String> newTexts;
         /** The old system properties; possibly {@code null}. */
-        private final SystemProperties oldProps;
+        private final GrammarProperties oldProps;
         /** The new system properties; possibly {@code null}. */
-        private final SystemProperties newProps;
+        private final GrammarProperties newProps;
     }
 
     /** Edit consisting of additions and deletions of graph-based resources. */
     private class GraphBasedEdit extends MyEdit {
         public GraphBasedEdit(ResourceKind kind, EditType type,
                 Collection<AspectGraph> oldGraphs,
-                Collection<AspectGraph> newGraphs, SystemProperties oldProps,
-                SystemProperties newProps) {
+                Collection<AspectGraph> newGraphs, GrammarProperties oldProps,
+                GrammarProperties newProps) {
             super(type, kind);
             this.oldGraphs = oldGraphs;
             this.newGraphs = newGraphs;
@@ -1194,15 +1194,15 @@ public class DefaultFileSystemStore extends SystemStore {
         /** The added graph. */
         private final Collection<AspectGraph> newGraphs;
         /** The old system properties; possibly {@code null}. */
-        private final SystemProperties oldProps;
+        private final GrammarProperties oldProps;
         /** The new system properties; possibly {@code null}. */
-        private final SystemProperties newProps;
+        private final GrammarProperties newProps;
     }
 
     /** Edit consisting of changing the grammar properties. */
     private class PutPropertiesEdit extends MyEdit {
-        public PutPropertiesEdit(SystemProperties oldProperties,
-                SystemProperties newProperties) {
+        public PutPropertiesEdit(GrammarProperties oldProperties,
+                GrammarProperties newProperties) {
             super(EditType.MODIFY, PROPERTIES);
             for (ResourceKind kind : EnumSet.of(ResourceKind.PROLOG,
                 ResourceKind.TYPE, ResourceKind.HOST, ResourceKind.CONTROL)) {
@@ -1244,8 +1244,8 @@ public class DefaultFileSystemStore extends SystemStore {
         }
 
         /** The old control program with this name. */
-        private final SystemProperties oldProperties;
+        private final GrammarProperties oldProperties;
         /** The new control program with this name. */
-        private final SystemProperties newProperties;
+        private final GrammarProperties newProperties;
     }
 }

@@ -17,9 +17,9 @@ import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.ResourceKind;
-import groove.trans.SystemProperties;
+import groove.trans.GrammarProperties;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
 import groove.view.GraphBasedModel;
@@ -149,7 +149,7 @@ public class SimulatorModel implements Cloneable {
         case TYPE:
         case PROLOG:
         case CONTROL:
-            SystemProperties newProperties =
+            GrammarProperties newProperties =
                 getGrammar().getProperties().clone();
             List<String> actives =
                 new ArrayList<String>(newProperties.getActiveNames(kind));
@@ -195,7 +195,7 @@ public class SimulatorModel implements Cloneable {
         case TYPE:
         case PROLOG:
         case CONTROL:
-            SystemProperties newProperties =
+            GrammarProperties newProperties =
                 getGrammar().getProperties().clone();
             newProperties.setActiveNames(kind, Collections.singleton(name));
             getStore().putProperties(newProperties);
@@ -302,8 +302,8 @@ public class SimulatorModel implements Cloneable {
      */
     public boolean doSetDefaultExploration(Exploration exploration)
         throws IOException {
-        SystemProperties properties = getGrammar().getProperties();
-        SystemProperties newProperties = properties.clone();
+        GrammarProperties properties = getGrammar().getProperties();
+        GrammarProperties newProperties = properties.clone();
         newProperties.setExploration(exploration.toParsableString());
         return doSetProperties(newProperties);
     }
@@ -314,7 +314,7 @@ public class SimulatorModel implements Cloneable {
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed
      */
-    public boolean doSetProperties(SystemProperties newProperties)
+    public boolean doSetProperties(GrammarProperties newProperties)
         throws IOException {
         start();
         try {
@@ -547,7 +547,7 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean setGts() {
         try {
-            GraphGrammar grammar = getGrammar().toGrammar();
+            Grammar grammar = getGrammar().toGrammar();
             GTS gts = new GTS(grammar);
             gts.getRecord().setRandomAccess(true);
             return setGts(gts, false);

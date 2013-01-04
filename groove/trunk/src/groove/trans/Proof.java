@@ -116,7 +116,7 @@ public class Proof {
      * This is only allowed if the proved condition has an associated rule.
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      */
-    public RuleEvent newEvent(SystemRecord nodeFactory) {
+    public RuleEvent newEvent(GrammarRecord nodeFactory) {
         assert hasRule();
         Collection<BasicEvent> eventSet = new ArrayList<BasicEvent>();
         collectEvents(eventSet, nodeFactory);
@@ -135,7 +135,7 @@ public class Proof {
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      */
     private void collectEvents(Collection<BasicEvent> events,
-            SystemRecord nodeFactory) {
+            GrammarRecord nodeFactory) {
         if (hasRule()) {
             BasicEvent myEvent = createSimpleEvent(nodeFactory);
             events.add(myEvent);
@@ -147,10 +147,10 @@ public class Proof {
 
     /**
      * Callback factory method to create a simple event. Delegates to
-     * {@link SystemRecord#createSimpleEvent(Rule, RuleToHostMap)} if
+     * {@link GrammarRecord#createSimpleEvent(Rule, RuleToHostMap)} if
      * <code>nodeFactory</code> is not <code>null</code>.
      */
-    private BasicEvent createSimpleEvent(SystemRecord record) {
+    private BasicEvent createSimpleEvent(GrammarRecord record) {
         assert hasRule();
         if (record == null) {
             return new BasicEvent(getRule(), getPatternMap(), Reuse.NONE);
@@ -161,10 +161,10 @@ public class Proof {
 
     /**
      * Callback factory method to create a composite event. Delegates to
-     * {@link SystemRecord#createSimpleEvent(Rule, RuleToHostMap)} if
+     * {@link GrammarRecord#createSimpleEvent(Rule, RuleToHostMap)} if
      * <code>nodeFactory</code> is not <code>null</code>.
      */
-    private RuleEvent createCompositeEvent(SystemRecord record,
+    private RuleEvent createCompositeEvent(GrammarRecord record,
             Collection<BasicEvent> eventSet) {
         if (record == null) {
             return new CompositeEvent(record, getRule(), eventSet, Reuse.NONE);

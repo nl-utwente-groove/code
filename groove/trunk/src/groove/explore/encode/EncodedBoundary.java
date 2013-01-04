@@ -19,7 +19,7 @@ package groove.explore.encode;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.RuleSetBoundary;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.Rule;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -49,7 +49,7 @@ public class EncodedBoundary implements EncodedType<Boundary,String> {
     }
 
     @Override
-    public Boundary parse(GraphGrammar rules, String source)
+    public Boundary parse(Grammar rules, String source)
         throws FormatException {
         // Split the source String (assumed to be a comma separated list).
         String[] units = source.split(",");

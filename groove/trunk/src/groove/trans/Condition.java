@@ -100,7 +100,7 @@ public class Condition implements Fixable {
      * @param properties properties for matching the condition
      */
     public Condition(String name, Op operator, RuleGraph pattern,
-            RuleGraph root, SystemProperties properties) {
+            RuleGraph root, GrammarProperties properties) {
         assert operator.hasPattern();
         this.op = operator;
         this.name = name;
@@ -113,7 +113,7 @@ public class Condition implements Fixable {
     }
 
     /** Returns the secondary properties of this graph condition. */
-    public SystemProperties getSystemProperties() {
+    public GrammarProperties getSystemProperties() {
         return this.systemProperties;
     }
 
@@ -717,7 +717,7 @@ public class Condition implements Fixable {
     /**
      * Factory instance for creating the correct simulation.
      */
-    private final SystemProperties systemProperties;
+    private final GrammarProperties systemProperties;
     /** Subtyping relation, derived from the SystemProperties. */
     private TypeGraph typeGraph;
 

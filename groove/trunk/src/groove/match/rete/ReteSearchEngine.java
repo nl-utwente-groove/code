@@ -22,7 +22,7 @@ import groove.match.rete.ReteNetworkNode.Action;
 import groove.trans.Anchor;
 import groove.trans.Condition;
 import groove.trans.DeltaStore;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
@@ -42,7 +42,7 @@ public class ReteSearchEngine extends SearchEngine {
      * This means the rete network gets initialised by that grammar,
      * and populated by the grammar's start graph.
      */
-    public ReteSearchEngine(GraphGrammar grammar) {
+    public ReteSearchEngine(Grammar grammar) {
         this.network =
             new ReteNetwork(this, grammar,
                 grammar.getProperties().isInjective());

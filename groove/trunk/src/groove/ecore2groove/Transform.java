@@ -21,7 +21,7 @@ import groove.graph.DefaultGraph;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
 import groove.trans.ResourceKind;
-import groove.trans.SystemProperties;
+import groove.trans.GrammarProperties;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -199,7 +199,7 @@ public class Transform {
             false);
 
         // Set grammar properties
-        SystemProperties sp = new SystemProperties();
+        GrammarProperties sp = new GrammarProperties();
         List<String> typeNames = new Vector<String>();
         typeNames.add(modelName);
         typeNames.add("EcoreTypes");

@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -36,7 +36,7 @@ public class CtrlTester {
     private static final String GRAMMAR_DIR = "junit/samples/";
     private static final String CONTROL_DIR = "junit/control/";
 
-    private GraphGrammar testGrammar;
+    private Grammar testGrammar;
     {
         try {
             this.testGrammar =

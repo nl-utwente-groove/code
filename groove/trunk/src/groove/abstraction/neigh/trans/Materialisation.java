@@ -41,7 +41,7 @@ import groove.match.MatcherFactory;
 import groove.match.SearchEngine.SearchMode;
 import groove.match.TreeMatch;
 import groove.trans.BasicEvent;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
 import groove.trans.Proof;
@@ -50,7 +50,7 @@ import groove.trans.RuleEdge;
 import groove.trans.RuleEvent;
 import groove.trans.RuleEvent.Reuse;
 import groove.trans.RuleNode;
-import groove.trans.SystemRecord;
+import groove.trans.GrammarRecord;
 import groove.util.Pair;
 import groove.util.Property;
 import groove.util.Visitor;
@@ -536,7 +536,7 @@ public final class Materialisation {
      * Applies the rule match defined by this materialisation and returns the
      * transformed shape, which is not yet normalised.
      */
-    public Pair<Shape,RuleEvent> applyMatch(SystemRecord record) {
+    public Pair<Shape,RuleEvent> applyMatch(GrammarRecord record) {
         RuleEvent event;
         Shape result;
         if (this.isRuleModifying()) {
@@ -1197,7 +1197,7 @@ public final class Materialisation {
         File grammarFile = new File(DIRECTORY);
         try {
             GrammarModel view = GrammarModel.newInstance(grammarFile, false);
-            GraphGrammar grammar = view.toGrammar();
+            Grammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("rule");
             Shape shape =
                 ShapeGxl.getInstance(view.getTypeGraph()).unmarshalShape(file);

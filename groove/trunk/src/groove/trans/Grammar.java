@@ -41,11 +41,11 @@ import java.util.TreeSet;
  * @see QualName
  * @see Rule
  */
-public class GraphGrammar {
+public class Grammar {
     /**
      * Constructs an initially empty rule system.
      */
-    public GraphGrammar(String name) {
+    public Grammar(String name) {
         this.name = name;
     }
 
@@ -55,7 +55,7 @@ public class GraphGrammar {
      * @require <tt>ruleSystem != null</tt>
      * @ensure <tt>equals(ruleSystem)</tt>
      */
-    public GraphGrammar(GraphGrammar other, DefaultHostGraph startGraph) {
+    public Grammar(Grammar other, DefaultHostGraph startGraph) {
         this(other.getName());
         this.startGraph = startGraph;
         getProperties().putAll(other.getProperties());
@@ -231,7 +231,7 @@ public class GraphGrammar {
      */
     public void setProperties(java.util.Properties properties) {
         testFixed(false);
-        SystemProperties currentRuleProperties = getProperties();
+        GrammarProperties currentRuleProperties = getProperties();
         currentRuleProperties.clear();
         currentRuleProperties.putAll(properties);
     }
@@ -248,7 +248,7 @@ public class GraphGrammar {
      * Returns the properties object for this graph grammar. The properties
      * object is immutable.
      */
-    public SystemProperties getProperties() {
+    public GrammarProperties getProperties() {
         if (this.properties == null) {
             this.properties = createProperties();
         }
@@ -336,8 +336,8 @@ public class GraphGrammar {
     /** Tests for equality of the rule system and the start graph. */
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof GraphGrammar)
-            && getStartGraph().equals(((GraphGrammar) obj).getStartGraph())
+        return (obj instanceof Grammar)
+            && getStartGraph().equals(((Grammar) obj).getStartGraph())
             && super.equals(obj);
     }
 
@@ -349,10 +349,10 @@ public class GraphGrammar {
 
     /**
      * Callback factory method to create an initially empty
-     * {@link SystemProperties} object for this graph grammar.
+     * {@link GrammarProperties} object for this graph grammar.
      */
-    private SystemProperties createProperties() {
-        return new SystemProperties();
+    private GrammarProperties createProperties() {
+        return new GrammarProperties();
     }
 
     /**
@@ -392,7 +392,7 @@ public class GraphGrammar {
     /**
      * The properties bundle of this rule system.
      */
-    private SystemProperties properties;
+    private GrammarProperties properties;
     /** The labels and subtypes occurring in this rule system. */
     private TypeGraph typeGraph;
     /**

@@ -26,7 +26,7 @@ import groove.explore.encode.Serialized;
 import groove.lts.GTS;
 import groove.lts.GTSCounter;
 import groove.lts.GraphState.Flag;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.ResourceKind;
 import groove.view.FormatException;
 import groove.view.GrammarModel;
@@ -135,7 +135,7 @@ public class RecipeTest {
         try {
             GrammarModel ggModel = loadGrammar(GRAMMAR, startGraphName);
             ggModel.setLocalActiveNames(ResourceKind.CONTROL, control);
-            GraphGrammar gg = ggModel.toGrammar();
+            Grammar gg = ggModel.toGrammar();
             runExploration(gg, strategyDescr);
             assertEquals(this.highLevelStateCount, counter.getStateCount()
                 - counter.getTransientStateCount());
@@ -152,7 +152,7 @@ public class RecipeTest {
         }
     }
 
-    private void runExploration(GraphGrammar gg, String strategyDescr) {
+    private void runExploration(Grammar gg, String strategyDescr) {
         try {
             GTS gts = new GTS(gg);
             counter.setGTS(gts);

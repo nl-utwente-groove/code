@@ -7,7 +7,7 @@ import groove.gui.Simulator;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.gui.jgraph.CtrlJGraph;
 import groove.gui.tree.LabelTree;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.ResourceKind;
 import groove.view.ControlModel;
 import groove.view.FormatException;
@@ -69,7 +69,7 @@ public class PreviewControlAction extends SimulatorAction {
         CtrlAut result = null;
         GrammarModel grammarModel = getGrammarModel();
         if (grammarModel != null) {
-            GraphGrammar grammar = grammarModel.toGrammar();
+            Grammar grammar = grammarModel.toGrammar();
             ControlModel controlModel =
                 (ControlModel) getSimulatorModel().getTextResource(
                     getResourceKind());

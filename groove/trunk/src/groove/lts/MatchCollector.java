@@ -30,7 +30,7 @@ import groove.trans.Proof;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleToHostMap;
-import groove.trans.SystemRecord;
+import groove.trans.GrammarRecord;
 import groove.util.KeySet;
 import groove.util.Visitor;
 
@@ -105,7 +105,7 @@ public class MatchCollector {
             // matches
             RuleToHostMap boundMap = extractBinding(ct);
             if (boundMap != null) {
-                final SystemRecord record = this.record;
+                final GrammarRecord record = this.record;
                 Visitor<Proof,Boolean> eventCollector =
                     new Visitor<Proof,Boolean>(false) {
                         @Override
@@ -268,7 +268,7 @@ public class MatchCollector {
     /** The control state of the graph state, if any. */
     private final CtrlState ctrlState;
     /** The system record is set at construction. */
-    private final SystemRecord record;
+    private final GrammarRecord record;
     /** Possibly {@code null} mapping from rules to sets of outgoing
      * transitions for the parent of this state.
      */

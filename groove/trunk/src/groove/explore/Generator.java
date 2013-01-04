@@ -31,7 +31,7 @@ import groove.io.external.FormatExporter;
 import groove.io.external.PortException;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.ResourceKind;
 import groove.util.CommandLineTool;
 import groove.util.GenerateProgressMonitor;
@@ -299,7 +299,7 @@ public class Generator extends CommandLineTool {
      * lazily loaded in. The method throws an error and returns
      * <code>null</code> if the grammar could not be loaded.
      */
-    public GraphGrammar getGrammar() {
+    public Grammar getGrammar() {
         if (this.grammar == null) {
             try {
                 this.grammar = getGrammarModel().toGrammar();
@@ -628,7 +628,7 @@ public class Generator extends CommandLineTool {
     private GrammarModel grammarModel;
 
     /** The graph grammar used for the generation. */
-    private GraphGrammar grammar;
+    private Grammar grammar;
 
     /**
      * The <code>ExportSimulationPathOption</code> is the command line option

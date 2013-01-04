@@ -26,7 +26,7 @@ import groove.control.parse.Namespace;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.trans.Action;
-import groove.trans.GraphGrammar;
+import groove.trans.Grammar;
 import groove.trans.QualName;
 import groove.trans.Recipe;
 import groove.trans.Rule;
@@ -186,7 +186,7 @@ public class CtrlLoader {
     public static void main(String[] args) {
         try {
             String grammarName = args[0];
-            GraphGrammar grammar = Groove.loadGrammar(grammarName).toGrammar();
+            Grammar grammar = Groove.loadGrammar(grammarName).toGrammar();
             for (int i = 1; i < args.length; i++) {
                 String programName = controlFilter.stripExtension(args[1]);
                 System.out.printf("Control automaton for %s:%n%s", programName,
@@ -204,7 +204,7 @@ public class CtrlLoader {
     private static final boolean DEBUG = false;
 
     /** Parses a single control program on the basis of a given grammar. */
-    public static CtrlAut run(GraphGrammar grammar, String programName,
+    public static CtrlAut run(Grammar grammar, String programName,
             String program) throws FormatException {
         instance.init(grammar.getProperties().getAlgebraFamily(),
             grammar.getAllRules());
@@ -213,7 +213,7 @@ public class CtrlLoader {
     }
 
     /** Parses a single control program on the basis of a given grammar. */
-    public static CtrlAut run(GraphGrammar grammar, String programName,
+    public static CtrlAut run(Grammar grammar, String programName,
             File base) throws FormatException, IOException {
         instance.init(grammar.getProperties().getAlgebraFamily(),
             grammar.getAllRules());
