@@ -30,7 +30,6 @@ import groove.match.SearchStrategy;
 import groove.match.TreeMatch;
 import groove.match.plan.PlanSearchStrategy;
 import groove.rel.LabelVar;
-import groove.rel.VarSupport;
 import groove.util.Fixable;
 import groove.util.Visitor;
 import groove.view.FormatException;
@@ -983,13 +982,22 @@ public class Rule implements Action, Fixable {
     private Set<LabelVar> computeModifierVars() {
         Set<LabelVar> result = new HashSet<LabelVar>();
         // add the variables of creators
-        result.addAll(VarSupport.getAllVars(getCreatorGraph()));
+        for (RuleEdge edge : getCreatorGraph().edgeSet()) {
+            result.addAll(edge.label().allVarSet());
+        }
+        for (RuleNode node : getCreatorGraph().nodeSet()) {
+            for (TypeGuard guard : node.getTypeGuards()) {
+                result.add(guard.getVar());
+            }
+        }
         // add the variables of erasers
         for (RuleNode eraser : getEraserNodes()) {
-            result.addAll(VarSupport.getAllVars(eraser));
+            for (TypeGuard guard : eraser.getTypeGuards()) {
+                result.add(guard.getVar());
+            }
         }
         for (RuleEdge eraser : getEraserEdges()) {
-            result.addAll(VarSupport.getAllVars(eraser));
+            result.addAll(eraser.label().allVarSet());
         }
         return result;
     }
