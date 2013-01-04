@@ -356,19 +356,35 @@ abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
                 + edge;
             this.connections.connect(result, sourceJVertex.getPort(),
                 targetJVertex.getPort());
-            getJEdges(sourceJVertex).add(jEdge);
-            getJEdges(targetJVertex).add(jEdge);
+            addJEdge(sourceJVertex, jEdge);
+            addJEdge(targetJVertex, jEdge);
         }
         this.edgeJCellMap.put(edge, result);
         return result;
     }
 
+    /**
+     * Retrieves the known incident JEdges of a given JVetex,
+     * either from the explicitly stored JEdges (if the JVertex is fresh)
+     * or from the stored context of the JVertex.
+     */
     private Set<JEdge<G>> getJEdges(JVertex<G> jVertex) {
         Set<JEdge<G>> result = this.addedJEdges.get(jVertex);
         if (result == null) {
             result = Collections.unmodifiableSet(jVertex.getContext());
         }
         return result;
+    }
+
+    /** 
+     * Adds a given JEdge to the fresh incident edges of a fresh JVertex.
+     * Does nothing if the JVertex is not fresh.
+     */
+    private void addJEdge(JVertex<G> jVertex, JEdge<G> jEdge) {
+        Set<JEdge<G>> jEdges = this.addedJEdges.get(jVertex);
+        if (jEdges != null) {
+            jEdges.add(jEdge);
+        }
     }
 
     /**
