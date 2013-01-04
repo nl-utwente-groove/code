@@ -31,8 +31,8 @@ import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleToHostMap;
 import groove.trans.GrammarRecord;
-import groove.util.KeySet;
 import groove.util.Visitor;
+import groove.util.collect.KeySet;
 
 import java.util.List;
 import java.util.Set;

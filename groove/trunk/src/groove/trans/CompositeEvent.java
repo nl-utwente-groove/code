@@ -17,7 +17,7 @@
 package groove.trans;
 
 import groove.match.TreeMatch;
-import groove.util.CacheReference;
+import groove.util.cache.CacheReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;

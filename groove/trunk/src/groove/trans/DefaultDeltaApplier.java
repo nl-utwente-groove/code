@@ -16,8 +16,8 @@
  */
 package groove.trans;
 
-import groove.util.DeltaSet;
-import groove.util.StackedSet;
+import groove.util.collect.DeltaSet;
+import groove.util.collect.StackedSet;
 
 import java.util.Collection;
 import java.util.Set;

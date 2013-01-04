@@ -18,7 +18,7 @@ package groove.match.rete;
 
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 import groove.match.rete.ReteSimpleMatch.ReteCountMatch;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.HashMap;
 import java.util.Set;

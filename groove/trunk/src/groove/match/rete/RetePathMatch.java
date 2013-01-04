@@ -21,7 +21,7 @@ import groove.match.rete.ClosurePathChecker.ClosureInfo;
 import groove.rel.Valuation;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.Set;
 

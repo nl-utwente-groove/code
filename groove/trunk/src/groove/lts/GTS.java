@@ -41,9 +41,9 @@ import groove.trans.HostEdge;
 import groove.trans.HostFactory;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.util.NestedIterator;
-import groove.util.TransformIterator;
-import groove.util.TreeHashSet;
+import groove.util.collect.NestedIterator;
+import groove.util.collect.TransformIterator;
+import groove.util.collect.TreeHashSet;
 import groove.view.FormatException;
 import groove.view.PostApplicationError;
 

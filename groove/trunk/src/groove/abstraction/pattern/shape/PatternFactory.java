@@ -22,7 +22,7 @@ import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.trans.HostEdge;
 import groove.util.FreeNumberDispenser;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.Collection;
 

@@ -27,8 +27,8 @@ import groove.graph.Graph;
 import groove.trans.HostElement;
 import groove.trans.HostNode;
 import groove.trans.GrammarRecord;
-import groove.util.AbstractCacheHolder;
-import groove.util.CacheReference;
+import groove.util.cache.AbstractCacheHolder;
+import groove.util.cache.CacheReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;

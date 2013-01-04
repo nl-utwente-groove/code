@@ -27,11 +27,11 @@ import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.iso.CertificateStrategy.ElementCertificate;
-import groove.util.Bag;
 import groove.util.Groove;
-import groove.util.HashBag;
 import groove.util.Reporter;
-import groove.util.SmallCollection;
+import groove.util.collect.Bag;
+import groove.util.collect.HashBag;
+import groove.util.collect.SmallCollection;
 
 import java.io.File;
 import java.io.IOException;

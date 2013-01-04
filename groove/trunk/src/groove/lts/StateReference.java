@@ -16,8 +16,8 @@
  */
 package groove.lts;
 
-import groove.util.CacheHolder;
-import groove.util.CacheReference;
+import groove.util.cache.CacheHolder;
+import groove.util.cache.CacheReference;
 
 /**
  * Cache reference for state caches, which carry the system record as static

@@ -17,14 +17,14 @@
 package groove.test.performance;
 
 import groove.util.Reporter;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 /**
- * Class to test the various implementations of {@link groove.util.IntSet}
+ * Class to test the various implementations of {@link groove.util.collect.IntSet}
  * regarding speed.
  * @author Arend Rensink
  * @version $Revision: 2734 $

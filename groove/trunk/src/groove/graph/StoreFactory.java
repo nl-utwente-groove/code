@@ -17,7 +17,7 @@
 package groove.graph;
 
 import groove.trans.HostEdge;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.Arrays;
 

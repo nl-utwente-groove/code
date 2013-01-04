@@ -37,9 +37,9 @@ import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.IsoChecker;
 import groove.lts.GTS;
 import groove.lts.LTSFactory;
-import groove.util.NestedIterator;
-import groove.util.TransformIterator;
-import groove.util.TreeHashSet;
+import groove.util.collect.NestedIterator;
+import groove.util.collect.TransformIterator;
+import groove.util.collect.TreeHashSet;
 
 import java.util.AbstractSet;
 import java.util.Collections;

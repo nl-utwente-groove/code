@@ -18,7 +18,7 @@ package groove.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import groove.util.HashBag;
+import groove.util.collect.HashBag;
 
 import java.util.HashSet;
 import java.util.Iterator;

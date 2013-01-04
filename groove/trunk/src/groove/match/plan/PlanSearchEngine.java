@@ -38,8 +38,8 @@ import groove.trans.RuleGraph;
 import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
 import groove.trans.GrammarProperties;
-import groove.util.Bag;
-import groove.util.HashBag;
+import groove.util.collect.Bag;
+import groove.util.collect.HashBag;
 
 import java.util.ArrayList;
 import java.util.Collection;

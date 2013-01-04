@@ -35,7 +35,7 @@ import groove.trans.HostElement;
 import groove.trans.HostNode;
 import groove.trans.Proof;
 import groove.trans.Rule;
-import groove.util.CacheReference;
+import groove.util.cache.CacheReference;
 
 import java.util.ArrayList;
 import java.util.Collection;

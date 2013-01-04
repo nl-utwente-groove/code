@@ -20,7 +20,7 @@ import groove.rel.RegExpr;
 import groove.rel.RegExpr.Atom;
 import groove.rel.RegExpr.Wildcard;
 import groove.trans.HostEdge;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.List;
 

@@ -27,7 +27,7 @@ import groove.graph.TypeNode;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.HostNode;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.BitSet;
 import java.util.EnumMap;

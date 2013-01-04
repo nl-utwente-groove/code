@@ -19,7 +19,7 @@ package groove.graph;
 import groove.graph.iso.CertificateStrategy;
 import groove.util.DefaultDispenser;
 import groove.util.Groove;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.Collection;
 import java.util.HashMap;

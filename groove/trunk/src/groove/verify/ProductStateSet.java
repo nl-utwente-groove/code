@@ -20,7 +20,7 @@ import groove.explore.result.CycleAcceptor;
 import groove.lts.GTS;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.HashSet;
 import java.util.Set;

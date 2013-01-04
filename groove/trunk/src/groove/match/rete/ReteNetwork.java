@@ -48,7 +48,7 @@ import groove.trans.RuleFactory;
 import groove.trans.RuleGraph;
 import groove.trans.RuleGraphMorphism;
 import groove.trans.RuleNode;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.io.File;
 import java.io.IOException;
