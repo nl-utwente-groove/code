@@ -21,7 +21,7 @@ import groove.graph.TypeNode;
 import groove.trans.HostEdge;
 import groove.trans.HostNode;
 import groove.trans.RuleElement;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.Collection;
 import java.util.HashMap;

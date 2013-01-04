@@ -24,8 +24,8 @@ import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.trans.HostElement;
-import groove.util.IntSet;
-import groove.util.TreeIntSet;
+import groove.util.collect.IntSet;
+import groove.util.collect.TreeIntSet;
 
 /**
  * Implements an algorithm to partition a given graph into sets of bisimilar

@@ -17,7 +17,7 @@
 package groove.trans;
 
 import groove.control.CtrlPar;
-import groove.util.CollectionOfCollections;
+import groove.util.collect.CollectionOfCollections;
 
 import java.util.Arrays;
 import java.util.Collection;

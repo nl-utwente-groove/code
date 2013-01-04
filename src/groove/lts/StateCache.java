@@ -26,10 +26,10 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.trans.RuleApplication;
 import groove.trans.GrammarRecord;
-import groove.util.KeySet;
 import groove.util.Pair;
-import groove.util.SetView;
-import groove.util.TreeHashSet;
+import groove.util.collect.KeySet;
+import groove.util.collect.SetView;
+import groove.util.collect.TreeHashSet;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -18,9 +18,9 @@ package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.PartitionRefiner;
-import groove.util.AbstractCacheHolder;
 import groove.util.Dispenser;
 import groove.util.Groove;
+import groove.util.cache.AbstractCacheHolder;
 
 import java.util.Collection;
 import java.util.Collections;

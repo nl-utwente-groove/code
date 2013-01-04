@@ -26,7 +26,7 @@ import groove.trans.RuleEdge;
 import groove.trans.RuleElement;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.Set;
 

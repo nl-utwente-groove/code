@@ -19,6 +19,8 @@ package groove.util;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
+import groove.util.collect.Bag;
+import groove.util.collect.TreeBag;
 
 import java.io.IOException;
 import java.util.List;

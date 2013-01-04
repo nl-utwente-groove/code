@@ -16,13 +16,13 @@
  */
 package groove.test.performance;
 
-import groove.util.HashIntSet;
-import groove.util.IntSet;
 import groove.util.Reporter;
-import groove.util.TreeIntSet;
+import groove.util.collect.HashIntSet;
+import groove.util.collect.IntSet;
+import groove.util.collect.TreeIntSet;
 
 /**
- * Class to test the various implementations of {@link groove.util.IntSet}
+ * Class to test the various implementations of {@link groove.util.collect.IntSet}
  * regarding speed.
  * @author Arend Rensink
  * @version $Revision: 2753 $

@@ -19,9 +19,9 @@ package groove.trans;
 import static groove.trans.RuleEvent.Reuse.EVENT;
 import groove.graph.algebra.ValueNode;
 import groove.match.TreeMatch;
-import groove.util.AbstractCacheHolder;
-import groove.util.CacheReference;
 import groove.util.Visitor;
+import groove.util.cache.AbstractCacheHolder;
+import groove.util.cache.CacheReference;
 import groove.view.FormatException;
 
 import java.util.ArrayList;

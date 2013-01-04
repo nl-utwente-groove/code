@@ -26,7 +26,7 @@ import groove.graph.TypeLabel;
 import groove.trans.HostEdge;
 import groove.trans.HostGraph;
 import groove.trans.RuleEdge;
-import groove.util.UnmodifiableSetView;
+import groove.util.collect.UnmodifiableSetView;
 
 import java.util.Set;
 

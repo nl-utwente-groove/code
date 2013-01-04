@@ -26,7 +26,7 @@ import groove.trans.HostGraph;
 import groove.trans.HostNode;
 import groove.util.Duo;
 import groove.util.Pair;
-import groove.util.UnmodifiableSetView;
+import groove.util.collect.UnmodifiableSetView;
 
 import java.util.Map;
 import java.util.Set;

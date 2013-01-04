@@ -18,7 +18,7 @@ package groove.graph.iso;
 
 import groove.graph.Element;
 import groove.graph.iso.CertificateStrategy.ElementCertificate;
-import groove.util.SmallCollection;
+import groove.util.collect.SmallCollection;
 
 import java.util.Collection;
 import java.util.HashMap;

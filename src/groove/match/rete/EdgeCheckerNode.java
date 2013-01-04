@@ -33,7 +33,7 @@ import groove.trans.RuleElement;
 import groove.trans.RuleLabel;
 import groove.trans.RuleNode;
 import groove.util.Reporter;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.List;
 

@@ -17,8 +17,8 @@
 package groove.gui.dialog;
 
 import groove.graph.GraphProperties;
-import groove.util.ListComparator;
 import groove.util.Property;
+import groove.util.collect.ListComparator;
 
 import java.awt.Component;
 import java.awt.Dimension;

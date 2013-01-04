@@ -26,8 +26,8 @@ import groove.graph.algebra.ValueNode;
 import groove.match.TreeMatch;
 import groove.rel.LabelVar;
 import groove.trans.RuleEffect.Fragment;
-import groove.util.CacheReference;
 import groove.util.Groove;
+import groove.util.cache.CacheReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;

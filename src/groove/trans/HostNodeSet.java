@@ -16,7 +16,7 @@
  */
 package groove.trans;
 
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.Collection;
 

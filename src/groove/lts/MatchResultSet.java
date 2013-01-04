@@ -16,7 +16,7 @@
  */
 package groove.lts;
 
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 /** Set of {@link MatchResult}s, which only tests for code and equality of the events. */
 public class MatchResultSet extends TreeHashSet<MatchResult> {

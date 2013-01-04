@@ -17,7 +17,7 @@
 package groove.gui.jgraph;
 
 import groove.gui.look.VisualKey;
-import groove.util.NestedIterator;
+import groove.util.collect.NestedIterator;
 import groove.view.FormatError;
 
 import java.util.ArrayList;

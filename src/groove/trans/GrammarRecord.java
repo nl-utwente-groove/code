@@ -4,7 +4,7 @@ package groove.trans;
 import static groove.trans.RuleEvent.Reuse.EVENT;
 import groove.lts.RuleTransitionLabel;
 import groove.trans.RuleEvent.Reuse;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.Collection;
 import java.util.ConcurrentModificationException;

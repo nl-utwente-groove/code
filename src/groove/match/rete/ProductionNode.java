@@ -19,7 +19,7 @@ package groove.match.rete;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 import groove.trans.Rule;
 import groove.util.Reporter;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.Iterator;
 import java.util.Set;

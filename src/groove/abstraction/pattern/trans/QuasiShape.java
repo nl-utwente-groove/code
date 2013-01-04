@@ -27,8 +27,8 @@ import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeEdge;
 import groove.abstraction.pattern.shape.TypeNode;
 import groove.util.Duo;
-import groove.util.NestedIterator;
 import groove.util.Pair;
+import groove.util.collect.NestedIterator;
 
 import java.util.ArrayList;
 import java.util.Collection;

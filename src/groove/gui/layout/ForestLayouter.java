@@ -21,10 +21,10 @@ import groove.graph.NodeComparator;
 import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
-import groove.util.CollectionOfCollections;
-import groove.util.NestedIterator;
 import groove.util.Pair;
-import groove.util.TransformIterator;
+import groove.util.collect.CollectionOfCollections;
+import groove.util.collect.NestedIterator;
+import groove.util.collect.TransformIterator;
 
 import java.util.Arrays;
 import java.util.Collection;

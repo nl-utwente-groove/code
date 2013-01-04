@@ -31,9 +31,9 @@ import groove.lts.MatchCollector;
 import groove.trans.HostFactory;
 import groove.trans.Rule;
 import groove.trans.GrammarRecord;
-import groove.util.AbstractCacheHolder;
-import groove.util.CacheReference;
 import groove.util.CommandLineTool.VerbosityOption;
+import groove.util.cache.AbstractCacheHolder;
+import groove.util.cache.CacheReference;
 import groove.util.Groove;
 import groove.util.Reporter;
 

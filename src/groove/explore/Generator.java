@@ -34,7 +34,6 @@ import groove.lts.GraphState;
 import groove.trans.Grammar;
 import groove.trans.ResourceKind;
 import groove.util.CommandLineTool;
-import groove.util.GenerateProgressMonitor;
 import groove.util.Groove;
 import groove.util.StoreCommandLineOption;
 import groove.view.FormatException;

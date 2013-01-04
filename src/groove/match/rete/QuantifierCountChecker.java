@@ -28,8 +28,8 @@ import groove.trans.HostNode;
 import groove.trans.RuleElement;
 import groove.trans.RuleNode;
 import groove.trans.RuleToHostMap;
-import groove.util.TreeHashSet;
 import groove.util.Visitor.Collector;
+import groove.util.collect.TreeHashSet;
 
 import java.util.ArrayList;
 import java.util.Collections;

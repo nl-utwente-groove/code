@@ -23,8 +23,8 @@ import gov.nasa.ltl.trans.LTL2Buchi;
 import groove.graph.AbstractGraph;
 import groove.graph.GraphRole;
 import groove.gui.dialog.GraphPreviewDialog;
-import groove.util.NestedIterator;
-import groove.util.TransformIterator;
+import groove.util.collect.NestedIterator;
+import groove.util.collect.TransformIterator;
 
 import java.util.AbstractSet;
 import java.util.HashMap;

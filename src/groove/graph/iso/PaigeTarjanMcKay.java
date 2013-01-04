@@ -23,7 +23,7 @@ import groove.graph.Node;
 import groove.graph.TypeLabel;
 import groove.graph.algebra.ValueNode;
 import groove.trans.HostNode;
-import groove.util.TreeHashSet;
+import groove.util.collect.TreeHashSet;
 
 import java.util.ArrayList;
 import java.util.Collection;

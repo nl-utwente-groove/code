@@ -23,8 +23,8 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.trans.Recipe;
 import groove.trans.Rule;
-import groove.util.NestedIterator;
-import groove.util.TransformIterator;
+import groove.util.collect.NestedIterator;
+import groove.util.collect.TransformIterator;
 import groove.view.FormatErrorSet;
 import groove.view.FormatException;
 

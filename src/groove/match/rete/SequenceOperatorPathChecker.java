@@ -18,7 +18,7 @@ package groove.match.rete;
 
 import groove.rel.RegExpr;
 import groove.trans.HostNode;
-import groove.util.MapSet;
+import groove.util.collect.MapSet;
 
 import java.util.List;
 import java.util.Set;
