@@ -16,12 +16,12 @@
  */
 package groove.gui;
 
+import groove.grammar.model.FormatException;
+import groove.grammar.model.ResourceKind;
 import groove.io.Util;
 import groove.io.store.EditType;
-import groove.trans.ResourceKind;
 import groove.util.ExprParser;
 import groove.util.Groove;
-import groove.view.FormatException;
 
 import java.awt.Font;
 import java.awt.FontFormatException;

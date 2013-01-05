@@ -1,10 +1,10 @@
 package groove.io.conceptual.graph;
 
+import groove.grammar.aspect.AspectEdge;
+import groove.grammar.aspect.AspectLabel;
+import groove.grammar.aspect.AspectNode;
+import groove.grammar.aspect.AspectParser;
 import groove.graph.GraphRole;
-import groove.view.aspect.AspectEdge;
-import groove.view.aspect.AspectLabel;
-import groove.view.aspect.AspectNode;
-import groove.view.aspect.AspectParser;
 
 import java.util.ArrayList;
 import java.util.Arrays;

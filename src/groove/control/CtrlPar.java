@@ -18,8 +18,8 @@ package groove.control;
 
 import groove.algebra.Algebra;
 import groove.algebra.Algebras;
-import groove.graph.algebra.ValueNode;
-import groove.trans.RuleNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.rule.RuleNode;
 
 /**
  * Class representing a control parameter. 

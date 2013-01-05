@@ -20,16 +20,16 @@ import static groove.graph.EdgeRole.BINARY;
 import groove.abstraction.MyHashSet;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.TypeLabel;
-import groove.graph.TypeNode;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
 
 import java.util.Set;
 

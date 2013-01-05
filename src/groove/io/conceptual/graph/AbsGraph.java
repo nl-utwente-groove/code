@@ -1,9 +1,9 @@
 package groove.io.conceptual.graph;
 
+import groove.grammar.aspect.AspectEdge;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.aspect.AspectNode;
 import groove.graph.GraphRole;
-import groove.view.aspect.AspectEdge;
-import groove.view.aspect.AspectGraph;
-import groove.view.aspect.AspectNode;
 
 import java.util.HashSet;
 import java.util.Set;

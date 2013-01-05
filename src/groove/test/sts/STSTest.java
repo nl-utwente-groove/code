@@ -1,6 +1,12 @@
 package groove.test.sts;
 
 import groove.algebra.PointIntAlgebra;
+import groove.grammar.host.DefaultHostGraph;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
 import groove.lts.GTS;
 import groove.lts.MatchResult;
 import groove.lts.StartGraphState;
@@ -10,13 +16,7 @@ import groove.sts.LocationVariable;
 import groove.sts.STS;
 import groove.sts.STSException;
 import groove.sts.SwitchRelation;
-import groove.trans.DefaultHostGraph;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
 import groove.util.Groove;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import java.io.IOException;
 import java.util.Collection;

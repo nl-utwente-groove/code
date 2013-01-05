@@ -16,24 +16,24 @@
  */
 package groove.test.rel;
 
+import static groove.automaton.RegExpr.atom;
+import static groove.automaton.RegExpr.empty;
+import static groove.automaton.RegExpr.wildcard;
+import static groove.grammar.type.TypeLabel.createLabel;
 import static groove.graph.EdgeRole.BINARY;
 import static groove.graph.EdgeRole.FLAG;
 import static groove.graph.EdgeRole.NODE_TYPE;
-import static groove.graph.TypeLabel.createLabel;
-import static groove.rel.RegExpr.atom;
-import static groove.rel.RegExpr.empty;
-import static groove.rel.RegExpr.wildcard;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import groove.graph.TypeLabel;
-import groove.rel.LabelVar;
-import groove.rel.RegExpr;
-import groove.rel.RegExpr.Atom;
-import groove.view.FormatException;
+import groove.automaton.RegExpr;
+import groove.automaton.RegExpr.Atom;
+import groove.grammar.model.FormatException;
+import groove.grammar.rule.LabelVar;
+import groove.grammar.type.TypeLabel;
 
 import java.util.Arrays;
 import java.util.Collections;

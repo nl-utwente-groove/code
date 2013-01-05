@@ -1,5 +1,8 @@
 package groove.gui.display;
 
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
 import groove.graph.GraphProperties;
 import groove.gui.Icons;
 import groove.gui.Options;
@@ -11,9 +14,6 @@ import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JModel;
 import groove.gui.tree.RuleLevelTree;
 import groove.gui.tree.TypeTree;
-import groove.trans.ResourceKind;
-import groove.view.GrammarModel;
-import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
 import java.util.HashMap;

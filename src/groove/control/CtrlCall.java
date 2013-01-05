@@ -16,9 +16,9 @@
  */
 package groove.control;
 
-import groove.trans.Action;
-import groove.trans.Recipe;
-import groove.trans.Rule;
+import groove.grammar.Action;
+import groove.grammar.Recipe;
+import groove.grammar.Rule;
 import groove.util.Groove;
 
 import java.util.HashMap;

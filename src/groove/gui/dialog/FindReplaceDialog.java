@@ -16,12 +16,12 @@
  */
 package groove.gui.dialog;
 
+import groove.grammar.model.FormatException;
+import groove.grammar.type.TypeGraph;
+import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
-import groove.graph.TypeGraph;
-import groove.graph.TypeLabel;
-import groove.graph.TypeNode;
 import groove.io.HTMLConverter;
-import groove.view.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

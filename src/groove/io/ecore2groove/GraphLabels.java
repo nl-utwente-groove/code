@@ -16,8 +16,8 @@
  */
 package groove.io.ecore2groove;
 
+import groove.grammar.aspect.AspectKind;
 import groove.graph.EdgeRole;
-import groove.view.aspect.AspectKind;
 
 import java.util.HashSet;
 import java.util.Set;

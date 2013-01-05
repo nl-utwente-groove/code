@@ -32,21 +32,21 @@ import groove.explore.encode.Serialized;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationStatistics;
-import groove.graph.DefaultGraph;
+import groove.grammar.Grammar;
+import groove.grammar.Rule;
+import groove.grammar.host.ValueNode;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.rule.OperatorNode;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.VariableNode;
 import groove.graph.Node;
-import groove.graph.algebra.OperatorNode;
-import groove.graph.algebra.ValueNode;
-import groove.graph.algebra.VariableNode;
-import groove.trans.Grammar;
-import groove.trans.ResourceKind;
-import groove.trans.Rule;
-import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
+import groove.graph.plain.PlainGraph;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import java.io.IOException;
 import java.util.List;
@@ -366,7 +366,7 @@ public final class ShapeGenerator extends CommandLineTool {
             + this.exploration.getLastResult().getValue().size());
         // See if we have to save the GTS into a file.
         if (getOutputFileName() != null) {
-            DefaultGraph gtsGraph =
+            PlainGraph gtsGraph =
                 this.reducedGTS.toPlainGraph(true, true, true, false);
             try {
                 Groove.saveGraph(gtsGraph, getOutputFileName());

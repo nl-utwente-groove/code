@@ -16,7 +16,7 @@
  */
 package groove.explore.strategy;
 
-import groove.trans.HostGraph;
+import groove.grammar.host.HostGraph;
 import groove.verify.ModelChecking.Record;
 import groove.verify.ProductTransition;
 

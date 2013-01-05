@@ -20,11 +20,11 @@ import groove.abstraction.AbstractionKind;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.neigh.match.ReverseMatcherStore;
 import groove.abstraction.neigh.trans.NeighAnchorFactory;
+import groove.grammar.DefaultAnchorFactory;
+import groove.grammar.Rule;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine.SearchMode;
 import groove.match.plan.PlanSearchEngine;
-import groove.trans.DefaultAnchorFactory;
-import groove.trans.Rule;
 
 /**
  * Basic collection of methods for initialising/terminating the abstraction

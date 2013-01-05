@@ -35,28 +35,28 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeMorphism;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.graph.TypeLabel;
+import groove.grammar.Grammar;
+import groove.grammar.Rule;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostNode;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.type.TypeLabel;
 import groove.match.Matcher;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine.SearchMode;
 import groove.match.TreeMatch;
-import groove.trans.BasicEvent;
-import groove.trans.Grammar;
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
-import groove.trans.Proof;
-import groove.trans.Rule;
-import groove.trans.RuleEdge;
-import groove.trans.RuleEvent;
-import groove.trans.RuleEvent.Reuse;
-import groove.trans.RuleNode;
-import groove.trans.GrammarRecord;
+import groove.transform.BasicEvent;
+import groove.transform.Proof;
+import groove.transform.Record;
+import groove.transform.RuleEvent;
+import groove.transform.RuleEvent.Reuse;
 import groove.util.Pair;
 import groove.util.Property;
 import groove.util.Visitor;
 import groove.util.Visitor.Finder;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -536,7 +536,7 @@ public final class Materialisation {
      * Applies the rule match defined by this materialisation and returns the
      * transformed shape, which is not yet normalised.
      */
-    public Pair<Shape,RuleEvent> applyMatch(GrammarRecord record) {
+    public Pair<Shape,RuleEvent> applyMatch(Record record) {
         RuleEvent event;
         Shape result;
         if (this.isRuleModifying()) {

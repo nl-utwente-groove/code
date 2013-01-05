@@ -17,11 +17,11 @@
 
 package groove.match.plan;
 
+import groove.grammar.host.HostGraph;
+import groove.grammar.rule.LabelVar;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleNode;
 import groove.match.plan.PlanSearchStrategy.Search;
-import groove.rel.LabelVar;
-import groove.trans.HostGraph;
-import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -18,12 +18,12 @@ package groove.test.rel;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import groove.grammar.rule.LabelVar;
+import groove.grammar.rule.Valuation;
+import groove.grammar.type.TypeEdge;
+import groove.grammar.type.TypeFactory;
+import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
-import groove.graph.TypeEdge;
-import groove.graph.TypeFactory;
-import groove.graph.TypeNode;
-import groove.rel.LabelVar;
-import groove.rel.Valuation;
 
 import org.junit.Test;
 

@@ -23,7 +23,7 @@ import groove.lts.GraphState;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine;
 import groove.match.rete.ReteSearchEngine;
-import groove.trans.DeltaStore;
+import groove.transform.DeltaStore;
 
 /**
  * Explores a single path until reaching a final state or a loop. In case of

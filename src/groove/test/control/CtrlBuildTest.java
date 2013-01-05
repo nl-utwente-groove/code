@@ -29,10 +29,10 @@ import groove.control.CtrlLabel;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
-import groove.trans.Grammar;
-import groove.trans.Rule;
+import groove.grammar.Grammar;
+import groove.grammar.Rule;
+import groove.grammar.model.FormatException;
 import groove.util.Groove;
-import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;

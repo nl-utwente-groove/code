@@ -25,7 +25,7 @@ import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.lts.GraphState;
 import groove.lts.RuleTransition;
-import groove.trans.RuleEvent;
+import groove.transform.RuleEvent;
 import groove.util.collect.TransformIterator;
 
 import java.util.Iterator;

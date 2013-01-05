@@ -18,12 +18,12 @@ package groove.abstraction.pattern.shape;
 
 import groove.abstraction.MyHashMap;
 import groove.abstraction.pattern.match.Match;
+import groove.grammar.host.DefaultHostGraph;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
 import groove.graph.Edge;
 import groove.graph.Node;
-import groove.trans.DefaultHostGraph;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
 import groove.util.Duo;
 import groove.util.Pair;
 import groove.util.collect.UnmodifiableSetView;

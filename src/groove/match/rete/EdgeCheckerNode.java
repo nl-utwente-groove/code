@@ -17,21 +17,21 @@
 package groove.match.rete;
 
 import groove.algebra.Constant;
-import groove.graph.TypeEdge;
-import groove.graph.TypeElement;
-import groove.graph.TypeGuard;
-import groove.graph.TypeNode;
-import groove.graph.algebra.ValueNode;
-import groove.graph.algebra.VariableNode;
+import groove.automaton.RegExpr;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.rule.LabelVar;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleElement;
+import groove.grammar.rule.RuleLabel;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.VariableNode;
+import groove.grammar.type.TypeEdge;
+import groove.grammar.type.TypeElement;
+import groove.grammar.type.TypeGuard;
+import groove.grammar.type.TypeNode;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
-import groove.rel.LabelVar;
-import groove.rel.RegExpr;
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
-import groove.trans.RuleEdge;
-import groove.trans.RuleElement;
-import groove.trans.RuleLabel;
-import groove.trans.RuleNode;
 import groove.util.Reporter;
 import groove.util.collect.TreeHashSet;
 

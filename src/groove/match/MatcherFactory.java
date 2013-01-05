@@ -16,10 +16,10 @@
  */
 package groove.match;
 
+import groove.grammar.Condition;
+import groove.grammar.rule.Anchor;
 import groove.match.SearchEngine.SearchMode;
 import groove.match.plan.PlanSearchEngine;
-import groove.trans.Anchor;
-import groove.trans.Condition;
 
 /**
  * A factory for matchers.

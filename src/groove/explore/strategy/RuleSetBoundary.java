@@ -16,9 +16,9 @@
  */
 package groove.explore.strategy;
 
+import groove.grammar.Action;
+import groove.grammar.Rule;
 import groove.lts.GraphTransition;
-import groove.trans.Action;
-import groove.trans.Rule;
 import groove.verify.ModelChecking.Record;
 import groove.verify.ProductTransition;
 

@@ -3,11 +3,11 @@ package groove.abstraction.neigh.shape;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.NodeEquivClass;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostFactory;
+import groove.grammar.host.HostNode;
 import groove.graph.InversableElementMap;
 import groove.graph.Node;
-import groove.trans.HostEdge;
-import groove.trans.HostFactory;
-import groove.trans.HostNode;
 import groove.util.Fixable;
 
 import java.util.Map;

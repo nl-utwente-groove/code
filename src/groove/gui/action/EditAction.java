@@ -1,10 +1,10 @@
 package groove.gui.action;
 
-import static groove.trans.ResourceKind.HOST;
+import static groove.grammar.model.ResourceKind.HOST;
+import groove.grammar.model.ResourceKind;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.store.EditType;
-import groove.trans.ResourceKind;
 
 /** Action to start editing the currently displayed resource. */
 public class EditAction extends SimulatorAction {

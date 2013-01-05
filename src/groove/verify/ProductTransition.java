@@ -16,8 +16,8 @@
  */
 package groove.verify;
 
+import groove.grammar.Action;
 import groove.lts.GraphTransition;
-import groove.trans.Action;
 
 /**
  * Models a transition in a product automaton consisting of a graph-transition

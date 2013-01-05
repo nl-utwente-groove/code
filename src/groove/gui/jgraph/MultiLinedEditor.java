@@ -16,11 +16,11 @@
  */
 package groove.gui.jgraph;
 
+import groove.grammar.aspect.AspectKind;
+import groove.grammar.type.TypeGraph;
+import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
-import groove.graph.TypeGraph;
-import groove.graph.TypeLabel;
 import groove.gui.Options;
-import groove.view.aspect.AspectKind;
 
 import java.awt.Component;
 import java.awt.Container;

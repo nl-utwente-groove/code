@@ -23,8 +23,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import groove.rel.LabelVar;
-import groove.trans.AnchorKind;
+import groove.grammar.AnchorKind;
+import groove.grammar.rule.LabelVar;
 
 import org.junit.Test;
 

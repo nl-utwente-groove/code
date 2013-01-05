@@ -16,9 +16,9 @@
  */
 package groove.match.plan;
 
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleNode;
 import groove.match.plan.PlanSearchStrategy.Search;
-import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
 
 import java.util.Collection;
 import java.util.Collections;

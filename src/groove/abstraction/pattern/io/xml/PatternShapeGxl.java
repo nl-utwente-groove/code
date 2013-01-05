@@ -18,7 +18,7 @@ package groove.abstraction.pattern.io.xml;
 
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeGraph;
-import groove.view.FormatException;
+import groove.grammar.model.FormatException;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -16,9 +16,9 @@
  */
 package groove.gui.look;
 
+import groove.grammar.aspect.AspectKind;
 import groove.gui.look.VisualKey.Nature;
 import groove.util.Colors;
-import groove.view.aspect.AspectKind;
 
 import java.awt.Color;
 import java.awt.Font;

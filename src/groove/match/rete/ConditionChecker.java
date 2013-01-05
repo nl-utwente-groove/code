@@ -16,17 +16,17 @@
  */
 package groove.match.rete;
 
+import groove.grammar.Condition;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostElement;
+import groove.grammar.host.HostFactory;
+import groove.grammar.host.HostNode;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleElement;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.RuleToHostMap;
 import groove.graph.NodeComparator;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
-import groove.trans.Condition;
-import groove.trans.HostEdge;
-import groove.trans.HostElement;
-import groove.trans.HostFactory;
-import groove.trans.HostNode;
-import groove.trans.RuleEdge;
-import groove.trans.RuleElement;
-import groove.trans.RuleNode;
-import groove.trans.RuleToHostMap;
 import groove.util.collect.FilterIterator;
 import groove.util.collect.HashBag;
 import groove.util.collect.TreeHashSet;
@@ -255,7 +255,7 @@ public class ConditionChecker extends ReteNetworkNode implements
     /**
      * @return <code>true</code> if the condition associated with this
      * condition-checker has any negative subconditions (with operator 
-     * {@link groove.trans.Condition.Op#NOT}). 
+     * {@link groove.grammar.Condition.Op#NOT}). 
      */
     public boolean hasNacs() {
         return this.hasNacSubconditions;

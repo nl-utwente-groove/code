@@ -18,8 +18,8 @@ package groove.match;
 
 import groove.algebra.BoolSignature;
 import groove.algebra.SignatureKind;
-import groove.graph.algebra.VariableNode;
-import groove.trans.Condition;
+import groove.grammar.Condition;
+import groove.grammar.rule.VariableNode;
 
 import java.util.Collections;
 

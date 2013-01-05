@@ -27,14 +27,14 @@ import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.trans.PatternGraphGrammar;
 import groove.control.CtrlState;
 import groove.graph.AbstractGraph;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
 import groove.graph.ElementFactory;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.IsoChecker;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainNode;
 import groove.lts.GTS;
 import groove.lts.LTSFactory;
 import groove.util.collect.NestedIterator;
@@ -333,12 +333,12 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
     }
 
     /** Exports the GTS to a plain graph representation. */
-    public DefaultGraph toPlainGraph() {
-        DefaultGraph result = new DefaultGraph(getName());
-        Map<PatternState,DefaultNode> nodeMap =
-            new HashMap<PatternState,DefaultNode>();
+    public PlainGraph toPlainGraph() {
+        PlainGraph result = new PlainGraph(getName());
+        Map<PatternState,PlainNode> nodeMap =
+            new HashMap<PatternState,PlainNode>();
         for (PatternState state : nodeSet()) {
-            DefaultNode image = result.addNode(state.getNumber());
+            PlainNode image = result.addNode(state.getNumber());
             nodeMap.put(state, image);
         }
         for (PatternTransition transition : edgeSet()) {

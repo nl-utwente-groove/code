@@ -16,7 +16,8 @@
  */
 package groove.graph;
 
-import groove.trans.HostEdge;
+import groove.grammar.host.HostEdge;
+import groove.graph.plain.PlainEdge;
 import groove.util.collect.TreeHashSet;
 
 import java.util.Arrays;
@@ -247,7 +248,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
 
     /**
      * A identity map, mapping previously created instances of
-     * {@link DefaultEdge} to themselves. Used to ensure that edge objects are
+     * {@link PlainEdge} to themselves. Used to ensure that edge objects are
      * reused.
      */
     private final TreeHashSet<E> edgeStore;

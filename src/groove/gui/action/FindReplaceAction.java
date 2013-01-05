@@ -16,9 +16,9 @@
  */
 package groove.gui.action;
 
+import groove.grammar.type.TypeElement;
+import groove.grammar.type.TypeLabel;
 import groove.graph.Label;
-import groove.graph.TypeElement;
-import groove.graph.TypeLabel;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;

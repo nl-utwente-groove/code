@@ -16,8 +16,8 @@
  */
 package groove.algebra;
 
+import groove.grammar.model.FormatException;
 import groove.util.ExprParser;
-import groove.view.FormatException;
 
 /**
  * Abstract implementation of the string algebra.

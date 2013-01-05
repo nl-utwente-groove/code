@@ -22,6 +22,7 @@ import static groove.gui.SimulatorModel.Change.MATCH;
 import static groove.gui.SimulatorModel.Change.STATE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
+import groove.grammar.model.GrammarModel;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
@@ -41,7 +42,6 @@ import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
-import groove.view.GrammarModel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

@@ -17,8 +17,8 @@
 package groove.explore;
 
 import groove.explore.encode.Serialized;
+import groove.grammar.model.GrammarModel;
 import groove.util.Version;
-import groove.view.GrammarModel;
 
 /**
  * Type for parsable (enumerated) values.

@@ -16,9 +16,9 @@
  */
 package groove.explore.result;
 
+import groove.grammar.Rule;
 import groove.lts.GraphState;
 import groove.lts.RuleTransition;
-import groove.trans.Rule;
 
 /**
  * A <code>Predicate</code> over <code>A></code> is a boolean condition that

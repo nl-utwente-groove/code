@@ -1,25 +1,25 @@
 package groove.gui.jgraph;
 
+import static groove.grammar.aspect.AspectKind.ARGUMENT;
+import static groove.grammar.aspect.AspectKind.DEFAULT;
 import static groove.gui.look.VisualKey.COLOR;
-import static groove.view.aspect.AspectKind.ARGUMENT;
-import static groove.view.aspect.AspectKind.DEFAULT;
+import groove.grammar.aspect.AspectEdge;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.aspect.AspectKind;
+import groove.grammar.aspect.AspectLabel;
+import groove.grammar.aspect.AspectNode;
+import groove.grammar.aspect.AspectParser;
+import groove.grammar.model.FormatError;
+import groove.grammar.model.GraphBasedModel.TypeModelMap;
+import groove.grammar.rule.RuleLabel;
+import groove.grammar.type.TypeEdge;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
-import groove.graph.TypeEdge;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.io.HTMLConverter;
-import groove.trans.RuleLabel;
-import groove.view.FormatError;
-import groove.view.GraphBasedModel.TypeModelMap;
-import groove.view.aspect.AspectEdge;
-import groove.view.aspect.AspectGraph;
-import groove.view.aspect.AspectKind;
-import groove.view.aspect.AspectLabel;
-import groove.view.aspect.AspectNode;
-import groove.view.aspect.AspectParser;
 
 import java.util.Collection;
 import java.util.Collections;

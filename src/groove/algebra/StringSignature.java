@@ -24,8 +24,8 @@ import groove.annotation.Syntax;
 import groove.annotation.ToolTipBody;
 import groove.annotation.ToolTipHeader;
 import groove.annotation.ToolTipPars;
+import groove.grammar.model.FormatException;
 import groove.util.ExprParser;
-import groove.view.FormatException;
 
 /**
  * Signature for strings in graph grammars.

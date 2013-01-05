@@ -1,11 +1,11 @@
 package groove.gui.action;
 
+import groove.grammar.model.ResourceKind;
+import groove.grammar.model.ResourceModel;
+import groove.grammar.model.RuleModel;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.store.EditType;
-import groove.trans.ResourceKind;
-import groove.view.ResourceModel;
-import groove.view.RuleModel;
 
 import java.io.IOException;
 import java.util.Set;

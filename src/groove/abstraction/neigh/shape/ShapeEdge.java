@@ -16,9 +16,9 @@
  */
 package groove.abstraction.neigh.shape;
 
-import groove.graph.TypeEdge;
-import groove.trans.DefaultHostEdge;
-import groove.trans.HostEdge;
+import groove.grammar.host.DefaultHostEdge;
+import groove.grammar.host.HostEdge;
+import groove.grammar.type.TypeEdge;
 
 /**
  * Class that implements the edges of a shape.

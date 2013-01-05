@@ -18,12 +18,12 @@ package groove.control;
 
 import groove.algebra.AlgebraFamily;
 import groove.control.parse.Namespace;
+import groove.grammar.Action;
+import groove.grammar.Recipe;
+import groove.grammar.Rule;
+import groove.grammar.model.FormatErrorSet;
+import groove.grammar.model.FormatException;
 import groove.graph.GraphInfo;
-import groove.trans.Action;
-import groove.trans.Recipe;
-import groove.trans.Rule;
-import groove.view.FormatErrorSet;
-import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;

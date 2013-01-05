@@ -18,8 +18,8 @@ package groove.abstraction.neigh;
 
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostNode;
 
 /** Enumeration of edge multiplicity directions. */
 public enum EdgeMultDir {

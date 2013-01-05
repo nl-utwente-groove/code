@@ -18,14 +18,14 @@ package groove.abstraction.pattern;
 
 import static groove.graph.EdgeRole.BINARY;
 import groove.abstraction.MyHashSet;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.type.TypeLabel;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.graph.TypeLabel;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.RuleEdge;
 import groove.util.collect.UnmodifiableSetView;
 
 import java.util.Set;

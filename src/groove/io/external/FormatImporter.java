@@ -16,9 +16,9 @@
  */
 package groove.io.external;
 
-import groove.trans.ResourceKind;
-import groove.view.GrammarModel;
-import groove.view.aspect.AspectGraph;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
 
 import java.io.File;
 import java.io.InputStream;

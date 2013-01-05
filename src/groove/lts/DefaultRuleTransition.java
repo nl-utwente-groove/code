@@ -17,22 +17,22 @@
 package groove.lts;
 
 import groove.control.CtrlTransition;
+import groove.grammar.Recipe;
+import groove.grammar.Rule;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostGraphMorphism;
+import groove.grammar.host.HostNode;
+import groove.grammar.model.FormatException;
 import groove.graph.AbstractEdge;
 import groove.graph.AbstractGraph;
 import groove.graph.EdgeRole;
 import groove.graph.Morphism;
 import groove.graph.iso.IsoChecker;
-import groove.trans.AbstractRuleEvent;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostGraphMorphism;
-import groove.trans.HostNode;
-import groove.trans.Proof;
-import groove.trans.Recipe;
-import groove.trans.Rule;
-import groove.trans.RuleApplication;
-import groove.trans.RuleEvent;
-import groove.view.FormatException;
+import groove.transform.AbstractRuleEvent;
+import groove.transform.Proof;
+import groove.transform.RuleApplication;
+import groove.transform.RuleEvent;
 
 import java.util.Collections;
 

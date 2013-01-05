@@ -17,6 +17,8 @@
 package groove.explore.util;
 
 import groove.explore.Exploration;
+import groove.grammar.Rule;
+import groove.grammar.host.HostFactory;
 import groove.graph.AbstractGraph;
 import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionRefiner;
@@ -28,9 +30,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.MatchApplier;
 import groove.lts.MatchCollector;
-import groove.trans.HostFactory;
-import groove.trans.Rule;
-import groove.trans.GrammarRecord;
+import groove.transform.Record;
 import groove.util.CommandLineTool.VerbosityOption;
 import groove.util.cache.AbstractCacheHolder;
 import groove.util.cache.CacheReference;
@@ -215,7 +215,7 @@ public class ExplorationStatistics {
         printf("\n\tTransitions:\n\t\tReused:\t\t%d%n",
             MatchCollector.getEventReuse());
         printf("\t\tConfluent:\t%d%n", MatchApplier.getConfluentDiamondCount());
-        printf("\t\tEvents:\t\t%d%n", GrammarRecord.getEventCount());
+        printf("\t\tEvents:\t\t%d%n", Record.getEventCount());
         printf("\tCoanchor reuse:\t%d/%d%n", HostFactory.getNormaliseGain(),
             HostFactory.getNormaliseCount());
     }

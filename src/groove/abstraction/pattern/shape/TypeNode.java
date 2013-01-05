@@ -17,7 +17,7 @@
 package groove.abstraction.pattern.shape;
 
 import groove.abstraction.pattern.Util;
-import groove.trans.HostGraph;
+import groove.grammar.host.HostGraph;
 
 /**
  * Pattern node of a pattern type graph.

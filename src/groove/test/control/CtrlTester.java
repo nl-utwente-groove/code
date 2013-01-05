@@ -20,9 +20,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
-import groove.trans.Grammar;
+import groove.grammar.Grammar;
+import groove.grammar.model.FormatException;
 import groove.util.Groove;
-import groove.view.FormatException;
 
 import java.io.File;
 import java.io.IOException;

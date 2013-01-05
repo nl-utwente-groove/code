@@ -19,11 +19,11 @@ package groove.util;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.GXL_FILTER;
 import static groove.io.FileType.STATE_FILTER;
-import groove.graph.DefaultGraph;
+import groove.grammar.model.GrammarModel;
 import groove.graph.Graph;
+import groove.graph.plain.PlainGraph;
 import groove.io.FileType;
 import groove.io.xml.DefaultGxl;
-import groove.view.GrammarModel;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -86,7 +86,7 @@ public class Groove {
      * @throws IOException if <code>filename</code> does not exist or is wrongly
      *         formatted
      */
-    static public DefaultGraph loadGraph(String filename) throws IOException {
+    static public PlainGraph loadGraph(String filename) throws IOException {
         // attempt to find the intended file
         File file = new File(filename);
         if (GXL_FILTER.accept(file) || STATE_FILTER.accept(file)) {
@@ -105,7 +105,7 @@ public class Groove {
      *         the file does not exist
      * @throws IOException if <code>file</code> cannot be parsed as a graph
      */
-    static public DefaultGraph loadGraph(File file) throws IOException {
+    static public PlainGraph loadGraph(File file) throws IOException {
         return gxlGraphLoader.unmarshalGraph(file.toURI().toURL());
     }
 

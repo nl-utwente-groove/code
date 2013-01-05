@@ -21,12 +21,12 @@ import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraphMorphism;
+import groove.grammar.host.HostNode;
+import groove.grammar.type.TypeLabel;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.TypeLabel;
-import groove.trans.HostEdge;
-import groove.trans.HostGraphMorphism;
-import groove.trans.HostNode;
 
 import java.util.HashSet;
 import java.util.Iterator;

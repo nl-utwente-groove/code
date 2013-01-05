@@ -16,10 +16,10 @@
  */
 package groove.match.plan;
 
-import groove.rel.LabelVar;
-import groove.trans.Anchor;
-import groove.trans.Condition;
-import groove.trans.RuleNode;
+import groove.grammar.Condition;
+import groove.grammar.rule.Anchor;
+import groove.grammar.rule.LabelVar;
+import groove.grammar.rule.RuleNode;
 
 import java.util.ArrayList;
 import java.util.BitSet;

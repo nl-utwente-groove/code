@@ -16,32 +16,32 @@
  */
 package groove.io.store;
 
+import static groove.grammar.model.ResourceKind.PROPERTIES;
+import static groove.grammar.model.ResourceKind.TYPE;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.JAR_FILTER;
 import static groove.io.FileType.LAYOUT_FILTER;
 import static groove.io.FileType.PROPERTIES_FILTER;
 import static groove.io.FileType.RULE_FILTER;
 import static groove.io.FileType.ZIP_FILTER;
-import static groove.trans.ResourceKind.PROPERTIES;
-import static groove.trans.ResourceKind.TYPE;
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
+import groove.grammar.GrammarProperties;
+import groove.grammar.QualName;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.type.TypeLabel;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.TypeLabel;
+import groove.graph.plain.PlainEdge;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainNode;
 import groove.gui.layout.LayoutMap;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.LayoutIO;
 import groove.io.xml.DefaultJaxbGxlIO;
-import groove.trans.QualName;
-import groove.trans.ResourceKind;
-import groove.trans.GrammarProperties;
 import groove.util.Groove;
 import groove.util.Pair;
-import groove.view.FormatException;
-import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;
@@ -433,9 +433,9 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
             String graphName = filter.stripExtension(graphEntry.getKey());
             InputStream in = file.getInputStream(graphEntry.getValue());
             try {
-                Pair<Graph<DefaultNode,DefaultEdge>,Map<String,DefaultNode>> plainGraphAndMap =
+                Pair<Graph<PlainNode,PlainEdge>,Map<String,PlainNode>> plainGraphAndMap =
                     DefaultJaxbGxlIO.getInstance().loadGraphWithMap(in);
-                DefaultGraph plainGraph = (DefaultGraph) plainGraphAndMap.one();
+                PlainGraph plainGraph = (PlainGraph) plainGraphAndMap.one();
                 /*
                  * For backward compatibility, we set the role and name of the
                  * graph.
@@ -465,12 +465,12 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      * given zip file.
      */
     private void addLayout(ZipFile file, String entryName,
-            DefaultGraph plainGraph, Map<String,DefaultNode> nodeMap)
+            PlainGraph plainGraph, Map<String,PlainNode> nodeMap)
         throws IOException {
         ZipEntry layoutEntry = this.layoutEntryMap.get(entryName);
         if (layoutEntry != null) {
             try {
-                LayoutMap<DefaultNode,DefaultEdge> layout =
+                LayoutMap<PlainNode,PlainEdge> layout =
                     LayoutIO.getInstance().readLayout(nodeMap,
                         file.getInputStream(layoutEntry));
                 GraphInfo.setLayoutMap(plainGraph, layout);

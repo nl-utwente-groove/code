@@ -1,10 +1,10 @@
 package groove.gui.action;
 
-import static groove.trans.ResourceKind.RULE;
+import static groove.grammar.model.ResourceKind.RULE;
+import groove.grammar.model.RuleModel;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.NumberDialog;
-import groove.view.RuleModel;
 
 import java.io.IOException;
 import java.util.HashMap;

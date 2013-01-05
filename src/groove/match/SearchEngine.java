@@ -16,8 +16,8 @@
  */
 package groove.match;
 
-import groove.trans.Anchor;
-import groove.trans.Condition;
+import groove.grammar.Condition;
+import groove.grammar.rule.Anchor;
 
 /**
  * This is the common interface among factory classes that generate

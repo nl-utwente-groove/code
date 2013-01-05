@@ -1,8 +1,8 @@
 package groove.sts;
 
 import groove.algebra.SignatureKind;
-import groove.graph.algebra.VariableNode;
-import groove.trans.Rule;
+import groove.grammar.Rule;
+import groove.grammar.rule.VariableNode;
 
 /**
  * An interaction variable in an sts.

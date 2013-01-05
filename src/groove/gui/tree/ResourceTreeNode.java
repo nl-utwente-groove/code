@@ -16,9 +16,9 @@
  */
 package groove.gui.tree;
 
+import groove.grammar.model.ResourceModel;
 import groove.gui.display.ResourceDisplay;
 import groove.io.HTMLConverter;
-import groove.view.ResourceModel;
 
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;

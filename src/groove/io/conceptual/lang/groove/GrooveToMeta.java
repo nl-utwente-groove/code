@@ -1,7 +1,7 @@
 package groove.io.conceptual.lang.groove;
 
-import groove.graph.TypeGraph;
-import groove.graph.TypeNode;
+import groove.grammar.type.TypeGraph;
+import groove.grammar.type.TypeNode;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.Message;

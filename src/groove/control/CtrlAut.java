@@ -18,15 +18,15 @@ package groove.control;
 
 import static groove.graph.GraphRole.CTRL;
 import groove.control.CtrlCall.Kind;
+import groove.grammar.Recipe;
+import groove.grammar.Rule;
+import groove.grammar.model.FormatErrorSet;
+import groove.grammar.model.FormatException;
 import groove.graph.AbstractGraph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
-import groove.trans.Recipe;
-import groove.trans.Rule;
 import groove.util.collect.NestedIterator;
 import groove.util.collect.TransformIterator;
-import groove.view.FormatErrorSet;
-import groove.view.FormatException;
 
 import java.util.AbstractSet;
 import java.util.Arrays;

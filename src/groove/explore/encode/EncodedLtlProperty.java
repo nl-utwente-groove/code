@@ -16,11 +16,11 @@
  */
 package groove.explore.encode;
 
-import groove.trans.Grammar;
+import groove.grammar.Grammar;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
 import groove.verify.FormulaParser;
 import groove.verify.ParseException;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 /**
  * Encoding of an LTL property.

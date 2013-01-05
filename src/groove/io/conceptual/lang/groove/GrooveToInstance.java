@@ -1,8 +1,13 @@
 package groove.io.conceptual.lang.groove;
 
 import groove.algebra.Constant;
+import groove.grammar.aspect.AspectNode;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.host.HostGraph.HostToAspectMap;
 import groove.graph.EdgeRole;
-import groove.graph.algebra.ValueNode;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.InstanceModel;
@@ -38,11 +43,6 @@ import groove.io.conceptual.value.RealValue;
 import groove.io.conceptual.value.StringValue;
 import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostGraph.HostToAspectMap;
-import groove.trans.HostNode;
-import groove.view.aspect.AspectNode;
 
 import java.util.HashMap;
 import java.util.HashSet;

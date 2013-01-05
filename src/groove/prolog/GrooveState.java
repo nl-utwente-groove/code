@@ -18,10 +18,10 @@
  */
 package groove.prolog;
 
+import groove.grammar.Grammar;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.trans.Grammar;
-import groove.trans.RuleEvent;
+import groove.transform.RuleEvent;
 
 /**
  * The current state in groove.

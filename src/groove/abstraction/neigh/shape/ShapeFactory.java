@@ -17,13 +17,13 @@
 package groove.abstraction.neigh.shape;
 
 import groove.abstraction.neigh.trans.RuleToShapeMap;
+import groove.grammar.host.HostFactory;
+import groove.grammar.host.HostNode;
+import groove.grammar.rule.RuleToHostMap;
+import groove.grammar.type.TypeEdge;
+import groove.grammar.type.TypeFactory;
+import groove.grammar.type.TypeLabel;
 import groove.graph.Label;
-import groove.graph.TypeEdge;
-import groove.graph.TypeFactory;
-import groove.graph.TypeLabel;
-import groove.trans.HostFactory;
-import groove.trans.HostNode;
-import groove.trans.RuleToHostMap;
 
 import java.util.Set;
 

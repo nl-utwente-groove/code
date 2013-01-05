@@ -16,14 +16,14 @@
  */
 package groove.io.store;
 
+import static groove.grammar.model.ResourceKind.PROPERTIES;
 import static groove.io.FileType.GRAMMAR_FILTER;
-import static groove.trans.ResourceKind.PROPERTIES;
-import groove.graph.TypeLabel;
+import groove.grammar.GrammarProperties;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.type.TypeLabel;
 import groove.io.Util;
-import groove.trans.ResourceKind;
-import groove.trans.GrammarProperties;
-import groove.view.GrammarModel;
-import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;

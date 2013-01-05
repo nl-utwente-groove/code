@@ -17,17 +17,17 @@
 package groove.match.rete;
 
 import groove.algebra.JavaIntAlgebra;
+import groove.grammar.Condition;
+import groove.grammar.Condition.Op;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.rule.RuleElement;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.RuleToHostMap;
+import groove.grammar.rule.VariableNode;
 import groove.graph.NodeComparator;
-import groove.graph.algebra.ValueNode;
-import groove.graph.algebra.VariableNode;
 import groove.match.TreeMatch;
 import groove.match.rete.ReteSimpleMatch.ReteCountMatch;
-import groove.trans.Condition;
-import groove.trans.Condition.Op;
-import groove.trans.HostNode;
-import groove.trans.RuleElement;
-import groove.trans.RuleNode;
-import groove.trans.RuleToHostMap;
 import groove.util.Visitor.Collector;
 import groove.util.collect.TreeHashSet;
 

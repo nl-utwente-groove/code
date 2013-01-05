@@ -16,9 +16,9 @@
  */
 package groove.abstraction.neigh.equiv;
 
-import groove.trans.HostElement;
-import groove.trans.HostFactory;
-import groove.trans.HostNode;
+import groove.grammar.host.HostElement;
+import groove.grammar.host.HostFactory;
+import groove.grammar.host.HostNode;
 
 import java.lang.reflect.Array;
 import java.util.BitSet;

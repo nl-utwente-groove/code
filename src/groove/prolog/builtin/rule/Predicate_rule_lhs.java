@@ -22,8 +22,8 @@ import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
+import groove.grammar.Rule;
 import groove.prolog.builtin.trans.TransPrologCode;
-import groove.trans.Rule;
 
 /**
  * Predicate rule_lhs(+Rule, ?Lhs)

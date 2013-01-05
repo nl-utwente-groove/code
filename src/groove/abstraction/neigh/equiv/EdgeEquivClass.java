@@ -17,7 +17,7 @@
 package groove.abstraction.neigh.equiv;
 
 import groove.abstraction.MyHashSet;
-import groove.trans.HostEdge;
+import groove.grammar.host.HostEdge;
 
 /**
  * An equivalence class implementation for edges (both from host graphs and

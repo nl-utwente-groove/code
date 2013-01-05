@@ -16,10 +16,10 @@
  */
 package groove.match.rete;
 
-import groove.rel.RegExpr;
-import groove.rel.RegExpr.Atom;
-import groove.rel.RegExpr.Wildcard;
-import groove.trans.HostEdge;
+import groove.automaton.RegExpr;
+import groove.automaton.RegExpr.Atom;
+import groove.automaton.RegExpr.Wildcard;
+import groove.grammar.host.HostEdge;
 import groove.util.collect.TreeHashSet;
 
 import java.util.List;

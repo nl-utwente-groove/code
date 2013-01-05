@@ -16,6 +16,9 @@
  */
 package groove.io.conceptual.lang.groove;
 
+import groove.grammar.QualName;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.ResourceKind;
 import groove.graph.GraphRole;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
@@ -27,9 +30,6 @@ import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.graph.AbsGraph;
 import groove.io.conceptual.lang.ExportException;
 import groove.io.conceptual.lang.ExportableResource;
-import groove.trans.QualName;
-import groove.trans.ResourceKind;
-import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
 import java.util.Collections;

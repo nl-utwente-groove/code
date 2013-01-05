@@ -1,10 +1,15 @@
 package groove.gui.action;
 
+import groove.grammar.aspect.Aspect;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.aspect.AspectKind;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
-import groove.graph.TypeLabel;
-import groove.graph.TypeNode;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.display.GraphTab;
@@ -13,11 +18,6 @@ import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.tree.LabelTree;
 import groove.gui.tree.LabelTree.EntryNode;
-import groove.trans.ResourceKind;
-import groove.view.FormatException;
-import groove.view.aspect.Aspect;
-import groove.view.aspect.AspectGraph;
-import groove.view.aspect.AspectKind;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;

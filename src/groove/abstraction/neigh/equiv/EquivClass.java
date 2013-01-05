@@ -16,7 +16,7 @@
  */
 package groove.abstraction.neigh.equiv;
 
-import groove.trans.HostElement;
+import groove.grammar.host.HostElement;
 import groove.util.Fixable;
 
 import java.util.Set;

@@ -23,12 +23,12 @@ import groove.explore.result.Result;
 import groove.explore.strategy.LTLStrategy;
 import groove.explore.strategy.Strategy;
 import groove.explore.strategy.Strategy.Halter;
+import groove.grammar.Grammar;
+import groove.grammar.model.FormatErrorSet;
+import groove.grammar.model.FormatException;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.trans.Grammar;
 import groove.util.Reporter;
-import groove.view.FormatErrorSet;
-import groove.view.FormatException;
 
 /**
  * <!=========================================================================>

@@ -1,6 +1,10 @@
 package groove.gui.action;
 
-import groove.graph.TypeLabel;
+import groove.grammar.QualName;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.type.TypeLabel;
 import groove.gui.BehaviourOption;
 import groove.gui.Icons;
 import groove.gui.Options;
@@ -24,12 +28,8 @@ import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.store.EditType;
 import groove.io.store.SystemStore;
-import groove.trans.QualName;
-import groove.trans.ResourceKind;
 import groove.util.Duo;
 import groove.util.Groove;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import java.awt.event.ActionEvent;
 import java.io.File;

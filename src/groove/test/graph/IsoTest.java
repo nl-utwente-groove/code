@@ -16,10 +16,10 @@
  */
 package groove.test.graph;
 
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
 import groove.graph.iso.IsoChecker;
+import groove.graph.plain.PlainEdge;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainNode;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.util.Groove;
@@ -40,16 +40,16 @@ import org.junit.Test;
 public class IsoTest {
     /** Location of the samples. */
     static private final String INPUT_DIR = "junit/graphs/iso";
-    static private final IsoChecker<DefaultNode,DefaultEdge> checker =
+    static private final IsoChecker<PlainNode,PlainEdge> checker =
         IsoChecker.getInstance(true);
 
-    private Map<String,List<DefaultGraph>> graphMap;
+    private Map<String,List<PlainGraph>> graphMap;
 
     /** Setup method loading all comparable graphs. */
     @Before
     public void setUp() {
         ExtensionFilter stateFilter = FileType.getFilter(FileType.STATE);
-        this.graphMap = new HashMap<String,List<DefaultGraph>>();
+        this.graphMap = new HashMap<String,List<PlainGraph>>();
         for (File stateFile : new File(INPUT_DIR).listFiles(stateFilter)) {
             if (stateFile.isDirectory()) {
                 continue;
@@ -65,7 +65,7 @@ public class IsoTest {
     }
 
     /** Adds a loaded graph to the graph map. */
-    private void addGraph(String name, DefaultGraph graph) {
+    private void addGraph(String name, PlainGraph graph) {
         // get the number suffix
         int hyphenPos = name.lastIndexOf('-');
         if (hyphenPos < 0) {
@@ -73,10 +73,10 @@ public class IsoTest {
                 name);
         } else {
             String actualName = name.substring(0, hyphenPos);
-            List<DefaultGraph> record = this.graphMap.get(actualName);
+            List<PlainGraph> record = this.graphMap.get(actualName);
             if (record == null) {
                 this.graphMap.put(actualName, record =
-                    new LinkedList<DefaultGraph>());
+                    new LinkedList<PlainGraph>());
             }
             record.add(graph);
         }
@@ -90,7 +90,7 @@ public class IsoTest {
 
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String graphName, boolean iso) {
-        List<DefaultGraph> graphs = this.graphMap.get(graphName);
+        List<PlainGraph> graphs = this.graphMap.get(graphName);
         Assert.assertNotNull(graphs);
         for (int i = 0; i < graphs.size(); i++) {
             for (int j = i + 1; j < graphs.size(); j++) {

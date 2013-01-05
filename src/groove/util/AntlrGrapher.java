@@ -4,15 +4,15 @@
 package groove.util;
 
 import groove.algebra.JavaStringAlgebra;
+import groove.grammar.host.DefaultHostGraph;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.model.FormatException;
+import groove.grammar.type.TypeGraph;
+import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
-import groove.graph.TypeGraph;
-import groove.graph.TypeLabel;
-import groove.graph.TypeNode;
-import groove.graph.algebra.ValueNode;
-import groove.trans.DefaultHostGraph;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
-import groove.view.FormatException;
 
 import java.util.BitSet;
 import java.util.HashMap;

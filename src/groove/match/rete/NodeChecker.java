@@ -16,8 +16,8 @@
  */
 package groove.match.rete;
 
-import groove.trans.RuleElement;
-import groove.trans.RuleNode;
+import groove.grammar.rule.RuleElement;
+import groove.grammar.rule.RuleNode;
 
 /**
  * Represents the abstract representation of a node checker

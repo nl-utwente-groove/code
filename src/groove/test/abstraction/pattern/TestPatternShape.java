@@ -20,9 +20,9 @@ import static org.junit.Assert.assertEquals;
 import groove.abstraction.pattern.io.xml.TypeGraphGxl;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeGraph;
-import groove.trans.HostGraph;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
+import groove.grammar.host.HostGraph;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;

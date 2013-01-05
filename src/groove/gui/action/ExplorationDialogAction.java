@@ -1,10 +1,10 @@
 package groove.gui.action;
 
+import groove.grammar.model.GrammarModel;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationDialog;
-import groove.view.GrammarModel;
 
 /** Action to open the Exploration Dialog. */
 public class ExplorationDialogAction extends SimulatorAction {

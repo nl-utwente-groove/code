@@ -16,11 +16,11 @@
  */
 package groove.explore.encode;
 
-import groove.trans.Grammar;
-import groove.trans.ResourceKind;
-import groove.trans.Rule;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
+import groove.grammar.Grammar;
+import groove.grammar.Rule;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
 
 import java.util.Map;
 import java.util.TreeMap;

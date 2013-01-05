@@ -16,18 +16,18 @@
  */
 package groove.io;
 
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultNode;
+import groove.grammar.model.FormatError;
+import groove.grammar.model.FormatErrorSet;
+import groove.grammar.model.FormatException;
 import groove.graph.Edge;
 import groove.graph.Node;
+import groove.graph.plain.PlainEdge;
+import groove.graph.plain.PlainNode;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.gui.look.LineStyle;
 import groove.util.ExprParser;
-import groove.view.FormatError;
-import groove.view.FormatErrorSet;
-import groove.view.FormatException;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -89,13 +89,13 @@ public class LayoutIO {
      * @throws IOException if an error occurred in reading the layout file
      * @throws FormatException if the layout file contains format errors
      */
-    public LayoutMap<DefaultNode,DefaultEdge> readLayout(
-            Map<String,DefaultNode> nodeMap, InputStream in)
+    public LayoutMap<PlainNode,PlainEdge> readLayout(
+            Map<String,PlainNode> nodeMap, InputStream in)
         throws IOException, FormatException {
         BufferedReader layoutReader =
             new BufferedReader(new InputStreamReader(in));
-        LayoutMap<DefaultNode,DefaultEdge> result =
-            new LayoutMap<DefaultNode,DefaultEdge>();
+        LayoutMap<PlainNode,PlainEdge> result =
+            new LayoutMap<PlainNode,PlainEdge>();
         FormatErrorSet errors = new FormatErrorSet();
         try {
             int version = 1;
@@ -139,10 +139,10 @@ public class LayoutIO {
      * Inserts vertex layout information in a given layout map, based on a
      * string array description and node map.
      */
-    private void putVertexLayout(LayoutMap<DefaultNode,DefaultEdge> layoutMap,
-            String[] parts, Map<String,DefaultNode> nodeMap)
+    private void putVertexLayout(LayoutMap<PlainNode,PlainEdge> layoutMap,
+            String[] parts, Map<String,PlainNode> nodeMap)
         throws FormatException {
-        DefaultNode node = nodeMap.get(parts[1]);
+        PlainNode node = nodeMap.get(parts[1]);
         if (node == null) {
             throw new FormatException("Unknown node " + parts[1]);
         }
@@ -160,25 +160,25 @@ public class LayoutIO {
      * array description and node map.
      * @param version for version 2, the layout position info has changed
      */
-    private DefaultEdge putEdgeLayout(
-            LayoutMap<DefaultNode,DefaultEdge> layoutMap, String[] parts,
-            Map<String,DefaultNode> nodeMap, int version)
+    private PlainEdge putEdgeLayout(
+            LayoutMap<PlainNode,PlainEdge> layoutMap, String[] parts,
+            Map<String,PlainNode> nodeMap, int version)
         throws FormatException {
         if (parts.length < 7) {
             throw new FormatException("Incomplete edge layout line");
         }
-        DefaultNode source = nodeMap.get(parts[1]);
+        PlainNode source = nodeMap.get(parts[1]);
         if (source == null) {
             throw new FormatException("Unknown node " + parts[1]);
         }
-        DefaultNode target = nodeMap.get(parts[2]);
+        PlainNode target = nodeMap.get(parts[2]);
         if (target == null) {
             throw new FormatException("Unknown node " + parts[2]);
         }
         String labelTextWithQuotes = parts[3];
         String labelText =
             ExprParser.toUnquoted(labelTextWithQuotes, DOUBLE_QUOTE);
-        DefaultEdge edge = DefaultEdge.createEdge(source, labelText, target);
+        PlainEdge edge = PlainEdge.createEdge(source, labelText, target);
         try {
             List<Point2D> points;
             int lineStyle;

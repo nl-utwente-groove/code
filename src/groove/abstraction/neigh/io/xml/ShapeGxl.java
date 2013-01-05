@@ -19,8 +19,8 @@ package groove.abstraction.neigh.io.xml;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
+import groove.grammar.type.TypeGraph;
 import groove.graph.Graph;
-import groove.graph.TypeGraph;
 import groove.io.xml.AbstractGxl;
 import groove.io.xml.GxlIO;
 

@@ -30,8 +30,8 @@ import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.trans.DefaultHostGraph;
-import groove.trans.HostGraph;
+import groove.grammar.host.DefaultHostGraph;
+import groove.grammar.host.HostGraph;
 import groove.util.Groove;
 
 import java.io.File;

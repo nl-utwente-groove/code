@@ -25,10 +25,10 @@ import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.annotation.Signature;
 import groove.annotation.ToolTipBody;
+import groove.grammar.Action;
+import groove.grammar.Rule;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.builtin.trans.TransPrologCode;
-import groove.trans.Action;
-import groove.trans.Rule;
 
 /**
  * Predicate rule_name(+Name, ?Rule)

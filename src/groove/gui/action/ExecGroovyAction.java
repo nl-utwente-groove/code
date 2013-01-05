@@ -1,12 +1,12 @@
 package groove.gui.action;
 
-import static groove.trans.ResourceKind.GROOVY;
-import groove.groovy.Util;
+import static groove.grammar.model.ResourceKind.GROOVY;
+import groove.grammar.groovy.Util;
+import groove.grammar.model.GroovyModel;
 import groove.gui.Icons;
 import groove.gui.Simulator;
 import groove.gui.display.GroovyDisplay;
 import groove.io.HTMLConverter;
-import groove.view.GroovyModel;
 
 import javax.swing.Action;
 

@@ -19,10 +19,10 @@ package groove.explore.encode;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.RuleSetBoundary;
-import groove.trans.Grammar;
-import groove.trans.Rule;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
+import groove.grammar.Grammar;
+import groove.grammar.Rule;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -16,15 +16,15 @@
  */
 package groove.gui.tree;
 
+import groove.grammar.aspect.AspectEdge;
+import groove.grammar.aspect.AspectElement;
+import groove.grammar.aspect.AspectNode;
+import groove.grammar.model.RuleModel;
+import groove.grammar.model.RuleModel.Index;
 import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.look.VisualKey;
-import groove.view.RuleModel;
-import groove.view.RuleModel.Index;
-import groove.view.aspect.AspectEdge;
-import groove.view.aspect.AspectElement;
-import groove.view.aspect.AspectNode;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;

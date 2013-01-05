@@ -30,10 +30,10 @@ import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.abstraction.pattern.trans.Materialisation;
 import groove.abstraction.pattern.trans.PatternRule;
-import groove.trans.HostGraph;
-import groove.trans.Rule;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
+import groove.grammar.Rule;
+import groove.grammar.host.HostGraph;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;

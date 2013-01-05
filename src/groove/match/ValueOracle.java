@@ -16,8 +16,8 @@
  */
 package groove.match;
 
-import groove.graph.algebra.VariableNode;
-import groove.trans.Condition;
+import groove.grammar.Condition;
+import groove.grammar.rule.VariableNode;
 
 /** Interface to provide values for unbound variable nodes during matching. */
 public interface ValueOracle {

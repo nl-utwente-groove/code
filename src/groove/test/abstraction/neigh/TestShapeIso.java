@@ -23,12 +23,12 @@ import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.iso.ShapeIsoChecker;
 import groove.abstraction.neigh.trans.Materialisation;
-import groove.trans.Grammar;
-import groove.trans.HostGraph;
-import groove.trans.Proof;
-import groove.trans.Rule;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
+import groove.grammar.Grammar;
+import groove.grammar.Rule;
+import groove.grammar.host.HostGraph;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
+import groove.transform.Proof;
 
 import java.io.File;
 import java.io.IOException;

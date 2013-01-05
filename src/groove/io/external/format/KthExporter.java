@@ -16,13 +16,13 @@
  */
 package groove.io.external.format;
 
+import groove.grammar.aspect.AspectGraph;
 import groove.io.FileType;
 import groove.io.external.AbstractFormatExporter;
 import groove.io.external.Exporter.Exportable;
 import groove.io.external.Format;
 import groove.io.external.PortException;
 import groove.io.external.util.GraphToKth;
-import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.FileWriter;

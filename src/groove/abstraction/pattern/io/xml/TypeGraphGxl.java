@@ -20,12 +20,12 @@ import groove.abstraction.MyHashMap;
 import groove.abstraction.pattern.shape.TypeEdge;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.abstraction.pattern.shape.TypeNode;
-import groove.trans.HostNode;
+import groove.grammar.aspect.AspectEdge;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.aspect.AspectKind;
+import groove.grammar.aspect.AspectNode;
+import groove.grammar.host.HostNode;
 import groove.util.Groove;
-import groove.view.aspect.AspectEdge;
-import groove.view.aspect.AspectGraph;
-import groove.view.aspect.AspectKind;
-import groove.view.aspect.AspectNode;
 
 import java.io.File;
 import java.io.IOException;

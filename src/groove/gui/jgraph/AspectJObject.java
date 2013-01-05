@@ -16,13 +16,13 @@
  */
 package groove.gui.jgraph;
 
+import groove.grammar.aspect.AspectEdge;
+import groove.grammar.aspect.AspectKind;
+import groove.grammar.aspect.AspectLabel;
 import groove.gui.look.Line;
 import groove.gui.look.MultiLabel;
 import groove.gui.look.MultiLabel.Direct;
 import groove.util.Groove;
-import groove.view.aspect.AspectEdge;
-import groove.view.aspect.AspectKind;
-import groove.view.aspect.AspectLabel;
 
 import java.util.ArrayList;
 import java.util.Collection;

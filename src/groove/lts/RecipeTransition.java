@@ -16,11 +16,11 @@
  */
 package groove.lts;
 
+import groove.grammar.Recipe;
+import groove.grammar.host.HostGraphMorphism;
 import groove.graph.AbstractEdge;
 import groove.graph.EdgeRole;
-import groove.trans.HostGraphMorphism;
-import groove.trans.Recipe;
-import groove.trans.RuleApplication;
+import groove.transform.RuleApplication;
 
 import java.util.ArrayList;
 import java.util.Arrays;

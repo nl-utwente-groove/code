@@ -21,9 +21,9 @@ import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.NoStateAcceptor;
 import groove.explore.result.Predicate;
 import groove.explore.result.PredicateAcceptor;
+import groove.grammar.Rule;
+import groove.grammar.model.GrammarModel;
 import groove.lts.GraphState;
-import groove.trans.Rule;
-import groove.view.GrammarModel;
 
 /** Symbolic values for the implemented acceptors. */
 public enum AcceptorValue implements ParsableValue {

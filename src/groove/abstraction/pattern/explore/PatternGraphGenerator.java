@@ -31,13 +31,13 @@ import groove.abstraction.pattern.trans.PatternGraphGrammar;
 import groove.explore.Generator;
 import groove.explore.strategy.Strategy;
 import groove.explore.strategy.DFSStrategy;
+import groove.grammar.Grammar;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
 import groove.lts.GTS;
-import groove.trans.Grammar;
-import groove.trans.ResourceKind;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;

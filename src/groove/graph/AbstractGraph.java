@@ -18,6 +18,7 @@ package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.PartitionRefiner;
+import groove.graph.plain.PlainEdge;
 import groove.util.Dispenser;
 import groove.util.Groove;
 import groove.util.cache.AbstractCacheHolder;
@@ -272,7 +273,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
 
     /**
      * Factory method for binary edges of this graph. This implementation
-     * returns a {@link DefaultEdge}.
+     * returns a {@link PlainEdge}.
      * @param source the source node of the new edge
      * @param label the label of the new edge
      * @param target the target node of the new edge

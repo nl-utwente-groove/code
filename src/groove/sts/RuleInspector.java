@@ -18,13 +18,13 @@ package groove.sts;
 
 import groove.algebra.Operator;
 import groove.algebra.SignatureKind;
+import groove.grammar.Rule;
+import groove.grammar.rule.OperatorNode;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleGraph;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.VariableNode;
 import groove.graph.Node;
-import groove.graph.algebra.OperatorNode;
-import groove.graph.algebra.VariableNode;
-import groove.trans.Rule;
-import groove.trans.RuleEdge;
-import groove.trans.RuleGraph;
-import groove.trans.RuleNode;
 
 import java.util.ArrayList;
 import java.util.List;

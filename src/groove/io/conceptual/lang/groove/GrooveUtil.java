@@ -16,9 +16,9 @@
  */
 package groove.io.conceptual.lang.groove;
 
+import groove.grammar.QualName;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
-import groove.trans.QualName;
 
 //TODO: this thing and its usage is a mess
 public class GrooveUtil {

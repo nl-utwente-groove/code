@@ -17,11 +17,11 @@
 package groove.abstraction.pattern.shape;
 
 import groove.abstraction.pattern.Util;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.type.TypeLabel;
 import groove.graph.AbstractNode;
-import groove.graph.TypeLabel;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
 import groove.util.Fixable;
 
 import java.util.Comparator;

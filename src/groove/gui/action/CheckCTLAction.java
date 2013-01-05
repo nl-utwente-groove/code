@@ -1,6 +1,7 @@
 package groove.gui.action;
 
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
+import groove.grammar.model.FormatException;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.StringDialog;
@@ -11,7 +12,6 @@ import groove.verify.DefaultMarker;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
 import groove.verify.ParseException;
-import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.List;

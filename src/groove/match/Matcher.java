@@ -17,16 +17,16 @@
 
 package groove.match;
 
-import groove.rel.LabelVar;
-import groove.rel.Valuation;
-import groove.trans.Anchor;
-import groove.trans.Condition;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
-import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
-import groove.trans.RuleToHostMap;
+import groove.grammar.Condition;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.rule.Anchor;
+import groove.grammar.rule.LabelVar;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.RuleToHostMap;
+import groove.grammar.rule.Valuation;
 import groove.util.Visitor;
 import groove.util.Visitor.Collector;
 import groove.util.Visitor.Finder;

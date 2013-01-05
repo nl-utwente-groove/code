@@ -16,20 +16,22 @@
  */
 package groove.io.xml;
 
-import static groove.view.aspect.AspectKind.ABSTRACT;
-import static groove.view.aspect.AspectKind.SUBTYPE;
-import groove.graph.DefaultGraph;
+import static groove.grammar.aspect.AspectKind.ABSTRACT;
+import static groove.grammar.aspect.AspectKind.SUBTYPE;
+import groove.grammar.host.ValueNode;
+import groove.grammar.model.FormatErrorSet;
+import groove.grammar.model.FormatException;
+import groove.grammar.type.TypeEdge;
+import groove.grammar.type.TypeGraph;
+import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
 import groove.graph.Node;
-import groove.graph.TypeEdge;
-import groove.graph.TypeGraph;
-import groove.graph.TypeLabel;
-import groove.graph.TypeNode;
-import groove.graph.algebra.ValueNode;
+import groove.graph.plain.PlainGraph;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
@@ -38,8 +40,6 @@ import groove.io.LayoutIO;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.Version;
-import groove.view.FormatErrorSet;
-import groove.view.FormatException;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -456,8 +456,8 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
             GraphInfo.setProperties(graph, properties);
         }
         String roleName = gxlGraph.getRole();
-        if (graph instanceof DefaultGraph) {
-            ((DefaultGraph) graph).setRole(roleName == null ? GraphRole.HOST
+        if (graph instanceof PlainGraph) {
+            ((PlainGraph) graph).setRole(roleName == null ? GraphRole.HOST
                     : GraphRole.roles.get(roleName));
         }
         GraphInfo.setLayoutMap(graph, layoutMap);

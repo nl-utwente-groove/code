@@ -18,14 +18,14 @@ package groove.lts;
 
 import groove.control.CtrlSchedule;
 import groove.control.CtrlTransition;
-import groove.trans.DeltaApplier;
-import groove.trans.DeltaHostGraph;
-import groove.trans.HostEdge;
-import groove.trans.HostElement;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
-import groove.trans.RuleApplication;
-import groove.trans.GrammarRecord;
+import groove.grammar.host.DeltaHostGraph;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostElement;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.transform.DeltaApplier;
+import groove.transform.Record;
+import groove.transform.RuleApplication;
 import groove.util.Pair;
 import groove.util.collect.KeySet;
 import groove.util.collect.SetView;
@@ -559,7 +559,7 @@ public class StateCache {
     /** The graph state of this cache. */
     private final AbstractGraphState state;
     /** The system record generating this state. */
-    private final GrammarRecord record;
+    private final Record record;
     /** The delta with respect to the state's parent. */
     private DeltaApplier delta;
     /** Cached map from events to target transitions. */

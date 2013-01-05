@@ -18,11 +18,12 @@ package groove.gui.tree;
 
 import static groove.io.HTMLConverter.ITALIC_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.type.TypeEdge;
+import groove.grammar.type.TypeElement;
+import groove.grammar.type.TypeGraph;
+import groove.grammar.type.TypeNode;
 import groove.graph.Label;
-import groove.graph.TypeEdge;
-import groove.graph.TypeElement;
-import groove.graph.TypeGraph;
-import groove.graph.TypeNode;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.action.CollapseAllAction;
@@ -30,7 +31,6 @@ import groove.gui.jgraph.AspectJGraph;
 import groove.gui.tree.LabelFilter.Entry;
 import groove.gui.tree.TypeFilter.TypeEntry;
 import groove.io.HTMLConverter;
-import groove.view.aspect.AspectGraph;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;

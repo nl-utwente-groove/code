@@ -16,8 +16,8 @@
  */
 package groove.test.rel;
 
-import groove.rel.RegAut;
-import groove.rel.SimpleNFA;
+import groove.automaton.RegAut;
+import groove.automaton.SimpleNFA;
 
 /**
  * Tests the available {@link RegAut} interface.

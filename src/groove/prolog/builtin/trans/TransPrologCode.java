@@ -22,9 +22,9 @@ import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.PrologException;
+import groove.grammar.Rule;
 import groove.prolog.builtin.graph.GraphPrologCode;
-import groove.trans.RuleEvent;
-import groove.trans.Rule;
+import groove.transform.RuleEvent;
 
 /**
  * This class contains some utility methods to extract Java objects from prolog terms

@@ -16,10 +16,10 @@
  */
 package groove.lts;
 
+import groove.grammar.Action;
+import groove.grammar.host.HostGraphMorphism;
 import groove.graph.Edge;
-import groove.trans.Action;
-import groove.trans.Event;
-import groove.trans.HostGraphMorphism;
+import groove.transform.Event;
 
 /**
  * Models a transition in a GTS.

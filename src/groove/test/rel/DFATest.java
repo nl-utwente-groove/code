@@ -16,27 +16,27 @@
  */
 package groove.test.rel;
 
-import static groove.rel.Direction.BACKWARD;
-import static groove.rel.Direction.FORWARD;
+import static groove.automaton.Direction.BACKWARD;
+import static groove.automaton.Direction.FORWARD;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import groove.automaton.DFA;
+import groove.automaton.DFAState;
+import groove.automaton.RegAutCalculator;
+import groove.automaton.RegExpr;
+import groove.automaton.SimpleNFA;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.rule.LabelVar;
+import groove.grammar.rule.Valuation;
+import groove.grammar.type.TypeEdge;
+import groove.grammar.type.TypeFactory;
+import groove.grammar.type.TypeGraph;
+import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
-import groove.graph.TypeEdge;
-import groove.graph.TypeFactory;
-import groove.graph.TypeGraph;
-import groove.graph.TypeLabel;
-import groove.rel.DFA;
-import groove.rel.DFAState;
-import groove.rel.LabelVar;
-import groove.rel.RegAutCalculator;
-import groove.rel.RegExpr;
-import groove.rel.SimpleNFA;
-import groove.rel.Valuation;
 import groove.util.Groove;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import java.io.IOException;
 import java.util.Collections;

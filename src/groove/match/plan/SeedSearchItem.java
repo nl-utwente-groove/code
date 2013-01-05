@@ -16,11 +16,11 @@
  */
 package groove.match.plan;
 
+import groove.grammar.rule.Anchor;
+import groove.grammar.rule.LabelVar;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleNode;
 import groove.match.plan.PlanSearchStrategy.Search;
-import groove.rel.LabelVar;
-import groove.trans.Anchor;
-import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
 
 import java.util.Arrays;
 import java.util.Collection;

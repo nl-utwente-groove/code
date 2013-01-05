@@ -27,11 +27,11 @@ import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologCode;
 import gnu.prolog.vm.PrologException;
+import groove.grammar.host.HostGraph;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.lts.GraphState;
-import groove.trans.HostGraph;
 
 /**
  * This class contains some utility methods to extract Java objects from prolog terms

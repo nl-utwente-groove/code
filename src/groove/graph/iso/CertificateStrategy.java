@@ -24,13 +24,13 @@ import groove.abstraction.neigh.shape.EdgeSignatureStore;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.graph.DefaultNode;
+import groove.grammar.host.ValueNode;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.graph.algebra.ValueNode;
+import groove.graph.plain.PlainNode;
 import groove.util.Reporter;
 
 import java.util.ArrayList;
@@ -217,7 +217,7 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
 
     /**
      * Inserts a certificate node either in the array (if the corresponding node
-     * is a {@link DefaultNode}) or in the map.
+     * is a {@link PlainNode}) or in the map.
      */
     private void putNodeCert(NodeCertificate<N> nodeCert) {
         N node = nodeCert.getElement();

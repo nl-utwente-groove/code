@@ -1,5 +1,10 @@
 package groove.gui.action;
 
+import groove.grammar.GrammarProperties;
+import groove.grammar.QualName;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.gui.Options;
@@ -8,12 +13,7 @@ import groove.gui.dialog.VersionDialog;
 import groove.io.store.DefaultArchiveSystemStore;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
-import groove.trans.QualName;
-import groove.trans.ResourceKind;
-import groove.trans.GrammarProperties;
 import groove.util.Version;
-import groove.view.GrammarModel;
-import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;

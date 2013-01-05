@@ -18,20 +18,20 @@ package groove.io.external.format;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.host.DefaultHostGraph;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
-import groove.graph.TypeLabel;
-import groove.graph.algebra.ValueNode;
 import groove.gui.Simulator;
 import groove.io.FileType;
 import groove.io.external.Format;
 import groove.io.external.FormatImporter;
 import groove.io.external.PortException;
-import groove.trans.DefaultHostGraph;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
-import groove.trans.ResourceKind;
-import groove.view.GrammarModel;
-import groove.view.aspect.AspectGraph;
 
 import java.awt.Frame;
 import java.io.BufferedReader;

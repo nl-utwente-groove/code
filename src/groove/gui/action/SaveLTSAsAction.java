@@ -16,8 +16,9 @@
  */
 package groove.gui.action;
 
-import groove.graph.DefaultGraph;
+import groove.grammar.aspect.AspectGraph;
 import groove.graph.GraphRole;
+import groove.graph.plain.PlainGraph;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -28,7 +29,6 @@ import groove.io.xml.AspectGxl;
 import groove.io.xml.DefaultGxl;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,7 +67,7 @@ public class SaveLTSAsAction extends SimulatorAction {
         }
         GTS gts = getSimulatorModel().getGts();
         gts.setName(ltsFilter.stripExtension(ltsFile.getName()));
-        DefaultGraph lts =
+        PlainGraph lts =
             gts.toPlainGraph(showFinal, showStart, showOpen, showNames);
 
         Collection<? extends GraphState> export = new HashSet<GraphState>(0);

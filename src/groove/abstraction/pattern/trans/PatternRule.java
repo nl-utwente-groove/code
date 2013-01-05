@@ -21,8 +21,8 @@ import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.shape.TypeEdge;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.abstraction.pattern.shape.TypeNode;
-import groove.trans.HostNode;
-import groove.trans.Rule;
+import groove.grammar.Rule;
+import groove.grammar.host.HostNode;
 
 import java.util.Iterator;
 import java.util.Map;

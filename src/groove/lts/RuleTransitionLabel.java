@@ -17,12 +17,12 @@
 package groove.lts;
 
 import groove.control.CtrlTransition;
+import groove.grammar.Rule;
+import groove.grammar.host.HostNode;
 import groove.graph.AbstractLabel;
-import groove.trans.AbstractRuleEvent;
-import groove.trans.HostNode;
-import groove.trans.Rule;
-import groove.trans.RuleEvent;
-import groove.trans.GrammarRecord;
+import groove.transform.AbstractRuleEvent;
+import groove.transform.Record;
+import groove.transform.RuleEvent;
 
 import java.util.Arrays;
 
@@ -134,14 +134,14 @@ public class RuleTransitionLabel extends AbstractLabel implements ActionLabel {
 
     /** 
      * Creates a normalised rule label.
-     * @see GrammarRecord#normaliseLabel(RuleTransitionLabel)
+     * @see Record#normaliseLabel(RuleTransitionLabel)
      */
     public static final RuleTransitionLabel createLabel(GraphState source,
             MatchResult match, HostNode[] addedNodes) {
         RuleTransitionLabel result =
             new RuleTransitionLabel(source, match, addedNodes);
         if (REUSE_LABELS) {
-            GrammarRecord record = source.getGTS().getRecord();
+            Record record = source.getGTS().getRecord();
             result = record.normaliseLabel(result);
         }
         return result;

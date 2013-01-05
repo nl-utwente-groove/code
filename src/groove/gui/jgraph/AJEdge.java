@@ -18,6 +18,8 @@ package groove.gui.jgraph;
 
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
@@ -26,8 +28,6 @@ import groove.gui.layout.JEdgeLayout;
 import groove.gui.look.Look;
 import groove.gui.look.MultiLabel.Direct;
 import groove.io.HTMLConverter;
-import groove.trans.RuleEdge;
-import groove.trans.RuleLabel;
 import groove.util.Groove;
 
 import java.util.ArrayList;

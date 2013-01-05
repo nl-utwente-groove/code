@@ -17,15 +17,15 @@
 package groove.io.xml;
 
 import static groove.io.FileType.LAYOUT_FILTER;
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
+import groove.grammar.model.FormatException;
 import groove.graph.GraphInfo;
+import groove.graph.plain.PlainEdge;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainNode;
 import groove.gui.layout.LayoutMap;
 import groove.io.LayoutIO;
 import groove.util.Groove;
 import groove.util.Pair;
-import groove.view.FormatException;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +39,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision: 3148 $
  */
-public class LayedOutXml implements Xml<DefaultGraph> {
+public class LayedOutXml implements Xml<PlainGraph> {
     /**
      * Constructs an xml (un)marshaller, based on {@link DefaultGxl}, also able
      * to deal with layout information. The graphs constructed by
@@ -57,17 +57,17 @@ public class LayedOutXml implements Xml<DefaultGraph> {
         return INSTANCE;
     }
 
-    public DefaultGraph unmarshalGraph(URL url) throws IOException {
+    public PlainGraph unmarshalGraph(URL url) throws IOException {
         // first get the non-layed out result
-        Pair<DefaultGraph,Map<String,DefaultNode>> preliminary =
+        Pair<PlainGraph,Map<String,PlainNode>> preliminary =
             this.marshaller.unmarshalGraphMap(url);
-        DefaultGraph result = preliminary.one();
-        Map<String,DefaultNode> nodeMap = preliminary.two();
+        PlainGraph result = preliminary.one();
+        Map<String,PlainNode> nodeMap = preliminary.two();
         URL layoutURL = toLayoutURL(url);
         try {
             InputStream in = layoutURL.openStream();
             try {
-                LayoutMap<DefaultNode,DefaultEdge> layout =
+                LayoutMap<PlainNode,PlainEdge> layout =
                     LayoutIO.getInstance().readLayout(nodeMap, in);
                 GraphInfo.setLayoutMap(result, layout);
             } catch (FormatException exc) {
@@ -80,7 +80,7 @@ public class LayedOutXml implements Xml<DefaultGraph> {
     }
 
     /** backwards compatibility method */
-    public DefaultGraph unmarshalGraph(File file) throws IOException {
+    public PlainGraph unmarshalGraph(File file) throws IOException {
         return unmarshalGraph(Groove.toURL(file));
     }
 
@@ -94,12 +94,12 @@ public class LayedOutXml implements Xml<DefaultGraph> {
     }
 
     @Override
-    public final DefaultGraph createGraph(String graphName) {
+    public final PlainGraph createGraph(String graphName) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void marshalGraph(DefaultGraph graph, File file) throws IOException {
+    public void marshalGraph(PlainGraph graph, File file) throws IOException {
         this.marshaller.marshalGraph(graph, file);
         toLayoutFile(file).delete();
     }

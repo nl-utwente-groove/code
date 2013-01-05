@@ -16,13 +16,13 @@
  */
 package groove.match;
 
-import groove.trans.Anchor;
-import groove.trans.AnchorKey;
-import groove.trans.AnchorValue;
-import groove.trans.Condition;
-import groove.trans.Condition.Op;
-import groove.trans.Proof;
-import groove.trans.RuleToHostMap;
+import groove.grammar.Condition;
+import groove.grammar.Condition.Op;
+import groove.grammar.host.AnchorValue;
+import groove.grammar.rule.Anchor;
+import groove.grammar.rule.AnchorKey;
+import groove.grammar.rule.RuleToHostMap;
+import groove.transform.Proof;
 import groove.util.Fixable;
 import groove.util.Property;
 import groove.util.Visitor;
@@ -79,10 +79,10 @@ public class TreeMatch implements Fixable {
     /**
      * Returns the operator of this tree match.
      * Note that this may be different from the operator of the condition:
-     * in particular, the match operator may be {@link groove.trans.Condition.Op#AND} when
-     * the condition is {@link groove.trans.Condition.Op#FORALL}, or
-     * {@link groove.trans.Condition.Op#OR} when the condition is
-     * {@link groove.trans.Condition.Op#EXISTS}.
+     * in particular, the match operator may be {@link groove.grammar.Condition.Op#AND} when
+     * the condition is {@link groove.grammar.Condition.Op#FORALL}, or
+     * {@link groove.grammar.Condition.Op#OR} when the condition is
+     * {@link groove.grammar.Condition.Op#EXISTS}.
      */
     public final Condition.Op getOp() {
         return this.op;

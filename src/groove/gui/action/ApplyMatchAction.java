@@ -1,12 +1,12 @@
 package groove.gui.action;
 
+import groove.grammar.model.GrammarModel;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
-import groove.view.GrammarModel;
 
 import javax.swing.Action;
 

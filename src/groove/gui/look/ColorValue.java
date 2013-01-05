@@ -16,11 +16,11 @@
  */
 package groove.gui.look;
 
+import groove.grammar.aspect.AspectNode;
+import groove.grammar.type.TypeNode;
 import groove.graph.GraphRole;
-import groove.graph.TypeNode;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJVertex;
-import groove.view.aspect.AspectNode;
 
 import java.awt.Color;
 

@@ -16,9 +16,11 @@
  */
 package groove.io.external.util;
 
-import static groove.view.aspect.AspectKind.DEFAULT;
-import static groove.view.aspect.AspectKind.PRODUCT;
+import static groove.grammar.aspect.AspectKind.DEFAULT;
+import static groove.grammar.aspect.AspectKind.PRODUCT;
 import groove.control.CtrlTransition;
+import groove.grammar.aspect.AspectEdge;
+import groove.grammar.aspect.AspectKind;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
@@ -41,8 +43,6 @@ import groove.gui.look.EdgeEnd;
 import groove.gui.look.MultiLabel;
 import groove.gui.look.VisualMap;
 import groove.util.Duo;
-import groove.view.aspect.AspectEdge;
-import groove.view.aspect.AspectKind;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;

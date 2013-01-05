@@ -16,16 +16,16 @@
  */
 package groove.match.rete;
 
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostNode;
+import groove.grammar.rule.LabelVar;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.RuleToHostMap;
+import groove.grammar.rule.Valuation;
+import groove.grammar.rule.VarMap;
+import groove.grammar.type.TypeElement;
 import groove.graph.Node;
-import groove.graph.TypeElement;
-import groove.rel.LabelVar;
-import groove.rel.Valuation;
-import groove.rel.VarMap;
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
-import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
-import groove.trans.RuleToHostMap;
 
 import java.util.ArrayList;
 import java.util.Collection;

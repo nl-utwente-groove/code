@@ -25,8 +25,8 @@ import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
-import groove.trans.QualName;
-import groove.view.FormatErrorSet;
+import groove.grammar.QualName;
+import groove.grammar.model.FormatErrorSet;
 
 import java.util.ArrayList;
 import java.util.Collections;

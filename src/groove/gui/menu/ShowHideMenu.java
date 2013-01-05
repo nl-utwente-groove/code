@@ -16,11 +16,15 @@
  */
 package groove.gui.menu;
 
+import groove.automaton.NodeRelation;
+import groove.automaton.RegExpr;
+import groove.automaton.RelationCalculator;
+import groove.grammar.model.FormatException;
+import groove.grammar.type.TypeLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
-import groove.graph.TypeLabel;
 import groove.gui.Options;
 import groove.gui.dialog.StringDialog;
 import groove.gui.jgraph.JCell;
@@ -34,10 +38,6 @@ import groove.io.GrooveFileChooser;
 import groove.io.HTMLConverter;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.rel.RegExpr;
-import groove.rel.RelationCalculator;
-import groove.rel.NodeRelation;
-import groove.view.FormatException;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;

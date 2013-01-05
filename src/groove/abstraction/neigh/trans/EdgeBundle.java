@@ -24,7 +24,7 @@ import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.graph.TypeLabel;
+import groove.grammar.type.TypeLabel;
 
 import java.util.Iterator;
 import java.util.Map;

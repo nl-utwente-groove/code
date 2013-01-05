@@ -16,8 +16,8 @@
  */
 package groove.match.rete;
 
+import groove.grammar.Rule;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
-import groove.trans.Rule;
 import groove.util.Reporter;
 import groove.util.collect.TreeHashSet;
 

@@ -23,7 +23,7 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
-import groove.trans.Proof;
+import groove.transform.Proof;
 
 /**
  * Predicate rulematch_edge(+RuleMatch,?Edge)

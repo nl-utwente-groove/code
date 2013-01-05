@@ -18,15 +18,15 @@ package groove.abstraction.pattern.shape;
 
 import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.Util;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
 import groove.graph.EdgeRole;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
 import groove.util.Duo;
 import groove.util.Pair;
 import groove.util.collect.UnmodifiableSetView;

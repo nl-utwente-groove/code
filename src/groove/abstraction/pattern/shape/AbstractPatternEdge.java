@@ -16,11 +16,11 @@
  */
 package groove.abstraction.pattern.shape;
 
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostNode;
 import groove.graph.AbstractEdge;
-import groove.graph.DefaultLabel;
 import groove.graph.EdgeRole;
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
+import groove.graph.plain.PlainLabel;
 import groove.util.Fixable;
 
 /**
@@ -29,7 +29,7 @@ import groove.util.Fixable;
  * @author Eduardo Zambon
  */
 public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
-        extends AbstractEdge<N,DefaultLabel> implements Fixable {
+        extends AbstractEdge<N,PlainLabel> implements Fixable {
 
     // ------------------------------------------------------------------------
     // Object Fields
@@ -45,7 +45,7 @@ public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
     /** 
      * Constructs a new pattern edge, with the given number, source and target.
      */
-    public AbstractPatternEdge(int nr, N source, DefaultLabel label, N target) {
+    public AbstractPatternEdge(int nr, N source, PlainLabel label, N target) {
         super(source, label, target);
         this.nr = nr;
     }

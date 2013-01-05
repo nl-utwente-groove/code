@@ -1,7 +1,7 @@
 package groove.sts;
 
 import groove.algebra.SignatureKind;
-import groove.trans.HostEdge;
+import groove.grammar.host.HostEdge;
 
 /**
  * A location variable in an sts.

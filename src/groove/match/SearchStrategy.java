@@ -16,10 +16,10 @@
  */
 package groove.match;
 
+import groove.grammar.host.HostGraph;
+import groove.grammar.rule.RuleToHostMap;
 import groove.match.plan.PlanSearchEngine;
 import groove.match.rete.ReteSearchEngine;
-import groove.trans.HostGraph;
-import groove.trans.RuleToHostMap;
 import groove.util.Visitor;
 
 /**

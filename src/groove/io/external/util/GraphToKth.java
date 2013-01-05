@@ -18,16 +18,16 @@ package groove.io.external.util;
 
 import static groove.graph.EdgeRole.NODE_TYPE;
 import groove.algebra.StringAlgebra;
+import groove.grammar.aspect.AspectEdge;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.aspect.AspectNode;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.ValueNode;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.HostModel;
 import groove.graph.EdgeRole;
 import groove.graph.Node;
-import groove.graph.algebra.ValueNode;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.view.FormatException;
-import groove.view.HostModel;
-import groove.view.aspect.AspectEdge;
-import groove.view.aspect.AspectGraph;
-import groove.view.aspect.AspectNode;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;

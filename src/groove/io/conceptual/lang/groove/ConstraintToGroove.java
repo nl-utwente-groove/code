@@ -1,5 +1,6 @@
 package groove.io.conceptual.lang.groove;
 
+import groove.grammar.QualName;
 import groove.graph.GraphRole;
 import groove.io.conceptual.Acceptor;
 import groove.io.conceptual.Field;
@@ -35,7 +36,6 @@ import groove.io.conceptual.value.Object;
 import groove.io.conceptual.value.RealValue;
 import groove.io.conceptual.value.StringValue;
 import groove.io.external.PortException;
-import groove.trans.QualName;
 
 import java.util.HashSet;
 import java.util.Set;

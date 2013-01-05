@@ -19,10 +19,10 @@ package groove.abstraction.neigh.shape;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.neigh.equiv.EquivRelation;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostElement;
+import groove.grammar.host.HostNode;
 import groove.graph.GraphCache;
-import groove.trans.HostEdge;
-import groove.trans.HostElement;
-import groove.trans.HostNode;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;

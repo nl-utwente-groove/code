@@ -16,12 +16,12 @@
  */
 package groove.gui.tree;
 
+import groove.grammar.model.RuleModel;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphProperties.Key;
 import groove.gui.display.ResourceDisplay;
 import groove.io.HTMLConverter;
-import groove.view.RuleModel;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

@@ -1,11 +1,11 @@
 package groove.gui.action;
 
-import static groove.trans.ResourceKind.HOST;
+import static groove.grammar.model.ResourceKind.HOST;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.HostModel;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.store.SystemStore;
-import groove.view.GrammarModel;
-import groove.view.HostModel;
 
 import java.io.File;
 import java.io.IOException;

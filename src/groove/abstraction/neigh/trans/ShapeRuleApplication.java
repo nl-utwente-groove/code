@@ -17,13 +17,13 @@
 package groove.abstraction.neigh.trans;
 
 import groove.abstraction.neigh.shape.Shape;
-import groove.trans.DeltaTarget;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
-import groove.trans.RuleApplication;
-import groove.trans.RuleEffect;
-import groove.trans.RuleEvent;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.transform.DeltaTarget;
+import groove.transform.RuleApplication;
+import groove.transform.RuleEffect;
+import groove.transform.RuleEvent;
 
 import java.util.Set;
 

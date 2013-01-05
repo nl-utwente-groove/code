@@ -16,10 +16,10 @@
  */
 package groove.gui.look;
 
+import groove.grammar.aspect.Aspect;
+import groove.grammar.aspect.AspectNode;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJVertex;
-import groove.view.aspect.Aspect;
-import groove.view.aspect.AspectNode;
 
 /**
  * Strategy for computing the node adornment for a given JVertex

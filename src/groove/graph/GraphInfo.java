@@ -16,11 +16,11 @@
  */
 package groove.graph;
 
+import groove.grammar.model.FormatErrorSet;
+import groove.grammar.model.FormatException;
 import groove.gui.layout.LayoutMap;
 import groove.util.DefaultFixable;
 import groove.util.Version;
-import groove.view.FormatErrorSet;
-import groove.view.FormatException;
 
 import java.io.File;
 import java.util.Collections;

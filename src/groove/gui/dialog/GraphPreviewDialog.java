@@ -1,5 +1,8 @@
 package groove.gui.dialog;
 
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.host.HostGraph;
+import groove.grammar.model.ResourceKind;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.gui.Simulator;
@@ -11,9 +14,6 @@ import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.PlainJGraph;
-import groove.trans.HostGraph;
-import groove.trans.ResourceKind;
-import groove.view.aspect.AspectGraph;
 
 import java.awt.Point;
 import java.util.EnumMap;

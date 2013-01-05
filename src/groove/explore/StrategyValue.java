@@ -43,9 +43,9 @@ import groove.explore.strategy.RemoteStrategy;
 import groove.explore.strategy.ReteLinearStrategy;
 import groove.explore.strategy.ReteRandomLinearStrategy;
 import groove.explore.strategy.ReteStrategy;
-import groove.graph.TypeLabel;
-import groove.trans.Rule;
-import groove.view.GrammarModel;
+import groove.grammar.Rule;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.type.TypeLabel;
 
 import java.util.EnumSet;
 import java.util.Map;

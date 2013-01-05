@@ -18,6 +18,11 @@ package groove.abstraction.neigh.lts;
 
 import groove.abstraction.neigh.shape.Shape;
 import groove.control.CtrlTransition;
+import groove.grammar.Recipe;
+import groove.grammar.Rule;
+import groove.grammar.host.HostGraphMorphism;
+import groove.grammar.host.HostNode;
+import groove.grammar.model.FormatException;
 import groove.graph.EdgeRole;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
@@ -26,14 +31,9 @@ import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
 import groove.lts.RuleTransitionLabel;
 import groove.lts.RuleTransitionStub;
-import groove.trans.HostGraphMorphism;
-import groove.trans.HostNode;
-import groove.trans.Proof;
-import groove.trans.Recipe;
-import groove.trans.Rule;
-import groove.trans.RuleApplication;
-import groove.trans.RuleEvent;
-import groove.view.FormatException;
+import groove.transform.Proof;
+import groove.transform.RuleApplication;
+import groove.transform.RuleEvent;
 
 import java.util.Collections;
 

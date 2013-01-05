@@ -1,5 +1,6 @@
 package groove.gui.action;
 
+import groove.grammar.model.ResourceModel;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.gui.Icons;
@@ -15,7 +16,6 @@ import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.JGraph;
 import groove.io.external.Exporter;
 import groove.io.external.Exporter.Exportable;
-import groove.view.ResourceModel;
 
 /**
  * Action to save the content of a {@link JGraph},

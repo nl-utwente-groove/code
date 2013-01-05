@@ -22,8 +22,8 @@ import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
-import groove.trans.HostGraph;
-import groove.trans.RuleEvent;
+import groove.grammar.host.HostGraph;
+import groove.transform.RuleEvent;
 
 /**
  * Predicate ruleevent_match(+RuleEvent,+HostGraph,?RuleMatch)

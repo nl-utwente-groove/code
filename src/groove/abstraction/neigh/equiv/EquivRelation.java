@@ -18,7 +18,7 @@ package groove.abstraction.neigh.equiv;
 
 import groove.abstraction.MyHashMap;
 import groove.abstraction.MyHashSet;
-import groove.trans.HostElement;
+import groove.grammar.host.HostElement;
 import groove.util.Fixable;
 
 import java.util.Map;
