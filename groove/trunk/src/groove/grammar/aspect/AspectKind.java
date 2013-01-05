@@ -26,10 +26,10 @@ import groove.annotation.Help;
 import groove.grammar.aspect.Expression.Kind;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.LabelPattern;
+import groove.grammar.type.Multiplicity;
 import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
-import groove.graph.Multiplicity;
 import groove.util.Colors;
 import groove.util.Pair;
 

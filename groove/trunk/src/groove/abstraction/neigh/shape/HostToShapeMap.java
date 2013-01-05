@@ -6,7 +6,7 @@ import groove.abstraction.neigh.equiv.NodeEquivClass;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
-import groove.graph.InversableElementMap;
+import groove.graph.InvertibleElementMap;
 import groove.graph.Node;
 import groove.util.Fixable;
 
@@ -19,7 +19,7 @@ import java.util.Set;
  * @author Eduardo Zambon
  */
 public final class HostToShapeMap extends
-        InversableElementMap<HostNode,HostEdge,HostNode,HostEdge> implements
+        InvertibleElementMap<HostNode,HostEdge,HostNode,HostEdge> implements
         Fixable {
 
     // ------------------------------------------------------------------------
