@@ -1,10 +1,10 @@
 package groove.sts;
 
+import groove.grammar.host.DefaultHostGraph;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
 import groove.graph.iso.IsoChecker;
-import groove.trans.DefaultHostGraph;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
 
 /**
  * A graph where the data values are always of a default value. 

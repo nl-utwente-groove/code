@@ -17,9 +17,9 @@
 package groove.io.ecore2groove;
 
 import static groove.graph.GraphRole.RULE;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
-import groove.graph.DefaultNode;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainLabel;
+import groove.graph.plain.PlainNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 public class ConstraintRules {
 
     private ModelHandler mh;
-    private List<DefaultGraph> constraintRules;
+    private List<PlainGraph> constraintRules;
 
     /**
      * Constructor method that calls methods to create constraint rules for
@@ -52,7 +52,7 @@ public class ConstraintRules {
      */
     public ConstraintRules(ModelHandler mh) {
         this.mh = mh;
-        this.constraintRules = new ArrayList<DefaultGraph>();
+        this.constraintRules = new ArrayList<PlainGraph>();
 
         eClassConstraints(mh.getEClasses());
         eEnumConstraints(mh.getEEnums());
@@ -165,9 +165,9 @@ public class ConstraintRules {
     private void addCyclicityConstraint() {
         // Cyclicity constraint
         String name = "constraint - global - cyclicity";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode node = constraintRule.addNode();
+        PlainNode node = constraintRule.addNode();
 
         constraintRule.addEdge(node, this.mh.getEClassType(), node);
         constraintRule.addEdge(node, "path:(?.flag:containment.val)+", node);
@@ -180,14 +180,14 @@ public class ConstraintRules {
     private void addOneContainerConstraint() {
         // Not zero container
         String name = "constraint - global - noContainer";
-        DefaultGraph constraintRule = createRuleGraph(name);
-        DefaultLabel eclassLabel =
-            DefaultLabel.createLabel(this.mh.getEClassType());
-        DefaultLabel notFlagLabel = DefaultLabel.createLabel("not:flag:root");
-        DefaultLabel refLabel =
-            DefaultLabel.createLabel(this.mh.getEReferenceType());
-        DefaultNode eclassNode = constraintRule.addNode();
-        DefaultNode contRefNode = constraintRule.addNode();
+        PlainGraph constraintRule = createRuleGraph(name);
+        PlainLabel eclassLabel =
+            PlainLabel.createLabel(this.mh.getEClassType());
+        PlainLabel notFlagLabel = PlainLabel.createLabel("not:flag:root");
+        PlainLabel refLabel =
+            PlainLabel.createLabel(this.mh.getEReferenceType());
+        PlainNode eclassNode = constraintRule.addNode();
+        PlainNode contRefNode = constraintRule.addNode();
 
         constraintRule.addEdge(eclassNode, eclassLabel, eclassNode);
         constraintRule.addEdge(eclassNode, notFlagLabel, eclassNode);
@@ -201,12 +201,12 @@ public class ConstraintRules {
         name = "constraint - global - manyContainers";
 
         eclassNode = constraintRule.addNode();
-        DefaultNode refNode1 = constraintRule.addNode();
-        DefaultNode refNode2 = constraintRule.addNode();
+        PlainNode refNode1 = constraintRule.addNode();
+        PlainNode refNode2 = constraintRule.addNode();
 
-        DefaultLabel regExprLabel =
-            DefaultLabel.createLabel("path:flag:containment.val");
-        DefaultLabel unequalLabel = DefaultLabel.createLabel("!=");
+        PlainLabel regExprLabel =
+            PlainLabel.createLabel("path:flag:containment.val");
+        PlainLabel unequalLabel = PlainLabel.createLabel("!=");
 
         constraintRule.addEdge(eclassNode, eclassLabel, eclassNode);
         constraintRule.addEdge(eclassNode, notFlagLabel, eclassNode);
@@ -224,15 +224,15 @@ public class ConstraintRules {
     private void addRootConstraint() {
         // Not two root elements constraint rule
         String name = "constraint - global - manyRoot";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode node1 = constraintRule.addNode();
-        DefaultNode node2 = constraintRule.addNode();
+        PlainNode node1 = constraintRule.addNode();
+        PlainNode node2 = constraintRule.addNode();
 
-        DefaultLabel eclassLabel =
-            DefaultLabel.createLabel(this.mh.getEClassType());
-        DefaultLabel flagLabel = DefaultLabel.createLabel("flag:root");
-        DefaultLabel unequalLabel = DefaultLabel.createLabel("!=");
+        PlainLabel eclassLabel =
+            PlainLabel.createLabel(this.mh.getEClassType());
+        PlainLabel flagLabel = PlainLabel.createLabel("flag:root");
+        PlainLabel unequalLabel = PlainLabel.createLabel("!=");
 
         constraintRule.addEdge(node1, eclassLabel, node1);
         constraintRule.addEdge(node2, eclassLabel, node2);
@@ -244,9 +244,9 @@ public class ConstraintRules {
         constraintRule = createRuleGraph(name);
         name = "constraint - global - noRoot";
 
-        DefaultNode eclassNode = constraintRule.addNode();
+        PlainNode eclassNode = constraintRule.addNode();
 
-        DefaultLabel notLabel = DefaultLabel.createLabel("not:");
+        PlainLabel notLabel = PlainLabel.createLabel("not:");
 
         constraintRule.addEdge(eclassNode, eclassLabel, eclassNode);
         constraintRule.addEdge(eclassNode, flagLabel, eclassNode);
@@ -259,12 +259,12 @@ public class ConstraintRules {
             name = "constraint - global - rootContainer";
 
             eclassNode = constraintRule.addNode();
-            DefaultNode refNode = constraintRule.addNode();
+            PlainNode refNode = constraintRule.addNode();
 
-            DefaultLabel regExprLabel =
-                DefaultLabel.createLabel("path:flag:containment.val");
-            DefaultLabel refLabel =
-                DefaultLabel.createLabel(this.mh.getEReferenceType());
+            PlainLabel regExprLabel =
+                PlainLabel.createLabel("path:flag:containment.val");
+            PlainLabel refLabel =
+                PlainLabel.createLabel(this.mh.getEReferenceType());
 
             constraintRule.addEdge(eclassNode, eclassLabel, eclassNode);
             constraintRule.addEdge(eclassNode, flagLabel, eclassNode);
@@ -283,14 +283,14 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eReference)
                 + " - noContainmentFlag";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode node = constraintRule.addNode();
+        PlainNode node = constraintRule.addNode();
 
-        DefaultLabel refLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eReference));
-        DefaultLabel notContLabel =
-            DefaultLabel.createLabel("not:flag:containment");
+        PlainLabel refLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eReference));
+        PlainLabel notContLabel =
+            PlainLabel.createLabel("not:flag:containment");
 
         constraintRule.addEdge(node, refLabel, node);
         constraintRule.addEdge(node, notContLabel, node);
@@ -307,13 +307,13 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eReference)
                 + " - containmentFlag";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode node = constraintRule.addNode();
+        PlainNode node = constraintRule.addNode();
 
-        DefaultLabel refLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eReference));
-        DefaultLabel contLabel = DefaultLabel.createLabel("flag:containment");
+        PlainLabel refLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eReference));
+        PlainLabel contLabel = PlainLabel.createLabel("flag:containment");
 
         constraintRule.addEdge(node, refLabel, node);
         constraintRule.addEdge(node, contLabel, node);
@@ -328,22 +328,22 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eFeature)
                 + " - ordered not two tail";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode sourceNode = constraintRule.addNode();
-        DefaultNode featureNode1 = constraintRule.addNode();
-        DefaultNode featureNode2 = constraintRule.addNode();
-        DefaultNode notFeatureNode1 = constraintRule.addNode();
-        DefaultNode notFeatureNode2 = constraintRule.addNode();
+        PlainNode sourceNode = constraintRule.addNode();
+        PlainNode featureNode1 = constraintRule.addNode();
+        PlainNode featureNode2 = constraintRule.addNode();
+        PlainNode notFeatureNode1 = constraintRule.addNode();
+        PlainNode notFeatureNode2 = constraintRule.addNode();
 
-        DefaultLabel sourceLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eFeature.getEContainingClass()));
-        DefaultLabel featureLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eFeature));
-        DefaultLabel nameLabel = DefaultLabel.createLabel(eFeature.getName());
-        DefaultLabel unequalLabel = DefaultLabel.createLabel("!=");
-        DefaultLabel nextLabel = DefaultLabel.createLabel("next");
-        DefaultLabel notLabel = DefaultLabel.createLabel("not:");
+        PlainLabel sourceLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eFeature.getEContainingClass()));
+        PlainLabel featureLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eFeature));
+        PlainLabel nameLabel = PlainLabel.createLabel(eFeature.getName());
+        PlainLabel unequalLabel = PlainLabel.createLabel("!=");
+        PlainLabel nextLabel = PlainLabel.createLabel("next");
+        PlainLabel notLabel = PlainLabel.createLabel("not:");
 
         constraintRule.addEdge(sourceNode, sourceLabel, sourceNode);
         constraintRule.addEdge(featureNode1, featureLabel, featureNode1);
@@ -396,7 +396,7 @@ public class ConstraintRules {
         sourceNode = constraintRule.addNode();
         featureNode1 = constraintRule.addNode();
         featureNode2 = constraintRule.addNode();
-        DefaultNode featureNode3 = constraintRule.addNode();
+        PlainNode featureNode3 = constraintRule.addNode();
 
         constraintRule.addEdge(sourceNode, sourceLabel, sourceNode);
         constraintRule.addEdge(featureNode1, featureLabel, featureNode1);
@@ -440,7 +440,7 @@ public class ConstraintRules {
         sourceNode = constraintRule.addNode();
         featureNode1 = constraintRule.addNode();
 
-        DefaultLabel nextPlusLabel = DefaultLabel.createLabel("path:next+");
+        PlainLabel nextPlusLabel = PlainLabel.createLabel("path:next+");
 
         constraintRule.addEdge(sourceNode, sourceLabel, sourceNode);
         constraintRule.addEdge(featureNode1, featureLabel, featureNode1);
@@ -456,23 +456,23 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eReference)
                 + " - ekeys";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode sourceNode = constraintRule.addNode();
-        DefaultNode refNode1 = constraintRule.addNode();
-        DefaultNode refNode2 = constraintRule.addNode();
-        DefaultNode targetNode1 = constraintRule.addNode();
-        DefaultNode targetNode2 = constraintRule.addNode();
+        PlainNode sourceNode = constraintRule.addNode();
+        PlainNode refNode1 = constraintRule.addNode();
+        PlainNode refNode2 = constraintRule.addNode();
+        PlainNode targetNode1 = constraintRule.addNode();
+        PlainNode targetNode2 = constraintRule.addNode();
 
-        DefaultLabel sourceLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eReference.getEContainingClass()));
-        DefaultLabel refLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eReference));
-        DefaultLabel targetLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eReference.getEReferenceType()));
-        DefaultLabel nameLabel = DefaultLabel.createLabel(eReference.getName());
-        DefaultLabel valLabel = DefaultLabel.createLabel("val");
-        DefaultLabel unequalLabel = DefaultLabel.createLabel("!=");
+        PlainLabel sourceLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eReference.getEContainingClass()));
+        PlainLabel refLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eReference));
+        PlainLabel targetLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eReference.getEReferenceType()));
+        PlainLabel nameLabel = PlainLabel.createLabel(eReference.getName());
+        PlainLabel valLabel = PlainLabel.createLabel("val");
+        PlainLabel unequalLabel = PlainLabel.createLabel("!=");
 
         constraintRule.addEdge(sourceNode, sourceLabel, sourceNode);
         constraintRule.addEdge(refNode1, refLabel, refNode1);
@@ -564,25 +564,25 @@ public class ConstraintRules {
         // Create the constraint rule now
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eAttribute) + " - id";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
         // Add the common part to the constraint rule
-        DefaultNode contEClassNode = constraintRule.addNode();
-        DefaultNode contERefNode1 = constraintRule.addNode();
-        DefaultNode contERefNode2 = constraintRule.addNode();
-        DefaultNode contNode1 = constraintRule.addNode();
-        DefaultNode contNode2 = constraintRule.addNode();
+        PlainNode contEClassNode = constraintRule.addNode();
+        PlainNode contERefNode1 = constraintRule.addNode();
+        PlainNode contERefNode2 = constraintRule.addNode();
+        PlainNode contNode1 = constraintRule.addNode();
+        PlainNode contNode2 = constraintRule.addNode();
 
-        DefaultLabel contEClassLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(contEClass));
-        DefaultLabel contERefLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(contEReference));
-        DefaultLabel contLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eAttribute.getEContainingClass()));
-        DefaultLabel refNameLabel =
-            DefaultLabel.createLabel(contEReference.getName());
-        DefaultLabel valLabel = DefaultLabel.createLabel("val");
-        DefaultLabel unequalLabel = DefaultLabel.createLabel("!=");
+        PlainLabel contEClassLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(contEClass));
+        PlainLabel contERefLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(contEReference));
+        PlainLabel contLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eAttribute.getEContainingClass()));
+        PlainLabel refNameLabel =
+            PlainLabel.createLabel(contEReference.getName());
+        PlainLabel valLabel = PlainLabel.createLabel("val");
+        PlainLabel unequalLabel = PlainLabel.createLabel("!=");
 
         constraintRule.addEdge(contEClassNode, contEClassLabel, contEClassNode);
         constraintRule.addEdge(contERefNode1, contERefLabel, contERefNode1);
@@ -649,34 +649,34 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eAttribute)
                 + " - validValues";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode attrNode = constraintRule.addNode();
-        DefaultNode datatypeNode = constraintRule.addNode();
-        DefaultNode lowerBoundNode = constraintRule.addNode();
-        DefaultNode upperBoundNode = constraintRule.addNode();
-        DefaultNode compare1Node = constraintRule.addNode();
-        DefaultNode compare2Node = constraintRule.addNode();
-        DefaultNode compare3Node = constraintRule.addNode();
-        DefaultNode bool1Node = constraintRule.addNode();
-        DefaultNode bool2Node = constraintRule.addNode();
-        DefaultNode bool3Node = constraintRule.addNode();
+        PlainNode attrNode = constraintRule.addNode();
+        PlainNode datatypeNode = constraintRule.addNode();
+        PlainNode lowerBoundNode = constraintRule.addNode();
+        PlainNode upperBoundNode = constraintRule.addNode();
+        PlainNode compare1Node = constraintRule.addNode();
+        PlainNode compare2Node = constraintRule.addNode();
+        PlainNode compare3Node = constraintRule.addNode();
+        PlainNode bool1Node = constraintRule.addNode();
+        PlainNode bool2Node = constraintRule.addNode();
+        PlainNode bool3Node = constraintRule.addNode();
 
-        DefaultLabel attrLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eAttribute));
-        DefaultLabel datatypeLabel = DefaultLabel.createLabel(type);
-        DefaultLabel lowerBoundLabel =
-            DefaultLabel.createLabel(type + lowerBound);
-        DefaultLabel upperBoundLabel =
-            DefaultLabel.createLabel(type + upperBound);
-        DefaultLabel boolLabel = DefaultLabel.createLabel("bool:");
-        DefaultLabel trueLabel = DefaultLabel.createLabel("bool:true");
-        DefaultLabel valLabel = DefaultLabel.createLabel("val");
-        DefaultLabel arg1Label = DefaultLabel.createLabel("arg:0");
-        DefaultLabel arg2Label = DefaultLabel.createLabel("arg:1");
-        DefaultLabel gtLabel = DefaultLabel.createLabel(type + "gt");
-        DefaultLabel ltLabel = DefaultLabel.createLabel(type + "lt");
-        DefaultLabel orLabel = DefaultLabel.createLabel("bool:or");
+        PlainLabel attrLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eAttribute));
+        PlainLabel datatypeLabel = PlainLabel.createLabel(type);
+        PlainLabel lowerBoundLabel =
+            PlainLabel.createLabel(type + lowerBound);
+        PlainLabel upperBoundLabel =
+            PlainLabel.createLabel(type + upperBound);
+        PlainLabel boolLabel = PlainLabel.createLabel("bool:");
+        PlainLabel trueLabel = PlainLabel.createLabel("bool:true");
+        PlainLabel valLabel = PlainLabel.createLabel("val");
+        PlainLabel arg1Label = PlainLabel.createLabel("arg:0");
+        PlainLabel arg2Label = PlainLabel.createLabel("arg:1");
+        PlainLabel gtLabel = PlainLabel.createLabel(type + "gt");
+        PlainLabel ltLabel = PlainLabel.createLabel(type + "lt");
+        PlainLabel orLabel = PlainLabel.createLabel("bool:or");
 
         constraintRule.addEdge(attrNode, attrLabel, attrNode);
         constraintRule.addEdge(datatypeNode, datatypeLabel, datatypeNode);
@@ -715,28 +715,28 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eAttribute)
                 + " - unchangeable";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode attrNode = constraintRule.addNode();
-        DefaultNode datatypeNode = constraintRule.addNode();
-        DefaultNode defaultValNode = constraintRule.addNode();
-        DefaultNode compareNode = constraintRule.addNode();
-        DefaultNode boolNode = constraintRule.addNode();
+        PlainNode attrNode = constraintRule.addNode();
+        PlainNode datatypeNode = constraintRule.addNode();
+        PlainNode defaultValNode = constraintRule.addNode();
+        PlainNode compareNode = constraintRule.addNode();
+        PlainNode boolNode = constraintRule.addNode();
 
-        DefaultLabel attrLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eAttribute));
-        DefaultLabel datatypeLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(
+        PlainLabel attrLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eAttribute));
+        PlainLabel datatypeLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(
                 eAttribute.getEAttributeType(), null));
-        DefaultLabel defaultValLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(
+        PlainLabel defaultValLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(
                 eAttribute.getEAttributeType(), eAttribute.getDefaultValue()));
-        DefaultLabel boolLabel = DefaultLabel.createLabel("bool:false");
-        DefaultLabel compareLabel =
-            DefaultLabel.createLabel(datatypeLabel + "eq");
-        DefaultLabel valLabel = DefaultLabel.createLabel("val");
-        DefaultLabel arg1Label = DefaultLabel.createLabel("arg:0");
-        DefaultLabel arg2Label = DefaultLabel.createLabel("arg:1");
+        PlainLabel boolLabel = PlainLabel.createLabel("bool:false");
+        PlainLabel compareLabel =
+            PlainLabel.createLabel(datatypeLabel + "eq");
+        PlainLabel valLabel = PlainLabel.createLabel("val");
+        PlainLabel arg1Label = PlainLabel.createLabel("arg:0");
+        PlainLabel arg2Label = PlainLabel.createLabel("arg:1");
 
         constraintRule.addEdge(attrNode, attrLabel, attrNode);
         constraintRule.addEdge(datatypeNode, datatypeLabel, datatypeNode);
@@ -758,14 +758,14 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eReference)
                 + " - opposite";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode refNode = constraintRule.addNode();
+        PlainNode refNode = constraintRule.addNode();
 
-        DefaultLabel refLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eReference));
-        DefaultLabel regExprLabel =
-            DefaultLabel.createLabel("path:!opposite.opposite");
+        PlainLabel refLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eReference));
+        PlainLabel regExprLabel =
+            PlainLabel.createLabel("path:!opposite.opposite");
 
         constraintRule.addEdge(refNode, refLabel, refNode);
         constraintRule.addEdge(refNode, regExprLabel, refNode);
@@ -777,15 +777,15 @@ public class ConstraintRules {
         constraintRule = createRuleGraph(name);
 
         refNode = constraintRule.addNode();
-        DefaultNode erefNode1 = constraintRule.addNode();
-        DefaultNode erefNode2 = constraintRule.addNode();
+        PlainNode erefNode1 = constraintRule.addNode();
+        PlainNode erefNode2 = constraintRule.addNode();
 
         EReference opposite = eReference.getEOpposite();
-        DefaultLabel oppositeLabel = DefaultLabel.createLabel("opposite");
-        DefaultLabel erefLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(opposite));
+        PlainLabel oppositeLabel = PlainLabel.createLabel("opposite");
+        PlainLabel erefLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(opposite));
         //DefaultLabel erefLabel = DefaultLabel.createLabel(this.mh.getEReferenceType());
-        DefaultLabel unequalLabel = DefaultLabel.createLabel("!=");
+        PlainLabel unequalLabel = PlainLabel.createLabel("!=");
 
         constraintRule.addEdge(refNode, refLabel, refNode);
         constraintRule.addEdge(erefNode1, erefLabel, erefNode1);
@@ -804,24 +804,24 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eFeature)
                 + " - lowerBound";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode sourceNode = constraintRule.addNode();
-        Vector<DefaultNode> featureNodes = new Vector<DefaultNode>();
+        PlainNode sourceNode = constraintRule.addNode();
+        Vector<PlainNode> featureNodes = new Vector<PlainNode>();
 
-        DefaultLabel sourceLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eFeature.getEContainingClass()));
-        DefaultLabel featureLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eFeature));
-        DefaultLabel nameLabel = DefaultLabel.createLabel(eFeature.getName());
-        DefaultLabel unequalLabel = DefaultLabel.createLabel("!=");
-        DefaultLabel notLabel = DefaultLabel.createLabel("not:");
+        PlainLabel sourceLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eFeature.getEContainingClass()));
+        PlainLabel featureLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eFeature));
+        PlainLabel nameLabel = PlainLabel.createLabel(eFeature.getName());
+        PlainLabel unequalLabel = PlainLabel.createLabel("!=");
+        PlainLabel notLabel = PlainLabel.createLabel("not:");
 
         constraintRule.addEdge(sourceNode, sourceLabel, sourceNode);
 
         // First add a lowerBound amount of featureNodes
         for (int i = 0; i < lowerBound; i++) {
-            DefaultNode featureNode = constraintRule.addNode();
+            PlainNode featureNode = constraintRule.addNode();
             constraintRule.addEdge(featureNode, featureLabel, featureNode);
             constraintRule.addEdge(featureNode, notLabel, featureNode);
             constraintRule.addEdge(sourceNode, nameLabel, featureNode);
@@ -849,23 +849,23 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eFeature)
                 + " - upperBound";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode sourceNode = constraintRule.addNode();
-        Vector<DefaultNode> featureNodes = new Vector<DefaultNode>();
+        PlainNode sourceNode = constraintRule.addNode();
+        Vector<PlainNode> featureNodes = new Vector<PlainNode>();
 
-        DefaultLabel sourceLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eFeature.getEContainingClass()));
-        DefaultLabel featureLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eFeature));
-        DefaultLabel nameLabel = DefaultLabel.createLabel(eFeature.getName());
-        DefaultLabel unequalLabel = DefaultLabel.createLabel("!=");
+        PlainLabel sourceLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eFeature.getEContainingClass()));
+        PlainLabel featureLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eFeature));
+        PlainLabel nameLabel = PlainLabel.createLabel(eFeature.getName());
+        PlainLabel unequalLabel = PlainLabel.createLabel("!=");
 
         constraintRule.addEdge(sourceNode, sourceLabel, sourceNode);
 
         // First add a lowerBound amount of featureNodes
         for (int i = 0; i < upperBound + 1; i++) {
-            DefaultNode featureNode = constraintRule.addNode();
+            PlainNode featureNode = constraintRule.addNode();
             constraintRule.addEdge(featureNode, featureLabel, featureNode);
             constraintRule.addEdge(sourceNode, nameLabel, featureNode);
             featureNodes.add(featureNode);
@@ -900,21 +900,21 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eAttribute)
                 + " - unique";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode sourceNode = constraintRule.addNode();
-        DefaultNode targetNode = constraintRule.addNode();
-        DefaultNode refNode1 = constraintRule.addNode();
-        DefaultNode refNode2 = constraintRule.addNode();
+        PlainNode sourceNode = constraintRule.addNode();
+        PlainNode targetNode = constraintRule.addNode();
+        PlainNode refNode1 = constraintRule.addNode();
+        PlainNode refNode2 = constraintRule.addNode();
 
-        DefaultLabel sourceLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eAttribute.getEContainingClass()));
-        DefaultLabel refLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eAttribute));
-        DefaultLabel targetLabel = DefaultLabel.createLabel(targetString);
-        DefaultLabel unequalLabel = DefaultLabel.createLabel("!=");
-        DefaultLabel valLabel = DefaultLabel.createLabel("val");
-        DefaultLabel nameLabel = DefaultLabel.createLabel(eAttribute.getName());
+        PlainLabel sourceLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eAttribute.getEContainingClass()));
+        PlainLabel refLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eAttribute));
+        PlainLabel targetLabel = PlainLabel.createLabel(targetString);
+        PlainLabel unequalLabel = PlainLabel.createLabel("!=");
+        PlainLabel valLabel = PlainLabel.createLabel("val");
+        PlainLabel nameLabel = PlainLabel.createLabel(eAttribute.getName());
 
         constraintRule.addEdge(sourceNode, sourceLabel, sourceNode);
         constraintRule.addEdge(refNode1, refLabel, refNode1);
@@ -937,25 +937,25 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eAttribute)
                 + " - unique";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode sourceNode = constraintRule.addNode();
-        DefaultNode attrNode1 = constraintRule.addNode();
-        DefaultNode attrNode2 = constraintRule.addNode();
-        DefaultNode targetNode1 = constraintRule.addNode();
-        DefaultNode targetNode2 = constraintRule.addNode();
+        PlainNode sourceNode = constraintRule.addNode();
+        PlainNode attrNode1 = constraintRule.addNode();
+        PlainNode attrNode2 = constraintRule.addNode();
+        PlainNode targetNode1 = constraintRule.addNode();
+        PlainNode targetNode2 = constraintRule.addNode();
 
-        DefaultLabel sourceLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eAttribute.getEContainingClass()));
-        DefaultLabel attrLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eAttribute));
-        DefaultLabel targetLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel((EEnum) eAttribute.getEAttributeType()));
-        DefaultLabel unequalLabel = DefaultLabel.createLabel("!=");
-        DefaultLabel valLabel = DefaultLabel.createLabel("val");
-        DefaultLabel nameLabel = DefaultLabel.createLabel(eAttribute.getName());
-        DefaultLabel matchLabel = DefaultLabel.createLabel("flag:?x");
-        DefaultLabel lookLabel = DefaultLabel.createLabel("flag:?x");
+        PlainLabel sourceLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eAttribute.getEContainingClass()));
+        PlainLabel attrLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eAttribute));
+        PlainLabel targetLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel((EEnum) eAttribute.getEAttributeType()));
+        PlainLabel unequalLabel = PlainLabel.createLabel("!=");
+        PlainLabel valLabel = PlainLabel.createLabel("val");
+        PlainLabel nameLabel = PlainLabel.createLabel(eAttribute.getName());
+        PlainLabel matchLabel = PlainLabel.createLabel("flag:?x");
+        PlainLabel lookLabel = PlainLabel.createLabel("flag:?x");
 
         constraintRule.addEdge(sourceNode, sourceLabel, sourceNode);
         constraintRule.addEdge(attrNode1, attrLabel, attrNode1);
@@ -980,22 +980,22 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eReference)
                 + " - unique";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode sourceNode = constraintRule.addNode();
-        DefaultNode targetNode = constraintRule.addNode();
-        DefaultNode refNode1 = constraintRule.addNode();
-        DefaultNode refNode2 = constraintRule.addNode();
+        PlainNode sourceNode = constraintRule.addNode();
+        PlainNode targetNode = constraintRule.addNode();
+        PlainNode refNode1 = constraintRule.addNode();
+        PlainNode refNode2 = constraintRule.addNode();
 
-        DefaultLabel sourceLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eReference.getEContainingClass()));
-        DefaultLabel refLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eReference));
-        DefaultLabel targetLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eReference.getEReferenceType()));
-        DefaultLabel unequalLabel = DefaultLabel.createLabel("!=");
-        DefaultLabel valLabel = DefaultLabel.createLabel("val");
-        DefaultLabel nameLabel = DefaultLabel.createLabel(eReference.getName());
+        PlainLabel sourceLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eReference.getEContainingClass()));
+        PlainLabel refLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eReference));
+        PlainLabel targetLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eReference.getEReferenceType()));
+        PlainLabel unequalLabel = PlainLabel.createLabel("!=");
+        PlainLabel valLabel = PlainLabel.createLabel("val");
+        PlainLabel nameLabel = PlainLabel.createLabel(eReference.getName());
 
         constraintRule.addEdge(sourceNode, sourceLabel, sourceNode);
         constraintRule.addEdge(targetNode, targetLabel, targetNode);
@@ -1017,18 +1017,18 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eStructuralFeature)
                 + " - noContainer";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode featureNode = constraintRule.addNode();
-        DefaultNode containerNode = constraintRule.addNode();
+        PlainNode featureNode = constraintRule.addNode();
+        PlainNode containerNode = constraintRule.addNode();
 
-        DefaultLabel featureLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eStructuralFeature));
-        DefaultLabel containerLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eStructuralFeature.getEContainingClass()));
-        DefaultLabel notLabel = DefaultLabel.createLabel("not:");
-        DefaultLabel nameLabel =
-            DefaultLabel.createLabel(eStructuralFeature.getName());
+        PlainLabel featureLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eStructuralFeature));
+        PlainLabel containerLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eStructuralFeature.getEContainingClass()));
+        PlainLabel notLabel = PlainLabel.createLabel("not:");
+        PlainLabel nameLabel =
+            PlainLabel.createLabel(eStructuralFeature.getName());
 
         constraintRule.addEdge(featureNode, featureLabel, featureNode);
         constraintRule.addEdge(containerNode, containerLabel, containerNode);
@@ -1046,19 +1046,19 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eStructuralFeature)
                 + " - manyContainers";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode featureNode = constraintRule.addNode();
-        DefaultNode containerNode1 = constraintRule.addNode();
-        DefaultNode containerNode2 = constraintRule.addNode();
+        PlainNode featureNode = constraintRule.addNode();
+        PlainNode containerNode1 = constraintRule.addNode();
+        PlainNode containerNode2 = constraintRule.addNode();
 
-        DefaultLabel featureLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eStructuralFeature));
-        DefaultLabel containerLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eStructuralFeature.getEContainingClass()));
-        DefaultLabel nameLabel =
-            DefaultLabel.createLabel(eStructuralFeature.getName());
-        DefaultLabel unequalLabel = DefaultLabel.createLabel("!=");
+        PlainLabel featureLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eStructuralFeature));
+        PlainLabel containerLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eStructuralFeature.getEContainingClass()));
+        PlainLabel nameLabel =
+            PlainLabel.createLabel(eStructuralFeature.getName());
+        PlainLabel unequalLabel = PlainLabel.createLabel("!=");
 
         constraintRule.addEdge(featureNode, featureLabel, featureNode);
         constraintRule.addEdge(containerNode1, containerLabel, containerNode1);
@@ -1076,17 +1076,17 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eStructuralFeature)
                 + " - noVal";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode featureNode = constraintRule.addNode();
-        DefaultNode targetNode = constraintRule.addNode();
+        PlainNode featureNode = constraintRule.addNode();
+        PlainNode targetNode = constraintRule.addNode();
 
-        DefaultLabel featureLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eStructuralFeature));
-        DefaultLabel targetLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eStructuralFeature.getEType()));
-        DefaultLabel notLabel = DefaultLabel.createLabel("not:");
-        DefaultLabel valLabel = DefaultLabel.createLabel("val");
+        PlainLabel featureLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eStructuralFeature));
+        PlainLabel targetLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eStructuralFeature.getEType()));
+        PlainLabel notLabel = PlainLabel.createLabel("not:");
+        PlainLabel valLabel = PlainLabel.createLabel("val");
 
         constraintRule.addEdge(featureNode, featureLabel, featureNode);
         constraintRule.addEdge(targetNode, targetLabel, targetNode);
@@ -1114,17 +1114,17 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eStructuralFeature)
                 + " - manyVals";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode featureNode = constraintRule.addNode();
-        DefaultNode targetNode1 = constraintRule.addNode();
-        DefaultNode targetNode2 = constraintRule.addNode();
+        PlainNode featureNode = constraintRule.addNode();
+        PlainNode targetNode1 = constraintRule.addNode();
+        PlainNode targetNode2 = constraintRule.addNode();
 
-        DefaultLabel featureLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eStructuralFeature));
-        DefaultLabel targetLabel = DefaultLabel.createLabel(targetString);
-        DefaultLabel valLabel = DefaultLabel.createLabel("val");
-        DefaultLabel unequalLabel = DefaultLabel.createLabel("!=");
+        PlainLabel featureLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eStructuralFeature));
+        PlainLabel targetLabel = PlainLabel.createLabel(targetString);
+        PlainLabel valLabel = PlainLabel.createLabel("val");
+        PlainLabel unequalLabel = PlainLabel.createLabel("!=");
 
         constraintRule.addEdge(featureNode, featureLabel, featureNode);
         constraintRule.addEdge(targetNode1, targetLabel, targetNode1);
@@ -1141,17 +1141,17 @@ public class ConstraintRules {
     private void addNoIncValConstraint(EEnum eEnum) {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eEnum) + " - noIncVal";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode enumNode = constraintRule.addNode();
-        DefaultNode attrNode = constraintRule.addNode();
+        PlainNode enumNode = constraintRule.addNode();
+        PlainNode attrNode = constraintRule.addNode();
 
-        DefaultLabel enumLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eEnum));
-        DefaultLabel attrLabel =
-            DefaultLabel.createLabel(this.mh.getEAttributeType());
-        DefaultLabel valLabel = DefaultLabel.createLabel("val");
-        DefaultLabel notLabel = DefaultLabel.createLabel("not:");
+        PlainLabel enumLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eEnum));
+        PlainLabel attrLabel =
+            PlainLabel.createLabel(this.mh.getEAttributeType());
+        PlainLabel valLabel = PlainLabel.createLabel("val");
+        PlainLabel notLabel = PlainLabel.createLabel("not:");
 
         constraintRule.addEdge(enumNode, enumLabel, enumNode);
         constraintRule.addEdge(attrNode, attrLabel, attrNode);
@@ -1168,19 +1168,19 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eEnum)
                 + " - manyIncVal";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode enumNode = constraintRule.addNode();
-        DefaultNode attrNode1 = constraintRule.addNode();
-        DefaultNode attrNode2 = constraintRule.addNode();
+        PlainNode enumNode = constraintRule.addNode();
+        PlainNode attrNode1 = constraintRule.addNode();
+        PlainNode attrNode2 = constraintRule.addNode();
 
-        DefaultLabel enumLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eEnum));
-        DefaultLabel attrLabel =
-            DefaultLabel.createLabel(this.mh.getEAttributeType());
-        DefaultLabel unequalLabel = DefaultLabel.createLabel("!=");
-        DefaultLabel regExprLabel =
-            DefaultLabel.createLabel("path:val." + GraphLabels.getLabel(eEnum));
+        PlainLabel enumLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eEnum));
+        PlainLabel attrLabel =
+            PlainLabel.createLabel(this.mh.getEAttributeType());
+        PlainLabel unequalLabel = PlainLabel.createLabel("!=");
+        PlainLabel regExprLabel =
+            PlainLabel.createLabel("path:val." + GraphLabels.getLabel(eEnum));
 
         constraintRule.addEdge(enumNode, enumLabel, enumNode);
         constraintRule.addEdge(attrNode1, attrLabel, attrNode1);
@@ -1199,9 +1199,9 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eEnum)
                 + " - noLiteral";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode node = addEnumNode(constraintRule, eEnum);
+        PlainNode node = addEnumNode(constraintRule, eEnum);
         for (EEnumLiteral eEnumLiteral : eEnum.getELiterals()) {
             String labelText = GraphLabels.getLabel(eEnumLiteral);
             constraintRule.addEdge(node, "not:" + labelText, node);
@@ -1218,9 +1218,9 @@ public class ConstraintRules {
             String name =
                 "constraint - " + GraphLabels.getLabelNoType(eEnum)
                     + " - manyLiterals";
-            DefaultGraph constraintRule = createRuleGraph(name);
+            PlainGraph constraintRule = createRuleGraph(name);
 
-            DefaultNode node = addEnumNode(constraintRule, eEnum);
+            PlainNode node = addEnumNode(constraintRule, eEnum);
             StringBuilder regExpr = new StringBuilder();
             EList<EEnumLiteral> literals = eEnum.getELiterals();
             for (int i = 0; i < literals.size() - 1; i++) {
@@ -1252,9 +1252,9 @@ public class ConstraintRules {
         String name =
             "constraint - " + GraphLabels.getLabelNoType(eClass)
                 + " - abstract";
-        DefaultGraph constraintRule = createRuleGraph(name);
+        PlainGraph constraintRule = createRuleGraph(name);
 
-        DefaultNode node = addClassNode(constraintRule, eClass);
+        PlainNode node = addClassNode(constraintRule, eClass);
 
         for (EClass otherClass : this.mh.getEClasses()) {
             if (eClass.isSuperTypeOf(otherClass) && !eClass.equals(otherClass)) {
@@ -1271,8 +1271,8 @@ public class ConstraintRules {
      * @param eClass the EClass
      * @return the new node representing the EClass
      */
-    private DefaultNode addClassNode(DefaultGraph constraintRule, EClass eClass) {
-        DefaultNode node = constraintRule.addNode();
+    private PlainNode addClassNode(PlainGraph constraintRule, EClass eClass) {
+        PlainNode node = constraintRule.addNode();
         constraintRule.addEdge(node, GraphLabels.getLabel(eClass), node);
 
         return node;
@@ -1284,8 +1284,8 @@ public class ConstraintRules {
      * @param eEnum the EEnum
      * @return the new node representing the EEnum
      */
-    private DefaultNode addEnumNode(DefaultGraph constraintRule, EEnum eEnum) {
-        DefaultNode node = constraintRule.addNode();
+    private PlainNode addEnumNode(PlainGraph constraintRule, EEnum eEnum) {
+        PlainNode node = constraintRule.addNode();
         constraintRule.addEdge(node, GraphLabels.getLabel(eEnum), node);
         return node;
     }
@@ -1298,38 +1298,38 @@ public class ConstraintRules {
      * @param node1 the first node representing the EAttribute
      * @param node2 the second node representing the EAttribute
      */
-    private void addEnumCheck(DefaultGraph constraintRule,
-            EAttribute eAttribute, DefaultNode node1, DefaultNode node2) {
+    private void addEnumCheck(PlainGraph constraintRule,
+            EAttribute eAttribute, PlainNode node1, PlainNode node2) {
 
-        DefaultLabel attrLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eAttribute));
-        DefaultLabel attrNameLabel =
-            DefaultLabel.createLabel(eAttribute.getName());
-        DefaultLabel enumLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel((EEnum) eAttribute.getEAttributeType()));
-        DefaultLabel valLabel = DefaultLabel.createLabel("val");
+        PlainLabel attrLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eAttribute));
+        PlainLabel attrNameLabel =
+            PlainLabel.createLabel(eAttribute.getName());
+        PlainLabel enumLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel((EEnum) eAttribute.getEAttributeType()));
+        PlainLabel valLabel = PlainLabel.createLabel("val");
 
-        DefaultNode attrA1Node = constraintRule.addNode();
-        DefaultNode attrA2Node = constraintRule.addNode();
-        DefaultNode attrB1Node = constraintRule.addNode();
-        DefaultNode attrB2Node = constraintRule.addNode();
-        DefaultNode enumA1Node = constraintRule.addNode();
-        DefaultNode enumA2Node = constraintRule.addNode();
-        DefaultNode enumB1Node = constraintRule.addNode();
-        DefaultNode enumB2Node = constraintRule.addNode();
-        DefaultNode forallANode = constraintRule.addNode();
-        DefaultNode forallBNode = constraintRule.addNode();
-        DefaultNode existsANode = constraintRule.addNode();
-        DefaultNode existsBNode = constraintRule.addNode();
+        PlainNode attrA1Node = constraintRule.addNode();
+        PlainNode attrA2Node = constraintRule.addNode();
+        PlainNode attrB1Node = constraintRule.addNode();
+        PlainNode attrB2Node = constraintRule.addNode();
+        PlainNode enumA1Node = constraintRule.addNode();
+        PlainNode enumA2Node = constraintRule.addNode();
+        PlainNode enumB1Node = constraintRule.addNode();
+        PlainNode enumB2Node = constraintRule.addNode();
+        PlainNode forallANode = constraintRule.addNode();
+        PlainNode forallBNode = constraintRule.addNode();
+        PlainNode existsANode = constraintRule.addNode();
+        PlainNode existsBNode = constraintRule.addNode();
 
-        DefaultLabel wildcardALabel =
-            DefaultLabel.createLabel("flag:?" + eAttribute.getName() + "_A");
-        DefaultLabel wildcardBLabel =
-            DefaultLabel.createLabel("flag:?" + eAttribute.getName() + "_B");
-        DefaultLabel atLabel = DefaultLabel.createLabel("at");
-        DefaultLabel inLabel = DefaultLabel.createLabel("in");
-        DefaultLabel forallLabel = DefaultLabel.createLabel("forall:");
-        DefaultLabel existsLabel = DefaultLabel.createLabel("exists:");
+        PlainLabel wildcardALabel =
+            PlainLabel.createLabel("flag:?" + eAttribute.getName() + "_A");
+        PlainLabel wildcardBLabel =
+            PlainLabel.createLabel("flag:?" + eAttribute.getName() + "_B");
+        PlainLabel atLabel = PlainLabel.createLabel("at");
+        PlainLabel inLabel = PlainLabel.createLabel("in");
+        PlainLabel forallLabel = PlainLabel.createLabel("forall:");
+        PlainLabel existsLabel = PlainLabel.createLabel("exists:");
 
         constraintRule.addEdge(attrA1Node, attrLabel, attrA1Node);
         constraintRule.addEdge(attrA2Node, attrLabel, attrA2Node);
@@ -1375,32 +1375,32 @@ public class ConstraintRules {
      * @param node1 the first node representing the EAttribute
      * @param node2 the second node representing the EAttribute
      */
-    void addDataTypeCheck(DefaultGraph constraintRule, EAttribute eAttribute,
-            DefaultNode node1, DefaultNode node2) {
+    void addDataTypeCheck(PlainGraph constraintRule, EAttribute eAttribute,
+            PlainNode node1, PlainNode node2) {
         String datatypeString =
             GraphLabels.getLabel(eAttribute.getEAttributeType(), null);
-        DefaultLabel dataTypeLabel = DefaultLabel.createLabel(datatypeString);
-        DefaultLabel attrLabel =
-            DefaultLabel.createLabel(GraphLabels.getLabel(eAttribute));
-        DefaultLabel attrNameLabel =
-            DefaultLabel.createLabel(eAttribute.getName());
-        DefaultLabel valLabel = DefaultLabel.createLabel("val");
+        PlainLabel dataTypeLabel = PlainLabel.createLabel(datatypeString);
+        PlainLabel attrLabel =
+            PlainLabel.createLabel(GraphLabels.getLabel(eAttribute));
+        PlainLabel attrNameLabel =
+            PlainLabel.createLabel(eAttribute.getName());
+        PlainLabel valLabel = PlainLabel.createLabel("val");
 
-        DefaultNode attrA1Node = constraintRule.addNode();
-        DefaultNode attrA2Node = constraintRule.addNode();
-        DefaultNode attrB1Node = constraintRule.addNode();
-        DefaultNode attrB2Node = constraintRule.addNode();
-        DefaultNode dataTypeANode = constraintRule.addNode();
-        DefaultNode dataTypeBNode = constraintRule.addNode();
-        DefaultNode forallANode = constraintRule.addNode();
-        DefaultNode forallBNode = constraintRule.addNode();
-        DefaultNode existsANode = constraintRule.addNode();
-        DefaultNode existsBNode = constraintRule.addNode();
+        PlainNode attrA1Node = constraintRule.addNode();
+        PlainNode attrA2Node = constraintRule.addNode();
+        PlainNode attrB1Node = constraintRule.addNode();
+        PlainNode attrB2Node = constraintRule.addNode();
+        PlainNode dataTypeANode = constraintRule.addNode();
+        PlainNode dataTypeBNode = constraintRule.addNode();
+        PlainNode forallANode = constraintRule.addNode();
+        PlainNode forallBNode = constraintRule.addNode();
+        PlainNode existsANode = constraintRule.addNode();
+        PlainNode existsBNode = constraintRule.addNode();
 
-        DefaultLabel atLabel = DefaultLabel.createLabel("at");
-        DefaultLabel inLabel = DefaultLabel.createLabel("in");
-        DefaultLabel forallLabel = DefaultLabel.createLabel("forall:");
-        DefaultLabel existsLabel = DefaultLabel.createLabel("exists:");
+        PlainLabel atLabel = PlainLabel.createLabel("at");
+        PlainLabel inLabel = PlainLabel.createLabel("in");
+        PlainLabel forallLabel = PlainLabel.createLabel("forall:");
+        PlainLabel existsLabel = PlainLabel.createLabel("exists:");
 
         constraintRule.addEdge(attrA1Node, attrLabel, attrA1Node);
         constraintRule.addEdge(attrA2Node, attrLabel, attrA2Node);
@@ -1435,12 +1435,12 @@ public class ConstraintRules {
      * Get the constraint rules created by this class
      * @return the constraint rules
      */
-    public List<DefaultGraph> getConstraints() {
+    public List<PlainGraph> getConstraints() {
         return this.constraintRules;
     }
 
-    private DefaultGraph createRuleGraph(String name) {
-        DefaultGraph result = new DefaultGraph(name);
+    private PlainGraph createRuleGraph(String name) {
+        PlainGraph result = new PlainGraph(name);
         result.setRole(RULE);
         this.constraintRules.add(result);
         return result;

@@ -16,11 +16,11 @@
  */
 package groove.match.rete;
 
+import groove.automaton.RegExpr;
+import groove.automaton.RegExpr.Star;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.match.rete.RetePathMatch.EmptyPathMatch;
-import groove.rel.RegExpr;
-import groove.rel.RegExpr.Star;
-import groove.trans.HostNode;
-import groove.trans.HostNodeSet;
 
 import java.util.Collection;
 import java.util.HashSet;

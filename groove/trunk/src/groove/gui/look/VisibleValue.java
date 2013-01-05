@@ -16,7 +16,11 @@
  */
 package groove.gui.look;
 
-import static groove.view.aspect.AspectKind.REMARK;
+import static groove.grammar.aspect.AspectKind.REMARK;
+import groove.grammar.aspect.Aspect;
+import groove.grammar.aspect.AspectEdge;
+import groove.grammar.aspect.AspectKind;
+import groove.grammar.aspect.AspectNode;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.gui.jgraph.AspectJCell;
@@ -33,10 +37,6 @@ import groove.gui.tree.LabelTree;
 import groove.gui.tree.RuleLevelTree;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.view.aspect.Aspect;
-import groove.view.aspect.AspectEdge;
-import groove.view.aspect.AspectKind;
-import groove.view.aspect.AspectNode;
 
 /**
  * Strategy to determine whether a given cell is currently visible.

@@ -21,9 +21,9 @@ import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.graph.TypeLabel;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.type.TypeLabel;
 
 import java.util.Map;
 

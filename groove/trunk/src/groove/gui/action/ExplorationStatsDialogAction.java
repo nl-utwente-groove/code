@@ -1,9 +1,9 @@
 package groove.gui.action;
 
+import groove.grammar.model.GrammarModel;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.ExplorationStatsDialog;
-import groove.view.GrammarModel;
 
 /** Action to open the Exploration Statistics Dialog. */
 public class ExplorationStatsDialogAction extends SimulatorAction {

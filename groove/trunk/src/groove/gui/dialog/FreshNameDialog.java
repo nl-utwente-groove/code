@@ -16,7 +16,7 @@
  */
 package groove.gui.dialog;
 
-import groove.trans.QualName;
+import groove.grammar.QualName;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;

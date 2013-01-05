@@ -16,15 +16,15 @@
  */
 package groove.io.xml;
 
-import groove.graph.DefaultGraph;
+import groove.grammar.model.FormatException;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
+import groove.graph.plain.PlainGraph;
 import groove.io.PriorityFileName;
 import groove.util.Groove;
 import groove.util.Pair;
-import groove.view.FormatException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -152,7 +152,7 @@ public abstract class AbstractGxl<N extends Node,E extends Edge,G extends Graph<
             @SuppressWarnings("unchecked")
             Pair<G,Map<String,N>> result =
                 (Pair<G,Map<String,N>>) getIO().loadGraphWithMap(in);
-            DefaultGraph resultGraph = (DefaultGraph) result.one();
+            PlainGraph resultGraph = (PlainGraph) result.one();
             // set some more information in the graph, based on the URL
             GraphInfo.setFile(resultGraph, url.getFile());
             // derive the name of the graph from the URL

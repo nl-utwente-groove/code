@@ -16,12 +16,12 @@
  */
 package groove.match.rete;
 
-import groove.rel.RegExpr;
-import groove.rel.RegExpr.Atom;
-import groove.rel.RegExpr.Choice;
-import groove.rel.RegExpr.Inv;
-import groove.rel.RegExpr.Seq;
-import groove.rel.RegExpr.Wildcard;
+import groove.automaton.RegExpr;
+import groove.automaton.RegExpr.Atom;
+import groove.automaton.RegExpr.Choice;
+import groove.automaton.RegExpr.Inv;
+import groove.automaton.RegExpr.Seq;
+import groove.automaton.RegExpr.Wildcard;
 
 import java.util.ArrayList;
 import java.util.Collections;

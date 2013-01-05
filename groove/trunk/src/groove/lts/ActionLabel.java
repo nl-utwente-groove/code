@@ -16,8 +16,8 @@
  */
 package groove.lts;
 
+import groove.grammar.Action;
 import groove.graph.Label;
-import groove.trans.Action;
 
 /**
  * Class of labels occurring on graph transitions.

@@ -23,7 +23,7 @@ import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.abstraction.neigh.equiv.NodeEquivClass;
-import groove.graph.TypeLabel;
+import groove.grammar.type.TypeLabel;
 
 import java.util.ArrayList;
 import java.util.EnumMap;

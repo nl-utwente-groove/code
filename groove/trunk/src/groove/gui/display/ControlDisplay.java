@@ -17,10 +17,10 @@
 package groove.gui.display;
 
 import groove.control.parse.CtrlDoc;
+import groove.grammar.model.ResourceKind;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
-import groove.trans.ResourceKind;
 
 import java.awt.Color;
 import java.awt.event.MouseAdapter;

@@ -16,6 +16,10 @@
  */
 package groove.gui.display;
 
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.model.ResourceModel;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -29,10 +33,6 @@ import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
 import groove.gui.tree.ResourceTree;
 import groove.io.HTMLConverter;
-import groove.trans.ResourceKind;
-import groove.view.GrammarModel;
-import groove.view.ResourceModel;
-import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;

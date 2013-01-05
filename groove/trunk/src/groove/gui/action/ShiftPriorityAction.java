@@ -1,11 +1,11 @@
 package groove.gui.action;
 
-import static groove.trans.ResourceKind.RULE;
+import static groove.grammar.model.ResourceKind.RULE;
+import groove.grammar.aspect.AspectGraph;
 import groove.graph.GraphProperties;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
 import java.util.ArrayList;

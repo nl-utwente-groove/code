@@ -18,15 +18,15 @@ package groove.abstraction.pattern.explore.util;
 
 import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PatternState;
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
+import groove.grammar.host.HostGraph;
 import groove.graph.iso.IsoChecker;
+import groove.graph.plain.PlainEdge;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainNode;
 import groove.lts.AbstractGraphState;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.StartGraphState;
-import groove.trans.HostGraph;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -92,10 +92,10 @@ public final class TransSystemChecker {
      * @return true if the systems are equivalent, false otherwise.
      */
     private boolean compare(PrintStream out) {
-        DefaultGraph plainSGTS =
+        PlainGraph plainSGTS =
             this.sgts.toPlainGraph(false, false, false, false);
-        DefaultGraph plainPGTS = this.pgts.toPlainGraph();
-        IsoChecker<DefaultNode,DefaultEdge> gtsChecker =
+        PlainGraph plainPGTS = this.pgts.toPlainGraph();
+        IsoChecker<PlainNode,PlainEdge> gtsChecker =
             IsoChecker.getInstance(true);
         if (gtsChecker.areIsomorphic(plainSGTS, plainPGTS)) {
             out.print("Transision systems are isomorphic. Checking states... ");

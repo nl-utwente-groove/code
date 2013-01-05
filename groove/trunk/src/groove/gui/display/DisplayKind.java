@@ -1,8 +1,8 @@
 package groove.gui.display;
 
+import groove.grammar.model.ResourceKind;
 import groove.graph.GraphRole;
 import groove.gui.Icons;
-import groove.trans.ResourceKind;
 
 import java.util.EnumMap;
 import java.util.Map;

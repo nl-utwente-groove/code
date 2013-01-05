@@ -18,14 +18,14 @@ package groove.match.plan;
 
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Operation;
-import groove.graph.algebra.OperatorNode;
-import groove.graph.algebra.ValueNode;
-import groove.graph.algebra.VariableNode;
+import groove.grammar.host.HostFactory;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.rule.OperatorNode;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.VariableNode;
 import groove.match.plan.PlanSearchStrategy.Search;
-import groove.trans.HostFactory;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
-import groove.trans.RuleNode;
 
 import java.util.Arrays;
 import java.util.Collection;

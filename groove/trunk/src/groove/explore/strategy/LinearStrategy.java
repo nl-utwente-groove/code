@@ -16,14 +16,14 @@
  */
 package groove.explore.strategy;
 
-import static groove.trans.RuleEvent.Reuse.NONE;
+import static groove.transform.RuleEvent.Reuse.NONE;
 import groove.explore.result.Acceptor;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphState;
 import groove.lts.GraphState.Flag;
 import groove.lts.MatchResult;
-import groove.trans.GrammarRecord;
+import groove.transform.Record;
 
 import java.util.Stack;
 
@@ -55,7 +55,7 @@ public class LinearStrategy extends GTSStrategy {
     public void prepare(GTS gts, GraphState state, Acceptor acceptor) {
         // We have to set the non-collapsing property before the first (start)
         // state is generated, otherwise it is too late.
-        GrammarRecord record = gts.getRecord();
+        Record record = gts.getRecord();
         record.setCollapse(false);
         record.setCopyGraphs(false);
         record.setReuseEvents(NONE);

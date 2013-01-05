@@ -23,7 +23,7 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.prolog.GrooveEnvironment;
-import groove.trans.Event;
+import groove.transform.Event;
 
 /**
  * Predicate active_rulevent(?RuleEvent)

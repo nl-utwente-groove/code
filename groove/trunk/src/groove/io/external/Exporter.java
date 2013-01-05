@@ -16,6 +16,9 @@
  */
 package groove.io.external;
 
+import groove.grammar.model.GraphBasedModel;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.model.ResourceModel;
 import groove.graph.Graph;
 import groove.gui.Simulator;
 import groove.gui.dialog.ErrorDialog;
@@ -35,9 +38,6 @@ import groove.io.external.format.NativePorter;
 import groove.io.external.format.RasterExporter;
 import groove.io.external.format.TikzExporter;
 import groove.io.external.format.VectorExporter;
-import groove.trans.ResourceKind;
-import groove.view.GraphBasedModel;
-import groove.view.ResourceModel;
 
 import java.awt.Component;
 import java.io.File;

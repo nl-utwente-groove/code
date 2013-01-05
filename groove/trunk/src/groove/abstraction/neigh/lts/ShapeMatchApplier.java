@@ -25,7 +25,7 @@ import groove.lts.GraphState;
 import groove.lts.MatchApplier;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
-import groove.trans.RuleEvent;
+import groove.transform.RuleEvent;
 import groove.util.Pair;
 import groove.util.Visitor;
 

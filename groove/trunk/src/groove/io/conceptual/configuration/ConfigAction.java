@@ -16,11 +16,11 @@
  */
 package groove.io.conceptual.configuration;
 
+import groove.grammar.model.ResourceKind;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.action.SimulatorAction;
-import groove.trans.ResourceKind;
 
 import javax.swing.Icon;
 

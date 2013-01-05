@@ -16,14 +16,14 @@
  */
 package groove.match.rete;
 
+import groove.grammar.host.HostNode;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleElement;
+import groove.grammar.rule.RuleNode;
 import groove.graph.Node;
 import groove.match.rete.LookupEntry.Role;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
 import groove.match.rete.RetePathMatch.EmptyPathMatch;
-import groove.trans.HostNode;
-import groove.trans.RuleEdge;
-import groove.trans.RuleElement;
-import groove.trans.RuleNode;
 
 import java.util.HashSet;
 import java.util.List;

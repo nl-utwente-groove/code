@@ -17,22 +17,22 @@
 package groove.match.plan;
 
 import groove.algebra.SignatureKind;
-import groove.graph.TypeElement;
-import groove.graph.algebra.ValueNode;
-import groove.graph.algebra.VariableNode;
+import groove.grammar.Condition;
+import groove.grammar.host.DefaultHostNode;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.rule.LabelVar;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.RuleToHostMap;
+import groove.grammar.rule.VariableNode;
+import groove.grammar.type.TypeElement;
 import groove.match.SearchEngine;
 import groove.match.SearchStrategy;
 import groove.match.TreeMatch;
 import groove.match.ValueOracle;
-import groove.rel.LabelVar;
-import groove.trans.Condition;
-import groove.trans.DefaultHostNode;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
-import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
-import groove.trans.RuleToHostMap;
 import groove.util.Reporter;
 import groove.util.Visitor;
 

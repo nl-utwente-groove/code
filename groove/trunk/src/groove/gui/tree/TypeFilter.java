@@ -16,14 +16,14 @@
  */
 package groove.gui.tree;
 
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.type.TypeEdge;
+import groove.grammar.type.TypeElement;
+import groove.grammar.type.TypeGraph;
+import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
 import groove.graph.Label;
-import groove.graph.TypeEdge;
-import groove.graph.TypeElement;
-import groove.graph.TypeGraph;
-import groove.graph.TypeLabel;
-import groove.graph.TypeNode;
 import groove.gui.jgraph.JCell;
-import groove.view.aspect.AspectGraph;
 
 import java.util.HashMap;
 import java.util.Map;

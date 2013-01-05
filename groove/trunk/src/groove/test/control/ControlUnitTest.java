@@ -28,7 +28,7 @@ import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.control.CtrlType;
-import groove.view.FormatException;
+import groove.grammar.model.FormatException;
 
 import java.util.Collections;
 import java.util.List;

@@ -16,6 +16,7 @@
  */
 package groove.io.external.format;
 
+import groove.grammar.model.GrammarModel;
 import groove.io.conceptual.InstanceModel;
 import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.lang.ExportableResource;
@@ -27,7 +28,6 @@ import groove.io.conceptual.lang.graphviz.TypeToGraphviz;
 import groove.io.external.ConceptualPorter;
 import groove.io.external.PortException;
 import groove.util.Pair;
-import groove.view.GrammarModel;
 
 import java.io.File;
 

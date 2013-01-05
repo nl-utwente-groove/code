@@ -16,8 +16,8 @@
  */
 package groove.lts;
 
-import groove.trans.Event;
-import groove.trans.Recipe;
+import groove.grammar.Recipe;
+import groove.transform.Event;
 
 /** Event class for recipe transitions. */
 public class RecipeEvent implements GraphTransitionStub, Event,

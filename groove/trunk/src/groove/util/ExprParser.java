@@ -16,7 +16,7 @@
  */
 package groove.util;
 
-import groove.view.FormatException;
+import groove.grammar.model.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collections;

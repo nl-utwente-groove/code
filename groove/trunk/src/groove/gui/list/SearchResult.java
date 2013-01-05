@@ -16,10 +16,10 @@
  */
 package groove.gui.list;
 
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.ResourceKind;
 import groove.graph.Element;
 import groove.gui.list.ListPanel.SelectableListEntry;
-import groove.trans.ResourceKind;
-import groove.view.aspect.AspectGraph;
 
 import java.util.ArrayList;
 import java.util.List;

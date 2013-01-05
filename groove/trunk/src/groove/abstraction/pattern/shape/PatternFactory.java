@@ -16,11 +16,11 @@
  */
 package groove.abstraction.pattern.shape;
 
-import groove.graph.DefaultEdge;
+import groove.grammar.host.HostEdge;
 import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.Morphism;
-import groove.trans.HostEdge;
+import groove.graph.plain.PlainEdge;
 import groove.util.FreeNumberDispenser;
 import groove.util.collect.TreeHashSet;
 
@@ -54,7 +54,7 @@ public final class PatternFactory implements
 
     /**
      * A identity map, mapping previously created instances of
-     * {@link DefaultEdge} to themselves. Used to ensure that edge objects are
+     * {@link PlainEdge} to themselves. Used to ensure that edge objects are
      * reused.
      */
     private final TreeHashSet<PatternEdge> edges;

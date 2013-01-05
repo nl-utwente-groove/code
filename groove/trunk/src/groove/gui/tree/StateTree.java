@@ -16,7 +16,10 @@
  */
 package groove.gui.tree;
 
-import static groove.trans.ResourceKind.RULE;
+import static groove.grammar.model.ResourceKind.RULE;
+import groove.grammar.Rule;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.model.RuleModel;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -33,10 +36,7 @@ import groove.lts.GraphState;
 import groove.lts.MatchResult;
 import groove.lts.RuleTransition;
 import groove.lts.StartGraphState;
-import groove.trans.ResourceKind;
-import groove.trans.Rule;
-import groove.trans.RuleEvent;
-import groove.view.RuleModel;
+import groove.transform.RuleEvent;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;

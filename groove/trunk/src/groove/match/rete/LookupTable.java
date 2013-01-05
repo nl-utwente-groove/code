@@ -16,10 +16,10 @@
  */
 package groove.match.rete;
 
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleElement;
+import groove.grammar.rule.RuleNode;
 import groove.match.rete.LookupEntry.Role;
-import groove.trans.RuleEdge;
-import groove.trans.RuleElement;
-import groove.trans.RuleNode;
 
 import java.util.HashMap;
 

@@ -19,9 +19,9 @@ package groove.gui.action;
 import groove.abstraction.neigh.NeighAbstraction;
 import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
 import groove.abstraction.neigh.shape.Shape;
+import groove.grammar.host.HostGraph;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.trans.HostGraph;
 
 import javax.swing.Action;
 

@@ -16,7 +16,7 @@
  */
 package groove.lts;
 
-import groove.trans.Action;
+import groove.grammar.Action;
 
 /**
  * An object recording the necessary information to reconstruct an

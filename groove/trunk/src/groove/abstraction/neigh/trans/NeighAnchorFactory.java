@@ -17,11 +17,11 @@
 package groove.abstraction.neigh.trans;
 
 import groove.abstraction.neigh.NeighAbsParam;
-import groove.trans.Anchor;
-import groove.trans.AnchorFactory;
-import groove.trans.Rule;
-import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
+import groove.grammar.AnchorFactory;
+import groove.grammar.Rule;
+import groove.grammar.rule.Anchor;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;

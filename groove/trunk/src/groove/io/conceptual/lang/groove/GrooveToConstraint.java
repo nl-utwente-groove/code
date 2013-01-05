@@ -16,6 +16,11 @@
  */
 package groove.io.conceptual.lang.groove;
 
+import groove.grammar.aspect.AspectEdge;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.aspect.AspectLabel;
+import groove.grammar.aspect.AspectNode;
+import groove.grammar.model.RuleModel;
 import groove.graph.GraphRole;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
@@ -49,11 +54,6 @@ import groove.io.conceptual.value.IntValue;
 import groove.io.conceptual.value.RealValue;
 import groove.io.conceptual.value.StringValue;
 import groove.io.conceptual.value.Value;
-import groove.view.RuleModel;
-import groove.view.aspect.AspectEdge;
-import groove.view.aspect.AspectGraph;
-import groove.view.aspect.AspectLabel;
-import groove.view.aspect.AspectNode;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -18,8 +18,8 @@ package groove.abstraction.neigh.shape;
 
 import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
-import groove.graph.TypeLabel;
-import groove.trans.HostNode;
+import groove.grammar.host.HostNode;
+import groove.grammar.type.TypeLabel;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -16,20 +16,20 @@
  */
 package groove.test.graph;
 
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
+import groove.graph.plain.PlainEdge;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainNode;
 
 /**
  * Test class to test <tt>DefaultGraph</tt>
  * @author Arend Rensink
  * @version $Revision$
  */
-public class DefaultGraphTest extends GraphTest<DefaultNode,DefaultEdge> {
+public class DefaultGraphTest extends GraphTest<PlainNode,PlainEdge> {
 
     @Override
-    DefaultGraph createGraph(String name) {
-        return new DefaultGraph(name);
+    PlainGraph createGraph(String name) {
+        return new PlainGraph(name);
     }
 
 }

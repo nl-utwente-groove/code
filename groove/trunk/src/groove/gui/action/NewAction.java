@@ -1,10 +1,10 @@
 package groove.gui.action;
 
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.ResourceKind;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.store.EditType;
-import groove.trans.ResourceKind;
-import groove.view.aspect.AspectGraph;
 
 import java.io.IOException;
 

@@ -22,7 +22,7 @@ import gnu.prolog.term.AtomTerm;
 import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.PrologException;
-import groove.graph.algebra.ValueNode;
+import groove.grammar.host.ValueNode;
 import groove.prolog.builtin.graph.GraphPrologCode;
 
 /**

@@ -1,11 +1,11 @@
 /* $Id: AspectGxl.java,v 1.5 2008-01-30 09:33:42 iovka Exp $ */
 package groove.io.xml;
 
-import groove.graph.DefaultGraph;
+import groove.grammar.aspect.AspectGraph;
 import groove.graph.GraphRole;
+import groove.graph.plain.PlainGraph;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
-import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,10 +50,10 @@ public class AspectGxl implements Xml<AspectGraph> {
      * Unmarshals the URL using the inner marshaller and converts the resulting
      * graph to an {@link AspectGraph}. Derives the name of the graph from the
      * last part of the URL path
-     * @see AspectGraph#newInstance(DefaultGraph)
+     * @see AspectGraph#newInstance(PlainGraph)
      */
     public AspectGraph unmarshalGraph(URL url) throws IOException {
-        DefaultGraph plainGraph = this.marshaller.unmarshalGraph(url);
+        PlainGraph plainGraph = this.marshaller.unmarshalGraph(url);
         plainGraph.setName(extractName(url.getPath()));
         return AspectGraph.newInstance(plainGraph);
     }
@@ -62,10 +62,10 @@ public class AspectGxl implements Xml<AspectGraph> {
      * Unmarshals the file using the inner marshaller and converts the resulting
      * graph to an {@link AspectGraph}. Derives the name of the graph from the
      * name part of the file
-     * @see AspectGraph#newInstance(DefaultGraph)
+     * @see AspectGraph#newInstance(PlainGraph)
      */
     public AspectGraph unmarshalGraph(File file) throws IOException {
-        DefaultGraph plainGraph = this.marshaller.unmarshalGraph(file);
+        PlainGraph plainGraph = this.marshaller.unmarshalGraph(file);
         if (!plainGraph.getRole().equals(GraphRole.HOST)
             && FileType.GXL_FILTER.acceptExtension(file)) {
             // .gxl files can only be loaded as host graphs so we need to
@@ -91,7 +91,7 @@ public class AspectGxl implements Xml<AspectGraph> {
      * The marshaller to get and store graphs, which are then converted to
      * aspect graphs.
      */
-    private final Xml<DefaultGraph> marshaller;
+    private final Xml<PlainGraph> marshaller;
 
     private static final AspectGxl INSTANCE = new AspectGxl();
 }

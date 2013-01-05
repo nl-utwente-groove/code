@@ -20,17 +20,17 @@ import groove.control.CtrlCall;
 import groove.control.CtrlPar;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
-import groove.graph.algebra.ValueNode;
-import groove.trans.AnchorValue;
-import groove.trans.CompositeEvent;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
-import groove.trans.Proof;
-import groove.trans.Rule;
-import groove.trans.RuleEvent;
-import groove.trans.RuleToHostMap;
-import groove.trans.GrammarRecord;
+import groove.grammar.Rule;
+import groove.grammar.host.AnchorValue;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.rule.RuleToHostMap;
+import groove.transform.CompositeEvent;
+import groove.transform.Proof;
+import groove.transform.Record;
+import groove.transform.RuleEvent;
 import groove.util.Visitor;
 import groove.util.collect.KeySet;
 
@@ -105,7 +105,7 @@ public class MatchCollector {
             // matches
             RuleToHostMap boundMap = extractBinding(ct);
             if (boundMap != null) {
-                final GrammarRecord record = this.record;
+                final Record record = this.record;
                 Visitor<Proof,Boolean> eventCollector =
                     new Visitor<Proof,Boolean>(false) {
                         @Override
@@ -268,7 +268,7 @@ public class MatchCollector {
     /** The control state of the graph state, if any. */
     private final CtrlState ctrlState;
     /** The system record is set at construction. */
-    private final GrammarRecord record;
+    private final Record record;
     /** Possibly {@code null} mapping from rules to sets of outgoing
      * transitions for the parent of this state.
      */

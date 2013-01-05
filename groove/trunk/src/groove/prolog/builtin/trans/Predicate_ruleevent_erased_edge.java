@@ -22,10 +22,10 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.RuleEffect;
-import groove.trans.RuleEvent;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.transform.RuleEffect;
+import groove.transform.RuleEvent;
 
 /**
  * Predicate erased_edge(+RuleEvent,+Graph,?Edge)

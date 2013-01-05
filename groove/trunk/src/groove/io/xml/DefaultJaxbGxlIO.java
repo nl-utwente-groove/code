@@ -16,11 +16,11 @@
  */
 package groove.io.xml;
 
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultFactory;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
-import groove.view.FormatException;
+import groove.grammar.model.FormatException;
+import groove.graph.plain.PlainEdge;
+import groove.graph.plain.PlainFactory;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainNode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +30,7 @@ import java.io.InputStream;
  * @author Arend Rensink
  * @version $Revision: 1568 $
  */
-public class DefaultJaxbGxlIO extends AbstractJaxbGxlIO<DefaultNode,DefaultEdge> {
+public class DefaultJaxbGxlIO extends AbstractJaxbGxlIO<PlainNode,PlainEdge> {
     /**
      * Private constructor for the singleton instance.
      */
@@ -46,7 +46,7 @@ public class DefaultJaxbGxlIO extends AbstractJaxbGxlIO<DefaultNode,DefaultEdge>
      *         number.
      */
     @Override
-    protected DefaultNode createNode(String nodeId) {
+    protected PlainNode createNode(String nodeId) {
         // attempt to construct node number from gxl node
         // by looking at trailing number shape of node id
         boolean digitFound = false;
@@ -71,14 +71,14 @@ public class DefaultJaxbGxlIO extends AbstractJaxbGxlIO<DefaultNode,DefaultEdge>
      * of <code>targetNode == null</code>, binary otherwise.
      */
     @Override
-    protected DefaultEdge createEdge(DefaultNode sourceNode, String label,
-            DefaultNode targetNode) {
+    protected PlainEdge createEdge(PlainNode sourceNode, String label,
+            PlainNode targetNode) {
         return elementFactory.createEdge(sourceNode, label, targetNode);
     }
 
     @Override
-    protected DefaultGraph createGraph(String name) {
-        return new DefaultGraph(name);
+    protected PlainGraph createGraph(String name) {
+        return new PlainGraph(name);
     }
 
     /**
@@ -87,9 +87,9 @@ public class DefaultJaxbGxlIO extends AbstractJaxbGxlIO<DefaultNode,DefaultEdge>
      * Specializes the return type.
      */
     @Override
-    public DefaultGraph loadGraph(InputStream in) throws IOException,
+    public PlainGraph loadGraph(InputStream in) throws IOException,
         FormatException {
-        return (DefaultGraph) loadGraphWithMap(in).one();
+        return (PlainGraph) loadGraphWithMap(in).one();
     }
 
     /** Returns the singleton instance of this class. */
@@ -97,8 +97,8 @@ public class DefaultJaxbGxlIO extends AbstractJaxbGxlIO<DefaultNode,DefaultEdge>
         return instance;
     }
 
-    static private final DefaultFactory elementFactory =
-        DefaultFactory.instance();
+    static private final PlainFactory elementFactory =
+        PlainFactory.instance();
     /** Singleton instance of the class. */
     static private final DefaultJaxbGxlIO instance = new DefaultJaxbGxlIO();
 

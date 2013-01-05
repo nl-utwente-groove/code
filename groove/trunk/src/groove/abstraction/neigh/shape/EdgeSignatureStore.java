@@ -20,8 +20,8 @@ import groove.abstraction.Multiplicity;
 import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
+import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
-import groove.graph.TypeLabel;
 
 import java.util.Arrays;
 import java.util.Collections;

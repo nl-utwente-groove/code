@@ -16,9 +16,9 @@
  */
 package groove.explore.result;
 
+import groove.grammar.Rule;
 import groove.lts.GraphState;
 import groove.lts.RuleTransition;
-import groove.trans.Rule;
 
 /**
  * Condition satisfied when a rule is applicable.

@@ -17,9 +17,9 @@
 package groove.lts;
 
 import groove.control.CtrlTransition;
+import groove.grammar.Rule;
 import groove.graph.EdgeComparator;
-import groove.trans.Rule;
-import groove.trans.RuleEvent;
+import groove.transform.RuleEvent;
 
 import java.util.Comparator;
 

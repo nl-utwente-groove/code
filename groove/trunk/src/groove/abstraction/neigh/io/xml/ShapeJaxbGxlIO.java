@@ -27,12 +27,12 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeFactory;
 import groove.abstraction.neigh.shape.ShapeNode;
+import groove.grammar.model.FormatException;
+import groove.grammar.type.TypeGraph;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.graph.TypeGraph;
 import groove.io.xml.AbstractJaxbGxlIO;
-import groove.view.FormatException;
 
 import java.util.List;
 import java.util.Map;

@@ -22,11 +22,11 @@ import static groove.lts.GraphState.Flag.DONE;
 import static groove.lts.GraphState.Flag.ERROR;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
+import groove.grammar.host.HostElement;
+import groove.grammar.host.HostNode;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.trans.HostElement;
-import groove.trans.HostNode;
-import groove.trans.GrammarRecord;
+import groove.transform.Record;
 import groove.util.cache.AbstractCacheHolder;
 import groove.util.cache.CacheReference;
 
@@ -398,7 +398,7 @@ abstract public class AbstractGraphState extends
     }
 
     /** Returns the system record associated with this state. */
-    protected GrammarRecord getRecord() {
+    protected Record getRecord() {
         return getGTS().getRecord();
     }
 

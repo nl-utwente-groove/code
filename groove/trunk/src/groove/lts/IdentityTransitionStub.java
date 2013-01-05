@@ -16,7 +16,7 @@
  */
 package groove.lts;
 
-import groove.trans.HostNode;
+import groove.grammar.host.HostNode;
 
 /**
  * Graph transition stub based on an identity morphism.

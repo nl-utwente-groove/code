@@ -21,7 +21,7 @@ import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
-import groove.graph.TypeLabel;
+import groove.grammar.type.TypeLabel;
 import groove.prolog.builtin.graph.GraphPrologCode;
 
 /**

@@ -28,7 +28,7 @@ import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.algebra.Algebra;
 import groove.algebra.Constant;
-import groove.graph.algebra.ValueNode;
+import groove.grammar.host.ValueNode;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

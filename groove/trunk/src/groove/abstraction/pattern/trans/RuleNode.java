@@ -18,7 +18,7 @@ package groove.abstraction.pattern.trans;
 
 import groove.abstraction.pattern.shape.AbstractPatternNode;
 import groove.abstraction.pattern.shape.TypeNode;
-import groove.trans.HostGraph;
+import groove.grammar.host.HostGraph;
 
 /**
  * Pattern node of rules.

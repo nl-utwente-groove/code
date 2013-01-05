@@ -1,17 +1,17 @@
 package groove.gui.action;
 
 import groove.control.CtrlAut;
+import groove.grammar.Grammar;
+import groove.grammar.model.ControlModel;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.gui.jgraph.CtrlJGraph;
 import groove.gui.tree.LabelTree;
-import groove.trans.Grammar;
-import groove.trans.ResourceKind;
-import groove.view.ControlModel;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import javax.swing.JDialog;
 

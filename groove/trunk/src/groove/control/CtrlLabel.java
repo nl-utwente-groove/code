@@ -16,9 +16,9 @@
  */
 package groove.control;
 
+import groove.grammar.Recipe;
 import groove.graph.AbstractLabel;
 import groove.graph.Label;
-import groove.trans.Recipe;
 
 import java.util.Map;
 

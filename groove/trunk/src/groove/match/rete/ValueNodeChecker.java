@@ -19,9 +19,9 @@ package groove.match.rete;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Constant;
-import groove.graph.algebra.ValueNode;
-import groove.graph.algebra.VariableNode;
-import groove.trans.RuleNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.VariableNode;
 
 import java.util.List;
 

@@ -1,12 +1,12 @@
 package groove.gui.display;
 
 import groove.control.parse.CtrlTokenMaker;
+import groove.grammar.model.FormatError;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.TextBasedModel;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.prolog.util.PrologTokenMaker;
-import groove.view.FormatError;
-import groove.view.GrammarModel;
-import groove.view.TextBasedModel;
 
 import java.awt.BorderLayout;
 import java.util.Collection;

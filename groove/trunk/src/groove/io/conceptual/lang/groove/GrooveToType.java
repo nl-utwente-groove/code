@@ -1,9 +1,9 @@
 package groove.io.conceptual.lang.groove;
 
+import groove.grammar.type.TypeEdge;
+import groove.grammar.type.TypeGraph;
+import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
-import groove.graph.TypeEdge;
-import groove.graph.TypeGraph;
-import groove.graph.TypeNode;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;

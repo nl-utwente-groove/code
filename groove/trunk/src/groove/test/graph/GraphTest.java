@@ -21,13 +21,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import groove.graph.DefaultFactory;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionMap;
+import groove.graph.plain.PlainFactory;
 import groove.io.xml.DefaultGxl;
 
 import java.io.File;
@@ -485,5 +485,5 @@ public abstract class GraphTest<N extends Node,E extends Edge> {
     }
 
     private final DefaultGxl xml = DefaultGxl.getInstance();
-    private final DefaultFactory factory = DefaultFactory.instance();
+    private final PlainFactory factory = PlainFactory.instance();
 }

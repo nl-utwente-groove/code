@@ -16,7 +16,7 @@
  */
 package groove.match.rete;
 
-import groove.rel.RegExpr.Choice;
+import groove.automaton.RegExpr.Choice;
 
 /**
  * A Path checker that implements the semantics of the 

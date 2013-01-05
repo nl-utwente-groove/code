@@ -17,10 +17,10 @@
 package groove.io.ecore2groove;
 
 import static groove.graph.GraphRole.HOST;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
-import groove.graph.DefaultNode;
 import groove.graph.EdgeRole;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainLabel;
+import groove.graph.plain.PlainNode;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,12 +46,12 @@ public class InstanceGraphRep {
 
     private final ModelHandler mh;
 
-    private final DefaultGraph ig;
+    private final PlainGraph ig;
 
-    private Map<EObject,DefaultNode> iClassToNodeMap =
-        new HashMap<EObject,DefaultNode>();
-    private Map<Triple<EObject,EStructuralFeature,EObject>,Stack<DefaultNode>> iReferenceToNodeMap =
-        new HashMap<Triple<EObject,EStructuralFeature,EObject>,Stack<DefaultNode>>();
+    private Map<EObject,PlainNode> iClassToNodeMap =
+        new HashMap<EObject,PlainNode>();
+    private Map<Triple<EObject,EStructuralFeature,EObject>,Stack<PlainNode>> iReferenceToNodeMap =
+        new HashMap<Triple<EObject,EStructuralFeature,EObject>,Stack<PlainNode>>();
     private Set<EObject> iClassReferencesDone = new HashSet<EObject>();
 
     /**
@@ -62,7 +62,7 @@ public class InstanceGraphRep {
      */
     public InstanceGraphRep(String name, ModelHandler m) {
         this.mh = m;
-        this.ig = new DefaultGraph(name);
+        this.ig = new PlainGraph(name);
         this.ig.setRole(HOST);
         // First add instances of of classes to graph, then features
         addClasses(this.mh.getiClasses());
@@ -79,7 +79,7 @@ public class InstanceGraphRep {
             // Add new labeled  node to ig 
             String labelText = GraphLabels.getLabel(iClass.eClass());
 
-            DefaultNode node = this.ig.addNode();
+            PlainNode node = this.ig.addNode();
             this.ig.addEdge(node, labelText, node);
 
             // If this instance EClass is the root element, add the root flag
@@ -113,8 +113,8 @@ public class InstanceGraphRep {
                             EList<EObject> targets =
                                 (EList<EObject>) iClass.eGet(feature, true);
                             boolean ordered = feature.isOrdered();
-                            DefaultNode previous = null;
-                            DefaultNode last = null;
+                            PlainNode previous = null;
+                            PlainNode last = null;
 
                             for (EObject target : targets) {
 
@@ -156,8 +156,8 @@ public class InstanceGraphRep {
                             EList<Object> targets =
                                 (EList<Object>) iClass.eGet(feature, true);
                             boolean ordered = feature.isOrdered();
-                            DefaultNode previous = null;
-                            DefaultNode last = null;
+                            PlainNode previous = null;
+                            PlainNode last = null;
 
                             for (Object iTarget : targets) {
 
@@ -166,8 +166,8 @@ public class InstanceGraphRep {
 
                                 // Add next edge if references are ordered
                                 if (ordered && previous != null) {
-                                    DefaultLabel label =
-                                        DefaultLabel.createLabel("next");
+                                    PlainLabel label =
+                                        PlainLabel.createLabel("next");
                                     this.ig.addEdge(previous, label, last);
                                 }
                                 previous = last;
@@ -208,14 +208,14 @@ public class InstanceGraphRep {
                             target, oppositeRef, opposite))
                         && !this.iReferenceToNodeMap.get(
                             Triple.create(target, oppositeRef, opposite)).isEmpty()) {
-                        Stack<DefaultNode> nodeStack1 =
+                        Stack<PlainNode> nodeStack1 =
                             this.iReferenceToNodeMap.get(Triple.create(
                                 opposite, feature, target));
-                        DefaultNode node1 = nodeStack1.pop();
-                        Stack<DefaultNode> nodeStack2 =
+                        PlainNode node1 = nodeStack1.pop();
+                        Stack<PlainNode> nodeStack2 =
                             this.iReferenceToNodeMap.get(Triple.create(target,
                                 oppositeRef, opposite));
-                        DefaultNode node2 = nodeStack2.pop();
+                        PlainNode node2 = nodeStack2.pop();
                         this.ig.addEdge(node1, "opposite", node2);
                         this.ig.addEdge(node2, "opposite", node1);
                     }
@@ -227,14 +227,14 @@ public class InstanceGraphRep {
                         target, oppositeRef, opposite))
                     && !this.iReferenceToNodeMap.get(
                         Triple.create(target, oppositeRef, opposite)).isEmpty()) {
-                    Stack<DefaultNode> nodeStack1 =
+                    Stack<PlainNode> nodeStack1 =
                         this.iReferenceToNodeMap.get(Triple.create(opposite,
                             feature, target));
-                    DefaultNode node1 = nodeStack1.pop();
-                    Stack<DefaultNode> nodeStack2 =
+                    PlainNode node1 = nodeStack1.pop();
+                    Stack<PlainNode> nodeStack2 =
                         this.iReferenceToNodeMap.get(Triple.create(target,
                             oppositeRef, opposite));
-                    DefaultNode node2 = nodeStack2.pop();
+                    PlainNode node2 = nodeStack2.pop();
                     this.ig.addEdge(node1, "opposite", node2);
                     this.ig.addEdge(node2, "opposite", node1);
                 }
@@ -253,23 +253,23 @@ public class InstanceGraphRep {
      * @require feature instanceof EAttribute, EClass instances must be
      * represented in the instance graph already.
      */
-    private DefaultNode addAttribute(EObject source,
+    private PlainNode addAttribute(EObject source,
             EStructuralFeature feature, Object target) {
         String attributeLabel = GraphLabels.getLabel(feature);
         EDataType attributeType = ((EAttribute) feature).getEAttributeType();
         String datatypeLabel = GraphLabels.getLabel(attributeType, target);
 
         // Create and add a node to represent the EAttribute itself
-        DefaultNode attributeNode = this.ig.addNode();
+        PlainNode attributeNode = this.ig.addNode();
         this.ig.addEdge(attributeNode, attributeLabel, attributeNode);
 
         // Create and add an edge from the container EClass to the EAttribute
-        DefaultNode sourceNode = this.iClassToNodeMap.get(source);
+        PlainNode sourceNode = this.iClassToNodeMap.get(source);
         this.ig.addEdge(sourceNode, feature.getName(), attributeNode);
 
         if (!datatypeLabel.isEmpty()) {
             // Create and add a node to represent that datatype value
-            DefaultNode datatypeNode = this.ig.addNode();
+            PlainNode datatypeNode = this.ig.addNode();
             this.ig.addEdge(datatypeNode, datatypeLabel, datatypeNode);
 
             // Create and add a val edge to the value
@@ -298,40 +298,40 @@ public class InstanceGraphRep {
      * represented in the instance graph already, source and target must be
      * EClass instances.
      */
-    private DefaultNode addReference(EObject source,
+    private PlainNode addReference(EObject source,
             EStructuralFeature feature, EObject target) {
         String labelText = GraphLabels.getLabel(feature);
 
         // Create node to represent the reference and add it to ig
-        DefaultNode node = this.ig.addNode();
+        PlainNode node = this.ig.addNode();
         this.ig.addEdge(node, labelText, node);
 
         // If the reference is a containment reference, add flag:containment
         if (((EReference) feature).isContainment()) {
-            DefaultLabel contLabel =
-                DefaultLabel.createLabel("flag:containment");
+            PlainLabel contLabel =
+                PlainLabel.createLabel("flag:containment");
             this.ig.addEdge(node, contLabel, node);
         }
 
         // Create and add an edge from the source of the EReference to the 
         // EReference node
-        DefaultNode sourceNode = this.iClassToNodeMap.get(source);
+        PlainNode sourceNode = this.iClassToNodeMap.get(source);
         this.ig.addEdge(sourceNode, feature.getName(), node);
 
         // Create and add an edge from the EReference node to the target of the
         // EReference
-        DefaultNode targetNode = this.iClassToNodeMap.get(target);
+        PlainNode targetNode = this.iClassToNodeMap.get(target);
         this.ig.addEdge(node, "val", targetNode);
 
         // Either add the node to the set of nodes that represent the
         // iReference, or add a new set to the map
-        Stack<DefaultNode> nodeStack =
+        Stack<PlainNode> nodeStack =
             this.iReferenceToNodeMap.get(Triple.create(source, feature, target));
 
         if (nodeStack != null) {
             nodeStack.push(node);
         } else {
-            nodeStack = new Stack<DefaultNode>();
+            nodeStack = new Stack<PlainNode>();
             nodeStack.push(node);
             this.iReferenceToNodeMap.put(
                 Triple.create(source, feature, target), nodeStack);
@@ -345,7 +345,7 @@ public class InstanceGraphRep {
      * Get method for the graph that represents the instance model
      * @return the instance graph
      */
-    public DefaultGraph getInstanceGraph() {
+    public PlainGraph getInstanceGraph() {
         return this.ig;
     }
 

@@ -16,7 +16,7 @@
  */
 package groove.gui.action;
 
-import static groove.trans.ResourceKind.RULE;
+import static groove.grammar.model.ResourceKind.RULE;
 import groove.gui.Options;
 import groove.gui.Simulator;
 

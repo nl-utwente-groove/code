@@ -1,10 +1,10 @@
 package groove.gui.action;
 
+import groove.grammar.GrammarProperties;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.PropertiesDialog;
-import groove.trans.GrammarProperties;
 
 import java.io.IOException;
 import java.util.Properties;

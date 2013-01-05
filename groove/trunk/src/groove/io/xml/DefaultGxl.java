@@ -16,9 +16,9 @@
  */
 package groove.io.xml;
 
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
+import groove.graph.plain.PlainEdge;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainNode;
 
 /**
  * Class to convert graphs to GXL format and back. Currently the conversion only
@@ -27,7 +27,7 @@ import groove.graph.DefaultNode;
  * @version $Revision: 2973 $
  */
 public class DefaultGxl extends
-        AbstractGxl<DefaultNode,DefaultEdge,DefaultGraph> {
+        AbstractGxl<PlainNode,PlainEdge,PlainGraph> {
 
     /** Returns the singleton instance of this class. */
     public static DefaultGxl getInstance() {
@@ -44,7 +44,7 @@ public class DefaultGxl extends
     private static final DefaultGxl INSTANCE = new DefaultGxl();
 
     @Override
-    protected GxlIO<DefaultNode,DefaultEdge> getIO() {
+    protected GxlIO<PlainNode,PlainEdge> getIO() {
         return io;
     }
 

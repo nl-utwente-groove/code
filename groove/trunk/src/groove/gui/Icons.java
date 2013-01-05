@@ -16,8 +16,8 @@
  */
 package groove.gui;
 
+import groove.grammar.model.ResourceKind;
 import groove.io.store.EditType;
-import groove.trans.ResourceKind;
 import groove.util.Groove;
 
 import java.awt.Cursor;

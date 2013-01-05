@@ -25,11 +25,11 @@ import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeEdge;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.abstraction.pattern.shape.TypeNode;
+import groove.grammar.model.FormatException;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.io.xml.AbstractJaxbGxlIO;
-import groove.view.FormatException;
 
 import java.util.List;
 import java.util.Map;

@@ -16,10 +16,10 @@
  */
 package groove.io.ecore2groove;
 
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
-import groove.view.aspect.AspectGraph;
+import groove.grammar.aspect.AspectGraph;
+import groove.graph.plain.PlainEdge;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainNode;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,17 +45,17 @@ import org.eclipse.emf.ecore.resource.Resource;
  */
 public class InstanceModelRep {
 
-    private DefaultGraph instanceGraph;
+    private PlainGraph instanceGraph;
     private Resource instanceModel;
 
-    private Set<DefaultEdge> classEdgeSet;
-    private Set<DefaultEdge> referenceEdgeSet;
-    private Set<DefaultEdge> containmentReferenceEdgeSet;
-    private Set<DefaultEdge> attributeEdgeSet;
+    private Set<PlainEdge> classEdgeSet;
+    private Set<PlainEdge> referenceEdgeSet;
+    private Set<PlainEdge> containmentReferenceEdgeSet;
+    private Set<PlainEdge> attributeEdgeSet;
 
-    private DefaultEdge rootEdge;
+    private PlainEdge rootEdge;
 
-    private Map<DefaultNode,DefaultNode> nextNode;
+    private Map<PlainNode,PlainNode> nextNode;
 
     private Map<String,EClass> labelToClass;
     private Map<String,EReference> labelToReference;
@@ -64,11 +64,11 @@ public class InstanceModelRep {
     private Map<String,EEnum> labelToEnum; //delete
     private Map<String,EEnumLiteral> labelToLiteral; //delete
 
-    private Map<DefaultNode,DefaultNode> referenceToVal;
-    private Map<DefaultNode,String> attributeToVal;
-    private Map<DefaultNode,DefaultEdge> featureToType;
+    private Map<PlainNode,PlainNode> referenceToVal;
+    private Map<PlainNode,String> attributeToVal;
+    private Map<PlainNode,PlainEdge> featureToType;
 
-    private Map<DefaultNode,EObject> nodeToObject;
+    private Map<PlainNode,EObject> nodeToObject;
 
     /**
      * Constructor class, given a ModelHandler and an AspectGraph, creates
@@ -81,14 +81,14 @@ public class InstanceModelRep {
     public InstanceModelRep(ModelHandler mh, AspectGraph ig) {
         this.instanceGraph = ig.toPlainGraph();
 
-        this.classEdgeSet = new HashSet<DefaultEdge>();
-        this.referenceEdgeSet = new HashSet<DefaultEdge>();
-        this.containmentReferenceEdgeSet = new HashSet<DefaultEdge>();
-        this.attributeEdgeSet = new HashSet<DefaultEdge>();
+        this.classEdgeSet = new HashSet<PlainEdge>();
+        this.referenceEdgeSet = new HashSet<PlainEdge>();
+        this.containmentReferenceEdgeSet = new HashSet<PlainEdge>();
+        this.attributeEdgeSet = new HashSet<PlainEdge>();
 
         this.rootEdge = null;
 
-        this.nextNode = new HashMap<DefaultNode,DefaultNode>();
+        this.nextNode = new HashMap<PlainNode,PlainNode>();
 
         this.labelToClass = new HashMap<String,EClass>();
         this.labelToReference = new HashMap<String,EReference>();
@@ -97,11 +97,11 @@ public class InstanceModelRep {
         this.labelToEnum = new HashMap<String,EEnum>(); //delete
         this.labelToLiteral = new HashMap<String,EEnumLiteral>(); //delete
 
-        this.referenceToVal = new HashMap<DefaultNode,DefaultNode>();
-        this.attributeToVal = new HashMap<DefaultNode,String>();
-        this.featureToType = new HashMap<DefaultNode,DefaultEdge>();
+        this.referenceToVal = new HashMap<PlainNode,PlainNode>();
+        this.attributeToVal = new HashMap<PlainNode,String>();
+        this.featureToType = new HashMap<PlainNode,PlainEdge>();
 
-        this.nodeToObject = new HashMap<DefaultNode,EObject>();
+        this.nodeToObject = new HashMap<PlainNode,EObject>();
 
         // Fill maps from label text to the EObjects from the Ecore model
         for (EClass eClass : mh.getEClasses()) {
@@ -134,7 +134,7 @@ public class InstanceModelRep {
         }
 
         // Fill edge sets with self edges of nodes that represent this type
-        for (DefaultEdge edge : this.instanceGraph.edgeSet()) {
+        for (PlainEdge edge : this.instanceGraph.edgeSet()) {
             if (edge.source() == edge.target()) {
                 if (this.labelToClass.containsKey(edge.label().text())) {
                     this.classEdgeSet.add(edge);
@@ -152,9 +152,9 @@ public class InstanceModelRep {
                 } else if (this.labelToAttribute.containsKey(edge.label().text())) {
                     this.attributeEdgeSet.add(edge);
                     this.featureToType.put(edge.source(), edge);
-                    DefaultNode attrVal = getValue(edge.source());
+                    PlainNode attrVal = getValue(edge.source());
                     if (attrVal != null) {
-                        for (DefaultEdge outEdge : this.instanceGraph.outEdgeSet(attrVal)) {
+                        for (PlainEdge outEdge : this.instanceGraph.outEdgeSet(attrVal)) {
                             String outLabelText = outEdge.label().text();
                             if (outLabelText.startsWith("flag:")
                                 || outLabelText.startsWith("int:")
@@ -211,20 +211,20 @@ public class InstanceModelRep {
      * @param startEdge Edge on node to recursively add contained classes of
      */
     @SuppressWarnings("unchecked")
-    private void addContainedClasses(DefaultEdge startEdge) {
+    private void addContainedClasses(PlainEdge startEdge) {
         // Check all outgoing edges from the node of this the startEdge
-        for (DefaultEdge outEdge : this.instanceGraph.outEdgeSet(startEdge.source())) {
+        for (PlainEdge outEdge : this.instanceGraph.outEdgeSet(startEdge.source())) {
 
             // Get type: edge of target node, and if exists check if it
             // represents a containment reference
-            DefaultEdge refEdge = this.featureToType.get(outEdge.target());
+            PlainEdge refEdge = this.featureToType.get(outEdge.target());
             if (refEdge != null
                 && this.containmentReferenceEdgeSet.contains(refEdge)) {
                 // When not ordered, the order doesn't matter
                 if (!this.labelToContainmentReference.get(
                     refEdge.label().text()).isOrdered()) {
 
-                    DefaultEdge valueEdge =
+                    PlainEdge valueEdge =
                         this.featureToType.get(this.referenceToVal.get(refEdge.source()));
                     EClass valueEClass =
                         this.labelToClass.get(valueEdge.label().text());
@@ -256,9 +256,9 @@ public class InstanceModelRep {
                 } else {
                     if (!this.nextNode.containsValue(outEdge.target())) {
 
-                        DefaultNode next = outEdge.target();
+                        PlainNode next = outEdge.target();
                         do {
-                            DefaultEdge valueEdge =
+                            PlainEdge valueEdge =
                                 this.featureToType.get(this.referenceToVal.get(next));
                             EClass valueEClass =
                                 this.labelToClass.get(valueEdge.label().text());
@@ -307,13 +307,13 @@ public class InstanceModelRep {
      */
     private void addStructuralFeatures() {
         // For all type edges of nodes that represent classes
-        for (DefaultEdge classEdge : this.classEdgeSet) {
+        for (PlainEdge classEdge : this.classEdgeSet) {
 
             // Check all outgoing edges from the node of this the classEdge
-            for (DefaultEdge outEdge : this.instanceGraph.outEdgeSet(classEdge.source())) {
+            for (PlainEdge outEdge : this.instanceGraph.outEdgeSet(classEdge.source())) {
 
                 // Get type: edge of target node, and if it exists 
-                DefaultEdge featureEdge =
+                PlainEdge featureEdge =
                     this.featureToType.get(outEdge.target());
                 if (featureEdge != null) {
 
@@ -340,7 +340,7 @@ public class InstanceModelRep {
      * @param featureEdge edge of the EAttribute node type
      */
     @SuppressWarnings("unchecked")
-    private void addAttribute(DefaultEdge containerEdge, DefaultEdge featureEdge) {
+    private void addAttribute(PlainEdge containerEdge, PlainEdge featureEdge) {
         // check if it is ordered, and when not just add it
         if (!this.labelToAttribute.get(featureEdge.label().text()).isOrdered()) {
 
@@ -379,7 +379,7 @@ public class InstanceModelRep {
 
             // Else check if it is the first in a sequence. If not, then ignore it
         } else if (!this.nextNode.containsValue(featureEdge.target())) {
-            DefaultNode next = featureEdge.source();
+            PlainNode next = featureEdge.source();
             do {
                 // create a new instance of a literal to add
                 String attrValue = this.attributeToVal.get(next);
@@ -427,10 +427,10 @@ public class InstanceModelRep {
      * @param containerEdge edge of the EClass node type
      * @param featureEdge edge of the EReference node type
      */
-    private void addReference(DefaultEdge containerEdge, DefaultEdge featureEdge) {
+    private void addReference(PlainEdge containerEdge, PlainEdge featureEdge) {
         // check if it is ordered, and when not just add it
         if (!this.labelToReference.get(featureEdge.label().text()).isOrdered()) {
-            DefaultEdge valueEdge =
+            PlainEdge valueEdge =
                 this.featureToType.get(this.referenceToVal.get(featureEdge.source()));
 
             // Get the value of the EReference from the nodeToObject map
@@ -454,9 +454,9 @@ public class InstanceModelRep {
             }
             // Else check if it is the first in a sequence. If not, then ignore it
         } else if (!this.nextNode.containsValue(featureEdge.target())) {
-            DefaultNode next = featureEdge.source();
+            PlainNode next = featureEdge.source();
             do {
-                DefaultEdge valueEdge =
+                PlainEdge valueEdge =
                     this.featureToType.get(this.referenceToVal.get(next));
 
                 // Get the value of the EReference from the nodeToObject map
@@ -494,10 +494,10 @@ public class InstanceModelRep {
      * @param featureNode The node representing an EStructuralFeature
      * @returns The node representing the value 
      */
-    private DefaultNode getValue(DefaultNode featureNode) {
-        DefaultNode value = null;
+    private PlainNode getValue(PlainNode featureNode) {
+        PlainNode value = null;
 
-        for (DefaultEdge outEdge : this.instanceGraph.outEdgeSet(featureNode)) {
+        for (PlainEdge outEdge : this.instanceGraph.outEdgeSet(featureNode)) {
             if (outEdge.label().text().equals("val")) {
                 value = outEdge.target();
             }

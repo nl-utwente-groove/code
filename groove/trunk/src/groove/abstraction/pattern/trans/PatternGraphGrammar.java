@@ -19,8 +19,8 @@ package groove.abstraction.pattern.trans;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.control.CtrlAut;
-import groove.trans.Grammar;
-import groove.trans.Rule;
+import groove.grammar.Grammar;
+import groove.grammar.Rule;
 
 import java.util.Map;
 import java.util.TreeMap;

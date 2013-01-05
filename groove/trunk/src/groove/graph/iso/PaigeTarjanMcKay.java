@@ -16,13 +16,13 @@
  */
 package groove.graph.iso;
 
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.type.TypeLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.TypeLabel;
-import groove.graph.algebra.ValueNode;
-import groove.trans.HostNode;
 import groove.util.collect.TreeHashSet;
 
 import java.util.ArrayList;

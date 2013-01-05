@@ -17,37 +17,37 @@
 package groove.match.rete;
 
 import groove.algebra.Constant;
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
+import groove.automaton.RegExpr;
+import groove.grammar.Condition;
+import groove.grammar.Grammar;
+import groove.grammar.Rule;
+import groove.grammar.Condition.Op;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostFactory;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.rule.DefaultRuleNode;
+import groove.grammar.rule.OperatorNode;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleElement;
+import groove.grammar.rule.RuleFactory;
+import groove.grammar.rule.RuleGraph;
+import groove.grammar.rule.RuleGraphMorphism;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.VariableNode;
+import groove.grammar.type.TypeGraph;
+import groove.grammar.type.TypeNode;
 import groove.graph.EdgeComparator;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
-import groove.graph.TypeGraph;
-import groove.graph.TypeNode;
-import groove.graph.algebra.OperatorNode;
-import groove.graph.algebra.VariableNode;
+import groove.graph.plain.PlainEdge;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainNode;
 import groove.io.FileType;
 import groove.io.xml.DefaultGxl;
 import groove.match.rete.LookupEntry.Role;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
-import groove.rel.RegExpr;
-import groove.trans.Condition;
-import groove.trans.Condition.Op;
-import groove.trans.DefaultRuleNode;
-import groove.trans.Grammar;
-import groove.trans.HostEdge;
-import groove.trans.HostFactory;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
-import groove.trans.Rule;
-import groove.trans.RuleEdge;
-import groove.trans.RuleElement;
-import groove.trans.RuleFactory;
-import groove.trans.RuleGraph;
-import groove.trans.RuleGraphMorphism;
-import groove.trans.RuleNode;
 import groove.util.collect.TreeHashSet;
 
 import java.io.File;
@@ -1101,12 +1101,12 @@ public class ReteNetwork {
     }
 
     /** Creates and returns a graph showing the structure of this RETE network. */
-    public DefaultGraph toPlainGraph() {
-        DefaultGraph graph = new DefaultGraph(this.grammarName + "-rete");
+    public PlainGraph toPlainGraph() {
+        PlainGraph graph = new PlainGraph(this.grammarName + "-rete");
         graph.setRole(GraphRole.RETE);
-        Map<ReteNetworkNode,DefaultNode> map =
-            new HashMap<ReteNetworkNode,DefaultNode>();
-        DefaultNode rootNode = graph.addNode();
+        Map<ReteNetworkNode,PlainNode> map =
+            new HashMap<ReteNetworkNode,PlainNode>();
+        PlainNode rootNode = graph.addNode();
         map.put(this.getRoot(), rootNode);
         graph.addEdge(rootNode, "ROOT", rootNode);
         addChildren(graph, map, this.getRoot());
@@ -1116,15 +1116,15 @@ public class ReteNetwork {
         return graph;
     }
 
-    private void addQuantifierCountCheckers(DefaultGraph graph,
-            Map<ReteNetworkNode,DefaultNode> map) {
+    private void addQuantifierCountCheckers(PlainGraph graph,
+            Map<ReteNetworkNode,PlainNode> map) {
         for (ConditionChecker cc : this.getConditonCheckerNodes()) {
             QuantifierCountChecker qcc = cc.getCountCheckerNode();
             if (qcc != null) {
-                DefaultNode qccNode = graph.addNode();
+                PlainNode qccNode = graph.addNode();
                 map.put(qcc, qccNode);
-                DefaultEdge[] flags = makeNNodeLabels(qcc, qccNode);
-                for (DefaultEdge f : flags) {
+                PlainEdge[] flags = makeNNodeLabels(qcc, qccNode);
+                for (PlainEdge f : flags) {
                     graph.addEdgeContext(f);
                 }
                 String l = "count";
@@ -1134,22 +1134,22 @@ public class ReteNetwork {
         }
     }
 
-    private void addEmptyConditions(DefaultGraph graph,
-            Map<ReteNetworkNode,DefaultNode> map) {
+    private void addEmptyConditions(PlainGraph graph,
+            Map<ReteNetworkNode,PlainNode> map) {
         for (ConditionChecker cc : this.getConditonCheckerNodes()) {
             if (cc.isEmpty()) {
-                DefaultNode conditionCheckerNode = graph.addNode();
+                PlainNode conditionCheckerNode = graph.addNode();
                 map.put(cc, conditionCheckerNode);
-                DefaultEdge[] flags = makeNNodeLabels(cc, conditionCheckerNode);
-                for (DefaultEdge f : flags) {
+                PlainEdge[] flags = makeNNodeLabels(cc, conditionCheckerNode);
+                for (PlainEdge f : flags) {
                     graph.addEdgeContext(f);
                 }
             }
         }
     }
 
-    private void addSubConditionEdges(DefaultGraph graph,
-            Map<ReteNetworkNode,DefaultNode> map) {
+    private void addSubConditionEdges(PlainGraph graph,
+            Map<ReteNetworkNode,PlainNode> map) {
         for (ConditionChecker cc : this.getConditonCheckerNodes()) {
             ConditionChecker parent = cc.getParent();
             if (parent != null) {
@@ -1167,9 +1167,9 @@ public class ReteNetwork {
         }
     }
 
-    private void addChildren(DefaultGraph graph,
-            Map<ReteNetworkNode,DefaultNode> map, ReteNetworkNode nnode) {
-        DefaultNode jNode = map.get(nnode);
+    private void addChildren(PlainGraph graph,
+            Map<ReteNetworkNode,PlainNode> map, ReteNetworkNode nnode) {
+        PlainNode jNode = map.get(nnode);
         boolean navigate;
         if (jNode != null) {
             ReteNetworkNode previous = null;
@@ -1178,12 +1178,12 @@ public class ReteNetwork {
                 repeatCounter =
                     (previous == childNNode) ? repeatCounter + 1 : 0;
                 navigate = false;
-                DefaultNode childJNode = map.get(childNNode);
+                PlainNode childJNode = map.get(childNNode);
                 if (childJNode == null) {
                     childJNode = graph.addNode();
-                    DefaultEdge[] flags =
+                    PlainEdge[] flags =
                         makeNNodeLabels(childNNode, childJNode);
-                    for (DefaultEdge f : flags) {
+                    for (PlainEdge f : flags) {
                         graph.addEdgeContext(f);
                     }
                     map.put(childNNode, childJNode);
@@ -1217,73 +1217,73 @@ public class ReteNetwork {
         }
     }
 
-    private DefaultEdge[] makeNNodeLabels(ReteNetworkNode nnode,
-            DefaultNode source) {
-        ArrayList<DefaultEdge> result = new ArrayList<DefaultEdge>();
+    private PlainEdge[] makeNNodeLabels(ReteNetworkNode nnode,
+            PlainNode source) {
+        ArrayList<PlainEdge> result = new ArrayList<PlainEdge>();
         if (nnode instanceof RootNode) {
-            result.add(DefaultEdge.createEdge(source, "ROOT", source));
+            result.add(PlainEdge.createEdge(source, "ROOT", source));
         } else if (nnode instanceof DefaultNodeChecker) {
-            result.add(DefaultEdge.createEdge(source, "Node Checker", source));
-            result.add(DefaultEdge.createEdge(source,
+            result.add(PlainEdge.createEdge(source, "Node Checker", source));
+            result.add(PlainEdge.createEdge(source,
                 ((DefaultNodeChecker) nnode).getNode().toString(), source));
         } else if (nnode instanceof ValueNodeChecker) {
-            result.add(DefaultEdge.createEdge(
+            result.add(PlainEdge.createEdge(
                 source,
                 String.format(
                     "Value Node Checker - %s ",
                     ((VariableNode) ((ValueNodeChecker) nnode).getNode()).getConstant().getSymbol()),
                 source));
-            result.add(DefaultEdge.createEdge(source, ":"
+            result.add(PlainEdge.createEdge(source, ":"
                 + ((ValueNodeChecker) nnode).getNode().toString(), source));
         } else if (nnode instanceof QuantifierCountChecker) {
-            result.add(DefaultEdge.createEdge(source,
+            result.add(PlainEdge.createEdge(source,
                 String.format("- Quantifier Count Checker "), source));
             for (int i = 0; i < ((QuantifierCountChecker) nnode).getPattern().length; i++) {
                 RuleElement e =
                     ((QuantifierCountChecker) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source, ":" + "--" + i + " "
+                result.add(PlainEdge.createEdge(source, ":" + "--" + i + " "
                     + e.toString(), source));
             }
 
         } else if (nnode instanceof EdgeCheckerNode) {
-            result.add(DefaultEdge.createEdge(source, "Edge Checker", source));
-            result.add(DefaultEdge.createEdge(source, ":"
+            result.add(PlainEdge.createEdge(source, "Edge Checker", source));
+            result.add(PlainEdge.createEdge(source, ":"
                 + ((EdgeCheckerNode) nnode).getEdge().toString(), source));
         } else if (nnode instanceof SubgraphCheckerNode) {
             String[] lines = nnode.toString().split("\n");
             for (String s : lines) {
-                result.add(DefaultEdge.createEdge(source, s, source));
+                result.add(PlainEdge.createEdge(source, s, source));
             }
         } else if (nnode instanceof DisconnectedSubgraphChecker) {
-            result.add(DefaultEdge.createEdge(source,
+            result.add(PlainEdge.createEdge(source,
                 "DisconnectedSubgraphChecker", source));
         } else if (nnode instanceof ProductionNode) {
-            result.add(DefaultEdge.createEdge(source, "- Production Node "
+            result.add(PlainEdge.createEdge(source, "- Production Node "
                 + (((ConditionChecker) nnode).isIndexed() ? "(idx)" : "()"),
                 source));
-            result.add(DefaultEdge.createEdge(source, "-"
+            result.add(PlainEdge.createEdge(source, "-"
                 + ((ProductionNode) nnode).getCondition().getName(), source));
             for (int i = 0; i < ((ProductionNode) nnode).getPattern().length; i++) {
                 RuleElement e = ((ProductionNode) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source, ":" + "--" + i + " "
+                result.add(PlainEdge.createEdge(source, ":" + "--" + i + " "
                     + e.toString(), source));
             }
         } else if (nnode instanceof ConditionChecker) {
-            result.add(DefaultEdge.createEdge(source, "- Condition Checker "
+            result.add(PlainEdge.createEdge(source, "- Condition Checker "
                 + (((ConditionChecker) nnode).isIndexed() ? "(idx)" : "()"),
                 source));
             for (int i = 0; i < ((ConditionChecker) nnode).getPattern().length; i++) {
                 RuleElement e = ((ConditionChecker) nnode).getPattern()[i];
-                result.add(DefaultEdge.createEdge(source, ":" + "--" + i + " "
+                result.add(PlainEdge.createEdge(source, ":" + "--" + i + " "
                     + e.toString(), source));
             }
         } else {
             String[] lines = nnode.toString().split("\n");
             for (String s : lines) {
-                result.add(DefaultEdge.createEdge(source, s, source));
+                result.add(PlainEdge.createEdge(source, s, source));
             }
         }
-        DefaultEdge[] res = new DefaultEdge[result.size()];
+        PlainEdge[] res = new PlainEdge[result.size()];
         return result.toArray(res);
     }
 
@@ -1295,7 +1295,7 @@ public class ReteNetwork {
      * @param name the name of the network
      */
     public void save(String filePath, String name) {
-        DefaultGraph graph = toPlainGraph();
+        PlainGraph graph = toPlainGraph();
         graph.setName(name);
         File file = new File(FileType.GXL_FILTER.addExtension(filePath));
         try {

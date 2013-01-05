@@ -21,12 +21,12 @@ import groove.abstraction.MyHashMap;
 import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.Util;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
-import groove.graph.TypeLabel;
-import groove.graph.TypeNode;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
 import groove.util.collect.TreeHashSet;
 
 import java.util.BitSet;

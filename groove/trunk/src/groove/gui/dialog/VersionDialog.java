@@ -16,8 +16,8 @@
  */
 package groove.gui.dialog;
 
+import groove.grammar.GrammarProperties;
 import groove.io.HTMLConverter;
-import groove.trans.GrammarProperties;
 import groove.util.Version;
 
 import java.awt.BorderLayout;

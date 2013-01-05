@@ -16,8 +16,8 @@
  */
 package groove.match.rete;
 
-import groove.rel.RegExpr.Atom;
-import groove.trans.HostEdge;
+import groove.automaton.RegExpr.Atom;
+import groove.grammar.host.HostEdge;
 
 /**
  * @author Arash Jalali

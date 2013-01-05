@@ -16,11 +16,11 @@
  */
 package groove.match.rete;
 
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostNode;
+import groove.grammar.rule.Valuation;
 import groove.graph.NodeComparator;
 import groove.match.rete.ClosurePathChecker.ClosureInfo;
-import groove.rel.Valuation;
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
 import groove.util.collect.TreeHashSet;
 
 import java.util.Set;

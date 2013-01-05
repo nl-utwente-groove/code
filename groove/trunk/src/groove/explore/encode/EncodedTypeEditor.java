@@ -16,7 +16,7 @@
  */
 package groove.explore.encode;
 
-import groove.view.GrammarModel;
+import groove.grammar.model.GrammarModel;
 
 import java.awt.LayoutManager;
 import java.util.ArrayList;

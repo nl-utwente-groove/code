@@ -16,8 +16,8 @@
  */
 package groove.abstraction.neigh.shape;
 
-import groove.graph.TypeNode;
-import groove.trans.DefaultHostNode;
+import groove.grammar.host.DefaultHostNode;
+import groove.grammar.type.TypeNode;
 
 /**
  * Class that implements the nodes of a shape.

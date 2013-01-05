@@ -16,9 +16,9 @@
  */
 package groove.gui.tree;
 
+import groove.grammar.Recipe;
 import groove.gui.Icons;
 import groove.io.HTMLConverter;
-import groove.trans.Recipe;
 
 import javax.swing.Icon;
 

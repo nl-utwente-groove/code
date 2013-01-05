@@ -18,7 +18,7 @@ package groove.abstraction.neigh;
 
 import groove.abstraction.AbsParameters;
 import groove.abstraction.MyHashSet;
-import groove.graph.TypeLabel;
+import groove.grammar.type.TypeLabel;
 
 import java.util.Set;
 

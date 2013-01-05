@@ -16,10 +16,10 @@
  */
 package groove.gui.action;
 
+import groove.grammar.model.GrammarModel;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.view.GrammarModel;
 
 import javax.swing.Action;
 

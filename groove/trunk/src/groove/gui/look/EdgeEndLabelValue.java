@@ -16,11 +16,11 @@
  */
 package groove.gui.look;
 
+import groove.grammar.aspect.AspectEdge;
 import groove.graph.GraphRole;
 import groove.graph.Multiplicity;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJVertex;
-import groove.view.aspect.AspectEdge;
 
 /**
  * Value of the edge source or target label (typically the outgoing/incoming multiplicity).

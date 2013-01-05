@@ -20,11 +20,11 @@ import static org.junit.Assert.fail;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.SignatureKind;
-import groove.graph.LabelPattern;
-import groove.trans.DefaultHostGraph;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
-import groove.view.FormatException;
+import groove.grammar.host.DefaultHostGraph;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.model.FormatException;
+import groove.grammar.type.LabelPattern;
 import junit.framework.Assert;
 
 import org.junit.Test;

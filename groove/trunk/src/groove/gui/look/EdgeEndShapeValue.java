@@ -16,9 +16,9 @@
  */
 package groove.gui.look;
 
+import groove.grammar.aspect.AspectKind;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.JCell;
-import groove.view.aspect.AspectKind;
 
 import java.util.Set;
 

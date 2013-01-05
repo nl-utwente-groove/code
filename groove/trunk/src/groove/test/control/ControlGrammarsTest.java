@@ -19,11 +19,11 @@ package groove.test.control;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import groove.explore.Exploration;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
 import groove.lts.GTS;
-import groove.trans.ResourceKind;
 import groove.util.Groove;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import java.io.IOException;
 

@@ -16,16 +16,16 @@
  */
 package groove.test.match.rete;
 
+import groove.grammar.Grammar;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
 import groove.match.rete.ConditionChecker;
 import groove.match.rete.ProductionNode;
 import groove.match.rete.ReteNetwork;
 import groove.match.rete.ReteNetworkNode;
 import groove.match.rete.ReteSearchEngine;
 import groove.match.rete.ReteSimpleMatch;
-import groove.trans.Grammar;
-import groove.trans.ResourceKind;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;

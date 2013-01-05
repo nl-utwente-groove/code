@@ -16,8 +16,8 @@
  */
 package groove.test.rel;
 
-import groove.rel.MatrixAutomaton;
-import groove.rel.RegAut;
+import groove.automaton.MatrixAutomaton;
+import groove.automaton.RegAut;
 
 /**
  * Tests the available {@link RegAut} interface.

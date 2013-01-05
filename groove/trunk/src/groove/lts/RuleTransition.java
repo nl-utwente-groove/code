@@ -17,13 +17,13 @@
 package groove.lts;
 
 import groove.control.CtrlTransition;
-import groove.trans.HostGraphMorphism;
-import groove.trans.HostNode;
-import groove.trans.Proof;
-import groove.trans.Recipe;
-import groove.trans.RuleApplication;
-import groove.trans.RuleEvent;
-import groove.view.FormatException;
+import groove.grammar.Recipe;
+import groove.grammar.host.HostGraphMorphism;
+import groove.grammar.host.HostNode;
+import groove.grammar.model.FormatException;
+import groove.transform.Proof;
+import groove.transform.RuleApplication;
+import groove.transform.RuleEvent;
 
 /**
  * 

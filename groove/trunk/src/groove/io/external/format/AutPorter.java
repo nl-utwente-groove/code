@@ -16,21 +16,21 @@
  */
 package groove.io.external.format;
 
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Node;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainNode;
 import groove.io.FileType;
 import groove.io.external.AbstractFormatExporter;
 import groove.io.external.Exporter.Exportable;
 import groove.io.external.Format;
 import groove.io.external.FormatImporter;
 import groove.io.external.PortException;
-import groove.trans.ResourceKind;
-import groove.view.GrammarModel;
-import groove.view.aspect.AspectGraph;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -91,19 +91,19 @@ public final class AutPorter extends AbstractFormatExporter implements
     @Override
     public Set<Resource> doImport(String name, InputStream stream,
             Format format, GrammarModel grammar) throws PortException {
-        Map<String,DefaultNode> result = new HashMap<String,DefaultNode>();
+        Map<String,PlainNode> result = new HashMap<String,PlainNode>();
         BufferedReader reader =
             new BufferedReader(new InputStreamReader(stream));
         int linenr = 0;
         try {
-            DefaultGraph graph = new DefaultGraph(name);
+            PlainGraph graph = new PlainGraph(name);
             String line = reader.readLine();
             linenr++;
             int rootStart = line.indexOf('(') + 1;
             int edgeCountStart = line.indexOf(',') + 1;
             int root =
                 Integer.parseInt(line.substring(rootStart, edgeCountStart - 1).trim());
-            DefaultNode rootNode = graph.addNode(root);
+            PlainNode rootNode = graph.addNode(root);
             result.put("" + root, rootNode);
             graph.addEdge(rootNode, ROOT_LABEL, rootNode);
             for (line = reader.readLine(); line != null; line =
@@ -120,8 +120,8 @@ public final class AutPorter extends AbstractFormatExporter implements
                     int target =
                         Integer.parseInt(line.substring(targetStart,
                             line.lastIndexOf(')')).trim());
-                    DefaultNode sourceNode = graph.addNode(source);
-                    DefaultNode targetNode = graph.addNode(target);
+                    PlainNode sourceNode = graph.addNode(source);
+                    PlainNode targetNode = graph.addNode(target);
                     result.put("" + source, sourceNode);
                     result.put("" + target, targetNode);
                     graph.addEdge(sourceNode, label, targetNode);

@@ -16,7 +16,7 @@
  */
 package groove.match.rete;
 
-import groove.trans.RuleElement;
+import groove.grammar.rule.RuleElement;
 
 import java.util.ArrayList;
 import java.util.List;

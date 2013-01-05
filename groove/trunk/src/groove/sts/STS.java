@@ -1,22 +1,22 @@
 package groove.sts;
 
+import groove.grammar.Condition;
+import groove.grammar.Rule;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.rule.AnchorKey;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleGraph;
+import groove.grammar.rule.RuleLabel;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.RuleToHostMap;
+import groove.grammar.rule.VariableNode;
+import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
-import groove.graph.TypeLabel;
-import groove.graph.algebra.ValueNode;
-import groove.graph.algebra.VariableNode;
 import groove.lts.MatchResult;
-import groove.trans.AnchorKey;
-import groove.trans.Condition;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
-import groove.trans.Rule;
-import groove.trans.RuleEdge;
-import groove.trans.RuleEvent;
-import groove.trans.RuleGraph;
-import groove.trans.RuleLabel;
-import groove.trans.RuleNode;
-import groove.trans.RuleToHostMap;
+import groove.transform.RuleEvent;
 import groove.util.Pair;
 
 import java.util.HashMap;

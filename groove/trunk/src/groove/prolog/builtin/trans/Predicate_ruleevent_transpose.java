@@ -23,12 +23,12 @@ import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleNode;
 import groove.graph.Edge;
 import groove.graph.Node;
-import groove.trans.RuleEdge;
-import groove.trans.RuleEvent;
-import groove.trans.RuleNode;
-import groove.trans.BasicEvent;
+import groove.transform.BasicEvent;
+import groove.transform.RuleEvent;
 
 /**
  * Predicate ruleevent_transpose(+RuleEvent,+Node,?Node)

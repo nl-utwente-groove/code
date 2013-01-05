@@ -17,13 +17,13 @@
 package groove.lts;
 
 import groove.control.CtrlTransition;
-import groove.trans.CompositeEvent;
-import groove.trans.HostNode;
-import groove.trans.MergeMap;
-import groove.trans.Rule;
-import groove.trans.RuleEffect;
-import groove.trans.RuleEffect.Fragment;
-import groove.trans.RuleEvent;
+import groove.grammar.Rule;
+import groove.grammar.host.HostNode;
+import groove.transform.CompositeEvent;
+import groove.transform.MergeMap;
+import groove.transform.RuleEffect;
+import groove.transform.RuleEvent;
+import groove.transform.RuleEffect.Fragment;
 import groove.util.Reporter;
 
 import java.util.Set;

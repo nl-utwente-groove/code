@@ -22,10 +22,10 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
-import groove.trans.RuleEffect;
-import groove.trans.RuleEvent;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.transform.RuleEffect;
+import groove.transform.RuleEvent;
 
 import java.util.Collection;
 

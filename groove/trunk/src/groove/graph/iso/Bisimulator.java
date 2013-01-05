@@ -16,14 +16,14 @@
  */
 package groove.graph.iso;
 
+import groove.grammar.host.HostElement;
+import groove.grammar.host.ValueNode;
+import groove.grammar.type.TypeLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.TypeLabel;
-import groove.graph.algebra.ValueNode;
-import groove.trans.HostElement;
 import groove.util.collect.IntSet;
 import groove.util.collect.TreeIntSet;
 

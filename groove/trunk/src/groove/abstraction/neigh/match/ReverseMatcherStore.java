@@ -17,12 +17,12 @@
 package groove.abstraction.neigh.match;
 
 import groove.abstraction.MyHashMap;
+import groove.grammar.Condition;
+import groove.grammar.Rule;
+import groove.grammar.rule.Anchor;
 import groove.match.Matcher;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine.SearchMode;
-import groove.trans.Anchor;
-import groove.trans.Condition;
-import groove.trans.Rule;
 
 import java.util.Map;
 

@@ -26,7 +26,7 @@ import groove.lts.RuleTransition;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine;
 import groove.match.rete.ReteSearchEngine;
-import groove.trans.DeltaStore;
+import groove.transform.DeltaStore;
 import groove.util.Reporter;
 
 import java.util.ArrayList;

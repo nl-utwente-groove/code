@@ -21,9 +21,9 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
-import groove.graph.TypeGraph;
-import groove.graph.TypeLabel;
-import groove.graph.TypeNode;
+import groove.grammar.type.TypeGraph;
+import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.builtin.graph.GraphPrologCode;
 

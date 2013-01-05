@@ -22,7 +22,11 @@ import groove.explore.encode.TemplateList;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationStatistics;
-import groove.graph.DefaultGraph;
+import groove.grammar.Grammar;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.graph.plain.PlainGraph;
 import groove.io.FileType;
 import groove.io.external.Exporter;
 import groove.io.external.Exporter.Exportable;
@@ -31,13 +35,9 @@ import groove.io.external.FormatExporter;
 import groove.io.external.PortException;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.trans.Grammar;
-import groove.trans.ResourceKind;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
 import groove.util.StoreCommandLineOption;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -442,7 +442,7 @@ public class Generator extends CommandLineTool {
         }
 
         // Create the LTS view to be exported.
-        DefaultGraph lts =
+        PlainGraph lts =
             getGTS().toPlainGraph(flags.labelFinalStates,
                 flags.labelStartState, flags.labelOpenStates,
                 flags.exportStateNames);

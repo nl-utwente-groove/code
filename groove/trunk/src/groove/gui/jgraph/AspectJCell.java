@@ -16,9 +16,9 @@
  */
 package groove.gui.jgraph;
 
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.aspect.AspectKind;
 import groove.graph.GraphRole;
-import groove.view.aspect.AspectGraph;
-import groove.view.aspect.AspectKind;
 
 import java.util.Set;
 

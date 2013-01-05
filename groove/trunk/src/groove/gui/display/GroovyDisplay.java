@@ -16,10 +16,10 @@
  */
 package groove.gui.display;
 
-import groove.groovy.GraphManager;
+import groove.grammar.groovy.GraphManager;
+import groove.grammar.model.ResourceKind;
 import groove.gui.Simulator;
 import groove.io.FileType;
-import groove.trans.ResourceKind;
 import groovy.lang.Binding;
 import groovy.lang.GroovyRuntimeException;
 import groovy.lang.GroovyShell;

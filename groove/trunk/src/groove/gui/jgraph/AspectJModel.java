@@ -16,31 +16,31 @@
  */
 package groove.gui.jgraph;
 
+import groove.grammar.aspect.AspectEdge;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.aspect.AspectKind;
+import groove.grammar.aspect.AspectNode;
+import groove.grammar.model.FormatError;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.GraphBasedModel;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.model.ResourceModel;
+import groove.grammar.model.TypeModel;
+import groove.grammar.type.ImplicitTypeGraph;
+import groove.grammar.type.TypeGraph;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphRole;
-import groove.graph.ImplicitTypeGraph;
 import groove.graph.Node;
-import groove.graph.TypeGraph;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
 import groove.gui.look.VisualMap;
-import groove.trans.ResourceKind;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Derived;
 import groove.util.Groove;
-import groove.view.FormatError;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
-import groove.view.GraphBasedModel;
-import groove.view.ResourceModel;
-import groove.view.TypeModel;
-import groove.view.aspect.AspectEdge;
-import groove.view.aspect.AspectGraph;
-import groove.view.aspect.AspectKind;
-import groove.view.aspect.AspectNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;

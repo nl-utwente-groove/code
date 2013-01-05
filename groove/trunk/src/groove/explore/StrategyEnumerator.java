@@ -20,8 +20,8 @@ import groove.explore.encode.Serialized;
 import groove.explore.encode.Template;
 import groove.explore.encode.TemplateList;
 import groove.explore.strategy.Strategy;
-import groove.trans.Grammar;
-import groove.view.FormatException;
+import groove.grammar.Grammar;
+import groove.grammar.model.FormatException;
 
 import java.util.EnumSet;
 

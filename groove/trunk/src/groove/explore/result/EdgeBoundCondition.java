@@ -16,10 +16,10 @@
  */
 package groove.explore.result;
 
-import groove.graph.TypeLabel;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.type.TypeLabel;
 import groove.lts.GraphState;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
 
 import java.util.Map;
 import java.util.Set;

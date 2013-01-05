@@ -17,12 +17,12 @@
 package groove.gui.tree;
 
 import static groove.io.HTMLConverter.HTML_TAG;
+import groove.grammar.type.TypeEdge;
+import groove.grammar.type.TypeElement;
+import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
 import groove.graph.Graph;
 import groove.graph.Label;
-import groove.graph.TypeEdge;
-import groove.graph.TypeElement;
-import groove.graph.TypeLabel;
-import groove.graph.TypeNode;
 import groove.gui.Options;
 import groove.gui.action.ActionStore;
 import groove.gui.jgraph.AspectJGraph;

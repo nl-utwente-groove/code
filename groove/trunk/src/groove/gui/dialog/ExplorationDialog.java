@@ -26,13 +26,13 @@ import groove.explore.encode.Serialized;
 import groove.explore.encode.TemplateListener;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
 import groove.gui.layout.SpringUtilities;
 import groove.io.HTMLConverter;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import java.awt.Color;
 import java.awt.Dimension;

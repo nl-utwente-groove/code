@@ -16,16 +16,16 @@
  */
 package groove.match.plan;
 
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.type.TypeEdge;
+import groove.grammar.type.TypeNode;
 import groove.graph.NodeComparator;
-import groove.graph.TypeEdge;
-import groove.graph.TypeNode;
-import groove.graph.algebra.ValueNode;
 import groove.match.plan.PlanSearchStrategy.Search;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
-import groove.trans.RuleEdge;
-import groove.trans.RuleNode;
 
 import java.util.Collection;
 import java.util.Collections;

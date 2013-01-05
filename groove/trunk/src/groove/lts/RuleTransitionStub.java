@@ -16,8 +16,8 @@
  */
 package groove.lts;
 
-import groove.trans.HostNode;
-import groove.trans.Rule;
+import groove.grammar.Rule;
+import groove.grammar.host.HostNode;
 
 /**
  * Graph transition stub specialised to rule transitions.

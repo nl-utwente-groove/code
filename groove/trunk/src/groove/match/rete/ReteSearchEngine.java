@@ -16,16 +16,16 @@
  */
 package groove.match.rete;
 
+import groove.grammar.Condition;
+import groove.grammar.Grammar;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.rule.Anchor;
 import groove.match.SearchEngine;
 import groove.match.ValueOracle;
 import groove.match.rete.ReteNetworkNode.Action;
-import groove.trans.Anchor;
-import groove.trans.Condition;
-import groove.trans.DeltaStore;
-import groove.trans.Grammar;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
+import groove.transform.DeltaStore;
 import groove.util.Reporter;
 
 

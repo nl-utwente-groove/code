@@ -16,10 +16,10 @@
  */
 package groove.gui.display;
 
+import groove.grammar.model.ResourceKind;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
 import groove.gui.action.ActionStore;
-import groove.trans.ResourceKind;
 
 import java.awt.BorderLayout;
 import java.awt.Container;

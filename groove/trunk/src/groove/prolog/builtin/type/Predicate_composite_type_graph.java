@@ -20,7 +20,7 @@ import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
-import groove.graph.TypeGraph;
+import groove.grammar.type.TypeGraph;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.builtin.graph.GraphPrologCode;
 

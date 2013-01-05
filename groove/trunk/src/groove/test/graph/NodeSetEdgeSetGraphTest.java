@@ -16,25 +16,25 @@
  */
 package groove.test.graph;
 
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultFactory;
-import groove.graph.DefaultNode;
 import groove.graph.ElementFactory;
 import groove.graph.NodeSetEdgeSetGraph;
+import groove.graph.plain.PlainEdge;
+import groove.graph.plain.PlainFactory;
+import groove.graph.plain.PlainNode;
 
 /**
  * Test class to test <tt>DefaultGraph</tt>
  * @author Arend Rensink
  * @version $Revision$
  */
-public class NodeSetEdgeSetGraphTest extends GraphTest<DefaultNode,DefaultEdge> {
+public class NodeSetEdgeSetGraphTest extends GraphTest<PlainNode,PlainEdge> {
 
     @Override
-    NodeSetEdgeSetGraph<DefaultNode,DefaultEdge> createGraph(String name) {
-        return new NodeSetEdgeSetGraph<DefaultNode,DefaultEdge>(name) {
+    NodeSetEdgeSetGraph<PlainNode,PlainEdge> createGraph(String name) {
+        return new NodeSetEdgeSetGraph<PlainNode,PlainEdge>(name) {
             @Override
-            public ElementFactory<DefaultNode,DefaultEdge> getFactory() {
-                return DefaultFactory.instance();
+            public ElementFactory<PlainNode,PlainEdge> getFactory() {
+                return PlainFactory.instance();
             }
         };
     }

@@ -23,13 +23,13 @@ import static org.junit.Assert.fail;
 import groove.explore.Exploration;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
+import groove.grammar.Grammar;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
 import groove.lts.GTS;
 import groove.lts.GTSCounter;
 import groove.lts.GraphState.Flag;
-import groove.trans.Grammar;
-import groove.trans.ResourceKind;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import java.io.File;
 import java.io.IOException;

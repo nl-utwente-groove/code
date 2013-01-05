@@ -17,8 +17,8 @@
 package groove.abstraction.pattern.shape;
 
 import groove.abstraction.MyHashMap;
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostNode;
 import groove.util.Fixable;
 
 import java.util.Map;

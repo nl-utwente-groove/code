@@ -16,6 +16,7 @@
  */
 package groove.gui.display;
 
+import groove.grammar.model.ResourceKind;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorModel;
@@ -23,7 +24,6 @@ import groove.gui.SimulatorModel.Change;
 import groove.gui.action.CollapseAllAction;
 import groove.gui.tree.RuleTree;
 import groove.lts.GraphState;
-import groove.trans.ResourceKind;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;

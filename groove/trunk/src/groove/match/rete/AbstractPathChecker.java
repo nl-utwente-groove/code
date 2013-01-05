@@ -16,15 +16,15 @@
  */
 package groove.match.rete;
 
-import groove.rel.RegExpr;
-import groove.rel.RegExpr.Empty;
-import groove.rel.RegExpr.Neg;
-import groove.rel.RegExpr.Star;
-import groove.trans.RuleEdge;
-import groove.trans.RuleElement;
-import groove.trans.RuleFactory;
-import groove.trans.RuleLabel;
-import groove.trans.RuleNode;
+import groove.automaton.RegExpr;
+import groove.automaton.RegExpr.Empty;
+import groove.automaton.RegExpr.Neg;
+import groove.automaton.RegExpr.Star;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleElement;
+import groove.grammar.rule.RuleFactory;
+import groove.grammar.rule.RuleLabel;
+import groove.grammar.rule.RuleNode;
 
 import java.util.HashMap;
 import java.util.List;

@@ -16,9 +16,9 @@
  */
 package groove.explore.encode;
 
+import groove.grammar.model.GrammarModel;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
-import groove.view.GrammarModel;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;

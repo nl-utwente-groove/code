@@ -3,6 +3,8 @@ package groove.gui.action;
 import groove.explore.AcceptorValue;
 import groove.explore.Exploration;
 import groove.explore.StrategyValue;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -16,8 +18,6 @@ import groove.lts.GTSAdapter;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;

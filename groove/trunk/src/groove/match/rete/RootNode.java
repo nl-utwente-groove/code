@@ -16,11 +16,11 @@
  */
 package groove.match.rete;
 
-import groove.graph.TypeLabel;
-import groove.graph.TypeNode;
-import groove.trans.HostEdge;
-import groove.trans.HostNode;
-import groove.trans.RuleElement;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostNode;
+import groove.grammar.rule.RuleElement;
+import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
 import groove.util.collect.TreeHashSet;
 
 import java.util.Collection;

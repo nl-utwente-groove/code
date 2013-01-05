@@ -24,6 +24,7 @@ import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static groove.gui.jgraph.JGraphMode.SELECT_MODE;
+import groove.grammar.GrammarProperties;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
@@ -47,7 +48,6 @@ import groove.gui.menu.ShowHideMenu;
 import groove.gui.menu.ZoomMenu;
 import groove.gui.tree.LabelTree;
 import groove.lts.GTS;
-import groove.trans.GrammarProperties;
 import groove.util.Pair;
 
 import java.awt.Color;

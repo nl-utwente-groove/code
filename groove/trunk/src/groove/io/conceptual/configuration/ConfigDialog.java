@@ -1,10 +1,10 @@
 package groove.io.conceptual.configuration;
 
+import groove.grammar.model.FormatException;
+import groove.grammar.model.ResourceKind;
 import groove.gui.Simulator;
 import groove.gui.dialog.ErrorDialog;
 import groove.io.conceptual.configuration.ConfigAction.Type;
-import groove.trans.ResourceKind;
-import groove.view.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;

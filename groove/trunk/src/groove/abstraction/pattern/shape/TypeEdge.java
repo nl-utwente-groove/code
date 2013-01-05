@@ -16,10 +16,10 @@
  */
 package groove.abstraction.pattern.shape;
 
-import groove.graph.DefaultLabel;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.graph.plain.PlainLabel;
 
 /**
  * Pattern edge of a pattern type graph.
@@ -51,7 +51,7 @@ public final class TypeEdge extends AbstractPatternEdge<TypeNode> {
      */
     public TypeEdge(int nr, TypeNode source, TypeNode target,
             SimpleMorphism morph) {
-        super(nr, source, DefaultLabel.createLabel(PREFIX + nr), target);
+        super(nr, source, PlainLabel.createLabel(PREFIX + nr), target);
         assert morph.getSource().equals(source)
             && morph.getTarget().equals(target);
         this.morph = morph;

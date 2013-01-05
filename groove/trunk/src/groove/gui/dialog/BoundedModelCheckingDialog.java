@@ -20,10 +20,10 @@ package groove.gui.dialog;
 import groove.explore.strategy.Boundary;
 import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.RuleSetBoundary;
+import groove.grammar.Action;
+import groove.grammar.Grammar;
+import groove.grammar.Rule;
 import groove.gui.layout.SpringUtilities;
-import groove.trans.Action;
-import groove.trans.Grammar;
-import groove.trans.Rule;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

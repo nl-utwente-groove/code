@@ -16,7 +16,7 @@
  */
 package groove.match.rete;
 
-import groove.rel.RegExpr.Inv;
+import groove.automaton.RegExpr.Inv;
 
 /**
  * A Path checker that implements the semantics of the 

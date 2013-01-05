@@ -26,8 +26,8 @@ import groove.explore.encode.Serialized;
 import groove.explore.encode.Template;
 import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.Strategy;
+import groove.grammar.model.FormatException;
 import groove.lts.GTS;
-import groove.view.FormatException;
 import junit.framework.Assert;
 
 import org.junit.Test;

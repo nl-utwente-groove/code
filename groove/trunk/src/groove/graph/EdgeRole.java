@@ -21,8 +21,8 @@ import groove.annotation.Syntax;
 import groove.annotation.ToolTipBody;
 import groove.annotation.ToolTipHeader;
 import groove.annotation.ToolTipPars;
+import groove.grammar.aspect.AspectParser;
 import groove.util.Pair;
-import groove.view.aspect.AspectParser;
 
 import java.lang.reflect.Field;
 import java.util.EnumMap;

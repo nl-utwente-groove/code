@@ -1,19 +1,19 @@
 package groove.io.conceptual.lang.groove;
 
-import groove.graph.TypeGraph;
+import groove.grammar.host.HostGraph;
+import groove.grammar.model.CompositeTypeModel;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.HostModel;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.model.ResourceModel;
+import groove.grammar.type.TypeGraph;
 import groove.io.conceptual.InstanceModel;
 import groove.io.conceptual.Timer;
 import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.lang.ImportException;
-import groove.trans.HostGraph;
-import groove.trans.ResourceKind;
 import groove.util.Pair;
-import groove.view.CompositeTypeModel;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
-import groove.view.HostModel;
-import groove.view.ResourceModel;
 
 import java.awt.Frame;
 import java.util.Collection;
@@ -219,7 +219,7 @@ public class GrammarVisitor {
         if (this.m_cfg.getConfig().getTypeModel().isMetaSchema()) {
             try {
                 TypeGraph metaGraph =
-                    ((groove.view.TypeModel) this.m_metaMap.values().iterator().next()).toResource();
+                    ((groove.grammar.model.TypeModel) this.m_metaMap.values().iterator().next()).toResource();
 
                 Timer.stop(timer);
                 setMetaGraph(metaGraph);
@@ -265,7 +265,7 @@ public class GrammarVisitor {
         this.m_typeModel = gtt.getTypeModel();
     }
 
-    private void setRuleGraphs(Collection<groove.view.RuleModel> ruleModels)
+    private void setRuleGraphs(Collection<groove.grammar.model.RuleModel> ruleModels)
         throws ImportException {
         /*GrooveToConstraint gtc = */new GrooveToConstraint(ruleModels,
             this.m_types, this.m_cfg, this.m_typeModel);

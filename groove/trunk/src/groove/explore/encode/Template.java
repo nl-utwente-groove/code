@@ -21,12 +21,12 @@ import static groove.io.HTMLConverter.STRONG_TAG;
 import groove.explore.ParsableValue;
 import groove.explore.prettyparse.SerializedParser;
 import groove.explore.prettyparse.StringConsumer;
+import groove.grammar.Grammar;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
 import groove.gui.dialog.ExplorationDialog;
 import groove.gui.layout.SpringUtilities;
 import groove.io.HTMLConverter.HTMLTag;
-import groove.trans.Grammar;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;

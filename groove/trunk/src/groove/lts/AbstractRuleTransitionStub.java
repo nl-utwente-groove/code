@@ -17,10 +17,10 @@
 package groove.lts;
 
 import groove.control.CtrlTransition;
+import groove.grammar.Rule;
+import groove.grammar.host.HostNode;
 import groove.graph.Element;
-import groove.trans.HostNode;
-import groove.trans.Rule;
-import groove.trans.RuleEvent;
+import groove.transform.RuleEvent;
 
 import java.util.Arrays;
 

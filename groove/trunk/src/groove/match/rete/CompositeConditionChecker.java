@@ -16,8 +16,8 @@
  */
 package groove.match.rete;
 
+import groove.grammar.Condition;
 import groove.match.rete.ReteNetwork.ReteStaticMapping;
-import groove.trans.Condition;
 
 /**
  * A checker node which is the result of superimposing the

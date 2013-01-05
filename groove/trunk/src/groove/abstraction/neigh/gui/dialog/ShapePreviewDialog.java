@@ -20,10 +20,10 @@ import groove.abstraction.neigh.NeighAbstraction;
 import groove.abstraction.neigh.gui.jgraph.ShapeJGraph;
 import groove.abstraction.neigh.gui.jgraph.ShapeJModel;
 import groove.abstraction.neigh.shape.Shape;
+import groove.grammar.host.DefaultHostGraph;
+import groove.grammar.host.HostGraph;
 import groove.gui.Simulator;
 import groove.gui.dialog.GraphPreviewDialog;
-import groove.trans.DefaultHostGraph;
-import groove.trans.HostGraph;
 import groove.util.Groove;
 
 import java.io.File;

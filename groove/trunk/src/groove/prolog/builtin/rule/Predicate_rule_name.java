@@ -19,10 +19,10 @@ package groove.prolog.builtin.rule;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
+import groove.grammar.Action;
 import groove.prolog.GrooveEnvironment;
 import groove.prolog.builtin.graph.GraphPrologCode;
 import groove.prolog.util.PrologStringCollectionIterator;
-import groove.trans.Action;
 
 import java.util.HashSet;
 import java.util.Set;

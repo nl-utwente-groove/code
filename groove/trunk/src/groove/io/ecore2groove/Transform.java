@@ -17,12 +17,12 @@
 package groove.io.ecore2groove;
 
 import groove.algebra.AlgebraFamily;
-import groove.graph.DefaultGraph;
+import groove.grammar.GrammarProperties;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.ResourceKind;
+import groove.graph.plain.PlainGraph;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
-import groove.trans.ResourceKind;
-import groove.trans.GrammarProperties;
-import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;
@@ -228,7 +228,7 @@ public class Transform {
 
         start = new Date().getTime();
         Set<AspectGraph> rules = new HashSet<AspectGraph>();
-        for (DefaultGraph constraintRule : constraints.getConstraints()) {
+        for (PlainGraph constraintRule : constraints.getConstraints()) {
             AspectGraph arg;
             try {
                 arg = AspectGraph.newInstance(constraintRule);

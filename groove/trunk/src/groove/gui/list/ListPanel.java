@@ -14,11 +14,11 @@
  */
 package groove.gui.list;
 
+import groove.grammar.model.ResourceKind;
 import groove.graph.Element;
 import groove.gui.look.Values;
 import groove.gui.look.Values.Mode;
 import groove.io.HTMLConverter;
-import groove.trans.ResourceKind;
 
 import java.awt.BorderLayout;
 import java.awt.Component;

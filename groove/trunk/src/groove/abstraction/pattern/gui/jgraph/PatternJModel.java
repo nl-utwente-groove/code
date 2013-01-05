@@ -19,14 +19,14 @@ package groove.abstraction.pattern.gui.jgraph;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.pattern.shape.AbstractPatternGraph;
 import groove.abstraction.pattern.shape.AbstractPatternNode;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostFactory;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
 import groove.graph.Node;
 import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JModel;
-import groove.trans.HostEdge;
-import groove.trans.HostFactory;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;

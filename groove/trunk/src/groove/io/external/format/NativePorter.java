@@ -16,6 +16,12 @@
  */
 package groove.io.external.format;
 
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.GraphBasedModel;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.model.ResourceModel;
+import groove.grammar.model.TextBasedModel;
 import groove.io.FileType;
 import groove.io.external.AbstractFormatExporter;
 import groove.io.external.Exporter.Exportable;
@@ -25,12 +31,6 @@ import groove.io.external.FormatPorter;
 import groove.io.external.PortException;
 import groove.io.xml.AspectGxl;
 import groove.io.xml.LayedOutXml;
-import groove.trans.ResourceKind;
-import groove.view.GrammarModel;
-import groove.view.GraphBasedModel;
-import groove.view.ResourceModel;
-import groove.view.TextBasedModel;
-import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.FileWriter;

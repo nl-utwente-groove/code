@@ -16,11 +16,11 @@
  */
 package groove.io.xml;
 
+import groove.grammar.model.FormatException;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.util.Pair;
-import groove.view.FormatException;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -21,10 +21,10 @@ import groove.control.CtrlCall;
 import groove.control.CtrlCall.Kind;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
-import groove.trans.Action;
-import groove.trans.QualName;
-import groove.trans.Recipe;
-import groove.trans.Rule;
+import groove.grammar.Action;
+import groove.grammar.QualName;
+import groove.grammar.Recipe;
+import groove.grammar.Rule;
 
 import java.util.Collection;
 import java.util.HashMap;

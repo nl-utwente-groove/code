@@ -22,8 +22,8 @@ import gnu.prolog.term.IntegerTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
+import groove.grammar.Action;
 import groove.prolog.builtin.trans.TransPrologCode;
-import groove.trans.Action;
 
 /**
  * Predicate rule_priority(+Rule,?Priority)

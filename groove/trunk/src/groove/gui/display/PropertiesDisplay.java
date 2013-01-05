@@ -16,14 +16,14 @@
  */
 package groove.gui.display;
 
+import groove.grammar.GrammarProperties;
+import groove.grammar.model.GrammarModel;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
 import groove.gui.dialog.PropertiesTable;
-import groove.trans.GrammarProperties;
-import groove.view.GrammarModel;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;

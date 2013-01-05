@@ -2,8 +2,8 @@
 package groove.lts;
 
 import groove.control.CtrlAut;
-import groove.trans.DeltaHostGraph;
-import groove.trans.HostGraph;
+import groove.grammar.host.DeltaHostGraph;
+import groove.grammar.host.HostGraph;
 
 /**
  * @author Arend Rensink

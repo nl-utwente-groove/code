@@ -16,8 +16,8 @@
  */
 package groove.io;
 
-import groove.trans.Action;
-import groove.trans.Rule;
+import groove.grammar.Action;
+import groove.grammar.Rule;
 import groove.util.Groove;
 
 import java.io.File;

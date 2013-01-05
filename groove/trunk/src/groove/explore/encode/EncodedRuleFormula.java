@@ -17,11 +17,11 @@
 package groove.explore.encode;
 
 import groove.explore.result.Predicate;
+import groove.grammar.Grammar;
+import groove.grammar.Rule;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
 import groove.lts.GraphState;
-import groove.trans.Grammar;
-import groove.trans.Rule;
-import groove.view.FormatException;
-import groove.view.GrammarModel;
 
 /**
  * An <code>EncodedRuleFormula</code> describes a predicate over graph states

@@ -16,26 +16,26 @@ t * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2007
  */
 package groove.io.store;
 
+import static groove.grammar.model.ResourceKind.PROPERTIES;
+import static groove.grammar.model.ResourceKind.RULE;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.PROPERTIES_FILTER;
 import static groove.io.store.EditType.LAYOUT;
-import static groove.trans.ResourceKind.PROPERTIES;
-import static groove.trans.ResourceKind.RULE;
-import groove.graph.DefaultGraph;
-import groove.graph.TypeLabel;
+import groove.grammar.GrammarProperties;
+import groove.grammar.QualName;
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.FormatErrorSet;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.type.TypeLabel;
+import groove.graph.plain.PlainGraph;
 import groove.gui.Options;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.xml.DefaultGxl;
 import groove.io.xml.LayedOutXml;
 import groove.io.xml.Xml;
-import groove.trans.QualName;
-import groove.trans.ResourceKind;
-import groove.trans.GrammarProperties;
 import groove.util.Groove;
-import groove.view.FormatErrorSet;
-import groove.view.FormatException;
-import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -640,7 +640,7 @@ public class DefaultFileSystemStore extends SystemStore {
     }
 
     /** Callback factory method for creating a graph marshaller. */
-    private Xml<DefaultGraph> createGraphMarshaller(boolean layouted) {
+    private Xml<PlainGraph> createGraphMarshaller(boolean layouted) {
         if (layouted) {
             return LayedOutXml.getInstance();
         } else {
@@ -664,7 +664,7 @@ public class DefaultFileSystemStore extends SystemStore {
         }
         for (Entry<QualName,File> fileEntry : files.entrySet()) {
             // read graph from file
-            DefaultGraph plainGraph =
+            PlainGraph plainGraph =
                 this.marshaller.unmarshalGraph(fileEntry.getValue());
 
             // backwards compatibility: set role and name
@@ -874,7 +874,7 @@ public class DefaultFileSystemStore extends SystemStore {
     /** Name of the rule system. */
     private final String name;
     /** The graph marshaller used for retrieving rule and graph files. */
-    private final Xml<DefaultGraph> marshaller;
+    private final Xml<PlainGraph> marshaller;
     /** Flag indicating whether the store has been loaded. */
     private boolean initialised;
     /** Flag whether this store contains a 'system.properties' file. */

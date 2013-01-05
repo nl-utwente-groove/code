@@ -16,10 +16,10 @@
  */
 package groove.control;
 
+import groove.grammar.Recipe;
+import groove.grammar.model.FormatErrorSet;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
-import groove.trans.Recipe;
-import groove.view.FormatErrorSet;
 
 import java.util.ArrayList;
 import java.util.Collection;

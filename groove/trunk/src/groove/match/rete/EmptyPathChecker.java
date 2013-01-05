@@ -16,8 +16,8 @@
  */
 package groove.match.rete;
 
+import groove.automaton.RegExpr.Empty;
 import groove.match.rete.RetePathMatch.EmptyPathMatch;
-import groove.rel.RegExpr.Empty;
 
 import java.util.HashMap;
 import java.util.List;

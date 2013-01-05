@@ -22,7 +22,7 @@ import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
-import groove.trans.Proof;
+import groove.transform.Proof;
 
 /**
  * Predicate is_rulematch(+RuleMatch)

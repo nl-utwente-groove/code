@@ -16,9 +16,9 @@
  */
 package groove.match.rete;
 
-import groove.graph.TypeGuard;
-import groove.rel.RegExpr.Wildcard;
-import groove.trans.HostEdge;
+import groove.automaton.RegExpr.Wildcard;
+import groove.grammar.host.HostEdge;
+import groove.grammar.type.TypeGuard;
 
 /**
  * Checks against some edge that conforms to a specific {@link Wildcard}

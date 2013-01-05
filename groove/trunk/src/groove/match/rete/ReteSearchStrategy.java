@@ -16,16 +16,16 @@
  */
 package groove.match.rete;
 
+import groove.grammar.Condition;
+import groove.grammar.EdgeEmbargo;
+import groove.grammar.Condition.Op;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.rule.RuleToHostMap;
 import groove.match.SearchStrategy;
 import groove.match.TreeMatch;
 import groove.match.ValueOracle;
-import groove.trans.Condition;
-import groove.trans.Condition.Op;
-import groove.trans.EdgeEmbargo;
-import groove.trans.HostEdge;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
-import groove.trans.RuleToHostMap;
 import groove.util.Visitor;
 import groove.util.Visitor.Collector;
 

@@ -17,16 +17,16 @@
 package groove.graph.iso;
 
 import groove.graph.AbstractGraph;
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultMorphism;
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.EdgeComparator;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.iso.CertificateStrategy.ElementCertificate;
+import groove.graph.plain.PlainEdge;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainMorphism;
+import groove.graph.plain.PlainNode;
 import groove.util.Groove;
 import groove.util.Reporter;
 import groove.util.collect.Bag;
@@ -1012,18 +1012,18 @@ public class IsoChecker<N extends Node,E extends Edge> {
 
     private static void testIso(String name) {
         try {
-            DefaultGraph graph1 = Groove.loadGraph(name);
-            IsoChecker<DefaultNode,DefaultEdge> checker = getInstance(true);
+            PlainGraph graph1 = Groove.loadGraph(name);
+            IsoChecker<PlainNode,PlainEdge> checker = getInstance(true);
             System.out.printf("Graph certificate: %s%n",
                 checker.getCertifier(graph1, true).getGraphCertificate());
             for (int i = 0; i < 1000; i++) {
-                DefaultGraph graph2 = new DefaultGraph(name);
-                DefaultMorphism nodeMap = new DefaultMorphism();
-                for (DefaultNode node : graph1.nodeSet()) {
-                    DefaultNode newNode = graph2.addNode();
+                PlainGraph graph2 = new PlainGraph(name);
+                PlainMorphism nodeMap = new PlainMorphism();
+                for (PlainNode node : graph1.nodeSet()) {
+                    PlainNode newNode = graph2.addNode();
                     nodeMap.putNode(node, newNode);
                 }
-                for (DefaultEdge edge : graph1.edgeSet()) {
+                for (PlainEdge edge : graph1.edgeSet()) {
                     graph2.addEdgeContext(nodeMap.mapEdge(edge));
                 }
                 if (!checker.areIsomorphic(graph1, graph2)) {
@@ -1038,8 +1038,8 @@ public class IsoChecker<N extends Node,E extends Edge> {
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static void compareGraphs(String name1, String name2) {
         try {
-            DefaultGraph graph1 = Groove.loadGraph(name1);
-            DefaultGraph graph2 = Groove.loadGraph(name2);
+            PlainGraph graph1 = Groove.loadGraph(name1);
+            PlainGraph graph2 = Groove.loadGraph(name2);
             System.out.printf("Graphs '%s' and '%s' isomorphic?%n", name1,
                 name2);
             System.out.printf("Done. Result: %b%n",

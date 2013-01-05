@@ -16,6 +16,11 @@
  */
 package groove.gui.display;
 
+import groove.grammar.QualName;
+import groove.grammar.model.FormatError;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
+import groove.grammar.model.ResourceModel;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -25,11 +30,6 @@ import groove.gui.action.SaveAction;
 import groove.gui.action.SimulatorAction;
 import groove.gui.list.ErrorListPanel;
 import groove.gui.list.ListPanel;
-import groove.trans.QualName;
-import groove.trans.ResourceKind;
-import groove.view.FormatError;
-import groove.view.GrammarModel;
-import groove.view.ResourceModel;
 
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;

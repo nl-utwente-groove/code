@@ -16,8 +16,8 @@
  */
 package groove.explore.encode;
 
+import groove.grammar.model.GrammarModel;
 import groove.gui.dialog.ExplorationDialog;
-import groove.view.GrammarModel;
 
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;

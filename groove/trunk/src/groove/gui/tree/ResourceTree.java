@@ -17,6 +17,7 @@
 package groove.gui.tree;
 
 import static groove.gui.SimulatorModel.Change.GRAMMAR;
+import groove.grammar.model.GrammarModel;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.SimulatorModel;
@@ -24,7 +25,6 @@ import groove.gui.SimulatorModel.Change;
 import groove.gui.display.DisplayKind;
 import groove.gui.display.ResourceDisplay;
 import groove.lts.GraphState;
-import groove.view.GrammarModel;
 
 import java.awt.Color;
 import java.awt.event.MouseAdapter;

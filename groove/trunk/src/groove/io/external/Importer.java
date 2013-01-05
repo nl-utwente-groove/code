@@ -16,6 +16,9 @@
  */
 package groove.io.external;
 
+import groove.grammar.aspect.AspectGraph;
+import groove.grammar.model.GrammarModel;
+import groove.grammar.model.ResourceKind;
 import groove.gui.Simulator;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
@@ -26,9 +29,6 @@ import groove.io.external.format.DotPorter;
 import groove.io.external.format.EcorePorter;
 import groove.io.external.format.GxlPorter;
 import groove.io.external.format.NativePorter;
-import groove.trans.ResourceKind;
-import groove.view.GrammarModel;
-import groove.view.aspect.AspectGraph;
 
 import java.awt.Component;
 import java.io.File;

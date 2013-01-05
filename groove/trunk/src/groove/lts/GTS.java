@@ -22,30 +22,30 @@ import static groove.lts.GTS.CollapseMode.COLLAPSE_NONE;
 import groove.algebra.AlgebraFamily;
 import groove.control.CtrlState;
 import groove.explore.result.Result;
+import groove.grammar.Grammar;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostFactory;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
+import groove.grammar.model.FormatException;
+import groove.grammar.model.PostApplicationError;
+import groove.grammar.type.EdgeMultiplicityVerifier;
 import groove.graph.AbstractGraph;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
-import groove.graph.EdgeMultiplicityVerifier;
 import groove.graph.ElementFactory;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Node;
-import groove.graph.algebra.ValueNode;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.IsoChecker;
+import groove.graph.plain.PlainGraph;
+import groove.graph.plain.PlainNode;
 import groove.lts.GraphState.Flag;
-import groove.trans.Grammar;
-import groove.trans.GrammarRecord;
-import groove.trans.HostEdge;
-import groove.trans.HostFactory;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
+import groove.transform.Record;
 import groove.util.collect.NestedIterator;
 import groove.util.collect.TransformIterator;
 import groove.util.collect.TreeHashSet;
-import groove.view.FormatException;
-import groove.view.PostApplicationError;
 
 import java.util.AbstractSet;
 import java.util.Arrays;
@@ -317,8 +317,8 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
 
     /**
      * Method to determine the collapse strategy of the state set. This is
-     * determined by {@link GrammarRecord#isCollapse()} and
-     * {@link GrammarRecord#isCheckIso()}.
+     * determined by {@link Record#isCollapse()} and
+     * {@link Record#isCheckIso()}.
      */
     protected CollapseMode getCollapse() {
         CollapseMode result;
@@ -335,9 +335,9 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     /**
      * Returns the (fixed) derivation record for this GTS.
      */
-    public final GrammarRecord getRecord() {
+    public final Record getRecord() {
         if (this.record == null) {
-            this.record = new GrammarRecord(this.grammar, getHostFactory());
+            this.record = new Record(this.grammar, getHostFactory());
         }
         return this.record;
     }
@@ -514,13 +514,13 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      * optionally including special edges to represent start, final and
      * open states, and state identifiers.
      */
-    public DefaultGraph toPlainGraph(boolean showFinal, boolean showStart,
+    public PlainGraph toPlainGraph(boolean showFinal, boolean showStart,
             boolean showOpen, boolean showNames) {
-        DefaultGraph result = new DefaultGraph(getName());
-        Map<GraphState,DefaultNode> nodeMap =
-            new HashMap<GraphState,DefaultNode>();
+        PlainGraph result = new PlainGraph(getName());
+        Map<GraphState,PlainNode> nodeMap =
+            new HashMap<GraphState,PlainNode>();
         for (GraphState state : nodeSet()) {
-            DefaultNode image = result.addNode(state.getNumber());
+            PlainNode image = result.addNode(state.getNumber());
             nodeMap.put(state, image);
             if (showFinal && isFinal(state)) {
                 result.addEdge(image, GTS.FINAL_LABEL_TEXT, image);
@@ -625,7 +625,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     private final Set<GraphState> resultStates = new HashSet<GraphState>();
 
     /** The system record for this GTS. */
-    private GrammarRecord record;
+    private Record record;
     /** The match applier associated with this GTS. */
     private MatchApplier matchApplier;
     /**

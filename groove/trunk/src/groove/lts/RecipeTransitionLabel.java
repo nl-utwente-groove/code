@@ -16,8 +16,8 @@
  */
 package groove.lts;
 
+import groove.grammar.Recipe;
 import groove.graph.AbstractLabel;
-import groove.trans.Recipe;
 
 /** Class of labels that can appear on rule transitions. */
 public class RecipeTransitionLabel extends AbstractLabel implements ActionLabel {

@@ -18,9 +18,9 @@ package groove.lts;
 
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
+import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostNode;
 import groove.graph.Node;
-import groove.trans.HostGraph;
-import groove.trans.HostNode;
 
 import java.util.List;
 import java.util.Set;
