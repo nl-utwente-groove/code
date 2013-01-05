@@ -19,7 +19,6 @@ package groove.automaton;
 import groove.automaton.RegExpr.Sharp;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GTSAdapter;
@@ -40,14 +39,6 @@ import java.util.Set;
 public class RelationCalculator extends GTSAdapter implements
         RegExprCalculator<NodeRelation> {
     /**
-     * Creates a relation calculator based on a given graph. The relation
-     * factory will be set to a {@link NodeRelation} over that graph.
-     */
-    public RelationCalculator(Graph<?,?> graph) {
-        this(graph, new NodeRelation());
-    }
-
-    /**
      * Creates a relation calculator based on a given graph and 
      * relation factory.
      */
@@ -61,7 +52,7 @@ public class RelationCalculator extends GTSAdapter implements
      * stores it in the underlying mapping.
      */
     public NodeRelation computeAtom(RegExpr.Atom expr) {
-        return createRelation(expr.toTypeLabel());
+        return createRelation(expr.text());
     }
 
     /**
@@ -120,8 +111,7 @@ public class RelationCalculator extends GTSAdapter implements
      * Computes the sequential composition of the relations associated with the
      * operands of <code>expr</code>, and stores it in the underlying mapping.
      */
-    public NodeRelation computeSeq(RegExpr.Seq expr,
-            List<NodeRelation> argList) {
+    public NodeRelation computeSeq(RegExpr.Seq expr, List<NodeRelation> argList) {
         Iterator<NodeRelation> argsIter = argList.iterator();
         NodeRelation result = argsIter.next();
         while (argsIter.hasNext()) {
@@ -146,7 +136,7 @@ public class RelationCalculator extends GTSAdapter implements
 
     @Override
     public NodeRelation computeSharp(Sharp expr) {
-        return createRelation(expr.getTypeLabel());
+        return createRelation(expr.getAtomText());
     }
 
     /**
@@ -193,9 +183,9 @@ public class RelationCalculator extends GTSAdapter implements
         }
     }
 
-    private NodeRelation createRelation(Label label) {
+    private NodeRelation createRelation(String text) {
         NodeRelation result = getFactory().newInstance();
-        Set<Edge> edges = getEdgeSet(label);
+        Set<Edge> edges = getEdgeSet(text);
         if (edges != null) {
             for (Edge edge : edges) {
                 result.addRelated(edge);
@@ -204,11 +194,11 @@ public class RelationCalculator extends GTSAdapter implements
         return result;
     }
 
-    private Set<Edge> getEdgeSet(Label label) {
+    private Set<Edge> getEdgeSet(String text) {
         if (this.labelEdgeMap == null) {
             this.labelEdgeMap = computeLabelEdgeMap();
         }
-        return this.labelEdgeMap.get(label.text());
+        return this.labelEdgeMap.get(text);
     }
 
     private Map<String,Set<Edge>> computeLabelEdgeMap() {

@@ -30,7 +30,6 @@ import groove.gui.dialog.StringDialog;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.FileType;
@@ -45,7 +44,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -579,12 +577,7 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
 
         @Override
         protected boolean isInvolved(JCell<G> cell) {
-            Set<? extends Edge> edgesInCell;
-            if (cell instanceof JEdge) {
-                edgesInCell = ((JEdge<G>) cell).getEdges();
-            } else {
-                edgesInCell = ((JVertex<G>) cell).getEdges();
-            }
+            Set<? extends Edge> edgesInCell = cell.getEdges();
             boolean edgeFound = false;
             Iterator<? extends Edge> edgeInCellIter = edgesInCell.iterator();
             while (!edgeFound && edgeInCellIter.hasNext()) {
@@ -664,7 +657,7 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
             if (result == JFileChooser.APPROVE_OPTION) {
                 File labelsFile = fileChooser.getSelectedFile();
                 String fileLine;
-                ArrayList<String> labelsList = new ArrayList<String>();
+                Set<String> labels = new HashSet<String>();
                 try {
                     BufferedReader in =
                         new BufferedReader(new FileReader(labelsFile));
@@ -673,13 +666,13 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
                         throw new IOException();
                     }
                     while ((fileLine = in.readLine()) != null) {
-                        labelsList.add(fileLine);
+                        labels.add(fileLine);
                     }
                     in.close();
                 } catch (IOException e) {
                     // Well, bad things can happen... :P Carry on.
                 }
-                this.labels = labelsList;
+                this.labels = labels;
                 super.actionPerformed(evt);
             }
         }
@@ -691,8 +684,8 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
         @Override
         protected boolean isInvolved(JCell<G> jCell) {
             boolean result = false;
-            for (String label : this.labels) {
-                result |= jCell.getKeys().contains(label);
+            for (Label label : jCell.getKeys()) {
+                result = this.labels.contains(label.text());
                 if (result) {
                     break;
                 }
@@ -700,7 +693,7 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
             return result;
         }
 
-        private ArrayList<String> labels;
+        private Set<String> labels;
     }
 
     /**
