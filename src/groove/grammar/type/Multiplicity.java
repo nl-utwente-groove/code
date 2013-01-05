@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.graph;
+package groove.grammar.type;
 
 import groove.grammar.model.FormatException;
 import groove.util.Duo;

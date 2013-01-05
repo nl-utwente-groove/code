@@ -25,7 +25,7 @@ import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
 import groove.graph.ElementMap;
-import groove.graph.InversableElementMap;
+import groove.graph.InvertibleElementMap;
 import groove.graph.Label;
 
 import java.util.HashMap;
@@ -39,7 +39,7 @@ import java.util.Map;
  * @version $Revision$
  */
 public class RuleToHostMap extends
-        InversableElementMap<RuleNode,RuleEdge,HostNode,HostEdge> implements
+        InvertibleElementMap<RuleNode,RuleEdge,HostNode,HostEdge> implements
         VarMap {
     /**
      * Creates an empty map with an empty valuation.

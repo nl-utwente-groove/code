@@ -17,8 +17,8 @@
 package groove.gui.look;
 
 import groove.grammar.aspect.AspectEdge;
+import groove.grammar.type.Multiplicity;
 import groove.graph.GraphRole;
-import groove.graph.Multiplicity;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJVertex;
 

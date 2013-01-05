@@ -20,7 +20,6 @@ import static groove.graph.EdgeRole.BINARY;
 import groove.grammar.AnchorKind;
 import groove.graph.AbstractEdge;
 import groove.graph.Label;
-import groove.graph.Multiplicity;
 
 import java.util.Set;
 

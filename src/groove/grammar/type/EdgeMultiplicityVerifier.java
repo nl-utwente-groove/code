@@ -21,7 +21,6 @@ import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.PostApplicationError;
-import groove.graph.Multiplicity;
 import groove.lts.GraphState;
 
 import java.util.HashMap;

@@ -30,14 +30,14 @@ import java.util.Set;
  * When the inverse relation is computed, the map is fixed and can no longer
  * be altered.
  */
-public class InversableElementMap<SN extends Node,SE extends Edge,TN extends Node,TE extends Edge>
+public class InvertibleElementMap<SN extends Node,SE extends Edge,TN extends Node,TE extends Edge>
         extends ElementMap<SN,SE,TN,TE> implements Fixable {
 
     private Map<TN,Set<SN>> inverseNodeMap;
     private Map<TE,Set<SE>> inverseEdgeMap;
 
     /** Default constructor. */
-    public InversableElementMap(ElementFactory<TN,TE> factory) {
+    public InvertibleElementMap(ElementFactory<TN,TE> factory) {
         super(factory);
     }
 
