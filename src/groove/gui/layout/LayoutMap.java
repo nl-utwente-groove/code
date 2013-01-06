@@ -45,7 +45,7 @@ import org.jgraph.graph.VertexView;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
+public class LayoutMap implements Cloneable {
     /**
      * Constructs an empty, non-fixed layout map
      */
@@ -54,22 +54,22 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
     }
 
     /** Retrieves the layout information for a given node. */
-    public JVertexLayout getLayout(N node) {
+    public JVertexLayout getLayout(Node node) {
         return this.nodeMap.get(node);
     }
 
     /** Retrieves the layout information for a given edge. */
-    public JEdgeLayout getLayout(E edge) {
+    public JEdgeLayout getLayout(Edge edge) {
         return this.edgeMap.get(edge);
     }
 
     /** Specialises the return type. */
-    public Map<N,JVertexLayout> nodeMap() {
+    public Map<Node,JVertexLayout> nodeMap() {
         return Collections.unmodifiableMap(this.nodeMap);
     }
 
     /** Specialises the return type. */
-    public Map<E,JEdgeLayout> edgeMap() {
+    public Map<Edge,JEdgeLayout> edgeMap() {
         return Collections.unmodifiableMap(this.edgeMap);
     }
 
@@ -78,11 +78,11 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
      */
     public Map<Object,AttributeMap> toJAttrMap() {
         Map<Object,AttributeMap> result = new HashMap<Object,AttributeMap>();
-        for (Map.Entry<N,JVertexLayout> layoutEntry : nodeMap().entrySet()) {
+        for (Map.Entry<Node,JVertexLayout> layoutEntry : nodeMap().entrySet()) {
             JCellLayout layout = layoutEntry.getValue();
             result.put(layoutEntry.getKey(), layout.toJAttr());
         }
-        for (Map.Entry<E,JEdgeLayout> layoutEntry : edgeMap().entrySet()) {
+        for (Map.Entry<Edge,JEdgeLayout> layoutEntry : edgeMap().entrySet()) {
             JCellLayout layout = layoutEntry.getValue();
             result.put(layoutEntry.getKey(), layout.toJAttr());
         }
@@ -94,7 +94,7 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
      * information if it is not default (according to the layout information
      * itself, i.e., <code>{@link JCellLayout#isDefault}</code>.
      */
-    public JVertexLayout putNode(N key, JVertexLayout layout) {
+    public JVertexLayout putNode(Node key, JVertexLayout layout) {
         if (!layout.isDefault()) {
             return this.nodeMap.put(key, layout);
         } else {
@@ -107,7 +107,7 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
      * information if it is not default (according to the layout information
      * itself, i.e., <code>{@link JCellLayout#isDefault}</code>.
      */
-    public void putEdge(E key, JEdgeLayout layout) {
+    public void putEdge(Edge key, JEdgeLayout layout) {
         if (layout.isDefault()) {
             this.edgeMap.remove(key);
         } else {
@@ -119,8 +119,8 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
      * Inserts layout information for a given node key, using the layout of
      * another node (from which it was mapped). Also adds an offset.
      */
-    public void copyNodeWithOffset(N newKey, N oldKey,
-            LayoutMap<N,E> oldLayoutMap, double offsetX, double offsetY) {
+    public void copyNodeWithOffset(Node newKey, Node oldKey,
+            LayoutMap oldLayoutMap, double offsetX, double offsetY) {
         JVertexLayout oldLayout = oldLayoutMap.nodeMap.get(oldKey);
         if (oldLayout != null) {
             Rectangle2D oldBounds = oldLayout.getBounds();
@@ -137,8 +137,8 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
      * Inserts layout information for a given edge key, using the layout of
      * another edge (from which it was mapped). Also adds an offset.
      */
-    public void copyEdgeWithOffset(E newKey, E oldKey,
-            LayoutMap<N,E> oldLayoutMap, double offsetX, double offsetY) {
+    public void copyEdgeWithOffset(Edge newKey, Edge oldKey,
+            LayoutMap oldLayoutMap, double offsetX, double offsetY) {
         JEdgeLayout oldLayout = oldLayoutMap.edgeMap.get(oldKey);
         if (oldLayout != null) {
             List<Point2D> oldPoints = oldLayout.getPoints();
@@ -161,7 +161,7 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
      * (according to the layout information itself, i.e.,
      * <code>{@link JCellLayout#isDefault}</code>.
      */
-    public void putNode(N key, VisualMap visuals) {
+    public void putNode(Node key, VisualMap visuals) {
         putNode(key, JVertexLayout.newInstance(visuals));
     }
 
@@ -171,7 +171,7 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
      * (according to the layout information itself, i.e.,
      * <code>{@link JCellLayout#isDefault}</code>.
      */
-    public void putEdge(E key, VisualMap visuals) {
+    public void putEdge(Edge key, VisualMap visuals) {
         putEdge(key, JEdgeLayout.newInstance(visuals));
     }
 
@@ -181,7 +181,7 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
      * (according to the layout information itself, i.e.,
      * <code>{@link JCellLayout#isDefault}</code>.
      */
-    public void putNode(N key, AttributeMap jAttr) {
+    public void putNode(Node key, AttributeMap jAttr) {
         putNode(key, JVertexLayout.newInstance(jAttr));
     }
 
@@ -191,12 +191,12 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
      * (according to the layout information itself, i.e.,
      * <code>{@link JCellLayout#isDefault}</code>.
      */
-    public void putEdge(E key, AttributeMap jAttr) {
+    public void putEdge(Edge key, AttributeMap jAttr) {
         putEdge(key, JEdgeLayout.newInstance(jAttr));
     }
 
     /** Fills this layout map with the content of another. */
-    public void load(LayoutMap<? extends N,? extends E> other) {
+    public void load(LayoutMap other) {
         this.nodeMap.clear();
         this.nodeMap.putAll(other.nodeMap());
         this.edgeMap.clear();
@@ -207,16 +207,16 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
      * Composes the inverse of a given element map in front of this layout map.
      * The result is not fixed.
      */
-    public <OtherN extends Node,OtherE extends Edge> LayoutMap<OtherN,OtherE> afterInverse(
+    public <N extends Node,E extends Edge,OtherN extends Node,OtherE extends Edge> LayoutMap afterInverse(
             ElementMap<N,E,OtherN,OtherE> other) {
-        LayoutMap<OtherN,OtherE> result = newInstance();
-        for (Map.Entry<N,JVertexLayout> layoutEntry : nodeMap().entrySet()) {
+        LayoutMap result = newInstance();
+        for (Map.Entry<Node,JVertexLayout> layoutEntry : nodeMap().entrySet()) {
             OtherN trafoValue = other.getNode(layoutEntry.getKey());
             if (trafoValue != null) {
                 result.putNode(trafoValue, layoutEntry.getValue());
             }
         }
-        for (Map.Entry<E,JEdgeLayout> layoutEntry : edgeMap().entrySet()) {
+        for (Map.Entry<Edge,JEdgeLayout> layoutEntry : edgeMap().entrySet()) {
             OtherE trafoValue = other.getEdge(layoutEntry.getKey());
             if (trafoValue != null) {
                 result.putEdge(trafoValue, layoutEntry.getValue());
@@ -226,8 +226,8 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
     }
 
     @Override
-    public LayoutMap<N,E> clone() {
-        LayoutMap<N,E> result = newInstance();
+    public LayoutMap clone() {
+        LayoutMap result = newInstance();
         result.nodeMap.putAll(nodeMap());
         result.edgeMap.putAll(edgeMap());
         return result;
@@ -236,14 +236,16 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
     /**
      * Specialises the return type of the super method to {@link LayoutMap}.
      */
-    protected <OtherN extends Node,OtherE extends Edge> LayoutMap<OtherN,OtherE> newInstance() {
-        return new LayoutMap<OtherN,OtherE>();
+    protected LayoutMap newInstance() {
+        return new LayoutMap();
     }
 
     /** Mapping from node keys to <tt>NT</tt>s. */
-    private final Map<N,JVertexLayout> nodeMap = new HashMap<N,JVertexLayout>();
+    private final Map<Node,JVertexLayout> nodeMap =
+        new HashMap<Node,JVertexLayout>();
     /** Mapping from edge keys to <tt>ET</tt>s. */
-    private final Map<E,JEdgeLayout> edgeMap = new HashMap<E,JEdgeLayout>();
+    private final Map<Edge,JEdgeLayout> edgeMap =
+        new HashMap<Edge,JEdgeLayout>();
 
     /**
      * Tests if a given object is a jgraph vertex, a jgraph vertex view or a

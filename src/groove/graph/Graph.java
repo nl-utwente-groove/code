@@ -155,7 +155,7 @@ public interface Graph<N extends Node,E extends Edge> extends Fixable {
      * @return the (non-{@code null}) information object
      * @see #hasInfo()
      */
-    GraphInfo<N,E> getInfo();
+    GraphInfo getInfo();
 
     /**
      * Makes a copy of this Graph with cloned (not aliased) node and edge sets

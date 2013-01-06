@@ -61,8 +61,7 @@ public class LayoutIO {
     }
 
     /** Writes a layout map in the correct format to a given output stream. */
-    public <N extends Node,E extends Edge> void writeLayout(
-            LayoutMap<N,E> layoutMap, OutputStream out) {
+    public void writeLayout(LayoutMap layoutMap, OutputStream out) {
         // if there is layout information, create a file for it
         PrintWriter layoutWriter = new PrintWriter(out);
         // some general wise words first
@@ -71,10 +70,10 @@ public class LayoutIO {
         }
         layoutWriter.println(VERSION_LINE);
         // iterator over the layout map and write the layout information
-        for (Map.Entry<N,JVertexLayout> entry : layoutMap.nodeMap().entrySet()) {
+        for (Map.Entry<Node,JVertexLayout> entry : layoutMap.nodeMap().entrySet()) {
             layoutWriter.println(toString(entry.getKey(), entry.getValue()));
         }
-        for (Map.Entry<E,JEdgeLayout> entry : layoutMap.edgeMap().entrySet()) {
+        for (Map.Entry<Edge,JEdgeLayout> entry : layoutMap.edgeMap().entrySet()) {
             layoutWriter.println(toString(entry.getKey(), entry.getValue()));
         }
         layoutWriter.close();
@@ -89,13 +88,11 @@ public class LayoutIO {
      * @throws IOException if an error occurred in reading the layout file
      * @throws FormatException if the layout file contains format errors
      */
-    public LayoutMap<PlainNode,PlainEdge> readLayout(
-            Map<String,PlainNode> nodeMap, InputStream in)
+    public LayoutMap readLayout(Map<String,PlainNode> nodeMap, InputStream in)
         throws IOException, FormatException {
         BufferedReader layoutReader =
             new BufferedReader(new InputStreamReader(in));
-        LayoutMap<PlainNode,PlainEdge> result =
-            new LayoutMap<PlainNode,PlainEdge>();
+        LayoutMap result = new LayoutMap();
         FormatErrorSet errors = new FormatErrorSet();
         try {
             int version = 1;
@@ -139,9 +136,8 @@ public class LayoutIO {
      * Inserts vertex layout information in a given layout map, based on a
      * string array description and node map.
      */
-    private void putVertexLayout(LayoutMap<PlainNode,PlainEdge> layoutMap,
-            String[] parts, Map<String,PlainNode> nodeMap)
-        throws FormatException {
+    private void putVertexLayout(LayoutMap layoutMap, String[] parts,
+            Map<String,PlainNode> nodeMap) throws FormatException {
         PlainNode node = nodeMap.get(parts[1]);
         if (node == null) {
             throw new FormatException("Unknown node " + parts[1]);
@@ -160,10 +156,8 @@ public class LayoutIO {
      * array description and node map.
      * @param version for version 2, the layout position info has changed
      */
-    private PlainEdge putEdgeLayout(
-            LayoutMap<PlainNode,PlainEdge> layoutMap, String[] parts,
-            Map<String,PlainNode> nodeMap, int version)
-        throws FormatException {
+    private PlainEdge putEdgeLayout(LayoutMap layoutMap, String[] parts,
+            Map<String,PlainNode> nodeMap, int version) throws FormatException {
         if (parts.length < 7) {
             throw new FormatException("Incomplete edge layout line");
         }

@@ -19,7 +19,6 @@ package groove.io.xml;
 import static groove.io.FileType.LAYOUT_FILTER;
 import groove.grammar.model.FormatException;
 import groove.graph.GraphInfo;
-import groove.graph.plain.PlainEdge;
 import groove.graph.plain.PlainGraph;
 import groove.graph.plain.PlainNode;
 import groove.gui.layout.LayoutMap;
@@ -67,7 +66,7 @@ public class LayedOutXml implements Xml<PlainGraph> {
         try {
             InputStream in = layoutURL.openStream();
             try {
-                LayoutMap<PlainNode,PlainEdge> layout =
+                LayoutMap layout =
                     LayoutIO.getInstance().readLayout(nodeMap, in);
                 GraphInfo.setLayoutMap(result, layout);
             } catch (FormatException exc) {

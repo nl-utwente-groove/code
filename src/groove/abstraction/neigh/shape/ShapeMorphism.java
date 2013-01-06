@@ -25,6 +25,7 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
 import groove.grammar.type.TypeLabel;
+import groove.graph.Edge;
 import groove.graph.Morphism;
 import groove.graph.Node;
 
@@ -81,7 +82,7 @@ public final class ShapeMorphism extends HostGraphMorphism {
     }
 
     @Override
-    public ShapeEdge getEdge(HostEdge key) {
+    public ShapeEdge getEdge(Edge key) {
         return (ShapeEdge) super.getEdge(key);
     }
 

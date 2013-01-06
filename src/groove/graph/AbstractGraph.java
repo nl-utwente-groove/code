@@ -140,10 +140,10 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
     }
 
     @Override
-    public GraphInfo<N,E> getInfo() {
+    public GraphInfo getInfo() {
         if (this.graphInfo == null) {
             assert !isFixed();
-            this.graphInfo = new GraphInfo<N,E>();
+            this.graphInfo = new GraphInfo();
         }
         return this.graphInfo;
     }
@@ -482,7 +482,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
     /**
      * Map in which various kinds of data can be stored.
      */
-    private GraphInfo<N,E> graphInfo;
+    private GraphInfo graphInfo;
 
     // -------------------- REPORTER DEFINITIONS ------------------------
 

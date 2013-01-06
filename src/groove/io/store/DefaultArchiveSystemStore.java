@@ -469,7 +469,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         ZipEntry layoutEntry = this.layoutEntryMap.get(entryName);
         if (layoutEntry != null) {
             try {
-                LayoutMap<PlainNode,PlainEdge> layout =
+                LayoutMap layout =
                     LayoutIO.getInstance().readLayout(nodeMap,
                         file.getInputStream(layoutEntry));
                 GraphInfo.setLayoutMap(plainGraph, layout);

@@ -72,7 +72,7 @@ public class ElementMap<SN extends Node,SE extends Edge,TN extends Node,TE exten
     /**
      * Returns the image for a given edge key.
      */
-    public TE getEdge(SE key) {
+    public TE getEdge(Edge key) {
         return edgeMap().get(key);
     }
 

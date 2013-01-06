@@ -6,6 +6,7 @@ import groove.abstraction.neigh.equiv.NodeEquivClass;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
+import groove.graph.Edge;
 import groove.graph.InvertibleElementMap;
 import groove.graph.Node;
 import groove.util.Fixable;
@@ -74,7 +75,7 @@ public final class HostToShapeMap extends
     }
 
     @Override
-    public ShapeEdge getEdge(HostEdge key) {
+    public ShapeEdge getEdge(Edge key) {
         return (ShapeEdge) super.getEdge(key);
     }
 

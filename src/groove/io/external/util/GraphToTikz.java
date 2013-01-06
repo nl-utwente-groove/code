@@ -30,11 +30,11 @@ import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.CtrlJEdge;
 import groove.gui.jgraph.CtrlJVertex;
-import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
+import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJVertex;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
@@ -78,7 +78,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     /** The underlying Groove graph connected to the jGraph. */
     private final Graph<Node,Edge> graph;
     /** The layout map of the graph. */
-    private final LayoutMap<Node,Edge> layoutMap;
+    private final LayoutMap layoutMap;
     /** The color map of the graph. */
     private final Map<JVertex<G>,Color> colorMap;
     /** The builder that holds the Tikz string. */
