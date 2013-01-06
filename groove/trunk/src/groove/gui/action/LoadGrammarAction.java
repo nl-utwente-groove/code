@@ -6,7 +6,6 @@ import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.graph.GraphInfo;
-import groove.graph.GraphProperties;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.VersionDialog;
@@ -253,11 +252,11 @@ public class LoadGrammarAction extends SimulatorAction {
             AspectGraph newGraph = oldGraph.clone();
             newGraph.setName(newName);
             if (kind == ResourceKind.RULE) {
-                // store old name in rule properties, if possible
-                GraphProperties properties =
-                    GraphInfo.getProperties(newGraph, false);
-                if (properties.getTransitionLabel() == null) {
-                    properties.setTransitionLabel(oldName);
+                // store old name as transition label
+                // if there was no explicit transition label
+                // so the name change does not affect the LTS
+                if (GraphInfo.getTransitionLabel(newGraph) == null) {
+                    GraphInfo.setTransitionLabel(newGraph, oldName);
                 }
             }
             newGraph.setFixed();

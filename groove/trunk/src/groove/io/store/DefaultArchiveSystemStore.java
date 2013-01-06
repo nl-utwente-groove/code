@@ -394,8 +394,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
             // enable the active types listed in the system properties
             Set<String> enabledTypes = this.properties.getActiveNames(kind);
             for (String enabledType : enabledTypes) {
-                GraphInfo.getProperties(graphMap.get(enabledType), true).setEnabled(
-                    true);
+                GraphInfo.setEnabled(graphMap.get(enabledType), true);
             }
         }
     }

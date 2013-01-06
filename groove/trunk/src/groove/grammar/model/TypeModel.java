@@ -95,7 +95,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
 
     @Override
     TypeGraph compute() throws FormatException {
-        getSource().getErrors().throwException();
+        GraphInfo.throwException(getSource());
         FormatErrorSet errors = createErrors();
         TypeGraph result = new TypeGraph(getFullName());
         TypeFactory factory = result.getFactory();

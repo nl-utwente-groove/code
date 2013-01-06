@@ -58,8 +58,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
             @Override
             public void update(Observable o, Object arg) {
                 if (arg != null) {
-                    JCell<?> errorCell =
-                        getJModel().getErrorMap().get(arg);
+                    JCell<?> errorCell = getJModel().getErrorMap().get(arg);
                     if (errorCell != null) {
                         getJGraph().setSelectionCell(errorCell);
                     }
@@ -153,7 +152,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         PropertiesTable result = this.propertiesPanel;
         if (result == null) {
             this.propertiesPanel =
-                result = new PropertiesTable(GraphProperties.KEYS, false);
+                result =
+                    new PropertiesTable(GraphProperties.getKeyMap(), false);
             result.setName("Properties");
             result.addMouseListener(new EditMouseListener());
         }

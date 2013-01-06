@@ -196,7 +196,7 @@ public class LayoutMap<N extends Node,E extends Edge> implements Cloneable {
     }
 
     /** Fills this layout map with the content of another. */
-    public void fill(LayoutMap<? extends N,? extends E> other) {
+    public void load(LayoutMap<? extends N,? extends E> other) {
         this.nodeMap.clear();
         this.nodeMap.putAll(other.nodeMap());
         this.edgeMap.clear();

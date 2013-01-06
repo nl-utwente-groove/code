@@ -78,21 +78,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         this.role = graphRole;
         this.normal = true;
         // make sure the properties object is initialised
-        GraphInfo.getInfo(this, true);
+        getInfo();
     }
 
-    /**
-     * Returns the list of format errors in this graph. If the list is empty,
-     * the graph has no errors.
-     * @return a possibly empty, non-<code>null</code> list of format errors in
-     *         this aspect graph
-     */
-    public FormatErrorSet getErrors() {
-        FormatErrorSet result = new FormatErrorSet();
-        if (getInfo() != null && getInfo().getErrors() != null) {
-            result = getInfo().getErrors();
-        }
-        return result;
+    /** Sets the list of errors to a copy of a given list. */
+    private void addErrors(Collection<FormatError> errors) {
+        GraphInfo.addErrors(this, errors);
     }
 
     /**
@@ -109,36 +100,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     }
 
     /**
-     * Indicates if this aspect graph has format errors. Convenience method for
-     * <code>! getErrors().isEmpty()</code>.
-     * @return <code>true</code> if this aspect graph has format errors
-     */
-    public boolean hasErrors() {
-        return !getErrors().isEmpty();
-    }
-
-    /** Sets the list of errors to a copy of a given list. */
-    private void addErrors(FormatErrorSet errors) {
-        FormatErrorSet newErrors = new FormatErrorSet();
-        if (GraphInfo.hasErrors(this)) {
-            newErrors.addAll(GraphInfo.getErrors(this));
-        }
-        if (errors != null) {
-            newErrors.addAll(errors);
-        }
-        GraphInfo.setErrors(this, newErrors);
-    }
-
-    /**
      * Method that returns an {@link AspectGraph} based on a graph whose edges
      * are interpreted as aspect value prefixed. This means that nodes with
      * self-edges that have no text (apart from their aspect prefixes) are
      * treated as indicating the node aspect. The method never throws an
-     * exception, but the resulting graph may have format errors, reported in
-     * {@link #getErrors()}.
+     * exception, but the resulting graph may have format errors.
      * @param graph the graph to take as input.
-     * @return an aspect graph whose format errors are recorded in
-     *         {@link #getErrors()}
+     * @return an aspect graph with possible format errors
      */
     public AspectGraph fromPlainGraph(PlainGraph graph) {
         // map from original graph elements to aspect graph elements
@@ -152,8 +120,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * self-edges that have no text (apart from their aspect prefixes) are
      * treated as indicating the node aspect. The mapping from the old to the
      * new graph is stored in a parameter. The method never throws an exception,
-     * but the resulting graph may have format errors, reported in
-     * {@link #getErrors()} as well as in the graph errors of the result.
+     * but the resulting graph may have format errors.
      * @param graph the graph to take as input.
      * @param elementMap output parameter for mapping from plain graph elements
      *        to resulting {@link AspectGraph} elements; should be initially
@@ -328,7 +295,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 errors.addAll(e.getErrors());
             }
         }
-        getErrors().addAll(errors);
+        addErrors(errors);
     }
 
     /**
@@ -629,7 +596,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             return this;
         } else {
             GraphInfo.transfer(this, result, elementMap);
-            GraphInfo.setErrors(result, new FormatErrorSet());
             result.setFixed();
             return fromPlainGraph(result);
         }
@@ -690,7 +656,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             return this;
         } else {
             GraphInfo.transfer(this, result, elementMap);
-            GraphInfo.setErrors(result, new FormatErrorSet());
             result.setFixed();
             return fromPlainGraph(result);
         }
@@ -776,7 +741,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             result.nodeIdMap = newNodeIdMap;
         }
         GraphInfo.transfer(this, result, null);
-        result.addErrors(getErrors());
         return result;
     }
 
@@ -934,11 +898,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 result.addEdgeContext(fresh);
             }
             // Copy the errors
-            FormatErrorSet oldErrors = GraphInfo.getErrors(graph);
-            if (oldErrors != null) {
-                for (FormatError oldError : oldErrors) {
-                    newErrors.add("Error in start graph %s: %s", name, oldError);
-                }
+            for (FormatError oldError : GraphInfo.getErrors(graph)) {
+                newErrors.add("Error in start graph %s: %s", name, oldError);
             }
             // Move the offsets
             if (globalMaxX > globalMaxY) {

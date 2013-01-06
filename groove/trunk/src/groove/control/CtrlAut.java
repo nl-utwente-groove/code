@@ -20,7 +20,6 @@ import static groove.graph.GraphRole.CTRL;
 import groove.control.CtrlCall.Kind;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
-import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.graph.AbstractGraph;
 import groove.graph.GraphInfo;
@@ -66,7 +65,6 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
         super(name);
         this.startState = addState();
         this.finalState = addState();
-        GraphInfo.setErrors(this, new FormatErrorSet());
     }
 
     @Override
@@ -223,9 +221,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
 
     /** Adds the errors of another automaton to this one. */
     void addErrors(CtrlAut other) {
-        if (GraphInfo.hasErrors(other)) {
-            GraphInfo.addErrors(this, GraphInfo.getErrors(other));
-        }
+        GraphInfo.addErrors(this, GraphInfo.getErrors(this));
     }
 
     @Override
@@ -337,7 +333,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
      */
     public CtrlAut normalise() throws FormatException {
         CtrlAut result = this;
-        if (getInfo().getErrors().isEmpty()) {
+        if (!GraphInfo.hasErrors(this)) {
             Set<Set<CtrlState>> equivalence = computeEquivalence();
             Map<CtrlState,Set<CtrlState>> partition =
                 computePartition(equivalence);

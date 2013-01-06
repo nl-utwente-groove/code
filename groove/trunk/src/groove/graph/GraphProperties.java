@@ -16,14 +16,7 @@
  */
 package groove.graph;
 
-import static groove.graph.GraphProperties.Key.ENABLED;
-import static groove.graph.GraphProperties.Key.FORMAT;
-import static groove.graph.GraphProperties.Key.PRIORITY;
-import static groove.graph.GraphProperties.Key.REMARK;
-import static groove.graph.GraphProperties.Key.TRANSITION_LABEL;
-import static groove.graph.GraphProperties.Key.VERSION;
 import groove.grammar.Action;
-import groove.grammar.Rule;
 import groove.gui.dialog.PropertyKey;
 import groove.util.DefaultFixable;
 import groove.util.ExprParser;
@@ -96,136 +89,6 @@ public class GraphProperties extends Properties implements Fixable {
         return result;
     }
 
-    /**
-     * Returns the priority stored in this properties object, if any. The
-     * priority is stored under key {@link #PRIORITY}.
-     * @return The stored priority, or {@link Rule#DEFAULT_PRIORITY} if there is
-     *         none
-     */
-    public int getPriority() {
-        return Integer.parseInt(getProperty(PRIORITY));
-    }
-
-    /**
-     * Sets a priority in this property object. The priority is stored under key
-     * {@link #PRIORITY}.
-     * @param priority the priority to be stored; non-negative
-     * @return the previously stored priority, or {@link Rule#DEFAULT_PRIORITY}
-     *         if there was none
-     */
-    public int setPriority(int priority) {
-        String result = setProperty(PRIORITY, Integer.toString(priority));
-        if (result == null) {
-            return Action.DEFAULT_PRIORITY;
-        } else {
-            return Integer.parseInt(result);
-        }
-    }
-
-    /**
-     * Returns the enabled status stored in this properties object, if any. The
-     * status is stored under key {@link #ENABLED}.
-     * @return The stored enabled status, or <code>true</code> if there is
-     *         none
-     */
-    public boolean isEnabled() {
-        return Boolean.parseBoolean(getProperty(ENABLED));
-    }
-
-    /**
-     * Sets a enabled status in this property object. The status is stored under
-     * key {@link #ENABLED}.
-     * @param enabled the enabled status to be stored
-     * @return the previously stored status, or <code>true</code> if there was
-     *         none
-     */
-    public boolean setEnabled(boolean enabled) {
-        String result = setProperty(ENABLED, Boolean.toString(enabled));
-        if (result == null) {
-            result = ENABLED.getDefaultValue();
-        }
-        return Boolean.parseBoolean(result);
-    }
-
-    /**
-     * Retrieves the {@link #REMARK} value in this properties object.
-     * @return the current value for {@link #REMARK}; may be
-     *         <code>null</code>
-     */
-    public String getRemark() {
-        return getProperty(REMARK);
-    }
-
-    /**
-     * Sets the {@link #REMARK} property to a given value.
-     * @param remark the new remark; may be <code>null</code>
-     * @return the previous value for {@link #REMARK}; may be
-     *         <code>null</code>
-     */
-    public String setRemark(String remark) {
-        return setProperty(REMARK, remark);
-    }
-
-    /**
-     * Retrieves the {@link #FORMAT} value in this properties object.
-     * @return the current value for {@link #FORMAT}; may be
-     *         <code>null</code>
-     */
-    public String getFormatString() {
-        return getProperty(FORMAT);
-    }
-
-    /**
-     * Sets the {@link #FORMAT} property to a given value.
-     * @param format the new remark; may be <code>null</code>
-     * @return the previous value for {@link #FORMAT}; may be
-     *         <code>null</code>
-     */
-    public String setFormatString(String format) {
-        return setProperty(FORMAT, format);
-    }
-
-    /**
-     * Retrieves the {@link #TRANSITION_LABEL} value in this properties
-     * object.
-     * @return the current value for {@link #TRANSITION_LABEL}; may be
-     *         <code>null</code>
-     */
-    public String getTransitionLabel() {
-        return getProperty(TRANSITION_LABEL);
-    }
-
-    /**
-     * Sets the {@link #TRANSITION_LABEL} property to a given value.
-     * @param label the new transition label; may be <code>null</code>
-     * @return the previous value for {@link #TRANSITION_LABEL}; may be
-     *         <code>null</code>
-     */
-    public String setTransitionLabel(String label) {
-        return setProperty(TRANSITION_LABEL, label);
-    }
-
-    /**
-     * Returns the version number stored in this properties object.
-     * @return the version property; <code>0</code> if the property is not
-     *         set.
-     * @see #VERSION
-     */
-    public String getVersion() {
-        String version = getProperty(VERSION);
-        return version;
-    }
-
-    /**
-     * Sets the version property to a given value.
-     * @return the previous value of the version property; <code>0</code> if
-     *         the property was not set.
-     * @see #VERSION
-     */
-    public String setVersion(String version) {
-        return setProperty(VERSION, version);
-    }
-
     @Override
     public String setProperty(String keyword, String value) {
         testFixed(false);
@@ -266,88 +129,10 @@ public class GraphProperties extends Properties implements Fixable {
     private final DefaultFixable fixable = new DefaultFixable();
 
     /**
-     * Returns the priority property from a given graph. The property is stored
-     * under {@link #PRIORITY}. Yields {@link Rule#DEFAULT_PRIORITY} if the
-     * graph has no properties, or the properties contain no priority value.
-     * @see #getPriority()
-     */
-    static public int getPriority(Graph<?,?> graph) {
-        GraphProperties properties = GraphInfo.getProperties(graph, false);
-        if (properties == null) {
-            return Action.DEFAULT_PRIORITY;
-        } else {
-            return properties.getPriority();
-        }
-    }
-
-    /**
-     * Returns the enabledness property from a given graph. The property is
-     * stored under {@link #ENABLED}. Yields <code>true</code> if the
-     * graph has no properties.
-     * @see #isEnabled()
-     */
-    static public boolean isEnabled(Graph<?,?> graph) {
-        if (graph == null) {
-            return false;
-        }
-        GraphProperties properties = GraphInfo.getProperties(graph, false);
-        if (properties == null) {
-            return true;
-        } else {
-            return properties.isEnabled();
-        }
-    }
-
-    /**
-     * Returns the remark property from a given graph. The property is stored
-     * under {@link #REMARK}. Yields <code>null</code> if the graph has
-     * no properties, or the properties contain no remark value.
-     * @see #getRemark()
-     */
-    static public String getRemark(Graph<?,?> graph) {
-        GraphProperties properties = GraphInfo.getProperties(graph, false);
-        if (properties == null) {
-            return null;
-        } else {
-            return properties.getRemark();
-        }
-    }
-
-    /**
-     * Returns the string format property from a given graph. The property is stored
-     * under {@link #FORMAT}. Yields <code>null</code> if the graph has
-     * no properties, or the properties contain no remark value.
-     * @see #getFormatString()
-     */
-    static public String getFormatString(Graph<?,?> graph) {
-        GraphProperties properties = GraphInfo.getProperties(graph, false);
-        if (properties == null) {
-            return null;
-        } else {
-            return properties.getFormatString();
-        }
-    }
-
-    /**
-     * Returns the transition label from a given graph. The property is stored
-     * under {@link #TRANSITION_LABEL}. Yields <code>null</code> if the
-     * graph has no properties, or the properties contain no label value.
-     * @see #getTransitionLabel()
-     */
-    static public String getTransitionLabel(Graph<?,?> graph) {
-        GraphProperties properties = GraphInfo.getProperties(graph, false);
-        if (properties == null) {
-            return null;
-        } else {
-            return properties.getTransitionLabel();
-        }
-    }
-
-    /**
      * Tests if a given string is a valid system-defined property key.
      */
-    static public boolean isSystemKey(String keyword) {
-        return KEYS.containsKey(keyword) && KEYS.get(keyword).isSystem();
+    static private boolean isSystemKey(String keyword) {
+        return isKey(keyword) && KEYS.get(keyword).isSystem();
     }
 
     /**
@@ -363,13 +148,23 @@ public class GraphProperties extends Properties implements Fixable {
      * Tests if a given object is a valid user-defined property key, or a system
      * key.
      */
-    static public boolean isValidKey(Object key) {
+    static private boolean isValidKey(Object key) {
         return key instanceof String
             && (isSystemKey((String) key) || isValidUserKey((String) key));
     }
 
+    /** Returns the mapping from string values to property keys. */
+    static public Map<String,Key> getKeyMap() {
+        return Collections.unmodifiableMap(KEYS);
+    }
+
+    /** Indicates if a given string corresponds to a property key. */
+    static public boolean isKey(String key) {
+        return KEYS.containsKey(key);
+    }
+
     /** Mapping from graph property key names to keys. */
-    public final static Map<String,Key> KEYS;
+    private final static Map<String,Key> KEYS;
 
     static {
         Map<String,Key> keys = new LinkedHashMap<String,Key>();
@@ -421,7 +216,7 @@ public class GraphProperties extends Properties implements Fixable {
             }
         }),
         /** User-defined comment. */
-        REMARK("remark", new Property<String>() {
+        REMARK("remark", "", new Property<String>() {
             @Override
             public boolean isSatisfied(String value) {
                 return value.trim().length() > 0;

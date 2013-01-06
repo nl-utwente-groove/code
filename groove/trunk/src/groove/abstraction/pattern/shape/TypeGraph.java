@@ -34,7 +34,6 @@ import groove.grammar.type.TypeLabel;
 import groove.graph.Edge;
 import groove.graph.EdgeComparator;
 import groove.graph.Graph;
-import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.graph.NodeComparator;
@@ -123,9 +122,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
             computeLayers();
             assert isWellDefined();
             createClosureRules();
-            if (getInfo() == null) {
-                setInfo(new GraphInfo<TypeNode,TypeEdge>());
-            }
+            getInfo().setFixed();
             this.fixed = true;
         }
         return result;
@@ -563,8 +560,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     }
 
     @Override
-    public boolean removeNodeSet(
-            Collection<? extends TypeNode> nodeSet) {
+    public boolean removeNodeSet(Collection<? extends TypeNode> nodeSet) {
         throw new UnsupportedOperationException();
     }
 

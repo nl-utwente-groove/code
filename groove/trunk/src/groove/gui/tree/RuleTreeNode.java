@@ -16,6 +16,7 @@
  */
 package groove.gui.tree;
 
+import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.RuleModel;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
@@ -57,40 +58,36 @@ class RuleTreeNode extends ResourceTreeNode implements ActionTreeNode {
         StringBuilder result = new StringBuilder();
         result.append("Rule ");
         result.append(HTMLConverter.STRONG_TAG.on(getName()));
-        GraphProperties properties =
-            GraphInfo.getProperties(getRule().getSource(), false);
-        if (properties != null && !properties.isEmpty()) {
-            String remark = properties.getRemark();
-            if (!remark.isEmpty()) {
-                result.append(": ");
-                result.append(HTMLConverter.toHtml(remark));
-            }
-            Map<String,String> filteredProps =
-                new LinkedHashMap<String,String>();
-            // collect the non-system, non-remark properties
-            for (Key key : Key.values()) {
-                String value = properties.getProperty(key);
-                if (key != Key.REMARK && !key.isSystem() && value != null
-                    && !value.isEmpty()) {
-                    filteredProps.put(key.getDescription(), value);
-                }
-            }
-            // collect the user properties
-            for (Map.Entry<Object,Object> entry : properties.entrySet()) {
-                String keyword = (String) entry.getKey();
-                String value = (String) entry.getValue();
-                if (!GraphProperties.KEYS.containsKey(keyword)
-                    && !value.isEmpty()) {
-                    filteredProps.put(keyword, value);
-                }
-            }
-            // display everything
-            for (Map.Entry<String,String> entry : filteredProps.entrySet()) {
-                result.append(HTMLConverter.HTML_LINEBREAK);
-                result.append(propertyToString(entry));
+        AspectGraph source = getRule().getSource();
+        String remark = GraphInfo.getRemark(source);
+        if (!remark.isEmpty()) {
+            result.append(": ");
+            result.append(HTMLConverter.toHtml(remark));
+        }
+        GraphProperties properties = GraphInfo.getProperties(source);
+        Map<String,String> filteredProps = new LinkedHashMap<String,String>();
+        // collect the non-system, non-remark properties
+        for (Key key : Key.values()) {
+            String value = properties.getProperty(key);
+            if (key != Key.REMARK && !key.isSystem() && value != null
+                && !value.isEmpty()) {
+                filteredProps.put(key.getDescription(), value);
             }
         }
-        if (!isTried() && (properties == null || properties.isEnabled())) {
+        // collect the user properties
+        for (Map.Entry<Object,Object> entry : properties.entrySet()) {
+            String keyword = (String) entry.getKey();
+            String value = (String) entry.getValue();
+            if (!GraphProperties.isKey(keyword) && !value.isEmpty()) {
+                filteredProps.put(keyword, value);
+            }
+        }
+        // display everything
+        for (Map.Entry<String,String> entry : filteredProps.entrySet()) {
+            result.append(HTMLConverter.HTML_LINEBREAK);
+            result.append(propertyToString(entry));
+        }
+        if (!isTried() && GraphInfo.isEnabled(source)) {
             result.append(HTMLConverter.HTML_LINEBREAK);
             result.append("Not scheduled in this state, due to rule priorities or control");
         }

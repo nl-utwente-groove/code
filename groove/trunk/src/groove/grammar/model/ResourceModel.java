@@ -20,7 +20,7 @@ import static groove.grammar.model.ResourceKind.RULE;
 import groove.grammar.QualName;
 import groove.grammar.Rule;
 import groove.grammar.aspect.AspectGraph;
-import groove.graph.GraphProperties;
+import groove.graph.GraphInfo;
 import groove.util.ChangeCount;
 import groove.util.ChangeCount.Tracker;
 import groove.util.Status;
@@ -228,7 +228,7 @@ abstract public class ResourceModel<R> {
         for (ResourceModel<?> model : ruleModels) {
             RuleModel ruleModel = (RuleModel) model;
             try {
-                if (GraphProperties.isEnabled(ruleModel.getSource())) {
+                if (GraphInfo.isEnabled(ruleModel.getSource())) {
                     result.add(ruleModel.toResource());
                 }
             } catch (FormatException exc) {

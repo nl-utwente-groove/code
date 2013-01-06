@@ -37,9 +37,9 @@ import groove.gui.dialog.PropertiesTable;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JAttr;
 import groove.gui.jgraph.JGraphMode;
 import groove.gui.tree.TypeTree;
 import groove.util.Pair;
@@ -116,8 +116,8 @@ final public class GraphEditorTab extends ResourceTab implements
     public void setGraph(AspectGraph graph) {
         AspectJModel oldModel = getJModel();
         if (oldModel != null) {
-            oldModel.addUndoableEditListener(getUndoManager());
-            oldModel.addGraphModelListener(this);
+            oldModel.removeUndoableEditListener(getUndoManager());
+            oldModel.removeGraphModelListener(this);
         }
         setName(graph.getName());
         AspectJModel newModel = getJGraph().newModel();
@@ -126,12 +126,13 @@ final public class GraphEditorTab extends ResourceTab implements
         graphClone.setFixed();
         newModel.loadGraph(graphClone);
         getJGraph().setModel(newModel);
+        loadProperties(graphClone, true);
         newModel.addUndoableEditListener(getUndoManager());
         newModel.addGraphModelListener(this);
         setClean();
         getUndoManager().discardAllEdits();
-        updateStatus();
         updateHistoryButtons();
+        updateStatus();
     }
 
     /** Returns the graph being edited. */
@@ -145,8 +146,7 @@ final public class GraphEditorTab extends ResourceTab implements
             @Override
             public void update(Observable o, Object arg) {
                 if (arg != null) {
-                    JCell<?> errorCell =
-                        getJModel().getErrorMap().get(arg);
+                    JCell<?> errorCell = getJModel().getErrorMap().get(arg);
                     if (errorCell != null) {
                         getJGraph().setSelectionCell(errorCell);
                     }
@@ -212,22 +212,21 @@ final public class GraphEditorTab extends ResourceTab implements
         GraphBasedModel<?> graphModel =
             (GraphBasedModel<?>) grammar.getResource(getResourceKind(),
                 getName());
-        if (graphModel == null) {
+        AspectGraph source = graphModel == null ? null : graphModel.getSource();
+        if (source == null) {
             dispose();
-        } else if (isDirty() || getGraph() == graphModel.getSource()) {
+        } else if (isDirty() || source == getGraph()) {
             // check if the properties have changed
-            GraphProperties properties =
-                GraphInfo.getProperties(graphModel.getSource(), false);
-            if (properties != null
-                && !properties.equals(GraphInfo.getProperties(getGraph(), false))) {
-                changeProperties(properties);
+            GraphProperties properties = GraphInfo.getProperties(source);
+            if (!properties.equals(GraphInfo.getProperties(getGraph()))) {
+                changeProperties(properties, true);
             } else {
                 getJModel().loadViewErrors();
                 getJGraph().refresh();
             }
             updateStatus();
         } else {
-            setGraph(graphModel.getSource());
+            setGraph(source);
         }
     }
 
@@ -273,17 +272,43 @@ final public class GraphEditorTab extends ResourceTab implements
         newGraph.setName(newName);
         newGraph.setFixed();
         getJModel().loadGraph(newGraph);
-        updateStatus();
+        loadProperties(newGraph, true);
         setName(newName);
+        updateStatus();
     }
 
-    /** Changes the properties of the graph in the JModel. */
-    private void changeProperties(Map<?,?> newProperties) {
+    /** 
+     * Changes the properties of the graph in the JModel.
+     * @param propertiesMap the new properties
+     * @param updatePropertiesPanel if {@code true}, the change did not originate
+     * from the properties table, so the table has to be refreshed as well
+     */
+    private void changeProperties(Map<?,?> propertiesMap,
+            boolean updatePropertiesPanel) {
         AspectGraph newGraph = getGraph().clone();
-        GraphInfo.setProperties(newGraph, new GraphProperties(newProperties));
+        GraphProperties newProperties = new GraphProperties(propertiesMap);
+        GraphInfo.setProperties(newGraph, newProperties);
         newGraph.setFixed();
         getJModel().loadGraph(newGraph);
+        loadProperties(newGraph, updatePropertiesPanel);
         updateStatus();
+    }
+
+    /** 
+     * Changes the graph to be displayed, as well as the graph properties
+     * and the status.
+     * @param newGraph the new graph to be displayed
+     * @param updatePropertiesPanel if {@code true}, the change did not originate
+     * from the properties table, so the table has to be refreshed as well
+     */
+    private void loadProperties(AspectGraph newGraph,
+            boolean updatePropertiesPanel) {
+        if (updatePropertiesPanel) {
+            this.listenToPropertiesPanel = false;
+            getPropertiesPanel().setProperties(
+                GraphInfo.getProperties(newGraph));
+            this.listenToPropertiesPanel = true;
+        }
     }
 
     @Override
@@ -512,24 +537,31 @@ final public class GraphEditorTab extends ResourceTab implements
         PropertiesTable result = this.propertiesPanel;
         if (result == null) {
             this.propertiesPanel =
-                result = new PropertiesTable(GraphProperties.KEYS, true);
+                result = new PropertiesTable(GraphProperties.getKeyMap(), true);
             result.setName("Properties");
             result.setBackground(JAttr.EDITOR_BACKGROUND);
-            result.setProperties(getGraph().getInfo().getProperties());
+            result.setProperties(GraphInfo.getProperties(getGraph()));
             // add the listener after initialising the properties, to avoid needless refreshes
             result.getModel().addTableModelListener(new TableModelListener() {
                 @Override
                 public void tableChanged(TableModelEvent e) {
-                    changeProperties(GraphEditorTab.this.propertiesPanel.getProperties());
-                    setDirty(false);
+                    if (GraphEditorTab.this.listenToPropertiesPanel) {
+                        changeProperties(
+                            GraphEditorTab.this.propertiesPanel.getProperties(),
+                            false);
+                        setDirty(false);
+                    }
                 }
             });
+            this.listenToPropertiesPanel = true;
         }
         return result;
     }
 
     /** Properties panel of this tab. */
     private PropertiesTable propertiesPanel;
+    /** Flag indicating if table changes should be propagated to the graph properties. */
+    private boolean listenToPropertiesPanel;
 
     @Override
     protected JComponent getLowerInfoPanel() {

@@ -134,24 +134,18 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
         }
     }
 
+    @Override
+    public boolean hasInfo() {
+        return this.graphInfo != null;
+    }
+
+    @Override
     public GraphInfo<N,E> getInfo() {
+        if (this.graphInfo == null) {
+            assert !isFixed();
+            this.graphInfo = new GraphInfo<N,E>();
+        }
         return this.graphInfo;
-    }
-
-    /**
-     * Callback factory method for a graph information object.
-     * @param info the {@link groove.graph.GraphInfo} to create a fresh instance
-     *        of
-     * @return a fresh instance of {@link groove.graph.GraphInfo} based on
-     *         <code>info</code>
-     */
-    protected GraphInfo<N,E> createInfo(GraphInfo<?,?> info) {
-        return new GraphInfo<N,E>(info);
-    }
-
-    public GraphInfo<N,E> setInfo(GraphInfo<?,?> info) {
-        assert !isFixed();
-        return this.graphInfo = (info == null ? null : createInfo(info));
     }
 
     @Override
@@ -164,7 +158,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
         boolean result = !isFixed();
         if (result) {
             setCacheCollectable();
-            if (getInfo() != null) {
+            if (hasInfo()) {
                 getInfo().setFixed();
             }
             if (GATHER_STATISTICS) {
@@ -508,7 +502,9 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      */
     public static String toString(Graph<?,?> graph) {
         StringBuffer result = new StringBuffer();
-        result.append(graph.getInfo());
+        if (graph.hasInfo()) {
+            result.append(graph.getInfo());
+        }
         result.append(String.format("Nodes: %s%n", graph.nodeSet()));
         result.append(String.format("Edges: %s%n", graph.edgeSet()));
         return "Nodes: " + graph.nodeSet() + "; Edges: " + graph.edgeSet();
