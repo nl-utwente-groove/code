@@ -17,9 +17,7 @@
 package groove.test.graph;
 
 import groove.graph.iso.IsoChecker;
-import groove.graph.plain.PlainEdge;
 import groove.graph.plain.PlainGraph;
-import groove.graph.plain.PlainNode;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.util.Groove;
@@ -40,8 +38,7 @@ import org.junit.Test;
 public class IsoTest {
     /** Location of the samples. */
     static private final String INPUT_DIR = "junit/graphs/iso";
-    static private final IsoChecker<PlainNode,PlainEdge> checker =
-        IsoChecker.getInstance(true);
+    static private final IsoChecker checker = IsoChecker.getInstance(true);
 
     private Map<String,List<PlainGraph>> graphMap;
 

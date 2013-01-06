@@ -517,8 +517,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     public PlainGraph toPlainGraph(boolean showFinal, boolean showStart,
             boolean showOpen, boolean showNames) {
         PlainGraph result = new PlainGraph(getName());
-        Map<GraphState,PlainNode> nodeMap =
-            new HashMap<GraphState,PlainNode>();
+        Map<GraphState,PlainNode> nodeMap = new HashMap<GraphState,PlainNode>();
         for (GraphState state : nodeSet()) {
             PlainNode image = result.addNode(state.getNumber());
             nodeMap.put(state, image);
@@ -671,8 +670,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
     /** Specialised set implementation for storing states. */
     public static class StateSet extends TreeHashSet<GraphState> {
         /** Constructs a new, empty state set. */
-        public StateSet(CollapseMode collapse,
-                IsoChecker<HostNode,HostEdge> checker) {
+        public StateSet(CollapseMode collapse, IsoChecker checker) {
             super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION,
                 STATE_SET_ROOT_RESOLUTION);
             this.collapse = collapse;
@@ -740,7 +738,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
                     }
                 }
             } else {
-                CertificateStrategy<HostNode,HostEdge> certifier =
+                CertificateStrategy certifier =
                     this.checker.getCertifier(stateKey.getGraph(), true);
                 Object certificate = certifier.getGraphCertificate();
                 result = certificate.hashCode();
@@ -772,7 +770,7 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         }
 
         /** The isomorphism checker of the state set. */
-        private final IsoChecker<HostNode,HostEdge> checker;
+        private final IsoChecker checker;
         /** The value of the collapse property. */
         protected final CollapseMode collapse;
     }

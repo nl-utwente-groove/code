@@ -20,9 +20,7 @@ import static groove.grammar.model.ResourceKind.HOST;
 import static groove.grammar.model.ResourceKind.RULE;
 import groove.algebra.AlgebraFamily;
 import groove.grammar.Rule;
-import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
-import groove.grammar.host.HostNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.graph.iso.IsoChecker;
@@ -194,7 +192,7 @@ public class RuleApplicationTest {
      * results in a given set of result graphs.
      */
     private void test(HostGraph start, Rule rule, List<HostGraph> results) {
-        IsoChecker<HostNode,HostEdge> checker = IsoChecker.getInstance(true);
+        IsoChecker checker = IsoChecker.getInstance(true);
         BitSet found = new BitSet();
         Set<RuleEvent> eventSet = new HashSet<RuleEvent>();
         for (Proof proof : rule.getAllMatches(start, null)) {

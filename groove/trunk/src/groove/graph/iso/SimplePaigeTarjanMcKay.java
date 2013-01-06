@@ -45,8 +45,7 @@ import java.util.Queue;
  * @author Arend Rensink
  * @version $Revision: 1529 $
  */
-public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
-        CertificateStrategy<N,E> {
+public class SimplePaigeTarjanMcKay extends CertificateStrategy {
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
      * The strategy checks for isomorphism weakly, meaning that it might yield
@@ -54,7 +53,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public SimplePaigeTarjanMcKay(Graph<N,E> graph) {
+    public SimplePaigeTarjanMcKay(Graph<?,?> graph) {
         this(graph, false);
     }
 
@@ -65,15 +64,14 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
      * @param strong if <code>true</code>, the strategy puts more effort into
      *        getting distinct certificates.
      */
-    public SimplePaigeTarjanMcKay(Graph<N,E> graph, boolean strong) {
+    public SimplePaigeTarjanMcKay(Graph<?,?> graph, boolean strong) {
         super(graph);
         this.strong = strong;
     }
 
     @Override
-    public <N1 extends Node,E1 extends Edge> SimplePaigeTarjanMcKay<N1,E1> newInstance(
-            Graph<N1,E1> graph, boolean strong) {
-        return new SimplePaigeTarjanMcKay<N1,E1>(graph);
+    public SimplePaigeTarjanMcKay newInstance(Graph<?,?> graph, boolean strong) {
+        return new SimplePaigeTarjanMcKay(graph);
     }
 
     /**
@@ -99,8 +97,8 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         // create the splitter array
         certStore.clear();
         for (int i = 0; i < this.nodeCerts.length; i++) {
-            MyNodeCert<?,?> nodeCert = (MyNodeCert<?,?>) this.nodeCerts[i];
-            MyNodeCert<?,?> previous = certStore.put(nodeCert);
+            MyNodeCert nodeCert = (MyNodeCert) this.nodeCerts[i];
+            MyNodeCert previous = certStore.put(nodeCert);
             Block block;
             if (previous == null) {
                 block = new Block(this, nodeCert.getValue());
@@ -111,7 +109,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
             block.append(nodeCert);
         }
         Queue<Block> splitters = new LinkedList<Block>();
-        Iterator<MyNodeCert<?,?>> iter = certStore.sortedIterator();
+        Iterator<MyNodeCert> iter = certStore.sortedIterator();
         while (iter.hasNext()) {
             splitters.add(iter.next().getBlock());
         }
@@ -152,8 +150,8 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         }
         // update the node certificates related to the splitter nodes
         TreeHashSet<Block> splitBlocks = new TreeHashSet<Block>();
-        for (MyNodeCert<?,?> splitterNode : splitter.getNodes()) {
-            for (MyEdge2Cert<?,?> outEdge : splitterNode.outEdges) {
+        for (MyNodeCert splitterNode : splitter.getNodes()) {
+            for (MyEdge2Cert outEdge : splitterNode.outEdges) {
                 Block splitBlock = outEdge.getTarget().getBlock();
                 if (splitBlock.startSplit()) {
                     // add the new split block to the set
@@ -168,7 +166,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
                 }
                 outEdge.updateTarget();
             }
-            for (MyEdge2Cert<?,?> inEdge : splitterNode.inEdges) {
+            for (MyEdge2Cert inEdge : splitterNode.inEdges) {
                 Block splitBlock = inEdge.getSource().getBlock();
                 if (splitBlock.startSplit()) {
                     // add the new split block to the set
@@ -219,28 +217,25 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
     }
 
     @Override
-    NodeCertificate<N> createValueNodeCertificate(ValueNode node) {
-        return new MyValueNodeCert<N,E>(node);
+    NodeCertificate createValueNodeCertificate(ValueNode node) {
+        return new MyValueNodeCert(node);
     }
 
     @Override
-    NodeCertificate<N> createNodeCertificate(N node) {
-        return new MyNodeCert<N,E>(node);
+    NodeCertificate createNodeCertificate(Node node) {
+        return new MyNodeCert(node);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    EdgeCertificate<N,E> createEdge1Certificate(E edge,
-            NodeCertificate<N> source) {
-        return new MyEdge1Cert<N,E>(edge, (MyNodeCert<N,E>) source);
+    EdgeCertificate createEdge1Certificate(Edge edge, NodeCertificate source) {
+        return new MyEdge1Cert(edge, (MyNodeCert) source);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    EdgeCertificate<N,E> createEdge2Certificate(E edge,
-            NodeCertificate<N> source, NodeCertificate<N> target) {
-        return new MyEdge2Cert<N,E>(this, edge, (MyNodeCert<N,E>) source,
-            (MyNodeCert<N,E>) target);
+    EdgeCertificate createEdge2Certificate(Edge edge, NodeCertificate source,
+            NodeCertificate target) {
+        return new MyEdge2Cert(this, edge, (MyNodeCert) source,
+            (MyNodeCert) target);
     }
 
     /**
@@ -283,8 +278,8 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
     /**
      * Store for node certificates, to count the number of partitions
      */
-    static private final TreeHashSet<MyNodeCert<?,?>> certStore =
-        new TreeHashSet<MyNodeCert<?,?>>(TREE_RESOLUTION) {
+    static private final TreeHashSet<MyNodeCert> certStore =
+        new TreeHashSet<MyNodeCert>(TREE_RESOLUTION) {
             /**
              * For the purpose of this set, only the certificate value is of
              * importance.
@@ -295,12 +290,12 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
             }
 
             @Override
-            protected int getCode(MyNodeCert<?,?> key) {
+            protected int getCode(MyNodeCert key) {
                 return key.getValue();
             }
         };
     /** Static empty list, to be shared among split blocks. */
-    private static final List<MyNodeCert<?,?>> EMPTY_NODE_LIST =
+    private static final List<MyNodeCert> EMPTY_NODE_LIST =
         Collections.emptyList();
     /**
      * Static empty array of blocks, to be returned in case of singular split
@@ -320,8 +315,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
      * @author Arend Rensink
      * @version $Revision: 1529 $
      */
-    static class MyNodeCert<N extends Node,E extends Edge> implements
-            NodeCertificate<N> {
+    static class MyNodeCert implements NodeCertificate {
         /** Initial node value to provide a better spread of hash codes. */
         static private final int INIT_NODE_VALUE = 0x126b;
 
@@ -330,7 +324,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
          * number of incident edges) is passed in as a parameter. The initial
          * value is set to the incidence count.
          */
-        public MyNodeCert(N node) {
+        public MyNodeCert(Node node) {
             this.node = node;
             if (node instanceof HostNode) {
                 this.label = ((HostNode) node).getType().label();
@@ -359,7 +353,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
             if (!(obj instanceof MyNodeCert)) {
                 return false;
             }
-            MyNodeCert<?,?> other = ((MyNodeCert<?,?>) obj);
+            MyNodeCert other = ((MyNodeCert) obj);
             if (this.value != other.value) {
                 return false;
             }
@@ -406,23 +400,23 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         }
 
         /** Returns the element of which this is a certificate. */
-        public N getElement() {
+        public Node getElement() {
             return this.node;
         }
 
         /** Adds a self-edge certificate to this node certificate. */
-        void addSelf(MyEdge1Cert<N,E> edgeCert) {
+        void addSelf(MyEdge1Cert edgeCert) {
             this.value += edgeCert.getValue();
         }
 
         /** Adds an outgoing edge certificate to this node certificate. */
-        void addOutgoing(MyEdge2Cert<N,E> edgeCert) {
+        void addOutgoing(MyEdge2Cert edgeCert) {
             this.outEdges.add(edgeCert);
             this.value += edgeCert.getValue();
         }
 
         /** Adds an incoming edge certificate to this node certificate. */
-        void addIncoming(MyEdge2Cert<N,E> edgeCert) {
+        void addIncoming(MyEdge2Cert edgeCert) {
             this.inEdges.add(edgeCert);
             this.value += edgeCert.getValue() ^ TARGET_MASK;
         }
@@ -440,15 +434,13 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         /** The current value, which determines the hash code. */
         int value;
         /** The element for which this is a certificate. */
-        private final N node;
+        private final Node node;
         /** Potentially {@code null} node label. */
         private final TypeLabel label;
         /** List of certificates of incoming edges. */
-        private final List<MyEdge2Cert<N,E>> inEdges =
-            new ArrayList<MyEdge2Cert<N,E>>();
+        private final List<MyEdge2Cert> inEdges = new ArrayList<MyEdge2Cert>();
         /** List of certificates of outgoing edges. */
-        private final List<MyEdge2Cert<N,E>> outEdges =
-            new ArrayList<MyEdge2Cert<N,E>>();
+        private final List<MyEdge2Cert> outEdges = new ArrayList<MyEdge2Cert>();
         /** Current enclosing block. */
         private Block container;
 
@@ -462,16 +454,14 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
      * @author Arend Rensink
      * @version $Revision $
      */
-    static class MyValueNodeCert<N extends Node,E extends Edge> extends
-            MyNodeCert<N,E> {
+    static class MyValueNodeCert extends MyNodeCert {
         /**
          * Constructs a new certificate node. The incidence count (i.e., the
          * number of incident edges) is passed in as a parameter. The initial
          * value is set to the incidence count.
          */
-        @SuppressWarnings("unchecked")
         public MyValueNodeCert(ValueNode node) {
-            super((N) node);
+            super(node);
             this.nodeValue = node.getValue();
             this.value = node.getValue().hashCode();
         }
@@ -486,15 +476,14 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
                 return true;
             }
             return obj instanceof MyValueNodeCert
-                && this.nodeValue.equals(((MyValueNodeCert<?,?>) obj).nodeValue);
+                && this.nodeValue.equals(((MyValueNodeCert) obj).nodeValue);
         }
 
         private final Object nodeValue;
     }
 
-    static class MyEdge1Cert<N extends Node,E extends Edge> implements
-            EdgeCertificate<N,E> {
-        MyEdge1Cert(E edge, MyNodeCert<N,E> sourceCert) {
+    static class MyEdge1Cert implements EdgeCertificate {
+        MyEdge1Cert(Edge edge, MyNodeCert sourceCert) {
             this.edge = edge;
             this.sourceCert = sourceCert;
             this.label = edge.label();
@@ -503,7 +492,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
             sourceCert.addSelf(this);
         }
 
-        final public E getElement() {
+        final public Edge getElement() {
             return this.edge;
         }
 
@@ -520,7 +509,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
             if (!(obj instanceof MyEdge1Cert)) {
                 return false;
             }
-            MyEdge1Cert<?,?> other = (MyEdge1Cert<?,?>) obj;
+            MyEdge1Cert other = (MyEdge1Cert) obj;
             return other.sourceCert.equals(this.sourceCert)
                 && other.label.equals(this.label);
         }
@@ -541,13 +530,13 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
             // ignore
         }
 
-        final MyNodeCert<?,E> getSource() {
+        final MyNodeCert getSource() {
             return this.sourceCert;
         }
 
-        private final E edge;
+        private final Edge edge;
         private final Label label;
-        private final MyNodeCert<N,E> sourceCert;
+        private final MyNodeCert sourceCert;
         /**
          * The hash code of the original edge label.
          */
@@ -555,10 +544,9 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         private final int value;
     }
 
-    static class MyEdge2Cert<N extends Node,E extends Edge> extends
-            MyEdge1Cert<N,E> {
-        MyEdge2Cert(SimplePaigeTarjanMcKay<?,E> strategy, E edge,
-                MyNodeCert<N,E> sourceCert, MyNodeCert<N,E> targetCert) {
+    static class MyEdge2Cert extends MyEdge1Cert {
+        MyEdge2Cert(SimplePaigeTarjanMcKay strategy, Edge edge,
+                MyNodeCert sourceCert, MyNodeCert targetCert) {
             super(edge, sourceCert);
             this.targetCert = targetCert;
             sourceCert.addOutgoing(this);
@@ -577,7 +565,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
                 return true;
             }
             return obj instanceof MyEdge2Cert && super.equals(obj)
-                && ((MyEdge2Cert<?,?>) obj).getTarget().equals(getTarget());
+                && ((MyEdge2Cert) obj).getTarget().equals(getTarget());
         }
 
         @Override
@@ -586,7 +574,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
                 + this.initValue + ")," + getTarget() + "]";
         }
 
-        private MyNodeCert<N,E> getTarget() {
+        private MyNodeCert getTarget() {
             return this.targetCert;
         }
 
@@ -617,16 +605,16 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         }
 
         /** The node certificate of the edge target. */
-        private final MyNodeCert<N,E> targetCert;
+        private final MyNodeCert targetCert;
         /** The strategy to which this certificate belongs. */
-        private final SimplePaigeTarjanMcKay<?,E> strategy;
+        private final SimplePaigeTarjanMcKay strategy;
     }
 
     /** Represents a block of nodes in some partition. */
     static class Block implements Comparable<Block>, Cloneable {
-        Block(SimplePaigeTarjanMcKay<?,?> strategy, int value) {
+        Block(SimplePaigeTarjanMcKay strategy, int value) {
             // this.head = new NodeCertificate(this);
-            this.nodes = new LinkedList<MyNodeCert<?,?>>();
+            this.nodes = new LinkedList<MyNodeCert>();
             this.value = value;
             this.strategy = strategy;
             strategy.graphCertificate += value;
@@ -661,7 +649,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
          */
         Block[] split() {
             if (size() == 1) {
-                MyNodeCert<?,?> node = this.nodes.get(0);
+                MyNodeCert node = this.nodes.get(0);
                 node.setNewValue();
                 this.value = node.getValue();
                 this.strategy.graphCertificate += this.value;
@@ -670,7 +658,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
             } else {
                 Map<Integer,Block> blockMap = new HashMap<Integer,Block>();
                 Block block = null;
-                for (MyNodeCert<?,?> node : this.nodes) {
+                for (MyNodeCert node : this.nodes) {
                     node.setNewValue();
                     if (block == null || block.value != node.getValue()) {
                         block = blockMap.get(node.getValue());
@@ -700,7 +688,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
             assert this.value == other.value : String.format(
                 "Merging blocks %s and %s with distinct hash codes", this,
                 other);
-            for (MyNodeCert<?,?> otherNode : other.getNodes()) {
+            for (MyNodeCert otherNode : other.getNodes()) {
                 otherNode.setBlock(this);
                 this.nodes.add(otherNode);
             }
@@ -710,7 +698,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
          * Appends a given node certificate to this block, and sets the
          * certificate's block to this.
          */
-        final void append(MyNodeCert<?,?> node) {
+        final void append(MyNodeCert node) {
             this.nodes.add(node);
             node.setBlock(this);
         }
@@ -720,7 +708,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
             return this.nodes.size();
         }
 
-        List<MyNodeCert<?,?>> getNodes() {
+        List<MyNodeCert> getNodes() {
             return this.nodes;
         }
 
@@ -750,7 +738,7 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         @Override
         public String toString() {
             List<Node> content = new ArrayList<Node>();
-            for (MyNodeCert<?,?> nodeCert : this.nodes) {
+            for (MyNodeCert nodeCert : this.nodes) {
                 content.add(nodeCert.getElement());
             }
             return String.format("B%dx%d%s", this.nodes.size(), this.value,
@@ -761,18 +749,18 @@ public class SimplePaigeTarjanMcKay<N extends Node,E extends Edge> extends
         public Block clone() {
             try {
                 Block result = (Block) super.clone();
-                result.nodes = new ArrayList<MyNodeCert<?,?>>(this.nodes);
+                result.nodes = new ArrayList<MyNodeCert>(this.nodes);
                 return result;
             } catch (CloneNotSupportedException e) {
                 return null;
             }
         }
 
-        private final SimplePaigeTarjanMcKay<?,?> strategy;
+        private final SimplePaigeTarjanMcKay strategy;
         /** The distinguishing value of this block. */
         private int value;
         /** List of marked nodes, in case the block is currently being split. */
-        private List<MyNodeCert<?,?>> nodes;
+        private List<MyNodeCert> nodes;
         /** Flag indicating if this block is in the list of splitters. */
         private boolean splitter;
         /** Flag indicating if this block is currently splitting. */

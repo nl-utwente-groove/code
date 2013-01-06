@@ -1,9 +1,7 @@
 package groove.sts;
 
 import groove.grammar.host.DefaultHostGraph;
-import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
-import groove.grammar.host.HostNode;
 import groove.graph.iso.IsoChecker;
 
 /**
@@ -15,8 +13,7 @@ import groove.graph.iso.IsoChecker;
  */
 public class GeneralizedGraph extends DefaultHostGraph {
 
-    private static IsoChecker<HostNode,HostEdge> isoChecker =
-        IsoChecker.getInstance(true);
+    private static IsoChecker isoChecker = IsoChecker.getInstance(true);
 
     /**
      * Creates a new instance.

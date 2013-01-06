@@ -214,8 +214,8 @@ public class DefaultRuleTransition extends
                 HostGraph derivedTarget = appl.getTarget().clone();
                 HostGraph realTarget = target().getGraph().clone();
                 final Morphism<HostNode,HostEdge> iso =
-                    IsoChecker.<HostNode,HostEdge>getInstance(true).getIsomorphism(
-                        derivedTarget, realTarget);
+                    IsoChecker.getInstance(true).getIsomorphism(derivedTarget,
+                        realTarget);
                 assert iso != null : "Can't reconstruct derivation from graph transition "
                     + this
                     + ": \n"

@@ -521,8 +521,8 @@ public class GraphCache<N extends Node,E extends Edge> {
      * {@link AbstractGraph#getCertificateFactory()}. If the underlying graph is
      * fixed (see {@link Graph#isFixed()}, the strategy is cached.
      */
-    protected CertificateStrategy<N,E> getCertifier(boolean strong) {
-        CertificateStrategy<N,E> result;
+    protected CertificateStrategy getCertifier(boolean strong) {
+        CertificateStrategy result;
         if (hasCertifier(strong)) {
             result = this.certificateStrategy;
         } else {
@@ -549,5 +549,5 @@ public class GraphCache<N extends Node,E extends Edge> {
      * The certificate strategy set for the graph. Initially set to
      * <tt>null</tt>.
      */
-    private CertificateStrategy<N,E> certificateStrategy;
+    private CertificateStrategy certificateStrategy;
 }

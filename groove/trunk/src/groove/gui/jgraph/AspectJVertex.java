@@ -210,7 +210,7 @@ public class AspectJVertex extends
     @Override
     public TypeEdge getKey(Edge edge) {
         TypeModelMap typeMap = getTypeMap();
-        return typeMap == null ? null : typeMap.getEdge((AspectEdge) edge);
+        return typeMap == null ? null : typeMap.getEdge(edge);
     }
 
     private TypeModelMap getTypeMap() {

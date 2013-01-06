@@ -25,11 +25,11 @@ import groove.abstraction.neigh.shape.EdgeSignatureStore;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
-import groove.grammar.host.HostEdge;
-import groove.grammar.host.HostNode;
+import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.Graph;
 import groove.graph.Morphism;
+import groove.graph.Node;
 import groove.graph.iso.IsoChecker;
 import groove.util.Pair;
 
@@ -42,7 +42,7 @@ import java.util.Map.Entry;
  *  
  * @author Eduardo Zambon
  */
-public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
+public final class ShapeIsoChecker extends IsoChecker {
 
     // ------------------------------------------------------------------------
     // Static fields
@@ -78,7 +78,6 @@ public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
      * @param strong if <code>true</code>, the checker will not returns false
      *        negatives.
      */
-    @SuppressWarnings("unchecked")
     public static ShapeIsoChecker getInstance(boolean strong) {
         // Initialise lazily to avoid initialisation circularities.
         if (strongInstance == null) {
@@ -172,8 +171,7 @@ public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         Graph<ShapeNode,ShapeEdge> domG = dom.downcast();
         Graph<ShapeNode,ShapeEdge> codG = cod.downcast();
         ShapeIsoChecker isoChecker = ShapeIsoChecker.getInstance(true);
-        IsoChecker<ShapeNode,ShapeEdge>.IsoCheckerState state =
-            new IsoCheckerState();
+        IsoChecker.IsoCheckerState state = new IsoCheckerState();
         Morphism<ShapeNode,ShapeEdge> morphism =
             isoChecker.getIsomorphism(domG, codG, state);
         int comparison = NON_ISO;
@@ -312,26 +310,19 @@ public final class ShapeIsoChecker extends IsoChecker<ShapeNode,ShapeEdge> {
         return result & comparison;
     }
 
-    /** Ugly hack for stupid typing problems. */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public IsoChecker<HostNode,HostEdge> downcast() {
-        return (IsoChecker) this;
-    }
-
     // ------------------------------------------------------------------------
     // Unimplemented methods
     // ------------------------------------------------------------------------
 
     @Override
-    public boolean areIsomorphic(Graph<ShapeNode,ShapeEdge> dom,
-            Graph<ShapeNode,ShapeEdge> cod, ShapeNode[] domNodes,
-            ShapeNode[] codNodes) {
+    public <N extends Node,E extends Edge> boolean areIsomorphic(
+            Graph<N,E> dom, Graph<N,E> cod, N[] domNodes, N[] codNodes) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Morphism<ShapeNode,ShapeEdge> getIsomorphism(
-            Graph<ShapeNode,ShapeEdge> dom, Graph<ShapeNode,ShapeEdge> cod) {
+    public <N extends Node,E extends Edge> Morphism<N,E> getIsomorphism(
+            Graph<N,E> dom, Graph<N,E> cod) {
         throw new UnsupportedOperationException();
     }
 }

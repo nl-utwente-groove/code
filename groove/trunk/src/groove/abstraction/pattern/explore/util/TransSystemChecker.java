@@ -20,9 +20,7 @@ import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PatternState;
 import groove.grammar.host.HostGraph;
 import groove.graph.iso.IsoChecker;
-import groove.graph.plain.PlainEdge;
 import groove.graph.plain.PlainGraph;
-import groove.graph.plain.PlainNode;
 import groove.lts.AbstractGraphState;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -95,8 +93,7 @@ public final class TransSystemChecker {
         PlainGraph plainSGTS =
             this.sgts.toPlainGraph(false, false, false, false);
         PlainGraph plainPGTS = this.pgts.toPlainGraph();
-        IsoChecker<PlainNode,PlainEdge> gtsChecker =
-            IsoChecker.getInstance(true);
+        IsoChecker gtsChecker = IsoChecker.getInstance(true);
         if (gtsChecker.areIsomorphic(plainSGTS, plainPGTS)) {
             out.print("Transision systems are isomorphic. Checking states... ");
             // EZ says: for some reason that I can't recall right now the test

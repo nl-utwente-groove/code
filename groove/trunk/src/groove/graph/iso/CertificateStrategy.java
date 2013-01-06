@@ -42,14 +42,13 @@ import java.util.Map;
  * Interface for algorithms to compute isomorphism certificates for a given
  * graph, i.e., a predictor for graph isomorphism. Two graphs are isomorphic
  * only if their certificates are equal (as determined by
- * <tt>equals(Object)</tt>). A certificate strategy is specialized to a graph
+ * <tt>equals(Object)</tt>). A certificate strategy is specialised to a graph
  * upon which it works; this is set at creation time.
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class CertificateStrategy<N extends Node,E extends Edge> {
-    @SuppressWarnings("unchecked")
-    CertificateStrategy(Graph<N,E> graph) {
+abstract public class CertificateStrategy {
+    CertificateStrategy(Graph<?,?> graph) {
         this.graph = graph;
         // the graph may be null if a prototype is being constructed.
         if (graph != null) {
@@ -64,7 +63,7 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
      * Returns the underlying graph for which this is the certificate strategy.
      * @return the underlying graph
      */
-    public Graph<N,E> getGraph() {
+    public Graph<?,?> getGraph() {
         return this.graph;
     }
 
@@ -95,7 +94,7 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
     }
 
     /** Returns the node certificates calculated for the graph. */
-    public ElementCertificate<N>[] getNodeCertificates() {
+    public ElementCertificate<Node>[] getNodeCertificates() {
         if (this.nodeCerts == null) {
             computeCertificates();
         }
@@ -103,7 +102,7 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
     }
 
     /** Returns the edge certificates calculated for the graph. */
-    public ElementCertificate<E>[] getEdgeCertificates() {
+    public ElementCertificate<Edge>[] getEdgeCertificates() {
         if (this.edgeCerts == null) {
             computeCertificates();
         }
@@ -129,7 +128,6 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
      * Initialises the node and edge certificate arrays, and the certificate
      * map.
      */
-    @SuppressWarnings("unchecked")
     void initCertificates() {
         // the following two calls are not profiled, as it
         // is likely that this results in the actual graph construction
@@ -138,10 +136,10 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
         this.nodeCerts = new NodeCertificate[nodeCount];
         this.edgeCerts = new EdgeCertificate[edgeCount];
         // create the edge certificates
-        for (N node : getGraph().nodeSet()) {
+        for (Node node : getGraph().nodeSet()) {
             initNodeCert(node);
         }
-        for (E edge : getGraph().edgeSet()) {
+        for (Edge edge : getGraph().edgeSet()) {
             initEdgeCert(edge);
         }
     }
@@ -154,35 +152,29 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
         for (EquivClass<ShapeNode> ec : er) {
             int ecHash = 0;
             for (ShapeNode node : ec) {
-                @SuppressWarnings("unchecked")
-                N nodeN = (N) node;
-                ecHash += getNodeCert(nodeN).hashCode();
+                ecHash += getNodeCert(node).hashCode();
             }
             ecHash *= ecHash;
             for (ShapeNode node : ec) {
-                @SuppressWarnings("unchecked")
-                N nodeN = (N) node;
-                getNodeCert(nodeN).modifyValue(ecHash);
+                getNodeCert(node).modifyValue(ecHash);
             }
             result += ecHash;
         }
         Map<EdgeSignature,Integer> sigCertMap =
             new HashMap<EdgeSignature,Integer>();
         for (EdgeSignature sig : shape.getEdgeSigSet()) {
-            @SuppressWarnings("unchecked")
-            NodeCertificate<N> sigNodeCert = getNodeCert((N) sig.getNode());
+            NodeCertificate sigNodeCert = getNodeCert(sig.getNode());
             int nHash = sigNodeCert.hashCode();
             int sigHash = sig.getLabel().hashCode();
             for (ShapeNode opposite : sig.getEquivClass()) {
-                @SuppressWarnings("unchecked")
-                N oppositeN = (N) opposite;
+                Node oppositeN = opposite;
                 sigHash += getNodeCert(oppositeN).hashCode();
             }
             sigHash *= nHash;
             sigCertMap.put(sig, sigHash);
             result += sigHash;
         }
-        for (ElementCertificate<E> edgeCert : getEdgeCertificates()) {
+        for (ElementCertificate<Edge> edgeCert : getEdgeCertificates()) {
             ShapeEdge edge = (ShapeEdge) edgeCert.getElement();
             if (edge.getRole() == EdgeRole.BINARY) {
                 edgeCert.modifyValue(sigCertMap.get(store.getSig(edge,
@@ -198,8 +190,8 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
      * Creates a {@link NodeCertificate} for a given graph node, and inserts
      * into the certificate node map.
      */
-    private NodeCertificate<N> initNodeCert(final N node) {
-        NodeCertificate<N> nodeCert;
+    private NodeCertificate initNodeCert(final Node node) {
+        NodeCertificate nodeCert;
         // if the node is an instance of OperationNode, the certificate
         // of this node also depends on the operation represented by it
         // therefore, the computeNewValue()-method of class
@@ -219,8 +211,8 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
      * Inserts a certificate node either in the array (if the corresponding node
      * is a {@link PlainNode}) or in the map.
      */
-    private void putNodeCert(NodeCertificate<N> nodeCert) {
-        N node = nodeCert.getElement();
+    private void putNodeCert(NodeCertificate nodeCert) {
+        Node node = nodeCert.getElement();
         int nodeNr = node.getNumber();
         assert nodeNr < this.defaultNodeCerts.length : String.format(
             "Node nr %d higher than maximum %d", nodeNr,
@@ -232,8 +224,8 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
      * Retrieves a certificate node image for a given graph node from the map,
      * creating the certificate node first if necessary.
      */
-    NodeCertificate<N> getNodeCert(final N node) {
-        NodeCertificate<N> result;
+    NodeCertificate getNodeCert(final Node node) {
+        NodeCertificate result;
         int nodeNr = node.getNumber();
         result = this.defaultNodeCerts[nodeNr];
         assert result != null : String.format(
@@ -245,14 +237,13 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
      * Creates an {@link EdgeCertificate} for a given graph edge, and inserts
      * into the certificate edge map.
      */
-    @SuppressWarnings("unchecked")
-    private void initEdgeCert(E edge) {
-        N source = (N) edge.source();
-        NodeCertificate<N> sourceCert = getNodeCert(source);
+    private void initEdgeCert(Edge edge) {
+        Node source = edge.source();
+        NodeCertificate sourceCert = getNodeCert(source);
         assert sourceCert != null : String.format(
             "No source certifiate found for %s", edge);
         if (source == edge.target()) {
-            EdgeCertificate<N,E> edge1Cert =
+            EdgeCertificate edge1Cert =
                 createEdge1Certificate(edge, sourceCert);
             this.edgeCerts[this.edgeCerts.length - this.edge1CertCount - 1] =
                 edge1Cert;
@@ -261,10 +252,10 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
                 "%s unary and %s binary edges do not equal %s edges",
                 this.edge1CertCount, this.edge2CertCount, this.edgeCerts.length);
         } else {
-            NodeCertificate<N> targetCert = getNodeCert((N) edge.target());
+            NodeCertificate targetCert = getNodeCert(edge.target());
             assert targetCert != null : String.format(
                 "No target certifiate found for %s", edge);
-            EdgeCertificate<N,E> edge2Cert =
+            EdgeCertificate edge2Cert =
                 createEdge2Certificate(edge, sourceCert, targetCert);
             this.edgeCerts[this.edge2CertCount] = edge2Cert;
             this.edge2CertCount++;
@@ -274,16 +265,16 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
         }
     }
 
-    abstract NodeCertificate<N> createValueNodeCertificate(ValueNode node);
+    abstract NodeCertificate createValueNodeCertificate(ValueNode node);
 
-    abstract NodeCertificate<N> createNodeCertificate(N node);
+    abstract NodeCertificate createNodeCertificate(Node node);
 
-    abstract EdgeCertificate<N,E> createEdge1Certificate(E edge,
-            groove.graph.iso.CertificateStrategy.NodeCertificate<N> source);
+    abstract EdgeCertificate createEdge1Certificate(Edge edge,
+            groove.graph.iso.CertificateStrategy.NodeCertificate source);
 
-    abstract EdgeCertificate<N,E> createEdge2Certificate(E edge,
-            groove.graph.iso.CertificateStrategy.NodeCertificate<N> source,
-            groove.graph.iso.CertificateStrategy.NodeCertificate<N> target);
+    abstract EdgeCertificate createEdge2Certificate(Edge edge,
+            groove.graph.iso.CertificateStrategy.NodeCertificate source,
+            groove.graph.iso.CertificateStrategy.NodeCertificate target);
 
     /**
      * Returns a map from graph elements to certificates for the underlying
@@ -302,11 +293,11 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
             getGraphCertificate();
             this.certificateMap = new HashMap<Element,ElementCertificate<?>>();
             // add the node certificates to the certificate map
-            for (NodeCertificate<N> nodeCert : this.nodeCerts) {
+            for (NodeCertificate nodeCert : this.nodeCerts) {
                 this.certificateMap.put(nodeCert.getElement(), nodeCert);
             }
             // add the edge certificates to the certificate map
-            for (EdgeCertificate<N,E> edgeCert : this.edgeCerts) {
+            for (EdgeCertificate edgeCert : this.edgeCerts) {
                 this.certificateMap.put(edgeCert.getElement(), edgeCert);
             }
         }
@@ -320,7 +311,7 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
      * isomorphism if their certificates are equal; i.e., if they are in the
      * image of the same certificate.
      */
-    public PartitionMap<N> getNodePartitionMap() {
+    public PartitionMap<Node> getNodePartitionMap() {
         // check if the map has been computed before
         if (this.nodePartitionMap == null) {
             // no; go ahead and compute it
@@ -334,11 +325,11 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
      * Computes the partition map, i.e., the mapping from certificates to sets
      * of graph elements having those certificates.
      */
-    private PartitionMap<N> computeNodePartitionMap() {
+    private PartitionMap<Node> computeNodePartitionMap() {
         getPartitionReporter.start();
-        PartitionMap<N> result = new PartitionMap<N>();
+        PartitionMap<Node> result = new PartitionMap<Node>();
         // invert the certificate map
-        for (NodeCertificate<N> cert : this.nodeCerts) {
+        for (NodeCertificate cert : this.nodeCerts) {
             result.add(cert);
         }
         getPartitionReporter.stop();
@@ -352,7 +343,7 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
      * isomorphism if their certificates are equal; i.e., if they are in the
      * image of the same certificate.
      */
-    public PartitionMap<E> getEdgePartitionMap() {
+    public PartitionMap<Edge> getEdgePartitionMap() {
         // check if the map has been computed before
         if (this.edgePartitionMap == null) {
             // no; go ahead and compute it
@@ -366,9 +357,9 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
      * Computes the partition map, i.e., the mapping from certificates to sets
      * of graph elements having those certificates.
      */
-    private PartitionMap<E> computeEdgePartitionMap() {
+    private PartitionMap<Edge> computeEdgePartitionMap() {
         getPartitionReporter.start();
-        PartitionMap<E> result = new PartitionMap<E>();
+        PartitionMap<Edge> result = new PartitionMap<Edge>();
         // invert the certificate map
         int bound = this.edgeCerts.length;
         for (int i = 0; i < bound; i++) {
@@ -392,8 +383,8 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
      * @return a fresh certificate strategy for <tt>graph</tt>
      * @see #getStrength()
      */
-    abstract public <N1 extends Node,E1 extends Edge> CertificateStrategy<N1,E1> newInstance(
-            Graph<N1,E1> graph, boolean strong);
+    abstract public CertificateStrategy newInstance(
+            Graph<?,?> graph, boolean strong);
 
     /** 
      * Returns the strength of the strategy:
@@ -402,21 +393,21 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
     abstract public boolean getStrength();
 
     /** The graph for which certificates are to be computed. */
-    private final Graph<N,E> graph;
+    private final Graph<?,?> graph;
 
     /** The pre-computed graph certificate, if any. */
     long graphCertificate;
     /** The pre-computed certificate map, if any. */
     Map<Element,ElementCertificate<?>> certificateMap;
     /** The pre-computed node partition map, if any. */
-    PartitionMap<N> nodePartitionMap;
+    PartitionMap<Node> nodePartitionMap;
     /** The pre-computed edge partition map, if any. */
-    PartitionMap<E> edgePartitionMap;
+    PartitionMap<Edge> edgePartitionMap;
 
     /**
      * The list of node certificates in this bisimulator.
      */
-    NodeCertificate<N>[] nodeCerts;
+    NodeCertificate[] nodeCerts;
     /** The number of elements in {@link #nodeCerts}. */
     int nodeCertCount;
     /**
@@ -424,13 +415,13 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
      * {@link #edge2CertCount} certificates for binary edges, followed by 
      * {@link #edge1CertCount} certificates for unary edges.
      */
-    EdgeCertificate<N,E>[] edgeCerts;
+    EdgeCertificate[] edgeCerts;
     /** The number of binary edge certificates in {@link #edgeCerts}. */
     int edge2CertCount;
     /** The number of unary edge certificates in {@link #edgeCerts}. */
     int edge1CertCount;
     /** Array for storing default node certificates. */
-    private final NodeCertificate<N>[] defaultNodeCerts;
+    private final NodeCertificate[] defaultNodeCerts;
 
     /**
      * Returns an array that, at every index, contains the number of times that
@@ -502,14 +493,14 @@ abstract public class CertificateStrategy<N extends Node,E extends Edge> {
     }
 
     /** Specialised certificate for nodes. */
-    static public interface NodeCertificate<N extends Node> extends
-            ElementCertificate<N> {
+    static public interface NodeCertificate extends
+            ElementCertificate<Node> {
         // no added functionality
     }
 
     /** Specialised certificate for edges. */
-    static public interface EdgeCertificate<N extends Node,E extends Edge>
-            extends ElementCertificate<E> {
+    static public interface EdgeCertificate
+            extends ElementCertificate<Edge> {
         // no added functionality
     }
 }

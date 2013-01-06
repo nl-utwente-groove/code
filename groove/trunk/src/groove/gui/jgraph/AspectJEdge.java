@@ -196,7 +196,7 @@ public class AspectJEdge extends
         TypeEdge result = null;
         TypeModelMap typeMap = getTypeMap();
         if (typeMap != null) {
-            result = typeMap.getEdge((AspectEdge) edge);
+            result = typeMap.getEdge(edge);
         }
         return result;
     }

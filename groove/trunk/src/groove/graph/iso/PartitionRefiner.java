@@ -38,8 +38,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision: 1529 $
  */
-public class PartitionRefiner<N extends Node,E extends Edge> extends
-        CertificateStrategy<N,E> {
+public class PartitionRefiner extends CertificateStrategy {
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
      * The strategy checks for isomorphism weakly, meaning that it might yield
@@ -47,7 +46,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public PartitionRefiner(Graph<N,E> graph) {
+    public PartitionRefiner(Graph<?,?> graph) {
         this(graph, false);
     }
 
@@ -58,15 +57,14 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
      * @param strong if <code>true</code>, the strategy puts more effort into
      *        getting distinct certificates.
      */
-    public PartitionRefiner(Graph<N,E> graph, boolean strong) {
+    public PartitionRefiner(Graph<?,?> graph, boolean strong) {
         super(graph);
         this.strong = strong;
     }
 
     @Override
-    public <N1 extends Node,E1 extends Edge> CertificateStrategy<N1,E1> newInstance(
-            Graph<N1,E1> graph, boolean strong) {
-        return new PartitionRefiner<N1,E1>(graph, strong);
+    public CertificateStrategy newInstance(Graph<?,?> graph, boolean strong) {
+        return new PartitionRefiner(graph, strong);
     }
 
     /**
@@ -136,7 +134,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
             int oldPartitionCount;
             do {
                 oldPartitionCount = this.nodePartitionCount;
-                List<MyNodeCert<N>> duplicates = getSmallestDuplicates();
+                List<MyNodeCert> duplicates = getSmallestDuplicates();
                 if (duplicates.isEmpty()) {
                     if (TRACE) {
                         System.out.printf("All duplicate certificates broken%n");
@@ -145,7 +143,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
                 }
                 checkpointCertificates();
                 // successively break the symmetry at each of these
-                for (MyNodeCert<N> duplicate : duplicates) {
+                for (MyNodeCert duplicate : duplicates) {
                     duplicate.breakSymmetry();
                     iterateCertificates1();
                     rollBackCertificates();
@@ -170,7 +168,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
         // give them a chance to get their value right
         int edgeCount = this.edgeCerts.length;
         for (int i = this.edge2CertCount; i < edgeCount; i++) {
-            ((MyEdge1Cert<?,?>) this.edgeCerts[i]).setNewValue();
+            ((MyEdge1Cert) this.edgeCerts[i]).setNewValue();
         }
     }
 
@@ -186,7 +184,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
      */
     private void advanceEdgeCerts() {
         for (int i = 0; i < this.edge2CertCount; i++) {
-            MyEdge2Cert<?,?> edgeCert = (MyEdge2Cert<?,?>) this.edgeCerts[i];
+            MyEdge2Cert edgeCert = (MyEdge2Cert) this.edgeCerts[i];
             this.graphCertificate += edgeCert.setNewValue();
         }
     }
@@ -200,7 +198,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
     private void advanceNodeCerts(boolean store) {
         int tmpSize = 0;
         for (int i = 0; i < this.nodeCertCount; i++) {
-            MyNodeCert<?> nodeCert = (MyNodeCert<?>) this.nodeCerts[i];
+            MyNodeCert nodeCert = (MyNodeCert) this.nodeCerts[i];
             this.graphCertificate += nodeCert.setNewValue();
             if (store) {
                 if (nodeCert.isSingular()) {
@@ -208,7 +206,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
                     tmpCertIxs[tmpSize] = i;
                     tmpSize++;
                 } else {
-                    MyNodeCert<?> oldCertForValue = certStore.put(nodeCert);
+                    MyNodeCert oldCertForValue = certStore.put(nodeCert);
                     if (oldCertForValue == null) {
                         // assume this certificate is singular
                         nodeCert.setSingular(this.iterateCount);
@@ -222,7 +220,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
         if (store) {
             // copy the remainder of the certificates to the store
             for (int i = 0; i < tmpSize; i++) {
-                certStore.add((MyNodeCert<?>) this.nodeCerts[tmpCertIxs[i]]);
+                certStore.add((MyNodeCert) this.nodeCerts[tmpCertIxs[i]]);
             }
             this.nodePartitionCount = certStore.size();
             certStore.clear();
@@ -272,11 +270,11 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
     }
 
     /** Returns the list of duplicate certificates with the smallest value. */
-    private List<MyNodeCert<N>> getSmallestDuplicates() {
-        List<MyNodeCert<N>> result = new LinkedList<MyNodeCert<N>>();
-        MyNodeCert<N> minCert = null;
+    private List<MyNodeCert> getSmallestDuplicates() {
+        List<MyNodeCert> result = new LinkedList<MyNodeCert>();
+        MyNodeCert minCert = null;
         for (int i = 0; i < this.nodeCerts.length; i++) {
-            MyNodeCert<N> cert = (MyNodeCert<N>) this.nodeCerts[i];
+            MyNodeCert cert = (MyNodeCert) this.nodeCerts[i];
             if (!cert.isSingular()) {
                 if (minCert == null) {
                     minCert = cert;
@@ -295,25 +293,24 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
     }
 
     @Override
-    NodeCertificate<N> createValueNodeCertificate(ValueNode node) {
-        return new MyValueNodeCert<N>(node);
+    NodeCertificate createValueNodeCertificate(ValueNode node) {
+        return new MyValueNodeCert(node);
     }
 
     @Override
-    MyNodeCert<N> createNodeCertificate(N node) {
-        return new MyNodeCert<N>(node);
+    MyNodeCert createNodeCertificate(Node node) {
+        return new MyNodeCert(node);
     }
 
     @Override
-    MyEdge1Cert<N,E> createEdge1Certificate(E edge, NodeCertificate<N> source) {
-        return new MyEdge1Cert<N,E>(edge, (MyNodeCert<N>) source);
+    MyEdge1Cert createEdge1Certificate(Edge edge, NodeCertificate source) {
+        return new MyEdge1Cert(edge, (MyNodeCert) source);
     }
 
     @Override
-    MyEdge2Cert<N,E> createEdge2Certificate(E edge, NodeCertificate<N> source,
-            NodeCertificate<N> target) {
-        return new MyEdge2Cert<N,E>(edge, (MyNodeCert<N>) source,
-            (MyNodeCert<N>) target);
+    MyEdge2Cert createEdge2Certificate(Edge edge, NodeCertificate source,
+            NodeCertificate target) {
+        return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target);
     }
 
     /**
@@ -343,8 +340,8 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
     /**
      * Store for node certificates, to count the number of partitions
      */
-    static private final TreeHashSet<MyNodeCert<?>> certStore =
-        new TreeHashSet<MyNodeCert<?>>(TREE_RESOLUTION) {
+    static private final TreeHashSet<MyNodeCert> certStore =
+        new TreeHashSet<MyNodeCert>(TREE_RESOLUTION) {
             /**
              * For the purpose of this set, only the certificate value is of
              * importance.
@@ -355,7 +352,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
             }
 
             @Override
-            protected int getCode(MyNodeCert<?> key) {
+            protected int getCode(MyNodeCert key) {
                 return key.getValue();
             }
         };
@@ -482,8 +479,8 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
      * @author Arend Rensink
      * @version $Revision: 1529 $
      */
-    static class MyNodeCert<N extends Node> extends MyCert<N> implements
-            CertificateStrategy.NodeCertificate<N> {
+    static class MyNodeCert extends MyCert<Node> implements
+            CertificateStrategy.NodeCertificate {
         /** Initial node value to provide a better spread of hash codes. */
         static private final int INIT_NODE_VALUE = 0x126b;
 
@@ -492,7 +489,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
          * number of incident edges) is passed in as a parameter. The initial
          * value is set to the incidence count.
          */
-        public MyNodeCert(N node) {
+        public MyNodeCert(Node node) {
             super(node);
             if (node instanceof HostNode) {
                 this.label = ((HostNode) node).getType().label();
@@ -517,7 +514,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
             if (this.label == null) {
                 return true;
             }
-            return this.label.equals(((MyNodeCert<?>) obj).label);
+            return this.label.equals(((MyNodeCert) obj).label);
         }
 
         @Override
@@ -593,15 +590,14 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
      * @author Arend Rensink
      * @version $Revision $
      */
-    static class MyValueNodeCert<N extends Node> extends MyNodeCert<N> {
+    static class MyValueNodeCert extends MyNodeCert {
         /**
          * Constructs a new certificate node. The incidence count (i.e., the
          * number of incident edges) is passed in as a parameter. The initial
          * value is set to the incidence count.
          */
-        @SuppressWarnings("unchecked")
         public MyValueNodeCert(ValueNode node) {
-            super((N) node);
+            super(node);
             this.nodeValue = node.getValue();
             this.value = this.nodeValue.hashCode();
         }
@@ -616,7 +612,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
                 return true;
             }
             return obj instanceof MyValueNodeCert
-                && this.nodeValue.equals(((MyValueNodeCert<?>) obj).nodeValue);
+                && this.nodeValue.equals(((MyValueNodeCert) obj).nodeValue);
         }
 
         /**
@@ -639,16 +635,14 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
      * @author Arend Rensink
      * @version $Revision: 1529 $
      */
-    static class MyEdge2Cert<N extends Node,E extends Edge> extends MyCert<E>
-            implements EdgeCertificate<N,E> {
+    static class MyEdge2Cert extends MyCert<Edge> implements EdgeCertificate {
         /**
          * Constructs a certificate for a binary edge.
          * @param edge The target certificate node
          * @param source The source certificate node
          * @param target The label of the original edge
          */
-        public MyEdge2Cert(E edge, MyNodeCert<? extends Node> source,
-                MyNodeCert<? extends Node> target) {
+        public MyEdge2Cert(Edge edge, MyNodeCert source, MyNodeCert target) {
             super(edge);
             this.source = source;
             this.target = target;
@@ -679,7 +673,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
             if (!super.equals(obj)) {
                 return false;
             }
-            MyEdge2Cert<?,?> other = (MyEdge2Cert<?,?>) obj;
+            MyEdge2Cert other = (MyEdge2Cert) obj;
             if (!this.source.equals(other.source)
                 || !this.label.equals(other.label)) {
                 return false;
@@ -709,9 +703,9 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
 
         private final Label label;
         /** The source certificate for the edge. */
-        private final MyNodeCert<?> source;
+        private final MyNodeCert source;
         /** The target certificate for the edge; may be <tt>null</tt>. */
-        private final MyNodeCert<?> target;
+        private final MyNodeCert target;
         /**
          * The hash code of the original edge label.
          */
@@ -724,10 +718,9 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
      * @author Arend Rensink
      * @version $Revision: 1529 $
      */
-    static class MyEdge1Cert<N extends Node,E extends Edge> extends MyCert<E>
-            implements EdgeCertificate<N,E> {
+    static class MyEdge1Cert extends MyCert<Edge> implements EdgeCertificate {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
-        public MyEdge1Cert(E edge, MyNodeCert<?> source) {
+        public MyEdge1Cert(Edge edge, MyNodeCert source) {
             super(edge);
             this.source = source;
             this.label = edge.label();
@@ -756,7 +749,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
             if (!super.equals(obj)) {
                 return false;
             }
-            MyEdge1Cert<?,?> other = (MyEdge1Cert<?,?>) obj;
+            MyEdge1Cert other = (MyEdge1Cert) obj;
             return this.label.equals(other.label);
         }
 
@@ -773,7 +766,7 @@ public class PartitionRefiner<N extends Node,E extends Edge> extends
         }
 
         /** The source certificate for the edge. */
-        private final MyNodeCert<?> source;
+        private final MyNodeCert source;
         /** Possibly {@code null} node label. */
         private final Label label;
         /**
