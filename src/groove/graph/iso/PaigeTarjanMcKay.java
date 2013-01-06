@@ -46,8 +46,7 @@ import java.util.TreeMap;
  * @author Arend Rensink
  * @version $Revision: 1529 $
  */
-public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
-        CertificateStrategy<N,E> {
+public class PaigeTarjanMcKay extends CertificateStrategy {
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
      * The strategy checks for isomorphism weakly, meaning that it might yield
@@ -55,7 +54,7 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public PaigeTarjanMcKay(Graph<N,E> graph) {
+    public PaigeTarjanMcKay(Graph<?,?> graph) {
         this(graph, true);
     }
 
@@ -66,15 +65,14 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
      * @param strong if <code>true</code>, the strategy puts more effort into
      *        getting distinct certificates.
      */
-    public PaigeTarjanMcKay(Graph<N,E> graph, boolean strong) {
+    public PaigeTarjanMcKay(Graph<?,?> graph, boolean strong) {
         super(graph);
         this.strong = strong;
     }
 
     @Override
-    public <N1 extends Node,E1 extends Edge> PaigeTarjanMcKay<N1,E1> newInstance(
-            Graph<N1,E1> graph, boolean strong) {
-        return new PaigeTarjanMcKay<N1,E1>(graph, strong);
+    public PaigeTarjanMcKay newInstance(Graph<?,?> graph, boolean strong) {
+        return new PaigeTarjanMcKay(graph, strong);
     }
 
     /**
@@ -314,18 +312,18 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
     }
 
     @Override
-    MyNodeCert createNodeCertificate(N node) {
+    MyNodeCert createNodeCertificate(Node node) {
         return new MyNodeCert(node);
     }
 
     @Override
-    MyEdge1Cert createEdge1Certificate(E edge, NodeCertificate<N> source) {
+    MyEdge1Cert createEdge1Certificate(Edge edge, NodeCertificate source) {
         return new MyEdge1Cert(edge, (MyNodeCert) source);
     }
 
     @Override
-    EdgeCertificate<N,E> createEdge2Certificate(E edge,
-            NodeCertificate<N> source, NodeCertificate<N> target) {
+    EdgeCertificate createEdge2Certificate(Edge edge, NodeCertificate source,
+            NodeCertificate target) {
         return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target);
     }
 
@@ -381,13 +379,13 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
      * @author Arend Rensink
      * @version $Revision: 1529 $
      */
-    private class MyNodeCert implements NodeCertificate<N>, Cloneable {
+    private class MyNodeCert implements NodeCertificate, Cloneable {
         /** Initial node value to provide a better spread of hash codes. */
         static private final int INIT_NODE_VALUE = 0x126b;
 
         /** Creates a dummy certificate to serve as a head node for a list. */
         MyNodeCert(Block block) {
-            this((N) null);
+            this((Node) null);
             this.block = block;
             this.value = block.value;
         }
@@ -397,7 +395,7 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
          * number of incident edges) is passed in as a parameter. The initial
          * value is set to the incidence count.
          */
-        public MyNodeCert(N node) {
+        public MyNodeCert(Node node) {
             this.element = node;
             if (node instanceof HostNode) {
                 this.label = ((HostNode) node).getType().label();
@@ -420,7 +418,6 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
          * {@link PaigeTarjanMcKay.MyNodeCert} and has the same value as this one.
          * @see #getValue()
          */
-        @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
@@ -452,7 +449,6 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
         }
 
         /** Only invokes the super method. Included for visibility. */
-        @SuppressWarnings("unchecked")
         @Override
         protected MyNodeCert clone() throws CloneNotSupportedException {
             return (MyNodeCert) super.clone();
@@ -494,7 +490,7 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
         }
 
         /** Returns the element of which this is a certificate. */
-        public N getElement() {
+        public Node getElement() {
             return this.element;
         }
 
@@ -621,7 +617,7 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
         /** The current value, which determines the hash code. */
         int value;
         /** The element for which this is a certificate. */
-        private final N element;
+        private final Node element;
         /** Potentially {@code null} node label. */
         private final TypeLabel label;
         /** List of certificates of incoming edges. */
@@ -659,9 +655,8 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
          * number of incident edges) is passed in as a parameter. The initial
          * value is set to the incidence count.
          */
-        @SuppressWarnings("unchecked")
         public MyValueNodeCert(ValueNode node) {
-            super((N) node);
+            super(node);
             this.nodeValue = node.getValue();
             this.value = this.nodeValue.hashCode();
         }
@@ -670,7 +665,6 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
          * Returns <tt>true</tt> if <tt>obj</tt> is also a
          * {@link PaigeTarjanMcKay.MyValueNodeCert} and has the same node as this one.
          */
-        @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
@@ -683,8 +677,8 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
         private final Object nodeValue;
     }
 
-    private class MyEdge1Cert implements EdgeCertificate<N,E> {
-        MyEdge1Cert(E edge, MyNodeCert sourceCert) {
+    private class MyEdge1Cert implements EdgeCertificate {
+        MyEdge1Cert(Edge edge, MyNodeCert sourceCert) {
             this.edge = edge;
             this.sourceCert = sourceCert;
             this.label = edge.label();
@@ -693,7 +687,7 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
             sourceCert.addSelf(this);
         }
 
-        final public E getElement() {
+        final public Edge getElement() {
             return this.edge;
         }
 
@@ -702,7 +696,6 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
             return this.sourceCert.hashCode() + this.initValue;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
@@ -735,7 +728,7 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
             return this.sourceCert;
         }
 
-        private final E edge;
+        private final Edge edge;
         private final Label label;
         private final MyNodeCert sourceCert;
         /**
@@ -746,7 +739,7 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
     }
 
     private class MyEdge2Cert extends MyEdge1Cert {
-        MyEdge2Cert(E edge, MyNodeCert sourceCert, MyNodeCert targetCert) {
+        MyEdge2Cert(Edge edge, MyNodeCert sourceCert, MyNodeCert targetCert) {
             super(edge, sourceCert);
             this.targetCert = targetCert;
             sourceCert.addOutEdge(this);
@@ -758,7 +751,6 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
             return super.hashCode() + (getTarget().hashCode() << 2);
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
@@ -863,7 +855,6 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
             // this implementation works under the assumption
             // that this is the array of nodes in the container block.
             assert this == getBlock().getNodes();
-            @SuppressWarnings("unchecked")
             MyNodeCert[] result =
                 new PaigeTarjanMcKay.MyNodeCert[getBlock().size()
                     - getBlock().markedSize()];
@@ -885,7 +876,7 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
         }
 
         /** Creates a partition from a given array of node certificates. */
-        NodePartition(NodeCertificate<N>[] nodes) {
+        NodePartition(NodeCertificate[] nodes) {
             super(TREE_RESOLUTION);
             for (int i = 0; i < nodes.length; i++) {
                 MyNodeCert nodeCert = (MyNodeCert) nodes[i];
@@ -1100,7 +1091,6 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
                     ? +1 : 0;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object obj) {
             return obj instanceof PaigeTarjanMcKay.Block
@@ -1130,7 +1120,6 @@ public class PaigeTarjanMcKay<N extends Node,E extends Edge> extends
             try {
                 // avoid the use of the constructor
                 // since this updates the graph certificate
-                @SuppressWarnings("unchecked")
                 Block result = (Block) super.clone();
                 // clone the nodes
                 result.nodes = new NodeCertificateList(result);

@@ -35,21 +35,19 @@ import groove.util.collect.TreeIntSet;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class Bisimulator<N extends Node,E extends Edge> extends
-        CertificateStrategy<N,E> {
+public class Bisimulator extends CertificateStrategy {
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public Bisimulator(Graph<N,E> graph) {
+    public Bisimulator(Graph<?,?> graph) {
         super(graph);
     }
 
     @Override
-    public <N1 extends Node,E1 extends Edge> CertificateStrategy<N1,E1> newInstance(
-            Graph<N1,E1> graph, boolean strong) {
-        return new Bisimulator<N1,E1>(graph);
+    public CertificateStrategy newInstance(Graph<?,?> graph, boolean strong) {
+        return new Bisimulator(graph);
     }
 
     /**
@@ -87,17 +85,17 @@ public class Bisimulator<N extends Node,E extends Edge> extends
             certStore.clear(nodeCertCount);
             // first compute the new edge certificates
             for (int i = 0; i < this.edge2CertCount; i++) {
-                Certificate<E> edgeCert = (MyEdge2Cert<N,E>) this.edgeCerts[i];
+                Certificate<Edge> edgeCert = (MyEdge2Cert) this.edgeCerts[i];
                 certificateValue += edgeCert.setNewValue();
             }
             // now compute the new node certificates
             // while keeping track of the lowest value, in case
             // we need to break symmetry
             int minCertValue = Integer.MAX_VALUE;
-            MyNodeCert<N> minCert = null;
+            MyNodeCert minCert = null;
             //for (MyNodeCert<N> nodeCert : (MyNodeCert<N>[]) this.nodeCerts) {
-            for (NodeCertificate<N> nodeCert : this.nodeCerts) {
-                int newCert = ((MyNodeCert<N>) nodeCert).setNewValue();
+            for (NodeCertificate nodeCert : this.nodeCerts) {
+                int newCert = ((MyNodeCert) nodeCert).setNewValue();
                 if (iterateCount > 0 && partitionCount < nodeCertCount) {
                     if (!certStore.add(newCert)) {
                         // this certificate is a duplicate; maybe it is the
@@ -105,7 +103,7 @@ public class Bisimulator<N extends Node,E extends Edge> extends
                         if (BREAK_SYMMETRIES && newCert < minCertValue
                             || minCert == null) {
                             minCertValue = newCert;
-                            minCert = (MyNodeCert<N>) nodeCert;
+                            minCert = (MyNodeCert) nodeCert;
                         }
                     }
                 }
@@ -148,7 +146,7 @@ public class Bisimulator<N extends Node,E extends Edge> extends
             // give them a chance to get their hash code right
             int edgeCount = this.edgeCerts.length;
             for (int i = this.edge2CertCount; i < edgeCount; i++) {
-                ((MyEdge1Cert<N,E>) this.edgeCerts[i]).setNewValue();
+                ((MyEdge1Cert) this.edgeCerts[i]).setNewValue();
             }
         }
         recordIterateCount(iterateCount);
@@ -161,32 +159,31 @@ public class Bisimulator<N extends Node,E extends Edge> extends
 
     /** Specialises the return type. */
     @Override
-    MyNodeCert<N> getNodeCert(N node) {
-        return (MyNodeCert<N>) super.getNodeCert(node);
+    MyNodeCert getNodeCert(Node node) {
+        return (MyNodeCert) super.getNodeCert(node);
     }
 
     @Override
-    MyNodeCert<N> createValueNodeCertificate(ValueNode node) {
-        return new MyValueNodeCert<N>(node);
+    MyNodeCert createValueNodeCertificate(ValueNode node) {
+        return new MyValueNodeCert(node);
     }
 
     @Override
-    MyNodeCert<N> createNodeCertificate(N node) {
-        return new MyNodeCert<N>(node);
+    MyNodeCert createNodeCertificate(Node node) {
+        return new MyNodeCert(node);
     }
 
     @Override
-    EdgeCertificate<N,E> createEdge1Certificate(E edge,
-            CertificateStrategy.NodeCertificate<N> source) {
-        return new MyEdge1Cert<N,E>(edge, (MyNodeCert<N>) source);
+    EdgeCertificate createEdge1Certificate(Edge edge,
+            CertificateStrategy.NodeCertificate source) {
+        return new MyEdge1Cert(edge, (MyNodeCert) source);
     }
 
     @Override
-    EdgeCertificate<N,E> createEdge2Certificate(E edge,
-            CertificateStrategy.NodeCertificate<N> source,
-            CertificateStrategy.NodeCertificate<N> target) {
-        return new MyEdge2Cert<N,E>(edge, (MyNodeCert<N>) source,
-            (MyNodeCert<N>) target);
+    EdgeCertificate createEdge2Certificate(Edge edge,
+            CertificateStrategy.NodeCertificate source,
+            CertificateStrategy.NodeCertificate target) {
+        return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target);
     }
 
     /**
@@ -299,8 +296,8 @@ public class Bisimulator<N extends Node,E extends Edge> extends
      * @author Arend Rensink
      * @version $Revision$
      */
-    static private class MyNodeCert<N extends Node> extends Certificate<N>
-            implements CertificateStrategy.NodeCertificate<N> {
+    static private class MyNodeCert extends Certificate<Node> implements
+            CertificateStrategy.NodeCertificate {
         /** Initial node value to provide a better spread of hash codes. */
         static private final int INIT_NODE_VALUE = 0x126b;
 
@@ -309,7 +306,7 @@ public class Bisimulator<N extends Node,E extends Edge> extends
          * number of incident edges) is passed in as a parameter. The initial
          * value is set to the incidence count.
          */
-        public MyNodeCert(N node) {
+        public MyNodeCert(Node node) {
             super(node);
             if (node instanceof HostElement) {
                 this.type = ((HostElement) node).getType().label();
@@ -334,7 +331,7 @@ public class Bisimulator<N extends Node,E extends Edge> extends
             if (this.type == null) {
                 return true;
             }
-            MyNodeCert<?> other = ((MyNodeCert<?>) obj);
+            MyNodeCert other = ((MyNodeCert) obj);
             return this.type.equals(other.type);
         }
 
@@ -390,13 +387,12 @@ public class Bisimulator<N extends Node,E extends Edge> extends
      * @author Arend Rensink
      * @version $Revision $
      */
-    static private class MyValueNodeCert<N extends Node> extends MyNodeCert<N> {
+    static private class MyValueNodeCert extends MyNodeCert {
         /**
          * Constructs a new value node certificate.
          */
-        @SuppressWarnings("unchecked")
         public MyValueNodeCert(ValueNode node) {
-            super((N) node);
+            super(node);
             this.nodeValue = node.getValue();
             this.value = this.nodeValue.hashCode();
         }
@@ -411,7 +407,7 @@ public class Bisimulator<N extends Node,E extends Edge> extends
                 return true;
             }
             return obj instanceof MyValueNodeCert
-                && this.nodeValue.equals(((MyValueNodeCert<?>) obj).nodeValue);
+                && this.nodeValue.equals(((MyValueNodeCert) obj).nodeValue);
         }
 
         /**
@@ -435,16 +431,15 @@ public class Bisimulator<N extends Node,E extends Edge> extends
      * @author Arend Rensink
      * @version $Revision$
      */
-    static private class MyEdge2Cert<N extends Node,E extends Edge> extends
-            Certificate<E> implements EdgeCertificate<N,E> {
+    static private class MyEdge2Cert extends Certificate<Edge> implements
+            EdgeCertificate {
         /**
          * Constructs a certificate for a binary edge.
          * @param edge The target certificate node
          * @param source The source certificate node
          * @param target The label of the original edge
          */
-        public MyEdge2Cert(E edge, MyNodeCert<? extends Node> source,
-                MyNodeCert<? extends Node> target) {
+        public MyEdge2Cert(Edge edge, MyNodeCert source, MyNodeCert target) {
             super(edge);
             this.source = source;
             this.target = target;
@@ -469,7 +464,7 @@ public class Bisimulator<N extends Node,E extends Edge> extends
             if (!super.equals(obj)) {
                 return false;
             }
-            MyEdge2Cert<?,?> other = (MyEdge2Cert<?,?>) obj;
+            MyEdge2Cert other = (MyEdge2Cert) obj;
             if (!this.source.equals(other.source)
                 || !this.label.equals(other.label)) {
                 return false;
@@ -506,9 +501,9 @@ public class Bisimulator<N extends Node,E extends Edge> extends
         }
 
         /** The source certificate for the edge. */
-        private final MyNodeCert<?> source;
+        private final MyNodeCert source;
         /** The target certificate for the edge; may be <tt>null</tt>. */
-        private final MyNodeCert<?> target;
+        private final MyNodeCert target;
         /** The original edge label. */
         private final Label label;
         /**
@@ -523,10 +518,10 @@ public class Bisimulator<N extends Node,E extends Edge> extends
      * @author Arend Rensink
      * @version $Revision$
      */
-    static private class MyEdge1Cert<N extends Node,E extends Edge> extends
-            Certificate<E> implements EdgeCertificate<N,E> {
+    static private class MyEdge1Cert extends Certificate<Edge> implements
+            EdgeCertificate {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
-        public MyEdge1Cert(E edge, MyNodeCert<?> source) {
+        public MyEdge1Cert(Edge edge, MyNodeCert source) {
             super(edge);
             this.source = source;
             this.label = edge.label();
@@ -549,7 +544,7 @@ public class Bisimulator<N extends Node,E extends Edge> extends
             if (!super.equals(obj)) {
                 return false;
             }
-            MyEdge1Cert<?,?> other = (MyEdge1Cert<?,?>) obj;
+            MyEdge1Cert other = (MyEdge1Cert) obj;
             return this.source.equals(other.source)
                 && !this.label.equals(other.label);
         }
@@ -575,7 +570,7 @@ public class Bisimulator<N extends Node,E extends Edge> extends
         }
 
         /** The source certificate for the edge. */
-        private final MyNodeCert<?> source;
+        private final MyNodeCert source;
         /** The original edge label. */
         private final Label label;
         /**

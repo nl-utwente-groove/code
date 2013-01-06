@@ -446,7 +446,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      * @param strong if <code>true</code>, a strong certifier is returned.
      * @see CertificateStrategy#getStrength()
      */
-    public CertificateStrategy<N,E> getCertifier(boolean strong) {
+    public CertificateStrategy getCertifier(boolean strong) {
         return getCache().getCertifier(strong);
     }
 
@@ -524,8 +524,8 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      * The current strategy for computing isomorphism certificates.
      * @see #getCertifier(boolean)
      */
-    static private CertificateStrategy<?,?> certificateFactory =
-        new PartitionRefiner<Node,Edge>((Graph<Node,Edge>) null);
+    static private CertificateStrategy certificateFactory =
+        new PartitionRefiner((Graph<Node,Edge>) null);
 
     /**
      * Changes the strategy for computing isomorphism certificates.
@@ -533,7 +533,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      * @see #getCertifier(boolean)
      */
     static public void setCertificateFactory(
-            CertificateStrategy<?,?> certificateFactory) {
+            CertificateStrategy certificateFactory) {
         AbstractGraph.certificateFactory = certificateFactory;
     }
 
@@ -541,7 +541,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      * Returns the strategy for computing isomorphism certificates.
      * @return the strategy for computing isomorphism certificates
      */
-    static public CertificateStrategy<?,?> getCertificateFactory() {
+    static public CertificateStrategy getCertificateFactory() {
         return certificateFactory;
     }
 }

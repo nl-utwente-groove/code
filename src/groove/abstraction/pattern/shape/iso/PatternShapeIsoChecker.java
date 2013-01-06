@@ -20,8 +20,10 @@ import groove.abstraction.Multiplicity;
 import groove.abstraction.pattern.shape.PatternEdge;
 import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.shape.PatternShape;
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Morphism;
+import groove.graph.Node;
 import groove.graph.iso.IsoChecker;
 import groove.util.Pair;
 
@@ -34,8 +36,7 @@ import java.util.Map.Entry;
  *  
  * @author Eduardo Zambon
  */
-public final class PatternShapeIsoChecker extends
-        IsoChecker<PatternNode,PatternEdge> {
+public final class PatternShapeIsoChecker extends IsoChecker {
 
     // ------------------------------------------------------------------------
     // Static fields
@@ -128,8 +129,7 @@ public final class PatternShapeIsoChecker extends
         if (!passBasicChecks(dom, cod)) {
             return result;
         }
-        IsoChecker<PatternNode,PatternEdge>.IsoCheckerState state =
-            new IsoCheckerState();
+        IsoChecker.IsoCheckerState state = new IsoCheckerState();
         Morphism<PatternNode,PatternEdge> morphism =
             getIsomorphism(dom, cod, state);
         int comparison = NON_ISO;
@@ -242,16 +242,14 @@ public final class PatternShapeIsoChecker extends
     // ------------------------------------------------------------------------
 
     @Override
-    public boolean areIsomorphic(Graph<PatternNode,PatternEdge> dom,
-            Graph<PatternNode,PatternEdge> cod, PatternNode[] domNodes,
-            PatternNode[] codNodes) {
+    public <N extends Node,E extends Edge> boolean areIsomorphic(
+            Graph<N,E> dom, Graph<N,E> cod, N[] domNodes, N[] codNodes) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Morphism<PatternNode,PatternEdge> getIsomorphism(
-            Graph<PatternNode,PatternEdge> dom,
-            Graph<PatternNode,PatternEdge> cod) {
+    public <N extends Node,E extends Edge> Morphism<N,E> getIsomorphism(
+            Graph<N,E> dom, Graph<N,E> cod) {
         throw new UnsupportedOperationException();
     }
 }

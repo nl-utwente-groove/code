@@ -389,7 +389,7 @@ public final class AGTS extends GTS {
 
         /** Default constructor, delegates to super class. */
         ShapeStateSet(CollapseMode collapse, boolean reachability) {
-            super(collapse, ShapeIsoChecker.getInstance(true).downcast());
+            super(collapse, ShapeIsoChecker.getInstance(true));
             this.reachability = reachability;
         }
 

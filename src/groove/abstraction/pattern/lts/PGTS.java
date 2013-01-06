@@ -20,10 +20,8 @@ import groove.abstraction.MyHashSet;
 import groove.abstraction.pattern.explore.util.PatternGraphMatchApplier;
 import groove.abstraction.pattern.explore.util.PatternGraphMatchSetCollector;
 import groove.abstraction.pattern.explore.util.PatternRuleEventApplier;
-import groove.abstraction.pattern.shape.PatternEdge;
 import groove.abstraction.pattern.shape.PatternFactory;
 import groove.abstraction.pattern.shape.PatternGraph;
-import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.trans.PatternGraphGrammar;
 import groove.control.CtrlState;
 import groove.graph.AbstractGraph;
@@ -405,10 +403,10 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
     public static class StateSet extends TreeHashSet<PatternState> {
 
         /** The isomorphism checker of the state set. */
-        protected final IsoChecker<PatternNode,PatternEdge> checker;
+        protected final IsoChecker checker;
 
         /** Constructs a new, empty state set. */
-        public StateSet(IsoChecker<PatternNode,PatternEdge> checker) {
+        public StateSet(IsoChecker checker) {
             super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION,
                 STATE_SET_ROOT_RESOLUTION);
             if (checker == null) {
@@ -438,7 +436,7 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
         @Override
         protected int getCode(PatternState stateKey) {
             int result;
-            CertificateStrategy<PatternNode,PatternEdge> certifier =
+            CertificateStrategy certifier =
                 this.checker.getCertifier(stateKey.getGraph(), true);
             Object certificate = certifier.getGraphCertificate();
             result = certificate.hashCode();
