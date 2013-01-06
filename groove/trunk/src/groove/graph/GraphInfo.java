@@ -38,11 +38,11 @@ import java.util.Map;
  * @author Harmen Kastenberg
  * @version $Revision: 4089 $ $Date: 2008-01-30 09:32:57 $
  */
-public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable {
+public class GraphInfo extends DefaultFixable {
     /** Constructs an empty information object. */
     public GraphInfo() {
         this.data = new HashMap<String,Object>();
-        this.data.put(LAYOUT_KEY, new LayoutMap<N,E>());
+        this.data.put(LAYOUT_KEY, new LayoutMap());
         this.data.put(PROPERTIES_KEY, new GraphProperties());
         this.data.put(ERRORS_KEY, new FormatErrorSet());
     }
@@ -70,9 +70,8 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable {
      * object. Note that the layout map is always non-{@code null} and modifiable
      * @return the (non-{@code null}, modifiable) layout map
      */
-    @SuppressWarnings("unchecked")
-    private LayoutMap<N,E> getLayoutMap() {
-        return (LayoutMap<N,E>) this.data.get(LAYOUT_KEY);
+    private LayoutMap getLayoutMap() {
+        return (LayoutMap) this.data.get(LAYOUT_KEY);
     }
 
     /**
@@ -80,7 +79,7 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable {
      * certain value.
      * @see #getLayoutMap()
      */
-    private void setLayoutMap(LayoutMap<? extends N,? extends E> layoutMap) {
+    private void setLayoutMap(LayoutMap layoutMap) {
         getLayoutMap().load(layoutMap);
     }
 
@@ -110,11 +109,10 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable {
      * Copies another graph info object into this one, overwriting all existing
      * keys but preserving those that are not overwritten.
      */
-    @SuppressWarnings("unchecked")
-    private void load(GraphInfo<?,?> other) {
+    private void load(GraphInfo other) {
         setErrors(other.getErrors());
         setProperties(other.getProperties());
-        setLayoutMap((LayoutMap<N,E>) other.getLayoutMap());
+        setLayoutMap(other.getLayoutMap());
     }
 
     @Override
@@ -150,12 +148,12 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable {
             ElementMap<N1,E1,N2,E2> elementMap) {
         if (source.hasInfo()) {
             // copy all the info
-            GraphInfo<N1,E1> sourceInfo = source.getInfo();
-            GraphInfo<N2,E2> targetInfo = target.getInfo();
+            GraphInfo sourceInfo = source.getInfo();
+            GraphInfo targetInfo = target.getInfo();
             targetInfo.load(sourceInfo);
             if (elementMap != null) {
                 // modify the layout map using the element map
-                LayoutMap<N1,E1> sourceLayoutMap = sourceInfo.getLayoutMap();
+                LayoutMap sourceLayoutMap = sourceInfo.getLayoutMap();
                 targetInfo.setLayoutMap(sourceLayoutMap.afterInverse(elementMap));
                 FormatErrorSet sourceErrors = sourceInfo.getErrors();
                 targetInfo.setErrors(sourceErrors.transfer(elementMap.nodeMap()).transfer(
@@ -235,12 +233,10 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable {
      * @return an alias to the layout map of the graph, 
      * or {@code null} if the graph has no associated layout map
      */
-    @SuppressWarnings("unchecked")
-    public static <N extends Node,E extends Edge> LayoutMap<N,E> getLayoutMap(
-            Graph<?,?> graph) {
-        LayoutMap<N,E> result = null;
+    public static LayoutMap getLayoutMap(Graph<?,?> graph) {
+        LayoutMap result = null;
         if (graph.hasInfo()) {
-            result = (LayoutMap<N,E>) graph.getInfo().getLayoutMap();
+            result = graph.getInfo().getLayoutMap();
         }
         return result;
     }
@@ -251,7 +247,7 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable {
      * @param layoutMap the new layout map; non-{@code null}
      */
     public static <N extends Node,E extends Edge> void setLayoutMap(
-            Graph<N,E> graph, LayoutMap<N,E> layoutMap) {
+            Graph<N,E> graph, LayoutMap layoutMap) {
         graph.getInfo().setLayoutMap(layoutMap);
     }
 

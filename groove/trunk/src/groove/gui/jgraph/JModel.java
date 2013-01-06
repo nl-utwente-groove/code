@@ -127,7 +127,7 @@ abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
      * Returns the (non-{@code null}) layout map of the graph.
      * This is retrieved from {@link GraphInfo#getLayoutMap(Graph)}. 
      */
-    public LayoutMap<Node,Edge> getLayoutMap() {
+    public LayoutMap getLayoutMap() {
         return this.layoutMap;
     }
 
@@ -176,7 +176,7 @@ abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
         this.graph = graph;
         this.layoutMap = GraphInfo.getLayoutMap(graph);
         if (this.layoutMap == null) {
-            this.layoutMap = new LayoutMap<Node,Edge>();
+            this.layoutMap = new LayoutMap();
             GraphInfo.setLayoutMap((Graph<Node,Edge>) graph, this.layoutMap);
         }
         this.nodeJCellMap.clear();
@@ -225,7 +225,7 @@ abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
 
     /** Stores the layout from the JModel back into the graph. */
     public void synchroniseLayout(JCell<G> jCell) {
-        LayoutMap<Node,Edge> layoutMap = getLayoutMap();
+        LayoutMap layoutMap = getLayoutMap();
         if (jCell instanceof JEdge) {
             for (Edge edge : ((JEdge<G>) jCell).getEdges()) {
                 layoutMap.putEdge(edge, jCell.getVisuals());
@@ -522,7 +522,7 @@ abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
      * {@link JCellLayout}s. This is set to an empty map if the graph is not a
      * layed out graph.
      */
-    private LayoutMap<Node,Edge> layoutMap;
+    private LayoutMap layoutMap;
 
     /** Changes the loading status of the JGraph. */
     private void setLoading(boolean loading) {

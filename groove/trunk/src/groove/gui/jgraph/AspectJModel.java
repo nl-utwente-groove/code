@@ -201,8 +201,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
             jVertex.setNodeFixed();
         }
         // collect the layout information
-        LayoutMap<AspectNode,AspectEdge> layoutMap =
-            new LayoutMap<AspectNode,AspectEdge>();
+        LayoutMap layoutMap = new LayoutMap();
         for (AspectJCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex) {
                 AspectJVertex jVertex = (AspectJVertex) jCell;

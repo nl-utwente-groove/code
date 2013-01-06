@@ -125,7 +125,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
      * Adds a layout attribute to a gxlNode.
      * @param map the map providing the layout info; may be {@code null}
      */
-    private void layout(LayoutMap<?,?> map, Node node, NodeType gxl) {
+    private void layout(LayoutMap map, Node node, NodeType gxl) {
         if (map == null) {
             return;
         }
@@ -142,7 +142,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
     }
 
     /** Adds a layout attribute to a gxlEdge. */
-    private void layout(LayoutMap<?,?> map, Edge edge, EdgeType gxl) {
+    private void layout(LayoutMap map, Edge edge, EdgeType gxl) {
         if (map == null) {
             return;
         }
@@ -197,7 +197,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
         Map<Edge,EdgeType> edgeMap = new HashMap<Edge,EdgeType>();
 
         // get the layout map
-        LayoutMap<?,?> layoutMap = GraphInfo.getLayoutMap(graph);
+        LayoutMap layoutMap = GraphInfo.getLayoutMap(graph);
 
         for (Node node : graph.nodeSet()) {
             // create an xml element for this node
@@ -334,7 +334,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
         Graph<N,E> graph = createGraph(gxlGraph.getId());
         Map<String,N> nodeIds = new HashMap<String,N>();
         Map<EdgeType,E> edgeMap = new HashMap<EdgeType,E>();
-        LayoutMap<N,E> layoutMap = new LayoutMap<N,E>();
+        LayoutMap layoutMap = new LayoutMap();
 
         // Extract nodes out of the gxl elements.
         for (GraphElementType gxlElement : gxlGraph.getNodeOrEdgeOrRel()) {

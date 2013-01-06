@@ -832,8 +832,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             // compute dimensions of this graph
             double maxX = 0;
             double maxY = 0;
-            LayoutMap<AspectNode,AspectEdge> layoutMap =
-                GraphInfo.getLayoutMap(graph);
+            LayoutMap layoutMap = GraphInfo.getLayoutMap(graph);
             if (layoutMap != null) {
                 for (AspectNode node : graph.nodeSet()) {
                     JVertexLayout layout = layoutMap.nodeMap().get(node);
@@ -850,8 +849,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
         // construct the result graph
         AspectGraph result = new AspectGraph(name.toString(), HOST);
-        LayoutMap<AspectNode,AspectEdge> newLayoutMap =
-            new LayoutMap<AspectNode,AspectEdge>();
+        LayoutMap newLayoutMap = new LayoutMap();
         FormatErrorSet newErrors = new FormatErrorSet();
         // Local bookkeeping.
         int nodeNr = 0;
@@ -865,8 +863,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         // Copy the graphs one by one into the combined graph
         for (AspectGraph graph : graphs) {
             nodeMap.clear();
-            LayoutMap<AspectNode,AspectEdge> oldLayoutMap =
-                GraphInfo.getLayoutMap(graph);
+            LayoutMap oldLayoutMap = GraphInfo.getLayoutMap(graph);
             // Copy the nodes
             for (AspectNode node : graph.nodeSet()) {
                 AspectNode fresh = null;

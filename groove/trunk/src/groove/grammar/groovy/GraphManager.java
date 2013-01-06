@@ -35,7 +35,7 @@ import java.util.HashMap;
 /** Auxiliary class for the GROOVY plugin. */
 public class GraphManager {
     private final SimulatorModel simulatorModel;
-    private final HashMap<AspectGraph,LayoutMap<AspectNode,AspectEdge>> layouts;
+    private final HashMap<AspectGraph,LayoutMap> layouts;
 
     /**
      * Create GraphManager useful for handling graphs in the simulator
@@ -44,8 +44,7 @@ public class GraphManager {
      */
     public GraphManager(SimulatorModel simulatorModel) {
         this.simulatorModel = simulatorModel;
-        this.layouts =
-            new HashMap<AspectGraph,LayoutMap<AspectNode,AspectEdge>>();
+        this.layouts = new HashMap<AspectGraph,LayoutMap>();
     }
 
     /**
@@ -70,7 +69,7 @@ public class GraphManager {
 
         // Do not insert layout yet, rather postpone until graph is done,
         // otherwise half finished layouts may be created
-        this.layouts.put(newGraph, new LayoutMap<AspectNode,AspectEdge>());
+        this.layouts.put(newGraph, new LayoutMap());
         return newGraph;
     }
 
@@ -106,7 +105,7 @@ public class GraphManager {
         }
 
         // Insert the precreated layout into the model
-        LayoutMap<AspectNode,AspectEdge> layoutMap = this.layouts.remove(graph);
+        LayoutMap layoutMap = this.layouts.remove(graph);
         if (layoutMap != null) {
             GraphInfo.setLayoutMap(graph, layoutMap);
         }
@@ -178,7 +177,7 @@ public class GraphManager {
         JVertexLayout layout =
             new JVertexLayout(new java.awt.Rectangle((int) location.getX(),
                 (int) location.getY(), 60, 20));
-        LayoutMap<AspectNode,AspectEdge> layoutMap = this.layouts.get(graph);
+        LayoutMap layoutMap = this.layouts.get(graph);
         if (layoutMap == null) {
             layoutMap = GraphInfo.getLayoutMap(graph);
         }
