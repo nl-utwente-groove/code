@@ -53,8 +53,6 @@ public abstract class AbstractGxl<N extends Node,E extends Edge,G extends Graph<
             InputStream in = connection.getInputStream();
             @SuppressWarnings("unchecked")
             G resultGraph = (G) getIO().loadGraph(in);
-            // set some more information in the graph, based on the URL
-            GraphInfo.setFile(resultGraph, url.getFile());
             // derive the name of the graph from the URL
             String entryName;
             if (connection instanceof JarURLConnection) {
@@ -65,7 +63,7 @@ public abstract class AbstractGxl<N extends Node,E extends Edge,G extends Graph<
             PriorityFileName priorityName =
                 new PriorityFileName(new File(entryName));
             if (priorityName.hasPriority()) {
-                GraphInfo.getProperties(resultGraph, true).setPriority(
+                GraphInfo.setPriority(resultGraph,
                     priorityName.getPriority());
             }
 
@@ -153,8 +151,6 @@ public abstract class AbstractGxl<N extends Node,E extends Edge,G extends Graph<
             Pair<G,Map<String,N>> result =
                 (Pair<G,Map<String,N>>) getIO().loadGraphWithMap(in);
             PlainGraph resultGraph = (PlainGraph) result.one();
-            // set some more information in the graph, based on the URL
-            GraphInfo.setFile(resultGraph, url.getFile());
             // derive the name of the graph from the URL
             String entryName;
             if (connection instanceof JarURLConnection) {
@@ -165,7 +161,7 @@ public abstract class AbstractGxl<N extends Node,E extends Edge,G extends Graph<
             PriorityFileName priorityName =
                 new PriorityFileName(new File(entryName));
             if (priorityName.hasPriority()) {
-                GraphInfo.getProperties(resultGraph, true).setPriority(
+                GraphInfo.setPriority(resultGraph,
                     priorityName.getPriority());
             }
             // note: don't set the name,

@@ -174,8 +174,11 @@ abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
     @SuppressWarnings("unchecked")
     protected void prepareLoad(G graph) {
         this.graph = graph;
-        this.layoutMap =
-            GraphInfo.getInfo((Graph<Node,Edge>) graph, true).getLayoutMap();
+        this.layoutMap = GraphInfo.getLayoutMap(graph);
+        if (this.layoutMap == null) {
+            this.layoutMap = new LayoutMap<Node,Edge>();
+            GraphInfo.setLayoutMap((Graph<Node,Edge>) graph, this.layoutMap);
+        }
         this.nodeJCellMap.clear();
         this.edgeJCellMap.clear();
     }
@@ -222,13 +225,13 @@ abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
 
     /** Stores the layout from the JModel back into the graph. */
     public void synchroniseLayout(JCell<G> jCell) {
-        LayoutMap<Node,Edge> currentLayout = GraphInfo.getLayoutMap(getGraph());
+        LayoutMap<Node,Edge> layoutMap = getLayoutMap();
         if (jCell instanceof JEdge) {
             for (Edge edge : ((JEdge<G>) jCell).getEdges()) {
-                currentLayout.putEdge(edge, jCell.getVisuals());
+                layoutMap.putEdge(edge, jCell.getVisuals());
             }
         } else if (jCell instanceof JVertex) {
-            currentLayout.putNode(((JVertex<G>) jCell).getNode(),
+            layoutMap.putNode(((JVertex<G>) jCell).getNode(),
                 jCell.getVisuals());
         }
     }
@@ -394,7 +397,7 @@ abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
      */
     protected JEdge<G> computeJEdge(Edge edge) {
         JEdge<G> result = createJEdge(edge);
-        JEdgeLayout layout = this.layoutMap.getLayout(edge);
+        JEdgeLayout layout = getLayoutMap().getLayout(edge);
         if (layout != null) {
             result.putVisuals(layout.toVisuals());
         } else {
@@ -413,7 +416,7 @@ abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
     protected JVertex<G> computeJVertex(Node node) {
         JVertex<G> result = createJVertex(node);
         result.setNode(node);
-        JVertexLayout layout = this.layoutMap.getLayout(node);
+        JVertexLayout layout = getLayoutMap().getLayout(node);
         if (layout != null) {
             result.putVisuals(layout.toVisuals());
         } else {

@@ -32,10 +32,10 @@ import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.grammar.Condition;
+import groove.grammar.Condition.Op;
 import groove.grammar.EdgeEmbargo;
 import groove.grammar.GrammarProperties;
 import groove.grammar.Rule;
-import groove.grammar.Condition.Op;
 import groove.grammar.aspect.Aspect;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectElement;
@@ -59,7 +59,7 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.Element;
-import groove.graph.GraphProperties;
+import groove.graph.GraphInfo;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.util.DefaultFixable;
 import groove.util.Groove;
@@ -124,7 +124,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
 
     @Override
     public boolean isEnabled() {
-        return GraphProperties.isEnabled(getSource()) || hasRecipes();
+        return GraphInfo.isEnabled(getSource()) || hasRecipes();
     }
 
     /** Returns the set of recipe names in which this rule is called. */
@@ -142,26 +142,26 @@ public class RuleModel extends GraphBasedModel<Rule> implements
      * result as <code>toRule().getPriority()</code>.
      */
     public int getPriority() {
-        return GraphProperties.getPriority(getSource());
+        return GraphInfo.getPriority(getSource());
     }
 
     /** Convenience method */
     public String getTransitionLabel() {
-        return GraphProperties.getTransitionLabel(getSource());
+        return GraphInfo.getTransitionLabel(getSource());
     }
 
     /** Convenience method */
     public String getFormatString() {
-        return GraphProperties.getFormatString(getSource());
+        return GraphInfo.getFormatString(getSource());
     }
 
     @Override
     Rule compute() throws FormatException {
         this.ruleFactory = RuleFactory.newInstance(getType().getFactory());
         this.modelMap = new RuleModelMap(this.ruleFactory);
-        getSource().getErrors().throwException();
+        GraphInfo.throwException(getSource());
         AspectGraph normalSource = getNormalSource();
-        normalSource.getErrors().throwException();
+        GraphInfo.throwException(normalSource);
         this.levelTree = new LevelTree(normalSource);
         this.modelMap.putAll(this.levelTree.getModelMap());
         this.typeMap = new TypeModelMap(getType().getFactory());
@@ -341,9 +341,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         } else {
             result = conditionTree.firstEntry().getValue().getRule();
             if (result != null) {
-                result.setPriority(getPriority());
-                result.setTransitionLabel(getTransitionLabel());
-                result.setFormatString(getFormatString());
+                result.setProperties(GraphInfo.getProperties(getSource()));
                 result.setCheckDangling(getSystemProperties().isCheckDangling());
                 Parameters parameters = new Parameters();
                 result.setSignature(parameters.getSignature(),
@@ -2106,8 +2104,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          */
         private Rule createRule(Condition condition, RuleGraph rhs,
                 RuleGraph coRoot) {
-            Rule result =
-                new Rule(condition, rhs, coRoot, new GraphProperties());
+            Rule result = new Rule(condition, rhs, coRoot);
             return result;
         }
 

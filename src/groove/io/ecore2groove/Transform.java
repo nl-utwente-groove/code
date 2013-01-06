@@ -20,6 +20,7 @@ import groove.algebra.AlgebraFamily;
 import groove.grammar.GrammarProperties;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.ResourceKind;
+import groove.graph.GraphInfo;
 import groove.graph.plain.PlainGraph;
 import groove.io.store.SystemStore;
 import groove.io.store.SystemStoreFactory;
@@ -183,9 +184,6 @@ public class Transform {
         AspectGraph atg = AspectGraph.newInstance(tgr.getTypeGraph());
         AspectGraph ecoreatg = AspectGraph.newInstance(tgr.getEcoreTypeGraph());
 
-        atg.getInfo().setFile(f + File.separator + modelName + ".gty");
-        ecoreatg.getInfo().setFile(f + File.separator + "EcoreTypes.gty");
-
         // Store type graphs, but first delete the old ones
         Set<String> typeGraphsToDelete = new HashSet<String>();
         for (String graphName : grammar.getGraphs(ResourceKind.TYPE).keySet()) {
@@ -237,9 +235,7 @@ public class Transform {
                 e.printStackTrace();
                 continue;
             }
-            String name = constraintRule.getName();
-            arg.getInfo().setFile(f + File.separator + name + ".gty");
-            arg.getInfo().getProperties().setPriority(50);
+            GraphInfo.setPriority(arg, 50);
             rules.add(arg);
 
             number++;
@@ -267,9 +263,6 @@ public class Transform {
                 + (new Date().getTime() - start) + " ms)");
 
             AspectGraph aig = AspectGraph.newInstance(igr.getInstanceGraph());
-
-            // Set info about how to store the instance graph and then store it
-            aig.getInfo().setFile(f + File.separator + instanceName);
             graphs.add(aig);
         }
         grammar.putGraphs(ResourceKind.HOST, graphs, true);

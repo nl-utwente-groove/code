@@ -98,12 +98,13 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
             GraphType gxlGraph = unmarshal(in);
             Pair<Graph<N,E>,Map<String,N>> result = gxlToGraph(gxlGraph);
             Graph<N,E> graph = result.one();
-            if (!Version.isKnownGxlVersion(GraphInfo.getVersion(graph))) {
+            String version = GraphInfo.getVersion(graph);
+            if (!Version.isKnownGxlVersion(version)) {
                 GraphInfo.addErrors(
                     graph,
                     new FormatErrorSet(
                         "GXL file format version '%s' is higher than supported version '%s'",
-                        GraphInfo.getVersion(graph), Version.GXL_VERSION));
+                        version, Version.GXL_VERSION));
             }
             return result;
         } finally {
@@ -120,8 +121,14 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
         return loadGraphWithMap(in).one();
     }
 
-    /** Adds a layout attribute to a gxlNode. */
+    /**
+     * Adds a layout attribute to a gxlNode.
+     * @param map the map providing the layout info; may be {@code null}
+     */
     private void layout(LayoutMap<?,?> map, Node node, NodeType gxl) {
+        if (map == null) {
+            return;
+        }
         JVertexLayout layout = map.nodeMap().get(node);
         if (layout == null) {
             return;
@@ -243,13 +250,12 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
             }
         }
         // add the graph info
-        GraphInfo<?,?> info = GraphInfo.getInfo(graph, false);
-        if (info != null) {
+        if (graph.hasInfo()) {
             gxlGraph.setId(graph.getName());
             gxlGraph.setRole(graph.getRole().toString());
             // add the graph attributes, if any
             List<AttrType> graphAttrs = gxlGraph.getAttr();
-            GraphProperties properties = info.getProperties();
+            GraphProperties properties = GraphInfo.getProperties(graph);
             for (Map.Entry<Object,Object> entry : properties.entrySet()) {
                 // EZ: Removed this conversion because it causes problems
                 // with rule properties keys.
@@ -452,9 +458,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
             }
             properties.setProperty(attrName, dataValue.toString());
         }
-        if (!properties.isEmpty()) {
-            GraphInfo.setProperties(graph, properties);
-        }
+        GraphInfo.setProperties(graph, properties);
         String roleName = gxlGraph.getRole();
         if (graph instanceof PlainGraph) {
             ((PlainGraph) graph).setRole(roleName == null ? GraphRole.HOST

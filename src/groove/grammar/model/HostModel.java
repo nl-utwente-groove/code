@@ -128,7 +128,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
     @Override
     HostGraph compute() throws FormatException {
         this.algebraFamily = getFamily();
-        getSource().getErrors().throwException();
+        GraphInfo.throwException(getSource());
         Pair<DefaultHostGraph,HostModelMap> modelPlusMap =
             computeModel(getSource());
         HostGraph result = modelPlusMap.one();
@@ -163,7 +163,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
         if (debug) {
             GraphPreviewDialog.showGraph(normalSource);
         }
-        FormatErrorSet errors = new FormatErrorSet(normalSource.getErrors());
+        FormatErrorSet errors =
+            new FormatErrorSet(GraphInfo.getErrors(normalSource));
         DefaultHostGraph result = new DefaultHostGraph(normalSource.getName());
         // we need to record the model-to-resource element map for layout transfer
         HostModelMap elementMap = new HostModelMap(result.getFactory());

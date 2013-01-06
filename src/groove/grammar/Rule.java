@@ -36,6 +36,7 @@ import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeGuard;
 import groove.graph.GraphProperties;
+import groove.graph.GraphProperties.Key;
 import groove.match.Matcher;
 import groove.match.MatcherFactory;
 import groove.match.SearchStrategy;
@@ -66,33 +67,19 @@ import java.util.TreeSet;
  */
 public class Rule implements Action, Fixable {
     /**
-     * @param condition the application condition of this rule
-     * @param rhs the right hand side graph of the rule
-     * @param ruleProperties the rule properties
-     */
-    public Rule(Condition condition, RuleGraph rhs,
-            GraphProperties ruleProperties) {
-        this(condition, rhs, new RuleGraph(condition.getName() + "-root",
-            rhs.getFactory()), ruleProperties);
-    }
-
-    /**
      * Constructs a rule that is a sub-condition of another rule.
      * @param condition the application condition of this rule
      * @param rhs the right hand side graph of the rule
      * @param coRoot map of creator nodes in the parent rule to creator nodes
      *        of this rule
-     * @param ruleProperties the rule properties
      */
-    public Rule(Condition condition, RuleGraph rhs, RuleGraph coRoot,
-            GraphProperties ruleProperties) {
+    public Rule(Condition condition, RuleGraph rhs, RuleGraph coRoot) {
         assert condition.getTypeGraph().getFactory() == rhs.getFactory().getTypeFactory()
             && (coRoot == null || rhs.getFactory() == coRoot.getFactory());
         this.condition = condition;
         this.coRoot = coRoot;
         this.lhs = condition.getPattern();
         this.rhs = rhs;
-        this.ruleProperties = ruleProperties;
         assert coRoot == null || rhs().nodeSet().containsAll(coRoot.nodeSet()) : String.format(
             "RHS nodes %s do not contain all co-root values %s",
             rhs().nodeSet(), coRoot.nodeSet());
@@ -129,20 +116,6 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * Returns the priority of this object. A higher number means higher
-     * priority, with {@link #DEFAULT_PRIORITY} the lowest.
-     */
-    public int getPriority() {
-        return this.ruleProperties.getPriority();
-    }
-
-    /** Sets the priority of this rule. */
-    public void setPriority(int priority) {
-        testFixed(false);
-        this.ruleProperties.setPriority(priority);
-    }
-
-    /**
      * Sets the parent rule of this rule, together with the nesting level and
      * the co-root map.
      * @param parent the parent rule for this rule
@@ -161,47 +134,6 @@ public class Rule implements Action, Fixable {
         this.parent = parent;
     }
 
-    /** 
-     * Returns the label to be used in the LTS when this rule is applied.
-     * Defaults to the rule name, if the property is undefined.  
-     */
-    public String getTransitionLabel() {
-        String result = this.ruleProperties.getTransitionLabel();
-        if (result.isEmpty()) {
-            result = getFullName();
-        }
-        return result;
-    }
-
-    /**
-     * Sets the transition label for this rule.
-     * @see #getTransitionLabel()
-     */
-    public void setTransitionLabel(String label) {
-        this.ruleProperties.setTransitionLabel(label);
-    }
-
-    /** 
-     * Returns a format string for the standard output.
-     * Whenever a transition with this rule is added to a GTS, a 
-     * corresponding string is sent to the standard output.
-     */
-    public String getFormatString() {
-        return this.ruleProperties.getFormatString();
-    }
-
-    /** Sets the format string for this rule. 
-     * @see #getFormatString()
-     */
-    public void setFormatString(String format) {
-        this.ruleProperties.setFormatString(format);
-    }
-
-    /** Sets the dangling-edge check for matches of this rule. */
-    public void setCheckDangling(boolean checkDangling) {
-        this.checkDangling = checkDangling;
-    }
-
     /**
      * Returns the parent rule of this rule. The parent may be this rule itself.
      */
@@ -211,6 +143,50 @@ public class Rule implements Action, Fixable {
             this.parent = this;
         }
         return this.parent;
+    }
+
+    /**
+     * Sets the rule properties from a graph property map.
+     */
+    public void setProperties(GraphProperties properties) {
+        testFixed(false);
+        this.priority = Integer.parseInt(properties.getProperty(Key.PRIORITY));
+        this.transitionLabel = properties.getProperty(Key.TRANSITION_LABEL);
+        this.formatString = properties.getProperty(Key.FORMAT);
+    }
+
+    /** 
+     * Returns the label to be used in the LTS when this rule is applied.
+     * Defaults to the rule name, if the property is undefined.  
+     */
+    public String getTransitionLabel() {
+        String result = this.transitionLabel;
+        if (result.isEmpty()) {
+            result = getFullName();
+        }
+        return result;
+    }
+
+    /** 
+     * Returns a format string for the standard output.
+     * Whenever a transition with this rule is added to a GTS, a 
+     * corresponding string is sent to the standard output.
+     */
+    public String getFormatString() {
+        return this.formatString;
+    }
+
+    /**
+     * Returns the priority of this object. A higher number means higher
+     * priority, with {@link #DEFAULT_PRIORITY} the lowest.
+     */
+    public int getPriority() {
+        return this.priority;
+    }
+
+    /** Sets the dangling-edge check for matches of this rule. */
+    public void setCheckDangling(boolean checkDangling) {
+        this.checkDangling = checkDangling;
     }
 
     /** Indicates if this is a top-level rule. */
@@ -1256,13 +1232,6 @@ public class Rule implements Action, Fixable {
         }
     }
 
-    /**
-     * Returns the properties of the rule.
-     */
-    public GraphProperties getRuleProperties() {
-        return this.ruleProperties;
-    }
-
     /** 
      * Indicates if this rule is part of a recipe.
      * @see #isPartial()
@@ -1430,8 +1399,12 @@ public class Rule implements Action, Fixable {
 
     /** Mapping from rule nodes to explicitly declared colours. */
     private final Map<RuleNode,Color> colorMap = new HashMap<RuleNode,Color>();
-
-    private final GraphProperties ruleProperties;
+    /** The rule priority. */
+    private int priority;
+    /** The optional transition label. */
+    private String transitionLabel;
+    /** The optional format string. */
+    private String formatString;
 
     /** The signature of the rule. */
     private List<CtrlPar.Var> sig;

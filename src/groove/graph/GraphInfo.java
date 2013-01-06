@@ -16,96 +16,53 @@
  */
 package groove.graph;
 
+import static groove.graph.GraphProperties.Key.ENABLED;
+import static groove.graph.GraphProperties.Key.PRIORITY;
+import groove.grammar.Rule;
+import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
+import groove.graph.GraphProperties.Key;
 import groove.gui.layout.LayoutMap;
 import groove.util.DefaultFixable;
-import groove.util.Version;
 
-import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A class that provides the keys needed for storing and retrieving data needed
- * for specific features.
+ * Class storing additional information about a graph.
+ * This is delegated to save space for those graphs that do not have
+ * such additional information.
  * @author Harmen Kastenberg
  * @version $Revision: 4089 $ $Date: 2008-01-30 09:32:57 $
  */
-public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
-        implements Cloneable {
-    /** Constructs a copy of an existing information object. */
-    public GraphInfo(GraphInfo<?,?> info) {
-        this.data = new HashMap<String,Object>(info.getData());
-        this.data.put(PROPERTIES_KEY, new GraphProperties());
-    }
-
+public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable {
     /** Constructs an empty information object. */
     public GraphInfo() {
         this.data = new HashMap<String,Object>();
         this.data.put(LAYOUT_KEY, new LayoutMap<N,E>());
+        this.data.put(PROPERTIES_KEY, new GraphProperties());
+        this.data.put(ERRORS_KEY, new FormatErrorSet());
     }
 
     /**
-     * Returns the list of format errors associated with the graph, if any.
-     * @return an error list stored in the info object, or <code>null</code>
+     * Returns the list of format errors associated with the graph.
+     * @return the non-{@code null} error set stored in the info object
      * @see #setErrors
      */
-    public FormatErrorSet getErrors() {
+    private FormatErrorSet getErrors() {
         return (FormatErrorSet) this.data.get(ERRORS_KEY);
     }
 
     /**
-     * Adds a given list of errors to those already stored. If there are no
-     * errors stored, creates the list.
-     * @see #setErrors
-     */
-    public void addErrors(FormatErrorSet errors) {
-        FormatErrorSet myErrors = getErrors();
-        if (myErrors == null) {
-            setErrors(errors);
-        } else {
-            myErrors.addAll(errors);
-        }
-    }
-
-    /**
      * Appends a list of format errors (key {@link #ERRORS_KEY}) to the existing
-     * errors in this info object. The errors property is created first if
-     * necessary. to a certain list. If the value is <code>null</code>, the key
-     * is removed altogether.
+     * errors in this info object.
      * @see #getErrors()
      */
-    public void setErrors(FormatErrorSet errors) {
-        if (errors == null) {
-            this.data.remove(ERRORS_KEY);
-        } else {
-            this.data.put(ERRORS_KEY, new FormatErrorSet(errors));
-        }
-    }
-
-    /**
-     * Returns the file associated with the graph, if any.
-     * @return a file stored in the info object, or <code>null</code>
-     * @see #setFile(String)
-     */
-    public String getFile() {
-        return (String) this.data.get(FILE_KEY);
-    }
-
-    /**
-     * 
-     * Sets the file (key {@link #FILE_KEY}) in this info object to a certain
-     * value. If the value is <code>null</code>, the key is removed altogether.
-     * @see #getFile()
-     */
-    public void setFile(String file) {
-        if (file == null) {
-            this.data.remove(FILE_KEY);
-        } else {
-            this.data.put(FILE_KEY, file);
-        }
+    private void setErrors(Collection<FormatError> errors) {
+        this.data.put(ERRORS_KEY, new FormatErrorSet(errors));
     }
 
     /**
@@ -114,7 +71,7 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
      * @return the (non-{@code null}, modifiable) layout map
      */
     @SuppressWarnings("unchecked")
-    public LayoutMap<N,E> getLayoutMap() {
+    private LayoutMap<N,E> getLayoutMap() {
         return (LayoutMap<N,E>) this.data.get(LAYOUT_KEY);
     }
 
@@ -123,8 +80,8 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
      * certain value.
      * @see #getLayoutMap()
      */
-    public void setLayoutMap(LayoutMap<? extends N,? extends E> layoutMap) {
-        getLayoutMap().fill(layoutMap);
+    private void setLayoutMap(LayoutMap<? extends N,? extends E> layoutMap) {
+        getLayoutMap().load(layoutMap);
     }
 
     /**
@@ -133,7 +90,7 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
      * @return a property map, or <code>null</code>
      * @see #setProperties(GraphProperties)
      */
-    public GraphProperties getProperties() {
+    private GraphProperties getProperties() {
         return (GraphProperties) this.data.get(PROPERTIES_KEY);
     }
 
@@ -142,7 +99,7 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
      * {@link #PROPERTIES_KEY}).
      * @see #getProperties()
      */
-    public void setProperties(GraphProperties properties) {
+    private void setProperties(GraphProperties properties) {
         testFixed(false);
         GraphProperties props = getProperties();
         props.clear();
@@ -150,36 +107,14 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
     }
 
     /**
-     * Clones a GraphProperties object and inserts(overwrites) it in the hash
-     * map of the GraphInfo.
-     * @param properties is the GraphProperties object to be cloned
-     */
-    public void newProperties(GraphProperties properties) {
-        GraphProperties result = new GraphProperties(properties);
-        this.data.put(PROPERTIES_KEY, result);
-    }
-
-    /**
      * Copies another graph info object into this one, overwriting all existing
      * keys but preserving those that are not overwritten.
      */
-    public void load(GraphInfo<N,E> other) {
-        for (Map.Entry<String,Object> e : other.getData().entrySet()) {
-            String key = e.getKey();
-            Object value = e.getValue();
-            if (key.equals(PROPERTIES_KEY)) {
-                // clone (and do not share) the properties object
-                value = new GraphProperties((GraphProperties) value);
-            } else if (key.equals(LAYOUT_KEY)) {
-                // clone (and do not share) the layout map
-                LayoutMap<N,E> myLayoutMap = getLayoutMap();
-                @SuppressWarnings("unchecked")
-                LayoutMap<N,E> otherLayoutMap = (LayoutMap<N,E>) value;
-                myLayoutMap.fill(otherLayoutMap);
-                value = myLayoutMap;
-            }
-            this.data.put(key, value);
-        }
+    @SuppressWarnings("unchecked")
+    private void load(GraphInfo<?,?> other) {
+        setErrors(other.getErrors());
+        setProperties(other.getProperties());
+        setLayoutMap((LayoutMap<N,E>) other.getLayoutMap());
     }
 
     @Override
@@ -193,235 +128,14 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
     }
 
     @Override
-    public GraphInfo<N,E> clone() {
-        GraphInfo<N,E> result = new GraphInfo<N,E>();
-        result.load(this);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "Graph information: " + this.data;
-    }
-
-    /** Returns the internally stored data. */
-    public final Map<String,Object> getData() {
-        return this.data;
     }
 
     /**
      * Map for the internally stored data.
      */
     private Map<String,Object> data;
-
-    /**
-     * Convenience method to retrieve a {@link GraphInfo} object form a given
-     * graph, creating it if necessary.
-     * @param graph the graph for which the info object is to be (created and)
-     *        retrieved
-     * @param create if <code>true</code>, the info object should be created if
-     *        not yet there
-     * @return a non-<code>null</code> value which equals (afterwards)
-     *         <code>graph.getInfo()</code>
-     */
-    public static <N extends Node,E extends Edge> GraphInfo<N,E> getInfo(
-            Graph<N,E> graph, boolean create) {
-        GraphInfo<N,E> result = null;
-        if (graph == null) {
-            assert !create;
-        } else {
-            result = graph.getInfo();
-            if (result == null && create) {
-                assert !graph.isFixed();
-                result = graph.setInfo(new GraphInfo<N,E>());
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Convenience method to indicate if a graph has a non-empty set of errors.
-     * @see #getErrors()
-     */
-    public static <N extends Node,E extends Edge> boolean hasErrors(
-            Graph<N,E> graph) {
-        boolean result = false;
-        if (graph != null) {
-            GraphInfo<N,E> graphInfo = graph.getInfo();
-            result =
-                graphInfo != null && graphInfo.getErrors() != null
-                    && !graphInfo.getErrors().isEmpty();
-        }
-        return result;
-    }
-
-    /**
-     * Convenience method to throw an exception if a graph has a non-empty set of errors.
-     * @see #hasErrors
-     */
-    public static <N extends Node,E extends Edge> void throwException(
-            Graph<N,E> graph) throws FormatException {
-        if (graph != null) {
-            GraphInfo<N,E> graphInfo = graph.getInfo();
-            if (graphInfo != null && graphInfo.getErrors() != null) {
-                graphInfo.getErrors().throwException();
-            }
-        }
-    }
-
-    /**
-     * Convenience method to retrieve the list of format errors of a graph.
-     * @return a list of errors, of {@code null} if the errors were not initialised
-     * @see #getErrors()
-     */
-    public static <N extends Node,E extends Edge> FormatErrorSet getErrors(
-            Graph<N,E> graph) {
-        FormatErrorSet result = null;
-        if (graph != null) {
-            GraphInfo<N,E> graphInfo = graph.getInfo();
-            if (graphInfo != null) {
-                result = graphInfo.getErrors();
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Convenience method to add a list of errors to a graph.
-     * @see #addErrors(FormatErrorSet)
-     */
-    public static <N extends Node,E extends Edge> void addErrors(
-            Graph<N,E> graph, FormatErrorSet errors) {
-        getInfo(graph, true).addErrors(errors);
-    }
-
-    /**
-     * Convenience method to set the list of format errors of a graph.
-     * @see #setErrors
-     */
-    public static <N extends Node,E extends Edge> void setErrors(
-            Graph<N,E> graph, FormatErrorSet errors) {
-        if (errors != null) {
-            assert !graph.isFixed();
-            getInfo(graph, true).setErrors(errors);
-        }
-    }
-
-    /**
-     * Convenience method to retrieve the file of a graph.
-     */
-    public static <N extends Node,E extends Edge> File getFile(Graph<N,E> graph) {
-        File result = null;
-        if (graph != null) {
-            GraphInfo<N,E> graphInfo = graph.getInfo();
-            if (graphInfo != null) {
-                String fileName = graphInfo.getFile();
-                if (fileName != null) {
-                    result = new File(fileName);
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Convenience method to set the file of a graph.
-     */
-    public static <N extends Node,E extends Edge> void setFile(
-            Graph<N,E> graph, String file) {
-        if (file != null) {
-            assert !graph.isFixed();
-            getInfo(graph, true).setFile(file);
-        }
-    }
-
-    /**
-     * Convenience method to retrieve the layout map from a graph.
-     * @return the layout map; non-{@code null} if the graph has an info object
-     */
-    public static <N extends Node,E extends Edge> LayoutMap<N,E> getLayoutMap(
-            Graph<?,?> graph) {
-        LayoutMap<N,E> result = null;
-        if (graph != null) {
-            @SuppressWarnings("unchecked")
-            GraphInfo<N,E> graphInfo = (GraphInfo<N,E>) graph.getInfo();
-            if (graphInfo != null) {
-                result = graphInfo.getLayoutMap();
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Convenience method to set the layout map of a graph.
-     */
-    public static <N extends Node,E extends Edge> void setLayoutMap(
-            Graph<N,E> graph, LayoutMap<N,E> layoutMap) {
-        getInfo(graph, true).setLayoutMap(layoutMap);
-    }
-
-    /**
-     * Convenience method to retrieve the properties map from a graph, creating
-     * it is necessary.
-     * @param graph the graph to retrieve the properties from
-     * @param create if <code>true</code>, the properties map (and so the info
-     *        object itself) should be created if not yet there. Note that this
-     *        is only allowed if the graph is not yet fixed!
-     * @return the properties map of <code>graph</code>, or <code>null</code>
-     */
-    public static <N extends Node,E extends Edge> GraphProperties getProperties(
-            Graph<N,E> graph, boolean create) {
-        GraphInfo<N,E> graphInfo = getInfo(graph, create);
-        if (graphInfo == null) {
-            return null;
-        } else {
-            return graphInfo.getProperties();
-        }
-    }
-
-    /**
-     * Convenience method to clone the properties map from a graph, creating
-     * it if necessary.
-     * @param graph the graph to retrieve the properties from
-     * @return a clone of the properties map of <code>graph</code>, or a fresh properties
-     * object if the graph has none 
-     */
-    public static <N extends Node,E extends Edge> GraphProperties cloneProperties(
-            Graph<N,E> graph) {
-        GraphProperties result;
-        GraphInfo<N,E> graphInfo = getInfo(graph, false);
-        if (graphInfo == null) {
-            result = new GraphProperties();
-        } else {
-            result = graphInfo.getProperties().clone();
-        }
-        return result;
-    }
-
-    /**
-     * Convenience method to set the graph properties of a graph. Only sets the
-     * map if it is not <code>null</code> or empty.
-     */
-    public static <N extends Node,E extends Edge> void setProperties(
-            Graph<N,E> graph, GraphProperties properties) {
-        if (properties != null) {
-            assert !graph.isFixed();
-            getInfo(graph, true).setProperties(properties);
-        }
-    }
-
-    /**
-     * Convenience method to retrieve the version of a graph.
-     * @see Version#GXL_VERSION
-     */
-    public static String getVersion(Graph<?,?> graph) {
-        GraphProperties properties = getProperties(graph, false);
-        if (properties == null) {
-            return null;
-        } else {
-            return properties.getVersion();
-        }
-    }
 
     /**
      * Transfers all available graph information from one graph to another,
@@ -434,41 +148,295 @@ public class GraphInfo<N extends Node,E extends Edge> extends DefaultFixable
     public static <N1 extends Node,E1 extends Edge,N2 extends Node,E2 extends Edge> void transfer(
             Graph<N1,E1> source, Graph<N2,E2> target,
             ElementMap<N1,E1,N2,E2> elementMap) {
-        GraphInfo<N1,E1> sourceInfo = source.getInfo();
-        if (sourceInfo != null) {
+        if (source.hasInfo()) {
             // copy all the info
-            GraphInfo<N2,E2> targetInfo = target.setInfo(sourceInfo.clone());
+            GraphInfo<N1,E1> sourceInfo = source.getInfo();
+            GraphInfo<N2,E2> targetInfo = target.getInfo();
+            targetInfo.load(sourceInfo);
             if (elementMap != null) {
                 // modify the layout map using the element map
                 LayoutMap<N1,E1> sourceLayoutMap = sourceInfo.getLayoutMap();
                 targetInfo.setLayoutMap(sourceLayoutMap.afterInverse(elementMap));
                 FormatErrorSet sourceErrors = sourceInfo.getErrors();
-                if (sourceErrors != null) {
-                    targetInfo.setErrors(sourceErrors.transfer(
-                        elementMap.nodeMap()).transfer(elementMap.edgeMap()));
-                }
+                targetInfo.setErrors(sourceErrors.transfer(elementMap.nodeMap()).transfer(
+                    elementMap.edgeMap()));
             }
             // copy rather than clone the graph properties
             GraphProperties properties = sourceInfo.getProperties();
             assert !target.isFixed();
-            targetInfo.newProperties(properties);
+            targetInfo.setProperties(properties);
         }
+    }
+
+    /**
+     * Indicates if a given graph has format errors.
+     * @param graph the queried graph; non-{@code null}
+     * @return {@code true} if {@code graph} has format errors
+     * @see #getErrors(Graph)
+     */
+    public static boolean hasErrors(Graph<?,?> graph) {
+        return graph.hasInfo() && !graph.getInfo().getErrors().isEmpty();
+    }
+
+    /**
+     * Retrieves the (unmodifiable) collection of format errors of a graph.
+     * @param graph the queried graph; non-{@code null}
+     * @return a list of errors, or {@code null} if the graph does not have an info object
+     * @see #getErrors()
+     */
+    public static Collection<FormatError> getErrors(Graph<?,?> graph) {
+        FormatErrorSet result;
+        if (graph.hasInfo()) {
+            result = graph.getInfo().getErrors();
+        } else {
+            result = new FormatErrorSet();
+        }
+        return Collections.unmodifiableCollection(result);
+    }
+
+    /**
+     * Sets the list of format errors of a graph.
+     * @param graph the graph to be modified; non-{@code null} and not fixed
+     * @param errors list of errors to be set; non-{@code null}
+     */
+    public static void setErrors(Graph<?,?> graph,
+            Collection<FormatError> errors) {
+        if (!errors.isEmpty()) {
+            assert !graph.isFixed();
+            graph.getInfo().setErrors(errors);
+        }
+    }
+
+    /**
+     * Adds a list of format errors to a graph.
+     * @param graph the graph to be modified; non-{@code null} and not fixed
+     * @param errors list of errors to be added; non-{@code null}
+     */
+    public static void addErrors(Graph<?,?> graph,
+            Collection<FormatError> errors) {
+        if (!errors.isEmpty()) {
+            assert !graph.isFixed();
+            graph.getInfo().getErrors().addAll(errors);
+        }
+    }
+
+    /**
+     * Convenience method to throw an exception if a graph has a non-empty set of errors.
+     */
+    public static void throwException(Graph<?,?> graph) throws FormatException {
+        if (graph.hasInfo()) {
+            graph.getInfo().getErrors().throwException();
+        }
+    }
+
+    /**
+     * Retrieves the layout map from a given graph.
+     * @param graph the queried graph; non-{@code null}
+     * @return an alias to the layout map of the graph, 
+     * or {@code null} if the graph has no associated layout map
+     */
+    @SuppressWarnings("unchecked")
+    public static <N extends Node,E extends Edge> LayoutMap<N,E> getLayoutMap(
+            Graph<?,?> graph) {
+        LayoutMap<N,E> result = null;
+        if (graph.hasInfo()) {
+            result = (LayoutMap<N,E>) graph.getInfo().getLayoutMap();
+        }
+        return result;
+    }
+
+    /**
+     * Sets the layout map of a given graph.
+     * @param graph the graph to be modified; non-{@code null}
+     * @param layoutMap the new layout map; non-{@code null}
+     */
+    public static <N extends Node,E extends Edge> void setLayoutMap(
+            Graph<N,E> graph, LayoutMap<N,E> layoutMap) {
+        graph.getInfo().setLayoutMap(layoutMap);
+    }
+
+    /**
+     * Returns an unmodifiable copy of the properties map of a given graph.
+     * @param graph the queried graph; non-{@code null}
+     * @return a copy of the properties object of the queried graph, or an empty
+     * properties map if the graph has no info object
+     */
+    public static GraphProperties getProperties(Graph<?,?> graph) {
+        GraphProperties result = null;
+        if (graph.hasInfo()) {
+            result = graph.getInfo().getProperties().clone();
+            result.setFixed();
+        } else {
+            result = EMPTY_PROPERTIES;
+        }
+        return result;
+    }
+
+    /**
+     * Convenience method to set the graph properties map of a given graph.
+     * The graph will receive a copy of the properties passed in.
+     * @param graph the graph to be modified; non-{@code null}
+     * @param properties the new properties map; non-{@code null}
+     */
+    public static <N extends Node,E extends Edge> void setProperties(
+            Graph<N,E> graph, GraphProperties properties) {
+        assert !graph.isFixed();
+        graph.getInfo().setProperties(properties);
+    }
+
+    /**
+     * Returns the priority property of a given graph. The priority is a non-negative number.
+     * Yields {@link Rule#DEFAULT_PRIORITY} if the priority has not been set explicitly.
+     * @param graph the queried graph; non-{@code null}
+     * @return the non-negative priority of {@code graph}
+     * @see Key#PRIORITY
+     */
+    static public int getPriority(Graph<?,?> graph) {
+        return Integer.parseInt(getProperty(graph, PRIORITY));
+    }
+
+    /** 
+     * Sets the priority of a given graph to a certain value.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param priority the new priority value; should be non-negative
+     */
+    static public void setPriority(Graph<?,?> graph, int priority) {
+        setProperty(graph, PRIORITY, "" + priority);
+    }
+
+    /**
+     * Returns the enabledness property of a given graph. 
+     * Yields <code>true</code> by default.
+     * @param graph the queried graph; non-{@code null}
+     * @see Key#ENABLED
+     */
+    static public boolean isEnabled(Graph<?,?> graph) {
+        return Boolean.parseBoolean(getProperty(graph, ENABLED));
+    }
+
+    /** 
+     * Sets the enabledness of a given graph to a certain value.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param enabled the new enabledness value
+     */
+    static public void setEnabled(Graph<?,?> graph, boolean enabled) {
+        setProperty(graph, ENABLED, Boolean.toString(enabled));
+    }
+
+    /**
+     * Returns the remark property from a given graph.
+     * Yields the empty string by default.
+     * @param graph the queried graph; non-{@code null}
+     * @see Key#REMARK
+     */
+    static public String getRemark(Graph<?,?> graph) {
+        return getProperty(graph, Key.REMARK);
+    }
+
+    /** 
+     * Sets the remark for a given graph to a certain value.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param remark the remark for this graph; non-{@code null}
+     */
+    static public void setRemark(Graph<?,?> graph, String remark) {
+        setProperty(graph, Key.REMARK, remark);
+    }
+
+    /**
+     * Returns the string format property from a given graph.
+     * Yields the empty string if the graph has
+     * no explicitly set format string.
+     * @param graph the queried graph; non-{@code null}
+     * @see Key#FORMAT
+     */
+    static public String getFormatString(Graph<?,?> graph) {
+        return getProperty(graph, Key.FORMAT);
+    }
+
+    /** 
+     * Sets the format string for a given graph to a certain value.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param formatString the format string for this graph; may be {@code null}
+     */
+    static public void setFormatString(Graph<?,?> graph, String formatString) {
+        setProperty(graph, Key.FORMAT, formatString);
+    }
+
+    /**
+     * Returns the transition label of a given graph.
+     * Yields the empty string if the transition label has not been set explicitly
+     * @param graph the queried graph; non-{@code null}
+     * @see Key#TRANSITION_LABEL
+     */
+    static public String getTransitionLabel(Graph<?,?> graph) {
+        return getProperty(graph, Key.TRANSITION_LABEL);
+    }
+
+    /** 
+     * Convenience method to set the transition label for a given graph to a certain value.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param label the transition label for this graph; may be {@code null}
+     */
+    static public void setTransitionLabel(Graph<?,?> graph, String label) {
+        setProperty(graph, Key.TRANSITION_LABEL, label);
+    }
+
+    /**
+     * Returns the version property from a given graph.
+     * Yields the empty string if the graph has
+     * no explicitly set version.
+     * @param graph the queried graph; non-{@code null}
+     * @see Key#VERSION
+     */
+    static public String getVersion(Graph<?,?> graph) {
+        return getProperty(graph, Key.VERSION);
+    }
+
+    /**
+     * Convenience method to retrieve a graph property from a given graph.
+     * Delegates to {@link GraphProperties#getProperty(Key)} 
+     * @param graph the queried graph; non-{@code null}
+     * @return the stored or default property value for the given key;
+     * non-{@code null}
+     */
+    private static String getProperty(Graph<?,?> graph, Key key) {
+        String result;
+        if (graph.hasInfo()) {
+            result = graph.getInfo().getProperties().getProperty(key);
+        } else {
+            result = key.getDefaultValue();
+        }
+        return result;
+    }
+
+    /**
+     * Convenience method to change a graph property of a given graph.
+     * Delegates to {@link GraphProperties#setProperty} 
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     */
+    private static void setProperty(Graph<?,?> graph, Key key, String value) {
+        GraphProperties properties;
+        properties = graph.getInfo().getProperties();
+        properties.setProperty(key, value);
     }
 
     /**
      * Key for error list.
      */
-    public static final String ERRORS_KEY = "errors";
-    /**
-     * Key for storage file.
-     */
-    public static final String FILE_KEY = "file";
+    private static final String ERRORS_KEY = "errors";
     /**
      * Key for graph properties.
      */
-    public static final String PROPERTIES_KEY = "properties";
+    private static final String PROPERTIES_KEY = "properties";
     /**
      * Key for layout-info.
      */
-    public static final String LAYOUT_KEY = "layout";
+    private static final String LAYOUT_KEY = "layout";
+    /** Constant empty properties object. */
+    private static final GraphProperties EMPTY_PROPERTIES;
+
+    static {
+        EMPTY_PROPERTIES = new GraphProperties();
+        EMPTY_PROPERTIES.setFixed();
+    }
 }

@@ -22,7 +22,6 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.graph.EdgeRole;
-import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -155,9 +154,7 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     public boolean setFixed() {
         boolean result = !isFixed();
         if (result) {
-            if (getInfo() == null) {
-                setInfo(new GraphInfo<N,E>());
-            }
+            getInfo().setFixed();
             super.setFixed();
         }
         return result;

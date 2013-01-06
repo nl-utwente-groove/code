@@ -135,7 +135,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         for (AspectJCell root : getRoots()) {
             root.saveToUserObject();
         }
-        this.properties = GraphInfo.getProperties(graph, false);
+        this.properties = GraphInfo.getProperties(graph);
         this.jModelModCount.increase();
         this.graphModCount.increase();
         // load the errors after increasing the modification counts,

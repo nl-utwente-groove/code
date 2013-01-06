@@ -2,7 +2,7 @@ package groove.gui.action;
 
 import static groove.grammar.model.ResourceKind.RULE;
 import groove.grammar.aspect.AspectGraph;
-import groove.graph.GraphProperties;
+import groove.graph.GraphInfo;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
@@ -45,7 +45,7 @@ public class ShiftPriorityAction extends SimulatorAction {
         NavigableMap<Integer,Set<String>> rulesMap =
             new TreeMap<Integer,Set<String>>();
         for (AspectGraph ruleGraph : getGrammarStore().getGraphs(RULE).values()) {
-            int priority = GraphProperties.getPriority(ruleGraph);
+            int priority = GraphInfo.getPriority(ruleGraph);
             Set<String> cell = rulesMap.get(priority);
             if (cell == null) {
                 rulesMap.put(priority, cell = new HashSet<String>());
@@ -123,7 +123,7 @@ public class ShiftPriorityAction extends SimulatorAction {
             for (String ruleName : newCells.get(i)) {
                 AspectGraph ruleGraph =
                     getGrammarStore().getGraphs(RULE).get(ruleName);
-                if (GraphProperties.getPriority(ruleGraph) != priority) {
+                if (GraphInfo.getPriority(ruleGraph) != priority) {
                     priorityMap.put(ruleName, priority);
                 }
             }

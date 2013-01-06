@@ -106,13 +106,9 @@ public class GraphManager {
         }
 
         // Insert the precreated layout into the model
-        if (this.layouts.containsKey(graph)) {
-            GraphInfo<AspectNode,AspectEdge> gi =
-                GraphInfo.getInfo(graph, true);
-            gi.setLayoutMap(this.layouts.get(graph));
-            this.layouts.remove(graph);
-        } else {
-            // Assume the graph already has a layout
+        LayoutMap<AspectNode,AspectEdge> layoutMap = this.layouts.remove(graph);
+        if (layoutMap != null) {
+            GraphInfo.setLayoutMap(graph, layoutMap);
         }
 
         graph.setFixed();
@@ -182,13 +178,13 @@ public class GraphManager {
         JVertexLayout layout =
             new JVertexLayout(new java.awt.Rectangle((int) location.getX(),
                 (int) location.getY(), 60, 20));
-        if (this.layouts.containsKey(graph)) {
-            this.layouts.get(graph).putNode(newNode, layout);
-        } else {
-            // Assume graph layout already exists
-            GraphInfo.getLayoutMap(graph).putNode(newNode, layout);
+        LayoutMap<AspectNode,AspectEdge> layoutMap = this.layouts.get(graph);
+        if (layoutMap == null) {
+            layoutMap = GraphInfo.getLayoutMap(graph);
         }
-
+        if (layoutMap != null) {
+            layoutMap.putNode(newNode, layout);
+        }
         return newNode;
     }
 

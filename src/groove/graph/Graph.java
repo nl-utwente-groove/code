@@ -140,21 +140,22 @@ public interface Graph<N extends Node,E extends Edge> extends Fixable {
     boolean setFixed();
 
     /**
-     * Returns an information object with additional information about this
-     * graph. The object may be <code>null</code> if there is no additional
-     * information.
+     * Indicates if the {@link GraphInfo} object of this graph
+     * has been initialised.
+     * @return {@code true} if the information object has been initialised
+     * @see #getInfo()
      */
-    GraphInfo<N,E> getInfo();
+    boolean hasInfo();
 
     /**
-     * Sets an information object with additional information about this graph,
-     * by copying an existing information object.
-     * @param info an information object; may be <code>null</code> to reset the
-     *        graph info
-     * @return a shallow copy of <code>info</code>, or <code>null</code> if
-     *         <code>info</code> was <code>null</code>
+     * Returns an information object with additional information about this
+     * graph. The information object is created (and stored) if it was not
+     * initialised yet, resulting in a larger memory footprint for the graph.
+     * To avoid creating the info object, test for its presence with {@link #hasInfo()}
+     * @return the (non-{@code null}) information object
+     * @see #hasInfo()
      */
-    GraphInfo<N,E> setInfo(GraphInfo<?,?> info);
+    GraphInfo<N,E> getInfo();
 
     /**
      * Makes a copy of this Graph with cloned (not aliased) node and edge sets

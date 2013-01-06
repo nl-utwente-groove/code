@@ -13,7 +13,6 @@ import groove.grammar.model.ResourceModel;
 import groove.grammar.model.TextBasedModel;
 import groove.grammar.type.TypeLabel;
 import groove.graph.GraphInfo;
-import groove.graph.GraphProperties;
 import groove.gui.display.DisplayKind;
 import groove.gui.list.SearchResult;
 import groove.io.store.DefaultFileSystemStore;
@@ -136,10 +135,8 @@ public class SimulatorModel implements Cloneable {
             for (String ruleName : names) {
                 AspectGraph oldRule =
                     getStore().getGraphs(ResourceKind.RULE).get(ruleName);
-                GraphProperties properties = GraphInfo.cloneProperties(oldRule);
-                properties.setEnabled(!properties.isEnabled());
                 AspectGraph newRule = oldRule.clone();
-                GraphInfo.setProperties(newRule, properties);
+                GraphInfo.setEnabled(newRule, !GraphInfo.isEnabled(oldRule));
                 newRule.setFixed();
                 newRules.add(newRule);
             }
@@ -279,8 +276,7 @@ public class SimulatorModel implements Cloneable {
             AspectGraph oldGraph =
                 getStore().getGraphs(resource).get(entry.getKey());
             AspectGraph newGraph = oldGraph.clone();
-            GraphInfo.getProperties(newGraph, true).setPriority(
-                entry.getValue());
+            GraphInfo.setPriority(newGraph, entry.getValue());
             newGraph.setFixed();
             newGraphs.add(newGraph);
         }
