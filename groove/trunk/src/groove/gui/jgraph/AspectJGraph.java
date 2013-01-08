@@ -47,7 +47,6 @@ import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedList;
@@ -162,14 +161,6 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
      */
     public RuleLevelTree getLevelTree() {
         return this.levelTree;
-    }
-
-    @Override
-    public void refreshCells(Collection<? extends JCell<AspectGraph>> jCellSet) {
-        // tell the model it has been modified,
-        // so refreshing actually changes the cell outlook
-        getModel().getModCount().increase();
-        super.refreshCells(jCellSet);
     }
 
     /** Indicates that the JModel has an editor enabled. */

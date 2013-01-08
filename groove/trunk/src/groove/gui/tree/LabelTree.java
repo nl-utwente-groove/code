@@ -123,6 +123,16 @@ public class LabelTree<G extends Graph<?,?>> extends CheckboxTree implements
         addMouseListener(new MyMouseListener());
     }
 
+    /** Adds this tree as listener to a given (non-{@code null}) JModel. */
+    void installJModelListeners(JModel<G> jModel) {
+        jModel.addGraphModelListener(this);
+    }
+
+    /** Removes this tree as listener to a given (non-{@code null}) JModel. */
+    void removeJModelListeners(JModel<G> jModel) {
+        jModel.removeGraphModelListener(this);
+    }
+
     @Override
     protected CellRenderer createRenderer() {
         return new MyTreeCellRenderer();
@@ -196,14 +206,14 @@ public class LabelTree<G extends Graph<?,?>> extends CheckboxTree implements
      */
     public void updateModel() {
         if (this.jModel != null) {
-            this.jModel.removeGraphModelListener(this);
+            removeJModelListeners(this.jModel);
         }
         this.jModel = getJGraph().getModel();
         if (hasFilter()) {
             clearFilter();
         }
         if (this.jModel != null) {
-            this.jModel.addGraphModelListener(this);
+            installJModelListeners(this.jModel);
             if (hasFilter()) {
                 updateFilter();
             }
@@ -360,8 +370,7 @@ public class LabelTree<G extends Graph<?,?>> extends CheckboxTree implements
                 Object treeNode = selectedPath.getLastPathComponent();
                 if (treeNode instanceof LabelTree.EntryNode) {
                     Entry entry = ((EntryNode) treeNode).getEntry();
-                    Set<JCell<G>> occurrences =
-                        getFilter().getJCells(entry);
+                    Set<JCell<G>> occurrences = getFilter().getJCells(entry);
                     if (occurrences != null) {
                         emphSet.addAll(occurrences);
                     }

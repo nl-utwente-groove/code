@@ -28,6 +28,8 @@ import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.action.CollapseAllAction;
 import groove.gui.jgraph.AspectJGraph;
+import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.JModel;
 import groove.gui.tree.LabelFilter.Entry;
 import groove.gui.tree.TypeFilter.TypeEntry;
 import groove.io.HTMLConverter;
@@ -38,6 +40,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -68,6 +72,32 @@ public class TypeTree extends LabelTree<AspectGraph> {
     public TypeTree(AspectJGraph jGraph, boolean filtering) {
         super(jGraph, filtering);
     }
+
+    @Override
+    void installJModelListeners(JModel<AspectGraph> jModel) {
+        super.installJModelListeners(jModel);
+        ((AspectJModel) jModel).addGraphChangeListener(getJModelChangeListener());
+    }
+
+    @Override
+    void removeJModelListeners(JModel<AspectGraph> jModel) {
+        super.removeJModelListeners(jModel);
+        ((AspectJModel) jModel).removeGraphChangeListener(getJModelChangeListener());
+    }
+
+    private Observer getJModelChangeListener() {
+        if (this.jModelChangeListener == null) {
+            this.jModelChangeListener = new Observer() {
+                @Override
+                public void update(Observable o, Object arg) {
+                    updateModel();
+                }
+            };
+        }
+        return this.jModelChangeListener;
+    }
+
+    private Observer jModelChangeListener;
 
     /** Creates a tool bar for the label tree. */
     public JToolBar createToolBar() {
@@ -198,7 +228,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
      */
     @Override
     public void graphChanged(GraphModelEvent e) {
-        if (getTypeGraph() != this.typeGraph) {
+        if (isModelStale()) {
             updateModel();
         } else {
             super.graphChanged(e);
@@ -258,7 +288,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
             isShowsSubtypes() ? getTypeGraph().getDirectSubtypeMap()
                     : getTypeGraph().getDirectSupertypeMap();
         for (TypeNode node : new TreeSet<TypeNode>(typeNodes)) {
-            if (node.isDataType() || node.isTopType()) {
+            if (node.isDataType()) {
                 continue;
             }
             TypeEntry entry = getFilter().getEntry(node);
@@ -268,6 +298,10 @@ public class TypeTree extends LabelTree<AspectGraph> {
                 topNode.add(nodeTypeNode);
                 result.add(nodeTypeNode);
                 addRelatedTypes(typeNodes, nodeTypeNode, relatedMap, result);
+                if (node.isTopType()) {
+                    // don't show the edges as dependent on the type
+                    continue;
+                }
                 // check duplicates due to equi-labelled edges to different targets
                 Set<Entry> entries = new HashSet<Entry>();
                 for (TypeEdge edge : new TreeSet<TypeEdge>(
@@ -280,6 +314,22 @@ public class TypeTree extends LabelTree<AspectGraph> {
                             nodeTypeNode.add(edgeTypeNode);
                             result.add(edgeTypeNode);
                         }
+                    }
+                }
+            }
+        }
+        if (getTypeGraph().isImplicit()) {
+            // add edge entries
+            // check duplicates due to equi-labelled edges
+            Set<Entry> entries = new HashSet<Entry>();
+            for (TypeEdge edge : typeEdges) {
+                TypeEntry edgeEntry = getFilter().getEntry(edge);
+                if (isShowsAllLabels() || getFilter().hasJCells(edgeEntry)) {
+                    if (entries.add(edgeEntry)) {
+                        TypedEntryNode edgeTypeNode =
+                            new TypedEntryNode(this, edgeEntry, true);
+                        topNode.add(edgeTypeNode);
+                        result.add(edgeTypeNode);
                     }
                 }
             }

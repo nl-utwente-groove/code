@@ -52,6 +52,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.undo.UndoableEdit;
@@ -76,6 +78,45 @@ final public class AspectJModel extends JModel<AspectGraph> {
      */
     AspectJModel(AspectJGraph jGraph) {
         super(jGraph);
+        this.graphModCount = new ChangeCount();
+        this.resource = new Derived<GraphBasedModel<?>>(this.graphModCount) {
+            @Override
+            protected GraphBasedModel<?> computeValue() {
+                GraphBasedModel<?> result = null;
+                if (getJGraph().isEditable() || getJGraph().isForState()) {
+                    result = getGrammar().createGraphModel(getGraph());
+                } else {
+                    ResourceKind kind =
+                        ResourceKind.toResource(getJGraph().getGraphRole());
+                    result = getGrammar().getGraphResource(kind, getName());
+                }
+                return result;
+            }
+        };
+        this.typeGraph = new Derived<TypeGraph>(this.graphModCount) {
+            @Override
+            protected TypeGraph computeValue() {
+                TypeGraph result;
+                GraphBasedModel<?> resourceModel = getResourceModel();
+                if (resourceModel instanceof TypeModel) {
+                    try {
+                        result = ((TypeModel) resourceModel).toResource();
+                    } catch (FormatException e) {
+                        result =
+                            ImplicitTypeGraph.newInstance(resourceModel.getLabels());
+                    }
+                } else {
+                    result = getGrammar().getTypeGraph();
+                }
+                return result;
+            }
+        };
+        this.graphModCount.addObserver(new Observer() {
+            @Override
+            public void update(Observable o, Object arg) {
+                loadViewErrors();
+            }
+        });
     }
 
     @Override
@@ -136,11 +177,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
             root.saveToUserObject();
         }
         this.properties = GraphInfo.getProperties(graph);
-        this.jModelModCount.increase();
         this.graphModCount.increase();
-        // load the errors after increasing the modification counts,
-        // as otherwise the resource is refreshed more often than necessary
-        loadViewErrors();
         setLoading(false);
     }
 
@@ -224,9 +261,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
         this.nodeJCellMap.putAll(nodeJVertexMap);
         this.edgeJCellMap.clear();
         this.edgeJCellMap.putAll(edgeJCellMap);
-        this.jModelModCount.increase();
         this.graphModCount.increase();
-        loadViewErrors();
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());
             Groove.printStackTrace(System.out, false);
@@ -398,13 +433,6 @@ final public class AspectJModel extends JModel<AspectGraph> {
         return result;
     }
 
-    /**
-     * Returns a modification counter of this jModel.
-     */
-    final ChangeCount getModCount() {
-        return this.jModelModCount;
-    }
-
     /** 
      * We override this method to ensure that the aspect graph
      * remains in sync with any changes made to the JModel, <i>before</i>
@@ -504,50 +532,24 @@ final public class AspectJModel extends JModel<AspectGraph> {
         return result;
     }
 
-    /** Counter of the modifications to the jModel. */
-    private final ChangeCount jModelModCount = new ChangeCount();
+    /** Adds a listener to graph modifications. */
+    public void addGraphChangeListener(Observer listener) {
+        this.graphModCount.addObserver(listener);
+    }
+
+    /** Removes a listener to graph modifications. */
+    public void removeGraphChangeListener(Observer listener) {
+        this.graphModCount.deleteObserver(listener);
+    }
+
     /** Counter of the modifications to the graph. */
-    private final ChangeCount graphModCount = new ChangeCount();
+    private final ChangeCount graphModCount;
+    /** The resource model of the graph being edited. */
+    private final Derived<GraphBasedModel<?>> resource;
+    /** The type graph of the graph being edited. */
+    private final Derived<TypeGraph> typeGraph;
     /** Flag to indicate if the graph is being edited or not. */
     private boolean beingEdited = false;
-
-    /** The resource model of the graph being edited. */
-    private Derived<GraphBasedModel<?>> resource =
-        new Derived<GraphBasedModel<?>>(this.graphModCount) {
-            @Override
-            protected GraphBasedModel<?> computeValue() {
-                GraphBasedModel<?> result = null;
-                if (getJGraph().isEditable() || getJGraph().isForState()) {
-                    result = getGrammar().createGraphModel(getGraph());
-                } else {
-                    ResourceKind kind =
-                        ResourceKind.toResource(getJGraph().getGraphRole());
-                    result = getGrammar().getGraphResource(kind, getName());
-                }
-                return result;
-            }
-        };
-
-    /** The type graph of the graph being edited. */
-    private Derived<TypeGraph> typeGraph = new Derived<TypeGraph>(
-        this.graphModCount) {
-        @Override
-        protected TypeGraph computeValue() {
-            TypeGraph result;
-            GraphBasedModel<?> resourceModel = getResourceModel();
-            if (resourceModel instanceof TypeModel) {
-                try {
-                    result = ((TypeModel) resourceModel).toResource();
-                } catch (FormatException e) {
-                    result =
-                        ImplicitTypeGraph.newInstance(resourceModel.getLabels());
-                }
-            } else {
-                result = getGrammar().getTypeGraph();
-            }
-            return result;
-        }
-    };
 
     /** Properties map of the graph being displayed or edited. */
     private GraphProperties properties;
