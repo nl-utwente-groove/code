@@ -40,31 +40,30 @@ import java.util.Map;
 public class MultiLabel {
     /** Adds a directed line to this multiline label. */
     public void add(Line line, Direct direct) {
-        if (!line.isEmpty()) {
-            DirectBag dirs = this.parts.get(line);
-            if (dirs == null) {
-                dirs = DirectBag.ZERO;
-            }
-            // combine forward and backward into bidirectional
-            switch (direct) {
-            case FORWARD:
-                int backCount = dirs.get(Direct.BACKWARD);
-                if (backCount > 0) {
-                    direct = Direct.BIDIRECTIONAL;
-                    dirs = dirs.dec(Direct.BACKWARD);
-                }
-                break;
-            case BACKWARD:
-                int foreCount = dirs.get(Direct.FORWARD);
-                if (foreCount > 0) {
-                    direct = Direct.BIDIRECTIONAL;
-                    dirs = dirs.dec(Direct.FORWARD);
-                }
-                break;
-            }
-            dirs = dirs.inc(direct);
-            this.parts.put(line, dirs);
+        // always add the line, also if it is empty
+        DirectBag dirs = this.parts.get(line);
+        if (dirs == null) {
+            dirs = DirectBag.ZERO;
         }
+        // combine forward and backward into bidirectional
+        switch (direct) {
+        case FORWARD:
+            int backCount = dirs.get(Direct.BACKWARD);
+            if (backCount > 0) {
+                direct = Direct.BIDIRECTIONAL;
+                dirs = dirs.dec(Direct.BACKWARD);
+            }
+            break;
+        case BACKWARD:
+            int foreCount = dirs.get(Direct.FORWARD);
+            if (foreCount > 0) {
+                direct = Direct.BIDIRECTIONAL;
+                dirs = dirs.dec(Direct.FORWARD);
+            }
+            break;
+        }
+        dirs = dirs.inc(direct);
+        this.parts.put(line, dirs);
     }
 
     /** Adds all parts of another multiline label to this one. */
