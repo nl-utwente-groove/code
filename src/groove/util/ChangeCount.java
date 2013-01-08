@@ -16,16 +16,20 @@
  */
 package groove.util;
 
+import java.util.Observable;
+
 /**
  * Class that records the change count of a given structure,
  * and allows observers to keep track of the count.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ChangeCount {
-    /** Increases the change count. */
+public class ChangeCount extends Observable {
+    /** Increases the change count and notifies all registered observers. */
     public void increase() {
         this.value++;
+        setChanged();
+        notifyObservers();
     }
 
     /**
