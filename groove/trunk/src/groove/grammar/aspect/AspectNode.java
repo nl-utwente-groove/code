@@ -358,7 +358,18 @@ public class AspectNode extends AbstractNode implements AspectElement, Fixable {
             }
         } else if (edge.isOperator()) {
             Operator operator = edge.getOperator();
-            setDataType(operator.getResultType());
+            Aspect operType =
+                Aspect.getAspect(operator.getResultType().getName());
+            AspectKind operKind = operType.getKind();
+            if (!hasAttrAspect()) {
+                throw new FormatException(
+                    "Target node of %s-edge should be %s-attribute",
+                    edge.label(), operKind, this);
+            } else if (getAttrKind() != operKind) {
+                throw new FormatException(
+                    "Inferred type %s of %s-target conflicts with declared type %s",
+                    operKind, edge.label(), getAttrKind(), this);
+            }
         }
     }
 
