@@ -20,7 +20,6 @@ import static groove.graph.GraphRole.HOST;
 import groove.algebra.AlgebraFamily;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
-import groove.grammar.aspect.AspectKind;
 import groove.grammar.aspect.AspectLabel;
 import groove.grammar.aspect.AspectNode;
 import groove.grammar.aspect.AspectParser;
@@ -28,7 +27,6 @@ import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.graph.ElementMap;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.transform.DeltaTarget;
 
 /**
@@ -79,12 +77,6 @@ public interface HostGraph extends Graph<HostNode,HostEdge>, DeltaTarget {
                 }
             });
             this.aspectGraph = aspectGraph;
-        }
-
-        @Override
-        public Label mapLabel(Label label) {
-            return getFactory().createLabel(
-                AspectKind.LITERAL.getPrefix() + label.toString());
         }
 
         /** Returns the target aspect graph of this mapping. */

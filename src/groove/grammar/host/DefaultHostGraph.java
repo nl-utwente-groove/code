@@ -19,7 +19,6 @@ package groove.grammar.host;
 import static groove.graph.GraphRole.HOST;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
-import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectKind;
 import groove.grammar.aspect.AspectLabel;
@@ -183,19 +182,20 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
         }
         // add edge images
         for (HostEdge edge : edgeSet()) {
+            String edgeText = edge.label().text();
+            AspectNode imageSource = result.getNode(edge.source());
+            AspectNode imageTarget;
+            String text;
             if (edge.target() instanceof ValueNode) {
-                AspectNode sourceImage = result.getNode(edge.source());
+                imageTarget = imageSource;
                 String constant = ((ValueNode) edge.target()).getSymbol();
-                String let =
-                    AspectKind.LET.getPrefix() + edge.label().text() + "="
-                        + constant;
-                AspectLabel label = AspectParser.getInstance().parse(let, HOST);
-                targetGraph.addEdge(sourceImage, label, sourceImage);
+                text = AspectKind.LET.getPrefix() + edgeText + "=" + constant;
             } else {
-                AspectEdge edgeImage = result.mapEdge(edge);
-                edgeImage.setFixed();
-                targetGraph.addEdge(edgeImage);
+                imageTarget = result.getNode(edge.target());
+                text = AspectKind.LITERAL.getPrefix() + edgeText;
             }
+            AspectLabel imageLabel = AspectParser.getInstance().parse(text, HOST);
+            targetGraph.addEdge(imageSource, imageLabel, imageTarget);
         }
         GraphInfo.transfer(this, targetGraph, result);
         targetGraph.setFixed();
