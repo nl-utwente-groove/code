@@ -47,6 +47,13 @@ public final class Materialisation {
      * Constructs and returns the set of all possible materialisations of the
      * given shape and pre-match. This method resolves all non-determinism
      * in the materialisation phase.
+     * 
+     * VERY IMPORTANT: This method computes the materialisations AND applies
+     * the rule, thus the returned pattern shapes are already the final result
+     * of the transformation. The only thing remaining to do is to normalise
+     * the resulting shapes. This is a direct consequence of how the
+     * transformation of pattern shapes was defined and is in complete contrast
+     * to the original materialisation of neighbourhood abstraction.
      */
     public static Collection<PatternShape> getMaterialisations(
             PatternShape pShape, PreMatch preMatch) {

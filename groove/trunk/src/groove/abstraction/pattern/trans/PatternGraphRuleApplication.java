@@ -101,7 +101,7 @@ public final class PatternGraphRuleApplication {
 
         // EZ says: We are wasting an opportunity to add some larger patterns
         // here. Since we already have a match, we could do some closure now.
-        // This, however, would avoid the need for closing, because new patterns
+        // This, however, would not avoid the need for closing, because new patterns
         // could still be formed. All in all, it seems it's better to not do
         // anything here for the sake of simplicity.
     }
