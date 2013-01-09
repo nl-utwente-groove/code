@@ -18,11 +18,12 @@ package groove.gui.action;
 
 import groove.gui.Options;
 import groove.gui.Simulator;
+import groove.gui.display.LTSDisplay;
 import groove.gui.jgraph.JCell;
-import groove.gui.jgraph.LTSJGraph;
+import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJModel;
-
-import org.jgraph.graph.GraphConstants;
+import groove.gui.look.VisualKey;
 
 /**
  * Action to reload the LTS into the LTSDisplay, with the current state bound.
@@ -37,19 +38,25 @@ public class ReloadLTSAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        LTSJModel ltsJModel = getLtsDisplay().getJModel();
-        int newBound = getLtsDisplay().getStateBound();
+        LTSDisplay display = getLtsDisplay();
+        LTSJModel ltsJModel = display.getJModel();
+        int newBound = display.getStateBound();
         int oldBound = ltsJModel.setStateBound(newBound);
-        if (oldBound > newBound) {
-            ltsJModel.loadGraph(getSimulatorModel().getGts());
-        } else {
-            LTSJGraph jGraph = getLtsDisplay().getJGraph();
-            for (JCell<?> jCell : ltsJModel.getRoots()) {
-                GraphConstants.setMoveable(jCell.getAttributes(), false);
+        int lower = Math.min(oldBound, newBound);
+        int upper = Math.max(oldBound, newBound);
+        for (JCell<?> jCell : ltsJModel.getRoots()) {
+            if (jCell instanceof JVertex<?>) {
+                JVertex<?> jVertex = (JVertex<?>) jCell;
+                int nr = jVertex.getNumber();
+                if (lower <= nr && nr <= upper) {
+                    jVertex.setStale(VisualKey.VISIBLE);
+                    for (JEdge<?> jEdge : jVertex.getContext()) {
+                        jEdge.setStale(VisualKey.VISIBLE);
+                    }
+                }
             }
-            ltsJModel.loadFurther();
-            jGraph.getLayouter().start(false);
         }
-        getLtsDisplay().getGraphPanel().refreshBackground();
+        display.getJGraph().refreshAllCells();
+        display.getGraphPanel().refreshBackground();
     }
 }

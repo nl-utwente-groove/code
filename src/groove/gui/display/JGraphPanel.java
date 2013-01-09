@@ -18,8 +18,8 @@ package groove.gui.display;
 
 import static groove.gui.jgraph.JGraphMode.PAN_MODE;
 import groove.graph.Graph;
-import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -186,6 +186,9 @@ public class JGraphPanel<G extends Graph<?,?>> extends JPanel {
     /** Sets the background colour for an enabled panel. */
     protected void setEnabledBackground(Color enabledBackground) {
         this.enabledBackground = enabledBackground;
+        if (isEnabled()) {
+            getJGraph().setBackground(enabledBackground);
+        }
     }
 
     /** The background colour in case the panel is enabled. */
