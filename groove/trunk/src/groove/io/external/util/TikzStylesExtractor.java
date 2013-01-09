@@ -16,14 +16,20 @@
  */
 package groove.io.external.util;
 
+import groove.gui.jgraph.JAttr;
+import groove.gui.look.EdgeEnd;
 import groove.gui.look.Look;
 import groove.gui.look.NodeShape;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
+import groove.util.Duo;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class to automatically create a groove2tikz.sty file from the existing
- * {@link Look} enum.
+ * {@link Look} enumeration.
  * 
  * @author Eduardo Zambon
  */
@@ -34,11 +40,15 @@ public final class TikzStylesExtractor {
      */
     public static void main(String[] args) {
         TikzStylesExtractor extractor = new TikzStylesExtractor();
-        extractor.print();
+        // Collect the information.
+        extractor.run();
+        // Write it.
+        extractor.write();
     }
 
     /** The builder that holds the Tikz string. */
     private final StringBuilder result;
+    private final List<StyleDuo> styles;
 
     /**
      * The constructor is private. To perform the conversion just call the
@@ -46,24 +56,31 @@ public final class TikzStylesExtractor {
      */
     private TikzStylesExtractor() {
         this.result = new StringBuilder();
+        this.styles = new ArrayList<StyleDuo>();
+    }
+
+    private void run() {
+        append(HEADER);
+        for (Look look : Look.values()) {
+            append(look);
+        }
+        append(FOOTER);
+    }
+
+    private void write() {
+        System.out.println(this.result);
     }
 
     private void append(String string) {
         this.result.append(string);
     }
 
-    /*private void append(StringBuilder sb) {
-        this.result.append(sb);
-    }*/
-
-    private void print() {
-        for (Look look : Look.values()) {
-            print(look);
-        }
-        System.out.println(this.result);
+    private void add(StyleDuo duo) {
+        this.styles.add(duo);
     }
 
-    private void print(Look look) {
+    private void append(Look look) {
+        this.styles.clear();
         append(NEW_LINE);
         append(BEGIN_TIKZ_STYLE);
         append(look.name().toLowerCase());
@@ -71,41 +88,35 @@ public final class TikzStylesExtractor {
         VisualMap visualMap = look.getVisuals();
         for (VisualKey key : visualMap.keySet()) {
             Object value = visualMap.get(key);
-            print(key, value);
+            computeStyles(key, value);
         }
-        // Remove the last comma.
-        int l = this.result.length();
-        this.result.delete(l - 1, l);
+        append(this.styles.toString());
         append(END_TIKZ_STYLE);
     }
 
-    private void print(VisualKey key, Object value) {
-        String keyStr = null;
-        String valStr = null;
-
+    private void computeStyles(VisualKey key, Object value) {
         switch (key) {
         case ADORNMENT:
             break;
         case BACKGROUND:
-            keyStr = FILL_KEY;
-            valStr = convertColor(value);
             break;
         case COLOR:
             break;
         case DASH:
-            keyStr = DENSELY_DASHED;
             break;
         case EDGE_SOURCE_LABEL:
             break;
         case EDGE_SOURCE_POS:
             break;
         case EDGE_SOURCE_SHAPE:
+            convertEdgeEndShape(EDGE_SOURCE_END_KEY, (EdgeEnd) value);
             break;
         case EDGE_TARGET_LABEL:
             break;
         case EDGE_TARGET_POS:
             break;
         case EDGE_TARGET_SHAPE:
+            convertEdgeEndShape(EDGE_TARGET_END_KEY, (EdgeEnd) value);
             break;
         case EMPHASIS:
             break;
@@ -114,8 +125,6 @@ public final class TikzStylesExtractor {
         case FONT:
             break;
         case FOREGROUND:
-            keyStr = DRAW_KEY;
-            valStr = convertColor(value);
             break;
         case INNER_LINE:
             break;
@@ -132,8 +141,7 @@ public final class TikzStylesExtractor {
         case NODE_POS:
             break;
         case NODE_SHAPE:
-            keyStr = SHAPE_KEY;
-            valStr = convertNodeShape(value);
+            convertNodeShape((NodeShape) value);
             break;
         case NODE_SIZE:
             break;
@@ -143,51 +151,133 @@ public final class TikzStylesExtractor {
             // Not used.
             break;
         default:
-            assert false : "Default fallthought in visual key.";
-            break;
-        }
-
-        if (keyStr != null) {
-            append(keyStr);
-            if (valStr != null) {
-                append(EQUAL + valStr);
-            }
-            append(COMMA);
+            throw new IllegalArgumentException(
+                "Default fall-thought in visual key! Did you add a new style?");
         }
     }
 
-    private static String convertColor(Object color) {
-        return color.toString();
-    }
-
-    private static String convertNodeShape(Object value) {
-        NodeShape shape = (NodeShape) value;
+    private void convertNodeShape(NodeShape shape) {
         switch (shape) {
         case DIAMOND:
-            return "diamond";
+            add(new StyleDuo(SHAPE_KEY, DIAMOND_VAL));
+            add(new StyleDuo(SHAPE_ASPECT_KEY, DIAMOND_ASPECT_VAL));
+            break;
         case ELLIPSE:
-            return "circle";
+            add(new StyleDuo(SHAPE_KEY, ELLIPSE_VAL));
+            break;
         case OVAL:
-            return "circle";
+            add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
+            add(new StyleDuo(ROUNDED_CORNERS_KEY, OVAL_CORNER_VAL));
+            break;
         case RECTANGLE:
-            return "rectangle";
+            add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
+            add(new StyleDuo(ROUNDED_CORNERS_KEY, SQUARE_CORNER_VAL));
+            break;
         case ROUNDED:
-            return "rectangle";
+            add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
+            add(new StyleDuo(ROUNDED_CORNERS_KEY, ROUND_CORNER_VAL));
+            break;
         default:
-            assert false : "Default fallthought in node shape.";
-            return null;
+            throw new IllegalArgumentException(
+                "Default fall-thought in node shape! Did you add a new node shape?");
+        }
+    }
+
+    private void convertEdgeEndShape(String key, EdgeEnd end) {
+        switch (end) {
+        case ARROW:
+            add(new StyleDuo(key, ARROW_EDGE_END_VAL));
+            break;
+        case COMPOSITE:
+            add(new StyleDuo(key, COMPOSITE_EDGE_END_VAL));
+            break;
+        case DOUBLE_LINE:
+            // EDUARDO: Ask Arend about this one...
+            break;
+        case NESTING:
+            // EDUARDO: Ask Arend about this one...
+            break;
+        case NONE:
+            add(new StyleDuo(key, NONE_EDGE_END_VAL));
+            break;
+        case SIMPLE:
+            add(new StyleDuo(key, SIMPLE_EDGE_END_VAL));
+            break;
+        case SUBTYPE:
+            add(new StyleDuo(key, SUBTYPE_EDGE_END_VAL));
+            break;
+        case UNFILLED:
+            // EDUARDO: Ask Arend about this one...
+            break;
+        default:
+            throw new IllegalArgumentException(
+                "Default fall-thought in node shape! Did you add a new edge end shape?");
         }
     }
 
     private static final String NEW_LINE = "\n";
-    private static final String EQUAL = "=";
-    private static final String COMMA = ",";
     private static final String BEGIN_TIKZ_STYLE = "\\tikzstyle{";
-    private static final String MID_TIKZ_STYLE = "}" + EQUAL + "[";
-    private static final String END_TIKZ_STYLE = "]" + NEW_LINE;
+    private static final String MID_TIKZ_STYLE = "}=";
+    private static final String END_TIKZ_STYLE = NEW_LINE;
 
-    private static final String DRAW_KEY = "draw";
-    private static final String FILL_KEY = "fill";
     private static final String SHAPE_KEY = "shape";
-    private static final String DENSELY_DASHED = "densely dashed";
+    private static final String DIAMOND_VAL = "diamond";
+    private static final String ELLIPSE_VAL = "ellipse";
+    private static final String RECTANGLE_VAL = "rectangle";
+
+    private static final String ROUNDED_CORNERS_KEY = "rounded corners";
+    private static final String SQUARE_CORNER_VAL = "0pt";
+    private static final String ROUND_CORNER_VAL = JAttr.NORMAL_ARC_SIZE / 5
+        + "pt";
+    private static final String OVAL_CORNER_VAL = JAttr.STRONG_ARC_SIZE / 5
+        + "pt";
+
+    private static final String EDGE_SOURCE_END_KEY = "<";
+    private static final String EDGE_TARGET_END_KEY = ">";
+    private static final String ARROW_EDGE_END_VAL = "stealth";
+    private static final String COMPOSITE_EDGE_END_VAL = "diamond";
+    private static final String NONE_EDGE_END_VAL = "space";
+    private static final String SIMPLE_EDGE_END_VAL = "to";
+    private static final String SUBTYPE_EDGE_END_VAL = "open triangle 60";
+
+    // Extra style entries.
+    private static final String SHAPE_ASPECT_KEY = "shape aspect";
+    private static final String DIAMOND_ASPECT_VAL = "2";
+
+    private static final String HEADER =
+        "% Package that defines the styles used in Tikz figures exported in GROOVE."
+            + NEW_LINE
+            + "% This file was automatically generated by the TikzStylesExtraction utility."
+            + NEW_LINE + NEW_LINE + "\\ProvidesPackage{groove2tikz}" + NEW_LINE
+            + "\\RequirePackage{tikz}" + NEW_LINE + "\\usepackage[T1]{fontenc}"
+            + NEW_LINE + "\\usepackage{amssymb}" + NEW_LINE + NEW_LINE
+            + "% Includes for Tikz." + NEW_LINE
+            + "\\usetikzlibrary{arrows,automata,positioning,er}" + NEW_LINE;
+
+    private static final String FOOTER = NEW_LINE
+        + "% Ugly hack to allow nodes with multiple lines." + NEW_LINE
+        + "\\newcommand{\\ml}[1]{" + NEW_LINE
+        + "\\begin{tabular}{@{}c@{}}#1\\vspace{-2pt}\\end{tabular}" + NEW_LINE
+        + "}" + NEW_LINE + NEW_LINE;
+
+    /** Key, value pairs. */
+    private static final class StyleDuo extends Duo<String> {
+
+        public StyleDuo(String one, String two) {
+            super(one, two);
+        }
+
+        @Override
+        public String toString() {
+            String one = one();
+            String two = two();
+            if (two == null) {
+                return one;
+            } else {
+                return String.format("%s=%s", one, two);
+            }
+        }
+
+    }
+
 }
