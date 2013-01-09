@@ -24,9 +24,9 @@ import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectNode;
 import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraph.HostToAspectMap;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
-import groove.grammar.host.HostGraph.HostToAspectMap;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.HostModel;
@@ -41,8 +41,8 @@ import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.AspectJVertex;
-import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JAttr;
+import groove.gui.jgraph.JEdge;
 import groove.gui.list.ErrorListPanel;
 import groove.gui.look.LineStyle;
 import groove.gui.look.VisualKey;
@@ -222,7 +222,13 @@ public class StateDisplay extends Display implements SimulatorListener {
         if (result == null) {
             result =
                 this.stateGraphPanel =
-                    new JGraphPanel<AspectGraph>(getJGraph());
+                    new JGraphPanel<AspectGraph>(getJGraph()) {
+                        @Override
+                        public void setEnabled(boolean enabled) {
+                            super.setEnabled(enabled);
+                            getInfoPanel().setEnabled(enabled);
+                        }
+                    };
             result.initialise();
             result.setBorder(null);
             result.setEnabledBackground(JAttr.STATE_BACKGROUND);
