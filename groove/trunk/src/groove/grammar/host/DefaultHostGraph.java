@@ -28,6 +28,7 @@ import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.graph.Edge;
+import groove.graph.EdgeRole;
 import groove.graph.ElementMap;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
@@ -190,11 +191,15 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
                 imageTarget = imageSource;
                 String constant = ((ValueNode) edge.target()).getSymbol();
                 text = AspectKind.LET.getPrefix() + edgeText + "=" + constant;
-            } else {
+            } else if (edge.getRole() == EdgeRole.BINARY) {
                 imageTarget = result.getNode(edge.target());
                 text = AspectKind.LITERAL.getPrefix() + edgeText;
+            } else {
+                imageTarget = imageSource;
+                text = edge.label().toString();
             }
-            AspectLabel imageLabel = AspectParser.getInstance().parse(text, HOST);
+            AspectLabel imageLabel =
+                AspectParser.getInstance().parse(text, HOST);
             targetGraph.addEdge(imageSource, imageLabel, imageTarget);
         }
         GraphInfo.transfer(this, targetGraph, result);
