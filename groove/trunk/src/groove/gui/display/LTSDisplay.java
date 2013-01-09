@@ -28,9 +28,8 @@ import groove.gui.Simulator;
 import groove.gui.SimulatorListener;
 import groove.gui.SimulatorModel;
 import groove.gui.SimulatorModel.Change;
-import groove.gui.jgraph.JCell;
-import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.JAttr;
+import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraphMode;
 import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJGraph;
@@ -48,6 +47,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Observable;
@@ -117,9 +118,18 @@ public class LTSDisplay extends Display implements SimulatorListener {
     @Override
     protected JComponent createInfoPanel() {
         LabelTree<GTS> labelTree = getLabelTree();
-        TitledPanel result =
+        final TitledPanel result =
             new TitledPanel("Transition labels", labelTree, null, true);
         result.setEnabledBackground(JAttr.STATE_BACKGROUND);
+        getJGraph().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals("background")
+                    && evt.getNewValue() != null) {
+                    result.setEnabledBackground((Color) evt.getNewValue());
+                }
+            }
+        });
         return result;
     }
 
@@ -519,14 +529,14 @@ public class LTSDisplay extends Display implements SimulatorListener {
          */
         public void refreshBackground() {
             boolean incomplete = isFilteringLts();
-            JModel<GTS> jModel = getJGraph().getModel();
+            LTSJModel jModel = (LTSJModel) getJGraph().getModel();
             if (!incomplete) {
-                incomplete = jModel.size() < jModel.getGraph().size();
+                incomplete =
+                    jModel.getStateBound() < jModel.getGraph().nodeCount();
             }
             Color background =
                 incomplete ? JAttr.FILTER_BACKGROUND : JAttr.STATE_BACKGROUND;
             setEnabledBackground(background);
-            setEnabled(isEnabled());
         }
     }
 

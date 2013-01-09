@@ -16,8 +16,6 @@
  */
 package groove.gui.jgraph;
 
-import groove.graph.Edge;
-import groove.graph.Node;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.lts.GTS;
@@ -125,8 +123,6 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
     @Override
     public void loadGraph(GTS gts) {
         this.listening = false;
-        this.maxStateNr = -1;
-        this.stateLowerBound = 0;
         GTS oldGTS = getGraph();
         // temporarily remove the model as a graph listener
         if (oldGTS != null && gts != oldGTS) {
@@ -140,40 +136,6 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
         this.listening = true;
     }
 
-    /** Loads all graph elements from the current highest actual state number to the current upper bound. */
-    public void loadFurther() {
-        this.stateLowerBound = this.maxStateNr + 1;
-        addElements(getGraph().nodeSet(), getGraph().edgeSet(), false);
-    }
-
-    /** Only add nodes that do not exceed the maximum state number. */
-    @Override
-    protected JVertex<GTS> addNode(Node node) {
-        JVertex<GTS> result = null;
-        int nr = node.getNumber();
-        if (!isLoading() || isWithinBounds(nr)) {
-            result = super.addNode(node);
-            if (nr > this.maxStateNr) {
-                this.maxStateNr = nr;
-            }
-        }
-        return result;
-    }
-
-    @Override
-    protected JCell<GTS> addEdge(Edge edge) {
-        JCell<GTS> result = null;
-        int sourceNr = edge.source().getNumber();
-        int targetNr = edge.target().getNumber();
-        if (!isLoading() || sourceNr <= this.stateUpperBound
-            && targetNr <= this.stateUpperBound) {
-            if (isWithinBounds(sourceNr) || isWithinBounds(targetNr)) {
-                result = super.addEdge(edge);
-            }
-        }
-        return result;
-    }
-
     private boolean listening = true;
 
     /**
@@ -181,23 +143,18 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
      * @return the previous bound
      */
     public int setStateBound(int bound) {
-        int result = this.stateUpperBound;
-        this.stateUpperBound = bound;
+        int result = this.stateBound;
+        this.stateBound = bound;
         return result;
     }
 
-    /** Tests if a number is within the state lower and upper bounds. */
-    private boolean isWithinBounds(int nr) {
-        return nr <= this.stateUpperBound && nr >= this.stateLowerBound;
+    /** Returns the maximum state number to be displayed. */
+    public int getStateBound() {
+        return this.stateBound;
     }
 
-    /** The minimum state number to be added. */
-    private int stateLowerBound;
     /** The maximum state number to be added. */
-    private int stateUpperBound;
-
-    /** Maximum state number currently added to the JGraph. */
-    private int maxStateNr;
+    private int stateBound;
 
     /** Default name of an LTS model. */
     static public final String DEFAULT_LTS_NAME = "lts";

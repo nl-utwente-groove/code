@@ -26,10 +26,10 @@ import groove.graph.GraphRole;
 import groove.gui.jgraph.AspectJCell;
 import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJVertex;
-import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJCell;
 import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJVertex;
@@ -161,6 +161,9 @@ public class VisibleValue implements VisualValue<Boolean> {
         }
         if (!jVertex.getJGraph().isShowPartialTransitions()
             && jVertex.isTransient() && state.isDone()) {
+            return false;
+        }
+        if (jVertex.getNumber() > jVertex.getJModel().getStateBound()) {
             return false;
         }
         if (jVertex.isStart() || jVertex.isFinal() || !jVertex.isClosed()) {
