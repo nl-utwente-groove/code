@@ -24,6 +24,7 @@ import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
 import groove.util.Duo;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,10 +100,12 @@ public final class TikzStylesExtractor {
         case ADORNMENT:
             break;
         case BACKGROUND:
+            convertBackground((Color) value);
             break;
         case COLOR:
             break;
         case DASH:
+            convertDash((float[]) value);
             break;
         case EDGE_SOURCE_LABEL:
             break;
@@ -123,8 +126,10 @@ public final class TikzStylesExtractor {
         case ERROR:
             break;
         case FONT:
+            // EDUARDO: Implement this?
             break;
         case FOREGROUND:
+            convertForeground((Color) value);
             break;
         case INNER_LINE:
             break;
@@ -137,6 +142,7 @@ public final class TikzStylesExtractor {
         case LINE_STYLE:
             break;
         case LINE_WIDTH:
+            convertLineWidth((Float) value);
             break;
         case NODE_POS:
             break;
@@ -154,6 +160,28 @@ public final class TikzStylesExtractor {
             throw new IllegalArgumentException(
                 "Default fall-thought in visual key! Did you add a new style?");
         }
+    }
+
+    private void convertBackground(Color color) {
+        String c = getColorString(color);
+        add(new StyleDuo(BACKGROUND_KEY, c));
+    }
+
+    private void convertDash(float[] dash) {
+        // EZ says: for now we just ignore the dash array and set everything to
+        // be 'densely dashed' in Tikz.
+        add(new StyleDuo(DENSELY_DASHED_KEY, null));
+    }
+
+    private void convertForeground(Color color) {
+        String c = getColorString(color);
+        add(new StyleDuo(FOREGROUND_KEY, c));
+        add(new StyleDuo(TEXT_KEY, c));
+    }
+
+    private void convertLineWidth(float width) {
+        int w = (int) Math.floor(width / 2.0);
+        add(new StyleDuo(LINE_WIDTH_KEY, w + "pt"));
     }
 
     private void convertNodeShape(NodeShape shape) {
@@ -183,19 +211,27 @@ public final class TikzStylesExtractor {
         }
     }
 
+    private String getColorString(Color color) {
+        int r = color.getRed();
+        int g = color.getGreen();
+        int b = color.getBlue();
+        // {rgb:red,r;green,g;blue,b}
+        return BEGIN_COLOR + RED + r + COLOR_SEP + GREEN + g + COLOR_SEP + BLUE
+            + b + END_COLOR;
+    }
+
     private void convertEdgeEndShape(String key, EdgeEnd end) {
         switch (end) {
         case ARROW:
+        case UNFILLED:
+        case NESTING:
             add(new StyleDuo(key, ARROW_EDGE_END_VAL));
             break;
         case COMPOSITE:
             add(new StyleDuo(key, COMPOSITE_EDGE_END_VAL));
             break;
         case DOUBLE_LINE:
-            // EDUARDO: Ask Arend about this one...
-            break;
-        case NESTING:
-            // EDUARDO: Ask Arend about this one...
+            // EDUARDO: Implement this. Control Automaton. See recipes.gps
             break;
         case NONE:
             add(new StyleDuo(key, NONE_EDGE_END_VAL));
@@ -205,9 +241,6 @@ public final class TikzStylesExtractor {
             break;
         case SUBTYPE:
             add(new StyleDuo(key, SUBTYPE_EDGE_END_VAL));
-            break;
-        case UNFILLED:
-            // EDUARDO: Ask Arend about this one...
             break;
         default:
             throw new IllegalArgumentException(
@@ -219,6 +252,13 @@ public final class TikzStylesExtractor {
     private static final String BEGIN_TIKZ_STYLE = "\\tikzstyle{";
     private static final String MID_TIKZ_STYLE = "}=";
     private static final String END_TIKZ_STYLE = NEW_LINE;
+
+    private static final String BEGIN_COLOR = "{rgb,255:";
+    private static final String END_COLOR = "}";
+    private static final String RED = "red,";
+    private static final String GREEN = "green,";
+    private static final String BLUE = "blue,";
+    private static final String COLOR_SEP = ";";
 
     private static final String SHAPE_KEY = "shape";
     private static final String DIAMOND_VAL = "diamond";
@@ -234,15 +274,21 @@ public final class TikzStylesExtractor {
 
     private static final String EDGE_SOURCE_END_KEY = "<";
     private static final String EDGE_TARGET_END_KEY = ">";
-    private static final String ARROW_EDGE_END_VAL = "stealth";
+    private static final String ARROW_EDGE_END_VAL = "stealth'";
     private static final String COMPOSITE_EDGE_END_VAL = "diamond";
     private static final String NONE_EDGE_END_VAL = "space";
     private static final String SIMPLE_EDGE_END_VAL = "to";
     private static final String SUBTYPE_EDGE_END_VAL = "open triangle 60";
 
+    private static final String BACKGROUND_KEY = "fill";
+    private static final String FOREGROUND_KEY = "draw";
+    private static final String TEXT_KEY = "text";
+    private static final String LINE_WIDTH_KEY = "line width";
+
     // Extra style entries.
     private static final String SHAPE_ASPECT_KEY = "shape aspect";
     private static final String DIAMOND_ASPECT_VAL = "2";
+    private static final String DENSELY_DASHED_KEY = "densely dashed";
 
     private static final String HEADER =
         "% Package that defines the styles used in Tikz figures exported in GROOVE."
