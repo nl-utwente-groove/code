@@ -18,44 +18,32 @@ package groove.io.external.util;
 
 import static groove.grammar.aspect.AspectKind.DEFAULT;
 import static groove.grammar.aspect.AspectKind.PRODUCT;
-import groove.control.CtrlTransition;
-import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectKind;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.GraphRole;
 import groove.graph.Node;
-import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJVertex;
-import groove.gui.jgraph.CtrlJEdge;
-import groove.gui.jgraph.CtrlJVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.JVertex;
-import groove.gui.jgraph.LTSJVertex;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.gui.look.EdgeEnd;
+import groove.gui.look.Look;
 import groove.gui.look.MultiLabel;
 import groove.gui.look.VisualMap;
-import groove.util.Duo;
 
-import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Formatter;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.jgraph.graph.GraphConstants;
@@ -80,7 +68,6 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     /** The layout map of the graph. */
     private final LayoutMap layoutMap;
     /** The color map of the graph. */
-    private final Map<JVertex<G>,Color> colorMap;
     /** The builder that holds the Tikz string. */
     private final StringBuilder result;
 
@@ -98,7 +85,6 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         this.model = this.jGraph.getModel();
         this.graph = (Graph<Node,Edge>) this.model.getGraph();
         this.layoutMap = GraphInfo.getLayoutMap(this.graph);
-        this.colorMap = createColorMap();
         this.result = new StringBuilder();
     }
 
@@ -299,37 +285,6 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         return null;
     }
 
-    // BEGIN
-    // Methods to handle special colors.
-
-    private static String getColorName(JVertex<?> vertex) {
-        return "n" + vertex.getNumber() + COLOR_SUFFIX;
-    }
-
-    private static String getColorStyle(JVertex<?> vertex) {
-        return getColorName(vertex) + COLOR_STYLE_SUFFIX;
-    }
-
-    private static String getRGBString(Color color) {
-        return encloseCurly(color.getRed() + "," + color.getGreen() + ","
-            + color.getBlue());
-    }
-
-    private static String getColorDefStr(JVertex<?> vertex, Color color) {
-        return DEF_COLOR + encloseCurly(getColorName(vertex)) + RGB
-            + getRGBString(color) + ENTER;
-    }
-
-    private static String getColorStyleDefStr(JVertex<?> vertex) {
-        String c = getColorName(vertex);
-        return getColorStyle(vertex) + STYLE_DEF
-            + encloseCurly(DRAW + c + TEXT + c + FILL + c + FILL_SUFFIX) + ","
-            + ENTER;
-    }
-
-    // Methods to handle special colors.
-    // END
-
     private static boolean isNodifiedEdge(JVertex<?> node) {
         return node instanceof AspectJVertex
             && ((AspectJVertex) node).isNodeEdge();
@@ -340,31 +295,8 @@ public final class GraphToTikz<G extends Graph<?,?>> {
                 ? ((AspectJVertex) node).getNode().hasParam() : false;
     }
 
-    private static boolean isTypeGraphNode(JVertex<?> node) {
-        return node instanceof AspectJVertex
-                ? ((AspectJVertex) node).getNode().getGraphRole() == GraphRole.TYPE
-                : false;
-    }
-
-    private static boolean isControlNode(JVertex<?> node) {
-        return node instanceof CtrlJVertex;
-    }
-
-    private static boolean isControlEdge(JEdge<?> edge) {
-        return edge instanceof CtrlJEdge;
-    }
-
-    private static boolean isLTSNode(JVertex<?> node) {
-        return node instanceof LTSJVertex;
-    }
-
     private static boolean hasNonEmptyLabel(JEdge<?> edge) {
         return !edge.getVisuals().getLabel().isEmpty();
-    }
-
-    private static AspectKind getNodeKind(JVertex<?> node) {
-        return node instanceof AspectJVertex
-                ? ((AspectJVertex) node).getNode().getKind() : DEFAULT;
     }
 
     private static AspectKind getAttributeKind(JVertex<?> node) {
@@ -388,10 +320,6 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         this.result.append(sb);
     }
 
-    private boolean isSelected(JCell<G> jCell) {
-        return this.jGraph.getSelectionModel().isCellSelected(jCell);
-    }
-
     /**
      * Performs the entire conversion to Tikz and returns the resulting string.
      */
@@ -405,7 +333,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
             if (this.layoutMap != null) {
                 layout = this.layoutMap.getLayout(node);
             }
-            appendTikzNode(vertex, layout, isSelected(vertex));
+            appendTikzNode(vertex, layout);
         }
 
         Set<JCell<G>> consumedEdges = new HashSet<JCell<G>>();
@@ -416,7 +344,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
             }
             JCell<G> jCell = this.model.getJCellForEdge(edge);
             if (!consumedEdges.contains(jCell)) {
-                appendTikzEdge(jCell, layout, isSelected(jCell));
+                appendTikzEdge(jCell, layout);
                 consumedEdges.add(jCell);
             }
         }
@@ -426,62 +354,13 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         return this.result.toString();
     }
 
-    /** Returns true is the graph to be exported can have personalized colors. */
-    private boolean mayHaveExtraColors() {
-        GraphRole role = this.graph.getRole();
-        return (role == GraphRole.HOST || role == GraphRole.TYPE);
-    }
-
-    /** Creates a map for the personalized colors. */
-    private Map<JVertex<G>,Color> createColorMap() {
-        Map<JVertex<G>,Color> result = new HashMap<JVertex<G>,Color>();
-        if (mayHaveExtraColors()) {
-            for (Node node : this.graph.nodeSet()) {
-                JVertex<G> vertex = this.model.getJCellForNode(node);
-                Color color = vertex.getVisuals().getColor();
-                if (color != null) {
-                    result.put(vertex, color);
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Checks if the given vertex is a key in the color map.
-     * @return the name of the color style for the vertex if it is a key;
-     *         null, otherwise.
-     */
-    private String getVertexColorStyle(JVertex<G> vertex) {
-        if (this.colorMap.get(vertex) != null) {
-            return getColorStyle(vertex);
-        } else {
-            return null;
-        }
-    }
-
     /**
      * Appends the header to the Tikz result string. The header includes
      * additional styles local to the figure.
      */
     private void appendTikzHeader() {
         append(DOC);
-
-        // Special color definitions.
-        append(COLORS);
-        for (Entry<JVertex<G>,Color> entry : this.colorMap.entrySet()) {
-            append(getColorDefStr(entry.getKey(), entry.getValue()));
-        }
-
-        append(BEGIN_TIKZ_FIG_OPEN);
-
-        // Special color styles.
-        append(COLOR_STYLES);
-        for (JVertex<G> vertex : this.colorMap.keySet()) {
-            append(getColorStyleDefStr(vertex));
-        }
-
-        append(BEGIN_TIKZ_FIG_CLOSE);
+        append(BEGIN_TIKZ_FIG + ENTER);
     }
 
     private void appendTikzFooter() {
@@ -494,18 +373,15 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      * Converts a jGraph node to a Tikz string representation. 
      * @param node the node to be converted.
      * @param layout information regarding layout of the node. 
-     * @param selected flag to indicate that the node should be drawn as
-     *                 selected.
-     */
-    private void appendTikzNode(JVertex<G> node, JVertexLayout layout,
-            boolean selected) {
+    */
+    private void appendTikzNode(JVertex<G> node, JVertexLayout layout) {
         if (!node.getVisuals().isVisible()) {
             return;
         }
 
         append(BEGIN_NODE);
         // Styles.
-        appendNodeStyles(node, selected);
+        appendNodeStyles(node);
         // Node ID.
         appendNode(node);
 
@@ -532,7 +408,8 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     }
 
     private void appendParameterNode(AspectJVertex node) {
-        String nodeId = node.getNode().toString();
+        // EDUARDO: Restore this...
+        /*String nodeId = node.getNode().toString();
         String nr = node.getNode().getParamNr() + "";
         // New node line.
         append(BEGIN_NODE + encloseBrack(PAR_NODE_STYLE));
@@ -542,116 +419,19 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         append(encloseSpace(AT_KEYWORD));
         append(enclosePar(nodeId + NORTH_WEST));
         // Parameter number.
-        append(" " + encloseCurly(nr) + ";\n");
+        append(" " + encloseCurly(nr) + ";\n");*/
     }
 
     /**
      * Produces a string with the proper Tikz styles of a given node.
      * @param node the node to be converted.
-     * @param selected flag to indicate that the node should be drawn as selected
      */
-    private void appendNodeStyles(JVertex<G> node, boolean selected) {
+    private void appendNodeStyles(JVertex<G> node) {
         ArrayList<String> styles = new ArrayList<String>();
-
-        if (isControlNode(node)) {
-            getControlNodeStyles((CtrlJVertex) node, styles);
+        for (Look look : node.getLooks()) {
+            styles.add(look.name().toLowerCase());
         }
-
-        AspectKind nodeKind = getNodeKind(node);
-        switch (nodeKind) {
-        case ERASER:
-            styles.add(ERASER_NODE_STYLE);
-            break;
-        case CREATOR:
-            styles.add(CREATOR_NODE_STYLE);
-            break;
-        case EMBARGO:
-            styles.add(EMBARGO_NODE_STYLE);
-            break;
-        case REMARK:
-            styles.add(REMARK_NODE_STYLE);
-            break;
-        case ABSTRACT:
-            styles.add(ABS_NODE_STYLE);
-            break;
-        case EXISTS:
-        case EXISTS_OPT:
-        case FORALL:
-        case FORALL_POS:
-            styles.add(QUANTIFIER_NODE_STYLE);
-            break;
-        default:
-            if (isNodifiedEdge(node)) {
-                styles.add(NODIFIED_EDGE_STYLE);
-            } else {
-                if (node.isGrayedOut()) {
-                    styles.add(THIN_NODE_STYLE);
-                } else if (!isControlNode(node)) {
-                    styles.add(BASIC_NODE_STYLE);
-                }
-            }
-        }
-
-        if (isLTSNode(node)) {
-            getLTSNodeStyles((LTSJVertex) node, styles);
-        }
-
-        AspectKind attrKind = getAttributeKind(node);
-        if (attrKind.hasSignature()) {
-            styles.add(ATTRIBUTE_NODE_STYLE);
-        } else if (attrKind == PRODUCT) {
-            styles.add(PRODUCT_NODE_STYLE);
-        }
-
-        if (selected) {
-            if (nodeKind == AspectKind.CREATOR
-                || nodeKind == AspectKind.EMBARGO) {
-                styles.add(ULTRA_BOLD_LINE);
-            } else {
-                styles.add(BOLD_LINE);
-            }
-        }
-
-        if (isTypeGraphNode(node)) {
-            styles.add(TYPE_NODE_STYLE);
-        }
-
-        String colorStyle = getVertexColorStyle(node);
-        if (colorStyle != null) {
-            styles.add(colorStyle);
-        }
-
         append(styles.toString());
-    }
-
-    /**
-     * Produces a string with the proper Tikz styles of a given control node.
-     * @param node the control node to be converted.
-     */
-    private void getControlNodeStyles(CtrlJVertex node, ArrayList<String> styles) {
-        if (node.isStart()) {
-            styles.add(CONTROL_START_NODE_STYLE);
-        } else if (node.isFinal()) {
-            styles.add(CONTROL_SUCCESS_NODE_STYLE);
-        } else {
-            styles.add(CONTROL_NODE_STYLE);
-        }
-    }
-
-    /**
-     * Produces a string with the proper Tikz styles of a given LTS node.
-     * @param node the LTS node to be converted.
-     */
-    private void getLTSNodeStyles(LTSJVertex node, ArrayList<String> styles) {
-        if (node.isResult()) {
-            styles.add(RESULT_NODE_STYLE);
-        } else if (node.isStart()) {
-            styles.add(START_NODE_STYLE);
-        } else if (node.isFinal()) {
-            styles.add(FINAL_NODE_STYLE);
-        } else if (!node.isClosed()) {
-            styles.add(OPEN_NODE_STYLE);
-        }
     }
 
     /** Appends the node name to the result string. */
@@ -755,14 +535,11 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      * Helper method to perform safe JCell casting.
      * @param cell the edge to be converted.
      * @param layout information regarding layout of the node.
-     * @param selected flag to indicate that the edge should be drawn as
-     *                 selected.
      */
-    private void appendTikzEdge(JCell<G> cell, JEdgeLayout layout,
-            boolean selected) {
+    private void appendTikzEdge(JCell<G> cell, JEdgeLayout layout) {
         if (cell instanceof JEdge) {
             JEdge<G> edge = (JEdge<G>) cell;
-            appendTikzEdge(edge, layout, selected);
+            appendTikzEdge(edge, layout);
         }
     }
 
@@ -770,155 +547,60 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      * Converts a jGraph edge to a Tikz string representation. 
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
-     * @param selected flag to indicate that the edge should be drawn as selected
      */
-    private void appendTikzEdge(JEdge<G> edge, JEdgeLayout layout,
-            boolean selected) {
+    private void appendTikzEdge(JEdge<G> edge, JEdgeLayout layout) {
         if (!edge.getVisuals().isVisible()) {
             return;
         }
 
-        Duo<String> styles = getEdgeStyles(edge, selected);
-        String edgeStyle = styles.one();
-        String labStyle = styles.two();
-
         append(BEGIN_EDGE);
-        append(encloseBrack(edgeStyle));
+        appendEdgeStyle(edge);
 
         if (layout != null) {
             switch (layout.getLineStyle()) {
             case ORTHOGONAL:
-                appendOrthogonalLayout(edge, layout, labStyle);
+                appendOrthogonalLayout(edge, layout);
                 break;
             case BEZIER:
-                appendBezierLayout(edge, layout, labStyle);
+                appendBezierLayout(edge, layout);
                 break;
             case SPLINE:
-                appendSplineLayout(edge, layout, labStyle);
+                appendSplineLayout(edge, layout);
                 break;
             case MANHATTAN:
-                appendManhattanLayout(edge, layout, labStyle);
+                appendManhattanLayout(edge, layout);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown line style!");
             }
         } else {
-            appendDefaultLayout(edge, labStyle);
+            appendDefaultLayout(edge);
         }
     }
 
     /**
      * Find the proper Tikz styles for a given edge.
      * @param edge the edge to be analysed.
-     * @param selected flag to indicate that the edge should be drawn as selected
      */
-    private Duo<String> getEdgeStyles(JEdge<G> edge, boolean selected) {
-        Duo<String> styles = new Duo<String>("", "");
-
-        if (isControlEdge(edge)) {
-            getControlEdgeStyles((CtrlJEdge) edge, styles);
+    private void appendEdgeStyle(JEdge<G> edge) {
+        ArrayList<String> styles = new ArrayList<String>();
+        for (Look look : edge.getLooks()) {
+            styles.add(look.name().toLowerCase());
         }
-
-        AspectEdge aspectEdge =
-            edge instanceof AspectJEdge ? ((AspectJEdge) edge).getEdge() : null;
-        AspectKind edgeKind =
-            aspectEdge == null ? DEFAULT : aspectEdge.getKind();
-        switch (edgeKind) {
-        case ERASER:
-            styles.setOne(ERASER_EDGE_STYLE);
-            styles.setTwo(ERASER_LABEL_STYLE);
-            break;
-        case CREATOR:
-            styles.setOne(CREATOR_EDGE_STYLE);
-            styles.setTwo(CREATOR_LABEL_STYLE);
-            break;
-        case EMBARGO:
-        case CONNECT:
-            styles.setOne(EMBARGO_EDGE_STYLE);
-            styles.setTwo(EMBARGO_LABEL_STYLE);
-            break;
-        case REMARK:
-            styles.setOne(REMARK_EDGE_STYLE);
-            styles.setTwo(REMARK_LABEL_STYLE);
-            break;
-        case SUBTYPE:
-            styles.setOne(INHERITANCE_EDGE_STYLE);
-            styles.setTwo(INHERITANCE_LABEL_STYLE);
-            break;
-        case ABSTRACT:
-            styles.setOne(ABS_EDGE_STYLE);
-            styles.setTwo(ABS_LABEL_STYLE);
-            break;
-        case NESTED:
-            styles.setOne(QUANTIFIER_EDGE_STYLE);
-            styles.setTwo(BASIC_LABEL_STYLE);
-            break;
-        default:
-            if (aspectEdge != null && aspectEdge.isComposite()) {
-                styles.setOne(COMPOSITE_EDGE_STYLE);
-            } else {
-                styles.setOne(BASIC_EDGE_STYLE);
-            }
-            styles.setTwo(BASIC_LABEL_STYLE);
-        }
-        if (edge.isGrayedOut()) {
-            styles.setOne(THIN_EDGE_STYLE);
-            styles.setTwo(THIN_LABEL_STYLE);
-        }
-
-        if (selected) {
-            if (edgeKind == AspectKind.CREATOR
-                || edgeKind == AspectKind.EMBARGO) {
-                styles.setOne(styles.one() + ", " + ULTRA_BOLD_LINE);
-            } else {
-                styles.setOne(styles.one() + ", " + BOLD_LINE);
-            }
-        }
-
-        // Check if we should draw the end arrow of the edge.
-        VisualMap visuals = edge.getVisuals();
-        if (visuals.getEdgeTargetShape() == EdgeEnd.NONE) {
-            styles.setOne(styles.one() + ", " + UNDIRECTED_EDGE_STYLE);
-        } else if (visuals.getEdgeSourceShape() != EdgeEnd.NONE) {
-            styles.setOne(styles.one() + ", " + BIDIRECTIONAL_EDGE_STYLE);
-        }
-
-        // Check if the edge has a special color.
-        String colorStyle = getVertexColorStyle(edge.getSourceVertex());
-        if (colorStyle != null) {
-            styles.setOne(styles.one() + ", " + colorStyle + ", fill="
-                + getColorName(edge.getSourceVertex()));
-        }
-
-        return styles;
+        append(styles.toString());
     }
 
     /**
-     * Find the proper Tikz styles for a given control edge.
-     * @param edge the control edge to be analysed.
-     */
-    private void getControlEdgeStyles(CtrlJEdge edge, Duo<String> styles) {
-        CtrlTransition t = edge.getEdge();
-        if (!t.label().getGuard().isEmpty()) {
-            styles.setOne(CONTROL_FAILURE_EDGE_STYLE);
-        } else {
-            styles.setOne(CONTROL_EDGE_STYLE);
-        }
-        styles.setTwo(CONTROL_LABEL_STYLE);
-    }
-
-    /**
-     * Creates an edge with a default layout. The edge is drawn as a straight
-     * line from source to target node and the label is placed half-way.
-     * @param edge the edge to be converted.
-     * @param labStyle a string describing the style to be used in the label.
-     */
-    private void appendDefaultLayout(JEdge<G> edge, String labStyle) {
+    * Creates an edge with a default layout. The edge is drawn as a straight
+    * line from source to target node and the label is placed half-way.
+    * @param edge the edge to be converted.
+    */
+    private void appendDefaultLayout(JEdge<G> edge) {
         JVertex<G> srcVertex = edge.getSourceVertex();
         JVertex<G> tgtVertex = edge.getTargetVertex();
         appendSourceNode(srcVertex, tgtVertex);
         append(encloseSpace(DOUBLE_DASH));
-        appendEdgeLabelInPath(edge, labStyle);
+        appendEdgeLabelInPath(edge);
         appendMultiplicities(edge);
         appendTargetNode(srcVertex, tgtVertex);
         append(END_EDGE);
@@ -930,11 +612,10 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      * and replaced by Tikz node names and we let Tikz find the anchors.
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
-     * @param labStyle a string describing the style to be used in the label.
      * @param connection the string with the type of Tikz connection to be used.
      */
     private void appendOrthogonalLayout(JEdge<G> edge, JEdgeLayout layout,
-            String labStyle, String connection) {
+            String connection) {
 
         JVertex<G> srcVertex = edge.getSourceVertex();
         JVertex<G> tgtVertex = edge.getTargetVertex();
@@ -969,7 +650,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
             appendNode(tgtVertex, points.get(lastPoint));
         }
         append(END_PATH);
-        appendEdgeLabel(edge, layout, labStyle, points);
+        appendEdgeLabel(edge, layout, points);
         append(END_EDGE);
         appendMultiplicities(edge, points);
     }
@@ -980,11 +661,9 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      * and replaced by Tikz node names and we let Tikz find the anchors.
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
-     * @param labStyle a string describing the style to be used in the label.
      */
-    private void appendOrthogonalLayout(JEdge<G> edge, JEdgeLayout layout,
-            String labStyle) {
-        appendOrthogonalLayout(edge, layout, labStyle, DOUBLE_DASH);
+    private void appendOrthogonalLayout(JEdge<G> edge, JEdgeLayout layout) {
+        appendOrthogonalLayout(edge, layout, DOUBLE_DASH);
     }
 
     /**
@@ -995,10 +674,8 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      * from the bezier lines.
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
-     * @param labStyle a string describing the style to be used in the label.
      */
-    private void appendBezierLayout(JEdge<G> edge, JEdgeLayout layout,
-            String labStyle) {
+    private void appendBezierLayout(JEdge<G> edge, JEdgeLayout layout) {
         JVertex<G> srcVertex = edge.getSourceVertex();
         JVertex<G> tgtVertex = edge.getTargetVertex();
         List<Point2D> points = layout.getPoints();
@@ -1010,7 +687,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         if (bPoints == null) {
             // The edge is with a bezier style but it does not have any bezier
             // points, just use standard layout.
-            appendDefaultLayout(edge, labStyle);
+            appendDefaultLayout(edge);
             return;
         }
 
@@ -1091,7 +768,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         }
 
         append(END_PATH);
-        appendEdgeLabel(edge, layout, labStyle, points);
+        appendEdgeLabel(edge, layout, points);
         append(END_EDGE);
         appendMultiplicities(edge, points);
     }
@@ -1100,13 +777,11 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      * This is not implemented yet. The Bezier style is used instead.
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
-     * @param labStyle a string describing the style to be used in the label.
      */
-    private void appendSplineLayout(JEdge<G> edge, JEdgeLayout layout,
-            String labStyle) {
+    private void appendSplineLayout(JEdge<G> edge, JEdgeLayout layout) {
         System.err.println("Sorry, the SPLINE line style is not yet "
             + "supported, using BEZIER style...");
-        appendBezierLayout(edge, layout, labStyle);
+        appendBezierLayout(edge, layout);
     }
 
     /**
@@ -1115,11 +790,9 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      * and replaced by Tikz node names and we let Tikz find the anchors.
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
-     * @param labStyle a string describing the style to be used in the label.
      */
-    private void appendManhattanLayout(JEdge<G> edge, JEdgeLayout layout,
-            String labStyle) {
-        appendOrthogonalLayout(edge, layout, labStyle, ANGLE);
+    private void appendManhattanLayout(JEdge<G> edge, JEdgeLayout layout) {
+        appendOrthogonalLayout(edge, layout, ANGLE);
     }
 
     /**
@@ -1200,14 +873,13 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      * placement requirements.
      */
     private void appendEdgeLabel(JEdge<G> edge, JEdgeLayout layout,
-            String labStyle, List<Point2D> points) {
-        if (!labStyle.equals(INHERITANCE_LABEL_STYLE) && hasNonEmptyLabel(edge)) {
+            List<Point2D> points) {
+        if (hasNonEmptyLabel(edge)) {
             Point2D labelPos =
                 convertRelativeLabelPositionToAbsolute(
                     layout.getLabelPosition(), points);
             // Extra path for the label position.
             append(BEGIN_NODE);
-            append(encloseBrack(labStyle));
             append(encloseSpace(AT_KEYWORD));
             appendPoint(labelPos);
             appendEdgeLabel(edge);
@@ -1256,7 +928,6 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         Point2D inMultPos = convertRelativeLabelPositionToAbsolute(pos, points);
         // Extra path for the label position.
         append(BEGIN_NODE);
-        append(encloseBrack(BASIC_LABEL_STYLE));
         append(encloseSpace(AT_KEYWORD));
         appendPoint(inMultPos);
         append(encloseCurly(mult.toString()));
@@ -1264,10 +935,9 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     }
 
     /** Appends the edge label along the path that is being drawn. */
-    private void appendEdgeLabelInPath(JEdge<G> edge, String labStyle) {
-        if (!labStyle.equals(INHERITANCE_LABEL_STYLE) && hasNonEmptyLabel(edge)) {
+    private void appendEdgeLabelInPath(JEdge<G> edge) {
+        if (hasNonEmptyLabel(edge)) {
             append(NODE);
-            append(encloseBrack(labStyle));
             appendEdgeLabel(edge);
         }
     }
@@ -1302,13 +972,9 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     // ------------------------------------------------------------------------
 
     private static final String ENTER = "\n";
-    private static final String BEGIN_TIKZ_FIG_OPEN = "\\begin{tikzpicture}["
-        + ENTER;
-    private static final String BEGIN_TIKZ_FIG_CLOSE = "scale=\\tikzscale]"
-        + ENTER;
-    private static final String END_TIKZ_FIG = "\\userdefinedmacro" + ENTER
-        + "\\end{tikzpicture}" + ENTER
-        + "\\renewcommand{\\userdefinedmacro}{\\relax}";
+    private static final String BEGIN_TIKZ_FIG =
+        "\\begin{tikzpicture}[scale=\\tikzscale]";
+    private static final String END_TIKZ_FIG = "\\end{tikzpicture}";
     private static final String BEGIN_NODE = "\\node";
     private static final String AT_KEYWORD = "at";
     private static final String BEGIN_NODE_LAB = " {\\ml{";
@@ -1320,53 +986,8 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     private static final String END_PATH = ";" + ENTER;
     private static final String END_EDGE = END_PATH;
     private static final String NODE = "node";
-    private static final String BASIC_NODE_STYLE = "node";
-    private static final String BASIC_EDGE_STYLE = "edge";
-    private static final String BASIC_LABEL_STYLE = "lab";
-    private static final String ERASER_NODE_STYLE = "delnode";
-    private static final String ERASER_EDGE_STYLE = "deledge";
-    private static final String ERASER_LABEL_STYLE = "dellab";
-    private static final String CREATOR_NODE_STYLE = "newnode";
-    private static final String CREATOR_EDGE_STYLE = "newedge";
-    private static final String CREATOR_LABEL_STYLE = "newlab";
-    private static final String EMBARGO_NODE_STYLE = "nacnode";
-    private static final String EMBARGO_EDGE_STYLE = "nacedge";
-    private static final String EMBARGO_LABEL_STYLE = "naclab";
-    private static final String REMARK_NODE_STYLE = "remnode";
-    private static final String REMARK_EDGE_STYLE = "remedge";
-    private static final String REMARK_LABEL_STYLE = "remlab";
-    private static final String THIN_NODE_STYLE = "thinnode";
-    private static final String THIN_EDGE_STYLE = "thinedge";
-    private static final String THIN_LABEL_STYLE = "thinlab";
-    private static final String NODIFIED_EDGE_STYLE = "nodified";
-    private static final String COMPOSITE_EDGE_STYLE = "partedge";
-    private static final String TYPE_NODE_STYLE = "type";
-    private static final String BIDIRECTIONAL_EDGE_STYLE = "bidir";
-    private static final String ABS_NODE_STYLE = "absnode";
-    private static final String ABS_EDGE_STYLE = "absedge";
-    private static final String ABS_LABEL_STYLE = "abslab";
-    private static final String ATTRIBUTE_NODE_STYLE = "attr";
-    private static final String PRODUCT_NODE_STYLE = "prod";
-    private static final String QUANTIFIER_NODE_STYLE = "quantnode";
-    private static final String QUANTIFIER_EDGE_STYLE = "quantedge";
-    private static final String PAR_NODE_STYLE = "parnode";
-    private static final String CONTROL_NODE_STYLE = "cnode";
-    private static final String CONTROL_START_NODE_STYLE = "cstart";
-    private static final String CONTROL_SUCCESS_NODE_STYLE = "csuccess";
-    private static final String CONTROL_EDGE_STYLE = "cedge";
-    private static final String CONTROL_FAILURE_EDGE_STYLE = "cfailure";
-    private static final String UNDIRECTED_EDGE_STYLE = "-";
-    private static final String INHERITANCE_EDGE_STYLE = "subedge";
-    private static final String INHERITANCE_LABEL_STYLE = "none";
-    private static final String CONTROL_LABEL_STYLE = "clab";
-    private static final String RESULT_NODE_STYLE = "result";
-    private static final String FINAL_NODE_STYLE = "final";
-    private static final String START_NODE_STYLE = "start";
-    private static final String OPEN_NODE_STYLE = "open";
     private static final String IN_MULT_LABEL_STYLE = "inmultlab";
     private static final String OUT_MULT_LABEL_STYLE = "outmultlab";
-    private static final String BOLD_LINE = "bold";
-    private static final String ULTRA_BOLD_LINE = "ultrabold";
     private static final String DOUBLE_DASH = "--";
     private static final String ANGLE = "-|";
     private static final String BEGIN_CONTROLS = ".. controls ";
@@ -1376,21 +997,8 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     private static final String SOUTH = ".south -| ";
     private static final String EAST = ".east |- ";
     private static final String WEST = ".west |- ";
-    private static final String NORTH_WEST = ".north west";
-    private static final String PAR_NODE_SUFFIX = "p";
-    private static final String COLOR_SUFFIX = "c";
-    private static final String COLOR_STYLE_SUFFIX = "s";
-    private static final String FILL_SUFFIX = "!10";
-    private static final String STYLE_DEF = "/.style=";
-    private static final String DRAW = "draw=";
-    private static final String FILL = ",fill=";
-    private static final String TEXT = ",text=";
-    private static final String DEF_COLOR = "\\definecolor";
-    private static final String RGB = "{RGB}";
     private static final String DOC = "% To use this figure in your LaTeX "
         + "document" + ENTER
         + "% import the package groove/resources/groove2tikz.sty" + ENTER + "%"
         + ENTER;
-    private static final String COLORS = "% Special colors" + ENTER;
-    private static final String COLOR_STYLES = "% Special color styles" + ENTER;
 }
