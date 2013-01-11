@@ -34,7 +34,6 @@ import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.gui.look.Look;
 import groove.gui.look.MultiLabel;
-import groove.gui.look.VisualMap;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -116,14 +115,6 @@ public final class GraphToTikz<G extends Graph<?,?>> {
 
     private static String enclosePar(String string) {
         return enclose(string, "(", ")");
-    }
-
-    private static String encloseBrack(String string) {
-        return enclose(string, "[", "]");
-    }
-
-    private static String encloseCurly(String string) {
-        return enclose(string, "{", "}");
     }
 
     private static String encloseSpace(String string) {
@@ -296,6 +287,8 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     }
 
     private static boolean hasNonEmptyLabel(JEdge<?> edge) {
+        MultiLabel label = edge.getVisuals().getLabel();
+        System.out.println(label);
         return !edge.getVisuals().getLabel().isEmpty();
     }
 
@@ -335,6 +328,8 @@ public final class GraphToTikz<G extends Graph<?,?>> {
             }
             appendTikzNode(vertex, layout);
         }
+
+        append(ENTER);
 
         Set<JCell<G>> consumedEdges = new HashSet<JCell<G>>();
         for (Edge edge : this.graph.edgeSet()) {
@@ -387,7 +382,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
 
         // Node Coordinates.
         if (layout != null) {
-            append(encloseSpace(AT_KEYWORD));
+            append(AT_KEYWORD + " ");
             appendPoint(getCenterPoint(layout.getBounds()));
         }
 
@@ -428,8 +423,14 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      */
     private void appendNodeStyles(JVertex<G> node) {
         ArrayList<String> styles = new ArrayList<String>();
+        styles.add(""); // Placeholder for the main style.
         for (Look look : node.getLooks()) {
-            styles.add(look.name().toLowerCase());
+            if (TikzStylesExtractor.mainLooks.contains(look)) {
+                styles.set(0, look.name().toLowerCase()
+                    + TikzStylesExtractor.NODE_SUFFIX);
+            } else {
+                styles.add(look.name().toLowerCase());
+            }
         }
         append(styles.toString());
     }
@@ -576,6 +577,8 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         } else {
             appendDefaultLayout(edge);
         }
+
+        append(END_EDGE);
     }
 
     /**
@@ -584,8 +587,14 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      */
     private void appendEdgeStyle(JEdge<G> edge) {
         ArrayList<String> styles = new ArrayList<String>();
+        styles.add(""); // Placeholder for the main style.
         for (Look look : edge.getLooks()) {
-            styles.add(look.name().toLowerCase());
+            if (TikzStylesExtractor.mainLooks.contains(look)) {
+                styles.set(0, look.name().toLowerCase()
+                    + TikzStylesExtractor.EDGE_SUFFIX);
+            } else {
+                styles.add(look.name().toLowerCase());
+            }
         }
         append(styles.toString());
     }
@@ -601,9 +610,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         appendSourceNode(srcVertex, tgtVertex);
         append(encloseSpace(DOUBLE_DASH));
         appendEdgeLabelInPath(edge);
-        appendMultiplicities(edge);
         appendTargetNode(srcVertex, tgtVertex);
-        append(END_EDGE);
     }
 
     /**
@@ -651,8 +658,6 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         }
         append(END_PATH);
         appendEdgeLabel(edge, layout, points);
-        append(END_EDGE);
-        appendMultiplicities(edge, points);
     }
 
     /**
@@ -769,8 +774,6 @@ public final class GraphToTikz<G extends Graph<?,?>> {
 
         append(END_PATH);
         appendEdgeLabel(edge, layout, points);
-        append(END_EDGE);
-        appendMultiplicities(edge, points);
     }
 
     /**
@@ -850,6 +853,14 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         }
     }
 
+    /** Appends the edge label along the path that is being drawn. */
+    private void appendEdgeLabelInPath(JEdge<G> edge) {
+        if (hasNonEmptyLabel(edge)) {
+            append(NODE);
+            appendEdgeLabel(edge);
+        }
+    }
+
     private void appendEdgeLabel(JEdge<G> edge) {
         if (hasNonEmptyLabel(edge)) {
             MultiLabel lines = edge.getVisuals().getLabel();
@@ -879,65 +890,9 @@ public final class GraphToTikz<G extends Graph<?,?>> {
                 convertRelativeLabelPositionToAbsolute(
                     layout.getLabelPosition(), points);
             // Extra path for the label position.
-            append(BEGIN_NODE);
+            append(NODE);
             append(encloseSpace(AT_KEYWORD));
             appendPoint(labelPos);
-            appendEdgeLabel(edge);
-        }
-    }
-
-    /**
-     * Places the multiplicities (if any) along an edge, aligned to the left, 
-     * at the "very near end" and "very near start" positions.
-     */
-    private void appendMultiplicities(JEdge<G> edge) {
-        VisualMap visuals = edge.getVisuals();
-        String sourceLabel = visuals.getEdgeSourceLabel();
-        if (sourceLabel != null) {
-            append(" ");
-            append(NODE);
-            append(encloseBrack(OUT_MULT_LABEL_STYLE));
-            append(encloseCurly(sourceLabel));
-        }
-        String targetLabel = visuals.getEdgeTargetLabel();
-        if (targetLabel != null) {
-            append(" ");
-            append(NODE);
-            append(encloseBrack(IN_MULT_LABEL_STYLE));
-            append(encloseCurly(targetLabel));
-        }
-    }
-
-    /**
-     * Creates extra paths to place the multiplicities.
-     */
-    private void appendMultiplicities(JEdge<G> edge, List<Point2D> points) {
-        VisualMap visuals = edge.getVisuals();
-        String sourceLabel = visuals.getEdgeSourceLabel();
-        if (sourceLabel != null) {
-            appendMultiplicity(sourceLabel, visuals.getEdgeSourcePos(), points);
-        }
-        String targetLabel = visuals.getEdgeSourceLabel();
-        if (targetLabel != null) {
-            appendMultiplicity(targetLabel, visuals.getEdgeTargetPos(), points);
-        }
-    }
-
-    private void appendMultiplicity(String mult, Point2D pos,
-            List<Point2D> points) {
-        Point2D inMultPos = convertRelativeLabelPositionToAbsolute(pos, points);
-        // Extra path for the label position.
-        append(BEGIN_NODE);
-        append(encloseSpace(AT_KEYWORD));
-        appendPoint(inMultPos);
-        append(encloseCurly(mult.toString()));
-        append(END_EDGE);
-    }
-
-    /** Appends the edge label along the path that is being drawn. */
-    private void appendEdgeLabelInPath(JEdge<G> edge) {
-        if (hasNonEmptyLabel(edge)) {
-            append(NODE);
             appendEdgeLabel(edge);
         }
     }
@@ -983,11 +938,9 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     private static final String END_EDGE_LAB = "}}";
     private static final String EMPTY_NODE_LAB = "{};" + ENTER;
     private static final String BEGIN_EDGE = "\\path";
-    private static final String END_PATH = ";" + ENTER;
-    private static final String END_EDGE = END_PATH;
-    private static final String NODE = "node";
-    private static final String IN_MULT_LABEL_STYLE = "inmultlab";
-    private static final String OUT_MULT_LABEL_STYLE = "outmultlab";
+    private static final String END_PATH = ENTER;
+    private static final String END_EDGE = ";" + ENTER;
+    private static final String NODE = "node[lab]";
     private static final String DOUBLE_DASH = "--";
     private static final String ANGLE = "-|";
     private static final String BEGIN_CONTROLS = ".. controls ";
