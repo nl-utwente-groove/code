@@ -148,16 +148,10 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
             String color;
             switch (type) {
             case CREATOR:
-                color = "\\green";
-                break;
             case EMBARGO:
-                color = "\\red";
-                break;
             case ERASER:
-                color = "\\blue";
-                break;
             case REMARK:
-                color = "\\orange";
+                color = type.name().toLowerCase() + "_c";
                 break;
             default:
                 color = null;
@@ -210,6 +204,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
         addChar('#', "\\#", Mode.BOTH);
         addChar('$', "\\$", Mode.BOTH);
         addChar('^', "\\^{}", Mode.TEXT);
+        addChar('\n', "\\\\", Mode.BOTH);
         for (char c = '0'; c <= '9'; c++) {
             addChar(c, "" + c, Mode.BOTH);
         }

@@ -86,6 +86,12 @@ public class MultiLabel {
         return this.parts.isEmpty();
     }
 
+    /** Indicates if the list of lines contains only an Empty line. */
+    public boolean isEmptyLine() {
+        return this.parts.size() == 1
+            && this.parts.keySet().iterator().next().isEmpty();
+    }
+
     /**
      * Computes a string representation of this label, for a given renderer
      * and with or without orientation decorations. 
