@@ -80,6 +80,7 @@ import static groove.gui.look.VisualKey.POINTS;
 import static groove.gui.look.VisualKey.VISIBLE;
 import groove.gui.jgraph.JAttr;
 import groove.gui.look.EdgeEnd;
+import groove.gui.look.Line.ColorType;
 import groove.gui.look.Look;
 import groove.gui.look.NodeShape;
 import groove.gui.look.Values;
@@ -103,21 +104,22 @@ public final class TikzStylesExtractor {
 
     public static final Set<Look> mainLooks = EnumSet.of(BASIC, CREATOR,
         CONNECT, DATA, EMBARGO, ERASER, NESTING, PRODUCT, REMARK, TYPE,
-        ABSTRACT, SUBTYPE);
+        ABSTRACT, SUBTYPE, STATE, TRANS);
 
     private static final Set<Look> mainNodeLooks = EnumSet.of(BASIC, CREATOR,
-        DATA, EMBARGO, ERASER, NESTING, PRODUCT, REMARK, TYPE, ABSTRACT);
+        DATA, EMBARGO, ERASER, NESTING, PRODUCT, REMARK, TYPE, ABSTRACT, STATE);
 
     private static final Set<Look> mainEdgeLooks = EnumSet.of(BASIC, CREATOR,
-        CONNECT, EMBARGO, ERASER, NESTING, REMARK, TYPE, ABSTRACT, SUBTYPE);
+        CONNECT, EMBARGO, ERASER, NESTING, REMARK, TYPE, ABSTRACT, SUBTYPE,
+        TRANS);
 
     private static final Set<Look> modifyingLooks = EnumSet.of(NODIFIED,
-        BIDIRECTIONAL, NO_ARROW, COMPOSITE);
+        BIDIRECTIONAL, NO_ARROW, COMPOSITE, ERROR_STATE, START, OPEN, FINAL,
+        RESULT, TRANSIENT, ABSENT, ACTIVE);
 
     private static final Set<Look> unusedLooks = EnumSet.of(REGULAR, ADDER,
         CTRL_TRANSIENT_STATE, CTRL_OMEGA_TRANS, CTRL_EXIT_TRANS,
-        CTRL_OMEGA_EXIT_TRANS, STATE, ERROR_STATE, START, TRANS, OPEN, FINAL,
-        RESULT, TRANSIENT, ABSENT, ACTIVE, PATTERN, EQUIV_CLASS, GRAYED_OUT);
+        CTRL_OMEGA_EXIT_TRANS, PATTERN, EQUIV_CLASS, GRAYED_OUT);
 
     private static final Set<VisualKey> usedKeys = EnumSet.of(BACKGROUND, DASH,
         EDGE_SOURCE_SHAPE, EDGE_TARGET_SHAPE, FOREGROUND, LINE_WIDTH,
@@ -172,12 +174,25 @@ public final class TikzStylesExtractor {
 
     private void run() {
         append(HEADER);
+        appendMainColors();
         appendMainStyles();
         appendModifyingStyles();
         append(FOOTER);
     }
 
+    private void appendMainColors() {
+        for (ColorType cType : ColorType.values()) {
+            Color color = cType.getColor();
+            if (color != null) {
+                append("\\definecolor{" + cType.name().toLowerCase()
+                    + "_c}{RGB}" + Style.getColorStringDefinition(color)
+                    + NEW_LINE);
+            }
+        }
+    }
+
     private void appendMainStyles() {
+        append(MAIN_STYLE_COMMENT);
         for (Look mainLook : mainLooks) {
             Style style = new Style(mainLook);
             VisualMap visualMap = mainLook.getVisuals();
@@ -208,9 +223,11 @@ public final class TikzStylesExtractor {
         // EZ says: this is a very ad-hoc implementation but I couldn't think
         // of a better way to do this.
         String edgeEnd = Style.getEdgeEndShape(ARROW);
+        Color foreground = look.getVisuals().getForeground();
+        Color background = look.getVisuals().getBackground();
         switch (look) {
         case NODIFIED:
-            styles.add(new StyleDuo(SHAPE_KEY, ELLIPSE_VAL));
+            Style.writeNodeShape(NodeShape.ELLIPSE, styles);
             styles.add(new StyleDuo("minimum size", "4pt"));
             break;
         case BIDIRECTIONAL:
@@ -222,6 +239,26 @@ public final class TikzStylesExtractor {
         case COMPOSITE:
             String srcEdgeEnd = Style.getEdgeEndShape(EdgeEnd.COMPOSITE);
             styles.add(new StyleDuo(srcEdgeEnd + "-" + edgeEnd, null));
+            break;
+        case ERROR_STATE:
+            Style.writeForegroundColor(foreground, styles);
+            break;
+        case START:
+            Style.writeForegroundColor(foreground, styles);
+            Style.writeBackgroundColor(background, styles);
+            break;
+        case OPEN:
+        case FINAL:
+        case RESULT:
+            Style.writeBackgroundColor(background, styles);
+            break;
+        case TRANSIENT:
+            Style.writeNodeShape(NodeShape.DIAMOND, styles);
+            Style.writeForegroundColor(foreground, styles);
+            break;
+        case ABSENT: // TODO
+            break;
+        case ACTIVE: // TODO
             break;
         default:
             throw new IllegalArgumentException("Invalid modifying look!");
@@ -276,13 +313,12 @@ public final class TikzStylesExtractor {
             + NEW_LINE
             + NEW_LINE
             + "\\tikzstyle every node=[font=\\tikzfontsize\\sffamily, inner sep=2.5pt, minimum size=9pt]"
-            + NEW_LINE
-            + NEW_LINE
-            + "% Extra style for edge labels."
-            + NEW_LINE
-            + "\\tikzstyle{lab}=[fill=white, inner sep=1pt]"
-            + NEW_LINE
-            + NEW_LINE
+            + NEW_LINE + NEW_LINE + "% Extra style for edge labels." + NEW_LINE
+            + "\\tikzstyle{lab}=[fill=white, inner sep=1pt]" + NEW_LINE
+            + NEW_LINE + "% Default colors for TeX strings." + NEW_LINE;
+
+    private static final String MAIN_STYLE_COMMENT =
+        NEW_LINE
             + "% Main styles. (Should be used first in a node and edge definition.)"
             + NEW_LINE;
 
@@ -387,34 +423,7 @@ public final class TikzStylesExtractor {
         }
 
         private void writeNodeShape() {
-            final String ROUNDED_CORNERS_KEY = "rounded corners";
-
-            switch (this.nodeShape) {
-            case DIAMOND:
-                this.nodes.add(new StyleDuo(SHAPE_KEY, DIAMOND_VAL));
-                this.nodes.add(new StyleDuo("shape aspect", "2"));
-                break;
-            case ELLIPSE:
-                this.nodes.add(new StyleDuo(SHAPE_KEY, ELLIPSE_VAL));
-                break;
-            case OVAL:
-                this.nodes.add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
-                this.nodes.add(new StyleDuo(ROUNDED_CORNERS_KEY,
-                    JAttr.STRONG_ARC_SIZE / 5 + "pt"));
-                break;
-            case RECTANGLE:
-                this.nodes.add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
-                this.nodes.add(new StyleDuo(ROUNDED_CORNERS_KEY, "0pt"));
-                break;
-            case ROUNDED:
-                this.nodes.add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
-                this.nodes.add(new StyleDuo(ROUNDED_CORNERS_KEY,
-                    JAttr.NORMAL_ARC_SIZE / 5 + "pt"));
-                break;
-            default:
-                throw new IllegalArgumentException(
-                    "Default fall-thought in node shape! Did you add a new node shape?");
-            }
+            writeNodeShape(this.nodeShape, this.nodes);
         }
 
         private void writeDash(List<StyleDuo> list) {
@@ -433,14 +442,11 @@ public final class TikzStylesExtractor {
         }
 
         private void writeForegroundColor() {
-            String c = getColorString(this.foreground);
-            this.nodes.add(new StyleDuo("draw", c));
-            this.nodes.add(new StyleDuo("text", c));
+            writeForegroundColor(this.foreground, this.nodes);
         }
 
         private void writeBackgroundColor() {
-            String c = getColorString(this.background);
-            this.nodes.add(new StyleDuo("fill", c));
+            writeBackgroundColor(this.background, this.nodes);
         }
 
         private void writeDraw() {
@@ -456,6 +462,17 @@ public final class TikzStylesExtractor {
         private void writeEdgeColor() {
             String c = getColorString(this.foreground);
             this.edges.add(new StyleDuo("color", c));
+        }
+
+        static void writeForegroundColor(Color foreground, List<StyleDuo> styles) {
+            String c = getColorString(foreground);
+            styles.add(new StyleDuo("draw", c));
+            styles.add(new StyleDuo("text", c));
+        }
+
+        static void writeBackgroundColor(Color background, List<StyleDuo> styles) {
+            String c = getColorString(background);
+            styles.add(new StyleDuo("fill", c));
         }
 
         static String getEdgeEndShape(EdgeEnd end) {
@@ -481,13 +498,52 @@ public final class TikzStylesExtractor {
             }
         }
 
-        private String getColorString(Color color) {
+        static void writeNodeShape(NodeShape nodeShape, List<StyleDuo> styles) {
+            final String ROUNDED_CORNERS_KEY = "rounded corners";
+
+            switch (nodeShape) {
+            case DIAMOND:
+                styles.add(new StyleDuo(SHAPE_KEY, DIAMOND_VAL));
+                styles.add(new StyleDuo("shape aspect", "2"));
+                break;
+            case ELLIPSE:
+                styles.add(new StyleDuo(SHAPE_KEY, ELLIPSE_VAL));
+                break;
+            case OVAL:
+                styles.add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
+                styles.add(new StyleDuo(ROUNDED_CORNERS_KEY,
+                    JAttr.STRONG_ARC_SIZE / 5 + "pt"));
+                break;
+            case RECTANGLE:
+                styles.add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
+                styles.add(new StyleDuo(ROUNDED_CORNERS_KEY, "0pt"));
+                break;
+            case ROUNDED:
+                styles.add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
+                styles.add(new StyleDuo(ROUNDED_CORNERS_KEY,
+                    JAttr.NORMAL_ARC_SIZE / 5 + "pt"));
+                break;
+            default:
+                throw new IllegalArgumentException(
+                    "Default fall-thought in node shape! Did you add a new node shape?");
+            }
+        }
+
+        static String getColorString(Color color) {
             int r = color.getRed();
             int g = color.getGreen();
             int b = color.getBlue();
             // {rgb:red,r;green,g;blue,b}
             return "{rgb,255:red," + r + ";" + "green," + g + ";" + "blue," + b
                 + "}";
+        }
+
+        static String getColorStringDefinition(Color color) {
+            int r = color.getRed();
+            int g = color.getGreen();
+            int b = color.getBlue();
+            // {r,g,b}
+            return "{" + r + "," + g + "," + b + "}";
         }
     }
 

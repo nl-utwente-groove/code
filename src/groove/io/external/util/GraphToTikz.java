@@ -287,9 +287,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     }
 
     private static boolean hasNonEmptyLabel(JEdge<?> edge) {
-        MultiLabel label = edge.getVisuals().getLabel();
-        System.out.println(label);
-        return !edge.getVisuals().getLabel().isEmpty();
+        return !edge.getVisuals().getLabel().isEmptyLine();
     }
 
     private static AspectKind getAttributeKind(JVertex<?> node) {
