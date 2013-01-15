@@ -102,24 +102,26 @@ import java.util.Set;
  */
 public final class TikzStylesExtractor {
 
+    /** */
     public static final Set<Look> mainLooks = EnumSet.of(BASIC, CREATOR,
         CONNECT, DATA, EMBARGO, ERASER, NESTING, PRODUCT, REMARK, TYPE,
-        ABSTRACT, SUBTYPE, STATE, TRANS);
+        ABSTRACT, SUBTYPE, STATE, TRANS, START, CTRL_TRANSIENT_STATE,
+        CTRL_OMEGA_TRANS, CTRL_EXIT_TRANS, CTRL_OMEGA_EXIT_TRANS);
 
     private static final Set<Look> mainNodeLooks = EnumSet.of(BASIC, CREATOR,
-        DATA, EMBARGO, ERASER, NESTING, PRODUCT, REMARK, TYPE, ABSTRACT, STATE);
+        DATA, EMBARGO, ERASER, NESTING, PRODUCT, REMARK, TYPE, ABSTRACT, STATE,
+        START, CTRL_TRANSIENT_STATE);
 
     private static final Set<Look> mainEdgeLooks = EnumSet.of(BASIC, CREATOR,
         CONNECT, EMBARGO, ERASER, NESTING, REMARK, TYPE, ABSTRACT, SUBTYPE,
-        TRANS);
+        TRANS, CTRL_OMEGA_TRANS, CTRL_EXIT_TRANS, CTRL_OMEGA_EXIT_TRANS);
 
     private static final Set<Look> modifyingLooks = EnumSet.of(NODIFIED,
-        BIDIRECTIONAL, NO_ARROW, COMPOSITE, ERROR_STATE, START, OPEN, FINAL,
-        RESULT, TRANSIENT, ABSENT, ACTIVE);
+        BIDIRECTIONAL, NO_ARROW, COMPOSITE, ERROR_STATE, OPEN, FINAL, RESULT,
+        TRANSIENT, ABSENT, ACTIVE, GRAYED_OUT);
 
     private static final Set<Look> unusedLooks = EnumSet.of(REGULAR, ADDER,
-        CTRL_TRANSIENT_STATE, CTRL_OMEGA_TRANS, CTRL_EXIT_TRANS,
-        CTRL_OMEGA_EXIT_TRANS, PATTERN, EQUIV_CLASS, GRAYED_OUT);
+        PATTERN, EQUIV_CLASS);
 
     private static final Set<VisualKey> usedKeys = EnumSet.of(BACKGROUND, DASH,
         EDGE_SOURCE_SHAPE, EDGE_TARGET_SHAPE, FOREGROUND, LINE_WIDTH,
@@ -137,6 +139,8 @@ public final class TikzStylesExtractor {
         TikzStylesExtractor extractor = new TikzStylesExtractor();
         // Collect the information.
         extractor.run();
+        // Maybe todo: output file name as an argument.
+        // But we can get by with pipes... :P
         System.out.println(extractor.result);
     }
 
@@ -222,43 +226,46 @@ public final class TikzStylesExtractor {
     private void computeModifyingStyle(Look look, List<StyleDuo> styles) {
         // EZ says: this is a very ad-hoc implementation but I couldn't think
         // of a better way to do this.
-        String edgeEnd = Style.getEdgeEndShape(ARROW);
-        Color foreground = look.getVisuals().getForeground();
-        Color background = look.getVisuals().getBackground();
+        String defaultEdgeEnd = Style.getEdgeEndShape(ARROW);
+        VisualMap visuals = look.getVisuals();
         switch (look) {
         case NODIFIED:
-            Style.writeNodeShape(NodeShape.ELLIPSE, styles);
+            Style.writeNodeShape(visuals.getNodeShape(), styles);
             styles.add(new StyleDuo("minimum size", "4pt"));
             break;
         case BIDIRECTIONAL:
-            styles.add(new StyleDuo(edgeEnd + "-" + edgeEnd, null));
+            styles.add(new StyleDuo(defaultEdgeEnd + "-" + defaultEdgeEnd, null));
             break;
         case NO_ARROW:
             styles.add(new StyleDuo("-", null));
             break;
         case COMPOSITE:
-            String srcEdgeEnd = Style.getEdgeEndShape(EdgeEnd.COMPOSITE);
-            styles.add(new StyleDuo(srcEdgeEnd + "-" + edgeEnd, null));
+            String srcEdgeEnd =
+                Style.getEdgeEndShape(visuals.getEdgeSourceShape());
+            styles.add(new StyleDuo(srcEdgeEnd + "-" + defaultEdgeEnd, null));
             break;
         case ERROR_STATE:
-            Style.writeForegroundColor(foreground, styles);
-            break;
-        case START:
-            Style.writeForegroundColor(foreground, styles);
-            Style.writeBackgroundColor(background, styles);
+            Style.writeForegroundColor(visuals.getForeground(), styles);
             break;
         case OPEN:
         case FINAL:
         case RESULT:
-            Style.writeBackgroundColor(background, styles);
+            Style.writeBackgroundColor(visuals.getBackground(), styles);
             break;
         case TRANSIENT:
-            Style.writeNodeShape(NodeShape.DIAMOND, styles);
-            Style.writeForegroundColor(foreground, styles);
+            Style.writeNodeShape(visuals.getNodeShape(), styles);
+            styles.add(new StyleDuo(ROUNDED_CORNERS_KEY, "0pt"));
+            Style.writeForegroundColor(visuals.getForeground(), styles);
             break;
-        case ABSENT: // TODO
+        case ABSENT:
+            Style.writeDash(visuals.getDash(), styles);
             break;
-        case ACTIVE: // TODO
+        case ACTIVE:
+            Style.writeForegroundColor(visuals.getForeground(), styles);
+            Style.writeLineWidth(visuals.getLineWidth(), styles);
+            break;
+        case GRAYED_OUT:
+            Style.writeForegroundColor(visuals.getForeground(), styles);
             break;
         default:
             throw new IllegalArgumentException("Invalid modifying look!");
@@ -272,18 +279,16 @@ public final class TikzStylesExtractor {
     /** The builder that holds the Tikz string. */
     private final StringBuilder result;
 
-    private static final String NEW_LINE = "\n";
+    /** */
     public static final String NODE_SUFFIX = "_node";
+    /** */
     public static final String EDGE_SUFFIX = "_edge";
+
+    private static final String NEW_LINE = "\n";
     private static final String BEGIN_TIKZ_STYLE = "\\tikzstyle{";
     private static final String MID_TIKZ_STYLE = "}=";
     private static final String END_TIKZ_STYLE = NEW_LINE;
-
-    private static final String DENSELY_DASHED_KEY = "densely dashed";
-    private static final String SHAPE_KEY = "shape";
-    private static final String DIAMOND_VAL = "diamond";
-    private static final String ELLIPSE_VAL = "ellipse";
-    private static final String RECTANGLE_VAL = "rectangle";
+    private static final String ROUNDED_CORNERS_KEY = "rounded corners";
 
     private static final String HEADER =
         "% Package that defines the styles used in Tikz figures exported in GROOVE."
@@ -333,7 +338,7 @@ public final class TikzStylesExtractor {
         + "\\begin{tabular}{@{}c@{}}#1\\vspace{-2pt}\\end{tabular}" + NEW_LINE
         + "}" + NEW_LINE;
 
-    private static final class Style {
+    public static final class Style {
         Color background;
         Color foreground;
         float[] dash;
@@ -398,6 +403,8 @@ public final class TikzStylesExtractor {
                 this.nodeShape = (NodeShape) value;
                 break;
             default:
+                // We checked for the consistency of visual keys earlier, so
+                // nothing to do here.
                 break;
             }
         }
@@ -406,51 +413,20 @@ public final class TikzStylesExtractor {
         void fix() {
             // Node styles.
             if (mainNodeLooks.contains(this.look)) {
-                writeNodeShape();
-                writeDash(this.nodes);
-                writeLineWidth(this.nodes);
-                writeForegroundColor();
-                writeBackgroundColor();
+                writeNodeShape(this.nodeShape, this.nodes);
+                writeDash(this.dash, this.nodes);
+                writeLineWidth(this.lineWidth, this.nodes);
+                writeForegroundColor(this.foreground, this.nodes);
+                writeBackgroundColor(this.background, this.nodes);
             }
             // Edge styles.
             if (mainEdgeLooks.contains(this.look)) {
-                writeDraw();
+                this.edges.add(new StyleDuo("draw", null));
                 writeEdgeEnds();
-                writeDash(this.edges);
-                writeLineWidth(this.edges);
-                writeEdgeColor();
+                writeDash(this.dash, this.edges);
+                writeLineWidth(this.lineWidth, this.edges);
+                writeEdgeColor(this.foreground, this.edges);
             }
-        }
-
-        private void writeNodeShape() {
-            writeNodeShape(this.nodeShape, this.nodes);
-        }
-
-        private void writeDash(List<StyleDuo> list) {
-            if (this.dash == Values.NESTED_DASH) {
-                list.add(new StyleDuo("densely dotted", null));
-            } else if (this.dash != Values.NO_DASH) {
-                list.add(new StyleDuo(DENSELY_DASHED_KEY, null));
-            }
-        }
-
-        private void writeLineWidth(List<StyleDuo> list) {
-            int w = (int) Math.floor(this.lineWidth / 2.0);
-            if (w > 0) {
-                list.add(new StyleDuo("line width", w + "pt"));
-            }
-        }
-
-        private void writeForegroundColor() {
-            writeForegroundColor(this.foreground, this.nodes);
-        }
-
-        private void writeBackgroundColor() {
-            writeBackgroundColor(this.background, this.nodes);
-        }
-
-        private void writeDraw() {
-            this.edges.add(new StyleDuo("draw", null));
         }
 
         private void writeEdgeEnds() {
@@ -459,9 +435,19 @@ public final class TikzStylesExtractor {
             this.edges.add(new StyleDuo(srcEnd + "-" + tgtEnd, null));
         }
 
-        private void writeEdgeColor() {
-            String c = getColorString(this.foreground);
-            this.edges.add(new StyleDuo("color", c));
+        static void writeLineWidth(float lineWidth, List<StyleDuo> styles) {
+            int w = (int) Math.floor(lineWidth / 2.0);
+            if (w > 0) {
+                styles.add(new StyleDuo("line width", w + "pt"));
+            }
+        }
+
+        static void writeDash(float dash[], List<StyleDuo> styles) {
+            if (dash == Values.NESTED_DASH) {
+                styles.add(new StyleDuo("densely dotted", null));
+            } else if (dash != Values.NO_DASH) {
+                styles.add(new StyleDuo("densely dashed", null));
+            }
         }
 
         static void writeForegroundColor(Color foreground, List<StyleDuo> styles) {
@@ -470,9 +456,30 @@ public final class TikzStylesExtractor {
             styles.add(new StyleDuo("text", c));
         }
 
+        static void getForegroundColor(Color foreground, List<String> styles) {
+            String c = getColorString(foreground);
+            styles.add("draw=" + c);
+            styles.add("text=" + c);
+        }
+
         static void writeBackgroundColor(Color background, List<StyleDuo> styles) {
             String c = getColorString(background);
             styles.add(new StyleDuo("fill", c));
+        }
+
+        static void getBackgroundColor(Color background, List<String> styles) {
+            String c = getColorString(background);
+            styles.add("fill=" + c);
+        }
+
+        static void writeEdgeColor(Color foreground, List<StyleDuo> styles) {
+            String c = getColorString(foreground);
+            styles.add(new StyleDuo("color", c));
+        }
+
+        static void getEdgeColor(Color foreground, List<String> styles) {
+            String c = getColorString(foreground);
+            styles.add("color=" + c);
         }
 
         static String getEdgeEndShape(EdgeEnd end) {
@@ -499,7 +506,10 @@ public final class TikzStylesExtractor {
         }
 
         static void writeNodeShape(NodeShape nodeShape, List<StyleDuo> styles) {
-            final String ROUNDED_CORNERS_KEY = "rounded corners";
+            final String SHAPE_KEY = "shape";
+            final String DIAMOND_VAL = "diamond";
+            final String ELLIPSE_VAL = "ellipse";
+            final String RECTANGLE_VAL = "rectangle";
 
             switch (nodeShape) {
             case DIAMOND:

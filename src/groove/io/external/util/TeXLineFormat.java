@@ -16,6 +16,7 @@
  */
 package groove.io.external.util;
 
+import groove.control.CtrlCall;
 import groove.gui.look.Line.ColorType;
 import groove.gui.look.Line.Style;
 import groove.gui.look.LineFormat;
@@ -187,6 +188,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
         addChar(Util.UT, "{\\blacktriangle}", Mode.MATH);
         addChar(Util.LT, "{\\blacktriangleleft}", Mode.MATH);
         addChar(Util.RT, "{\\blacktriangleright}", Mode.MATH);
+        addChar(CtrlCall.OMEGA_NAME.charAt(0), "\\Omega", Mode.MATH);
         addChar('<', "<", Mode.MATH);
         addChar('>', ">", Mode.MATH);
         addChar('{', "\\{", Mode.BOTH);

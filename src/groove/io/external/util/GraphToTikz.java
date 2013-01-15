@@ -34,7 +34,9 @@ import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.gui.look.Look;
 import groove.gui.look.MultiLabel;
+import groove.io.external.util.TikzStylesExtractor.Style;
 
+import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.PrintWriter;
@@ -430,7 +432,27 @@ public final class GraphToTikz<G extends Graph<?,?>> {
                 styles.add(look.name().toLowerCase());
             }
         }
+        addAdditionalStyles(node, styles);
         append(styles.toString());
+    }
+
+    private void addAdditionalStyles(JVertex<G> node, List<String> styles) {
+        // Check if there are some extra styles, for now we just look for
+        // a color.
+        Color color = node.getVisuals().getColor();
+        if (color != null) {
+            Style.getForegroundColor(color, styles);
+            Style.getBackgroundColor(node.getVisuals().getBackground(), styles);
+        }
+    }
+
+    private void addAdditionalStyles(JEdge<G> edge, List<String> styles) {
+        // Check if there are some extra styles, for now we just look for
+        // a color.
+        Color color = edge.getVisuals().getColor();
+        if (color != null) {
+            Style.getEdgeColor(color, styles);
+        }
     }
 
     /** Appends the node name to the result string. */
@@ -553,7 +575,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         }
 
         append(BEGIN_EDGE);
-        appendEdgeStyle(edge);
+        appendEdgeStyles(edge);
 
         if (layout != null) {
             switch (layout.getLineStyle()) {
@@ -583,7 +605,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      * Find the proper Tikz styles for a given edge.
      * @param edge the edge to be analysed.
      */
-    private void appendEdgeStyle(JEdge<G> edge) {
+    private void appendEdgeStyles(JEdge<G> edge) {
         ArrayList<String> styles = new ArrayList<String>();
         styles.add(""); // Placeholder for the main style.
         for (Look look : edge.getLooks()) {
@@ -594,6 +616,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
                 styles.add(look.name().toLowerCase());
             }
         }
+        addAdditionalStyles(edge, styles);
         append(styles.toString());
     }
 
