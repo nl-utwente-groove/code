@@ -119,6 +119,14 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         return enclose(string, "(", ")");
     }
 
+    private static String encloseBrack(String string) {
+        return enclose(string, "[", "]");
+    }
+
+    private static String encloseCurly(String string) {
+        return enclose(string, "{", "}");
+    }
+
     private static String encloseSpace(String string) {
         return enclose(string, " ", " ");
     }
@@ -403,8 +411,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     }
 
     private void appendParameterNode(AspectJVertex node) {
-        // EDUARDO: Restore this...
-        /*String nodeId = node.getNode().toString();
+        String nodeId = node.getNode().toString();
         String nr = node.getNode().getParamNr() + "";
         // New node line.
         append(BEGIN_NODE + encloseBrack(PAR_NODE_STYLE));
@@ -414,7 +421,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
         append(encloseSpace(AT_KEYWORD));
         append(enclosePar(nodeId + NORTH_WEST));
         // Parameter number.
-        append(" " + encloseCurly(nr) + ";\n");*/
+        append(" " + encloseCurly(nr) + ";\n");
     }
 
     /**
@@ -962,6 +969,8 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     private static final String END_PATH = ENTER;
     private static final String END_EDGE = ";" + ENTER;
     private static final String NODE = "node[lab]";
+    private static final String PAR_NODE_SUFFIX = "p";
+    private static final String PAR_NODE_STYLE = "par_node";
     private static final String DOUBLE_DASH = "--";
     private static final String ANGLE = "-|";
     private static final String BEGIN_CONTROLS = ".. controls ";
@@ -971,6 +980,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     private static final String SOUTH = ".south -| ";
     private static final String EAST = ".east |- ";
     private static final String WEST = ".west |- ";
+    private static final String NORTH_WEST = ".north west";
     private static final String DOC = "% To use this figure in your LaTeX "
         + "document" + ENTER
         + "% import the package groove/resources/groove2tikz.sty" + ENTER + "%"

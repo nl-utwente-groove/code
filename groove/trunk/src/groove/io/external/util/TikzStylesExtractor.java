@@ -102,31 +102,48 @@ import java.util.Set;
  */
 public final class TikzStylesExtractor {
 
-    /** */
+    /** Enumeration of main looks that are defined. */
     public static final Set<Look> mainLooks = EnumSet.of(BASIC, CREATOR,
         CONNECT, DATA, EMBARGO, ERASER, NESTING, PRODUCT, REMARK, TYPE,
         ABSTRACT, SUBTYPE, STATE, TRANS, START, CTRL_TRANSIENT_STATE,
         CTRL_OMEGA_TRANS, CTRL_EXIT_TRANS, CTRL_OMEGA_EXIT_TRANS);
 
+    /** Subset of the main looks that are suitable for nodes. */
     private static final Set<Look> mainNodeLooks = EnumSet.of(BASIC, CREATOR,
         DATA, EMBARGO, ERASER, NESTING, PRODUCT, REMARK, TYPE, ABSTRACT, STATE,
         START, CTRL_TRANSIENT_STATE);
 
+    /** Subset of the main looks that are suitable for edges. */
     private static final Set<Look> mainEdgeLooks = EnumSet.of(BASIC, CREATOR,
         CONNECT, EMBARGO, ERASER, NESTING, REMARK, TYPE, ABSTRACT, SUBTYPE,
         TRANS, CTRL_OMEGA_TRANS, CTRL_EXIT_TRANS, CTRL_OMEGA_EXIT_TRANS);
 
+    /**
+     * Extra enumeration for the additional looks that can modify a main look.
+     */
     private static final Set<Look> modifyingLooks = EnumSet.of(NODIFIED,
         BIDIRECTIONAL, NO_ARROW, COMPOSITE, ERROR_STATE, OPEN, FINAL, RESULT,
         TRANSIENT, ABSENT, ACTIVE, GRAYED_OUT);
 
+    /**
+     * Set of unused looks. It is required that mainLooks + modifyingLooks +
+     * unusedLooks to be equal to the entire Look enum, otherwise an error
+     * is raised. This is needed to ensure the consistency of the extractor.
+     */
     private static final Set<Look> unusedLooks = EnumSet.of(REGULAR, ADDER,
         PATTERN, EQUIV_CLASS);
 
+    /**
+     * Set of visual keys that are used in the extractor.
+     */
     private static final Set<VisualKey> usedKeys = EnumSet.of(BACKGROUND, DASH,
         EDGE_SOURCE_SHAPE, EDGE_TARGET_SHAPE, FOREGROUND, LINE_WIDTH,
         NODE_SHAPE);
 
+    /**
+     * Set of visual keys that are not used in the extractor because they are
+     * element dependent and hence cannot form a style.
+     */
     private static final Set<VisualKey> unusedKeys = EnumSet.of(ADORNMENT,
         COLOR, EDGE_SOURCE_LABEL, EDGE_SOURCE_POS, EDGE_TARGET_LABEL,
         EDGE_TARGET_POS, EMPHASIS, ERROR, FONT, INNER_LINE, INSET, LABEL,
@@ -144,6 +161,7 @@ public final class TikzStylesExtractor {
         System.out.println(extractor.result);
     }
 
+    /** Method to ensure that we won't forget any Look. */
     private static final void checkConsistency() {
         Set<Look> allLooks = EnumSet.allOf(Look.class);
         allLooks.removeAll(mainLooks);
@@ -176,6 +194,7 @@ public final class TikzStylesExtractor {
         this.result = new StringBuilder();
     }
 
+    /** Top level method. Creates everything. */
     private void run() {
         append(HEADER);
         appendMainColors();
@@ -184,6 +203,7 @@ public final class TikzStylesExtractor {
         append(FOOTER);
     }
 
+    /** Appends colors definitions that are used in node labels. */
     private void appendMainColors() {
         for (ColorType cType : ColorType.values()) {
             Color color = cType.getColor();
@@ -195,6 +215,7 @@ public final class TikzStylesExtractor {
         }
     }
 
+    /** Appends the main styles definitions. */
     private void appendMainStyles() {
         append(MAIN_STYLE_COMMENT);
         for (Look mainLook : mainLooks) {
@@ -209,6 +230,7 @@ public final class TikzStylesExtractor {
         }
     }
 
+    /** Appends the modifying styles definitions. */
     private void appendModifyingStyles() {
         append(MOD_STYLE_COMMENT);
         List<StyleDuo> styles = new ArrayList<StyleDuo>();
@@ -223,6 +245,7 @@ public final class TikzStylesExtractor {
         }
     }
 
+    /** Creates all Tikz styles for the given look. */
     private void computeModifyingStyle(Look look, List<StyleDuo> styles) {
         // EZ says: this is a very ad-hoc implementation but I couldn't think
         // of a better way to do this.
@@ -272,6 +295,7 @@ public final class TikzStylesExtractor {
         }
     }
 
+    /** Short-cut method to make the code look nicier. */
     private void append(String string) {
         this.result.append(string);
     }
@@ -279,9 +303,9 @@ public final class TikzStylesExtractor {
     /** The builder that holds the Tikz string. */
     private final StringBuilder result;
 
-    /** */
+    /** Suffix for the look names that define node styles. */
     public static final String NODE_SUFFIX = "_node";
-    /** */
+    /** Suffix for the look names that define edge styles.*/
     public static final String EDGE_SUFFIX = "_edge";
 
     private static final String NEW_LINE = "\n";
@@ -318,9 +342,18 @@ public final class TikzStylesExtractor {
             + NEW_LINE
             + NEW_LINE
             + "\\tikzstyle every node=[font=\\tikzfontsize\\sffamily, inner sep=2.5pt, minimum size=9pt]"
-            + NEW_LINE + NEW_LINE + "% Extra style for edge labels." + NEW_LINE
-            + "\\tikzstyle{lab}=[fill=white, inner sep=1pt]" + NEW_LINE
-            + NEW_LINE + "% Default colors for TeX strings." + NEW_LINE;
+            + NEW_LINE
+            + NEW_LINE
+            + "% Extra style for edge labels."
+            + NEW_LINE
+            + "\\tikzstyle{lab}=[fill=white, inner sep=1pt]"
+            + NEW_LINE
+            + NEW_LINE
+            + "% Extra style for parameter adornments."
+            + NEW_LINE
+            + "\\tikzstyle{par_node}=[draw=black, fill=black, text=white, shape=rectangle, font=\\scriptsize\\sffamily, inner sep=1pt, minimum size=4pt, anchor=east]"
+            + NEW_LINE + NEW_LINE + "% Default colors for TeX strings."
+            + NEW_LINE;
 
     private static final String MAIN_STYLE_COMMENT =
         NEW_LINE
@@ -338,7 +371,12 @@ public final class TikzStylesExtractor {
         + "\\begin{tabular}{@{}c@{}}#1\\vspace{-2pt}\\end{tabular}" + NEW_LINE
         + "}" + NEW_LINE;
 
+    /**
+     * Auxiliary class for storing the useful Look information and outputing
+     * it in a proper order.
+     */
     public static final class Style {
+        // Collected information.
         Color background;
         Color foreground;
         float[] dash;
@@ -347,6 +385,7 @@ public final class TikzStylesExtractor {
         float lineWidth;
         NodeShape nodeShape;
 
+        // List of style definitions for nodes and edges.
         final Look look;
         final List<StyleDuo> nodes;
         final List<StyleDuo> edges;
@@ -434,6 +473,9 @@ public final class TikzStylesExtractor {
             String tgtEnd = getEdgeEndShape(this.targetEnd);
             this.edges.add(new StyleDuo(srcEnd + "-" + tgtEnd, null));
         }
+
+        // Static methods that can be called by the Tikz exporter. This
+        // avoids some code duplication.
 
         static void writeLineWidth(float lineWidth, List<StyleDuo> styles) {
             int w = (int) Math.floor(lineWidth / 2.0);
@@ -557,7 +599,7 @@ public final class TikzStylesExtractor {
         }
     }
 
-    /** Key, value pairs. */
+    /** Special duo definition that prints itself nicely. */
     private static final class StyleDuo extends Duo<String> {
 
         public StyleDuo(String one, String two) {
