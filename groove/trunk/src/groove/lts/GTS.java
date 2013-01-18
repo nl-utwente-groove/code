@@ -41,6 +41,7 @@ import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.iso.IsoChecker;
 import groove.graph.plain.PlainGraph;
 import groove.graph.plain.PlainNode;
+import groove.gui.jgraph.LTSJModel;
 import groove.lts.GraphState.Flag;
 import groove.transform.Record;
 import groove.util.collect.NestedIterator;
@@ -205,6 +206,14 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
      */
     public void setResult(Result result) {
         this.resultStates.addAll(result.getValue());
+        // Notify the listener for the GUI if we are in the simulator.
+        // Fix for SF bug ticket #3600971.
+        LTSJModel ltsJModel = getJModelListener();
+        if (ltsJModel != null) {
+            for (GraphState resultState : this.resultStates) {
+                ltsJModel.statusUpdate(this, resultState, Flag.DONE);
+            }
+        }
     }
 
     /**
@@ -429,6 +438,16 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         if (this.listeners != null) {
             this.listeners.remove(listener);
         }
+    }
+
+    /** Returns the possibly null J-Graph listener. */
+    private LTSJModel getJModelListener() {
+        for (GTSListener listener : getGraphListeners()) {
+            if (listener instanceof LTSJModel) {
+                return (LTSJModel) listener;
+            }
+        }
+        return null;
     }
 
     /**
