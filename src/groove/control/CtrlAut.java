@@ -65,6 +65,9 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
         super(name);
         this.startState = addState();
         this.finalState = addState();
+        // Dummy call to construct the info object before the automaton is
+        // fixed. SF bug #3600975
+        getInfo();
     }
 
     @Override
