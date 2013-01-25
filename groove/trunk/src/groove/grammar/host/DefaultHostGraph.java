@@ -19,6 +19,7 @@ package groove.grammar.host;
 import static groove.graph.GraphRole.HOST;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
+import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectKind;
 import groove.grammar.aspect.AspectLabel;
@@ -200,7 +201,9 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
             }
             AspectLabel imageLabel =
                 AspectParser.getInstance().parse(text, HOST);
-            targetGraph.addEdge(imageSource, imageLabel, imageTarget);
+            AspectEdge edgeImage =
+                targetGraph.addEdge(imageSource, imageLabel, imageTarget);
+            result.putEdge(edge, edgeImage);
         }
         GraphInfo.transfer(this, targetGraph, result);
         targetGraph.setFixed();
