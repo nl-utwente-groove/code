@@ -26,10 +26,8 @@ import java.io.File;
  * @version $Revision $
  */
 public class FormatFilter extends ExtensionFilter {
-    private final Format format;
-
     /** Constructs a filter for a given (non-{@code null}) format. */
-    public FormatFilter(Format format) {
+    FormatFilter(Format format) {
         super(format.getDescription(), false);
         this.format = format;
     }
@@ -64,5 +62,30 @@ public class FormatFilter extends ExtensionFilter {
     public boolean isAcceptDirectories() {
         return true;
     }
+
+    @Override
+    public int hashCode() {
+        return this.format.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        FormatFilter other = (FormatFilter) obj;
+        if (!this.format.equals(other.format)) {
+            return false;
+        }
+        return true;
+    }
+
+    private final Format format;
 
 }

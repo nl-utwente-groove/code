@@ -41,7 +41,7 @@ public class EcorePorter extends ConceptualPorter {
     private EcorePorter() {
         super("Ecore ", ".ecore", ".xmi");
 
-        FormatFilter typeFilter = new FormatFilter(getTypeFormat());
+        FormatFilter typeFilter = getTypeFormat().getFilter();
         this.typemodelChooser = GrooveFileChooser.getFileChooser(typeFilter);
         this.typemodelChooser.setFileFilter(typeFilter);
     }
