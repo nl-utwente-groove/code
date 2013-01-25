@@ -30,10 +30,6 @@ import java.util.List;
  * @version $Revision $
  */
 public class Format {
-    private final List<String> extensions;
-    private final String description;
-    private final FormatPorter formatter;
-
     /** Creates an instance with a given formatter and supporting a given set of file extensions. */
     public Format(FormatPorter formatter, String description,
             String... extensions) {
@@ -58,10 +54,14 @@ public class Format {
         return this.formatter;
     }
 
+    private final FormatPorter formatter;
+
     /** Returns a list of supported file name extensions. */
     public List<String> getExtensions() {
         return this.extensions;
     }
+
+    private final List<String> extensions;
 
     /** Returns a description of this format. */
     public String getDescription() {
@@ -74,6 +74,8 @@ public class Format {
         }
         return this.description + " (" + exts.toString() + ")";
     }
+
+    private final String description;
 
     /**
      * Strips the extension off a filename, if it ends on one of the
@@ -89,4 +91,15 @@ public class Format {
         }
         return fileName;
     }
+
+    /** Returns the filter permanently associated with this format. */
+    public FormatFilter getFilter() {
+        if (this.filter == null) {
+            this.filter = new FormatFilter(this);
+        }
+        return this.filter;
+    }
+
+    /** The dedicated filter for this format. */
+    private FormatFilter filter;
 }

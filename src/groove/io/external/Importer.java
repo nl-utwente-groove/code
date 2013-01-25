@@ -63,7 +63,7 @@ public class Importer {
 
         for (FormatImporter ri : this.importers) {
             for (Format f : ri.getSupportedFormats()) {
-                filters.add(new FormatFilter(f));
+                filters.add(f.getFilter());
             }
         }
 

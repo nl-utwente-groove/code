@@ -112,12 +112,10 @@ public class Exporter {
         List<ExtensionFilter> filters = new ArrayList<ExtensionFilter>();
 
         for (Format f : formats) {
-            filters.add(new FormatFilter(f));
+            filters.add(f.getFilter());
         }
 
         result = GrooveFileChooser.getFileChooser(filters);
-        result.setFileFilter(filters.get(0));
-
         return result;
     }
 
