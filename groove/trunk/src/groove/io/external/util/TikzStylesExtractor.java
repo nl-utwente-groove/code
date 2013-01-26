@@ -34,7 +34,6 @@ import static groove.gui.look.Look.DATA;
 import static groove.gui.look.Look.EMBARGO;
 import static groove.gui.look.Look.EQUIV_CLASS;
 import static groove.gui.look.Look.ERASER;
-import static groove.gui.look.Look.ERROR_STATE;
 import static groove.gui.look.Look.FINAL;
 import static groove.gui.look.Look.GRAYED_OUT;
 import static groove.gui.look.Look.NESTING;
@@ -122,8 +121,8 @@ public final class TikzStylesExtractor {
      * Extra enumeration for the additional looks that can modify a main look.
      */
     private static final Set<Look> modifyingLooks = EnumSet.of(NODIFIED,
-        BIDIRECTIONAL, NO_ARROW, COMPOSITE, ERROR_STATE, OPEN, FINAL, RESULT,
-        TRANSIENT, ABSENT, ACTIVE, GRAYED_OUT);
+        BIDIRECTIONAL, NO_ARROW, COMPOSITE, OPEN, FINAL, RESULT, TRANSIENT,
+        ABSENT, ACTIVE, GRAYED_OUT);
 
     /**
      * Set of unused looks. It is required that mainLooks + modifyingLooks +
@@ -266,9 +265,6 @@ public final class TikzStylesExtractor {
             String srcEdgeEnd =
                 Style.getEdgeEndShape(visuals.getEdgeSourceShape());
             styles.add(new StyleDuo(srcEdgeEnd + "-" + defaultEdgeEnd, null));
-            break;
-        case ERROR_STATE:
-            Style.writeForegroundColor(visuals.getForeground(), styles);
             break;
         case OPEN:
         case FINAL:
