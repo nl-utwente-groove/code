@@ -134,8 +134,6 @@ public class LTSJVertex extends AJVertex<GTS,LTSJGraph,LTSJModel,LTSJEdge>
     protected Look getStructuralLook() {
         if (isStart()) {
             return Look.START;
-        } else if (hasErrors()) {
-            return Look.ERROR_STATE;
         } else {
             return Look.STATE;
         }

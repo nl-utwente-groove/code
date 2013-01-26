@@ -216,14 +216,6 @@ public enum Look {
             add(VisualKey.NODE_SHAPE, NodeShape.OVAL);
         }
     },
-    /** Error state look. */
-    ERROR_STATE(STATE) {
-        @Override
-        void init() {
-            add(VisualKey.FOREGROUND, Values.ERROR_COLOR);
-            add(VisualKey.BACKGROUND, null);
-        }
-    },
     /** Start state look. */
     START(true, STATE) {
         @Override
