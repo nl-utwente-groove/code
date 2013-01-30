@@ -272,7 +272,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
      * Sets the extra-error flags of all the cells, based
      * on the errors in the view.
      */
-    public void loadViewErrors() {
+    private void loadViewErrors() {
         if (getGrammar() == null) {
             return;
         }
@@ -431,6 +431,14 @@ final public class AspectJModel extends JModel<AspectGraph> {
         }
         resetNodeNrs();
         return result;
+    }
+
+    /**
+     * Notifies the model and all listeners that the underlying graph has
+     * been modified.
+     */
+    public void setGraphModified() {
+        this.graphModCount.increase();
     }
 
     /** 

@@ -222,7 +222,7 @@ final public class GraphEditorTab extends ResourceTab implements
             if (!properties.equals(GraphInfo.getProperties(getGraph()))) {
                 changeProperties(properties, true);
             } else {
-                getJModel().loadViewErrors();
+                getJModel().setGraphModified();
                 getJGraph().refresh();
             }
             updateStatus();
