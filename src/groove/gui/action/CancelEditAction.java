@@ -7,7 +7,7 @@ import groove.gui.Simulator;
 import groove.gui.display.ResourceTab;
 
 /**
- * Action to cancel editing the currently displayed control program.
+ * Action to cancel editing the currently displayed resource.
  */
 public class CancelEditAction extends SimulatorAction {
     /** Constructs a new action, for a given control panel. */
@@ -19,7 +19,8 @@ public class CancelEditAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        ResourceTab editorTab = getDisplay().getSelectedEditor();
+        String name = getSimulatorModel().getSelected(getResourceKind());
+        ResourceTab editorTab = getDisplay().getEditor(name);
         if (editorTab != null) {
             editorTab.saveEditor(true, true);
         }

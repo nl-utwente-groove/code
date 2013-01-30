@@ -423,11 +423,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         return result;
     }
 
-    /** Returns the currently selected editor tab, or {@code null} if no editor is selected. */
-    public ResourceTab getSelectedEditor() {
-        ResourceTab result = getSelectedTab();
-        return result != null && result.isEditor() ? (ResourceTab) result
-                : null;
+    /** Returns the editor for a resource with a given name, if any. */
+    public ResourceTab getEditor(String name) {
+        return getEditors().get(name);
     }
 
     /** Returns the currently selected tab, or {@code null} if no editor is selected. */
