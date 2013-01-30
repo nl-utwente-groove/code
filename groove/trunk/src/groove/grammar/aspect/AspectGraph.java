@@ -38,6 +38,7 @@ import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Morphism;
+import groove.graph.NodeComparator;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.plain.PlainEdge;
 import groove.graph.plain.PlainFactory;
@@ -514,7 +515,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     public AspectGraph renumber() {
         AspectGraph result = this;
         // renumber the nodes in their original order
-        SortedSet<AspectNode> nodes = new TreeSet<AspectNode>(nodeSet());
+        SortedSet<AspectNode> nodes =
+            new TreeSet<AspectNode>(NodeComparator.instance());
+        nodes.addAll(nodeSet());
         if (!nodes.isEmpty() && nodes.last().getNumber() != nodeCount() - 1) {
             result = newGraph(getName());
             AspectGraphMorphism elementMap = new AspectGraphMorphism(getRole());
