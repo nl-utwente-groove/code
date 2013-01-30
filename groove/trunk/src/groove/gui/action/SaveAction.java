@@ -48,10 +48,8 @@ public final class SaveAction extends SimulatorAction {
         } else {
             boolean saved = false;
             ResourceKind resourceKind = getResourceKind();
-            ResourceTab editor = getEditor();
-            String name =
-                editor == null ? getSimulatorModel().getSelected(resourceKind)
-                        : editor.getName();
+            String name = getSimulatorModel().getSelected(resourceKind);
+            ResourceTab editor = getDisplay().getEditor(name);
             if (resourceKind.isGraphBased()) {
                 AspectGraph graph;
                 boolean minor;
@@ -181,14 +179,16 @@ public final class SaveAction extends SimulatorAction {
 
     @Override
     public void refresh() {
-        boolean enabled;
+        boolean enabled = false;
         ResourceKind resource = getResourceKind();
         if (isForState()) {
             enabled = getSimulatorModel().hasState();
         } else {
-            enabled =
-                (this.saveAs && getSimulatorModel().getResource(resource) != null)
-                    || (getEditor() != null && getEditor().isDirty());
+            String name = getSimulatorModel().getSelected(resource);
+            if (name != null) {
+                ResourceTab editor = getDisplay().getEditor(name);
+                enabled = this.saveAs || editor != null && editor.isDirty();
+            }
         }
         setEnabled(enabled);
         String name =
@@ -196,11 +196,6 @@ public final class SaveAction extends SimulatorAction {
                     : Options.getSaveActionName(resource, this.saveAs);
         putValue(NAME, name);
         putValue(SHORT_DESCRIPTION, name);
-    }
-
-    /** Returns the currently selected editor tab on the appropriate display, if any. */
-    private ResourceTab getEditor() {
-        return getDisplay().getSelectedEditor();
     }
 
     private boolean isForState() {

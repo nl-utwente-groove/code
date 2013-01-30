@@ -207,15 +207,16 @@ final public class GraphEditorTab extends ResourceTab implements
 
     @Override
     public void updateGrammar(GrammarModel grammar) {
-        // test if the graph being edited is still in the grammar;
-        // if not, silently dispose it - it's too late to do anything else!
         GraphBasedModel<?> graphModel =
             (GraphBasedModel<?>) grammar.getResource(getResourceKind(),
                 getName());
         AspectGraph source = graphModel == null ? null : graphModel.getSource();
+        // test if the graph being edited is still in the grammar;
+        // if not, silently dispose it - it's too late to do anything else!
         if (source == null) {
             dispose();
         } else if (isDirty() || source == getGraph()) {
+            // to keep the edit history, don't change the underlying graph
             // check if the properties have changed
             GraphProperties properties = GraphInfo.getProperties(source);
             if (!properties.equals(GraphInfo.getProperties(getGraph()))) {
