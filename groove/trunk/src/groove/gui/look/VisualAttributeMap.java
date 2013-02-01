@@ -25,6 +25,7 @@ import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -176,30 +177,45 @@ public class VisualAttributeMap extends AttributeMap {
         // do nothing for derived keys or keys that are unknown in the visual map
         if (vKey != null && vKey.getNature() == Nature.CONTROLLED) {
             Object vValue;
+            Object[] vValues;
             // also update the backing visual map
             // convert those values for which this is necessary
             switch (vKey) {
             case EDGE_SOURCE_LABEL:
-                vValue = ((Object[]) value)[0];
-                Object targetLabel = ((Object[]) value)[1];
-                this.visuals.put(VisualKey.EDGE_TARGET_LABEL, targetLabel,
-                    false);
+                assert value instanceof Object[] : String.format(
+                    "Incorrect value %s", value);
+                vValues = ((Object[]) value);
+                assert vValues.length == 2 : String.format(
+                    "Incorrect value array", Arrays.toString(vValues));
+                vValue = vValues[0];
+                this.visuals.put(VisualKey.EDGE_TARGET_LABEL, vValues[1], false);
                 break;
             case EDGE_SOURCE_POS:
-                vValue = ((Object[]) value)[0];
-                Object targetPos = ((Object[]) value)[1];
-                this.visuals.put(VisualKey.EDGE_TARGET_POS, targetPos, false);
+                assert value instanceof Object[] : String.format(
+                    "Incorrect value %s", value);
+                vValues = ((Object[]) value);
+                assert vValues.length == 2 : String.format(
+                    "Incorrect value array", Arrays.toString(vValues));
+                vValue = vValues[0];
+                this.visuals.put(VisualKey.EDGE_TARGET_POS, vValues[1], false);
                 break;
             case EDGE_TARGET_LABEL:
-                vValue = ((Object[]) value)[1];
-                Object sourceLabel = ((Object[]) value)[0];
-                this.visuals.put(VisualKey.EDGE_SOURCE_LABEL, sourceLabel,
-                    false);
+                assert value instanceof Object[] : String.format(
+                    "Incorrect value %s", value);
+                vValues = ((Object[]) value);
+                assert vValues.length == 2 : String.format(
+                    "Incorrect value array", Arrays.toString(vValues));
+                vValue = vValues[1];
+                this.visuals.put(VisualKey.EDGE_SOURCE_LABEL, vValues[0], false);
                 break;
             case EDGE_TARGET_POS:
-                vValue = ((Object[]) value)[1];
-                Object sourcePos = ((Object[]) value)[0];
-                this.visuals.put(VisualKey.EDGE_SOURCE_POS, sourcePos, false);
+                assert value instanceof Object[] : String.format(
+                    "Incorrect value %s", value);
+                vValues = ((Object[]) value);
+                assert vValues.length == 2 : String.format(
+                    "Incorrect value array", Arrays.toString(vValues));
+                vValue = vValues[1];
+                this.visuals.put(VisualKey.EDGE_SOURCE_POS, vValues[0], false);
                 break;
             case LINE_STYLE:
                 vValue = LineStyle.getStyle((Integer) value);
