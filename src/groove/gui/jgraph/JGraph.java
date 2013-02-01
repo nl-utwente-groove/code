@@ -390,7 +390,8 @@ abstract public class JGraph<G extends Graph<?,?>> extends org.jgraph.JGraph {
         List<Object> res = new LinkedList<Object>();
         for (Object element : cells) {
             res.add(element);
-            if (element instanceof DefaultGraphCell) {
+            if (element instanceof DefaultGraphCell
+                && ((DefaultGraphCell) element).getChildCount() > 0) {
                 res.add(((DefaultGraphCell) element).getChildAt(0));
             }
         }
