@@ -464,7 +464,7 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
          */
         @Override
         public Layouter newInstance(JGraph<?> jGraph) {
-            return new MyForestLayouter(this.name, jGraph);
+            return new MyForestLayouter(getName(), jGraph);
         }
     }
 

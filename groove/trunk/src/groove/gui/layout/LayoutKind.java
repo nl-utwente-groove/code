@@ -443,7 +443,7 @@ public enum LayoutKind {
         public void setLayoutParameter() {
             if (!this.getValueIsAdjusting()) {
                 this.invoke();
-                this.item.start(true);
+                this.item.start();
             }
         }
 
@@ -478,7 +478,7 @@ public enum LayoutKind {
 
         public void setLayoutParameter() {
             this.invoke();
-            this.item.start(true);
+            this.item.start();
         }
 
         void invoke() {
@@ -513,7 +513,7 @@ public enum LayoutKind {
 
         public void setLayoutParameter() {
             this.invoke();
-            this.item.start(true);
+            this.item.start();
         }
 
         void invoke() {
@@ -546,7 +546,7 @@ public enum LayoutKind {
 
         public void setLayoutParameter() {
             this.invoke();
-            this.item.start(true);
+            this.item.start();
         }
 
         @Override

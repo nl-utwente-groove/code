@@ -70,7 +70,7 @@ public class LayoutDialog extends JDialog implements ActionListener,
         int i = 0;
         for (LayoutKind kind : LayoutKind.values()) {
             this.protoLayouterItems[i] = LayoutKind.getLayouterItemProto(kind);
-            this.layoutBox.addItem(this.protoLayouterItems[i].getText());
+            this.layoutBox.addItem(this.protoLayouterItems[i].getName());
             i++;
         }
         this.layoutBox.addActionListener(this);

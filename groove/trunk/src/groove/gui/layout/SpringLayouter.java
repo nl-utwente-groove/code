@@ -16,8 +16,8 @@
  */
 package groove.gui.layout;
 
-import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
 import groove.util.Pair;
 
@@ -51,115 +51,28 @@ public class SpringLayouter extends AbstractLayouter {
      */
     private SpringLayouter(String name, JGraph<?> jgraph, float rigidity) {
         super(name, jgraph);
-        // setEnabled(true);
-        // setDuration(duration);
-        setRigidity(rigidity);
     }
 
     public Layouter newInstance(JGraph<?> jgraph) {
-        return new SpringLayouter(this.name, jgraph, this.rigidity);
-    }
-
-    /**
-     * @require rigidity > 0
-     */
-    public void setRigidity(float rigidity) {
-        if (rigidity > 0) {
-            this.rigidity = rigidity;
-        }
+        return new SpringLayouter(getName(), jgraph, this.rigidity);
     }
 
     /**
      * Starts layouting in a parallel thread; or stops the current layouter
      * thread if one is running.
      */
-    public void start(final boolean complete) {
-        if (getText() != null && getText().equals(STOP_ACTION_NAME)) {
-            stop();
-        } else {
-            stop();
-            if (complete) {
-                reset();
-            }
-            this.relaxer = new Thread() {
-                @Override
-                public void run() {
-                    // Thread me = Thread.currentThread();
-                    SpringLayouter.this.damper = 1.0;
-                    prepare(complete);
-                    while (SpringLayouter.this.damper > 0) {
-                        relax();
-                        Thread.yield();
-                    }
-                    finish();
-                    setText(SpringLayouter.this.name);
-                }
-            };
-            this.relaxer.setPriority(Thread.MIN_PRIORITY);
-            setText(STOP_ACTION_NAME);
-            // because I don't see any way to make it thread safe
-            // (the Renderers are global objects and spoil everything)
-            // for now we just call this within the event dispatch thread
-            this.relaxer.run();
-            // if (duration > 0) {
-            // stopTask = new TimerTask() {
-            // public void run() {
-            // stop();
-            // }
-            // };
-            // layoutTimer.schedule(stopTask, duration);
-            // }
+    public void start() {
+        SpringLayouter.this.damper = 1.0;
+        prepare();
+        while (SpringLayouter.this.damper > 0) {
+            relax();
         }
-    }
-
-    /**
-     * Stops the automatic layout process. Stores the bounds back from the view
-     * into the model, and sets the nodes to moveable.
-     */
-    public synchronized void stop() {
-        if (isRunning()) {
-            if (DEBUG) {
-                System.out.println("Stopping automatic layout");
-            }
-            this.relaxer.interrupt();
-            boolean joined = false;
-            while (!joined) {
-                try {
-                    this.relaxer.join();
-                    joined = true;
-                } catch (InterruptedException exc) {
-                    // proceed
-                }
-            }
-            this.relaxer = null;
-            // freeze();
-        }
-    }
-
-    private boolean isRunning() {
-        return this.relaxer != null && this.relaxer.isAlive();
-    }
-
-    /**
-     * Sets the action name to reflect the duration.
-     * @param duration the duration of the temporary layout action, in
-     *        milliseconds
-     * @require <tt>duration >= 0</tt>
-     */
-    protected void setName(int duration) {
-        String actionName = getName();
-        if (duration == 0) {
-            actionName += " (until stable)";
-        } else if (duration > 0 && duration != DEFAULT_DURATION) {
-            String durationUnit = duration / 1000 == 1 ? " second" : " seconds";
-            actionName += " (" + duration / 1000 + durationUnit + ")";
-        }
-        setName(actionName);
+        finish();
     }
 
     @Override
-    protected void prepare(boolean complete) {
-        super.prepare(complete);
+    protected void prepare() {
+        super.prepare();
         if (DEBUG) {
             System.out.println("Starting automatic layout");
         }
@@ -346,7 +259,6 @@ public class SpringLayouter extends AbstractLayouter {
                     key.setLocation(
                         Math.max(0, (int) position.x - key.getWidth() / 2),
                         Math.max(0, (int) position.y - key.getHeight() / 2));
-                    this.repaintNeeded = true;
                 }
             }
         }
@@ -364,13 +276,7 @@ public class SpringLayouter extends AbstractLayouter {
             avoidLabels();
             moveNodes();
         }
-        if (this.workingRigidity != this.rigidity) {
-            this.workingRigidity = this.rigidity; // update rigidity
-        }
-        if (this.repaintNeeded) {
-            this.jgraph.repaint();
-            this.repaintNeeded = false;
-        }
+        this.workingRigidity = this.rigidity; // update rigidity
     }
 
     private void shiftDelta(Layoutable key, double dx, double dy) {
@@ -425,15 +331,6 @@ public class SpringLayouter extends AbstractLayouter {
      *            <tt>edgeFragmentSources.length == edgeFragmentTargets.length</tt>
      */
     private Layoutable[] edgeFragmentTargets;
-
-    /** A map from movable points to their calculated positions (as float points) */
-    // private final Map positions = new IdentityHashMap();
-    private Thread relaxer;
-
-    // private boolean allowedToRun = false;
-
-    // private boolean frozen = true;
-    private boolean repaintNeeded = false;
 
     double damper = 1.0; // A low damper value causes the graph to move
                          // slowly

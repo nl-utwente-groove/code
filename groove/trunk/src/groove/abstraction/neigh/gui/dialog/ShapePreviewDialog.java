@@ -62,7 +62,6 @@ public final class ShapePreviewDialog extends GraphPreviewDialog<Shape> {
         ShapeJGraph jGraph = new ShapeJGraph(this.simulator);
         ShapeJModel model = (ShapeJModel) jGraph.newModel();
         model.loadGraph(this.graph);
-        jGraph.setModel(model);
         model.setLayoutable(true);
         jGraph.setModel(model);
         return jGraph;

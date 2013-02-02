@@ -17,9 +17,9 @@
 package groove.gui.layout;
 
 import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JEdgeView;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
-import groove.gui.jgraph.JEdgeView;
 import groove.gui.look.VisualMap;
 import groove.util.Pair;
 
@@ -37,9 +37,7 @@ import javax.swing.SwingUtilities;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.CellView;
-import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.EdgeView;
-import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.VertexView;
 
 /**
@@ -163,7 +161,7 @@ abstract public class AbstractLayouter implements Layouter {
      * @see #newInstance(JGraph)
      */
     protected AbstractLayouter(String name, JGraph<?> jgraph) {
-        setName(name);
+        this.name = name;
         this.jgraph = jgraph;
     }
 
@@ -175,55 +173,12 @@ abstract public class AbstractLayouter implements Layouter {
     }
 
     /**
-     * Returns the text to be displayed for this action.
-     */
-    public String getText() {
-        return this.text;
-    }
-
-    public boolean isEnabled() {
-        return this.jgraph.isEnabled();
-    }
-
-    /**
-     * Sets the name stored for this action. Used when the action is a factory.
-     * Note that this does not affect the <i>display </i> name for this action.
-     */
-    protected void setName(String name) {
-        this.name = name;
-        this.text = name;
-    }
-
-    /**
-     * Sets the text to be displayed for this action. Queried by an
-     * <tt>Action</tt> in which this layout is embedded.
-     */
-    protected void setText(String text) {
-        this.text = text;
-    }
-
-    /**
-     * Restarts the entire layouting process on the basis of <tt>jview</tt>'s
-     * current model. This implementation resets the movable attribute of all
-     * cells to true, so the layouting can touch them.
-     */
-    protected void reset() {
-        Object[] cells = this.jgraph.getRoots();
-        for (Object element : cells) {
-            GraphConstants.setMoveable(
-                ((DefaultGraphCell) element).getAttributes(), true);
-        }
-    }
-
-    /**
      * Prepares the actual layout process by calculating the information from
      * the current <tt>jmodel</tt>. This implementation calculates the
      * <tt>toLayoutableMap</tt>, and sets the line style to that preferred by
      * the layouter.
-     * @param complete if {@code true}, the {@link JCell#isLayoutable()} setting
-     * is ignored
      */
-    protected void prepare(boolean complete) {
+    protected void prepare() {
         this.jgraph.notifyProgress("Layouting");
         this.jmodel = this.jgraph.getModel();
         // clear the transient information
@@ -239,15 +194,11 @@ abstract public class AbstractLayouter implements Layouter {
             if (jCell.isGrayedOut()) {
                 continue;
             }
-            boolean immovable = !complete && !jCell.isLayoutable();
             if (cellView instanceof JEdgeView) {
                 // all true points (i.e., that are not PortViews) are
                 // subject to layouting
                 List<Point2D> points =
                     ((JEdgeView) cellView).getCell().getVisuals().getPoints();
-                // failed attempt to store edges beck so they will be layed
-                // out live
-                // GraphConstants.setPoints(cell.getAttributes(),points);
                 for (int p = 1; p < points.size() - 1; p++) {
                     Object point = points.get(p);
                     if (point instanceof Point2D) {
@@ -255,7 +206,7 @@ abstract public class AbstractLayouter implements Layouter {
                             new PointLayoutable((Point2D) point);
                         this.toLayoutableMap.put(Pair.newPair(jCell, p),
                             layoutable);
-                        if (immovable) {
+                        if (!jCell.isLayoutable()) {
                             this.immovableSet.add(layoutable);
                         }
                     }
@@ -266,7 +217,7 @@ abstract public class AbstractLayouter implements Layouter {
                 Layoutable layoutable =
                     new VertexLayoutable((VertexView) cellView);
                 this.toLayoutableMap.put(jCell, layoutable);
-                if (immovable) {
+                if (!jCell.isLayoutable()) {
                     this.immovableSet.add(layoutable);
                 }
             }
@@ -285,7 +236,6 @@ abstract public class AbstractLayouter implements Layouter {
         for (CellView view : cellViews) {
             if (view instanceof VertexView || view instanceof EdgeView) {
                 JCell<?> cell = (JCell<?>) view.getCell();
-                GraphConstants.setMoveable(cell.getAttributes(), true);
                 VisualMap visuals = new VisualMap();
                 if (view instanceof VertexView) {
                     // store the bounds back into the model
@@ -339,12 +289,7 @@ abstract public class AbstractLayouter implements Layouter {
     /**
      * The name of this layout action
      */
-    protected String name;
-
-    /**
-     * The text to be currently displayed by this layout action.
-     */
-    protected String text;
+    private final String name;
 
     /**
      * The underlying jgraph for this layout action.

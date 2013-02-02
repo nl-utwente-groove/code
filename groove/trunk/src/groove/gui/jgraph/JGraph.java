@@ -80,8 +80,6 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.accessibility.AccessibleState;
 import javax.swing.AbstractAction;
@@ -622,9 +620,6 @@ abstract public class JGraph<G extends Graph<?,?>> extends org.jgraph.JGraph {
             @SuppressWarnings("unchecked")
             JModel<G> newJModel = (JModel<G>) model;
             if (oldJModel != null) {
-                if (getLayouter() != null) {
-                    getLayouter().stop();
-                }
                 // if we don't clear the selection, the old selection
                 // gives trouble when setting the model
                 clearSelection();
@@ -638,19 +633,7 @@ abstract public class JGraph<G extends Graph<?,?>> extends org.jgraph.JGraph {
                 setName(newJModel.getName());
             }
             if (newJModel != null) {
-                Layouter layouter = doLayout(false);
-                if (layouter != null) {
-                    final Timer timer = new Timer();
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            getLayouter().stop();
-                            // cancel the timer, because it may otherwise
-                            // keep the entire program from terminating
-                            timer.cancel();
-                        }
-                    }, MAX_LAYOUT_DURATION);
-                }
+                doLayout(false);
             }
             if (newJModel != null) {
                 newJModel.addGraphModelListener(getCancelEditListener());
@@ -868,9 +851,6 @@ abstract public class JGraph<G extends Graph<?,?>> extends org.jgraph.JGraph {
      * @see #getLayouter()
      */
     public void setLayouter(Layouter prototypeLayouter) {
-        if (this.layouter != null) {
-            this.layouter.stop();
-        }
         this.layouter = prototypeLayouter.newInstance(this);
     }
 
@@ -885,33 +865,25 @@ abstract public class JGraph<G extends Graph<?,?>> extends org.jgraph.JGraph {
      */
     public Layouter doLayout(boolean complete) {
         Layouter result = null;
-        // Test if we do any layouting, or complete layouting
+        // Test if we do any layouting
         // any means there is a layoutable
         boolean any = complete;
-        // all means all cells are layoutable
-        boolean all = true;
-        for (JCell<G> jCell : getModel().getRoots()) {
-            if (jCell.isLayoutable()) {
-                any = true;
-                if (!all) {
-                    break;
-                }
-            } else {
-                all = false;
-                if (any) {
+        if (!any) {
+            for (JCell<G> jCell : getModel().getRoots()) {
+                if (jCell.isLayoutable()) {
+                    any = true;
                     break;
                 }
             }
         }
         if (any) {
-            complete |= all;
             if (complete) {
+                getModel().setLayoutable(true);
                 result = getLayouter();
-            }
-            if (result == null) {
+            } else {
                 result = this.incrementalLayouter;
             }
-            result.start(complete);
+            result.start();
         }
         return result;
     }
@@ -1421,9 +1393,6 @@ abstract public class JGraph<G extends Graph<?,?>> extends org.jgraph.JGraph {
     /** Layouter used if only part of the model should be layed out. */
     private final Layouter incrementalLayouter =
         new SpringLayouter().newInstance(this);
-
-    /** Maximum duration for layouting a new model. */
-    static private final long MAX_LAYOUT_DURATION = 1000;
 
     /** The factor by which the zoom is adapted. */
     public static final float ZOOM_FACTOR = 1.4f;

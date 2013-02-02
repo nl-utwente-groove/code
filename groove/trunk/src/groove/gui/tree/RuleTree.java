@@ -653,8 +653,9 @@ public class RuleTree extends AbstractResourceTree {
             for (TreeNode node : selectedNodes) {
                 if (node instanceof MatchTreeNode) {
                     // selected tree node is a match (level 2 node)
-                    MatchResult result = ((MatchTreeNode) node).getMatch();
-                    getSimulatorModel().setMatch(result);
+                    GraphState state = ((MatchTreeNode) node).getSource();
+                    MatchResult match = ((MatchTreeNode) node).getMatch();
+                    getSimulatorModel().setMatch(state, match);
                     done = true;
                     break;
                 }

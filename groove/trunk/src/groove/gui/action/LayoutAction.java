@@ -41,7 +41,7 @@ public class LayoutAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (getLayouter().isEnabled()) {
+        if (this.jGraph.isEnabled()) {
             doLayout();
         }
     }
@@ -53,15 +53,13 @@ public class LayoutAction extends AbstractAction {
         // only layout selected cells, if there are any
         Object[] selection = this.jGraph.getSelectionCells();
         boolean complete = selection.length == 0;
-        if (!complete) {
-            this.jGraph.getModel().setLayoutable(false);
-            for (Object jCell : selection) {
-                if (jCell instanceof JCell) {
-                    ((JCell<?>) jCell).setLayoutable(true);
-                }
+        this.jGraph.getModel().setLayoutable(selection.length == 0);
+        for (Object jCell : selection) {
+            if (jCell instanceof JCell) {
+                ((JCell<?>) jCell).setLayoutable(true);
             }
         }
-        getLayouter().start(complete);
+        getLayouter().start();
     }
 
     /**
@@ -71,7 +69,7 @@ public class LayoutAction extends AbstractAction {
     @Override
     public Object getValue(String key) {
         if (key.equals(NAME)) {
-            return getLayouter().getText();
+            return getLayouter().getName();
         } else {
             return super.getValue(key);
         }

@@ -28,7 +28,7 @@ import java.util.Comparator;
  * This essentially consists of a rule event and the control transition.
  */
 public class MatchResult implements GraphTransitionKey {
-    /** Constructs a result from a given event and control transition. */
+    /** Constructs a result from a given rule transition. */
     public MatchResult(RuleTransition ruleTrans) {
         this.ruleTrans = ruleTrans;
         this.event = ruleTrans.getEvent();
@@ -42,7 +42,23 @@ public class MatchResult implements GraphTransitionKey {
         this.ctrlTrans = ctrlTrans;
     }
 
-    /** Indicates if this match result is based on an already explored rule transition. */
+    /** 
+     * Indicates if this match result corresponds to an 
+     * already explored rule transition from a given source state.
+     * @param state the source state for which the test is carried out
+     * @see #hasRuleTransition()
+     */
+    public boolean hasRuleTransitionFrom(GraphState state) {
+        return hasRuleTransition() && getRuleTransition().source() == state;
+    }
+
+    /** 
+     * Indicates if this match result is based on an already explored rule transition.
+     * Note that, in case the match is reused from a parent state,
+     * the source of this transition (if any) may differ from
+     * the state to which the match is to be applied.
+     * @see #hasRuleTransitionFrom(GraphState)
+     */
     public boolean hasRuleTransition() {
         return this.ruleTrans != null;
     }
