@@ -26,10 +26,10 @@ import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Simulator;
-import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JGraphFactory;
+import groove.gui.jgraph.JVertex;
 import groove.gui.layout.AbstractLayouter;
 import groove.gui.layout.Layouter;
 import groove.gui.look.VisualKey;
@@ -102,19 +102,14 @@ public final class PatternJGraph extends JGraph<AbstractPatternGraph<?,?>> {
 
         @Override
         public Layouter newInstance(JGraph<?> jgraph) {
-            return new MyLayouter(this.name, (PatternJGraph) jgraph);
+            return new MyLayouter(getName(), (PatternJGraph) jgraph);
         }
 
         @Override
-        public void start(boolean complete) {
+        public void start() {
             prepareLayouting();
             run();
             finishLayouting();
-        }
-
-        @Override
-        public void stop() {
-            // Empty by design.
         }
 
         PatternJGraph getJGraph() {

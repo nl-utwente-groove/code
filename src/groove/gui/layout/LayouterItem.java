@@ -31,23 +31,18 @@ import com.jgraph.layout.JGraphLayout;
 public class LayouterItem implements Layouter {
 
     private final LayoutKind kind;
-    private final String actionName;
-    private final JGraphLayout layout;
     private final JGraph<?> jGraph;
     private JGraphFacade facade;
     private final JPanel panel;
 
     /** Builds a prototype instance based on the given layout kind. */
     public LayouterItem(LayoutKind kind) {
-        this(kind, kind.getDisplayString(), kind.getLayout(), null, null);
+        this(kind, null, null);
     }
 
-    private LayouterItem(LayoutKind kind, String actionName,
-            JGraphLayout layout, final JGraph<?> jGraph,
+    private LayouterItem(LayoutKind kind, final JGraph<?> jGraph,
             JGraphFacade facade) {
         this.kind = kind;
-        this.actionName = actionName;
-        this.layout = layout;
         this.jGraph = jGraph;
         this.facade = facade;
         this.panel = jGraph == null ? null : LayoutKind.createLayoutPanel(this);
@@ -65,40 +60,24 @@ public class LayouterItem implements Layouter {
 
     @Override
     public Layouter newInstance(JGraph<?> jGraph) {
-        return new LayouterItem(this.kind, this.actionName, this.layout,
-            jGraph, new JGraphFacade(jGraph));
+        return new LayouterItem(this.kind, jGraph, new JGraphFacade(jGraph));
     }
 
     @Override
     public String getName() {
-        return this.actionName;
+        return this.kind.getDisplayString();
     }
 
     @Override
-    public String getText() {
-        return this.actionName;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    @Override
-    public void start(boolean complete) {
+    public void start() {
         prepareLayouting();
         run();
         finishLayouting();
     }
 
-    @Override
-    public void stop() {
-        // Empty by design.
-    }
-
     /** Basic getter method. */
     public JGraphLayout getLayout() {
-        return this.layout;
+        return this.kind.getLayout();
     }
 
     /** Basic getter method. */
@@ -112,7 +91,7 @@ public class LayouterItem implements Layouter {
     }
 
     private void run() {
-        this.layout.run(this.facade);
+        getLayout().run(this.facade);
         Map<?,?> nested = this.facade.createNestedMap(true, true);
         this.jGraph.getGraphLayoutCache().edit(nested);
     }

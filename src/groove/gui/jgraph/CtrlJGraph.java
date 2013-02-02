@@ -124,7 +124,7 @@ public class CtrlJGraph extends JGraph<CtrlAut> {
          */
         @Override
         public Layouter newInstance(JGraph<?> jGraph) {
-            return new MyForestLayouter(this.name, (CtrlJGraph) jGraph);
+            return new MyForestLayouter(getName(), (CtrlJGraph) jGraph);
         }
     }
 

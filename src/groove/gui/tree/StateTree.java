@@ -705,8 +705,8 @@ public class StateTree extends JTree implements SimulatorListener {
                         StateTreeNode stateNode = getStateNode(selectedState);
                         if (stateNode != null) {
                             expandPath(createPath(stateNode));
-                            getSimulatorModel().setState(selectedState);
-                            getSimulatorModel().setMatch(selectedMatch);
+                            getSimulatorModel().setMatch(selectedState,
+                                selectedMatch);
                         }
                     }
                 }

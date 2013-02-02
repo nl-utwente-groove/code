@@ -444,7 +444,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             if (clear) {
                 getJGraph().clearSelection();
             }
-            getSimulatorModel().setMatch(null);
+            getSimulatorModel().setMatch(getSimulatorModel().getState(), null);
             updateStatus();
         }
         return result;

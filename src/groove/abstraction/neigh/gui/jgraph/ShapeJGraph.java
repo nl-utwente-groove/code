@@ -24,11 +24,11 @@ import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Simulator;
-import groove.gui.jgraph.JVertex;
-import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JCellViewFactory;
+import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JGraphFactory;
+import groove.gui.jgraph.JVertex;
 import groove.gui.layout.AbstractLayouter;
 import groove.gui.layout.Layouter;
 import groove.gui.look.VisualKey;
@@ -205,19 +205,14 @@ public final class ShapeJGraph extends JGraph<Shape> {
 
         @Override
         public Layouter newInstance(JGraph<?> jgraph) {
-            return new MyLayouter(this.name, (ShapeJGraph) jgraph);
+            return new MyLayouter(getName(), (ShapeJGraph) jgraph);
         }
 
         @Override
-        public void start(boolean complete) {
+        public void start() {
             prepareLayouting();
             run();
             finishLayouting();
-        }
-
-        @Override
-        public void stop() {
-            // Empty by design.
         }
 
         ShapeJGraph getJGraph() {

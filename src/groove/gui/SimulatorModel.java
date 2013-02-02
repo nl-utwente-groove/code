@@ -415,7 +415,8 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** 
-     * Sets the selected state and if possible an outgoing match.
+     * Sets the selected state and optionally the incoming transition through which
+     * this state was reached, as well as a randomly selected outgoing match.
      * @param state the new selected state; non-{@code null}
      * @param trans if not {@code null}, a transition that should be inserted post-hoc into the
      * history as the one that was selected before this change
@@ -438,8 +439,8 @@ public class SimulatorModel implements Cloneable {
         changeState(state);
         MatchResult match = getMatch(state);
         changeMatch(match);
-        changeTransition(match instanceof GraphTransition
-                ? (GraphTransition) match : null);
+        changeTransition(match.hasRuleTransitionFrom(state)
+                ? match.getRuleTransition() : null);
         if (getDisplay() != DisplayKind.LTS) {
             changeDisplay(DisplayKind.STATE);
         }
@@ -635,25 +636,32 @@ public class SimulatorModel implements Cloneable {
     }
 
     /** 
-     * Changes the selected rule match, and fires an update event.
+     * Changes the selected state and rule match, and fires an update event.
      * If the match is changed to a non-null event, also sets the rule.
-     * If the match is changed to a non-null transition, also sets the state.
+     * If the match is changed to a non-null transition from the selected state,
+     * also sets the transition.
+     * @param state the new selected state; if {@code null}, the selected state
+     * is unchanged
+     * @param match the new selected match; if {@code null}, the match is
+     * deselected
      * @return if {@code true}, the match was really changed
      */
-    public final boolean setMatch(MatchResult match) {
+    public final boolean setMatch(GraphState state, MatchResult match) {
         start();
-        if (changeMatch(match) && match != null) {
-            changeSelected(ResourceKind.RULE, match.getRule().getFullName());
-            if (match.hasRuleTransition()) {
-                RuleTransition trans = match.getRuleTransition();
-                changeTransition(trans);
-                changeState(trans.source());
+        boolean stateChanged = changeState(state);
+        boolean matchChanged = changeMatch(match);
+        if (matchChanged || stateChanged) {
+            if (match.hasRuleTransitionFrom(state)) {
+                changeTransition(match.getRuleTransition());
             } else {
                 changeTransition(null);
             }
             if (getDisplay() != DisplayKind.LTS) {
                 changeDisplay(DisplayKind.STATE);
             }
+        }
+        if (matchChanged) {
+            changeSelected(ResourceKind.RULE, match.getRule().getFullName());
         }
         return finish();
     }

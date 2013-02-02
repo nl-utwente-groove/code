@@ -43,14 +43,9 @@ class MatchTreeNode extends DisplayTreeNode {
         this.anchored = anchored;
     }
 
-    /** Indicates if this match is already turned into a transition. */
-    public boolean isTransition() {
-        return getMatch().hasRuleTransition();
-    }
-
-    /** Returns the rule transition of the match, if any. */
-    public RuleTransition getTransition() {
-        return getMatch().getRuleTransition();
+    /** Indicates if this match corresponds to a transition from the source state. */
+    private boolean isTransition() {
+        return getMatch().hasRuleTransitionFrom(this.source);
     }
 
     @Override
@@ -104,7 +99,7 @@ class MatchTreeNode extends DisplayTreeNode {
         result.append(this.nr);
         result.append(": ");
         if (isTransition()) {
-            RuleTransition trans = getTransition();
+            RuleTransition trans = getMatch().getRuleTransition();
             result.append(trans.text(this.anchored));
             result.append(RIGHTARROW);
             result.append(HTMLConverter.ITALIC_TAG.on(trans.target().toString()));

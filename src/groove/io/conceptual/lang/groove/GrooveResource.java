@@ -133,7 +133,7 @@ public class GrooveResource extends ExportableResource {
                         model.loadGraph(aspectGraph);
                         try {
                             jGraph.setModel(model);
-                            this.m_layouter.newInstance(jGraph).start(true);
+                            this.m_layouter.newInstance(jGraph).start();
                             //m_simModel.synchronize();
                         } catch (Exception e) {
                             // For some reason NullPointerException when filtering and some label keys are null

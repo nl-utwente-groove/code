@@ -18,9 +18,9 @@ package groove.gui.layout;
 
 import groove.graph.EdgeComparator;
 import groove.graph.NodeComparator;
-import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JVertex;
 import groove.util.Pair;
 import groove.util.collect.CollectionOfCollections;
 import groove.util.collect.NestedIterator;
@@ -78,19 +78,16 @@ public class ForestLayouter extends AbstractLayouter {
     }
 
     public Layouter newInstance(JGraph<?> jgraph) {
-        return new ForestLayouter(this.name, jgraph);
+        return new ForestLayouter(getName(), jgraph);
     }
 
     /**
      * This implementation successively calls <tt>reset()</tt>,
      * <tt>prepare()</tt>, <tt>layout()</tt> and <tt>finish()</tt>.
      */
-    public void start(boolean complete) {
-        if (complete) {
-            reset();
-        }
+    public void start() {
         synchronized (this.jgraph) {
-            prepare(complete);
+            prepare();
             computeBranchMap();
             computeRoots();
             layout(this.roots, 0);
@@ -99,11 +96,6 @@ public class ForestLayouter extends AbstractLayouter {
             shift(this.roots, MIN_NODE_DISTANCE);
             finish();
         }
-    }
-
-    /** This implementation does nothing, */
-    public void stop() {
-        // does nothing
     }
 
     /**

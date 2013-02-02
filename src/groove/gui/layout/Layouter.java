@@ -37,14 +37,6 @@ public interface Layouter {
     public String getName();
 
     /**
-     * Returns the text to be displayed on an action for this layouter.
-     */
-    public String getText();
-
-    /** Indicates if the layouter is currently enabled. */
-    public boolean isEnabled();
-
-    /**
      * Lays out the <tt>jgraph</tt>, optionally taking existing layout
      * information into account. Existing layout information is kept for the
      * jgraph cells marked unmoveable, if the specific layouter is able to do
@@ -52,15 +44,6 @@ public interface Layouter {
      * does layouting in parallel, the <tt>stop()</tt> method should make sure
      * that the layout thread stops, and the <tt>start()</tt> itself shouls
      * call <tt>stop()</tt> before it does anything else.
-     * @param complete <tt>true</tt> if the jgraph should be layed out
-     *        completely, i.e., not taking existing layout information into
-     *        account.
      */
-    public abstract void start(boolean complete);
-
-    /**
-     * To be invoked whenever layouting should stop. This is only relevant if
-     * layouting is done in an independent thread.
-     */
-    public abstract void stop();
+    public abstract void start();
 }

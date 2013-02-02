@@ -30,7 +30,7 @@ public class ApplyMatchAction extends SimulatorAction {
         } else {
             GraphState state = getSimulatorModel().getState();
             RuleTransition trans;
-            if (match.hasRuleTransition()) {
+            if (match.hasRuleTransitionFrom(state)) {
                 trans = match.getRuleTransition();
             } else {
                 trans = state.applyMatch(match);
