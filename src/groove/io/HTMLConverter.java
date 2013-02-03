@@ -72,7 +72,6 @@ public class HTMLConverter {
             case Util.RT:
                 html = HTML_RT;
                 break;
-
             default:
                 if (c > 0xFF) {
                     html = toHtml(c);

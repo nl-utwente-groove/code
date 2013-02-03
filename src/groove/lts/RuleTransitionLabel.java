@@ -20,6 +20,7 @@ import groove.control.CtrlTransition;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
 import groove.graph.AbstractLabel;
+import groove.graph.Label;
 import groove.transform.AbstractRuleEvent;
 import groove.transform.Record;
 import groove.transform.RuleEvent;
@@ -117,6 +118,34 @@ public class RuleTransitionLabel extends AbstractLabel implements ActionLabel {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public int compareTo(Label obj) {
+        if (!(obj instanceof ActionLabel)) {
+            throw new IllegalArgumentException(String.format(
+                "Can't compare %s and %s", this.getClass(), obj.getClass()));
+        }
+        int result = super.compareTo(obj);
+        if (result != 0) {
+            return result;
+        }
+        if (obj instanceof RecipeTransitionLabel) {
+            return -1;
+        }
+        RuleTransitionLabel other = (RuleTransitionLabel) obj;
+        result = getCtrlTransition().compareTo(other.getCtrlTransition());
+        if (result != 0) {
+            return result;
+        }
+        result = getEvent().compareTo(other.getEvent());
+        return result;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        // TODO Auto-generated method stub
+        return super.clone();
     }
 
     private final RuleEvent event;
