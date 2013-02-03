@@ -103,9 +103,14 @@ public class MultiLabel {
             Line line = entry.getKey();
             DirectBag dirBag = entry.getValue();
             for (Direct dir : Direct.values()) {
-                for (int i = 0; i < dirBag.get(dir); i++) {
+                int count = dirBag.get(dir);
+                if (count > 0) {
                     if (!result.isEmpty()) {
                         result.appendLineBreak();
+                    }
+                    if (count > 1) {
+                        String mult = SP + "(" + count + ")";
+                        line = line.append(mult);
                     }
                     if (start != null) {
                         Orient orient = dir.getOrient(start, end);
@@ -346,6 +351,11 @@ public class MultiLabel {
                 result.values.put(dir, get(dir) + other.get(dir));
             }
             return norm(result);
+        }
+
+        @Override
+        public String toString() {
+            return "DirectBag [" + this.values + "]";
         }
 
         /** Counts for each of the directions in this multiset. */

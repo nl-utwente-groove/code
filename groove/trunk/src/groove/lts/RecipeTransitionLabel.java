@@ -18,6 +18,7 @@ package groove.lts;
 
 import groove.grammar.Recipe;
 import groove.graph.AbstractLabel;
+import groove.graph.Label;
 
 /** Class of labels that can appear on rule transitions. */
 public class RecipeTransitionLabel extends AbstractLabel implements ActionLabel {
@@ -76,6 +77,27 @@ public class RecipeTransitionLabel extends AbstractLabel implements ActionLabel 
         int result = this.recipe.hashCode();
         result = prime * result + this.initial.hashCode();
         return result;
+    }
+
+    @Override
+    public int compareTo(Label obj) {
+        if (!(obj instanceof ActionLabel)) {
+            throw new IllegalArgumentException(String.format(
+                "Can't compare %s and %s", this.getClass(), obj.getClass()));
+        }
+        if (obj instanceof RuleTransitionLabel) {
+            return -obj.compareTo(this);
+        }
+        int result = super.compareTo(obj);
+        if (result != 0) {
+            return result;
+        }
+        RecipeTransitionLabel other = (RecipeTransitionLabel) obj;
+        result = this.recipe.compareTo(other.recipe);
+        if (result != 0) {
+            return result;
+        }
+        return getInitial().label().compareTo(other.getInitial().label());
     }
 
     private final String text;

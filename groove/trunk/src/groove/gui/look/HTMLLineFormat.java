@@ -139,6 +139,11 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
             this.content.append(HTMLConverter.HTML_LINEBREAK);
         }
 
+        @Override
+        public String toString() {
+            return this.content.toString();
+        }
+
         private final StringBuilder content = new StringBuilder();
     }
 }
