@@ -18,13 +18,14 @@ package groove.io.conceptual.type;
 
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Visitor;
-import groove.io.conceptual.value.DataValue;
+import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.Value;
 
+/** User-provided special data type. */
 public class CustomDataType extends DataType {
-
+    /** Constructs a custom data type with a given identifier. */
     public CustomDataType(Id id) {
-        m_id = id;
+        super(id);
     }
 
     @Override
@@ -35,12 +36,11 @@ public class CustomDataType extends DataType {
 
     @Override
     public Value valueFromString(String valueString) {
-        return new DataValue(this, valueString);
+        return new CustomDataValue(this, valueString);
     }
 
     @Override
     public String typeString() {
-        return m_id.getName().toString();
+        return getId().getName().toString();
     }
-
 }

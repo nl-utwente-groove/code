@@ -5,21 +5,15 @@ import groove.io.conceptual.Name;
 import groove.io.conceptual.value.BoolValue;
 import groove.io.conceptual.value.Value;
 
-//TODO: is singleton
+/** Singleton class for the boolean type. */
 public class BoolType extends DataType {
-    private static BoolType g_boolType = new BoolType();
-
     private BoolType() {
-        m_id = Id.getId(Id.ROOT, Name.getName("bool"));
-    }
-
-    public static BoolType get() {
-        return g_boolType;
+        super(Id.getId(Id.ROOT, Name.getName(NAME)));
     }
 
     @Override
     public String typeString() {
-        return "bool";
+        return NAME;
     }
 
     @Override
@@ -30,9 +24,15 @@ public class BoolType extends DataType {
 
     @Override
     public Value valueFromString(String valueString) {
-        if (valueString.equals("true")) {
-            return new BoolValue(true);
-        }
-        return new BoolValue(false);
+        return BoolValue.getInstance(Boolean.getBoolean(valueString));
     }
+
+    /** Returns the singleton instance of the boolean type. */
+    public static BoolType instance() {
+        return instance;
+    }
+
+    private static BoolType instance = new BoolType();
+    /** Name of the boolean type. */
+    public final static String NAME = "bool";
 }

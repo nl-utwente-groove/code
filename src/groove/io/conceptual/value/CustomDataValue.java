@@ -17,17 +17,20 @@
 package groove.io.conceptual.value;
 
 import groove.io.conceptual.Visitor;
-import groove.io.conceptual.type.Type;
+import groove.io.conceptual.type.CustomDataType;
 
 import java.util.regex.Matcher;
 
-public class DataValue extends Value {
-
-    String m_value;
-
-    public DataValue(Type type, String value) {
+/** Class for values of custom data types. */
+public class CustomDataValue extends Value {
+    /** 
+     * Constructs a custom data value representation.
+     * @param type the custom data type of which this is a value; non-{@code null}
+     * @param value the string representation of the custom value; non-{@code null}
+     */
+    public CustomDataValue(CustomDataType type, String value) {
         super(type);
-        m_value = value;
+        this.m_value = value;
     }
 
     @Override
@@ -36,12 +39,17 @@ public class DataValue extends Value {
         return true;
     }
 
+    @Override
     public String getValue() {
-        return m_value.replaceAll(Matcher.quoteReplacement("\\"), "\\\\\\\\").replaceAll(Matcher.quoteReplacement("\""), "\\\\\"");
+        return this.m_value.replaceAll(Matcher.quoteReplacement("\\"),
+            "\\\\\\\\").replaceAll(Matcher.quoteReplacement("\""), "\\\\\"");
     }
 
     @Override
     public String toString() {
-        return "Data: " + m_value;
+        return "Data: " + this.m_value;
     }
+
+    /** The (String-represented) value. */
+    private final String m_value;
 }

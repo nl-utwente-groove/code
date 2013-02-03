@@ -18,7 +18,7 @@ import groove.io.conceptual.property.OppositeProperty;
 import groove.io.conceptual.property.Property;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
-import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.CustomDataType;
 import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
@@ -275,8 +275,8 @@ public class Config {
             // Otherwise, not required
             boolean useIndex = useIndex(c);
             boolean unique =
-                c.getContainerType() == ContainerType.SET
-                    || c.getContainerType() == ContainerType.ORD;
+                c.getContainerType() == Kind.SET
+                    || c.getContainerType() == Kind.ORD;
 
             if (!unique) {
                 return true;
@@ -316,8 +316,8 @@ public class Config {
         boolean useIndex =
             this.m_xmlConfig.getTypeModel().getFields().getContainers().getOrdering().getType() != OrderType.NONE;
         useIndex &=
-            c.getContainerType() == ContainerType.ORD
-                || c.getContainerType() == ContainerType.SEQ;
+            c.getContainerType() == Kind.ORD
+                || c.getContainerType() == Kind.SEQ;
 
         return useIndex;
     }

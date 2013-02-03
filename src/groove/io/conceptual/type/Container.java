@@ -2,20 +2,30 @@ package groove.io.conceptual.type;
 
 import groove.io.conceptual.Field;
 
+/** Container type. */
 public class Container extends Type {
-    public enum ContainerType {
-        BAG, SET, SEQ, ORD
+    /** Kind of container type. */
+    public enum Kind {
+        /** Unordered container with duplicates. */
+        BAG,
+        /** Unordered container without duplicates. */
+        SET,
+        /** Ordered container with duplicates. */
+        SEQ,
+        /** Ordered container without duplicates. */
+        ORD
     }
 
-    private ContainerType m_ctype;
+    private Kind m_ctype;
     private Type m_contentType;
-    // This field is kind of a hack to be able to determine if this container requires an intermediate node by its containing field
+    /** Field that is set if the representation of the container uses an intermediate node. */
     private Field m_containingField;
-    // parent container. Info is required to detect of a parent is used, as an intermediate is required then
+    /** Field that is set this container type is wrapped in another container type. */
     private Container m_parent;
 
-    public Container(ContainerType ctype, Type contentType) {
-        m_ctype = ctype;
+    /** Constructs a container of a given kind and element type. */
+    public Container(Kind ctype, Type contentType) {
+        this.m_ctype = ctype;
 
         if (contentType instanceof Class) {
             // Containers always proper type
@@ -25,54 +35,59 @@ public class Container extends Type {
             ((Container) contentType).m_parent = this;
         }
 
-        m_contentType = contentType;
-        m_parent = null;
+        this.m_contentType = contentType;
+        this.m_parent = null;
     }
 
+    /** Sets the field representing this container, if an intermediate node is used. */
     public void setField(Field field) {
-        m_containingField = field;
+        this.m_containingField = field;
     }
 
+    /** Returns the field representing this container, if an intermediate node is used. */
     public Field getField() {
-        return m_containingField;
+        return this.m_containingField;
     }
 
+    /** Returns the parent container in which this type is wrapped, if any. */
     public Container getParent() {
-        return m_parent;
+        return this.m_parent;
     }
 
+    /** Changes the kind of container to ordered or unordered. */
     public void setOrdered(boolean ordered) {
         if (ordered) {
-            if (m_ctype == ContainerType.SET) {
-                m_ctype = ContainerType.ORD;
+            if (this.m_ctype == Kind.SET) {
+                this.m_ctype = Kind.ORD;
             }
-            if (m_ctype == ContainerType.BAG) {
-                m_ctype = ContainerType.SEQ;
+            if (this.m_ctype == Kind.BAG) {
+                this.m_ctype = Kind.SEQ;
             }
         } else {
-            if (m_ctype == ContainerType.ORD) {
-                m_ctype = ContainerType.SET;
+            if (this.m_ctype == Kind.ORD) {
+                this.m_ctype = Kind.SET;
             }
-            if (m_ctype == ContainerType.SEQ) {
-                m_ctype = ContainerType.BAG;
+            if (this.m_ctype == Kind.SEQ) {
+                this.m_ctype = Kind.BAG;
             }
         }
     }
 
+    /** Changes the presence of duplicates in the container kind. */
     public void setUnique(boolean unique) {
         if (unique) {
-            if (m_ctype == ContainerType.BAG) {
-                m_ctype = ContainerType.SET;
+            if (this.m_ctype == Kind.BAG) {
+                this.m_ctype = Kind.SET;
             }
-            if (m_ctype == ContainerType.SEQ) {
-                m_ctype = ContainerType.ORD;
+            if (this.m_ctype == Kind.SEQ) {
+                this.m_ctype = Kind.ORD;
             }
         } else {
-            if (m_ctype == ContainerType.SET) {
-                m_ctype = ContainerType.BAG;
+            if (this.m_ctype == Kind.SET) {
+                this.m_ctype = Kind.BAG;
             }
-            if (m_ctype == ContainerType.ORD) {
-                m_ctype = ContainerType.SEQ;
+            if (this.m_ctype == Kind.ORD) {
+                this.m_ctype = Kind.SEQ;
             }
         }
     }
@@ -89,31 +104,32 @@ public class Container extends Type {
 
     @Override
     public String toString() {
-        return typeString() + "<" + m_ctype + ">(" + (m_contentType.isComplex() ? m_contentType.typeString() : m_contentType.toString()) + ")";
+        return typeString()
+            + "<"
+            + this.m_ctype
+            + ">("
+            + (this.m_contentType.isComplex() ? this.m_contentType.typeString()
+                    : this.m_contentType.toString()) + ")";
     }
 
-    public ContainerType getContainerType() {
-        return m_ctype;
+    /** Returns the kind of this container. */
+    public Kind getContainerType() {
+        return this.m_ctype;
     }
 
-    public void setContainerType(ContainerType ctype) {
-        m_ctype = ctype;
-    }
-
+    /** Returns the type of the container elements. */
     public Type getType() {
-        return m_contentType;
+        return this.m_contentType;
     }
 
-    public void setType(Type contentType) {
-        m_contentType = contentType;
-    }
-
+    /** Indicates if this container supports duplicates. */
     public boolean isUnique() {
-        return m_ctype == ContainerType.SET || m_ctype == ContainerType.ORD;
+        return this.m_ctype == Kind.SET || this.m_ctype == Kind.ORD;
     }
 
+    /** Indicates if this container is ordered. */
     public boolean isOrdered() {
-        return m_ctype == ContainerType.SEQ || m_ctype == ContainerType.ORD;
+        return this.m_ctype == Kind.SEQ || this.m_ctype == Kind.ORD;
     }
 
     @Override
@@ -128,6 +144,7 @@ public class Container extends Type {
             return false;
         }
         Container c = (Container) o;
-        return c.getContainerType() == getContainerType() && c.getType().equals(getType());
+        return c.getContainerType() == getContainerType()
+            && c.getType().equals(getType());
     }
 }

@@ -23,7 +23,7 @@ import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
 import groove.io.conceptual.type.StringType;
-import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.type.Container.Kind;
 
 public class GraphvizUtil {
     private static final Id g_dotId = Id.getId(Id.ROOT, Name.getName("DOT"));
@@ -46,15 +46,15 @@ public class GraphvizUtil {
         TypeModel typeModel = new TypeModel("DOT");
         g_NodeClass = typeModel.getClass(Id.getId(g_dotId, Name.getName("Node")), true);
 
-        g_LabelField = new Field(Name.getName("label"), StringType.get(), 0, 1);
-        g_AttrField = new Field(Name.getName("attributes"), new Container(ContainerType.SET, StringType.get()), 0, -1);
+        g_LabelField = new Field(Name.getName("label"), StringType.instance(), 0, 1);
+        g_AttrField = new Field(Name.getName("attributes"), new Container(Kind.SET, StringType.instance()), 0, -1);
         g_NodeClass.addField(g_LabelField);
         g_NodeClass.addField(g_AttrField);
 
         //Edges may have attributes and labels, but not supported
         //Edges may be connected to ports, but not supported
         //Edges may be directed or undirected, but not supported
-        g_EdgeField = new Field(Name.getName("edge"), new Container(ContainerType.SET, g_NodeClass.getProperClass()), 0, -1);
+        g_EdgeField = new Field(Name.getName("edge"), new Container(Kind.SET, g_NodeClass.getProperClass()), 0, -1);
         g_NodeClass.addField(g_EdgeField);
 
         return typeModel;

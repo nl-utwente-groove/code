@@ -6,20 +6,20 @@ import groove.io.conceptual.type.Container;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Conceptual container values: lists, sets, etc. */
 public class ContainerValue extends Value {
     // List has ordering. Depending on the type of the container, it may be interpreted ordered or unordered
     private List<Value> m_values;
 
-    public ContainerValue(Container type, Value... vals) {
+    /** Constructs an initially empty container. */
+    public ContainerValue(Container type) {
         super(type);
-        m_values = new ArrayList<Value>();
-        for (Value v : vals) {
-            m_values.add(v);
-        }
+        this.m_values = new ArrayList<Value>();
     }
 
+    /** Adds a value to the container. */
     public void addValue(Value v) {
-        m_values.add(v);
+        this.m_values.add(v);
     }
 
     @Override
@@ -28,21 +28,22 @@ public class ContainerValue extends Value {
         return true;
     }
 
-    public List<Value> getValues() {
-        return m_values;
+    @Override
+    public List<Value> getValue() {
+        return this.m_values;
     }
 
     @Override
     public String toString() {
         String valueString = "[";
 
-        for (int i = 0; i < m_values.size(); i++) {
-            if (m_values.get(i) instanceof Object) {
-                valueString += ((Object) m_values.get(i)).toShortString();
+        for (int i = 0; i < this.m_values.size(); i++) {
+            if (this.m_values.get(i) instanceof Object) {
+                valueString += ((Object) this.m_values.get(i)).toShortString();
             } else {
-                valueString += m_values.get(i);
+                valueString += this.m_values.get(i);
             }
-            if (i < m_values.size() - 1) {
+            if (i < this.m_values.size() - 1) {
                 valueString += ", ";
             }
         }

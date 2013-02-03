@@ -22,7 +22,7 @@ import groove.io.conceptual.type.CustomDataType;
 import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Type;
-import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.Value;
 
@@ -247,9 +247,9 @@ public class EcoreToType extends TypeImporter {
 
         // Handle container type
         if (eAttribute.getUpperBound() > 1 || eAttribute.getUpperBound() == -1) {
-            ContainerType type = eAttribute.isUnique() ?
-                    (eAttribute.isOrdered() ? ContainerType.ORD : ContainerType.SET) : // Unique
-                    (eAttribute.isOrdered() ? ContainerType.SEQ : ContainerType.BAG); // Non-unique
+            Kind type = eAttribute.isUnique() ?
+                    (eAttribute.isOrdered() ? Kind.ORD : Kind.SET) : // Unique
+                    (eAttribute.isOrdered() ? Kind.SEQ : Kind.BAG); // Non-unique
             attribType = new Container(type, attribType);
         }
 
@@ -320,9 +320,9 @@ public class EcoreToType extends TypeImporter {
 
         // Handle container type
         if (eReference.getUpperBound() > 1 || eReference.getUpperBound() == -1) {
-            ContainerType type = eReference.isUnique() ?
-                    (eReference.isOrdered() ? ContainerType.ORD : ContainerType.SET) : // Unique
-                    (eReference.isOrdered() ? ContainerType.SEQ : ContainerType.BAG); // Non-unique
+            Kind type = eReference.isUnique() ?
+                    (eReference.isOrdered() ? Kind.ORD : Kind.SET) : // Unique
+                    (eReference.isOrdered() ? Kind.SEQ : Kind.BAG); // Non-unique
             fieldType = new Container(type, fieldType);
         }
 

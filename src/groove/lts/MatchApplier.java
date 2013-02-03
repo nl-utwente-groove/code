@@ -22,8 +22,8 @@ import groove.grammar.host.HostNode;
 import groove.transform.CompositeEvent;
 import groove.transform.MergeMap;
 import groove.transform.RuleEffect;
-import groove.transform.RuleEvent;
 import groove.transform.RuleEffect.Fragment;
+import groove.transform.RuleEvent;
 import groove.util.Reporter;
 
 import java.util.Set;

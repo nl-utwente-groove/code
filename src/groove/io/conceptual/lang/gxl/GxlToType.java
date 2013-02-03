@@ -18,7 +18,7 @@ import groove.io.conceptual.property.DefaultValueProperty;
 import groove.io.conceptual.type.BoolType;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
-import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.IntType;
 import groove.io.conceptual.type.RealType;
@@ -79,11 +79,11 @@ public class GxlToType extends TypeImporter {
     private static final Map<String,Type> g_simpleTypeMap =
         new HashMap<String,Type>();
     static {
-        g_simpleTypeMap.put("Locator", StringType.get());
-        g_simpleTypeMap.put("Bool", BoolType.get());
-        g_simpleTypeMap.put("Float", RealType.get());
-        g_simpleTypeMap.put("Int", IntType.get());
-        g_simpleTypeMap.put("String", StringType.get());
+        g_simpleTypeMap.put("Locator", StringType.instance());
+        g_simpleTypeMap.put("Bool", BoolType.instance());
+        g_simpleTypeMap.put("Float", RealType.instance());
+        g_simpleTypeMap.put("Int", IntType.instance());
+        g_simpleTypeMap.put("String", StringType.instance());
     }
 
     private static final Set<String> g_complexTypeSet = new HashSet<String>();
@@ -321,7 +321,7 @@ public class GxlToType extends TypeImporter {
      */
 
     // Nodes specify elements in the model, being nodes, edges, relations, attributes etc
-    /*
+    /**
      * Nodes (classes) 
      * --<node id="NodeClass"> 
      * --<node id="isA"> edge, inheritance 
@@ -552,16 +552,16 @@ public class GxlToType extends TypeImporter {
             Type toType = targetClass;
             if (fromLimits.upper > 1 || toLimits.upper == -1) {
                 if (fromOrdered) {
-                    fromType = new Container(ContainerType.ORD, fromType);
+                    fromType = new Container(Kind.ORD, fromType);
                 } else {
-                    fromType = new Container(ContainerType.SET, fromType);
+                    fromType = new Container(Kind.SET, fromType);
                 }
             }
             if (toLimits.upper > 1 || toLimits.upper == -1) {
                 if (toOrdered) {
-                    toType = new Container(ContainerType.ORD, toType);
+                    toType = new Container(Kind.ORD, toType);
                 } else {
-                    toType = new Container(ContainerType.SET, toType);
+                    toType = new Container(Kind.SET, toType);
                 }
             }
 
@@ -612,7 +612,7 @@ public class GxlToType extends TypeImporter {
 
         Type targetType = targetClass;
         if ((toLimits.upper > 1 || toLimits.upper == -1) && toOrdered) {
-            targetType = new Container(ContainerType.ORD, targetType);
+            targetType = new Container(Kind.ORD, targetType);
         }
         Field f =
             new Field(Name.getName(name), targetType, toLimits.lower,
@@ -673,11 +673,11 @@ public class GxlToType extends TypeImporter {
             } else {
                 assert (components.size() == 1);
                 if (type.equals("Set")) {
-                    t = new Container(ContainerType.SET, components.get(0));
+                    t = new Container(Kind.SET, components.get(0));
                 } else if (type.equals("Bag")) {
-                    t = new Container(ContainerType.BAG, components.get(0));
+                    t = new Container(Kind.BAG, components.get(0));
                 } else if (type.equals("Seq")) {
-                    t = new Container(ContainerType.SEQ, components.get(0));
+                    t = new Container(Kind.SEQ, components.get(0));
                 }
             }
 
@@ -759,15 +759,15 @@ public class GxlToType extends TypeImporter {
                 return null;
             }
         } else if (type.equals("BoolVal")) {
-            String value =
+            String valueString =
                 (String) GxlUtil.getAttribute(valueNode, "value",
                     AttrTypeEnum.STRING);
             if (type instanceof BoolType) {
-                return new groove.io.conceptual.value.BoolValue(
-                    Boolean.parseBoolean(value));
+                return BoolType.instance().valueFromString(valueString);
             } else {
-                addMessage(new Message("Trying to parse bool value " + value
-                    + " while expected type is " + type, MessageType.ERROR));
+                addMessage(new Message("Trying to parse bool value "
+                    + valueString + " while expected type is " + type,
+                    MessageType.ERROR));
                 return null;
             }
         } else if (nodeType.equals("FloatVal")) {
@@ -834,13 +834,13 @@ public class GxlToType extends TypeImporter {
         // composite types
         else if (nodeType.equals("BagVal") || nodeType.equals("SetVal")
             || nodeType.equals("SeqVal")) {
-            ContainerType ct = ContainerType.BAG;
+            Kind ct = Kind.BAG;
             if (nodeType.equals("BagVal")) {
-                ct = ContainerType.BAG;
+                ct = Kind.BAG;
             } else if (nodeType.equals("SetVal")) {
-                ct = ContainerType.SET;
+                ct = Kind.SET;
             } else if (nodeType.equals("SeqVal")) {
-                ct = ContainerType.SEQ;
+                ct = Kind.SEQ;
             }
             if (type instanceof Container
                 && ((Container) type).getContainerType() == ct) {
@@ -923,18 +923,22 @@ public class GxlToType extends TypeImporter {
         return new Limits(lower, upper);
     }
 
+    /** Returns the conceptual type corresponding to a given name, if any. */
     public Type getIdType(String id) {
         return this.m_idToType.get(id);
     }
 
+    /** Returns the conceptual field corresponding to a given name, if any. */
     public Field getIdField(String id) {
         return this.m_idToField.get(id);
     }
 
+    /** Returns the conceptual identifier corresponding to a given graph name, if any. */
     public Id getGraphId(String graphId) {
         return this.m_graphNamespaces.get(graphId);
     }
 
+    /** Tests if a given edge name belongs to a composte edge. */
     public boolean isComplex(String edgeId) {
         return this.m_complexEdgeIds.contains(edgeId);
     }

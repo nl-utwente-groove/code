@@ -16,8 +16,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * This type is based on a 'Class' identifier. The public constructor creates a nullable and proper version of the same class, with the proper class referring
- * to the nullable class as a supertype.
+ * This type is based on a 'Class' identifier.
+ * The public constructor creates a nullable and proper version of the same class,
+ * with the proper class referring to the nullable class as a supertype.
  * 
  * @author Me
  */
@@ -31,23 +32,30 @@ public class Class extends Type implements Identifiable {
 
     // Each class instantiation creates a nullable and proper version
     private Class m_nullableClass;
+    /** The corresponding proper class, if this is a nullable class. */
     private Class m_properClass;
 
-    // Create nullable class
+    /**
+     * Creates a nullable class with a given name.
+     * @param name the name of the nullable class; non-{@code null}
+     * @param proper the corresponding proper class; non-{@code null}
+     */
     private Class(Id name, Class proper) {
-        m_id = name;
-        m_proper = false;
-        m_nullableClass = this;
-        m_properClass = proper;
+        this.m_id = name;
+        this.m_proper = false;
+        this.m_nullableClass = this;
+        this.m_properClass = proper;
     }
 
-    // Create proper class
+    /**
+     * Creates a proper class with a given name.
+     * @param name the name of the nullable class; non-{@code null}
+     */
     public Class(Id name) {
-        m_id = name;
-        m_proper = true;
-        m_properClass = this;
-        m_nullableClass = new Class(name, this);
-
+        this.m_id = name;
+        this.m_proper = true;
+        this.m_properClass = this;
+        this.m_nullableClass = new Class(name, this);
         //addSuperClass(nullable); //dont do this, cyclic result
         // Commented out: the type graph builder will do this on its own. Allows lazy building the nullable class
         //m_superClasses.add(m_nullableClass);
@@ -65,58 +73,61 @@ public class Class extends Type implements Identifiable {
 
     @Override
     public String toString() {
-        if (m_proper) {
-            return m_id.toString() + "<Proper>";
+        if (this.m_proper) {
+            return this.m_id.toString() + "<Proper>";
         }
-        return m_id.toString() + "<Nullable>";
+        return this.m_id.toString() + "<Nullable>";
     }
 
+    /** Adds a direct superclass to this class type. */
     public void addSuperClass(Class c) {
-        if (!m_proper) {
-            m_properClass.addSuperClass(c);
+        if (!this.m_proper) {
+            this.m_properClass.addSuperClass(c);
             return;
         }
         assert c.isProper();
         if (c == this) {
             return;
         }
-        if (!m_superClasses.contains(c)) {
-            m_superClasses.add(c);
+        if (!this.m_superClasses.contains(c)) {
+            this.m_superClasses.add(c);
         }
     }
 
+    /** Adds a field to this class type. */
     public Field addField(Field f) {
-        if (!m_proper) {
-            return m_properClass.addField(f);
+        if (!this.m_proper) {
+            return this.m_properClass.addField(f);
         }
         //if (!m_fields.values().contains(f))
-        if (!m_fields.containsKey(f.getName())) {
-            m_fields.put(f.getName(), f);
+        if (!this.m_fields.containsKey(f.getName())) {
+            this.m_fields.put(f.getName(), f);
             f.setDefiningClass(this);
         }
         return f;
     }
 
+    /** Returns the field with a given name, if any. */
     public Field getField(Name name) {
-        if (!m_proper) {
-            return m_properClass.getField(name);
+        if (!this.m_proper) {
+            return this.m_properClass.getField(name);
         }
-        if (m_fields.containsKey(name)) {
-            return m_fields.get(name);
+        if (this.m_fields.containsKey(name)) {
+            return this.m_fields.get(name);
         }
         return null;
     }
 
-    //DFS search for field in superclasses
+    /** Returns the field with a given name from either this class or a superclass, if any. */
     public Field getFieldSuper(Name name) {
-        if (!m_proper) {
-            return m_properClass.getFieldSuper(name);
+        if (!this.m_proper) {
+            return this.m_properClass.getFieldSuper(name);
         }
-        if (m_fields.containsKey(name)) {
-            return m_fields.get(name);
+        if (this.m_fields.containsKey(name)) {
+            return this.m_fields.get(name);
         }
 
-        for (Class c : m_superClasses) {
+        for (Class c : this.m_superClasses) {
             Field f = c.getFieldSuper(name);
             if (f != null) {
                 return f;
@@ -126,38 +137,43 @@ public class Class extends Type implements Identifiable {
         return null;
     }
 
+    /** Returns the fields of this class type. */
     public Collection<Field> getFields() {
-        if (!m_proper) {
-            return m_properClass.getFields();
+        if (!this.m_proper) {
+            return this.m_properClass.getFields();
         }
-        return m_fields.values();
+        return this.m_fields.values();
     }
 
+    /** Returns the combined fields of this class type and all its supertypes. */
     public Collection<Field> getAllFields() {
-        if (!m_proper) {
-            return m_properClass.getAllFields();
+        if (!this.m_proper) {
+            return this.m_properClass.getAllFields();
         }
-        Set<Field> fields = new HashSet<Field>(m_fields.values());
-        for (Class sup : m_superClasses) {
+        Set<Field> fields = new HashSet<Field>(this.m_fields.values());
+        for (Class sup : this.m_superClasses) {
             fields.addAll(sup.getAllFields());
         }
         return fields;
     }
 
+    /** Returns the direct superclasses of this class type. */
     public Collection<Class> getSuperClasses() {
-        if (!m_proper) {
-            return m_properClass.getSuperClasses();
+        if (!this.m_proper) {
+            return this.m_properClass.getSuperClasses();
+        } else {
+            return this.m_superClasses;
         }
-        return m_superClasses;
     }
 
+    /** Returns the transitively closed set of superclasses of this class type. */
     public Collection<Class> getAllSuperClasses() {
-        if (!m_proper) {
-            return m_properClass.getAllSuperClasses();
+        if (!this.m_proper) {
+            return this.m_properClass.getAllSuperClasses();
         }
-        Set<Class> superClasses = new HashSet<Class>(m_superClasses);
+        Set<Class> superClasses = new HashSet<Class>(this.m_superClasses);
         superClasses.add(this);
-        for (Class sup : m_superClasses) {
+        for (Class sup : this.m_superClasses) {
             superClasses.addAll(sup.getAllSuperClasses());
         }
 
@@ -166,31 +182,35 @@ public class Class extends Type implements Identifiable {
 
     @Override
     public Id getId() {
-        return m_id;
+        return this.m_id;
     }
 
     @Override
-    public boolean doVisit(groove.io.conceptual.Visitor v, java.lang.Object param) {
+    public boolean doVisit(groove.io.conceptual.Visitor v,
+            java.lang.Object param) {
         v.visit(this, param);
         return true;
     }
 
+    /** Returns the propert version of this class type. */
     public Class getProperClass() {
-        return m_properClass;
+        return this.m_properClass;
     }
 
+    /** Returns the nullable version of this class type. */
     public Class getNullableClass() {
-        return m_nullableClass;
+        return this.m_nullableClass;
     }
 
+    /** Indicates if this class is proper, i.e., does not allow {@link Object#NIL} as a value. */
     public boolean isProper() {
-        return m_proper;
+        return this.m_proper;
     }
 
     @Override
     public boolean acceptValue(Value v) {
         if (v == null) {
-            return !m_proper;
+            return !this.m_proper;
         }
         if (!(v instanceof Object)) {
             return false;

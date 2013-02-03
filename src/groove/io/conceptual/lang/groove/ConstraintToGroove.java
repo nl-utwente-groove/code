@@ -27,9 +27,9 @@ import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
-import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.value.BoolValue;
-import groove.io.conceptual.value.DataValue;
+import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.IntValue;
 import groove.io.conceptual.value.Object;
@@ -383,8 +383,8 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
             boolean isOrdered = false;
             if (field.getType() instanceof Container) {
                 Container c = (Container) field.getType();
-                isUnique = c.getContainerType() == ContainerType.SET || c.getContainerType() == ContainerType.ORD;
-                isOrdered = c.getContainerType() == ContainerType.ORD || c.getContainerType() == ContainerType.SEQ;
+                isUnique = c.getContainerType() == Kind.SET || c.getContainerType() == Kind.ORD;
+                isOrdered = c.getContainerType() == Kind.ORD || c.getContainerType() == Kind.SEQ;
             }
 
             if (!useIntermediate) {
@@ -674,7 +674,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
     }
 
     @Override
-    public void visit(DataValue dataval, java.lang.Object param) {
+    public void visit(CustomDataValue dataval, java.lang.Object param) {
         if (hasElement(dataval)) {
             return;
         }
@@ -692,7 +692,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
         if (m_cfg.getConfig().getTypeModel().getConstraints().isCheckUniqueness()) {
             if (m_cfg.useIntermediate(field)
                 && field.getType() instanceof Container
-                && (((Container) field.getType()).getContainerType() == ContainerType.SET || ((Container) field.getType()).getContainerType() == ContainerType.ORD)) {
+                && (((Container) field.getType()).getContainerType() == Kind.SET || ((Container) field.getType()).getContainerType() == Kind.ORD)) {
                 GrammarGraph prevGraph = m_currentGraph;
                 m_currentGraph = getUniqueGraph("Unique_" + field.getName(), GraphRole.RULE, CONSTRAINT_NS);
 
@@ -726,7 +726,7 @@ public class ConstraintToGroove extends TypeExporter<AbsNode> {
         // Ordering, check if indices are well ordered, or next edges don't have two heads (rest is checked by multiplicities)
         if (m_cfg.getConfig().getTypeModel().getConstraints().isCheckOrdering()) {
             if (field.getType() instanceof Container
-                && (((Container) field.getType()).getContainerType() == ContainerType.ORD || ((Container) field.getType()).getContainerType() == ContainerType.SEQ)) {
+                && (((Container) field.getType()).getContainerType() == Kind.ORD || ((Container) field.getType()).getContainerType() == Kind.SEQ)) {
                 GrammarGraph prevGraph = m_currentGraph;
                 m_currentGraph = getUniqueGraph("Ordered_" + field.getName(), GraphRole.RULE, CONSTRAINT_NS);
 

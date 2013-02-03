@@ -13,7 +13,7 @@ import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.value.BoolValue;
 import groove.io.conceptual.value.ContainerValue;
-import groove.io.conceptual.value.DataValue;
+import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.IntValue;
 import groove.io.conceptual.value.Object;
@@ -69,8 +69,8 @@ public interface Visitor {
     /** Visits a {@link TupleValue} instance. */
     void visit(TupleValue tupleval, java.lang.Object param);
 
-    /** Visits a {@link DataValue} instance. */
-    void visit(DataValue dataval, java.lang.Object param);
+    /** Visits a {@link CustomDataValue} instance. */
+    void visit(CustomDataValue dataval, java.lang.Object param);
 
     /** Visits an {@link AbstractProperty} instance. */
     void visit(AbstractProperty abstractProperty, java.lang.Object param);

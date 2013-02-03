@@ -6,18 +6,20 @@ import groove.io.conceptual.Visitor;
 import groove.io.conceptual.type.Class;
 
 /**
+ * Property expressing that a set of fields together define object identity.
  * Allowed field types: Class, DataType, Container(Class|DataType)
- * @author s0141844
+ * @author Harold Bruintjes
  * @version $Revision $
  */
 public class IdentityProperty implements Property {
-    private Class m_class;
-    private Name[] m_fieldNames;
+    final private Class m_class;
+    final private Name[] m_fieldNames;
     private Field[] m_fields;
 
+    /** Constructs a property for a given set of fields (of a given class). */
     public IdentityProperty(Class c, Name... idFields) {
-        m_class = c;
-        m_fieldNames = idFields;
+        this.m_class = c;
+        this.m_fieldNames = idFields;
     }
 
     @Override
@@ -26,24 +28,30 @@ public class IdentityProperty implements Property {
         return true;
     }
 
+    /** Returns the class that has the identity property. */
     public Class getIdClass() {
-        return m_class;
+        return this.m_class;
     }
 
+    /** Returns the field names of the fields that identify the object. */
     public Name[] getNames() {
-        return m_fieldNames;
+        return this.m_fieldNames;
     }
 
+    /** 
+     * Returns the fields that identify the object.
+     * Only initialised after a call to {@link #resolveFields()}.
+     */
     public Field[] getFields() {
-        return m_fields;
+        return this.m_fields;
     }
 
     @Override
     public void resolveFields() {
-        m_fields = new Field[m_fieldNames.length];
+        this.m_fields = new Field[this.m_fieldNames.length];
         int i = 0;
-        for (Name fieldName : m_fieldNames) {
-            m_fields[i] = m_class.getFieldSuper(fieldName);
+        for (Name fieldName : this.m_fieldNames) {
+            this.m_fields[i] = this.m_class.getFieldSuper(fieldName);
             i++;
         }
     }

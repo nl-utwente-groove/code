@@ -6,25 +6,28 @@ import groove.io.conceptual.Visitor;
 import groove.io.conceptual.type.Class;
 
 /**
+ * Property expressing that a given set of fields identifies the elements of
+ * a container field.
  * Allowed field types: Class, DataType, Container(Class|DataType)
  * @author s0141844
  * @version $Revision $
  */
 public class KeysetProperty implements Property {
-
-    private Class m_relClass;
-    private Name m_relName;
+    private final Class m_relClass;
+    private final Name m_relName;
     private Field m_relField;
 
-    private Class m_keyClass;
-    private Name[] m_keyNames;
+    private final Class m_keyClass;
+    private final Name[] m_keyNames;
     private Field[] m_keyFields;
 
-    public KeysetProperty(Class relClass, Name rel, Class keyClass, Name... keyFields) {
-        m_relClass = relClass;
-        m_relName = rel;
-        m_keyClass = keyClass;
-        m_keyNames = keyFields;
+    /** Constructs a property for a given container and set of field names. */
+    public KeysetProperty(Class relClass, Name rel, Class keyClass,
+            Name... keyFields) {
+        this.m_relClass = relClass;
+        this.m_relName = rel;
+        this.m_keyClass = keyClass;
+        this.m_keyNames = keyFields;
     }
 
     @Override
@@ -33,38 +36,50 @@ public class KeysetProperty implements Property {
         return true;
     }
 
+    /** Returns the source class of the container. */
     public Class getRelClass() {
-        return m_relClass;
+        return this.m_relClass;
     }
 
+    /** Returns the field name of the container field. */
     public Name getRelName() {
-        return m_relName;
+        return this.m_relName;
     }
 
+    /** 
+     * Returns the container field.
+     * Only initialised after a call to {@link #resolveFields()}.
+     */
     public Field getRelField() {
-        return m_relField;
+        return this.m_relField;
     }
 
+    /** Returns the contained class type. */
     public Class getKeyClass() {
-        return m_keyClass;
+        return this.m_keyClass;
     }
 
+    /** Returns the field names constituting the key for the contained values. */
     public Name[] getKeyNames() {
-        return m_keyNames;
+        return this.m_keyNames;
     }
 
+    /** 
+     * Returns the fields constituting the key for the contained values. 
+     * Only initialised after a call to {@link #resolveFields()}.
+     */
     public Field[] getKeyFields() {
-        return m_keyFields;
+        return this.m_keyFields;
     }
 
     @Override
     public void resolveFields() {
-        m_relField = m_relClass.getFieldSuper(m_relName);
+        this.m_relField = this.m_relClass.getFieldSuper(this.m_relName);
 
-        m_keyFields = new Field[m_keyNames.length];
+        this.m_keyFields = new Field[this.m_keyNames.length];
         int i = 0;
-        for (Name fieldName : m_keyNames) {
-            m_keyFields[i] = m_keyClass.getFieldSuper(fieldName);
+        for (Name fieldName : this.m_keyNames) {
+            this.m_keyFields[i] = this.m_keyClass.getFieldSuper(fieldName);
             i++;
         }
     }

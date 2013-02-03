@@ -4,16 +4,17 @@ import groove.io.conceptual.Name;
 import groove.io.conceptual.Visitor;
 import groove.io.conceptual.type.Enum;
 
+/** Values of an enumerated type. */
 public class EnumValue extends Value {
-    private Name m_value;
-
+    /** Constructs a new enumerated value, for a given enumerated type. */
     public EnumValue(Enum e, Name value) {
         super(e);
-        m_value = value;
+        this.m_value = value;
     }
 
+    @Override
     public Name getValue() {
-        return m_value;
+        return this.m_value;
     }
 
     @Override
@@ -24,6 +25,8 @@ public class EnumValue extends Value {
 
     @Override
     public String toString() {
-        return m_type + ":" + m_value.toString();
+        return getType() + ":" + this.m_value.toString();
     }
+
+    private final Name m_value;
 }

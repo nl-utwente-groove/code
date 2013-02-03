@@ -3,16 +3,17 @@ package groove.io.conceptual.value;
 import groove.io.conceptual.Visitor;
 import groove.io.conceptual.type.RealType;
 
+/** Representation of real values. */
 public class RealValue extends LiteralValue {
-    double m_value;
-
+    /** Constructs a value wrapping a given java double. */
     public RealValue(double value) {
-        super(RealType.get());
-        m_value = value;
+        super(RealType.instance());
+        this.m_value = value;
     }
 
-    public double getValue() {
-        return m_value;
+    @Override
+    public Double getValue() {
+        return this.m_value;
     }
 
     @Override
@@ -23,6 +24,8 @@ public class RealValue extends LiteralValue {
 
     @Override
     public String toString() {
-        return Double.toString(m_value);
+        return Double.toString(this.m_value);
     }
+
+    private final double m_value;
 }

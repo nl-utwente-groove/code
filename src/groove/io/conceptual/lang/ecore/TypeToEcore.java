@@ -17,7 +17,7 @@ import groove.io.conceptual.property.OppositeProperty;
 import groove.io.conceptual.type.BoolType;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
-import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.CustomDataType;
 import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
@@ -242,12 +242,12 @@ public class TypeToEcore extends TypeExporter<EObject> {
             Container cmContainer = (Container) fieldType;
             fieldType = cmContainer.getType();
 
-            if (cmContainer.getContainerType() == ContainerType.SET
-                || cmContainer.getContainerType() == ContainerType.BAG) {
+            if (cmContainer.getContainerType() == Kind.SET
+                || cmContainer.getContainerType() == Kind.BAG) {
                 ordered = false;
             }
-            if (cmContainer.getContainerType() == ContainerType.BAG
-                || cmContainer.getContainerType() == ContainerType.SEQ) {
+            if (cmContainer.getContainerType() == Kind.BAG
+                || cmContainer.getContainerType() == Kind.SEQ) {
                 unique = false;
             }
         }
@@ -328,10 +328,10 @@ public class TypeToEcore extends TypeExporter<EObject> {
         eContainerFeature.setName("value");
         if (container.getType() instanceof Container) {
             Container subType = (Container) container.getType();
-            eContainerFeature.setOrdered(subType.getContainerType() == ContainerType.ORD
-                || subType.getContainerType() == ContainerType.SEQ);
-            eContainerFeature.setUnique(subType.getContainerType() == ContainerType.SET
-                || subType.getContainerType() == ContainerType.ORD);
+            eContainerFeature.setOrdered(subType.getContainerType() == Kind.ORD
+                || subType.getContainerType() == Kind.SEQ);
+            eContainerFeature.setUnique(subType.getContainerType() == Kind.SET
+                || subType.getContainerType() == Kind.ORD);
         } else {
             eContainerFeature.setOrdered(false);
             eContainerFeature.setUnique(true);

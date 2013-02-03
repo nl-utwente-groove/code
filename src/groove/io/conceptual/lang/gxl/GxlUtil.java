@@ -26,7 +26,7 @@ import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
 import groove.io.conceptual.value.BoolValue;
 import groove.io.conceptual.value.ContainerValue;
-import groove.io.conceptual.value.DataValue;
+import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.IntValue;
 import groove.io.conceptual.value.RealValue;
@@ -561,7 +561,7 @@ public class GxlUtil {
             } else if (type instanceof RealType && o instanceof Float) {
                 return new RealValue((Float) o);
             } else if (type instanceof BoolType && o instanceof Boolean) {
-                return new BoolValue((Boolean) o);
+                return BoolValue.getInstance((Boolean) o);
             } else if (type instanceof StringType && o instanceof String) {
                 return new StringValue((String) o);
             } else if (type instanceof StringType && o instanceof LocatorType) {
@@ -633,19 +633,19 @@ public class GxlUtil {
 
     public static JAXBElement<?> valueToGxl(Value val) {
         if (val instanceof BoolValue) {
-            return g_objectFactory.createBool(new Boolean(
-                ((BoolValue) val).getValue()));
+            return g_objectFactory.createBool(((BoolValue) val).getValue());
         } else if (val instanceof IntValue) {
-            return g_objectFactory.createInt(BigInteger.valueOf(((IntValue) val).getValue()));
+            return g_objectFactory.createInt(((IntValue) val).getValue());
         } else if (val instanceof StringValue) {
             return g_objectFactory.createString(((StringValue) val).getValue());
         } else if (val instanceof RealValue) {
+            // the GXL representation can only take floats
             return g_objectFactory.createFloat(new Float(
                 ((RealValue) val).getValue()));
         } else if (val instanceof EnumValue) {
             return GxlUtil.g_objectFactory.createEnum(((EnumValue) val).getValue().toString());
-        } else if (val instanceof DataValue) {
-            return GxlUtil.g_objectFactory.createString(((DataValue) val).getValue());
+        } else if (val instanceof CustomDataValue) {
+            return GxlUtil.g_objectFactory.createString(((CustomDataValue) val).getValue());
         }
 
         if (val instanceof ContainerValue) {
@@ -669,7 +669,7 @@ public class GxlUtil {
                 break;
             }
 
-            for (Value subVal : cv.getValues()) {
+            for (Value subVal : cv.getValue()) {
                 cvt.getBagOrSetOrSeq().add(valueToGxl(subVal));
             }
 
@@ -680,7 +680,7 @@ public class GxlUtil {
             TupType tup = new TupType();
             JAXBElement<TupType> tupElem = g_objectFactory.createTup(tup);
 
-            for (Entry<Integer,Value> tupEntry : ((TupleValue) val).getValues().entrySet()) {
+            for (Entry<Integer,Value> tupEntry : ((TupleValue) val).getValue().entrySet()) {
                 tup.getBagOrSetOrSeq().add(valueToGxl(tupEntry.getValue()));
             }
 

@@ -29,7 +29,7 @@ import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.value.BoolValue;
 import groove.io.conceptual.value.ContainerValue;
-import groove.io.conceptual.value.DataValue;
+import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.IntValue;
 import groove.io.conceptual.value.RealValue;
@@ -115,7 +115,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
         setElement(object, eObject);
         this.m_eObjects.add(eObject);
 
-        for (Entry<Field,Value> fieldValue : object.getValues().entrySet()) {
+        for (Entry<Field,Value> fieldValue : object.getValue().entrySet()) {
             EStructuralFeature eFeature =
                 this.m_typeToEcore.getEStructuralFeature(fieldValue.getKey());
             // if unset value, dont set it in the Ecore model either
@@ -129,7 +129,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
                 @SuppressWarnings("unchecked")
                 EList<Object> objectList =
                     (EList<Object>) eObject.eGet(eFeature);
-                for (Value subValue : cv.getValues()) {
+                for (Value subValue : cv.getValue()) {
                     Object eSubValue = getElement(subValue);
                     assert (eSubValue != null);
                     // It is very well possible that this evaluated to true, due to recursion and opposite edges
@@ -143,7 +143,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
                 // ContainerValue possible for 0..1 attribs
                 if (fieldValue.getValue() instanceof ContainerValue) {
                     eValue =
-                        getElement(((ContainerValue) fieldValue.getValue()).getValues().get(
+                        getElement(((ContainerValue) fieldValue.getValue()).getValue().get(
                             0));
                 } else {
                     eValue = getElement(fieldValue.getValue());
@@ -247,7 +247,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
         @SuppressWarnings("unchecked")
         EList<Object> objectList =
             (EList<Object>) containerObject.eGet(eFeature);
-        for (Value val : containerval.getValues()) {
+        for (Value val : containerval.getValue()) {
             Object eSubValue = getElement(val);
             objectList.add(eSubValue);
         }
@@ -267,7 +267,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
         setElement(tupleval, tupleObject);
         this.m_eObjects.add(tupleObject);
 
-        for (Entry<Integer,Value> entry : tupleval.getValues().entrySet()) {
+        for (Entry<Integer,Value> entry : tupleval.getValue().entrySet()) {
             String indexName =
                 this.m_typeToEcore.getTupleElementName(tuple, entry.getKey());
             EStructuralFeature eFeature =
@@ -279,7 +279,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
                 @SuppressWarnings("unchecked")
                 EList<Object> objectList =
                     (EList<Object>) tupleObject.eGet(eFeature);
-                for (Value subValue : cv.getValues()) {
+                for (Value subValue : cv.getValue()) {
                     Object eSubValue = getElement(subValue);
                     objectList.add(eSubValue);
                 }
@@ -292,7 +292,7 @@ public class InstanceToEcore extends InstanceExporter<java.lang.Object>
     }
 
     @Override
-    public void visit(DataValue dataval, Object param) {
+    public void visit(CustomDataValue dataval, Object param) {
         if (hasElement(dataval)) {
             return;
         }

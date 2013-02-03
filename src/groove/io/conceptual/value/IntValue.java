@@ -3,16 +3,19 @@ package groove.io.conceptual.value;
 import groove.io.conceptual.Visitor;
 import groove.io.conceptual.type.IntType;
 
-public class IntValue extends LiteralValue {
-    int m_value;
+import java.math.BigInteger;
 
+/** Representation of integer values. */
+public class IntValue extends LiteralValue {
+    /** Constructs an integer value. */
     public IntValue(int value) {
-        super(IntType.get());
-        m_value = value;
+        super(IntType.instance());
+        this.m_value = value;
     }
 
-    public int getValue() {
-        return m_value;
+    @Override
+    public BigInteger getValue() {
+        return BigInteger.valueOf(this.m_value);
     }
 
     @Override
@@ -23,6 +26,8 @@ public class IntValue extends LiteralValue {
 
     @Override
     public String toString() {
-        return Integer.toString(m_value);
+        return Integer.toString(this.m_value);
     }
+
+    private final int m_value;
 }

@@ -34,7 +34,7 @@ import groove.io.conceptual.property.OppositeProperty;
 import groove.io.conceptual.type.BoolType;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
-import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.CustomDataType;
 import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
@@ -45,7 +45,7 @@ import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
 import groove.io.conceptual.value.BoolValue;
 import groove.io.conceptual.value.ContainerValue;
-import groove.io.conceptual.value.DataValue;
+import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.IntValue;
 import groove.io.conceptual.value.RealValue;
@@ -285,9 +285,9 @@ public class TypeToGxl extends TypeExporter<NodeType> {
                 AttrTypeEnum.BOOL);
             setElement(container, edgeNode);
 
-            ContainerType ct = container.getContainerType();
+            Kind ct = container.getContainerType();
             boolean ordered =
-                (ct == ContainerType.ORD || ct == ContainerType.SEQ);
+                (ct == Kind.ORD || ct == Kind.SEQ);
             NodeType typeNode = getElement(container.getType());
             // Unique is ignored and assumed to be true. Non-unique is not supported
 
@@ -649,23 +649,21 @@ public class TypeToGxl extends TypeExporter<NodeType> {
                 createNode(getValueId(v),
                     GxlUtil.g_gxlTypeGraphURI + "#IntVal", Id.ROOT);
             GxlUtil.setAttribute(valNode, "value",
-                BigInteger.valueOf(((IntValue) v).getValue()).toString(),
-                AttrTypeEnum.STRING);
+                ((IntValue) v).getValue().toString(), AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof RealValue) {
             valNode =
                 createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI
                     + "#FloatVal", Id.ROOT);
             GxlUtil.setAttribute(valNode, "value",
-                new Double(((RealValue) v).getValue()).toString(),
-                AttrTypeEnum.STRING);
+                ((RealValue) v).getValue().toString(), AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof StringValue) {
             valNode =
                 createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI
                     + "#StringVal", Id.ROOT);
             GxlUtil.setAttribute(valNode, "value",
-                ((StringValue) v).getValue().toString(), AttrTypeEnum.STRING);
+                ((StringValue) v).getValue(), AttrTypeEnum.STRING);
             return valNode;
         } else if (v instanceof EnumValue) {
             valNode =
@@ -674,13 +672,14 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             GxlUtil.setAttribute(valNode, "value",
                 ((EnumValue) v).getValue().toString(), AttrTypeEnum.STRING);
             return valNode;
-        } else if (v instanceof DataValue) {
+        } else if (v instanceof CustomDataValue) {
             valNode =
                 createNode(getValueId(v), GxlUtil.g_gxlTypeGraphURI
                     + "#StringVal",
                     ((CustomDataType) v.getType()).getId().getNamespace());
             GxlUtil.setAttribute(valNode, "value",
-                ((DataValue) v).getValue().toString(), AttrTypeEnum.STRING);
+                ((CustomDataValue) v).getValue().toString(),
+                AttrTypeEnum.STRING);
             return valNode;
         }
         // Composite types
@@ -702,7 +701,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
             valNode = createNode(getValueId(v), type, Id.ROOT);
 
             int index = 0;
-            for (Value subVal : cv.getValues()) {
+            for (Value subVal : cv.getValue()) {
                 NodeType subValNode = getValueElement(subVal);
                 EdgeType valEdge =
                     createEdge(valNode, subValNode, GxlUtil.g_gxlTypeGraphURI
@@ -718,7 +717,7 @@ public class TypeToGxl extends TypeExporter<NodeType> {
                 createNode(getValueId(v),
                     GxlUtil.g_gxlTypeGraphURI + "#TupVal", Id.ROOT);
 
-            for (Entry<Integer,Value> subEntry : tv.getValues().entrySet()) {
+            for (Entry<Integer,Value> subEntry : tv.getValue().entrySet()) {
                 NodeType subValNode = getValueElement(subEntry.getValue());
                 EdgeType valEdge =
                     createEdge(valNode, subValNode, GxlUtil.g_gxlTypeGraphURI
