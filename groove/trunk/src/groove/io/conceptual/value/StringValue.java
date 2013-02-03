@@ -5,16 +5,17 @@ import groove.io.conceptual.type.StringType;
 
 import java.util.regex.Matcher;
 
+/** Representation of string values. */
 public class StringValue extends LiteralValue {
-    String m_value;
-
+    /** Constructs a value wrapping a given string. */
     public StringValue(java.lang.String value) {
-        super(StringType.get());
-        m_value = value;
+        super(StringType.instance());
+        this.m_value = value;
     }
 
+    @Override
     public String getValue() {
-        return m_value;
+        return this.m_value;
     }
 
     @Override
@@ -25,10 +26,18 @@ public class StringValue extends LiteralValue {
 
     @Override
     public String toString() {
-        return m_value;
+        return this.m_value;
     }
 
+    /**
+     * Returns a version of the string value in which all backslash escapes have themselves
+     * been escaped.
+     */
     public String toEscapedString() {
-        return m_value.replaceAll(Matcher.quoteReplacement("\\"), "\\\\\\\\").replaceAll(Matcher.quoteReplacement("\""), "\\\\\"");
+        return this.m_value.replaceAll(Matcher.quoteReplacement("\\"),
+            "\\\\\\\\").replaceAll(Matcher.quoteReplacement("\""), "\\\\\"");
     }
+
+    /** The wrapped string value. */
+    private final String m_value;
 }

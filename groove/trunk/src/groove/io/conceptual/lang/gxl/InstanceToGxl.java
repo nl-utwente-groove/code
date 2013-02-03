@@ -25,11 +25,11 @@ import groove.io.conceptual.lang.InstanceExporter;
 import groove.io.conceptual.lang.gxl.GxlUtil.AttrTypeEnum;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
-import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.value.BoolValue;
 import groove.io.conceptual.value.ContainerValue;
-import groove.io.conceptual.value.DataValue;
+import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.IntValue;
 import groove.io.conceptual.value.RealValue;
@@ -101,7 +101,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             createNode(id, "#" + classNodeId, cmClass.getId().getNamespace());
         setElement(object, objectNode);
 
-        for (Entry<Field,Value> fieldEntry : object.getValues().entrySet()) {
+        for (Entry<Field,Value> fieldEntry : object.getValue().entrySet()) {
             Value fieldValue = fieldEntry.getValue();
             // if unset value, dont set it in the Ecore model either
             if (fieldValue == null
@@ -122,10 +122,10 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
                 if (fieldValue instanceof ContainerValue) {
                     ContainerValue cv = (ContainerValue) fieldValue;
                     boolean isordered =
-                        ((Container) cv.getType()).getContainerType() == ContainerType.ORD
-                            || ((Container) cv.getType()).getContainerType() == ContainerType.SEQ;
+                        ((Container) cv.getType()).getContainerType() == Kind.ORD
+                            || ((Container) cv.getType()).getContainerType() == Kind.SEQ;
                     int index = 0;
-                    for (Value subValue : cv.getValues()) {
+                    for (Value subValue : cv.getValue()) {
                         NodeType valueNode = (NodeType) getElement(subValue);
                         EdgeType edge =
                             createEdge(objectNode, valueNode, fieldEdgeId);
@@ -170,7 +170,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
         }
 
         JAXBElement<BigInteger> intElem =
-            GxlUtil.g_objectFactory.createInt(BigInteger.valueOf(intval.getValue()));
+            GxlUtil.g_objectFactory.createInt(intval.getValue());
         setElement(intval, intElem);
     }
 
@@ -223,7 +223,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
         }
         setElement(containerval, cntElem);
 
-        for (Value subVal : containerval.getValues()) {
+        for (Value subVal : containerval.getValue()) {
             JAXBElement<?> cntValue = (JAXBElement<?>) getElement(subVal);
             cntType.getBagOrSetOrSeq().add(cntValue);
         }
@@ -241,7 +241,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
                 GxlUtil.g_objectFactory.createTup(tupType);
             setElement(tupleval, tupElem);
 
-            for (Entry<Integer,Value> entry : tupleval.getValues().entrySet()) {
+            for (Entry<Integer,Value> entry : tupleval.getValue().entrySet()) {
                 JAXBElement<?> tupValue =
                     (JAXBElement<?>) getElement(entry.getValue());
                 tupType.getBagOrSetOrSeq().add(tupValue);
@@ -253,7 +253,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             groove.io.conceptual.value.Object o =
                 new groove.io.conceptual.value.Object(cmClass, null);
 
-            for (Entry<Integer,Value> entry : tupleval.getValues().entrySet()) {
+            for (Entry<Integer,Value> entry : tupleval.getValue().entrySet()) {
                 o.setFieldValue(
                     cmClass.getField(Name.getName("_" + entry.getKey())),
                     entry.getValue());
@@ -264,7 +264,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(DataValue dataval, Object param) {
+    public void visit(CustomDataValue dataval, Object param) {
         if (hasElement(dataval)) {
             return;
         }

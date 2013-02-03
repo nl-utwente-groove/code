@@ -80,7 +80,7 @@ public class TypeCheckTest {
                 Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
             for (ResourceKind kind : EnumSet.of(ResourceKind.RULE,
                 ResourceKind.HOST, ResourceKind.TYPE)) {
-                for (Map.Entry<String,ResourceModel<?>> entry : grammarView.getResourceMap(
+                for (Map.Entry<String,? extends ResourceModel<?>> entry : grammarView.getResourceMap(
                     kind).entrySet()) {
                     String name = entry.getKey();
                     ResourceModel<?> model = entry.getValue();

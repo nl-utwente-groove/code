@@ -6,27 +6,29 @@ import groove.io.conceptual.Visitor;
 import groove.io.conceptual.type.Class;
 
 /**
+ * Property expressing that two fields are the opposite of one another.
  * Instantiate this twice for each opposite, a->b and b->a
+ * TODO: not allowed for container of container type?
+ * Only for relations
  * @author s0141844
  * @version $Revision $
  */
-//TODO: not allowed for container of container type?
-// Only for relations
 public class OppositeProperty implements Property {
-    private Class m_class1;
-    private Class m_class2;
+    private final Class m_class1;
+    private final Class m_class2;
 
-    private Name m_fieldName1;
-    private Name m_fieldName2;
+    private final Name m_fieldName1;
+    private final Name m_fieldName2;
     private Field m_field1;
     private Field m_field2;
 
+    /** Constructs a property for two given fields. */
     public OppositeProperty(Class class1, Name field1, Class class2, Name field2) {
-        m_class1 = class1;
-        m_class2 = class2;
+        this.m_class1 = class1;
+        this.m_class2 = class2;
 
-        m_fieldName1 = field1;
-        m_fieldName2 = field2;
+        this.m_fieldName1 = field1;
+        this.m_fieldName2 = field2;
     }
 
     @Override
@@ -35,34 +37,46 @@ public class OppositeProperty implements Property {
         return true;
     }
 
+    /** Returns the first source class of the opposite fields. */
     public Class getClass1() {
-        return m_class1;
+        return this.m_class1;
     }
 
+    /** Returns the second source class of the opposite fields. */
     public Class getClass2() {
-        return m_class2;
+        return this.m_class2;
     }
 
+    /** Returns the first field name of the opposite fields. */
     public Name getFieldName1() {
-        return m_fieldName1;
+        return this.m_fieldName1;
     }
 
+    /** Returns the second field name of the opposite fields. */
     public Name getFieldName2() {
-        return m_fieldName2;
+        return this.m_fieldName2;
     }
 
+    /** 
+     * Returns the first opposite field.
+     * Only initialised after a call to {@link #resolveFields()}.
+     */
     public Field getField1() {
-        return m_field1;
+        return this.m_field1;
     }
 
+    /** 
+     * Returns the second opposite field.
+     * Only initialised after a call to {@link #resolveFields()}.
+     */
     public Field getField2() {
-        return m_field2;
+        return this.m_field2;
     }
 
     @Override
     public void resolveFields() {
-        m_field1 = m_class1.getFieldSuper(m_fieldName1);
-        m_field2 = m_class2.getFieldSuper(m_fieldName2);
+        this.m_field1 = this.m_class1.getFieldSuper(this.m_fieldName1);
+        this.m_field2 = this.m_class2.getFieldSuper(this.m_fieldName2);
     }
 
 }

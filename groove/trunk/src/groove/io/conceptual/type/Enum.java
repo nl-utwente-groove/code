@@ -6,18 +6,19 @@ import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.Value;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+/** Enumerated types. */
 public class Enum extends DataType {
     private List<Name> m_values = new ArrayList<Name>();
 
-    public Enum(Id id, Name... values) {
-        this.m_id = id;
-        this.m_values.addAll(Arrays.asList(values));
+    /** Constructs an initially empty enumerated type with a given identifier. */
+    public Enum(Id id) {
+        super(id);
     }
 
+    /** Adds an allowed value to this enumerated type. */
     public void addLiteral(Name litName) {
         this.m_values.add(litName);
     }
@@ -29,16 +30,12 @@ public class Enum extends DataType {
 
     @Override
     public String toString() {
-        return m_id + "<" + typeString() + ">";
+        return getId() + "<" + typeString() + ">";
     }
 
-    @Override
-    public Id getId() {
-        return m_id;
-    }
-
+    /** Returns the collection of allowed values of this enumerated type. */
     public Collection<Name> getLiterals() {
-        return m_values;
+        return this.m_values;
     }
 
     @Override
@@ -50,7 +47,7 @@ public class Enum extends DataType {
     @Override
     public Value valueFromString(String valueString) {
         Name valName = Name.getName(valueString);
-        if (m_values.contains(valName)) {
+        if (this.m_values.contains(valName)) {
             return new EnumValue(this, valName);
         } else {
             return null;

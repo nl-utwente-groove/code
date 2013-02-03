@@ -34,25 +34,25 @@ public class EcoreUtil {
     // Static table of 'known' types in Ecore that can be mapped to the conceptual model
     public static final Map<String,Type> g_knownTypes = new HashMap<String,Type>();
     static {
-        g_knownTypes.put("EBoolean", BoolType.get());
-        g_knownTypes.put("EBooleanObject", BoolType.get());
+        g_knownTypes.put("EBoolean", BoolType.instance());
+        g_knownTypes.put("EBooleanObject", BoolType.instance());
 
-        g_knownTypes.put("EBigInteger", IntType.get());
-        g_knownTypes.put("EInt", IntType.get());
-        g_knownTypes.put("EIntegerObject", IntType.get());
-        g_knownTypes.put("ELong", IntType.get());
-        g_knownTypes.put("ELongObject", IntType.get());
-        g_knownTypes.put("EShort", IntType.get());
-        g_knownTypes.put("EShortObject", IntType.get());
+        g_knownTypes.put("EBigInteger", IntType.instance());
+        g_knownTypes.put("EInt", IntType.instance());
+        g_knownTypes.put("EIntegerObject", IntType.instance());
+        g_knownTypes.put("ELong", IntType.instance());
+        g_knownTypes.put("ELongObject", IntType.instance());
+        g_knownTypes.put("EShort", IntType.instance());
+        g_knownTypes.put("EShortObject", IntType.instance());
 
-        g_knownTypes.put("EChar", StringType.get());
-        g_knownTypes.put("ECharacterObject", StringType.get());
-        g_knownTypes.put("EString", StringType.get());
+        g_knownTypes.put("EChar", StringType.instance());
+        g_knownTypes.put("ECharacterObject", StringType.instance());
+        g_knownTypes.put("EString", StringType.instance());
 
-        g_knownTypes.put("EDouble", RealType.get());
-        g_knownTypes.put("EDoubleObject", RealType.get());
-        g_knownTypes.put("EFloat", RealType.get());
-        g_knownTypes.put("EFloatObject", RealType.get());
+        g_knownTypes.put("EDouble", RealType.instance());
+        g_knownTypes.put("EDoubleObject", RealType.instance());
+        g_knownTypes.put("EFloat", RealType.instance());
+        g_knownTypes.put("EFloatObject", RealType.instance());
     }
 
     // Static table of 'known' instance types in Ecore that can be mapped to Ecore DataTypes

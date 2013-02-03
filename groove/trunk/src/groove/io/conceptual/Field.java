@@ -2,7 +2,7 @@ package groove.io.conceptual;
 
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
-import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.Type;
 
 /**
@@ -45,7 +45,7 @@ public class Field implements Acceptor {
             && lower == 0)
             && !(type instanceof Container)) {
             // Unique and non-ordered container (fits best into GROOVE, intermediate not required)
-            type = new Container(ContainerType.SET, type);
+            type = new Container(Kind.SET, type);
         }
 
         if (type instanceof Container) {

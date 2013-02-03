@@ -108,7 +108,8 @@ public class GrammarModel implements Observer {
     }
 
     /** Returns the map from resource names to resource models of a given kind. */
-    public Map<String,ResourceModel<?>> getResourceMap(ResourceKind kind) {
+    public Map<String,? extends ResourceModel<?>> getResourceMap(
+            ResourceKind kind) {
         return this.resourceMap.get(kind);
     }
 

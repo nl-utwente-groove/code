@@ -3,11 +3,11 @@ package groove.io.conceptual.property;
 import groove.io.conceptual.Visitor;
 import groove.io.conceptual.type.Class;
 
+/** Property expressing that a given class type is abstract. */
 public class AbstractProperty implements Property {
-    Class m_class;
-
+    /** Constructs a property for a given class. */
     public AbstractProperty(Class c) {
-        m_class = c;
+        this.m_class = c;
     }
 
     @Override
@@ -16,8 +16,9 @@ public class AbstractProperty implements Property {
         return true;
     }
 
+    /** The class type that according to this property should be abstract. */
     public Class getAbstractClass() {
-        return m_class;
+        return this.m_class;
     }
 
     @Override
@@ -25,4 +26,5 @@ public class AbstractProperty implements Property {
         // Nothing to do
     }
 
+    private final Class m_class;
 }

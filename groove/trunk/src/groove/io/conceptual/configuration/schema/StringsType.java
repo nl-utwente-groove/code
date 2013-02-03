@@ -5,14 +5,12 @@
 // Generated on: 2012.07.20 at 10:40:55 AM CEST 
 //
 
-
 package groove.io.conceptual.configuration.schema;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
-
 
 /**
  * <p>Java class for stringsType complex type.
@@ -57,8 +55,8 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "stringsType")
+@SuppressWarnings("javadoc")
 public class StringsType {
-
     @XmlAttribute(name = "dataPostfix")
     protected String dataPostfix;
     @XmlAttribute(name = "properPostfix")
@@ -119,10 +117,10 @@ public class StringsType {
      *     
      */
     public String getDataPostfix() {
-        if (dataPostfix == null) {
+        if (this.dataPostfix == null) {
             return "$data$";
         } else {
-            return dataPostfix;
+            return this.dataPostfix;
         }
     }
 
@@ -147,10 +145,10 @@ public class StringsType {
      *     
      */
     public String getProperPostfix() {
-        if (properPostfix == null) {
+        if (this.properPostfix == null) {
             return "";
         } else {
-            return properPostfix;
+            return this.properPostfix;
         }
     }
 
@@ -175,10 +173,10 @@ public class StringsType {
      *     
      */
     public String getNullablePostfix() {
-        if (nullablePostfix == null) {
+        if (this.nullablePostfix == null) {
             return "$nullable$";
         } else {
-            return nullablePostfix;
+            return this.nullablePostfix;
         }
     }
 
@@ -203,10 +201,10 @@ public class StringsType {
      *     
      */
     public String getEnumPostfix() {
-        if (enumPostfix == null) {
+        if (this.enumPostfix == null) {
             return "$enum$";
         } else {
-            return enumPostfix;
+            return this.enumPostfix;
         }
     }
 
@@ -231,10 +229,10 @@ public class StringsType {
      *     
      */
     public String getTuplePostfix() {
-        if (tuplePostfix == null) {
+        if (this.tuplePostfix == null) {
             return "$tuple$";
         } else {
-            return tuplePostfix;
+            return this.tuplePostfix;
         }
     }
 
@@ -259,10 +257,10 @@ public class StringsType {
      *     
      */
     public String getValueEdge() {
-        if (valueEdge == null) {
+        if (this.valueEdge == null) {
             return "val";
         } else {
-            return valueEdge;
+            return this.valueEdge;
         }
     }
 
@@ -287,10 +285,10 @@ public class StringsType {
      *     
      */
     public String getIndexEdge() {
-        if (indexEdge == null) {
+        if (this.indexEdge == null) {
             return "index";
         } else {
-            return indexEdge;
+            return this.indexEdge;
         }
     }
 
@@ -315,10 +313,10 @@ public class StringsType {
      *     
      */
     public String getNextEdge() {
-        if (nextEdge == null) {
+        if (this.nextEdge == null) {
             return "next";
         } else {
-            return nextEdge;
+            return this.nextEdge;
         }
     }
 
@@ -343,10 +341,10 @@ public class StringsType {
      *     
      */
     public String getPrevEdge() {
-        if (prevEdge == null) {
+        if (this.prevEdge == null) {
             return "prev";
         } else {
-            return prevEdge;
+            return this.prevEdge;
         }
     }
 
@@ -371,10 +369,10 @@ public class StringsType {
      *     
      */
     public String getOppositeEdge() {
-        if (oppositeEdge == null) {
+        if (this.oppositeEdge == null) {
             return "opposite";
         } else {
-            return oppositeEdge;
+            return this.oppositeEdge;
         }
     }
 
@@ -399,10 +397,10 @@ public class StringsType {
      *     
      */
     public String getDataValue() {
-        if (dataValue == null) {
+        if (this.dataValue == null) {
             return "value";
         } else {
-            return dataValue;
+            return this.dataValue;
         }
     }
 
@@ -427,10 +425,10 @@ public class StringsType {
      *     
      */
     public String getIntermediatePostfix() {
-        if (intermediatePostfix == null) {
+        if (this.intermediatePostfix == null) {
             return "";
         } else {
-            return intermediatePostfix;
+            return this.intermediatePostfix;
         }
     }
 
@@ -455,10 +453,10 @@ public class StringsType {
      *     
      */
     public String getNilName() {
-        if (nilName == null) {
+        if (this.nilName == null) {
             return "Nil";
         } else {
-            return nilName;
+            return this.nilName;
         }
     }
 
@@ -483,10 +481,10 @@ public class StringsType {
      *     
      */
     public String getIntermediateName() {
-        if (intermediateName == null) {
+        if (this.intermediateName == null) {
             return "elem";
         } else {
-            return intermediateName;
+            return this.intermediateName;
         }
     }
 
@@ -511,10 +509,10 @@ public class StringsType {
      *     
      */
     public String getMetaType() {
-        if (metaType == null) {
+        if (this.metaType == null) {
             return "Type";
         } else {
-            return metaType;
+            return this.metaType;
         }
     }
 
@@ -539,10 +537,10 @@ public class StringsType {
      *     
      */
     public String getMetaClass() {
-        if (metaClass == null) {
+        if (this.metaClass == null) {
             return "Class";
         } else {
-            return metaClass;
+            return this.metaClass;
         }
     }
 
@@ -567,10 +565,10 @@ public class StringsType {
      *     
      */
     public String getMetaClassNullable() {
-        if (metaClassNullable == null) {
+        if (this.metaClassNullable == null) {
             return "NullableClass";
         } else {
-            return metaClassNullable;
+            return this.metaClassNullable;
         }
     }
 
@@ -595,10 +593,10 @@ public class StringsType {
      *     
      */
     public String getMetaEnum() {
-        if (metaEnum == null) {
+        if (this.metaEnum == null) {
             return "Enum";
         } else {
-            return metaEnum;
+            return this.metaEnum;
         }
     }
 
@@ -623,10 +621,10 @@ public class StringsType {
      *     
      */
     public String getMetaTuple() {
-        if (metaTuple == null) {
+        if (this.metaTuple == null) {
             return "Tuple";
         } else {
-            return metaTuple;
+            return this.metaTuple;
         }
     }
 
@@ -651,10 +649,10 @@ public class StringsType {
      *     
      */
     public String getMetaContainerBag() {
-        if (metaContainerBag == null) {
+        if (this.metaContainerBag == null) {
             return "Bag";
         } else {
-            return metaContainerBag;
+            return this.metaContainerBag;
         }
     }
 
@@ -679,10 +677,10 @@ public class StringsType {
      *     
      */
     public String getMetaContainerSet() {
-        if (metaContainerSet == null) {
+        if (this.metaContainerSet == null) {
             return "Set";
         } else {
-            return metaContainerSet;
+            return this.metaContainerSet;
         }
     }
 
@@ -707,10 +705,10 @@ public class StringsType {
      *     
      */
     public String getMetaContainerSeq() {
-        if (metaContainerSeq == null) {
+        if (this.metaContainerSeq == null) {
             return "Seq";
         } else {
-            return metaContainerSeq;
+            return this.metaContainerSeq;
         }
     }
 
@@ -735,10 +733,10 @@ public class StringsType {
      *     
      */
     public String getMetaContainerOrd() {
-        if (metaContainerOrd == null) {
+        if (this.metaContainerOrd == null) {
             return "Ord";
         } else {
-            return metaContainerOrd;
+            return this.metaContainerOrd;
         }
     }
 
@@ -763,10 +761,10 @@ public class StringsType {
      *     
      */
     public String getMetaDataType() {
-        if (metaDataType == null) {
+        if (this.metaDataType == null) {
             return "DataType";
         } else {
-            return metaDataType;
+            return this.metaDataType;
         }
     }
 
@@ -791,10 +789,10 @@ public class StringsType {
      *     
      */
     public String getMetaIntermediate() {
-        if (metaIntermediate == null) {
+        if (this.metaIntermediate == null) {
             return "Intermediate";
         } else {
-            return metaIntermediate;
+            return this.metaIntermediate;
         }
     }
 

@@ -35,7 +35,7 @@ import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.value.BoolValue;
 import groove.io.conceptual.value.ContainerValue;
-import groove.io.conceptual.value.DataValue;
+import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.IntValue;
 import groove.io.conceptual.value.RealValue;
@@ -179,7 +179,7 @@ public abstract class InstanceExporter<E> implements Messenger, Visitor {
     }
 
     @Override
-    public void visit(DataValue dataval, Object param) {
+    public void visit(CustomDataValue dataval, Object param) {
         throw new UnsupportedOperationException();
     }
 

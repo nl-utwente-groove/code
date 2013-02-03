@@ -5,32 +5,33 @@ import groove.io.conceptual.Name;
 import groove.io.conceptual.Visitor;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
-import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.type.Container.Kind;
 
 import java.util.HashMap;
 import java.util.Map;
 
-//TODO: Merge with ClassValue
 /**
- * Object in the conceptual model. No two object references are equal if they are not the same underlying Java Object.
+ * Object in the conceptual model.
+ * No two object references are equal if they are not the same underlying Java Object.
  * @author s0141844
  * 
  */
 public class Object extends Value {
-    public static final Object NIL = new Object(Name.getName("Nil"));
-    //Actual id is this Object itself
+    /** The name of this object. */
     private Name m_name;
 
     private Map<Field,Value> m_fieldValues = new HashMap<Field,Value>();
 
+    /** Constructor for the singleton {@link #NIL} object. */
     private Object(Name name) {
         super(null);
-        m_name = name;
+        this.m_name = name;
     }
 
+    /** Constructs a new object, of a given type and with a given name. */
     public Object(Class type, Name name) {
         super(type);
-        m_name = name;
+        this.m_name = name;
 
         // Init some default (empty) field values
         for (Field f : type.getFields()) {
@@ -41,35 +42,39 @@ public class Object extends Value {
                 v = Object.NIL;
             }
             if (v != null) {
-                m_fieldValues.put(f, v);
+                this.m_fieldValues.put(f, v);
             }
         }
     }
 
+    /** Sets the value of a given field of this object. */
     public void setFieldValue(Field field, Value fieldValue) {
         // SET container is often automatic, so just create container value if required
-        if (field.getType() instanceof Container && ((Container) field.getType()).getContainerType() == ContainerType.SET) {
+        if (field.getType() instanceof Container
+            && ((Container) field.getType()).getContainerType() == Kind.SET) {
             if (!(fieldValue instanceof ContainerValue)) {
-                ContainerValue cv = new ContainerValue((Container) field.getType());
+                ContainerValue cv =
+                    new ContainerValue((Container) field.getType());
                 cv.addValue(fieldValue);
                 fieldValue = cv;
             }
         }
         assert (field.getType().acceptValue(fieldValue));
-        m_fieldValues.put(field, fieldValue);
+        this.m_fieldValues.put(field, fieldValue);
     }
 
+    /** Returns a string representation of the name of this object. */
     public String getName() {
-        if (m_name == null) {
+        if (this.m_name == null) {
             return null;
         }
-        return m_name.toString();
+        return this.m_name.toString();
     }
 
     @Override
     public String toString() {
-        String result = m_name.toString() + "(" + m_type + ")" + "\n";
-        for (java.util.Map.Entry<Field,Value> fieldEntry : m_fieldValues.entrySet()) {
+        String result = toShortString() + "\n";
+        for (java.util.Map.Entry<Field,Value> fieldEntry : this.m_fieldValues.entrySet()) {
             String valString = "null";
             if (fieldEntry.getValue() instanceof Object) {
                 valString = ((Object) fieldEntry.getValue()).toShortString();
@@ -81,8 +86,9 @@ public class Object extends Value {
         return result;
     }
 
+    /** Returns a short string representation of this object value. */
     public String toShortString() {
-        return m_name.toString() + "(" + m_type + ")";
+        return getName() + "(" + getType() + ")";
     }
 
     @Override
@@ -91,7 +97,11 @@ public class Object extends Value {
         return true;
     }
 
-    public Map<Field,Value> getValues() {
-        return m_fieldValues;
+    @Override
+    public Map<Field,Value> getValue() {
+        return this.m_fieldValues;
     }
+
+    /** The singleton NIL object. */
+    public static final Object NIL = new Object(Name.getName("Nil"));
 }

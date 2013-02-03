@@ -31,7 +31,7 @@ import groove.io.conceptual.type.RealType;
 import groove.io.conceptual.type.StringType;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
-import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.type.Container.Kind;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,10 +46,10 @@ public class GrooveToType extends TypeImporter {
 
     private static Map<Id,Type> g_primitiveIds = new HashMap<Id,Type>();
     static {
-        g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("bool")), BoolType.get());
-        g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("int")), IntType.get());
-        g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("real")), RealType.get());
-        g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("string")), StringType.get());
+        g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("bool")), BoolType.instance());
+        g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("int")), IntType.instance());
+        g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("real")), RealType.instance());
+        g_primitiveIds.put(Id.getId(Id.ROOT, Name.getName("string")), StringType.instance());
     }
 
     // Map TypeNode to Id (each typenode in graph should have one)
@@ -363,7 +363,7 @@ public class GrooveToType extends TypeImporter {
                     }
 
                     // Guaranteed to be unique, otherwise direct edges not possible
-                    targetType = new Container(isOrdered ? ContainerType.ORD : ContainerType.SET, targetType);
+                    targetType = new Container(isOrdered ? Kind.ORD : Kind.SET, targetType);
                 }
 
                 //TODO: opposite edge check
@@ -435,26 +435,26 @@ public class GrooveToType extends TypeImporter {
         // If known container type (meta model), use this information
         switch (m_types.getModelType(getLabel(interNode))) {
             case TypeContainerSet:
-                Container cSet = new Container(ContainerType.SET, t);
+                Container cSet = new Container(Kind.SET, t);
                 setNodeType(interNode, cSet);
                 return cSet;
             case TypeContainerBag:
-                Container cBag = new Container(ContainerType.BAG, t);
+                Container cBag = new Container(Kind.BAG, t);
                 setNodeType(interNode, cBag);
                 return cBag;
             case TypeContainerOrd:
-                Container cOrd = new Container(ContainerType.ORD, t);
+                Container cOrd = new Container(Kind.ORD, t);
                 setNodeType(interNode, cOrd);
                 return cOrd;
             case TypeContainerSeq:
-                Container cSeq = new Container(ContainerType.SEQ, t);
+                Container cSeq = new Container(Kind.SEQ, t);
                 setNodeType(interNode, cSeq);
                 return cSeq;
         }
 
         // No luxury of metamodel, maybe postfixes were used
         if (m_cfg.getConfig().getTypeModel().getFields().getContainers().isUseTypeName()) {
-            ContainerType ct = getPostfixType(interNode);
+            Kind ct = getPostfixType(interNode);
             if (ct != null) {
                 Container c = new Container(ct, t);
                 setNodeType(interNode, c);
@@ -496,9 +496,9 @@ public class GrooveToType extends TypeImporter {
         }
 
         // TODO: uniqueness constraint?
-        ContainerType type = isUnique ?
-                (isOrdered ? ContainerType.ORD : ContainerType.SET) : // Unique
-                (isOrdered ? ContainerType.SEQ : ContainerType.BAG); // Non-unique
+        Kind type = isUnique ?
+                (isOrdered ? Kind.ORD : Kind.SET) : // Unique
+                (isOrdered ? Kind.SEQ : Kind.BAG); // Non-unique
         Container c = new Container(type, t);
         setNodeType(interNode, c);
 
@@ -529,16 +529,16 @@ public class GrooveToType extends TypeImporter {
         return m_types.getType(node.label().text());
     }
 
-    private ContainerType getPostfixType(TypeNode node) {
+    private Kind getPostfixType(TypeNode node) {
         String typeName = node.label().text();
         if (m_cfg.getStrings().getMetaContainerSet().length() > 0 && typeName.endsWith(m_cfg.getStrings().getMetaContainerSet())) { //Container intermediates when postfix enabled
-            return ContainerType.SET;
+            return Kind.SET;
         } else if (m_cfg.getStrings().getMetaContainerBag().length() > 0 && typeName.endsWith(m_cfg.getStrings().getMetaContainerBag())) { //Container intermediates when postfix enabled
-            return ContainerType.BAG;
+            return Kind.BAG;
         } else if (m_cfg.getStrings().getMetaContainerOrd().length() > 0 && typeName.endsWith(m_cfg.getStrings().getMetaContainerOrd())) { //Container intermediates when postfix enabled
-            return ContainerType.ORD;
+            return Kind.ORD;
         } else if (m_cfg.getStrings().getMetaContainerSeq().length() > 0 && typeName.endsWith(m_cfg.getStrings().getMetaContainerSeq())) { //Container intermediates when postfix enabled
-            return ContainerType.SEQ;
+            return Kind.SEQ;
         }
 
         //No type detected

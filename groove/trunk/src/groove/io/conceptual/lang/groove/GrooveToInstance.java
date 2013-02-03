@@ -4,9 +4,9 @@ import groove.algebra.Constant;
 import groove.grammar.aspect.AspectNode;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
+import groove.grammar.host.HostGraph.HostToAspectMap;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
-import groove.grammar.host.HostGraph.HostToAspectMap;
 import groove.graph.EdgeRole;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
@@ -22,20 +22,19 @@ import groove.io.conceptual.lang.InstanceImporter;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
 import groove.io.conceptual.lang.groove.GraphNodeTypes.ModelType;
-import groove.io.conceptual.type.BoolType;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
-import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.CustomDataType;
+import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.IntType;
 import groove.io.conceptual.type.RealType;
 import groove.io.conceptual.type.StringType;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
-import groove.io.conceptual.value.BoolValue;
 import groove.io.conceptual.value.ContainerValue;
-import groove.io.conceptual.value.DataValue;
+import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.IntValue;
 import groove.io.conceptual.value.Object;
@@ -229,30 +228,6 @@ public class GrooveToInstance extends InstanceImporter {
         if (nodeType instanceof Class) {
             resultValue = this.m_objectNodes.get(node);
         }
-        // Data types
-        else if (nodeType instanceof BoolType) {
-            ValueNode valNode = (ValueNode) node;
-            groove.algebra.Constant c = (Constant) valNode.getValue();
-            Boolean value = c.getSymbol().toLowerCase().equals("true");
-            resultValue = new BoolValue(value);
-        } else if (nodeType instanceof IntType) {
-            ValueNode valNode = (ValueNode) node;
-            //Integer value = (Integer) valNode.getValue();
-            groove.algebra.Constant c = (Constant) valNode.getValue();
-            Integer value = Integer.parseInt(c.getSymbol());
-            resultValue = new IntValue(value);
-        } else if (nodeType instanceof RealType) {
-            ValueNode valNode = (ValueNode) node;
-            groove.algebra.Constant c = (Constant) valNode.getValue();
-            Float value = Float.parseFloat(c.getSymbol());
-            resultValue = new RealValue(value);
-        } else if (nodeType instanceof StringType) {
-            ValueNode valNode = (ValueNode) node;
-            groove.algebra.Constant c = (Constant) valNode.getValue();
-            String value = c.getSymbol();
-            resultValue =
-                new StringValue(value.substring(1, value.length() - 1));
-        }
         // Enum type
         else if (nodeType instanceof Enum) {
             Enum e = (Enum) nodeType;
@@ -280,7 +255,7 @@ public class GrooveToInstance extends InstanceImporter {
             HostNode valueNode = getEdgeNode(node, dataValueName);
             String valueString =
                 (((ValueNode) valueNode).getValue().toString());
-            DataValue dv = new DataValue(cdt, valueString);
+            CustomDataValue dv = new CustomDataValue(cdt, valueString);
             resultValue = dv;
         }
         // Containers & tuples
@@ -294,8 +269,8 @@ public class GrooveToInstance extends InstanceImporter {
                 if (e.label().text().equals(valueEdge)) {
                     Value subVal = getNodeValue(e.target());
                     int index = 0;
-                    if (ct.getContainerType() == ContainerType.ORD
-                        || ct.getContainerType() == ContainerType.SEQ) {
+                    if (ct.getContainerType() == Kind.ORD
+                        || ct.getContainerType() == Kind.SEQ) {
                         index = getNodeIndex(e.target());
                     }
                     containerValues.put(index, subVal);
@@ -320,7 +295,29 @@ public class GrooveToInstance extends InstanceImporter {
             }
             resultValue = tv;
         }
-
+        // (Other) data types
+        else if (nodeType instanceof DataType) {
+            ValueNode valNode = (ValueNode) node;
+            groove.algebra.Constant c = (Constant) valNode.getValue();
+            resultValue = ((DataType) nodeType).valueFromString(c.getSymbol());
+        } else if (nodeType instanceof IntType) {
+            ValueNode valNode = (ValueNode) node;
+            //Integer value = (Integer) valNode.getValue();
+            groove.algebra.Constant c = (Constant) valNode.getValue();
+            Integer value = Integer.parseInt(c.getSymbol());
+            resultValue = new IntValue(value);
+        } else if (nodeType instanceof RealType) {
+            ValueNode valNode = (ValueNode) node;
+            groove.algebra.Constant c = (Constant) valNode.getValue();
+            Float value = Float.parseFloat(c.getSymbol());
+            resultValue = new RealValue(value);
+        } else if (nodeType instanceof StringType) {
+            ValueNode valNode = (ValueNode) node;
+            groove.algebra.Constant c = (Constant) valNode.getValue();
+            String value = c.getSymbol();
+            resultValue =
+                new StringValue(value.substring(1, value.length() - 1));
+        }
         this.m_nodeValues.put(node, resultValue);
 
         return resultValue;
@@ -356,8 +353,8 @@ public class GrooveToInstance extends InstanceImporter {
         for (HostEdge e : nodeEdges) {
             Value subVal = getNodeValue(e.target());
             int index = 0;
-            if (containerType.getContainerType() == ContainerType.ORD
-                || containerType.getContainerType() == ContainerType.SEQ) {
+            if (containerType.getContainerType() == Kind.ORD
+                || containerType.getContainerType() == Kind.SEQ) {
                 index = getNodeIndex(e.target());
             }
             containerValues.put(index, subVal);
@@ -396,7 +393,7 @@ public class GrooveToInstance extends InstanceImporter {
                 return getNodeValue(nodeEdges.iterator().next().target());
             }
             // multiple values: improvise and create container type by guessing
-            nextType = new Container(ContainerType.SET, nextType);
+            nextType = new Container(Kind.SET, nextType);
         }
 
         ContainerValue cv = new ContainerValue((Container) nextType);
@@ -413,8 +410,8 @@ public class GrooveToInstance extends InstanceImporter {
             } else {
                 Value subVal = getContainerValue(e.target(), valueName);
                 int index = 0;
-                if (((Container) nextType).getContainerType() == ContainerType.ORD
-                    || ((Container) nextType).getContainerType() == ContainerType.SEQ) {
+                if (((Container) nextType).getContainerType() == Kind.ORD
+                    || ((Container) nextType).getContainerType() == Kind.SEQ) {
                     index = getNodeIndex(e.target());
                 }
                 containerValues.put(index, subVal);

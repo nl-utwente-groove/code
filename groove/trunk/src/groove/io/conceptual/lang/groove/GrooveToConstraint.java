@@ -38,21 +38,14 @@ import groove.io.conceptual.property.DefaultValueProperty;
 import groove.io.conceptual.property.IdentityProperty;
 import groove.io.conceptual.property.KeysetProperty;
 import groove.io.conceptual.property.OppositeProperty;
-import groove.io.conceptual.type.BoolType;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
 import groove.io.conceptual.type.CustomDataType;
+import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
-import groove.io.conceptual.type.IntType;
-import groove.io.conceptual.type.RealType;
-import groove.io.conceptual.type.StringType;
 import groove.io.conceptual.type.Type;
-import groove.io.conceptual.value.BoolValue;
-import groove.io.conceptual.value.DataValue;
+import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
-import groove.io.conceptual.value.IntValue;
-import groove.io.conceptual.value.RealValue;
-import groove.io.conceptual.value.StringValue;
 import groove.io.conceptual.value.Value;
 
 import java.util.ArrayList;
@@ -131,10 +124,6 @@ public class GrooveToConstraint implements Messenger {
     @Override
     public void clearMessages() {
         this.m_messages.clear();
-    }
-
-    private void addMessage(Message msg) {
-        this.m_messages.add(msg);
     }
 
     // Determines subject of rule and sets container type to be unique
@@ -471,20 +460,9 @@ public class GrooveToConstraint implements Messenger {
         Value resultValue = null;
 
         // Data types
-        if (nodeType instanceof BoolType) {
-            Boolean value = node.getNames()[0].substring(5).equals("true");
-            resultValue = new BoolValue(value);
-        } else if (nodeType instanceof IntType) {
-            Integer value = Integer.parseInt(node.getNames()[0].substring(4));
-            resultValue = new IntValue(value);
-        } else if (nodeType instanceof RealType) {
-            Float value = Float.parseFloat(node.getNames()[0].substring(5));
-            resultValue = new RealValue(value);
-        } else if (nodeType instanceof StringType) {
-            resultValue = new StringValue(node.getNames()[0].substring(7));
-        }
+        // get the value-related part of the node name
         // Enum type
-        else if (nodeType instanceof Enum) {
+        if (nodeType instanceof Enum) {
             Enum e = (Enum) nodeType;
             if (this.m_cfg.getConfig().getTypeModel().getEnumMode() == EnumModeType.NODE) {
                 Id id = this.m_cfg.nameToId(getType(node));
@@ -513,10 +491,17 @@ public class GrooveToConstraint implements Messenger {
                 }
             }
             if (valueNode != null) {
-                String valueString = valueNode.getNames()[0].substring(7);
-                DataValue dv = new DataValue(cdt, valueString);
+                String valueString =
+                    valueNode.getNames()[0].substring(nodeType.typeString().length() + 1);
+                CustomDataValue dv = new CustomDataValue(cdt, valueString);
                 resultValue = dv;
             }
+        }
+        // regular data types
+        else if (nodeType instanceof DataType) {
+            String valueString =
+                node.getNames()[0].substring(nodeType.typeString().length() + 1);
+            resultValue = ((DataType) nodeType).valueFromString(valueString);
         }
         // Containers & tuples
         // Not supported, used by default value only

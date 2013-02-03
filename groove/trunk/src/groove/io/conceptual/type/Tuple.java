@@ -3,11 +3,13 @@ package groove.io.conceptual.type;
 import java.util.Arrays;
 import java.util.List;
 
+/** Tupe type representation in the conceptual model. */
 public class Tuple extends Type {
     private Type[] m_types;
 
+    /** Constructs a tuple type expecting values from a given range of types. */
     public Tuple(Type... types) {
-        m_types = types;
+        this.m_types = types;
     }
 
     @Override
@@ -24,7 +26,7 @@ public class Tuple extends Type {
     public String toString() {
         String res = typeString() + "<";
         boolean first = true;
-        for (Type t : m_types) {
+        for (Type t : this.m_types) {
             if (!first) {
                 res += ", ";
             }
@@ -39,12 +41,14 @@ public class Tuple extends Type {
         return res;
     }
 
+    /** Returns the sequence of types expected for this tuple type. */
     public List<Type> getTypes() {
-        return Arrays.asList(m_types);
+        return Arrays.asList(this.m_types);
     }
 
+    /** Sets the sequence of types expected for values of this tuple type. */
     public void setTypes(Type... types) {
-        m_types = types;
+        this.m_types = types;
     }
 
     @Override
@@ -60,12 +64,12 @@ public class Tuple extends Type {
         }
 
         Tuple t = (Tuple) o;
-        if (t.m_types.length != m_types.length) {
+        if (t.m_types.length != this.m_types.length) {
             return false;
         }
 
-        for (int i = 0; i < m_types.length; i++) {
-            boolean eq = m_types[i].equals(t.m_types[i]);
+        for (int i = 0; i < this.m_types.length; i++) {
+            boolean eq = this.m_types[i].equals(t.m_types[i]);
             if (!eq) {
                 return false;
             }

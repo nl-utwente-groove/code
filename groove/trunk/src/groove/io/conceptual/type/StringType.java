@@ -1,25 +1,21 @@
 package groove.io.conceptual.type;
 
+import groove.grammar.model.FormatException;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.Name;
 import groove.io.conceptual.value.StringValue;
 import groove.io.conceptual.value.Value;
+import groove.util.ExprParser;
 
-//TODO: is singleton
+/** Data type for strings. */
 public class StringType extends DataType {
-    private static StringType g_stringType = new StringType();
-
     private StringType() {
-        m_id = Id.getId(Id.ROOT, Name.getName("string"));
-    }
-
-    public static StringType get() {
-        return g_stringType;
+        super(Id.getId(Id.ROOT, Name.getName(NAME)));
     }
 
     @Override
     public String typeString() {
-        return "string";
+        return NAME;
     }
 
     @Override
@@ -30,11 +26,26 @@ public class StringType extends DataType {
 
     @Override
     public Value valueFromString(String valueString) {
-        return new StringValue(valueString);
+        try {
+            return new StringValue(ExprParser.toUnquoted(valueString,
+                ExprParser.DOUBLE_QUOTE_CHAR));
+        } catch (FormatException e) {
+            return null;
+        }
     }
 
     @Override
     public boolean acceptValue(Value v) {
         return (v instanceof StringValue);
     }
+
+    /** Returns the singleton instance of this class. */
+    public static StringType instance() {
+        return instance;
+    }
+
+    /** The singleton instance of this class. */
+    private static final StringType instance = new StringType();
+    /** Name of this type. */
+    public static final String NAME = "string";
 }

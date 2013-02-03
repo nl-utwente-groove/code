@@ -5,21 +5,15 @@ import groove.io.conceptual.Name;
 import groove.io.conceptual.value.IntValue;
 import groove.io.conceptual.value.Value;
 
-//TODO: is singleton
+/** Data type for integers (represented as Java ints). */
 public class IntType extends DataType {
-    private static IntType g_intType = new IntType();
-
     private IntType() {
-        m_id = Id.getId(Id.ROOT, Name.getName("int"));
-    }
-
-    public static IntType get() {
-        return g_intType;
+        super(Id.getId(Id.ROOT, Name.getName(NAME)));
     }
 
     @Override
     public String typeString() {
-        return "int";
+        return NAME;
     }
 
     @Override
@@ -30,17 +24,27 @@ public class IntType extends DataType {
 
     @Override
     public Value valueFromString(String valueString) {
-        int i = 0;
+        Value result;
         try {
-            i = Integer.parseInt(valueString);
+            result = new IntValue(Integer.parseInt(valueString));
         } catch (NumberFormatException e) {
-            return null;
+            result = null;
         }
-        return new IntValue(i);
+        return result;
     }
 
     @Override
     public boolean acceptValue(Value v) {
         return (v instanceof IntValue);
     }
+
+    /** Returns the singleton instance of this class. */
+    public static IntType instance() {
+        return instance;
+    }
+
+    /** The singleton instance of this class. */
+    private static final IntType instance = new IntType();
+    /** Name of this type. */
+    public static final String NAME = "int";
 }

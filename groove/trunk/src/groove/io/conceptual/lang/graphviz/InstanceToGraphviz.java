@@ -32,7 +32,7 @@ import groove.io.conceptual.type.Container;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
 import groove.io.conceptual.value.ContainerValue;
-import groove.io.conceptual.value.DataValue;
+import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
 import groove.io.external.PortException;
@@ -92,7 +92,7 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
         }
         objectNode.setAttribute("label", objectLabel);
 
-        for (Entry<Field,Value> entry : object.getValues().entrySet()) {
+        for (Entry<Field,Value> entry : object.getValue().entrySet()) {
             Type fieldType = entry.getKey().getType();
             boolean isContainer = false;
             if (fieldType instanceof Container) {
@@ -113,7 +113,7 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
                 // Add edge
                 if (isContainer) {
                     ContainerValue cVal = (ContainerValue) entry.getValue();
-                    for (Value v : cVal.getValues()) {
+                    for (Value v : cVal.getValue()) {
                         Edge fieldEdge = new Edge();
                         Node fieldNode = getElement(v);
                         fieldEdge.setSource(new PortNode(objectNode));
@@ -145,7 +145,7 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
                     ContainerValue cVal = (ContainerValue) entry.getValue();
                     valueLabel += "[";
                     boolean first = true;
-                    for (Value v : cVal.getValues()) {
+                    for (Value v : cVal.getValue()) {
                         if (!first) {
                             valueLabel += ", ";
                         }
@@ -177,7 +177,7 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
         String label = "";
 
         boolean first = true;
-        for (Entry<Integer,Value> entry : tupleval.getValues().entrySet()) {
+        for (Entry<Integer,Value> entry : tupleval.getValue().entrySet()) {
             Type type = ((Tuple) tupleval.getType()).getTypes().get(entry.getKey());
             boolean isContainer = type instanceof Container;
 
@@ -189,7 +189,7 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
                 label += port;
                 if (isContainer) {
                     ContainerValue cVal = (ContainerValue) entry.getValue();
-                    for (Value v : cVal.getValues()) {
+                    for (Value v : cVal.getValue()) {
                         Edge valueEdge = new Edge();
                         Node valueNode = getElement(v);
                         valueEdge.setSource(new PortNode(tupleNode, port));
@@ -222,7 +222,7 @@ public class InstanceToGraphviz extends InstanceExporter<Node> {
     }
 
     @Override
-    public void visit(DataValue dataval, Object param) {
+    public void visit(CustomDataValue dataval, Object param) {
         // Not directly translated
 
     }

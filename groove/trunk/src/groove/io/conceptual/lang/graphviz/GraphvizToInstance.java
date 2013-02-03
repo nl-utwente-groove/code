@@ -30,7 +30,7 @@ import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
 import groove.io.conceptual.type.StringType;
 import groove.io.conceptual.type.Type;
-import groove.io.conceptual.type.Container.ContainerType;
+import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.value.ContainerValue;
 import groove.io.conceptual.value.Object;
 import groove.io.conceptual.value.StringValue;
@@ -168,7 +168,7 @@ public class GraphvizToInstance extends InstanceImporter {
             }
 
             // Add field of type container, as attributes are optional
-            Field f = new Field(Name.getName(entry.getKey()), new Container(ContainerType.SET, StringType.get()), 0, 1);
+            Field f = new Field(Name.getName(entry.getKey()), new Container(Kind.SET, StringType.instance()), 0, 1);
             c.addField(f);
 
             ContainerValue v = new ContainerValue((Container) f.getType());
@@ -214,13 +214,13 @@ public class GraphvizToInstance extends InstanceImporter {
 
         if (f == null) {
             // Always unique and unordered
-            Container ctype = new Container(ContainerType.SET, targetObj.getType());
+            Container ctype = new Container(Kind.SET, targetObj.getType());
             f = new Field(Name.getName(index == 0 ? label : label + index), ctype, 0, -1);
             ((Class) sourceObj.getType()).addField(f);
             sourceObj.setFieldValue(f, new ContainerValue(ctype));
         }
 
-        ContainerValue cv = (ContainerValue) sourceObj.getValues().get(f);
+        ContainerValue cv = (ContainerValue) sourceObj.getValue().get(f);
         cv.addValue(targetObj);
     }
 }

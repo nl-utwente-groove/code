@@ -421,7 +421,7 @@ public class SimulatorModel implements Cloneable {
      * @param trans if not {@code null}, a transition that should be inserted post-hoc into the
      * history as the one that was selected before this change
      * @return if {@code true}, the transition or state was really changed
-     * @see #setMatch(MatchResult)
+     * @see #setMatch(GraphState,MatchResult)
      */
     public final boolean doSetStateAndMatch(GraphState state,
             RuleTransition trans) {
@@ -595,7 +595,7 @@ public class SimulatorModel implements Cloneable {
      * If the new state is different from the old, the transition
      * and event are set to {@code null}.
      * @return if {@code true}, the state was really changed
-     * @see #setMatch(MatchResult)
+     * @see #setMatch(GraphState,MatchResult)
      */
     public final boolean setState(GraphState state) {
         start();

@@ -22,7 +22,7 @@ import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.value.BoolValue;
 import groove.io.conceptual.value.ContainerValue;
-import groove.io.conceptual.value.DataValue;
+import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
 import groove.io.conceptual.value.IntValue;
 import groove.io.conceptual.value.Object;
@@ -144,7 +144,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                 if (p instanceof DefaultValueProperty) {
                     DefaultValueProperty dp = (DefaultValueProperty) p;
                     if (((Class) object.getType()).getAllSuperClasses().contains(dp.getField().getDefiningClass())) {
-                        if (!object.getValues().containsKey(dp.getField())) {
+                        if (!object.getValue().containsKey(dp.getField())) {
                             object.setFieldValue(dp.getField(), dp.getDefaultValue());
                             defaultFields.add(dp.getField());
                         }
@@ -153,7 +153,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
             }
         }
 
-        for (Entry<Field,Value> fieldEntry : object.getValues().entrySet()) {
+        for (Entry<Field,Value> fieldEntry : object.getValue().entrySet()) {
             Field f = fieldEntry.getKey();
             Value v = fieldEntry.getValue();
             assert (v != null);
@@ -168,8 +168,8 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
                 int i = 0;
                 for (AbsNode valNode : valNodes) {
                     /*AbsEdge valEdge = */new AbsEdge(objectNode, valNode, f.getName().toString());
-                    if (cv.getValues().get(i) instanceof Object) {
-                        m_objectNodes.put(new Triple<Object,Field,Object>(object, f, (Object) cv.getValues().get(i)), valNode);
+                    if (cv.getValue().get(i) instanceof Object) {
+                        m_objectNodes.put(new Triple<Object,Field,Object>(object, f, (Object) cv.getValue().get(i)), valNode);
                     }
                     i++;
                 }
@@ -192,7 +192,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
         // Clear previously set default values so model is not changed by import
         if (m_cfg.getConfig().getTypeModel().getFields().getDefaults().isSetValue()) {
             for (Field f : defaultFields) {
-                object.getValues().remove(f);
+                object.getValue().remove(f);
             }
         }
 
@@ -296,7 +296,7 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
     }
 
     @Override
-    public void visit(DataValue dataval, java.lang.Object param) {
+    public void visit(CustomDataValue dataval, java.lang.Object param) {
         if (hasElement(dataval)) {
             return;
         }
@@ -326,11 +326,11 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
         boolean useIndex = m_cfg.useIndex(containerType);
         boolean useEdge = m_cfg.getConfig().getTypeModel().getFields().getContainers().getOrdering().getType() == OrderType.EDGE;
 
-        AbsNode[] containerNodes = new AbsNode[containerVal.getValues().size()]; //actual nodes to represent this container
+        AbsNode[] containerNodes = new AbsNode[containerVal.getValue().size()]; //actual nodes to represent this container
         int i = 0;
         int index = 1;
         AbsNode prevValNode = null;
-        for (Value subValue : containerVal.getValues()) {
+        for (Value subValue : containerVal.getValue()) {
             // No not include Nil if not used (shouldn't have to happen anyway, Nil in container is bad
             if (subValue == Object.NIL && m_cfg.getConfig().getGlobal().getNullable() == NullableType.NONE) {
                 continue;
@@ -394,8 +394,8 @@ public class InstanceToGroove extends InstanceExporter<java.lang.Object> {
         AbsNode tupleNode = new AbsNode(m_cfg.getName(tup));
         setElement(tupleval, tupleNode);
 
-        for (Integer i : tupleval.getValues().keySet()) {
-            Value v = tupleval.getValues().get(i);
+        for (Integer i : tupleval.getValue().keySet()) {
+            Value v = tupleval.getValue().get(i);
             AbsNode valNode = getNode(v);
             if (valNode == null) {
                 // Happens if Nil value and not using nullable classes
