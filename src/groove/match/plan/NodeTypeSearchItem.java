@@ -106,6 +106,22 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         return this.node.getNumber() - other.node.getNumber();
     }
 
+    @Override
+    int computeHashCode() {
+        return super.computeHashCode() * 31 * getNode().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        return getNode().equals(((NodeTypeSearchItem) obj).getNode());
+    }
+
     public void activate(PlanSearchStrategy strategy) {
         this.nodeFound = strategy.isNodeFound(this.node);
         this.nodeIx = strategy.getNodeIx(this.node);

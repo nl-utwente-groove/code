@@ -69,6 +69,34 @@ class SeedSearchItem extends AbstractSearchItem {
         return this.boundVars;
     }
 
+    @Override
+    public int compareTo(SearchItem item) {
+        int result = super.compareTo(item);
+        if (result != 0) {
+            return result;
+        }
+        SeedSearchItem other = (SeedSearchItem) item;
+        result = this.seed.compareTo(other.seed);
+        return result;
+    }
+
+    @Override
+    int computeHashCode() {
+        return super.computeHashCode() + 31 * this.seed.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        SeedSearchItem other = (SeedSearchItem) obj;
+        return this.seed.equals(other.seed);
+    }
+
     /**
      * This item gets the highest rating since it should be scheduled first.
      */

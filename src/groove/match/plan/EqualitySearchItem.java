@@ -18,6 +18,7 @@ package groove.match.plan;
 
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleNode;
+import groove.graph.NodeComparator;
 import groove.match.plan.PlanSearchStrategy.Search;
 
 import java.util.Collection;
@@ -40,8 +41,13 @@ public class EqualitySearchItem extends AbstractSearchItem {
     public EqualitySearchItem(RuleEdge edge, boolean equals) {
         assert edge.label().isEmpty() || edge.label().isNeg()
             && edge.label().getNegOperand().isEmpty();
-        this.node1 = edge.source();
-        this.node2 = edge.target();
+        if (nodeComparator.compare(edge.source(), edge.target()) < 0) {
+            this.node1 = edge.source();
+            this.node2 = edge.target();
+        } else {
+            this.node1 = edge.target();
+            this.node2 = edge.source();
+        }
         this.equals = equals;
         this.neededNodes = new HashSet<RuleNode>();
         this.neededNodes.add(this.node1);
@@ -84,6 +90,47 @@ public class EqualitySearchItem extends AbstractSearchItem {
         return 0;
     }
 
+    @Override
+    public int compareTo(SearchItem item) {
+        int result = super.compareTo(item);
+        if (result != 0) {
+            return result;
+        }
+        EqualitySearchItem other = (EqualitySearchItem) item;
+        result = nodeComparator.compare(this.node1, other.node1);
+        if (result != 0) {
+            return result;
+        }
+        result = nodeComparator.compare(this.node2, other.node2);
+        return result;
+    }
+
+    @Override
+    int computeHashCode() {
+        int result = super.computeHashCode();
+        result = 31 * this.node1.hashCode();
+        result = 31 * this.node2.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        EqualitySearchItem other = (EqualitySearchItem) obj;
+        if (!this.node1.equals(other.node1)) {
+            return false;
+        }
+        if (!this.node2.equals(other.node2)) {
+            return false;
+        }
+        return true;
+    }
+
     public void activate(PlanSearchStrategy strategy) {
         this.node1Ix = strategy.getNodeIx(this.node1);
         this.node2Ix = strategy.getNodeIx(this.node2);
@@ -110,6 +157,8 @@ public class EqualitySearchItem extends AbstractSearchItem {
     int node1Ix;
     /** Node index (in the result) of {@link #node2}. */
     int node2Ix;
+
+    private static NodeComparator nodeComparator = NodeComparator.instance();
 
     /** The record for this search item. */
     private class EqualityRecord extends SingularRecord {

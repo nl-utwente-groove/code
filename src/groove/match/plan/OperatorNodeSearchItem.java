@@ -97,26 +97,30 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
      * <code>super</code>.
      */
     @Override
-    public int compareTo(SearchItem other) {
-        int result = 0;
-        if (other instanceof OperatorNodeSearchItem) {
-            OperatorNode hisNode = ((OperatorNodeSearchItem) other).getNode();
-            List<VariableNode> hisArguments = hisNode.getArguments();
-            result =
-                this.operation.getName().compareTo(
-                    hisNode.getOperator().getName());
-            for (int i = 0; result == 0 && i < this.arguments.size(); i++) {
-                result = this.arguments.get(i).compareTo(hisArguments.get(i));
-            }
-            if (result == 0) {
-                result = this.target.compareTo(hisNode.getTarget());
-            }
-        }
-        if (result == 0) {
-            return super.compareTo(other);
-        } else {
+    public int compareTo(SearchItem item) {
+        int result = super.compareTo(item);
+        if (result != 0) {
             return result;
         }
+        OperatorNode hisNode = ((OperatorNodeSearchItem) item).getNode();
+        List<VariableNode> hisArguments = hisNode.getArguments();
+        result =
+            this.operation.getName().compareTo(hisNode.getOperator().getName());
+        if (result != 0) {
+            return result;
+        }
+        for (int i = 0; i < this.arguments.size(); i++) {
+            result = this.arguments.get(i).compareTo(hisArguments.get(i));
+            if (result != 0) {
+                return result;
+            }
+        }
+        result = this.target.compareTo(hisNode.getTarget());
+        if (result != 0) {
+            return result;
+        }
+        result = getNode().compareTo(hisNode);
+        return result;
     }
 
     /**
@@ -125,6 +129,23 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
     @Override
     int getRating() {
         return this.node.hashCode();
+    }
+
+    @Override
+    int computeHashCode() {
+        return super.computeHashCode() + 31 * getNode().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        OperatorNodeSearchItem other = (OperatorNodeSearchItem) obj;
+        return getNode().equals(other.getNode());
     }
 
     /** Returns the operator node being calculated by this search item. */

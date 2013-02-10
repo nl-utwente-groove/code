@@ -20,9 +20,9 @@ import static groove.match.SearchEngine.SearchMode.NORMAL;
 import groove.algebra.AlgebraFamily;
 import groove.automaton.RegExpr;
 import groove.grammar.Condition;
+import groove.grammar.Condition.Op;
 import groove.grammar.EdgeEmbargo;
 import groove.grammar.GrammarProperties;
-import groove.grammar.Condition.Op;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.AnchorKey;
 import groove.grammar.rule.DefaultRuleNode;
@@ -169,23 +169,20 @@ public class PlanSearchEngine extends SearchEngine {
             this.condition = condition;
             this.searchMode = searchMode;
             this.typeGraph = condition.getTypeGraph();
+            this.remainingNodes = new LinkedHashSet<RuleNode>();
+            this.remainingEdges = new LinkedHashSet<RuleEdge>();
+            this.remainingVars = new LinkedHashSet<LabelVar>();
             if (condition.hasPattern()) {
                 RuleGraph graph = condition.getPattern();
                 // compute the set of remaining (unmatched) nodes
-                this.remainingNodes =
-                    new LinkedHashSet<RuleNode>(graph.nodeSet());
+                this.remainingNodes.addAll(graph.nodeSet());
                 // compute the set of remaining (unmatched) edges and variables
-                this.remainingEdges =
-                    new LinkedHashSet<RuleEdge>(graph.edgeSet());
-                this.remainingVars =
-                    new LinkedHashSet<LabelVar>(graph.varSet());
+                this.remainingEdges.addAll(graph.edgeSet());
+                this.remainingVars.addAll(graph.varSet());
                 this.algebraFamily =
                     condition.getSystemProperties().getAlgebraFamily();
             } else {
-                this.remainingNodes = null;
-                this.remainingEdges = null;
-                this.remainingVars = null;
-                this.algebraFamily = null;
+                this.algebraFamily = AlgebraFamily.DEFAULT;
             }
         }
 

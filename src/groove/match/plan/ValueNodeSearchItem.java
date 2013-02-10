@@ -60,6 +60,33 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         }
     }
 
+    @Override
+    public int compareTo(SearchItem item) {
+        int result = super.compareTo(item);
+        if (result != 0) {
+            return result;
+        }
+        ValueNodeSearchItem other = (ValueNodeSearchItem) item;
+        return getNode().compareTo(other.getNode());
+    }
+
+    @Override
+    int computeHashCode() {
+        return super.computeHashCode() + 31 * getNode().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        ValueNodeSearchItem other = (ValueNodeSearchItem) obj;
+        return getNode().equals(other.getNode());
+    }
+
     /**
      * Since the order in which value nodes are matched does not make a
      * difference to the outcome, and the effort is also the same, no natural
