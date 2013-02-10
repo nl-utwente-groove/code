@@ -106,6 +106,40 @@ public class PlanSearchStrategy implements SearchStrategy {
             + (isInjective() ? " (injective)" : " (non-injective)");
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (isInjective() ? 1231 : 1237);
+        result = prime * result + getOracle().hashCode();
+        result = prime * result + getPlan().hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        PlanSearchStrategy other = (PlanSearchStrategy) obj;
+        if (isInjective() != other.isInjective()) {
+            return false;
+        }
+        if (!getOracle().equals(other.getOracle())) {
+            return false;
+        }
+        if (!getPlan().equals(other.getPlan())) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Callback factory method for an auxiliary {@link Search} object.
      */

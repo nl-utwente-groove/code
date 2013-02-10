@@ -56,13 +56,18 @@ public class MatcherFactory {
         this.engine = PlanSearchEngine.getInstance(mode);
     }
 
-    /** Returns the installed value oracle. */
+    /** Returns the installed value oracle.
+     * @return the value oracle; non-{@code null}
+     */
     public ValueOracle getOracle() {
         return this.oracle;
     }
 
-    /** Sets a new value oracle. */
+    /** Sets a new value oracle.
+     * @param oracle the new oracle; non-{@code null}
+     */
     public void setOracle(ValueOracle oracle) {
+        assert oracle != null;
         this.oracle = oracle;
     }
 

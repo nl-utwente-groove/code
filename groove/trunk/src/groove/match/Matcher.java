@@ -137,8 +137,11 @@ public class Matcher implements SearchStrategy {
         return this.oracle;
     }
 
-    /** Changes the value oracle of this matcher. */
+    /** Changes the value oracle of this matcher.
+     * @param oracle the new oracle; non-{@code null}
+     */
     public void setOracle(ValueOracle oracle) {
+        assert oracle != null;
         this.oracle = oracle;
     }
 
