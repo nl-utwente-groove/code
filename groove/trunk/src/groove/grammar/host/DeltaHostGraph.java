@@ -548,9 +548,9 @@ public final class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge>
         /** Adds the node to the node set and the node-edge map. */
         @Override
         public boolean addNode(HostNode node) {
-            HostEdgeSet edges = addKeyToStore(this.nodeEdgeStore, node);
-            assert edges == null : String.format(
-                "Node %s already occured in graph", node);
+            boolean fresh = addKeyToStore(this.nodeEdgeStore, node);
+            assert fresh : String.format("Node %s already occured in graph",
+                node);
             addKeyToStore(this.nodeInEdgeStore, node);
             addKeyToStore(this.nodeOutEdgeStore, node);
             return true;
@@ -627,10 +627,11 @@ public final class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge>
          * @param <T> the type of the key
          * @param map the mapping to be modified; may be {@code null}
          * @param key the key to be inserted
-         * @return the previous edgeset for the key, if the map was not {@code null}
+         * @return {@code true} if the key was indeed added to the map;
+         * {@code false} if the map wal {@code null} or the key already existed
          */
-        private <T> HostEdgeSet addKeyToStore(HostEdgeStore<T> map, T key) {
-            HostEdgeSet result = null;
+        private <T> boolean addKeyToStore(HostEdgeStore<T> map, T key) {
+            boolean result = false;
             if (map != null) {
                 result = map.addKey(key);
             }

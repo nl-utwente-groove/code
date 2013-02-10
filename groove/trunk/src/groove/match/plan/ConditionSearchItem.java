@@ -19,8 +19,8 @@ package groove.match.plan;
 import groove.algebra.Algebra;
 import groove.algebra.SignatureKind;
 import groove.grammar.Condition;
-import groove.grammar.GrammarProperties;
 import groove.grammar.Condition.Op;
+import groove.grammar.GrammarProperties;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
 import groove.grammar.rule.LabelVar;
@@ -89,6 +89,16 @@ class ConditionSearchItem extends AbstractSearchItem {
     @Override
     public Collection<? extends RuleNode> bindsNodes() {
         return this.boundNodes;
+    }
+
+    @Override
+    public int compareTo(SearchItem item) {
+        int result = super.compareTo(item);
+        if (result != 0) {
+            return result;
+        }
+        ConditionSearchItem other = (ConditionSearchItem) item;
+        return this.condition.getName().compareTo(other.condition.getName());
     }
 
     @Override

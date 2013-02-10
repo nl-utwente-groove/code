@@ -559,8 +559,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
         while (!queue.isEmpty()) {
             CtrlTransition next = queue.poll();
             CtrlState source = next.source();
-            Set<CtrlVar> sourceVars =
-                new LinkedHashSet<CtrlVar>(source.getBoundVars());
+            CtrlVarSet sourceVars = new CtrlVarSet(source.getBoundVars());
             boolean modified = false;
             for (CtrlVar targetVar : next.target().getBoundVars()) {
                 if (!next.getOutVars().contains(targetVar)) {
@@ -582,7 +581,7 @@ public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
 
     /** The set of omega transitions in this control automaton. */
     private final Set<CtrlTransition> omegaTransitions =
-        new HashSet<CtrlTransition>();
+        new LinkedHashSet<CtrlTransition>();
 
     /** Upper bound of the range of known consecutive state numbers. */
     private int maxStateNr = -1;

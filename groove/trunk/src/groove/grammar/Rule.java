@@ -100,12 +100,15 @@ public class Rule implements Action, Fixable {
         return getCondition().getTypeGraph();
     }
 
-    /** Returns the name of this rule (which equals the name of the associated condition). */
+    /** Returns the qualified name of this rule (which equals the name of the associated condition). */
     public String getFullName() {
         return getCondition().getName();
     }
 
-    /** Returns the name of this rule (which equals the name of the associated condition). */
+    /**
+     * Returns the last part of the qualified name of this rule
+     * (which equals the name of the associated condition). 
+     */
     public String getLastName() {
         return QualName.getLastName(getFullName());
     }

@@ -58,19 +58,23 @@ import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
+import groove.graph.EdgeComparator;
 import groove.graph.Element;
 import groove.graph.GraphInfo;
+import groove.graph.NodeComparator;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.util.DefaultFixable;
+import groove.util.Fixable;
 import groove.util.Groove;
 
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -455,20 +459,21 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         }
 
         /**
-         * Returns the name of this level. The name is either taken from the
+         * Returns the (non-{@code null}) name of this level. The name is either taken from the
          * representative level node, or constructed by concatenating the rule
          * name and the level indices.
+         * @return the name of this level: a non-{@code null} value
+         * guaranteed to distinguish all index levels.
          */
         public String getName() {
-            String levelName =
-                isImplicit() ? null : this.levelNode.getLevelName();
-            if (levelName == null) {
-                return this.namePrefix
-                    + (isTopLevel() ? ""
-                            : Groove.toString(this.index.toArray()));
+            String suffix;
+            if (isImplicit()) {
+                suffix =
+                    isTopLevel() ? "" : Groove.toString(this.index.toArray());
             } else {
-                return levelName;
+                suffix = "-" + this.levelNode.getLevelName();
             }
+            return this.namePrefix + suffix;
         }
 
         /** Lexicographically compares the tree indices. 
@@ -1417,7 +1422,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          * @return The set of maximal connected subsets of {@link #nacNodeSet} and
          * {@link #nacEdgeSet}
          */
-        private Collection<Cell> getConnectedSets() throws FormatException {
+        private SortedSet<Cell> getConnectedSets() throws FormatException {
             // mapping from nodes of elementSet to sets of connected elements
             Map<Element,Cell> result = new HashMap<Element,Cell>();
             for (RuleNode node : this.nacNodeSet) {
@@ -1479,16 +1484,67 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     result.put(elem, newCell);
                 }
             }
-            return new HashSet<Cell>(result.values());
+            return new TreeSet<Cell>(result.values());
         }
 
-        private class Cell extends HashSet<RuleElement> {
+        private class Cell extends HashSet<RuleElement> implements
+                Comparable<Cell>, Fixable {
             public Cell() {
                 // empty
             }
 
-            public Set<RuleNode> getNodes() {
-                Set<RuleNode> result = new HashSet<RuleNode>();
+            @Override
+            public boolean setFixed() {
+                boolean result = !this.fixed;
+                this.fixed = true;
+                return result;
+            }
+
+            @Override
+            public boolean isFixed() {
+                return this.fixed;
+            }
+
+            @Override
+            public void testFixed(boolean fixed) {
+                if (this.fixed != fixed) {
+                    throw new IllegalStateException();
+                }
+            }
+
+            @Override
+            public boolean add(RuleElement e) {
+                testFixed(false);
+                return super.add(e);
+            }
+
+            @Override
+            public boolean remove(Object o) {
+                testFixed(false);
+                return super.remove(o);
+            }
+
+            @Override
+            public void clear() {
+                testFixed(false);
+                super.clear();
+            }
+
+            /**
+             * Returns the set of nodes in this cell. Only call after
+             * the cell has been completely fixed.
+             */
+            public SortedSet<RuleNode> getNodes() {
+                setFixed();
+                if (this.nodes == null) {
+                    this.nodes = computeNodes();
+                }
+                return this.nodes;
+            }
+
+            private SortedSet<RuleNode> computeNodes() {
+                TreeSet<RuleNode> result =
+                    new TreeSet<RuleNode>(NodeComparator.instance());
                 for (RuleElement elem : this) {
                     if (elem instanceof RuleNode) {
                         result.add((RuleNode) elem);
@@ -1497,8 +1553,21 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 return result;
             }
 
-            public Set<RuleEdge> getEdges() {
-                Set<RuleEdge> result = new HashSet<RuleEdge>();
+            /**
+             * Returns the set of edges in this cell. Only call after
+             * the cell has been completely fixed.
+             */
+            public SortedSet<RuleEdge> getEdges() {
+                setFixed();
+                if (this.edges == null) {
+                    this.edges = computeEdges();
+                }
+                return this.edges;
+            }
+
+            private SortedSet<RuleEdge> computeEdges() {
+                TreeSet<RuleEdge> result =
+                    new TreeSet<RuleEdge>(EdgeComparator.instance());
                 for (RuleElement elem : this) {
                     if (elem instanceof RuleEdge) {
                         result.add((RuleEdge) elem);
@@ -1506,6 +1575,49 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 }
                 return result;
             }
+
+            @Override
+            public int compareTo(Cell o) {
+                // comparison of node set size
+                int result = getNodes().size() - o.getNodes().size();
+                if (result != 0) {
+                    return result;
+                }
+                // comparison of edge set size
+                result = getEdges().size() - o.getEdges().size();
+                if (result != 0) {
+                    return result;
+                }
+                // lexicographical comparison of the ordered sets of nodes
+                Iterator<RuleNode> myNodeIter = getNodes().iterator();
+                Iterator<RuleNode> otherNodeIter = o.getNodes().iterator();
+                Comparator<? super RuleNode> nodeComp = getNodes().comparator();
+                while (myNodeIter.hasNext()) {
+                    result =
+                        nodeComp.compare(myNodeIter.next(),
+                            otherNodeIter.next());
+                    if (result != 0) {
+                        return result;
+                    }
+                }
+                // lexicographical comparison of the ordered sets of edges
+                Iterator<RuleEdge> myEdgeIter = getEdges().iterator();
+                Iterator<RuleEdge> otherEdgeIter = o.getEdges().iterator();
+                Comparator<? super RuleEdge> edgeComp = getEdges().comparator();
+                while (myEdgeIter.hasNext()) {
+                    result =
+                        edgeComp.compare(myEdgeIter.next(),
+                            otherEdgeIter.next());
+                    if (result != 0) {
+                        return result;
+                    }
+                }
+                return result;
+            }
+
+            private boolean fixed = false;
+            private SortedSet<RuleNode> nodes;
+            private SortedSet<RuleEdge> edges;
         }
 
         /**

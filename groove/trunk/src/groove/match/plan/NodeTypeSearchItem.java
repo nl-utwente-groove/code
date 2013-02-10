@@ -92,16 +92,18 @@ class NodeTypeSearchItem extends AbstractSearchItem {
      * it delegates to super.
      */
     @Override
-    public int compareTo(SearchItem other) {
-        int result = 0;
-        if (other instanceof NodeTypeSearchItem) {
-            result = this.type.compareTo(((NodeTypeSearchItem) other).type);
-        }
-        if (result == 0) {
-            return super.compareTo(other);
-        } else {
+    public int compareTo(SearchItem item) {
+        int result = super.compareTo(item);
+        if (result != 0) {
             return result;
         }
+        NodeTypeSearchItem other = (NodeTypeSearchItem) item;
+        result = this.type.compareTo(other.type);
+        if (result != 0) {
+            return result;
+        }
+        // compare node numbers to make sure the ordering is deterministic
+        return this.node.getNumber() - other.node.getNumber();
     }
 
     public void activate(PlanSearchStrategy strategy) {
