@@ -43,11 +43,12 @@ public final class HostEdgeStore<K> extends LinkedHashMap<K,HostEdgeSet> {
         }
     }
 
-    /** Adds a given key to the map, with an initially empty set of edges. */
-    public HostEdgeSet addKey(K key) {
-        HostEdgeSet result = HostEdgeSet.newInstance(null);
-        put(key, result);
-        return result;
+    /** 
+     * Adds a given key to the map, with an initially empty set of edges.
+     */
+    public boolean addKey(K key) {
+        HostEdgeSet oldValue = put(key, HostEdgeSet.newInstance(null));
+        return oldValue == null;
     }
 
     /**

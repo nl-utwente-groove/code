@@ -31,6 +31,13 @@ import groove.util.Groove;
  * @version $Revision$
  */
 public class EdgeEmbargo extends Condition {
+    /** Constructs a named edge embargo.
+     * 
+     * @param name the (non-{@code null}) name for the embargo
+     * @param context the graph on which this is an embargo
+     * @param embargoEdge the forbidden edge
+     * @param properties properties of the graph grammar
+     */
     private EdgeEmbargo(String name, RuleGraph context, RuleEdge embargoEdge,
             GrammarProperties properties) {
         super(name, Condition.Op.NOT, context.newGraph(name), null, properties);

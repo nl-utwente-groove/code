@@ -82,8 +82,14 @@ import java.util.Set;
  * @version $Revision$
  */
 public class Condition implements Fixable {
-    /** Constructs a condition for a non-pattern operator. */
+    /** 
+     * Constructs a (named) condition for a non-pattern operator.
+     * @param name the (non-{@code null}) name for this condition
+     * @param operator the top-level operator for the condition;
+     * {@link Op#hasPattern()} should be {@code false}
+     */
     public Condition(String name, Op operator) {
+        assert name != null;
         assert !operator.hasPattern();
         this.op = operator;
         this.name = name;
@@ -96,7 +102,7 @@ public class Condition implements Fixable {
     /**
      * Constructs a (named) graph condition based on a given pattern graph
      * and root graph.
-     * @param name the name of the condition; may be <code>null</code>
+     * @param name the (non-{@code null}) name of the condition
      * @param operator the top-level operator of this condition
      * @param pattern the graph to be matched
      * @param root the root graph of the condition; may be <code>null</code> if the condition is
@@ -105,13 +111,12 @@ public class Condition implements Fixable {
      */
     public Condition(String name, Op operator, RuleGraph pattern,
             RuleGraph root, GrammarProperties properties) {
+        assert name != null;
         assert operator.hasPattern();
         this.op = operator;
         this.name = name;
         this.factory = pattern.getFactory();
-        this.root =
-            root == null ? pattern.newGraph((name == null ? "root" : name
-                + "-root")) : root;
+        this.root = root == null ? pattern.newGraph(name + "-root") : root;
         this.pattern = pattern;
         this.systemProperties = properties;
     }
@@ -198,8 +203,9 @@ public class Condition implements Fixable {
     }
 
     /**
-     * Returns the name of this condition. A return value of <code>null</code>
-     * indicates that the condition is unnamed.
+     * Returns the (non-{@code null}) name of this condition.
+     * The name is guaranteed to be unique across all conditions and subconditions
+     * in a grammar.
      */
     public String getName() {
         return this.name;
@@ -623,8 +629,8 @@ public class Condition implements Fixable {
     public Condition reverse() {
         assert getOp() == Op.NOT;
         Condition result =
-            new Condition(getName(), Op.FORALL, getPattern(), getRoot(),
-                getSystemProperties());
+            new Condition(getName() + "-reverse", Op.FORALL, getPattern(),
+                getRoot(), getSystemProperties());
         result.addSubCondition(True);
         if (getTypeGraph() != null) {
             result.setTypeGraph(getTypeGraph());
@@ -689,7 +695,7 @@ public class Condition implements Fixable {
     /** The operator of this condition. */
     private final Op op;
     /**
-     * The name of this condition. May be <code>code</code> null.
+     * The name of this condition. May be {@code null}.
      */
     private final String name;
     /** The factory responsible for creating rule nodes and edges. */

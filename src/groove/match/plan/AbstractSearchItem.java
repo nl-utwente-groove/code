@@ -81,6 +81,8 @@ abstract class AbstractSearchItem implements SearchItem {
      * This implementation compares items on the basis of their class names, and
      * after that, on the basis of their ratings. A lower rating means a
      * "smaller" search item, which is scheduled earlier.
+     * If this implementation returns {@code 0}, the type of the parameter
+     * is guaranteed to coincide with the type of this item.
      */
     public int compareTo(SearchItem other) {
         int result = getClass().getName().compareTo(other.getClass().getName());

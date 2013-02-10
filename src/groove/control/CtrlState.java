@@ -23,11 +23,9 @@ import groove.graph.Node;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -208,7 +206,8 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
     }
 
     /**
-     * Returns the set of bound variables in this state.
+     * Returns the list of bound variables in this state,
+     * ordered according to the natural ordering of the control variables.
      */
     public List<CtrlVar> getBoundVars() {
         return this.boundVars;
@@ -218,7 +217,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
      * Adds bound variables to this state.
      */
     public void addBoundVars(Collection<CtrlVar> variables) {
-        Set<CtrlVar> newVars = new TreeSet<CtrlVar>(variables);
+        CtrlVarSet newVars = new CtrlVarSet(variables);
         newVars.addAll(this.boundVars);
         this.boundVars.clear();
         this.boundVars.addAll(newVars);
@@ -229,7 +228,7 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
      */
     public void setBoundVars(Collection<CtrlVar> variables) {
         this.boundVars.clear();
-        this.boundVars.addAll(new TreeSet<CtrlVar>(variables));
+        this.boundVars.addAll(new CtrlVarSet(variables));
     }
 
     /** Lazily creates and returns the schedule for trying the outgoing transitions of this state. */
@@ -238,9 +237,8 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
             assert this.disabledMap == null;
             this.disabledMap = computeDisabledMap();
             this.schedule =
-                getSchedule(new TreeSet<CtrlTransition>(getTransitions()),
-                    Collections.<CtrlTransition>emptySet(),
-                    Collections.<CtrlTransition>emptySet());
+                getSchedule(new CtrlTransitionSet(getTransitions()),
+                    new CtrlTransitionSet(), new CtrlTransitionSet());
             // discard the map to save space
             this.scheduleMap = null;
         }
@@ -302,15 +300,15 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
     }
 
     /** Computes a map from control calls to transitions disabled by those calls. */
-    private Map<CtrlTransition,Set<CtrlTransition>> computeDisabledMap() {
+    private Map<CtrlTransition,CtrlTransitionSet> computeDisabledMap() {
         // look for the transition that appears in the fewest guards
-        Map<CtrlTransition,Set<CtrlTransition>> result =
-            new HashMap<CtrlTransition,Set<CtrlTransition>>();
+        Map<CtrlTransition,CtrlTransitionSet> result =
+            new HashMap<CtrlTransition,CtrlTransitionSet>();
         for (CtrlTransition trans : getTransitions()) {
             for (CtrlTransition call : trans.label().getGuard()) {
-                Set<CtrlTransition> disablings = result.get(call);
+                CtrlTransitionSet disablings = result.get(call);
                 if (disablings == null) {
-                    result.put(call, disablings = new HashSet<CtrlTransition>());
+                    result.put(call, disablings = new CtrlTransitionSet());
                 }
                 disablings.add(trans);
             }
@@ -328,17 +326,17 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
      * @param failedCalls subset of {@code triedCalls} that have failed
      * @return a schedule for the given configuration
      */
-    private CtrlSchedule getSchedule(Set<CtrlTransition> transSet,
-            Set<CtrlTransition> triedCalls, Set<CtrlTransition> failedCalls) {
+    private CtrlSchedule getSchedule(CtrlTransitionSet transSet,
+            CtrlTransitionSet triedCalls, CtrlTransitionSet failedCalls) {
         if (this.scheduleMap == null) {
             this.scheduleMap =
-                new HashMap<Set<CtrlTransition>,Map<Set<CtrlTransition>,CtrlSchedule>>();
+                new HashMap<CtrlTransitionSet,Map<CtrlTransitionSet,CtrlSchedule>>();
         }
-        Map<Set<CtrlTransition>,CtrlSchedule> auxMap =
+        Map<CtrlTransitionSet,CtrlSchedule> auxMap =
             this.scheduleMap.get(transSet);
         if (auxMap == null) {
             this.scheduleMap.put(transSet, auxMap =
-                new HashMap<Set<CtrlTransition>,CtrlSchedule>());
+                new HashMap<CtrlTransitionSet,CtrlSchedule>());
         }
         CtrlSchedule result = auxMap.get(triedCalls);
         if (result == null) {
@@ -348,16 +346,16 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
         return result;
     }
 
-    private CtrlSchedule computeSchedule(Set<CtrlTransition> transSet,
-            Set<CtrlTransition> tried, Set<CtrlTransition> failed) {
+    private CtrlSchedule computeSchedule(CtrlTransitionSet transSet,
+            CtrlTransitionSet tried, CtrlTransitionSet failed) {
         // look for the untried calls with the least disablings
         SortedSet<CtrlTransition> chosenTrans = null;
-        Set<CtrlTransition> chosenDisablings = null;
+        SortedSet<CtrlTransition> chosenDisablings = null;
         // boolean indicating that the omega rule guards have all been satisfied
         boolean success = false;
         for (CtrlTransition tryTrans : transSet) {
-            Set<CtrlTransition> guard =
-                new HashSet<CtrlTransition>(tryTrans.getGuard());
+            SortedSet<CtrlTransition> guard =
+                new TreeSet<CtrlTransition>(tryTrans.getGuard());
             guard.removeAll(tried);
             if (!guard.isEmpty()) {
                 continue;
@@ -366,13 +364,13 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
                 success = true;
                 continue;
             }
-            Set<CtrlTransition> tryDisablings;
+            SortedSet<CtrlTransition> tryDisablings;
             if (this.disabledMap.containsKey(tryTrans)) {
                 tryDisablings =
-                    new HashSet<CtrlTransition>(this.disabledMap.get(tryTrans));
+                    new TreeSet<CtrlTransition>(this.disabledMap.get(tryTrans));
                 tryDisablings.retainAll(transSet);
             } else {
-                tryDisablings = Collections.emptySet();
+                tryDisablings = new TreeSet<CtrlTransition>();
             }
             // determine whether this control transition should be scheduled,
             // and whether it can be joined with the previously chosen ones
@@ -413,19 +411,18 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
                     : new ArrayList<CtrlTransition>(chosenTrans), tried,
                 success, isTransient);
         if (chosenTrans != null) {
-            Set<CtrlTransition> newTried = new HashSet<CtrlTransition>(tried);
+            CtrlTransitionSet newTried = new CtrlTransitionSet(tried);
             newTried.addAll(chosenTrans);
-            Set<CtrlTransition> newFailed = new HashSet<CtrlTransition>(failed);
+            CtrlTransitionSet newFailed = new CtrlTransitionSet(failed);
             newFailed.addAll(chosenTrans);
-            Set<CtrlTransition> remainder =
-                new LinkedHashSet<CtrlTransition>(transSet);
+            CtrlTransitionSet remainder = new CtrlTransitionSet(transSet);
             remainder.removeAll(chosenTrans);
             CtrlSchedule failNext = getSchedule(remainder, newTried, newFailed);
             CtrlSchedule succNext;
             if (chosenDisablings.isEmpty()) {
                 succNext = failNext;
             } else {
-                remainder = new LinkedHashSet<CtrlTransition>(remainder);
+                remainder = new CtrlTransitionSet(remainder);
                 remainder.removeAll(chosenDisablings);
                 succNext = getSchedule(remainder, newTried, failed);
             }
@@ -480,9 +477,9 @@ public class CtrlState implements Node, Comparator<CtrlTransition> {
     /** The schedule for trying the outgoing transitions of this state. */
     private CtrlSchedule schedule;
     /** Map from calls to transitions disabled by their success. */
-    private Map<CtrlTransition,Set<CtrlTransition>> disabledMap;
+    private Map<CtrlTransition,CtrlTransitionSet> disabledMap;
     /** Map storing the computed intermediate schedules, to enable sharing. */
-    private Map<Set<CtrlTransition>,Map<Set<CtrlTransition>,CtrlSchedule>> scheduleMap;
+    private Map<CtrlTransitionSet,Map<CtrlTransitionSet,CtrlSchedule>> scheduleMap;
     /** Count of the number of outgoing recipe transitions. */
     private int recipeCount;
 }

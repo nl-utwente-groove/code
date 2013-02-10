@@ -79,6 +79,8 @@ public class CtrlGuard extends TreeSet<CtrlTransition> implements
         if (size() != other.size()) {
             return false;
         }
+        // compare labels rather than full transitions
+        // this avoids a comparison of source and target states
         Set<CtrlLabel> otherLabels = new HashSet<CtrlLabel>();
         for (CtrlTransition trans : other) {
             otherLabels.add(trans.label());
