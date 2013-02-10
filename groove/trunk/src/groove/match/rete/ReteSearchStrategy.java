@@ -17,11 +17,13 @@
 package groove.match.rete;
 
 import groove.grammar.Condition;
-import groove.grammar.EdgeEmbargo;
 import groove.grammar.Condition.Op;
+import groove.grammar.EdgeEmbargo;
 import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.rule.RuleToHostMap;
 import groove.match.SearchStrategy;
 import groove.match.TreeMatch;
@@ -30,7 +32,6 @@ import groove.util.Visitor;
 import groove.util.Visitor.Collector;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -153,7 +154,7 @@ public class ReteSearchStrategy implements SearchStrategy {
     private synchronized boolean graphShapesEqual(HostGraph g1, HostGraph g2) {
         boolean result = true;
 
-        HashSet<HostNode> nodes = new HashSet<HostNode>(g1.nodeSet());
+        HostNodeSet nodes = new HostNodeSet(g1.nodeSet());
 
         for (HostNode n : nodes) {
             result = g2.nodeSet().contains(n);
@@ -167,7 +168,7 @@ public class ReteSearchStrategy implements SearchStrategy {
         }
 
         if (result) {
-            nodes = new HashSet<HostNode>(g2.nodeSet());
+            nodes = new HostNodeSet(g2.nodeSet());
             for (HostNode n : nodes) {
                 result = g1.nodeSet().contains(n);
                 if (!result) {
@@ -180,7 +181,7 @@ public class ReteSearchStrategy implements SearchStrategy {
             }
         }
         if (result) {
-            HashSet<HostEdge> edges = new HashSet<HostEdge>(g1.edgeSet());
+            HostEdgeSet edges = new HostEdgeSet(g1.edgeSet());
             for (HostEdge e : edges) {
                 result = g2.edgeSet().contains(e);
                 if (!result) {
@@ -194,7 +195,7 @@ public class ReteSearchStrategy implements SearchStrategy {
         }
 
         if (result) {
-            HashSet<HostEdge> edges = new HashSet<HostEdge>(g2.edgeSet());
+            HostEdgeSet edges = new HostEdgeSet(g2.edgeSet());
             for (HostEdge e : edges) {
                 result = g1.edgeSet().contains(e);
                 if (!result) {

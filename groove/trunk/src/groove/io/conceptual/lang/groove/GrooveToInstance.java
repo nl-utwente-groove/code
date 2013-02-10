@@ -3,9 +3,12 @@ package groove.io.conceptual.lang.groove;
 import groove.algebra.Constant;
 import groove.grammar.aspect.AspectNode;
 import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostEdgeSet;
+import groove.grammar.host.HostEdgeStore;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostGraph.HostToAspectMap;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.host.ValueNode;
 import groove.graph.EdgeRole;
 import groove.io.conceptual.Field;
@@ -44,11 +47,9 @@ import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -63,8 +64,7 @@ public class GrooveToInstance extends InstanceImporter {
 
     private Map<HostNode,Object> m_objectNodes = new HashMap<HostNode,Object>();
     private Map<HostNode,Value> m_nodeValues = new HashMap<HostNode,Value>();
-    private Map<HostNode,Set<HostEdge>> m_nodeEdges =
-        new HashMap<HostNode,Set<HostEdge>>();
+    private HostEdgeStore<HostNode> m_nodeEdges = new HostEdgeStore<HostNode>();
 
     private int m_nodeCounter = 1;
 
@@ -99,15 +99,14 @@ public class GrooveToInstance extends InstanceImporter {
 
         // Map nodes to edges
         for (HostNode n : hostGraph.nodeSet()) {
-            this.m_nodeEdges.put(n, new HashSet<HostEdge>());
+            this.m_nodeEdges.addKey(n);
         }
         for (HostEdge e : hostGraph.edgeSet()) {
             this.m_nodeEdges.get(e.source()).add(e);
         }
 
         // Set of Nodes that need to be walked through
-        Set<? extends HostNode> unvisitedNodes =
-            new HashSet<HostNode>(hostGraph.nodeSet());
+        HostNodeSet unvisitedNodes = new HostNodeSet(hostGraph.nodeSet());
 
         // Some trickery is required to obtain the ID of a node
         // Find original aspect node and obtain ID from that
@@ -236,7 +235,7 @@ public class GrooveToInstance extends InstanceImporter {
                 EnumValue ev = new EnumValue(e, id.getName());
                 resultValue = ev;
             } else {
-                Set<HostEdge> edges = this.m_nodeEdges.get(node);
+                HostEdgeSet edges = this.m_nodeEdges.get(node);
                 for (HostEdge enumEdge : edges) {
                     if (enumEdge.getType().getRole() == EdgeRole.FLAG) {
                         EnumValue ev =
@@ -324,7 +323,7 @@ public class GrooveToInstance extends InstanceImporter {
     }
 
     private HostNode getEdgeNode(HostNode node, String edge) {
-        Set<HostEdge> nodeEdges = this.m_nodeEdges.get(node);
+        HostEdgeSet nodeEdges = this.m_nodeEdges.get(node);
         for (HostEdge e : nodeEdges) {
             if (e.label().text().equals(edge)) {
                 return e.target();
@@ -336,8 +335,8 @@ public class GrooveToInstance extends InstanceImporter {
     // For container field w/o intermediate
     private ContainerValue getFieldContainerValue(HostNode fieldNode,
             String fieldName, Container containerType) {
-        Set<HostEdge> nodeEdges =
-            new HashSet<HostEdge>(this.m_nodeEdges.get(fieldNode));
+        HostEdgeSet nodeEdges =
+            new HostEdgeSet(this.m_nodeEdges.get(fieldNode));
         for (Iterator<HostEdge> it = nodeEdges.iterator(); it.hasNext();) {
             HostEdge e = it.next();
             if (!e.label().text().equals(fieldName)) {
@@ -371,8 +370,7 @@ public class GrooveToInstance extends InstanceImporter {
 
     // For intermediate nodes for containers
     private Value getContainerValue(HostNode node, String edgeName) {
-        Set<HostEdge> nodeEdges =
-            new HashSet<HostEdge>(this.m_nodeEdges.get(node));
+        HostEdgeSet nodeEdges = new HostEdgeSet(this.m_nodeEdges.get(node));
         for (Iterator<HostEdge> it = nodeEdges.iterator(); it.hasNext();) {
             HostEdge e = it.next();
             if (!e.label().text().equals(edgeName)) {

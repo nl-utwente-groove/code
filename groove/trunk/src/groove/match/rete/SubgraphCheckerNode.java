@@ -17,6 +17,7 @@
 package groove.match.rete;
 
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleElement;
 import groove.grammar.rule.RuleNode;
@@ -693,8 +694,8 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
 
             Object[] leftUnits = left.getAllUnits();
             Object[] rightUnits = right.getAllUnits();
-            Set<HostNode> nodesLeft = (injective) ? left.getNodes() : null;
-            Set<HostNode> nodesRight = (injective) ? right.getNodes() : null;
+            HostNodeSet nodesLeft = (injective) ? left.getNodes() : null;
+            HostNodeSet nodesRight = (injective) ? right.getNodes() : null;
 
             int i = 0;
             for (; i < this.subgraphChecker.leftLookupTable.length; i++) {

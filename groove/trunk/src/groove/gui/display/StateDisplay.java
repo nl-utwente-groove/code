@@ -27,6 +27,7 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph.HostToAspectMap;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.HostModel;
@@ -529,8 +530,8 @@ public class StateDisplay extends Display implements SimulatorListener {
         Map<HostNode,Attributes> sourceNodeMap = map.nodeMap;
         Map<HostNode,Attributes> resultNodeMap = result.nodeMap;
         Map<HostNode,Color> newColorMap = extractNewColors(trans);
-        Set<HostNode> newNodes =
-            new HashSet<HostNode>(trans.target().getGraph().nodeSet());
+        HostNodeSet newNodes =
+            new HostNodeSet(trans.target().getGraph().nodeSet());
         // transfer node attributes
         for (Map.Entry<HostNode,HostNode> entry : morphism.nodeMap().entrySet()) {
             HostNode sourceNode = entry.getKey();
@@ -656,9 +657,9 @@ public class StateDisplay extends Display implements SimulatorListener {
         Map<HostNode,Color> result = new HashMap<HostNode,Color>();
         // extract new colours from target
         RuleApplication application = trans.createRuleApplication();
-        Map<RuleNode,Set<HostNode>> comatch = application.getComatch();
+        Map<RuleNode,HostNodeSet> comatch = application.getComatch();
         for (Map.Entry<RuleNode,Color> colorEntry : application.getRule().getColorMap().entrySet()) {
-            Set<HostNode> matches = comatch.get(colorEntry.getKey());
+            HostNodeSet matches = comatch.get(colorEntry.getKey());
             // possibly this node has no matches, for instance if it is universally
             // quantified
             if (matches != null) {

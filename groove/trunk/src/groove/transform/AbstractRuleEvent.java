@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.MissingFormatArgumentException;
-import java.util.Set;
 
 /**
  * Abstract class providing basic rule event functionality.
@@ -206,7 +205,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
     /**
      * Callback factory method to create a fresh, empty node set.
      */
-    protected Set<HostNode> createNodeSet() {
+    protected HostNodeSet createNodeSet() {
         return new HostNodeSet();
     }
 
@@ -214,14 +213,14 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
      * Callback factory method to create a fresh, empty node set with a given
      * initial capacity.
      */
-    protected Set<HostNode> createNodeSet(int capacity) {
+    protected HostNodeSet createNodeSet(int capacity) {
         return new HostNodeSet(capacity);
     }
 
     /**
      * Callback factory method to create a fresh, empty edge set.
      */
-    protected Set<HostEdge> createEdgeSet() {
+    protected HostEdgeSet createEdgeSet() {
         return new HostEdgeSet();
     }
 
@@ -229,7 +228,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
      * Callback factory method to create a fresh, empty edge set with a given
      * initial capacity.
      */
-    protected Set<HostEdge> createEdgeSet(int capacity) {
+    protected HostEdgeSet createEdgeSet(int capacity) {
         return new HostEdgeSet(capacity);
     }
 

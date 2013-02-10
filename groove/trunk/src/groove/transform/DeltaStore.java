@@ -17,9 +17,9 @@
 package groove.transform;
 
 import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostNode;
-
-import java.util.Set;
+import groove.grammar.host.HostNodeSet;
 
 /**
  * Delta target that collects the addition and removal information and can play
@@ -39,9 +39,8 @@ public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget {
      * Creates a delta store based on explicitly given added and removed sets.
      * The sets are copied.
      */
-    protected DeltaStore(Set<HostNode> addedNodeSet,
-            Set<HostNode> removedNodeSet, Set<HostEdge> addedEdgeSet,
-            Set<HostEdge> removedEdgeSet) {
+    protected DeltaStore(HostNodeSet addedNodeSet, HostNodeSet removedNodeSet,
+            HostEdgeSet addedEdgeSet, HostEdgeSet removedEdgeSet) {
         super(addedNodeSet, removedNodeSet, addedEdgeSet, removedEdgeSet);
     }
 
@@ -49,9 +48,8 @@ public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget {
      * Creates a delta store based on explicitly given added and removed sets. A
      * further parameter controls if the sets are copied or shared.
      */
-    protected DeltaStore(Set<HostNode> addedNodeSet,
-            Set<HostNode> removedNodeSet, Set<HostEdge> addedEdgeSet,
-            Set<HostEdge> removedEdgeSet, boolean share) {
+    protected DeltaStore(HostNodeSet addedNodeSet, HostNodeSet removedNodeSet,
+            HostEdgeSet addedEdgeSet, HostEdgeSet removedEdgeSet, boolean share) {
         super(addedNodeSet, removedNodeSet, addedEdgeSet, removedEdgeSet, share);
     }
 

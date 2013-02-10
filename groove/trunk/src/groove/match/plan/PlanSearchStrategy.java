@@ -22,6 +22,7 @@ import groove.grammar.host.DefaultHostNode;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.host.ValueNode;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.RuleEdge;
@@ -38,9 +39,7 @@ import groove.util.Visitor;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * This matcher walks through a search tree built up according to a search plan,
@@ -618,9 +617,9 @@ public class PlanSearchStrategy implements SearchStrategy {
          * Returns the set of nodes already used as images. This is needed for
          * the injectivity check, if any.
          */
-        private Set<HostNode> getUsedNodes() {
+        private HostNodeSet getUsedNodes() {
             if (this.usedNodes == null) {
-                this.usedNodes = new HashSet<HostNode>();
+                this.usedNodes = new HostNodeSet();
             }
             return this.usedNodes;
         }
@@ -658,7 +657,7 @@ public class PlanSearchStrategy implements SearchStrategy {
          * The set of non-value nodes already used as images, used for the
          * injectivity test.
          */
-        private Set<HostNode> usedNodes;
+        private HostNodeSet usedNodes;
         /** Search stack. */
         private final SearchItem.Record[] records;
         /** Forward influences of the records. */

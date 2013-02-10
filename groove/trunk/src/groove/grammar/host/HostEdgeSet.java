@@ -1,48 +1,68 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2011 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
+ */
 package groove.grammar.host;
 
-import groove.util.collect.TreeHashSet;
-
-import java.util.Set;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 
 /**
- * Specialisation of a set of edges that relies on the 
- * edge hashcode uniquely identifying the edge.
+ * Deterministic set of host edges.
+ * Determinism means that, after a fixed sequence of inserts and removals,
+ * the order of the elements as returned by {@link #iterator()} is als fixed.
+ * This class provides an intermediate type that can be changed easily
+ * to inherit from {@link LinkedHashSet} or {@link HostEdgeTreeHashSet}. 
+ * @author Arend Rensink
+ * @version $Revision $
  */
-public class HostEdgeSet extends TreeHashSet<HostEdge> {
-    /** Creates an empty edge set. */
+public final class HostEdgeSet extends HostEdgeTreeHashSet {
+    /** Constructs an empty instance with default capacity. */
     public HostEdgeSet() {
-        this(DEFAULT_CAPACITY);
+        super();
     }
 
-    /** Creates an empty edge set with a given initial capacity. */
-    public HostEdgeSet(int capacity) {
-        super(capacity, 2, 3);
-    }
-
-    /** Creates a copy of an existing edge set. */
+    /** Clones a given set. */
     public HostEdgeSet(HostEdgeSet other) {
         super(other);
     }
 
-    /** Creates a copy of a set of edges. */
-    public HostEdgeSet(Set<HostEdge> other) {
-        this(other.size());
-        addAll(other);
+    /** Constructs an empty instance with given initial capacity. */
+    public HostEdgeSet(int capacity) {
+        super(capacity);
     }
 
-    @Override
-    protected boolean allEqual() {
-        return true;
+    /** Clones a given set. */
+    public HostEdgeSet(Collection<? extends HostEdge> other) {
+        super(other);
     }
 
-    @Override
-    protected boolean areEqual(HostEdge newKey, HostEdge oldKey) {
-        assert newKey.equals(oldKey);
-        return true;
-    }
-
-    @Override
-    protected int getCode(HostEdge key) {
-        return key.getNumber();
+    /**
+     * Factory method to copy a given set of host edges or create a new one.
+     * @param set the set to be copied; if {@code null}, a fresh empty set is returned.
+     */
+    final public static HostEdgeSet newInstance(
+            Collection<? extends HostEdge> set) {
+        HostEdgeSet result;
+        if (set == null) {
+            result = new HostEdgeSet();
+        } else if (set instanceof HostEdgeSet) {
+            result = new HostEdgeSet((HostEdgeSet) set);
+        } else {
+            result = new HostEdgeSet(set);
+        }
+        return result;
     }
 }

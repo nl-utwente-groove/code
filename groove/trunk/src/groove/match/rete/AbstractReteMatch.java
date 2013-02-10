@@ -18,6 +18,7 @@ package groove.match.rete;
 
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleNode;
@@ -31,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * @author Arash Jalali
@@ -203,11 +203,10 @@ public abstract class AbstractReteMatch implements VarMap {
      * @return <code>true</code> if the intersection of s1 and s2 is empty,<code>false</code>
      * otherwise.
      */
-    public static boolean checkInjectiveOverlap(Set<HostNode> s1,
-            Set<HostNode> s2) {
+    public static boolean checkInjectiveOverlap(HostNodeSet s1, HostNodeSet s2) {
         boolean result = true;
-        Set<HostNode> largerNodes = s1.size() > s2.size() ? s1 : s2;
-        Set<HostNode> smallerNodes = (largerNodes == s1) ? s2 : s1;
+        HostNodeSet largerNodes = s1.size() > s2.size() ? s1 : s2;
+        HostNodeSet smallerNodes = (largerNodes == s1) ? s2 : s1;
         for (HostNode n : smallerNodes) {
             if (largerNodes.contains(n)) {
                 result = false;
@@ -221,7 +220,7 @@ public abstract class AbstractReteMatch implements VarMap {
      * @return The set of host-nodes of the match, i.e. nodes in the host graph
      * that this match covers.
      */
-    public abstract Set<HostNode> getNodes();
+    public abstract HostNodeSet getNodes();
 
     /**
      * Adds a match to the list of supermatches for this one

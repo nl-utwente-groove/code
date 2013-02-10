@@ -23,10 +23,11 @@ import groove.algebra.AlgebraFamily;
 import groove.control.CtrlState;
 import groove.explore.result.Result;
 import groove.grammar.Grammar;
-import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.PostApplicationError;
@@ -724,8 +725,8 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
                     return false;
                 }
                 // check for graph equality
-                Set<?> myNodeSet = new HashSet<HostNode>(myGraph.nodeSet());
-                Set<?> myEdgeSet = new HashSet<HostEdge>(myGraph.edgeSet());
+                Set<?> myNodeSet = new HostNodeSet(myGraph.nodeSet());
+                Set<?> myEdgeSet = new HostEdgeSet(myGraph.edgeSet());
                 return myNodeSet.equals(otherGraph.nodeSet())
                     && myEdgeSet.equals(otherGraph.edgeSet());
             } else {

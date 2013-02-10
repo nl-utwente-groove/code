@@ -20,6 +20,7 @@ import groove.automaton.RegExpr;
 import groove.automaton.RegExpr.Star;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
+import groove.grammar.host.HostNodeTreeHashSet;
 import groove.match.rete.RetePathMatch.EmptyPathMatch;
 
 import java.util.Collection;
@@ -257,7 +258,7 @@ public class ClosurePathChecker extends AbstractPathChecker implements
         /** The network node to which this closure belongs. */
         private final ReteNetworkNode origin;
         /** Set of relevant nodes, excluding the final node. */
-        private final HostNodeSet relevantNodes;
+        private final HostNodeTreeHashSet relevantNodes;
         /** The end node of the path. */
         private final HostNode end;
 

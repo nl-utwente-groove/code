@@ -19,15 +19,13 @@ package groove.transform;
 import groove.grammar.Condition;
 import groove.grammar.Condition.Op;
 import groove.grammar.Rule;
-import groove.grammar.host.HostEdge;
-import groove.grammar.host.HostNode;
+import groove.grammar.host.HostEdgeSet;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.rule.RuleToHostMap;
 import groove.transform.RuleEvent.Reuse;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Proof of a {@link Condition}.
@@ -93,8 +91,8 @@ public class Proof {
     }
 
     /** Returns the (host graph) edges used as images in the proof. */
-    public Collection<HostEdge> getEdgeValues() {
-        Set<HostEdge> result = new HashSet<HostEdge>();
+    public HostEdgeSet getEdgeValues() {
+        HostEdgeSet result = new HostEdgeSet();
         for (Proof subMatch : getSubProofs()) {
             result.addAll(subMatch.getEdgeValues());
         }
@@ -105,8 +103,8 @@ public class Proof {
     }
 
     /** Returns the (host graph) nodes used as images in the proof. */
-    public Collection<HostNode> getNodeValues() {
-        Set<HostNode> result = new HashSet<HostNode>();
+    public HostNodeSet getNodeValues() {
+        HostNodeSet result = new HostNodeSet();
         for (Proof subMatch : getSubProofs()) {
             result.addAll(subMatch.getNodeValues());
         }

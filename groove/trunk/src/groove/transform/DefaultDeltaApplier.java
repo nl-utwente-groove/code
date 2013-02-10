@@ -37,9 +37,9 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
      * Creates a delta store based on explicitly given added and removed sets.
      * The sets are copied.
      */
-    protected DefaultDeltaApplier(Set<HostNode> addedNodeSet,
-            Set<HostNode> removedNodeSet, Set<HostEdge> addedEdgeSet,
-            Set<HostEdge> removedEdgeSet) {
+    protected DefaultDeltaApplier(HostNodeSet addedNodeSet,
+            HostNodeSet removedNodeSet, HostEdgeSet addedEdgeSet,
+            HostEdgeSet removedEdgeSet) {
         this.addedNodeSet = createNodeSet(addedNodeSet);
         this.removedNodeSet = createNodeSet(removedNodeSet);
         this.addedEdgeSet = createEdgeSet(addedEdgeSet);
@@ -50,9 +50,9 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
      * Creates a delta store based on explicitly given added and removed sets. A
      * further parameter controls if the sets are copied or shared.
      */
-    protected DefaultDeltaApplier(Set<HostNode> addedNodeSet,
-            Set<HostNode> removedNodeSet, Set<HostEdge> addedEdgeSet,
-            Set<HostEdge> removedEdgeSet, boolean share) {
+    protected DefaultDeltaApplier(HostNodeSet addedNodeSet,
+            HostNodeSet removedNodeSet, HostEdgeSet addedEdgeSet,
+            HostEdgeSet removedEdgeSet, boolean share) {
         this.addedNodeSet = share ? addedNodeSet : createNodeSet(addedNodeSet);
         this.removedNodeSet =
             share ? removedNodeSet : createNodeSet(removedNodeSet);
@@ -92,22 +92,22 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
     }
 
     /** Returns an alias of the set of added nodes of this delta. */
-    public Set<HostNode> getAddedNodeSet() {
+    public HostNodeSet getAddedNodeSet() {
         return this.addedNodeSet;
     }
 
     /** Returns an alias of the set of removed nodes of this delta. */
-    public Set<HostNode> getRemovedNodeSet() {
+    public HostNodeSet getRemovedNodeSet() {
         return this.removedNodeSet;
     }
 
     /** Returns an alias of the set of added edges of this delta. */
-    public Set<HostEdge> getAddedEdgeSet() {
+    public HostEdgeSet getAddedEdgeSet() {
         return this.addedEdgeSet;
     }
 
     /** Returns an alias of the set of removed edges of this delta. */
-    public Set<HostEdge> getRemovedEdgeSet() {
+    public HostEdgeSet getRemovedEdgeSet() {
         return this.removedEdgeSet;
     }
 
@@ -155,24 +155,16 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
      * Callback factory method for copying a given node set. Returns the empty
      * set if the given node set is <code>null</code>.
      */
-    protected Set<HostNode> createNodeSet(Collection<HostNode> set) {
-        if (set == null) {
-            return new HostNodeSet();
-        } else {
-            return new HostNodeSet(set);
-        }
+    private HostNodeSet createNodeSet(Collection<HostNode> set) {
+        return HostNodeSet.newInstance(set);
     }
 
     /**
      * Callback factory method for copying a given edge set. Returns the empty
      * set if the given edge set is <code>null</code>.
      */
-    protected Set<HostEdge> createEdgeSet(Collection<HostEdge> set) {
-        Set<HostEdge> result = new HostEdgeSet();
-        if (set != null) {
-            result.addAll(set);
-        }
-        return result;
+    private HostEdgeSet createEdgeSet(Collection<HostEdge> set) {
+        return HostEdgeSet.newInstance(set);
     }
 
     /**
@@ -218,11 +210,11 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
     }
 
     /** The set of added nodes of this delta. */
-    final private Set<HostNode> addedNodeSet;
+    final private HostNodeSet addedNodeSet;
     /** The set of removed nodes of this delta. */
-    final private Set<HostNode> removedNodeSet;
+    final private HostNodeSet removedNodeSet;
     /** The set of added edges of this delta. */
-    final private Set<HostEdge> addedEdgeSet;
+    final private HostEdgeSet addedEdgeSet;
     /** The set of removed edges of this delta. */
-    final private Set<HostEdge> removedEdgeSet;
+    final private HostEdgeSet removedEdgeSet;
 }
