@@ -439,7 +439,7 @@ public class SimulatorModel implements Cloneable {
         changeState(state);
         MatchResult match = getMatch(state);
         changeMatch(match);
-        changeTransition(match.hasRuleTransitionFrom(state)
+        changeTransition(match != null && match.hasRuleTransitionFrom(state)
                 ? match.getRuleTransition() : null);
         if (getDisplay() != DisplayKind.LTS) {
             changeDisplay(DisplayKind.STATE);
@@ -526,7 +526,7 @@ public class SimulatorModel implements Cloneable {
         if (gts != null && getState() == null) {
             changeState(gts.startState());
         }
-        if (switchTab) {
+        if (switchTab && getDisplay() != DisplayKind.STATE) {
             changeDisplay(DisplayKind.LTS);
         }
         return finish();
