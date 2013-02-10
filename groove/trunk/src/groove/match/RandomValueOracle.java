@@ -25,6 +25,11 @@ import java.util.Collections;
 
 /** Oracle returning a single random value for the appropriate type. */
 public class RandomValueOracle implements ValueOracle {
+    /** Constructor for the singleton instance. */
+    private RandomValueOracle() {
+        // empty
+    }
+
     @Override
     public Iterable<String> getValues(Condition condition, VariableNode var) {
         SignatureKind sig = var.getSignature();
@@ -54,4 +59,11 @@ public class RandomValueOracle implements ValueOracle {
         }
         return Collections.singleton(result);
     }
+
+    /** Returns the singleton instance of this class. */
+    public final static RandomValueOracle instance() {
+        return instance;
+    }
+
+    private static final RandomValueOracle instance = new RandomValueOracle();
 }
