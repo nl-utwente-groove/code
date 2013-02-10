@@ -627,11 +627,11 @@ public final class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge>
          * @param <T> the type of the key
          * @param map the mapping to be modified; may be {@code null}
          * @param key the key to be inserted
-         * @return {@code true} if the key was indeed added to the map;
-         * {@code false} if the map wal {@code null} or the key already existed
+         * @return {@code true} if the key was indeed added to the map,
+         * or the map was {@code null}
          */
         private <T> boolean addKeyToStore(HostEdgeStore<T> map, T key) {
-            boolean result = false;
+            boolean result = true;
             if (map != null) {
                 result = map.addKey(key);
             }
