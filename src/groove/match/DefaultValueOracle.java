@@ -24,9 +24,21 @@ import java.util.Collections;
 
 /** Oracle returning the default value for the appropriate type. */
 public class DefaultValueOracle implements ValueOracle {
+    /** Constructor for the singleton instance. */
+    private DefaultValueOracle() {
+        // empty
+    }
+
     @Override
     public Iterable<String> getValues(Condition condition, VariableNode var) {
         SignatureKind sig = var.getSignature();
         return Collections.singleton(sig.getDefaultValue());
     }
+
+    /** Returns the singleton instance of this class. */
+    public final static DefaultValueOracle instance() {
+        return instance;
+    }
+
+    private static final DefaultValueOracle instance = new DefaultValueOracle();
 }

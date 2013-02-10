@@ -35,7 +35,7 @@ import groove.match.plan.PlanSearchEngine;
 public class MatcherFactory {
     private MatcherFactory() {
         this.engine = defaultEngine;
-        this.oracle = new DefaultValueOracle();
+        this.oracle = DefaultValueOracle.instance();
     }
 
     /**
