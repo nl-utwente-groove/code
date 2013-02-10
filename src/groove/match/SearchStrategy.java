@@ -53,10 +53,15 @@ public interface SearchStrategy {
     public <T> T traverse(HostGraph host, RuleToHostMap seedMap,
             Visitor<TreeMatch,T> visitor);
 
-    /** Returns the search engine that was used to create this strategy. */
+    /** 
+     * Returns the search engine that was used to create this strategy.
+     * @return the search engine; non-{@code null}
+     */
     public SearchEngine getEngine();
-    
-    /** Returns the value oracle of this matcher. */
+
+    /** Returns the value oracle of this matcher.
+     * @return the value oracle; non-{@code null}
+     */
     public ValueOracle getOracle();
 
 }
