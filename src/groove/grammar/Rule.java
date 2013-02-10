@@ -21,7 +21,7 @@ import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
-import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.model.FormatException;
@@ -534,8 +534,8 @@ public class Rule implements Action, Fixable {
         boolean result = true;
         for (RuleNode eraserNode : getEraserNodes()) {
             HostNode erasedNode = match.getNode(eraserNode);
-            Set<HostEdge> danglingEdges =
-                new HashSet<HostEdge>(host.edgeSet(erasedNode));
+            HostEdgeSet danglingEdges =
+                new HostEdgeSet(host.edgeSet(erasedNode));
             for (RuleEdge eraserEdge : lhs().edgeSet(eraserNode)) {
                 boolean removed =
                     danglingEdges.remove(match.getEdge(eraserEdge));

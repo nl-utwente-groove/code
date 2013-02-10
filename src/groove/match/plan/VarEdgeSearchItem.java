@@ -17,6 +17,7 @@
 package groove.match.plan;
 
 import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.RuleEdge;
@@ -240,5 +241,5 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         private TypeElement varFind;
     }
 
-    private static final Set<HostEdge> EMPTY_IMAGE_SET = Collections.emptySet();
+    private static final HostEdgeSet EMPTY_IMAGE_SET = new HostEdgeSet();
 }

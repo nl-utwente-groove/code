@@ -21,14 +21,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.automaton.RegAut;
+import groove.automaton.RegAut.Result;
 import groove.automaton.RegAutCalculator;
 import groove.automaton.RegExpr;
 import groove.automaton.SimpleNFA;
-import groove.automaton.RegAut.Result;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.rule.LabelVar;
@@ -92,7 +93,7 @@ abstract public class AbstractAutomatonTest {
     static HostGraph testGraph;
 
     static HostNode nList, nC1, nC2, nC3, nC4, nI0, nI1, nI2, nI3;
-    static Set<HostNode> nC12, nC34;
+    static HostNodeSet nC12, nC34;
     static Set<Result> reflexive;
     static ImplicitTypeGraph implicitTypeGraph;
     static TypeGraph loadedTypeGraph;
@@ -133,10 +134,10 @@ abstract public class AbstractAutomatonTest {
         nI1 = getNode("1");
         nI2 = getNode("2");
         nI3 = getNode("3");
-        nC12 = new HashSet<HostNode>();
+        nC12 = new HostNodeSet();
         nC12.add(nC1);
         nC12.add(nC2);
-        nC34 = new HashSet<HostNode>();
+        nC34 = new HostNodeSet();
         nC34.add(nC3);
         nC34.add(nC4);
         reflexive = new HashSet<Result>();

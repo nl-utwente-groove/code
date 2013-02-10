@@ -20,14 +20,13 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.rule.RuleNode;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -134,11 +133,11 @@ public class RuleEffect {
         int createdNodeCount = createdNodes.length;
         if (createdNodeCount > 0) {
             Map<RuleNode,HostNode> oldCreatedNodeMap = this.createdNodeMap;
-            Set<HostNode> oldCreatedNodes = this.createdNodeSet;
+            HostNodeSet oldCreatedNodes = this.createdNodeSet;
             if (oldCreatedNodes == null) {
                 int size = createdNodeCount * 2;
                 oldCreatedNodeMap = new HashMap<RuleNode,HostNode>(size);
-                oldCreatedNodes = new LinkedHashSet<HostNode>(size);
+                oldCreatedNodes = new HostNodeSet(size);
             }
             for (int i = 0; i < createdNodeCount; i++) {
                 HostNode createdNode = createdNodes[i];
@@ -153,17 +152,17 @@ public class RuleEffect {
     /** 
      * Adds a collection of erased nodes to those already stored in this record.
      */
-    void addErasedNodes(Set<HostNode> erasedNodes) {
+    void addErasedNodes(HostNodeSet erasedNodes) {
         if (!erasedNodes.isEmpty()) {
-            Set<HostNode> oldErasedNodes = this.erasedNodes;
-            Set<HostNode> newErasedNodes;
+            HostNodeSet oldErasedNodes = this.erasedNodes;
+            HostNodeSet newErasedNodes;
             if (oldErasedNodes == null) {
                 newErasedNodes = erasedNodes;
                 this.erasedNodesAliased = true;
             } else {
                 if (this.erasedNodesAliased) {
                     newErasedNodes =
-                        new HashSet<HostNode>(
+                        new HostNodeSet(
                             (oldErasedNodes.size() + erasedNodes.size()) * 2);
                     newErasedNodes.addAll(oldErasedNodes);
                     this.erasedNodesAliased = false;
@@ -179,9 +178,9 @@ public class RuleEffect {
     /** 
      * Adds a collection of erased edges to those already stored in this record.
      */
-    void addErasedEdges(Set<HostEdge> erasedEdges) {
-        Set<HostEdge> oldErasedEdges = this.erasedEdges;
-        Set<HostEdge> newErasedEdges;
+    void addErasedEdges(HostEdgeSet erasedEdges) {
+        HostEdgeSet oldErasedEdges = this.erasedEdges;
+        HostEdgeSet newErasedEdges;
         if (erasedEdges.isEmpty()) {
             newErasedEdges = null;
         } else if (oldErasedEdges == null) {
@@ -205,9 +204,9 @@ public class RuleEffect {
     /** 
      * Adds a collection of created edges to those already stored in this record.
      */
-    void addCreatedEdges(Set<HostEdge> createdEdges) {
-        Collection<HostEdge> oldCreatedEdges = this.createdEdges;
-        Collection<HostEdge> newCreatedEdges;
+    void addCreatedEdges(HostEdgeSet createdEdges) {
+        HostEdgeSet oldCreatedEdges = this.createdEdges;
+        HostEdgeSet newCreatedEdges;
         if (createdEdges.isEmpty()) {
             newCreatedEdges = oldCreatedEdges;
         } else if (oldCreatedEdges == null) {
@@ -233,8 +232,8 @@ public class RuleEffect {
      * stored in this record.
      */
     void addCreatedEdge(HostEdge edge) {
-        Collection<HostEdge> oldCreatedEdges = this.createdEdges;
-        Collection<HostEdge> newCreatedEdges;
+        HostEdgeSet oldCreatedEdges = this.createdEdges;
+        HostEdgeSet newCreatedEdges;
         if (oldCreatedEdges == null) {
             newCreatedEdges = new HostEdgeSet();
         } else if (this.createdEdgesAliased) {
@@ -271,7 +270,7 @@ public class RuleEffect {
     }
 
     /** Returns the (possibly {@code null}) set of erased nodes. */
-    final public Set<HostNode> getErasedNodes() {
+    final public HostNodeSet getErasedNodes() {
         return this.erasedNodes;
     }
 
@@ -332,7 +331,7 @@ public class RuleEffect {
                         @Override
                         public boolean hasNext() {
                             HostEdge next = this.next;
-                            Set<HostEdge> previous = this.mergedEdges;
+                            HostEdgeSet previous = this.mergedEdges;
                             MergeMap mergeMap = getMergeMap();
                             Iterator<HostEdge> inner = this.createdEdgeIter;
                             while (next == null && inner.hasNext()) {
@@ -366,7 +365,7 @@ public class RuleEffect {
                         private final Iterator<HostEdge> createdEdgeIter =
                             createdEdges.iterator();
                         /** Set of previously computed merged edges. */
-                        private final Set<HostEdge> mergedEdges =
+                        private final HostEdgeSet mergedEdges =
                             new HostEdgeSet();
                     };
                 }
@@ -379,7 +378,7 @@ public class RuleEffect {
                         @Override
                         public boolean hasNext() {
                             HostEdge next = this.next;
-                            Set<HostNode> erasedNodes = getErasedNodes();
+                            HostNodeSet erasedNodes = getErasedNodes();
                             Iterator<HostEdge> inner = this.createdEdgeIter;
                             while (next == null && inner.hasNext()) {
                                 next = inner.next();
@@ -446,11 +445,11 @@ public class RuleEffect {
     private final Fragment fragment;
     /** Flag indicating that the created nodes are predefined. */
     /** Collection of erased nodes. */
-    private Set<HostNode> erasedNodes;
+    private HostNodeSet erasedNodes;
     /** Flag indicating if {@link #erasedNodes} is currently an alias. */
     private boolean erasedNodesAliased;
     /** Collection of erased edges. */
-    private Set<HostEdge> erasedEdges;
+    private HostEdgeSet erasedEdges;
     /** Flag indicating if {@link #erasedEdges} is currently an alias. */
     private boolean erasedEdgesAliased;
     /** Mapping from rule node creators to the corresponding created nodes. */
@@ -459,7 +458,7 @@ public class RuleEffect {
      * Collection of created nodes. 
      * Only used if the created nodes are not predefined (see {@link #createdNodeArray}). 
      */
-    private Set<HostNode> createdNodeSet;
+    private HostNodeSet createdNodeSet;
     /** 
      * Predefined array of created nodes; if {@code null}, the created nodes
      * are not predefined.
@@ -468,7 +467,7 @@ public class RuleEffect {
     /** Index of the first unused element in {@link #createdNodeArray}. */
     private int createdNodeIndex;
     /** Collection of created edges. */
-    private Collection<HostEdge> createdEdges;
+    private HostEdgeSet createdEdges;
     /** Flag indicating if {@link #createdEdges} is currently an alias. */
     private boolean createdEdgesAliased;
     /** Mapping from merged nodes to their merge targets. */

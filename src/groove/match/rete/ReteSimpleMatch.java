@@ -19,6 +19,7 @@ package groove.match.rete;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.host.ValueNode;
 import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.RuleEdge;
@@ -26,9 +27,6 @@ import groove.grammar.rule.RuleElement;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.rule.Valuation;
-import groove.util.collect.TreeHashSet;
-
-import java.util.Set;
 
 /**
  * @author Arash Jalali
@@ -43,7 +41,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
      * It is only of use in injective matching so it will be
      * filled lazily if needed by the <code>getNodes</code> method.
      */
-    protected Set<HostNode> nodes = null;
+    protected HostNodeSet nodes = null;
 
     /**
      * Creates a new match object from a given sub-match copying all the units of the submatch.
@@ -180,9 +178,9 @@ public class ReteSimpleMatch extends AbstractReteMatch {
     }
 
     @Override
-    public Set<HostNode> getNodes() {
+    public HostNodeSet getNodes() {
         if (this.nodes == null) {
-            this.nodes = new TreeHashSet<HostNode>();
+            this.nodes = new HostNodeSet();
             for (int i = 0; i < this.units.length; i++) {
                 if (this.units[i] instanceof HostEdge) {
                     HostEdge e = (HostEdge) this.units[i];
@@ -333,8 +331,7 @@ public class ReteSimpleMatch extends AbstractReteMatch {
     public static ReteSimpleMatch merge(ReteNetworkNode origin,
             AbstractReteMatch[] subMatches, boolean injective) {
         ReteSimpleMatch result = new ReteSimpleMatch(origin, injective);
-        TreeHashSet<HostNode> nodes =
-            (injective) ? new TreeHashSet<HostNode>() : null;
+        HostNodeSet nodes = (injective) ? new HostNodeSet() : null;
         Valuation valuation = AbstractReteMatch.getMergedValuation(subMatches);
         if (valuation != null) {
             int k = 0;

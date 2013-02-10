@@ -18,12 +18,10 @@ package groove.match.rete;
 
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.rule.Valuation;
 import groove.graph.NodeComparator;
 import groove.match.rete.ClosurePathChecker.ClosureInfo;
-import groove.util.collect.TreeHashSet;
-
-import java.util.Set;
 
 /**
  * @author Arash Jalali
@@ -45,7 +43,7 @@ public class RetePathMatch extends AbstractReteMatch {
      * 
      * Warning: The lazy evaluation is not thread-safe.
      */
-    private Set<HostNode> nodes = null;
+    private HostNodeSet nodes = null;
     /** Additional information in case this match is for a closure. */
     private ClosureInfo closureInfo = null;
 
@@ -113,9 +111,9 @@ public class RetePathMatch extends AbstractReteMatch {
     }
 
     @Override
-    public Set<HostNode> getNodes() {
+    public HostNodeSet getNodes() {
         if (this.nodes == null) {
-            this.nodes = new TreeHashSet<HostNode>();
+            this.nodes = new HostNodeSet();
             this.nodes.add(this.start);
             this.nodes.add(this.end);
         }

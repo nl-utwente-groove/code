@@ -21,6 +21,7 @@ import groove.automaton.RegAut.Result;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.type.TypeLabel;
 import groove.util.Pair;
 
@@ -45,7 +46,7 @@ public class Recogniser {
         this.aut = aut;
         this.graph = graph;
         this.nextMap = new HashMap<Tuple,TupleSet>();
-        this.reachMap = new HashMap<Tuple,Set<HostNode>>();
+        this.reachMap = new HashMap<Tuple,HostNodeSet>();
     }
 
     /** Returns the host graph on which this recogniser works. */
@@ -113,12 +114,11 @@ public class Recogniser {
             }
         }
         // Set of all tuples with known reachable host nodes
-        Map<Tuple,Set<HostNode>> newReachMap =
-            new HashMap<Tuple,Set<HostNode>>();
+        Map<Tuple,HostNodeSet> newReachMap = new HashMap<Tuple,HostNodeSet>();
         for (Tuple p : predMap.keySet()) {
-            Set<HostNode> ns = this.reachMap.get(p);
+            HostNodeSet ns = this.reachMap.get(p);
             if (ns == null) {
-                this.reachMap.put(p, ns = new HashSet<HostNode>());
+                this.reachMap.put(p, ns = new HostNodeSet());
                 if (p.two().isFinal()) {
                     ns.add(p.one());
                 }
@@ -170,24 +170,24 @@ public class Recogniser {
         }
     }
 
-    private Set<HostNode> getRelated(HostNode from) {
+    private HostNodeSet getRelated(HostNode from) {
         return this.reachMap.get(createStartTuple(from));
     }
 
     private void propagateBackwards(Map<Tuple,TupleSet> predMap,
-            Map<Tuple,Set<HostNode>> newReachMap) {
+            Map<Tuple,HostNodeSet> newReachMap) {
         while (!newReachMap.isEmpty()) {
-            Iterator<Map.Entry<Tuple,Set<HostNode>>> newReachIter =
+            Iterator<Map.Entry<Tuple,HostNodeSet>> newReachIter =
                 newReachMap.entrySet().iterator();
-            Map.Entry<Tuple,Set<HostNode>> newReachEntry = newReachIter.next();
+            Map.Entry<Tuple,HostNodeSet> newReachEntry = newReachIter.next();
             newReachIter.remove();
-            Set<HostNode> toSet = newReachEntry.getValue();
+            HostNodeSet toSet = newReachEntry.getValue();
             // add the toSet to all predecessors
             for (Tuple tp : predMap.get(newReachEntry.getKey())) {
-                Set<HostNode> tpToSet = newReachMap.get(tp);
+                HostNodeSet tpToSet = newReachMap.get(tp);
                 boolean tpFresh = tpToSet == null;
                 if (tpFresh) {
-                    tpToSet = new HashSet<HostNode>();
+                    tpToSet = new HostNodeSet();
                 }
                 for (HostNode hn : toSet) {
                     if (this.reachMap.get(tp).add(hn)) {
@@ -217,7 +217,7 @@ public class Recogniser {
     /** Mapping from explored product states to their sets of successors. */
     private final Map<Tuple,TupleSet> nextMap;
     /** Mapping from product states to sets of reachable host nodes. */
-    private final Map<Tuple,Set<HostNode>> reachMap;
+    private final Map<Tuple,HostNodeSet> reachMap;
 
     private static class Tuple extends Pair<HostNode,DFAState> {
         /** Constructs a product node. */

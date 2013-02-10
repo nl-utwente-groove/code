@@ -19,14 +19,13 @@ package groove.lts;
 import groove.control.CtrlTransition;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.transform.CompositeEvent;
 import groove.transform.MergeMap;
 import groove.transform.RuleEffect;
 import groove.transform.RuleEffect.Fragment;
 import groove.transform.RuleEvent;
 import groove.util.Reporter;
-
-import java.util.Set;
 
 /**
  * Provides functionality to add states and transitions to a GTS, based on known
@@ -199,7 +198,7 @@ public class MatchApplier {
         Rule rule = event.getRule();
         int anchorSize = rule.getAnchor().size();
         HostNode[] createdNodes = record.getCreatedNodeArray();
-        Set<HostNode> erasedNodes = record.getErasedNodes();
+        HostNodeSet erasedNodes = record.getErasedNodes();
         MergeMap mergeMap = record.getMergeMap();
         for (int i = 0; i < valueCount; i++) {
             int fromI = varBinding[i];
@@ -227,7 +226,7 @@ public class MatchApplier {
     }
 
     private HostNode getNodeImage(HostNode key, MergeMap mergeMap,
-            Set<HostNode> erasedNodes) {
+            HostNodeSet erasedNodes) {
         if (mergeMap == null) {
             if (erasedNodes == null || !erasedNodes.contains(key)) {
                 return key;

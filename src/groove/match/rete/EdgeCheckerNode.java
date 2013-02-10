@@ -19,6 +19,7 @@ package groove.match.rete;
 import groove.algebra.Constant;
 import groove.automaton.RegExpr;
 import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.ValueNode;
 import groove.grammar.rule.LabelVar;
@@ -50,7 +51,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
      * This is where incoming edges are buffered lazily
      * when the RETE network is working in on-demand mode.
      */
-    private TreeHashSet<HostEdge> ondemandBuffer = new TreeHashSet<HostEdge>();
+    private HostEdgeSet ondemandBuffer = new HostEdgeSet();
 
     /**
      * Edge-checker nodes now have a memory of

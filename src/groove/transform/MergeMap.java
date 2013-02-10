@@ -19,14 +19,13 @@ package groove.transform;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.host.ValueNode;
 import groove.graph.ElementMap;
 import groove.graph.Morphism;
 import groove.graph.Node;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Variation on a map that only stores non-identity mappings for nodes; hence
@@ -42,7 +41,7 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
      */
     public MergeMap(HostFactory factory) {
         super(factory);
-        this.mergeTargets = new HashSet<HostNode>();
+        this.mergeTargets = new HostNodeSet();
     }
 
     /**
@@ -216,7 +215,7 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
      * Set of nodes to which other nodes are mapped. The merge targets are
      * themselves fixpoints of the merge map.
      */
-    private final Set<HostNode> mergeTargets;
+    private final HostNodeSet mergeTargets;
 
     /** Internal representation of undefined. */
     static private final HostNode UNDEFINED = ValueNode.DUMMY_NODE;

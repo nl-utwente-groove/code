@@ -17,6 +17,7 @@
 package groove.match.rete;
 
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.rule.RuleElement;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.type.TypeNode;
@@ -33,7 +34,7 @@ import java.util.List;
 public class DefaultNodeChecker extends NodeChecker implements
         ReteStateSubscriber {
 
-    private TreeHashSet<HostNode> ondemandBuffer = new TreeHashSet<HostNode>();
+    private HostNodeSet ondemandBuffer = new HostNodeSet();
 
     /**
      * Node-checker nodes now have a memory of

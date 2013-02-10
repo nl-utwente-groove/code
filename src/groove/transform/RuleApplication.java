@@ -18,9 +18,11 @@ package groove.transform;
 
 import groove.grammar.Rule;
 import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.host.ValueNode;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.AnchorKey;
@@ -204,10 +206,8 @@ public class RuleApplication implements DeltaApplier {
         MergeMap mergeMap = record.getMergeMap();
         // copy the source node and edge set, to avoid modification exceptions
         // in case graph aliasing was used
-        Set<HostNode> sourceNodes =
-            new HashSet<HostNode>(this.source.nodeSet());
-        Set<HostEdge> sourceEdges =
-            new HashSet<HostEdge>(this.source.edgeSet());
+        HostNodeSet sourceNodes = new HostNodeSet(this.source.nodeSet());
+        HostEdgeSet sourceEdges = new HostEdgeSet(this.source.edgeSet());
         for (HostNode node : sourceNodes) {
             HostNode nodeImage =
                 mergeMap == null ? node : mergeMap.getNode(node);
@@ -274,7 +274,7 @@ public class RuleApplication implements DeltaApplier {
      * @param target the target to which to apply the changes
      */
     protected void eraseNodes(RuleEffect record, DeltaTarget target) {
-        Set<HostNode> nodeSet = record.getErasedNodes();
+        HostNodeSet nodeSet = record.getErasedNodes();
         // also remove the incident edges of the eraser nodes
         if (nodeSet != null && !nodeSet.isEmpty()) {
             // there is a choice here to query the graph for its incident edge
@@ -328,7 +328,7 @@ public class RuleApplication implements DeltaApplier {
     protected void registerErasure(HostEdge edge) {
         HostNode target = edge.target();
         if (target instanceof ValueNode) {
-            Set<HostEdge> edges = getValueNodeEdges((ValueNode) target);
+            HostEdgeSet edges = getValueNodeEdges((ValueNode) target);
             edges.remove(edge);
             if (edges.isEmpty()) {
                 addIsolatedValueNode((ValueNode) target);
@@ -495,13 +495,13 @@ public class RuleApplication implements DeltaApplier {
      * Lazily creates and returns the set of remaining incident edges of a given
      * value node.
      */
-    private Set<HostEdge> getValueNodeEdges(ValueNode node) {
+    private HostEdgeSet getValueNodeEdges(ValueNode node) {
         if (this.valueNodeEdgesMap == null) {
-            this.valueNodeEdgesMap = new HashMap<ValueNode,Set<HostEdge>>();
+            this.valueNodeEdgesMap = new HashMap<ValueNode,HostEdgeSet>();
         }
-        Set<HostEdge> result = this.valueNodeEdgesMap.get(node);
+        HostEdgeSet result = this.valueNodeEdgesMap.get(node);
         if (result == null) {
-            result = new HashSet<HostEdge>(this.source.inEdgeSet(node));
+            result = new HostEdgeSet(this.source.inEdgeSet(node));
             this.valueNodeEdgesMap.put(node, result);
         }
         return result;
@@ -539,7 +539,7 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /** Returns the relation between rule nodes and target graph nodes. */
-    public Map<RuleNode,Set<HostNode>> getComatch() {
+    public Map<RuleNode,HostNodeSet> getComatch() {
         if (this.comatch == null) {
             this.comatch = computeComatch();
         }
@@ -547,9 +547,8 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /** Computes the relation between rule nodes and target graph nodes. */
-    private Map<RuleNode,Set<HostNode>> computeComatch() {
-        Map<RuleNode,Set<HostNode>> result =
-            new HashMap<RuleNode,Set<HostNode>>();
+    private Map<RuleNode,HostNodeSet> computeComatch() {
+        Map<RuleNode,HostNodeSet> result = new HashMap<RuleNode,HostNodeSet>();
         RuleEvent event = getEvent();
         if (event instanceof BasicEvent) {
             collectComatch(result, (BasicEvent) event);
@@ -561,7 +560,7 @@ public class RuleApplication implements DeltaApplier {
         return result;
     }
 
-    private void collectComatch(Map<RuleNode,Set<HostNode>> result,
+    private void collectComatch(Map<RuleNode,HostNodeSet> result,
             BasicEvent event) {
         Rule rule = event.getRule();
         Anchor anchor = rule.getAnchor();
@@ -582,12 +581,12 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /** Adds a key/value pair to a relational map. */
-    private void addToComatch(Map<RuleNode,Set<HostNode>> result,
+    private void addToComatch(Map<RuleNode,HostNodeSet> result,
             RuleNode ruleNode, HostNode hostNode) {
         assert hostNode != null;
-        Set<HostNode> image = result.get(ruleNode);
+        HostNodeSet image = result.get(ruleNode);
         if (image == null) {
-            result.put(ruleNode, image = new HashSet<HostNode>());
+            result.put(ruleNode, image = new HostNodeSet());
         }
         image.add(hostNode);
     }
@@ -614,7 +613,7 @@ public class RuleApplication implements DeltaApplier {
      * Mapping from selected RHS elements to target graph. The comatch is
      * constructed in the course of rule application.
      */
-    private Map<RuleNode,Set<HostNode>> comatch;
+    private Map<RuleNode,HostNodeSet> comatch;
     /**
      * The target graph of this derivation, created lazily in
      * {@link #computeTarget()}.
@@ -638,7 +637,7 @@ public class RuleApplication implements DeltaApplier {
      * A mapping from target value nodes of erased edges to their remaining
      * incident edges, used to judge spurious value nodes.
      */
-    private Map<ValueNode,Set<HostEdge>> valueNodeEdgesMap;
+    private Map<ValueNode,HostEdgeSet> valueNodeEdgesMap;
     /** The set of value nodes that have become isolated due to edge erasure. */
     private Set<ValueNode> isolatedValueNodes;
     /** The set of value nodes that have been added due to edge creation. */

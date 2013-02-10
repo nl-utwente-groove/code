@@ -23,8 +23,10 @@ import groove.grammar.AnchorKind;
 import groove.grammar.Rule;
 import groove.grammar.host.AnchorValue;
 import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.HostNodeSet;
 import groove.grammar.host.ValueNode;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.AnchorKey;
@@ -43,7 +45,6 @@ import groove.util.cache.CacheReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -271,7 +272,7 @@ final public class BasicEvent extends
             result = false;
             // check if the other creates edges that this event erases
             Iterator<HostEdge> myErasedEdgeIter = getErasedEdges().iterator();
-            Set<HostEdge> otherCreatedEdges =
+            HostEdgeSet otherCreatedEdges =
                 ((BasicEvent) other).getSimpleCreatedEdges();
             while (!result && myErasedEdgeIter.hasNext()) {
                 result = otherCreatedEdges.contains(myErasedEdgeIter.next());
@@ -280,7 +281,7 @@ final public class BasicEvent extends
                 // check if the other erases edges that this event creates
                 Iterator<HostEdge> myCreatedEdgeIter =
                     getSimpleCreatedEdges().iterator();
-                Set<HostEdge> otherErasedEdges =
+                HostEdgeSet otherErasedEdges =
                     ((BasicEvent) other).getErasedEdges();
                 while (!result && myCreatedEdgeIter.hasNext()) {
                     result =
@@ -378,7 +379,7 @@ final public class BasicEvent extends
      * This should be called only after any nodes have been created.
      */
     private void recordCreatedEdges(RuleEffect record) {
-        Set<HostEdge> simpleCreatedEdges = getSimpleCreatedEdges();
+        HostEdgeSet simpleCreatedEdges = getSimpleCreatedEdges();
         record.addCreatedEdges(simpleCreatedEdges);
         Map<RuleNode,HostNode> createdNodeMap = record.getCreatedNodeMap();
         RuleToHostMap anchorMap = getAnchorMap();
@@ -436,7 +437,7 @@ final public class BasicEvent extends
      * Returns the set of explicitly erased nodes, i.e., the images of the LHS
      * eraser nodes.
      */
-    private Set<HostNode> getErasedNodes() {
+    private HostNodeSet getErasedNodes() {
         return getCache().getErasedNodes();
     }
 
@@ -444,11 +445,11 @@ final public class BasicEvent extends
      * Computes the set of explicitly erased nodes, i.e., the images of the LHS
      * eraser nodes. Callback method from {@link #getErasedNodes()}.
      */
-    private Set<HostNode> computeErasedNodes() {
+    private HostNodeSet computeErasedNodes() {
         if (getRule().getEraserNodes().length == 0) {
             return EMPTY_NODE_SET;
         } else {
-            Set<HostNode> result = createNodeSet();
+            HostNodeSet result = createNodeSet();
             RuleToHostMap anchorMap = getAnchorMap();
             // register the node erasures
             for (RuleNode node : getRule().getEraserNodes()) {
@@ -462,7 +463,7 @@ final public class BasicEvent extends
      * Returns the set of explicitly erased edges, i.e., the images of the LHS
      * eraser edges.
      */
-    private Set<HostEdge> getErasedEdges() {
+    private HostEdgeSet getErasedEdges() {
         return getCache().getErasedEdges();
     }
 
@@ -470,8 +471,8 @@ final public class BasicEvent extends
      * Computes the set of explicitly erased edges, i.e., the images of the LHS
      * eraser edges. Callback method from {@link #getErasedEdges()}.
      */
-    private Set<HostEdge> computeErasedEdges() {
-        Set<HostEdge> result = createEdgeSet();
+    private HostEdgeSet computeErasedEdges() {
+        HostEdgeSet result = createEdgeSet();
         RuleToHostMap anchorMap = getAnchorMap();
         RuleEdge[] eraserEdges = getRule().getEraserEdges();
         for (RuleEdge edge : eraserEdges) {
@@ -487,7 +488,7 @@ final public class BasicEvent extends
      * Returns the set of images of the LHS
      * creator edges.
      */
-    private Set<HostEdge> getSimpleCreatedEdges() {
+    private HostEdgeSet getSimpleCreatedEdges() {
         return getCache().getSimpleCreatedEdges();
     }
 
@@ -495,8 +496,8 @@ final public class BasicEvent extends
      * Computes the set of images of the LHS
      * creator edges. Callback method from {@link #getSimpleCreatedEdges()}.
      */
-    private Set<HostEdge> computeSimpleCreatedEdges() {
-        Set<HostEdge> result = createEdgeSet();
+    private HostEdgeSet computeSimpleCreatedEdges() {
+        HostEdgeSet result = createEdgeSet();
         RuleToHostMap coAnchorMap = getCoanchorMap();
         for (RuleEdge edge : getRule().getSimpleCreatorEdges()) {
             HostEdge edgeImage = coAnchorMap.mapEdge(edge);
@@ -707,8 +708,7 @@ final public class BasicEvent extends
      */
     static public final String ANCHOR_END = ")";
     /** Global empty set of nodes. */
-    static private final Set<HostNode> EMPTY_NODE_SET =
-        Collections.<HostNode>emptySet();
+    static private final HostNodeSet EMPTY_NODE_SET = new HostNodeSet(0);
     /** Value for {@link #freshNodeList} that indicates {@link #NONE} mode. */
     static private List<List<HostNode>> NO_REUSE_LIST =
         new ArrayList<List<HostNode>>();
@@ -855,7 +855,7 @@ final public class BasicEvent extends
         /**
          * Returns the pre-computed and cached set of explicitly erased edges.
          */
-        final Set<HostEdge> getErasedEdges() {
+        final HostEdgeSet getErasedEdges() {
             if (this.erasedEdgeSet == null) {
                 this.erasedEdgeSet = computeErasedEdges();
             }
@@ -865,7 +865,7 @@ final public class BasicEvent extends
         /**
          * Returns the pre-computed and cached set of explicitly erased edges.
          */
-        final Set<HostEdge> getSimpleCreatedEdges() {
+        final HostEdgeSet getSimpleCreatedEdges() {
             if (this.simpleCreatedEdgeSet == null) {
                 this.simpleCreatedEdgeSet = computeSimpleCreatedEdges();
             }
@@ -883,7 +883,7 @@ final public class BasicEvent extends
         }
 
         /** Returns the cached set of nodes erased by the event. */
-        final Set<HostNode> getErasedNodes() {
+        final HostNodeSet getErasedNodes() {
             if (this.erasedNodeSet == null) {
                 this.erasedNodeSet = computeErasedNodes();
             }
@@ -893,7 +893,7 @@ final public class BasicEvent extends
         /**
          * Set of nodes from the source that are to be erased in the target.
          */
-        private Set<HostNode> erasedNodeSet;
+        private HostNodeSet erasedNodeSet;
         /**
          * Matching from the rule's lhs to the source graph.
          */
@@ -915,10 +915,10 @@ final public class BasicEvent extends
         /**
          * Set of edges from the source that are to be erased in the target.
          */
-        private Set<HostEdge> erasedEdgeSet;
+        private HostEdgeSet erasedEdgeSet;
         /**
          * Images of the simple creator edges.
          */
-        private Set<HostEdge> simpleCreatedEdgeSet;
+        private HostEdgeSet simpleCreatedEdgeSet;
     }
 }
