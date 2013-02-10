@@ -90,6 +90,32 @@ class NegatedSearchItem extends AbstractSearchItem {
         this.inner.activate(strategy);
     }
 
+    @Override
+    public int compareTo(SearchItem item) {
+        int result = super.compareTo(item);
+        if (result != 0) {
+            return result;
+        }
+        NegatedSearchItem other = (NegatedSearchItem) item;
+        return this.inner.compareTo(other.inner);
+    }
+
+    @Override
+    int computeHashCode() {
+        return super.computeHashCode() + 31 * this.inner.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        return this.inner.equals(((NegatedSearchItem) obj).inner);
+    }
+
     /**
      * The inner search item, for which we test for the negation.
      */

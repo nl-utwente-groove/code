@@ -94,27 +94,13 @@ abstract public class AbstractNode implements Node, Cloneable {
     abstract protected String getToStringPrefix();
 
     /**
-     * Implements the ordering criteria for graph elements from the perspective
-     * of {@link Node}s. {@link AbstractNode}s are mutually ordered by their
-     * number.
+     * Compares the node numbers of two nodes.
      */
-    public int compareTo(Element obj) {
+    public int compareTo(Node obj) {
         int result;
-        if (obj instanceof Node) {
-            result = getNumber() - ((Node) obj).getNumber();
-            if (result == 0) {
-                result =
-                    getClass().getName().compareTo(obj.getClass().getName());
-            }
-        } else if (obj instanceof Edge) {
-            result = compareTo(((Edge) obj).source());
-            if (result == 0) {
-                // nodes come before edges with the same source
-                result = -1;
-            }
-        } else {
-            throw new IllegalArgumentException("Default node " + this
-                + " not comparable with " + obj);
+        result = getNumber() - obj.getNumber();
+        if (result == 0) {
+            result = getClass().getName().compareTo(obj.getClass().getName());
         }
         assert result != 0 || equals(obj) : String.format(
             "Ordering of distinct objects %s and %s yields 0", this, obj);

@@ -467,11 +467,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements
          */
         public String getName() {
             String suffix;
-            if (isImplicit()) {
+            AspectNode levelNode = this.levelNode;
+            if (levelNode == null || levelNode.getLevelName() == null) {
                 suffix =
                     isTopLevel() ? "" : Groove.toString(this.index.toArray());
             } else {
-                suffix = "-" + this.levelNode.getLevelName();
+                suffix = "-" + levelNode.getLevelName();
             }
             return this.namePrefix + suffix;
         }
@@ -544,17 +545,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         @Override
         public String toString() {
             return this.index.toString();
-        }
-
-        /**
-         * Indicates if this is an implicit level, i.e., without representative
-         * level node. This could mean it's the top level, or the implicit
-         * universal sub-level of the top level to accommodate existential top
-         * level nodes, or the implicit existential sub-level of a childless
-         * universal level.
-         */
-        private boolean isImplicit() {
-            return this.levelNode == null;
         }
 
         /** The name prefix of the index (to be followed by the index list). */

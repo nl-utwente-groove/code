@@ -99,27 +99,22 @@ class Edge2SearchItem extends AbstractSearchItem {
      */
     @Override
     public int compareTo(SearchItem other) {
-        int result = 0;
-        if (other instanceof Edge2SearchItem) {
-            // compare first the edge labels, then the edge ends
-            RuleEdge otherEdge = ((Edge2SearchItem) other).getEdge();
-            result = getEdge().label().compareTo(otherEdge.label());
-            if (result == 0) {
-                result =
-                    nodeComparator.compare(this.edge.source(),
-                        otherEdge.source());
-            }
-            if (result == 0) {
-                result =
-                    nodeComparator.compare(this.edge.target(),
-                        otherEdge.target());
-            }
-        }
-        if (result == 0) {
-            return super.compareTo(other);
-        } else {
+        int result = super.compareTo(other);
+        if (result != 0) {
             return result;
         }
+        // compare first the edge labels, then the edge ends
+        RuleEdge otherEdge = ((Edge2SearchItem) other).getEdge();
+        result = getEdge().label().compareTo(otherEdge.label());
+        if (result != 0) {
+            return result;
+        }
+        result = nodeComparator.compare(getEdge().source(), otherEdge.source());
+        if (result != 0) {
+            return result;
+        }
+        result = nodeComparator.compare(getEdge().target(), otherEdge.target());
+        return result;
     }
 
     public void activate(PlanSearchStrategy strategy) {
@@ -146,6 +141,24 @@ class Edge2SearchItem extends AbstractSearchItem {
     @Override
     int getRating() {
         return this.edge.label().hashCode();
+    }
+
+    @Override
+    int computeHashCode() {
+        int result = super.computeHashCode();
+        return result * 31 + getEdge().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        Edge2SearchItem other = (Edge2SearchItem) obj;
+        return getEdge().equals(other.getEdge());
     }
 
     final public Record createRecord(

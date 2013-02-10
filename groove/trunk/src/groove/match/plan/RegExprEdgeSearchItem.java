@@ -12,6 +12,7 @@ import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.Valuation;
 import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGraph;
+import groove.graph.EdgeComparator;
 import groove.match.plan.PlanSearchStrategy.Search;
 
 import java.util.Collection;
@@ -34,6 +35,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
      * node type labels in the regular expression
      */
     public RegExprEdgeSearchItem(RuleEdge edge, TypeGraph typeGraph) {
+        this.edge = edge;
         this.source = edge.source();
         this.target = edge.target();
         this.selfEdge = this.source == this.target;
@@ -57,6 +59,33 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         } else {
             return createMultipleRecord(search);
         }
+    }
+
+    @Override
+    public int compareTo(SearchItem item) {
+        int result = super.compareTo(item);
+        if (result != 0) {
+            return result;
+        }
+        RegExprEdgeSearchItem other = (RegExprEdgeSearchItem) item;
+        return EdgeComparator.instance().compare(this.edge, other.edge);
+    }
+
+    @Override
+    int computeHashCode() {
+        return super.computeHashCode() + 31 * this.edge.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        RegExprEdgeSearchItem other = (RegExprEdgeSearchItem) obj;
+        return this.edge.equals(other.edge);
     }
 
     /**
@@ -144,6 +173,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             this.target);
     }
 
+    private final RuleEdge edge;
     /**
      * The source end of the regular edge, separately stored for efficiency.
      */

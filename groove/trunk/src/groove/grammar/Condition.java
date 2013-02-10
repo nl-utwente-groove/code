@@ -533,6 +533,28 @@ public class Condition implements Fixable {
         return result.toString();
     }
 
+    @Override
+    public int hashCode() {
+        // the name uniquely identifies the condition across the grammar
+        return getName().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Condition other = (Condition) obj;
+        // the name uniquely identifies the condition across the grammar
+        return getName().equals(other.getName());
+    }
+
     /** Returns the operator of this condition. */
     public final Op getOp() {
         return this.op;

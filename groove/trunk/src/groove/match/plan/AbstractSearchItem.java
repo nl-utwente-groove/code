@@ -137,6 +137,41 @@ abstract class AbstractSearchItem implements SearchItem {
      */
     private boolean relevant = true;
 
+    @Override
+    public final int hashCode() {
+        if (this.hashCode == 0) {
+            this.hashCode = computeHashCode();
+            if (this.hashCode == 0) {
+                this.hashCode++;
+            }
+        }
+        return this.hashCode;
+    }
+
+    /** Callback method to compute this search item's hash code. */
+    int computeHashCode() {
+        return getClass().hashCode();
+    }
+
+    private int hashCode;
+
+    /** This implementation is guaranteed to return {@code true}
+     * only if the type of the argument equals the type of this object.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Dummy search record, which does nothing upon {@link #next()} except
      * alternatingly return <code>true</code> and <code>false</code>.

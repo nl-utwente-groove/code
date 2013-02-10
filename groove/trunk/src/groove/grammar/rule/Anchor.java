@@ -17,6 +17,8 @@
 package groove.grammar.rule;
 
 import groove.grammar.AnchorKind;
+import groove.graph.EdgeComparator;
+import groove.graph.NodeComparator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +31,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Anchor extends ArrayList<AnchorKey> {
+public class Anchor extends ArrayList<AnchorKey> implements Comparable<Anchor> {
     /** Constructs an empty anchor. */
     public Anchor() {
         super();
@@ -52,6 +54,7 @@ public class Anchor extends ArrayList<AnchorKey> {
 
     @Override
     public boolean add(AnchorKey e) {
+        // make sure there are no duplicates
         boolean result = !contains(e);
         if (result) {
             super.add(e);
@@ -107,6 +110,43 @@ public class Anchor extends ArrayList<AnchorKey> {
                 this.varSet.add(AnchorKind.label(key));
             }
         }
+    }
+
+    @Override
+    public int compareTo(Anchor other) {
+        int result = size() - other.size();
+        if (result != 0) {
+            return result;
+        }
+        for (int i = 0; i < size(); i++) {
+            result = compare(get(i), other.get(i));
+            if (result != 0) {
+                return result;
+            }
+        }
+        return result;
+    }
+
+    private int compare(AnchorKey one, AnchorKey two) {
+        int result = one.getAnchorKind().compareTo(two.getAnchorKind());
+        if (result != 0) {
+            return result;
+        }
+        switch (one.getAnchorKind()) {
+        case EDGE:
+            result =
+                EdgeComparator.instance().compare(AnchorKind.edge(one),
+                    AnchorKind.edge(two));
+            break;
+        case LABEL:
+            result = AnchorKind.label(one).compareTo(AnchorKind.label(two));
+            break;
+        case NODE:
+            result =
+                NodeComparator.instance().compare(AnchorKind.node(one),
+                    AnchorKind.node(two));
+        }
+        return result;
     }
 
     private Set<RuleNode> nodeSet;

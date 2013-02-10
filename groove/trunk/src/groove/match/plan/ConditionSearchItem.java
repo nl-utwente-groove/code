@@ -120,6 +120,24 @@ class ConditionSearchItem extends AbstractSearchItem {
     }
 
     @Override
+    int computeHashCode() {
+        int result = super.computeHashCode();
+        return result * 31 + getCondition().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        ConditionSearchItem other = (ConditionSearchItem) obj;
+        return getCondition().equals(other.getCondition());
+    }
+
+    @Override
     public boolean isTestsNodes() {
         return true;
     }
