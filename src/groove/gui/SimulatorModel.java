@@ -651,7 +651,7 @@ public class SimulatorModel implements Cloneable {
         boolean stateChanged = changeState(state);
         boolean matchChanged = changeMatch(match);
         if (matchChanged || stateChanged) {
-            if (match.hasRuleTransitionFrom(state)) {
+            if (match != null && match.hasRuleTransitionFrom(state)) {
                 changeTransition(match.getRuleTransition());
             } else {
                 changeTransition(null);
@@ -661,7 +661,8 @@ public class SimulatorModel implements Cloneable {
             }
         }
         if (matchChanged) {
-            changeSelected(ResourceKind.RULE, match.getRule().getFullName());
+            changeSelected(ResourceKind.RULE, match == null ? null
+                    : match.getRule().getFullName());
         }
         return finish();
     }
@@ -692,7 +693,7 @@ public class SimulatorModel implements Cloneable {
     public final boolean setTransition(GraphTransition trans) {
         start();
         if (changeTransition(trans) && trans != null) {
-            RuleTransition ruleTrans = trans.getSteps().iterator().next();
+            RuleTransition ruleTrans = trans.getInitial();
             MatchResult match = ruleTrans.getKey();
             changeMatch(match);
             changeSelected(ResourceKind.RULE, match.getRule().getFullName());

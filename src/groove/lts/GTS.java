@@ -394,17 +394,16 @@ public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
         // if not ... 
         if (result == null) {
 
+            // and then add it to the GTS 
+            fireAddNode(newState);
+
             // first check the validity of edge multiplicities ...
             this.verifier.reset();
             this.verifier.count(newState.getGraph());
             if (!this.verifier.check(newState)) {
                 addPostErrors(newState, this.verifier.getErrors());
-                newState.setClosed(false);
                 newState.setError();
             }
-
-            // and then add it to the GTS 
-            fireAddNode(newState);
 
         }
 

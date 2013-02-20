@@ -27,15 +27,16 @@ import groove.lts.GTS;
 import groove.lts.GTSAdapter;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
+import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
 import groove.lts.MatchApplier;
 import groove.lts.MatchCollector;
 import groove.transform.Record;
 import groove.util.CommandLineTool.VerbosityOption;
-import groove.util.cache.AbstractCacheHolder;
-import groove.util.cache.CacheReference;
 import groove.util.Groove;
 import groove.util.Reporter;
+import groove.util.cache.AbstractCacheHolder;
+import groove.util.cache.CacheReference;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -110,7 +111,7 @@ public class ExplorationStatistics {
         runTime.runFinalization();
         runTime.gc();
         this.startUsedMemory = runTime.totalMemory() - runTime.freeMemory();
-        if (getVerbosity() == VerbosityOption.HIGH_VERBOSITY) {
+        if (getVerbosity() > VerbosityOption.LOW_VERBOSITY) {
             this.gts.addLTSListener(this.statisticsListener);
         }
         this.startTime = System.currentTimeMillis();
@@ -192,13 +193,23 @@ public class ExplorationStatistics {
 
     /** Reports data on the LTS generated. */
     private void reportLTS() {
-        println("\n\tStates:\t\t\t" + this.gts.nodeCount());
-        int spuriousStateCount = this.gts.openStateCount();
-        if (spuriousStateCount > 0) {
-            println("\tExplored:\t\t"
-                + (this.gts.nodeCount() - spuriousStateCount));
+        int openTransientStateCount =
+            this.statisticsListener.getOpenTransientStateCount();
+        int closedTransientStateCount =
+            this.statisticsListener.getClosedTransientStateCount();
+        int realStateCount =
+            this.gts.nodeCount() - openTransientStateCount
+                - closedTransientStateCount;
+        println("\n\tStates:\t\t\t" + realStateCount);
+        int openRealStateCount =
+            this.gts.openStateCount() - openTransientStateCount;
+        if (openRealStateCount > 0) {
+            println("\tExplored:\t\t" + (realStateCount - openRealStateCount));
         }
-        println("\tTransitions:\t" + this.gts.edgeCount());
+        int partialTransitionCount =
+            this.statisticsListener.getPartialTransitionCount();
+        int realTransitionCount = this.gts.edgeCount() - partialTransitionCount;
+        println("\tTransitions:\t" + realTransitionCount);
     }
 
     /** Gives some statistics regarding the graphs and deltas. */
@@ -396,11 +407,32 @@ public class ExplorationStatistics {
         public void addUpdate(GTS gts, GraphState state) {
             this.nodeCount += state.getGraph().nodeCount();
             this.edgeCount += state.getGraph().edgeCount();
+            if (state.isTransient()) {
+                if (state.isClosed()) {
+                    this.closedTransientStateCount++;
+                } else {
+                    this.openTransientStateCount++;
+                }
+            }
         }
 
         @Override
         public void addUpdate(GTS gts, GraphTransition transition) {
-            // Does nothing by design.
+            if (transition.isPartial()) {
+                this.partialTransitionCount++;
+            }
+        }
+
+        @Override
+        public void statusUpdate(GTS graph, GraphState explored, Flag flag) {
+            if (flag == Flag.CLOSED) {
+                if (explored.getCtrlState().isTransient()) {
+                    this.openTransientStateCount--;
+                }
+                if (explored.isTransient()) {
+                    this.closedTransientStateCount++;
+                }
+            }
         }
 
         /** Returns the number of nodes in the added states. */
@@ -413,7 +445,25 @@ public class ExplorationStatistics {
             return this.edgeCount;
         }
 
+        /** Returns the number of closed transient states in the GTS. */
+        public int getClosedTransientStateCount() {
+            return this.closedTransientStateCount;
+        }
+
+        /** Returns the number of open transient states in the GTS. */
+        public int getOpenTransientStateCount() {
+            return this.openTransientStateCount;
+        }
+
+        /** Returns the number of partial transitions in the GTS. */
+        public int getPartialTransitionCount() {
+            return this.partialTransitionCount;
+        }
+
         private int nodeCount;
         private int edgeCount;
+        private int closedTransientStateCount;
+        private int openTransientStateCount;
+        private int partialTransitionCount;
     }
 }

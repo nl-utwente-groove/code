@@ -244,7 +244,8 @@ abstract public class AbstractLayouter implements Layouter {
                         bounds.getCenterY()));
                 } else {
                     // store the points back into the model
-                    List<?> points = ((EdgeView) view).getPoints();
+                    List<?> points =
+                        ((JEdgeView) view).getCell().getVisuals().getPoints();
                     if (points != null) {
                         List<Point2D> newPoints =
                             new ArrayList<Point2D>(points.size());

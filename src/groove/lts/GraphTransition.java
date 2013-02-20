@@ -54,8 +54,17 @@ public interface GraphTransition extends Edge {
     /** Indicates if this transition is part of a recipe transition. */
     public boolean isPartial();
 
+    /**
+     * Returns the initial rule transition of this graph transition.
+     * If the graph transition is itself a rule transition, this returns
+     * the object itself; otherwise, it returns the initial outgoing
+     * rule transition in the recipe transition.
+     */
+    public RuleTransition getInitial();
+
     /** 
      * Returns an iterator over the steps comprising this transition.
+     * The steps are returned in arbitrary order.
      */
     public Iterable<RuleTransition> getSteps();
 
