@@ -17,6 +17,7 @@
 package groove.lts;
 
 import groove.grammar.Recipe;
+import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostGraphMorphism;
 import groove.graph.AbstractEdge;
 import groove.graph.EdgeRole;
@@ -198,12 +199,13 @@ public class RecipeTransition extends
      */
     protected HostGraphMorphism computeMorphism() {
         HostGraphMorphism result = null;
+        HostGraph host = source().getGraph();
         for (RuleTransition step : getSteps()) {
-            RuleApplication appl =
-                step.getEvent().newApplication(source().getGraph());
+            RuleApplication appl = step.getEvent().newApplication(host);
             result =
                 result == null ? appl.getMorphism()
                         : result.then(appl.getMorphism());
+            host = appl.getTarget();
         }
         return result;
     }

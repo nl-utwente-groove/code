@@ -31,6 +31,20 @@ public class LTSJEdge extends AJEdge<GTS,LTSJGraph,LTSJModel,LTSJVertex>
     }
 
     @Override
+    public boolean isCompatible(Edge edge) {
+        return super.isCompatible(edge)
+            && isPartial() == ((GraphTransition) edge).isPartial();
+    }
+
+    @Override
+    public void addEdge(Edge edge) {
+        super.addEdge(edge);
+        // updates the look on the basis of the edge
+        setLook(Look.TRANSIENT, isPartial());
+        setLook(Look.ABSENT, isAbsent());
+    }
+
+    @Override
     public GraphTransition getEdge() {
         return (GraphTransition) super.getEdge();
     }

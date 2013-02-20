@@ -114,7 +114,12 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
                 }
                 jCell.setLook(Look.ABSENT, true);
             }
-            jCell.setLook(Look.TRANSIENT, explored.isTransient());
+            if (explored.isTransient()) {
+                for (JEdge<GTS> jEdge : jCell.getContext()) {
+                    jEdge.setLook(Look.TRANSIENT, true);
+                }
+                jCell.setLook(Look.TRANSIENT, true);
+            }
             jCell.setLook(Look.FINAL, lts.isFinal(explored));
             jCell.setLook(Look.RESULT, lts.isResult(explored));
         }

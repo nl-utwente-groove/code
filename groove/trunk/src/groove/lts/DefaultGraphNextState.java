@@ -79,6 +79,11 @@ public class DefaultGraphNextState extends AbstractGraphState implements
     }
 
     @Override
+    public RuleTransition getInitial() {
+        return this;
+    }
+
+    @Override
     public Iterable<RuleTransition> getSteps() {
         return Collections.<RuleTransition>singletonList(this);
     }
