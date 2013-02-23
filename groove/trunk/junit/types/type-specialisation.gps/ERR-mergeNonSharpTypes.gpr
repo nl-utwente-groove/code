@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
     <graph edgemode="directed" edgeids="false" role="rule" id="ERR-mergeNonSharpTypes">
+        <attr name="enabled">
+            <string>false</string>
+        </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -22,14 +25,14 @@
                 <string>82 89 247 31</string>
             </attr>
         </node>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>Non-sharp node types cannot be merged</string>
-            </attr>
-        </edge>
         <edge to="n1" from="n1">
             <attr name="label">
                 <string>type:B</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n1">
+            <attr name="label">
+                <string>new:=</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">
@@ -42,9 +45,9 @@
                 <string>rem:</string>
             </attr>
         </edge>
-        <edge to="n2" from="n1">
+        <edge to="n0" from="n0">
             <attr name="label">
-                <string>new:=</string>
+                <string>Non-sharp node types cannot be merged</string>
             </attr>
         </edge>
     </graph>

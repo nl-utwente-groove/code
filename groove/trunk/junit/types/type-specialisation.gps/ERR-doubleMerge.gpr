@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
     <graph edgemode="directed" edgeids="false" role="rule" id="ERR-doubleMerge">
+        <attr name="enabled">
+            <string>false</string>
+        </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -27,16 +30,6 @@
                 <string>262 224 34 46</string>
             </attr>
         </node>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>A sharp type cannot be merged with two distinct subtype nodes</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:#A</string>
-            </attr>
-        </edge>
         <edge to="n3" from="n1">
             <attr name="label">
                 <string>new:=</string>
@@ -47,9 +40,9 @@
                 <string>new:=</string>
             </attr>
         </edge>
-        <edge to="n2" from="n2">
+        <edge to="n1" from="n1">
             <attr name="label">
-                <string>type:C</string>
+                <string>type:#A</string>
             </attr>
         </edge>
         <edge to="n3" from="n3">
@@ -60,6 +53,16 @@
         <edge to="n0" from="n0">
             <attr name="label">
                 <string>rem:</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>A sharp type cannot be merged with two distinct subtype nodes</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>type:C</string>
             </attr>
         </edge>
     </graph>
