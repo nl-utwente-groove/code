@@ -21,7 +21,7 @@ import groove.grammar.AnchorKind;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
-import groove.graph.AbstractNode;
+import groove.graph.ANode;
 import groove.graph.EdgeRole;
 
 import java.util.List;
@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * Instances of this class represent operator invocations.
  */
-public class OperatorNode extends AbstractNode implements RuleNode {
+public class OperatorNode extends ANode implements RuleNode {
     /**
      * Returns a fresh operator node with a given node number,
      * operator, arguments and target.

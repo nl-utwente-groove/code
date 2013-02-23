@@ -45,14 +45,14 @@ public abstract class GraphPrologCode implements PrologCode {
      * @param term      A term representing a graph
      * @return          A graph
      */
-    public static final Graph<?,?> getGraph(Term term) throws PrologException {
+    public static final Graph getGraph(Term term) throws PrologException {
         if (term instanceof JavaObjectTerm) {
             JavaObjectTerm jot = (JavaObjectTerm) term;
             if (jot.value instanceof GraphState) {
                 return ((GraphState) jot.value).getGraph();
             }
             if (jot.value instanceof Graph) {
-                return (Graph<?,?>) jot.value;
+                return (Graph) jot.value;
             }
             PrologException.domainError(GraphPrologCode.GRAPH_ATOM, term);
         } else {

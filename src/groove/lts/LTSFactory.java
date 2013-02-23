@@ -18,7 +18,7 @@ package groove.lts;
 
 import groove.graph.Edge;
 import groove.graph.ElementFactory;
-import groove.graph.Graph;
+import groove.graph.GGraph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
@@ -33,10 +33,10 @@ import groove.graph.Node;
 public final class LTSFactory<N extends Node,E extends Edge> implements
         ElementFactory<N,E> {
 
-    private final Graph<N,E> graph;
+    private final GGraph<N,E> graph;
 
     /** Default constructor. */
-    public LTSFactory(Graph<N,E> graph) {
+    public LTSFactory(GGraph<N,E> graph) {
         this.graph = graph;
     }
 

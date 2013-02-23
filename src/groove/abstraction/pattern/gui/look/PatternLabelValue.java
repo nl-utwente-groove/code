@@ -24,8 +24,8 @@ import groove.abstraction.pattern.shape.PatternEdge;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.JEdge;
+import groove.gui.jgraph.JVertex;
 import groove.gui.look.LabelValue;
 import groove.gui.look.Line;
 import groove.gui.look.MultiLabel;
@@ -65,7 +65,7 @@ public class PatternLabelValue extends LabelValue {
         for (Edge edge : jEdge.getEdges()) {
             StringBuilder sb = new StringBuilder();
             sb.append(((AbstractPatternEdge<?>) edge).getPrintableLabel());
-            Graph<?,?> graph = getJGraph().getModel().getGraph();
+            Graph graph = getJGraph().getModel().getGraph();
             if (graph instanceof PatternShape) {
                 PatternShape pShape = (PatternShape) graph;
                 sb.append("(" + pShape.getMult((PatternEdge) edge) + ")");

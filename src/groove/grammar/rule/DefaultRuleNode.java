@@ -19,7 +19,7 @@ package groove.grammar.rule;
 import groove.grammar.AnchorKind;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeNode;
-import groove.graph.AbstractNode;
+import groove.graph.ANode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +33,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision: 2971 $
  */
-public class DefaultRuleNode extends AbstractNode implements RuleNode,
+public class DefaultRuleNode extends ANode implements RuleNode,
         AnchorKey {
     /**
      * Constructs a fresh node, with an explicitly given number and node type.

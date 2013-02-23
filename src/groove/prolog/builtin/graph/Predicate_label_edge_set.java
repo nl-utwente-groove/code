@@ -36,7 +36,7 @@ public class Predicate_label_edge_set extends GraphPrologCode {
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
         try {
-            Graph<?,?> graph = getGraph(args[0]);
+            Graph graph = getGraph(args[0]);
 
             Label label = (Label) ((JavaObjectTerm) args[1]).value;
 

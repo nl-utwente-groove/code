@@ -92,7 +92,7 @@ public class ExportAction extends SimulatorAction {
         String type = null;
         if (this.isGraph) {
             JGraph<?> jGraph = getJGraph();
-            Graph<?,?> graph = jGraph.getModel().getGraph();
+            Graph graph = jGraph.getModel().getGraph();
             GraphRole role = graph.getRole();
             boolean isState =
                 jGraph instanceof AspectJGraph

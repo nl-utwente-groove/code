@@ -26,6 +26,7 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.Edge;
+import groove.graph.GGraph;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
@@ -70,14 +71,13 @@ import de.gupro.gxl.gxl_1_0.ObjectFactory;
  * @author Arend Rensink
  * @version $Revision: 1568 $
  */
-public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
-        implements GxlIO<N,E> {
+public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge,G extends GGraph<N,E>>
+        implements GxlIO<N,E,G> {
 
     /**
      * Saves a graph to an output stream.
      */
-    public void saveGraph(Graph<?,?> graph, OutputStream out)
-        throws IOException {
+    public void saveGraph(Graph graph, OutputStream out) throws IOException {
         GraphType gxlGraph = graphToGxl(graph);
         // now marshal the attribute graph
         try {
@@ -92,12 +92,12 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
      * information consists of a map from node identities as they occur in the
      * input to node identities in the resulting graph.
      */
-    public Pair<Graph<N,E>,Map<String,N>> loadGraphWithMap(InputStream in)
+    public Pair<G,Map<String,N>> loadGraphWithMap(InputStream in)
         throws IOException, FormatException {
         try {
             GraphType gxlGraph = unmarshal(in);
-            Pair<Graph<N,E>,Map<String,N>> result = gxlToGraph(gxlGraph);
-            Graph<N,E> graph = result.one();
+            Pair<G,Map<String,N>> result = gxlToGraph(gxlGraph);
+            G graph = result.one();
             String version = GraphInfo.getVersion(graph);
             if (!Version.isKnownGxlVersion(version)) {
                 GraphInfo.addErrors(
@@ -116,8 +116,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
      * Loads a graph from an input stream. Convenience method for
      * <code>loadGraphWithMap(in).first()</code>.
      */
-    public Graph<N,E> loadGraph(InputStream in) throws IOException,
-        FormatException {
+    public G loadGraph(InputStream in) throws IOException, FormatException {
         return loadGraphWithMap(in).one();
     }
 
@@ -186,7 +185,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
      * to prefixed form.
      * If the graph is a {@link TypeGraph}, subtype edges are also added.
      */
-    private GraphType graphToGxl(Graph<?,?> graph) {
+    private GraphType graphToGxl(Graph graph) {
         GraphType gxlGraph = this.factory.createGraphType();
         gxlGraph.setEdgeids(false);
         gxlGraph.setEdgemode(EdgemodeType.DIRECTED);
@@ -280,9 +279,8 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
      * Stores additional structure information from the given graph into the
      * given gxlGraph. This is used, for example, with shapes (abstraction).
      */
-    protected void storeAdditionalStructure(Graph<?,?> graph,
-            GraphType gxlGraph, Map<Node,NodeType> nodeMap,
-            Map<Edge,EdgeType> edgeMap) {
+    protected void storeAdditionalStructure(Graph graph, GraphType gxlGraph,
+            Map<Node,NodeType> nodeMap, Map<Edge,EdgeType> edgeMap) {
         // Empty by design. To be overriden by subclasses.
     }
 
@@ -327,11 +325,11 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
      * @param gxlGraph the source of the unmarshalling
      * @return pair consisting of the resulting graph and a non-<code>null</code> map
      */
-    private Pair<Graph<N,E>,Map<String,N>> gxlToGraph(GraphType gxlGraph)
+    private Pair<G,Map<String,N>> gxlToGraph(GraphType gxlGraph)
         throws FormatException {
 
         // Initialize the new objects to be created.
-        Graph<N,E> graph = createGraph(gxlGraph.getId());
+        G graph = createGraph(gxlGraph.getId());
         Map<String,N> nodeIds = new HashMap<String,N>();
         Map<EdgeType,E> edgeMap = new HashMap<EdgeType,E>();
         LayoutMap layoutMap = new LayoutMap();
@@ -466,7 +464,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
         }
         GraphInfo.setLayoutMap(graph, layoutMap);
         loadAdditionalStructure(graph, gxlGraph, nodeIds, edgeMap);
-        return new Pair<Graph<N,E>,Map<String,N>>(graph, nodeIds);
+        return new Pair<G,Map<String,N>>(graph, nodeIds);
     }
 
     /**
@@ -474,7 +472,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
      * given graph. This is used, for example, with shapes (abstraction).
      */
     @SuppressWarnings("unused")
-    protected void loadAdditionalStructure(Graph<N,E> graph,
+    protected void loadAdditionalStructure(GGraph<N,E> graph,
             GraphType gxlGraph, Map<String,N> nodeMap, Map<EdgeType,E> edgeMap)
         throws FormatException {
         // Empty by design. To be overriden by subclasses.
@@ -502,7 +500,7 @@ public abstract class AbstractJaxbGxlIO<N extends Node,E extends Edge>
     }
 
     /** Creates a graph with the proper type. */
-    protected abstract Graph<N,E> createGraph(String name);
+    protected abstract G createGraph(String name);
 
     /**
      * Creates a GROOVE node from a GXL node ID, attempting to retain any node

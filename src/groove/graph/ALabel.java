@@ -24,7 +24,7 @@ import groove.util.Fixable;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:57 $
  */
-public abstract class AbstractLabel implements Cloneable, Label, Fixable {
+public abstract class ALabel implements Cloneable, Label, Fixable {
     /** Labels are binary by default. */
     @Override
     public EdgeRole getRole() {

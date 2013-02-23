@@ -38,7 +38,7 @@ public class Predicate_graph_node extends GraphPrologCode {
             interpreter.undo(it.getUndoPosition());
             return it.nextSolution(interpreter);
         } else {
-            Graph<?,?> graph = getGraph(args[0]);
+            Graph graph = getGraph(args[0]);
             PrologCollectionIterator it =
                 new PrologCollectionIterator(graph.nodeSet(), args[1],
                     interpreter.getUndoPosition());

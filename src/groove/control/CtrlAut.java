@@ -21,7 +21,7 @@ import groove.control.CtrlCall.Kind;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatException;
-import groove.graph.AbstractGraph;
+import groove.graph.AGraph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.util.collect.NestedIterator;
@@ -55,7 +55,7 @@ import java.util.TreeSet;
  * </ul>
  * @author Arend Rensink
  */
-public class CtrlAut extends AbstractGraph<CtrlState,CtrlTransition> {
+public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
     /**
      * Constructs a new control automaton.
      * The start state and final state are automatically initialised.

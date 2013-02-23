@@ -22,14 +22,14 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision: 2894 $
  */
-abstract public class AbstractNode implements Node, Cloneable {
+abstract public class ANode implements Node, Cloneable {
     /**
      * Constructs a fresh node, with an explicitly given number. Note that node
      * equality is determined by identity, but it is assumed that never two
      * distinct nodes with the same number will be compared.
      * @param nr the number for this node
      */
-    protected AbstractNode(int nr) {
+    protected ANode(int nr) {
         this.nodeNr = nr;
     }
 

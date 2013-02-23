@@ -41,12 +41,12 @@ public class Bisimulator extends CertificateStrategy {
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public Bisimulator(Graph<?,?> graph) {
+    public Bisimulator(Graph graph) {
         super(graph);
     }
 
     @Override
-    public CertificateStrategy newInstance(Graph<?,?> graph, boolean strong) {
+    public CertificateStrategy newInstance(Graph graph, boolean strong) {
         return new Bisimulator(graph);
     }
 

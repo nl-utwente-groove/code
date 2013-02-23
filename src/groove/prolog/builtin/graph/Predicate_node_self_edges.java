@@ -46,7 +46,7 @@ public class Predicate_node_self_edges extends GraphPrologCode {
     private static class SelfEdgesBacktrackInfo extends BacktrackInfo {
         int startUndoPosition;
 
-        Graph<?,?> graph;
+        Graph graph;
         Iterator<? extends Node> nodes;
         List<String> labels; // can be null when argList isn't
 

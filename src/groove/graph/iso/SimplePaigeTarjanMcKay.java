@@ -53,7 +53,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public SimplePaigeTarjanMcKay(Graph<?,?> graph) {
+    public SimplePaigeTarjanMcKay(Graph graph) {
         this(graph, false);
     }
 
@@ -64,13 +64,13 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
      * @param strong if <code>true</code>, the strategy puts more effort into
      *        getting distinct certificates.
      */
-    public SimplePaigeTarjanMcKay(Graph<?,?> graph, boolean strong) {
+    public SimplePaigeTarjanMcKay(Graph graph, boolean strong) {
         super(graph);
         this.strong = strong;
     }
 
     @Override
-    public SimplePaigeTarjanMcKay newInstance(Graph<?,?> graph, boolean strong) {
+    public SimplePaigeTarjanMcKay newInstance(Graph graph, boolean strong) {
         return new SimplePaigeTarjanMcKay(graph);
     }
 

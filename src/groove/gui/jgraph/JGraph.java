@@ -117,7 +117,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-05 13:27:59 $
  */
-abstract public class JGraph<G extends Graph<?,?>> extends org.jgraph.JGraph {
+abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     /**
      * Constructs a JGraph for a given simulator.
      * @param simulator simulator to which the JGraph belongs; may be {@code null}

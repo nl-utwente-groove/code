@@ -33,7 +33,7 @@ public class Predicate_graph_node_set extends GraphPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        Graph<?,?> graph = getGraph(args[0]);
+        Graph graph = getGraph(args[0]);
         Term nodeSetTerm =
             CompoundTerm.getList(PrologUtils.createJOTlist(graph.nodeSet()));
         return interpreter.unify(nodeSetTerm, args[1]);

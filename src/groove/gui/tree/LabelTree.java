@@ -74,7 +74,7 @@ import org.jgraph.event.GraphSelectionListener;
  * @author Arend Rensink
  * @version $Revision: 1915 $
  */
-public class LabelTree<G extends Graph<?,?>> extends CheckboxTree implements
+public class LabelTree<G extends Graph> extends CheckboxTree implements
         GraphModelListener, TreeSelectionListener {
     /**
      * Constructs a label list associated with a given jgraph. A further

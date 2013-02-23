@@ -42,7 +42,6 @@ import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.VariableNode;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
-import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -849,11 +848,11 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
      * @param node the node for which to discover the type
      * @throws FormatException on nonexistent, abstract or duplicate node types
      */
-    private <N extends Node,E extends Edge> List<E> detectNodeType(
-            Graph<N,E> source, N node) throws FormatException {
-        List<E> result = new ArrayList<E>();
+    private List<HostEdge> detectNodeType(HostGraph source, HostNode node)
+        throws FormatException {
+        List<HostEdge> result = new ArrayList<HostEdge>();
         // find a node type among the outgoing edges
-        for (E edge : source.outEdgeSet(node)) {
+        for (HostEdge edge : source.outEdgeSet(node)) {
             if (edge.getRole() == NODE_TYPE) {
                 result.add(edge);
             }

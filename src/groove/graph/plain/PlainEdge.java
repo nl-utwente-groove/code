@@ -16,7 +16,7 @@
  */
 package groove.graph.plain;
 
-import groove.graph.AbstractEdge;
+import groove.graph.AEdge;
 
 /**
  * Default implementation of an (immutable) graph edge, as a triple consisting
@@ -24,7 +24,7 @@ import groove.graph.AbstractEdge;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-12 15:15:31 $
  */
-public class PlainEdge extends AbstractEdge<PlainNode,PlainLabel> {
+public class PlainEdge extends AEdge<PlainNode,PlainLabel> {
     /**
      * Constructs a new edge on the basis of a given source, label and target.
      * @param source source node of the new edge

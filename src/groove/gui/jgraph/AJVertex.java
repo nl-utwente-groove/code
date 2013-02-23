@@ -37,7 +37,7 @@ import org.jgraph.graph.DefaultPort;
  * @author rensink
  * @version $Revision $
  */
-public abstract class AJVertex<G extends Graph<?,?>,JG extends JGraph<G>,JM extends JModel<G>,JE extends JEdge<G>>
+public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JE extends JEdge<G>>
         extends AJCell<G,JG,JM> implements JVertex<G> {
     /**
      * Constructs a fresh, uninitialised JVertex.

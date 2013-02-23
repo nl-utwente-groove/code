@@ -59,7 +59,7 @@ public final class PatternShapeGxl {
     public PatternShape unmarshalPatternShape(File file) throws IOException {
         InputStream in = new FileInputStream(file);
         try {
-            PatternShape result = (PatternShape) this.io.loadGraph(in);
+            PatternShape result = this.io.loadGraph(in);
             assert result.isWellDefined();
             return result;
         } catch (FormatException e) {

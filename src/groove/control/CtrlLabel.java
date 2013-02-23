@@ -17,7 +17,7 @@
 package groove.control;
 
 import groove.grammar.Recipe;
-import groove.graph.AbstractLabel;
+import groove.graph.ALabel;
 import groove.graph.Label;
 
 import java.util.Map;
@@ -28,7 +28,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlLabel extends AbstractLabel {
+public class CtrlLabel extends ALabel {
     /** 
      * Constructs a control label from a call and
      * a guard.

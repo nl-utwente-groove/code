@@ -16,11 +16,11 @@
  */
 package groove.abstraction.pattern.lts;
 
-import groove.graph.AbstractEdge;
+import groove.graph.AEdge;
 
 /** Transitions occurring in a PGTS. */
 public class PatternGraphTransition extends
-        AbstractEdge<PatternState,PatternTransitionLabel> implements
+        AEdge<PatternState,PatternTransitionLabel> implements
         PatternTransition {
 
     /** Default constructor. */

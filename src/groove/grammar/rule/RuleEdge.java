@@ -20,7 +20,7 @@ import groove.grammar.AnchorKind;
 import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeGuard;
-import groove.graph.AbstractEdge;
+import groove.graph.AEdge;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 /** Rule edge that is not attribute-related. */
-public class RuleEdge extends AbstractEdge<RuleNode,RuleLabel> implements
+public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements
         RuleElement {
     /** Constructs a rule edge from a given rule label and/or type edge. */
     public RuleEdge(RuleNode source, RuleLabel label, TypeEdge type,

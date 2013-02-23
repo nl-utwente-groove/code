@@ -143,9 +143,8 @@ public class GraphInfo extends DefaultFixable {
      * @param target the graph to transfer the information to
      * @param elementMap map from the source elements to the target elements
      */
-    public static <N1 extends Node,E1 extends Edge,N2 extends Node,E2 extends Edge> void transfer(
-            Graph<N1,E1> source, Graph<N2,E2> target,
-            ElementMap<N1,E1,N2,E2> elementMap) {
+    public static void transfer(Graph source, Graph target,
+            ElementMap<?,?,?,?> elementMap) {
         if (source.hasInfo()) {
             // copy all the info
             GraphInfo sourceInfo = source.getInfo();
@@ -172,7 +171,7 @@ public class GraphInfo extends DefaultFixable {
      * @return {@code true} if {@code graph} has format errors
      * @see #getErrors(Graph)
      */
-    public static boolean hasErrors(Graph<?,?> graph) {
+    public static boolean hasErrors(Graph graph) {
         return graph.hasInfo() && !graph.getInfo().getErrors().isEmpty();
     }
 
@@ -182,7 +181,7 @@ public class GraphInfo extends DefaultFixable {
      * @return a list of errors, or {@code null} if the graph does not have an info object
      * @see #getErrors()
      */
-    public static Collection<FormatError> getErrors(Graph<?,?> graph) {
+    public static Collection<FormatError> getErrors(Graph graph) {
         FormatErrorSet result;
         if (graph.hasInfo()) {
             result = graph.getInfo().getErrors();
@@ -197,8 +196,7 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the graph to be modified; non-{@code null} and not fixed
      * @param errors list of errors to be set; non-{@code null}
      */
-    public static void setErrors(Graph<?,?> graph,
-            Collection<FormatError> errors) {
+    public static void setErrors(Graph graph, Collection<FormatError> errors) {
         if (!errors.isEmpty()) {
             assert !graph.isFixed();
             graph.getInfo().setErrors(errors);
@@ -210,8 +208,7 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the graph to be modified; non-{@code null} and not fixed
      * @param errors list of errors to be added; non-{@code null}
      */
-    public static void addErrors(Graph<?,?> graph,
-            Collection<FormatError> errors) {
+    public static void addErrors(Graph graph, Collection<FormatError> errors) {
         if (!errors.isEmpty()) {
             assert !graph.isFixed();
             graph.getInfo().getErrors().addAll(errors);
@@ -221,7 +218,7 @@ public class GraphInfo extends DefaultFixable {
     /**
      * Convenience method to throw an exception if a graph has a non-empty set of errors.
      */
-    public static void throwException(Graph<?,?> graph) throws FormatException {
+    public static void throwException(Graph graph) throws FormatException {
         if (graph.hasInfo()) {
             graph.getInfo().getErrors().throwException();
         }
@@ -233,7 +230,7 @@ public class GraphInfo extends DefaultFixable {
      * @return an alias to the layout map of the graph, 
      * or {@code null} if the graph has no associated layout map
      */
-    public static LayoutMap getLayoutMap(Graph<?,?> graph) {
+    public static LayoutMap getLayoutMap(Graph graph) {
         LayoutMap result = null;
         if (graph.hasInfo()) {
             result = graph.getInfo().getLayoutMap();
@@ -246,8 +243,7 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the graph to be modified; non-{@code null}
      * @param layoutMap the new layout map; non-{@code null}
      */
-    public static <N extends Node,E extends Edge> void setLayoutMap(
-            Graph<N,E> graph, LayoutMap layoutMap) {
+    public static void setLayoutMap(Graph graph, LayoutMap layoutMap) {
         graph.getInfo().setLayoutMap(layoutMap);
     }
 
@@ -257,7 +253,7 @@ public class GraphInfo extends DefaultFixable {
      * @return a copy of the properties object of the queried graph, or an empty
      * properties map if the graph has no info object
      */
-    public static GraphProperties getProperties(Graph<?,?> graph) {
+    public static GraphProperties getProperties(Graph graph) {
         GraphProperties result = null;
         if (graph.hasInfo()) {
             result = graph.getInfo().getProperties().clone();
@@ -274,8 +270,7 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the graph to be modified; non-{@code null}
      * @param properties the new properties map; non-{@code null}
      */
-    public static <N extends Node,E extends Edge> void setProperties(
-            Graph<N,E> graph, GraphProperties properties) {
+    public static void setProperties(Graph graph, GraphProperties properties) {
         assert !graph.isFixed();
         graph.getInfo().setProperties(properties);
     }
@@ -287,7 +282,7 @@ public class GraphInfo extends DefaultFixable {
      * @return the non-negative priority of {@code graph}
      * @see Key#PRIORITY
      */
-    static public int getPriority(Graph<?,?> graph) {
+    static public int getPriority(Graph graph) {
         return Integer.parseInt(getProperty(graph, PRIORITY));
     }
 
@@ -296,7 +291,7 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the graph to be modified; non-{@code null} and non-fixed
      * @param priority the new priority value; should be non-negative
      */
-    static public void setPriority(Graph<?,?> graph, int priority) {
+    static public void setPriority(Graph graph, int priority) {
         setProperty(graph, PRIORITY, "" + priority);
     }
 
@@ -306,7 +301,7 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the queried graph; non-{@code null}
      * @see Key#ENABLED
      */
-    static public boolean isEnabled(Graph<?,?> graph) {
+    static public boolean isEnabled(Graph graph) {
         return Boolean.parseBoolean(getProperty(graph, ENABLED));
     }
 
@@ -315,7 +310,7 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the graph to be modified; non-{@code null} and non-fixed
      * @param enabled the new enabledness value
      */
-    static public void setEnabled(Graph<?,?> graph, boolean enabled) {
+    static public void setEnabled(Graph graph, boolean enabled) {
         setProperty(graph, ENABLED, Boolean.toString(enabled));
     }
 
@@ -325,7 +320,7 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the queried graph; non-{@code null}
      * @see Key#REMARK
      */
-    static public String getRemark(Graph<?,?> graph) {
+    static public String getRemark(Graph graph) {
         return getProperty(graph, Key.REMARK);
     }
 
@@ -334,7 +329,7 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the graph to be modified; non-{@code null} and non-fixed
      * @param remark the remark for this graph; non-{@code null}
      */
-    static public void setRemark(Graph<?,?> graph, String remark) {
+    static public void setRemark(Graph graph, String remark) {
         setProperty(graph, Key.REMARK, remark);
     }
 
@@ -345,7 +340,7 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the queried graph; non-{@code null}
      * @see Key#FORMAT
      */
-    static public String getFormatString(Graph<?,?> graph) {
+    static public String getFormatString(Graph graph) {
         return getProperty(graph, Key.FORMAT);
     }
 
@@ -354,7 +349,7 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the graph to be modified; non-{@code null} and non-fixed
      * @param formatString the format string for this graph; may be {@code null}
      */
-    static public void setFormatString(Graph<?,?> graph, String formatString) {
+    static public void setFormatString(Graph graph, String formatString) {
         setProperty(graph, Key.FORMAT, formatString);
     }
 
@@ -364,7 +359,7 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the queried graph; non-{@code null}
      * @see Key#TRANSITION_LABEL
      */
-    static public String getTransitionLabel(Graph<?,?> graph) {
+    static public String getTransitionLabel(Graph graph) {
         return getProperty(graph, Key.TRANSITION_LABEL);
     }
 
@@ -373,7 +368,7 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the graph to be modified; non-{@code null} and non-fixed
      * @param label the transition label for this graph; may be {@code null}
      */
-    static public void setTransitionLabel(Graph<?,?> graph, String label) {
+    static public void setTransitionLabel(Graph graph, String label) {
         setProperty(graph, Key.TRANSITION_LABEL, label);
     }
 
@@ -384,7 +379,7 @@ public class GraphInfo extends DefaultFixable {
      * @param graph the queried graph; non-{@code null}
      * @see Key#VERSION
      */
-    static public String getVersion(Graph<?,?> graph) {
+    static public String getVersion(Graph graph) {
         return getProperty(graph, Key.VERSION);
     }
 
@@ -395,7 +390,7 @@ public class GraphInfo extends DefaultFixable {
      * @return the stored or default property value for the given key;
      * non-{@code null}
      */
-    private static String getProperty(Graph<?,?> graph, Key key) {
+    private static String getProperty(Graph graph, Key key) {
         String result;
         if (graph.hasInfo()) {
             result = graph.getInfo().getProperties().getProperty(key);
@@ -410,7 +405,7 @@ public class GraphInfo extends DefaultFixable {
      * Delegates to {@link GraphProperties#setProperty} 
      * @param graph the graph to be modified; non-{@code null} and non-fixed
      */
-    private static void setProperty(Graph<?,?> graph, Key key, String value) {
+    private static void setProperty(Graph graph, Key key, String value) {
         GraphProperties properties;
         properties = graph.getInfo().getProperties();
         properties.setProperty(key, value);

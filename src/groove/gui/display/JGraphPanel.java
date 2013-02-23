@@ -38,7 +38,7 @@ import javax.swing.JScrollPane;
  * @author Arend Rensink, updated by Carel van Leeuwen
  * @version $Revision$
  */
-public class JGraphPanel<G extends Graph<?,?>> extends JPanel {
+public class JGraphPanel<G extends Graph> extends JPanel {
     /**
      * Constructs a view upon a given jgraph, possibly with a status bar.
      * 

@@ -54,7 +54,7 @@ import org.jgraph.graph.ParentMap;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
+abstract public class JModel<G extends Graph> extends DefaultGraphModel {
     /**
      * Creates a new GraphJModel instance on top of a given GraphJGraph, with given
      * node and edge attributes, and an indication whether self-edges should be
@@ -119,7 +119,7 @@ abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
      * Returns the underlying Graph of this GraphModel.
      * @ensure result != null
      */
-    public Graph<?,?> getGraph() {
+    public Graph getGraph() {
         return this.graph;
     }
 
@@ -171,13 +171,12 @@ abstract public class JModel<G extends Graph<?,?>> extends DefaultGraphModel {
     /**
      * Prepare the object fields for loading a new graph.
      */
-    @SuppressWarnings("unchecked")
     protected void prepareLoad(G graph) {
         this.graph = graph;
         this.layoutMap = GraphInfo.getLayoutMap(graph);
         if (this.layoutMap == null) {
             this.layoutMap = new LayoutMap();
-            GraphInfo.setLayoutMap((Graph<Node,Edge>) graph, this.layoutMap);
+            GraphInfo.setLayoutMap(graph, this.layoutMap);
         }
         this.nodeJCellMap.clear();
         this.edgeJCellMap.clear();

@@ -18,7 +18,7 @@ package groove.grammar.type;
 
 import static groove.graph.EdgeRole.BINARY;
 import groove.grammar.AnchorKind;
-import groove.graph.AbstractEdge;
+import groove.graph.AEdge;
 import groove.graph.Label;
 
 import java.util.Set;
@@ -28,7 +28,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TypeEdge extends AbstractEdge<TypeNode,TypeLabel> implements
+public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements
         TypeElement {
     /**
      * Constructs a new type edge, with explicit multiplicity.

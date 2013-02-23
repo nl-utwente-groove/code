@@ -16,7 +16,7 @@
  */
 package groove.graph.plain;
 
-import groove.graph.AbstractLabel;
+import groove.graph.ALabel;
 import groove.graph.Label;
 
 /**
@@ -25,7 +25,7 @@ import groove.graph.Label;
  * @author Arend Rensink
  * @version $Revision$
  */
-public final class PlainLabel extends AbstractLabel {
+public final class PlainLabel extends ALabel {
     /**
      * Constructs a standard implementation of Label on the basis of a given
      * text index. For internal purposes only.

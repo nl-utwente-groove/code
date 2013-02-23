@@ -345,7 +345,7 @@ abstract public class AbstractGraphState extends
      * Returns a name for this state, rather than a full description. To get the
      * full description, use <tt>DefaultGraph.toString(Graph)</tt>.
      * 
-     * @see groove.graph.AbstractGraph#toString(Graph)
+     * @see groove.graph.AGraph#toString(Graph)
      */
     @Override
     public String toString() {

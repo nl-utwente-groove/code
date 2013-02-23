@@ -34,7 +34,7 @@ import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.LabelPattern;
 import groove.grammar.type.TypeLabel;
-import groove.graph.AbstractNode;
+import groove.graph.ANode;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.plain.PlainLabel;
@@ -51,7 +51,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectNode extends AbstractNode implements AspectElement, Fixable {
+public class AspectNode extends ANode implements AspectElement, Fixable {
     /** Constructs an aspect node with a given number. */
     public AspectNode(int nr, GraphRole graphRole) {
         super(nr);

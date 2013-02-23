@@ -21,7 +21,7 @@ import static groove.graph.EdgeRole.NODE_TYPE;
 import groove.algebra.SignatureKind;
 import groove.grammar.model.FormatException;
 import groove.grammar.rule.RuleLabel;
-import groove.graph.AbstractLabel;
+import groove.graph.ALabel;
 import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.io.HTMLConverter;
@@ -36,7 +36,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision: 2709 $
  */
-public final class TypeLabel extends AbstractLabel {
+public final class TypeLabel extends ALabel {
     /**
      * Constructs a standard implementation of Label on the basis of a given
      * text index. For internal purposes only.

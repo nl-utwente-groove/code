@@ -26,7 +26,7 @@ import groove.gui.Simulator;
  * @author rensink
  * @version $Revision $
  */
-public class PlainJGraph extends JGraph<Graph<?,?>> {
+public class PlainJGraph extends JGraph<Graph> {
     /**
      * Private constructor.
      * @param simulator the simulator to which the {@link JGraph} belongs;
@@ -37,8 +37,8 @@ public class PlainJGraph extends JGraph<Graph<?,?>> {
     }
 
     @Override
-    protected JGraphFactory<Graph<?,?>> createFactory() {
-        return new JGraphFactory<Graph<?,?>>(this) {
+    protected JGraphFactory<Graph> createFactory() {
+        return new JGraphFactory<Graph>(this) {
             @Override
             public PlainJEdge newJEdge(Edge edge) {
                 return new PlainJEdge();
@@ -61,12 +61,12 @@ public class PlainJGraph extends JGraph<Graph<?,?>> {
     }
 
     private class PlainJEdge extends
-            AJEdge<Graph<?,?>,PlainJGraph,JModel<Graph<?,?>>,PlainJVertex> {
+            AJEdge<Graph,PlainJGraph,JModel<Graph>,PlainJVertex> {
         // empty
     }
 
     private class PlainJVertex extends
-            AJVertex<Graph<?,?>,PlainJGraph,JModel<Graph<?,?>>,PlainJEdge> {
+            AJVertex<Graph,PlainJGraph,JModel<Graph>,PlainJEdge> {
         // empty
     }
 }

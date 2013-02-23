@@ -24,8 +24,8 @@ import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
 import groove.grammar.model.FormatException;
-import groove.graph.AbstractEdge;
-import groove.graph.AbstractGraph;
+import groove.graph.AEdge;
+import groove.graph.AGraph;
 import groove.graph.EdgeRole;
 import groove.graph.Morphism;
 import groove.graph.iso.IsoChecker;
@@ -42,7 +42,7 @@ import java.util.Collections;
  * @version $Revision$ $Date: 2008-03-05 16:50:10 $
  */
 public class DefaultRuleTransition extends
-        AbstractEdge<GraphState,RuleTransitionLabel> implements
+        AEdge<GraphState,RuleTransitionLabel> implements
         RuleTransitionStub, RuleTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between
@@ -224,9 +224,9 @@ public class DefaultRuleTransition extends
                 assert iso != null : "Can't reconstruct derivation from graph transition "
                     + this
                     + ": \n"
-                    + AbstractGraph.toString(derivedTarget)
+                    + AGraph.toString(derivedTarget)
                     + " and \n"
-                    + AbstractGraph.toString(realTarget)
+                    + AGraph.toString(realTarget)
                     + " \nnot isomorphic";
                 result = result.then(iso);
             }

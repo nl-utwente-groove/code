@@ -242,14 +242,14 @@ public final class PatternShapeIsoChecker extends IsoChecker {
     // ------------------------------------------------------------------------
 
     @Override
-    public <N extends Node,E extends Edge> boolean areIsomorphic(
-            Graph<N,E> dom, Graph<N,E> cod, N[] domNodes, N[] codNodes) {
+    public <N extends Node,E extends Edge> boolean areIsomorphic(Graph dom,
+            Graph cod, Node[] domNodes, Node[] codNodes) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public <N extends Node,E extends Edge> Morphism<N,E> getIsomorphism(
-            Graph<N,E> dom, Graph<N,E> cod) {
+            Graph dom, Graph cod) {
         throw new UnsupportedOperationException();
     }
 }

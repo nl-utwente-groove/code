@@ -18,7 +18,7 @@ package groove.grammar.aspect;
 
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.type.TypeLabel;
-import groove.graph.AbstractLabel;
+import groove.graph.ALabel;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 
@@ -32,7 +32,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectLabel extends AbstractLabel {
+public class AspectLabel extends ALabel {
     /**
      * Constructs an initially empty label, for a graph with a particular role.
      */

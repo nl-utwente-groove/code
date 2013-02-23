@@ -27,6 +27,7 @@ import groove.abstraction.pattern.shape.TypeGraph;
 import groove.abstraction.pattern.shape.TypeNode;
 import groove.grammar.model.FormatException;
 import groove.graph.Edge;
+import groove.graph.GGraph;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.io.xml.AbstractJaxbGxlIO;
@@ -46,7 +47,7 @@ import de.gupro.gxl.gxl_1_0.NodeType;
  * @author Eduardo Zambon
  */
 public final class PatternShapeJaxbGxlIO extends
-        AbstractJaxbGxlIO<PatternNode,PatternEdge> {
+        AbstractJaxbGxlIO<PatternNode,PatternEdge,PatternShape> {
 
     // ------------------------------------------------------------------------
     // Static fields
@@ -112,9 +113,8 @@ public final class PatternShapeJaxbGxlIO extends
      * Stores the node and edge multiplicities and also the equivalence relation.
      */
     @Override
-    protected void storeAdditionalStructure(Graph<?,?> graph,
-            GraphType gxlGraph, Map<Node,NodeType> nodeMap,
-            Map<Edge,EdgeType> edgeMap) {
+    protected void storeAdditionalStructure(Graph graph, GraphType gxlGraph,
+            Map<Node,NodeType> nodeMap, Map<Edge,EdgeType> edgeMap) {
         assert graph instanceof PatternShape;
         PatternShape shape = (PatternShape) graph;
 
@@ -144,7 +144,7 @@ public final class PatternShapeJaxbGxlIO extends
      */
     @Override
     protected void loadAdditionalStructure(
-            Graph<PatternNode,PatternEdge> graph, GraphType gxlGraph,
+            GGraph<PatternNode,PatternEdge> graph, GraphType gxlGraph,
             Map<String,PatternNode> nodeMap, Map<EdgeType,PatternEdge> edgeMap)
         throws FormatException {
         PatternShape shape = (PatternShape) graph;

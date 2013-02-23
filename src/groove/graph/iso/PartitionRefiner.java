@@ -46,7 +46,7 @@ public class PartitionRefiner extends CertificateStrategy {
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public PartitionRefiner(Graph<?,?> graph) {
+    public PartitionRefiner(Graph graph) {
         this(graph, false);
     }
 
@@ -57,13 +57,13 @@ public class PartitionRefiner extends CertificateStrategy {
      * @param strong if <code>true</code>, the strategy puts more effort into
      *        getting distinct certificates.
      */
-    public PartitionRefiner(Graph<?,?> graph, boolean strong) {
+    public PartitionRefiner(Graph graph, boolean strong) {
         super(graph);
         this.strong = strong;
     }
 
     @Override
-    public CertificateStrategy newInstance(Graph<?,?> graph, boolean strong) {
+    public CertificateStrategy newInstance(Graph graph, boolean strong) {
         return new PartitionRefiner(graph, strong);
     }
 

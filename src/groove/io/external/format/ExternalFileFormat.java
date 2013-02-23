@@ -30,7 +30,7 @@ import java.io.IOException;
  * 
  * @author Eduardo Zambon
  */
-public interface ExternalFileFormat<G extends Graph<?,?>> {
+public interface ExternalFileFormat<G extends Graph> {
 
     /** Returns the extension filter associated with this format. */
     public ExtensionFilter getFilter();

@@ -37,7 +37,7 @@ public class PatternAdornmentValue implements VisualValue<String> {
             PatternJVertex jVertex = (PatternJVertex) cell;
             AbstractPatternNode node = (AbstractPatternNode) jVertex.getNode();
             result = node.getAdornment();
-            Graph<?,?> graph = cell.getJModel().getGraph();
+            Graph graph = cell.getJModel().getGraph();
             if (graph instanceof PatternShape) {
                 PatternShape pShape = (PatternShape) graph;
                 result += "(" + pShape.getMult((PatternNode) node) + ")";

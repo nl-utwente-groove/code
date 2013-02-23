@@ -56,7 +56,7 @@ import org.jgraph.graph.CellView;
 import org.jgraph.plaf.basic.BasicGraphUI;
 
 /** Adapted UI for JGraphs. */
-public class JGraphUI<G extends Graph<?,?>> extends BasicGraphUI {
+public class JGraphUI<G extends Graph> extends BasicGraphUI {
     @SuppressWarnings("unchecked")
     private JGraph<G> getJGraph() {
         return (JGraph<G>) this.graph;

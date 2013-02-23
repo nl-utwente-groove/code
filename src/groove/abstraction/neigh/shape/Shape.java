@@ -42,6 +42,7 @@ import groove.grammar.host.HostNode;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.type.TypeLabel;
+import groove.graph.GGraph;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.util.Duo;
@@ -326,14 +327,14 @@ public final class Shape extends ShapeGraph {
     }
 
     /** Ugly hack to circumvent typing problems. */
-    @SuppressWarnings({"cast", "unchecked", "rawtypes"})
-    public Graph<ShapeNode,ShapeEdge> downcast() {
-        return (Graph<ShapeNode,ShapeEdge>) ((Graph) this);
+    @SuppressWarnings({"unchecked"})
+    public GGraph<ShapeNode,ShapeEdge> downcast() {
+        return (GGraph<ShapeNode,ShapeEdge>) ((Graph) this);
     }
 
     /** Ugly hack to circumvent typing problems. */
-    @SuppressWarnings({"rawtypes"})
-    public static Shape upcast(Graph<ShapeNode,ShapeEdge> shape) {
+    @SuppressWarnings({})
+    public static Shape upcast(GGraph<ShapeNode,ShapeEdge> shape) {
         return (Shape) ((Graph) shape);
     }
 

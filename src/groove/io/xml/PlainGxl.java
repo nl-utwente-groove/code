@@ -26,25 +26,24 @@ import groove.graph.plain.PlainNode;
  * @author Arend Rensink
  * @version $Revision: 2973 $
  */
-public class DefaultGxl extends
-        AbstractGxl<PlainNode,PlainEdge,PlainGraph> {
+public class PlainGxl extends AbstractGxl<PlainNode,PlainEdge,PlainGraph> {
 
     /** Returns the singleton instance of this class. */
-    public static DefaultGxl getInstance() {
+    public static PlainGxl getInstance() {
         return INSTANCE;
     }
 
-    private DefaultGxl() {
+    private PlainGxl() {
         // Private to avoid object creation. Use getInstance() method.
     }
 
     /** Marshaller/unmarshaller. */
     static private final DefaultJaxbGxlIO io = DefaultJaxbGxlIO.getInstance();
 
-    private static final DefaultGxl INSTANCE = new DefaultGxl();
+    private static final PlainGxl INSTANCE = new PlainGxl();
 
     @Override
-    protected GxlIO<PlainNode,PlainEdge> getIO() {
+    protected GxlIO<PlainNode,PlainEdge,PlainGraph> getIO() {
         return io;
     }
 

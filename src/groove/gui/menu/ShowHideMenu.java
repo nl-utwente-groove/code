@@ -61,7 +61,7 @@ import javax.swing.JPopupMenu;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
+public class ShowHideMenu<G extends Graph> extends JMenu {
     /**
      * Show mode for a {@link ShowHideAction}: involved cells are set to
      * visible.
@@ -275,8 +275,8 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
      * hidden).
      * </ul>
      */
-    static abstract protected class ShowHideAction<G extends Graph<?,?>>
-            extends AbstractAction {
+    static abstract protected class ShowHideAction<G extends Graph> extends
+            AbstractAction {
         /**
          * Constructs a nameless action.
          * @param jgraph the jgraph upon which this action works
@@ -391,8 +391,7 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
     /**
      * Action that shows/hide all nodes and edges in the graph.
      */
-    static protected class AllAction<G extends Graph<?,?>> extends
-            ShowHideAction<G> {
+    static protected class AllAction<G extends Graph> extends ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
@@ -418,7 +417,7 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
     /**
      * Action that inverts the shown/hidden nodes and edges in the graph.
      */
-    static protected class InvertAction<G extends Graph<?,?>> extends
+    static protected class InvertAction<G extends Graph> extends
             ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph, either for
@@ -445,7 +444,7 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
      * Action that shows all incident edges of non-hidden nodes, or hides all
      * endpoints of hidden edges.
      */
-    static protected class ContextAction<G extends Graph<?,?>> extends
+    static protected class ContextAction<G extends Graph> extends
             ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph, either for
@@ -487,7 +486,7 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
     /**
      * Action that shows/hides all nodes and edges with a given label.
      */
-    static protected class LabelAction<G extends Graph<?,?>> extends
+    static protected class LabelAction<G extends Graph> extends
             ShowHideAction<G> {
         /**
          * Creates a <tt>LabelAction</tt> that tests for an explicitly given
@@ -531,7 +530,7 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
      * Action that shows/hides elements on the basis of a regular expression
      * over edge labels.
      */
-    static protected class RegExprAction<G extends Graph<?,?>> extends
+    static protected class RegExprAction<G extends Graph> extends
             ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph, either for
@@ -547,7 +546,7 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            Graph<?,?> graph = this.jgraph.getModel().getGraph();
+            Graph graph = this.jgraph.getModel().getGraph();
             String exprText = exprDialog.showDialog(null);
             if (exprText != null) {
                 try {
@@ -607,7 +606,7 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
      * @author Arend Rensink
      * @version $Revision$
      */
-    static protected class SelectedAction<G extends Graph<?,?>> extends
+    static protected class SelectedAction<G extends Graph> extends
             ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph, either for
@@ -636,7 +635,7 @@ public class ShowHideMenu<G extends Graph<?,?>> extends JMenu {
      * file format is one label per line.
      * @author Eduardo Zambon
      */
-    static protected class FromFileAction<G extends Graph<?,?>> extends
+    static protected class FromFileAction<G extends Graph> extends
             ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph.

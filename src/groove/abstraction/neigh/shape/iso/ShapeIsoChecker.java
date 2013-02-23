@@ -168,12 +168,10 @@ public final class ShapeIsoChecker extends IsoChecker {
         if (!this.passBasicChecks(dom, cod)) {
             return result;
         }
-        Graph<ShapeNode,ShapeEdge> domG = dom.downcast();
-        Graph<ShapeNode,ShapeEdge> codG = cod.downcast();
         ShapeIsoChecker isoChecker = ShapeIsoChecker.getInstance(true);
         IsoChecker.IsoCheckerState state = new IsoCheckerState();
         Morphism<ShapeNode,ShapeEdge> morphism =
-            isoChecker.getIsomorphism(domG, codG, state);
+            isoChecker.getIsomorphism(dom, cod, state);
         int comparison = NON_ISO;
         while (morphism != null) {
             // We found an isomorphism between the graph structures.
@@ -186,7 +184,7 @@ public final class ShapeIsoChecker extends IsoChecker {
                 break;
             } else {
                 // Keep trying.
-                morphism = isoChecker.getIsomorphism(domG, codG, state);
+                morphism = isoChecker.getIsomorphism(dom, cod, state);
                 if (morphism == null || state.isPlanEmpty()) {
                     // We got the same morphism back. The check fails.
                     break;
@@ -315,14 +313,13 @@ public final class ShapeIsoChecker extends IsoChecker {
     // ------------------------------------------------------------------------
 
     @Override
-    public <N extends Node,E extends Edge> boolean areIsomorphic(
-            Graph<N,E> dom, Graph<N,E> cod, N[] domNodes, N[] codNodes) {
+    public boolean areIsomorphic(Graph dom, Graph cod, Node[] domNodes,
+            Node[] codNodes) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public <N extends Node,E extends Edge> Morphism<N,E> getIsomorphism(
-            Graph<N,E> dom, Graph<N,E> cod) {
+    public Morphism<Node,Edge> getIsomorphism(Graph dom, Graph cod) {
         throw new UnsupportedOperationException();
     }
 }

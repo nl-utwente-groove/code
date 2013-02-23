@@ -19,7 +19,7 @@ package groove.grammar.host;
 import groove.grammar.AnchorKind;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
-import groove.graph.AbstractNode;
+import groove.graph.ANode;
 
 /**
  * Default nodes used in host graphs.
@@ -28,7 +28,7 @@ import groove.graph.AbstractNode;
  * @author Arend Rensink
  * @version $Revision: 2936 $
  */
-public class DefaultHostNode extends AbstractNode implements HostNode {
+public class DefaultHostNode extends ANode implements HostNode {
     /**
      * Constructs a fresh node, with an explicitly given number and node type.
      * Note that node

@@ -21,7 +21,7 @@ import groove.algebra.SignatureKind;
 import groove.grammar.AnchorKind;
 import groove.grammar.aspect.AspectParser;
 import groove.grammar.type.TypeNode;
-import groove.graph.AbstractNode;
+import groove.graph.ANode;
 
 /**
  * Implementation of graph elements that represent algebraic data values.
@@ -29,7 +29,7 @@ import groove.graph.AbstractNode;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-02-12 15:15:32 $
  */
-public class ValueNode extends AbstractNode implements HostNode {
+public class ValueNode extends ANode implements HostNode {
     /** Constructor for the unique dummy node. */
     private ValueNode() {
         super(Integer.MAX_VALUE);

@@ -54,7 +54,7 @@ import org.jgraph.util.Bezier;
  * Class to perform the conversion from Groove graphs to Tikz format. 
  * @author Eduardo Zambon
  */
-public final class GraphToTikz<G extends Graph<?,?>> {
+public final class GraphToTikz<G extends Graph> {
 
     // ------------------------------------------------------------------------
     // Object fields
@@ -65,7 +65,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
     /** The underlying model for jGraph. */
     private final JModel<G> model;
     /** The underlying Groove graph connected to the jGraph. */
-    private final Graph<Node,Edge> graph;
+    private final Graph graph;
     /** The layout map of the graph. */
     private final LayoutMap layoutMap;
     /** The color map of the graph. */
@@ -80,11 +80,10 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      * The constructor is private. To perform the conversion just call the
      * static method {@link #convert(JGraph)}.
      */
-    @SuppressWarnings("unchecked")
     private GraphToTikz(JGraph<G> jGraph) {
         this.jGraph = jGraph;
         this.model = this.jGraph.getModel();
-        this.graph = (Graph<Node,Edge>) this.model.getGraph();
+        this.graph = this.model.getGraph();
         this.layoutMap = GraphInfo.getLayoutMap(this.graph);
         this.result = new StringBuilder();
     }
@@ -104,7 +103,7 @@ public final class GraphToTikz<G extends Graph<?,?>> {
      * @param jGraph the graph to be converted.
      * @return a string with the Tikz encoding of the graph.
      */
-    public static <G extends Graph<?,?>> String convert(JGraph<G> jGraph) {
+    public static <G extends Graph> String convert(JGraph<G> jGraph) {
         return new GraphToTikz<G>(jGraph).doConvert();
     }
 

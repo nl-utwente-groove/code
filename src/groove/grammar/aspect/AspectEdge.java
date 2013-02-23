@@ -41,7 +41,7 @@ import groove.grammar.model.FormatException;
 import groove.grammar.rule.RuleLabel;
 import groove.grammar.type.Multiplicity;
 import groove.grammar.type.TypeLabel;
-import groove.graph.AbstractEdge;
+import groove.graph.AEdge;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
@@ -56,7 +56,7 @@ import groove.util.Fixable;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectEdge extends AbstractEdge<AspectNode,AspectLabel> implements
+public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
         AspectElement, Fixable {
     /**
      * Constructs a new edge.

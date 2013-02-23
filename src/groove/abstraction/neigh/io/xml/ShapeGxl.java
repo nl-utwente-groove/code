@@ -20,7 +20,7 @@ import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.shape.ShapeEdge;
 import groove.abstraction.neigh.shape.ShapeNode;
 import groove.grammar.type.TypeGraph;
-import groove.graph.Graph;
+import groove.graph.GGraph;
 import groove.io.xml.AbstractGxl;
 import groove.io.xml.GxlIO;
 
@@ -34,7 +34,7 @@ import java.net.URL;
  * @author Eduardo Zambon
  */
 public final class ShapeGxl extends
-        AbstractGxl<ShapeNode,ShapeEdge,Graph<ShapeNode,ShapeEdge>> {
+        AbstractGxl<ShapeNode,ShapeEdge,GGraph<ShapeNode,ShapeEdge>> {
 
     // ------------------------------------------------------------------------
     // Static fields
@@ -73,7 +73,7 @@ public final class ShapeGxl extends
     // ------------------------------------------------------------------------
 
     @Override
-    protected GxlIO<ShapeNode,ShapeEdge> getIO() {
+    protected GxlIO<ShapeNode,ShapeEdge,GGraph<ShapeNode,ShapeEdge>> getIO() {
         return this.io;
     }
 

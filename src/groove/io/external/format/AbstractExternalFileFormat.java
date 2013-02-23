@@ -34,8 +34,8 @@ import java.net.URL;
  * 
  * @author Eduardo Zambon
  */
-public abstract class AbstractExternalFileFormat<G extends Graph<?,?>>
-        implements ExternalFileFormat<G>, Xml<G> {
+public abstract class AbstractExternalFileFormat<G extends Graph> implements
+        ExternalFileFormat<G>, Xml<G> {
 
     /** The filter associated with this format. */
     private final ExtensionFilter filter;
@@ -71,8 +71,7 @@ public abstract class AbstractExternalFileFormat<G extends Graph<?,?>>
     abstract public void save(G graph, File file) throws IOException;
 
     @Override
-    abstract public void save(JGraph<G> jGraph, File file)
-        throws IOException;
+    abstract public void save(JGraph<G> jGraph, File file) throws IOException;
 
     // Methods from Xml
 

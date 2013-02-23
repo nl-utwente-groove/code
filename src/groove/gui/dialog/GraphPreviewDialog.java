@@ -29,7 +29,7 @@ import javax.swing.JDialog;
  * Dialog showing an given graph in the most appropriate
  * GUI component. 
  */
-public class GraphPreviewDialog<G extends Graph<?,?>> extends JDialog {
+public class GraphPreviewDialog<G extends Graph> extends JDialog {
     /** Constructs a new dialog, for a given graph. */
     public GraphPreviewDialog(Simulator simulator, G graph) {
         super(simulator == null ? null : simulator.getFrame());
@@ -61,7 +61,7 @@ public class GraphPreviewDialog<G extends Graph<?,?>> extends JDialog {
     @SuppressWarnings({"rawtypes", "unchecked"})
     protected JGraph<G> createJGraph() {
         JGraph jGraph;
-        Graph<?,?> shownGraph = this.graph;
+        Graph shownGraph = this.graph;
         switch (this.graph.getRole()) {
         case CTRL:
             jGraph = new CtrlJGraph(this.simulator);
@@ -111,7 +111,7 @@ public class GraphPreviewDialog<G extends Graph<?,?>> extends JDialog {
     /**
      * Creates a dialog for the given graph, and sets it to visible.
      */
-    public static void showGraph(Graph<?,?> graph) {
+    public static void showGraph(Graph graph) {
         showGraph(globalSimulator, graph);
     }
 
@@ -119,8 +119,7 @@ public class GraphPreviewDialog<G extends Graph<?,?>> extends JDialog {
      * Creates a dialog for the given graph and (possibly {@code null}) 
      * simulator, and sets it to visible.
      */
-    public static <G extends Graph<?,?>> void showGraph(Simulator simulator,
-            G graph) {
+    public static <G extends Graph> void showGraph(Simulator simulator, G graph) {
         final GraphRole role = graph.getRole();
         final String name = graph.getName();
         synchronized (recentPreviews) {

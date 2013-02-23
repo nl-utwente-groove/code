@@ -26,7 +26,7 @@ import groove.gui.dialog.SaveLTSAsDialog;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.xml.AspectGxl;
-import groove.io.xml.DefaultGxl;
+import groove.io.xml.PlainGxl;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 
@@ -79,7 +79,7 @@ public class SaveLTSAsAction extends SimulatorAction {
         }
 
         try {
-            DefaultGxl.getInstance().marshalAnyGraph(lts, ltsFile);
+            PlainGxl.getInstance().marshalAnyGraph(lts, ltsFile);
             ExtensionFilter stateFilter = FileType.STATE_FILTER;
             for (GraphState state : export) {
                 AspectGraph stateGraph =

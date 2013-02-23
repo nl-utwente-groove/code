@@ -34,7 +34,7 @@ import org.jgraph.graph.GraphCell;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface JCell<G extends Graph<?,?>> extends GraphCell, Serializable {
+public interface JCell<G extends Graph> extends GraphCell, Serializable {
     /** Returns the fixed jGraph on which this jCell is displayed. */
     public JGraph<G> getJGraph();
 

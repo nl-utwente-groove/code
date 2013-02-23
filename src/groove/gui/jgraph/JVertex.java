@@ -28,7 +28,7 @@ import org.jgraph.graph.DefaultPort;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface JVertex<G extends Graph<?,?>> extends JCell<G> {
+public interface JVertex<G extends Graph> extends JCell<G> {
     /** Returns the set of incident JEdges. */
     @Override
     public Set<? extends JEdge<G>> getContext();

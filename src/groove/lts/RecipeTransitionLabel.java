@@ -17,11 +17,11 @@
 package groove.lts;
 
 import groove.grammar.Recipe;
-import groove.graph.AbstractLabel;
+import groove.graph.ALabel;
 import groove.graph.Label;
 
 /** Class of labels that can appear on rule transitions. */
-public class RecipeTransitionLabel extends AbstractLabel implements ActionLabel {
+public class RecipeTransitionLabel extends ALabel implements ActionLabel {
     /** 
      * Constructs a new label on the basis of a given recipe and initial rule transition.
      * The subsequent rule transitions are optionally passed in; if {@code null},

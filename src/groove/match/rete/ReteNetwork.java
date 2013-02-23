@@ -38,13 +38,13 @@ import groove.grammar.rule.VariableNode;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeNode;
 import groove.graph.EdgeComparator;
-import groove.graph.Graph;
+import groove.graph.GGraph;
 import groove.graph.GraphRole;
 import groove.graph.plain.PlainEdge;
 import groove.graph.plain.PlainGraph;
 import groove.graph.plain.PlainNode;
 import groove.io.FileType;
-import groove.io.xml.DefaultGxl;
+import groove.io.xml.PlainGxl;
 import groove.match.rete.LookupEntry.Role;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
@@ -565,7 +565,7 @@ public class ReteNetwork {
     }
 
     /**
-     * Returns the collection of edges in the given graph's {@link Graph#edgeSet()}
+     * Returns the collection of edges in the given graph's {@link GGraph#edgeSet()}
      * in the order that is deemed suitable for making RETE. 
      * 
      * @param c The condition from target of which the edges have to be listed. 
@@ -1299,7 +1299,7 @@ public class ReteNetwork {
         graph.setName(name);
         File file = new File(FileType.GXL_FILTER.addExtension(filePath));
         try {
-            DefaultGxl graphLoader = DefaultGxl.getInstance();
+            PlainGxl graphLoader = PlainGxl.getInstance();
             graphLoader.marshalGraph(graph, file);
         } catch (IOException exc) {
             throw new RuntimeException(String.format(

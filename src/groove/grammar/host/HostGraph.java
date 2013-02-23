@@ -26,7 +26,7 @@ import groove.grammar.aspect.AspectParser;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.graph.ElementMap;
-import groove.graph.Graph;
+import groove.graph.GGraph;
 import groove.transform.DeltaTarget;
 
 /**
@@ -35,7 +35,7 @@ import groove.transform.DeltaTarget;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface HostGraph extends Graph<HostNode,HostEdge>, DeltaTarget {
+public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {
     @Override
     HostGraph newGraph(String name);
 

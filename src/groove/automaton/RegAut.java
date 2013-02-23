@@ -23,7 +23,7 @@ import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.rule.Valuation;
 import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGraph;
-import groove.graph.Graph;
+import groove.graph.GGraph;
 import groove.graph.plain.PlainEdge;
 import groove.graph.plain.PlainNode;
 import groove.util.Duo;
@@ -43,7 +43,7 @@ import java.util.Set;
  * <li> Atoms
  * </ul>
  */
-public interface RegAut extends Graph<RegNode,RegEdge> {
+public interface RegAut extends GGraph<RegNode,RegEdge> {
     /** Returns the start node of the automaton. */
     RegNode getStartNode();
 

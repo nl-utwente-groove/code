@@ -24,8 +24,9 @@ import groove.abstraction.pattern.shape.PatternFactory;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.trans.PatternGraphGrammar;
 import groove.control.CtrlState;
-import groove.graph.AbstractGraph;
+import groove.graph.AGraph;
 import groove.graph.ElementFactory;
+import groove.graph.GGraph;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
 import groove.graph.Node;
@@ -51,7 +52,7 @@ import java.util.Set;
  * 
  * Complete re-implementation (AKA copy-paste :P) of the functionality in {@link GTS}. 
  */
-public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
+public class PGTS extends AGraph<PatternState,PatternTransition> {
 
     // ------------------------------------------------------------------------
     // Static fields
@@ -372,12 +373,12 @@ public class PGTS extends AbstractGraph<PatternState,PatternTransition> {
     // ------------------------------------------------------------------------
 
     @Override
-    public AbstractGraph<PatternState,PatternTransition> clone() {
+    public AGraph<PatternState,PatternTransition> clone() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Graph<PatternState,PatternTransition> newGraph(String name) {
+    public GGraph<PatternState,PatternTransition> newGraph(String name) {
         throw new UnsupportedOperationException();
     }
 

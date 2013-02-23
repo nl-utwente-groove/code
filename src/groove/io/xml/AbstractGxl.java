@@ -18,6 +18,7 @@ package groove.io.xml;
 
 import groove.grammar.model.FormatException;
 import groove.graph.Edge;
+import groove.graph.GGraph;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
@@ -41,18 +42,17 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision: 2973 $
  */
-public abstract class AbstractGxl<N extends Node,E extends Edge,G extends Graph<N,E>>
+public abstract class AbstractGxl<N extends Node,E extends Edge,G extends GGraph<N,E>>
         implements Xml<G> {
 
     /** Returns the proper marshaller. */
-    protected abstract GxlIO<N,E> getIO();
+    protected abstract GxlIO<N,E,G> getIO();
 
     public G unmarshalGraph(URL url) throws IOException {
         try {
             URLConnection connection = url.openConnection();
             InputStream in = connection.getInputStream();
-            @SuppressWarnings("unchecked")
-            G resultGraph = (G) getIO().loadGraph(in);
+            G resultGraph = getIO().loadGraph(in);
             // derive the name of the graph from the URL
             String entryName;
             if (connection instanceof JarURLConnection) {
@@ -63,8 +63,7 @@ public abstract class AbstractGxl<N extends Node,E extends Edge,G extends Graph<
             PriorityFileName priorityName =
                 new PriorityFileName(new File(entryName));
             if (priorityName.hasPriority()) {
-                GraphInfo.setPriority(resultGraph,
-                    priorityName.getPriority());
+                GraphInfo.setPriority(resultGraph, priorityName.getPriority());
             }
 
             // note: don't set the name,
@@ -118,7 +117,7 @@ public abstract class AbstractGxl<N extends Node,E extends Edge,G extends Graph<
     /**
      * This implementation works by delegating to a {@link GxlIO}.
      */
-    public void marshalAnyGraph(Graph<?,?> graph, File file) throws IOException {
+    public void marshalAnyGraph(Graph graph, File file) throws IOException {
         // create parent dirs if necessary
         File parent = file.getParentFile();
         if (parent != null && !parent.exists()) {
@@ -147,9 +146,7 @@ public abstract class AbstractGxl<N extends Node,E extends Edge,G extends Graph<
         try {
             URLConnection connection = url.openConnection();
             InputStream in = connection.getInputStream();
-            @SuppressWarnings("unchecked")
-            Pair<G,Map<String,N>> result =
-                (Pair<G,Map<String,N>>) getIO().loadGraphWithMap(in);
+            Pair<G,Map<String,N>> result = getIO().loadGraphWithMap(in);
             PlainGraph resultGraph = (PlainGraph) result.one();
             // derive the name of the graph from the URL
             String entryName;
@@ -161,8 +158,7 @@ public abstract class AbstractGxl<N extends Node,E extends Edge,G extends Graph<
             PriorityFileName priorityName =
                 new PriorityFileName(new File(entryName));
             if (priorityName.hasPriority()) {
-                GraphInfo.setPriority(resultGraph,
-                    priorityName.getPriority());
+                GraphInfo.setPriority(resultGraph, priorityName.getPriority());
             }
             // note: don't set the name,
             // there is no general scheme to derive it from the URL

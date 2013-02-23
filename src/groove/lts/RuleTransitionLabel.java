@@ -19,7 +19,7 @@ package groove.lts;
 import groove.control.CtrlTransition;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
-import groove.graph.AbstractLabel;
+import groove.graph.ALabel;
 import groove.graph.Label;
 import groove.transform.AbstractRuleEvent;
 import groove.transform.Record;
@@ -28,7 +28,7 @@ import groove.transform.RuleEvent;
 import java.util.Arrays;
 
 /** Class of labels that can appear on rule transitions. */
-public class RuleTransitionLabel extends AbstractLabel implements ActionLabel {
+public class RuleTransitionLabel extends ALabel implements ActionLabel {
     /** 
      * Constructs a new label on the basis of a given rule event and list
      * of created nodes.

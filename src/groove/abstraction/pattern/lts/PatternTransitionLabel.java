@@ -16,7 +16,7 @@
  */
 package groove.abstraction.pattern.lts;
 
-import groove.graph.AbstractLabel;
+import groove.graph.ALabel;
 import groove.lts.RuleTransitionLabel;
 
 /**
@@ -24,7 +24,7 @@ import groove.lts.RuleTransitionLabel;
  * 
  * See {@link RuleTransitionLabel}. 
  */
-public class PatternTransitionLabel extends AbstractLabel {
+public class PatternTransitionLabel extends ALabel {
 
     private final String text;
     private final MatchResult match;

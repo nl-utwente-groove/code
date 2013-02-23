@@ -48,7 +48,7 @@ import java.util.Map;
  * @version $Revision$
  */
 abstract public class CertificateStrategy {
-    CertificateStrategy(Graph<?,?> graph) {
+    CertificateStrategy(Graph graph) {
         this.graph = graph;
         // the graph may be null if a prototype is being constructed.
         if (graph != null) {
@@ -63,7 +63,7 @@ abstract public class CertificateStrategy {
      * Returns the underlying graph for which this is the certificate strategy.
      * @return the underlying graph
      */
-    public Graph<?,?> getGraph() {
+    public Graph getGraph() {
         return this.graph;
     }
 
@@ -94,7 +94,7 @@ abstract public class CertificateStrategy {
     }
 
     /** Returns the node certificates calculated for the graph. */
-    public ElementCertificate<Node>[] getNodeCertificates() {
+    public NodeCertificate[] getNodeCertificates() {
         if (this.nodeCerts == null) {
             computeCertificates();
         }
@@ -102,7 +102,7 @@ abstract public class CertificateStrategy {
     }
 
     /** Returns the edge certificates calculated for the graph. */
-    public ElementCertificate<Edge>[] getEdgeCertificates() {
+    public EdgeCertificate[] getEdgeCertificates() {
         if (this.edgeCerts == null) {
             computeCertificates();
         }
@@ -383,8 +383,7 @@ abstract public class CertificateStrategy {
      * @return a fresh certificate strategy for <tt>graph</tt>
      * @see #getStrength()
      */
-    abstract public CertificateStrategy newInstance(
-            Graph<?,?> graph, boolean strong);
+    abstract public CertificateStrategy newInstance(Graph graph, boolean strong);
 
     /** 
      * Returns the strength of the strategy:
@@ -393,7 +392,7 @@ abstract public class CertificateStrategy {
     abstract public boolean getStrength();
 
     /** The graph for which certificates are to be computed. */
-    private final Graph<?,?> graph;
+    private final Graph graph;
 
     /** The pre-computed graph certificate, if any. */
     long graphCertificate;
@@ -493,14 +492,12 @@ abstract public class CertificateStrategy {
     }
 
     /** Specialised certificate for nodes. */
-    static public interface NodeCertificate extends
-            ElementCertificate<Node> {
+    static public interface NodeCertificate extends ElementCertificate<Node> {
         // no added functionality
     }
 
     /** Specialised certificate for edges. */
-    static public interface EdgeCertificate
-            extends ElementCertificate<Edge> {
+    static public interface EdgeCertificate extends ElementCertificate<Edge> {
         // no added functionality
     }
 }

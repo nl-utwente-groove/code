@@ -37,7 +37,7 @@ import net.sf.epsgraphics.EpsGraphics;
  * @author Arend Rensink 
  */
 
-public class EpsFormat extends AbstractExternalFileFormat<Graph<?,?>> {
+public class EpsFormat extends AbstractExternalFileFormat<Graph> {
 
     private static final EpsFormat INSTANCE = new EpsFormat();
 
@@ -53,13 +53,12 @@ public class EpsFormat extends AbstractExternalFileFormat<Graph<?,?>> {
     // Methods from FileFormat.
 
     @Override
-    public void load(Graph<?,?> graph, File file) throws IOException {
+    public void load(Graph graph, File file) throws IOException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void save(JGraph<Graph<?,?>> jGraph, File file)
-        throws IOException {
+    public void save(JGraph<Graph> jGraph, File file) throws IOException {
         // Create a graphics contents on the buffered image
         BufferedImage image = jGraph.toImage();
         if (image == null) {
@@ -76,14 +75,14 @@ public class EpsFormat extends AbstractExternalFileFormat<Graph<?,?>> {
     }
 
     @Override
-    public void save(Graph<?,?> graph, File file) throws IOException {
+    public void save(Graph graph, File file) throws IOException {
         throw new UnsupportedOperationException();
     }
 
     // Methods from Xml
 
     @Override
-    public Graph<?,?> createGraph(String graphName) {
+    public Graph createGraph(String graphName) {
         throw new UnsupportedOperationException();
     }
 

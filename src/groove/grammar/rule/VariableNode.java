@@ -23,7 +23,7 @@ import groove.algebra.Variable;
 import groove.grammar.AnchorKind;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeNode;
-import groove.graph.AbstractNode;
+import groove.graph.ANode;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,7 +34,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision: 1768 $ $Date: 2008-02-12 15:15:32 $
  */
-public class VariableNode extends AbstractNode implements RuleNode, AnchorKey {
+public class VariableNode extends ANode implements RuleNode, AnchorKey {
     /**
      * Constructs a (numbered) typed variable node.
      */
