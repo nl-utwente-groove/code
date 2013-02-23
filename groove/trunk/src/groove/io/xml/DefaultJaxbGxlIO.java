@@ -30,7 +30,8 @@ import java.io.InputStream;
  * @author Arend Rensink
  * @version $Revision: 1568 $
  */
-public class DefaultJaxbGxlIO extends AbstractJaxbGxlIO<PlainNode,PlainEdge> {
+public class DefaultJaxbGxlIO extends
+        AbstractJaxbGxlIO<PlainNode,PlainEdge,PlainGraph> {
     /**
      * Private constructor for the singleton instance.
      */
@@ -89,7 +90,7 @@ public class DefaultJaxbGxlIO extends AbstractJaxbGxlIO<PlainNode,PlainEdge> {
     @Override
     public PlainGraph loadGraph(InputStream in) throws IOException,
         FormatException {
-        return (PlainGraph) loadGraphWithMap(in).one();
+        return loadGraphWithMap(in).one();
     }
 
     /** Returns the singleton instance of this class. */
@@ -97,8 +98,7 @@ public class DefaultJaxbGxlIO extends AbstractJaxbGxlIO<PlainNode,PlainEdge> {
         return instance;
     }
 
-    static private final PlainFactory elementFactory =
-        PlainFactory.instance();
+    static private final PlainFactory elementFactory = PlainFactory.instance();
     /** Singleton instance of the class. */
     static private final DefaultJaxbGxlIO instance = new DefaultJaxbGxlIO();
 

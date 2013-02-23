@@ -39,7 +39,7 @@ public class Predicate_node_out_edge extends GraphPrologCode {
             interpreter.undo(it.getUndoPosition());
             return it.nextSolution(interpreter);
         } else {
-            Graph<?,?> graph = getGraph(args[0]);
+            Graph graph = getGraph(args[0]);
             Node node = getNode(args[1]);
             PrologCollectionIterator it =
                 new PrologCollectionIterator(graph.outEdgeSet(node), args[2],

@@ -19,7 +19,7 @@ package groove.lts;
 import groove.grammar.Recipe;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostGraphMorphism;
-import groove.graph.AbstractEdge;
+import groove.graph.AEdge;
 import groove.graph.EdgeRole;
 import groove.transform.RuleApplication;
 
@@ -39,7 +39,7 @@ import java.util.Stack;
  * @version $Revision: 3638 $ $Date: 2008-03-05 16:50:10 $
  */
 public class RecipeTransition extends
-        AbstractEdge<GraphState,RecipeTransitionLabel> implements
+        AEdge<GraphState,RecipeTransitionLabel> implements
         GraphTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, between

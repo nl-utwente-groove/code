@@ -40,7 +40,7 @@ import java.util.Map;
  */
 public class LayedOutXml implements Xml<PlainGraph> {
     /**
-     * Constructs an xml (un)marshaller, based on {@link DefaultGxl}, also able
+     * Constructs an xml (un)marshaller, based on {@link PlainGxl}, also able
      * to deal with layout information. The graphs constructed by
      * {@link #unmarshalGraph(File)} are as directed by the default graph
      * factory, except that layout information is also taken into account.
@@ -48,7 +48,7 @@ public class LayedOutXml implements Xml<PlainGraph> {
      * {@link #getInstance()} instead.
      */
     private LayedOutXml() {
-        this.marshaller = DefaultGxl.getInstance();
+        this.marshaller = PlainGxl.getInstance();
     }
 
     /** Returns the singleton instance of this class. */
@@ -130,7 +130,7 @@ public class LayedOutXml implements Xml<PlainGraph> {
     /**
      * The inner (un)marshaller.
      */
-    private final DefaultGxl marshaller;
+    private final PlainGxl marshaller;
 
     private static final LayedOutXml INSTANCE = new LayedOutXml();
 

@@ -81,7 +81,7 @@ public final class Util {
     // doesn't impact performance much. It is not a good idea to try to use
     // an UnmodifiableSetView because we need to check for containment in the
     // returned set which would be inefficient.
-    public static Set<TypeLabel> getNodeLabels(Graph<?,?> graph, Node node) {
+    public static Set<TypeLabel> getNodeLabels(Graph graph, Node node) {
         Set<TypeLabel> nodeLabels = new MyHashSet<TypeLabel>();
         for (Edge edge : graph.edgeSet(node)) {
             if (edge.getRole() != BINARY) {

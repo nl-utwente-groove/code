@@ -228,7 +228,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     }
 
     /** Lifts the given simple graph to a pattern graph. */
-    public PatternGraph lift(Graph<?,?> graph) {
+    public PatternGraph lift(Graph graph) {
         PatternGraph result = getPatternFactory().newPatternGraph();
         Map<Node,PatternNode> nodeMap = new MyHashMap<Node,PatternNode>();
         lift(graph, result, nodeMap, null);
@@ -251,7 +251,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
      * @param edgeMap
      *    a map of simple edges to pattern nodes of layer 1. The map may be null. 
      */
-    private void lift(Graph<?,?> graph, PatternGraph result,
+    private void lift(Graph graph, PatternGraph result,
             Map<Node,PatternNode> nodeMap, Map<Edge,PatternNode> edgeMap) {
         // First lift the nodes of layer 0.
         for (TypeNode tNode : getLayerNodes(0)) {
@@ -462,7 +462,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         return this.ruleFactory;
     }
 
-    private List<Node> match(Graph<?,?> graph, Set<TypeLabel> nodeLabels) {
+    private List<Node> match(Graph graph, Set<TypeLabel> nodeLabels) {
         List<Node> result = new ArrayList<Node>(graph.nodeSet().size());
         for (Node node : graph.nodeSet()) {
             if (match(graph, node, nodeLabels)) {
@@ -473,7 +473,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         return result;
     }
 
-    private List<Edge> match(Graph<?,?> graph, Set<TypeLabel> srcLabels,
+    private List<Edge> match(Graph graph, Set<TypeLabel> srcLabels,
             TypeLabel edgeLabel, Set<TypeLabel> tgtLabels) {
         List<Edge> result = new ArrayList<Edge>();
         for (Edge edge : graph.edgeSet(edgeLabel)) {
@@ -487,7 +487,7 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
         return result;
     }
 
-    private boolean match(Graph<?,?> graph, Node node, Set<TypeLabel> nodeLabels) {
+    private boolean match(Graph graph, Node node, Set<TypeLabel> nodeLabels) {
         Set<TypeLabel> other = Util.getNodeLabels(graph, node);
         return nodeLabels.containsAll(other) && other.containsAll(nodeLabels);
     }

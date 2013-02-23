@@ -32,7 +32,7 @@ public class Predicate_graph_node_count extends GraphPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        Graph<?,?> graph = getGraph(args[0]);
+        Graph graph = getGraph(args[0]);
         Term nodeCountTerm = new IntegerTerm(graph.nodeCount());
         return interpreter.unify(nodeCountTerm, args[1]);
     }

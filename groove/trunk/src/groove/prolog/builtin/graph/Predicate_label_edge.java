@@ -41,13 +41,13 @@ public class Predicate_label_edge extends GraphPrologCode {
             return it.nextSolution(interpreter);
         } else {
             try {
-                Graph<?,?> graph = getGraph(args[0]);
+                Graph graph = getGraph(args[0]);
 
                 Label label = (Label) ((JavaObjectTerm) args[1]).value;
 
                 PrologCollectionIterator it =
-                    new PrologCollectionIterator(graph.edgeSet(label),
-                        args[2], interpreter.getUndoPosition());
+                    new PrologCollectionIterator(graph.edgeSet(label), args[2],
+                        interpreter.getUndoPosition());
                 return it.nextSolution(interpreter);
             } catch (Exception e) {
                 return FAIL;

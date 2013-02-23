@@ -45,7 +45,7 @@ import org.jgraph.graph.DefaultPort;
  * @author rensink
  * @version $Revision $
  */
-abstract public class AJEdge<G extends Graph<?,?>,JG extends JGraph<G>,JM extends JModel<G>,JV extends JVertex<G>>
+abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JV extends JVertex<G>>
         extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, JEdge<G> {
     /**
      * Constructs an uninitialised model edge.

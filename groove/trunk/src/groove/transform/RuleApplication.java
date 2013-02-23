@@ -29,7 +29,7 @@ import groove.grammar.rule.AnchorKey;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.graph.Edge;
-import groove.graph.Graph;
+import groove.graph.GGraph;
 import groove.graph.Node;
 import groove.match.TreeMatch;
 import groove.util.Property;
@@ -449,8 +449,8 @@ public class RuleApplication implements DeltaApplier {
     /**
      * Adds an edge to a delta target, if the edge is not <code>null</code>
      * and not already in the source graph. Optimises by trying to call
-     * {@link Graph#addEdge(Edge)} if the target is an
-     * {@link Graph}.
+     * {@link GGraph#addEdge(Edge)} if the target is an
+     * {@link GGraph}.
      */
     private void addEdge(DeltaTarget target, HostEdge edge) {
         HostNode targetNode = edge.target();
@@ -473,8 +473,8 @@ public class RuleApplication implements DeltaApplier {
 
     /**
      * Removes a node from a delta target. Optimises by trying to call
-     * {@link Graph#removeNode(Node)} if the target is an
-     * {@link Graph}.
+     * {@link GGraph#removeNode(Node)} if the target is an
+     * {@link GGraph}.
      */
     private void removeNode(DeltaTarget target, HostNode node) {
         target.removeNode(node);
@@ -482,8 +482,8 @@ public class RuleApplication implements DeltaApplier {
 
     /**
      * Removes a set of nodes from a delta target. Optimizes by trying to call
-     * {@link Graph#removeNode(Node)} if the target is an
-     * {@link Graph}.
+     * {@link GGraph#removeNode(Node)} if the target is an
+     * {@link GGraph}.
      */
     private void removeNodeSet(DeltaTarget target, Collection<HostNode> nodeSet) {
         for (HostNode node : nodeSet) {

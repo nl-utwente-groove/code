@@ -64,8 +64,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         return result;
     }
 
-    private <G extends Graph<?,?>> boolean getBasicVertexValue(
-            JVertex<G> jVertex) {
+    private <G extends Graph> boolean getBasicVertexValue(JVertex<G> jVertex) {
         JGraph<G> jGraph = jVertex.getJGraph();
         LabelTree<G> labelTree = jGraph.getLabelTree();
         if (labelTree == null || !labelTree.isFiltered(jVertex)) {
@@ -80,7 +79,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         return false;
     }
 
-    private <G extends Graph<?,?>> boolean getBasicEdgeValue(JEdge<G> jEdge) {
+    private <G extends Graph> boolean getBasicEdgeValue(JEdge<G> jEdge) {
         boolean result = true;
         JVertex<?> source = jEdge.getSourceVertex();
         JVertex<?> target = jEdge.getTargetVertex();
@@ -195,8 +194,7 @@ public class VisibleValue implements VisualValue<Boolean> {
      * with nonempty (unfiltered) label text.
      * This is to determine the visibility of the node.
      */
-    private <G extends Graph<?,?>> boolean hasVisibleIncidentEdge(
-            JVertex<G> jVertex) {
+    private <G extends Graph> boolean hasVisibleIncidentEdge(JVertex<G> jVertex) {
         boolean result = false;
         LabelTree<G> labelTree = jVertex.getJGraph().getLabelTree();
         for (JEdge<G> jEdge : jVertex.getContext()) {

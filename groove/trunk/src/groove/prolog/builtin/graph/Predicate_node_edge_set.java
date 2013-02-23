@@ -34,7 +34,7 @@ public class Predicate_node_edge_set extends GraphPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        Graph<?,?> graph = getGraph(args[0]);
+        Graph graph = getGraph(args[0]);
         Node node = getNode(args[1]);
         Term edgeSetTerm =
             CompoundTerm.getList(PrologUtils.createJOTlist(graph.edgeSet(node)));

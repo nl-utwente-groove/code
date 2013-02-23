@@ -21,12 +21,12 @@ package groove.graph;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AbstractEdge<N extends Node,L extends Label> implements
+public abstract class AEdge<N extends Node,L extends Label> implements
         Edge {
     /**
      * Creates an edge with a given source node and label.
      */
-    protected AbstractEdge(N source, L label, N target) {
+    protected AEdge(N source, L label, N target) {
         assert source != null && label != null && target != null;
         this.source = source;
         this.label = label;
@@ -83,7 +83,7 @@ public abstract class AbstractEdge<N extends Node,L extends Label> implements
      * <code>this</code>.
      */
     @Override
-    public AbstractEdge<N,L> clone() {
+    public AEdge<N,L> clone() {
         return this;
     }
 

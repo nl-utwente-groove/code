@@ -41,7 +41,7 @@ import org.jgraph.graph.DefaultGraphCell;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class AJCell<G extends Graph<?,?>,JG extends JGraph<G>,JM extends JModel<G>>
+public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JModel<G>>
         extends DefaultGraphCell implements JCell<G> {
     /** 
      * Constructs a new, uninitialised cell.

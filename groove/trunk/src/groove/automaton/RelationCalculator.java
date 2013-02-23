@@ -42,7 +42,7 @@ public class RelationCalculator extends GTSAdapter implements
      * Creates a relation calculator based on a given graph and 
      * relation factory.
      */
-    public RelationCalculator(Graph<?,?> graph, NodeRelation factory) {
+    public RelationCalculator(Graph graph, NodeRelation factory) {
         this.factory = factory;
         this.graph = graph;
     }
@@ -151,7 +151,7 @@ public class RelationCalculator extends GTSAdapter implements
     }
 
     /** Returns the graph on which this calculator is based. */
-    public Graph<?,?> getGraph() {
+    public Graph getGraph() {
         return this.graph;
     }
 
@@ -222,7 +222,7 @@ public class RelationCalculator extends GTSAdapter implements
     /** Mapping from label test to sets of edges. */
     private Map<String,Set<Edge>> labelEdgeMap;
     /** The graph from which relations are to be computed. */
-    private final Graph<?,?> graph;
+    private final Graph graph;
     /** Factory for creating relations. */
     private final NodeRelation factory;
 }

@@ -19,6 +19,7 @@ package groove.io.external;
 import groove.grammar.model.GraphBasedModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
+import groove.graph.GGraph;
 import groove.graph.Graph;
 import groove.gui.Simulator;
 import groove.gui.dialog.ErrorDialog;
@@ -132,7 +133,7 @@ public class Exporter {
      * Get suitable export format for a given file.
       * Backwards compatibility function for now.
      */
-    static public Format getAcceptingFormat(Graph<?,?> graph, File file) {
+    static public Format getAcceptingFormat(Graph graph, File file) {
         Format result = null;
         outer: for (FormatExporter rf : exporters) {
             if (rf.getFormatKind() == Kind.GRAPH) {
@@ -172,19 +173,19 @@ public class Exporter {
 
     /**
      * Wrapper class to transfer object to be exported form ExportAction to Exporter.
-     * Can wrap either {@link Graph}s, {@link JGraph}s or {@link ResourceModel}s.
+     * Can wrap either {@link GGraph}s, {@link JGraph}s or {@link ResourceModel}s.
      * @author Harold
      * @version $Revision $
      */
     public static class Exportable {
         private final EnumSet<FormatPorter.Kind> porterKinds;
         private final String name;
-        private final Graph<?,?> graph;
+        private final Graph graph;
         private final JGraph<?> jGraph;
         private final ResourceModel<?> model;
 
         /** Constructs an exportable for a given {@link JGraph}. */
-        public Exportable(Graph<?,?> graph) {
+        public Exportable(Graph graph) {
             this.porterKinds = EnumSet.of(Kind.GRAPH);
             this.name = graph.getName();
             this.jGraph = null;
@@ -242,8 +243,8 @@ public class Exporter {
             return this.name;
         }
 
-        /** Returns the {@link Graph} wrapped by this exportable, if any. */
-        public Graph<?,?> getGraph() {
+        /** Returns the {@link GGraph} wrapped by this exportable, if any. */
+        public Graph getGraph() {
             return this.graph;
         }
 

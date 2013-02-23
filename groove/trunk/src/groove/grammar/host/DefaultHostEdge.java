@@ -19,14 +19,14 @@ package groove.grammar.host;
 import groove.grammar.AnchorKind;
 import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeLabel;
-import groove.graph.AbstractEdge;
+import groove.graph.AEdge;
 import groove.graph.EdgeRole;
 
 /**
  * Class that implements the edges of a host graph.
  * @author Arend Rensink
  */
-public class DefaultHostEdge extends AbstractEdge<HostNode,TypeLabel> implements
+public class DefaultHostEdge extends AEdge<HostNode,TypeLabel> implements
         HostEdge {
     /** Constructor for a typed edge. */
     protected DefaultHostEdge(HostNode source, TypeEdge type, HostNode target,

@@ -37,9 +37,9 @@ public class GraphCache<N extends Node,E extends Edge> {
     /**
      * Constructs a dynamic graph cache for a given graph.
      * @param graph the graph for which the cache is to be created.
-     * @see #GraphCache(AbstractGraph,boolean)
+     * @see #GraphCache(AGraph,boolean)
      */
-    public GraphCache(AbstractGraph<N,E> graph) {
+    public GraphCache(AGraph<N,E> graph) {
         this(graph, true);
     }
 
@@ -50,12 +50,12 @@ public class GraphCache<N extends Node,E extends Edge> {
      * itself as a graph listener, this means there will be a hard reference to
      * the cache, and any reference won't be cleared, until the cache is removed
      * from the graph listeners! (This happens automatically in
-     * {@link AbstractGraph#setFixed()}). A static cache does not cache dynamic
+     * {@link AGraph#setFixed()}). A static cache does not cache dynamic
      * information as long as the graph is not fixed.
      * @param graph the graph for which the cache is to be created.
      * @param dynamic switch to indicate if caching should be dynamic
      */
-    public GraphCache(AbstractGraph<N,E> graph, boolean dynamic) {
+    public GraphCache(AGraph<N,E> graph, boolean dynamic) {
         this.graph = graph;
         this.dynamic = dynamic;
         if (Groove.GATHER_STATISTICS) {
@@ -142,7 +142,7 @@ public class GraphCache<N extends Node,E extends Edge> {
      * Returns a mapping from nodes to incident edges in the underlying graph.
      * If there is a cached mapping, that is returned, otherwise it is computed
      * fresh, and, if the cache is dynamic (see {@link #isDynamic()} or the
-     * graph is fixed (see {@link Graph#isFixed()}) then the fresh mapping is
+     * graph is fixed (see {@link GGraph#isFixed()}) then the fresh mapping is
      * cached.
      */
     public Map<N,? extends Set<? extends E>> getNodeInEdgeMap() {
@@ -160,7 +160,7 @@ public class GraphCache<N extends Node,E extends Edge> {
      * Returns a mapping from nodes to incident edges in the underlying graph.
      * If there is a cached mapping, that is returned, otherwise it is computed
      * fresh, and, if the cache is dynamic (see {@link #isDynamic()} or the
-     * graph is fixed (see {@link Graph#isFixed()}) then the fresh mapping is
+     * graph is fixed (see {@link GGraph#isFixed()}) then the fresh mapping is
      * cached.
      */
     public Map<N,? extends Set<? extends E>> getNodeOutEdgeMap() {
@@ -178,7 +178,7 @@ public class GraphCache<N extends Node,E extends Edge> {
      * Returns a mapping from nodes to incident edges in the underlying graph.
      * If there is a cached mapping, that is returned, otherwise it is computed
      * fresh, and, if the cache is dynamic (see {@link #isDynamic()} or the
-     * graph is fixed (see {@link Graph#isFixed()}) then the fresh mapping is
+     * graph is fixed (see {@link GGraph#isFixed()}) then the fresh mapping is
      * cached.
      */
     public Map<N,? extends Set<? extends E>> getNodeEdgeMap() {
@@ -468,7 +468,7 @@ public class GraphCache<N extends Node,E extends Edge> {
     /**
      * The graph on which the cache works.
      */
-    protected final AbstractGraph<N,E> graph;
+    protected final AGraph<N,E> graph;
     /**
      * Switch to indicate that the cache is dynamic.
      */
@@ -518,8 +518,8 @@ public class GraphCache<N extends Node,E extends Edge> {
      * Returns a certificate strategy for the current state of this graph. If no
      * strategy is currently cached, it is created by calling
      * {@link CertificateStrategy#newInstance(Graph, boolean)} on
-     * {@link AbstractGraph#getCertificateFactory()}. If the underlying graph is
-     * fixed (see {@link Graph#isFixed()}, the strategy is cached.
+     * {@link AGraph#getCertificateFactory()}. If the underlying graph is
+     * fixed (see {@link GGraph#isFixed()}, the strategy is cached.
      */
     protected CertificateStrategy getCertifier(boolean strong) {
         CertificateStrategy result;
@@ -527,7 +527,7 @@ public class GraphCache<N extends Node,E extends Edge> {
             result = this.certificateStrategy;
         } else {
             result =
-                AbstractGraph.getCertificateFactory().newInstance(getGraph(),
+                AGraph.getCertificateFactory().newInstance(getGraph(),
                     strong);
             if (this.graph.isFixed()) {
                 this.certificateStrategy = result;
@@ -539,7 +539,7 @@ public class GraphCache<N extends Node,E extends Edge> {
     /**
      * Returns the graph for which the cache is maintained.
      */
-    public AbstractGraph<N,E> getGraph() {
+    public AGraph<N,E> getGraph() {
         return this.graph;
     }
 

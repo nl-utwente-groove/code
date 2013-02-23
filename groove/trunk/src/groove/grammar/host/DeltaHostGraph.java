@@ -21,7 +21,7 @@ import groove.algebra.AlgebraFamily;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
-import groove.graph.AbstractGraph;
+import groove.graph.AGraph;
 import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Label;
@@ -48,7 +48,7 @@ import java.util.Stack;
  * @author Arend Rensink
  * @version $Revision $
  */
-public final class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge>
+public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
         implements HostGraph, Cloneable {
     /**
      * Constructs a graph with an empty basis and a delta determining
@@ -427,7 +427,7 @@ public final class DeltaHostGraph extends AbstractGraph<HostNode,HostEdge>
             this.certifier == null ? null : this.certifier.get();
         if (result == null || result.getStrength() != strong) {
             result =
-                AbstractGraph.getCertificateFactory().newInstance(this, strong);
+                AGraph.getCertificateFactory().newInstance(this, strong);
             this.certifier = new WeakReference<CertificateStrategy>(result);
         }
         return result;

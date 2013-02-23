@@ -36,7 +36,7 @@ public class Predicate_start_graph extends GraphPrologCode {
         }
 
         try {
-            Graph<?,?> startGraph =
+            Graph startGraph =
                 ((GrooveEnvironment) interpreter.getEnvironment()).getGrooveState().getGraphGrammar().getStartGraph();
 
             if (startGraph == null) {

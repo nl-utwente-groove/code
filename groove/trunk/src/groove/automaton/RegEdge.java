@@ -17,13 +17,13 @@
 package groove.automaton;
 
 import groove.grammar.rule.RuleLabel;
-import groove.graph.AbstractEdge;
+import groove.graph.AEdge;
 
 /**
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RegEdge extends AbstractEdge<RegNode,RuleLabel> {
+public class RegEdge extends AEdge<RegNode,RuleLabel> {
     /**
      * Creates an edge between the given end points.
      */

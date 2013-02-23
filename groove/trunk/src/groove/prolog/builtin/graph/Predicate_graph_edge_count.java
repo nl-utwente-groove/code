@@ -32,7 +32,7 @@ public class Predicate_graph_edge_count extends GraphPrologCode {
     @Override
     public int execute(Interpreter interpreter, boolean backtrackMode,
             Term[] args) throws PrologException {
-        Graph<?,?> graph = getGraph(args[0]);
+        Graph graph = getGraph(args[0]);
         Term edgeCountTerm = new IntegerTerm(graph.edgeCount());
         return interpreter.unify(edgeCountTerm, args[1]);
     }

@@ -41,7 +41,7 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
-import groove.io.xml.DefaultGxl;
+import groove.io.xml.PlainGxl;
 import groove.io.xml.Xml;
 import groove.util.ExprParser;
 import groove.util.Groove;
@@ -88,7 +88,7 @@ abstract public class AbstractAutomatonTest {
     /**
      * Graph loader used in this test case.
      */
-    static final Xml loader = DefaultGxl.getInstance();
+    static final Xml loader = PlainGxl.getInstance();
     static final String testGraphName = "regexpr-test-graph";
     static HostGraph testGraph;
 

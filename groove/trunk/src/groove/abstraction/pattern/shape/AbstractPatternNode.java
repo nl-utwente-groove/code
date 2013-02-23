@@ -21,7 +21,7 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.grammar.type.TypeLabel;
-import groove.graph.AbstractNode;
+import groove.graph.ANode;
 import groove.util.Fixable;
 
 import java.util.Comparator;
@@ -32,7 +32,7 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon
  */
-public abstract class AbstractPatternNode extends AbstractNode implements
+public abstract class AbstractPatternNode extends ANode implements
         Fixable {
 
     // ------------------------------------------------------------------------

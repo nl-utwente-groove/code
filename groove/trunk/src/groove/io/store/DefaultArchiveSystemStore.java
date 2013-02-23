@@ -30,9 +30,7 @@ import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
-import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.graph.plain.PlainEdge;
 import groove.graph.plain.PlainGraph;
 import groove.graph.plain.PlainNode;
 import groove.gui.layout.LayoutMap;
@@ -432,9 +430,9 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
             String graphName = filter.stripExtension(graphEntry.getKey());
             InputStream in = file.getInputStream(graphEntry.getValue());
             try {
-                Pair<Graph<PlainNode,PlainEdge>,Map<String,PlainNode>> plainGraphAndMap =
+                Pair<PlainGraph,Map<String,PlainNode>> plainGraphAndMap =
                     DefaultJaxbGxlIO.getInstance().loadGraphWithMap(in);
-                PlainGraph plainGraph = (PlainGraph) plainGraphAndMap.one();
+                PlainGraph plainGraph = plainGraphAndMap.one();
                 /*
                  * For backward compatibility, we set the role and name of the
                  * graph.

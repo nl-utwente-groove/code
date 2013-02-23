@@ -32,7 +32,7 @@ import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.PostApplicationError;
 import groove.grammar.type.EdgeMultiplicityVerifier;
-import groove.graph.AbstractGraph;
+import groove.graph.AGraph;
 import groove.graph.ElementFactory;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
@@ -65,7 +65,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GTS extends AbstractGraph<GraphState,GraphTransition> implements
+public class GTS extends AGraph<GraphState,GraphTransition> implements
         Cloneable {
     /** Debug flag controlling whether states are compared for control location equality. */
     protected final static boolean CHECK_CONTROL_LOCATION = true;

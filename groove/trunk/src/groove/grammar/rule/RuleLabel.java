@@ -22,7 +22,7 @@ import groove.automaton.RegExpr;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
-import groove.graph.AbstractLabel;
+import groove.graph.ALabel;
 import groove.graph.EdgeRole;
 
 import java.util.List;
@@ -33,7 +33,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision: 2876 $ $Date: 2008-01-30 09:32:28 $
  */
-public class RuleLabel extends AbstractLabel {
+public class RuleLabel extends ALabel {
     /**
      * Constructs a rule label on the basis of a regular
      * expression.

@@ -34,7 +34,7 @@ import groove.gui.look.VisualValue;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class JGraphFactory<G extends Graph<?,?>> {
+abstract public class JGraphFactory<G extends Graph> {
     /** Constructs a factory for a given JGraph. */
     public JGraphFactory(JGraph<G> jGraph) {
         this.jGraph = jGraph;

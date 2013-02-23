@@ -19,8 +19,8 @@ package groove.automaton;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
-import groove.graph.AbstractEdge;
-import groove.graph.AbstractGraph;
+import groove.graph.AEdge;
+import groove.graph.AGraph;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -39,7 +39,7 @@ public enum Direction {
     BACKWARD;
 
     /** Returns the origin node of an edge, according to this direction. */
-    public <N extends Node,L extends Label,E extends AbstractEdge<N,L>> N origin(
+    public <N extends Node,L extends Label,E extends AEdge<N,L>> N origin(
             E edge) {
         switch (this) {
         case FORWARD:
@@ -53,7 +53,7 @@ public enum Direction {
     }
 
     /** Returns the opposite node of an edge, according to this direction. */
-    public <N extends Node,L extends Label,E extends AbstractEdge<N,L>> N opposite(
+    public <N extends Node,L extends Label,E extends AEdge<N,L>> N opposite(
             E edge) {
         switch (this) {
         case FORWARD:
@@ -80,7 +80,7 @@ public enum Direction {
     }
 
     /** Returns the set of edges connected to a given node, according to this direction. */
-    public <N extends Node,E extends Edge,G extends AbstractGraph<N,E>> Set<? extends E> edges(
+    public <N extends Node,E extends Edge,G extends AGraph<N,E>> Set<? extends E> edges(
             G graph, N node) {
         switch (this) {
         case FORWARD:

@@ -29,7 +29,7 @@ import java.net.URL;
  * @author Arend Rensink
  * @version $Revision: 2968 $
  */
-public interface Xml<G extends Graph<?,?>> {
+public interface Xml<G extends Graph> {
     /**
      * Writes a graph to an output stream, in XML format.
      * @param graph the graph to be marshalled

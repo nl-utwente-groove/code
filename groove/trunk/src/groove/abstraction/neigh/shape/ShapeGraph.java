@@ -37,7 +37,7 @@ import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
-import groove.graph.AbstractGraph;
+import groove.graph.AGraph;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
@@ -53,7 +53,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ShapeGraph extends AbstractGraph<HostNode,HostEdge> implements
+public class ShapeGraph extends AGraph<HostNode,HostEdge> implements
         HostGraph {
     /**
      * Constructs an empty host graph.

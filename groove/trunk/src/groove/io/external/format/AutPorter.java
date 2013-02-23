@@ -148,7 +148,7 @@ public final class AutPorter extends AbstractFormatExporter implements
     @Override
     public void doExport(File file, Format format, Exportable exportable)
         throws PortException {
-        Graph<?,?> graph = exportable.getGraph();
+        Graph graph = exportable.getGraph();
         try {
             PrintWriter writer = new PrintWriter(file);
             this.save(graph, writer);
@@ -158,7 +158,7 @@ public final class AutPorter extends AbstractFormatExporter implements
         }
     }
 
-    private void save(Graph<?,?> graph, PrintWriter writer) {
+    private void save(Graph graph, PrintWriter writer) {
         // collect the node numbers, to be able to number them consecutively
         int nodeCount = graph.nodeCount();
         // list marking which node numbers have been used

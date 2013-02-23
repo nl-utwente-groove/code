@@ -18,7 +18,7 @@ package groove.verify;
 
 import gov.nasa.ltl.graph.Guard;
 import gov.nasa.ltl.graph.Literal;
-import groove.graph.AbstractEdge;
+import groove.graph.AEdge;
 
 import java.util.Set;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * @version $Revision $
  */
 public class BuchiTransition extends
-        AbstractEdge<BuchiLocation,BuchiLabel> {
+        AEdge<BuchiLocation,BuchiLabel> {
     /**
      * Constructor for creating a new Büchi transition
      */

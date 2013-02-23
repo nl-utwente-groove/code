@@ -38,7 +38,7 @@ public class Predicate_graph_edge extends GraphPrologCode {
             interpreter.undo(it.getUndoPosition());
             return it.nextSolution(interpreter);
         } else {
-            Graph<?,?> graph = getGraph(args[0]);
+            Graph graph = getGraph(args[0]);
             PrologCollectionIterator it =
                 new PrologCollectionIterator(graph.edgeSet(), args[1],
                     interpreter.getUndoPosition());

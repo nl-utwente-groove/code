@@ -27,7 +27,7 @@ import groove.gui.look.MultiLabel.Direct;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface JEdge<G extends Graph<?,?>> extends JCell<G> {
+public interface JEdge<G extends Graph> extends JCell<G> {
     /** 
      * The cloned object is equal to this one after a reset. 
      */

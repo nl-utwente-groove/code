@@ -38,7 +38,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LabelFilter<G extends Graph<?,?>> extends Observable {
+public class LabelFilter<G extends Graph> extends Observable {
     /** Clears the inverse mapping from labels to {@link JCell}s. */
     public void clearJCells() {
         for (Set<JCell<G>> jCellSet : this.entryJCellMap.values()) {
@@ -197,8 +197,7 @@ public class LabelFilter<G extends Graph<?,?>> extends Observable {
      * the observers of the changed {@link JCell}s.
      */
     public void changeSelected(Entry entry) {
-        Set<JCell<G>> changedCells =
-            getSelection(entry, !isSelected(entry));
+        Set<JCell<G>> changedCells = getSelection(entry, !isSelected(entry));
         notifyIfNonempty(changedCells);
     }
 

@@ -30,6 +30,7 @@ import groove.abstraction.neigh.shape.ShapeNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.graph.Edge;
+import groove.graph.GGraph;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.io.xml.AbstractJaxbGxlIO;
@@ -51,7 +52,7 @@ import de.gupro.gxl.gxl_1_0.RelendType;
  * @author Eduardo Zambon
  */
 public final class ShapeJaxbGxlIO extends
-        AbstractJaxbGxlIO<ShapeNode,ShapeEdge> {
+        AbstractJaxbGxlIO<ShapeNode,ShapeEdge,GGraph<ShapeNode,ShapeEdge>> {
 
     // ------------------------------------------------------------------------
     // Static fields
@@ -97,7 +98,7 @@ public final class ShapeJaxbGxlIO extends
     // ------------------------------------------------------------------------
 
     @Override
-    protected Graph<ShapeNode,ShapeEdge> createGraph(String name) {
+    protected GGraph<ShapeNode,ShapeEdge> createGraph(String name) {
         this.elementFactory =
             ShapeFactory.newInstance(this.typeGraph.getFactory());
         return new Shape(name, this.elementFactory).downcast();
@@ -133,9 +134,8 @@ public final class ShapeJaxbGxlIO extends
      * Stores the node and edge multiplicities and also the equivalence relation.
      */
     @Override
-    protected void storeAdditionalStructure(Graph<?,?> graph,
-            GraphType gxlGraph, Map<Node,NodeType> nodeMap,
-            Map<Edge,EdgeType> edgeMap) {
+    protected void storeAdditionalStructure(Graph graph, GraphType gxlGraph,
+            Map<Node,NodeType> nodeMap, Map<Edge,EdgeType> edgeMap) {
         assert graph instanceof Shape;
         Shape shape = (Shape) graph;
 
@@ -187,7 +187,7 @@ public final class ShapeJaxbGxlIO extends
      * Loads the node and edge multiplicities and also the equivalence relation.
      */
     @Override
-    protected void loadAdditionalStructure(Graph<ShapeNode,ShapeEdge> graph,
+    protected void loadAdditionalStructure(GGraph<ShapeNode,ShapeEdge> graph,
             GraphType gxlGraph, Map<String,ShapeNode> nodeMap,
             Map<EdgeType,ShapeEdge> edgeMap) throws FormatException {
         Shape shape = Shape.upcast(graph);

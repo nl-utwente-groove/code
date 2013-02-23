@@ -32,7 +32,7 @@ import groove.graph.plain.PlainGraph;
 import groove.gui.Options;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
-import groove.io.xml.DefaultGxl;
+import groove.io.xml.PlainGxl;
 import groove.io.xml.LayedOutXml;
 import groove.io.xml.Xml;
 import groove.util.Groove;
@@ -644,7 +644,7 @@ public class DefaultFileSystemStore extends SystemStore {
         if (layouted) {
             return LayedOutXml.getInstance();
         } else {
-            return DefaultGxl.getInstance();
+            return PlainGxl.getInstance();
         }
     }
 

@@ -22,13 +22,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.graph.Edge;
-import groove.graph.Graph;
+import groove.graph.GGraph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionMap;
 import groove.graph.plain.PlainFactory;
-import groove.io.xml.DefaultGxl;
+import groove.io.xml.PlainGxl;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,9 +59,9 @@ public abstract class GraphTest<N extends Node,E extends Edge> {
      * The graph upon which most tests are done. It has three nodes, one of
      * which has an a-edge to another and a b-edge to the third.
      */
-    public Graph<N,E> graph;
+    public GGraph<N,E> graph;
     /** An empty graph of the same type as {@code graph}. */
-    public Graph<N,E> newGraph;
+    public GGraph<N,E> newGraph;
     /** An a-label */
     public Label aLabel;
     /** A b-label */
@@ -79,13 +79,13 @@ public abstract class GraphTest<N extends Node,E extends Edge> {
     /** The target node of <tt>bEdge</tt>. */
     public N bTarget;
 
-    public Graph<N,E>[] matchDom = new Graph[MATCH_DOM_COUNT];
-    public Graph<N,E> matchCod;
-    public Graph<N,E>[] isoGraph = new Graph[ISO_GRAPH_COUNT];
+    public GGraph<N,E>[] matchDom = new GGraph[MATCH_DOM_COUNT];
+    public GGraph<N,E> matchCod;
+    public GGraph<N,E>[] isoGraph = new GGraph[ISO_GRAPH_COUNT];
 
     public IsoChecker checker = IsoChecker.getInstance(true);
 
-    abstract Graph<N,E> createGraph(String name);
+    abstract GGraph<N,E> createGraph(String name);
 
     /*
      * @see TestCase#setUp()
@@ -120,10 +120,10 @@ public abstract class GraphTest<N extends Node,E extends Edge> {
         this.bTarget = (N) this.bEdge.target();
     }
 
-    protected Graph<N,E> loadGraph(File file) {
-        Graph<N,E> result = createGraph(file.getName());
+    protected GGraph<N,E> loadGraph(File file) {
+        GGraph<N,E> result = createGraph(file.getName());
         try {
-            Graph graph = this.xml.unmarshalGraph(file);
+            GGraph graph = this.xml.unmarshalGraph(file);
             result.addNodeSet(graph.nodeSet());
             result.addEdgeSetContext(graph.edgeSet());
         } catch (IOException e) {
@@ -200,7 +200,7 @@ public abstract class GraphTest<N extends Node,E extends Edge> {
 
     @Test
     final public void testNewGraph() {
-        Graph newGraph = this.matchDom[0].newGraph("new graph 0");
+        GGraph newGraph = this.matchDom[0].newGraph("new graph 0");
         assertEquals(0, newGraph.nodeCount());
         assertEquals(0, newGraph.edgeCount());
         assertFalse(newGraph.isFixed());
@@ -484,6 +484,6 @@ public abstract class GraphTest<N extends Node,E extends Edge> {
         // so there is little else to do here
     }
 
-    private final DefaultGxl xml = DefaultGxl.getInstance();
+    private final PlainGxl xml = PlainGxl.getInstance();
     private final PlainFactory factory = PlainFactory.instance();
 }

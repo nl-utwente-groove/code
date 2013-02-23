@@ -34,13 +34,13 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AbstractGraph<N extends Node,E extends Edge> extends
-        AbstractCacheHolder<GraphCache<N,E>> implements Graph<N,E> {
+public abstract class AGraph<N extends Node,E extends Edge> extends
+        AbstractCacheHolder<GraphCache<N,E>> implements GGraph<N,E> {
     /**
      * Constructs an abstract named graph.
      * @param name the (non-{@code null}) name of the graph.
      */
-    protected AbstractGraph(String name) {
+    protected AGraph(String name) {
         super(null);
         modifiableGraphCount++;
         assert name != null;
@@ -58,7 +58,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
     /**
      * Defers the containment question to {@link #nodeSet()}
      */
-    public boolean containsNode(N elem) {
+    public boolean containsNode(Node elem) {
         assert isTypeCorrect(elem);
         return nodeSet().contains(elem);
     }
@@ -66,7 +66,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
     /**
      * Defers the containment question to {@link #edgeSet()}
      */
-    public boolean containsEdge(E elem) {
+    public boolean containsEdge(Edge elem) {
         assert isTypeCorrect(elem) : String.format(
             "Edge %s is not of correct type", elem);
         return edgeSet().contains(elem);
@@ -429,7 +429,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
 
     /* Overridden to rule out the CloneNotSupportedException */
     @Override
-    public abstract AbstractGraph<N,E> clone();
+    public abstract AGraph<N,E> clone();
 
     /**
      * Tests if the certificate strategy (of the correct strength) is currently instantiated.
@@ -500,7 +500,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      * @param graph the graph to be described
      * @return a textual description of <tt>graph</tt>
      */
-    public static String toString(Graph<?,?> graph) {
+    public static String toString(Graph graph) {
         StringBuffer result = new StringBuffer();
         if (graph.hasInfo()) {
             result.append(graph.getInfo());
@@ -525,7 +525,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      * @see #getCertifier(boolean)
      */
     static private CertificateStrategy certificateFactory =
-        new PartitionRefiner((Graph<Node,Edge>) null);
+        new PartitionRefiner((GGraph<Node,Edge>) null);
 
     /**
      * Changes the strategy for computing isomorphism certificates.
@@ -534,7 +534,7 @@ public abstract class AbstractGraph<N extends Node,E extends Edge> extends
      */
     static public void setCertificateFactory(
             CertificateStrategy certificateFactory) {
-        AbstractGraph.certificateFactory = certificateFactory;
+        AGraph.certificateFactory = certificateFactory;
     }
 
     /**

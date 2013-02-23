@@ -26,7 +26,7 @@ import java.io.File;
 /** Abstract superclass for {@link FormatExporter}s, containing a few helper methods. */
 public abstract class AbstractFormatExporter implements FormatExporter {
     @Override
-    public void doExport(File file, Format format, Graph<?,?> graph)
+    public void doExport(File file, Format format, Graph graph)
         throws PortException {
         doExport(file, format, new Exportable(graph));
     }

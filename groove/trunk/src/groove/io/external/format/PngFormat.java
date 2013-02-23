@@ -33,7 +33,7 @@ import javax.imageio.ImageIO;
  * @author Arend Rensink 
  */
 
-public class PngFormat extends AbstractExternalFileFormat<Graph<?,?>> {
+public class PngFormat extends AbstractExternalFileFormat<Graph> {
 
     private static final PngFormat INSTANCE = new PngFormat();
 
@@ -49,13 +49,12 @@ public class PngFormat extends AbstractExternalFileFormat<Graph<?,?>> {
     // Methods from FileFormat.
 
     @Override
-    public void load(Graph<?,?> graph, File file) throws IOException {
+    public void load(Graph graph, File file) throws IOException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void save(JGraph<Graph<?,?>> jGraph, File file)
-        throws IOException {
+    public void save(JGraph<Graph> jGraph, File file) throws IOException {
         BufferedImage image = jGraph.toImage();
         if (image == null) {
             throw new IOException("Cannot export blank image");
@@ -65,14 +64,14 @@ public class PngFormat extends AbstractExternalFileFormat<Graph<?,?>> {
     }
 
     @Override
-    public void save(Graph<?,?> graph, File file) throws IOException {
+    public void save(Graph graph, File file) throws IOException {
         throw new UnsupportedOperationException();
     }
 
     // Methods from Xml
 
     @Override
-    public Graph<?,?> createGraph(String graphName) {
+    public Graph createGraph(String graphName) {
         throw new UnsupportedOperationException();
     }
 

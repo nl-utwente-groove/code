@@ -20,7 +20,7 @@ import gov.nasa.ltl.graph.Edge;
 import gov.nasa.ltl.graph.Graph;
 import gov.nasa.ltl.graph.Node;
 import gov.nasa.ltl.trans.LTL2Buchi;
-import groove.graph.AbstractGraph;
+import groove.graph.AGraph;
 import groove.graph.GraphRole;
 import groove.gui.dialog.GraphPreviewDialog;
 import groove.util.collect.NestedIterator;
@@ -37,7 +37,7 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public class BuchiGraph extends AbstractGraph<BuchiLocation,BuchiTransition>
+public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition>
         implements Cloneable {
     private BuchiGraph(String name) {
         super(name);

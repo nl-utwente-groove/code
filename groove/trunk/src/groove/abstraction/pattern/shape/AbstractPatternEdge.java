@@ -18,7 +18,7 @@ package groove.abstraction.pattern.shape;
 
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostNode;
-import groove.graph.AbstractEdge;
+import groove.graph.AEdge;
 import groove.graph.EdgeRole;
 import groove.graph.plain.PlainLabel;
 import groove.util.Fixable;
@@ -29,7 +29,7 @@ import groove.util.Fixable;
  * @author Eduardo Zambon
  */
 public abstract class AbstractPatternEdge<N extends AbstractPatternNode>
-        extends AbstractEdge<N,PlainLabel> implements Fixable {
+        extends AEdge<N,PlainLabel> implements Fixable {
 
     // ------------------------------------------------------------------------
     // Object Fields

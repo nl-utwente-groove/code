@@ -18,13 +18,13 @@ package groove.verify;
 
 import gov.nasa.ltl.graph.Guard;
 import gov.nasa.ltl.graph.Literal;
-import groove.graph.AbstractLabel;
+import groove.graph.ALabel;
 
 /**
  * @author Harmen Kastenberg
  * @version $Revision $
  */
-public class BuchiLabel extends AbstractLabel {
+public class BuchiLabel extends ALabel {
     private String action;
 
     private Guard<String> guard;

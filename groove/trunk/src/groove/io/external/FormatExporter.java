@@ -40,6 +40,6 @@ public interface FormatExporter extends FormatPorter {
      * @param graph the (non-{@code null}) graph to be exported
      * @throws PortException if something went wrong during export (typically I/O-related)
      */
-    public void doExport(File file, Format format, Graph<?,?> graph)
+    public void doExport(File file, Format format, Graph graph)
         throws PortException;
 }

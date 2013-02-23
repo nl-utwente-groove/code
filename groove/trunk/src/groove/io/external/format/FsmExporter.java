@@ -57,7 +57,7 @@ public final class FsmExporter extends AbstractFormatExporter {
     @Override
     public void doExport(File file, Format format, Exportable exportable)
         throws PortException {
-        Graph<?,?> graph = exportable.getGraph();
+        Graph graph = exportable.getGraph();
         try {
             PrintWriter writer = new PrintWriter(file);
             this.save(graph, writer);
@@ -67,7 +67,7 @@ public final class FsmExporter extends AbstractFormatExporter {
         }
     }
 
-    private void save(Graph<?,?> graph, PrintWriter writer) {
+    private void save(Graph graph, PrintWriter writer) {
         // mapping from nodes of graphs to integers
         Map<Node,Integer> nodeMap = new HashMap<Node,Integer>();
         writer.println("NodeNumber(0)");

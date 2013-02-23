@@ -19,7 +19,7 @@ package groove.explore.util;
 import groove.explore.Exploration;
 import groove.grammar.Rule;
 import groove.grammar.host.HostFactory;
-import groove.graph.AbstractGraph;
+import groove.graph.AGraph;
 import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionRefiner;
 import groove.lts.AbstractGraphState;
@@ -215,7 +215,7 @@ public class ExplorationStatistics {
     /** Gives some statistics regarding the graphs and deltas. */
     private void reportGraphStatistics() {
         printf("\n\tGraphs:\n\t\tModifiable:\t\t%d%n",
-            AbstractGraph.getModifiableGraphCount());
+            AGraph.getModifiableGraphCount());
         printf("\t\tFrozen:\t\t\t%d%n",
             AbstractGraphState.getFrozenGraphCount());
         printf("\t\tBytes/state:\t%.1f%n", this.gts.getBytesPerState());

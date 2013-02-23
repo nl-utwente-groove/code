@@ -16,7 +16,6 @@
  */
 package groove.test.graph;
 
-import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.plain.PlainEdge;
 import groove.graph.plain.PlainGraph;
@@ -72,7 +71,7 @@ public class GraphCreationTest extends TestCase {
     }
 
     public void testCreateEqualAndCompare() {
-        Graph g2 = new PlainGraph("g2");
+        PlainGraph g2 = new PlainGraph("g2");
 
         for (int i = NR_NODES_IN_GRAPH - 1; i >= 0; i--) {
             assertTrue(!this.g.equals(g2));
@@ -157,8 +156,7 @@ public class GraphCreationTest extends TestCase {
         }
         assertTrue(inEdges.isEmpty());
 
-        Iterator<PlainEdge> edgeIter2 =
-            inEdgeSet(this.g, this.n[5]).iterator();
+        Iterator<PlainEdge> edgeIter2 = inEdgeSet(this.g, this.n[5]).iterator();
         assertTrue(!edgeIter2.hasNext());
 
         edgeIter2 = inEdgeSet(this.g, this.n[6]).iterator();

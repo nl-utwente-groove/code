@@ -16,7 +16,7 @@
  */
 package groove.graph.plain;
 
-import groove.graph.AbstractNode;
+import groove.graph.ANode;
 
 /**
  * Default implementation of a graph node. Default nodes have numbers, but node
@@ -24,7 +24,7 @@ import groove.graph.AbstractNode;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class PlainNode extends AbstractNode {
+public class PlainNode extends ANode {
     /**
      * Constructs a fresh node, with an explicitly given number. Note that node
      * equality is determined by identity, but it is assumed that never two

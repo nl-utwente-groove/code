@@ -17,8 +17,8 @@
 package groove.graph.plain;
 
 import static groove.graph.GraphRole.NONE;
-
-import groove.graph.AbstractGraph;
+import groove.graph.AGraph;
+import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 
@@ -35,8 +35,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-01-30 09:32:51 $
  */
-public class PlainGraph extends AbstractGraph<PlainNode,PlainEdge>
-        implements Cloneable {
+public class PlainGraph extends AGraph<PlainNode,PlainEdge> implements
+        Cloneable {
     /**
      * Constructs a prototype object of this class, to be used as a factory for
      * new (default) graphs.
@@ -65,18 +65,18 @@ public class PlainGraph extends AbstractGraph<PlainNode,PlainEdge>
     protected PlainGraph(PlainGraph graph) {
         super(graph.getName());
         for (Map.Entry<PlainNode,Set<PlainEdge>> edgeEntry : graph.edgeMap.entrySet()) {
-            this.edgeMap.put(edgeEntry.getKey(),
-                new LinkedHashSet<PlainEdge>(edgeEntry.getValue()));
+            this.edgeMap.put(edgeEntry.getKey(), new LinkedHashSet<PlainEdge>(
+                edgeEntry.getValue()));
         }
     }
 
     @Override
-    public boolean containsNode(PlainNode node) {
+    public boolean containsNode(Node node) {
         return this.edgeMap.containsKey(node);
     }
 
     @Override
-    public boolean containsEdge(PlainEdge edge) {
+    public boolean containsEdge(Edge edge) {
         Set<PlainEdge> edgeSet = this.edgeMap.get(edge.source());
         return edgeSet != null && edgeSet.contains(edge);
     }
