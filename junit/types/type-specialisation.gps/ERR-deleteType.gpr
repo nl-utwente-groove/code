@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
     <graph edgemode="directed" edgeids="false" role="rule" id="ERR-deleteType">
+        <attr name="enabled">
+            <string>false</string>
+        </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -22,11 +25,6 @@
                 <string>type:B</string>
             </attr>
         </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>Node types cannot be deleted</string>
-            </attr>
-        </edge>
         <edge to="n1" from="n1">
             <attr name="label">
                 <string>del:type:A</string>
@@ -35,6 +33,11 @@
         <edge to="n0" from="n0">
             <attr name="label">
                 <string>rem:</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>Node types cannot be deleted</string>
             </attr>
         </edge>
     </graph>

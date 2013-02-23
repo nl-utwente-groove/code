@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
     <graph edgemode="directed" edgeids="false" role="rule" id="ERR-universalMerge">
+        <attr name="enabled">
+            <string>false</string>
+        </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -27,19 +30,9 @@
                 <string>263 97 30 31</string>
             </attr>
         </node>
-        <edge to="n2" from="n3">
+        <edge to="n3" from="n1">
             <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>forall:</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n0">
-            <attr name="label">
-                <string>rem:</string>
+                <string>new:=</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">
@@ -47,9 +40,19 @@
                 <string>type:#A</string>
             </attr>
         </edge>
-        <edge to="n3" from="n1">
+        <edge to="n0" from="n0">
             <attr name="label">
-                <string>new:=</string>
+                <string>rem:</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>The merged subtype should be on the same quantification level as the supertype node</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n3">
+            <attr name="label">
+                <string>at</string>
             </attr>
         </edge>
         <edge to="n3" from="n3">
@@ -57,9 +60,9 @@
                 <string>type:B</string>
             </attr>
         </edge>
-        <edge to="n0" from="n0">
+        <edge to="n2" from="n2">
             <attr name="label">
-                <string>The merged subtype should be on the same quantification level as the supertype node</string>
+                <string>forall:</string>
             </attr>
         </edge>
     </graph>
