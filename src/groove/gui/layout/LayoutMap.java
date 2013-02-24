@@ -207,17 +207,16 @@ public class LayoutMap implements Cloneable {
      * Composes the inverse of a given element map in front of this layout map.
      * The result is not fixed.
      */
-    public <N extends Node,E extends Edge,OtherN extends Node,OtherE extends Edge> LayoutMap afterInverse(
-            ElementMap<N,E,OtherN,OtherE> other) {
+    public LayoutMap afterInverse(ElementMap other) {
         LayoutMap result = newInstance();
         for (Map.Entry<Node,JVertexLayout> layoutEntry : nodeMap().entrySet()) {
-            OtherN trafoValue = other.getNode(layoutEntry.getKey());
+            Node trafoValue = other.getNode(layoutEntry.getKey());
             if (trafoValue != null) {
                 result.putNode(trafoValue, layoutEntry.getValue());
             }
         }
         for (Map.Entry<Edge,JEdgeLayout> layoutEntry : edgeMap().entrySet()) {
-            OtherE trafoValue = other.getEdge(layoutEntry.getKey());
+            Edge trafoValue = other.getEdge(layoutEntry.getKey());
             if (trafoValue != null) {
                 result.putEdge(trafoValue, layoutEntry.getValue());
             }

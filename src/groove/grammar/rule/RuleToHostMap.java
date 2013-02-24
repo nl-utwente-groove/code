@@ -24,7 +24,7 @@ import groove.grammar.host.HostNode;
 import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
-import groove.graph.ElementMap;
+import groove.graph.GElementMap;
 import groove.graph.InvertibleElementMap;
 import groove.graph.Label;
 
@@ -103,7 +103,7 @@ public class RuleToHostMap extends
      * Also copies the other's valuation, if any.
      */
     @Override
-    public void putAll(ElementMap<RuleNode,RuleEdge,HostNode,HostEdge> other) {
+    public void putAll(GElementMap<RuleNode,RuleEdge,HostNode,HostEdge> other) {
         super.putAll(other);
         if (other instanceof RuleToHostMap) {
             putAllVar(((RuleToHostMap) other).getValuation());

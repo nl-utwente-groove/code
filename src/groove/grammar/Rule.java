@@ -471,7 +471,8 @@ public class Rule implements Action, Fixable {
                 // for this parameter
                 initPars.set(
                     i,
-                    seedMap.containsNodeKey(getSignature().get(i).getRuleNode()));
+                    seedMap.nodeMap().containsKey(
+                        getSignature().get(i).getRuleNode()));
             }
             result = this.matcherMap.get(initPars);
             if (result == null) {
