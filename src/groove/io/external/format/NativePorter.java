@@ -30,7 +30,7 @@ import groove.io.external.Format;
 import groove.io.external.FormatImporter;
 import groove.io.external.FormatPorter;
 import groove.io.external.PortException;
-import groove.io.xml.LayedOutXml;
+import groove.io.xml.PlainGxl;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -84,7 +84,7 @@ public class NativePorter extends AbstractFormatExporter implements
             if (kind.isGraphBased()) {
                 // read graph from file
                 PlainGraph plainGraph =
-                    LayedOutXml.getInstance().unmarshalGraph(file);
+                    PlainGxl.getInstance().unmarshalGraph(file);
                 plainGraph.setRole(kind.getGraphRole());
                 plainGraph.setName(name);
                 result =
@@ -127,8 +127,7 @@ public class NativePorter extends AbstractFormatExporter implements
             GraphBasedModel<?> graphModel = (GraphBasedModel<?>) model;
             AspectGraph graph = graphModel.getSource();
             try {
-                LayedOutXml.getInstance().marshalGraph(graph.toPlainGraph(),
-                    file);
+                PlainGxl.getInstance().marshalGraph(graph.toPlainGraph(), file);
             } catch (IOException e) {
                 throw new PortException(e);
             }

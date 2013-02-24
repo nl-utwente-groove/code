@@ -23,7 +23,7 @@ import groove.grammar.model.GrammarModel;
 import groove.graph.Graph;
 import groove.graph.plain.PlainGraph;
 import groove.io.FileType;
-import groove.io.xml.LayedOutXml;
+import groove.io.xml.PlainGxl;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -511,7 +511,7 @@ public class Groove {
     /**
      * The fixed GXL graph loader.
      */
-    static private final LayedOutXml gxlGraphLoader = LayedOutXml.getInstance();
+    static private final PlainGxl gxlGraphLoader = PlainGxl.getInstance();
 
     // Platform dependent information.
 

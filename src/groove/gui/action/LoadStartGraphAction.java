@@ -6,7 +6,7 @@ import groove.graph.plain.PlainGraph;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.ExtensionFilter;
-import groove.io.xml.LayedOutXml;
+import groove.io.xml.PlainGxl;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +31,7 @@ public class LoadStartGraphAction extends SimulatorAction {
             File file = getStateFileChooser().getSelectedFile();
             try {
                 PlainGraph plainGraph =
-                    LayedOutXml.getInstance().unmarshalGraph(file);
+                    PlainGxl.getInstance().unmarshalGraph(file);
                 plainGraph.setRole(GraphRole.HOST);
                 plainGraph.setName(ExtensionFilter.getPureName(file));
                 getSimulatorModel().doSetStartGraph(

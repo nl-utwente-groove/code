@@ -35,7 +35,7 @@ import groove.grammar.type.TypeFactory;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
-import groove.io.xml.LayedOutXml;
+import groove.io.xml.PlainGxl;
 import groove.util.Groove;
 import groove.util.Pair;
 
@@ -59,7 +59,7 @@ public class RegExprTyperTest {
     /**
      * Graph loader used in this test case.
      */
-    static final LayedOutXml loader = LayedOutXml.getInstance();
+    static final PlainGxl loader = PlainGxl.getInstance();
     static RegExprTyper implicitTyper;
     static RegExprTyper explicitTyper;
     static TypeNode A, A1, A2, B, B1, C, D, XInt, XBool, XReal, XString;

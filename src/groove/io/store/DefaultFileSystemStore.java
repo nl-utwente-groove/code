@@ -32,8 +32,7 @@ import groove.graph.plain.PlainGraph;
 import groove.gui.Options;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
-import groove.io.xml.LayedOutXml;
-import groove.io.xml.Xml;
+import groove.io.xml.PlainGxl;
 import groove.util.Groove;
 
 import java.io.File;
@@ -104,7 +103,7 @@ public class DefaultFileSystemStore extends SystemStore {
         }
         this.file = file;
         this.name = GRAMMAR_FILTER.stripExtension(this.file.getName());
-        this.marshaller = LayedOutXml.getInstance();
+        this.marshaller = PlainGxl.getInstance();
         if (create) {
             this.createVersionProperties();
         }
@@ -865,7 +864,7 @@ public class DefaultFileSystemStore extends SystemStore {
     /** Name of the rule system. */
     private final String name;
     /** The graph marshaller used for retrieving rule and graph files. */
-    private final Xml<PlainGraph> marshaller;
+    private final PlainGxl marshaller;
     /** Flag indicating whether the store has been loaded. */
     private boolean initialised;
     /** Flag whether this store contains a 'system.properties' file. */

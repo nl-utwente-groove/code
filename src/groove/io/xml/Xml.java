@@ -20,7 +20,6 @@ import groove.graph.Graph;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
 /**
  * Interface for the conversion of graphs to and from XML documents. To be
@@ -44,7 +43,7 @@ public interface Xml<G extends Graph> {
      * @return the unmarshalled graph
      * @throws IOException if an error occurred during input from the URL
      */
-    public G unmarshalGraph(URL url) throws IOException;
+    //    public G unmarshalGraph(URL url) throws IOException;
 
     /**
      * Backwards compatibility method for unmarshalling from files.

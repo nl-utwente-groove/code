@@ -28,7 +28,7 @@ import groove.graph.iso.PartitionMap;
 import groove.graph.plain.PlainEdge;
 import groove.graph.plain.PlainFactory;
 import groove.graph.plain.PlainNode;
-import groove.io.xml.LayedOutXml;
+import groove.io.xml.PlainGxl;
 
 import java.io.File;
 import java.io.IOException;
@@ -491,6 +491,6 @@ public abstract class GraphTest {
         // so there is little else to do here
     }
 
-    private final LayedOutXml xml = LayedOutXml.getInstance();
+    private final PlainGxl xml = PlainGxl.getInstance();
     private final PlainFactory factory = PlainFactory.instance();
 }
