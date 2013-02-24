@@ -14,42 +14,46 @@
 /*
  * $Id: Xml.java,v 1.11 2008-01-30 09:33:43 iovka Exp $
  */
-package groove.io.xml;
+package groove.io.graph;
 
+import groove.grammar.model.FormatException;
 import groove.graph.Graph;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
- * Interface for the conversion of graphs to and from XML documents. To be
- * implemented for particular XML formats.
- * 
+ * Interface for saving and loading graphs.
  * @author Arend Rensink
  * @version $Revision: 2968 $
  */
-public interface Xml<G extends Graph> {
+public interface GraphIO {
     /**
-     * Writes a graph to an output stream, in XML format.
-     * @param graph the graph to be marshalled
+     * Saves a graph to file.
+     * @param graph the graph to be saved
      * @param file the file to write to
      * @throws IOException if an error occurred during file output
      */
-    public void marshalGraph(Graph graph, File file) throws IOException;
+    public void saveGraph(Graph graph, File file) throws IOException;
 
     /**
-     * Converts an XML URL into a graph, and returns the graph.
-     * @param url the URL to be read from
-     * @return the unmarshalled graph
-     * @throws IOException if an error occurred during input from the URL
+     * Saves a graph to an output stream.
      */
-    //    public G unmarshalGraph(URL url) throws IOException;
+    public void saveGraph(Graph graph, OutputStream out) throws IOException;
 
     /**
-     * Backwards compatibility method for unmarshalling from files.
+     * Loads an attributed graph from a file.
      * @throws IOException if an error occurred during file input
      */
-    public G unmarshalGraph(File file) throws IOException;
+    public AttrGraph loadGraph(File file) throws IOException;
+
+    /**
+     * Loads a graph from an input stream.
+     */
+    public AttrGraph loadGraph(InputStream in) throws FormatException,
+        IOException;
 
     /** Deletes a file together with further information (such as layout info). */
     public void deleteGraph(File file);

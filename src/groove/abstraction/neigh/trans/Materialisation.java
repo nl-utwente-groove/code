@@ -27,7 +27,6 @@ import groove.abstraction.neigh.NeighAbstraction;
 import groove.abstraction.neigh.Util;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.gui.dialog.ShapePreviewDialog;
-import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.match.ReverseMatcherStore;
 import groove.abstraction.neigh.shape.EdgeSignature;
@@ -44,6 +43,7 @@ import groove.grammar.model.GrammarModel;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.type.TypeLabel;
+import groove.io.graph.GxlIO;
 import groove.match.Matcher;
 import groove.match.MatcherFactory;
 import groove.match.SearchEngine.SearchMode;
@@ -1200,7 +1200,8 @@ public final class Materialisation {
             Grammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("rule");
             Shape shape =
-                ShapeGxl.getInstance(view.getTypeGraph()).unmarshalShape(file);
+                GxlIO.getInstance().loadGraph(file).toShape(
+                    view.getTypeGraph());
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             for (Proof preMatch : preMatches) {
                 Set<Materialisation> mats =

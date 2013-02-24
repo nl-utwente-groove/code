@@ -22,7 +22,6 @@ import groove.grammar.model.GraphBasedModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
 import groove.grammar.model.TextBasedModel;
-import groove.graph.plain.PlainGraph;
 import groove.io.FileType;
 import groove.io.external.AbstractFormatExporter;
 import groove.io.external.Exporter.Exportable;
@@ -30,7 +29,8 @@ import groove.io.external.Format;
 import groove.io.external.FormatImporter;
 import groove.io.external.FormatPorter;
 import groove.io.external.PortException;
-import groove.io.xml.PlainGxl;
+import groove.io.graph.AttrGraph;
+import groove.io.graph.GxlIO;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -83,13 +83,11 @@ public class NativePorter extends AbstractFormatExporter implements
             String name = format.stripExtension(file.getName());
             if (kind.isGraphBased()) {
                 // read graph from file
-                PlainGraph plainGraph =
-                    PlainGxl.getInstance().unmarshalGraph(file);
-                plainGraph.setRole(kind.getGraphRole());
-                plainGraph.setName(name);
-                result =
-                    new Resource(kind, name,
-                        AspectGraph.newInstance(plainGraph));
+                AttrGraph xmlGraph =
+                    GxlIO.getInstance().loadGraph(file);
+                xmlGraph.setRole(kind.getGraphRole());
+                xmlGraph.setName(name);
+                result = new Resource(kind, name, xmlGraph.toAspectGraph());
             } else {
                 String program = groove.io.Util.readFileToString(file);
                 result = new Resource(kind, name, program);
@@ -127,7 +125,8 @@ public class NativePorter extends AbstractFormatExporter implements
             GraphBasedModel<?> graphModel = (GraphBasedModel<?>) model;
             AspectGraph graph = graphModel.getSource();
             try {
-                PlainGxl.getInstance().marshalGraph(graph.toPlainGraph(), file);
+                GxlIO.getInstance().saveGraph(graph.toPlainGraph(),
+                    file);
             } catch (IOException e) {
                 throw new PortException(e);
             }

@@ -28,11 +28,11 @@ import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
-import groove.graph.plain.PlainGraph;
 import groove.gui.Options;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
-import groove.io.xml.PlainGxl;
+import groove.io.graph.AttrGraph;
+import groove.io.graph.GxlIO;
 import groove.util.Groove;
 
 import java.io.File;
@@ -103,7 +103,7 @@ public class DefaultFileSystemStore extends SystemStore {
         }
         this.file = file;
         this.name = GRAMMAR_FILTER.stripExtension(this.file.getName());
-        this.marshaller = PlainGxl.getInstance();
+        this.marshaller = GxlIO.getInstance();
         if (create) {
             this.createVersionProperties();
         }
@@ -313,7 +313,7 @@ public class DefaultFileSystemStore extends SystemStore {
         AspectGraph newGraph = oldGraph.rename(newName);
         AspectGraph previous = getGraphMap(kind).put(newName, newGraph);
         assert previous == null;
-        this.marshaller.marshalGraph(newGraph.toPlainGraph(),
+        this.marshaller.saveGraph(newGraph.toPlainGraph(),
             createFile(kind, newName));
         deleteEmptyDirectories(oldFile.getParentFile());
         // change the properties if there is a change in the enabled types
@@ -385,7 +385,7 @@ public class DefaultFileSystemStore extends SystemStore {
         Set<AspectGraph> oldGraphs = new HashSet<AspectGraph>();
         for (AspectGraph newGraph : newGraphs) {
             String name = newGraph.getName();
-            this.marshaller.marshalGraph(newGraph.toPlainGraph(),
+            this.marshaller.saveGraph(newGraph.toPlainGraph(),
                 createFile(kind, name));
             AspectGraph oldGraph = getGraphMap(kind).put(name, newGraph);
             if (oldGraph == null) {
@@ -653,15 +653,15 @@ public class DefaultFileSystemStore extends SystemStore {
         }
         for (Entry<QualName,File> fileEntry : files.entrySet()) {
             // read graph from file
-            PlainGraph plainGraph =
-                this.marshaller.unmarshalGraph(fileEntry.getValue());
+            AttrGraph xmlGraph =
+                this.marshaller.loadGraph(fileEntry.getValue());
 
             // backwards compatibility: set role and name
-            plainGraph.setRole(kind.getGraphRole());
-            plainGraph.setName(fileEntry.getKey().toString());
+            xmlGraph.setRole(kind.getGraphRole());
+            xmlGraph.setName(fileEntry.getKey().toString());
 
             // store graph in corresponding map
-            AspectGraph graph = AspectGraph.newInstance(plainGraph);
+            AspectGraph graph = xmlGraph.toAspectGraph();
             Object oldEntry =
                 getGraphMap(kind).put(fileEntry.getKey().toString(), graph);
             assert oldEntry == null : String.format("Duplicate %s name '%s'",
@@ -864,7 +864,7 @@ public class DefaultFileSystemStore extends SystemStore {
     /** Name of the rule system. */
     private final String name;
     /** The graph marshaller used for retrieving rule and graph files. */
-    private final PlainGxl marshaller;
+    private final GxlIO marshaller;
     /** Flag indicating whether the store has been loaded. */
     private boolean initialised;
     /** Flag whether this store contains a 'system.properties' file. */

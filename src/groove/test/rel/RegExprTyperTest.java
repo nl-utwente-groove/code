@@ -35,7 +35,6 @@ import groove.grammar.type.TypeFactory;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
-import groove.io.xml.PlainGxl;
 import groove.util.Groove;
 import groove.util.Pair;
 
@@ -56,10 +55,6 @@ public class RegExprTyperTest {
     /** Directory with test grammar (relative to the project) */
     static public final String GRAMMAR = "junit/types/regexpr";
 
-    /**
-     * Graph loader used in this test case.
-     */
-    static final PlainGxl loader = PlainGxl.getInstance();
     static RegExprTyper implicitTyper;
     static RegExprTyper explicitTyper;
     static TypeNode A, A1, A2, B, B1, C, D, XInt, XBool, XReal, XString;

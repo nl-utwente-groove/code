@@ -17,7 +17,6 @@
 package groove.abstraction.pattern;
 
 import groove.abstraction.pattern.gui.dialog.PatternPreviewDialog;
-import groove.abstraction.pattern.io.xml.TypeGraphGxl;
 import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
@@ -25,6 +24,7 @@ import groove.abstraction.pattern.match.PreMatch;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeGraph;
+import groove.abstraction.pattern.shape.TypeGraphFactory;
 import groove.abstraction.pattern.trans.Materialisation;
 import groove.abstraction.pattern.trans.PatternRule;
 import groove.grammar.Rule;
@@ -69,8 +69,7 @@ public class Test {
                 GrammarModel.newInstance(new File(GRAMMAR), false);
             sRule = view.getRuleModel(RULE).toResource();
             sGraph = view.getHostModel(HOST).toResource();
-            pTGraph =
-                TypeGraphGxl.getInstance().loadTypeGraph(new File(TYPE_GRAPH));
+            pTGraph = TypeGraphFactory.unmarshalTypeGraph(new File(TYPE_GRAPH));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (FormatException e) {

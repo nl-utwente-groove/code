@@ -22,7 +22,6 @@ import static org.junit.Assert.fail;
 import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.NeighAbstraction;
 import groove.abstraction.neigh.Util;
-import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.EdgeSignature;
 import groove.abstraction.neigh.shape.Shape;
@@ -37,6 +36,7 @@ import groove.grammar.model.GrammarModel;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
+import groove.io.graph.GxlIO;
 import groove.transform.Proof;
 
 import java.io.File;
@@ -56,7 +56,7 @@ public class TestMaterialisation {
         "junit/abstraction/basic-tests.gps/";
     static private GrammarModel view;
     static private Grammar grammar;
-    static private ShapeGxl marshaller;
+    static private GxlIO marshaller;
 
     @BeforeClass
     public static void setUp() {
@@ -65,7 +65,7 @@ public class TestMaterialisation {
         try {
             view = GrammarModel.newInstance(file, false);
             grammar = view.toGrammar();
-            marshaller = ShapeGxl.getInstance(view.getTypeGraph());
+            marshaller = GxlIO.getInstance();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (FormatException e) {
@@ -643,7 +643,7 @@ public class TestMaterialisation {
         NeighAbsParam.getInstance().setEdgeMultBound(2);
 
         File file = new File(DIRECTORY + "materialisation-test-13.gxl");
-        Shape shape = marshaller.loadShape(file);
+        Shape shape = loadShape(file);
         Rule rule = grammar.getRule("test-mat-13");
 
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
@@ -661,7 +661,7 @@ public class TestMaterialisation {
         NeighAbsParam.getInstance().setEdgeMultBound(2);
 
         File file = new File(DIRECTORY + "materialisation-test-14.gxl");
-        Shape shape = marshaller.loadShape(file);
+        Shape shape = loadShape(file);
         Rule rule = grammar.getRule("test-mat-14");
 
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
@@ -704,6 +704,14 @@ public class TestMaterialisation {
                 assertEquals(4, normalisedShape.nodeSet().size());
                 assertEquals(5, Util.getBinaryEdges(normalisedShape).size());
             }
+        }
+    }
+
+    private Shape loadShape(File file) {
+        try {
+            return marshaller.loadGraph(file).toShape(view.getTypeGraph());
+        } catch (IOException e) {
+            throw new IllegalArgumentException();
         }
     }
 }

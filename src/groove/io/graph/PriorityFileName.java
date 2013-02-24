@@ -14,10 +14,11 @@
 /*
  * $Id: PriorityFileName.java,v 1.6 2008-01-30 09:33:42 iovka Exp $
  */
-package groove.io;
+package groove.io.graph;
 
 import groove.grammar.Action;
 import groove.grammar.Rule;
+import groove.io.ExtensionFilter;
 import groove.util.Groove;
 
 import java.io.File;

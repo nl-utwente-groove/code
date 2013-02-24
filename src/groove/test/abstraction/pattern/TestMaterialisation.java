@@ -19,8 +19,6 @@ package groove.test.abstraction.pattern;
 import static org.junit.Assert.assertEquals;
 import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.PatternAbstraction;
-import groove.abstraction.pattern.io.xml.PatternShapeGxl;
-import groove.abstraction.pattern.io.xml.TypeGraphGxl;
 import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
@@ -28,12 +26,14 @@ import groove.abstraction.pattern.match.PreMatch;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeGraph;
+import groove.abstraction.pattern.shape.TypeGraphFactory;
 import groove.abstraction.pattern.trans.Materialisation;
 import groove.abstraction.pattern.trans.PatternRule;
 import groove.grammar.Rule;
 import groove.grammar.host.HostGraph;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
+import groove.io.graph.GxlIO;
 
 import java.io.File;
 import java.io.IOException;
@@ -133,9 +133,7 @@ public class TestMaterialisation {
                 sHost = view.getHostModel(HOST).toResource();
             }
             sRule = view.getRuleModel(RULE).toResource();
-            pTGraph =
-                TypeGraphGxl.getInstance().unmarshalTypeGraph(
-                    new File(TYPE_GRAPH));
+            pTGraph = TypeGraphFactory.unmarshalTypeGraph(new File(TYPE_GRAPH));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (FormatException e) {
@@ -148,9 +146,14 @@ public class TestMaterialisation {
             PatternGraph pHost = pTGraph.lift(sHost);
             pShape = new PatternShape(pHost).normalise();
         } else {
-            PatternShapeGxl gxl = new PatternShapeGxl(pTGraph);
             File file = new File(DIRECTORY + HOST);
-            pShape = gxl.loadPatternShape(file);
+            try {
+                pShape =
+                    GxlIO.getInstance().loadGraph(file).toPattern(
+                        pTGraph);
+            } catch (IOException e) {
+                throw new IllegalArgumentException();
+            }
         }
         pShape.setFixed();
     }

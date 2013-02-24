@@ -111,18 +111,19 @@ public class SpringLayouter extends AbstractLayouter {
                     Object efs =
                         j == 0 ? jEdge.getSourceVertex() : Pair.newPair(jEdge,
                             j);
-                    Layoutable sourceLayoutable = this.toLayoutableMap.get(efs);
-                    edgeFragmentSourceList.add(sourceLayoutable);
+                    Layoutable source = this.toLayoutableMap.get(efs);
                     Object eft =
                         j == points.size() - 2 ? jEdge.getTargetVertex()
                                 : Pair.newPair(jEdge, j + 1);
-                    Layoutable targetLayoutable = this.toLayoutableMap.get(eft);
-                    edgeFragmentTargetList.add(targetLayoutable);
+                    Layoutable target = this.toLayoutableMap.get(eft);
+                    if (source == null || target == null) {
+                        break;
+                    }
+                    edgeFragmentSourceList.add(source);
+                    edgeFragmentTargetList.add(target);
                 }
             }
         }
-        assert !edgeFragmentSourceList.contains(null);
-        assert !edgeFragmentTargetList.contains(null);
         this.edgeFragmentSources =
             edgeFragmentSourceList.toArray(new Layoutable[edgeFragmentSourceList.size()]);
         this.edgeFragmentTargets =
