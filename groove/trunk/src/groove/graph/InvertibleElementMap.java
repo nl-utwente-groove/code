@@ -30,8 +30,8 @@ import java.util.Set;
  * When the inverse relation is computed, the map is fixed and can no longer
  * be altered.
  */
-public class InvertibleElementMap<SN extends Node,SE extends Edge,TN extends Node,TE extends Edge>
-        extends ElementMap<SN,SE,TN,TE> implements Fixable {
+abstract public class InvertibleElementMap<SN extends Node,SE extends Edge,TN extends Node,TE extends Edge>
+        extends GElementMap<SN,SE,TN,TE> implements Fixable {
 
     private Map<TN,Set<SN>> inverseNodeMap;
     private Map<TE,Set<SE>> inverseEdgeMap;
@@ -45,7 +45,7 @@ public class InvertibleElementMap<SN extends Node,SE extends Edge,TN extends Nod
     public boolean setFixed() {
         boolean result = !isFixed();
         if (result) {
-            // Fixing is the same as computing the inverse map.
+            // Fixing is the same as computing the inverse maps.
             this.getInverseNodeMap();
             this.getInverseEdgeMap();
         }
@@ -72,8 +72,6 @@ public class InvertibleElementMap<SN extends Node,SE extends Edge,TN extends Nod
         if (this.inverseNodeMap == null) {
             this.inverseNodeMap =
                 (Map<TN,Set<SN>>) this.computeInverse(this.nodeMap());
-            this.inverseEdgeMap =
-                (Map<TE,Set<SE>>) this.computeInverse(this.edgeMap());
         }
         return this.inverseNodeMap;
     }
@@ -84,8 +82,6 @@ public class InvertibleElementMap<SN extends Node,SE extends Edge,TN extends Nod
     @SuppressWarnings("unchecked")
     public Map<TE,Set<SE>> getInverseEdgeMap() {
         if (this.inverseEdgeMap == null) {
-            this.inverseNodeMap =
-                (Map<TN,Set<SN>>) this.computeInverse(this.nodeMap());
             this.inverseEdgeMap =
                 (Map<TE,Set<SE>>) this.computeInverse(this.edgeMap());
         }

@@ -17,7 +17,7 @@
 package groove.grammar.rule;
 
 import groove.grammar.type.TypeElement;
-import groove.graph.ElementMap;
+import groove.graph.GElementMap;
 import groove.graph.Morphism;
 
 import java.util.HashMap;
@@ -58,7 +58,7 @@ public class RuleGraphMorphism extends Morphism<RuleNode,RuleEdge> {
     }
 
     @Override
-    public void putAll(ElementMap<RuleNode,RuleEdge,RuleNode,RuleEdge> other) {
+    public void putAll(GElementMap<RuleNode,RuleEdge,RuleNode,RuleEdge> other) {
         assert other instanceof RuleGraphMorphism;
         super.putAll(other);
         copyVarTyping((RuleGraphMorphism) other);

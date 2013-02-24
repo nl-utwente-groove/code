@@ -525,8 +525,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
         for (RuleEdge edge : source.edgeSet()) {
             // only consider edges for which source and target are typed
             // which may fail to hold due to a previous error
-            if (result.containsNodeKey(edge.source())
-                && result.containsNodeKey(edge.target()) && !isNodeType(edge)) {
+            if (result.nodeMap().containsKey(edge.source())
+                && result.nodeMap().containsKey(edge.target())
+                && !isNodeType(edge)) {
                 RuleLabel edgeLabel = edge.label();
                 if (edgeLabel.isAtom() || edgeLabel.isSharp()) {
                     simpleEdges.add(edge);

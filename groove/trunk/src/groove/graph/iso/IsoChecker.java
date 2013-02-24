@@ -394,7 +394,7 @@ public class IsoChecker {
             NodeCertificate[] nodeCerts = domCertifier.getNodeCertificates();
             for (NodeCertificate nodeCert : nodeCerts) {
                 Node node = nodeCert.getElement();
-                if (!result.containsNodeKey(node)) {
+                if (!result.nodeMap().containsKey(node)) {
                     // this is an isolated node
                     SmallCollection<Node> nodeImages =
                         codPartitionMap.get(nodeCert);
@@ -767,8 +767,7 @@ public class IsoChecker {
             }
         } else if (always) {
             result =
-                AGraph.getCertificateFactory().newInstance(graph,
-                    isStrong());
+                AGraph.getCertificateFactory().newInstance(graph, isStrong());
         }
         return result;
     }

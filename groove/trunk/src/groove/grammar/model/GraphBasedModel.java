@@ -27,6 +27,7 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
+import groove.graph.GElementMap;
 import groove.graph.Node;
 
 import java.util.HashMap;
@@ -91,13 +92,12 @@ abstract public class GraphBasedModel<R> extends ResourceModel<R> {
      * @param map mapping from aspect elements to rule graph elements
      * @return the transferred errors
      */
-    final FormatErrorSet transferErrors(FormatErrorSet errors,
-            ElementMap<?,?,?,?> map) {
+    final FormatErrorSet transferErrors(FormatErrorSet errors, ElementMap map) {
         return errors.transfer(getInverseMap(map));
     }
 
     /** Convenience method to return the inverse of a given model map. */
-    private final Map<Element,Element> getInverseMap(ElementMap<?,?,?,?> map) {
+    private final Map<Element,Element> getInverseMap(ElementMap map) {
         Map<Element,Element> result = new HashMap<Element,Element>();
         for (Map.Entry<? extends Node,? extends Node> nodeEntry : map.nodeMap().entrySet()) {
             result.put(nodeEntry.getValue(), nodeEntry.getKey());
@@ -112,7 +112,7 @@ abstract public class GraphBasedModel<R> extends ResourceModel<R> {
 
     /** Mapping from source graph elements to resource elements. */
     abstract public static class ModelMap<N extends Node,E extends Edge>
-            extends ElementMap<AspectNode,AspectEdge,N,E> {
+            extends GElementMap<AspectNode,AspectEdge,N,E> {
         /**
          * Creates a new map, on the basis of a given factory.
          */

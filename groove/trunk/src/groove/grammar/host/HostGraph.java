@@ -25,7 +25,7 @@ import groove.grammar.aspect.AspectNode;
 import groove.grammar.aspect.AspectParser;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
-import groove.graph.ElementMap;
+import groove.graph.GElementMap;
 import groove.graph.GGraph;
 import groove.transform.DeltaTarget;
 
@@ -65,7 +65,7 @@ public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {
      * aspect graph. For convenience, the aspect graph is bundled in with the map.  
      */
     public class HostToAspectMap extends
-            ElementMap<HostNode,HostEdge,AspectNode,AspectEdge> {
+            GElementMap<HostNode,HostEdge,AspectNode,AspectEdge> {
         /**
          * Creates a new, empty map.
          */

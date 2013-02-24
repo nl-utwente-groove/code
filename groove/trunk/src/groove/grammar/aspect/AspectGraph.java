@@ -34,7 +34,7 @@ import groove.grammar.type.TypeLabel;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.ElementFactory;
-import groove.graph.ElementMap;
+import groove.graph.GElementMap;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
@@ -1018,7 +1018,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     }
 
     private static class AspectToPlainMap extends
-            ElementMap<AspectNode,AspectEdge,PlainNode,PlainEdge> {
+            GElementMap<AspectNode,AspectEdge,PlainNode,PlainEdge> {
         /** Constructs a new, empty map. */
         public AspectToPlainMap() {
             super(PlainFactory.instance());
@@ -1050,7 +1050,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * @version $Revision $
      */
     private static class GraphToAspectMap extends
-            ElementMap<Node,Edge,AspectNode,AspectEdge> {
+            GElementMap<Node,Edge,AspectNode,AspectEdge> {
         /** Creates a fresh, empty map. */
         public GraphToAspectMap(GraphRole graphRole) {
             super(AspectFactory.instance(graphRole));
