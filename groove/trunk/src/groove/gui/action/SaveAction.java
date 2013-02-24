@@ -10,7 +10,7 @@ import groove.gui.display.GraphEditorTab;
 import groove.gui.display.ResourceTab;
 import groove.gui.display.TextTab;
 import groove.io.ExtensionFilter;
-import groove.io.xml.AspectGxl;
+import groove.io.xml.LayedOutXml;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -115,8 +115,8 @@ public final class SaveAction extends SimulatorAction {
                     // save in external file
                     String newName =
                         filter.stripExtension(selectedFile.getName());
-                    AspectGxl.getInstance().marshalGraph(graph.rename(newName),
-                        selectedFile);
+                    LayedOutXml.getInstance().marshalGraph(
+                        graph.rename(newName).toPlainGraph(), selectedFile);
                 } else {
                     // save within the grammar
                     result = doSaveGraph(graph.rename(nameInGrammar), false);

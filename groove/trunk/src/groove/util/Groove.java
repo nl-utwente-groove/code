@@ -23,7 +23,7 @@ import groove.grammar.model.GrammarModel;
 import groove.graph.Graph;
 import groove.graph.plain.PlainGraph;
 import groove.io.FileType;
-import groove.io.xml.PlainGxl;
+import groove.io.xml.LayedOutXml;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -106,7 +106,7 @@ public class Groove {
      * @throws IOException if <code>file</code> cannot be parsed as a graph
      */
     static public PlainGraph loadGraph(File file) throws IOException {
-        return gxlGraphLoader.unmarshalGraph(file.toURI().toURL());
+        return gxlGraphLoader.unmarshalGraph(file);
     }
 
     /**
@@ -133,7 +133,7 @@ public class Groove {
      * @throws IOException if saving ran into problems
      */
     static public void saveGraph(Graph graph, File file) throws IOException {
-        gxlGraphLoader.marshalAnyGraph(graph, file);
+        gxlGraphLoader.marshalGraph(graph, file);
     }
 
     /**
@@ -511,7 +511,7 @@ public class Groove {
     /**
      * The fixed GXL graph loader.
      */
-    static private final PlainGxl gxlGraphLoader = PlainGxl.getInstance();
+    static private final LayedOutXml gxlGraphLoader = LayedOutXml.getInstance();
 
     // Platform dependent information.
 

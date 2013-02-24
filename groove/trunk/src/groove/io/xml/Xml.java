@@ -36,7 +36,7 @@ public interface Xml<G extends Graph> {
      * @param file the file to write to
      * @throws IOException if an error occurred during file output
      */
-    public void marshalGraph(G graph, File file) throws IOException;
+    public void marshalGraph(Graph graph, File file) throws IOException;
 
     /**
      * Converts an XML URL into a graph, and returns the graph.
@@ -54,7 +54,4 @@ public interface Xml<G extends Graph> {
 
     /** Deletes a file together with further information (such as layout info). */
     public void deleteGraph(File file);
-
-    /** Creates a graph with the given name and proper type. */
-    public G createGraph(String graphName);
 }

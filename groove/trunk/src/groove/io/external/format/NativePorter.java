@@ -22,6 +22,7 @@ import groove.grammar.model.GraphBasedModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
 import groove.grammar.model.TextBasedModel;
+import groove.graph.plain.PlainGraph;
 import groove.io.FileType;
 import groove.io.external.AbstractFormatExporter;
 import groove.io.external.Exporter.Exportable;
@@ -29,7 +30,6 @@ import groove.io.external.Format;
 import groove.io.external.FormatImporter;
 import groove.io.external.FormatPorter;
 import groove.io.external.PortException;
-import groove.io.xml.AspectGxl;
 import groove.io.xml.LayedOutXml;
 
 import java.io.File;
@@ -80,18 +80,19 @@ public class NativePorter extends AbstractFormatExporter implements
         ResourceKind kind = ((ResourceFormat) format).getKind();
         Resource result;
         try {
+            String name = format.stripExtension(file.getName());
             if (kind.isGraphBased()) {
                 // read graph from file
-                AspectGxl marshaller = AspectGxl.getInstance();
-                AspectGraph graph = marshaller.unmarshalGraph(file);
+                PlainGraph plainGraph =
+                    LayedOutXml.getInstance().unmarshalGraph(file);
+                plainGraph.setRole(kind.getGraphRole());
+                plainGraph.setName(name);
                 result =
-                    new Resource(kind, format.stripExtension(file.getName()),
-                        graph);
+                    new Resource(kind, name,
+                        AspectGraph.newInstance(plainGraph));
             } else {
                 String program = groove.io.Util.readFileToString(file);
-                result =
-                    new Resource(kind, format.stripExtension(file.getName()),
-                        program);
+                result = new Resource(kind, name, program);
             }
         } catch (IOException e) {
             throw new PortException(e);

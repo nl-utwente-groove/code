@@ -32,7 +32,6 @@ import groove.graph.plain.PlainGraph;
 import groove.gui.Options;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
-import groove.io.xml.PlainGxl;
 import groove.io.xml.LayedOutXml;
 import groove.io.xml.Xml;
 import groove.util.Groove;
@@ -105,7 +104,7 @@ public class DefaultFileSystemStore extends SystemStore {
         }
         this.file = file;
         this.name = GRAMMAR_FILTER.stripExtension(this.file.getName());
-        this.marshaller = createGraphMarshaller(true);
+        this.marshaller = LayedOutXml.getInstance();
         if (create) {
             this.createVersionProperties();
         }
@@ -639,15 +638,6 @@ public class DefaultFileSystemStore extends SystemStore {
         return getName() + " - " + location;
     }
 
-    /** Callback factory method for creating a graph marshaller. */
-    private Xml<PlainGraph> createGraphMarshaller(boolean layouted) {
-        if (layouted) {
-            return LayedOutXml.getInstance();
-        } else {
-            return PlainGxl.getInstance();
-        }
-    }
-
     /**
      * Collects all aspect graphs from the {@link #file} directory with a given
      * extension, and a given role.
@@ -809,7 +799,8 @@ public class DefaultFileSystemStore extends SystemStore {
         saveProperties(this.properties);
     }
 
-    private void saveProperties(GrammarProperties properties) throws IOException {
+    private void saveProperties(GrammarProperties properties)
+        throws IOException {
         File propertiesFile = getDefaultPropertiesFile();
         Writer propertiesWriter = new FileWriter(propertiesFile);
         try {

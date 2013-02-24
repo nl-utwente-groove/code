@@ -19,9 +19,9 @@ package groove.match.rete;
 import groove.algebra.Constant;
 import groove.automaton.RegExpr;
 import groove.grammar.Condition;
+import groove.grammar.Condition.Op;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
-import groove.grammar.Condition.Op;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostGraph;
@@ -44,10 +44,10 @@ import groove.graph.plain.PlainEdge;
 import groove.graph.plain.PlainGraph;
 import groove.graph.plain.PlainNode;
 import groove.io.FileType;
-import groove.io.xml.PlainGxl;
 import groove.match.rete.LookupEntry.Role;
 import groove.match.rete.ReteNetwork.ReteState.ReteUpdateMode;
 import groove.match.rete.ReteNetworkNode.Action;
+import groove.util.Groove;
 import groove.util.collect.TreeHashSet;
 
 import java.io.File;
@@ -1181,8 +1181,7 @@ public class ReteNetwork {
                 PlainNode childJNode = map.get(childNNode);
                 if (childJNode == null) {
                     childJNode = graph.addNode();
-                    PlainEdge[] flags =
-                        makeNNodeLabels(childNNode, childJNode);
+                    PlainEdge[] flags = makeNNodeLabels(childNNode, childJNode);
                     for (PlainEdge f : flags) {
                         graph.addEdgeContext(f);
                     }
@@ -1217,8 +1216,7 @@ public class ReteNetwork {
         }
     }
 
-    private PlainEdge[] makeNNodeLabels(ReteNetworkNode nnode,
-            PlainNode source) {
+    private PlainEdge[] makeNNodeLabels(ReteNetworkNode nnode, PlainNode source) {
         ArrayList<PlainEdge> result = new ArrayList<PlainEdge>();
         if (nnode instanceof RootNode) {
             result.add(PlainEdge.createEdge(source, "ROOT", source));
@@ -1299,8 +1297,7 @@ public class ReteNetwork {
         graph.setName(name);
         File file = new File(FileType.GXL_FILTER.addExtension(filePath));
         try {
-            PlainGxl graphLoader = PlainGxl.getInstance();
-            graphLoader.marshalGraph(graph, file);
+            Groove.saveGraph(graph, file);
         } catch (IOException exc) {
             throw new RuntimeException(String.format(
                 "Error while saving graph to '%s'", file), exc);
