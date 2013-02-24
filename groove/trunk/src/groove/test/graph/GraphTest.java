@@ -28,7 +28,8 @@ import groove.graph.iso.PartitionMap;
 import groove.graph.plain.PlainEdge;
 import groove.graph.plain.PlainFactory;
 import groove.graph.plain.PlainNode;
-import groove.io.xml.PlainGxl;
+import groove.io.graph.AttrGraph;
+import groove.io.graph.GxlIO;
 
 import java.io.File;
 import java.io.IOException;
@@ -124,9 +125,8 @@ public abstract class GraphTest {
     protected GGraph<PlainNode,PlainEdge> loadGraph(File file) {
         GGraph<PlainNode,PlainEdge> result = createGraph(file.getName());
         try {
-            GGraph graph = this.xml.unmarshalGraph(file);
-            result.addNodeSet(graph.nodeSet());
-            result.addEdgeSetContext(graph.edgeSet());
+            AttrGraph graph = GxlIO.getInstance().loadGraph(file);
+            graph.copyTo(result);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -491,6 +491,5 @@ public abstract class GraphTest {
         // so there is little else to do here
     }
 
-    private final PlainGxl xml = PlainGxl.getInstance();
     private final PlainFactory factory = PlainFactory.instance();
 }

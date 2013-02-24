@@ -41,7 +41,7 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
-import groove.io.xml.PlainGxl;
+import groove.io.graph.GxlIO;
 import groove.util.ExprParser;
 import groove.util.Groove;
 
@@ -84,10 +84,6 @@ abstract public class AbstractAutomatonTest {
     static final List<String> wordAAA = Arrays.asList("A", "A", "A");
     static final List<String> wordAAABCAAA = Arrays.asList("A", "A", "A", "B",
         "C", "A", "A", "A");
-    /**
-     * Graph loader used in this test case.
-     */
-    static final PlainGxl loader = PlainGxl.getInstance();
     static final String testGraphName = "regexpr-test-graph";
     static HostGraph testGraph;
 
@@ -103,8 +99,8 @@ abstract public class AbstractAutomatonTest {
     public static void initStatics() {
         try {
             testGraph =
-                new DefaultHostGraph(loader.unmarshalGraph(new File(
-                    GRAPH_TEST_DIR + "/" + testGraphName + ".gxl")));
+                new DefaultHostGraph(GxlIO.getInstance().loadGraph(
+                    new File(GRAPH_TEST_DIR + "/" + testGraphName + ".gxl")));
         } catch (IOException e) {
             e.printStackTrace();
         }

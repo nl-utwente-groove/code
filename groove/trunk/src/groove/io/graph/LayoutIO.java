@@ -14,19 +14,18 @@
 /*
  * $Id: LayedOutXml.java,v 1.18 2008-03-25 15:13:55 rensink Exp $
  */
-package groove.io;
+package groove.io.graph;
 
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
-import groove.graph.Edge;
-import groove.graph.Node;
-import groove.graph.plain.PlainEdge;
-import groove.graph.plain.PlainNode;
+import groove.graph.GraphInfo;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.gui.look.LineStyle;
+import groove.io.FileType;
+import groove.io.HTMLConverter;
 import groove.util.ExprParser;
 
 import java.awt.Point;
@@ -37,11 +36,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphConstants;
@@ -60,36 +56,14 @@ public class LayoutIO {
         // empty
     }
 
-    /** Writes a layout map in the correct format to a given output stream. */
-    public void writeLayout(LayoutMap layoutMap, OutputStream out) {
-        // if there is layout information, create a file for it
-        PrintWriter layoutWriter = new PrintWriter(out);
-        // some general wise words first
-        for (String line : layoutComment()) {
-            layoutWriter.println(line);
-        }
-        layoutWriter.println(VERSION_LINE);
-        // iterator over the layout map and write the layout information
-        for (Map.Entry<Node,JVertexLayout> entry : layoutMap.nodeMap().entrySet()) {
-            layoutWriter.println(toString(entry.getKey(), entry.getValue()));
-        }
-        for (Map.Entry<Edge,JEdgeLayout> entry : layoutMap.edgeMap().entrySet()) {
-            layoutWriter.println(toString(entry.getKey(), entry.getValue()));
-        }
-        layoutWriter.close();
-    }
-
     /**
-     * Reads the layout information for a given graph from a given input stream.
+     * Loads layout information into a given graph from a given input stream.
      * Any errors in the layout information are added to the graph errors.
-     * @param nodeMap mapping from node names in the layout file to graph nodes
+     * @param graph graph to load the layout into
      * @param in input stream containing the layout information
-     * @return layout map from graph elements to corresponding layout info
      * @throws IOException if an error occurred in reading the layout file
-     * @throws FormatException if the layout file contains format errors
      */
-    public LayoutMap readLayout(Map<String,PlainNode> nodeMap, InputStream in)
-        throws IOException, FormatException {
+    public void loadLayout(AttrGraph graph, InputStream in) throws IOException {
         BufferedReader layoutReader =
             new BufferedReader(new InputStreamReader(in));
         LayoutMap result = new LayoutMap();
@@ -105,9 +79,9 @@ public class LayoutIO {
                     if (parts.length > 0) {
                         String command = parts[0];
                         if (command.equals(NODE_PREFIX)) {
-                            putVertexLayout(result, parts, nodeMap);
+                            putVertexLayout(result, parts, graph);
                         } else if (command.equals(EDGE_PREFIX)) {
-                            putEdgeLayout(result, parts, nodeMap, version);
+                            putEdgeLayout(result, parts, graph, version);
                         } else if (command.equals(VERSION_PREFIX)) {
                             try {
                                 version = Integer.parseInt(parts[1]);
@@ -128,8 +102,8 @@ public class LayoutIO {
             layoutReader.close();
             in.close();
         }
-        errors.throwException();
-        return result;
+        GraphInfo.addErrors(graph, errors);
+        GraphInfo.setLayoutMap(graph, result);
     }
 
     /**
@@ -137,8 +111,8 @@ public class LayoutIO {
      * string array description and node map.
      */
     private void putVertexLayout(LayoutMap layoutMap, String[] parts,
-            Map<String,PlainNode> nodeMap) throws FormatException {
-        PlainNode node = nodeMap.get(parts[1]);
+            AttrGraph graph) throws FormatException {
+        AttrNode node = graph.getNode(parts[1]);
         if (node == null) {
             throw new FormatException("Unknown node " + parts[1]);
         }
@@ -156,23 +130,27 @@ public class LayoutIO {
      * array description and node map.
      * @param version for version 2, the layout position info has changed
      */
-    private PlainEdge putEdgeLayout(LayoutMap layoutMap, String[] parts,
-            Map<String,PlainNode> nodeMap, int version) throws FormatException {
+    private AttrEdge putEdgeLayout(LayoutMap layoutMap, String[] parts,
+            AttrGraph graph, int version) throws FormatException {
         if (parts.length < 7) {
             throw new FormatException("Incomplete edge layout line");
         }
-        PlainNode source = nodeMap.get(parts[1]);
+        AttrNode source = graph.getNode(parts[1]);
         if (source == null) {
             throw new FormatException("Unknown node " + parts[1]);
         }
-        PlainNode target = nodeMap.get(parts[2]);
+        AttrNode target = graph.getNode(parts[2]);
         if (target == null) {
             throw new FormatException("Unknown node " + parts[2]);
         }
         String labelTextWithQuotes = parts[3];
         String labelText =
             ExprParser.toUnquoted(labelTextWithQuotes, DOUBLE_QUOTE);
-        PlainEdge edge = PlainEdge.createEdge(source, labelText, target);
+        AttrEdge edge = graph.getEdge(source, labelText, target);
+        if (edge == null) {
+            throw new FormatException("Unknown edge %s --%s-> %s", source,
+                labelText, target);
+        }
         try {
             List<Point2D> points;
             int lineStyle;
@@ -372,81 +350,6 @@ public class LayoutIO {
     }
 
     /**
-     * Returns a multi-line text, formatted as a comment, describing the layout
-     * format.
-     * @see #COMMENT_PREFIX
-     */
-    private List<String> layoutComment() {
-        List<String> result = new LinkedList<String>();
-        result.add("# Layout information");
-        result.add("# Each line contains layout information about a node or edge");
-        result.add("# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9");
-        result.add("#     v 1: label position = (x-permillage, y-permillage)");
-        result.add("#     v 2: label position = (vector permillage, perpendicular distance)");
-        result.add("# Node Format: n <node id> <bounds>");
-        result.add("# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]");
-        return result;
-    }
-
-    /**
-     * Converts a graph node plus layout information to a string.
-     */
-    private String toString(Node node, JVertexLayout layout) {
-        StringBuffer result = new StringBuffer();
-        result.append(NODE_PREFIX + " " + node + " ");
-        Rectangle nodeBounds = layout.getBounds().getBounds();
-        result.append(toString(nodeBounds));
-        return result.toString();
-    }
-
-    /**
-     * Converts a graph edge plus layout information to a string.
-     */
-    private String toString(Edge edge, JEdgeLayout layout) {
-        StringBuffer result = new StringBuffer();
-        result.append(EDGE_PREFIX + " ");
-        result.append(edge.source() + " ");
-        result.append(edge.target() + " ");
-        result.append(ExprParser.toQuoted(edge.label().text(), DOUBLE_QUOTE)
-            + " ");
-        result.append(toString(layout.getLabelPosition()));
-        result.append(toString(layout.getPoints()));
-        result.append("" + layout.getLineStyle().getCode());
-        return result.toString();
-    }
-
-    /**
-     * Converts a bounds rectangle to a string, as a space-separated list of the
-     * x and y-coordinates and width and height, followed by a space.
-     * @see #toBounds
-     */
-    private String toString(Rectangle r) {
-        return "" + r.x + " " + r.y + " " + r.width + " " + r.height + " ";
-    }
-
-    /**
-     * Converts a point to a string, as a space-separated list of the x and
-     * y-coordinates, followed by a space.
-     * @see #toBounds
-     */
-    private String toString(Point2D p) {
-        return "" + (int) p.getX() + " " + (int) p.getY() + " ";
-    }
-
-    /**
-     * Converts a list of points to a string, where the point coordinates are
-     * listed in sequence
-     * @see #toPoints
-     */
-    private String toString(List<Point2D> points) {
-        StringBuffer pointsText = new StringBuffer();
-        for (Object p : points) {
-            pointsText.append(toString((Point2D) p));
-        }
-        return pointsText.toString();
-    }
-
-    /**
      * Converts four elements of a string array to a rectangle.
      */
     public static Rectangle toBounds(String[] s, int i) {
@@ -493,7 +396,6 @@ public class LayoutIO {
     private static LayoutIO instance = new LayoutIO();
     /**
      * The layout prefix of a version number.
-     * @see #layoutComment() for an explanation of the version numbers.
      */
     static public final String VERSION_PREFIX = "v";
     /** The layout prefix of a node layout line. */
@@ -516,9 +418,6 @@ public class LayoutIO {
 
     /** The current version number. */
     static public final int CURRENT_VERSION_NUMBER = VERSION2;
-    /** Line for the layoutfile with the version information. */
-    static private final String VERSION_LINE = String.format("%s %d",
-        VERSION_PREFIX, CURRENT_VERSION_NUMBER);
     /** Error message in case an error is detected in the layout file. */
     static private final String LAYOUT_FORMAT_ERROR = String.format(
         "Error in %s file", FileType.LAYOUT.getExtension());

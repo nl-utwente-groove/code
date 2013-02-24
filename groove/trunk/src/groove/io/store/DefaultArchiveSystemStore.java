@@ -31,15 +31,12 @@ import groove.grammar.model.FormatException;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
 import groove.graph.GraphInfo;
-import groove.graph.plain.PlainGraph;
-import groove.graph.plain.PlainNode;
-import groove.gui.layout.LayoutMap;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
-import groove.io.LayoutIO;
-import groove.io.xml.DefaultJaxbGxlIO;
+import groove.io.graph.AttrGraph;
+import groove.io.graph.GxlIO;
+import groove.io.graph.LayoutIO;
 import groove.util.Groove;
-import groove.util.Pair;
 
 import java.io.File;
 import java.io.IOException;
@@ -430,18 +427,15 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
             String graphName = filter.stripExtension(graphEntry.getKey());
             InputStream in = file.getInputStream(graphEntry.getValue());
             try {
-                Pair<PlainGraph,Map<String,PlainNode>> plainGraphAndMap =
-                    DefaultJaxbGxlIO.getInstance().loadGraphWithMap(in);
-                PlainGraph plainGraph = plainGraphAndMap.one();
+                AttrGraph xmlGraph = GxlIO.getInstance().loadGraph(in);
                 /*
                  * For backward compatibility, we set the role and name of the
                  * graph.
                  */
-                plainGraph.setRole(kind.getGraphRole());
-                plainGraph.setName(createQualName(graphName).toString());
-                addLayout(file, graphEntry.getKey(), plainGraph,
-                    plainGraphAndMap.two());
-                AspectGraph graph = AspectGraph.newInstance(plainGraph);
+                xmlGraph.setRole(kind.getGraphRole());
+                xmlGraph.setName(createQualName(graphName).toString());
+                addLayout(file, graphEntry.getKey(), xmlGraph);
+                AspectGraph graph = xmlGraph.toAspectGraph();
                 /* Store the graph */
                 result.put(graphName, graph);
             } catch (FormatException exc) {
@@ -461,19 +455,12 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      * Adds layout information to a graph, based on the layout info found in a
      * given zip file.
      */
-    private void addLayout(ZipFile file, String entryName,
-            PlainGraph plainGraph, Map<String,PlainNode> nodeMap)
+    private void addLayout(ZipFile file, String entryName, AttrGraph xmlGraph)
         throws IOException {
         ZipEntry layoutEntry = this.layoutEntryMap.get(entryName);
         if (layoutEntry != null) {
-            try {
-                LayoutMap layout =
-                    LayoutIO.getInstance().readLayout(nodeMap,
-                        file.getInputStream(layoutEntry));
-                GraphInfo.setLayoutMap(plainGraph, layout);
-            } catch (FormatException exc) {
-                GraphInfo.addErrors(plainGraph, exc.getErrors());
-            }
+            LayoutIO.getInstance().loadLayout(xmlGraph,
+                file.getInputStream(layoutEntry));
         }
     }
 

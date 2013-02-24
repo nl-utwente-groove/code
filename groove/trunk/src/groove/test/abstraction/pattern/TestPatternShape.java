@@ -17,9 +17,9 @@
 package groove.test.abstraction.pattern;
 
 import static org.junit.Assert.assertEquals;
-import groove.abstraction.pattern.io.xml.TypeGraphGxl;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeGraph;
+import groove.abstraction.pattern.shape.TypeGraphFactory;
 import groove.grammar.host.HostGraph;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
@@ -67,8 +67,7 @@ public class TestPatternShape {
         File typeGraphFile = new File(typeGraphFileName);
         TypeGraph typeGraph = null;
         try {
-            typeGraph =
-                TypeGraphGxl.getInstance().unmarshalTypeGraph(typeGraphFile);
+            typeGraph = TypeGraphFactory.unmarshalTypeGraph(typeGraphFile);
         } catch (IOException e) {
             e.printStackTrace();
         }

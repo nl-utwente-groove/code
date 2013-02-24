@@ -31,13 +31,16 @@ import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
+import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
+import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.Morphism;
+import groove.graph.Node;
 import groove.graph.NodeComparator;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.plain.PlainEdge;
@@ -109,9 +112,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * @param graph the graph to take as input.
      * @return an aspect graph with possible format errors
      */
-    public AspectGraph fromPlainGraph(PlainGraph graph) {
+    @Deprecated
+    public AspectGraph fromPlainGraph(Graph graph) {
         // map from original graph elements to aspect graph elements
-        PlainToAspectMap elementMap = new PlainToAspectMap(graph.getRole());
+        GraphToAspectMap elementMap = new GraphToAspectMap(graph.getRole());
         return fromPlainGraph(graph, elementMap);
     }
 
@@ -127,23 +131,22 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      *        to resulting {@link AspectGraph} elements; should be initially
      *        empty
      */
-    public AspectGraph fromPlainGraph(PlainGraph graph,
-            PlainToAspectMap elementMap) {
+    @Deprecated
+    private AspectGraph fromPlainGraph(Graph graph, GraphToAspectMap elementMap) {
         GraphRole role = graph.getRole();
         AspectGraph result = new AspectGraph(graph.getName(), role);
         FormatErrorSet errors = new FormatErrorSet();
         assert elementMap != null && elementMap.isEmpty();
         // first do the nodes;
-        for (PlainNode node : graph.nodeSet()) {
+        for (Node node : graph.nodeSet()) {
             AspectNode nodeImage = result.addNode(node.getNumber());
             // update the maps
             elementMap.putNode(node, nodeImage);
         }
         // look for node aspect indicators
         // and put all correct aspect vales in a map
-        Map<PlainEdge,AspectLabel> edgeDataMap =
-            new HashMap<PlainEdge,AspectLabel>();
-        for (PlainEdge edge : graph.edgeSet()) {
+        Map<Edge,AspectLabel> edgeDataMap = new HashMap<Edge,AspectLabel>();
+        for (Edge edge : graph.edgeSet()) {
             AspectLabel label = parser.parse(edge.label().text(), role);
             if (label.isNodeOnly()) {
                 AspectNode sourceImage = elementMap.getNode(edge.source());
@@ -153,8 +156,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             }
         }
         // Now iterate over the remaining edges
-        for (Map.Entry<PlainEdge,AspectLabel> entry : edgeDataMap.entrySet()) {
-            PlainEdge edge = entry.getKey();
+        for (Map.Entry<Edge,AspectLabel> entry : edgeDataMap.entrySet()) {
+            Edge edge = entry.getKey();
             AspectLabel label = entry.getValue();
             AspectEdge edgeImage =
                 result.addEdge(elementMap.getNode(edge.source()), label,
@@ -178,18 +181,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      */
     public PlainGraph toPlainGraph() {
         AspectToPlainMap elementMap = new AspectToPlainMap();
-        return toPlainGraph(elementMap);
-    }
-
-    /**
-     * Creates a graph where the aspect values are represented as label prefixes
-     * for the edges, and as special edges for the nodes. The mapping from the
-     * old to the new graph is stored in a parameter.
-     * @param elementMap output parameter for mapping from plain graph elements
-     *        to resulting {@link AspectGraph} elements; should be initially
-     *        empty
-     */
-    private PlainGraph toPlainGraph(AspectToPlainMap elementMap) {
         PlainGraph result = createPlainGraph();
         for (AspectNode node : nodeSet()) {
             PlainNode nodeImage = result.addNode(node.getNumber());
@@ -600,7 +591,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         } else {
             GraphInfo.transfer(this, result, elementMap);
             result.setFixed();
-            return fromPlainGraph(result);
+            return newInstance(result);
         }
     }
 
@@ -660,7 +651,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         } else {
             GraphInfo.transfer(this, result, elementMap);
             result.setFixed();
-            return fromPlainGraph(result);
+            return newInstance(result);
         }
     }
 
@@ -773,29 +764,53 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     private Map<String,AspectNode> nodeIdMap;
 
     /**
-     * Creates an aspect graph from a given (plain) graph. Convenience method
-     * for <code>getFactory().fromPlainGraph(GraphShape)</code>.
-     * @param plainGraph the plain graph to convert; non-null
+     * Creates an aspect graph from a given (plain) graph.
+     * @param graph the plain graph to convert; non-null
      * @return the resulting aspect graph; non-null
-     * @see #fromPlainGraph(PlainGraph)
      */
-    public static AspectGraph newInstance(PlainGraph plainGraph) {
-        return factory.fromPlainGraph(plainGraph);
-    }
-
-    /**
-     * Creates an aspect graph from a given (plain) graph. Convenience method
-     * for {@link #fromPlainGraph(PlainGraph, PlainToAspectMap)}.
-     * @param plainGraph the plain graph to convert; non-null
-     * @param elementMap output parameter for mapping from plain graph elements
-     *        to resulting {@link AspectGraph} elements; should be initially
-     *        empty
-     * @return the resulting aspect graph; non-null
-     * @see #fromPlainGraph(PlainGraph)
-     */
-    public static AspectGraph newInstance(PlainGraph plainGraph,
-            PlainToAspectMap elementMap) {
-        return factory.fromPlainGraph(plainGraph, elementMap);
+    public static AspectGraph newInstance(Graph graph) {
+        // map from original graph elements to aspect graph elements
+        GraphToAspectMap elementMap = new GraphToAspectMap(graph.getRole());
+        GraphRole role = graph.getRole();
+        AspectGraph result = new AspectGraph(graph.getName(), role);
+        FormatErrorSet errors = new FormatErrorSet();
+        assert elementMap != null && elementMap.isEmpty();
+        // first do the nodes;
+        for (Node node : graph.nodeSet()) {
+            AspectNode nodeImage = result.addNode(node.getNumber());
+            // update the maps
+            elementMap.putNode(node, nodeImage);
+        }
+        // look for node aspect indicators
+        // and put all correct aspect vales in a map
+        Map<Edge,AspectLabel> edgeDataMap = new HashMap<Edge,AspectLabel>();
+        for (Edge edge : graph.edgeSet()) {
+            AspectLabel label = parser.parse(edge.label().text(), role);
+            if (label.isNodeOnly()) {
+                AspectNode sourceImage = elementMap.getNode(edge.source());
+                sourceImage.setAspects(label);
+            } else {
+                edgeDataMap.put(edge, label);
+            }
+        }
+        // Now iterate over the remaining edges
+        for (Map.Entry<Edge,AspectLabel> entry : edgeDataMap.entrySet()) {
+            Edge edge = entry.getKey();
+            AspectLabel label = entry.getValue();
+            AspectEdge edgeImage =
+                result.addEdge(elementMap.getNode(edge.source()), label,
+                    elementMap.getNode(edge.target()));
+            elementMap.putEdge(edge, edgeImage);
+            if (!edge.source().equals(edge.target())
+                && edgeImage.getRole() != EdgeRole.BINARY) {
+                errors.add("%s %s must be a node label",
+                    label.getRole().getDescription(true), label, edgeImage);
+            }
+        }
+        GraphInfo.transfer(graph, result, elementMap);
+        result.addErrors(errors);
+        result.setFixed();
+        return result;
     }
 
     /** Creates an empty, fixed, named aspect graph, with a given graph role. */
@@ -917,10 +932,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         return result;
     }
 
-    /**
-     * The static instance serving as a factory.
-     */
-    private static final AspectGraph factory = emptyGraph(HOST);
     /** The singleton aspect parser instance. */
     private static final AspectParser parser = AspectParser.getInstance();
 
@@ -1031,5 +1042,26 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         public AspectToPlainMap newMap() {
             return new AspectToPlainMap();
         }
+    }
+    
+    /**
+     * Graph element map from a plain graph to an aspect graph.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    private static class GraphToAspectMap extends
+            ElementMap<Node,Edge,AspectNode,AspectEdge> {
+        /** Creates a fresh, empty map. */
+        public GraphToAspectMap(GraphRole graphRole) {
+            super(AspectFactory.instance(graphRole));
+            this.graphRole = graphRole;
+        }
+
+        @Override
+        public GraphToAspectMap newMap() {
+            return new GraphToAspectMap(this.graphRole);
+        }
+
+        private final GraphRole graphRole;
     }
 }

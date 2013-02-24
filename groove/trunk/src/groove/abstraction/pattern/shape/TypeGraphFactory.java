@@ -14,12 +14,9 @@
 /*
  * $Id: DefaultGxl.java,v 1.21 2007-12-03 08:55:18 rensink Exp $
  */
-package groove.abstraction.pattern.io.xml;
+package groove.abstraction.pattern.shape;
 
 import groove.abstraction.MyHashMap;
-import groove.abstraction.pattern.shape.TypeEdge;
-import groove.abstraction.pattern.shape.TypeGraph;
-import groove.abstraction.pattern.shape.TypeNode;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectKind;
@@ -36,7 +33,7 @@ import java.util.Map;
  * 
  * @author Eduardo Zambon
  */
-public final class TypeGraphGxl {
+public final class TypeGraphFactory {
 
     // ------------------------------------------------------------------------
     // Static fields
@@ -46,14 +43,14 @@ public final class TypeGraphGxl {
     private static final char NODE_ID_PREFIX = 't';
     private static final char EDGE_ID_PREFIX = 'm';
 
-    private static final TypeGraphGxl instance = new TypeGraphGxl();
+    private static final TypeGraphFactory instance = new TypeGraphFactory();
 
     // ------------------------------------------------------------------------
     // Static methods
     // ------------------------------------------------------------------------
 
     /** Returns the singleton instance of this class. */
-    public static TypeGraphGxl getInstance() {
+    public static TypeGraphFactory getInstance() {
         return instance;
     }
 
@@ -93,7 +90,7 @@ public final class TypeGraphGxl {
     // Constructors
     // ------------------------------------------------------------------------
 
-    private TypeGraphGxl() {
+    private TypeGraphFactory() {
         this.tGraph = null;
         this.tNodeMap = new MyHashMap<Integer,TypeNode>();
         this.tEdgeMap = new MyHashMap<Integer,TypeEdge>();
@@ -105,20 +102,8 @@ public final class TypeGraphGxl {
     // Other methods
     // ------------------------------------------------------------------------
 
-    /** Tries to load a pattern type graph from the given file. May return null. */
-    public TypeGraph loadTypeGraph(File file) {
-        TypeGraph result = null;
-        try {
-            result = unmarshalTypeGraph(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-
-    /** Loads a pattern type graph from the given file. */
-    public TypeGraph unmarshalTypeGraph(File file) throws IOException {
-        AspectGraph aGraph = AspectGraph.newInstance(Groove.loadGraph(file));
+    /** Converts an aspect graph into a type graph. */
+    public TypeGraph toTypeGraph(AspectGraph aGraph) throws IOException {
         clearMaps();
         createTypeGraph(aGraph.getName());
         createTypeNodes(aGraph);
@@ -224,5 +209,15 @@ public final class TypeGraphGxl {
             this.tEdgeMap.put(id, result);
         }
         return result;
+    }
+
+    // ------------------------------------------------------------------------
+    // Other methods
+    // ------------------------------------------------------------------------
+
+    /** Loads a pattern type graph from the given file. */
+    public static TypeGraph unmarshalTypeGraph(File file) throws IOException {
+        return getInstance().toTypeGraph(
+            AspectGraph.newInstance(Groove.loadGraph(file)));
     }
 }

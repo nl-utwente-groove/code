@@ -18,13 +18,13 @@ package groove.test.abstraction.pattern;
 
 import static org.junit.Assert.assertEquals;
 import groove.abstraction.pattern.PatternAbstraction;
-import groove.abstraction.pattern.io.xml.TypeGraphGxl;
 import groove.abstraction.pattern.lts.MatchResult;
 import groove.abstraction.pattern.match.Matcher;
 import groove.abstraction.pattern.match.MatcherFactory;
 import groove.abstraction.pattern.shape.PatternGraph;
 import groove.abstraction.pattern.shape.PatternShape;
 import groove.abstraction.pattern.shape.TypeGraph;
+import groove.abstraction.pattern.shape.TypeGraphFactory;
 import groove.abstraction.pattern.trans.PatternRule;
 import groove.grammar.Rule;
 import groove.grammar.host.HostGraph;
@@ -56,8 +56,7 @@ public class TestMatching {
         File typeGraphFile = new File(GRAMMAR + TYPE);
         try {
             view = GrammarModel.newInstance(grammarFile, false);
-            typeGraph =
-                TypeGraphGxl.getInstance().unmarshalTypeGraph(typeGraphFile);
+            typeGraph = TypeGraphFactory.unmarshalTypeGraph(typeGraphFile);
         } catch (IOException e) {
             e.printStackTrace();
         }

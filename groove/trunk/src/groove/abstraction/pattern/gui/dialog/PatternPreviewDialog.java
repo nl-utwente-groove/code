@@ -18,9 +18,9 @@ package groove.abstraction.pattern.gui.dialog;
 
 import groove.abstraction.pattern.gui.jgraph.PatternJGraph;
 import groove.abstraction.pattern.gui.jgraph.PatternJModel;
-import groove.abstraction.pattern.io.xml.TypeGraphGxl;
 import groove.abstraction.pattern.shape.AbstractPatternGraph;
 import groove.abstraction.pattern.shape.TypeGraph;
+import groove.abstraction.pattern.shape.TypeGraphFactory;
 import groove.gui.Simulator;
 import groove.gui.dialog.GraphPreviewDialog;
 
@@ -76,9 +76,7 @@ public final class PatternPreviewDialog extends
 
         TypeGraph pTGraph = null;
         try {
-            pTGraph =
-                TypeGraphGxl.getInstance().unmarshalTypeGraph(
-                    new File(TYPE_GRAPH));
+            pTGraph = TypeGraphFactory.unmarshalTypeGraph(new File(TYPE_GRAPH));
         } catch (IOException e) {
             e.printStackTrace();
         }

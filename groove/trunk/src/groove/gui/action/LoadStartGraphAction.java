@@ -1,12 +1,11 @@
 package groove.gui.action;
 
-import groove.grammar.aspect.AspectGraph;
 import groove.graph.GraphRole;
-import groove.graph.plain.PlainGraph;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.io.ExtensionFilter;
-import groove.io.xml.PlainGxl;
+import groove.io.graph.AttrGraph;
+import groove.io.graph.GxlIO;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,12 +29,11 @@ public class LoadStartGraphAction extends SimulatorAction {
         if (approve == JFileChooser.APPROVE_OPTION) {
             File file = getStateFileChooser().getSelectedFile();
             try {
-                PlainGraph plainGraph =
-                    PlainGxl.getInstance().unmarshalGraph(file);
-                plainGraph.setRole(GraphRole.HOST);
-                plainGraph.setName(ExtensionFilter.getPureName(file));
-                getSimulatorModel().doSetStartGraph(
-                    AspectGraph.newInstance(plainGraph));
+                AttrGraph xmlGraph =
+                    GxlIO.getInstance().loadGraph(file);
+                xmlGraph.setRole(GraphRole.HOST);
+                xmlGraph.setName(ExtensionFilter.getPureName(file));
+                getSimulatorModel().doSetStartGraph(xmlGraph.toAspectGraph());
             } catch (IOException exc) {
                 showErrorDialog(exc,
                     "Could not load start graph from " + file.getName());

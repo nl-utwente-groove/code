@@ -21,16 +21,16 @@ import groove.abstraction.pattern.PatternAbstraction;
 import groove.abstraction.pattern.explore.strategy.PatternDFSStrategy;
 import groove.abstraction.pattern.explore.strategy.PatternStrategy;
 import groove.abstraction.pattern.explore.util.TransSystemChecker;
-import groove.abstraction.pattern.io.xml.TypeGraphGxl;
 import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PGTSAdapter;
 import groove.abstraction.pattern.lts.PatternState;
 import groove.abstraction.pattern.lts.PatternTransition;
 import groove.abstraction.pattern.shape.TypeGraph;
+import groove.abstraction.pattern.shape.TypeGraphFactory;
 import groove.abstraction.pattern.trans.PatternGraphGrammar;
 import groove.explore.Generator;
-import groove.explore.strategy.Strategy;
 import groove.explore.strategy.DFSStrategy;
+import groove.explore.strategy.Strategy;
 import groove.grammar.Grammar;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
@@ -266,8 +266,7 @@ public class PatternGraphGenerator extends CommandLineTool {
             Grammar sGrammar = model.toGrammar();
             sGrammar.setFixed();
             File typeGraphFile = new File(grammarFile + ".gps/" + typeGraph);
-            TypeGraph type =
-                TypeGraphGxl.getInstance().unmarshalTypeGraph(typeGraphFile);
+            TypeGraph type = TypeGraphFactory.unmarshalTypeGraph(typeGraphFile);
             this.grammar = new PatternGraphGrammar(sGrammar, type);
         } catch (FormatException exc) {
             printError("Grammar format error: " + exc.getMessage(), false);

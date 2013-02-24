@@ -5,7 +5,7 @@ import groove.grammar.model.ResourceKind;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.io.xml.PlainGxl;
+import groove.io.graph.GxlIO;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,7 +76,7 @@ public final class SaveStateAction extends SimulatorAction {
                     String newName =
                         getResourceKind().getFilter().stripExtension(
                             selectedFile.getName());
-                    PlainGxl.getInstance().marshalGraph(
+                    GxlIO.getInstance().saveGraph(
                         graph.rename(newName).toPlainGraph(), selectedFile);
                 } else {
                     // save within the grammar

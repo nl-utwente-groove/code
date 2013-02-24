@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.NeighAbstraction;
-import groove.abstraction.neigh.io.xml.ShapeGxl;
 import groove.abstraction.neigh.match.PreMatch;
 import groove.abstraction.neigh.shape.Shape;
 import groove.abstraction.neigh.trans.Materialisation;
@@ -29,6 +28,7 @@ import groove.grammar.Rule;
 import groove.grammar.host.HostGraph;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
+import groove.io.graph.GxlIO;
 import groove.transform.Proof;
 
 import java.io.File;
@@ -267,14 +267,7 @@ public class TestMatching {
     @Test
     public void testNAC6() {
         File file = new File(DIRECTORY + "test-nac-5a.gxl");
-        Shape shape = null;
-        try {
-            shape =
-                ShapeGxl.getInstance(view.getTypeGraph()).unmarshalShape(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        Shape shape = loadShape(file);
         NeighAbsParam.getInstance().setNodeMultBound(1);
         NeighAbsParam.getInstance().setEdgeMultBound(1);
 
@@ -290,14 +283,7 @@ public class TestMatching {
     @Test
     public void testNAC7() {
         File file = new File(DIRECTORY + "test-nac-5b.gxl");
-        Shape shape = null;
-        try {
-            shape =
-                ShapeGxl.getInstance(view.getTypeGraph()).unmarshalShape(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        Shape shape = loadShape(file);
         Rule rule = grammar.getRule("test-nac-5");
         Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
         assertEquals(2, preMatches.size());
@@ -309,6 +295,15 @@ public class TestMatching {
         preMatch = it.next();
         mats = Materialisation.getMaterialisations(shape, preMatch);
         assertEquals(0, mats.size());
+    }
+
+    private Shape loadShape(File file) {
+        try {
+            return GxlIO.getInstance().loadGraph(file).toShape(
+                view.getTypeGraph());
+        } catch (IOException e) {
+            throw new IllegalArgumentException();
+        }
     }
 
     @AfterClass
