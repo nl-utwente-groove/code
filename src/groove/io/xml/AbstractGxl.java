@@ -92,11 +92,6 @@ public abstract class AbstractGxl<N extends Node,E extends Edge,G extends GGraph
         deleteFile(file);
     }
 
-    @Override
-    public final G createGraph(String graphName) {
-        throw new UnsupportedOperationException();
-    }
-
     /**
      * Delete the given file
      */
@@ -110,14 +105,7 @@ public abstract class AbstractGxl<N extends Node,E extends Edge,G extends GGraph
      * This implementation works by delegating to a {@link GxlIO}.
      */
     @Override
-    public void marshalGraph(G graph, File file) throws IOException {
-        this.marshalAnyGraph(graph, file);
-    }
-
-    /**
-     * This implementation works by delegating to a {@link GxlIO}.
-     */
-    public void marshalAnyGraph(Graph graph, File file) throws IOException {
+    public void marshalGraph(Graph graph, File file) throws IOException {
         // create parent dirs if necessary
         File parent = file.getParentFile();
         if (parent != null && !parent.exists()) {

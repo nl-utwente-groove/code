@@ -25,10 +25,10 @@ import groove.gui.Simulator;
 import groove.gui.dialog.SaveLTSAsDialog;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
-import groove.io.xml.AspectGxl;
-import groove.io.xml.PlainGxl;
+import groove.io.xml.LayedOutXml;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.util.Groove;
 
 import java.io.File;
 import java.io.IOException;
@@ -79,7 +79,7 @@ public class SaveLTSAsAction extends SimulatorAction {
         }
 
         try {
-            PlainGxl.getInstance().marshalAnyGraph(lts, ltsFile);
+            Groove.saveGraph(lts, ltsFile);
             ExtensionFilter stateFilter = FileType.STATE_FILTER;
             for (GraphState state : export) {
                 AspectGraph stateGraph =
@@ -87,7 +87,8 @@ public class SaveLTSAsAction extends SimulatorAction {
                 File file =
                     new File(ltsFile.getParentFile(),
                         stateFilter.addExtension(state.toString()));
-                AspectGxl.getInstance().marshalGraph(stateGraph, file);
+                LayedOutXml.getInstance().marshalGraph(
+                    stateGraph.toPlainGraph(), file);
             }
         } catch (IOException e) {
             showErrorDialog(e, "Error while saving LTS to %s", ltsFile);

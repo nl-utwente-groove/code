@@ -26,7 +26,6 @@ import groove.io.xml.GxlIO;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
 /**
  * Class to convert shapes to GXL format and back.
@@ -80,11 +79,6 @@ public final class ShapeGxl extends
     // ------------------------------------------------------------------------
     // Other methods
     // ------------------------------------------------------------------------
-
-    /** Loads a shape from the given URL. */
-    public Shape unmarshalShape(URL url) throws IOException {
-        return Shape.upcast(this.unmarshalGraph(url));
-    }
 
     /** Loads a shape from the given file. */
     public Shape unmarshalShape(File file) throws IOException {

@@ -27,8 +27,7 @@ import groove.graph.plain.PlainNode;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class NodeSetEdgeSetGraphTest extends GraphTest<PlainNode,PlainEdge> {
-
+public class NodeSetEdgeSetGraphTest extends GraphTest {
     @Override
     NodeSetEdgeSetGraph<PlainNode,PlainEdge> createGraph(String name) {
         return new NodeSetEdgeSetGraph<PlainNode,PlainEdge>(name) {

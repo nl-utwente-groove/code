@@ -18,6 +18,7 @@ package groove.io.xml;
 
 import static groove.io.FileType.LAYOUT_FILTER;
 import groove.grammar.model.FormatException;
+import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.plain.PlainGraph;
 import groove.graph.plain.PlainNode;
@@ -93,12 +94,7 @@ public class LayedOutXml implements Xml<PlainGraph> {
     }
 
     @Override
-    public final PlainGraph createGraph(String graphName) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void marshalGraph(PlainGraph graph, File file) throws IOException {
+    public void marshalGraph(Graph graph, File file) throws IOException {
         this.marshaller.marshalGraph(graph, file);
         toLayoutFile(file).delete();
     }
