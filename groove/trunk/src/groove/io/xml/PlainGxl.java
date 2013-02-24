@@ -16,9 +16,22 @@
  */
 package groove.io.xml;
 
+import static groove.io.FileType.LAYOUT_FILTER;
+import groove.grammar.model.FormatException;
+import groove.graph.Graph;
+import groove.graph.GraphInfo;
 import groove.graph.plain.PlainEdge;
 import groove.graph.plain.PlainGraph;
 import groove.graph.plain.PlainNode;
+import groove.gui.layout.LayoutMap;
+import groove.io.LayoutIO;
+import groove.util.Pair;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
 
 /**
  * Class to convert graphs to GXL format and back. Currently the conversion only
@@ -43,8 +56,57 @@ public class PlainGxl extends AbstractGxl<PlainNode,PlainEdge,PlainGraph> {
     private static final PlainGxl INSTANCE = new PlainGxl();
 
     @Override
+    public void marshalGraph(Graph graph, File file) throws IOException {
+        super.marshalGraph(graph, file);
+        // layout is now saved in the gxl file; delete the layout file
+        deleteFile(toLayoutFile(file));
+    }
+
+    @Override
+    public void deleteGraph(File file) {
+        super.deleteGraph(file);
+        // delete the layout file as well, if any
+        deleteFile(toLayoutFile(file));
+    }
+
+    @Override
     protected GxlIO<PlainNode,PlainEdge,PlainGraph> getIO() {
         return io;
     }
 
+    /* Overridden for backward compatibility: get layout from external file. */
+    @Override
+    protected Pair<PlainGraph,Map<String,PlainNode>> unmarshalGraphMap(File file)
+        throws IOException {
+        // first get the non-layed out result
+        Pair<PlainGraph,Map<String,PlainNode>> result =
+            super.unmarshalGraphMap(file);
+        PlainGraph resultGraph = result.one();
+        Map<String,PlainNode> nodeMap = result.two();
+        File layoutFile = toLayoutFile(file);
+        if (layoutFile.exists()) {
+            try {
+                InputStream in = new FileInputStream(layoutFile);
+                try {
+                    LayoutMap layout =
+                        LayoutIO.getInstance().readLayout(nodeMap, in);
+                    GraphInfo.setLayoutMap(resultGraph, layout);
+                } catch (FormatException exc) {
+                    GraphInfo.addErrors(resultGraph, exc.getErrors());
+                }
+            } catch (IOException e) {
+                // we do nothing when there is no layout found
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Converts a file containing a graph to the file containing the graph's
+     * layout information, by adding <code>Groove.LAYOUT_EXTENSION</code> to the
+     * file name.
+     */
+    private File toLayoutFile(File graphFile) {
+        return new File(LAYOUT_FILTER.addExtension(graphFile.toString()));
+    }
 }

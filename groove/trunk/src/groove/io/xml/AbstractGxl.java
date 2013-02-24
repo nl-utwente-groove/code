@@ -24,16 +24,13 @@ import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.graph.plain.PlainGraph;
 import groove.io.PriorityFileName;
-import groove.util.Groove;
 import groove.util.Pair;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Map;
 
 /**
@@ -48,54 +45,22 @@ public abstract class AbstractGxl<N extends Node,E extends Edge,G extends GGraph
     /** Returns the proper marshaller. */
     protected abstract GxlIO<N,E,G> getIO();
 
-    public G unmarshalGraph(URL url) throws IOException {
-        try {
-            URLConnection connection = url.openConnection();
-            InputStream in = connection.getInputStream();
-            G resultGraph = getIO().loadGraph(in);
-            // derive the name of the graph from the URL
-            String entryName;
-            if (connection instanceof JarURLConnection) {
-                entryName = ((JarURLConnection) connection).getEntryName();
-            } else {
-                entryName = url.getFile();
-            }
-            PriorityFileName priorityName =
-                new PriorityFileName(new File(entryName));
-            if (priorityName.hasPriority()) {
-                GraphInfo.setPriority(resultGraph, priorityName.getPriority());
-            }
-
-            // note: don't set the name,
-            // there is no general scheme to derive it from the URL
-            return resultGraph;
-        } catch (FormatException exc) {
-            throw new IOException(String.format(
-                "Format error while loading '%s':\n%s", url, exc.getMessage()),
-                exc);
-        } catch (IOException exc) {
-            throw new IOException(String.format(
-                "Error while loading '%s':\n%s", url, exc.getMessage()), exc);
-        }
-    }
-
     /** backwards compatibility method */
     public G unmarshalGraph(File file) throws IOException {
-        return unmarshalGraph(Groove.toURL(file));
+        return unmarshalGraphMap(file).one();
     }
 
     /**
-     * Deletes the graph file, as well as all variants with the same name but
-     * different priorities.
+     * Deletes the graph file and all dependent files.
      */
-    public final void deleteGraph(File file) {
+    public void deleteGraph(File file) {
         deleteFile(file);
     }
 
     /**
-     * Delete the given file
+     * Deletes the given file.
      */
-    public void deleteFile(File file) {
+    protected void deleteFile(File file) {
         if (file.exists() && file.canWrite()) {
             file.delete();
         }
@@ -120,31 +85,22 @@ public abstract class AbstractGxl<N extends Node,E extends Edge,G extends GGraph
     }
 
     /**
-     * Reads a graph from an XML formatted URL and returns it. Also constructs
+     * Reads a graph from a file and returns it. Also constructs
      * a map from node identities in the XML file to graph nodes. This can be
      * used to connect with layout information.
-     * @param url the URL to be read from
+     * @param file the file to be read from
      * @return a pair consisting of the unmarshalled graph and a string-to-node
      *         map from node identities in the XML file to nodes in the
      *         unmarshalled graph
      * @throws IOException if an error occurred during file input
      */
-    protected Pair<G,Map<String,N>> unmarshalGraphMap(URL url)
+    protected Pair<G,Map<String,N>> unmarshalGraphMap(File file)
         throws IOException {
         try {
-            URLConnection connection = url.openConnection();
-            InputStream in = connection.getInputStream();
+            InputStream in = new FileInputStream(file);
             Pair<G,Map<String,N>> result = getIO().loadGraphWithMap(in);
             PlainGraph resultGraph = (PlainGraph) result.one();
-            // derive the name of the graph from the URL
-            String entryName;
-            if (connection instanceof JarURLConnection) {
-                entryName = ((JarURLConnection) connection).getEntryName();
-            } else {
-                entryName = url.getFile();
-            }
-            PriorityFileName priorityName =
-                new PriorityFileName(new File(entryName));
+            PriorityFileName priorityName = new PriorityFileName(file);
             if (priorityName.hasPriority()) {
                 GraphInfo.setPriority(resultGraph, priorityName.getPriority());
             }
@@ -152,12 +108,12 @@ public abstract class AbstractGxl<N extends Node,E extends Edge,G extends GGraph
             // there is no general scheme to derive it from the URL
             return result;
         } catch (FormatException exc) {
-            throw new IOException(String.format(
-                "Format error while loading '%s':\n%s", url, exc.getMessage()),
-                exc);
+            throw new IOException(
+                String.format("Format error while loading '%s':\n%s", file,
+                    exc.getMessage()), exc);
         } catch (IOException exc) {
             throw new IOException(String.format(
-                "Error while loading '%s':\n%s", url, exc.getMessage()), exc);
+                "Error while loading '%s':\n%s", file, exc.getMessage()), exc);
         }
     }
 
