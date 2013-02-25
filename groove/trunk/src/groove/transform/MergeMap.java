@@ -21,7 +21,7 @@ import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
 import groove.grammar.host.ValueNode;
-import groove.graph.GElementMap;
+import groove.graph.AElementMap;
 import groove.graph.Morphism;
 import groove.graph.Node;
 
@@ -87,7 +87,7 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
     }
 
     @Override
-    public void putAll(GElementMap<HostNode,HostEdge,HostNode,HostEdge> other) {
+    public void putAll(AElementMap<HostNode,HostEdge,HostNode,HostEdge> other) {
         // override to make sure putNode is called
         for (Map.Entry<HostNode,? extends HostNode> nodeEntry : other.nodeMap().entrySet()) {
             putNode(nodeEntry.getKey(), nodeEntry.getValue());

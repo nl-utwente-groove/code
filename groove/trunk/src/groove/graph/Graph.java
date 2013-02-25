@@ -167,28 +167,8 @@ public interface Graph {
      */
     Graph newGraph(String name);
 
-    /**
-     * Generates a fresh node and adds it to this graph.
-     * Convenience method; equivalent to {@code addNode(getFactory().createNode())}
-     * @return the new node; non-{@code null}
-     */
-    Node addNode();
-
-    /**
-     * Adds a node with a given number to this graph.
-     * The node is required to be fresh within the graph.
-     * @return the new node
-     */
-    Node addNode(int nr);
-
     /** Returns the element factory used for elements of this graph. */
     ElementFactory<? extends Node,? extends Edge> getFactory();
-
-    /** 
-     * Sets a new (non-{@code null}) name of this graph.
-     * Only allowed if the graph is not fixed.
-     */
-    void setName(String name);
 
     /** Returns the (non-{@code null}) name of this graph. */
     String getName();

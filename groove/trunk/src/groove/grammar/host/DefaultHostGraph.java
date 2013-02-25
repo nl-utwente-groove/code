@@ -30,7 +30,7 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
-import groove.graph.GElementMap;
+import groove.graph.AElementMap;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
@@ -97,8 +97,10 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
      */
     public DefaultHostGraph(Graph graph) {
         this(graph.getName());
-        GElementMap<Node,Edge,HostNode,HostEdge> map =
-            new GElementMap<Node,Edge,HostNode,HostEdge>(getFactory());
+        AElementMap<Node,Edge,HostNode,HostEdge> map =
+            new AElementMap<Node,Edge,HostNode,HostEdge>(getFactory()) {
+                // empty
+            };
         for (Node node : graph.nodeSet()) {
             HostNode newNode = addNode(node.getNumber());
             map.putNode(node, newNode);

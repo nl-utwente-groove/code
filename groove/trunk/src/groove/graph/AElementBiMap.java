@@ -30,14 +30,14 @@ import java.util.Set;
  * When the inverse relation is computed, the map is fixed and can no longer
  * be altered.
  */
-abstract public class InvertibleElementMap<SN extends Node,SE extends Edge,TN extends Node,TE extends Edge>
-        extends GElementMap<SN,SE,TN,TE> implements Fixable {
+abstract public class AElementBiMap<SN extends Node,SE extends Edge,TN extends Node,TE extends Edge>
+        extends AElementMap<SN,SE,TN,TE> implements Fixable {
 
     private Map<TN,Set<SN>> inverseNodeMap;
     private Map<TE,Set<SE>> inverseEdgeMap;
 
     /** Default constructor. */
-    public InvertibleElementMap(ElementFactory<TN,TE> factory) {
+    public AElementBiMap(ElementFactory<TN,TE> factory) {
         super(factory);
     }
 
@@ -103,7 +103,7 @@ abstract public class InvertibleElementMap<SN extends Node,SE extends Edge,TN ex
     }
 
     /** Returns the set of host nodes mapped to a given shape node. */
-    public Set<? extends Node> getPreImages(TN node) {
+    public Set<? extends SN> getPreImages(Node node) {
         Set<SN> result = getInverseNodeMap().get(node);
         if (result == null) {
             result = Collections.emptySet();
@@ -112,12 +112,11 @@ abstract public class InvertibleElementMap<SN extends Node,SE extends Edge,TN ex
     }
 
     /** Returns the set of host edges mapped to a given shape edge. */
-    public Set<? extends Edge> getPreImages(TE edge) {
+    public Set<? extends SE> getPreImages(Edge edge) {
         Set<SE> result = getInverseEdgeMap().get(edge);
         if (result == null) {
             result = Collections.emptySet();
         }
         return result;
     }
-
 }

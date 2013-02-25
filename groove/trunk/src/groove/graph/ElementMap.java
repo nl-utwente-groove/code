@@ -61,15 +61,15 @@ public interface ElementMap {
      * Returns the built-in edge map.
      */
     public Map<? extends Edge,? extends Edge> edgeMap();
-
-    /**
-     * Returns a deep copy of the node and edge maps.
-     */
-    public ElementMap clone();
-
-    /**
-     * Factory method for this type of map.
-     * Returns a fresh map of the type of this map.
-     */
-    public ElementMap newMap();
+    //
+    //    /**
+    //     * Returns a deep copy of the node and edge maps.
+    //     */
+    //    public ElementMap clone();
+    //
+    //    /**
+    //     * Factory method for this type of map.
+    //     * Returns a fresh map of the type of this map.
+    //     */
+    //    public ElementMap newMap();
 }

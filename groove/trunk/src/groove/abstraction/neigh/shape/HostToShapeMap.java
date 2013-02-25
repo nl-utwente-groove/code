@@ -4,10 +4,9 @@ import groove.abstraction.MyHashMap;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.NodeEquivClass;
 import groove.grammar.host.HostEdge;
-import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
+import groove.graph.AElementBiMap;
 import groove.graph.Edge;
-import groove.graph.InvertibleElementMap;
 import groove.graph.Node;
 import groove.util.Fixable;
 
@@ -20,8 +19,7 @@ import java.util.Set;
  * @author Eduardo Zambon
  */
 public final class HostToShapeMap extends
-        InvertibleElementMap<HostNode,HostEdge,HostNode,HostEdge> implements
-        Fixable {
+        AElementBiMap<HostNode,HostEdge,HostNode,HostEdge> implements Fixable {
 
     // ------------------------------------------------------------------------
     // Object fields
@@ -81,14 +79,14 @@ public final class HostToShapeMap extends
 
     @SuppressWarnings("unchecked")
     @Override
-    public Set<HostNode> getPreImages(HostNode node) {
+    public Set<HostNode> getPreImages(Node node) {
         assert node instanceof ShapeNode;
         return (Set<HostNode>) super.getPreImages(node);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Set<HostEdge> getPreImages(HostEdge edge) {
+    public Set<HostEdge> getPreImages(Edge edge) {
         assert edge instanceof ShapeEdge;
         return (Set<HostEdge>) super.getPreImages(edge);
     }
@@ -108,8 +106,7 @@ public final class HostToShapeMap extends
         }
         EquivClass<HostNode> nodesG = this.ecMap.get(ecS);
         if (nodesG == null) {
-            nodesG =
-                new NodeEquivClass<HostNode>((HostFactory) this.getFactory());
+            nodesG = new NodeEquivClass<HostNode>(getFactory());
             for (ShapeNode nodeS : ecS) {
                 nodesG.addAll(this.getPreImages(nodeS));
             }
@@ -118,4 +115,8 @@ public final class HostToShapeMap extends
         return nodesG;
     }
 
+    @Override
+    public ShapeFactory getFactory() {
+        return (ShapeFactory) super.getFactory();
+    }
 }

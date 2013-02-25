@@ -121,14 +121,14 @@ public final class ShapeMorphism extends HostGraphMorphism {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Set<ShapeNode> getPreImages(HostNode node) {
+    public Set<ShapeNode> getPreImages(Node node) {
         assert node instanceof ShapeNode;
         return (Set<ShapeNode>) super.getPreImages(node);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Set<ShapeEdge> getPreImages(HostEdge edge) {
+    public Set<ShapeEdge> getPreImages(Edge edge) {
         assert edge instanceof ShapeEdge;
         return (Set<ShapeEdge>) super.getPreImages(edge);
     }

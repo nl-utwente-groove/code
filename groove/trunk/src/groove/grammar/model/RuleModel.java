@@ -2395,10 +2395,5 @@ public class RuleModel extends GraphBasedModel<Rule> implements
         public RuleFactory getFactory() {
             return (RuleFactory) super.getFactory();
         }
-
-        @Override
-        public RuleModelMap newMap() {
-            return new RuleModelMap(getFactory());
-        }
     }
 }

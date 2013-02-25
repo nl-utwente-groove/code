@@ -19,7 +19,9 @@ package groove.abstraction.pattern.shape;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.MyHashMap;
 import groove.abstraction.MyHashSet;
+import groove.graph.Edge;
 import groove.graph.Morphism;
+import groove.graph.Node;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -87,13 +89,13 @@ public final class PatternShapeMorphism extends
 
     @SuppressWarnings("unchecked")
     @Override
-    public Set<PatternNode> getPreImages(PatternNode node) {
+    public Set<PatternNode> getPreImages(Node node) {
         return (Set<PatternNode>) super.getPreImages(node);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Set<PatternEdge> getPreImages(PatternEdge edge) {
+    public Set<PatternEdge> getPreImages(Edge edge) {
         return (Set<PatternEdge>) super.getPreImages(edge);
     }
 

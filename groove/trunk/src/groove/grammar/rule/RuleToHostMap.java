@@ -24,8 +24,8 @@ import groove.grammar.host.HostNode;
 import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
-import groove.graph.GElementMap;
-import groove.graph.InvertibleElementMap;
+import groove.graph.AElementMap;
+import groove.graph.AElementBiMap;
 import groove.graph.Label;
 
 import java.util.HashMap;
@@ -39,7 +39,7 @@ import java.util.Map;
  * @version $Revision$
  */
 public class RuleToHostMap extends
-        InvertibleElementMap<RuleNode,RuleEdge,HostNode,HostEdge> implements
+        AElementBiMap<RuleNode,RuleEdge,HostNode,HostEdge> implements
         VarMap {
     /**
      * Creates an empty map with an empty valuation.
@@ -103,7 +103,7 @@ public class RuleToHostMap extends
      * Also copies the other's valuation, if any.
      */
     @Override
-    public void putAll(GElementMap<RuleNode,RuleEdge,HostNode,HostEdge> other) {
+    public void putAll(AElementMap<RuleNode,RuleEdge,HostNode,HostEdge> other) {
         super.putAll(other);
         if (other instanceof RuleToHostMap) {
             putAllVar(((RuleToHostMap) other).getValuation());
@@ -151,14 +151,6 @@ public class RuleToHostMap extends
         return result;
     }
 
-    /**
-     * This implementation returns a {@link RuleToHostMap}.}
-     */
-    @Override
-    public RuleToHostMap clone() {
-        return (RuleToHostMap) super.clone();
-    }
-
     @Override
     public void clear() {
         super.clear();
@@ -179,11 +171,6 @@ public class RuleToHostMap extends
     @Override
     public String toString() {
         return super.toString() + " Valuation: " + this.valuation;
-    }
-
-    @Override
-    public RuleToHostMap newMap() {
-        return new RuleToHostMap(getFactory());
     }
 
     /** Specialises the return type. */

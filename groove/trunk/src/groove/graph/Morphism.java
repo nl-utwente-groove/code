@@ -24,7 +24,7 @@ import java.util.Map;
  * @version $Revision $
  */
 public class Morphism<N extends Node,E extends Edge> extends
-        InvertibleElementMap<N,E,N,E> {
+        AElementBiMap<N,E,N,E> {
     /**
      * Creates a morphism, based on a given element factory.
      */
@@ -46,14 +46,19 @@ public class Morphism<N extends Node,E extends Edge> extends
         return (Map<E,E>) super.edgeMap();
     }
 
-    @Override
-    public Morphism<N,E> newMap() {
+    /**
+     * Factory method for this type of map.
+     * Returns a fresh map of the type of this map.
+     */
+    protected Morphism<N,E> newMap() {
         return new Morphism<N,E>(getFactory());
     }
 
     @Override
     public Morphism<N,E> clone() {
-        return (Morphism<N,E>) super.clone();
+        Morphism<N,E> result = new Morphism<N,E>(getFactory());
+        result.putAll(this);
+        return result;
     }
 
     /** This implementation is the identity on labels. */
