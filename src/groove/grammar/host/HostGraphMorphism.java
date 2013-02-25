@@ -42,7 +42,7 @@ public class HostGraphMorphism extends Morphism<HostNode,HostEdge> {
     }
 
     @Override
-    public HostGraphMorphism newMap() {
+    protected HostGraphMorphism newMap() {
         return new HostGraphMorphism(getFactory());
     }
 
@@ -58,8 +58,7 @@ public class HostGraphMorphism extends Morphism<HostNode,HostEdge> {
 
     /** Creates a host graph consisting precisely of the node and edge images in this morphism. */
     public DefaultHostGraph createImage(String name) {
-        DefaultHostGraph result =
-            new DefaultHostGraph(name, getFactory());
+        DefaultHostGraph result = new DefaultHostGraph(name, getFactory());
         result.addNodeSet(nodeMap().values());
         result.addEdgeSetContext(edgeMap().values());
         return result;

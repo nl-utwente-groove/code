@@ -62,7 +62,7 @@ public final class ShapeMorphism extends HostGraphMorphism {
     }
 
     @Override
-    public ShapeMorphism newMap() {
+    protected ShapeMorphism newMap() {
         return new ShapeMorphism(getFactory());
     }
 

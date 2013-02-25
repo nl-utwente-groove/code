@@ -78,7 +78,7 @@ public final class PatternShapeMorphism extends
     }
 
     @Override
-    public PatternShapeMorphism newMap() {
+    protected PatternShapeMorphism newMap() {
         return new PatternShapeMorphism(getFactory());
     }
 
