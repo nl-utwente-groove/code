@@ -65,7 +65,7 @@ public class RuleGraphMorphism extends Morphism<RuleNode,RuleEdge> {
     }
 
     @Override
-    public RuleGraphMorphism newMap() {
+    protected RuleGraphMorphism newMap() {
         return new RuleGraphMorphism(getFactory());
     }
 

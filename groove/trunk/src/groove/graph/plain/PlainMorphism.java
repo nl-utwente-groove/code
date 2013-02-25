@@ -37,7 +37,7 @@ public class PlainMorphism extends Morphism<PlainNode,PlainEdge> {
     }
 
     @Override
-    public PlainMorphism newMap() {
+    protected PlainMorphism newMap() {
         return new PlainMorphism();
     }
 

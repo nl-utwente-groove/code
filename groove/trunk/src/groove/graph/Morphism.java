@@ -46,19 +46,19 @@ public class Morphism<N extends Node,E extends Edge> extends
         return (Map<E,E>) super.edgeMap();
     }
 
+    @Override
+    public Morphism<N,E> clone() {
+        Morphism<N,E> result = newMap();
+        result.putAll(this);
+        return result;
+    }
+
     /**
      * Factory method for this type of map.
      * Returns a fresh map of the type of this map.
      */
     protected Morphism<N,E> newMap() {
         return new Morphism<N,E>(getFactory());
-    }
-
-    @Override
-    public Morphism<N,E> clone() {
-        Morphism<N,E> result = new Morphism<N,E>(getFactory());
-        result.putAll(this);
-        return result;
     }
 
     /** This implementation is the identity on labels. */

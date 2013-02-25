@@ -202,7 +202,7 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
     }
 
     @Override
-    public MergeMap newMap() {
+    protected MergeMap newMap() {
         return new MergeMap(getFactory());
     }
 
