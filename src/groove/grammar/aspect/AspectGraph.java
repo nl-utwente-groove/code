@@ -34,7 +34,7 @@ import groove.grammar.type.TypeLabel;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.ElementFactory;
-import groove.graph.GElementMap;
+import groove.graph.AElementMap;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
@@ -1018,7 +1018,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     }
 
     private static class AspectToPlainMap extends
-            GElementMap<AspectNode,AspectEdge,PlainNode,PlainEdge> {
+            AElementMap<AspectNode,AspectEdge,PlainNode,PlainEdge> {
         /** Constructs a new, empty map. */
         public AspectToPlainMap() {
             super(PlainFactory.instance());
@@ -1037,31 +1037,18 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             return getFactory().createEdge(imageSource, key.getPlainLabel(),
                 imageTarget);
         }
-
-        @Override
-        public AspectToPlainMap newMap() {
-            return new AspectToPlainMap();
-        }
     }
-    
+
     /**
      * Graph element map from a plain graph to an aspect graph.
      * @author Arend Rensink
      * @version $Revision $
      */
     private static class GraphToAspectMap extends
-            GElementMap<Node,Edge,AspectNode,AspectEdge> {
+            AElementMap<Node,Edge,AspectNode,AspectEdge> {
         /** Creates a fresh, empty map. */
         public GraphToAspectMap(GraphRole graphRole) {
             super(AspectFactory.instance(graphRole));
-            this.graphRole = graphRole;
         }
-
-        @Override
-        public GraphToAspectMap newMap() {
-            return new GraphToAspectMap(this.graphRole);
-        }
-
-        private final GraphRole graphRole;
     }
 }

@@ -203,7 +203,8 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 TypeGraph type = getGrammar().getTypeGraph();
                 HostGraphMorphism typing = type.analyzeHost(result);
                 result = typing.createImage(result.getName());
-                HostModelMap newElementMap = elementMap.newMap();
+                HostModelMap newElementMap =
+                    new HostModelMap(result.getFactory());
                 for (Map.Entry<AspectNode,HostNode> nodeEntry : elementMap.nodeMap().entrySet()) {
                     HostNode typedNode = typing.getNode(nodeEntry.getValue());
                     if (typedNode != null) {
@@ -323,16 +324,6 @@ public class HostModel extends GraphBasedModel<HostGraph> {
          */
         public HostModelMap(HostFactory factory) {
             super(factory);
-        }
-
-        @Override
-        public HostModelMap newMap() {
-            return new HostModelMap(getFactory());
-        }
-
-        @Override
-        public HostFactory getFactory() {
-            return (HostFactory) super.getFactory();
         }
     }
 }

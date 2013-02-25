@@ -27,7 +27,7 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
-import groove.graph.GElementMap;
+import groove.graph.AElementMap;
 import groove.graph.Node;
 
 import java.util.HashMap;
@@ -112,7 +112,7 @@ abstract public class GraphBasedModel<R> extends ResourceModel<R> {
 
     /** Mapping from source graph elements to resource elements. */
     abstract public static class ModelMap<N extends Node,E extends Edge>
-            extends GElementMap<AspectNode,AspectEdge,N,E> {
+            extends AElementMap<AspectNode,AspectEdge,N,E> {
         /**
          * Creates a new map, on the basis of a given factory.
          */
@@ -147,11 +147,6 @@ abstract public class GraphBasedModel<R> extends ResourceModel<R> {
         @Override
         public TypeFactory getFactory() {
             return (TypeFactory) super.getFactory();
-        }
-
-        @Override
-        public TypeModelMap newMap() {
-            return new TypeModelMap(getFactory());
         }
     }
 }

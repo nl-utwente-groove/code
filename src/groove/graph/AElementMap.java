@@ -27,12 +27,12 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GElementMap<SN extends Node,SE extends Edge,TN extends Node,TE extends Edge>
+abstract public class AElementMap<SN extends Node,SE extends Edge,TN extends Node,TE extends Edge>
         implements ElementMap, Cloneable {
     /**
      * Constructs an empty map.
      */
-    public GElementMap(ElementFactory<TN,TE> factory) {
+    public AElementMap(ElementFactory<TN,TE> factory) {
         this.nodeMap = createNodeMap();
         this.edgeMap = createEdgeMap();
         this.factory = factory;
@@ -98,7 +98,7 @@ public class GElementMap<SN extends Node,SE extends Edge,TN extends Node,TE exte
      * Copies the information from a given element map to this one.
      * @param other the element map to be copied
      */
-    public void putAll(GElementMap<SN,SE,TN,TE> other) {
+    public void putAll(AElementMap<SN,SE,TN,TE> other) {
         this.nodeMap.putAll(other.nodeMap());
         this.edgeMap.putAll(other.edgeMap());
     }
@@ -130,9 +130,9 @@ public class GElementMap<SN extends Node,SE extends Edge,TN extends Node,TE exte
      */
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof GElementMap)
-            && nodeMap().equals(((GElementMap<?,?,?,?>) obj).nodeMap())
-            && edgeMap().equals(((GElementMap<?,?,?,?>) obj).edgeMap());
+        return (obj instanceof AElementMap)
+            && nodeMap().equals(((AElementMap<?,?,?,?>) obj).nodeMap())
+            && edgeMap().equals(((AElementMap<?,?,?,?>) obj).edgeMap());
     }
 
     /**
@@ -220,23 +220,22 @@ public class GElementMap<SN extends Node,SE extends Edge,TN extends Node,TE exte
         return this.edgeMap;
     }
 
-    /**
-     * Returns a deep copy of the node and edge maps.
-     */
-    @Override
-    public GElementMap<SN,SE,TN,TE> clone() {
-        GElementMap<SN,SE,TN,TE> result = newMap();
-        result.putAll(this);
-        return result;
-    }
-
-    /**
-     * Factory method for this type of map.
-     * Returns a fresh map of the type of this map.
-     */
-    public GElementMap<SN,SE,TN,TE> newMap() {
-        return new GElementMap<SN,SE,TN,TE>(getFactory());
-    }
+    //
+    //    /**
+    //     * Returns a deep copy of the node and edge maps.
+    //     */
+    //    @Override
+    //    public GElementMap<SN,SE,TN,TE> clone() {
+    //        GElementMap<SN,SE,TN,TE> result = newMap();
+    //        result.putAll(this);
+    //        return result;
+    //    }
+    //
+    //    /**
+    //     * Factory method for this type of map.
+    //     * Returns a fresh map of the type of this map.
+    //     */
+    //    abstract public GElementMap<SN,SE,TN,TE> newMap();
 
     /**
      * Callback factory method to create the actual node map.

@@ -28,6 +28,7 @@ import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeLabel;
+import groove.graph.Edge;
 import groove.graph.Node;
 
 import java.util.Map;
@@ -74,63 +75,58 @@ public final class RuleToShapeMap extends RuleToHostMap {
         return super.putVar(var, value);
     }
 
-    /** Tests if the map is not fixed and specialises the return type. */
+    /* Tests if the map is not fixed and specialises the return type. */
     @Override
     public ShapeEdge mapEdge(RuleEdge key) {
         assert !isFixed();
         return (ShapeEdge) super.mapEdge(key);
     }
 
-    /** Tests if the map is not fixed and specialises the return type. */
+    /* Tests if the map is not fixed and specialises the return type. */
     @Override
     public ShapeNode putNode(RuleNode key, HostNode layout) {
         assert !isFixed();
         return (ShapeNode) super.putNode(key, layout);
     }
 
-    /** Tests if the map is not fixed and specialises the return type. */
+    /* Tests if the map is not fixed and specialises the return type. */
     @Override
     public ShapeEdge putEdge(RuleEdge key, HostEdge layout) {
         assert !isFixed();
         return (ShapeEdge) super.putEdge(key, layout);
     }
 
-    /** Tests if the map is not fixed and specialises the return type. */
+    /* Tests if the map is not fixed and specialises the return type. */
     @Override
     public ShapeNode removeNode(RuleNode key) {
         assert !isFixed();
         return (ShapeNode) super.removeNode(key);
     }
 
-    /** Tests if the map is not fixed and specialises the return type. */
+    /* Tests if the map is not fixed and specialises the return type. */
     @Override
     public ShapeEdge removeEdge(RuleEdge key) {
         assert !isFixed();
         return (ShapeEdge) super.removeEdge(key);
     }
 
-    /** Specialises the return type. */
+    /* Specialises the return type. */
     @Override
     public ShapeNode getNode(Node key) {
         return (ShapeNode) super.getNode(key);
     }
 
-    /** Specialises the return type. */
+    /* Specialises the return type. */
     @Override
     public ShapeFactory getFactory() {
         return (ShapeFactory) super.getFactory();
     }
 
-    /** Tests if the map is not fixed and specialises the return type. */
     @Override
     public RuleToShapeMap clone() {
-        return (RuleToShapeMap) super.clone();
-    }
-
-    /** Tests if the map is not fixed and specialises the return type. */
-    @Override
-    public RuleToShapeMap newMap() {
-        return new RuleToShapeMap(getFactory());
+        RuleToShapeMap result = new RuleToShapeMap(getFactory());
+        result.putAll(this);
+        return result;
     }
 
     @Override
@@ -142,14 +138,14 @@ public final class RuleToShapeMap extends RuleToHostMap {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Set<RuleNode> getPreImages(HostNode node) {
+    public Set<RuleNode> getPreImages(Node node) {
         assert node instanceof ShapeNode;
         return (Set<RuleNode>) super.getPreImages(node);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Set<RuleEdge> getPreImages(HostEdge edge) {
+    public Set<RuleEdge> getPreImages(Edge edge) {
         assert edge instanceof ShapeEdge;
         return (Set<RuleEdge>) super.getPreImages(edge);
     }

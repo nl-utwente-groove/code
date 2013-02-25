@@ -22,7 +22,7 @@ import groove.abstraction.pattern.shape.PatternNode;
 import groove.abstraction.pattern.trans.PatternRule;
 import groove.abstraction.pattern.trans.RuleEdge;
 import groove.abstraction.pattern.trans.RuleNode;
-import groove.graph.InvertibleElementMap;
+import groove.graph.AElementBiMap;
 
 /**
  * Match result of a pattern graph rule.
@@ -30,7 +30,7 @@ import groove.graph.InvertibleElementMap;
  * @author Eduardo Zambon
  */
 public class Match extends
-        InvertibleElementMap<RuleNode,RuleEdge,PatternNode,PatternEdge> {
+        AElementBiMap<RuleNode,RuleEdge,PatternNode,PatternEdge> {
 
     private final PatternRule pRule;
     private final PatternGraph pGraph;
@@ -80,5 +80,4 @@ public class Match extends
     public Match clone() {
         return new Match(this);
     }
-
 }

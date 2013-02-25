@@ -52,11 +52,37 @@ public interface GGraph<N extends Node,E extends Edge> extends Graph, Fixable {
     /* Specialises the return type. */
     GGraph<N,E> newGraph(String name);
 
-    /* Specialises the return type. */
+    /** 
+     * Sets a new (non-{@code null}) name of this graph.
+     * Only allowed if the graph is not fixed.
+     */
+    void setName(String name);
+
+    /**
+     * Generates a fresh node and adds it to this graph.
+     * Convenience method; equivalent to {@code addNode(getFactory().createNode())}
+     * @return the new node; non-{@code null}
+     */
     N addNode();
 
-    /* Specialises the return type. */
+    /**
+     * Adds a node with a given number to this graph.
+     * The node is required to be fresh within the graph.
+     * @return the new node
+     */
     N addNode(int nr);
+
+    /**
+     * Adds a node to this graph. This is allowed only if the graph is not
+     * fixed. If the node is already in the graph then the method has no effect.
+     * 
+     * @param node the node to be added.
+     * @return <tt>true</tt> if the node was indeed added (and not yet
+     *         present)
+     * @see #addEdge(Edge)
+     * @see #isFixed()
+     */
+    boolean addNode(N node);
 
     /**
      * Adds a binary edge to the graph, between given nodes and with a given
@@ -90,16 +116,12 @@ public interface GGraph<N extends Node,E extends Edge> extends Graph, Fixable {
     E addEdge(N source, Label label, N target);
 
     /**
-     * Adds a node to this graph. This is allowed only if the graph is not
-     * fixed. If the node is already in the graph then the method has no effect.
-     * 
-     * @param node the node to be added.
-     * @return <tt>true</tt> if the node was indeed added (and not yet
-     *         present)
-     * @see #addEdge(Edge)
-     * @see #isFixed()
+     * Adds an edge to the graph.
+     * The end nodes are assumed to be in the graph already.
+     * @param edge the (non-{@code null}) edge to be added to the graph
+     * @return <tt>true</tt> if the graph changed as a result of this call
      */
-    boolean addNode(N node);
+    boolean addEdge(E edge);
 
     /**
      * Convenience method to add an edge and its end nodes to this graph.
@@ -180,14 +202,6 @@ public interface GGraph<N extends Node,E extends Edge> extends Graph, Fixable {
      * @see #removeNodeSetContext(Collection)
      */
     boolean removeEdgeSet(Collection<? extends E> edgeSet);
-
-    /**
-     * Adds an edge to the graph.
-     * The end nodes are assumed to be in the graph already.
-     * @param edge the (non-{@code null}) edge to be added to the graph
-     * @return <tt>true</tt> if the graph changed as a result of this call
-     */
-    boolean addEdge(E edge);
 
     /**
      * Removes a node from the graph.

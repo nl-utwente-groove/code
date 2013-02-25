@@ -38,7 +38,7 @@ import groove.grammar.host.HostNode;
 import groove.grammar.type.TypeGraph;
 import groove.graph.Edge;
 import groove.graph.ElementFactory;
-import groove.graph.GElementMap;
+import groove.graph.AElementMap;
 import groove.graph.GGraph;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
@@ -253,10 +253,9 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
      * The target graph is left unfixed.
      * @param target the target of the copy operation; non-{@code null}
      */
-    public <N extends Node,E extends Edge,G extends GGraph<N,E>> GElementMap<AttrNode,AttrEdge,N,E> copyTo(
+    public <N extends Node,E extends Edge,G extends GGraph<N,E>> void copyTo(
             G target) {
-        GElementMap<AttrNode,AttrEdge,N,E> map =
-            new GElementMap<AttrNode,AttrEdge,N,E>(target.getFactory());
+        AttrToGraphMap<N,E> map = new AttrToGraphMap<N,E>(target.getFactory());
         for (AttrNode node : nodeSet()) {
             N nodeImage = target.addNode(node.getNumber());
             map.putNode(node, nodeImage);
@@ -266,7 +265,6 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             target.addEdge(edgeImage);
         }
         GraphInfo.transfer(this, target, map);
-        return map;
     }
 
     /**
@@ -489,7 +487,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     private static final String EDGE_MULT_ATTR_NAME = "emult";
 
     private static class AspectToAttrMap extends
-            GElementMap<AspectNode,AspectEdge,AttrNode,AttrEdge> {
+            AElementMap<AspectNode,AspectEdge,AttrNode,AttrEdge> {
         /** Constructs a new, empty map. */
         public AspectToAttrMap() {
             super(AttrFactory.instance());
@@ -508,15 +506,18 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
             return getFactory().createEdge(imageSource, key.getPlainLabel(),
                 imageTarget);
         }
+    }
 
-        @Override
-        public AspectToAttrMap newMap() {
-            return new AspectToAttrMap();
+    private static class AttrToGraphMap<N extends Node,E extends Edge> extends
+            AElementMap<AttrNode,AttrEdge,N,E> {
+        /** Constructs a new, empty map. */
+        public AttrToGraphMap(ElementFactory<N,E> factory) {
+            super(factory);
         }
     }
 
     private static class AttrToShapeMap extends
-            GElementMap<AttrNode,AttrEdge,HostNode,HostEdge> {
+            AttrToGraphMap<HostNode,HostEdge> {
         /** Constructs a new, empty map. */
         public AttrToShapeMap(ShapeFactory factory) {
             super(factory);
@@ -535,7 +536,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     }
 
     private static class ShapeToAttrMap extends
-            GElementMap<HostNode,HostEdge,AttrNode,AttrEdge> {
+            AElementMap<HostNode,HostEdge,AttrNode,AttrEdge> {
         /** Constructs a new, empty map. */
         public ShapeToAttrMap() {
             super(AttrFactory.instance());
@@ -555,7 +556,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     }
 
     private static class AttrToPatternMap extends
-            GElementMap<AttrNode,AttrEdge,PatternNode,PatternEdge> {
+            AttrToGraphMap<PatternNode,PatternEdge> {
         /** Constructs a new, empty map. */
         public AttrToPatternMap(PatternFactory factory) {
             super(factory);
@@ -563,7 +564,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     }
 
     private static class PatternToXmlMap extends
-            GElementMap<PatternNode,PatternEdge,AttrNode,AttrEdge> {
+            AElementMap<PatternNode,PatternEdge,AttrNode,AttrEdge> {
         /** Constructs a new, empty map. */
         public PatternToXmlMap() {
             super(AttrFactory.instance());
