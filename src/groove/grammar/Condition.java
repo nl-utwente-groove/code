@@ -24,6 +24,7 @@ import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleFactory;
 import groove.grammar.rule.RuleGraph;
+import groove.grammar.rule.RuleLabel;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.VariableNode;
 import groove.grammar.type.TypeGraph;
@@ -393,7 +394,8 @@ public class Condition implements Fixable {
                 VariableNode varNode = (VariableNode) node;
                 boolean isResolved = false;
                 for (RuleEdge inEdge : getPattern().inEdgeSet(node)) {
-                    if (!inEdge.label().isEmpty()) {
+                    RuleLabel inLabel = inEdge.label();
+                    if (!inLabel.isEmpty() && !inLabel.isNeg()) {
                         isResolved = true;
                         break;
                     }
