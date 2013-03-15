@@ -24,7 +24,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({AlgebrasTest.class, JavaAlgebraTest.class,
-    BigAlgebraTest.class, PointAlgebraTest.class, TermAlgebraTest.class,})
+    BigAlgebraTest.class, PointAlgebraTest.class, TermAlgebraTest.class})
 public class AllAlgebraTests {
     // Empty by design.
 }
