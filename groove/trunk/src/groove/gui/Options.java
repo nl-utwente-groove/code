@@ -32,7 +32,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -1078,8 +1077,8 @@ public class Options implements Cloneable {
         Font result = null;
         try {
             result =
-                Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(
-                    Groove.getResource(name).getFile()));
+                Font.createFont(Font.TRUETYPE_FONT,
+                    Groove.getResource(name).openStream());
             result = result.deriveFont(getLabelFont().getSize2D());
         } catch (FileNotFoundException e) {
             // do nothing
