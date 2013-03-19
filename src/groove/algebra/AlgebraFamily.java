@@ -218,11 +218,16 @@ public enum AlgebraFamily {
             }
         }
         // now create an operation for all those declared methods
-        Method[] methods = algebra.getClass().getDeclaredMethods();
-        for (Method method : methods) {
-            if (methodNames.contains(method.getName())) {
-                result.put(method.getName(), createOperation(algebra, method));
+        // including those from superclasses
+        Class<?> myClass = algebra.getClass();
+        while (!methodNames.isEmpty()) {
+            for (Method method : myClass.getDeclaredMethods()) {
+                if (methodNames.remove(method.getName())) {
+                    result.put(method.getName(),
+                        createOperation(algebra, method));
+                }
             }
+            myClass = myClass.getSuperclass();
         }
         return result;
     }
