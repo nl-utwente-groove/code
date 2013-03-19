@@ -87,7 +87,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
         default:
             jGraph = PlainJGraph.newInstance(this.simulator);
         }
-        JModel<G> model = jGraph.getFactory().newModel();
+        JModel<G> model = jGraph.newModel();
         model.loadGraph(this.graph);
         jGraph.setModel(model);
         jGraph.doLayout(true);
