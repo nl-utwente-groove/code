@@ -173,14 +173,14 @@ public enum Look {
 
     },
     /** Product node look. */
-    PRODUCT(true, BASIC) {
+    PRODUCT(false, BASIC) {
         @Override
         void init() {
             add(VisualKey.NODE_SHAPE, NodeShape.DIAMOND);
         }
     },
     /** Data node look. */
-    DATA(true, BASIC) {
+    DATA(false, BASIC) {
         @Override
         void init() {
             add(VisualKey.NODE_SHAPE, NodeShape.ELLIPSE);
