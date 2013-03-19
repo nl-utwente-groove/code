@@ -64,6 +64,9 @@ public class AspectJVertex extends
         AspectNode aspectNode = (AspectNode) node;
         this.aspect = aspectNode.getKind();
         super.setNode(node);
+        if (aspectNode.hasAttrAspect()) {
+            setLook(Look.getLookFor(getNode().getAttrKind()), true);
+        }
         getErrors().addErrors(aspectNode.getErrors(), true);
         refreshVisual(COLOR);
     }
@@ -224,8 +227,6 @@ public class AspectJVertex extends
         } else if (getNode().getGraphRole() == GraphRole.TYPE
             && getAspect() == AspectKind.DEFAULT) {
             return Look.TYPE;
-        } else if (getNode().hasAttrAspect()) {
-            return Look.getLookFor(getNode().getAttrKind());
         } else {
             return Look.getLookFor(getAspect());
         }
