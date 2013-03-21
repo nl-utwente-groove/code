@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="seq">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n0">
+            <attr name="layout">
+                <string>101 186 31 31</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>189 136 31 31</string>
+            </attr>
+        </node>
+        <edge to="n0" from="n1">
+            <attr name="label">
+                <string>{a.b.b}</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 205 152 147 151 117 202 12</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

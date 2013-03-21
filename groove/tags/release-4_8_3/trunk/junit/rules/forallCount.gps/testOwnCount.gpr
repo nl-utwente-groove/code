@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="testOwnCount">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n1">
+            <attr name="layout">
+                <string>211 53 58 46</string>
+            </attr>
+        </node>
+        <node id="n0">
+            <attr name="layout">
+                <string>75 48 82 46</string>
+            </attr>
+        </node>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>new:flag:mark</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n1">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:A</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>id:x</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>test:count = 2</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
