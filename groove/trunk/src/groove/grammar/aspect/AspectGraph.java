@@ -31,10 +31,10 @@ import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
-import groove.graph.AElementMap;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.ElementFactory;
+import groove.graph.AElementMap;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
@@ -379,25 +379,17 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                     ownerName, source);
             }
         }
-        // look up the field nesting;
-        // this is the owner's nesting except for count fields, which belong one level up
-        AspectNode nesting;
-        if (owner.getKind().isQuantifier()) {
-            if (!field.getField().equals(
-                AspectKind.NestedValue.COUNT.toString())) {
-                throw new FormatException(
-                    "Quantifier node does not have '%s'-edge",
-                    field.getField(), owner, source);
-            }
-            nesting = owner.getNestingParent();
-        } else {
-            nesting = owner;
+        if (owner.getKind().isQuantifier()
+            && !field.getField().equals(AspectKind.NestedValue.COUNT.toString())) {
+            throw new FormatException(
+                "Quantifier node does not have '%s'-edge", field.getField(),
+                owner, source);
         }
         // look up the field
         AspectKind sigKind = AspectKind.toAspectKind(field.getType());
         AspectNode result = findTarget(owner, field.getField(), sigKind);
         if (result == null) {
-            result = addNestedNode(nesting);
+            result = addNestedNode(owner);
             result.setAspects(createLabel(sigKind));
         } else {
             if (result.getAttrKind() != sigKind) {
@@ -487,22 +479,15 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         return result;
     }
 
-    /** 
-     * Adds a node with a given nesting.
-     * The nesting is either a quantifier node or {@code null}, in which case it is
-     * itself the nesting level; or the nesting level is obtained from it through
-     * a call to {@link AspectNode#getNestingLevel()}.
-     */
-    private AspectNode addNestedNode(AspectNode nesting) throws FormatException {
+    /** Adds a node with the same nesting level as a given source node. */
+    private AspectNode addNestedNode(AspectNode source) throws FormatException {
         AspectNode result = addNode();
-        if (nesting != null) {
-            if (nesting.getKind() == AspectKind.EMBARGO) {
-                result.setAspect(nesting.getAspect());
-            }
-            if (!nesting.getKind().isQuantifier()) {
-                nesting = nesting.getNestingLevel();
-            }
+        if (source.getKind() == AspectKind.EMBARGO) {
+            result.setAspect(source.getAspect());
         }
+        AspectNode nesting =
+            source.getKind().isQuantifier() ? source.getNestingParent()
+                    : source.getNestingLevel();
         if (nesting != null) {
             addEdge(result, AspectKind.NestedValue.AT.toString(), nesting);
         }
