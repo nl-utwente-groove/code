@@ -1,0 +1,3 @@
+node var1;
+addNode(out var1);
+deleteNode(var1);
