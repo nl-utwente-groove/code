@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="del-cell">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n156">
+            <attr name="layout">
+                <string>98 71 53 31</string>
+            </attr>
+        </node>
+        <node id="n151">
+            <attr name="layout">
+                <string>109 197 41 33</string>
+            </attr>
+        </node>
+        <node id="n152">
+            <attr name="layout">
+                <string>154 124 43 43</string>
+            </attr>
+        </node>
+        <node id="n155">
+            <attr name="layout">
+                <string>260 130 50 33</string>
+            </attr>
+        </node>
+        <node id="n154">
+            <attr name="layout">
+                <string>216 196 27 33</string>
+            </attr>
+        </node>
+        <node id="n153">
+            <attr name="layout">
+                <string>-7 71 38 31</string>
+            </attr>
+        </node>
+        <edge to="n156" from="n156">
+            <attr name="label">
+                <string>Buffer</string>
+            </attr>
+        </edge>
+        <edge to="n153" from="n153">
+            <attr name="label">
+                <string>Cell</string>
+            </attr>
+        </edge>
+        <edge to="n153" from="n156">
+            <attr name="label">
+                <string>entry</string>
+            </attr>
+        </edge>
+        <edge to="n151" from="n152">
+            <attr name="label">
+                <string>arg:0</string>
+            </attr>
+        </edge>
+        <edge to="n153" from="n153">
+            <attr name="label">
+                <string>del:</string>
+            </attr>
+        </edge>
+        <edge to="n154" from="n154">
+            <attr name="label">
+                <string>int:1</string>
+            </attr>
+        </edge>
+        <edge to="n155" from="n156">
+            <attr name="label">
+                <string>new:length</string>
+            </attr>
+        </edge>
+        <edge to="n152" from="n152">
+            <attr name="label">
+                <string>prod:</string>
+            </attr>
+        </edge>
+        <edge to="n155" from="n155">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge to="n155" from="n152">
+            <attr name="label">
+                <string>int:sub</string>
+            </attr>
+        </edge>
+        <edge to="n151" from="n151">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge to="n151" from="n153">
+            <attr name="label">
+                <string>order</string>
+            </attr>
+        </edge>
+        <edge to="n151" from="n156">
+            <attr name="label">
+                <string>del:length</string>
+            </attr>
+            <attr name="layout">
+                <string>481 2 137 87 129 203 11</string>
+            </attr>
+        </edge>
+        <edge to="n154" from="n152">
+            <attr name="label">
+                <string>arg:1</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
