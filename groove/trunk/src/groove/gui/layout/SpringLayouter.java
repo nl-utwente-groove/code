@@ -64,7 +64,9 @@ public class SpringLayouter extends AbstractLayouter {
     public void start() {
         SpringLayouter.this.damper = 1.0;
         prepare();
-        while (SpringLayouter.this.damper > 0) {
+        long currentTime = System.currentTimeMillis();
+        while (SpringLayouter.this.damper > 0
+            && System.currentTimeMillis() - currentTime < TIMEOUT) {
             relax();
         }
         finish();
@@ -402,4 +404,7 @@ public class SpringLayouter extends AbstractLayouter {
     private static final boolean DEBUG = false;
 
     private static final boolean MOVE_NODES_DEBUG = false;
+
+    /** Maximal running time of the layouter (in milliseconds). */
+    private static final int TIMEOUT = 2000;
 }
