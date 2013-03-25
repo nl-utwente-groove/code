@@ -1,5 +1,6 @@
 package groove.io.conceptual.lang.ecore;
 
+import groove.io.ExtensionFilter;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.InstanceModel;
@@ -18,6 +19,7 @@ import groove.io.conceptual.value.ContainerValue;
 import groove.io.conceptual.value.Object;
 import groove.io.conceptual.value.Value;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -53,10 +55,10 @@ public class EcoreToInstance extends InstanceImporter {
     /**
      * Create an Ecore instance model importer.
      * @param typeModel EcoreToType to use for the corresponding type model. The type model should not contain errors.
-     * @param instanceModel Name of the instance model file to load
+     * @param filename Name of the instance model file to load
      * @throws ImportException When the file could not be properly loaded, or the type model is invalid
      */
-    public EcoreToInstance(EcoreToType typeModel, String instanceModel)
+    public EcoreToInstance(EcoreToType typeModel, String filename)
         throws ImportException {
         this.m_ecoreType = typeModel;
 
@@ -70,9 +72,10 @@ public class EcoreToInstance extends InstanceImporter {
         ResourceSet rs = this.m_ecoreType.getResourceSet();
 
         // Load the XMI model containing Ecore instance model
+        File file = new File(filename);
         try {
-            this.m_resource = rs.createResource(URI.createURI(instanceModel));
-            FileInputStream in = new FileInputStream(instanceModel);
+            this.m_resource = rs.createResource(URI.createURI(filename));
+            FileInputStream in = new FileInputStream(file);
             int timer = Timer.cont("Load Ecore");
             try {
                 this.m_resource.load(in, null);
@@ -87,7 +90,7 @@ public class EcoreToInstance extends InstanceImporter {
         }
 
         int timer = Timer.start("Ecore to IM");
-        this.m_instanceName = instanceModel;
+        this.m_instanceName = ExtensionFilter.getPureName(file);
         getInstanceModel(this.m_instanceName);
         Timer.stop(timer);
     }

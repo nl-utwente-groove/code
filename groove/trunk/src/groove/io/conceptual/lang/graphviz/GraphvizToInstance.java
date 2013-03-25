@@ -16,6 +16,7 @@
  */
 package groove.io.conceptual.lang.graphviz;
 
+import groove.io.ExtensionFilter;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.InstanceModel;
@@ -35,6 +36,7 @@ import groove.io.conceptual.value.ContainerValue;
 import groove.io.conceptual.value.Object;
 import groove.io.conceptual.value.StringValue;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -53,10 +55,11 @@ import com.alexmerz.graphviz.objects.Node;
 public class GraphvizToInstance extends InstanceImporter {
     private Map<Node,Object> m_nodeMap = new HashMap<Node,Object>();
 
-    public GraphvizToInstance(String instanceModelFile) throws ImportException {
+    public GraphvizToInstance(String filename) throws ImportException {
         ArrayList<Graph> graphs = null;
+        File file = new File(filename);
         try {
-            FileReader in = new FileReader(instanceModelFile);
+            FileReader in = new FileReader(file);
             Parser p = new Parser();
 
             try {
@@ -78,7 +81,7 @@ public class GraphvizToInstance extends InstanceImporter {
         //Import all graphs in the same instance model.
         TypeModel typeModel = new TypeModel("DOTType");
         InstanceModel instanceModel =
-            new InstanceModel(typeModel, instanceModelFile);
+            new InstanceModel(typeModel, ExtensionFilter.getPureName(file));
         int timer = Timer.start("DOT to IM");
         visitGraphs(instanceModel, graphs, Id.ROOT);
         Timer.stop(timer);
