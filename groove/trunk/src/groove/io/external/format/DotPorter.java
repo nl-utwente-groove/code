@@ -47,9 +47,8 @@ public class DotPorter extends ConceptualPorter {
             GrammarModel grammar) throws ImportException {
         GraphvizToInstance gtg = new GraphvizToInstance(file.getAbsolutePath());
 
-        TypeModel tm = gtg.getTypeModel("DOT");
         InstanceModel im = gtg.getInstanceModel("DOT");
-        return Pair.newPair(tm, im);
+        return Pair.newPair(im.getTypeModel(), im);
     }
 
     @Override

@@ -35,7 +35,6 @@ import groove.io.conceptual.value.Value;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,9 +50,6 @@ import de.gupro.gxl.gxl_1_0.GxlType;
 import de.gupro.gxl.gxl_1_0.NodeType;
 
 public class GxlToInstance extends InstanceImporter {
-
-    private Map<String,InstanceModel> m_models =
-        new HashMap<String,InstanceModel>();
     private Map<String,GraphType> m_instanceGraphs =
         new HashMap<String,GraphType>();
 
@@ -98,29 +94,17 @@ public class GxlToInstance extends InstanceImporter {
         // Preload Models
         int timer = Timer.start("GXL to IM");
         for (String model : this.m_instanceGraphs.keySet()) {
-            try {
-                getInstanceModel(model);
-            } catch (ImportException e) {
-                throw new ImportException(e);
-            }
+            getInstanceModel(model);
         }
         Timer.stop(timer);
     }
 
     @Override
-    public Collection<String> getInstanceModelNames() {
-        return this.m_models.keySet();
-    }
-
-    private int count = 0;
-
-    @Override
-    public InstanceModel getInstanceModel(String modelName)
-        throws ImportException {
-        if (this.m_models.containsKey(modelName)) {
-            return this.m_models.get(modelName);
+    public InstanceModel getInstanceModel(String modelName) {
+        InstanceModel result = super.getInstanceModel(modelName);
+        if (result != null) {
+            return result;
         }
-
         if (this.m_instanceGraphs.containsKey(modelName)) {
             // Find the type of the graph
             String type =
@@ -132,19 +116,13 @@ public class GxlToInstance extends InstanceImporter {
 
             InstanceModel m = new InstanceModel(mm, modelName);
 
-            this.count = 0;
             visitGraph(m, this.m_instanceGraphs.get(modelName));
-            this.m_models.put(modelName, m);
+            addInstanceModel(m);
             //System.out.println("GXL instance elem: " + count);
             return m;
         }
 
         return null;
-    }
-
-    @Override
-    public InstanceModel getInstanceModel() throws ImportException {
-        return getInstanceModel(this.m_models.keySet().iterator().next());
     }
 
     private void visitGraph(InstanceModel m, GraphType graph) {
@@ -155,7 +133,6 @@ public class GxlToInstance extends InstanceImporter {
             NodeWrapper node = entry.getValue();
 
             if (node.getNode().getGraph().isEmpty()) {
-                this.count++;
                 Object cmObject = visitObject(m, node, graphId);
                 m.addObject(cmObject);
             } else {

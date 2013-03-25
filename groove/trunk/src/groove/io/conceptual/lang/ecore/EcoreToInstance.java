@@ -35,16 +35,17 @@ import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 
+/** Importer for Ecore instance models. */
 public class EcoreToInstance extends InstanceImporter {
     // References to the Ecore type model information, retrieved from EcoreToType
-    private EcoreToType m_ecoreType;
-    private Resource m_resource;
-    private TypeModel m_typeModel;
+    private final EcoreToType m_ecoreType;
+    private final Resource m_resource;
+    private final TypeModel m_typeModel;
 
-    // Instance model that is generated
+    /** Instance model that is generated. */
     private InstanceModel m_instanceModel;
-    // Name of the instance model. Simply "ecoreInstance"
-    private String m_instanceName = "ecoreInstance";
+    /** Name of the instance model. */
+    private final String m_instanceName;
 
     // Map to keep track of objects that have been generated
     private Map<EObject,Object> m_objects = new HashMap<EObject,Object>();
@@ -55,24 +56,26 @@ public class EcoreToInstance extends InstanceImporter {
      * @param instanceModel Name of the instance model file to load
      * @throws ImportException When the file could not be properly loaded, or the type model is invalid
      */
-    public EcoreToInstance(EcoreToType typeModel, String instanceModel) throws ImportException {
-        m_ecoreType = typeModel;
+    public EcoreToInstance(EcoreToType typeModel, String instanceModel)
+        throws ImportException {
+        this.m_ecoreType = typeModel;
 
         // "ecore" is the hardcoded string for an ecore type model
-        m_typeModel = m_ecoreType.getTypeModel("ecore");
-        if (m_typeModel == null) {
-            throw new ImportException("Cannot load type model from given EcoreToType");
+        this.m_typeModel = this.m_ecoreType.getTypeModel("ecore");
+        if (this.m_typeModel == null) {
+            throw new ImportException(
+                "Cannot load type model from given EcoreToType");
         }
 
-        ResourceSet rs = m_ecoreType.getResourceSet();
+        ResourceSet rs = this.m_ecoreType.getResourceSet();
 
         // Load the XMI model containing Ecore instance model
         try {
-            m_resource = rs.createResource(URI.createURI(instanceModel));
+            this.m_resource = rs.createResource(URI.createURI(instanceModel));
             FileInputStream in = new FileInputStream(instanceModel);
             int timer = Timer.cont("Load Ecore");
             try {
-                m_resource.load(in, null);
+                this.m_resource.load(in, null);
             } finally {
                 in.close();
             }
@@ -84,26 +87,27 @@ public class EcoreToInstance extends InstanceImporter {
         }
 
         int timer = Timer.start("Ecore to IM");
-        getInstanceModel(m_instanceName);
+        this.m_instanceName = instanceModel;
+        getInstanceModel(this.m_instanceName);
         Timer.stop(timer);
     }
 
     @Override
     public InstanceModel getInstanceModel(String modelName) {
-        if (!m_instanceName.equals(modelName)) {
+        if (!this.m_instanceName.equals(modelName)) {
             return null;
         }
-        if (m_instanceModel != null) {
-            return m_instanceModel;
+        if (this.m_instanceModel != null) {
+            return this.m_instanceModel;
         }
 
         //int count = 0;
 
         // Create the Model based on TypeModel of ecoreType
-        InstanceModel m = new InstanceModel(m_typeModel, modelName);
+        InstanceModel m = new InstanceModel(this.m_typeModel, modelName);
 
         // Iterate over all objects in the Ecore instance and create Model Object where applicable
-        Iterator<EObject> it = m_resource.getAllContents();
+        Iterator<EObject> it = this.m_resource.getAllContents();
         while (it.hasNext()) {
             EObject obj = it.next();
             // This check is probably unnecessary
@@ -115,10 +119,9 @@ public class EcoreToInstance extends InstanceImporter {
 
         //System.out.println("Ecore objects: " + count);
 
-        m_instanceModel = m;
+        this.m_instanceModel = m;
 
-        m_instanceModels.put(modelName, m);
-
+        addInstanceModel(m);
         return m;
     }
 
@@ -129,28 +132,31 @@ public class EcoreToInstance extends InstanceImporter {
      * @return The translated Object, or null on error
      */
     private Object visitObject(InstanceModel m, EObject eObject) {
-        if (m_objects.containsKey(eObject)) {
-            return m_objects.get(eObject);
+        if (this.m_objects.containsKey(eObject)) {
+            return this.m_objects.get(eObject);
         }
 
         Name objName = getObjectName(eObject);
         Id clsId = EcoreUtil.idFromClassifier(eObject.eClass());
-        Class cmClass = m_typeModel.getClass(clsId);
+        Class cmClass = this.m_typeModel.getClass(clsId);
         if (cmClass == null) {
-            addMessage(new Message("Cannot find class " + clsId + " in type model", MessageType.ERROR));
+            addMessage(new Message("Cannot find class " + clsId
+                + " in type model", MessageType.ERROR));
             return null;
         }
 
         Object cmObject = new Object(cmClass, objName);
         m.addObject(cmObject);
-        m_objects.put(eObject, cmObject);
+        this.m_objects.put(eObject, cmObject);
 
         // Run through structural features in metamodel, and map the values (if any)
         for (EStructuralFeature feature : eObject.eClass().getEAllStructuralFeatures()) {
             if (feature.eClass().getName().equals("EReference")) {
-                visitReference(m, cmObject, (EReference) feature, eObject.eGet(feature));
+                visitReference(m, cmObject, (EReference) feature,
+                    eObject.eGet(feature));
             } else if (feature.eClass().getName().equals("EAttribute")) {
-                visitAttribute(m, cmObject, (EAttribute) feature, eObject.eGet(feature));
+                visitAttribute(m, cmObject, (EAttribute) feature,
+                    eObject.eGet(feature));
             }
         }
 
@@ -166,17 +172,20 @@ public class EcoreToInstance extends InstanceImporter {
      * @return The Value if translated, null on error
      */
     @SuppressWarnings("unchecked")
-    private Value visitReference(InstanceModel m, Object cmObject, EReference eReference, java.lang.Object value) {
+    private Value visitReference(InstanceModel m, Object cmObject,
+            EReference eReference, java.lang.Object value) {
         // Happens if no value is assigned.
         if (value == null) {
             return null;
         }
 
         //Reference may be defined in supertype, so acquire field through that
-        Id classId = EcoreUtil.idFromClassifier(eReference.getEContainingClass());
-        Class refClass = m_typeModel.getClass(classId);
+        Id classId =
+            EcoreUtil.idFromClassifier(eReference.getEContainingClass());
+        Class refClass = this.m_typeModel.getClass(classId);
         if (refClass == null) {
-            addMessage(new Message("Cannot find class of reference " + eReference, MessageType.ERROR));
+            addMessage(new Message("Cannot find class of reference "
+                + eReference, MessageType.ERROR));
             return null;
         }
         Field f = refClass.getField(Name.getName(eReference.getName()));
@@ -210,17 +219,20 @@ public class EcoreToInstance extends InstanceImporter {
      * @return The Value if translated, null on error
      */
     @SuppressWarnings("unchecked")
-    private Value visitAttribute(InstanceModel m, Object cmObject, EAttribute eAttribute, java.lang.Object value) {
+    private Value visitAttribute(InstanceModel m, Object cmObject,
+            EAttribute eAttribute, java.lang.Object value) {
         // Happens if no value is assigned.
         if (value == null) {
             return null;
         }
 
         //Attribute may be defined in supertype, so acquire field through that
-        Id classId = EcoreUtil.idFromClassifier(eAttribute.getEContainingClass());
-        Class attrClass = m_typeModel.getClass(classId);
+        Id classId =
+            EcoreUtil.idFromClassifier(eAttribute.getEContainingClass());
+        Class attrClass = this.m_typeModel.getClass(classId);
         if (attrClass == null) {
-            addMessage(new Message("Cannot find class of attribute " + eAttribute, MessageType.ERROR));
+            addMessage(new Message("Cannot find class of attribute "
+                + eAttribute, MessageType.ERROR));
             return null;
         }
         Field f = attrClass.getField(Name.getName(eAttribute.getName()));
@@ -235,16 +247,21 @@ public class EcoreToInstance extends InstanceImporter {
             if (eAttribute.isMany()) {
                 for (java.lang.Object target : (EList<Object>) value) {
                     try {
-                        Value cmVal = m_ecoreType.objectToDataType(m_typeModel, subType, target);
+                        Value cmVal =
+                            this.m_ecoreType.objectToDataType(this.m_typeModel,
+                                subType, target);
                         cv.addValue(cmVal);
                     } catch (InvalidTypeException e) {
-                        addMessage(new Message(e.getMessage(), MessageType.ERROR));
+                        addMessage(new Message(e.getMessage(),
+                            MessageType.ERROR));
                         continue;
                     }
                 }
             } else {
                 try {
-                    Value cmVal = m_ecoreType.objectToDataType(m_typeModel, subType, value);
+                    Value cmVal =
+                        this.m_ecoreType.objectToDataType(this.m_typeModel,
+                            subType, value);
                     cv.addValue(cmVal);
                 } catch (InvalidTypeException e) {
                     addMessage(new Message(e.getMessage(), MessageType.ERROR));
@@ -254,7 +271,9 @@ public class EcoreToInstance extends InstanceImporter {
             return cv;
         } else {
             try {
-                Value cmVal = m_ecoreType.objectToDataType(m_typeModel, f.getType(), value);
+                Value cmVal =
+                    this.m_ecoreType.objectToDataType(this.m_typeModel,
+                        f.getType(), value);
                 cmObject.setFieldValue(f, cmVal);
                 return cmVal;
             } catch (InvalidTypeException e) {
@@ -269,8 +288,12 @@ public class EcoreToInstance extends InstanceImporter {
     private Name getObjectName(EObject eObject) {
         String fragment = "";
         EObject current = eObject;
-        while (current.eContainer() != null && current.eContainer() instanceof InternalEObject) {
-            fragment = "/" + ((InternalEObject) current.eContainer()).eURIFragmentSegment(current.eContainingFeature(), current) + fragment;
+        while (current.eContainer() != null
+            && current.eContainer() instanceof InternalEObject) {
+            fragment =
+                "/"
+                    + ((InternalEObject) current.eContainer()).eURIFragmentSegment(
+                        current.eContainingFeature(), current) + fragment;
             current = current.eContainer();
         }
         fragment = "/" + fragment;

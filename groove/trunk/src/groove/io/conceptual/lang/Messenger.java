@@ -19,8 +19,9 @@ package groove.io.conceptual.lang;
 import java.util.List;
 
 /**
- * Collects various Messages which may be generated upon some operation on the class implementing this interface. The list of messages will not be cleared
- * unless clearMessages() is explicitly called upon the class implementing this itnerface
+ * Collects various Messages which may be generated upon some operation on
+ * the class implementing this interface. The list of messages will not be cleared
+ * unless clearMessages() is explicitly called.
  * @author s0141844
  * @version $Revision $
  */
