@@ -20,7 +20,6 @@ import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.configuration.Config;
 import groove.io.conceptual.configuration.schema.EnumModeType;
 import groove.io.conceptual.configuration.schema.OrderType;
-import groove.io.conceptual.lang.ImportException;
 import groove.io.conceptual.lang.InstanceImporter;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
@@ -84,12 +83,6 @@ public class GrooveToInstance extends InstanceImporter {
         int timer = Timer.start("GROOVE to IM");
         buildInstanceModel(hostGraph);
         Timer.stop(timer);
-    }
-
-    @Override
-    public InstanceModel getInstanceModel(String modelName)
-        throws ImportException {
-        return this.m_instanceModels.get(modelName);
     }
 
     private void buildInstanceModel(HostGraph hostGraph) {
@@ -159,7 +152,7 @@ public class GrooveToInstance extends InstanceImporter {
         }
 
         // And we're done
-        this.m_instanceModels.put(instanceModel.getName(), instanceModel);
+        addInstanceModel(instanceModel);
     }
 
     private Type getNodeType(HostNode node) {

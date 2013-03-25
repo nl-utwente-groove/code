@@ -28,9 +28,9 @@ import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
+import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.StringType;
 import groove.io.conceptual.type.Type;
-import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.value.ContainerValue;
 import groove.io.conceptual.value.Object;
 import groove.io.conceptual.value.StringValue;
@@ -75,35 +75,14 @@ public class GraphvizToInstance extends InstanceImporter {
             throw new ImportException(e);
         }
 
-        /*int count = 0;
-        for (Graph graph : graphs) {
-            Set<Node> nodes = new HashSet<Node>();
-            nodes.addAll(graph.getNodes(true));
-            for (Edge e : graph.getEdges()) {
-                nodes.add(e.getSource().getNode());
-                nodes.add(e.getTarget().getNode());
-            }
-
-            count += nodes.size();
-        }
-        System.out.println("DOT nodes " + count);*/
-
         //Import all graphs in the same instance model.
         TypeModel typeModel = new TypeModel("DOTType");
-        InstanceModel instanceModel = new InstanceModel(typeModel, "DOTInstance");
+        InstanceModel instanceModel =
+            new InstanceModel(typeModel, instanceModelFile);
         int timer = Timer.start("DOT to IM");
         visitGraphs(instanceModel, graphs, Id.ROOT);
         Timer.stop(timer);
-        m_instanceModels.put("DOT", instanceModel);
-    }
-
-    @Override
-    public InstanceModel getInstanceModel(String modelName) throws ImportException {
-        return m_instanceModels.get(modelName);
-    }
-
-    public TypeModel getTypeModel(String modelName) throws ImportException {
-        return getInstanceModel(modelName).getTypeModel();
+        addInstanceModel(instanceModel);
     }
 
     private void visitGraphs(InstanceModel model, List<Graph> graphs, Id graphId) {
@@ -138,11 +117,12 @@ public class GraphvizToInstance extends InstanceImporter {
     }
 
     private Object visitNode(InstanceModel model, Node node, Id graphId) {
-        if (m_nodeMap.containsKey(node)) {
-            return m_nodeMap.get(node);
+        if (this.m_nodeMap.containsKey(node)) {
+            return this.m_nodeMap.get(node);
         }
         if (graphId == null) {
-            addMessage(new Message("Attempting to add edge for unvisited node" + node.toString(), MessageType.ERROR));
+            addMessage(new Message("Attempting to add edge for unvisited node"
+                + node.toString(), MessageType.ERROR));
         }
 
         String nodeName = node.getId().getLabel();
@@ -156,9 +136,11 @@ public class GraphvizToInstance extends InstanceImporter {
             nodeName = "node";
         }
 
-        Class c = model.getTypeModel().getClass(Id.getId(graphId, Name.getName(nodeName)), true);
+        Class c =
+            model.getTypeModel().getClass(
+                Id.getId(graphId, Name.getName(nodeName)), true);
         Object object = new Object(c, Name.getName(nodeName));
-        m_nodeMap.put(node, object);
+        this.m_nodeMap.put(node, object);
 
         //ContainerValue attrContainer = new ContainerValue((Container) GraphvizUtil.g_AttrField.getType());
         //object.setFieldValue(GraphvizUtil.g_AttrField, attrContainer);
@@ -168,7 +150,9 @@ public class GraphvizToInstance extends InstanceImporter {
             }
 
             // Add field of type container, as attributes are optional
-            Field f = new Field(Name.getName(entry.getKey()), new Container(Kind.SET, StringType.instance()), 0, 1);
+            Field f =
+                new Field(Name.getName(entry.getKey()), new Container(Kind.SET,
+                    StringType.instance()), 0, 1);
             c.addField(f);
 
             ContainerValue v = new ContainerValue((Container) f.getType());
@@ -203,7 +187,9 @@ public class GraphvizToInstance extends InstanceImporter {
         Type targetType = targetObj.getType();
         int index = 0;
         do {
-            f = ((Class) sourceObj.getType()).getField(Name.getName(index == 0 ? label : label + index));
+            f =
+                ((Class) sourceObj.getType()).getField(Name.getName(index == 0
+                        ? label : label + index));
             if (f != null) {
                 index++;
                 fType = ((Container) f.getType()).getType();
@@ -215,7 +201,9 @@ public class GraphvizToInstance extends InstanceImporter {
         if (f == null) {
             // Always unique and unordered
             Container ctype = new Container(Kind.SET, targetObj.getType());
-            f = new Field(Name.getName(index == 0 ? label : label + index), ctype, 0, -1);
+            f =
+                new Field(Name.getName(index == 0 ? label : label + index),
+                    ctype, 0, -1);
             ((Class) sourceObj.getType()).addField(f);
             sourceObj.setFieldValue(f, new ContainerValue(ctype));
         }

@@ -31,10 +31,10 @@ import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
+import groove.graph.AElementMap;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.ElementFactory;
-import groove.graph.AElementMap;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
@@ -411,9 +411,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         for (AspectEdge edge : outEdgeSet(owner)) {
             if (edge.getDisplayLabel().text().equals(fieldName)) {
                 AspectNode target = edge.target();
-                // make sure we have an LHS edge
+                // make sure we have an LHS edge or a count edge
                 if (target.getAttrKind() == fieldKind
-                    && (getRole() != RULE || edge.getKind().inLHS())) {
+                    && (getRole() != RULE || edge.getKind().inLHS() || owner.getKind().isQuantifier())) {
                     result = edge.target();
                     break;
                 }
