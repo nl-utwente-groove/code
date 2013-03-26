@@ -46,9 +46,10 @@ import groove.io.conceptual.value.TupleValue;
 import groove.io.conceptual.value.Value;
 
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -110,7 +111,6 @@ public class GrooveToInstance extends InstanceImporter {
 
             Type t = getNodeType(node);
             if (t instanceof Class) {
-                //it.remove();
                 unvisitedNodes.remove(node);
                 //Object nodeObj = new Object((Class) t, Name.getName(getNodeName(node)));
                 Object nodeObj =
@@ -328,15 +328,12 @@ public class GrooveToInstance extends InstanceImporter {
     // For container field w/o intermediate
     private ContainerValue getFieldContainerValue(HostNode fieldNode,
             String fieldName, Container containerType) {
-        HostEdgeSet nodeEdges =
-            new HostEdgeSet(this.m_nodeEdges.get(fieldNode));
-        for (Iterator<HostEdge> it = nodeEdges.iterator(); it.hasNext();) {
-            HostEdge e = it.next();
-            if (!e.label().text().equals(fieldName)) {
-                it.remove();
+        Set<HostEdge> nodeEdges = new HashSet<HostEdge>();
+        for (HostEdge e : this.m_nodeEdges.get(fieldNode)) {
+            if (e.label().text().equals(fieldName)) {
+                nodeEdges.add(e);
             }
         }
-
         if (nodeEdges.size() == 0) {
             return null;
         }
@@ -363,14 +360,12 @@ public class GrooveToInstance extends InstanceImporter {
 
     // For intermediate nodes for containers
     private Value getContainerValue(HostNode node, String edgeName) {
-        HostEdgeSet nodeEdges = new HostEdgeSet(this.m_nodeEdges.get(node));
-        for (Iterator<HostEdge> it = nodeEdges.iterator(); it.hasNext();) {
-            HostEdge e = it.next();
-            if (!e.label().text().equals(edgeName)) {
-                it.remove();
+        Set<HostEdge> nodeEdges = new HashSet<HostEdge>();
+        for (HostEdge e : this.m_nodeEdges.get(node)) {
+            if (e.label().text().equals(edgeName)) {
+                nodeEdges.add(e);
             }
         }
-
         if (nodeEdges.size() == 0) {
             return null;
         }
