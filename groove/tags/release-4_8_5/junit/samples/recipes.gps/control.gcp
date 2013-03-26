@@ -1,0 +1,18 @@
+recipe ab() {
+  a;
+  b;
+}
+
+recipe cd() {
+  c;
+  d;
+}
+
+alap {
+  try {
+    ab;
+  } else {
+    cd;
+  }
+}
+
