@@ -206,7 +206,11 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
             AspectKind kind = getKind();
             assert kind.isRole();
             String message = null;
-            if (kind.isCreator()) {
+            RegExpr matchExpr = ruleLabel.getMatchExpr();
+            if (matchExpr != null
+                && matchExpr.containsOperator(RegExpr.NEG_OPERATOR)) {
+                message = "Negation only allowed as top-level operator";
+            } else if (kind.isCreator()) {
                 if (ruleLabel.isWildcard()) {
                     message = "Unnamed wildcard %s not allowed on creators";
                 } else if (!ruleLabel.isEmpty()) {
