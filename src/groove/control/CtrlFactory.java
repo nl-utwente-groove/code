@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * Class for constructing control automata.
@@ -376,8 +378,8 @@ public class CtrlFactory {
             boolean symbolic) throws FormatException {
         CtrlAut result = new CtrlAut("control");
         FormatErrorSet errors = new FormatErrorSet();
-        Map<Integer,Set<Action>> priorityMap =
-            new HashMap<Integer,Set<Action>>();
+        SortedMap<Integer,Set<Action>> priorityMap =
+            new TreeMap<Integer,Set<Action>>();
         Namespace namespace = new Namespace();
         // first add the names and signatures to the namespace
         for (Action action : actions) {
