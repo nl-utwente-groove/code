@@ -7,10 +7,10 @@ package groove.algebra;
 public enum Precedence {
     /** Dummy value used for context of an expression. */
     NONE,
-    /** Conjunction. */
-    AND,
     /** Disjunction. */
     OR,
+    /** Conjunction. */
+    AND,
     /** Equality and inequality tests. */
     EQUAL,
     /** Comparison operators: lesser than, greater than (or equal). */
