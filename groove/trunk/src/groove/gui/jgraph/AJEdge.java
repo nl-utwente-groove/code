@@ -171,12 +171,13 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
         //            return false;
         //        }
         if (edge.source() == getSourceNode()
-            && edge.target() == getTargetNode()) {
+            && edge.target() == getTargetNode()
+            && !getLooks().contains(Look.BIDIRECTIONAL)) {
             return true;
         }
         if (edge.source() == getTargetNode()
             && edge.target() == getSourceNode()) {
-            return getJGraph().isShowBidirectionalEdges()
+            return getJModel().isMergeBidirectionalEdges()
                 && getEdges().size() == 1
                 && edge.label().equals(getEdge().label());
         }

@@ -333,11 +333,11 @@ final public class AspectJModel extends JModel<AspectGraph> {
      * graph, and the grammar property is set to true.
      */
     @Override
-    public boolean isShowBidirectionalEdges() {
+    public boolean isMergeBidirectionalEdges() {
         if (this.beingEdited || getGraph().getRole() != GraphRole.HOST) {
             return false;
         } else {
-            return super.isShowBidirectionalEdges();
+            return super.isMergeBidirectionalEdges();
         }
     }
 

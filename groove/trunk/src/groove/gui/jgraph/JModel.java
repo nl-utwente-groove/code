@@ -301,7 +301,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * enable this behavior.
      * @see AspectJModel
      */
-    public boolean isShowBidirectionalEdges() {
+    public boolean isMergeBidirectionalEdges() {
         return getJGraph().isShowBidirectionalEdges();
     }
 
