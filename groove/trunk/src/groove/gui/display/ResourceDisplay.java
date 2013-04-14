@@ -485,7 +485,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         getSimulatorModel().addListener(this, Change.GRAMMAR,
             Change.toChange(getResourceKind()));
         // adds a mouse listener that offers a popup menu with a detach action
-        addMouseListener(new MouseAdapter() {
+        getTabPane().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
