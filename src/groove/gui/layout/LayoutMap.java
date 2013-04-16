@@ -225,6 +225,12 @@ public class LayoutMap implements Cloneable {
     }
 
     @Override
+    public String toString() {
+        return "LayoutMap [nodeMap=" + nodeMap() + ", edgeMap=" + edgeMap()
+            + "]";
+    }
+
+    @Override
     public LayoutMap clone() {
         LayoutMap result = newInstance();
         result.nodeMap.putAll(nodeMap());

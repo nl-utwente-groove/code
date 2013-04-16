@@ -141,6 +141,11 @@ public class JVertexLayout implements JCellLayout {
         return getBounds().hashCode();
     }
 
+    @Override
+    public String toString() {
+        return "Bounds=" + getBounds();
+    }
+
     /** The node bounds. */
     private final Rectangle2D bounds;
 }
