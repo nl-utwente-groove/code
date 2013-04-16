@@ -139,6 +139,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      */
     void setGraph(G graph) {
         this.graph = graph;
+        this.layoutMap = GraphInfo.getLayoutMap(graph);
     }
 
     /**

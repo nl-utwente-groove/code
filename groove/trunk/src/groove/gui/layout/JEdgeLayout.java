@@ -200,6 +200,12 @@ public class JEdgeLayout implements JCellLayout {
             + getLineStyle().hashCode();
     }
 
+    @Override
+    public String toString() {
+        return "LabelPosition=" + getLabelPosition() + "; Points="
+            + getPoints() + "; LineStyle=" + getLineStyle();
+    }
+
     /** The label position of this edge layout. */
     private final Point2D labelPosition;
     /** The list of intermediate points of this edge layout. */
