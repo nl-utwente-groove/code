@@ -119,7 +119,8 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * with the given keyword and then using its parse method.
      */
     @Override
-    public A parse(Grammar rules, Serialized source) throws FormatException {
+    public A parse(Grammar rules, Serialized source)
+        throws FormatException {
         for (Template<A> template : this.templates) {
             if (template.getKeyword().equals(source.getKeyword())) {
                 return template.parse(rules, source);
@@ -185,7 +186,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         private final Map<String,EncodedTypeEditor<A,Serialized>> editors =
             new TreeMap<String,EncodedTypeEditor<A,Serialized>>();
         private ArrayList<String> templateKeywords;
-        private JList<Object> nameSelector;
+        private JList nameSelector;
         private JPanel infoPanel;
 
         public TemplateListEditor(GrammarModel grammar) {
@@ -249,7 +250,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         }
 
         private void addListPanel() {
-            this.nameSelector = new JList<Object>();
+            this.nameSelector = new JList();
             this.nameSelector.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             this.nameSelector.setSelectedIndex(0);
             JScrollPane listScroller = new JScrollPane(this.nameSelector);

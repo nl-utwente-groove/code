@@ -4,6 +4,7 @@ import groove.grammar.model.FormatException;
 import groove.grammar.model.ResourceKind;
 import groove.gui.Simulator;
 import groove.gui.dialog.ErrorDialog;
+import groove.io.conceptual.configuration.ConfigAction.Type;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -103,26 +104,25 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
             this.getClass().getClassLoader().getResource(Config.CONFIG_SCHEMA);
         if (this.m_schemaURL == null) {
             throw new RuntimeException(
-                "Unable to load the XML schema resource "
-                    + Config.CONFIG_SCHEMA);
+                "Unable to load the XML schema resource " + Config.CONFIG_SCHEMA);
         }
 
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
 
-        toolBar.add(getAction(ConfigAction.Type.NEW));
+        toolBar.add(getAction(Type.NEW));
         toolBar.addSeparator();
 
         this.m_configsList = new JComboBox();
         this.m_configsList.setEditable(false);
         this.m_configsList.addActionListener(this);
         toolBar.add(this.m_configsList);
-        toolBar.add(getAction(ConfigAction.Type.SAVE));
+        toolBar.add(getAction(Type.SAVE));
         toolBar.addSeparator();
 
-        toolBar.add(getAction(ConfigAction.Type.COPY));
-        toolBar.add(getAction(ConfigAction.Type.DELETE));
-        toolBar.add(getAction(ConfigAction.Type.RENAME));
+        toolBar.add(getAction(Type.COPY));
+        toolBar.add(getAction(Type.DELETE));
+        toolBar.add(getAction(Type.RENAME));
 
         this.getContentPane().setLayout(new BorderLayout());
         this.getContentPane().add(toolBar, BorderLayout.NORTH);
@@ -134,7 +134,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 ConfigDialog.this.m_selectedModel =
                     ConfigDialog.this.m_activeModel;
-                getAction(ConfigAction.Type.SAVE).execute();
+                getAction(Type.SAVE).execute();
                 ConfigDialog.this.dispose();
             }
         });
@@ -182,7 +182,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         }
     }
 
-    private ConfigAction getAction(ConfigAction.Type type) {
+    private ConfigAction getAction(Type type) {
         ConfigAction result = this.actionMap.get(type);
         if (result == null) {
             this.actionMap.put(type, result =
@@ -192,13 +192,13 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
         return result;
     }
 
-    private final Map<ConfigAction.Type,ConfigAction> actionMap =
-        new EnumMap<ConfigAction.Type,ConfigAction>(ConfigAction.Type.class);
+    private final Map<Type,ConfigAction> actionMap =
+        new EnumMap<ConfigAction.Type,ConfigAction>(Type.class);
 
     private void refreshGUI() {
-        getAction(ConfigAction.Type.RENAME).setEnabled(hasModels());
-        getAction(ConfigAction.Type.COPY).setEnabled(hasModels());
-        getAction(ConfigAction.Type.DELETE).setEnabled(hasModels());
+        getAction(Type.RENAME).setEnabled(hasModels());
+        getAction(Type.COPY).setEnabled(hasModels());
+        getAction(Type.DELETE).setEnabled(hasModels());
 
         refreshList();
     }
@@ -233,7 +233,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
     }
 
     /** Carries out the consequences of a given action. */
-    public void executeAction(ConfigAction.Type type, String modelName) {
+    public void executeAction(Type type, String modelName) {
         try {
             switch (type) {
             case NEW:

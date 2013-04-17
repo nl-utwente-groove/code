@@ -55,7 +55,7 @@ public class LayoutDialog extends JDialog implements ActionListener,
 
     private final Simulator simulator;
     private final LayouterItem protoLayouterItems[];
-    private final JComboBox<String> layoutBox;
+    private final JComboBox layoutBox;
     private final JPanel panel;
     private JGraph<?> jGraph;
 
@@ -66,7 +66,7 @@ public class LayoutDialog extends JDialog implements ActionListener,
         this.simulator = simulator;
         this.protoLayouterItems = new LayouterItem[LayoutKind.values().length];
 
-        this.layoutBox = new JComboBox<String>();
+        this.layoutBox = new JComboBox();
         int i = 0;
         for (LayoutKind kind : LayoutKind.values()) {
             this.protoLayouterItems[i] = LayoutKind.getLayouterItemProto(kind);
