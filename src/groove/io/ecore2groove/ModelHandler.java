@@ -102,6 +102,7 @@ public class ModelHandler {
                     jarFile.getInputStream(jarFile.getEntry("Ecore.ecore"));
                 this.r = this.rs.createResource(URI.createURI(substr));
                 this.r.load(in, null);
+                jarFile.close();
             } else {
                 this.r = this.rs.createResource(URI.createURI(modelLoc));
                 FileInputStream in = new FileInputStream(modelLoc);

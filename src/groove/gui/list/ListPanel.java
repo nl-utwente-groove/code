@@ -28,7 +28,6 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Observer;
 
@@ -69,14 +68,14 @@ public abstract class ListPanel extends JPanel {
      * @param entries the list of messages to be shown
      */
     public void setEntries(Collection<? extends SelectableListEntry> entries) {
-        getEntryArea().setListData(entries.toArray());
+        getEntryArea().setListData(
+            entries.toArray(new SelectableListEntry[entries.size()]));
         setVisible(!entries.isEmpty());
     }
 
     /** Clears all entries from the list. */
     public void clearEntries() {
-        getEntryArea().setListData(
-            Collections.<SelectableListEntry>emptySet().toArray());
+        getEntryArea().setListData(new SelectableListEntry[0]);
         setVisible(false);
     }
 
@@ -105,7 +104,7 @@ public abstract class ListPanel extends JPanel {
 
     /** Returns the currently selected entry. */
     public SelectableListEntry getSelectedEntry() {
-        return (SelectableListEntry) getEntryArea().getSelectedValue();
+        return getEntryArea().getSelectedValue();
     }
 
     @Override
@@ -136,9 +135,10 @@ public abstract class ListPanel extends JPanel {
     }
 
     /** Lazily creates and returns the panel. */
-    private JList getEntryArea() {
+    private JList<SelectableListEntry> getEntryArea() {
         if (this.entryArea == null) {
-            JList result = this.entryArea = new JList();
+            JList<SelectableListEntry> result =
+                this.entryArea = new JList<SelectableListEntry>();
             result.setBackground(getColors().getBackground(Mode.NONE));
             result.setForeground(getColors().getForeground(Mode.NONE));
             result.setSelectionBackground(getColors().getBackground(
@@ -175,7 +175,7 @@ public abstract class ListPanel extends JPanel {
     protected abstract Values.ColorSet getColors();
 
     /** The text area containing the messages. */
-    private JList entryArea;
+    private JList<SelectableListEntry> entryArea;
     /** The title of the panel. */
     private JLabel title;
 
@@ -186,8 +186,9 @@ public abstract class ListPanel extends JPanel {
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value,
-                int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<?> list,
+                Object value, int index, boolean isSelected,
+                boolean cellHasFocus) {
             Component result =
                 super.getListCellRendererComponent(list, value, index,
                     isSelected, false);

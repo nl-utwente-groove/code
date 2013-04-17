@@ -892,7 +892,7 @@ public class Imager extends CommandLineTool {
         private final JTextArea logArea = new JTextArea();
 
         /** Combo box for the available image formats. */
-        final JComboBox formatBox = new JComboBox(
-            Imager.getFormatMap().keySet().toArray());
+        final JComboBox<String> formatBox = new JComboBox<String>(
+            (String[]) Imager.getFormatMap().keySet().toArray());
     }
 }
