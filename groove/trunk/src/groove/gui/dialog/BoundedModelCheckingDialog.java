@@ -306,12 +306,12 @@ public class BoundedModelCheckingDialog {
                 BoundedModelCheckingDialog.this.boundField.setEditable(false);
                 BoundedModelCheckingDialog.this.deltaField.setEditable(false);
             } else if (e.getSource() == BoundedModelCheckingDialog.this.addButton) {
-                for (Object object : BoundedModelCheckingDialog.this.ruleList.getSelectedValues()) {
+                for (Object object : BoundedModelCheckingDialog.this.ruleList.getSelectedValuesList()) {
                     BoundedModelCheckingDialog.this.selectedRuleNames.add(object.toString());
                 }
                 BoundedModelCheckingDialog.this.selectedRuleList.setListData(BoundedModelCheckingDialog.this.selectedRuleNames.toArray());
             } else if (e.getSource() == BoundedModelCheckingDialog.this.deleteButton) {
-                for (Object object : BoundedModelCheckingDialog.this.selectedRuleList.getSelectedValues()) {
+                for (Object object : BoundedModelCheckingDialog.this.selectedRuleList.getSelectedValuesList()) {
                     BoundedModelCheckingDialog.this.selectedRuleNames.remove(object.toString());
                 }
                 BoundedModelCheckingDialog.this.selectedRuleList.setListData(BoundedModelCheckingDialog.this.selectedRuleNames.toArray());
@@ -320,13 +320,13 @@ public class BoundedModelCheckingDialog {
 
         public void valueChanged(ListSelectionEvent e) {
             if (e.getSource() == BoundedModelCheckingDialog.this.ruleList) {
-                if (BoundedModelCheckingDialog.this.ruleList.getSelectedValues().length > 0) {
+                if (BoundedModelCheckingDialog.this.ruleList.getSelectedValuesList().size() > 0) {
                     BoundedModelCheckingDialog.this.addButton.setEnabled(true);
                 } else {
                     BoundedModelCheckingDialog.this.addButton.setEnabled(false);
                 }
             } else if (e.getSource() == BoundedModelCheckingDialog.this.selectedRuleList) {
-                if (BoundedModelCheckingDialog.this.selectedRuleList.getSelectedValues().length > 0) {
+                if (BoundedModelCheckingDialog.this.selectedRuleList.getSelectedValuesList().size() > 0) {
                     BoundedModelCheckingDialog.this.deleteButton.setEnabled(true);
                 } else {
                     BoundedModelCheckingDialog.this.deleteButton.setEnabled(false);
