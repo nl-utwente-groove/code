@@ -55,7 +55,7 @@ public class RuleLabel extends ALabel {
      * an atom; may not be <tt>null</tt>
      */
     public RuleLabel(TypeLabel label) {
-        this(RegExpr.atom(TypeLabel.toPrefixedString(label)));
+        this(RegExpr.atom(label.toPrefixedString()));
     }
 
     /**

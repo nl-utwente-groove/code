@@ -165,8 +165,8 @@ public class GxlIO implements GraphIO {
         for (Node node : graph.nodeSet()) {
             // create an xml element for this node
             NodeType gxlNode = this.factory.createNodeType();
-            // give the element an id
-            gxlNode.setId(node.toString());
+            // give the element an id based on the node number
+            gxlNode.setId("n" + node.getNumber());
             if (layoutMap != null) {
                 // store the layout
                 storeNodeLayout(layoutMap, node, gxlNode);
@@ -188,7 +188,10 @@ public class GxlIO implements GraphIO {
         // add the edges
         for (Edge edge : graph.edgeSet()) {
             // create an xml element for this edge
-            String prefixedLabel = TypeLabel.toPrefixedString(edge.label());
+            String prefixedLabel = edge.label().text();
+            if (edge.label() instanceof TypeLabel) {
+                prefixedLabel = edge.getRole().getPrefix() + prefixedLabel;
+            }
             if (edge instanceof TypeEdge && ((TypeEdge) edge).isAbstract()) {
                 prefixedLabel = ABSTRACT_PREFIX + prefixedLabel;
             }

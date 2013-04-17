@@ -493,7 +493,9 @@ public class Generator extends CommandLineTool {
                             throw new IOException(e1);
                         }
                     } else {
-                        Groove.saveGraph(state.getGraph(), stateFile);
+                        Groove.saveGraph(
+                            state.getGraph().toAspectMap().getAspectGraph(),
+                            stateFile);
                     }
                 }
             }
