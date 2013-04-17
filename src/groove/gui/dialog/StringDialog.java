@@ -144,8 +144,8 @@ abstract public class StringDialog {
     }
 
     private JComponent createSyntaxPanel() {
-        final JList<String> list = new JList<String>();
-        DefaultListModel<String> model = new DefaultListModel<String>();
+        final JList list = new JList();
+        DefaultListModel model = new DefaultListModel();
         for (Map.Entry<String,String> entry : this.docMap.entrySet()) {
             model.addElement(entry.getKey());
         }
@@ -370,7 +370,7 @@ abstract public class StringDialog {
      * Overrides the {@link JComboBox#configureEditor(ComboBoxEditor, Object)}
      * method to avoid confusing the editor. 
      */
-    private static class MyComboBox extends JComboBox<Object> {
+    private static class MyComboBox extends JComboBox {
         @Override
         public void configureEditor(ComboBoxEditor anEditor, Object anItem) {
             if (anItem != null && this.configure) {
@@ -385,7 +385,7 @@ abstract public class StringDialog {
         private boolean configure;
     }
 
-    private class MyComboBoxModel implements ComboBoxModel<Object> {
+    private class MyComboBoxModel implements ComboBoxModel {
         @Override
         public Object getSelectedItem() {
             return this.selectedItem;
@@ -533,9 +533,8 @@ abstract public class StringDialog {
         }
 
         @Override
-        public Component getListCellRendererComponent(JList<?> list,
-                Object value, int index, boolean isSelected,
-                boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean cellHasFocus) {
             Component result =
                 super.getListCellRendererComponent(list, value, index,
                     isSelected, cellHasFocus);

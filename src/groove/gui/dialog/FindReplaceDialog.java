@@ -264,9 +264,9 @@ public class FindReplaceDialog {
     private JButton cancelButton;
 
     /** Returns the text field in which the user is to enter his input. */
-    private JComboBox<TypeLabel> getOldField() {
+    private JComboBox getOldField() {
         if (this.oldField == null) {
-            final JComboBox<TypeLabel> result =
+            final JComboBox result =
                 this.oldField = getLabelComboBox(this.typeGraph);
             result.addActionListener(new ActionListener() {
                 @Override
@@ -279,7 +279,7 @@ public class FindReplaceDialog {
     }
 
     /** The text field where the original label is entered. */
-    private JComboBox<TypeLabel> oldField;
+    private JComboBox oldField;
 
     /** Returns the text field in which the user is to enter his input. */
     private JTextField getNewField() {
@@ -331,16 +331,16 @@ public class FindReplaceDialog {
         return this.oldTypeLabel;
     }
 
-    /** Combo box showing the new label's type. */
+    /** Combobox showing the new label's type. */
     private JLabel oldTypeLabel;
 
     /** Returns the combo box for the label in the given type graph. */
-    private JComboBox<TypeLabel> getLabelComboBox(TypeGraph typeGraph) {
-        final JComboBox<TypeLabel> result = new JComboBox<TypeLabel>();
+    private JComboBox getLabelComboBox(TypeGraph typeGraph) {
+        final JComboBox result = new JComboBox();
         result.setFocusable(false);
         result.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> list,
+            public Component getListCellRendererComponent(JList list,
                     Object value, int index, boolean isSelected,
                     boolean cellHasFocus) {
                 if (value instanceof TypeLabel) {
@@ -385,11 +385,10 @@ public class FindReplaceDialog {
         return result;
     }
 
-    /** Returns the combo box for the new label's type. */
-    private JComboBox<String> getNewTypeCombobox() {
+    /** Returns the combobox for the new label's type. */
+    private JComboBox getNewTypeCombobox() {
         if (this.newTypeChoice == null) {
-            final JComboBox<String> result =
-                this.newTypeChoice = new JComboBox<String>();
+            final JComboBox result = this.newTypeChoice = new JComboBox();
             for (EdgeRole kind : EdgeRole.values()) {
                 result.addItem(kind.getDescription(true));
             }
@@ -422,7 +421,7 @@ public class FindReplaceDialog {
     }
 
     /** Combobox showing the old label's type. */
-    private JComboBox<String> newTypeChoice;
+    private JComboBox newTypeChoice;
 
     /** Set of existing rule names. */
     private final TypeGraph typeGraph;
