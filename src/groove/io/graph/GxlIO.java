@@ -446,13 +446,23 @@ public class GxlIO implements GraphIO {
             if (gxlElement instanceof EdgeType) {
                 EdgeType gxlEdge = (EdgeType) gxlElement;
                 // Find the source node of the edge.
-                String sourceId = ((NodeType) gxlEdge.getFrom()).getId();
+                NodeType gxlSource = (NodeType) gxlEdge.getFrom();
+                if (gxlSource == null) {
+                    throw new FormatException(
+                        "Unable to find source node of %s", gxlEdge);
+                }
+                String sourceId = gxlSource.getId();
                 AttrNode sourceNode = graph.getNode(sourceId);
                 if (sourceNode == null) {
                     throw new FormatException(
                         "Unable to find edge source node %s", sourceId);
                 }
                 // Find the target node of the edge.
+                NodeType gxlTarget = (NodeType) gxlEdge.getTo();
+                if (gxlTarget == null) {
+                    throw new FormatException(
+                        "Unable to find target node of %s", gxlEdge);
+                }
                 String targetId = ((NodeType) gxlEdge.getTo()).getId();
                 AttrNode targetNode = graph.getNode(targetId);
                 if (targetNode == null) {
