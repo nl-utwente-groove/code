@@ -188,8 +188,8 @@ public final class TypeLabel extends ALabel {
      * Returns the text of the label string, prefixed by the node type 
      * or flag aspect if the label is a node type or flag.
      */
-    static public String toPrefixedString(Label label) {
-        return label.getRole().getPrefix() + label.text();
+    public String toPrefixedString() {
+        return getRole().getPrefix() + text();
     }
 
     static private final Map<SignatureKind,TypeLabel> sigLabelMap =
