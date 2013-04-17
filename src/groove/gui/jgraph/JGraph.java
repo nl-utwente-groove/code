@@ -356,7 +356,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     }
 
     /**
-     * Returns a tool tip text for the front graph cell onder the mouse.
+     * Returns a tool tip text for the front graph cell under the mouse.
      */
     @Override
     public String getToolTipText(MouseEvent evt) {
@@ -949,7 +949,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
     }
 
     /**
-     * Registers ur unregisters this jgraph with the tool tip manager. The
+     * Registers or unregisters this jgraph with the tool tip manager. The
      * current registration state can be queried using
      * <tt>getToolTipEnabled()</tt>
      * @param enabled <tt>true</tt> if this jgraph is to be registered with the

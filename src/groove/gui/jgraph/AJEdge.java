@@ -18,6 +18,7 @@ package groove.gui.jgraph;
 
 import static groove.io.HTMLConverter.HTML_TAG;
 import static groove.io.HTMLConverter.STRONG_TAG;
+import groove.grammar.model.FormatError;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleLabel;
 import groove.graph.Edge;
@@ -27,6 +28,7 @@ import groove.graph.Node;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.look.Look;
 import groove.gui.look.MultiLabel.Direct;
+import groove.gui.look.Values;
 import groove.io.HTMLConverter;
 import groove.util.Groove;
 
@@ -293,6 +295,14 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
         if (targetIdentity != null) {
             result.append(" to ");
             result.append(HTMLConverter.ITALIC_TAG.on(targetIdentity));
+        }
+        if (hasErrors()) {
+            HTMLConverter.HTMLTag errorTag =
+                HTMLConverter.createColorTag(Values.ERROR_NORMAL_FOREGROUND);
+            for (FormatError error : getErrors()) {
+                result.append(HTMLConverter.HTML_LINEBREAK);
+                result.append(errorTag.on(error));
+            }
         }
         return result;
     }

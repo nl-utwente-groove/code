@@ -698,6 +698,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                     }
                 }
             }
+            // check for non-binary edges with explicit layout
+            for (Edge edge : GraphInfo.getLayoutMap(this).edgeMap().keySet()) {
+                if (edge.getRole() != EdgeRole.BINARY) {
+                    errors.add("Node label '%s' not allowed on edges",
+                        edge.label(), edge);
+                }
+            }
             addErrors(errors);
             super.setFixed();
         }
