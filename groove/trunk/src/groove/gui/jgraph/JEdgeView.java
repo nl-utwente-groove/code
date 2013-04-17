@@ -42,7 +42,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JLabel;
@@ -52,7 +51,6 @@ import org.jgraph.graph.CellHandle;
 import org.jgraph.graph.CellMapper;
 import org.jgraph.graph.CellView;
 import org.jgraph.graph.ConnectionSet;
-import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.EdgeRenderer;
 import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphCellEditor;
@@ -302,25 +300,24 @@ public class JEdgeView extends EdgeView {
      */
     protected void routeParallelEdge(CellMapper mapper) {
         // look for parallel edges; if one exists, make this one bend
-        int parallelEdgeCount = 0;
-        Iterator<?> edgeIter = ((DefaultPort) this.source.getCell()).edges();
-        while (parallelEdgeCount <= 1 && edgeIter.hasNext()) {
-            EdgeView otherView =
-                (EdgeView) mapper.getMapping(edgeIter.next(), false);
-            if (otherView != null
-                && otherView.getPointCount() <= 2
-                && (otherView.getSource() == this.target || otherView.getTarget() == this.target)) {
-                parallelEdgeCount++;
+        boolean parallelEdge = false;
+        JVertex<?> sourceVertex = getCell().getSourceVertex();
+        JVertex<?> targetVertex = getCell().getTargetVertex();
+        for (JEdge<?> otherEdge : sourceVertex.getContext()) {
+            EdgeView otherView = (EdgeView) mapper.getMapping(otherEdge, false);
+            if (otherEdge != getCell()
+                && otherView != null
+                && otherEdge.getVisuals().getPoints().size() <= 2
+                && (otherEdge.getSourceVertex() == targetVertex || otherEdge.getTargetVertex() == targetVertex)) {
+                parallelEdge = true;
+                break;
             }
         }
-        if (parallelEdgeCount > 1) {
-            VisualMap visuals = getCell().getVisuals();
-            List<Point2D> points = visuals.getPoints();
-            assert points.size() > 1 : String.format(
-                "JEdge %s has only points %s", getCell(), points);
-            Point2D startPoint = points.get(0);
-            Point2D endPoint = points.get(1);
+        if (parallelEdge) {
+            Point2D startPoint = getPoint(0);
+            Point2D endPoint = getPoint(1);
             Point2D midPoint = createPointBetween(startPoint, endPoint);
+            VisualMap visuals = getCell().getVisuals();
             visuals.setPoints(Arrays.asList(startPoint, midPoint, endPoint));
             visuals.setLineStyle(LineStyle.BEZIER);
         }

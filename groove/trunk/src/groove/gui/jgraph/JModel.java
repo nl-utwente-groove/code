@@ -345,6 +345,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
                     // yes, the edge could be added here; we're done
                     jEdge.addEdge(edge);
                     result = jEdge;
+                    break;
                 }
             }
         }
