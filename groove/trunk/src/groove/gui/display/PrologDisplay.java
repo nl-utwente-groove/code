@@ -152,10 +152,11 @@ public class PrologDisplay extends ResourceDisplay {
      * Constructs and returns the query field.
      * Also initialises {@link #queryEdit}.
      */
-    private JComboBox getQueryField() {
+    private JComboBox<String> getQueryField() {
         if (this.queryField == null) {
             this.queryField =
-                new JComboBox(PREFS.get("queryHistory", "").split("\\n"));
+                new JComboBox<String>(
+                    PREFS.get("queryHistory", "").split("\\n"));
             this.queryField.setFont(EDIT_FONT);
             this.queryField.setEditable(true);
             this.queryField.setEnabled(true);
@@ -489,7 +490,7 @@ public class PrologDisplay extends ResourceDisplay {
      * Add the query to the history
      */
     private void addQueryHistory(String queryString) {
-        JComboBox query = getQueryField();
+        JComboBox<String> query = getQueryField();
         query.removeItem(queryString);
         query.insertItemAt(queryString, 0);
         query.setSelectedIndex(0);
@@ -623,7 +624,7 @@ public class PrologDisplay extends ResourceDisplay {
      * time "reconsult" action is performed.
      */
     private PrologEngine engine;
-    private JComboBox queryField;
+    private JComboBox<String> queryField;
     private JTextComponent queryEdit;
     /** Panel for the results area and status bar. */
     private JPanel resultsPanel;

@@ -617,10 +617,10 @@ final public class GraphEditorTab extends ResourceTab implements
      * @param data the data for the {@link JList}
      */
     private JComponent createSyntaxList(Collection<String> data) {
-        final JList list = new JList();
+        final JList<String> list = new JList<String>();
         list.setCellRenderer(new SyntaxCellRenderer());
         list.setBackground(JAttr.EDITOR_BACKGROUND);
-        list.setListData(data.toArray());
+        list.setListData(data.toArray(new String[data.size()]));
         list.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -1016,8 +1016,9 @@ final public class GraphEditorTab extends ResourceTab implements
     /** Private cell renderer class that inserts the correct tool tips. */
     private class SyntaxCellRenderer extends DefaultListCellRenderer {
         @Override
-        public Component getListCellRendererComponent(JList list, Object value,
-                int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<?> list,
+                Object value, int index, boolean isSelected,
+                boolean cellHasFocus) {
             Component result =
                 super.getListCellRendererComponent(list, value, index,
                     isSelected, cellHasFocus);
