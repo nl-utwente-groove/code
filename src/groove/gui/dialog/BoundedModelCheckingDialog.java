@@ -85,7 +85,6 @@ public class BoundedModelCheckingDialog {
         this.ruleList.setEnabled(false);
         this.ruleList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         this.ruleList.addListSelectionListener(this.selectionListener);
-        // ruleList.setBorder(new Border());
         String[] singleton = {"empty"};
         this.selectedRuleList = new JList();
         this.selectedRuleList.setListData(singleton);
@@ -126,20 +125,6 @@ public class BoundedModelCheckingDialog {
         panel.add(this.selectedRuleList);
         SpringUtilities.makeCompactGrid(panel, 5, 5, 5, 5, 10, 10);
 
-        /*
-        panel.add(this.boundLabel, ParagraphLayout.NEW_PARAGRAPH);
-        panel.add(this.boundField);
-
-        panel.add(this.deltaLabel, ParagraphLayout.NEW_PARAGRAPH);
-        panel.add(this.deltaField);
-
-        panel.add(this.ruleSetBoundButton, ParagraphLayout.NEW_PARAGRAPH);
-        panel.add(this.emptyLabel, ParagraphLayout.NEW_PARAGRAPH);
-        panel.add(this.ruleList);
-        panel.add(this.deleteButton);
-        panel.add(this.addButton);
-        panel.add(this.selectedRuleList);
-        */
         return panel;
     }
 
@@ -171,10 +156,8 @@ public class BoundedModelCheckingDialog {
      * Shows the dialog that requests the boundary.
      */
     public void showDialog(JFrame frame) {
-        // createContentPane();
         this.dialog = createContentPane().createDialog(frame, createTitle());
         this.dialog.setResizable(true);
-        // dialog.setSize(200,200);
         this.dialog.pack();
         this.dialog.setVisible(true);
     }
@@ -267,23 +250,21 @@ public class BoundedModelCheckingDialog {
         }
 
         private void setBoundary() {
-            if (BoundedModelCheckingDialog.this.graphBoundButton.isSelected()) {
-                int graphBound =
-                    Integer.parseInt(BoundedModelCheckingDialog.this.boundField.getText());
-                int delta =
-                    Integer.parseInt(BoundedModelCheckingDialog.this.deltaField.getText());
-                BoundedModelCheckingDialog.this.boundary =
-                    new GraphNodeSizeBoundary(graphBound, delta);
-            } else if (BoundedModelCheckingDialog.this.ruleSetBoundButton.isSelected()) {
+            BoundedModelCheckingDialog aDialog =
+                BoundedModelCheckingDialog.this;
+            if (aDialog.graphBoundButton.isSelected()) {
+                int graphBound = Integer.parseInt(aDialog.boundField.getText());
+                int delta = Integer.parseInt(aDialog.deltaField.getText());
+                aDialog.boundary = new GraphNodeSizeBoundary(graphBound, delta);
+            } else if (aDialog.ruleSetBoundButton.isSelected()) {
                 Set<Rule> selectedRules = new HashSet<Rule>();
                 Iterator<String> selectedRuleNamesIter =
-                    BoundedModelCheckingDialog.this.selectedRuleNames.iterator();
+                    aDialog.selectedRuleNames.iterator();
                 while (selectedRuleNamesIter.hasNext()) {
                     String ruleName = selectedRuleNamesIter.next();
-                    selectedRules.add(BoundedModelCheckingDialog.this.grammar.getRule(ruleName));
+                    selectedRules.add(aDialog.grammar.getRule(ruleName));
                 }
-                BoundedModelCheckingDialog.this.boundary =
-                    new RuleSetBoundary(selectedRules);
+                aDialog.boundary = new RuleSetBoundary(selectedRules);
             }
         }
     }
@@ -295,41 +276,45 @@ public class BoundedModelCheckingDialog {
     private class SelectionListener implements ActionListener,
             ListSelectionListener {
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == BoundedModelCheckingDialog.this.graphBoundButton) {
-                BoundedModelCheckingDialog.this.boundField.setEditable(true);
-                BoundedModelCheckingDialog.this.deltaField.setEditable(true);
-                BoundedModelCheckingDialog.this.ruleList.setEnabled(false);
-                BoundedModelCheckingDialog.this.selectedRuleList.setEnabled(false);
-            } else if (e.getSource() == BoundedModelCheckingDialog.this.ruleSetBoundButton) {
-                BoundedModelCheckingDialog.this.ruleList.setEnabled(true);
-                BoundedModelCheckingDialog.this.selectedRuleList.setEnabled(true);
-                BoundedModelCheckingDialog.this.boundField.setEditable(false);
-                BoundedModelCheckingDialog.this.deltaField.setEditable(false);
-            } else if (e.getSource() == BoundedModelCheckingDialog.this.addButton) {
-                for (Object object : BoundedModelCheckingDialog.this.ruleList.getSelectedValues()) {
-                    BoundedModelCheckingDialog.this.selectedRuleNames.add(object.toString());
+            BoundedModelCheckingDialog aDialog =
+                BoundedModelCheckingDialog.this;
+            if (e.getSource() == aDialog.graphBoundButton) {
+                aDialog.boundField.setEditable(true);
+                aDialog.deltaField.setEditable(true);
+                aDialog.ruleList.setEnabled(false);
+                aDialog.selectedRuleList.setEnabled(false);
+            } else if (e.getSource() == aDialog.ruleSetBoundButton) {
+                aDialog.ruleList.setEnabled(true);
+                aDialog.selectedRuleList.setEnabled(true);
+                aDialog.boundField.setEditable(false);
+                aDialog.deltaField.setEditable(false);
+            } else if (e.getSource() == aDialog.addButton) {
+                for (Object object : aDialog.ruleList.getSelectedValues()) {
+                    aDialog.selectedRuleNames.add(object.toString());
                 }
-                BoundedModelCheckingDialog.this.selectedRuleList.setListData(BoundedModelCheckingDialog.this.selectedRuleNames.toArray());
-            } else if (e.getSource() == BoundedModelCheckingDialog.this.deleteButton) {
-                for (Object object : BoundedModelCheckingDialog.this.selectedRuleList.getSelectedValues()) {
-                    BoundedModelCheckingDialog.this.selectedRuleNames.remove(object.toString());
+                aDialog.selectedRuleList.setListData(aDialog.selectedRuleNames.toArray());
+            } else if (e.getSource() == aDialog.deleteButton) {
+                for (Object object : aDialog.selectedRuleList.getSelectedValues()) {
+                    aDialog.selectedRuleNames.remove(object.toString());
                 }
-                BoundedModelCheckingDialog.this.selectedRuleList.setListData(BoundedModelCheckingDialog.this.selectedRuleNames.toArray());
+                aDialog.selectedRuleList.setListData(aDialog.selectedRuleNames.toArray());
             }
         }
 
         public void valueChanged(ListSelectionEvent e) {
-            if (e.getSource() == BoundedModelCheckingDialog.this.ruleList) {
-                if (BoundedModelCheckingDialog.this.ruleList.getSelectedValues().length > 0) {
-                    BoundedModelCheckingDialog.this.addButton.setEnabled(true);
+            BoundedModelCheckingDialog aDialog =
+                BoundedModelCheckingDialog.this;
+            if (e.getSource() == aDialog.ruleList) {
+                if (aDialog.ruleList.getSelectedValues().length > 0) {
+                    aDialog.addButton.setEnabled(true);
                 } else {
-                    BoundedModelCheckingDialog.this.addButton.setEnabled(false);
+                    aDialog.addButton.setEnabled(false);
                 }
-            } else if (e.getSource() == BoundedModelCheckingDialog.this.selectedRuleList) {
-                if (BoundedModelCheckingDialog.this.selectedRuleList.getSelectedValues().length > 0) {
-                    BoundedModelCheckingDialog.this.deleteButton.setEnabled(true);
+            } else if (e.getSource() == aDialog.selectedRuleList) {
+                if (aDialog.selectedRuleList.getSelectedValues().length > 0) {
+                    aDialog.deleteButton.setEnabled(true);
                 } else {
-                    BoundedModelCheckingDialog.this.deleteButton.setEnabled(false);
+                    aDialog.deleteButton.setEnabled(false);
                 }
             }
         }
