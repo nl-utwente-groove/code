@@ -616,7 +616,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                     }
                 }
                 if (!fit) {
-                    errors.add("No %s-path exists between %s and %s",
+                    errors.add("No %s-path can exist between %s and %s",
                         checkLabel, sourceImage.getType(),
                         targetImage.getType(), edge);
                 }
@@ -1041,42 +1041,54 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
 
     /** Returns the set of subtypes of a given node type. */
     public Set<TypeNode> getSubtypes(TypeNode node) {
+        Set<TypeNode> result;
         if (isImplicit()) {
-            return Collections.singleton(node);
+            result = Collections.singleton(node);
         } else {
             assert isFixed();
-            return this.nodeSubtypeMap.get(node);
+            result = this.nodeSubtypeMap.get(node);
         }
+        assert result != null;
+        return result;
     }
 
     /** Returns the set of subtypes of a given edge type. */
     public Set<TypeEdge> getSubtypes(TypeEdge edge) {
+        Set<TypeEdge> result;
         if (isImplicit()) {
-            return Collections.singleton(edge);
+            result = Collections.singleton(edge);
         } else {
             assert isFixed();
-            return this.edgeSubtypeMap.get(edge);
+            result = this.edgeSubtypeMap.get(edge);
         }
+        assert result != null;
+        return result;
     }
 
     /** Returns the set of supertypes of a given node type. */
     public Set<TypeNode> getSupertypes(TypeNode node) {
+        Set<TypeNode> result;
         if (isImplicit()) {
-            return Collections.singleton(node);
+            result = Collections.singleton(node);
         } else {
             assert isFixed();
-            return this.nodeSupertypeMap.get(node);
+            result = this.nodeSupertypeMap.get(node);
         }
+        assert result != null;
+        return result;
     }
 
     /** Returns the set of supertypes of a given edge type. */
     public Set<TypeEdge> getSupertypes(TypeEdge edge) {
+        Set<TypeEdge> result;
         if (isImplicit()) {
-            return Collections.singleton(edge);
+            result = Collections.singleton(edge);
         } else {
             assert isFixed();
-            return this.edgeSupertypeMap.get(edge);
+            result = this.edgeSupertypeMap.get(edge);
         }
+        assert result != null;
+        return result;
     }
 
     /**

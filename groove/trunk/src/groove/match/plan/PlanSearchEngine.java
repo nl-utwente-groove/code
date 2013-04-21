@@ -35,6 +35,8 @@ import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.VariableNode;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
+import groove.graph.EdgeRole;
 import groove.graph.Label;
 import groove.match.SearchEngine;
 import groove.match.ValueOracle;
@@ -433,11 +435,20 @@ public class PlanSearchEngine extends SearchEngine {
             if (negOperand instanceof RegExpr.Empty) {
                 result = new EqualitySearchItem(edge, false);
             } else if (negOperand != null) {
-                RuleEdge negatedEdge =
-                    this.condition.getFactory().createEdge(source,
-                        negOperand.toLabel(), target);
-                result =
-                    createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
+                RuleLabel negatedLabel = negOperand.toLabel();
+                AbstractSearchItem negatedItem;
+                if (negatedLabel.getRole() == EdgeRole.NODE_TYPE
+                    && !this.typeGraph.isImplicit()) {
+                    TypeNode negatedType = this.typeGraph.getNode(negatedLabel);
+                    negatedItem =
+                        new NodeTypeSearchItem(edge.source(), negatedType);
+                } else {
+                    RuleEdge negatedEdge =
+                        this.condition.getFactory().createEdge(source,
+                            negatedLabel, target);
+                    negatedItem = createEdgeSearchItem(negatedEdge);
+                }
+                result = createNegatedSearchItem(negatedItem);
                 this.remainingEdges.remove(edge);
             } else if (label.getWildcardGuard() != null) {
                 assert !this.typeGraph.isNodeType(edge);
@@ -474,7 +485,7 @@ public class PlanSearchEngine extends SearchEngine {
                         this.algebraFamily);
             } else {
                 assert node instanceof DefaultRuleNode;
-                result = new NodeTypeSearchItem(node, this.typeGraph);
+                result = new NodeTypeSearchItem(node);
             }
             return result;
         }

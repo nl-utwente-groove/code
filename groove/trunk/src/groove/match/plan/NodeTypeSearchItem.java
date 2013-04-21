@@ -22,7 +22,6 @@ import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.type.TypeElement;
-import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeNode;
 import groove.match.plan.PlanSearchStrategy.Search;
 
@@ -41,12 +40,19 @@ class NodeTypeSearchItem extends AbstractSearchItem {
     /**
      * Creates a search item for a given typed node.
      * @param node the node to be matched
-     * @param typeGraph label store containing the subtypes of the node type
      */
-    public NodeTypeSearchItem(RuleNode node, TypeGraph typeGraph) {
-        assert node.getType().getGraph() == typeGraph;
+    public NodeTypeSearchItem(RuleNode node) {
+        this(node, node.getType());
+    }
+
+    /**
+     * Creates a search item that tests for the type of a given node.
+     * @param node the node to be matched
+     * @param type the node type that the image should be tested for
+     */
+    public NodeTypeSearchItem(RuleNode node, TypeNode type) {
         this.node = node;
-        this.type = node.getType();
+        this.type = type;
         this.boundVars = new ArrayList<LabelVar>(node.getVars());
         this.boundNodes = Collections.singleton(node);
         this.matchingTypes = node.getMatchingTypes();
