@@ -82,10 +82,12 @@ import javax.swing.event.UndoableEditEvent;
 
 import org.jgraph.event.GraphLayoutCacheEvent.GraphLayoutCacheChange;
 import org.jgraph.event.GraphModelEvent;
+import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.event.GraphModelListener;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
 import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphUndoManager;
 
@@ -430,20 +432,21 @@ final public class GraphEditorTab extends ResourceTab implements
                         || getJGraph().isModelRefreshing()) {
                         relevant = false;
                     } else if (e.getEdit() instanceof GraphLayoutCacheChange) {
-                        GraphLayoutCacheChange edit =
-                            (GraphLayoutCacheChange) e.getEdit();
+                        GraphModelChange edit = (GraphModelChange) e.getEdit();
+                        Object[] inserted = edit.getInserted();
+                        Object[] removed = edit.getRemoved();
+                        Object[] changed = edit.getChanged();
+                        ConnectionSet connections = edit.getConnectionSet();
                         relevant =
-                            edit.getInserted() != null
-                                && edit.getInserted().length > 0
-                                || edit.getRemoved() != null
-                                && edit.getRemoved().length > 0
-                                || edit.getChanged() != null
-                                && edit.getChanged().length > 0;
+                            inserted != null && inserted.length > 0
+                                || removed != null && removed.length > 0
+                                || changed != null && changed.length > 0;
                         minor =
-                            (edit.getInserted() == null || edit.getInserted().length == 0)
-                                && (edit.getRemoved() == null || edit.getRemoved().length == 0);
-                        if (minor && edit.getChanged() != null) {
-                            for (Object in : edit.getChanged()) {
+                            (connections == null || connections.isEmpty())
+                                && (inserted == null || inserted.length == 0)
+                                && (removed == null || removed.length == 0);
+                        if (minor && changed != null) {
+                            for (Object in : changed) {
                                 AttributeMap attrs =
                                     (AttributeMap) edit.getAttributes().get(in);
                                 if (GraphConstants.getValue(attrs) != null) {
