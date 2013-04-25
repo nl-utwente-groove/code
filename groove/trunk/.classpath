@@ -29,5 +29,6 @@
 	<classpathentry kind="lib" path="lib/emf-2_7_0/org.eclipse.emf.common_2.7.0.v20120127-1122.jar"/>
 	<classpathentry kind="lib" path="lib/emf-2_7_0/org.eclipse.emf.ecore_2.7.0.v20120127-1122.jar"/>
 	<classpathentry kind="lib" path="lib/emf-2_7_0/org.eclipse.emf.ecore.xmi_2.7.0.v20120127-1122.jar"/>
+	<classpathentry kind="lib" path="lib/antlr-4.0-complete.jar" sourcepath="lib/src/antlr-4.0-src.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
