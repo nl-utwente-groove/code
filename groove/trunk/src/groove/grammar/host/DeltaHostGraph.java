@@ -48,8 +48,8 @@ import java.util.Stack;
  * @author Arend Rensink
  * @version $Revision $
  */
-public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
-        implements HostGraph, Cloneable {
+public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements
+        HostGraph, Cloneable {
     /**
      * Constructs a graph with an empty basis and a delta determining
      * the elements of the graph.
@@ -426,8 +426,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
         CertificateStrategy result =
             this.certifier == null ? null : this.certifier.get();
         if (result == null || result.getStrength() != strong) {
-            result =
-                AGraph.getCertificateFactory().newInstance(this, strong);
+            result = AGraph.getCertificateFactory().newInstance(this, strong);
             this.certifier = new WeakReference<CertificateStrategy>(result);
         }
         return result;
@@ -457,11 +456,6 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
     @Override
     public HostGraph retype(TypeGraph typeGraph) throws FormatException {
         return typeGraph.analyzeHost(this).createImage(getName());
-    }
-
-    @Override
-    public HostToAspectMap toAspectMap() {
-        return clone().toAspectMap();
     }
 
     /** The element factory of this host graph. */

@@ -17,6 +17,7 @@
 package groove.gui.action;
 
 import groove.grammar.aspect.AspectGraph;
+import groove.grammar.aspect.GraphConverter;
 import groove.graph.GraphRole;
 import groove.graph.plain.PlainGraph;
 import groove.gui.Icons;
@@ -83,12 +84,11 @@ public class SaveLTSAsAction extends SimulatorAction {
             ExtensionFilter stateFilter = FileType.STATE_FILTER;
             for (GraphState state : export) {
                 AspectGraph stateGraph =
-                    state.getGraph().toAspectMap().getAspectGraph();
+                    GraphConverter.toAspect(state.getGraph());
                 File file =
                     new File(ltsFile.getParentFile(),
                         stateFilter.addExtension(state.toString()));
-                GxlIO.getInstance().saveGraph(
-                    stateGraph.toPlainGraph(), file);
+                GxlIO.getInstance().saveGraph(stateGraph.toPlainGraph(), file);
             }
         } catch (IOException e) {
             showErrorDialog(e, "Error while saving LTS to %s", ltsFile);

@@ -16,16 +16,9 @@
  */
 package groove.grammar.host;
 
-import static groove.graph.GraphRole.HOST;
 import groove.algebra.AlgebraFamily;
-import groove.grammar.aspect.AspectEdge;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.aspect.AspectLabel;
-import groove.grammar.aspect.AspectNode;
-import groove.grammar.aspect.AspectParser;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
-import groove.graph.AElementMap;
 import groove.graph.GGraph;
 import groove.transform.DeltaTarget;
 
@@ -56,34 +49,4 @@ public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {
      * @throws FormatException if there are typing errors in the graph 
      */
     public HostGraph retype(TypeGraph typeGraph) throws FormatException;
-
-    /** Converts this host graph to an equivalent aspect graph representation. */
-    HostToAspectMap toAspectMap();
-
-    /** 
-     * Mapping from the elements of a host graph to those of a corresponding
-     * aspect graph. For convenience, the aspect graph is bundled in with the map.  
-     */
-    public class HostToAspectMap extends
-            AElementMap<HostNode,HostEdge,AspectNode,AspectEdge> {
-        /**
-         * Creates a new, empty map.
-         */
-        public HostToAspectMap(AspectGraph aspectGraph) {
-            super(new AspectGraph.AspectFactory(HOST) {
-                @Override
-                public AspectLabel createLabel(String text) {
-                    return AspectParser.getInstance().parse(text, HOST);
-                }
-            });
-            this.aspectGraph = aspectGraph;
-        }
-
-        /** Returns the target aspect graph of this mapping. */
-        public AspectGraph getAspectGraph() {
-            return this.aspectGraph;
-        }
-
-        private final AspectGraph aspectGraph;
-    }
 }

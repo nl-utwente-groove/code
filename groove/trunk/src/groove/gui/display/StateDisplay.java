@@ -23,8 +23,9 @@ import static groove.gui.SimulatorModel.Change.STATE;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectNode;
+import groove.grammar.aspect.GraphConverter;
+import groove.grammar.aspect.GraphConverter.HostToAspectMap;
 import groove.grammar.host.HostEdge;
-import groove.grammar.host.HostGraph.HostToAspectMap;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
@@ -730,8 +731,8 @@ public class StateDisplay extends Display implements SimulatorListener {
     private HostToAspectMap getAspectMap(GraphState state) {
         HostToAspectMap result = this.stateToAspectMap.get(state);
         if (result == null) {
-            this.stateToAspectMap.put(state, result =
-                state.getGraph().toAspectMap());
+            this.stateToAspectMap.put(state,
+                result = GraphConverter.toAspectMap(state.getGraph()));
         }
         return result;
     }

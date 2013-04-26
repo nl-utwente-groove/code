@@ -19,18 +19,10 @@ package groove.grammar.host;
 import static groove.graph.GraphRole.HOST;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
-import groove.grammar.aspect.AspectEdge;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.aspect.AspectKind;
-import groove.grammar.aspect.AspectLabel;
-import groove.grammar.aspect.AspectNode;
-import groove.grammar.aspect.AspectParser;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
-import groove.grammar.type.TypeLabel;
-import groove.graph.Edge;
-import groove.graph.EdgeRole;
 import groove.graph.AElementMap;
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
@@ -168,48 +160,6 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
     @Override
     public HostGraph retype(TypeGraph typeGraph) throws FormatException {
         return typeGraph.analyzeHost(this).createImage(getName());
-    }
-
-    public HostToAspectMap toAspectMap() {
-        AspectGraph targetGraph = new AspectGraph(getName(), HOST);
-        HostToAspectMap result = new HostToAspectMap(targetGraph);
-        for (HostNode node : nodeSet()) {
-            if (!(node instanceof ValueNode)) {
-                AspectNode nodeImage = targetGraph.addNode(node.getNumber());
-                result.putNode(node, nodeImage);
-                TypeLabel typeLabel = node.getType().label();
-                if (typeLabel != TypeLabel.NODE) {
-                    targetGraph.addEdge(nodeImage, result.mapLabel(typeLabel),
-                        nodeImage);
-                }
-            }
-        }
-        // add edge images
-        for (HostEdge edge : edgeSet()) {
-            String edgeText = edge.label().text();
-            AspectNode imageSource = result.getNode(edge.source());
-            AspectNode imageTarget;
-            String text;
-            if (edge.target() instanceof ValueNode) {
-                imageTarget = imageSource;
-                String constant = ((ValueNode) edge.target()).getSymbol();
-                text = AspectKind.LET.getPrefix() + edgeText + "=" + constant;
-            } else if (edge.getRole() == EdgeRole.BINARY) {
-                imageTarget = result.getNode(edge.target());
-                text = AspectKind.LITERAL.getPrefix() + edgeText;
-            } else {
-                imageTarget = imageSource;
-                text = edge.label().toString();
-            }
-            AspectLabel imageLabel =
-                AspectParser.getInstance().parse(text, HOST);
-            AspectEdge edgeImage =
-                targetGraph.addEdge(imageSource, imageLabel, imageTarget);
-            result.putEdge(edge, edgeImage);
-        }
-        GraphInfo.transfer(this, targetGraph, result);
-        targetGraph.setFixed();
-        return result;
     }
 
     /** The element factory of this host graph. */

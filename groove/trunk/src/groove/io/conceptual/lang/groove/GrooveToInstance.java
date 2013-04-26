@@ -2,11 +2,12 @@ package groove.io.conceptual.lang.groove;
 
 import groove.algebra.Constant;
 import groove.grammar.aspect.AspectNode;
+import groove.grammar.aspect.GraphConverter;
+import groove.grammar.aspect.GraphConverter.HostToAspectMap;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostEdgeStore;
 import groove.grammar.host.HostGraph;
-import groove.grammar.host.HostGraph.HostToAspectMap;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
 import groove.grammar.host.ValueNode;
@@ -104,7 +105,7 @@ public class GrooveToInstance extends InstanceImporter {
 
         // Some trickery is required to obtain the ID of a node
         // Find original aspect node and obtain ID from that
-        HostToAspectMap map = hostGraph.toAspectMap();
+        HostToAspectMap map = GraphConverter.toAspectMap(hostGraph);
         // Find all class instances
         for (HostNode node : hostGraph.nodeSet()) {
             AspectNode aspectNode = map.getNode(node);

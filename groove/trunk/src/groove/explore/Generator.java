@@ -23,6 +23,7 @@ import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationStatistics;
 import groove.grammar.Grammar;
+import groove.grammar.aspect.GraphConverter;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
@@ -494,7 +495,7 @@ public class Generator extends CommandLineTool {
                         }
                     } else {
                         Groove.saveGraph(
-                            state.getGraph().toAspectMap().getAspectGraph(),
+                            GraphConverter.toAspect(state.getGraph()),
                             stateFile);
                     }
                 }
