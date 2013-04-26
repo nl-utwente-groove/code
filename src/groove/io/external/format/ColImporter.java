@@ -19,6 +19,7 @@ package groove.io.external.format;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.grammar.aspect.AspectGraph;
+import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -118,7 +119,7 @@ public class ColImporter implements FormatImporter {
                     graph.addEdge(source, LABEL, target);
                 }
             }
-            AspectGraph aGraph = graph.toAspectMap().getAspectGraph();
+            AspectGraph aGraph = GraphConverter.toAspect(graph);
 
             Resource res = new Resource(ResourceKind.HOST, name, aGraph);
 

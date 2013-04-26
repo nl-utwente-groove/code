@@ -16,7 +16,6 @@
  */
 package groove.abstraction.neigh.shape;
 
-import static groove.graph.GraphRole.HOST;
 import static groove.graph.GraphRole.SHAPE;
 import groove.abstraction.Multiplicity;
 import groove.abstraction.neigh.EdgeMultDir;
@@ -24,12 +23,6 @@ import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
-import groove.grammar.aspect.AspectEdge;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.aspect.AspectKind;
-import groove.grammar.aspect.AspectLabel;
-import groove.grammar.aspect.AspectNode;
-import groove.grammar.aspect.AspectParser;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
@@ -53,8 +46,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ShapeGraph extends AGraph<HostNode,HostEdge> implements
-        HostGraph {
+public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
     /**
      * Constructs an empty host graph.
      */
@@ -103,8 +95,7 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements
     }
 
     @Override
-    public boolean removeNodeSet(
-            Collection<? extends HostNode> nodeSet) {
+    public boolean removeNodeSet(Collection<? extends HostNode> nodeSet) {
         return nodeSet().removeAll(nodeSet);
     }
 
@@ -197,41 +188,6 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements
     @Override
     public ShapeGraph retype(TypeGraph typeGraph) throws FormatException {
         throw new UnsupportedOperationException();
-    }
-
-    public HostToAspectMap toAspectMap() {
-        AspectGraph targetGraph = new AspectGraph(getName(), HOST);
-        HostToAspectMap result = new HostToAspectMap(targetGraph);
-        for (HostNode node : nodeSet()) {
-            if (!(node instanceof ValueNode)) {
-                AspectNode nodeImage = targetGraph.addNode(node.getNumber());
-                result.putNode(node, nodeImage);
-                TypeLabel typeLabel = node.getType().label();
-                if (typeLabel != TypeLabel.NODE) {
-                    targetGraph.addEdge(nodeImage, result.mapLabel(typeLabel),
-                        nodeImage);
-                }
-            }
-        }
-        // add edge images
-        for (HostEdge edge : edgeSet()) {
-            if (edge.target() instanceof ValueNode) {
-                AspectNode sourceImage = result.getNode(edge.source());
-                String constant = ((ValueNode) edge.target()).getSymbol();
-                String let =
-                    AspectKind.LET.getPrefix() + edge.label().text() + "="
-                        + constant;
-                AspectLabel label = AspectParser.getInstance().parse(let, HOST);
-                targetGraph.addEdge(sourceImage, label, sourceImage);
-            } else {
-                AspectEdge edgeImage = result.mapEdge(edge);
-                edgeImage.setFixed();
-                targetGraph.addEdgeContext(edgeImage);
-            }
-        }
-        GraphInfo.transfer(this, targetGraph, result);
-        targetGraph.setFixed();
-        return result;
     }
 
     @Override

@@ -1,7 +1,6 @@
 package groove.gui.dialog;
 
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.host.HostGraph;
+import groove.grammar.aspect.GraphConverter;
 import groove.grammar.model.ResourceKind;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
@@ -69,17 +68,10 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
         case HOST:
         case TYPE:
         case RULE:
-            if (this.graph instanceof HostGraph && this.simulator != null) {
-                shownGraph =
-                    ((HostGraph) this.graph).toAspectMap().getAspectGraph();
-            }
-            if (shownGraph instanceof AspectGraph) {
-                DisplayKind kind =
-                    DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
-                jGraph = new AspectJGraph(this.simulator, kind, false);
-            } else {
-                jGraph = PlainJGraph.newInstance(this.simulator);
-            }
+            shownGraph = GraphConverter.toAspect(this.graph);
+            DisplayKind kind =
+                DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
+            jGraph = new AspectJGraph(this.simulator, kind, false);
             break;
         case LTS:
             jGraph = new LTSJGraph(this.simulator);
@@ -88,7 +80,7 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
             jGraph = PlainJGraph.newInstance(this.simulator);
         }
         JModel<G> model = jGraph.newModel();
-        model.loadGraph(this.graph);
+        model.loadGraph((G) shownGraph);
         jGraph.setModel(model);
         jGraph.doLayout(true);
         return jGraph;

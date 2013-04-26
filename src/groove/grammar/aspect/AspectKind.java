@@ -1524,7 +1524,7 @@ public enum AspectKind {
          * Builds a string description of a given aspect kind and content
          * of this {@link ContentKind}.
          */
-        String toString(AspectKind aspect, Object content) {
+        public String toString(AspectKind aspect, Object content) {
             if (content == null) {
                 return aspect.getPrefix();
             } else if (this == LEVEL || this == MULTIPLICITY) {

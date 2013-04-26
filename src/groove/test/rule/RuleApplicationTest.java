@@ -20,6 +20,7 @@ import static groove.grammar.model.ResourceKind.HOST;
 import static groove.grammar.model.ResourceKind.RULE;
 import groove.algebra.AlgebraFamily;
 import groove.grammar.Rule;
+import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.HostGraph;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
@@ -215,7 +216,7 @@ public class RuleApplicationTest {
                             File.createTempFile("error",
                                 FileType.STATE_FILTER.getExtension(), new File(
                                     INPUT_DIR));
-                        Groove.saveGraph(target.toAspectMap().getAspectGraph(),
+                        Groove.saveGraph(GraphConverter.toAspect(target),
                             tmpFile);
                         System.out.printf("Graph saved in %s", tmpFile);
                     } catch (IOException e) {
