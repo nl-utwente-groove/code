@@ -511,11 +511,12 @@ public class Generator extends CommandLineTool {
         if (getVerbosity() > LOW_VERBOSITY) {
             println();
             println();
+            String report = this.explorationStats.getReport();
+            if (report.length() > 0) {
+                println(report);
+            }
         }
-        String report = this.explorationStats.getReport();
-        if (report.length() > 0) {
-            println(report);
-        }
+        println(getExploration().getLastMessage());
         // transfer the garbage collector log (if any) to the log file (if any)
         if (isLogging()) {
             File gcLogFile = new File(GC_LOG_NAME);

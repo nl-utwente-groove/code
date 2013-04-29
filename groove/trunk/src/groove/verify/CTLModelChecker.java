@@ -47,21 +47,19 @@ public class CTLModelChecker extends CommandLineTool {
      */
     public static void main(String args[]) {
         List<String> argList = new LinkedList<String>(Arrays.asList(args));
-        List<String> checkerArgs;
-        List<String> genArgs;
-        if (argList.contains("-g")) {
-            int splitPoint = argList.indexOf("-g");
-            checkerArgs =
+        int splitPoint = argList.indexOf("-g");
+        if (splitPoint < 0) {
+            System.err.printf(USAGE_MESSAGE);
+        } else {
+            List<String> checkerArgs =
                 new LinkedList<String>(argList.subList(0, splitPoint));
-            genArgs =
+            List<String> genArgs =
                 new LinkedList<String>(argList.subList(splitPoint + 1,
                     argList.size()));
-        } else {
-            checkerArgs = argList;
-            genArgs = null;
+            CTLModelChecker verifier =
+                new CTLModelChecker(checkerArgs, genArgs);
+            verifier.start();
         }
-        CTLModelChecker verifier = new CTLModelChecker(checkerArgs, genArgs);
-        verifier.start();
     }
 
     /**

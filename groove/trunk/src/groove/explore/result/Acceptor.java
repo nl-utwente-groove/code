@@ -17,6 +17,9 @@
 package groove.explore.result;
 
 import groove.lts.GTSAdapter;
+import groove.lts.GraphState;
+
+import java.util.Collection;
 
 /**
  * Listens to a GTS and adds accepted elements to a result.
@@ -47,13 +50,25 @@ public class Acceptor extends GTSAdapter {
     public Result getResult() {
         return this.result;
     }
-    
+
     /**
      * Factory method to create a fresh instance of this acceptor, with a fresh
      * result instance.
      */
     public Acceptor newInstance() {
         return new Acceptor(this.result.newInstance());
+    }
+
+    /** Returns a message describing the accepted result. */
+    public String getMessage() {
+        String result;
+        Collection<GraphState> states = this.result.getValue();
+        if (states.isEmpty()) {
+            result = "No result states found";
+        } else {
+            result = states.size() + " result states found: " + states;
+        }
+        return result;
     }
 
     private Result result;
