@@ -121,6 +121,19 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
         return result;
     }
 
+    @Override
+    public String getMessage() {
+        String result;
+        Collection<GraphState> states = getResult().getValue();
+        String property = this.strategy.getProperty();
+        if (states.size() == 0) {
+            result = "No counterexample found for " + property;
+        } else {
+            result = property + " is violated; counterexample: " + states;
+        }
+        return result;
+    }
+
     private LTLStrategy strategy;
     private Record record;
 

@@ -106,6 +106,7 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
      */
     public void setProperty(String property) {
         assert property != null;
+        this.property = property;
         try {
             Formula<String> formula =
                 FormulaParser.parse(property).toLtlFormula();
@@ -116,6 +117,11 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
             throw new IllegalStateException(String.format(
                 "Error in property '%s'", property), e);
         }
+    }
+
+    /** Returns the property being checked (in string form as set by {@link #setProperty(String)}). */
+    public String getProperty() {
+        return this.property;
     }
 
     /** 
@@ -389,6 +395,8 @@ public class LTLStrategy extends Strategy implements ExploreIterator {
         return this.record;
     }
 
+    /** Property to be chacked. */
+    private String property;
     /** Record of this model checking run. */
     private Record record = new Record();
     private final Strategy stateStrategy = new ExploreStateStrategy();

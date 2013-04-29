@@ -44,8 +44,10 @@ public class Exploration {
     private final Serialized strategy;
     private final Serialized acceptor;
     private final int nrResults;
-
+    /** Result of the last exploration. */
     private Result lastResult;
+    /** Message of the last exploration. */
+    private String lastMessage;
 
     private GraphState lastState;
 
@@ -105,8 +107,7 @@ public class Exploration {
      * @throws FormatException if the grammar is incompatible with the (serialised)
      * strategy.
      */
-    public Strategy getParsedStrategy(Grammar grammar)
-        throws FormatException {
+    public Strategy getParsedStrategy(Grammar grammar) throws FormatException {
         return StrategyEnumerator.parseStrategy(grammar, this.strategy);
     }
 
@@ -122,8 +123,7 @@ public class Exploration {
      * @throws FormatException if the grammar is incompatible with the (serialised)
      * acceptor.
      */
-    public Acceptor getParsedAcceptor(Grammar grammar)
-        throws FormatException {
+    public Acceptor getParsedAcceptor(Grammar grammar) throws FormatException {
         if (getParsedStrategy(grammar) instanceof LTLStrategy) {
             return new CycleAcceptor();
         } else {
@@ -150,6 +150,13 @@ public class Exploration {
      */
     public GraphState getLastState() {
         return this.lastState;
+    }
+
+    /**
+     * Returns the message of the last exploration. 
+     */
+    public String getLastMessage() {
+        return this.lastMessage;
     }
 
     /**
@@ -236,6 +243,7 @@ public class Exploration {
         // store result
         this.lastResult = parsedAcceptor.getResult();
         this.lastState = parsedStrategy.getLastState();
+        this.lastMessage = parsedStrategy.getMessage();
     }
 
     /** 

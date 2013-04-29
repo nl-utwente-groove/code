@@ -130,6 +130,19 @@ public abstract class Strategy {
         return this.lastState;
     }
 
+    /** 
+     * Returns a message recorded after exploration.
+     * The message is non-{@code null} after {@link #play()} has returned. 
+     */
+    final public String getMessage() {
+        StringBuilder result = new StringBuilder();
+        if (isInterrupted()) {
+            result.append("Exploration interrupted. ");
+        }
+        result.append(this.acceptor.getMessage());
+        return result.toString();
+    }
+
     private final ExploreIterator iterator;
     /** Flag indicating that the last invocation of {@link #play} was interrupted. */
     private boolean interrupted;
