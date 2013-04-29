@@ -373,13 +373,13 @@ public class RuleDependencies {
     private void addEraserNode(Set<TypeElement> consumed, RuleNode eraserNode,
             RuleGraph lhs) {
         TypeNode eraserType = eraserNode.getType();
+        Set<TypeNode> sharpEraserTypes = new HashSet<TypeNode>();
         if (eraserNode.isSharp()) {
-            addSharpEraserNode(consumed, eraserType);
+            sharpEraserTypes.add(eraserType);
         } else {
-            for (TypeNode subtype : this.typeGraph.getSubtypes(eraserType)) {
-                addSharpEraserNode(consumed, subtype);
-            }
+            sharpEraserTypes.addAll(this.typeGraph.getSubtypes(eraserType));
         }
+        addSharpEraserTypes(consumed, sharpEraserTypes);
         if (this.properties.isCheckDangling()) {
             // the incident edges of eraser nodes are not eraser edges,
             // so we have to add them explicitly to the consumed edges
@@ -389,12 +389,25 @@ public class RuleDependencies {
         }
     }
 
-    private void addSharpEraserNode(Set<TypeElement> consumed,
-            TypeNode eraserType) {
-        consumed.add(eraserType);
+    /**
+     * Adds a given set of node types to the 
+     * of consumed types. If the rule does not check for dangling edges,
+     * also adds all potential incident edge types.
+     */
+    private void addSharpEraserTypes(Set<TypeElement> consumed,
+            Set<TypeNode> nodeTypes) {
+        consumed.addAll(nodeTypes);
         if (!this.properties.isCheckDangling()) {
-            consumed.addAll(this.typeGraph.inEdgeSet(eraserType));
-            consumed.addAll(this.typeGraph.outEdgeSet(eraserType));
+            Set<TypeNode> superTypes = new HashSet<TypeNode>();
+            for (TypeNode type : nodeTypes) {
+                superTypes.addAll(type.getSupertypes());
+            }
+            Set<TypeEdge> incidentEdgeTypes = new HashSet<TypeEdge>();
+            for (TypeNode superType : superTypes) {
+                incidentEdgeTypes.addAll(this.typeGraph.inEdgeSet(superType));
+                incidentEdgeTypes.addAll(this.typeGraph.outEdgeSet(superType));
+            }
+            consumed.addAll(incidentEdgeTypes);
         }
     }
 
@@ -412,6 +425,7 @@ public class RuleDependencies {
         }
     }
 
+    /** Collects the type elements for which a condition tests positively and negatively. */
     void collectConditionCharacteristics(Condition cond,
             Set<TypeElement> positive, Set<TypeElement> negative) {
         if (cond.hasPattern()) {
