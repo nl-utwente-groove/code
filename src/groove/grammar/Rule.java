@@ -867,6 +867,7 @@ public class Rule implements Action, Fixable {
 
     /**
      * Computes the eraser (i.e., LHS-only) edges.
+     * Note: this does not include the incident edges of the eraser nodes.
      */
     private RuleEdge[] computeEraserEdges() {
         testFixed(true);
