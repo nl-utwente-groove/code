@@ -136,7 +136,16 @@ public class GraphConverter {
                 text = AspectKind.LET.getPrefix() + edgeText + "=" + constant;
             } else if (edge.getRole() == EdgeRole.BINARY) {
                 imageTarget = result.getNode(edge.target());
-                text = AspectKind.LITERAL.getPrefix() + edgeText;
+                // precede with literal aspect prefix if this is necessary
+                // to parse the label
+                AspectLabel tryLabel =
+                    AspectParser.getInstance().parse(edgeText, HOST);
+                if (tryLabel.hasErrors()
+                    || !tryLabel.getInnerText().equals(edgeText)) {
+                    text = AspectKind.LITERAL.getPrefix() + edgeText;
+                } else {
+                    text = edgeText;
+                }
             } else {
                 imageTarget = imageSource;
                 text = edge.label().toString();

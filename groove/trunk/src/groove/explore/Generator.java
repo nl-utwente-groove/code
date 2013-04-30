@@ -542,8 +542,8 @@ public class Generator extends CommandLineTool {
             if (report.length() > 0) {
                 println(report);
             }
+            println(getExploration().getLastMessage());
         }
-        println(getExploration().getLastMessage());
         // transfer the garbage collector log (if any) to the log file (if any)
         if (isLogging()) {
             File gcLogFile = new File(GC_LOG_NAME);
