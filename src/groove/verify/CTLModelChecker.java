@@ -81,11 +81,11 @@ public class CTLModelChecker extends CommandLineTool {
         this.generator = new Generator(this.genArgs);
         this.generator.start();
         this.gts = this.generator.getGTS();
-        this.marker = new DefaultMarker(this.property, this.gts);
         long startTime = System.currentTimeMillis();
 
         while (this.properties.size() > 0) {
             this.setProperty(this.properties.remove(0));
+            this.marker = new DefaultMarker(this.property, this.gts);
             System.out.println("Checking CTL formula: " + this.property);
             this.marker.verify();
             if (this.marker.hasValue(false)) {
