@@ -23,10 +23,10 @@ import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationStatistics;
 import groove.grammar.Grammar;
+import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
 import groove.graph.plain.PlainGraph;
 import groove.io.FileType;
 import groove.io.external.Exporter;
@@ -284,14 +284,41 @@ public class Generator extends CommandLineTool {
                     startGraphNames.add(Groove.DEFAULT_START_GRAPH_NAME);
                 }
                 this.grammarModel = GrammarModel.newInstance(url);
-                this.grammarModel.setLocalActiveNames(ResourceKind.HOST,
-                    startGraphNames);
+                AspectGraph externalStartGraph = getStartGraph(url);
+                if (externalStartGraph != null) {
+                    this.grammarModel.setStartGraph(externalStartGraph);
+                }
                 this.grammarModel.getStore().addObserver(loadObserver);
             } catch (IOException exc) {
                 printError("Can't load grammar: " + exc.getMessage(), false);
             }
         }
         return this.grammarModel;
+    }
+
+    private AspectGraph getStartGraph(URL url) throws IOException {
+        AspectGraph result = null;
+        if (!this.startGraphs.isEmpty()) {
+            String grammarFileName = url.getFile();
+            File grammarFile =
+                grammarFileName.isEmpty() ? null : new File(grammarFileName);
+            List<AspectGraph> graphs = new ArrayList<AspectGraph>();
+            for (String startGraphName : this.startGraphs) {
+                startGraphName =
+                    FileType.STATE_FILTER.addExtension(startGraphName);
+                File startGraphFile = new File(grammarFile, startGraphName);
+                if (!startGraphFile.exists()) {
+                    startGraphFile = new File(startGraphName);
+                }
+                if (!startGraphFile.exists()) {
+                    throw new IOException("Can't find start graph "
+                        + startGraphName);
+                }
+                graphs.add(GraphConverter.toAspect(Groove.loadGraph(startGraphFile)));
+            }
+            result = AspectGraph.mergeGraphs(graphs);
+        }
+        return result;
     }
 
     /**
