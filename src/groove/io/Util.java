@@ -289,8 +289,8 @@ public class Util {
         List<String[]> result = null;
         try {
             CSVReader reader =
-                new CSVReader(new FileReader(
-                    Groove.getResource(name + ".csv").getFile()), sep);
+                new CSVReader(new InputStreamReader(Groove.getResource(
+                    name + ".csv").openStream()), sep);
             result = reader.readAll();
             reader.close();
         } catch (IOException e) {
