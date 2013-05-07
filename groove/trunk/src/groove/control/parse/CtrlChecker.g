@@ -11,9 +11,8 @@ options {
 package groove.control.parse;
 import groove.control.*;
 import groove.control.CtrlCall.Kind;
-import groove.trans.Rule;
 import groove.algebra.AlgebraFamily;
-import groove.view.FormatErrorSet;
+import groove.grammar.model.FormatErrorSet;
 import java.util.LinkedList;
 import java.util.Stack;
 import java.util.HashSet;

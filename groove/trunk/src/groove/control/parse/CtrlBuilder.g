@@ -11,8 +11,7 @@ options {
 package groove.control.parse;
 import groove.control.*;
 import groove.control.CtrlCall.Kind;
-import groove.trans.Rule;
-import groove.view.FormatErrorSet;
+import groove.grammar.model.FormatErrorSet;
 import java.util.Set;
 import java.util.HashSet;
 }
