@@ -466,22 +466,6 @@ public class ActionStore implements SimulatorListener {
     /** The grammar load action permanently associated with this simulator. */
     private LoadGrammarFromURLAction loadGrammarFromURLAction;
 
-    /**
-     * Returns the start graph load action permanently associated with this
-     * simulator.
-     */
-    public LoadStartGraphAction getLoadStartGraphAction() {
-        // lazily create the action
-        if (this.loadStartGraphAction == null) {
-            this.loadStartGraphAction =
-                new LoadStartGraphAction(this.simulator);
-        }
-        return this.loadStartGraphAction;
-    }
-
-    /** The start state load action permanently associated with this simulator. */
-    private LoadStartGraphAction loadStartGraphAction;
-
     /** Returns the delete action appropriate for a given resource kind. */
     public SimulatorAction getNewAction(ResourceKind resource) {
         SimulatorAction result = this.newActionMap.get(resource);
