@@ -108,21 +108,25 @@ public class LabelFilter<G extends Graph> extends Observable {
      * @return {@code true} if any entries were added or removed
      */
     public boolean modifyJCell(JCell<G> jCell) {
-        assert this.jCellEntryMap.containsKey(jCell);
         boolean result = false;
-        Set<Entry> newEntrySet = computeEntries(jCell);
-        Set<Entry> oldEntrySet = this.jCellEntryMap.put(jCell, newEntrySet);
-        // remove the obsolete entries
-        for (Entry oldEntry : oldEntrySet) {
-            if (!newEntrySet.contains(oldEntry)) {
-                this.entryJCellMap.get(oldEntry).remove(jCell);
+        // it may happen that the cell is already removed,
+        // for instance when the filter has been reinitialised in the course
+        // of an undo operation. In that case, do nothing
+        if (this.jCellEntryMap.containsKey(jCell)) {
+            Set<Entry> newEntrySet = computeEntries(jCell);
+            Set<Entry> oldEntrySet = this.jCellEntryMap.put(jCell, newEntrySet);
+            // remove the obsolete entries
+            for (Entry oldEntry : oldEntrySet) {
+                if (!newEntrySet.contains(oldEntry)) {
+                    this.entryJCellMap.get(oldEntry).remove(jCell);
+                }
             }
-        }
-        // add the new entries
-        for (Entry newEntry : newEntrySet) {
-            if (!oldEntrySet.contains(newEntry)) {
-                result |= addEntry(newEntry);
-                this.entryJCellMap.get(newEntry).add(jCell);
+            // add the new entries
+            for (Entry newEntry : newEntrySet) {
+                if (!oldEntrySet.contains(newEntry)) {
+                    result |= addEntry(newEntry);
+                    this.entryJCellMap.get(newEntry).add(jCell);
+                }
             }
         }
         return result;
