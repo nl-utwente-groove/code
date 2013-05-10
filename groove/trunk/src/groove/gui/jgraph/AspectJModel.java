@@ -277,7 +277,7 @@ final public class AspectJModel extends JModel<AspectGraph> {
             return;
         }
         for (AspectJCell jCell : getRoots()) {
-            jCell.getErrors().clear(false);
+            jCell.getErrors().clear();
         }
         this.errorMap.clear();
         for (FormatError error : getResourceModel().getErrors()) {

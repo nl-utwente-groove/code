@@ -36,21 +36,26 @@ public class AspectJCellErrors implements Iterable<FormatError> {
         this.jCell = jCell;
     }
 
-    /** Adds a format error to either the aspect errors or the extra errors. */
+    /** Adds a format error to either the aspect errors or the extra errors.
+     * @param aspect if {@code true}, adds to the aspect errors, else to the extra errors.
+     */
     void addError(FormatError error, boolean aspect) {
         getErrors(aspect).add(error);
         this.jCell.setStale(VisualKey.ERROR);
     }
 
-    /** Adds a collection of format errors to either the aspect errors or the extra errors. */
+    /** Adds a collection of format errors to either the aspect errors or the extra errors.
+     * @param aspect if {@code true}, adds to the aspect errors, else to the extra errors.
+     */
     void addErrors(Collection<FormatError> errors, boolean aspect) {
         getErrors(aspect).addAll(errors);
         this.jCell.setStale(VisualKey.ERROR);
     }
 
     /** Clears either the aspect errors or the extra errors. */
-    void clear(boolean aspect) {
-        getErrors(aspect).clear();
+    void clear() {
+        getErrors(true).clear();
+        getErrors(false).clear();
         this.jCell.setStale(VisualKey.ERROR);
     }
 
