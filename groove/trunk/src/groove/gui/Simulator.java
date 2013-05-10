@@ -445,10 +445,6 @@ public class Simulator implements SimulatorListener {
 
         result.addSeparator();
 
-        result.add(new JMenuItem(this.actions.getLoadStartGraphAction()));
-
-        result.addSeparator();
-
         result.add(new JMenuItem(this.actions.getSaveGrammarAction()));
         result.add(getSaveAsMenuItem());
 
