@@ -85,32 +85,38 @@ public enum NodeShape {
         }
 
         @Override
-        Point2D getPerimeterPoint(Rectangle2D bounds, Point2D q) {
-            Point2D result;
-            double cx = bounds.getCenterX();
-            double cy = bounds.getCenterY();
-            double dist = q.distance(cx, cy);
-            if (dist == 0) {
-                result = q;
+        Point2D getPerimeterPoint(double w, double h, double dx, double dy) {
+            double x, y;
+            if (dx == 0) {
+                x = 0;
+                y = Math.signum(dy) * h;
+            } else if (dy == 0) {
+                x = Math.signum(dx) * w;
+                y = 0;
             } else {
-                double w = bounds.getWidth() / 2;
-                double h = bounds.getHeight() / 2;
-                double dx = q.getX() - cx;
-                double dy = q.getY() - cy;
-                double xFrac = dx / dist * w;
-                double yFrac = dy / dist * h;
-                result = new Point2D.Double(cx + xFrac, cy + yFrac);
+                double dist = Math.sqrt(dx * dx + dy * dy);
+                x = dx / dist * w;
+                y = dy / dist * h;
             }
-            return result;
+            return new Point2D.Double(x, y);
         }
 
+        /* We can do better than calling getPerimeterPoint. */
         @Override
         public double getRadius(Rectangle2D bounds, double dx, double dy) {
-            double dx2 = dx * dx;
-            double dy2 = dy * dy;
+            double result;
             double w = bounds.getWidth() / 2;
             double h = bounds.getHeight() / 2;
-            return Math.sqrt((w * w * dx2 + h * h * dy2) / (dx2 + dy2));
+            if (dx == 0) {
+                result = h;
+            } else if (dy == 0) {
+                result = w;
+            } else {
+                double dx2 = dx * dx;
+                double dy2 = dy * dy;
+                result = Math.sqrt((w * w * dx2 + h * h * dy2) / (dx2 + dy2));
+            }
+            return result;
         }
     },
 

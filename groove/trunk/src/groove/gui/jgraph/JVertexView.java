@@ -188,30 +188,17 @@ public class JVertexView extends VertexView {
             // the limits of the vertex itself, in either x or y coordinate
             double xDrop = bounds.getWidth() / DROP_FRACTION;
             double yDrop = bounds.getHeight() / DROP_FRACTION;
-            double minX = bounds.getMinX() + xDrop;
-            double maxX = bounds.getMaxX() - xDrop;
-            double minY = bounds.getMinY() + yDrop;
-            double maxY = bounds.getMaxY() - yDrop;
-            boolean xAdjust = qx > minX && qx < maxX;
-            boolean yAdjust = qy > minY && qy < maxY;
-            if (xAdjust || yAdjust) {
-                double px = xAdjust ? qx : bounds.getCenterX();
-                double py = yAdjust ? qy : bounds.getCenterY();
-                p = new Point2D.Double(px, py);
-            }
+            double minX = left + xDrop;
+            double maxX = right - xDrop;
+            double px = (qx > minX && qx < maxX) ? qx : cx;
+            double minY = top + yDrop;
+            double maxY = bottom - yDrop;
+            double py = (qy > minY && qy < maxY) ? qy : cy;
+            p = new Point2D.Double(px, py);
         }
         result =
             getCellVisuals().getNodeShape().getPerimeterPoint(bounds, p, q);
         return result;
-    }
-
-    /** Calculates the radius of this vertex, in a specified direction.
-     * @param dx x-component of the direction
-     * @param dy y-component of the direction
-     * @return the radius of this vertex, in the given direction
-     */
-    public double getRadius(double dx, double dy) {
-        return getCellVisuals().getNodeShape().getRadius(getBounds(), dx, dy);
     }
 
     /** Returns the cell bounds including the parameter adornment, if any. */
