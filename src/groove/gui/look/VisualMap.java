@@ -18,6 +18,7 @@ package groove.gui.look;
 
 import groove.gui.look.VisualKey.Nature;
 import groove.util.DefaultFixable;
+import groove.util.NodeShape;
 
 import java.awt.Color;
 import java.awt.geom.Dimension2D;

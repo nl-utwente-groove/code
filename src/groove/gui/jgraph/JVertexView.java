@@ -56,7 +56,6 @@ import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphCellEditor;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.PortView;
-import org.jgraph.graph.VertexRenderer;
 import org.jgraph.graph.VertexView;
 
 /**
@@ -131,28 +130,61 @@ public class JVertexView extends VertexView {
         return this.text;
     }
 
-    /**
+    /*
      * Overwrites the super method because we have a different renderer.
      */
     @Override
-    public Point2D getPerimeterPoint(EdgeView edge, Point2D source, Point2D p) {
+    public Point2D getPerimeterPoint(EdgeView edge, Point2D p, Point2D q) {
         Point2D result = null;
         // use the adornment bounds if there is an adornment, and the
         // source lies to the northwest of it
         Rectangle2D bounds = getAdornBounds();
-        if (bounds == null || bounds.getMaxX() <= p.getX()
-            || bounds.getMaxY() <= p.getY()) {
+        double qx = q.getX();
+        double qy = q.getY();
+        if (bounds == null || bounds.getMaxX() <= qx || bounds.getMaxY() <= qy) {
             // revert to the actual borders by subtracting the
             // extra border space
             bounds = getBounds();
             float extra = EXTRA_BORDER_SPACE - getCellVisuals().getLineWidth();
             bounds =
-                new Rectangle2D.Double(bounds.getX() + extra, bounds.getY()
-                    + extra, bounds.getWidth() - 2 * extra, bounds.getHeight()
-                    - 2 * extra);
+                new Rectangle2D.Double(bounds.getMinX() + extra,
+                    bounds.getMinY() + extra, bounds.getWidth() - 2 * extra,
+                    bounds.getHeight() - 2 * extra);
         }
-        if (source == null) {
-            // be smart about positioning the perimeter point if p is within
+        double left = bounds.getMinX();
+        double right = bounds.getMaxX();
+        double top = bounds.getMinY();
+        double bottom = bounds.getMaxY();
+        double cx = bounds.getCenterX();
+        double cy = bounds.getCenterY();
+        // in manhattan line style, we shift the target point so it is
+        // in horizontal or vertical reach of the node
+        VisualMap edgeVisuals = ((JEdgeView) edge).getCell().getVisuals();
+        if (edgeVisuals.getLineStyle() == LineStyle.MANHATTAN
+            && edgeVisuals.getPoints().size() > 2) {
+            if ((qx < left || qx > right) && (qy < top || qy > bottom)) {
+                if (this == edge.getSource().getParentView()) {
+                    // move qy into horizontal reach
+                    double dy = qy - cy;
+                    double room =
+                        bounds.getHeight() * (1 - 2 / DROP_FRACTION) * 0.5;
+                    qy =
+                        cy + room * Math.signum(dy)
+                            * Math.min(Math.abs(dy) / MAX_RATIO_DISTANCE, 1);
+                } else {
+                    // move qx into vertical reach
+                    double dx = qx - cx;
+                    double room =
+                        bounds.getWidth() * (1 - 2 / DROP_FRACTION) * 0.5;
+                    qx =
+                        cx + room * Math.signum(dx)
+                            * Math.min(Math.abs(dx) / MAX_RATIO_DISTANCE, 1);
+                }
+                q = new Point2D.Double(qx, qy);
+            }
+        }
+        if (p == null || p.getX() == cx && p.getY() == cy) {
+            // be smart about positioning the perimeter point if q is within
             // the limits of the vertex itself, in either x or y coordinate
             double xDrop = bounds.getWidth() / DROP_FRACTION;
             double yDrop = bounds.getHeight() / DROP_FRACTION;
@@ -160,41 +192,26 @@ public class JVertexView extends VertexView {
             double maxX = bounds.getMaxX() - xDrop;
             double minY = bounds.getMinY() + yDrop;
             double maxY = bounds.getMaxY() - yDrop;
-            boolean xAdjust = p.getX() > minX && p.getX() < maxX;
-            boolean yAdjust = p.getY() > minY && p.getY() < maxY;
+            boolean xAdjust = qx > minX && qx < maxX;
+            boolean yAdjust = qy > minY && qy < maxY;
             if (xAdjust || yAdjust) {
-                double x = xAdjust ? p.getX() : bounds.getCenterX();
-                double y = yAdjust ? p.getY() : bounds.getCenterY();
-                switch (getCellVisuals().getNodeShape()) {
-                case DIAMOND:
-                    result = getDiamondPerimeterPoint(bounds, x, y, p);
-                    break;
-                case RECTANGLE:
-                case ROUNDED:
-                case OVAL:
-                    result = getRectanglePerimeterPoint(bounds, x, y, p);
-                }
+                double px = xAdjust ? qx : bounds.getCenterX();
+                double py = yAdjust ? qy : bounds.getCenterY();
+                p = new Point2D.Double(px, py);
             }
         }
-        if (result == null) {
-            switch (getCellVisuals().getNodeShape()) {
-            case ELLIPSE:
-                result = getEllipsePerimeterPoint(bounds, p);
-                break;
-            case DIAMOND:
-                result = getDiamondPerimeterPoint(bounds, p);
-                break;
-            default:
-                if (getCellVisuals().getLineStyle() == LineStyle.MANHATTAN) {
-                    result =
-                        getRectanglePerimeterPoint(bounds, p,
-                            this == edge.getSource().getParentView());
-                } else {
-                    result = getRectanglePerimeterPoint(bounds, p);
-                }
-            }
-        }
+        result =
+            getCellVisuals().getNodeShape().getPerimeterPoint(bounds, p, q);
         return result;
+    }
+
+    /** Calculates the radius of this vertex, in a specified direction.
+     * @param dx x-component of the direction
+     * @param dy y-component of the direction
+     * @return the radius of this vertex, in the given direction
+     */
+    public double getRadius(double dx, double dy) {
+        return getCellVisuals().getNodeShape().getRadius(getBounds(), dx, dy);
     }
 
     /** Returns the cell bounds including the parameter adornment, if any. */
@@ -211,220 +228,6 @@ public class JVertexView extends VertexView {
                     renderer.adornWidth, renderer.adornHeight);
         }
         return result;
-    }
-
-    /**
-     * Computes the perimeter point on a rectangle, lying on the line from the
-     * center in the direction of a given point. This implementation is in fact
-     * taken from
-     * {@link VertexRenderer#getPerimeterPoint(VertexView, Point2D, Point2D)}.
-     */
-    private Point2D getRectanglePerimeterPoint(Rectangle2D bounds, Point2D p) {
-        double xRadius = bounds.getWidth() / 2;
-        double yRadius = bounds.getHeight() / 2;
-        double centerX = bounds.getCenterX();
-        double centerY = bounds.getCenterY();
-        double dx = p.getX() - centerX; // Compute Angle
-        double dy = p.getY() - centerY;
-        double alpha = Math.atan2(dy, dx);
-        double pi = Math.PI;
-        double t = Math.atan2(yRadius, xRadius);
-        double outX, outY;
-        if (alpha < -pi + t || alpha > pi - t) { // Left edge
-            outX = centerX - xRadius;
-            outY = centerY - xRadius * Math.tan(alpha);
-        } else if (alpha < -t) { // Top Edge
-            outY = centerY - yRadius;
-            outX = centerX - yRadius * Math.tan(pi / 2 - alpha);
-        } else if (alpha < t) { // Right Edge
-            outX = centerX + xRadius;
-            outY = centerY + xRadius * Math.tan(alpha);
-        } else { // Bottom Edge
-            outY = centerY + yRadius;
-            outX = centerX + yRadius * Math.tan(pi / 2 - alpha);
-        }
-        return new Point2D.Double(outX, outY);
-    }
-
-    /**
-     * Computes a perimeter point on a rectangle, for a manhattan-style line
-     * entering horizontally or vertically.
-     * @param bounds the bounds of the rectangle
-     * @param p the reference point for the perimeter point
-     * @param horizontal if <code>true</code>, the line will enter horizontally;
-     *        look for a point on one of the sides
-     */
-    private Point2D getRectanglePerimeterPoint(Rectangle2D bounds, Point2D p,
-            boolean horizontal) {
-        double centerX = bounds.getCenterX();
-        double centerY = bounds.getCenterY();
-        double dx = p.getX() - centerX;
-        double dy = p.getY() - centerY;
-        double outX, outY;
-        if (horizontal) { // left or right side
-            outX = dx < 0 ? bounds.getMinX() : bounds.getMaxX();
-            double room = bounds.getHeight() * (1 - 2 / DROP_FRACTION) * 0.5;
-            outY =
-                centerY + room * Math.signum(dy)
-                    * Math.min(Math.abs(dy) / MAX_RATIO_DISTANCE, 1);
-        } else { // top or bottom
-            outY = dy < 0 ? bounds.getMinY() : bounds.getMaxY();
-            double room = bounds.getWidth() * (1 - 2 / DROP_FRACTION) * 0.5;
-            outX =
-                centerX + room * Math.signum(dx)
-                    * Math.min(Math.abs(dx) / MAX_RATIO_DISTANCE, 1);
-        }
-        return new Point2D.Double(outX, outY);
-    }
-
-    /**
-     * Computes the perimeter point on a rectangle, lying on the line from a
-     * given point in the direction of another point. The <code>from</code>
-     * point is guaranteed to be either horizontally or vertically aligned with
-     * the <code>to</code> point. This implementation is in fact taken from
-     * {@link VertexRenderer#getPerimeterPoint(VertexView, Point2D, Point2D)}.
-     */
-    private Point2D getRectanglePerimeterPoint(Rectangle2D bounds,
-            double fromX, double fromY, Point2D to) {
-        double dx = to.getX() - fromX; // Compute Angle
-        double dy = to.getY() - fromY;
-        double outX, outY;
-        if (dx < 0) { // Left edge
-            outX = bounds.getMinX();
-            outY = fromY;
-        } else if (dy < 0) { // Top Edge
-            outX = fromX;
-            outY = bounds.getMinY();
-        } else if (dx > 0) { // Right Edge
-            outX = bounds.getMaxX();
-            outY = fromY;
-        } else { // Bottom Edge
-            outX = fromX;
-            outY = bounds.getMaxY();
-        }
-        return new Point2D.Double(outX, outY);
-    }
-
-    /**
-     * Computes the perimeter point on an ellipse lying on the line from the
-     * center in the direction of a given point. The ellipse is given by its
-     * bounds.
-     */
-    private Point2D getEllipsePerimeterPoint(Rectangle2D bounds, Point2D p) {
-        double centerX = bounds.getCenterX();
-        double centerY = bounds.getCenterY();
-        double dx = p.getX() - centerX;
-        double dy = p.getY() - centerY;
-        double pDist = dx * dx + dy * dy;
-        double xFrac = Math.sqrt(dx * dx / pDist) * bounds.getWidth() / 2;
-        double yFrac = Math.sqrt(dy * dy / pDist) * bounds.getHeight() / 2;
-        double outX = centerX + xFrac * Math.signum(dx);
-        double outY = centerY + yFrac * Math.signum(dy);
-        return new Point2D.Double(outX, outY);
-    }
-
-    /**
-     * Computes the perimeter point on a diamond lying on the line from the
-     * center in the direction of a given point. The diamond is given by its
-     * outer bounds.
-     */
-    private Point2D getDiamondPerimeterPoint(Rectangle2D bounds, Point2D to) {
-        double centerX = bounds.getCenterX();
-        double centerY = bounds.getCenterY();
-        double dx = to.getX() - centerX; // Compute Angle
-        double dy = to.getY() - centerY;
-        double startX, startY, endX, endY;
-        if (dx <= 0 && dy <= 0) { // top left edge
-            startX = bounds.getMinX();
-            startY = centerY;
-            endX = centerX;
-            endY = bounds.getMinY();
-        } else if (dy <= 0) { // top right edge
-            startX = centerX;
-            startY = bounds.getMinY();
-            endX = bounds.getMaxX();
-            endY = centerY;
-        } else if (dx <= 0) { // bottom left edge
-            startX = bounds.getMinX();
-            startY = centerY;
-            endX = centerX;
-            endY = bounds.getMaxY();
-        } else { // Bottom right edge
-            startX = centerX;
-            startY = bounds.getMaxY();
-            endX = bounds.getMaxX();
-            endY = centerY;
-        }
-        return lineIntersection(centerX, centerY, dx, dy, startX, startY, endX
-            - startX, endY - startY);
-    }
-
-    /**
-     * Computes the perimeter point on a diamond lying on the line from a given
-     * point in the direction of another point. The <code>from</code> point is
-     * guaranteed to be either horizontally or vertically aligned with the
-     * <code>to</code> point. The diamond is given by its outer bounds.
-     */
-    private Point2D getDiamondPerimeterPoint(Rectangle2D bounds, double fromX,
-            double fromY, Point2D to) {
-        double centerX = bounds.getCenterX();
-        double centerY = bounds.getCenterY();
-        double toX = to.getX();
-        double toY = to.getY();
-        double dx = toX - fromX; // Compute direction
-        double dy = toY - fromY;
-        double startX, startY, endX, endY;
-        if (toX <= centerX && toY <= centerY) { // top left edge
-            startX = bounds.getMinX();
-            startY = centerY;
-            endX = centerX;
-            endY = bounds.getMinY();
-        } else if (toY <= centerY) { // top right edge
-            startX = centerX;
-            startY = bounds.getMinY();
-            endX = bounds.getMaxX();
-            endY = centerY;
-        } else if (toX <= centerX) { // bottom left edge
-            startX = bounds.getMinX();
-            startY = centerY;
-            endX = centerX;
-            endY = bounds.getMaxY();
-        } else { // Bottom right edge
-            startX = centerX;
-            startY = bounds.getMaxY();
-            endX = bounds.getMaxX();
-            endY = centerY;
-        }
-        return lineIntersection(fromX, fromY, dx, dy, startX, startY, endX
-            - startX, endY - startY);
-    }
-
-    /**
-     * Computes the intersection of two lines.
-     * @param x1 Start point of the first line (x-coordinate)
-     * @param y1 Start point of the first line (y-coordinate)
-     * @param dx1 vector of the first line (x-direction)
-     * @param dy1 vector of the first line (y-direction)
-     * @param x2 Start point of the second line (x-coordinate)
-     * @param y2 Start point of the second line (y-coordinate)
-     * @param dx2 vector of the second line (x-direction)
-     * @param dy2 vector of the second line (y-direction)
-     * @return Intersection point of the two lines, of <code>null</code> if they
-     *         are parallel
-     */
-    private Point2D lineIntersection(double x1, double y1, double dx1,
-            double dy1, double x2, double y2, double dx2, double dy2) {
-        double above = dx1 * (y2 - y1) - dy1 * (x2 - x1);
-        double below = dx2 * dy1 - dx1 * dy2;
-        if (below == 0) {
-            // the lines are parallel
-            return null;
-        } else {
-            double c2 = above / below;
-            double x = x2 + dx2 * c2;
-            double y = y2 + dy2 * c2;
-            return new Point2D.Double(x, y);
-        }
     }
 
     @Override
@@ -475,7 +278,7 @@ public class JVertexView extends VertexView {
      * Fraction of the width or height that is the minimum for special perimeter
      * point placement.
      */
-    static private final double DROP_FRACTION = 10;
+    private static final double DROP_FRACTION = 10;
     /**
      * Maximal distance (horizontal or vertical) for perpendicular perimeter
      * points to be placed in ratio.

@@ -107,6 +107,16 @@ public class JEdgeView extends EdgeView {
         invalidate();
     }
 
+    /** Convenience method to retrieve the source vertex. */
+    private JVertex<?> getSourceVertex() {
+        return getCell().getSourceVertex();
+    }
+
+    /** Convenience method to retrieve the target vertex. */
+    private JVertex<?> getTargetVertex() {
+        return getCell().getTargetVertex();
+    }
+
     @Override
     public String toString() {
         return this.cell.toString();
@@ -146,7 +156,7 @@ public class JEdgeView extends EdgeView {
             if (this.isSelfEdge()) {
                 routeSelfEdge();
             } else if (getPointCount() <= 2) {
-                routeParallelEdge(mapper);
+                //routeParallelEdge(mapper);
             }
         }
     }
@@ -170,30 +180,36 @@ public class JEdgeView extends EdgeView {
     @Override
     public Point2D getPoint(int index) {
         Point2D result = null;
-        if (index == 0) {
-            Point2D nearestPoint = getNearestPoint(true);
-            if (this.sourceParentView != null) {
-                result =
-                    this.sourceParentView.getPerimeterPoint(this,
-                        getCenterPoint(this.sourceParentView), nearestPoint);
-            } else if (this.source instanceof PortView) {
-                result =
-                    ((PortView) this.source).getLocation(this, nearestPoint);
-            }
-        } else if (index == getPointCount() - 1) {
-            Point2D nearestPoint = getNearestPoint(false);
-            if (this.targetParentView != null) {
-                result =
-                    this.targetParentView.getPerimeterPoint(this,
-                        getCenterPoint(this.targetParentView), nearestPoint);
-            } else if (this.target instanceof PortView) {
-                result =
-                    ((PortView) this.target).getLocation(this, nearestPoint);
-            }
+        if (index == 0 && this.source != null) {
+            result = getEndPoint(this.source.getParentView(), true);
+        } else if (index == getPointCount() - 1 && this.target != null) {
+            result = getEndPoint(this.target.getParentView(), false);
         }
         Object obj = this.points.get(index);
         if (result == null && obj instanceof Point2D) {
             result = (Point2D) obj;
+        }
+        return result;
+    }
+
+    /*
+     * If we're doing this for the target point and the nearest point is the
+     * source, take the corrected source point.
+     */
+    @Override
+    protected Point2D getNearestPoint(boolean source) {
+        Point2D result = null;
+        if (getPointCount() == 2) {
+            if (!source && this.source instanceof PortView) {
+                JVertexView sourceCellView =
+                    (JVertexView) ((PortView) this.source).getParentView();
+                result =
+                    sourceCellView.getPerimeterPoint(this, null,
+                        getPointLocation(getPointCount() - 1));
+            }
+        }
+        if (result == null) {
+            result = super.getNearestPoint(source);
         }
         return result;
     }
@@ -216,26 +232,98 @@ public class JEdgeView extends EdgeView {
             }
         }
         if (result == null) {
+            // this is neither source nor target vertex, so take the point itself
             result = (Point2D) this.points.get(index);
         }
         return result;
     }
 
-    /*
-     * If we're doing this for the target point and the nearest point is the
-     * source, take the corrected source point.
+    /**
+     * Returns the parallel edges rank of this edge.
+     * This is the rank within the set of parallel unrouted
+     * edges. The rank is
+     * determined by the position in the edge set of this edges's source port.
+     * If this edge is routed (that is, it has explicit routing points)
+     * then its parallel rank is always 0.
+     * @return the computed parallel edges rank
      */
-    @Override
-    protected Point2D getNearestPoint(boolean source) {
-        if (getPointCount() == 2) {
-            if (!source && this.source instanceof PortView) {
-                JVertexView sourceCellView =
-                    (JVertexView) ((PortView) this.source).getParentView();
-                return sourceCellView.getPerimeterPoint(this, null,
-                    getPointLocation(getPointCount() - 1));
+    private int getParRank() {
+        if (this.source == null || this.target == null) {
+            return 0;
+        }
+        if (getPointCount() > 2) {
+            return 0;
+        }
+        if (getCell().isLoop()) {
+            return 0;
+        }
+        // the total number of incoming and outgoing parallel edges
+        int inCount = 0;
+        int outCount = 0;
+        // the rank calculated for this edge
+        int rank = 0;
+        // flag indicating that this edge has been encountered
+        boolean found = false;
+        // determine the rank within the incoming/outgoing edges
+        for (JEdge<?> edge : getSourceVertex().getContext()) {
+            // determine if this is a parallel edge
+            if (edge.getVisuals().getPoints().size() > 2) {
+                continue;
+            }
+            found |= edge == getCell();
+            if (edge.getTargetVertex() == getTargetVertex()) {
+                // edge is outgoing
+                outCount++;
+                if (!found) {
+                    rank++;
+                }
+            } else if (edge.getSourceVertex() == getTargetVertex()) {
+                // edge is incoming
+                inCount++;
             }
         }
-        return super.getNearestPoint(source);
+        // adjust so the ranks are points on an interval centered on 0 with distance 2
+        return 2 * (inCount + rank) - (inCount + outCount - 1);
+    }
+
+    /** Returns the perimeter point where the end of this edge has to connect.
+     * @param vertex the end vertex
+     * @param source if {@code true}, we're computing this for the edge target
+     */
+    private Point2D getEndPoint(CellView vertex, boolean source) {
+        JVertexView vertexView = (JVertexView) vertex;
+        Point2D center = getCenterPoint(vertex);
+        Point2D nextPoint = getNearestPoint(source);
+        Point2D adjustedCenter;
+        Point2D adjustedNextPoint;
+        int parRank = source ? getParRank() : -getParRank();
+        if (parRank == 0) {
+            adjustedCenter = center;
+            adjustedNextPoint = nextPoint;
+        } else {
+            // direction of the next point
+            double dx = nextPoint.getX() - center.getX();
+            double dy = nextPoint.getY() - center.getY();
+            // direction for the offset, perpendicular to the next point
+            double offDirX = dy;
+            double offDirY = -dx;
+            double offDist = center.distance(nextPoint);
+            // calculate vertex radius in the specified direction
+            double offMax = vertexView.getRadius(offDirX, offDirY);
+            // calculate actual offset
+            double offset =
+                Math.signum(parRank)
+                    * Math.min(PAR_EDGES_DISTANCE * Math.abs(parRank), offMax);
+            double offX = offset * offDirX / offDist;
+            double offY = offset * offDirY / offDist;
+            adjustedCenter =
+                new Point2D.Double(center.getX() + offX, center.getY() + offY);
+            adjustedNextPoint =
+                new Point2D.Double(nextPoint.getX() + offX, nextPoint.getY()
+                    + offY);
+        }
+        return vertexView.getPerimeterPoint(this, adjustedCenter,
+            adjustedNextPoint);
     }
 
     /**
@@ -393,6 +481,9 @@ public class JEdgeView extends EdgeView {
     protected LineStyle getPreferredLinestyle() {
         return LineStyle.BEZIER;
     }
+
+    /** Distance between parallel edges. */
+    private static final int PAR_EDGES_DISTANCE = 4;
 
     static {
         renderer = new MyEdgeRenderer();
