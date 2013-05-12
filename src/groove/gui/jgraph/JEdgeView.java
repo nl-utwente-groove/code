@@ -41,7 +41,6 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JLabel;
@@ -58,6 +57,7 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphContext;
 import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.PortView;
+import org.jgraph.graph.VertexView;
 
 /**
  * An edge view that uses the <tt>getText()</tt> of the underlying edge as a
@@ -144,26 +144,90 @@ public class JEdgeView extends EdgeView {
     }
 
     /**
-     * Does some routing of self-edges and overlapping edges.
+     * Does some routing of self-edges.
      */
     @Override
     public void refresh(GraphLayoutCache cache, CellMapper mapper,
             boolean createDependentViews) {
         super.refresh(cache, mapper, createDependentViews);
-        // target could be null, if we are dealing with a temporary cache that just
-        // contains a mapping for the edge
-        if (this.target != null && !this.jGraph.isLayouting()) {
-            if (this.isSelfEdge()) {
-                routeSelfEdge();
-            } else if (getPointCount() <= 2) {
-                //routeParallelEdge(mapper);
-            }
+        if (!this.jGraph.isLayouting() && isLoop()) {
+            routeLoop();
         }
     }
 
-    /** Returns true if this is a self edge. */
-    protected boolean isSelfEdge() {
-        return this.source == this.target;
+    /**
+     * Adds points to the view and sets the line style so that the edge makes a
+     * nice curve. The points are created perpendicular to the line between the
+     * first and second point when the method is invoked, also taking the vertex
+     * bound into account. All but the first and last points of the original
+     * points are removed. Should only be called if
+     * <code>getSource() == getTarget()</code>.
+     */
+    private void routeLoop() {
+        VisualMap visuals = getCell().getVisuals();
+        LineStyle lineStyle = visuals.getLineStyle();
+        boolean isManhattan = lineStyle == LineStyle.MANHATTAN;
+        if (isManhattan ? getPointCount() == 2 : getPointCount() <= 3) {
+            Point2D startPoint = getPoint(0);
+            Point2D endPoint = getPoint(1);
+            List<Point2D> newPoints = new ArrayList<Point2D>(4);
+            newPoints.add(startPoint);
+            VisualMap sourceVisuals = getCell().getSourceVertex().getVisuals();
+            Point2D pos = sourceVisuals.getNodePos();
+            Dimension2D size = sourceVisuals.getNodeSize();
+            pos.setLocation(pos.getX() - size.getWidth() / 2,
+                pos.getY() - size.getHeight() / 2);
+            Rectangle2D bounds = new Rectangle();
+            bounds.setFrame(pos, size);
+            if (bounds.contains(endPoint)) {
+                endPoint.setLocation(endPoint.getX() + size.getWidth() * 2,
+                    endPoint.getY());
+            }
+            newPoints.add(1,
+                createPointPerpendicular(startPoint, endPoint, true));
+            if (!isManhattan) {
+                newPoints.add(1,
+                    createPointPerpendicular(startPoint, endPoint, false));
+                visuals.setLineStyle(LineStyle.BEZIER);
+            }
+            newPoints.add(startPoint);
+            visuals.put(VisualKey.POINTS, newPoints);
+        }
+    }
+
+    /**
+     * Creates and returns a point perpendicular to the line between two points,
+     * at a distance to the second point that is a fraction of the length of the
+     * original line. A boolean flag controls the direction to which the
+     * perpendicular point sticks out from the original line.
+     * @param p1 the first boundary point
+     * @param p2 the first boundary point
+     * @param left flag to indicate whether the new point is to stick out on the
+     *        left or right hand side of the line between <tt>p1</tt> and
+     *        <tt>p2</tt>.
+     * @return new point on the perpendicular of the line between <tt>p1</tt>
+     *         and <tt>p2</tt>
+     */
+    private Point createPointPerpendicular(Point2D p1, Point2D p2, boolean left) {
+        double distance = p1.distance(p2);
+        int midX = (int) (p1.getX() + p2.getX()) / 2;
+        int midY = (int) (p1.getY() + p2.getY()) / 2;
+        // int offset = (int) (5 + distance / 2 + 20 * Math.random());
+        int x, y;
+        if (distance == 0) {
+            x = midX + 20;
+            y = midY + 20;
+        } else {
+            int offset = (int) (5 + distance / 4);
+            if (left) {
+                offset = -offset;
+            }
+            double xDelta = p1.getX() - p2.getX();
+            double yDelta = p1.getY() - p2.getY();
+            x = (int) (p2.getX() + offset * yDelta / distance);
+            y = (int) (p2.getY() - offset * xDelta / distance);
+        }
+        return new Point(Math.max(x, 0), Math.max(y, 0));
     }
 
     /**
@@ -201,8 +265,8 @@ public class JEdgeView extends EdgeView {
         Point2D result = null;
         if (getPointCount() == 2) {
             if (!source && this.source instanceof PortView) {
-                JVertexView sourceCellView =
-                    (JVertexView) ((PortView) this.source).getParentView();
+                VertexView sourceCellView =
+                    (VertexView) this.source.getParentView();
                 result =
                     sourceCellView.getPerimeterPoint(this, null,
                         getPointLocation(getPointCount() - 1));
@@ -309,7 +373,10 @@ public class JEdgeView extends EdgeView {
             double offDirY = -dx;
             double offDist = center.distance(nextPoint);
             // calculate vertex radius in the specified direction
-            double offMax = vertexView.getRadius(offDirX, offDirY);
+            Rectangle2D bounds = vertex.getBounds();
+            double offMax =
+                vertexView.getCellVisuals().getNodeShape().getRadius(bounds,
+                    offDirX, offDirY);
             // calculate actual offset
             double offset =
                 Math.signum(parRank)
@@ -342,147 +409,7 @@ public class JEdgeView extends EdgeView {
         return new Point2D.Double(dx, dy);
     }
 
-    /**
-     * Adds points to the view and sets the line style so that the edge makes a
-     * nice curve. The points are created perpendicular to the line between the
-     * first and second point when the method is invoked, also taking the vertex
-     * bound into account. All but the first and last points of the original
-     * points are removed. Should only be called if
-     * <code>getSource() == getTarget()</code>.
-     */
-    protected void routeSelfEdge() {
-        VisualMap visuals = getCell().getVisuals();
-        LineStyle lineStyle = visuals.getLineStyle();
-        boolean isManhattan = lineStyle == LineStyle.MANHATTAN;
-        if (isManhattan ? getPointCount() == 2 : getPointCount() <= 3) {
-            Point2D startPoint = getPoint(0);
-            Point2D endPoint = getPoint(1);
-            List<Point2D> newPoints = new ArrayList<Point2D>(4);
-            newPoints.add(startPoint);
-            VisualMap sourceVisuals = getCell().getSourceVertex().getVisuals();
-            Point2D pos = sourceVisuals.getNodePos();
-            Dimension2D size = sourceVisuals.getNodeSize();
-            pos.setLocation(pos.getX() - size.getWidth() / 2,
-                pos.getY() - size.getHeight() / 2);
-            Rectangle2D bounds = new Rectangle();
-            bounds.setFrame(pos, size);
-            if (bounds.contains(endPoint)) {
-                endPoint.setLocation(endPoint.getX() + size.getWidth() * 2,
-                    endPoint.getY());
-            }
-            newPoints.add(1,
-                createPointPerpendicular(startPoint, endPoint, true));
-            if (!isManhattan) {
-                newPoints.add(1,
-                    createPointPerpendicular(startPoint, endPoint, false));
-                visuals.setLineStyle(LineStyle.BEZIER);
-            }
-            newPoints.add(startPoint);
-            visuals.put(VisualKey.POINTS, newPoints);
-        }
-    }
-
-    /**
-     * Tests if the edge has parallel edges and, if so, adds a point to this
-     * edge so it can be routed around.
-     */
-    protected void routeParallelEdge(CellMapper mapper) {
-        // look for parallel edges; if one exists, make this one bend
-        boolean parallelEdge = false;
-        JVertex<?> sourceVertex = getCell().getSourceVertex();
-        JVertex<?> targetVertex = getCell().getTargetVertex();
-        for (JEdge<?> otherEdge : sourceVertex.getContext()) {
-            EdgeView otherView = (EdgeView) mapper.getMapping(otherEdge, false);
-            if (otherEdge != getCell()
-                && otherView != null
-                && otherEdge.getVisuals().getPoints().size() <= 2
-                && (otherEdge.getSourceVertex() == targetVertex || otherEdge.getTargetVertex() == targetVertex)) {
-                parallelEdge = true;
-                break;
-            }
-        }
-        if (parallelEdge) {
-            Point2D startPoint = getPoint(0);
-            Point2D endPoint = getPoint(1);
-            Point2D midPoint = createPointBetween(startPoint, endPoint);
-            VisualMap visuals = getCell().getVisuals();
-            visuals.setPoints(Arrays.asList(startPoint, midPoint, endPoint));
-            visuals.setLineStyle(LineStyle.BEZIER);
-        }
-    }
-
-    /**
-     * Creates an returns a point halfway two given points, with a random effect
-     * @param p1 the first boundary point
-     * @param p2 the first boundary point
-     * @return new point on the perpendicular of the line between <tt>p1</tt>
-     *         and <tt>p2</tt>
-     */
-    private Point createPointBetween(Point2D p1, Point2D p2) {
-        double distance = p1.distance(p2);
-        int midX = (int) (p1.getX() + p2.getX()) / 2;
-        int midY = (int) (p1.getY() + p2.getY()) / 2;
-        // int offset = (int) (5 + distance / 2 + 20 * Math.random());
-        int x, y;
-        if (distance == 0) {
-            x = midX + 20;
-            y = midY + 20;
-        } else {
-            int offset = (int) (5 + distance / 4);
-            double xDelta = p1.getX() - p2.getX();
-            double yDelta = p1.getY() - p2.getY();
-            x = midX + (int) (offset * yDelta / distance);
-            y = midY - (int) (offset * xDelta / distance);
-        }
-        return new Point(Math.max(x, 0), Math.max(y, 0));
-    }
-
-    /**
-     * Creates and returns a point perpendicular to the line between two points,
-     * at a distance to the second point that is a fraction of the length of the
-     * original line. A boolean flag controls the direction to which the
-     * perpendicular point sticks out from the original line.
-     * @param p1 the first boundary point
-     * @param p2 the first boundary point
-     * @param left flag to indicate whether the new point is to stick out on the
-     *        left or right hand side of the line between <tt>p1</tt> and
-     *        <tt>p2</tt>.
-     * @return new point on the perpendicular of the line between <tt>p1</tt>
-     *         and <tt>p2</tt>
-     */
-    protected Point createPointPerpendicular(Point2D p1, Point2D p2,
-            boolean left) {
-        double distance = p1.distance(p2);
-        int midX = (int) (p1.getX() + p2.getX()) / 2;
-        int midY = (int) (p1.getY() + p2.getY()) / 2;
-        // int offset = (int) (5 + distance / 2 + 20 * Math.random());
-        int x, y;
-        if (distance == 0) {
-            x = midX + 20;
-            y = midY + 20;
-        } else {
-            int offset = (int) (5 + distance / 4);
-            if (left) {
-                offset = -offset;
-            }
-            double xDelta = p1.getX() - p2.getX();
-            double yDelta = p1.getY() - p2.getY();
-            x = (int) (p2.getX() + offset * yDelta / distance);
-            y = (int) (p2.getY() - offset * xDelta / distance);
-        }
-        return new Point(Math.max(x, 0), Math.max(y, 0));
-    }
-
-    /**
-     * Callback method to determine the line style for edges that have points
-     * added automatically.
-     * @return This method always returns {@link GraphConstants#STYLE_BEZIER}.
-     */
-    protected LineStyle getPreferredLinestyle() {
-        return LineStyle.BEZIER;
-    }
-
-    /** Distance between parallel edges. */
+    /** Preferred distance between parallel edges. */
     private static final int PAR_EDGES_DISTANCE = 4;
 
     static {
