@@ -117,14 +117,13 @@ public class ForestLayouter extends AbstractLayouter {
         this.inDegreeMap.clear();
         this.branchMap.clear();
         // count the incoming edges and compose the branch map
-        for (Map.Entry<Object,Layoutable> cellLayoutableEntry : this.toLayoutableMap.entrySet()) {
-            Object key = cellLayoutableEntry.getKey();
-            Layoutable cellLayoutable = cellLayoutableEntry.getValue();
+        for (Map.Entry<JVertex<?>,LayoutNode> cellLayoutableEntry : this.layoutMap.entrySet()) {
+            JVertex<?> key = cellLayoutableEntry.getKey();
+            LayoutNode cellLayoutable = cellLayoutableEntry.getValue();
             // add the layoutable to the leaves and the branch map
-            Set<Layoutable> branchSet = new LinkedHashSet<Layoutable>();
+            Set<LayoutNode> branchSet = new LinkedHashSet<LayoutNode>();
             this.branchMap.put(cellLayoutable, branchSet);
-            if (key instanceof JVertex
-                && ((JVertex<?>) key).getVisuals().isVisible()) {
+            if (key.getVisuals().isVisible()) {
                 // Initialise the incoming edge count
                 int inEdgeCount = 0;
                 // calculate the incoming edge count and outgoing edge map
@@ -166,18 +165,17 @@ public class ForestLayouter extends AbstractLayouter {
                     // the first point is the (port of the) source node
                     // itself; skip it
                     for (int i = 1; i < points.size() - 1; i++) {
-                        branchSet.add(this.toLayoutableMap.get(Pair.newPair(
-                            edge, i)));
+                        branchSet.add(this.layoutMap.get(Pair.newPair(edge, i)));
                     }
-                    branchSet.add(this.toLayoutableMap.get(targetVertex));
+                    branchSet.add(this.layoutMap.get(targetVertex));
                 }
                 // add the cell to the count map
                 Integer inEdgeCountKey = Integer.valueOf(inEdgeCount);
-                Set<Layoutable> cellsWithInEdgeCount =
+                Set<LayoutNode> cellsWithInEdgeCount =
                     this.inDegreeMap.get(inEdgeCountKey);
                 if (cellsWithInEdgeCount == null) {
                     this.inDegreeMap.put(inEdgeCountKey, cellsWithInEdgeCount =
-                        new LinkedHashSet<Layoutable>());
+                        new LinkedHashSet<LayoutNode>());
                 }
                 cellsWithInEdgeCount.add(cellLayoutable);
             }
@@ -192,18 +190,18 @@ public class ForestLayouter extends AbstractLayouter {
      * disregarded if <tt>null</tt> The result is stored in <code>roots</code>.
      */
     private void computeRoots() {
-        Iterator<Layoutable> rootIter =
-            new CollectionOfCollections<Layoutable>(this.inDegreeMap.values()).iterator();
+        Iterator<LayoutNode> rootIter =
+            new CollectionOfCollections<LayoutNode>(this.inDegreeMap.values()).iterator();
         // Transfer the suggested roots (if any) from j-cells to layoutables
         Collection<?> suggestedRoots = getSuggestedRoots();
         if (suggestedRoots != null && !suggestedRoots.isEmpty()) {
-            Iterator<Layoutable> suggestedRootIter =
-                new TransformIterator<Object,Layoutable>(
+            Iterator<LayoutNode> suggestedRootIter =
+                new TransformIterator<Object,LayoutNode>(
                     suggestedRoots.iterator()) {
                     @Override
-                    public Layoutable toOuter(Object in) {
-                        Layoutable result =
-                            ForestLayouter.this.toLayoutableMap.get(in);
+                    public LayoutNode toOuter(Object in) {
+                        LayoutNode result =
+                            ForestLayouter.this.layoutMap.get(in);
                         if (result == null) {
                             throw new IllegalArgumentException(
                                 "Suggested root " + in
@@ -213,30 +211,30 @@ public class ForestLayouter extends AbstractLayouter {
                     }
                 };
             rootIter =
-                new NestedIterator<Layoutable>(suggestedRootIter, rootIter);
+                new NestedIterator<LayoutNode>(suggestedRootIter, rootIter);
         }
         // now add real roots to the result list, one by one
         this.roots.clear();
-        Set<Layoutable> leaves =
-            new LinkedHashSet<Layoutable>(this.branchMap.keySet());
+        Set<LayoutNode> leaves =
+            new LinkedHashSet<LayoutNode>(this.branchMap.keySet());
         while (rootIter.hasNext()) {
-            Layoutable root = rootIter.next();
+            LayoutNode root = rootIter.next();
             if (leaves.contains(root)) {
                 this.roots.add(root);
                 leaves.remove(root);
                 // compute reachable cells and take them from leaves
                 // also adjust the branch sets of the reachable leaves
-                Set<Layoutable> reachableCells =
-                    new LinkedHashSet<Layoutable>();
+                Set<LayoutNode> reachableCells =
+                    new LinkedHashSet<LayoutNode>();
                 reachableCells.add(root);
                 while (!reachableCells.isEmpty()) {
-                    Iterator<Layoutable> reachableCellIter =
+                    Iterator<LayoutNode> reachableCellIter =
                         reachableCells.iterator();
                     Object nextReachableCell = reachableCellIter.next();
                     reachableCellIter.remove();
                     // we might have duplication in the list of reachable cells
                     // so we have to check whether this one was not done before
-                    Set<Layoutable> branches =
+                    Set<LayoutNode> branches =
                         this.branchMap.get(nextReachableCell);
                     // restrict to branches which were unreached before
                     branches.retainAll(leaves);
@@ -254,13 +252,13 @@ public class ForestLayouter extends AbstractLayouter {
      * cells; the second is the indentation from the left of each tree level,
      * and the third the indentation from the right.
      */
-    private Object[] layout(Collection<Layoutable> branches, int height) {
+    private Object[] layout(Collection<LayoutNode> branches, int height) {
         int width = 0;
         int levelCount = 0;
         int[] leftIndent = new int[levelCount];
         int[] rightIndent = new int[levelCount];
-        LinkedList<Layoutable> previousBranches = new LinkedList<Layoutable>();
-        for (Layoutable branch : branches) {
+        LinkedList<LayoutNode> previousBranches = new LinkedList<LayoutNode>();
+        for (LayoutNode branch : branches) {
             Object[] rightLayout = layout(branch, height);
             int leftWidth = width;
             int leftLevelCount = levelCount;
@@ -323,9 +321,9 @@ public class ForestLayouter extends AbstractLayouter {
      * the second is the indentation from the left of each tree level, and the
      * third the indentation from the right.
      */
-    private Object[] layout(Layoutable layoutable, int height) {
+    private Object[] layout(LayoutNode layoutable, int height) {
         // recursively call layouting for the next level of the tree
-        Set<Layoutable> branches = this.branchMap.get(layoutable);
+        Set<LayoutNode> branches = this.branchMap.get(layoutable);
         Object[] branchLayout =
             layout(branches,
                 height + VERTICAL_SPACE + (int) layoutable.getHeight());
@@ -374,8 +372,8 @@ public class ForestLayouter extends AbstractLayouter {
      * @param branches the roots of the forest to be shifted
      * @param shift the distance to shift the forest
      */
-    private void shift(Collection<Layoutable> branches, int shift) {
-        for (Layoutable branch : branches) {
+    private void shift(Collection<LayoutNode> branches, int shift) {
+        for (LayoutNode branch : branches) {
             shift(branch, shift);
         }
     }
@@ -386,7 +384,7 @@ public class ForestLayouter extends AbstractLayouter {
      * @param layoutable the root of the tree to be shifted
      * @param shift the distance to shift the tree
      */
-    private void shift(Layoutable layoutable, int shift) {
+    private void shift(LayoutNode layoutable, int shift) {
         layoutable.setLocation(layoutable.getX() + shift, layoutable.getY());
         shift(this.branchMap.get(layoutable), shift);
     }
@@ -405,20 +403,20 @@ public class ForestLayouter extends AbstractLayouter {
 
     /**
      * The in-degree of all layoutables, as a mapping from
-     * {@link groove.gui.layout.AbstractLayouter.Layoutable} to {@link Integer}.
+     * {@link groove.gui.layout.AbstractLayouter.LayoutNode} to {@link Integer}.
      */
-    private final Map<Integer,Set<Layoutable>> inDegreeMap =
-        new TreeMap<Integer,Set<Layoutable>>();
+    private final Map<Integer,Set<LayoutNode>> inDegreeMap =
+        new TreeMap<Integer,Set<LayoutNode>>();
     /**
      * The branch map of the forest. It maps each layoutable item (jgraph node
      * bounds or edge point) to the set of its children. For a node, all points
      * on the outgoing edges are children. Edge points have no children of their
      * own. If the branch set is empty, the cell is a leaf.
      */
-    private final Map<Layoutable,Set<Layoutable>> branchMap =
-        new LinkedHashMap<Layoutable,Set<Layoutable>>();
+    private final Map<LayoutNode,Set<LayoutNode>> branchMap =
+        new LinkedHashMap<LayoutNode,Set<LayoutNode>>();
     /** The roots of the forest. */
-    private final Collection<Layoutable> roots = new LinkedList<Layoutable>();
+    private final Collection<LayoutNode> roots = new LinkedList<LayoutNode>();
 
     private final static Comparator<JEdge<?>> edgeComparator =
         new Comparator<JEdge<?>>() {

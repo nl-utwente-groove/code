@@ -37,9 +37,7 @@ import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.Edge.Routing;
-import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphConstants;
-import org.jgraph.graph.GraphLayoutCache;
 
 /** 
  * Attribute map associated with a {@link VisualMap}.
@@ -495,16 +493,5 @@ public class VisualAttributeMap extends AttributeMap {
         visualToAttrKeyMap = v2a;
     }
 
-    private final static Routing edgeRouting = new Routing() {
-        /**
-         * Returns {@link #NO_PREFERENCE}.
-         */
-        public int getPreferredLineStyle(EdgeView edge) {
-            return NO_PREFERENCE;
-        }
-
-        public List<?> route(GraphLayoutCache cache, EdgeView edge) {
-            return null;
-        }
-    };
+    private final static Routing edgeRouting = new MyRouting();
 }

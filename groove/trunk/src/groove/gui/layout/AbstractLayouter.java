@@ -20,8 +20,9 @@ import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdgeView;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
+import groove.gui.jgraph.JVertex;
+import groove.gui.jgraph.JVertexView;
 import groove.gui.look.VisualMap;
-import groove.util.Pair;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -47,90 +48,35 @@ import org.jgraph.graph.VertexView;
  */
 abstract public class AbstractLayouter implements Layouter {
     /**
-     * Interface of an item that is to be layed out. This is to unify node
-     * bounds and edge points.
-     */
-    static protected interface Layoutable {
-        /** Returns the x-coordinate of this layoutable. */
-        public double getX();
-
-        /** Returns the y-coordinate of this layoutable. */
-        public double getY();
-
-        /** Returns the height of this layoutable. */
-        public double getHeight();
-
-        /** Returns the width of this layoutable. */
-        public double getWidth();
-
-        /** Sets a new position of this layoutable. */
-        public void setLocation(double x, double y);
-    }
-
-    /**
-     * Implements a layoutable that wraps a point. Width and height are zero.
-     */
-    static final protected class PointLayoutable implements Layoutable {
-        /** Constructs a new layoutable from a given point. */
-        public PointLayoutable(Point2D p) {
-            this.p = p;
-        }
-
-        public double getX() {
-            return this.p.getX();
-        }
-
-        public double getY() {
-            return this.p.getY();
-        }
-
-        public double getWidth() {
-            return 0;
-        }
-
-        public double getHeight() {
-            return 0;
-        }
-
-        public void setLocation(double x, double y) {
-            this.p.setLocation(x, y);
-
-        }
-
-        @Override
-        public String toString() {
-            return "PointLayoutable[x=" + getX() + ",y=" + getY() + "]";
-        }
-
-        /** The internally stored point of this layoutable. */
-        private final Point2D p;
-    }
-
-    /**
      * Implements a layoutable that wraps a rectangle.
      */
-    static final protected class VertexLayoutable implements Layoutable {
+    static final protected class LayoutNode {
         /** Constructs a new layoutable from a given vertex. */
-        public VertexLayoutable(VertexView view) {
+        public LayoutNode(VertexView view) {
             this.r = view.getBounds();
         }
 
+        /** Returns the x-coordinate of this layoutable. */
         public double getX() {
             return this.r.getX();
         }
 
+        /** Returns the y-coordinate of this layoutable. */
         public double getY() {
             return this.r.getY();
         }
 
+        /** Returns the width of this layoutable. */
         public double getWidth() {
             return this.r.getWidth();
         }
 
+        /** Returns the height of this layoutable. */
         public double getHeight() {
             return this.r.getHeight();
         }
 
+        /** Sets a new position of this layoutable. */
         public void setLocation(double x, double y) {
             this.r.setRect(x, y, getWidth(), getHeight());
 
@@ -182,43 +128,20 @@ abstract public class AbstractLayouter implements Layouter {
         this.jgraph.notifyProgress("Layouting");
         this.jmodel = this.jgraph.getModel();
         // clear the transient information
-        this.toLayoutableMap.clear();
+        this.layoutMap.clear();
         this.immovableSet.clear();
         // iterate over the cell views
         CellView[] cellViews = this.jgraph.getGraphLayoutCache().getRoots();
         for (CellView cellView : cellViews) {
-            if (!(cellView.getCell() instanceof JCell)) {
-                continue;
-            }
-            JCell<?> jCell = (JCell<?>) cellView.getCell();
-            if (jCell.isGrayedOut()) {
-                continue;
-            }
-            if (cellView instanceof JEdgeView) {
-                // all true points (i.e., that are not PortViews) are
-                // subject to layouting
-                List<Point2D> points =
-                    ((JEdgeView) cellView).getCell().getVisuals().getPoints();
-                for (int p = 1; p < points.size() - 1; p++) {
-                    Object point = points.get(p);
-                    if (point instanceof Point2D) {
-                        Layoutable layoutable =
-                            new PointLayoutable((Point2D) point);
-                        this.toLayoutableMap.put(Pair.newPair(jCell, p),
-                            layoutable);
-                        if (!jCell.isLayoutable()) {
-                            this.immovableSet.add(layoutable);
-                        }
+            if (cellView instanceof JVertexView) {
+                JVertex<?> jVertex = ((JVertexView) cellView).getCell();
+                if (!jVertex.isGrayedOut()) {
+                    LayoutNode layoutable =
+                        new LayoutNode((VertexView) cellView);
+                    this.layoutMap.put(jVertex, layoutable);
+                    if (!jVertex.isLayoutable()) {
+                        this.immovableSet.add(layoutable);
                     }
-                }
-            } else {
-                assert cellView instanceof VertexView : String.format(
-                    "%s instance of %s", cellView, cellView.getClass());
-                Layoutable layoutable =
-                    new VertexLayoutable((VertexView) cellView);
-                this.toLayoutableMap.put(jCell, layoutable);
-                if (!jCell.isLayoutable()) {
-                    this.immovableSet.add(layoutable);
                 }
             }
         }
@@ -309,13 +232,14 @@ abstract public class AbstractLayouter implements Layouter {
      * contains that cell's bounds; the layoutable for an edge point contains
      * the point.
      */
-    protected final Map<Object,Layoutable> toLayoutableMap =
-        new LinkedHashMap<Object,Layoutable>();
+    protected final Map<JVertex<?>,LayoutNode> layoutMap =
+        new LinkedHashMap<JVertex<?>,LayoutNode>();
 
     /**
      * The subset of layoutables that should be immovable, according to the
      * movability attribute of the corresponding jcell. Initialised in
      * <tt>prepare()</tt>
      */
-    protected final Set<Layoutable> immovableSet = new HashSet<Layoutable>();
+    protected final Set<LayoutNode> immovableSet =
+        new HashSet<LayoutNode>();
 }

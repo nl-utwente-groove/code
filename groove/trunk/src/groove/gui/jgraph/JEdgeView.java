@@ -22,7 +22,6 @@ import groove.gui.look.HTMLLineFormat;
 import groove.gui.look.LineStyle;
 import groove.gui.look.MultiLabel;
 import groove.gui.look.Values;
-import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
 
 import java.awt.BasicStroke;
@@ -31,23 +30,19 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Dimension2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 import org.jgraph.graph.CellHandle;
-import org.jgraph.graph.CellMapper;
 import org.jgraph.graph.CellView;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.EdgeRenderer;
@@ -55,7 +50,6 @@ import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphCellEditor;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphContext;
-import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.PortView;
 import org.jgraph.graph.VertexView;
 
@@ -71,17 +65,11 @@ public class JEdgeView extends EdgeView {
     /** The editor for all instances of <tt>JEdgeView</tt>. */
     static protected final MultiLinedEditor editor = new MultiLinedEditor();
 
-    private final JGraph<?> jGraph;
-
     /**
-     * Apart from constructing a new edge view, adds points to the edge if it is
-     * a self-edge or if a straight parallel edge already exists. Queries the
-     * underlying model for edge attributes. (using
-     * <tt>@link JModel#createEdgeAttributes</tt>).
+     * Constructs an edge view for a given jEdge.
      */
     public JEdgeView(JEdge<?> jEdge, JGraph<?> jGraph) {
         super(jEdge);
-        this.jGraph = jGraph;
     }
 
     /* Overridden to avoid inserting PortViews into the points list. */
@@ -141,93 +129,6 @@ public class JEdgeView extends EdgeView {
     @Override
     public JEdge<?> getCell() {
         return (JEdge<?>) super.getCell();
-    }
-
-    /**
-     * Does some routing of self-edges.
-     */
-    @Override
-    public void refresh(GraphLayoutCache cache, CellMapper mapper,
-            boolean createDependentViews) {
-        super.refresh(cache, mapper, createDependentViews);
-        if (!this.jGraph.isLayouting() && isLoop()) {
-            routeLoop();
-        }
-    }
-
-    /**
-     * Adds points to the view and sets the line style so that the edge makes a
-     * nice curve. The points are created perpendicular to the line between the
-     * first and second point when the method is invoked, also taking the vertex
-     * bound into account. All but the first and last points of the original
-     * points are removed. Should only be called if
-     * <code>getSource() == getTarget()</code>.
-     */
-    private void routeLoop() {
-        VisualMap visuals = getCell().getVisuals();
-        LineStyle lineStyle = visuals.getLineStyle();
-        boolean isManhattan = lineStyle == LineStyle.MANHATTAN;
-        if (isManhattan ? getPointCount() == 2 : getPointCount() <= 3) {
-            Point2D startPoint = getPoint(0);
-            Point2D endPoint = getPoint(1);
-            List<Point2D> newPoints = new ArrayList<Point2D>(4);
-            newPoints.add(startPoint);
-            VisualMap sourceVisuals = getCell().getSourceVertex().getVisuals();
-            Point2D pos = sourceVisuals.getNodePos();
-            Dimension2D size = sourceVisuals.getNodeSize();
-            pos.setLocation(pos.getX() - size.getWidth() / 2,
-                pos.getY() - size.getHeight() / 2);
-            Rectangle2D bounds = new Rectangle();
-            bounds.setFrame(pos, size);
-            if (bounds.contains(endPoint)) {
-                endPoint.setLocation(endPoint.getX() + size.getWidth() * 2,
-                    endPoint.getY());
-            }
-            newPoints.add(1,
-                createPointPerpendicular(startPoint, endPoint, true));
-            if (!isManhattan) {
-                newPoints.add(1,
-                    createPointPerpendicular(startPoint, endPoint, false));
-                visuals.setLineStyle(LineStyle.BEZIER);
-            }
-            newPoints.add(startPoint);
-            visuals.put(VisualKey.POINTS, newPoints);
-        }
-    }
-
-    /**
-     * Creates and returns a point perpendicular to the line between two points,
-     * at a distance to the second point that is a fraction of the length of the
-     * original line. A boolean flag controls the direction to which the
-     * perpendicular point sticks out from the original line.
-     * @param p1 the first boundary point
-     * @param p2 the first boundary point
-     * @param left flag to indicate whether the new point is to stick out on the
-     *        left or right hand side of the line between <tt>p1</tt> and
-     *        <tt>p2</tt>.
-     * @return new point on the perpendicular of the line between <tt>p1</tt>
-     *         and <tt>p2</tt>
-     */
-    private Point createPointPerpendicular(Point2D p1, Point2D p2, boolean left) {
-        double distance = p1.distance(p2);
-        int midX = (int) (p1.getX() + p2.getX()) / 2;
-        int midY = (int) (p1.getY() + p2.getY()) / 2;
-        // int offset = (int) (5 + distance / 2 + 20 * Math.random());
-        int x, y;
-        if (distance == 0) {
-            x = midX + 20;
-            y = midY + 20;
-        } else {
-            int offset = (int) (5 + distance / 4);
-            if (left) {
-                offset = -offset;
-            }
-            double xDelta = p1.getX() - p2.getX();
-            double yDelta = p1.getY() - p2.getY();
-            x = (int) (p2.getX() + offset * yDelta / distance);
-            y = (int) (p2.getY() - offset * xDelta / distance);
-        }
-        return new Point(Math.max(x, 0), Math.max(y, 0));
     }
 
     /**
