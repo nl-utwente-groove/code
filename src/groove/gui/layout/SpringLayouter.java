@@ -19,7 +19,6 @@ package groove.gui.layout;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
-import groove.util.Pair;
 
 import java.awt.geom.Point2D;
 import java.util.HashMap;
@@ -82,10 +81,10 @@ public class SpringLayouter extends AbstractLayouter {
         // initialise the layoutables, positions and deltas
         this.deltaMap.clear();
         int layoutableIndex = 0;
-        this.layoutables = new Layoutable[this.toLayoutableMap.size()];
-        this.positions = new Point2D.Double[this.toLayoutableMap.size()];
-        this.deltas = new Point2D.Float[this.toLayoutableMap.size()];
-        for (Layoutable layoutable : this.toLayoutableMap.values()) {
+        this.layoutables = new LayoutNode[this.layoutMap.size()];
+        this.positions = new Point2D.Double[this.layoutMap.size()];
+        this.deltas = new Point2D.Float[this.layoutMap.size()];
+        for (LayoutNode layoutable : this.layoutMap.values()) {
             this.layoutables[layoutableIndex] = layoutable;
             // CellView vertexView = jview.getMapping(cell, false);
             // assert vertexView != null : "Node " + graphVertices[i] + " does
@@ -101,35 +100,29 @@ public class SpringLayouter extends AbstractLayouter {
         }
         // initialise the edge fragment arrays
         // Object[] graphEdges = jgraph.getEdges(jgraph.getRoots());
-        List<Layoutable> edgeFragmentSourceList = new LinkedList<Layoutable>();
-        List<Layoutable> edgeFragmentTargetList = new LinkedList<Layoutable>();
+        List<LayoutNode> edgeSourceList =
+            new LinkedList<LayoutNode>();
+        List<LayoutNode> edgeTargetList =
+            new LinkedList<LayoutNode>();
         for (int i = 0; i < this.jmodel.getRootCount(); i++) {
             JCell<?> jCell = (JCell<?>) this.jmodel.getRootAt(i);
             if (jCell instanceof JEdge && jCell.getVisuals().isVisible()
                 && !jCell.isGrayedOut()) {
                 JEdge<?> jEdge = (JEdge<?>) jCell;
-                List<Point2D> points = jEdge.getVisuals().getPoints();
-                for (int j = 0; j < points.size() - 1; j++) {
-                    Object efs =
-                        j == 0 ? jEdge.getSourceVertex() : Pair.newPair(jEdge,
-                            j);
-                    Layoutable source = this.toLayoutableMap.get(efs);
-                    Object eft =
-                        j == points.size() - 2 ? jEdge.getTargetVertex()
-                                : Pair.newPair(jEdge, j + 1);
-                    Layoutable target = this.toLayoutableMap.get(eft);
-                    if (source == null || target == null) {
-                        break;
-                    }
-                    edgeFragmentSourceList.add(source);
-                    edgeFragmentTargetList.add(target);
+                LayoutNode source =
+                    this.layoutMap.get(jEdge.getSourceVertex());
+                LayoutNode target =
+                    this.layoutMap.get(jEdge.getTargetVertex());
+                if (source != null && target != null) {
+                    edgeSourceList.add(source);
+                    edgeTargetList.add(target);
                 }
             }
         }
-        this.edgeFragmentSources =
-            edgeFragmentSourceList.toArray(new Layoutable[edgeFragmentSourceList.size()]);
-        this.edgeFragmentTargets =
-            edgeFragmentTargetList.toArray(new Layoutable[edgeFragmentTargetList.size()]);
+        this.edgeSources =
+            edgeSourceList.toArray(new LayoutNode[edgeSourceList.size()]);
+        this.edgeTargets =
+            edgeTargetList.toArray(new LayoutNode[edgeTargetList.size()]);
     }
 
     private void damp() {
@@ -165,9 +158,9 @@ public class SpringLayouter extends AbstractLayouter {
     // relaxEdges is more like tense edges up. All edges pull nodes closer
     // together;
     private synchronized void relaxEdges() {
-        for (int i = 0; i < this.edgeFragmentSources.length; i++) {
-            Layoutable bf = this.edgeFragmentSources[i];
-            Layoutable bt = this.edgeFragmentTargets[i];
+        for (int i = 0; i < this.edgeSources.length; i++) {
+            LayoutNode bf = this.edgeSources[i];
+            LayoutNode bt = this.edgeTargets[i];
             double dx = (bt.getX() - bf.getX()) * this.workingRigidity / 100; // rigidity
                                                                               // makes
                                                                               // edges
@@ -181,12 +174,10 @@ public class SpringLayouter extends AbstractLayouter {
     private synchronized void avoidLabels() {
         final float repSum = 200; // a repulsion constant
         for (int i = 0; i < this.layoutables.length; i++) {
-            Layoutable from = this.layoutables[i];
             Point2D.Double bf = this.positions[i];
             float fromDx = 0;
             float fromDy = 0;
             for (int j = i + 1; j < this.layoutables.length; j++) {
-                Layoutable to = this.layoutables[j];
                 Point2D.Double bt = this.positions[j];
 
                 double vx = bf.x - bt.x;
@@ -200,10 +191,6 @@ public class SpringLayouter extends AbstractLayouter {
                         dx = repSum * (float) Math.random();
                         dy = repSum * (float) Math.random();
                     } else {
-                        if (from instanceof PointLayoutable
-                            || to instanceof PointLayoutable) {
-                            len += 5;
-                        }
                         dx = vx / len;
                         dy = vy / len;
                     }
@@ -225,7 +212,7 @@ public class SpringLayouter extends AbstractLayouter {
         this.lastMaxMotion = this.maxMotion;
         this.maxMotion = 0;
         for (int i = 0; i < this.deltas.length; i++) {
-            Layoutable key = this.layoutables[i];
+            LayoutNode key = this.layoutables[i];
             Point2D.Float delta = this.deltas[i];
             if (delta != null) {
                 float dx = delta.x *= this.damper;
@@ -282,7 +269,7 @@ public class SpringLayouter extends AbstractLayouter {
         this.workingRigidity = this.rigidity; // update rigidity
     }
 
-    private void shiftDelta(Layoutable key, double dx, double dy) {
+    private void shiftDelta(LayoutNode key, double dx, double dy) {
         shiftDelta(this.deltaMap.get(key), dx, dy);
     }
 
@@ -297,7 +284,7 @@ public class SpringLayouter extends AbstractLayouter {
      * An array of layoutables, corresponding to the keys in
      * LayoutAction#toLayoutableMap.
      */
-    private Layoutable[] layoutables;
+    private LayoutNode[] layoutables;
 
     /**
      * More precise positions for the elements of layoutables.
@@ -317,15 +304,15 @@ public class SpringLayouter extends AbstractLayouter {
      * <tt>(layoutables[i],deltas[i])</tt> for which
      * <tt>deltas[i] != null</tt>
      */
-    private final Map<Layoutable,Point2D.Float> deltaMap =
-        new HashMap<Layoutable,Point2D.Float>();
+    private final Map<LayoutNode,Point2D.Float> deltaMap =
+        new HashMap<LayoutNode,Point2D.Float>();
 
     /**
      * Source vertices or midpoints of the edge fragments in this graph.
      * Transient value; only used while layout is running.
      * @invariant <tt>edgeFragmentSources: (Rectangle \cup Point)^*</tt>
      */
-    private Layoutable[] edgeFragmentSources;
+    private LayoutNode[] edgeSources;
 
     /**
      * Target midpoints or vertices of the edge fragments in this graph.
@@ -333,7 +320,7 @@ public class SpringLayouter extends AbstractLayouter {
      * @invariant <tt>edgeFragmentTargets: (Rectangle \cup Point)^*</tt> and
      *            <tt>edgeFragmentSources.length == edgeFragmentTargets.length</tt>
      */
-    private Layoutable[] edgeFragmentTargets;
+    private LayoutNode[] edgeTargets;
 
     double damper = 1.0; // A low damper value causes the graph to move
                          // slowly
