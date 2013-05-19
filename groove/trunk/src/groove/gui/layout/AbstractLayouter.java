@@ -108,7 +108,7 @@ abstract public class AbstractLayouter implements Layouter {
      */
     protected AbstractLayouter(String name, JGraph<?> jgraph) {
         this.name = name;
-        this.jgraph = jgraph;
+        this.jGraph = jgraph;
     }
 
     /**
@@ -125,13 +125,15 @@ abstract public class AbstractLayouter implements Layouter {
      * the layouter.
      */
     protected void prepare() {
-        this.jgraph.notifyProgress("Layouting");
-        this.jmodel = this.jgraph.getModel();
+        this.jGraph.notifyProgress("Layouting");
+        this.jGraph.setLayouting(true);
+        this.jGraph.clearAllEdgePoints();
+        this.jmodel = this.jGraph.getModel();
         // clear the transient information
         this.layoutMap.clear();
         this.immovableSet.clear();
         // iterate over the cell views
-        CellView[] cellViews = this.jgraph.getGraphLayoutCache().getRoots();
+        CellView[] cellViews = this.jGraph.getGraphLayoutCache().getRoots();
         for (CellView cellView : cellViews) {
             if (cellView instanceof JVertexView) {
                 JVertex<?> jVertex = ((JVertexView) cellView).getCell();
@@ -145,7 +147,7 @@ abstract public class AbstractLayouter implements Layouter {
                 }
             }
         }
-        this.jgraph.setToolTipEnabled(false);
+        this.jGraph.setToolTipEnabled(false);
     }
 
     /**
@@ -155,7 +157,7 @@ abstract public class AbstractLayouter implements Layouter {
     protected void finish() {
         final Map<JCell<?>,AttributeMap> change =
             new HashMap<JCell<?>,AttributeMap>();
-        CellView[] cellViews = this.jgraph.getGraphLayoutCache().getRoots();
+        CellView[] cellViews = this.jGraph.getGraphLayoutCache().getRoots();
         for (CellView view : cellViews) {
             if (view instanceof VertexView || view instanceof EdgeView) {
                 JCell<?> cell = (JCell<?>) view.getCell();
@@ -199,7 +201,8 @@ abstract public class AbstractLayouter implements Layouter {
                     // certainly performance impacting
                     //                    AbstractLayouter.this.jgraph.refresh();
                 }
-                AbstractLayouter.this.jgraph.notifyProgress("");
+                AbstractLayouter.this.jGraph.notifyProgress("");
+                AbstractLayouter.this.jGraph.setLayouting(false);
             }
         };
         // do this now (if invoked from the event thread) or defer to event thread
@@ -218,7 +221,7 @@ abstract public class AbstractLayouter implements Layouter {
     /**
      * The underlying jgraph for this layout action.
      */
-    protected final JGraph<?> jgraph;
+    protected final JGraph<?> jGraph;
 
     /**
      * The model that has last been layed out.
@@ -240,6 +243,5 @@ abstract public class AbstractLayouter implements Layouter {
      * movability attribute of the corresponding jcell. Initialised in
      * <tt>prepare()</tt>
      */
-    protected final Set<LayoutNode> immovableSet =
-        new HashSet<LayoutNode>();
+    protected final Set<LayoutNode> immovableSet = new HashSet<LayoutNode>();
 }

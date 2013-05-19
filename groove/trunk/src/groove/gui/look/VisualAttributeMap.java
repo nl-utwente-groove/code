@@ -493,5 +493,5 @@ public class VisualAttributeMap extends AttributeMap {
         visualToAttrKeyMap = v2a;
     }
 
-    private final static Routing edgeRouting = new MyRouting();
+    private final static Routing edgeRouting = new LoopRouting();
 }

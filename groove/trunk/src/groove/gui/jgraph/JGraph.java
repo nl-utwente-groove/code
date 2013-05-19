@@ -105,6 +105,7 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.CellView;
 import org.jgraph.graph.DefaultGraphCell;
+import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.GraphModel;
@@ -1322,7 +1323,23 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
     /** Sets the layouting flag to the given value. */
     public void setLayouting(boolean layouting) {
-        this.layouting = layouting;
+        if (layouting != this.layouting) {
+            this.layouting = layouting;
+            if (layouting) {
+                // start the layouting
+                getModel().beginUpdate();
+            } else {
+                // end the layouting
+                getModel().endUpdate();
+                // reroute the loops
+                GraphLayoutCache cache = getGraphLayoutCache();
+                for (CellView view : cache.getRoots()) {
+                    if (view instanceof EdgeView && ((EdgeView) view).isLoop()) {
+                        view.update(cache);
+                    }
+                }
+            }
+        }
     }
 
     /** Returns the layouting status of this jGraph. */

@@ -141,8 +141,8 @@ abstract public class AJEdge<G extends Graph,JG extends JGraph<G>,JM extends JMo
 
     @Override
     public String toString() {
-        return String.format("%s with labels %s", getClass().getSimpleName(),
-            getKeys());
+        return String.format("%s wrapping %s", getClass().getSimpleName(),
+            getEdges());
     }
 
     /**
