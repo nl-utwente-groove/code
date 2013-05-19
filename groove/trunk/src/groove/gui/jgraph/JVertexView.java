@@ -26,6 +26,7 @@ import groove.gui.look.MultiLabel;
 import groove.gui.look.Values;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
+import groove.util.NodeShape;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -136,21 +137,19 @@ public class JVertexView extends VertexView {
     @Override
     public Point2D getPerimeterPoint(EdgeView edge, Point2D p, Point2D q) {
         Point2D result = null;
-        // use the adornment bounds if there is an adornment, and the
-        // source lies to the northwest of it
-        Rectangle2D bounds = getAdornBounds();
         double qx = q.getX();
         double qy = q.getY();
-        if (bounds == null || bounds.getMaxX() <= qx || bounds.getMaxY() <= qy) {
-            // revert to the actual borders by subtracting the
-            // extra border space
-            bounds = getBounds();
-            float extra = EXTRA_BORDER_SPACE - getCellVisuals().getLineWidth();
-            bounds =
-                new Rectangle2D.Double(bounds.getMinX() + extra,
-                    bounds.getMinY() + extra, bounds.getWidth() - 2 * extra,
-                    bounds.getHeight() - 2 * extra);
-        }
+        // use the adornment bounds if there is an adornment, and the
+        // source lies to the northwest of it
+        Rectangle2D bounds = getBounds();
+        // revert to the actual borders by subtracting the
+        // extra border space
+        bounds = getBounds();
+        float extra = EXTRA_BORDER_SPACE - getCellVisuals().getLineWidth();
+        bounds =
+            new Rectangle2D.Double(bounds.getMinX() + extra, bounds.getMinY()
+                + extra, bounds.getWidth() - 2 * extra, bounds.getHeight() - 2
+                * extra);
         double left = bounds.getMinX();
         double right = bounds.getMaxX();
         double top = bounds.getMinY();
@@ -196,8 +195,36 @@ public class JVertexView extends VertexView {
             double py = (qy > minY && qy < maxY) ? qy : cy;
             p = new Point2D.Double(px, py);
         }
-        result =
-            getCellVisuals().getNodeShape().getPerimeterPoint(bounds, p, q);
+        NodeShape shape = getCellVisuals().getNodeShape();
+        result = shape.getPerimeterPoint(bounds, p, q);
+        // correct for the adornment, if any
+        Rectangle2D adornBounds = getAdornBounds();
+        // possibly adjust if the target point lies northwest of the adornment
+        boolean adorn =
+            adornBounds != null && adornBounds.getMaxX() > qx
+                && adornBounds.getMaxY() > qy;
+        if (adorn) {
+            double rx = result.getX();
+            double ry = result.getY();
+            double dx = qx - result.getX();
+            double dy = qy - result.getY();
+            if (adornBounds.intersectsLine(rx, ry, qx, qy)) {
+                if (dy == 0) {
+                    // target lies straight to the west
+                    result.setLocation(adornBounds.getMinX(), result.getY());
+                } else {
+                    // first try out the intersection with the upper edge
+                    double shiftY = ry - adornBounds.getMinY();
+                    double shiftX = shiftY * dx / dy;
+                    if (result.getX() - shiftX < adornBounds.getMinX()) {
+                        // too far left; we need the left edge
+                        shiftX = rx - adornBounds.getMinX();
+                        shiftY = shiftX * dy / dx;
+                    }
+                    result.setLocation(rx - shiftX, ry - shiftY);
+                }
+            }
+        }
         return result;
     }
 
