@@ -92,12 +92,11 @@ public class LayouterItem implements Layouter {
 
     private void run() {
         getLayout().run(this.facade);
-        Map<?,?> nested = this.facade.createNestedMap(true, true);
+        Map<?,?> nested = this.facade.createNestedMap(true, false);
         this.jGraph.getGraphLayoutCache().edit(nested);
     }
 
     private void finishLayouting() {
         this.jGraph.setLayouting(false);
     }
-
 }

@@ -164,7 +164,7 @@ public class JEdgeView extends EdgeView {
     @Override
     protected Point2D getNearestPoint(boolean source) {
         Point2D result = null;
-        if (getPointCount() == 2) {
+        if (getPointCount() == 2 && !isLoop()) {
             if (!source && this.source instanceof PortView) {
                 VertexView sourceCellView =
                     (VertexView) this.source.getParentView();

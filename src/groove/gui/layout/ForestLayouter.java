@@ -86,7 +86,7 @@ public class ForestLayouter extends AbstractLayouter {
      * <tt>prepare()</tt>, <tt>layout()</tt> and <tt>finish()</tt>.
      */
     public void start() {
-        synchronized (this.jgraph) {
+        synchronized (this.jGraph) {
             prepare();
             computeBranchMap();
             computeRoots();
@@ -105,7 +105,7 @@ public class ForestLayouter extends AbstractLayouter {
      * cells of the underlying {@link JGraph}.
      */
     protected Collection<?> getSuggestedRoots() {
-        return Arrays.asList(this.jgraph.getSelectionCells());
+        return Arrays.asList(this.jGraph.getSelectionCells());
     }
 
     /**
@@ -135,7 +135,7 @@ public class ForestLayouter extends AbstractLayouter {
                     // it's possible that the edge is displayed as node label
                     // even though it has an explicit layout
                     EdgeView edgeView =
-                        (EdgeView) this.jgraph.getGraphLayoutCache().getMapping(
+                        (EdgeView) this.jGraph.getGraphLayoutCache().getMapping(
                             edge, false);
                     if (edgeView != null && edge.getVisuals().isVisible()
                         && !edge.isGrayedOut()) {
@@ -154,7 +154,7 @@ public class ForestLayouter extends AbstractLayouter {
                 }
                 for (JEdge<?> edge : outEdges) {
                     EdgeView edgeView =
-                        (EdgeView) this.jgraph.getGraphLayoutCache().getMapping(
+                        (EdgeView) this.jGraph.getGraphLayoutCache().getMapping(
                             edge, false);
                     // add all the points on the edge to the branches of
                     // the

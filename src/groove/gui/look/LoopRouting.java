@@ -19,8 +19,6 @@ package groove.gui.look;
 import groove.gui.jgraph.JEdge;
 
 import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -37,7 +35,7 @@ import org.jgraph.graph.GraphLayoutCache;
  * @author Arend Rensink
  * @version $Revision $
  */
-final class MyRouting implements Routing {
+final class LoopRouting implements Routing {
     public int getPreferredLineStyle(EdgeView edge) {
         return NO_PREFERENCE;
     }
@@ -52,24 +50,23 @@ final class MyRouting implements Routing {
             result = new ArrayList<Point2D>(4);
             result.add(startPoint);
             // test if end point is within node bounds
-            VisualMap sourceVisuals = cell.getSourceVertex().getVisuals();
-            Point2D pos = sourceVisuals.getNodePos();
-            Dimension2D size = sourceVisuals.getNodeSize();
-            pos.setLocation(pos.getX() - size.getWidth() / 2,
-                pos.getY() - size.getHeight() / 2);
-            Rectangle2D bounds = new Rectangle();
-            bounds.setFrame(pos, size);
-            if (bounds.contains(endPoint)) {
+            Rectangle2D sourceBounds =
+                edge.getSource().getParentView().getBounds();
+            if (startPoint.equals(endPoint) || sourceBounds.contains(endPoint)) {
                 // modify end point so it lies outside node bounds
-                endPoint.setLocation(endPoint.getX() + size.getWidth() * 2,
-                    endPoint.getY());
+                endPoint =
+                    new Point2D.Double(endPoint.getX()
+                        + sourceBounds.getWidth(), endPoint.getY());
             }
             // add first intermediate point
-            result.add(1, createPointPerpendicular(startPoint, endPoint, true));
+            Point2D newPoint =
+                createPointPerpendicular(startPoint, endPoint, true);
+            result.add(1, newPoint);
             if (visuals.getLineStyle() != LineStyle.MANHATTAN) {
                 // in any but manhattan style, add second intermediate point
-                result.add(1,
-                    createPointPerpendicular(startPoint, endPoint, false));
+                newPoint =
+                    createPointPerpendicular(startPoint, endPoint, false);
+                result.add(1, newPoint);
                 visuals.setLineStyle(LineStyle.BEZIER);
             }
             result.add(startPoint);
@@ -82,16 +79,19 @@ final class MyRouting implements Routing {
 
     /** Determines if this edge should be routed. */
     private boolean isRoutable(EdgeView edge) {
-        boolean result =
-            edge.getSource() != null && edge.getSource() == edge.getTarget();
-        if (result) {
-            VisualMap visuals = ((JEdge<?>) edge.getCell()).getVisuals();
-            boolean isManhattan = visuals.getLineStyle() == LineStyle.MANHATTAN;
-            result =
-                isManhattan ? edge.getPointCount() == 2
-                        : edge.getPointCount() <= 3;
+        if (edge.getSource() == null) {
+            return false;
         }
-        return result;
+        if (!edge.isLoop()) {
+            return false;
+        }
+        JEdge<?> jEdge = (JEdge<?>) edge.getCell();
+        if (jEdge.getJGraph().isLayouting()) {
+            return false;
+        }
+        VisualMap visuals = jEdge.getVisuals();
+        boolean isManhattan = visuals.getLineStyle() == LineStyle.MANHATTAN;
+        return edge.getPointCount() <= (isManhattan ? 2 : 3);
     }
 
     /**
