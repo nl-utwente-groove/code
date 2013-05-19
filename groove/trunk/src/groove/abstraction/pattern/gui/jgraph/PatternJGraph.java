@@ -113,7 +113,7 @@ public final class PatternJGraph extends JGraph<AbstractPatternGraph<?,?>> {
         }
 
         PatternJGraph getJGraph() {
-            return (PatternJGraph) this.jgraph;
+            return (PatternJGraph) this.jGraph;
         }
 
         void prepareLayouting() {

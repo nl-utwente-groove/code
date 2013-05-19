@@ -216,7 +216,7 @@ public final class ShapeJGraph extends JGraph<Shape> {
         }
 
         ShapeJGraph getJGraph() {
-            return (ShapeJGraph) this.jgraph;
+            return (ShapeJGraph) this.jGraph;
         }
 
         void prepareLayouting() {
