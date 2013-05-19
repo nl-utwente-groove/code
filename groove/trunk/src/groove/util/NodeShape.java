@@ -51,16 +51,21 @@ public enum NodeShape {
             double dc = px * qy - py * qx;
             // check for vertical lines
             if (dx == 0) {
-                x = dc / dy;
-                // we solve an equation A*y^2 + B*y + C = 0
-                double A = h2;
-                double B = -2 * h2 * cy;
-                double C = w2 * (x - cx) * (x - cx) + h2 * (cy * cy - w2);
-                // DQ = sqrt(B^2 - 4*A*C)
-                double DQ = Math.sqrt(B * B - 4 * A * C);
-                y = (-B + DQ) / (2 * A);
-                if (Math.signum(y - py) != Math.signum(dy)) {
-                    y = (-B - DQ) / (2 * A);
+                if (dy == 0) {
+                    x = cx + w;
+                    y = 0;
+                } else {
+                    x = dc / dy;
+                    // we solve an equation A*y^2 + B*y + C = 0
+                    double A = h2;
+                    double B = -2 * h2 * cy;
+                    double C = w2 * (x - cx) * (x - cx) + h2 * (cy * cy - w2);
+                    // DQ = sqrt(B^2 - 4*A*C)
+                    double DQ = Math.sqrt(B * B - 4 * A * C);
+                    y = (-B + DQ) / (2 * A);
+                    if (Math.signum(y - py) != Math.signum(dy)) {
+                        y = (-B - DQ) / (2 * A);
+                    }
                 }
             } else {
                 // line given by y = k*x + m
@@ -88,8 +93,13 @@ public enum NodeShape {
         Point2D getPerimeterPoint(double w, double h, double dx, double dy) {
             double x, y;
             if (dx == 0) {
-                x = 0;
-                y = Math.signum(dy) * h;
+                if (dy == 0) {
+                    x = w;
+                    y = 0;
+                } else {
+                    x = 0;
+                    y = Math.signum(dy) * h;
+                }
             } else if (dy == 0) {
                 x = Math.signum(dx) * w;
                 y = 0;
@@ -211,6 +221,8 @@ public enum NodeShape {
     /**
      * Computes the perimeter point on this shape, lying on the line from 
      * a given source point in the direction of a target point. 
+     * If the source and target point coincide, the point to the east of
+     * the source point is returned.
      * @param bounds bounds of the shape
      * @param p source point;
      * may be {@code null}, in which case the centre of the bounds is used
@@ -232,6 +244,8 @@ public enum NodeShape {
     /**
      * Computes the perimeter point on this shape, lying on the line from 
      * a given source point in the direction of a target point. 
+     * If the source and target point coincide, the point to the east of
+     * the source point is returned.
      * @param bounds bounds of the shape
      * @param px x-coordinate of source point;
      * @param py y-coordinate of source point;
@@ -274,6 +288,8 @@ public enum NodeShape {
     /**
      * Computes the perimeter point on this shape, lying on the line from 
      * the centre of the shape into the direction of a target point. 
+     * If the source and target point coincide, the point to the east of
+     * the source point is returned.
      * @param bounds bounds of the shape
      * @param q target point
      */
@@ -293,6 +309,8 @@ public enum NodeShape {
     /**
      * Computes the perimeter point on this shape, lying on the line from 
      * the origin {@code (0,0)} into a given direction.
+     * If the direction is {@code (0,0)}, the point to the east of
+     * the origin is returned.
      * @param w horizontal radius (width) of the shape
      * @param h vertical radius (height) of the shape
      * @param dx x-coordinate of direction of the requested perimeter point
@@ -302,8 +320,13 @@ public enum NodeShape {
         // coordinates of perimeter point
         double x, y;
         if (dx == 0) {
-            x = 0;
-            y = dy < 0 ? -h : h;
+            if (dy == 0) {
+                x = w;
+                y = 0;
+            } else {
+                x = 0;
+                y = dy < 0 ? -h : h;
+            }
         } else if (dy == 0) {
             x = dx < 0 ? -w : w;
             y = 0;
