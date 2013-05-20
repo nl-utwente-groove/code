@@ -17,7 +17,6 @@
 package groove.gui.layout;
 
 import groove.gui.jgraph.JCell;
-import groove.gui.jgraph.JEdgeView;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.JVertex;
@@ -26,11 +25,9 @@ import groove.gui.look.VisualMap;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -167,26 +164,6 @@ abstract public class AbstractLayouter implements Layouter {
                     Rectangle2D bounds = ((VertexView) view).getCachedBounds();
                     visuals.setNodePos(new Point2D.Double(bounds.getCenterX(),
                         bounds.getCenterY()));
-                } else {
-                    // store the points back into the model
-                    List<?> points =
-                        ((JEdgeView) view).getCell().getVisuals().getPoints();
-                    if (points != null) {
-                        List<Point2D> newPoints =
-                            new ArrayList<Point2D>(points.size());
-                        for (Object p : points) {
-                            if (p instanceof CellView) {
-                                Rectangle2D bounds = ((CellView) p).getBounds();
-                                Point2D point = new Point2D.Double();
-                                point.setLocation(bounds.getCenterX(),
-                                    bounds.getCenterY());
-                                newPoints.add(point);
-                            } else {
-                                newPoints.add((Point2D) p);
-                            }
-                        }
-                        visuals.setPoints(newPoints);
-                    }
                 }
                 change.put(cell, visuals.getAttributes());
                 cell.setLayoutable(false);

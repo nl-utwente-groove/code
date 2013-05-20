@@ -96,11 +96,11 @@ public enum VisualKey {
     LINE_STYLE(LineStyle.class, LineStyle.ORTHOGONAL, CONTROLLED),
     /** Line width. Defaults to {@code 1}. */
     LINE_WIDTH(Float.class, 1f, DERIVED),
-    /** Node position. */
+    /** Node position, corresponding to the centre of the node bounds. */
     NODE_POS(Point2D.class, new Point2D.Double(10, 10), CONTROLLED),
     /** Node shape. Defaults to {@link NodeShape#RECTANGLE} */
     NODE_SHAPE(NodeShape.class, NodeShape.RECTANGLE, DERIVED),
-    /** Node bounds. */
+    /** Size of the node inscription. The rendered node adds insets to the size. */
     NODE_SIZE(Dimension2D.class, new Dimension(19, 19), REFRESHABLE),
     /** Node opacity. Defaults to {@code false}. */
     OPAQUE(Boolean.class, false, DERIVED),

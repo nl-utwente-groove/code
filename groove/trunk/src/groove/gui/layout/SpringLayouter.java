@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public class SpringLayouter extends AbstractLayouter {
     /** Constructs a template spring layouter. */
-    public SpringLayouter() {
+    private SpringLayouter() {
         super(ACTION_NAME);
     }
 
@@ -100,19 +100,15 @@ public class SpringLayouter extends AbstractLayouter {
         }
         // initialise the edge fragment arrays
         // Object[] graphEdges = jgraph.getEdges(jgraph.getRoots());
-        List<LayoutNode> edgeSourceList =
-            new LinkedList<LayoutNode>();
-        List<LayoutNode> edgeTargetList =
-            new LinkedList<LayoutNode>();
+        List<LayoutNode> edgeSourceList = new LinkedList<LayoutNode>();
+        List<LayoutNode> edgeTargetList = new LinkedList<LayoutNode>();
         for (int i = 0; i < this.jmodel.getRootCount(); i++) {
             JCell<?> jCell = (JCell<?>) this.jmodel.getRootAt(i);
             if (jCell instanceof JEdge && jCell.getVisuals().isVisible()
                 && !jCell.isGrayedOut()) {
                 JEdge<?> jEdge = (JEdge<?>) jCell;
-                LayoutNode source =
-                    this.layoutMap.get(jEdge.getSourceVertex());
-                LayoutNode target =
-                    this.layoutMap.get(jEdge.getTargetVertex());
+                LayoutNode source = this.layoutMap.get(jEdge.getSourceVertex());
+                LayoutNode target = this.layoutMap.get(jEdge.getTargetVertex());
                 if (source != null && target != null) {
                     edgeSourceList.add(source);
                     edgeTargetList.add(target);
@@ -344,6 +340,8 @@ public class SpringLayouter extends AbstractLayouter {
      */
     private float rigidity = DEFAULT_RIGIDITY;
 
+    /** The prototype instance of this layouter. */
+    public static final SpringLayouter PROTOTYPE = new SpringLayouter();
     /** Name of this layouter. */
     public static final String ACTION_NAME = "Spring layout";
 

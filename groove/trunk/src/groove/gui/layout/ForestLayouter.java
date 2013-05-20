@@ -16,11 +16,17 @@
  */
 package groove.gui.layout;
 
+import groove.control.CtrlAut;
+import groove.control.CtrlState;
 import groove.graph.EdgeComparator;
 import groove.graph.NodeComparator;
+import groove.gui.jgraph.CtrlJGraph;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.JVertex;
+import groove.gui.jgraph.LTSJGraph;
+import groove.gui.jgraph.LTSJModel;
 import groove.util.Pair;
 import groove.util.collect.CollectionOfCollections;
 import groove.util.collect.NestedIterator;
@@ -28,6 +34,7 @@ import groove.util.collect.TransformIterator;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -47,25 +54,10 @@ import org.jgraph.graph.EdgeView;
  * @version $Revision$
  */
 public class ForestLayouter extends AbstractLayouter {
-    /** Name of the layouter. */
-    static public final String ACTION_NAME = "Forest layout";
-    /**
-     * The minimum horizontal space to between child nodes, not including node
-     * width
-     */
-    static public final int MIN_CHILD_DISTANCE = 60;
-    /**
-     * The minimum horizontal space to between arbitrary nodes, not including
-     * node width
-     */
-    static public final int MIN_NODE_DISTANCE = 40;
-    /** The vertical space between levels, excluding the node height. */
-    static public final int VERTICAL_SPACE = 40;
-
     /**
      * Constructs a factory instance of this layouter.
      */
-    public ForestLayouter() {
+    private ForestLayouter() {
         super(ACTION_NAME);
     }
 
@@ -105,7 +97,20 @@ public class ForestLayouter extends AbstractLayouter {
      * cells of the underlying {@link JGraph}.
      */
     protected Collection<?> getSuggestedRoots() {
-        return Arrays.asList(this.jGraph.getSelectionCells());
+        Collection<?> result;
+        JGraph<?> jGraph = this.jGraph;
+        if (jGraph instanceof LTSJGraph) {
+            LTSJModel jModel = ((LTSJGraph) jGraph).getModel();
+            result =
+                Collections.singleton(jModel.getJCellForNode(jModel.getGraph().startState()));
+        } else if (jGraph instanceof CtrlJGraph) {
+            JModel<CtrlAut> jModel = ((CtrlJGraph) jGraph).getModel();
+            CtrlState start = jModel.getGraph().getStart();
+            result = Collections.singleton(jModel.getJCellForNode(start));
+        } else {
+            result = Arrays.asList(this.jGraph.getSelectionCells());
+        }
+        return result;
     }
 
     /**
@@ -434,4 +439,21 @@ public class ForestLayouter extends AbstractLayouter {
 
     private final static NodeComparator nodeComp = NodeComparator.instance();
     private final static EdgeComparator edgeComp = EdgeComparator.instance();
+
+    /** Prototype instance of the forest layouter. */
+    public static final ForestLayouter PROTOTYPE = new ForestLayouter();
+    /** Name of the layouter. */
+    static public final String ACTION_NAME = "Forest layout";
+    /**
+     * The minimum horizontal space to between child nodes, not including node
+     * width
+     */
+    static public final int MIN_CHILD_DISTANCE = 60;
+    /**
+     * The minimum horizontal space to between arbitrary nodes, not including
+     * node width
+     */
+    static public final int MIN_NODE_DISTANCE = 40;
+    /** The vertical space between levels, excluding the node height. */
+    static public final int VERTICAL_SPACE = 40;
 }

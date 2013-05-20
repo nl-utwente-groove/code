@@ -253,12 +253,15 @@ public class JEdgeView extends EdgeView {
 
     /** Returns the perimeter point where the end of this edge has to connect.
      * @param vertex the end vertex
-     * @param source if {@code true}, we're computing this for the edge target
+     * @param source if {@code true}, we're computing this for the edge source,
+     * otherwise for the edge target
      */
     private Point2D getEndPoint(CellView vertex, boolean source) {
         JVertexView vertexView = (JVertexView) vertex;
         Point2D center = getCenterPoint(vertex);
         Point2D nextPoint = getNearestPoint(source);
+        // adjust the centre and next point depending on the number of
+        // parallel edges, as determined by the parameter rank
         Point2D adjustedCenter;
         Point2D adjustedNextPoint;
         int parRank = source ? getParRank() : -getParRank();

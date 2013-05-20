@@ -28,6 +28,7 @@ import org.jgraph.graph.Edge.Routing;
 import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphLayoutCache;
+import org.jgraph.graph.VertexView;
 
 /**
  * Edge routing class that only touches loops with fewer than two 
@@ -40,24 +41,34 @@ final class LoopRouting implements Routing {
         return NO_PREFERENCE;
     }
 
-    public List<?> route(GraphLayoutCache cache, EdgeView edge) {
+    public List<?> route(GraphLayoutCache cache, EdgeView edgeView) {
         List<Point2D> result = null;
-        if (isRoutable(edge)) {
-            JEdge<?> cell = (JEdge<?>) edge.getCell();
-            VisualMap visuals = cell.getVisuals();
-            Point2D startPoint = edge.getPoint(0);
-            Point2D endPoint = edge.getPoint(1);
-            result = new ArrayList<Point2D>(4);
-            result.add(startPoint);
-            // test if end point is within node bounds
-            Rectangle2D sourceBounds =
-                edge.getSource().getParentView().getBounds();
+        if (isRoutable(edgeView)) {
+            JEdge<?> jEdge = (JEdge<?>) edgeView.getCell();
+            // find out the source bounds
+            VertexView sourceView =
+                (VertexView) edgeView.getSource().getParentView();
+            // first refresh the source view, otherwise the view bounds
+            // might be out of date
+            sourceView.refresh(cache, cache, true);
+            jEdge.getJGraph().updateAutoSize(sourceView);
+            Rectangle2D sourceBounds = sourceView.getBounds();
+            VisualMap visuals = jEdge.getVisuals();
+            Point2D startPoint = edgeView.getPoint(0);
+            Point2D endPoint;
+            if (edgeView.getPointCount() == 2) {
+                endPoint = startPoint;
+            } else {
+                endPoint = edgeView.getPoint(1);
+            }
             if (startPoint.equals(endPoint) || sourceBounds.contains(endPoint)) {
                 // modify end point so it lies outside node bounds
                 endPoint =
-                    new Point2D.Double(endPoint.getX()
-                        + sourceBounds.getWidth(), endPoint.getY());
+                    new Point2D.Double(sourceBounds.getMaxX()
+                        + DEFAULT_LOOP_SIZE, endPoint.getY());
             }
+            result = new ArrayList<Point2D>(4);
+            result.add(startPoint);
             // add first intermediate point
             Point2D newPoint =
                 createPointPerpendicular(startPoint, endPoint, true);
@@ -71,27 +82,26 @@ final class LoopRouting implements Routing {
             }
             result.add(startPoint);
             visuals.setPoints(result);
-            visuals.setLineStyle(LineStyle.BEZIER);
-            GraphConstants.setPoints(edge.getAllAttributes(), result);
+            GraphConstants.setPoints(edgeView.getAllAttributes(), result);
         }
         return result;
     }
 
     /** Determines if this edge should be routed. */
-    private boolean isRoutable(EdgeView edge) {
-        if (edge.getSource() == null) {
+    private boolean isRoutable(EdgeView edgeView) {
+        if (edgeView.getSource() == null) {
             return false;
         }
-        if (!edge.isLoop()) {
+        if (!edgeView.isLoop()) {
             return false;
         }
-        JEdge<?> jEdge = (JEdge<?>) edge.getCell();
+        JEdge<?> jEdge = (JEdge<?>) edgeView.getCell();
         if (jEdge.getJGraph().isLayouting()) {
             return false;
         }
         VisualMap visuals = jEdge.getVisuals();
         boolean isManhattan = visuals.getLineStyle() == LineStyle.MANHATTAN;
-        return edge.getPointCount() <= (isManhattan ? 2 : 3);
+        return edgeView.getPointCount() <= (isManhattan ? 2 : 3);
     }
 
     /**
@@ -129,4 +139,6 @@ final class LoopRouting implements Routing {
         return new Point(Math.max(x, 0), Math.max(y, 0));
     }
 
+    /** Distance of the loop's control point from the node bound's right edge. */
+    private static final int DEFAULT_LOOP_SIZE = 35;
 }

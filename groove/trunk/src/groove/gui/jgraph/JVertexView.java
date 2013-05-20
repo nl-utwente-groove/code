@@ -144,7 +144,6 @@ public class JVertexView extends VertexView {
         Rectangle2D bounds = getBounds();
         // revert to the actual borders by subtracting the
         // extra border space
-        bounds = getBounds();
         float extra = EXTRA_BORDER_SPACE - getCellVisuals().getLineWidth();
         bounds =
             new Rectangle2D.Double(bounds.getMinX() + extra, bounds.getMinY()

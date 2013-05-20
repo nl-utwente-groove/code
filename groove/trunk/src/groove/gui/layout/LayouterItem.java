@@ -52,7 +52,9 @@ public class LayouterItem implements Layouter {
                 new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
-                        LayouterItem.this.facade = new JGraphFacade(jGraph);
+                        LayouterItem.this.facade =
+                            jGraph.getModel() == null ? null
+                                    : new JGraphFacade(jGraph);
                     }
                 });
         }
@@ -70,9 +72,11 @@ public class LayouterItem implements Layouter {
 
     @Override
     public void start() {
-        prepareLayouting();
-        run();
-        finishLayouting();
+        if (this.facade != null) {
+            prepareLayouting();
+            run();
+            finishLayouting();
+        }
     }
 
     /** Basic getter method. */
