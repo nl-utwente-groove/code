@@ -23,12 +23,6 @@ import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Simulator;
-import groove.gui.layout.Layouter;
-import groove.gui.layout.SpringLayouter;
-import groove.gui.menu.SetLayoutMenu;
-
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * This is the JGraph representation of a ControlAutomaton.
@@ -44,8 +38,6 @@ public class CtrlJGraph extends JGraph<CtrlAut> {
     public CtrlJGraph(Simulator simulator) {
         super(simulator);
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
-        getSetLayoutMenu().selectLayoutAction(
-            createInitialLayouter().newInstance((this)));
         setConnectable(false);
         setDisconnectable(false);
         setEnabled(true);
@@ -74,58 +66,6 @@ public class CtrlJGraph extends JGraph<CtrlAut> {
     @Override
     public boolean isShowLoopsAsNodeLabels() {
         return false;
-    }
-
-    /**
-     * Creates the layouter to be used at construction time.
-     */
-    protected Layouter createInitialLayouter() {
-        return new MyForestLayouter();
-    }
-
-    /**
-     * Overwrites the menu, so the forest layouter takes the Control start state
-     * as its root.
-     */
-    @Override
-    public SetLayoutMenu createSetLayoutMenu() {
-        SetLayoutMenu result = new SetLayoutMenu(this, new SpringLayouter());
-        result.addLayoutItem(createInitialLayouter());
-        return result;
-    }
-
-    private class MyForestLayouter extends groove.gui.layout.ForestLayouter {
-        /**
-         * Creates a prototype layouter
-         */
-        public MyForestLayouter() {
-            super();
-        }
-
-        /**
-         * Creates a new instance, for a given {@link JGraph}.
-         */
-        public MyForestLayouter(String name, CtrlJGraph jgraph) {
-            super(name, jgraph);
-        }
-
-        /**
-         * This method returns a singleton set consisting of the LTS start
-         * state.
-         */
-        @Override
-        protected Collection<?> getSuggestedRoots() {
-            CtrlState start = ((CtrlAut) getModel().getGraph()).getStart();
-            return Collections.singleton(getModel().getJCellForNode(start));
-        }
-
-        /**
-         * This implementation returns a {@link MyForestLayouter}.
-         */
-        @Override
-        public Layouter newInstance(JGraph<?> jGraph) {
-            return new MyForestLayouter(getName(), (CtrlJGraph) jGraph);
-        }
     }
 
     @Override

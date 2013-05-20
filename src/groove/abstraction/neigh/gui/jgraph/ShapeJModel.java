@@ -56,11 +56,6 @@ public class ShapeJModel extends JModel<Shape> {
     }
 
     @Override
-    public Shape getGraph() {
-        return (Shape) super.getGraph();
-    }
-
-    @Override
     public void loadGraph(Shape graph) {
         // Prepare the object fields.
         setVetoFireGraphChanged(true);

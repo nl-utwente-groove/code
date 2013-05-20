@@ -841,7 +841,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
     /** Prototype factory method to create a layouter for this JGraph. */
     protected Layouter createLayouter() {
-        return new ForestLayouter();
+        return ForestLayouter.PROTOTYPE;
     }
 
     /**
@@ -1313,9 +1313,13 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
             if (jCell instanceof JEdge) {
                 VisualMap visuals = jCell.getVisuals();
                 List<Point2D> points = visuals.getPoints();
-                visuals.setPoints(Arrays.asList(points.get(0),
-                    points.get(points.size() - 1)));
-                change.put(jCell, visuals.getAttributes());
+                // don't make the change directly in the cell,
+                // as this messes up the undo history
+                List<Point2D> newPoints =
+                    Arrays.asList(points.get(0), points.get(points.size() - 1));
+                AttributeMap newAttributes = new AttributeMap();
+                GraphConstants.setPoints(newAttributes, newPoints);
+                change.put(jCell, newAttributes);
             }
         }
         getModel().edit(change, null, null, null);
@@ -1329,8 +1333,6 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                 // start the layouting
                 getModel().beginUpdate();
             } else {
-                // end the layouting
-                getModel().endUpdate();
                 // reroute the loops
                 GraphLayoutCache cache = getGraphLayoutCache();
                 for (CellView view : cache.getRoots()) {
@@ -1338,6 +1340,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
                         view.update(cache);
                     }
                 }
+                // end the layouting
+                getModel().endUpdate();
             }
         }
     }
@@ -1409,7 +1413,7 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
 
     /** Layouter used if only part of the model should be layed out. */
     private final Layouter incrementalLayouter =
-        new SpringLayouter().newInstance(this);
+        SpringLayouter.PROTOTYPE.newInstance(this);
 
     /** The factor by which the zoom is adapted. */
     public static final float ZOOM_FACTOR = 1.4f;

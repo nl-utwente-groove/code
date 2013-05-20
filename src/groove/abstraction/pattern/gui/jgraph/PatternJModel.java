@@ -24,9 +24,9 @@ import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.graph.Node;
-import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JModel;
+import groove.gui.jgraph.JVertex;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,11 +80,6 @@ public class PatternJModel extends JModel<AbstractPatternGraph<?,?>> {
     // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
-
-    @Override
-    public AbstractPatternGraph<?,?> getGraph() {
-        return (AbstractPatternGraph<?,?>) super.getGraph();
-    }
 
     @Override
     protected void prepareLoad(AbstractPatternGraph<?,?> graph) {

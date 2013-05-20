@@ -26,11 +26,8 @@ import groove.graph.GraphRole;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.Simulator;
-import groove.gui.layout.Layouter;
-import groove.gui.layout.SpringLayouter;
 import groove.gui.menu.ModelCheckingMenu;
 import groove.gui.menu.MyJMenu;
-import groove.gui.menu.SetLayoutMenu;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
@@ -43,7 +40,6 @@ import java.awt.event.ActionEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -169,17 +165,6 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
         result.add(getActions().getGotoStartStateAction());
         result.add(getActions().getGotoFinalStateAction());
         result.add(getScrollToCurrentAction());
-        return result;
-    }
-
-    /**
-     * Overwrites the menu, so the forest layouter takes the LTS start state as
-     * its root.
-     */
-    @Override
-    public SetLayoutMenu createSetLayoutMenu() {
-        SetLayoutMenu result = new SetLayoutMenu(this, new MyForestLayouter());
-        result.addLayoutItem(new SpringLayouter());
         return result;
     }
 
@@ -427,44 +412,6 @@ public class LTSJGraph extends JGraph<GTS> implements Serializable {
          */
         public void setState(GraphState node) {
             putValue(Action.NAME, Options.SCROLL_TO_ACTION_NAME + " state");
-        }
-    }
-
-    /**
-     * A specialisation of the forest layouter that takes the LTS start graph as
-     * its suggested root.
-     */
-    private class MyForestLayouter extends groove.gui.layout.ForestLayouter {
-        /**
-         * Creates a prototype layouter
-         */
-        public MyForestLayouter() {
-            super();
-        }
-
-        /**
-         * Creates a new instance, for a given {@link JGraph}.
-         */
-        public MyForestLayouter(String name, JGraph<?> jgraph) {
-            super(name, jgraph);
-        }
-
-        /**
-         * This method returns a singleton set consisting of the LTS start
-         * state.
-         */
-        @Override
-        protected Collection<?> getSuggestedRoots() {
-            LTSJModel jModel = getModel();
-            return Collections.singleton(jModel.getJCellForNode(jModel.getGraph().startState()));
-        }
-
-        /**
-         * This implementation returns a {@link MyForestLayouter}.
-         */
-        @Override
-        public Layouter newInstance(JGraph<?> jGraph) {
-            return new MyForestLayouter(getName(), jGraph);
         }
     }
 

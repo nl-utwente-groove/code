@@ -119,7 +119,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      * Returns the underlying Graph of this GraphModel.
      * @ensure result != null
      */
-    public Graph getGraph() {
+    public G getGraph() {
         return this.graph;
     }
 
@@ -242,7 +242,7 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
      */
     public void setLayoutable(boolean layoutable) {
         for (JCell<G> jCell : getRoots()) {
-            jCell.setLayoutable(true);
+            jCell.setLayoutable(layoutable);
         }
     }
 

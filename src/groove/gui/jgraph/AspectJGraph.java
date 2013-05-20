@@ -31,13 +31,10 @@ import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.display.DisplayKind;
-import groove.gui.layout.ForestLayouter;
-import groove.gui.layout.SpringLayouter;
 import groove.gui.look.LineStyle;
 import groove.gui.look.VisualKey;
 import groove.gui.look.VisualMap;
 import groove.gui.menu.MyJMenu;
-import groove.gui.menu.SetLayoutMenu;
 import groove.gui.tree.RuleLevelTree;
 
 import java.awt.Point;
@@ -221,18 +218,6 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
         }
         result.addMenuItems(super.createExportMenu());
         return result;
-    }
-
-    @Override
-    public SetLayoutMenu createSetLayoutMenu() {
-        if (this.editing) {
-            SetLayoutMenu result =
-                new SetLayoutMenu(this, new SpringLayouter());
-            result.addLayoutItem(new ForestLayouter());
-            return result;
-        } else {
-            return super.createSetLayoutMenu();
-        }
     }
 
     /**

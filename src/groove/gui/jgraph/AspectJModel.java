@@ -131,12 +131,6 @@ final public class AspectJModel extends JModel<AspectGraph> {
         return (List<? extends AspectJCell>) super.getRoots();
     }
 
-    /** Specialises the return type. */
-    @Override
-    public AspectGraph getGraph() {
-        return (AspectGraph) super.getGraph();
-    }
-
     /** Sets a grammar model, with respect to which typing is resolved. */
     public void setGrammar(GrammarModel grammar) {
         assert (this.grammar == null || this.grammar == grammar)

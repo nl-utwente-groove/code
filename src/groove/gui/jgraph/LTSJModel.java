@@ -42,12 +42,6 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
         return (LTSJGraph) super.getJGraph();
     }
 
-    /* Specialises the return type. */
-    @Override
-    public GTS getGraph() {
-        return (GTS) super.getGraph();
-    }
-
     /**
      * If the super call returns <code>null</code>, use
      * {@link #DEFAULT_LTS_NAME}.

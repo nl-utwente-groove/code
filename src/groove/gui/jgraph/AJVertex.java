@@ -77,7 +77,14 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
      */
     @Override
     public DefaultPort getPort() {
-        return (DefaultPort) getFirstChild();
+        DefaultPort result = null;
+        for (Object child : getChildren()) {
+            if (child instanceof DefaultPort) {
+                result = (DefaultPort) child;
+                break;
+            }
+        }
+        return result;
     }
 
     /** 
