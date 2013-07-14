@@ -253,6 +253,10 @@ public class Condition implements Fixable {
                 getRule().addSubRule(subRule);
             }
         }
+        // A non-embargo subcondition may be disjunctively interpreted
+        if (!getOp().isConjunctive() && condition.getOp() != Op.NOT) {
+            this.disjunctCount++;
+        }
     }
 
     /**
@@ -409,7 +413,7 @@ public class Condition implements Fixable {
         }
         // first collect the count nodes of subconditions, if this node is conjunctive
         // or there is only one subcondition
-        if (getOp().isConjunctive() || getSubConditions().size() == 1) {
+        if (this.disjunctCount <= 1) {
             for (Condition subCondition : getSubConditions()) {
                 VariableNode countNode = subCondition.getCountNode();
                 // check if the condition has a non-constant count node
@@ -732,6 +736,8 @@ public class Condition implements Fixable {
     private final Collection<Condition> subConditions =
         new ArrayList<Condition>();
 
+    /** Number of disjunctively interpreted subconditions. */
+    private int disjunctCount;
     /** Flag indicating if this condition is now fixed, i.e., unchangeable. */
     private boolean fixed;
     /** Flag indicating if this condition is in the process of fixing. */
