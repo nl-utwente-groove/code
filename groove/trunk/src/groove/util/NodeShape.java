@@ -191,20 +191,20 @@ public enum NodeShape {
             } else {
                 // line from (0,0) to (dx,dy) described by y=r*x with r=dy/dx
                 double r = dy / dx;
-                // top right edge described by y = -s*x + h with s=h/w
+                // top right edge described by y = s*x + h with s=h/w
                 double s = h / w;
                 if (dx < 0 && dy < 0) {
-                    // top left edge; y = s*x + h
-                    x = h / (r - s);
-                } else if (dy < 0) {
-                    // top right edge; y = -s*x + h
-                    x = h / (r + s);
-                } else if (dx < 0) {
-                    // bottom left edge; y = s*x - h
-                    x = -h / (r - s);
-                } else {
-                    // bottom right edge; y = s*x - h
+                    // top left edge; y = -s*x - h
                     x = -h / (r + s);
+                } else if (dy < 0) {
+                    // top right edge; y = s*x - h
+                    x = -h / (r - s);
+                } else if (dx < 0) {
+                    // bottom left edge; y = s*x + h
+                    x = h / (r - s);
+                } else {
+                    // bottom right edge; y = -s*x + h
+                    x = h / (r + s);
                 }
                 y = r * x;
             }
