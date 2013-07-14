@@ -30,6 +30,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.MouseEvent;
@@ -37,6 +38,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JLabel;
@@ -486,12 +488,69 @@ public class JEdgeView extends EdgeView {
          */
         @Override
         protected Shape createShape() {
+            Shape result;
             if (this.lineStyle == Values.STYLE_MANHATTAN
                 && this.view.getPointCount() > 2) {
-                return createManhattanShape();
+                result = createManhattanShape();
+            } else if (this.view.isLoop() && this.view.getPointCount() == 3) {
+                @SuppressWarnings({"cast", "unchecked"})
+                List<Object> points = (List<Object>) this.view.getPoints();
+                List<Object> oldPoints = new ArrayList<Object>(points);
+                List<Object> newPoints = new ArrayList<Object>(points);
+                Point2D first = this.view.getPoint(0);
+                Point2D second = this.view.getPoint(1);
+                Point2D leftPoint =
+                    createPointPerpendicular(first, second, true);
+                Point2D rightPoint =
+                    createPointPerpendicular(first, second, false);
+                newPoints.set(1, leftPoint);
+                newPoints.add(2, rightPoint);
+                // call the super method with the fake points
+                points.clear();
+                points.addAll(newPoints);
+                result = super.createShape();
+                points.clear();
+                points.addAll(oldPoints);
             } else {
-                return super.createShape();
+                result = super.createShape();
             }
+            return result;
+        }
+
+        /**
+         * Creates and returns a point perpendicular to the line between two points,
+         * at a distance to the second point that is a fraction of the length of the
+         * original line. A boolean flag controls the direction to which the
+         * perpendicular point sticks out from the original line.
+         * @param p1 the first boundary point
+         * @param p2 the first boundary point
+         * @param left flag to indicate whether the new point is to stick out on the
+         *        left or right hand side of the line between <tt>p1</tt> and
+         *        <tt>p2</tt>.
+         * @return new point on the perpendicular of the line between <tt>p1</tt>
+         *         and <tt>p2</tt>
+         */
+        private Point createPointPerpendicular(Point2D p1, Point2D p2,
+                boolean left) {
+            double distance = p1.distance(p2);
+            int midX = (int) (p1.getX() + p2.getX()) / 2;
+            int midY = (int) (p1.getY() + p2.getY()) / 2;
+            // int offset = (int) (5 + distance / 2 + 20 * Math.random());
+            int x, y;
+            if (distance == 0) {
+                x = midX + 20;
+                y = midY + 20;
+            } else {
+                int offset = (int) (5 + distance / 4);
+                if (left) {
+                    offset = -offset;
+                }
+                double xDelta = p1.getX() - p2.getX();
+                double yDelta = p1.getY() - p2.getY();
+                x = (int) (p2.getX() + offset * yDelta / distance);
+                y = (int) (p2.getY() - offset * xDelta / distance);
+            }
+            return new Point(Math.max(x, 0), Math.max(y, 0));
         }
 
         /** Creates a shape for the {@link LineStyle#MANHATTAN} line style. */

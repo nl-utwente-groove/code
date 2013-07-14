@@ -18,7 +18,6 @@ package groove.gui.look;
 
 import groove.gui.jgraph.JEdge;
 
-import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -38,7 +37,7 @@ import org.jgraph.graph.VertexView;
  */
 final class LoopRouting implements Routing {
     public int getPreferredLineStyle(EdgeView edge) {
-        return NO_PREFERENCE;
+        return GraphConstants.STYLE_SPLINE;
     }
 
     public List<?> route(GraphLayoutCache cache, EdgeView edgeView) {
@@ -55,32 +54,17 @@ final class LoopRouting implements Routing {
             Rectangle2D sourceBounds = sourceView.getBounds();
             VisualMap visuals = jEdge.getVisuals();
             Point2D startPoint = edgeView.getPoint(0);
-            Point2D endPoint;
-            if (edgeView.getPointCount() == 2) {
-                endPoint = startPoint;
-            } else {
-                endPoint = edgeView.getPoint(1);
-            }
-            if (startPoint.equals(endPoint) || sourceBounds.contains(endPoint)) {
+            Point2D midPoint = edgeView.getPoint(1);
+            if (startPoint.equals(midPoint) || sourceBounds.contains(midPoint)) {
                 // modify end point so it lies outside node bounds
-                endPoint =
-                    new Point2D.Double(sourceBounds.getMaxX()
-                        + DEFAULT_LOOP_SIZE, endPoint.getY());
+                midPoint.setLocation(
+                    sourceBounds.getMaxX() + DEFAULT_LOOP_SIZE, midPoint.getY());
             }
-            result = new ArrayList<Point2D>(4);
+            Point2D endPoint = edgeView.getPoint(edgeView.getPointCount() - 1);
+            result = new ArrayList<Point2D>(3);
             result.add(startPoint);
-            // add first intermediate point
-            Point2D newPoint =
-                createPointPerpendicular(startPoint, endPoint, true);
-            result.add(1, newPoint);
-            if (visuals.getLineStyle() != LineStyle.MANHATTAN) {
-                // in any but manhattan style, add second intermediate point
-                newPoint =
-                    createPointPerpendicular(startPoint, endPoint, false);
-                result.add(1, newPoint);
-                visuals.setLineStyle(LineStyle.BEZIER);
-            }
-            result.add(startPoint);
+            result.add(midPoint);
+            result.add(endPoint);
             visuals.setPoints(result);
             GraphConstants.setPoints(edgeView.getAllAttributes(), result);
         }
@@ -99,44 +83,7 @@ final class LoopRouting implements Routing {
         if (jEdge.getJGraph().isLayouting()) {
             return false;
         }
-        VisualMap visuals = jEdge.getVisuals();
-        boolean isManhattan = visuals.getLineStyle() == LineStyle.MANHATTAN;
-        return edgeView.getPointCount() <= (isManhattan ? 2 : 3);
-    }
-
-    /**
-     * Creates and returns a point perpendicular to the line between two points,
-     * at a distance to the second point that is a fraction of the length of the
-     * original line. A boolean flag controls the direction to which the
-     * perpendicular point sticks out from the original line.
-     * @param p1 the first boundary point
-     * @param p2 the first boundary point
-     * @param left flag to indicate whether the new point is to stick out on the
-     *        left or right hand side of the line between <tt>p1</tt> and
-     *        <tt>p2</tt>.
-     * @return new point on the perpendicular of the line between <tt>p1</tt>
-     *         and <tt>p2</tt>
-     */
-    private Point createPointPerpendicular(Point2D p1, Point2D p2, boolean left) {
-        double distance = p1.distance(p2);
-        int midX = (int) (p1.getX() + p2.getX()) / 2;
-        int midY = (int) (p1.getY() + p2.getY()) / 2;
-        // int offset = (int) (5 + distance / 2 + 20 * Math.random());
-        int x, y;
-        if (distance == 0) {
-            x = midX + 20;
-            y = midY + 20;
-        } else {
-            int offset = (int) (5 + distance / 4);
-            if (left) {
-                offset = -offset;
-            }
-            double xDelta = p1.getX() - p2.getX();
-            double yDelta = p1.getY() - p2.getY();
-            x = (int) (p2.getX() + offset * yDelta / distance);
-            y = (int) (p2.getY() - offset * xDelta / distance);
-        }
-        return new Point(Math.max(x, 0), Math.max(y, 0));
+        return edgeView.getPointCount() <= 2;
     }
 
     /** Distance of the loop's control point from the node bound's right edge. */
