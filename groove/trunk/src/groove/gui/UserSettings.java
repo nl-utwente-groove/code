@@ -114,8 +114,14 @@ public class UserSettings {
 
     private static void applyDisplaySettings(final Simulator simulator) {
         String display = userPrefs.get(DISPLAY_KEY, "");
-        final DisplayKind kind =
-            display.isEmpty() ? null : DisplayKind.valueOf(display);
+        DisplayKind kindValue = null;
+        if (!display.isEmpty()) {
+            try {
+                kindValue = DisplayKind.valueOf(display);
+            } catch (IllegalArgumentException exc) {
+                // do nothing
+            }
+        }
         int stateBoundValue;
         try {
             stateBoundValue =
@@ -123,6 +129,7 @@ public class UserSettings {
         } catch (NumberFormatException e) {
             stateBoundValue = 1000;
         }
+        final DisplayKind kind = kindValue;
         final int stateBound = stateBoundValue;
         if (kind != null) {
             SwingUtilities.invokeLater(new Runnable() {
