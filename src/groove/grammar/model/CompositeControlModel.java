@@ -134,6 +134,7 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
      * Returns the (non-{@code null}) set of recipe names calling a given rule.
      */
     public Set<String> getRecipes(String rule) {
+        synchronise();
         Set<String> result = getRuleRecipeMap().get(rule);
         if (result == null) {
             result = Collections.emptySet();
