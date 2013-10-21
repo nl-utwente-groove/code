@@ -23,6 +23,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jgraph.graph.Edge;
 import org.jgraph.graph.Edge.Routing;
 import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphConstants;
@@ -37,7 +38,11 @@ import org.jgraph.graph.VertexView;
  */
 final class LoopRouting implements Routing {
     public int getPreferredLineStyle(EdgeView edge) {
-        return GraphConstants.STYLE_SPLINE;
+        if (edge.isLoop()) {
+            return GraphConstants.STYLE_SPLINE;
+        } else {
+            return Edge.Routing.NO_PREFERENCE;
+        }
     }
 
     public List<?> route(GraphLayoutCache cache, EdgeView edgeView) {
