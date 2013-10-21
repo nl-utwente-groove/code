@@ -493,8 +493,8 @@ public class JEdgeView extends EdgeView {
                 && this.view.getPointCount() > 2) {
                 result = createManhattanShape();
             } else if (this.view.isLoop() && this.view.getPointCount() == 3) {
-                @SuppressWarnings({"cast", "unchecked"})
-                List<Object> points = (List<Object>) this.view.getPoints();
+                @SuppressWarnings({"unchecked"})
+                List<Object> points = this.view.getPoints();
                 List<Object> oldPoints = new ArrayList<Object>(points);
                 List<Object> newPoints = new ArrayList<Object>(points);
                 Point2D first = this.view.getPoint(0);
