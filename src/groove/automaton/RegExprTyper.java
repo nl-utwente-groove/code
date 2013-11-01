@@ -115,13 +115,17 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         TypeLabel typeLabel = expr.toTypeLabel();
         if (this.typeGraph.isNodeType(typeLabel)) {
             for (TypeNode subType : this.typeGraph.getNode(typeLabel).getSubtypes()) {
-                result.add(subType, subType);
+                if (!subType.isAbstract()) {
+                    result.add(subType, subType);
+                }
             }
         } else {
             for (TypeEdge edgeType : this.typeGraph.edgeSet(typeLabel)) {
-                Set<TypeNode> targetTypes = edgeType.target().getSubtypes();
-                for (TypeNode sourceType : edgeType.source().getSubtypes()) {
-                    result.add(sourceType, targetTypes);
+                if (!edgeType.isAbstract()) {
+                    Set<TypeNode> targetTypes = edgeType.target().getSubtypes();
+                    for (TypeNode sourceType : edgeType.source().getSubtypes()) {
+                        result.add(sourceType, targetTypes);
+                    }
                 }
             }
         }
@@ -208,15 +212,11 @@ public class RegExprTyper implements RegExprCalculator<Result> {
     @Override
     public Result computeEmpty(Empty expr) {
         Result result = new Result();
-        // all node types with a common supertype can be unified
-        // find the highest types in the subtype ordering
+        // Nodes can be unified with sub- or supertypes
         for (TypeNode node : this.typeGraph.nodeSet()) {
-            if (node.getSupertypes().size() == 1) {
-                for (TypeNode node1 : node.getSubtypes()) {
-                    for (TypeNode node2 : node.getSubtypes()) {
-                        result.add(node1, node2);
-                    }
-                }
+            for (TypeNode node1 : node.getSubtypes()) {
+                result.add(node1, node);
+                result.add(node, node1);
             }
         }
         return result;
