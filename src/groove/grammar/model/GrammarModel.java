@@ -695,9 +695,19 @@ public class GrammarModel implements Observer {
     /**
      * Creates an instance based on a given file.
      * @param file the file to load the grammar from
+     * @throws IOException if the store exists  does not contain a grammar
+     */
+    static public GrammarModel newInstance(File file) throws IOException {
+        return newInstance(file, false);
+    }
+
+    /**
+     * Creates an instance based on a given file.
+     * @param file the file to load the grammar from
      * @param create if <code>true</code> and <code>file</code> does not yet
      *        exist, attempt to create it.
-     * @throws IOException if an error occurred while creating the store
+     * @throws IOException if an error occurred while creating the store, or
+     * if the store exists but does not contain a grammar
      */
     static public GrammarModel newInstance(File file, boolean create)
         throws IOException {
