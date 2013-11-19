@@ -33,7 +33,6 @@ import static groove.io.FileType.GRAMMAR_FILTER;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.GrammarModel;
-import groove.grammar.model.HostModel;
 import groove.grammar.model.ResourceKind;
 import groove.graph.Element;
 import groove.gui.SimulatorModel.Change;
@@ -826,12 +825,7 @@ public class Simulator implements SimulatorListener {
         StringBuffer title = new StringBuffer();
         GrammarModel grammar = getModel().getGrammar();
         if (grammar != null && grammar.getName() != null) {
-            title.append(grammar.getName());
-            HostModel startGraph = grammar.getStartGraphModel();
-            if (startGraph != null) {
-                title.append(TITLE_NAME_SEPARATOR);
-                title.append(startGraph.getFullName());
-            }
+            title.append(grammar.getId());
             if (!grammar.getStore().isModifiable()) {
                 title.append(" (read-only)");
             }
@@ -977,11 +971,6 @@ public class Simulator implements SimulatorListener {
      * Default name of an empty rule.
      */
     public static final String NEW_RULE_NAME = "newRule";
-
-    /**
-     * Separator between grammar name and start graph name in the frame title.
-     */
-    private static final String TITLE_NAME_SEPARATOR = "@";
 
     /** Name of this application. */
     private static final String APPLICATION_NAME = "Production Simulator";

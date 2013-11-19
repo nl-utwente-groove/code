@@ -86,6 +86,20 @@ public class GrammarModel implements Observer {
         return this.store.getName();
     }
 
+    /**
+     * Returns a string that can be used to identify the grammar model.
+     * The ID is composed from grammar name and start graph name(s);
+     */
+    public String getId() {
+        StringBuilder result = new StringBuilder(getName());
+        HostModel startGraph = getStartGraphModel();
+        if (startGraph != null) {
+            result.append("@");
+            result.append(startGraph.getFullName());
+        }
+        return result.toString();
+    }
+
     /** Returns the backing system store. */
     public SystemStore getStore() {
         return this.store;
