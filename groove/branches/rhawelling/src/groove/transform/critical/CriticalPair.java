@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2011 University of Twente
+ * Copyright 2003--2013 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -17,42 +17,49 @@
 package groove.transform.critical;
 
 import groove.grammar.Rule;
+import groove.grammar.host.DefaultHostGraph;
+import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleGraph;
+import groove.grammar.rule.RuleGraphMorphism;
 import groove.grammar.rule.RuleNode;
-import groove.grammar.type.TypeNode;
-import groove.transform.RuleApplication;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class CriticalPair {
 
-    private CriticalPair(RuleApplication app1, RuleApplication app2) {
-        this.app1 = app1;
-        this.app2 = app2;
+    private RuleGraph target;
+    private RuleGraphMorphism m1;
+    private RuleGraphMorphism m2;
+
+    public RuleGraph getTarget() {
+        return this.target;
     }
 
-    public static Set<CriticalPair> computeCriticalPairs(Rule r1, Rule r2) {
-        Set<CriticalPair> result = new HashSet<CriticalPair>();
-        RuleGraph l1 = r1.lhs();
-        RuleGraph l2 = r2.lhs();
+    public RuleGraphMorphism getM1() {
+        return this.m1;
+    }
 
-        //TODO ensure that l1 and l2 are disjoint
+    public RuleGraphMorphism getM2() {
+        return this.m2;
+    }
 
-        //Form the set of all Nodes for l1 and l2, we do this by taking the union of these sets
-        //(create a copy of l1.nodeSet(), and all all elements of l2.nodeSet())
-        Set<RuleNode> allNodes = new HashSet<RuleNode>(l1.nodeSet());
-        allNodes.addAll(l2.nodeSet());
+    private CriticalPair(RuleGraph target, RuleGraphMorphism m1,
+            RuleGraphMorphism m2) {
+        this.target = target;
+        this.m1 = m1;
+        this.m2 = m2;
+    }
 
-        //The set of all possible overlaps, every element is a possible overlap
-        //Every overlap is a set of sets, each element of an overlap is a nonempty set (combination) of rulenodes
-        Set<Set<Combination>> overlapSet = formAllOverlaps(allNodes);
+    private CriticalPair(CriticalPair other) {
+        this.target = other.target.clone();
+        this.m1 = other.m1.clone();
+        this.m2 = other.m2.clone();
+    }
 
-        //TODO for all combinations in curPairs create host graphs with matches to form a potential critical pairs
-
-        //TODO check if the potential pairs are actually in conflict
-
-        return result;
+    @Override
+    public CriticalPair clone() {
+        return new CriticalPair(this);
     }
 
     /**
@@ -61,93 +68,99 @@ public class CriticalPair {
      * @param nodes the nodes for which overlappings should be computed
      * @return All possble overlappings of the given set of nodes
      */
-    private static Set<Set<Combination>> formAllOverlaps(Set<RuleNode> nodes) {
-        Set<Set<Combination>> overlapSet = new HashSet<Set<Combination>>();
-        for (RuleNode rnode : nodes) {
-            Set<Set<Combination>> newOverlapSet =
-                new HashSet<Set<Combination>>();
-            //special case, the overlapSet may contain no overlappings
-            if (overlapSet.isEmpty()) {
-                Combination combination = new Combination(rnode);
-                Set<Combination> overlap = new HashSet<Combination>();
-                overlap.add(combination);
-                newOverlapSet.add(overlap);
-            } else {
-                for (Set<Combination> overlap : overlapSet) {
-                    //case 1: do not overlap rn1 with an existing element of the overlap
-                    //This means we create a copy of overlap and add the set containing rn1 as a separate element
-                    addToCombination(rnode, null, overlap, newOverlapSet);
+    public static Set<CriticalPair> computeCriticalPairs(Rule r1, Rule r2) {
+        RuleGraph l1 = r1.lhs();
+        RuleGraph l2 = r2.lhs();
+        Set<CriticalPair> parrPairs = new HashSet<CriticalPair>();
 
-                    //case 2: 
-                    //Repeat the following for every combination in overlap:
-                    //Add rn1 to the combination and add a copy of overlap with rn1 added to newOverlapSet
-                    for (Combination combination : overlap) {
-                        addToCombination(rnode, combination, overlap,
-                            newOverlapSet);
-                    }
-                }
-            }
-            overlapSet = newOverlapSet;
+        parrPairs = buildCriticalNodeSet(l1.nodeSet(), parrPairs, 1);
+        parrPairs = buildCriticalNodeSet(l2.nodeSet(), parrPairs, 2);
+
+        //TODO add edges: buildCriticalEdgeSet
+        //TODO check if every critical pair is indeed a critical pair
+
+        DefaultHostGraph hostGraph = new DefaultHostGraph("host");
+
+        return parrPairs;
+    }
+
+    private static Set<CriticalPair> buildCriticalEdgeSet(RuleGraph graph,
+            Set<CriticalPair> parrPairs, int matchnum) {
+        for (RuleEdge edge : graph.edgeSet()) {
+            RuleNode source = edge.source();
+            RuleNode target = edge.target();
+            //TODO
         }
-        return overlapSet;
+        return parrPairs;
     }
 
     /**
-     * Help method for computing overlaps
-     * @param rnode the node that will be added to (a copy of) combination
-     * @param combination The combination to which rnode should be added (if combination is null, a new Combination will be created) 
-     * @param overlap the new combination will be added to a copy of overlap, the old combination will be removed from the copy
-     * @param newOverlapSet the new (copy of) overlap will be added to newOverlapset
+     * Help method for formAllOverlaps(...)
+     * @param nodes the nodes which should be added
+     * @param parrPairs the exists critical pairs (may be empty)
+     * @param matchnum the match number (1 or 2) this number states to which match mappings should be added
+     * @return a set of parallel pairs
      */
-    private static void addToCombination(RuleNode rnode,
-            Combination combination, Set<Combination> overlap,
-            Set<Set<Combination>> newOverlapSet) {
-        if (combination == null
-            || rnode.getType().equals(combination.getType())) {
-            Set<Combination> newOverlap = new HashSet<Combination>(overlap);
-            Combination newCombination;
-            if (combination == null) {
-                newCombination = new Combination(rnode);
-            } else {
-                newCombination = new Combination(combination);
-                newCombination.add(rnode);
-                //We do not need the old combination in the new overlap
-                newOverlap.remove(combination);
-            }
-            newOverlap.add(newCombination);
-            newOverlapSet.add(newOverlap);
+    private static Set<CriticalPair> buildCriticalNodeSet(Set<RuleNode> nodes,
+            Set<CriticalPair> parrPairs, int matchnum) {
+        if (matchnum != 1 || matchnum != 2) {
+            throw new IllegalArgumentException("matchnum may only be 1 or 2");
         }
+        for (RuleNode rnode : nodes) {
+            HashSet<CriticalPair> newParrPairs = new HashSet<CriticalPair>();
+            //special case, parrPairs contains no pairs yet, this can only happen if l1.nodeSet().isEmpty()
+            if (parrPairs.isEmpty()) {
+                RuleGraph target = new RuleGraph("target");
+                RuleNode targetNode = createAndAddSimilarNode(rnode, target);
+                RuleGraphMorphism m1 = new RuleGraphMorphism();
+                RuleGraphMorphism m2 = new RuleGraphMorphism();
+                if (matchnum == 1) {
+                    m1.nodeMap().put(rnode, targetNode);
+                } else { //matchnum == 2
+                    m2.nodeMap().put(rnode, targetNode);
+                }
+                newParrPairs.add(new CriticalPair(target, m1, m2));
+            } else {
+                for (CriticalPair pair : parrPairs) {
+                    //case 1: do not overlap rnode with an existing node of pair.getTarget()
+                    //This means we create a copy of pair and add the set containing rnode as a separate element
+
+                    CriticalPair newPair = new CriticalPair(pair);
+                    RuleNode targetNode =
+                        createAndAddSimilarNode(rnode, newPair.getTarget());
+                    if (matchnum == 1) {
+                        newPair.getM1().nodeMap().put(rnode, targetNode);
+                    } else { //matchnum == 2
+                        newPair.getM2().nodeMap().put(rnode, targetNode);
+                    }
+                    newParrPairs.add(newPair);
+
+                    //case 2: 
+                    //Repeat the following for every node tnode in pair.getTarget():
+                    //Map rnode to tnode in M1 (if the types coincide)
+                    for (RuleNode tnode : pair.getTarget().nodeSet()) {
+                        if (tnode.getType().equals(rnode.getType())) {
+                            newPair = new CriticalPair(pair);
+                            if (matchnum == 1) {
+                                newPair.getM1().nodeMap().put(rnode, targetNode);
+                            } else { //matchnum == 2
+                                newPair.getM2().nodeMap().put(rnode, targetNode);
+                            }
+                            newParrPairs.add(newPair);
+                        }
+                    }
+                }
+            }
+            parrPairs = newParrPairs;
+        }
+        return parrPairs;
     }
 
-    private RuleApplication app1;
-    private RuleApplication app2;
-
-    private static class Combination extends HashSet<RuleNode> {
-
-        protected Combination(RuleNode singleElement) {
-            this.add(singleElement);
-            this.type = singleElement.getType();
-        }
-
-        protected Combination(Combination comb) {
-            super(comb);
-            this.type = comb.getType();
-        }
-
-        @Override
-        public boolean add(RuleNode e) {
-            if (!e.getType().equals(this.type)) {
-                throw new IllegalArgumentException(
-                    "RuleNode can not be added to the combination because it has a different Type");
-            }
-            return super.add(e);
-        }
-
-        public TypeNode getType() {
-            return this.type;
-        }
-
-        private TypeNode type;
-
+    private static RuleNode createAndAddSimilarNode(RuleNode toCopy,
+            RuleGraph forGraph) {
+        //TODO zorgen dat een node van het goede type is (DefaultRuleNode, OperatorNode of VariableNode)
+        //TODO zorgen dat de TypeNode goed gezet wordt
+        RuleNode result = forGraph.addNode();
+        return result;
     }
 }
