@@ -17,6 +17,7 @@
 package groove.explore.util;
 
 import groove.explore.Exploration;
+import groove.explore.Verbosity;
 import groove.grammar.Rule;
 import groove.grammar.host.HostFactory;
 import groove.graph.AGraph;
@@ -32,7 +33,6 @@ import groove.lts.GraphTransition;
 import groove.lts.MatchApplier;
 import groove.lts.MatchCollector;
 import groove.transform.Record;
-import groove.util.CommandLineTool.VerbosityOption;
 import groove.util.Groove;
 import groove.util.Reporter;
 import groove.util.cache.AbstractCacheHolder;
@@ -72,7 +72,7 @@ public class ExplorationStatistics {
     private final GTS gts;
     private StringBuilder sb;
     private Formatter fm;
-    private int verbosity = VerbosityOption.MEDIUM_VERBOSITY;
+    private Verbosity verbosity = Verbosity.MEDIUM;
     private StatisticsListener statisticsListener = new StatisticsListener();
 
     // ------------------------------------------------------------------------
@@ -97,12 +97,17 @@ public class ExplorationStatistics {
 
     /** Configures the object to produce output to be used by the Simulator. */
     public void configureForSimulator() {
-        this.setVerbosity(VerbosityOption.HIGH_VERBOSITY);
+        this.setVerbosity(Verbosity.HIGH);
     }
 
     /** Configures the object to produce output to be used by the Generator. */
-    public void configureForGenerator(int verbosity) {
+    public void configureForGenerator(Verbosity verbosity) {
         this.setVerbosity(verbosity);
+    }
+
+    /** Configures the object to produce output to be used by the Generator. */
+    public void configureForGenerator(int level) {
+        this.setVerbosity(Verbosity.getVerbosity(level));
     }
 
     /** Should be called right before the exploration starts. */
@@ -111,7 +116,7 @@ public class ExplorationStatistics {
         runTime.runFinalization();
         runTime.gc();
         this.startUsedMemory = runTime.totalMemory() - runTime.freeMemory();
-        if (getVerbosity() > VerbosityOption.LOW_VERBOSITY) {
+        if (!getVerbosity().isLow()) {
             this.gts.addLTSListener(this.statisticsListener);
         }
         this.startTime = System.currentTimeMillis();
@@ -120,9 +125,7 @@ public class ExplorationStatistics {
     /** Should be called right after the exploration finishes. */
     public void stop() {
         this.endTime = System.currentTimeMillis();
-        if (getVerbosity() == VerbosityOption.HIGH_VERBOSITY) {
-            this.gts.removeLTSListener(this.statisticsListener);
-        }
+        this.gts.removeLTSListener(this.statisticsListener);
     }
 
     /**
@@ -136,7 +139,7 @@ public class ExplorationStatistics {
      * Sets the verbosity level.
      * @param verbosity the verbosity level; should be a legal verbosity value.
      */
-    public void setVerbosity(int verbosity) {
+    public void setVerbosity(Verbosity verbosity) {
         this.verbosity = verbosity;
     }
 
@@ -144,7 +147,7 @@ public class ExplorationStatistics {
      * Returns the verbosity level.
      * The default level is <tt>MEDIUM_VERBOSITY</tt>
      */
-    public int getVerbosity() {
+    public Verbosity getVerbosity() {
         return this.verbosity;
     }
 
@@ -309,7 +312,7 @@ public class ExplorationStatistics {
             + percentage(transforming / (double) total));
         println("\tIso checking:\t\t" + isoChecking + "\t"
             + percentage(isoChecking / (double) total));
-        if (getVerbosity() == VerbosityOption.HIGH_VERBOSITY) {
+        if (getVerbosity().isHigh()) {
             long certifying = IsoChecker.getCertifyingTime();
             long equalCheck = IsoChecker.getEqualCheckTime();
             long certCheck = IsoChecker.getCertCheckTime();
@@ -345,7 +348,7 @@ public class ExplorationStatistics {
         // Clear the string builder before we start.
         this.sb.delete(0, this.sb.length());
 
-        if (getVerbosity() == VerbosityOption.HIGH_VERBOSITY) {
+        if (getVerbosity().isHigh()) {
             StringWriter sw = new StringWriter();
             Reporter.report(new PrintWriter(sw));
             this.sb.append(sw.toString());
@@ -354,7 +357,7 @@ public class ExplorationStatistics {
             println();
         }
 
-        if (getVerbosity() > VerbosityOption.LOW_VERBOSITY) {
+        if (!getVerbosity().isLow()) {
             final Runtime runTime = Runtime.getRuntime();
             // Clear all caches to see all available memory.
             for (GraphState state : this.gts.nodeSet()) {
@@ -373,8 +376,7 @@ public class ExplorationStatistics {
 
             println("Statistics:");
             reportLTS();
-            if (getVerbosity() == VerbosityOption.HIGH_VERBOSITY
-                && Groove.GATHER_STATISTICS) {
+            if (getVerbosity().isHigh() && Groove.GATHER_STATISTICS) {
                 reportGraphStatistics();
                 reportTransitionStatistics();
                 reportIsomorphism();
