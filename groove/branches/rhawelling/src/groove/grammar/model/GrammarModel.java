@@ -86,6 +86,20 @@ public class GrammarModel implements Observer {
         return this.store.getName();
     }
 
+    /**
+     * Returns a string that can be used to identify the grammar model.
+     * The ID is composed from grammar name and start graph name(s);
+     */
+    public String getId() {
+        StringBuilder result = new StringBuilder(getName());
+        HostModel startGraph = getStartGraphModel();
+        if (startGraph != null) {
+            result.append("@");
+            result.append(startGraph.getFullName());
+        }
+        return result.toString();
+    }
+
     /** Returns the backing system store. */
     public SystemStore getStore() {
         return this.store;
@@ -695,9 +709,19 @@ public class GrammarModel implements Observer {
     /**
      * Creates an instance based on a given file.
      * @param file the file to load the grammar from
+     * @throws IOException if the store exists  does not contain a grammar
+     */
+    static public GrammarModel newInstance(File file) throws IOException {
+        return newInstance(file, false);
+    }
+
+    /**
+     * Creates an instance based on a given file.
+     * @param file the file to load the grammar from
      * @param create if <code>true</code> and <code>file</code> does not yet
      *        exist, attempt to create it.
-     * @throws IOException if an error occurred while creating the store
+     * @throws IOException if an error occurred while creating the store, or
+     * if the store exists but does not contain a grammar
      */
     static public GrammarModel newInstance(File file, boolean create)
         throws IOException {

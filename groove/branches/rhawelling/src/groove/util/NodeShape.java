@@ -184,9 +184,9 @@ public enum NodeShape {
             double x, y;
             if (dx == 0) {
                 x = 0;
-                y = h;
+                y = dy < 0 ? -h : h;
             } else if (dy == 0) {
-                x = w;
+                x = dx < 0 ? -w : w;
                 y = 0;
             } else {
                 // line from (0,0) to (dx,dy) described by y=r*x with r=dy/dx
