@@ -16,7 +16,6 @@ tokens {
   REAL;
   INT;
   BOOL;
-  CLOSE; // imaginary token for the end of an expression
 }
 
 @lexer::header {
@@ -46,14 +45,51 @@ import groove.grammar.model.FormatErrorSet;
 // PARSER ACTIONS
 /** Either a variable or constant, or an operator applied to terms. */
 expression
-  : subexpr EOF!
+  : or_expr EOF!
   ;
 
-/** Analogous to expression; distinguished to avoid initial recursion. */
-subexpr
+or_expr
+  : and_expr (BAR^ and_expr)*
+  ;
+
+and_expr
+  : not_expr (AMP^ not_expr)*
+  ;
+
+not_expr
+  : NOT^ not_expr
+  | equal_expr;
+
+equal_expr
+  : compare_expr ((EQ | NEQ)^ compare_expr)*;
+
+compare_expr
+  : assign_expr ((LT | LE | GT | GE)^ assign_expr)*
+  ;
+  
+assign_expr
+  : add_expr
+  ;
+  
+add_expr
+  : mult_expr ((PLUS | MINUS)^ mult_expr)*
+  ;
+
+mult_expr
+  : unary_expr ((ASTERISK | SLASH | PERCENT)^ unary_expr)*
+  ;
+
+unary_expr
+  : MINUS^ unary_expr
+  | atom_expr
+  ;
+
+atom_expr
   : constant
   | variableOrField
   | call
+  | open=LPAR or_expr close=RPAR
+    -> ^(LPAR[$open,""] or_expr RPAR[$close,""])
   ;
 
 constant
@@ -84,8 +120,8 @@ variableOrField
   ;
 
 call
-  : oper LPAR (subexpr (COMMA subexpr)*)? close=RPAR
-   -> ^(CALL oper subexpr* CLOSE[$close,""])
+  : oper LPAR (or_expr (COMMA or_expr)*)? close=RPAR
+   -> ^(CALL oper or_expr* RPAR[$close,""])
   ;
 
 oper
@@ -156,6 +192,8 @@ DONT_CARE	: '_' ;
 MINUS     : '-' ;
 QUOTE     : '"' ;
 BSLASH    : '\\';
+SLASH     : '/';
+PERCENT   : '%';
 COMMA     : ',' ;
 SEMI      : ';' ;
 COLON     : ':' ;
@@ -163,6 +201,12 @@ LPAR      : '(' ;
 RPAR      : ')' ;
 LCURLY    : '{' ;
 RCURLY    : '}' ;
+EQ        : '==' ;
+NEQ       : '!=' ;
+GT        : '>' ;
+GE        : '>=' ;
+LT        : '<' ;
+LE        : '<=' ;
 
 WS  :   (   ' '
         |   '\t'

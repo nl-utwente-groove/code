@@ -20,6 +20,7 @@ import static groove.algebra.Precedence.ADD;
 import static groove.algebra.Precedence.COMPARE;
 import static groove.algebra.Precedence.EQUAL;
 import static groove.algebra.Precedence.MULT;
+import static groove.algebra.Precedence.UNARY;
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.Syntax;
@@ -128,7 +129,7 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
     @ToolTipHeader("Real inversion")
     @Syntax("Q%s.LPAR.r1.RPAR")
     @ToolTipBody("Yields the inverse of %s")
-    @PrefixSymbol(symbol = "-")
+    @PrefixSymbol(symbol = "-", precedence = UNARY)
     public abstract Real neg(Real arg);
 
     /** String representation. */

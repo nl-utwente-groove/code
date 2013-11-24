@@ -16,6 +16,8 @@
  */
 package groove.annotation;
 
+import groove.algebra.Precedence;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -24,4 +26,9 @@ import java.lang.annotation.RetentionPolicy;
 public @interface PrefixSymbol {
     /** The prefix symbol. */
     public String symbol();
+
+    /** 
+     * The operator priority.
+     */
+    public Precedence precedence();
 }

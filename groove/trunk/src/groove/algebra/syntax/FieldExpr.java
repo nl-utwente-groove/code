@@ -17,6 +17,7 @@
 package groove.algebra.syntax;
 
 import static groove.graph.EdgeRole.BINARY;
+import groove.algebra.Precedence;
 import groove.algebra.SignatureKind;
 import groove.grammar.type.TypeLabel;
 
@@ -62,8 +63,10 @@ public class FieldExpr extends Expression {
     }
 
     @Override
-    public String toDisplayString() {
-        return getTarget() + "." + getField();
+    protected void buildDisplayString(StringBuilder result, Precedence context) {
+        result.append(getTarget());
+        result.append(".");
+        result.append(getField());
     }
 
     @Override

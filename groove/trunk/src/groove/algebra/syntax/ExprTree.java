@@ -103,9 +103,11 @@ public class ExprTree extends CommonTree {
         case ExprParser.CALL:
             result = toCallExprs(varMap);
             break;
+        case ExprParser.LPAR:
+            result = getChild(0).toExpressions(varMap);
+            break;
         default:
-            throw new IllegalArgumentException(String.format(
-                "Can't parse %s as term", toInputString()));
+            result = toOpExprs(varMap);
         }
         return result;
     }
@@ -208,6 +210,21 @@ public class ExprTree extends CommonTree {
         return result;
     }
 
+    /**
+     * Returns the set of derivable expressions for an operator tree,
+     * i.e., in which the root represents an operator.
+     */
+    private Map<SignatureKind,CallExpr> toOpExprs(
+            Map<String,SignatureKind> varMap) throws FormatException {
+        List<Map<SignatureKind,? extends Expression>> args =
+            new ArrayList<Map<SignatureKind,? extends Expression>>();
+        // all children are arguments
+        for (int i = 0; i < getChildCount(); i++) {
+            args.add(getChild(i).toExpressions(varMap));
+        }
+        return toCallExprs(getText(), args, varMap);
+    }
+
     private Map<SignatureKind,CallExpr> toCallExprs(
             Map<String,SignatureKind> varMap) throws FormatException {
         Map<SignatureKind,CallExpr> result =
@@ -218,52 +235,61 @@ public class ExprTree extends CommonTree {
         for (int i = 1; i < getChildCount() - 1; i++) {
             args.add(getChild(i).toExpressions(varMap));
         }
-        ExprTree operator = getChild(0);
-        String opName = operator.getChild(0).getText();
-        if (operator.getChildCount() == 2) {
-            String prefix = operator.getChild(1).getText();
-            SignatureKind opSig = SignatureKind.getKind(prefix);
-            if (opSig == null) {
-                throw new FormatException(
-                    "Prefix '%s' does not represent a type", prefix);
-            }
-            Operator op = opSig.getOperator(opName);
-            if (op == null) {
-                throw new FormatException("Operator '%s:%s' does exist",
-                    prefix, opName);
-            }
-            result.put(op.getResultType(), newCallExp(op, args));
+        ExprTree opTree = getChild(0);
+        String opName = opTree.getChild(0).getText();
+        if (opTree.getChildCount() == 2) {
+            result =
+                toCallExprs(opTree.getChild(1).getText(), opName, args, varMap);
         } else {
-            // look up op based on argument types
-            boolean foundOp = false;
-            for (SignatureKind opSig : SignatureKind.values()) {
-                Operator op = opSig.getOperator(opName);
-                if (op != null) {
-                    foundOp = true;
-                    boolean duplicate = false;
-                    try {
-                        duplicate =
-                            (result.put(op.getResultType(),
-                                newCallExp(op, args)) != null);
-                    } catch (FormatException e) {
-                        // this candidate did not work out; proceed
-                    }
-                    if (duplicate) {
-                        throw new FormatException(
-                            "Typing of '%s' is ambiguous: add type prefixes",
-                            toInputString());
-                    }
-                }
+            result = toCallExprs(opName, args, varMap);
+        }
+        return result;
+    }
+
+    private Map<SignatureKind,CallExpr> toCallExprs(String prefix,
+            String opName, List<Map<SignatureKind,? extends Expression>> args,
+            Map<String,SignatureKind> varMap) throws FormatException {
+        Map<SignatureKind,CallExpr> result =
+            new EnumMap<SignatureKind,CallExpr>(SignatureKind.class);
+        SignatureKind opSig = SignatureKind.getKind(prefix);
+        Operator op = opSig.getOperator(opName);
+        if (op == null) {
+            throw new FormatException("Operator '%s:%s' does exist",
+                opSig.getName(), opName);
+        }
+        result.put(op.getResultType(), newCallExp(op, args));
+        return result;
+    }
+
+    private Map<SignatureKind,CallExpr> toCallExprs(String opName,
+            List<Map<SignatureKind,? extends Expression>> args,
+            Map<String,SignatureKind> varMap) throws FormatException {
+        Map<SignatureKind,CallExpr> result =
+            new EnumMap<SignatureKind,CallExpr>(SignatureKind.class);
+        List<Operator> ops = Operator.getOps(opName);
+        // look up op based on argument types
+        if (ops.isEmpty()) {
+            throw new FormatException("No such operator '%s' in '%s'", opName,
+                toInputString());
+        }
+        for (Operator op : ops) {
+            boolean duplicate = false;
+            try {
+                duplicate =
+                    (result.put(op.getResultType(), newCallExp(op, args)) != null);
+            } catch (FormatException e) {
+                // this candidate did not work out; proceed
             }
-            if (!foundOp) {
-                throw new FormatException("No such operator '%s' in '%s'",
-                    opName, toInputString());
-            }
-            if (result.isEmpty()) {
+            if (duplicate) {
                 throw new FormatException(
-                    "Operator '%s' not applicable to arguments in '%s'",
-                    opName, toInputString());
+                    "Typing of '%s' is ambiguous: add type prefixes",
+                    toInputString());
             }
+        }
+        if (result.isEmpty()) {
+            throw new FormatException(
+                "Operator '%s' not applicable to arguments in '%s'", opName,
+                toInputString());
         }
         return result;
     }
@@ -312,7 +338,7 @@ public class ExprTree extends CommonTree {
 
     /** 
      * Returns the part of the input token stream corresponding to this tree.
-     * This is determined by the token numbers of the root and the final child. 
+     * This is determined by the token numbers of the first and last tokens. 
      */
     private String toInputString() {
         Token first = findFirstToken();

@@ -16,6 +16,7 @@
  */
 package groove.algebra.syntax;
 
+import groove.algebra.Precedence;
 import groove.algebra.SignatureKind;
 
 import java.util.Collections;
@@ -40,8 +41,9 @@ public class Parameter extends Expression {
     }
 
     @Override
-    public String toDisplayString() {
-        return "$" + this.nr;
+    protected void buildDisplayString(StringBuilder result, Precedence context) {
+        result.append("$");
+        result.append(getNumber());
     }
 
     /** Returns the parameter number. */

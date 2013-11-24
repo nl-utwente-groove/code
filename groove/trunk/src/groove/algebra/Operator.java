@@ -12,7 +12,9 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class encoding an operator declaration in a {@link Signature}.
@@ -58,8 +60,8 @@ public class Operator {
             infix == null ? (prefix == null ? null : prefix.symbol())
                     : infix.symbol();
         this.precedence =
-            infix == null ? (prefix == null ? null : Precedence.UNARY)
-                    : infix.precedence();
+            infix == null ? (prefix == null ? Precedence.ATOM
+                    : prefix.precedence()) : infix.precedence();
     }
 
     /** Returns the signature to which this operator belongs. */
@@ -98,7 +100,7 @@ public class Operator {
         return this.signature + ":" + this.name;
     }
 
-    /** Returns the infix symbol of this operator, or {@code null} if it has none. */
+    /** Returns the in- or prefix symbol of this operator, or {@code null} if it has none. */
     public String getSymbol() {
         return this.symbol;
     }
@@ -194,4 +196,39 @@ public class Operator {
             getOperatorMethod(enumValue.getClass().getEnclosingClass(), opName);
         return new Operator(sigKind, opMethod);
     }
+
+    /** Returns the operators for a given (prefix or infix) operator symbol or name. */
+    public static List<Operator> getOps(String symbol) {
+        if (opLookupMap.isEmpty()) {
+            // register all operators
+            for (SignatureKind sig : SignatureKind.values()) {
+                for (OpValue opValue : sig.getOpValues()) {
+                    registerOp(opValue.getOperator());
+                }
+            }
+        }
+        return opLookupMap.get(symbol);
+    }
+
+    /** Adds an operator to the store. */
+    private static void registerOp(Operator op) {
+        String symbol = op.getSymbol();
+        if (symbol != null) {
+            List<Operator> ops = opLookupMap.get(symbol);
+            if (ops == null) {
+                opLookupMap.put(symbol, ops = new ArrayList<Operator>());
+            }
+            ops.add(op);
+        }
+        String opName = op.getName();
+        List<Operator> ops = opLookupMap.get(opName);
+        if (ops == null) {
+            opLookupMap.put(opName, ops = new ArrayList<Operator>());
+        }
+        ops.add(op);
+    }
+
+    /** Mapping from operator names and symbols to lists of operators with that symbol. */
+    private static final Map<String,List<Operator>> opLookupMap =
+        new HashMap<String,List<Operator>>();
 }

@@ -16,6 +16,7 @@
  */
 package groove.algebra.syntax;
 
+import groove.algebra.Precedence;
 import groove.algebra.SignatureKind;
 
 import java.util.Collections;
@@ -39,8 +40,8 @@ public class Variable extends Expression {
     }
 
     @Override
-    public String toDisplayString() {
-        return getName();
+    protected void buildDisplayString(StringBuilder result, Precedence context) {
+        result.append(getName());
     }
 
     @Override

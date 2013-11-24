@@ -45,7 +45,7 @@ public class Assignment {
 
     @Override
     public String toString() {
-        return getLhs() + " = " + getRhs().toString();
+        return getLhs() + " = " + getRhs().toInputString();
     }
 
     /** 
