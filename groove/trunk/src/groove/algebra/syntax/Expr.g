@@ -100,10 +100,10 @@ constant
   ;
 
 parameter
-  : prefix=ID DOLLAR INT_LIT
-    -> ^(PAR INT_LIT $prefix)
-  | DOLLAR INT_LIT
-    -> ^(PAR INT_LIT)
+  : prefix=ID DOLLAR NAT_LIT
+    -> ^(PAR NAT_LIT $prefix)
+  | DOLLAR NAT_LIT
+    -> ^(PAR NAT_LIT)
   ;
 
 variableOrField
@@ -131,7 +131,7 @@ oper
 
 literal
   : REAL_LIT -> ^(REAL REAL_LIT)
-  | INT_LIT -> ^(INT INT_LIT)
+  | NAT_LIT -> ^(INT NAT_LIT)
   | STRING_LIT -> ^(STRING STRING_LIT)
   | TRUE -> ^(BOOL TRUE)
   | FALSE -> ^(BOOL FALSE)
@@ -142,14 +142,14 @@ literal
 TRUE : 'true';
 FALSE : 'false';
 
-INT_LIT
-  : IntegerNumber 
+NAT_LIT
+  : Naturalumber 
   ;
 
 fragment
-IntegerNumber
-  : '-'? '0' 
-  | '-'? '1'..'9' ('0'..'9')*     
+Naturalumber
+  : '0' 
+  | '1'..'9' ('0'..'9')*     
   ;
 
 REAL_LIT
