@@ -17,6 +17,7 @@
 package groove.algebra.syntax;
 
 import groove.algebra.Constant;
+import groove.algebra.Precedence;
 import groove.algebra.SignatureKind;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
@@ -48,7 +49,18 @@ public abstract class Expression {
      * The difference with {@link #toString()} is that
      * the display string does not contain type prefixes.
      */
-    public abstract String toDisplayString();
+    final public String toDisplayString() {
+        StringBuilder result = new StringBuilder();
+        buildDisplayString(result, Precedence.NONE);
+        return result.toString();
+    }
+
+    /**
+     * Builds the display string for this expression in the 
+     * result parameter.
+     */
+    abstract protected void buildDisplayString(StringBuilder result,
+            Precedence context);
 
     /** 
      * Returns a string representation from which
@@ -94,6 +106,13 @@ public abstract class Expression {
             this.varMap = computeVarMap();
         }
         return this.varMap;
+    }
+
+    /** Returns the precedence of the top-level operator of this expression,
+     * or {@link Precedence#ATOM} if this is not a call expression.
+     */
+    public Precedence getPrecedence() {
+        return Precedence.ATOM;
     }
 
     /** Factory method to create the variable map for this expression. */
@@ -159,8 +178,11 @@ public abstract class Expression {
     public static void main(String[] args) {
         try {
             ExprTree tree = parseToTree(args[0]);
+            System.out.printf("Original expression: %s%n", args[0]);
             System.out.printf("Flattened term tree: %s%n", tree.toStringTree());
-            System.out.printf("Corresponding term: %s%n", tree.toExpression());
+            System.out.printf("Corresponding term:  %s%n", tree.toExpression());
+            System.out.printf("Display string:      %s%n",
+                tree.toExpression().toDisplayString());
         } catch (FormatException e) {
             e.printStackTrace();
         }

@@ -18,6 +18,7 @@ package groove.algebra;
 
 import static groove.algebra.Precedence.AND;
 import static groove.algebra.Precedence.EQUAL;
+import static groove.algebra.Precedence.NOT;
 import static groove.algebra.Precedence.OR;
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
@@ -36,7 +37,7 @@ public abstract class BoolSignature<Bool> implements Signature {
     @ToolTipHeader("Inversion")
     @Syntax("Q%s.LPAR.b1.RPAR")
     @ToolTipBody("Yields TRUE if boolean %s is FALSE")
-    @PrefixSymbol(symbol = "!")
+    @PrefixSymbol(symbol = "!", precedence = NOT)
     public abstract Bool not(Bool arg);
 
     /** Conjunction. */

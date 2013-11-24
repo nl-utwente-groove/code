@@ -20,6 +20,7 @@ import static groove.algebra.Precedence.ADD;
 import static groove.algebra.Precedence.COMPARE;
 import static groove.algebra.Precedence.EQUAL;
 import static groove.algebra.Precedence.MULT;
+import static groove.algebra.Precedence.UNARY;
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.Syntax;
@@ -129,7 +130,7 @@ public abstract class IntSignature<Int,Bool,String> implements Signature {
     @ToolTipHeader("Integer inversion")
     @Syntax("Q%s.LPAR.i1.RPAR")
     @ToolTipBody("Yields the inverse of %s")
-    @PrefixSymbol(symbol = "-")
+    @PrefixSymbol(symbol = "-", precedence = UNARY)
     public abstract Int neg(Int arg);
 
     /** Subtraction of two integers. */

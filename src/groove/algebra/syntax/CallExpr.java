@@ -18,6 +18,9 @@ package groove.algebra.syntax;
 
 import static groove.graph.EdgeRole.BINARY;
 import groove.algebra.Operator;
+import groove.algebra.Precedence;
+import groove.algebra.Precedence.Direction;
+import groove.algebra.Precedence.Placement;
 import groove.algebra.SignatureKind;
 import groove.grammar.type.TypeLabel;
 
@@ -79,6 +82,11 @@ public class CallExpr extends Expression {
         return this.op;
     }
 
+    @Override
+    public Precedence getPrecedence() {
+        return getOperator().getPrecedence();
+    }
+
     /** Returns an unmodifiable view on the list of arguments of this term. */
     public List<Expression> getArgs() {
         return Collections.unmodifiableList(this.args);
@@ -134,8 +142,16 @@ public class CallExpr extends Expression {
     }
 
     @Override
-    public String toDisplayString() {
-        StringBuilder result = new StringBuilder(this.op.getName());
+    protected void buildDisplayString(StringBuilder result, Precedence context) {
+        if (getOperator().getSymbol() == null) {
+            buildCallString(result);
+        } else {
+            buildFixString(result, context);
+        }
+    }
+
+    private void buildCallString(StringBuilder result) {
+        result.append(this.op.getName());
         result.append('(');
         boolean firstArg = true;
         for (Expression arg : getArgs()) {
@@ -144,10 +160,41 @@ public class CallExpr extends Expression {
             } else {
                 firstArg = false;
             }
-            result.append(arg.toDisplayString());
+            arg.buildDisplayString(result, Precedence.NONE);
         }
         result.append(')');
-        return result.toString();
+    }
+
+    private void buildFixString(StringBuilder result, Precedence context) {
+        Precedence me = getOperator().getPrecedence();
+        boolean addPars = me.compareTo(context) < 0;
+        boolean addSpaces = me.compareTo(Precedence.MULT) < 0;
+        int nextArgIx = 0;
+        if (addPars) {
+            result.append('(');
+        }
+        if (me.getPlace() != Placement.PREFIX) {
+            // add left argument
+            this.args.get(nextArgIx).buildDisplayString(result,
+                me.getDirection() == Direction.LEFT ? me : me.increase());
+            nextArgIx++;
+            if (addSpaces) {
+                result.append(' ');
+            }
+        }
+        result.append(getOperator().getSymbol());
+        if (me.getPlace() != Placement.POSTFIX) {
+            // add left argument
+            if (addSpaces) {
+                result.append(' ');
+            }
+            this.args.get(nextArgIx).buildDisplayString(result,
+                me.getDirection() == Direction.RIGHT ? me : me.increase());
+            nextArgIx++;
+        }
+        if (addPars) {
+            result.append(')');
+        }
     }
 
     @Override

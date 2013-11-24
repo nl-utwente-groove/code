@@ -123,8 +123,8 @@ public class Constant extends Expression {
     }
 
     @Override
-    public final String toDisplayString() {
-        return this.symbol;
+    protected void buildDisplayString(StringBuilder result, Precedence context) {
+        result.append(this.symbol);
     }
 
     /**
