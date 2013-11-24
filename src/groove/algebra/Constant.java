@@ -16,16 +16,73 @@
  */
 package groove.algebra;
 
+import groove.algebra.syntax.Expression;
+import groove.grammar.model.FormatException;
+import groove.util.ExprParser;
+import groove.util.Keywords;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Collections;
+import java.util.Map;
+
 /** A constant symbol for a particular signature. */
-public class Constant implements Term {
+public class Constant extends Expression {
     /**
      * Constructs a new constant from a given signature and 
      * constant symbol.
-     * The parameters are required to satisfy {@link Algebras#isConstant(SignatureKind, String)}.
      */
-    Constant(SignatureKind signature, String symbol) {
+    private Constant(SignatureKind signature, String symbol) {
+        assert signature != null && symbol != null;
         this.signature = signature;
         this.symbol = symbol;
+    }
+
+    /**
+     * Constructs a new string constant from a given string value.
+     */
+    private Constant(String value) {
+        this(SignatureKind.STRING, ExprParser.toQuoted(value, '"'));
+        this.stringRepr = value;
+    }
+
+    /**
+     * Constructs a new boolean constant from a given boolean value.
+     */
+    private Constant(Boolean value) {
+        this(SignatureKind.BOOL, value.toString());
+        this.boolRepr = value;
+    }
+
+    /**
+     * Constructs a new real constant from a given {@link BigDecimal} value.
+     */
+    private Constant(BigDecimal value) {
+        this(SignatureKind.REAL, value.toString());
+        this.realRepr = value;
+    }
+
+    /**
+     * Constructs a new integer constant from a given {@link BigInteger} value.
+     */
+    private Constant(BigInteger value) {
+        this(SignatureKind.INT, value.toString());
+        this.intRepr = value;
+    }
+
+    @Override
+    public boolean isTerm() {
+        return true;
+    }
+
+    @Override
+    public boolean isClosed() {
+        return true;
+    }
+
+    @Override
+    protected Map<String,SignatureKind> computeVarMap() {
+        return Collections.emptyMap();
     }
 
     @Override
@@ -57,7 +114,7 @@ public class Constant implements Term {
 
     @Override
     public String toString() {
-        return getSignature() + ":" + getSymbol();
+        return getSignature() + ":" + toDisplayString();
     }
 
     @Override
@@ -65,11 +122,124 @@ public class Constant implements Term {
         return this.signature;
     }
 
-    /** Returns the constant symbol. */
-    public final String getSymbol() {
+    @Override
+    public final String toDisplayString() {
         return this.symbol;
+    }
+
+    /**
+     * Returns the internal string representation, if this is a {@link SignatureKind#STRING} constant.
+     * This is the unquoted version of the constant symbol. 
+     */
+    public String getStringRepr() {
+        assert getSignature() == SignatureKind.STRING;
+        if (this.stringRepr == null) {
+            try {
+                this.stringRepr = ExprParser.toUnquoted(this.symbol, '"');
+            } catch (FormatException e) {
+                assert false : String.format(
+                    "%s is not a double-quoted string", this.symbol);
+            }
+        }
+        return this.stringRepr;
+    }
+
+    /**
+     * Returns the internal integer representation, if this is a {@link SignatureKind#INT} constant.
+     * This is the unquoted version of the constant symbol. 
+     */
+    public BigInteger getIntRepr() {
+        assert getSignature() == SignatureKind.INT;
+        if (this.intRepr == null) {
+            this.intRepr = new BigInteger(this.symbol);
+        }
+        return this.intRepr;
+    }
+
+    /**
+     * Returns the internal string representation, if this is a {@link SignatureKind#REAL} constant.
+     * This is the unquoted version of the constant symbol. 
+     */
+    public BigDecimal getRealRepr() {
+        assert getSignature() == SignatureKind.REAL;
+        if (this.realRepr == null) {
+            this.realRepr = new BigDecimal(this.symbol);
+        }
+        return this.realRepr;
+    }
+
+    /**
+     * Returns the internal string representation, if this is a {@link SignatureKind#BOOL} constant.
+     * This is the unquoted version of the constant symbol. 
+     */
+    public Boolean getBoolRepr() {
+        assert getSignature() == SignatureKind.BOOL;
+        if (this.boolRepr == null) {
+            this.boolRepr = this.symbol.equals(Keywords.TRUE);
+        }
+        return this.boolRepr;
     }
 
     private final SignatureKind signature;
     private final String symbol;
+    /** Internal representation in case this is a {@link SignatureKind#STRING} constant. */
+    private String stringRepr;
+    /** Internal representation in case this is a {@link SignatureKind#INT} constant. */
+    private BigInteger intRepr;
+    /** Internal representation in case this is a {@link SignatureKind#REAL} constant. */
+    private BigDecimal realRepr;
+    /** Internal representation in case this is a {@link SignatureKind#BOOL} constant. */
+    private Boolean boolRepr;
+
+    /**
+     * Returns a constant object for a given symbol.
+     * @param symbol syntactic symbol for the constant
+     * @return a constant object, or {@code null} if 
+     * the symbol does not represent a constant value of this.
+     */
+    public static Constant parseConstant(String symbol) throws FormatException {
+        Constant result = null;
+        Expression expr = Expression.parse(symbol);
+        if (expr.getKind() == Kind.CONST) {
+            result = (Constant) expr;
+        } else {
+            throw new FormatException("%s is not a constant term", expr);
+        }
+        return result;
+    }
+
+    /** Returns a string constant containing the given string representation. */
+    public static Constant instance(String value) {
+        return new Constant(value);
+    }
+
+    /** Returns a string constant of a certain type and symbolic value. */
+    public static Constant instance(SignatureKind signature, String symbol) {
+        return new Constant(signature, symbol);
+    }
+
+    /** Returns a string constant containing the given boolean representation. */
+    public static Constant instance(Boolean value) {
+        return new Constant(value);
+    }
+
+    /** Returns a string constant containing the given real-number representation. */
+    public static Constant instance(BigDecimal value) {
+        return new Constant(value);
+    }
+
+    /** Returns a string constant containing the given real-number representation. */
+    public static Constant instance(double value) {
+        return new Constant(BigDecimal.valueOf(value));
+    }
+
+    /** Returns a string constant containing the given integer representation. */
+    public static Constant instance(BigInteger value) {
+        return new Constant(value);
+    }
+
+    /** Returns a string constant containing the given integer representation. */
+    public static Constant instance(int value) {
+        return new Constant(BigInteger.valueOf(value));
+    }
 }

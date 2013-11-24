@@ -16,8 +16,11 @@
  */
 package groove.algebra;
 
+import groove.algebra.syntax.Expression;
+
 /**
- * Abstract implementation of booleans.
+ * Abstract implementation of boolean algebra,
+ * in which the values are represented by Java {@link Boolean}.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -52,16 +55,33 @@ public abstract class AbstractBoolAlgebra extends BoolAlgebra<Boolean> {
         return arg0 || arg1;
     }
 
+    @Override
+    public boolean isValue(Object value) {
+        return value instanceof Boolean;
+    }
+
+    @Override
     public String getSymbol(Object value) {
         return value.toString();
     }
 
-    public Boolean getValueFromSymbol(String constant) {
-        return constant.equals("true");
+    @Override
+    public Expression toTerm(Object value) {
+        return Constant.instance((Boolean) value);
     }
 
     @Override
-    protected Boolean toValue(Boolean constant) {
-        return constant;
+    public Boolean toValueFromConstant(Constant constant) {
+        return constant.getBoolRepr();
+    }
+
+    @Override
+    public Boolean toJavaValue(Object value) {
+        return (Boolean) value;
+    }
+
+    @Override
+    protected Boolean toValueFromJavaBoolean(Boolean value) {
+        return value;
     }
 }

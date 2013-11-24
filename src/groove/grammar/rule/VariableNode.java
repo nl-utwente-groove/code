@@ -18,8 +18,8 @@ package groove.grammar.rule;
 
 import groove.algebra.Constant;
 import groove.algebra.SignatureKind;
-import groove.algebra.Term;
-import groove.algebra.Variable;
+import groove.algebra.syntax.Expression;
+import groove.algebra.syntax.Variable;
 import groove.grammar.AnchorKind;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeNode;
@@ -49,7 +49,7 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
     /**
      * Constructs a (numbered) constant variable node.
      */
-    public VariableNode(int nr, Term term, TypeNode type) {
+    public VariableNode(int nr, Expression term, TypeNode type) {
         super(nr);
         this.term = term;
         assert type != null;
@@ -105,7 +105,7 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
     /**
      * Returns the term wrapped in this variable node.
      */
-    public Term getTerm() {
+    public Expression getTerm() {
         return this.term;
     }
 
@@ -119,7 +119,7 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
 
     /**
      * Returns the variable of the variable node 
-     * if its wrapped term is a constant; otherwise returns {@code null}.
+     * if its wrapped term is a variable; otherwise returns {@code null}.
      */
     public Variable getVariable() {
         return (getTerm() instanceof Variable) ? null : (Variable) getTerm();
@@ -158,7 +158,7 @@ public class VariableNode extends ANode implements RuleNode, AnchorKey {
     /** The type of this variable node. */
     private final TypeNode type;
     /** Term (constant or variable) associated with this variable node. */
-    private final Term term;
+    private final Expression term;
 
     /** returns the string preceding the node number in the default variable node id. */
     static public final String TO_STRING_PREFIX = "x";

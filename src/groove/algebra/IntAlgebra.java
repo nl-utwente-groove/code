@@ -16,9 +16,42 @@
  */
 package groove.algebra;
 
-/** Abstract superclass of all integer algebras. */
+import groove.algebra.syntax.Expression;
+
+/** Abstract superclass of all integer algebras.
+ * @param <Int> The representation type of the integer algebra 
+ * @param <Bool> The representation type of the boolean algebra 
+ * @param <String> The representation type of the string algebra 
+ */
 @SuppressWarnings("hiding")
 public abstract class IntAlgebra<Int,Bool,String> extends
         IntSignature<Int,Bool,String> implements Algebra<Int> {
-    // empty
+    @SuppressWarnings("unchecked")
+    public Int toValue(Expression term) {
+        return (Int) getFamily().toValue(term);
+    }
+
+    /*
+     * Specialises the return type.
+     * @throws IllegalArgumentException if the parameter is not of type {@link Integer}
+     */
+    @Override
+    final public Int toValueFromJava(Object value) {
+        if (!(value instanceof Integer)) {
+            throw new IllegalArgumentException(java.lang.String.format(
+                "Native int type is %s, not %s", Integer.class.getSimpleName(),
+                value.getClass().getSimpleName()));
+        }
+        return toValue((Integer) value);
+    }
+
+    /** 
+     * Callback method to convert from the native ({@link Integer})
+     * representation of a value to the algebra representation.
+     */
+    protected abstract Int toValue(Integer constant);
+
+    /* Specialises the return type to Integer. */
+    @Override
+    abstract public Integer toJavaValue(Object value);
 }

@@ -18,6 +18,7 @@ package groove.io.external.format;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
+import groove.algebra.SignatureKind;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.DefaultHostGraph;
@@ -102,7 +103,7 @@ public class ColImporter implements FormatImporter {
 
             DefaultHostGraph graph = new DefaultHostGraph(name);
             Algebra<?> intAlgebra =
-                AlgebraFamily.getInstance().getAlgebraFor("0");
+                AlgebraFamily.getInstance().getAlgebra(SignatureKind.INT);
             TypeLabel valueLabel = TypeLabel.createBinaryLabel("value");
             for (String nextLine = reader.readLine(); nextLine != null; nextLine =
                 reader.readLine()) {
@@ -111,7 +112,7 @@ public class ColImporter implements FormatImporter {
                     HostNode node = this.addNode(graph, fragments[1]);
                     ValueNode valueNode =
                         graph.addNode(intAlgebra,
-                            intAlgebra.getValueFromSymbol(fragments[2]));
+                            intAlgebra.toValueFromJava(fragments[2]));
                     graph.addEdge(node, valueLabel, valueNode);
                 } else if (fragments[0].equals("e")) {
                     HostNode source = this.addNode(graph, fragments[1]);

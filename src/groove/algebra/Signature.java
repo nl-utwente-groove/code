@@ -36,23 +36,18 @@ package groove.algebra;
  */
 public interface Signature {
     /** Returns the signature kind of this signature. */
-    public SignatureKind getKind();
+    public SignatureKind getSignature();
 
-    /**
-     * Tests if a given string is a representation of a value of the signature.
-     * This should be implemented in the concrete signature, not in the algebra.
-     * @param value a prospective string representation of an algebra constant 
-     */
-    public boolean isValue(String value);
+    /** Enumeration of operators for this signature. */
+    public interface OpValue {
+        /** 
+         * Returns the literal name of the enum operator value.
+         * (This is typically an all-caps name, according to the naming conventions
+         * of Java.) 
+         */
+        String name();
 
-    /**
-     * Conversion of native Java representation of algebra constants to
-     * the corresponding algebra values.
-     * @param constant the native Java representation of an algebra constants for
-     * this signature
-     * @throws IllegalArgumentException if the parameter is not of the
-     * native Java type
-     */
-    public Object getValueFromJava(Object constant)
-        throws IllegalArgumentException;
+        /** Returns the corresponding operator object. */
+        public Operator getOperator();
+    }
 }

@@ -16,6 +16,7 @@
  */
 package groove.match.rete;
 
+import groove.algebra.Algebra;
 import groove.algebra.JavaIntAlgebra;
 import groove.grammar.Condition;
 import groove.grammar.Condition.Op;
@@ -249,11 +250,12 @@ public class QuantifierCountChecker extends ReteNetworkNode implements
             }
         }
         if (this.condition.getCountNode().getConstant() == null) {
+            Algebra<Integer> intAlgebra = JavaIntAlgebra.instance;
             this.dummyMatch =
                 new ReteCountMatch(
                     this,
-                    this.getOwner().getOwnerEngine().getNetwork().getHostFactory().createNodeFromJava(
-                        JavaIntAlgebra.instance, 0));
+                    this.getOwner().getOwnerEngine().getNetwork().getHostFactory().createValueNode(
+                        intAlgebra, intAlgebra.toValueFromJava(0)));
         } else {
             this.dummyMatch = null;
         }
@@ -267,12 +269,12 @@ public class QuantifierCountChecker extends ReteNetworkNode implements
         this.conditionMatcher.traverse(
             this.getOwner().getOwnerEngine().getNetwork().getState().getHostGraph(),
             anchor, collector);
+        Algebra<Integer> intAlgebra = JavaIntAlgebra.instance;
         ValueNode vn =
-            this.getOwner().getOwnerEngine().getNetwork().getHostFactory().createNodeFromJava(
-                JavaIntAlgebra.instance, matchList.size());
-        if (this.getCountNode().getConstant() != null) {
-            if (this.getCountNode().getConstant().getSymbol().equals(
-                vn.getSymbol())) {
+            this.getOwner().getOwnerEngine().getNetwork().getHostFactory().createValueNode(
+                intAlgebra, intAlgebra.toValueFromJava(matchList.size()));
+        if (this.getCountNode().hasConstant()) {
+            if (this.getCountNode().getConstant().equals(vn.getTerm())) {
                 countMatch =
                     new ReteCountMatch(this, getAnchorNodes(anchor), vn);
             }

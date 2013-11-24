@@ -16,19 +16,24 @@
  */
 package groove.algebra;
 
+import groove.algebra.syntax.Expression;
+
+import java.math.BigDecimal;
+
 /**
  * Implementation of reals consisting of a singleton value.
  * To be used in conjunction with {@link PointBoolAlgebra} and {@link PointStringAlgebra}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointRealAlgebra extends RealAlgebra<Object,Object,Object>
-        implements PointAlgebra<Object> {
+public class PointRealAlgebra extends RealAlgebra<Double,Boolean,String>
+        implements PointAlgebra<Double> {
     /** Private constructor for the singleton instance. */
     private PointRealAlgebra() {
         // empty
     }
 
+    @Override
     public String getName() {
         return NAME;
     }
@@ -38,96 +43,111 @@ public class PointRealAlgebra extends RealAlgebra<Object,Object,Object>
         return AlgebraFamily.POINT;
     }
 
+    public boolean isValue(Object value) {
+        return value == singleReal;
+    }
+
+    @Override
     public String getSymbol(Object value) {
         return value.toString();
     }
 
     @Override
-    public Object getPointValue() {
+    public Double getPointValue() {
         return singleReal;
     }
 
-    public Object getValueFromSymbol(String constant) {
+    public Expression toTerm(Object value) {
+        return singlRealConstant;
+    }
+
+    @Override
+    public Double toJavaValue(Object value) {
         return singleReal;
     }
 
     @Override
-    protected Object toValue(Double constant) {
+    public Double toValueFromConstant(Constant constant) {
         return singleReal;
     }
 
     @Override
-    public Object abs(Object arg) {
+    protected Double toValueFromJavaDouble(Double value) {
         return singleReal;
     }
 
     @Override
-    public Object add(Object arg0, Object arg1) {
+    public Double abs(Double arg) {
         return singleReal;
     }
 
     @Override
-    public Object div(Object arg0, Object arg1) {
+    public Double add(Double arg0, Double arg1) {
         return singleReal;
     }
 
     @Override
-    public Object eq(Object arg0, Object arg1) {
+    public Double div(Double arg0, Double arg1) {
+        return singleReal;
+    }
+
+    @Override
+    public Boolean eq(Double arg0, Double arg1) {
         return singleBool;
     }
 
     @Override
-    public Object neq(Object arg0, Object arg1) {
+    public Boolean neq(Double arg0, Double arg1) {
         return singleBool;
     }
 
     @Override
-    public Object ge(Object arg0, Object arg1) {
+    public Boolean ge(Double arg0, Double arg1) {
         return singleBool;
     }
 
     @Override
-    public Object gt(Object arg0, Object arg1) {
+    public Boolean gt(Double arg0, Double arg1) {
         return singleBool;
     }
 
     @Override
-    public Object le(Object arg0, Object arg1) {
+    public Boolean le(Double arg0, Double arg1) {
         return singleBool;
     }
 
     @Override
-    public Object lt(Object arg0, Object arg1) {
+    public Boolean lt(Double arg0, Double arg1) {
         return singleBool;
     }
 
     @Override
-    public Object max(Object arg0, Object arg1) {
+    public Double max(Double arg0, Double arg1) {
         return singleReal;
     }
 
     @Override
-    public Object min(Object arg0, Object arg1) {
+    public Double min(Double arg0, Double arg1) {
         return singleReal;
     }
 
     @Override
-    public Object mul(Object arg0, Object arg1) {
+    public Double mul(Double arg0, Double arg1) {
         return singleReal;
     }
 
     @Override
-    public Object neg(Object arg) {
+    public Double neg(Double arg) {
         return singleReal;
     }
 
     @Override
-    public Object sub(Object arg0, Object arg1) {
+    public Double sub(Double arg0, Double arg1) {
         return singleReal;
     }
 
     @Override
-    public Object toString(Object arg) {
+    public String toString(Double arg) {
         return singleString;
     }
 
@@ -144,10 +164,12 @@ public class PointRealAlgebra extends RealAlgebra<Object,Object,Object>
      * redefined literally to avoid class loading dependencies.
      * @see PointBoolAlgebra#singleBool
      */
-    public static final String singleBool = PointBoolAlgebra.singleBool;
+    public static final Boolean singleBool = PointBoolAlgebra.singleBool;
     /** Point value of the real algebra. */
-    public static final String singleReal =
-        SignatureKind.REAL.getDefaultValue();
+    public static final Double singleReal = 0.0;
+    /** Point value of the real algebra, represented as a {@link BigDecimal}. */
+    public static final Constant singlRealConstant =
+        Constant.instance(singleReal);
     /** Singleton instance of this algebra. */
     public static final PointRealAlgebra instance = new PointRealAlgebra();
 }

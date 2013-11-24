@@ -95,7 +95,8 @@ public class LabelPattern {
         for (HostEdge outEdge : host.outEdgeSet(source)) {
             Integer position = this.argPositions.get(outEdge.label().text());
             if (position != null && outEdge.target() instanceof ValueNode) {
-                values[position] = ((ValueNode) outEdge.target()).getSymbol();
+                values[position] =
+                    ((ValueNode) outEdge.target()).getTerm().toDisplayString();
             }
         }
         return getLabel(values);

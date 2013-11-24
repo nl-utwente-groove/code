@@ -16,16 +16,16 @@
  */
 package groove.algebra;
 
-import java.math.BigDecimal;
+import groove.algebra.syntax.Expression;
 
 /**
  * Double algebra based on the java type {@link Double}.
  * @author Arend Rensink
  * @version $Revision: 1577 $
  */
-public class JavaDoubleAlgebra extends RealAlgebra<Double,Boolean,String> {
+public class JavaRealAlgebra extends RealAlgebra<Double,Boolean,String> {
     /** Private constructor for the singleton instance. */
-    private JavaDoubleAlgebra() {
+    private JavaRealAlgebra() {
         // empty
     }
 
@@ -104,26 +104,38 @@ public class JavaDoubleAlgebra extends RealAlgebra<Double,Boolean,String> {
         return arg.toString();
     }
 
-    /**
-     * Delegates to {@link BigDecimal#doubleValue()}.
-     */
-    public Double getValueFromSymbol(String symbol) {
-        return new BigDecimal(symbol).doubleValue();
+    @Override
+    public boolean isValue(Object value) {
+        return value instanceof Double;
     }
 
     @Override
-    protected Double toValue(Double constant) {
-        return constant;
+    public Expression toTerm(Object value) {
+        return Constant.instance((Double) value);
     }
 
-    /**
-     * Delegates to {@link Double#toString()}.
-     */
+    @Override
+    public Double toValueFromConstant(Constant constant) {
+        return constant.getRealRepr().doubleValue();
+    }
+
+    /* The value is already of the right type. */
+    @Override
+    public Double toJavaValue(Object value) {
+        return (Double) value;
+    }
+
+    @Override
+    protected Double toValueFromJavaDouble(Double value) {
+        return value;
+    }
+
+    @Override
     public String getSymbol(Object value) {
         return value.toString();
     }
 
-    /** Returns {@link #NAME}. */
+    @Override
     public String getName() {
         return NAME;
     }
@@ -149,5 +161,5 @@ public class JavaDoubleAlgebra extends RealAlgebra<Double,Boolean,String> {
     /** Name of the algebra. */
     public static final String NAME = "jdouble";
     /** Singleton instance of this algebra. */
-    public static final JavaDoubleAlgebra instance = new JavaDoubleAlgebra();
+    public static final JavaRealAlgebra instance = new JavaRealAlgebra();
 }

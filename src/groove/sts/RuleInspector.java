@@ -16,6 +16,7 @@
  */
 package groove.sts;
 
+import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.algebra.SignatureKind;
 import groove.grammar.Rule;
@@ -74,8 +75,7 @@ public class RuleInspector {
         String guard = "";
         // Check if the variable is a primitive value
         if (vn.hasConstant()) {
-            return v.getLabel() + " == "
-                + getSymbol(vn.getConstant().getSymbol());
+            return v.getLabel() + " == " + getSymbol(vn.getConstant());
         }
         List<String> results =
             parseAlgebraicExpression(rule, lhs, vn, iVarMap, lVarMap);
@@ -149,7 +149,8 @@ public class RuleInspector {
                     // opNode.getArguments().contains(variableResult) &&
                     // getInteractionVariable(variableResult) != null
                     // operatorNode refers to a node with a value
-                    String value = opNode.getTarget().getConstant().getSymbol();
+                    String value =
+                        opNode.getTarget().getConstant().toDisplayString();
                     List<VariableNode> arguments = opNode.getArguments();
                     String[] subExpressions = new String[arguments.size()];
                     for (int i = 0; i < arguments.size(); i++) {
@@ -198,18 +199,18 @@ public class RuleInspector {
     }
 
     /**
-     * Formats the symbol to the correct JSON representation of a primitive value.
-     * @param symbol The symbol to format
-     * @return The formatted symbol
+     * Formats a constant to the correct JSON representation of a primitive value.
+     * @param constant The constant to format
+     * @return The formatted value
      */
-    public String getSymbol(String symbol) {
-        if (symbol.startsWith("\"")) {
-            return "\\\"" + symbol.substring(1, symbol.length() - 1) + "\\\"";
-        } else if (symbol == "S") {
-            return "\"S\"";
-        } else {
-            return symbol;
+    public String getSymbol(Constant constant) {
+        String result = constant.toDisplayString();
+        if (constant.getSignature() == SignatureKind.STRING) {
+            // add a layer of \-escapes
+            result = result.replace("\\", "\\\\");
+            result = result.replace("\"", "\\\"");
         }
+        return result;
     }
 
     /**
@@ -227,7 +228,7 @@ public class RuleInspector {
         VariableNode variableResult = (VariableNode) resultValue;
         // Check if the expression is a primitive value
         if (variableResult.hasConstant()) {
-            return variableResult.getConstant().getSymbol();
+            return variableResult.getConstant().toDisplayString();
         }
         // Check if the expression is a known interaction variable
         InteractionVariable iVar = iVarMap.get(variableResult);

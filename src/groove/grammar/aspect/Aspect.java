@@ -17,6 +17,7 @@
 package groove.grammar.aspect;
 
 import groove.algebra.Constant;
+import groove.algebra.syntax.Expression;
 import groove.grammar.aspect.AspectKind.ContentKind;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
@@ -174,13 +175,17 @@ public class Aspect {
         boolean result =
             AspectKind.allowedNodeKinds.get(role).contains(getKind());
         if (result && getKind().hasSignature()) {
-            if (hasContent()) {
-                // data aspects with content not allowed in type graphs
+            switch (role) {
+            case TYPE:
+                result = !(getContent() instanceof Expression);
+                break;
+            case RULE:
+                result = !hasContent() || (getContent() instanceof Expression);
+                break;
+            case HOST:
                 result =
-                    getContent() instanceof Constant && role != GraphRole.TYPE;
-            } else {
-                // data aspects without content not allowed in host graphs
-                result = role != GraphRole.HOST;
+                    (getContent() instanceof Expression)
+                        && ((Expression) getContent()).isTerm();
             }
         }
         return result;

@@ -21,6 +21,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.PointAlgebra;
+import groove.algebra.PointBoolAlgebra;
+import groove.algebra.PointIntAlgebra;
+import groove.algebra.PointRealAlgebra;
+import groove.algebra.PointStringAlgebra;
 import groove.algebra.SignatureKind;
 
 import java.util.HashSet;
@@ -52,27 +56,27 @@ public class PointAlgebraTest extends
     public void testInt() {
         super.testInt();
         assertEquals(createInt(-1), createInt(1));
-        assertEquals(SignatureKind.INT.getDefaultValue(), createInt(1));
+        assertEquals(PointIntAlgebra.singleInt, createInt(1));
     }
 
     @Override
     public void testReal() {
         super.testReal();
         assertEquals(createReal(-0.1), createReal(10.5));
-        assertEquals(SignatureKind.REAL.getDefaultValue(), createReal(11.23));
+        assertEquals(PointRealAlgebra.singleReal, createReal(11.23));
     }
 
     @Override
     public void testBoolean() {
         super.testBoolean();
         assertEquals(bTrue(), bFalse());
-        assertEquals(SignatureKind.BOOL.getDefaultValue(), bTrue());
+        assertEquals(PointBoolAlgebra.singleBool, bTrue());
     }
 
     @Override
     public void testString() {
         super.testString();
         assertEquals(createString("a"), createString("b"));
-        assertEquals(SignatureKind.STRING.getDefaultValue(), createString("a"));
+        assertEquals(PointStringAlgebra.singleString, createString("a"));
     }
 }

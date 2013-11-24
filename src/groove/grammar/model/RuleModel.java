@@ -25,8 +25,8 @@ import static groove.grammar.aspect.AspectKind.PARAM_IN;
 import static groove.grammar.aspect.AspectKind.PARAM_OUT;
 import static groove.grammar.aspect.AspectKind.PRODUCT;
 import groove.algebra.Constant;
-import groove.algebra.Term;
-import groove.algebra.Variable;
+import groove.algebra.syntax.Expression;
+import groove.algebra.syntax.Variable;
 import groove.automaton.RegExpr;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
@@ -1724,7 +1724,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             int nr = node.getNumber();
             if (nodeAttrKind.hasSignature()) {
                 Aspect nodeAttr = node.getAttrAspect();
-                Term term;
+                Expression term;
                 if (nodeAttr.hasContent()) {
                     term = (Constant) nodeAttr.getContent();
                 } else {

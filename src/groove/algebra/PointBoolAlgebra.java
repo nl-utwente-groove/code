@@ -16,43 +16,46 @@
  */
 package groove.algebra;
 
+import groove.algebra.syntax.Expression;
+
 /**
  * Implementation of booleans consisting of a singleton value.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointBoolAlgebra extends BoolAlgebra<Object> implements
-        PointAlgebra<Object> {
+public class PointBoolAlgebra extends BoolAlgebra<Boolean> implements
+        PointAlgebra<Boolean> {
     /** Private constructor for the singleton instance. */
     private PointBoolAlgebra() {
         // empty
     }
 
     @Override
-    public Object and(Object arg0, Object arg1) {
+    public Boolean and(Boolean arg0, Boolean arg1) {
         return singleBool;
     }
 
     @Override
-    public Object eq(Object arg0, Object arg1) {
+    public Boolean eq(Boolean arg0, Boolean arg1) {
         return singleBool;
     }
 
     @Override
-    public Object neq(Object arg0, Object arg1) {
+    public Boolean neq(Boolean arg0, Boolean arg1) {
         return singleBool;
     }
 
     @Override
-    public Object not(Object arg) {
+    public Boolean not(Boolean arg) {
         return singleBool;
     }
 
     @Override
-    public Object or(Object arg0, Object arg1) {
+    public Boolean or(Boolean arg0, Boolean arg1) {
         return singleBool;
     }
 
+    @Override
     public String getName() {
         return NAME;
     }
@@ -62,29 +65,45 @@ public class PointBoolAlgebra extends BoolAlgebra<Object> implements
         return AlgebraFamily.POINT;
     }
 
+    @Override
     public String getSymbol(Object value) {
         return value.toString();
     }
 
     @Override
-    public Object getPointValue() {
-        return singleBool;
-    }
-
-    public Object getValueFromSymbol(String constant) {
+    public Boolean getPointValue() {
         return singleBool;
     }
 
     @Override
-    protected Object toValue(Boolean constant) {
+    public boolean isValue(Object value) {
+        return value == singleBool;
+    }
+
+    @Override
+    public Expression toTerm(Object value) {
+        return Constant.instance(singleBool);
+    }
+
+    @Override
+    public Boolean toJavaValue(Object value) {
+        return singleBool;
+    }
+
+    @Override
+    public Boolean toValueFromConstant(Constant constant) {
+        return singleBool;
+    }
+
+    @Override
+    protected Boolean toValueFromJavaBoolean(Boolean value) {
         return singleBool;
     }
 
     /** Name of this algebra. */
     public static final String NAME = "pbool";
     /** Singleton object of this algebra. */
-    public static final String singleBool =
-        SignatureKind.BOOL.getDefaultValue();
+    public static final Boolean singleBool = Boolean.FALSE;
     /** Singleton instance of this algebra. */
     public static final PointBoolAlgebra instance = new PointBoolAlgebra();
 }

@@ -18,8 +18,8 @@ package groove.grammar.model;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
-import groove.algebra.Constant;
 import groove.algebra.SignatureKind;
+import groove.algebra.syntax.Expression;
 import groove.grammar.aspect.Aspect;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
@@ -260,10 +260,10 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 Algebra<?> nodeAlgebra =
                     this.algebraFamily.getAlgebra(SignatureKind.getKind(attrType.getName()));
                 Aspect dataType = modelNode.getAttrAspect();
-                String symbol = ((Constant) dataType.getContent()).getSymbol();
+                Expression term = (Expression) dataType.getContent();
                 nodeImage =
-                    result.getFactory().createNodeFromString(nodeAlgebra,
-                        symbol);
+                    result.getFactory().createValueNode(nodeAlgebra,
+                        nodeAlgebra.toValue(term));
                 result.addNode(nodeImage);
             } else {
                 nodeImage = result.addNode(modelNode.getNumber());

@@ -16,11 +16,15 @@
  */
 package groove.algebra;
 
+import groove.algebra.syntax.CallExpr;
+import groove.algebra.syntax.Expression;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,7 +45,7 @@ public enum AlgebraFamily {
      * {@link Double} for {@code real}, 
      */
     DEFAULT("default", JavaIntAlgebra.instance, JavaBoolAlgebra.instance,
-            JavaStringAlgebra.instance, JavaDoubleAlgebra.instance),
+            JavaStringAlgebra.instance, JavaRealAlgebra.instance),
     /** Point algebra family: every sort has a single value. */
     POINT("point", PointIntAlgebra.instance, PointBoolAlgebra.instance,
             PointStringAlgebra.instance, PointRealAlgebra.instance),
@@ -52,7 +56,7 @@ public enum AlgebraFamily {
      * {@link BigDecimal} for {@code real}, 
      */
     BIG("big", BigIntAlgebra.instance, BigBoolAlgebra.instance,
-            BigStringAlgebra.instance, BigDoubleAlgebra.instance),
+            BigStringAlgebra.instance, BigRealAlgebra.instance),
     /** Term algebra: symbolic representations for all values. */
     TERM("term", TermIntAlgebra.instance, TermBoolAlgebra.instance,
             TermStringAlgebra.instance, TermRealAlgebra.instance);
@@ -79,7 +83,7 @@ public enum AlgebraFamily {
      * @param algebra the algebra to be added
      */
     private void setImplementation(Algebra<?> algebra) {
-        SignatureKind sigKind = algebra.getKind();
+        SignatureKind sigKind = algebra.getSignature();
         Algebra<?> oldAlgebra = this.algebraMap.put(sigKind, algebra);
         if (oldAlgebra != null) {
             throw new IllegalArgumentException(String.format(
@@ -114,52 +118,30 @@ public enum AlgebraFamily {
         return this.algebraMap.get(sigKind);
     }
 
-    /** 
-     * Returns the value for a given constant.
-     * @param signature the signature of which this is a constant
-     * @param constant the string representation of the constant.
-     * @return the value {@code constant} (in the appropriate algebra)
-     * @see #getAlgebraFor(String)
-     */
-    public Object getValue(SignatureKind signature, String constant) {
-        return getAlgebra(signature).getValueFromSymbol(constant);
-    }
-
     /** Indicates if this algebra family can assign definite values to variables. */
     public boolean supportsSymbolic() {
         return this == POINT;
     }
 
     /** 
-     * Returns the value for a given variable.
-     * This is only possible for algebras in which a variable has a single,
-     * well-defined value.
-     * @param signature the signature of which this is a constant
-     * @param variable the variable to be assigned
-     * @return the value {@code constant} (in the appropriate algebra)
-     * @see #getAlgebraFor(String)
-     */
-    public Object getValue(SignatureKind signature, Variable variable) {
-        if (this == POINT) {
-            return ((PointAlgebra<?>) getAlgebra(signature)).getPointValue();
-        } else {
-            throw new UnsupportedOperationException(String.format(
-                "Algebra family %s cannot assign value to variable %s",
-                getName(), variable.getName()));
-        }
-    }
-
-    /** 
      * Returns the value for a given term.
      * @return the value {@code term} (in the appropriate algebra)
      */
-    public Object getValue(Term term) {
-        if (term instanceof Constant) {
-            return getValue(term.getSignature(), ((Constant) term).getSymbol());
-        } else if (term instanceof Variable) {
+    public Object toValue(Expression term) {
+        switch (term.getKind()) {
+        case CONST:
+            return getAlgebra(term.getSignature()).toValueFromConstant((Constant) term);
+        case VAR:
             assert this == POINT;
-            return getValue(term.getSignature(), (Variable) term);
-        } else {
+            return ((PointAlgebra<?>) getAlgebra(term.getSignature())).getPointValue();
+        case CALL:
+            CallExpr call = (CallExpr) term;
+            List<Object> args = new ArrayList<Object>();
+            for (Expression arg : call.getArgs()) {
+                args.add(toValue(arg));
+            }
+            return getOperation(call.getOperator()).apply(args);
+        default:
             assert false;
             return null;
         }
@@ -187,21 +169,6 @@ public enum AlgebraFamily {
         return result;
     }
 
-    /** 
-     * Returns the algebra containing a given constant.
-     * The constant is looked up in the available algebras of this register.
-     * @param constant the string representation of the constant.
-     * @return the algebra containing {@code constant}, or {@code null} if there is no such algebra.
-     */
-    public Algebra<?> getAlgebraFor(String constant) {
-        for (Algebra<?> algebra : this.algebraMap.values()) {
-            if (algebra.isValue(constant)) {
-                return algebra;
-            }
-        }
-        return null;
-    }
-
     /**
      * Returns a mapping from operation names to operations for a given algebra.
      */
@@ -210,7 +177,7 @@ public enum AlgebraFamily {
         // first find out what methods were declared in the signature
         Set<String> methodNames = new HashSet<String>();
         Method[] signatureMethods =
-            Algebras.getSignature(algebra).getDeclaredMethods();
+            algebra.getSignature().getSignatureClass().getDeclaredMethods();
         for (Method method : signatureMethods) {
             if (Modifier.isAbstract(method.getModifiers())
                 && Modifier.isPublic(method.getModifiers())) {
@@ -282,7 +249,7 @@ public enum AlgebraFamily {
             this.algebra = algebra;
             this.method = method;
             SignatureKind returnType =
-                Algebras.getOperator(algebra.getKind(), method.getName()).getResultType();
+                algebra.getSignature().getOperator(method.getName()).getResultType();
             this.returnType = register.getAlgebra(returnType);
         }
 
@@ -292,7 +259,11 @@ public enum AlgebraFamily {
             } catch (IllegalAccessException e) {
                 throw new IllegalArgumentException();
             } catch (InvocationTargetException e) {
-                throw new IllegalArgumentException();
+                if (e.getCause() instanceof Error) {
+                    throw (Error) e.getCause();
+                } else {
+                    throw new IllegalArgumentException();
+                }
             }
         }
 

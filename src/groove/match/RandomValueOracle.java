@@ -17,6 +17,7 @@
 package groove.match;
 
 import groove.algebra.BoolSignature;
+import groove.algebra.Constant;
 import groove.algebra.SignatureKind;
 import groove.grammar.Condition;
 import groove.grammar.rule.VariableNode;
@@ -31,19 +32,20 @@ public class RandomValueOracle implements ValueOracle {
     }
 
     @Override
-    public Iterable<String> getValues(Condition condition, VariableNode var) {
+    public Iterable<Constant> getValues(Condition condition, VariableNode var) {
         SignatureKind sig = var.getSignature();
-        String result;
+        Constant result;
         switch (sig) {
         case BOOL:
             result =
-                Math.random() < 0.5 ? BoolSignature.TRUE : BoolSignature.FALSE;
+                Math.random() < 0.5 ? BoolSignature.TRUE
+                        : BoolSignature.FALSE;
             break;
         case INT:
-            result = "" + (int) (Math.random() * 100);
+            result = Constant.instance((int) Math.random() * 100);
             break;
         case REAL:
-            result = "" + (Math.random() * 100);
+            result = Constant.instance(Math.random() * 100);
             break;
         case STRING:
             StringBuffer text = new StringBuffer();
@@ -51,7 +53,7 @@ public class RandomValueOracle implements ValueOracle {
             for (int i = 0; i < length; i++) {
                 text.append((char) ('0' + Math.random() * 36));
             }
-            result = text.toString();
+            result = Constant.instance(text.toString());
             break;
         default:
             result = null;
