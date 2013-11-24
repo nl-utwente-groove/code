@@ -17,6 +17,7 @@
 package groove.control.parse;
 
 import groove.algebra.AlgebraFamily;
+import groove.algebra.syntax.Expression;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlCall.Kind;
@@ -27,6 +28,7 @@ import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.grammar.QualName;
 import groove.grammar.model.FormatErrorSet;
+import groove.grammar.model.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -392,12 +394,22 @@ public class CtrlHelper {
     CtrlPar checkConstArg(CtrlTree argTree) {
         assert argTree.getType() == CtrlChecker.ARG
             && argTree.getChildCount() == 1;
-        String constant = argTree.getChild(0).getText();
-        CtrlPar result =
-            new CtrlPar.Const(this.algebraFamily.getAlgebraFor(constant),
-                constant);
-        argTree.setCtrlPar(result);
-        return result;
+        try {
+            Expression constant =
+                Expression.parse(argTree.getChild(0).getText());
+            CtrlPar result =
+                new CtrlPar.Const(
+                    this.algebraFamily.getAlgebra(constant.getSignature()),
+                    this.algebraFamily.toValue(constant));
+            argTree.setCtrlPar(result);
+            return result;
+        } catch (FormatException e) {
+            // this cannot occur, as the constant string has just been approved
+            // by the control parser
+            assert false : String.format("%s is not a parsable constant",
+                argTree.getChild(0).getText());
+            return null;
+        }
     }
 
     CtrlCall checkCall(CtrlTree callTree) {

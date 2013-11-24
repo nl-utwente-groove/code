@@ -24,11 +24,12 @@ import groove.annotation.Syntax;
 import groove.annotation.ToolTipBody;
 import groove.annotation.ToolTipHeader;
 import groove.annotation.ToolTipPars;
-import groove.grammar.model.FormatException;
-import groove.util.ExprParser;
 
 /**
- * Signature for strings in graph grammars.
+ * Signature for string algebras.
+ * @param <String> The representation type of the string algebra 
+ * @param <Bool> The representation type of the boolean algebra 
+ * @param <Int> The representation type of the integer algebra  
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -90,45 +91,42 @@ public abstract class StringSignature<String,Bool,Int> implements Signature {
     @ToolTipBody("Yields the number of characters in string %s")
     public abstract Int length(String arg);
 
-    /**
-     * Tests if the string value is surrounded with double quotes.
-     * @see ExprParser#toUnquoted(java.lang.String, char)
-     */
-    public final boolean isValue(java.lang.String value) {
-        if (value.indexOf(ExprParser.DOUBLE_QUOTE_CHAR) != 0) {
-            return false;
-        }
-        try {
-            ExprParser.toUnquoted(value, ExprParser.DOUBLE_QUOTE_CHAR);
-            return true;
-        } catch (FormatException e) {
-            return false;
-        }
-    }
-
-    /**
-     * Conversion of native Java representation of string constants to
-     * the corresponding algebra values.
-     * @throws IllegalArgumentException if the parameter is not of type {@link java.lang.String}
-     */
-    final public String getValueFromJava(Object constant) {
-        if (!(constant instanceof java.lang.String)) {
-            throw new IllegalArgumentException(java.lang.String.format(
-                "Native int type is %s, not %s",
-                java.lang.String.class.getSimpleName(),
-                constant.getClass().getSimpleName()));
-        }
-        return toValue((java.lang.String) constant);
-    }
-
-    /** 
-     * Callback method to convert from the native ({@link java.lang.String})
-     * representation to the algebra representation.
-     */
-    protected abstract String toValue(java.lang.String constant);
-
     @Override
-    public SignatureKind getKind() {
+    public SignatureKind getSignature() {
         return SignatureKind.STRING;
+    }
+
+    /** String constant for the empty string. */
+    public static final Constant EMPTY = Constant.instance("");
+
+    /** Enumeration of all operators defined in this signature. */
+    public static enum Op implements Signature.OpValue {
+        /** Value for {@link #concat(Object, Object)}. */
+        CONCAT,
+        /** Value for {@link #eq(Object, Object)}. */
+        EQ,
+        /** Value for {@link #ge(Object, Object)}. */
+        GE,
+        /** Value for {@link #gt(Object, Object)}. */
+        GT,
+        /** Value for {@link #le(Object, Object)}. */
+        LE,
+        /** Value for {@link #lt(Object, Object)}. */
+        LT,
+        /** Value for {@link #neq(Object, Object)}. */
+        LENGTH,
+        /** Value for {@link #lt(Object, Object)}. */
+        NEQ, ;
+
+        public Operator getOperator() {
+            if (this.operator == null) {
+                this.operator =
+                    Operator.newInstance(SignatureKind.STRING, this);
+            }
+            return this.operator;
+        }
+
+        /** Corresponding operator object. */
+        private Operator operator;
     }
 }

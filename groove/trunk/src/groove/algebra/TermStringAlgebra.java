@@ -16,65 +16,58 @@
  */
 package groove.algebra;
 
-import groove.util.ExprParser;
+import groove.algebra.syntax.Expression;
 
 /**
  * Term algebra of strings.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TermStringAlgebra extends StringAlgebra<Term,Term,Term> {
+public class TermStringAlgebra extends
+        StringAlgebra<Expression,Expression,Expression> {
     /** Private constructor for the singleton instance. */
     private TermStringAlgebra() {
         // empty
     }
 
     @Override
-    public Term concat(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression concat(Expression arg0, Expression arg1) {
+        return Op.CONCAT.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term eq(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression eq(Expression arg0, Expression arg1) {
+        return Op.EQ.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term neq(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression ge(Expression arg0, Expression arg1) {
+        return Op.GE.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term ge(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression gt(Expression arg0, Expression arg1) {
+        return Op.GT.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term gt(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression le(Expression arg0, Expression arg1) {
+        return Op.LE.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term le(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression lt(Expression arg0, Expression arg1) {
+        return Op.LT.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term lt(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression length(Expression arg) {
+        return Op.LENGTH.getOperator().newTerm(arg);
     }
 
     @Override
-    public Term length(Term arg) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression neq(Expression arg0, Expression arg1) {
+        return Op.NEQ.getOperator().newTerm(arg0, arg1);
     }
 
     public String getName() {
@@ -86,19 +79,33 @@ public class TermStringAlgebra extends StringAlgebra<Term,Term,Term> {
         return AlgebraFamily.TERM;
     }
 
-    public String getSymbol(Object value) {
-        return ((Constant) value).getSymbol();
+    @Override
+    public boolean isValue(Object value) {
+        return value instanceof Expression
+            && ((Expression) value).getSignature() == getSignature();
     }
 
-    public Constant getValueFromSymbol(String symbol) {
-        return Algebras.getConstant(SignatureKind.STRING, symbol);
+    public String getSymbol(Object value) {
+        return ((Expression) value).toDisplayString();
     }
 
     @Override
-    public Constant toValue(String value) {
-        String symbol =
-            ExprParser.toQuoted(value, ExprParser.DOUBLE_QUOTE_CHAR);
-        return Algebras.getConstant(SignatureKind.STRING, symbol);
+    public Expression toTerm(Object value) {
+        return (Expression) value;
+    }
+
+    public Expression toValueFromConstant(Constant constant) {
+        return constant;
+    }
+
+    @Override
+    public String toJavaValue(Object value) {
+        return (String) AlgebraFamily.DEFAULT.toValue((Expression) value);
+    }
+
+    @Override
+    protected Constant toValueFromJavaString(String value) {
+        return Constant.instance(value);
     }
 
     /** Name of this algebra. */

@@ -216,7 +216,7 @@ public class EdgeCheckerNode extends ReteNetworkNode implements
     private boolean valuesMatch(VariableNode n1, ValueNode n2) {
         assert n2.getSignature().equals((n2.getSignature()));
         Constant c = n1.getConstant();
-        return (c == null) || (c.getSymbol().equals(n2.getSymbol()));
+        return (c == null) || (c.equals(n2.getTerm()));
     }
 
     /**

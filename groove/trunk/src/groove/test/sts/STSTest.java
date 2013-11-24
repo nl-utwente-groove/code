@@ -8,8 +8,8 @@ import groove.grammar.host.HostNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.lts.GTS;
+import groove.lts.GraphState;
 import groove.lts.MatchResult;
-import groove.lts.StartGraphState;
 import groove.sts.Gate;
 import groove.sts.Location;
 import groove.sts.LocationVariable;
@@ -19,7 +19,6 @@ import groove.sts.SwitchRelation;
 import groove.util.Groove;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -60,6 +59,7 @@ public class STSTest extends TestCase {
     /**
      * Sets up all Object needed for the tests
      */
+    @Override
     protected void setUp() {
         this.sts = new STS();
 
@@ -129,11 +129,13 @@ public class STSTest extends TestCase {
         try {
             GrammarModel view =
                 Groove.loadGrammar(INPUT_DIR + "/" + "exception");
-            HostGraph graph = view.getStartGraphModel().toHost();
-            this.sts.hostGraphToStartLocation(graph);
-            for (MatchResult next : createMatchSet(view)) {
+            GTS gts =
+                new GTS(view.getStartGraphModel().getGrammar().toGrammar());
+            GraphState state = gts.startState();
+            this.sts.hostGraphToStartLocation(state.getGraph());
+            for (MatchResult next : state.getMatches()) {
                 try {
-                    this.sts.ruleMatchToSwitchRelation(graph, next,
+                    this.sts.ruleMatchToSwitchRelation(state.getGraph(), next,
                         new HashSet<SwitchRelation>());
                     Assert.fail("No STSException thrown.");
                 } catch (STSException e) {
@@ -196,9 +198,11 @@ public class STSTest extends TestCase {
         try {
             GrammarModel view =
                 Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            HostGraph graph = view.getStartGraphModel().toHost();
-            for (MatchResult next : createMatchSet(view)) {
-                testRuleMatchToSwitchRelation(graph, next);
+            GTS gts =
+                new GTS(view.getStartGraphModel().getGrammar().toGrammar());
+            GraphState state = gts.startState();
+            for (MatchResult next : state.getMatches()) {
+                testRuleMatchToSwitchRelation(state.getGraph(), next);
             }
             toJsonTest();
         } catch (IOException e) {
@@ -211,22 +215,6 @@ public class STSTest extends TestCase {
     private void toJsonTest() {
         String json = this.sts.toJSON();
         // TODO: Test if json is well-formed
-    }
-
-    /** 
-     * Gets the first matchset for the given grammar for rule to switchrelation tests 
-     */
-    private Collection<? extends MatchResult> createMatchSet(GrammarModel view) {
-        try {
-            HostGraph graph = view.getStartGraphModel().toHost();
-            GTS gts =
-                new GTS(view.getStartGraphModel().getGrammar().toGrammar());
-            StartGraphState state = new StartGraphState(gts, graph);
-            return state.getMatches();
-        } catch (FormatException e) {
-            Assert.fail(e.getMessage());
-        }
-        return null;
     }
 
     private void testRuleMatchToSwitchRelation(HostGraph sourceGraph,

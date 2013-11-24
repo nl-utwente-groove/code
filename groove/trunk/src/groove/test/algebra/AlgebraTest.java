@@ -17,6 +17,7 @@
 package groove.test.algebra;
 
 import static org.junit.Assert.assertEquals;
+import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.BoolAlgebra;
 import groove.algebra.IntAlgebra;
@@ -39,8 +40,8 @@ public abstract class AlgebraTest<B,I,R,S> {
             (RealAlgebra<R,B,S>) family.getAlgebra(SignatureKind.REAL);
         this.stringAlgebra =
             (StringAlgebra<S,B,I>) family.getAlgebra(SignatureKind.STRING);
-        this.TRUE = this.boolAlgebra.getValueFromJava(true);
-        this.FALSE = this.boolAlgebra.getValueFromJava(false);
+        this.TRUE = this.boolAlgebra.toValueFromJava(true);
+        this.FALSE = this.boolAlgebra.toValueFromJava(false);
     }
 
     /** Tests consistency of the definitions. */
@@ -70,45 +71,35 @@ public abstract class AlgebraTest<B,I,R,S> {
 
     /** Factory method to create an integer representation from a Java integer value. */
     protected I createInt(int value) {
-        I result = this.intAlgebra.getValueFromJava(value);
-        assertEquals(result,
-            createIntFromSymbol(this.intAlgebra.getSymbol(result)));
+        I result = this.intAlgebra.toValueFromJava(value);
+        testConversion(this.intAlgebra, result);
         return result;
-    }
-
-    /** Factory method to create an integer representation from a symbolic (String) representation. */
-    protected I createIntFromSymbol(String symbol) {
-        return this.intAlgebra.getValueFromSymbol(symbol);
     }
 
     /** Factory method to create a boolean representation from a Java boolean value. */
     protected B createBool(boolean value) {
-        return this.boolAlgebra.getValueFromJava(value);
-    }
-
-    /** Factory method to create a boolean representation from a symbolic (String) representation. */
-    protected B createBoolFromSymbol(String symbol) {
-        return this.boolAlgebra.getValueFromSymbol(symbol);
+        B result = this.boolAlgebra.toValueFromJava(value);
+        testConversion(this.boolAlgebra, result);
+        return result;
     }
 
     /** Factory method to create a real-number representation from a Java double value. */
     protected R createReal(double value) {
-        return this.realAlgebra.getValueFromJava(value);
-    }
-
-    /** Factory method to create a real-number representation from a symbolic (String) representation. */
-    protected R createRealFromSymbol(String symbol) {
-        return this.realAlgebra.getValueFromSymbol(symbol);
+        R result = this.realAlgebra.toValueFromJava(value);
+        testConversion(this.realAlgebra, result);
+        return result;
     }
 
     /** Factory method to create a string representation from a Java String value. */
     protected S createString(String value) {
-        return this.stringAlgebra.getValueFromJava(value);
+        S result = this.stringAlgebra.toValueFromJava(value);
+        testConversion(this.stringAlgebra, result);
+        return result;
     }
 
-    /** Factory method to create a string representation from a symbolic (String) representation. */
-    protected S createStringFromSymbol(String symbol) {
-        return this.stringAlgebra.getValueFromSymbol(symbol);
+    /** Tests conversion from algebra value to term and back. */
+    private void testConversion(Algebra<?> algebra, Object value) {
+        assertEquals(value, algebra.toValue(algebra.toTerm(value)));
     }
 
     /** Returns the representation of the Boolean value {@code true} */
@@ -342,10 +333,10 @@ public abstract class AlgebraTest<B,I,R,S> {
     }
 
     private final AlgebraFamily family;
-    private final IntAlgebra<I,B,S> intAlgebra;
-    private final BoolAlgebra<B> boolAlgebra;
-    private final RealAlgebra<R,B,S> realAlgebra;
-    private final StringAlgebra<S,B,I> stringAlgebra;
+    final IntAlgebra<I,B,S> intAlgebra;
+    final BoolAlgebra<B> boolAlgebra;
+    final RealAlgebra<R,B,S> realAlgebra;
+    final StringAlgebra<S,B,I> stringAlgebra;
     private final B TRUE;
     private final B FALSE;
 }

@@ -19,5 +19,5 @@ package groove.algebra;
 /** Special algebra that guarantees the existence of a single value. */
 public interface PointAlgebra<T> extends Algebra<T> {
     /** Returns the single value of the algebra. */
-    public Object getPointValue();
+    public T getPointValue();
 }

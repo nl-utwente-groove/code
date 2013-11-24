@@ -16,19 +16,22 @@
  */
 package groove.algebra;
 
+import groove.algebra.syntax.Expression;
+
 /**
  * Implementation of integers consisting of a singleton value.
  * To be used in conjunction with {@link PointBoolAlgebra} and {@link PointStringAlgebra}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointIntAlgebra extends IntAlgebra<Object,Object,Object> implements
-        PointAlgebra<Object> {
+public class PointIntAlgebra extends IntAlgebra<Integer,Boolean,String>
+        implements PointAlgebra<Integer> {
     /** Private constructor for the singleton instance. */
     private PointIntAlgebra() {
         // empty
     }
 
+    @Override
     public String getName() {
         return NAME;
     }
@@ -38,122 +41,139 @@ public class PointIntAlgebra extends IntAlgebra<Object,Object,Object> implements
         return AlgebraFamily.POINT;
     }
 
+    public boolean isValue(Object value) {
+        return value == singleInt;
+    }
+
+    @Override
     public String getSymbol(Object value) {
         return value.toString();
     }
 
     @Override
-    public Object getPointValue() {
-        return singleInt;
-    }
-
-    public Object getValueFromSymbol(String constant) {
+    public Integer getPointValue() {
         return singleInt;
     }
 
     @Override
-    protected Object toValue(Integer constant) {
+    public Expression toTerm(Object value) {
+        return singleIntConstant;
+    }
+
+    @Override
+    public Integer toJavaValue(Object value) {
         return singleInt;
     }
 
     @Override
-    public Object abs(Object arg) {
+    public Integer toValueFromConstant(Constant constant) {
         return singleInt;
     }
 
     @Override
-    public Object add(Object arg0, Object arg1) {
+    protected Integer toValue(Integer constant) {
         return singleInt;
     }
 
     @Override
-    public Object div(Object arg0, Object arg1) {
+    public Integer abs(Integer arg) {
         return singleInt;
     }
 
     @Override
-    public Object eq(Object arg0, Object arg1) {
+    public Integer add(Integer arg0, Integer arg1) {
+        return singleInt;
+    }
+
+    @Override
+    public Integer div(Integer arg0, Integer arg1) {
+        return singleInt;
+    }
+
+    @Override
+    public Boolean eq(Integer arg0, Integer arg1) {
         return singleBool;
     }
 
     @Override
-    public Object neq(Object arg0, Object arg1) {
+    public Boolean neq(Integer arg0, Integer arg1) {
         return singleBool;
     }
 
     @Override
-    public Object ge(Object arg0, Object arg1) {
+    public Boolean ge(Integer arg0, Integer arg1) {
         return singleBool;
     }
 
     @Override
-    public Object gt(Object arg0, Object arg1) {
+    public Boolean gt(Integer arg0, Integer arg1) {
         return singleBool;
     }
 
     @Override
-    public Object le(Object arg0, Object arg1) {
+    public Boolean le(Integer arg0, Integer arg1) {
         return singleBool;
     }
 
     @Override
-    public Object lt(Object arg0, Object arg1) {
+    public Boolean lt(Integer arg0, Integer arg1) {
         return singleBool;
     }
 
     @Override
-    public Object max(Object arg0, Object arg1) {
+    public Integer max(Integer arg0, Integer arg1) {
         return singleInt;
     }
 
     @Override
-    public Object min(Object arg0, Object arg1) {
+    public Integer min(Integer arg0, Integer arg1) {
         return singleInt;
     }
 
     @Override
-    public Object mod(Object arg0, Object arg1) {
+    public Integer mod(Integer arg0, Integer arg1) {
         return singleInt;
     }
 
     @Override
-    public Object mul(Object arg0, Object arg1) {
+    public Integer mul(Integer arg0, Integer arg1) {
         return singleInt;
     }
 
     @Override
-    public Object neg(Object arg) {
+    public Integer neg(Integer arg) {
         return singleInt;
     }
 
     @Override
-    public Object sub(Object arg0, Object arg1) {
+    public Integer sub(Integer arg0, Integer arg1) {
         return singleInt;
     }
 
     @Override
-    public Object toString(Object arg) {
+    public String toString(Integer arg) {
         return singleString;
     }
 
     /** Name of this algebra. */
     public static final String NAME = "pint";
     /** 
-     * Representation of the point value of the string algebra;
-     * redefined literally to avoid class loading dependencies.
+     * Representation of the point value of the string algebra.
+     * Redefined literally to avoid circular class loading dependencies.
      * @see PointStringAlgebra#singleString
      */
-    public static final String singleString =
-        SignatureKind.STRING.getDefaultValue();
+    public static final String singleString = "";
     /** 
-     * Representation of the point value of the boolean algebra;
-     * redefined literally to avoid class loading dependencies.
+     * Representation of the point value of the boolean algebra.
+     * Redefined literally to avoid circular class loading dependencies.
      * @see PointBoolAlgebra#singleBool
      */
-    public static final String singleBool =
-        SignatureKind.BOOL.getDefaultValue();
+    public static final Boolean singleBool = Boolean.FALSE;
     /** Point value of the int algebra. */
-    public static final String singleInt = SignatureKind.INT.getDefaultValue();
+    public static final Integer singleInt = 0;
+    /** Constant representing the point value of the int algebra. */
+    public static final Constant singleIntConstant =
+        Constant.instance(singleInt);
     /** Singleton instance of this algebra. */
     public static final PointIntAlgebra instance = new PointIntAlgebra();
 }

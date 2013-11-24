@@ -17,7 +17,6 @@
 package groove.control;
 
 import groove.algebra.Algebra;
-import groove.algebra.Algebras;
 import groove.grammar.host.ValueNode;
 import groove.grammar.rule.RuleNode;
 
@@ -210,14 +209,14 @@ public abstract class CtrlPar {
      */
     public static class Const extends CtrlPar {
         /**
-         * Constructs a constant argument from a string representation of the 
-         * constant value
-         * @param repr String representation of this constant
+         * Constructs a constant argument from an algebra value
+         * @param algebra the algebra from which the value is taken
+         * @param value the algebra value
          */
-        public Const(Algebra<?> algebra, String repr) {
+        public Const(Algebra<?> algebra, Object value) {
             this.algebra = algebra;
-            this.value = algebra.getValueFromSymbol(repr);
-            this.type = CtrlType.getDataType(Algebras.getSignatureFor(repr));
+            this.value = value;
+            this.type = CtrlType.getDataType(algebra.getSignature());
         }
 
         @Override

@@ -16,7 +16,7 @@
  */
 package groove.algebra;
 
-import java.math.BigInteger;
+import groove.algebra.syntax.Expression;
 
 /**
  * Integer algebra based on the java type {@link Integer}.
@@ -109,11 +109,24 @@ public class JavaIntAlgebra extends IntAlgebra<Integer,Boolean,String> {
         return arg.toString();
     }
 
-    /**
-     * Delegates to {@link BigInteger#intValue()}.
-     */
-    public Integer getValueFromSymbol(String symbol) {
-        return new BigInteger(symbol).intValue();
+    @Override
+    public boolean isValue(Object value) {
+        return value instanceof Integer;
+    }
+
+    public Expression toTerm(Object value) {
+        return Constant.instance((Integer) value);
+    }
+
+    @Override
+    public Integer toValueFromConstant(Constant constant) {
+        return constant.getIntRepr().intValue();
+    }
+
+    /* The value is already of the right type. */
+    @Override
+    public Integer toJavaValue(Object value) {
+        return (Integer) value;
     }
 
     @Override

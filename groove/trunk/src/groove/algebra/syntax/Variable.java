@@ -14,14 +14,19 @@
  *
  * $Id$
  */
-package groove.algebra;
+package groove.algebra.syntax;
+
+import groove.algebra.SignatureKind;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Algebraic variable.
  * @author Rensink
  * @version $Revision $
  */
-public class Variable implements Term {
+public class Variable extends Expression {
     /** Constructs a new variable with a given name and signature. */
     public Variable(String name, SignatureKind signature) {
         this.signature = signature;
@@ -34,6 +39,11 @@ public class Variable implements Term {
     }
 
     @Override
+    public String toDisplayString() {
+        return getName();
+    }
+
+    @Override
     public SignatureKind getSignature() {
         return this.signature;
     }
@@ -41,6 +51,21 @@ public class Variable implements Term {
     @Override
     public int hashCode() {
         return getName().hashCode();
+    }
+
+    @Override
+    public boolean isTerm() {
+        return true;
+    }
+
+    @Override
+    public boolean isClosed() {
+        return false;
+    }
+
+    @Override
+    public Map<String,SignatureKind> computeVarMap() {
+        return Collections.singletonMap(getName(), getSignature());
     }
 
     @Override

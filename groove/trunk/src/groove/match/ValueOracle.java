@@ -16,11 +16,12 @@
  */
 package groove.match;
 
+import groove.algebra.Constant;
 import groove.grammar.Condition;
 import groove.grammar.rule.VariableNode;
 
 /** Interface to provide values for unbound variable nodes during matching. */
 public interface ValueOracle {
     /** Returns a range of possible values for a given variable node. */
-    Iterable<String> getValues(Condition condition, VariableNode var);
+    Iterable<Constant> getValues(Condition condition, VariableNode var);
 }

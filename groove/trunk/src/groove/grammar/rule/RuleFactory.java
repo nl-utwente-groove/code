@@ -17,7 +17,7 @@
 package groove.grammar.rule;
 
 import groove.algebra.Operator;
-import groove.algebra.Term;
+import groove.algebra.syntax.Expression;
 import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeFactory;
 import groove.grammar.type.TypeGuard;
@@ -49,7 +49,7 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
     }
 
     /** Creates a variable node for a given algebra term, and with a given node number. */
-    public VariableNode createVariableNode(int nr, Term term) {
+    public VariableNode createVariableNode(int nr, Expression term) {
         updateMaxNodeNr(nr);
         TypeNode type = getTypeFactory().getDataType(term.getSignature());
         return new VariableNode(nr, term, type);
