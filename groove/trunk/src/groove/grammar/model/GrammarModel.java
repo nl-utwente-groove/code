@@ -434,13 +434,17 @@ public class GrammarModel implements Observer {
                 }
             }
         }
-        // set control
-        CtrlAut control = getControlModel().toResource();
-        if (result.hasMultiplePriorities()
-            && !getActiveNames(CONTROL).isEmpty()) {
-            errors.add("Rule priorities and explicit control cannot be used simultaneously");
+        try {
+            // set control
+            CtrlAut control = getControlModel().toResource();
+            if (result.hasMultiplePriorities()
+                && !getActiveNames(CONTROL).isEmpty()) {
+                errors.add("Rule priorities and explicit control cannot be used simultaneously");
+            }
+            result.setCtrlAut(control);
+        } catch (FormatException e) {
+            errors.addAll(e.getErrors());
         }
-        result.setCtrlAut(control);
         // set properties
         result.setProperties(getProperties());
         // set start graph
