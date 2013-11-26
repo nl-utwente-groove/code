@@ -16,47 +16,45 @@
  */
 package groove.algebra;
 
+import groove.algebra.syntax.Expression;
+
 /**
  * Implementation of booleans consisting of a singleton value.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TermBoolAlgebra extends BoolAlgebra<Term> {
+public class TermBoolAlgebra extends BoolAlgebra<Expression> {
     /** Private constructor for the singleton instance. */
     private TermBoolAlgebra() {
         // empty
     }
 
     @Override
-    public Term and(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression and(Expression arg0, Expression arg1) {
+        return Op.AND.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term eq(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression eq(Expression arg0, Expression arg1) {
+        return Op.EQ.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term neq(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression neq(Expression arg0, Expression arg1) {
+        return Op.NEQ.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term not(Term arg) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression not(Expression arg) {
+        return Op.NOT.getOperator().newTerm(arg);
     }
 
     @Override
-    public Term or(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression or(Expression arg0, Expression arg1) {
+        return Op.OR.getOperator().newTerm(arg0, arg1);
     }
 
+    @Override
     public String getName() {
         return NAME;
     }
@@ -66,17 +64,35 @@ public class TermBoolAlgebra extends BoolAlgebra<Term> {
         return AlgebraFamily.TERM;
     }
 
-    public String getSymbol(Object value) {
-        return ((Constant) value).getSymbol();
-    }
-
-    public Constant getValueFromSymbol(String constant) {
-        return Algebras.getConstant(SignatureKind.BOOL, constant);
+    @Override
+    public boolean isValue(Object value) {
+        return value instanceof Expression
+            && ((Expression) value).getSignature() == getSignature();
     }
 
     @Override
-    protected Constant toValue(Boolean constant) {
-        return Algebras.getConstant(SignatureKind.BOOL, constant.toString());
+    public String getSymbol(Object value) {
+        return ((Expression) value).toDisplayString();
+    }
+
+    @Override
+    public Expression toTerm(Object value) {
+        return (Expression) value;
+    }
+
+    @Override
+    public Expression toValueFromConstant(Constant constant) {
+        return constant;
+    }
+
+    @Override
+    public Boolean toJavaValue(Object value) {
+        return (Boolean) AlgebraFamily.DEFAULT.toValue((Expression) value);
+    }
+
+    @Override
+    protected Constant toValueFromJavaBoolean(Boolean value) {
+        return Constant.instance(value);
     }
 
     /** Name of this algebra. */

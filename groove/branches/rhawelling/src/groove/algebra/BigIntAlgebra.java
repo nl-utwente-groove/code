@@ -16,6 +16,8 @@
  */
 package groove.algebra;
 
+import groove.algebra.syntax.Expression;
+
 import java.math.BigInteger;
 
 /**
@@ -109,12 +111,24 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,Boolean,String> {
         return arg.toString();
     }
 
-    /**
-     * Delegates to {@link BigInteger#BigInteger(String)}.
-     */
     @Override
-    public BigInteger getValueFromSymbol(String symbol) {
-        return new BigInteger(symbol);
+    public boolean isValue(Object value) {
+        return value instanceof BigInteger;
+    }
+
+    @Override
+    public Expression toTerm(Object value) {
+        return Constant.instance((BigInteger) value);
+    }
+
+    @Override
+    public BigInteger toValueFromConstant(Constant constant) {
+        return constant.getIntRepr();
+    }
+
+    @Override
+    public Integer toJavaValue(Object value) {
+        return ((BigInteger) value).intValue();
     }
 
     @Override
@@ -122,15 +136,11 @@ public class BigIntAlgebra extends IntAlgebra<BigInteger,Boolean,String> {
         return BigInteger.valueOf(constant);
     }
 
-    /**
-     * Delegates to {@link BigInteger#toString()}.
-     */
     @Override
     public String getSymbol(Object value) {
         return value.toString();
     }
 
-    /** Returns {@link #NAME}. */
     @Override
     public String getName() {
         return NAME;

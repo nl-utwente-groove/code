@@ -18,12 +18,13 @@ package groove.grammar.aspect;
 
 import static groove.grammar.aspect.AspectParser.ASSIGN;
 import static groove.grammar.aspect.AspectParser.SEPARATOR;
-import groove.algebra.Algebras;
 import groove.algebra.Constant;
 import groove.algebra.Operator;
+import groove.algebra.Signature.OpValue;
 import groove.algebra.SignatureKind;
+import groove.algebra.syntax.Expression;
+import groove.algebra.syntax.Expression.Kind;
 import groove.annotation.Help;
-import groove.grammar.aspect.Expression.Kind;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.LabelPattern;
 import groove.grammar.type.Multiplicity;
@@ -31,6 +32,7 @@ import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.util.Colors;
+import groove.util.Keywords;
 import groove.util.Pair;
 
 import java.awt.Color;
@@ -76,13 +78,13 @@ public enum AspectKind {
 
     // data types
     /** Indicates a boolean value or operator. */
-    BOOL(SignatureKind.BOOL.getName(), ContentKind.BOOL_LITERAL),
+    BOOL(Keywords.BOOL, ContentKind.BOOL_LITERAL),
     /** Indicates an integer value or operator. */
-    INT(SignatureKind.INT.getName(), ContentKind.INT_LITERAL),
+    INT(Keywords.INT, ContentKind.INT_LITERAL),
     /** Indicates a floating-point value or operator. */
-    REAL(SignatureKind.REAL.getName(), ContentKind.REAL_LITERAL),
+    REAL(Keywords.REAL, ContentKind.REAL_LITERAL),
     /** Indicates a string value or operator. */
-    STRING(SignatureKind.STRING.getName(), ContentKind.STRING_LITERAL),
+    STRING(Keywords.STRING, ContentKind.STRING_LITERAL),
 
     // auxiliary attribute-related aspects
     /** Indicates an argument edge. */
@@ -96,11 +98,11 @@ public enum AspectKind {
 
     // rule parameters
     /** Indicates a bidirectional rule parameter. */
-    PARAM_BI("par", ContentKind.PARAM),
+    PARAM_BI(Keywords.PAR, ContentKind.PARAM),
     /** Indicates an input rule parameter. */
-    PARAM_IN("parin", ContentKind.PARAM),
+    PARAM_IN(Keywords.PAR_IN, ContentKind.PARAM),
     /** Indicates an output rule parameter. */
-    PARAM_OUT("parout", ContentKind.PARAM),
+    PARAM_OUT(Keywords.PAR_OUT, ContentKind.PARAM),
 
     // type-related aspects
     /** Indicates a nodified edge type. */
@@ -891,11 +893,11 @@ public enum AspectKind {
     static private String ops(AspectKind kind) {
         StringBuilder result = new StringBuilder();
         assert kind.hasSignature();
-        for (String opName : Algebras.getOperatorNames(SignatureKind.getKind(kind.getName()))) {
+        for (OpValue op : SignatureKind.getKind(kind.getName()).getOpValues()) {
             if (result.length() > 0) {
                 result.append(", ");
             }
-            result.append(Help.it(opName));
+            result.append(Help.it(op.getOperator().getName()));
         }
         return result.toString();
     }
@@ -1298,17 +1300,14 @@ public enum AspectKind {
             @Override
             String parseContent(String text, GraphRole role)
                 throws FormatException {
-                boolean reserved = text.length() > 1;
                 for (int i = 0; i < text.length(); i++) {
                     char c = text.charAt(i);
                     if (i == 0 ? !isValidFirstChar(c) : !isValidNextChar(c)) {
                         throw new FormatException("Invalid node name '%s'",
                             text);
                     }
-                    reserved &=
-                        i == 0 ? Character.isLetter(c) : Character.isDigit(c);
                 }
-                if (reserved) {
+                if (text.charAt(0) == '$' || text.equals(Keywords.SELF)) {
                     throw new FormatException(
                         "Reserved node name '%s' (letter digit+)", text);
                 }
@@ -1338,7 +1337,7 @@ public enum AspectKind {
                             "Identifier '%s' not allowed as predicate expression",
                             text);
                     }
-                    SignatureKind type = expr.getType();
+                    SignatureKind type = expr.getSignature();
                     if (type != SignatureKind.BOOL) {
                         throw new FormatException(
                             "Non-boolean expression '%s' not allowed as predicate expression",
@@ -1362,7 +1361,8 @@ public enum AspectKind {
                 if (content instanceof Assignment) {
                     return ((Assignment) content).relabel(oldLabel, newLabel);
                 } else {
-                    return ((Expression) content).relabel(oldLabel, newLabel);
+                    return ((groove.algebra.syntax.Expression) content).relabel(
+                        oldLabel, newLabel);
                 }
             }
         },
@@ -1469,6 +1469,7 @@ public enum AspectKind {
                 throw new UnsupportedOperationException("No content allowed");
             }
             if (role == GraphRole.TYPE) {
+                // in a type graph, this is the declaration of an attribute
                 assert text.length() > 0;
                 boolean isIdent =
                     Character.isJavaIdentifierStart(text.charAt(0));
@@ -1480,10 +1481,23 @@ public enum AspectKind {
                         "Attributes field '%s' must be identifier", text);
                 }
                 result = text;
+            } else if (role == GraphRole.HOST) {
+                // in a host graph, this is a term
+                result = Expression.parse(text);
             } else {
-                result = Algebras.getConstant(this.signature, text);
-                if (result == null) {
-                    result = Algebras.getOperator(this.signature, text);
+                Constant constant = null;
+                try {
+                    constant = Constant.parseConstant(text);
+                } catch (FormatException e) {
+                    // try for operator
+                }
+                if (constant == null) {
+                    result = this.signature.getOperator(text);
+                } else if (constant.getSignature() != this.signature) {
+                    throw new FormatException(
+                        "Constant '%s' is not of type '%s'", this.signature);
+                } else {
+                    result = constant;
                 }
                 if (result == null) {
                     throw new FormatException(
@@ -1504,7 +1518,7 @@ public enum AspectKind {
             if (content == null) {
                 return "";
             } else if (content instanceof Constant) {
-                return ((Constant) content).getSymbol();
+                return ((Constant) content).toInputString();
             } else if (content instanceof Operator) {
                 return ((Operator) content).getName();
             } else if (content instanceof Color) {
@@ -1556,18 +1570,16 @@ public enum AspectKind {
         }
 
         /**
-         * Indicates if a given character is allowed in level names. Currently
-         * allowed are: letters, digits, currency symbols, underscores and periods.
-         * @param c the character to be tested
+         * Indicates if a given character is allowed as the first part of a name.
+         * Delegates to {@link Character#isJavaIdentifierStart(char)}.
          */
         static private boolean isValidFirstChar(char c) {
             return Character.isJavaIdentifierStart(c);
         }
 
         /**
-         * Indicates if a given character is allowed in level names. Currently
-         * allowed are: letters, digits, currency symbols, underscores and periods.
-         * @param c the character to be tested
+         * Indicates if a given character is allowed in a name names.
+         * Delegates to {@link Character#isJavaIdentifierPart(char)}.
          */
         static private boolean isValidNextChar(char c) {
             return Character.isJavaIdentifierPart(c);
@@ -1577,6 +1589,8 @@ public enum AspectKind {
 
         /** Start character of parameter strings. */
         static public final char PARAM_START_CHAR = '$';
+        /** Reserved name "self". */
+        static public final String SELF_NAME = "self";
     }
 
     /** Correct values of the {@link #NESTED} aspect kind. */

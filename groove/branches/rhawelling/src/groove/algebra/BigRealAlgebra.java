@@ -16,8 +16,9 @@
  */
 package groove.algebra;
 
+import groove.algebra.syntax.Expression;
+
 import java.math.BigDecimal;
-import java.math.MathContext;
 
 /**
  * Double algebra based on reals of arbitrary precision.
@@ -25,9 +26,9 @@ import java.math.MathContext;
  * @author Arend Rensink
  * @version $Revision: 1577 $
  */
-public class BigDoubleAlgebra extends RealAlgebra<BigDecimal,Boolean,String> {
+public class BigRealAlgebra extends RealAlgebra<BigDecimal,Boolean,String> {
     /** Private constructor for the singleton instance. */
-    private BigDoubleAlgebra() {
+    private BigRealAlgebra() {
         // empty
     }
 
@@ -110,16 +111,28 @@ public class BigDoubleAlgebra extends RealAlgebra<BigDecimal,Boolean,String> {
         return arg.toString();
     }
 
-    /**
-     * Creates a new {@link BigDecimal}.
-     */
-    public BigDecimal getValueFromSymbol(String symbol) {
-        return new BigDecimal(symbol, MathContext.DECIMAL128);
+    public boolean isValue(Object value) {
+        return value instanceof BigDecimal;
     }
 
     @Override
-    protected BigDecimal toValue(Double constant) {
-        return BigDecimal.valueOf(constant);
+    public Expression toTerm(Object value) {
+        return Constant.instance((BigDecimal) value);
+    }
+
+    @Override
+    public BigDecimal toValueFromConstant(Constant constant) {
+        return constant.getRealRepr();
+    }
+
+    @Override
+    public Double toJavaValue(Object value) {
+        return ((BigDecimal) value).doubleValue();
+    }
+
+    @Override
+    protected BigDecimal toValueFromJavaDouble(Double value) {
+        return BigDecimal.valueOf(value);
     }
 
     /**
@@ -156,5 +169,5 @@ public class BigDoubleAlgebra extends RealAlgebra<BigDecimal,Boolean,String> {
     /** Name of the algebra. */
     public static final String NAME = "bdouble";
     /** Singleton instance of this algebra. */
-    public static final BigDoubleAlgebra instance = new BigDoubleAlgebra();
+    public static final BigRealAlgebra instance = new BigRealAlgebra();
 }

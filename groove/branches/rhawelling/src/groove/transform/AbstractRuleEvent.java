@@ -78,7 +78,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
                 if (arg == null) {
                     result.append('_');
                 } else if (arg instanceof ValueNode) {
-                    result.append(((ValueNode) arg).getSymbol());
+                    result.append(((ValueNode) arg).getTerm());
                 } else {
                     result.append(arg);
                 }

@@ -19,14 +19,13 @@ package groove.grammar.aspect;
 import static groove.graph.GraphRole.HOST;
 import static groove.graph.GraphRole.RULE;
 import static groove.graph.GraphRole.TYPE;
-import groove.algebra.Algebras;
 import groove.algebra.Constant;
 import groove.algebra.Operator;
+import groove.algebra.syntax.CallExpr;
+import groove.algebra.syntax.Expression;
+import groove.algebra.syntax.FieldExpr;
+import groove.algebra.syntax.Parameter;
 import groove.automaton.RegExpr;
-import groove.grammar.aspect.Expression.Call;
-import groove.grammar.aspect.Expression.Const;
-import groove.grammar.aspect.Expression.Field;
-import groove.grammar.aspect.Expression.Par;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
@@ -51,6 +50,7 @@ import groove.graph.plain.PlainNode;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.gui.list.SearchResult;
+import groove.util.Keywords;
 
 import java.awt.Point;
 import java.awt.geom.Rectangle2D;
@@ -279,8 +279,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                     outcome =
                         addExpression(source, (Expression) edge.getPredicate());
                     // specify whether the outcome should be true or false
-                    Constant value =
-                        Algebras.getConstant(nac ? "false" : "true");
+                    Constant value = Constant.instance(!nac);
                     outcome.setAspects(parser.parse(value.toString(), getRole()));
                 }
             } catch (FormatException e) {
@@ -329,14 +328,18 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     private AspectNode addExpression(AspectNode source, Expression expr)
         throws FormatException {
         switch (expr.getKind()) {
-        case CONSTANT:
-            return addConstant(((Const) expr).getConstant());
+        case CONST:
+            return addConstant(expr);
         case FIELD:
-            return addField(source, (Field) expr);
+            return addField(source, (FieldExpr) expr);
         case CALL:
-            return addCall(source, (Call) expr);
+            if (getRole() == HOST) {
+                return addConstant(expr);
+            } else {
+                return addCall(source, (CallExpr) expr);
+            }
         case PAR:
-            return addPar(source, (Par) expr);
+            return addPar(source, (Parameter) expr);
         default:
             assert false;
             return null;
@@ -348,8 +351,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * @param constant the constant for which we add a node
      * @return the node representing the constant
      */
-    private AspectNode addConstant(Constant constant) {
+    private AspectNode addConstant(Expression constant) throws FormatException {
         AspectNode result = addNode();
+        if (!constant.isTerm()) {
+            throw new FormatException(
+                "Expression '%s' not allowed as constant value",
+                constant.toInputString());
+        }
         result.setAspects(parser.parse(constant.toString(), getRole()));
         return result;
     }
@@ -360,17 +368,17 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * @param field the field expression
      * @return the target node of the identifier
      */
-    private AspectNode addField(AspectNode source, Field field)
+    private AspectNode addField(AspectNode source, FieldExpr field)
         throws FormatException {
         if (getRole() != RULE) {
             throw new FormatException(
                 "Field expression '%s' only allowed in rules",
-                field.toString(false), source);
+                field.toDisplayString(), source);
         }
         // look up the field owner
         AspectNode owner;
-        String ownerName = field.getOwner();
-        if (ownerName == null) {
+        String ownerName = field.getTarget();
+        if (ownerName.equals(Keywords.SELF)) {
             owner = source;
         } else {
             owner = this.nodeIdMap.get(ownerName);
@@ -386,7 +394,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 owner, source);
         }
         // look up the field
-        AspectKind sigKind = AspectKind.toAspectKind(field.getType());
+        AspectKind sigKind = AspectKind.toAspectKind(field.getSignature());
         AspectNode result = findTarget(owner, field.getField(), sigKind);
         if (result == null) {
             result = addNestedNode(owner);
@@ -428,24 +436,24 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * @param call the call expression
      * @return the node representing the value of the expression
      */
-    private AspectNode addCall(AspectNode source, Call call)
+    private AspectNode addCall(AspectNode source, CallExpr call)
         throws FormatException {
         Operator operator = call.getOperator();
         if (getRole() != RULE) {
             throw new FormatException(
-                "Operator expression '%s' only allowed in rules",
-                operator.getTypedName(), source);
+                "Call expression '%s' only allowed in rules",
+                call.toInputString(), source);
         }
         AspectNode result = addNestedNode(source);
-        result.setAspects(createLabel(AspectKind.toAspectKind(call.getType())));
+        result.setAspects(createLabel(AspectKind.toAspectKind(call.getSignature())));
         AspectNode product = addNestedNode(source);
         product.setAspects(createLabel(AspectKind.PRODUCT));
         // add the operator edge
         AspectLabel operatorLabel =
-            parser.parse(operator.getTypedName(), getRole());
+            parser.parse(operator.getFullName(), getRole());
         addEdge(product, operatorLabel, result);
         // add the arguments
-        List<Expression> args = call.getArguments();
+        List<groove.algebra.syntax.Expression> args = call.getArgs();
         for (int i = 0; i < args.size(); i++) {
             AspectNode argResult = addExpression(source, args.get(i));
             AspectLabel argLabel =
@@ -461,7 +469,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      * @param par the par expression
      * @return the node representing the value of the expression
      */
-    private AspectNode addPar(AspectNode source, Par par)
+    private AspectNode addPar(AspectNode source, Parameter par)
         throws FormatException {
         int nr = par.getNumber();
         if (getRole() != RULE) {
@@ -474,7 +482,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             parser.parse(AspectKind.PARAM_IN.getPrefix() + nr, getRole());
         result.setAspects(parLabel);
         AspectLabel typeLabel =
-            createLabel(AspectKind.toAspectKind(par.getType()));
+            createLabel(AspectKind.toAspectKind(par.getSignature()));
         result.setAspects(typeLabel);
         return result;
     }

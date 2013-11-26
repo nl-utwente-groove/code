@@ -1229,7 +1229,7 @@ public class ReteNetwork {
                 source,
                 String.format(
                     "Value Node Checker - %s ",
-                    ((VariableNode) ((ValueNodeChecker) nnode).getNode()).getConstant().getSymbol()),
+                    ((VariableNode) ((ValueNodeChecker) nnode).getNode()).getConstant()),
                 source));
             result.add(PlainEdge.createEdge(source, ":"
                 + ((ValueNodeChecker) nnode).getNode().toString(), source));

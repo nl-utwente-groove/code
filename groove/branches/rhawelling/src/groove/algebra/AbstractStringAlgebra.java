@@ -16,7 +16,7 @@
  */
 package groove.algebra;
 
-import groove.grammar.model.FormatException;
+import groove.algebra.syntax.Expression;
 import groove.util.ExprParser;
 
 /**
@@ -67,20 +67,29 @@ public abstract class AbstractStringAlgebra<Int> extends
         return arg0.compareTo(arg1) < 0;
     }
 
+    public boolean isValue(Object value) {
+        return value instanceof String;
+    }
+
     public String getSymbol(Object value) {
         return ExprParser.toQuoted((String) value, ExprParser.DOUBLE_QUOTE_CHAR);
     }
 
-    public String getValueFromSymbol(String constant) {
-        try {
-            return ExprParser.toUnquoted(constant, ExprParser.DOUBLE_QUOTE_CHAR);
-        } catch (FormatException e) {
-            return null;
-        }
+    public Expression toTerm(Object value) {
+        return Constant.instance((String) value);
     }
 
     @Override
-    protected String toValue(String constant) {
-        return constant;
+    public String toJavaValue(Object value) {
+        return (String) value;
+    }
+
+    public String toValueFromConstant(Constant constant) {
+        return constant.getStringRepr();
+    }
+
+    @Override
+    protected String toValueFromJavaString(String value) {
+        return value;
     }
 }

@@ -106,6 +106,16 @@ public abstract class ExtensionFilter extends
     }
 
     /**
+     * Tests if a given filename has any extension.
+     * @param filename the filename to be tested
+     * @return <code>true</code> if <code>filename</code> has an extension
+     * (not necessarily of this filter).
+     */
+    public boolean hasAnyExtension(String filename) {
+        return new File(filename).getName().indexOf(SEPARATOR) >= 0;
+    }
+
+    /**
      * Indicates whether this filter accepts directory files, in addition to
      * files ending on the required extension.
      */

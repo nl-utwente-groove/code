@@ -18,6 +18,7 @@ package groove.test.algebra;
 
 import static org.junit.Assert.assertEquals;
 import groove.algebra.AlgebraFamily;
+import groove.algebra.RealSignature;
 
 import org.junit.Test;
 
@@ -25,20 +26,6 @@ import org.junit.Test;
 public abstract class NonFinalAlgebraTest<B,I,R,S> extends AlgebraTest<B,I,R,S> {
     NonFinalAlgebraTest(AlgebraFamily family) {
         super(family);
-    }
-
-    @Override
-    protected I createInt(int value) {
-        I result = super.createInt(value);
-        assertEquals(result, createIntFromSymbol(iToString(result).toString()));
-        return result;
-    }
-
-    @Override
-    protected R createReal(double value) {
-        R result = super.createReal(value);
-        assertEquals(result, createRealFromSymbol(rToString(result).toString()));
-        return result;
     }
 
     /** Tests the integer algebra. */
@@ -81,7 +68,8 @@ public abstract class NonFinalAlgebraTest<B,I,R,S> extends AlgebraTest<B,I,R,S> 
     @Test
     public void testReal() {
         R zero = createReal(0);
-        assertEquals(bTrue(), rEq(zero, createRealFromSymbol("0")));
+        assertEquals(bTrue(),
+            rEq(zero, this.realAlgebra.toValue(RealSignature.ZERO)));
         R one = createReal(1.1);
         R two = createReal(2.2);
         R four = createReal(4.84);

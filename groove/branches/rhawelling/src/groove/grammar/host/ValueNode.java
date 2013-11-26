@@ -18,6 +18,7 @@ package groove.grammar.host;
 
 import groove.algebra.Algebra;
 import groove.algebra.SignatureKind;
+import groove.algebra.syntax.Expression;
 import groove.grammar.AnchorKind;
 import groove.grammar.aspect.AspectParser;
 import groove.grammar.type.TypeNode;
@@ -49,7 +50,7 @@ public class ValueNode extends ANode implements HostNode {
     public ValueNode(int nr, Algebra<?> algebra, Object value, TypeNode type) {
         super(nr);
         this.algebra = algebra;
-        this.signature = algebra.getKind();
+        this.signature = algebra.getSignature();
         this.value = value;
         this.type = type;
         assert algebra != null && value != null && type != null;
@@ -64,6 +65,14 @@ public class ValueNode extends ANode implements HostNode {
     }
 
     /**
+     * Converts the value in this object to the corresponding value in
+     * the Java algebra family.
+     */
+    public Object toJavaValue() {
+        return getAlgebra().toJavaValue(getValue());
+    }
+
+    /**
      * Returns a symbolic description of the value, which uniquely identifies
      * the value in the algebra.
      */
@@ -72,11 +81,18 @@ public class ValueNode extends ANode implements HostNode {
     }
 
     /**
+     * Returns the normalised term for the algebra value.
+     */
+    public Expression getTerm() {
+        return getAlgebra().toTerm(getValue());
+    }
+
+    /**
      * This methods returns a description of the value.
      */
     @Override
     public String toString() {
-        return getAlgebra().getName() + AspectParser.SEPARATOR + getSymbol();
+        return getAlgebra().getName() + AspectParser.SEPARATOR + getTerm();
     }
 
     /** Superseded by the reimplemented {@link #toString()} method. */

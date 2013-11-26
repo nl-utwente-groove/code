@@ -20,16 +20,18 @@ import static groove.algebra.Precedence.ADD;
 import static groove.algebra.Precedence.COMPARE;
 import static groove.algebra.Precedence.EQUAL;
 import static groove.algebra.Precedence.MULT;
+import static groove.algebra.Precedence.UNARY;
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.annotation.Syntax;
 import groove.annotation.ToolTipBody;
 import groove.annotation.ToolTipHeader;
 
-import java.math.BigDecimal;
-
 /**
- * Interface for real number algebras.
+ * The signature for real number algebras.
+ * @param <Real> The representation type of the real algebra 
+ * @param <Bool> The representation type of the boolean algebra 
+ * @param <String> The representation type of the string algebra  
  * @author Arend Rensink
  * @version $Revision: 1577 $
  */
@@ -127,7 +129,7 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
     @ToolTipHeader("Real inversion")
     @Syntax("Q%s.LPAR.r1.RPAR")
     @ToolTipBody("Yields the inverse of %s")
-    @PrefixSymbol(symbol = "-")
+    @PrefixSymbol(symbol = "-", precedence = UNARY)
     public abstract Real neg(Real arg);
 
     /** String representation. */
@@ -137,40 +139,54 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
     public abstract String toString(Real arg);
 
     @Override
-    public SignatureKind getKind() {
+    public SignatureKind getSignature() {
         return SignatureKind.REAL;
     }
 
-    /**
-     * Tests if the number can be parsed as a {@link BigDecimal}. This means
-     * that a number of any length is accepted.
-     */
-    final public boolean isValue(java.lang.String value) {
-        try {
-            new BigDecimal(value);
-            return true;
-        } catch (NumberFormatException exc) {
-            return false;
-        }
-    }
+    /** Real constant for the value zero. */
+    public static final Constant ZERO = Constant.instance(0.0);
 
-    /**
-     * Conversion of native Java representation of integer constants to
-     * the corresponding algebra values.
-     * @throws IllegalArgumentException if the parameter is not of type {@link Double}
-     */
-    final public Real getValueFromJava(Object constant) {
-        if (!(constant instanceof Double)) {
-            throw new IllegalArgumentException(java.lang.String.format(
-                "Native int type is %s, not %s", Double.class.getSimpleName(),
-                constant.getClass().getSimpleName()));
-        }
-        return toValue((Double) constant);
-    }
+    /** Enumeration of all operators defined in this signature. */
+    public static enum Op implements Signature.OpValue {
+        /** Value for {@link #abs(Object)}. */
+        ABS,
+        /** Value for {@link #add(Object, Object)}. */
+        ADD,
+        /** Value for {@link #div(Object, Object)}. */
+        DIV,
+        /** Value for {@link #eq(Object, Object)}. */
+        EQ,
+        /** Value for {@link #ge(Object, Object)}. */
+        GE,
+        /** Value for {@link #gt(Object, Object)}. */
+        GT,
+        /** Value for {@link #le(Object, Object)}. */
+        LE,
+        /** Value for {@link #lt(Object, Object)}. */
+        LT,
+        /** Value for {@link #max(Object, Object)}. */
+        MAX,
+        /** Value for {@link #min(Object, Object)}. */
+        MIN,
+        /** Value for {@link #mul(Object, Object)}. */
+        MUL,
+        /** Value for {@link #neq(Object, Object)}. */
+        NEQ,
+        /** Value for {@link #neq(Object, Object)}. */
+        NEG,
+        /** Value for {@link #sub(Object, Object)}. */
+        SUB,
+        /** Value for {@link #toString(Object)}. */
+        TO_STRING, ;
 
-    /** 
-     * Callback method to convert from the native ({@link Double})
-     * representation to the algebra representation.
-     */
-    protected abstract Real toValue(Double constant);
+        public Operator getOperator() {
+            if (this.operator == null) {
+                this.operator = Operator.newInstance(SignatureKind.REAL, this);
+            }
+            return this.operator;
+        }
+
+        /** Corresponding operator object. */
+        private Operator operator;
+    }
 }

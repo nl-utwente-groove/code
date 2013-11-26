@@ -16,13 +16,16 @@
  */
 package groove.algebra;
 
+import groove.algebra.syntax.Expression;
+
 /**
  * Implementation of integers consisting of a singleton value.
  * To be used in conjunction with {@link PointBoolAlgebra} and {@link PointStringAlgebra}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TermIntAlgebra extends IntAlgebra<Term,Term,Term> {
+public class TermIntAlgebra extends
+        IntAlgebra<Expression,Expression,Expression> {
     /** Private constructor for the singleton instance. */
     private TermIntAlgebra() {
         // empty
@@ -37,113 +40,113 @@ public class TermIntAlgebra extends IntAlgebra<Term,Term,Term> {
         return AlgebraFamily.TERM;
     }
 
-    public String getSymbol(Object value) {
-        return ((Constant) value).getSymbol();
+    @Override
+    public boolean isValue(Object value) {
+        return value instanceof Expression
+            && ((Expression) value).getSignature() == getSignature();
     }
 
-    public Constant getValueFromSymbol(String constant) {
-        return Algebras.getConstant(SignatureKind.INT, constant);
+    public String getSymbol(Object value) {
+        return ((Expression) value).toDisplayString();
+    }
+
+    @Override
+    public Expression toTerm(Object value) {
+        return (Expression) value;
+    }
+
+    public Expression toValueFromConstant(Constant constant) {
+        return constant;
+    }
+
+    @Override
+    public Integer toJavaValue(Object value) {
+        return (Integer) AlgebraFamily.DEFAULT.toValue((Expression) value);
     }
 
     @Override
     protected Constant toValue(Integer constant) {
-        return Algebras.getConstant(SignatureKind.INT, constant.toString());
+        return Constant.instance(constant);
     }
 
     @Override
-    public Term abs(Term arg) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression abs(Expression arg) {
+        return Op.ABS.getOperator().newTerm(arg);
     }
 
     @Override
-    public Term add(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression add(Expression arg0, Expression arg1) {
+        return Op.ADD.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term div(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression div(Expression arg0, Expression arg1) {
+        return Op.DIV.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term eq(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression eq(Expression arg0, Expression arg1) {
+        return Op.EQ.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term neq(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression neq(Expression arg0, Expression arg1) {
+        return Op.NEQ.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term ge(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression ge(Expression arg0, Expression arg1) {
+        return Op.GE.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term gt(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression gt(Expression arg0, Expression arg1) {
+        return Op.GT.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term le(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression le(Expression arg0, Expression arg1) {
+        return Op.LE.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term lt(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression lt(Expression arg0, Expression arg1) {
+        return Op.LT.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term max(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression max(Expression arg0, Expression arg1) {
+        return Op.MAX.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term min(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression min(Expression arg0, Expression arg1) {
+        return Op.MIN.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term mod(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression mod(Expression arg0, Expression arg1) {
+        return Op.MOD.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term mul(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression mul(Expression arg0, Expression arg1) {
+        return Op.MUL.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term neg(Term arg) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression neg(Expression arg) {
+        return Op.NEG.getOperator().newTerm(arg);
     }
 
     @Override
-    public Term sub(Term arg0, Term arg1) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression sub(Expression arg0, Expression arg1) {
+        return Op.SUB.getOperator().newTerm(arg0, arg1);
     }
 
     @Override
-    public Term toString(Term arg) {
-        // for now, only constants are supported
-        throw new UnsupportedOperationException();
+    public Expression toString(Expression arg) {
+        return Op.TO_STRING.getOperator().newTerm(arg);
     }
 
     /** Name of this algebra. */

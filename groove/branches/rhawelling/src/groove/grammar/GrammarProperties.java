@@ -854,7 +854,8 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
                     return new Property.Choice<String>(comment,
                         AlgebraFamily.DEFAULT.getName(),
                         AlgebraFamily.POINT.getName(),
-                        AlgebraFamily.BIG.getName());
+                        AlgebraFamily.BIG.getName(),
+                        AlgebraFamily.TERM.getName());
                 }
             },
             EXPLORATION {

@@ -18,6 +18,7 @@ package groove.algebra;
 
 import static groove.algebra.Precedence.AND;
 import static groove.algebra.Precedence.EQUAL;
+import static groove.algebra.Precedence.NOT;
 import static groove.algebra.Precedence.OR;
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
@@ -26,7 +27,8 @@ import groove.annotation.ToolTipBody;
 import groove.annotation.ToolTipHeader;
 
 /**
- * Interface for boolean algebras.
+ * Signature for boolean algebras.
+ * <Bool> Representation type for boolean values
  * @author Arend Rensink
  * @version $Revision: 1577 $
  */
@@ -35,7 +37,7 @@ public abstract class BoolSignature<Bool> implements Signature {
     @ToolTipHeader("Inversion")
     @Syntax("Q%s.LPAR.b1.RPAR")
     @ToolTipBody("Yields TRUE if boolean %s is FALSE")
-    @PrefixSymbol(symbol = "!")
+    @PrefixSymbol(symbol = "!", precedence = NOT)
     public abstract Bool not(Bool arg);
 
     /** Conjunction. */
@@ -67,37 +69,37 @@ public abstract class BoolSignature<Bool> implements Signature {
     public abstract Bool neq(Bool arg0, Bool arg1);
 
     @Override
-    public SignatureKind getKind() {
+    public SignatureKind getSignature() {
         return SignatureKind.BOOL;
     }
 
-    /** Only <code>true</code> and <code>false</code> are legal values. */
-    final public boolean isValue(String value) {
-        return value.equals(TRUE) || value.equals(FALSE);
-    }
+    /** The constant for the true value. */
+    public static final Constant TRUE = Constant.instance(true);
+    /** The constant for the false value. */
+    public static final Constant FALSE = Constant.instance(false);
 
-    /**
-     * Conversion of native Java representation of integer constants to
-     * the corresponding algebra values.
-     * @throws IllegalArgumentException if the parameter is not of type {@link Boolean}
-     */
-    final public Bool getValueFromJava(Object constant) {
-        if (!(constant instanceof Boolean)) {
-            throw new IllegalArgumentException(java.lang.String.format(
-                "Native int type is %s, not %s", Boolean.class.getSimpleName(),
-                constant.getClass().getSimpleName()));
+    /** Enumeration of all operators defined in this signature. */
+
+    public static enum Op implements Signature.OpValue {
+        /** Value for {@link #and(Object,Object)}. */
+        AND,
+        /** Value for {@link #or(Object, Object)}. */
+        OR,
+        /** Value for {@link #not(Object)}. */
+        NOT,
+        /** Value for {@link #eq(Object, Object)}. */
+        EQ,
+        /** Value for {@link #neq(Object, Object)}. */
+        NEQ, ;
+
+        public Operator getOperator() {
+            if (this.operator == null) {
+                this.operator = Operator.newInstance(SignatureKind.BOOL, this);
+            }
+            return this.operator;
         }
-        return toValue((Boolean) constant);
+
+        /** Corresponding operator object. */
+        private Operator operator;
     }
-
-    /** 
-     * Callback method to convert from the native ({@link Boolean})
-     * representation to the algebra representation.
-     */
-    protected abstract Bool toValue(Boolean constant);
-
-    /** The unique string representation of the true value. */
-    public static final String TRUE = "true";
-    /** The unique string representation of the false value. */
-    public static final String FALSE = "false";
 }

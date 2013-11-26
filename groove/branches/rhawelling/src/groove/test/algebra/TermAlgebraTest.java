@@ -17,10 +17,10 @@
 package groove.test.algebra;
 
 import groove.algebra.AlgebraFamily;
-import groove.algebra.Term;
+import groove.algebra.syntax.Expression;
 
 /** Tests the functionality of the java algebra family. */
-public class TermAlgebraTest extends AlgebraTest<Term,Term,Term,Term> {
+public class TermAlgebraTest extends AlgebraTest<Expression,Expression,Expression,Expression> {
     /** Creates a test. */
     public TermAlgebraTest() {
         super(AlgebraFamily.TERM);

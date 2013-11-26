@@ -16,6 +16,7 @@
  */
 package groove.grammar.aspect;
 
+import groove.algebra.syntax.Expression;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
@@ -44,7 +45,7 @@ public class Assignment {
 
     @Override
     public String toString() {
-        return getLhs() + " = " + getRhs().toString();
+        return getLhs() + " = " + getRhs().toInputString();
     }
 
     /** 
@@ -92,7 +93,8 @@ public class Assignment {
     public Assignment relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         Assignment result = this;
         if (oldLabel.getRole() == EdgeRole.BINARY) {
-            Expression newRhs = getRhs().relabel(oldLabel, newLabel);
+            groove.algebra.syntax.Expression newRhs =
+                getRhs().relabel(oldLabel, newLabel);
             String newLhs =
                 oldLabel.text().equals(getLhs()) ? newLabel.text() : getLhs();
             if (newRhs != getRhs() || newLhs != getLhs()) {
@@ -102,7 +104,7 @@ public class Assignment {
         return result;
     }
 
-    private final Expression rhs;
+    private final groove.algebra.syntax.Expression rhs;
     private final String lhs;
 
     /**
@@ -127,7 +129,7 @@ public class Assignment {
             throw new FormatException(
                 "Assignment target '%s' is not an identifier", lhs);
         }
-        return new Assignment(lhs, Expression.parse(rhs));
+        return new Assignment(lhs, groove.algebra.syntax.Expression.parse(rhs));
     }
 
     private static boolean isIdentifier(String text) {

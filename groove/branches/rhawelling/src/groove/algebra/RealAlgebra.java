@@ -16,9 +16,42 @@
  */
 package groove.algebra;
 
-/** Abstract superclass of all real-number algebras. */
+import groove.algebra.syntax.Expression;
+
+/** Abstract superclass of all real-number algebras.
+ * @param <Real> The representation type of the real algebra 
+ * @param <Bool> The representation type of the boolean algebra 
+ * @param <String> The representation type of the string algebra  
+ */
 @SuppressWarnings("hiding")
 public abstract class RealAlgebra<Real,Bool,String> extends
         RealSignature<Real,Bool,String> implements Algebra<Real> {
-    // empty
+    @SuppressWarnings("unchecked")
+    public Real toValue(Expression term) {
+        return (Real) getFamily().toValue(term);
+    }
+
+    /*
+     * Specialises the return type.
+     * @throws IllegalArgumentException if the parameter is not of type {@link Double}
+     */
+    @Override
+    final public Real toValueFromJava(Object value) {
+        if (!(value instanceof Double)) {
+            throw new IllegalArgumentException(java.lang.String.format(
+                "Native double type is %s, not %s",
+                Double.class.getSimpleName(), value.getClass().getSimpleName()));
+        }
+        return toValueFromJavaDouble((Double) value);
+    }
+
+    /** 
+     * Callback method to convert from the native ({@link Double})
+     * representation to the algebra representation.
+     */
+    protected abstract Real toValueFromJavaDouble(Double value);
+
+    /* Specialises the return type. */
+    @Override
+    public abstract Double toJavaValue(Object value);
 }

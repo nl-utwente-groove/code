@@ -1,126 +1,118 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
     <graph edgemode="directed" edgeids="false" role="type" id="type">
-        <attr name="$version">
-            <string>curly</string>
+        <attr name="transitionLabel">
+            <string></string>
+        </attr>
+        <attr name="enabled">
+            <string>true</string>
+        </attr>
+        <attr name="priority">
+            <string>0</string>
+        </attr>
+        <attr name="printFormat">
+            <string></string>
+        </attr>
+        <attr name="remark">
+            <string></string>
         </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n7">
+        <node id="n8">
             <attr name="layout">
-                <string>33 87 45 46</string>
-            </attr>
-        </node>
-        <node id="n4">
-            <attr name="layout">
-                <string>249 192 37 61</string>
-            </attr>
-        </node>
-        <node id="n2">
-            <attr name="layout">
-                <string>460 60 34 46</string>
-            </attr>
-        </node>
-        <node id="n1">
-            <attr name="layout">
-                <string>104 195 37 61</string>
-            </attr>
-        </node>
-        <node id="n0">
-            <attr name="layout">
-                <string>174 100 34 61</string>
-            </attr>
-        </node>
-        <node id="n3">
-            <attr name="layout">
-                <string>455 182 36 46</string>
-            </attr>
-        </node>
-        <node id="n5">
-            <attr name="layout">
-                <string>128 308 34 46</string>
+                <string>580 100 7 15</string>
             </attr>
         </node>
         <node id="n6">
             <attr name="layout">
-                <string>226 309 34 46</string>
+                <string>238 324 9 15</string>
             </attr>
         </node>
-        <node id="n8">
+        <node id="n5">
             <attr name="layout">
-                <string>567 85 34 46</string>
+                <string>141 323 8 15</string>
             </attr>
         </node>
-        <edge to="n7" from="n7">
+        <node id="n3">
+            <attr name="layout">
+                <string>465 197 16 15</string>
+            </attr>
+        </node>
+        <node id="n0">
+            <attr name="layout">
+                <string>186 115 9 30</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>114 210 17 30</string>
+            </attr>
+        </node>
+        <node id="n2">
+            <attr name="layout">
+                <string>473 75 8 15</string>
+            </attr>
+        </node>
+        <node id="n4">
+            <attr name="layout">
+                <string>259 207 17 30</string>
+            </attr>
+        </node>
+        <node id="n7">
+            <attr name="layout">
+                <string>43 102 25 15</string>
+            </attr>
+        </node>
+        <edge to="n8" from="n8">
             <attr name="label">
-                <string>type:Aalt</string>
+                <string>type:E</string>
             </attr>
         </edge>
-        <edge to="n4" from="n4">
+        <edge to="n2" from="n8">
             <attr name="label">
-                <string>type:A2</string>
+                <string>eToB</string>
             </attr>
         </edge>
-        <edge to="n4" from="n4">
+        <edge to="n6" from="n6">
             <attr name="label">
-                <string>flag:a2</string>
+                <string>type:D</string>
             </attr>
         </edge>
-        <edge to="n2" from="n4">
+        <edge to="n0" from="n6">
             <attr name="label">
-                <string>a2ToB</string>
-            </attr>
-        </edge>
-        <edge to="n6" from="n4">
-            <attr name="label">
-                <string>aTo</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n4">
-            <attr name="label">
-                <string>sub:</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>type:B</string>
-            </attr>
-        </edge>
-        <edge to="n0" from="n2">
-            <attr name="label">
-                <string>bToA</string>
+                <string>dToA</string>
             </attr>
             <attr name="layout">
-                <string>500 0 468 80 334 41 189 82 12</string>
+                <string>500 0 243 332 191 130 12</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge to="n5" from="n5">
             <attr name="label">
-                <string>type:A1</string>
+                <string>type:C</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge to="n0" from="n5">
             <attr name="label">
-                <string>flag:a1</string>
+                <string>cToA</string>
             </attr>
         </edge>
-        <edge to="n5" from="n1">
+        <edge to="n3" from="n3">
             <attr name="label">
-                <string>aTo</string>
+                <string>type:B1</string>
             </attr>
         </edge>
-        <edge to="n2" from="n1">
+        <edge to="n4" from="n3">
             <attr name="label">
-                <string>a1ToB</string>
+                <string>b1ToA2</string>
             </attr>
         </edge>
-        <edge to="n7" from="n1">
+        <edge to="n0" from="n3">
             <attr name="label">
-                <string>sub:</string>
+                <string>b1ToA</string>
             </attr>
         </edge>
-        <edge to="n0" from="n1">
+        <edge to="n2" from="n3">
             <attr name="label">
                 <string>sub:</string>
             </attr>
@@ -140,57 +132,82 @@
                 <string>aToB</string>
             </attr>
         </edge>
-        <edge to="n3" from="n3">
+        <edge to="n1" from="n1">
             <attr name="label">
-                <string>type:B1</string>
+                <string>type:A1</string>
             </attr>
         </edge>
-        <edge to="n0" from="n3">
+        <edge to="n1" from="n1">
             <attr name="label">
-                <string>b1ToA</string>
+                <string>flag:a1</string>
             </attr>
         </edge>
-        <edge to="n4" from="n3">
+        <edge to="n5" from="n1">
             <attr name="label">
-                <string>b1ToA2</string>
+                <string>aTo</string>
             </attr>
         </edge>
-        <edge to="n2" from="n3">
+        <edge to="n0" from="n1">
             <attr name="label">
                 <string>sub:</string>
             </attr>
         </edge>
-        <edge to="n5" from="n5">
+        <edge to="n2" from="n1">
             <attr name="label">
-                <string>type:C</string>
+                <string>a1ToB</string>
             </attr>
         </edge>
-        <edge to="n0" from="n5">
+        <edge to="n7" from="n1">
             <attr name="label">
-                <string>cToA</string>
+                <string>sub:</string>
             </attr>
         </edge>
-        <edge to="n6" from="n6">
+        <edge to="n2" from="n2">
             <attr name="label">
-                <string>type:D</string>
+                <string>type:B</string>
             </attr>
         </edge>
-        <edge to="n0" from="n6">
+        <edge to="n0" from="n2">
             <attr name="label">
-                <string>dToA</string>
+                <string>bToA</string>
             </attr>
             <attr name="layout">
-                <string>500 0 243 332 191 130 12</string>
+                <string>500 0 468 80 334 41 191 130 12</string>
             </attr>
         </edge>
-        <edge to="n8" from="n8">
+        <edge to="n4" from="n4">
             <attr name="label">
-                <string>type:E</string>
+                <string>type:A2</string>
             </attr>
         </edge>
-        <edge to="n2" from="n8">
+        <edge to="n4" from="n4">
             <attr name="label">
-                <string>eToB</string>
+                <string>flag:a2</string>
+            </attr>
+        </edge>
+        <edge to="n6" from="n4">
+            <attr name="label">
+                <string>aTo</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n4">
+            <attr name="label">
+                <string>a2ToB</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n4">
+            <attr name="label">
+                <string>sub:</string>
+            </attr>
+        </edge>
+        <edge to="n7" from="n7">
+            <attr name="label">
+                <string>type:Aalt</string>
+            </attr>
+        </edge>
+        <edge to="n7" from="n7">
+            <attr name="label">
+                <string>flag:aalt</string>
             </attr>
         </edge>
     </graph>

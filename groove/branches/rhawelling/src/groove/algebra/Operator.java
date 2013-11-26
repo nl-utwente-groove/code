@@ -1,14 +1,20 @@
 package groove.algebra;
 
+import groove.algebra.Signature.OpValue;
+import groove.algebra.syntax.CallExpr;
+import groove.algebra.syntax.Expression;
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
 import groove.util.Groove;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class encoding an operator declaration in a {@link Signature}.
@@ -23,11 +29,10 @@ public class Operator {
      * @throws IllegalArgumentException if the method parameter or return types
      * are not type variables.
      */
-    @SuppressWarnings("unchecked")
-    Operator(Method method) throws IllegalArgumentException {
+    private Operator(SignatureKind signature, Method method)
+        throws IllegalArgumentException {
         Type[] methodParameterTypes = method.getGenericParameterTypes();
-        this.signature =
-            Algebras.getSigKind((Class<? extends Signature>) method.getDeclaringClass());
+        this.signature = signature;
         this.arity = methodParameterTypes.length;
         this.name = method.getName();
         this.parameterTypes = new ArrayList<SignatureKind>();
@@ -55,8 +60,8 @@ public class Operator {
             infix == null ? (prefix == null ? null : prefix.symbol())
                     : infix.symbol();
         this.precedence =
-            infix == null ? (prefix == null ? null : Precedence.UNARY)
-                    : infix.precedence();
+            infix == null ? (prefix == null ? Precedence.ATOM
+                    : prefix.precedence()) : infix.precedence();
     }
 
     /** Returns the signature to which this operator belongs. */
@@ -90,12 +95,12 @@ public class Operator {
         return this.returnType;
     }
 
-    /** Returns the name of the operator, preceded with its type prefix. */
-    public String getTypedName() {
+    /** Returns the name of the operator, preceded with its containing signature. */
+    public String getFullName() {
         return this.signature + ":" + this.name;
     }
 
-    /** Returns the infix symbol of this operator, or {@code null} if it has none. */
+    /** Returns the in- or prefix symbol of this operator, or {@code null} if it has none. */
     public String getSymbol() {
         return this.symbol;
     }
@@ -107,8 +112,16 @@ public class Operator {
 
     @Override
     public String toString() {
-        return getTypedName()
+        return getFullName()
             + Groove.toString(this.parameterTypes.toArray(), "(", ")", ",");
+    }
+
+    /** 
+     * Constructs and returns a new composite term consisting of this
+     * operator applied to a sequence of arguments.
+     */
+    public CallExpr newTerm(Expression... args) {
+        return new CallExpr(this, args);
     }
 
     private final SignatureKind signature;
@@ -118,4 +131,104 @@ public class Operator {
     private final String name;
     private final String symbol;
     private final Precedence precedence;
+
+    /** 
+     * Returns the method from a given signature class with a given name. 
+     * This method is supposed to implement an operator, and should therefore be
+     * declared exactly once, as a public abstract method.
+     */
+    static private Method getOperatorMethod(Class<?> sigClass,
+            java.lang.String name) {
+        Method result = null;
+        java.lang.String className = sigClass.getSimpleName();
+        java.lang.String sigName =
+            className.substring(0, className.indexOf("Signature")).toLowerCase();
+        Method[] methods = sigClass.getDeclaredMethods();
+        for (Method method : methods) {
+            if (method.getName().equals(name)) {
+                if (result != null) {
+                    throw new IllegalArgumentException(java.lang.String.format(
+                        "Operator overloading for '%s:%s' not allowed",
+                        sigName, name));
+                }
+                result = method;
+            }
+        }
+        if (result == null) {
+            throw new IllegalArgumentException(java.lang.String.format(
+                "No method found for operator '%s:%s'", sigName, name));
+        }
+        if (!Modifier.isAbstract(result.getModifiers())) {
+            throw new IllegalArgumentException(
+                java.lang.String.format(
+                    "Method for operator '%s:%s' should be abstract", sigName,
+                    name));
+        }
+        if (!Modifier.isPublic(result.getModifiers())) {
+            throw new IllegalArgumentException(java.lang.String.format(
+                "Method for operator '%s:%s' should be public", sigName, name));
+        }
+        return result;
+    }
+
+    /** Computes the name of an (all-caps) enum-value and converts it to camel case. */
+    static private String getOperatorName(OpValue enumValue) {
+        StringBuilder result = new StringBuilder();
+        result.append(enumValue.name().toLowerCase());
+        // delete underscores and set next char as uppercase
+        int i = 0;
+        while (i < result.length()) {
+            char c = result.charAt(i);
+            if (c == '_') {
+                result.delete(i, i + 1);
+                result.setCharAt(i, Character.toUpperCase(result.charAt(i)));
+            } else {
+                i = i + 1;
+            }
+        }
+        return result.toString();
+    }
+
+    /** Computes the name of an (all-caps) enum-value and converts it to camel case. */
+    static Operator newInstance(SignatureKind sigKind, OpValue enumValue) {
+        String opName = getOperatorName(enumValue);
+        Method opMethod =
+            getOperatorMethod(enumValue.getClass().getEnclosingClass(), opName);
+        return new Operator(sigKind, opMethod);
+    }
+
+    /** Returns the operators for a given (prefix or infix) operator symbol or name. */
+    public static List<Operator> getOps(String symbol) {
+        if (opLookupMap.isEmpty()) {
+            // register all operators
+            for (SignatureKind sig : SignatureKind.values()) {
+                for (OpValue opValue : sig.getOpValues()) {
+                    registerOp(opValue.getOperator());
+                }
+            }
+        }
+        return opLookupMap.get(symbol);
+    }
+
+    /** Adds an operator to the store. */
+    private static void registerOp(Operator op) {
+        String symbol = op.getSymbol();
+        if (symbol != null) {
+            List<Operator> ops = opLookupMap.get(symbol);
+            if (ops == null) {
+                opLookupMap.put(symbol, ops = new ArrayList<Operator>());
+            }
+            ops.add(op);
+        }
+        String opName = op.getName();
+        List<Operator> ops = opLookupMap.get(opName);
+        if (ops == null) {
+            opLookupMap.put(opName, ops = new ArrayList<Operator>());
+        }
+        ops.add(op);
+    }
+
+    /** Mapping from operator names and symbols to lists of operators with that symbol. */
+    private static final Map<String,List<Operator>> opLookupMap =
+        new HashMap<String,List<Operator>>();
 }

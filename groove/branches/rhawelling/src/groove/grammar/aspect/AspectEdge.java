@@ -369,7 +369,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
                 if (getPredicate() instanceof Assignment) {
                     text = ((Assignment) getPredicate()).toDisplayString("?=");
                 } else {
-                    text = ((Expression) getPredicate()).toDisplayString();
+                    text =
+                        ((groove.algebra.syntax.Expression) getPredicate()).toDisplayString();
                 }
             } else if (isAssign()) {
                 text =

@@ -17,6 +17,7 @@
 package groove.match.plan;
 
 import groove.algebra.Algebra;
+import groove.algebra.AlgebraFamily;
 import groove.algebra.SignatureKind;
 import groove.grammar.Condition;
 import groove.grammar.Condition.Op;
@@ -331,7 +332,7 @@ class ConditionSearchItem extends AbstractSearchItem {
                 HostNode countImage =
                     this.search.getNode(ConditionSearchItem.this.countNodeIx);
                 this.preCount =
-                    Integer.parseInt(((ValueNode) countImage).getSymbol());
+                    (Integer) AlgebraFamily.DEFAULT.toValue(((ValueNode) countImage).getTerm());
             }
             RuleToHostMap contextMap = createContextMap();
             List<TreeMatch> matches =
@@ -342,9 +343,10 @@ class ConditionSearchItem extends AbstractSearchItem {
             } else if (ConditionSearchItem.this.preCounted) {
                 result = matches.size() == this.preCount;
             } else if (ConditionSearchItem.this.countNode != null) {
+                Algebra<?> intAlgebra = ConditionSearchItem.this.intAlgebra;
                 this.countImage =
-                    this.host.getFactory().createNodeFromJava(
-                        ConditionSearchItem.this.intAlgebra, matches.size());
+                    this.host.getFactory().createValueNode(intAlgebra,
+                        intAlgebra.toValueFromJava(matches.size()));
             }
             if (result) {
                 this.match = createMatch(matches);

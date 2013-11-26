@@ -18,8 +18,9 @@ package groove.match.plan;
 
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
-import groove.algebra.Term;
-import groove.algebra.Variable;
+import groove.algebra.Constant;
+import groove.algebra.syntax.Expression;
+import groove.algebra.syntax.Variable;
 import groove.grammar.Condition;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostGraph;
@@ -46,9 +47,9 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         this.node = node;
         this.boundNodes = Collections.<RuleNode>singleton(node);
         this.algebra = family.getAlgebra(node.getSignature());
-        Term term = node.getTerm();
+        Expression term = node.getTerm();
         this.value =
-            term instanceof Variable ? null : family.getValue(node.getTerm());
+            term instanceof Variable ? null : family.toValue(node.getTerm());
     }
 
     public Record createRecord(
@@ -185,7 +186,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         private ValueNode image;
     }
 
-    private class ValueQueryRecord extends MultipleRecord<String> {
+    private class ValueQueryRecord extends MultipleRecord<Constant> {
         public ValueQueryRecord(Search search) {
             super(search);
         }
@@ -206,10 +207,11 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         }
 
         @Override
-        boolean write(String image) {
+        boolean write(Constant image) {
+            Algebra<?> algebra = ValueNodeSearchItem.this.algebra;
             ValueNode imageNode =
-                this.factory.createNodeFromString(
-                    ValueNodeSearchItem.this.algebra, image);
+                this.factory.createValueNode(algebra,
+                    algebra.toValueFromConstant(image));
             return this.search.putNode(ValueNodeSearchItem.this.nodeIx,
                 imageNode);
         }
@@ -220,6 +222,6 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         }
 
         private HostFactory factory;
-        private Iterable<String> values;
+        private Iterable<Constant> values;
     }
 }

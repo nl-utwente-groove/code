@@ -1,6 +1,5 @@
 package groove.io.conceptual.lang.groove;
 
-import groove.algebra.Constant;
 import groove.grammar.aspect.AspectNode;
 import groove.grammar.aspect.GraphConverter;
 import groove.grammar.aspect.GraphConverter.HostToAspectMap;
@@ -25,17 +24,18 @@ import groove.io.conceptual.lang.InstanceImporter;
 import groove.io.conceptual.lang.Message;
 import groove.io.conceptual.lang.Message.MessageType;
 import groove.io.conceptual.lang.groove.GraphNodeTypes.ModelType;
+import groove.io.conceptual.type.BoolType;
 import groove.io.conceptual.type.Class;
 import groove.io.conceptual.type.Container;
 import groove.io.conceptual.type.Container.Kind;
 import groove.io.conceptual.type.CustomDataType;
-import groove.io.conceptual.type.DataType;
 import groove.io.conceptual.type.Enum;
 import groove.io.conceptual.type.IntType;
 import groove.io.conceptual.type.RealType;
 import groove.io.conceptual.type.StringType;
 import groove.io.conceptual.type.Tuple;
 import groove.io.conceptual.type.Type;
+import groove.io.conceptual.value.BoolValue;
 import groove.io.conceptual.value.ContainerValue;
 import groove.io.conceptual.value.CustomDataValue;
 import groove.io.conceptual.value.EnumValue;
@@ -54,8 +54,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-/*
- * Should query some map of node id to NodeType
+/**
+ * Converts a Groove {@link HostGraph} to a conceptual model instance.
  */
 public class GrooveToInstance extends InstanceImporter {
     private GraphNodeTypes m_types;
@@ -183,9 +183,7 @@ public class GrooveToInstance extends InstanceImporter {
                 return Integer.MIN_VALUE;
             } else {
                 ValueNode valNode = (ValueNode) indexNode;
-                groove.algebra.Constant c = (Constant) valNode.getValue();
-                Integer value = Integer.parseInt(c.getSymbol());
-                return value;
+                return (Integer) valNode.toJavaValue();
             }
         } else if (orderType == OrderType.EDGE) {
             String nextName = this.m_cfg.getStrings().getNextEdge();
@@ -289,27 +287,22 @@ public class GrooveToInstance extends InstanceImporter {
             resultValue = tv;
         }
         // (Other) data types
-        else if (nodeType instanceof DataType) {
+        else if (nodeType instanceof BoolType) {
             ValueNode valNode = (ValueNode) node;
-            groove.algebra.Constant c = (Constant) valNode.getValue();
-            resultValue = ((DataType) nodeType).valueFromString(c.getSymbol());
+            Boolean value = (Boolean) valNode.toJavaValue();
+            resultValue = BoolValue.getInstance(value);
         } else if (nodeType instanceof IntType) {
             ValueNode valNode = (ValueNode) node;
-            //Integer value = (Integer) valNode.getValue();
-            groove.algebra.Constant c = (Constant) valNode.getValue();
-            Integer value = Integer.parseInt(c.getSymbol());
+            Integer value = (Integer) valNode.toJavaValue();
             resultValue = new IntValue(value);
         } else if (nodeType instanceof RealType) {
             ValueNode valNode = (ValueNode) node;
-            groove.algebra.Constant c = (Constant) valNode.getValue();
-            Float value = Float.parseFloat(c.getSymbol());
+            Double value = (Double) valNode.toJavaValue();
             resultValue = new RealValue(value);
         } else if (nodeType instanceof StringType) {
             ValueNode valNode = (ValueNode) node;
-            groove.algebra.Constant c = (Constant) valNode.getValue();
-            String value = c.getSymbol();
-            resultValue =
-                new StringValue(value.substring(1, value.length() - 1));
+            String value = (String) valNode.toJavaValue();
+            resultValue = new StringValue(value);
         }
         this.m_nodeValues.put(node, resultValue);
 

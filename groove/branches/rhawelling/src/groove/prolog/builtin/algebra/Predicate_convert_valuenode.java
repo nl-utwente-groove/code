@@ -27,11 +27,7 @@ import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import groove.algebra.Algebra;
-import groove.algebra.Constant;
 import groove.grammar.host.ValueNode;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
 
 /**
  * Predicate convert_valuenode(+ValueNode,?Atom)
@@ -46,70 +42,19 @@ public class Predicate_convert_valuenode extends AlgebraPrologCode {
 
             Term result;
             Algebra<?> alg = node.getAlgebra();
-            Object value = node.getValue();
-            switch (alg.getKind()) {
+            Object value = alg.toJavaValue(node.getValue());
+            switch (alg.getSignature()) {
             case BOOL:
                 result = new JavaObjectTerm(value);
                 break;
             case INT:
-                Integer intValue;
-                switch (alg.getFamily()) {
-                case DEFAULT:
-                    intValue = (Integer) value;
-                    break;
-                case BIG:
-                    intValue = ((BigInteger) value).intValue();
-                    break;
-                case POINT:
-                    intValue = Integer.parseInt((String) value);
-                    break;
-                case TERM:
-                    intValue = Integer.parseInt(((Constant) value).getSymbol());
-                    break;
-                default:
-                    intValue = null;
-                    assert false;
-                }
-                result = IntegerTerm.get(intValue);
+                result = IntegerTerm.get((Integer) value);
                 break;
             case REAL:
-                Double realValue;
-                switch (alg.getFamily()) {
-                case DEFAULT:
-                    realValue = (Double) value;
-                    break;
-                case BIG:
-                    realValue = ((BigDecimal) value).doubleValue();
-                    break;
-                case POINT:
-                    realValue = Double.parseDouble((String) value);
-                    break;
-                case TERM:
-                    realValue =
-                        Double.parseDouble(((Constant) value).getSymbol());
-                    break;
-                default:
-                    realValue = null;
-                    assert false;
-                }
-                result = new FloatTerm(realValue);
+                result = new FloatTerm((Double) value);
                 break;
             case STRING:
-                String stringValue;
-                switch (alg.getFamily()) {
-                case DEFAULT:
-                case BIG:
-                case POINT:
-                    stringValue = (String) value;
-                    break;
-                case TERM:
-                    stringValue = ((Constant) value).getSymbol();
-                    break;
-                default:
-                    stringValue = null;
-                    assert false;
-                }
-                result = AtomTerm.get(stringValue);
+                result = AtomTerm.get((String) value);
                 break;
             default:
                 result = null;

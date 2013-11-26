@@ -24,8 +24,7 @@ package groove;
  */
 public class Generator {
     /**
-     * Main method.
-     * @param args list of command-line arguments
+     * Invokes the Generator with a set of command-line parameters.
      */
     static public void main(String[] args) {
         groove.explore.Generator.main(args);

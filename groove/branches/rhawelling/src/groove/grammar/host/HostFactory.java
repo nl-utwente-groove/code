@@ -190,30 +190,10 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      * Raises an exception if a different node with that number already exists.
      */
     private ValueNode newValueNode(int nr, Algebra<?> algebra, Object value) {
-        TypeNode type = this.typeFactory.getDataType(algebra.getKind());
+        TypeNode type = this.typeFactory.getDataType(algebra.getSignature());
         ValueNode result = new ValueNode(nr, algebra, value, type);
         addNode(result);
         return result;
-    }
-
-    /**
-     * Returns a (numbered) value node for a given algebra and value.
-     * The value is given in its string representation.
-     * @param algebra the algebra of the value
-     * @param value string representation of the value for the node to be created
-     */
-    public ValueNode createNodeFromString(Algebra<?> algebra, String value) {
-        return createValueNode(algebra, algebra.getValueFromSymbol(value));
-    }
-
-    /**
-     * Returns a (numbered) value node for a given algebra and value.
-     * The value is given in its string representation.
-     * @param algebra the algebra of the value
-     * @param value native Java representation of the value for the node to be created
-     */
-    public ValueNode createNodeFromJava(Algebra<?> algebra, Object value) {
-        return createValueNode(algebra, algebra.getValueFromJava(value));
     }
 
     /** 
@@ -239,8 +219,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
             assert result == (oldNode == null);
             if (oldNode != null && oldNode != node) {
                 throw new IllegalArgumentException(String.format(
-                    "Duplicate value nodes for %s:%s", algebra.getKind(),
-                    algebra.getSymbol(value)));
+                    "Duplicate value nodes for %s", algebra.toTerm(value)));
             }
         }
         return result;

@@ -16,59 +16,62 @@
  */
 package groove.algebra;
 
+import groove.algebra.syntax.Expression;
+
 /**
  * Implementation of strings consisting of a singleton value.
  * To be used in conjunction with {@link PointBoolAlgebra}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointStringAlgebra extends StringAlgebra<Object,Object,Object>
-        implements PointAlgebra<Object> {
+public class PointStringAlgebra extends StringAlgebra<String,Boolean,Integer>
+        implements PointAlgebra<String> {
     /** Private constructor for the singleton instance. */
     private PointStringAlgebra() {
         // empty
     }
 
     @Override
-    public Object concat(Object arg0, Object arg1) {
+    public String concat(String arg0, String arg1) {
         return singleString;
     }
 
     @Override
-    public Object eq(Object arg0, Object arg1) {
+    public Boolean eq(String arg0, String arg1) {
         return singleBool;
     }
 
     @Override
-    public Object neq(Object arg0, Object arg1) {
+    public Boolean neq(String arg0, String arg1) {
         return singleBool;
     }
 
     @Override
-    public Object ge(Object arg0, Object arg1) {
+    public Boolean ge(String arg0, String arg1) {
         return singleBool;
     }
 
     @Override
-    public Object gt(Object arg0, Object arg1) {
+    public Boolean gt(String arg0, String arg1) {
         return singleBool;
     }
 
     @Override
-    public Object le(Object arg0, Object arg1) {
+    public Boolean le(String arg0, String arg1) {
         return singleBool;
     }
 
     @Override
-    public Object lt(Object arg0, Object arg1) {
+    public Boolean lt(String arg0, String arg1) {
         return singleBool;
     }
 
     @Override
-    public Object length(Object arg) {
+    public Integer length(String arg) {
         return singleInt;
     }
 
+    @Override
     public String getName() {
         return NAME;
     }
@@ -78,21 +81,35 @@ public class PointStringAlgebra extends StringAlgebra<Object,Object,Object>
         return AlgebraFamily.POINT;
     }
 
+    public boolean isValue(Object value) {
+        return value == singleString;
+    }
+
     public String getSymbol(Object value) {
         return singleString;
     }
 
-    public Object getValueFromSymbol(String constant) {
+    @Override
+    public Expression toTerm(Object value) {
+        return Constant.instance(singleString);
+    }
+
+    @Override
+    public String toJavaValue(Object value) {
+        return singleString;
+    }
+
+    public String toValueFromConstant(Constant constant) {
         return singleString;
     }
 
     @Override
-    public Object getPointValue() {
+    public String getPointValue() {
         return singleString;
     }
 
     @Override
-    public Object toValue(String constant) {
+    public String toValueFromJavaString(String value) {
         return singleString;
     }
 
@@ -104,12 +121,11 @@ public class PointStringAlgebra extends StringAlgebra<Object,Object,Object>
      * redefined literally to avoid class loading dependencies.
      * @see PointBoolAlgebra#singleBool
      */
-    public static final String singleBool = PointBoolAlgebra.singleBool;
+    public static final Boolean singleBool = PointBoolAlgebra.singleBool;
     /** Point value of the string algebra. */
-    public static final String singleInt = PointIntAlgebra.singleInt;
+    public static final Integer singleInt = PointIntAlgebra.singleInt;
     /** Point value of the string algebra. */
-    public static final String singleString =
-        SignatureKind.STRING.getDefaultValue();
+    public static final String singleString = "";
     /** Singleton instance of this algebra. */
     public static final PointStringAlgebra instance = new PointStringAlgebra();
 }

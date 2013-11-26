@@ -1,5 +1,6 @@
 package groove.sts;
 
+import groove.algebra.Constant;
 import groove.grammar.Condition;
 import groove.grammar.Rule;
 import groove.grammar.host.HostEdge;
@@ -335,8 +336,9 @@ public class STS {
             HostNode node = edge.target();
             if (node.getType().isDataType() && !isFinal(graph, edge.source())) {
                 ValueNode valueNode = (ValueNode) node;
-                addLocationVariable(edge,
-                    this.ruleInspector.getSymbol(valueNode.getSymbol()));
+                addLocationVariable(
+                    edge,
+                    this.ruleInspector.getSymbol((Constant) valueNode.getTerm()));
             }
         }
     }
@@ -510,8 +512,7 @@ public class STS {
         for (VariableNode v : lValueMap.keySet()) {
             guard +=
                 lValueMap.get(v).getLabel() + " == "
-                    + this.ruleInspector.getSymbol(v.getConstant().getSymbol())
-                    + " && ";
+                    + this.ruleInspector.getSymbol(v.getConstant()) + " && ";
         }
         if (guard.endsWith(" && ")) {
             guard = guard.substring(0, guard.length() - 4);
