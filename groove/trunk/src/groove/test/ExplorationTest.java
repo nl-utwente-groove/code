@@ -22,6 +22,7 @@ import static org.junit.Assert.assertFalse;
 import groove.explore.Exploration;
 import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
+import groove.explore.util.LTSLabels;
 import groove.grammar.Grammar;
 import groove.grammar.host.HostGraph;
 import groove.grammar.model.FormatException;
@@ -303,7 +304,7 @@ public class ExplorationTest {
 
             if (save) {
                 try {
-                    Groove.saveGraph(lts.toPlainGraph(true, true, true, true),
+                    Groove.saveGraph(lts.toPlainGraph(LTSLabels.DEFAULT),
                         view.getName());
                 } catch (IOException exc) { // proceed
                 }

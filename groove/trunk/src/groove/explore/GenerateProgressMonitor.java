@@ -40,7 +40,7 @@ public class GenerateProgressMonitor extends GTSAdapter {
     @Override
     public void addUpdate(GTS gts, GraphState state) {
         if (gts.nodeCount() % UNIT == 0) {
-            System.out.print("s");
+            print("s");
             this.printed++;
         }
         endLine(gts);
@@ -49,10 +49,19 @@ public class GenerateProgressMonitor extends GTSAdapter {
     @Override
     public void addUpdate(GTS gts, GraphTransition transition) {
         if (gts.edgeCount() % UNIT == 0) {
-            System.out.print("t");
+            print("t");
             this.printed++;
         }
         endLine(gts);
+    }
+
+    private void print(String text) {
+        if (!this.started) {
+            System.out.printf(
+                "Progress: (s = %1$s states, t = %1$s transitions):%n  ", UNIT);
+            this.started = true;
+        }
+        System.out.print(text);
     }
 
     private void endLine(GTS gts) {
@@ -60,12 +69,14 @@ public class GenerateProgressMonitor extends GTSAdapter {
             int nodeCount = gts.nodeCount();
             int edgeCount = gts.edgeCount();
             int explorableCount = gts.openStateCount();
-            System.out.println(" " + nodeCount + "s (" + explorableCount
-                + "x) " + edgeCount + "t ");
+            System.out.printf(" %ss (%sx) %st%n  ", nodeCount, explorableCount,
+                edgeCount);
             this.printed = 0;
         }
     }
 
+    /** Boolean indicating if any output has been generated. */
+    private boolean started = false;
     /**
      * The number of indications printed on the current line.
      */

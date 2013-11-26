@@ -21,9 +21,9 @@ import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.NeighAbstraction;
 import groove.abstraction.neigh.lts.AGTS;
 import groove.explore.AcceptorEnumerator;
+import groove.explore.Args4JGenerator;
 import groove.explore.Exploration;
 import groove.explore.GenerateProgressMonitor;
-import groove.explore.Generator;
 import groove.explore.Generator.ResultOption;
 import groove.explore.Generator.TemplatedOption;
 import groove.explore.StrategyEnumerator;
@@ -32,6 +32,8 @@ import groove.explore.encode.Serialized;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationStatistics;
+import groove.explore.util.LTSLabels;
+import groove.explore.util.LTSLabels.Flag;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
 import groove.grammar.host.ValueNode;
@@ -52,7 +54,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Counterpart of {@link Generator} for abstract state space exploration.
+ * Counterpart of {@link Args4JGenerator} for abstract state space exploration.
  * 
  * @author Eduardo Zambon
  */
@@ -221,8 +223,7 @@ public final class ShapeGenerator extends CommandLineTool {
         NeighAbstraction.initialise();
         gts = null;
         this.reducedGTS = null;
-        this.explorationStats = new ExplorationStatistics(getGTS());
-        this.explorationStats.configureForGenerator(this.getVerbosity());
+        this.explorationStats = new ExplorationStatistics(this.getVerbosity());
     }
 
     /**
@@ -252,7 +253,7 @@ public final class ShapeGenerator extends CommandLineTool {
      */
     public void explore() {
         reset();
-        if (getVerbosity() > LOW_VERBOSITY) {
+        if (!getVerbosity().isLow()) {
             println("\n======================================================\n");
             println("Grammar:\t" + this.grammarLocation);
             println("Start graph:\t"
@@ -274,7 +275,7 @@ public final class ShapeGenerator extends CommandLineTool {
             print("\nProgress:\n\n");
             getGTS().addLTSListener(new GenerateProgressMonitor());
         }
-        this.explorationStats.start();
+        this.explorationStats.start(this.exploration, getGTS());
         try {
             this.exploration.play(getGTS(), null);
             if (this.exploration.isInterrupted()) {
@@ -363,11 +364,12 @@ public final class ShapeGenerator extends CommandLineTool {
         AGTS reducedGTS = getReducedGTS();
         reportGTS(reducedGTS, "Reduced GTS");
         printfMedium("\nResult count: "
-            + this.exploration.getLastResult().getValue().size());
+            + this.exploration.getResult().getValue().size());
         // See if we have to save the GTS into a file.
         if (getOutputFileName() != null) {
-            PlainGraph gtsGraph =
-                this.reducedGTS.toPlainGraph(true, true, true, false);
+            LTSLabels ltsLabels =
+                new LTSLabels(Flag.START, Flag.FINAL, Flag.OPEN);
+            PlainGraph gtsGraph = this.reducedGTS.toPlainGraph(ltsLabels);
             try {
                 Groove.saveGraph(gtsGraph, getOutputFileName());
             } catch (IOException e) {

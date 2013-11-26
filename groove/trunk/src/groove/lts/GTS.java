@@ -22,6 +22,7 @@ import static groove.lts.GTS.CollapseMode.COLLAPSE_NONE;
 import groove.algebra.AlgebraFamily;
 import groove.control.CtrlState;
 import groove.explore.result.Result;
+import groove.explore.util.LTSLabels;
 import groove.grammar.Grammar;
 import groove.grammar.host.HostEdgeSet;
 import groove.grammar.host.HostFactory;
@@ -533,24 +534,29 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
      * optionally including special edges to represent start, final and
      * open states, and state identifiers.
      */
-    public PlainGraph toPlainGraph(boolean showFinal, boolean showStart,
-            boolean showOpen, boolean showNames) {
+    public PlainGraph toPlainGraph(LTSLabels flags) {
         PlainGraph result = new PlainGraph(getName());
         Map<GraphState,PlainNode> nodeMap = new HashMap<GraphState,PlainNode>();
         for (GraphState state : nodeSet()) {
             PlainNode image = result.addNode(state.getNumber());
             nodeMap.put(state, image);
-            if (showFinal && isFinal(state)) {
-                result.addEdge(image, GTS.FINAL_LABEL_TEXT, image);
+            if (flags.showResult() && isResult(state)) {
+                result.addEdge(image, flags.getResultLabel(), image);
             }
-            if (showStart && startState().equals(state)) {
-                result.addEdge(image, GTS.START_LABEL_TEXT, image);
+            if (flags.showFinal() && isFinal(state)) {
+                result.addEdge(image, flags.getFinalLabel(), image);
             }
-            if (showOpen && !state.isClosed()) {
-                result.addEdge(image, GTS.OPEN_LABEL_TEXT, image);
+            if (flags.showStart() && startState().equals(state)) {
+                result.addEdge(image, flags.getStartLabel(), image);
             }
-            if (showNames) {
-                result.addEdge(image, state.toString(), image);
+            if (flags.showOpen() && !state.isClosed()) {
+                result.addEdge(image, flags.getOpenLabel(), image);
+            }
+            if (flags.showNumber()) {
+                result.addEdge(
+                    image,
+                    flags.getNumberLabel().replaceAll("#",
+                        "" + state.getNumber()), image);
             }
         }
         for (GraphTransition transition : edgeSet()) {

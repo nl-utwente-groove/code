@@ -1063,10 +1063,8 @@ public class SimulatorModel implements Cloneable {
      * GTS.
      */
     public ExplorationStatistics getExplorationStats() {
-        if (this.explorationStats == null
-            || this.explorationStats.getGts() != getGts()) {
-            this.explorationStats = new ExplorationStatistics(getGts());
-            this.explorationStats.configureForSimulator();
+        if (this.explorationStats == null) {
+            this.explorationStats = new ExplorationStatistics();
         }
         return this.explorationStats;
     }

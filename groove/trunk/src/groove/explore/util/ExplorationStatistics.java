@@ -16,6 +16,8 @@
  */
 package groove.explore.util;
 
+import static groove.explore.Verbosity.HIGH;
+import static groove.explore.Verbosity.MEDIUM;
 import groove.explore.Exploration;
 import groove.explore.Verbosity;
 import groove.grammar.Rule;
@@ -47,7 +49,7 @@ import java.util.List;
 /**
  * @author Eduardo Zambon
  */
-public class ExplorationStatistics {
+public class ExplorationStatistics extends ExplorationReporter {
 
     // ------------------------------------------------------------------------
     // Static Fields
@@ -69,112 +71,105 @@ public class ExplorationStatistics {
     /** Amount of memory used at the moment at which exploration was started. */
     private long startUsedMemory;
 
-    private final GTS gts;
     private StringBuilder sb;
     private Formatter fm;
-    private Verbosity verbosity = Verbosity.MEDIUM;
-    private StatisticsListener statisticsListener = new StatisticsListener();
+    /** The verbosity level with which {@link #sb} was built. */
+    private Verbosity sbVerbosity;
+
+    private final Verbosity verbosity;
+    private final StatisticsListener statisticsListener =
+        new StatisticsListener();
 
     // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
     /**
-     * Standard constructor.
-     * @param gts the GTS that will be explored.
+     * Constructs a exploration statistics object at a 
+     * given verbosity level.
      */
-    public ExplorationStatistics(GTS gts) {
-        assert gts != null;
-        this.gts = gts;
-        this.sb = new StringBuilder();
-        this.fm = new Formatter(this.sb);
-    }
-
-    /** Returns the GTS permanently associated with this statistics object. */
-    public final GTS getGts() {
-        return this.gts;
-    }
-
-    /** Configures the object to produce output to be used by the Simulator. */
-    public void configureForSimulator() {
-        this.setVerbosity(Verbosity.HIGH);
-    }
-
-    /** Configures the object to produce output to be used by the Generator. */
-    public void configureForGenerator(Verbosity verbosity) {
-        this.setVerbosity(verbosity);
-    }
-
-    /** Configures the object to produce output to be used by the Generator. */
-    public void configureForGenerator(int level) {
-        this.setVerbosity(Verbosity.getVerbosity(level));
-    }
-
-    /** Should be called right before the exploration starts. */
-    public void start() {
-        final Runtime runTime = Runtime.getRuntime();
-        runTime.runFinalization();
-        runTime.gc();
-        this.startUsedMemory = runTime.totalMemory() - runTime.freeMemory();
-        if (!getVerbosity().isLow()) {
-            this.gts.addLTSListener(this.statisticsListener);
-        }
-        this.startTime = System.currentTimeMillis();
-    }
-
-    /** Should be called right after the exploration finishes. */
-    public void stop() {
-        this.endTime = System.currentTimeMillis();
-        this.gts.removeLTSListener(this.statisticsListener);
-    }
-
-    /**
-     * @return the total running time of the exploration.
-     */
-    public long getRunningTime() {
-        return this.endTime - this.startTime;
-    }
-
-    /**
-     * Sets the verbosity level.
-     * @param verbosity the verbosity level; should be a legal verbosity value.
-     */
-    public void setVerbosity(Verbosity verbosity) {
+    public ExplorationStatistics(Verbosity verbosity) {
         this.verbosity = verbosity;
     }
 
     /**
-     * Returns the verbosity level.
-     * The default level is <tt>MEDIUM_VERBOSITY</tt>
+     * Constructs a exploration statistics object with high verbosity.
      */
-    public Verbosity getVerbosity() {
-        return this.verbosity;
+    public ExplorationStatistics() {
+        this(Verbosity.HIGH);
     }
 
-    /** Returns a string representation of a double as a percentage. */
-    private String percentage(double fraction) {
-        int percentage = (int) (fraction * 1000 + 0.5);
-        String result = "" + (percentage / 10) + "." + (percentage % 10) + "%";
-        if (result.length() == 4) {
-            return " " + result;
-        } else {
-            return result;
+    @Override
+    public void start(Exploration exploration, GTS gts) {
+        super.start(exploration, gts);
+        Runtime runTime = Runtime.getRuntime();
+        runTime.gc();
+        this.startUsedMemory = runTime.totalMemory() - runTime.freeMemory();
+        if (!this.verbosity.isLow()) {
+            getGTS().addLTSListener(this.statisticsListener);
         }
+        this.startTime = System.currentTimeMillis();
+        // clear any previous report
+        this.sb = null;
+        this.fm = null;
     }
 
-    /** Prints an empty line to the output stream. */
-    private void println() {
-        this.sb.append("\n");
+    /** Should be called right after the exploration finishes. */
+    @Override
+    public void stop() {
+        this.endTime = System.currentTimeMillis();
+        getGTS().removeLTSListener(this.statisticsListener);
     }
 
-    /** Prints a line of text to the output stream. */
-    private void println(String text) {
-        this.sb.append(text + "\n");
+    /**
+     * Returns the statistics report string at the default verbosity level
+     * (set at construction time).
+     */
+    public String getReport() {
+        return getReport(this.verbosity);
     }
 
-    /** Prints a line of text to the output stream. */
-    protected void printf(String text, Object... args) {
-        this.fm.format(text, args);
+    /** Returns the statistics report, at a given verbosity level. */
+    public String getReport(Verbosity verbosity) {
+        // build the report if that has not yet been done
+        if (this.sb == null || this.sbVerbosity != verbosity) {
+            createReport(verbosity);
+        }
+        return this.sb.toString();
+    }
+
+    private void createReport(Verbosity verbosity) {
+        // Set the string builder before we start.
+        this.sb = new StringBuilder();
+        this.fm = new Formatter(this.sb);
+        this.sbVerbosity = verbosity;
+        reportProfiling();
+        reportTime();
+        reportSpace();
+        reportStatistics();
+    }
+
+    private void reportProfiling() {
+        print(HIGH, "%n");
+        if (this.sbVerbosity.isHigh()) {
+            StringWriter sw = new StringWriter();
+            Reporter.report(new PrintWriter(sw));
+            this.sb.append(sw.toString());
+        }
+        print(
+            HIGH,
+            "===============================================================================%n");
+    }
+
+    private void reportStatistics() {
+        if (Groove.GATHER_STATISTICS) {
+            reportGraphStatistics();
+            reportGraphElementStatistics();
+            reportTransitionStatistics();
+            reportIsomorphism();
+            reportCacheStatistics();
+        }
+        reportLTS();
     }
 
     /**
@@ -201,37 +196,49 @@ public class ExplorationStatistics {
         int closedTransientStateCount =
             this.statisticsListener.getClosedTransientStateCount();
         int realStateCount =
-            this.gts.nodeCount() - openTransientStateCount
+            getGTS().nodeCount() - openTransientStateCount
                 - closedTransientStateCount;
-        println("\n\tStates:\t\t\t" + realStateCount);
+        String formatString = "%-14s%d%n";
+        print(MEDIUM, "%n");
+        print(MEDIUM, formatString, "States:", realStateCount);
         int openRealStateCount =
-            this.gts.openStateCount() - openTransientStateCount;
+            getGTS().openStateCount() - openTransientStateCount;
         if (openRealStateCount > 0) {
-            println("\tExplored:\t\t" + (realStateCount - openRealStateCount));
+            print(MEDIUM, formatString, "Explored:",
+                (realStateCount - openRealStateCount));
         }
         int partialTransitionCount =
             this.statisticsListener.getPartialTransitionCount();
-        int realTransitionCount = this.gts.edgeCount() - partialTransitionCount;
-        println("\tTransitions:\t" + realTransitionCount);
+        int realTransitionCount = getGTS().edgeCount() - partialTransitionCount;
+        print(MEDIUM, formatString, "Transitions:", realTransitionCount);
     }
 
     /** Gives some statistics regarding the graphs and deltas. */
     private void reportGraphStatistics() {
-        printf("\n\tGraphs:\n\t\tModifiable:\t\t%d%n",
+        String formatString = "    %-20s";
+        String intFormatString = formatString + "%d%n";
+        String floatFormatString = formatString + "%.1f%n";
+        print(HIGH, "%nGraph count%n");
+        print(HIGH, intFormatString, "Modifiable:",
             AGraph.getModifiableGraphCount());
-        printf("\t\tFrozen:\t\t\t%d%n",
+        print(HIGH, intFormatString, "Frozen:",
             AbstractGraphState.getFrozenGraphCount());
-        printf("\t\tBytes/state:\t%.1f%n", this.gts.getBytesPerState());
+        print(HIGH, floatFormatString, "Bytes/state:",
+            getGTS().getBytesPerState());
     }
 
     /** Gives some statistics regarding the generated transitions. */
     private void reportTransitionStatistics() {
-        printf("\n\tTransitions:\n\t\tReused:\t\t%d%n",
-            MatchCollector.getEventReuse());
-        printf("\t\tConfluent:\t%d%n", MatchApplier.getConfluentDiamondCount());
-        printf("\t\tEvents:\t\t%d%n", Record.getEventCount());
-        printf("\tCoanchor reuse:\t%d/%d%n", HostFactory.getNormaliseGain(),
-            HostFactory.getNormaliseCount());
+        String format = "    %-20s";
+        String intFormat = format + "%d%n";
+        String ratioFormat = format + "%d/%d%n";
+        print(HIGH, "%nTransition count%n");
+        print(HIGH, intFormat, "Reused:", MatchCollector.getEventReuse());
+        print(HIGH, intFormat, "Confluent:",
+            MatchApplier.getConfluentDiamondCount());
+        print(HIGH, intFormat, "Events:", Record.getEventCount());
+        print(HIGH, ratioFormat, "Coanchor reuse:",
+            HostFactory.getNormaliseGain(), HostFactory.getNormaliseCount());
     }
 
     /** Reports statistics on isomorphism checking. */
@@ -245,44 +252,58 @@ public class ExplorationStatistics {
         int equalCertsCount = IsoChecker.getEqualCertsCount();
         int equalSimCount = IsoChecker.getEqualSimCount();
         int intCertOverlap = IsoChecker.getIntCertOverlap();
-        printf("\n\tIsomorphism:\n\t\tPredicted:\t\t\t%d (-%d)%n", predicted,
-            intCertOverlap);
-        printf("\t\tFalse pos 1:\t\t%d (%s)%n", falsePos1,
-            percentage((double) falsePos1 / (predicted - intCertOverlap)));
-        printf("\t\tFalse pos 2:\t\t%d (%s)%n", falsePos2,
-            percentage((double) falsePos2 / (predicted - intCertOverlap)));
-        println("\t\tEqual graphs:\t\t" + equalGraphCount);
-        println("\t\tEqual certificates:\t" + equalCertsCount);
-        println("\t\tEqual simulation:\t" + equalSimCount);
-        println("\t\tIterations:\t\t\t" + PartitionRefiner.getIterateCount());
-        println("\t\tSymmetry breaking:\t"
-            + PartitionRefiner.getSymmetryBreakCount());
+        String format = "    %-20s";
+        String intFormat = format + "%d%n";
+        String stringFormat = format + "%s%n";
+        String intIntFormat = format + "%-6d(-%d)%n";
+        String percFormat = "   " + format + "%-6d(%4.1f%%)%n";
+        print(HIGH, "%nIsomorphism statistics%n");
+        print(HIGH, intIntFormat, "Predicted:", predicted, intCertOverlap);
+        print(HIGH, percFormat, "False pos 1:", falsePos1, (double) 100
+            * falsePos1 / (predicted - intCertOverlap));
+        print(HIGH, percFormat, "False pos 2:", falsePos2, (double) 100
+            * falsePos2 / (predicted - intCertOverlap));
+        print(HIGH, intFormat, "Equal graphs:", equalGraphCount);
+        print(HIGH, intFormat, "Equal certificates:", equalCertsCount);
+        print(HIGH, intFormat, "Equal simulation:", equalSimCount);
+        print(HIGH, stringFormat, "Iterations:",
+            PartitionRefiner.getIterateCount());
+        print(HIGH, intFormat, "Symmetry breaking:",
+            PartitionRefiner.getSymmetryBreakCount());
     }
 
     /** Reports on the graph data. */
     private void reportGraphElementStatistics() {
-        HostFactory factory = this.gts.getHostFactory();
-        printf("\n\tFactory node count:\t%d%n", factory.getNodeCount());
-        //printf("\tFresh nodes:\t%d%n", BasicEvent.getFreshNodeCount());
-        printf("\tFactory edge count:\t%d%n", factory.getEdgeCount());
+        HostFactory factory = getGTS().getHostFactory();
+        String format = "    %-20s";
+        String intFormat = format + "%d%n";
+        String floatFormat = format + "%5.1f%n";
+        print(HIGH, "%nGraph element count%n");
+        print(HIGH, intFormat, "Factory nodes:", factory.getNodeCount());
+        print(HIGH, intFormat, "Factory edges:", factory.getEdgeCount());
         double nodeAvg =
             (double) this.statisticsListener.getNodeCount()
-                / this.gts.nodeCount();
-        printf("\tAverage:\n\t\tNodes per state:\t%3.1f%n", nodeAvg);
+                / getGTS().nodeCount();
+        print(HIGH, floatFormat, "Nodes/state (avg):", nodeAvg);
         double edgeAvg =
             (double) this.statisticsListener.getEdgeCount()
-                / this.gts.edgeCount();
-        printf("\t\tEdges per state:\t%3.1f%n", edgeAvg);
+                / getGTS().edgeCount();
+        print(HIGH, floatFormat, "Edges/state (avg):", edgeAvg);
     }
 
     /** Reports on the cache usage. */
     private void reportCacheStatistics() {
-        println("\n\tCaches:\n\t\tCreated:\t\t"
-            + CacheReference.getCreateCount());
-        println("\t\tCleared:\t\t" + CacheReference.getClearCount());
-        println("\t\tCollected:\t\t" + CacheReference.getCollectCount());
-        println("\t\tReconstructed:\t" + CacheReference.getIncarnationCount());
-        println("\t\tDistribution:\t" + getCacheReconstructionDistribution());
+        String format = "    %-20s";
+        String intFormat = format + "%d%n";
+        String stringFormat = format + "%s%n";
+        print(HIGH, "%nCache statistics%n");
+        print(HIGH, intFormat, "Created:", CacheReference.getCreateCount());
+        print(HIGH, intFormat, "Cleared:", CacheReference.getClearCount());
+        print(HIGH, intFormat, "Collected:", CacheReference.getCollectCount());
+        print(HIGH, intFormat, "Reconstructed:",
+            CacheReference.getIncarnationCount());
+        print(HIGH, stringFormat, "Distribution:",
+            getCacheReconstructionDistribution());
     }
 
     /** Reports on the time usage. */
@@ -304,99 +325,75 @@ public class ExplorationStatistics {
         long transforming =
             running - matching - isoChecking - building - measuring;
 
-        println("\nTime (ms):\t" + total);
+        String format = "%-20s%d%n";
+        print(MEDIUM, "%n");
+        print(MEDIUM, format, "Time (ms):", total);
 
-        println("\tMatching:\t\t\t" + matching + "\t"
-            + percentage(matching / (double) total));
-        println("\tTransforming:\t\t" + transforming + "\t"
-            + percentage(transforming / (double) total));
-        println("\tIso checking:\t\t" + isoChecking + "\t"
-            + percentage(isoChecking / (double) total));
-        if (getVerbosity().isHigh()) {
-            long certifying = IsoChecker.getCertifyingTime();
-            long equalCheck = IsoChecker.getEqualCheckTime();
-            long certCheck = IsoChecker.getCertCheckTime();
-            long simCheck = IsoChecker.getSimCheckTime();
-            println("\t\tCertifying:\t\t" + certifying + "\t"
-                + percentage(certifying / (double) isoChecking));
-            println("\t\tEquals check:\t" + equalCheck + "\t"
-                + percentage(equalCheck / (double) isoChecking));
-            println("\t\tCert check:\t\t" + certCheck + "\t"
-                + percentage(certCheck / (double) isoChecking));
-            println("\t\tSim check:\t\t" + simCheck + "\t"
-                + percentage(simCheck / (double) isoChecking));
-        }
-        println("\tBuilding GTS:\t\t" + building + "\t"
-            + percentage(building / (double) total));
-        println("\tMeasuring:\t\t\t" + measuring + "\t"
-            + percentage(measuring / (double) total));
-        println("\tInitialization:\t\t" + overhead + "\t"
-            + percentage(overhead / (double) total));
+        // Time breakup only reported under high verbosity
+        format = "    %-15s%7d    (%4.1f%%)%n";
+        String longFormat = "    " + format;
+        print(HIGH, format, "Matching:", matching, 100 * matching
+            / (double) total);
+        print(HIGH, format, "Transforming:", transforming, 100 * transforming
+            / (double) total);
+        print(HIGH, format, "Iso checking:", isoChecking, 100 * isoChecking
+            / (double) total);
+
+        long certifying = IsoChecker.getCertifyingTime();
+        long equalCheck = IsoChecker.getEqualCheckTime();
+        long certCheck = IsoChecker.getCertCheckTime();
+        long simCheck = IsoChecker.getSimCheckTime();
+        print(HIGH, longFormat, "Certifying:", certifying, 100 * certifying
+            / (double) isoChecking);
+        print(HIGH, longFormat, "Equals check:", equalCheck, 100 * equalCheck
+            / (double) isoChecking);
+        print(HIGH, longFormat, "Cert check:", certCheck, 100 * certCheck
+            / (double) isoChecking);
+        print(HIGH, longFormat, "Sim check:", simCheck, 100 * simCheck
+            / (double) isoChecking);
+
+        print(HIGH, format, "Building GTS:", building, 100 * building
+            / (double) total);
+        print(HIGH, format, "Measuring:", measuring, 100 * measuring
+            / (double) total);
+        print(HIGH, format, "Initialization:", overhead, 100 * overhead
+            / (double) total);
     }
 
     /**
-     * Reports on the time usage.
-     * @param usedMemory the final memory after generation, cache clearing and
-     *        garbage collection.
+     * Reports on the space usage.
      */
-    private void reportSpace(long usedMemory) {
-        println("\nSpace (kB):\t" + (usedMemory / BYTES_PER_KB));
+    private void reportSpace() {
+        final Runtime runTime = Runtime.getRuntime();
+        // Clear all caches to see all available memory.
+        for (GraphState state : getGTS().nodeSet()) {
+            if (state instanceof AbstractCacheHolder<?>) {
+                ((AbstractCacheHolder<?>) state).clearCache();
+            }
+            if (state instanceof GraphNextState) {
+                ((AbstractCacheHolder<?>) ((GraphNextState) state).getEvent()).clearCache();
+            }
+        }
+        // The following is to make sure that the graph reference queue gets
+        // flushed.
+        System.runFinalization();
+        System.gc();
+        long usedMemory = runTime.totalMemory() - runTime.freeMemory();
+        String format = "%-20s%d%n";
+        print(HIGH, "%n");
+        print(MEDIUM, format, "Space (kB):",
+            (usedMemory - this.startUsedMemory) / BYTES_PER_KB);
     }
 
-    /** Prints a report of the exploration to the output stream. */
-    private void report() {
-        // Clear the string builder before we start.
-        this.sb.delete(0, this.sb.length());
-
-        if (getVerbosity().isHigh()) {
-            StringWriter sw = new StringWriter();
-            Reporter.report(new PrintWriter(sw));
-            this.sb.append(sw.toString());
-            println();
-            println("===============================================================================");
-            println();
-        }
-
-        if (!getVerbosity().isLow()) {
-            final Runtime runTime = Runtime.getRuntime();
-            // Clear all caches to see all available memory.
-            for (GraphState state : this.gts.nodeSet()) {
-                if (state instanceof AbstractCacheHolder<?>) {
-                    ((AbstractCacheHolder<?>) state).clearCache();
-                }
-                if (state instanceof GraphNextState) {
-                    ((AbstractCacheHolder<?>) ((GraphNextState) state).getEvent()).clearCache();
-                }
-            }
-            // The following is to make sure that the graph reference queue gets
-            // flushed.
-            System.runFinalization();
-            System.gc();
-            long usedMemory = runTime.totalMemory() - runTime.freeMemory();
-
-            println("Statistics:");
-            reportLTS();
-            if (getVerbosity().isHigh() && Groove.GATHER_STATISTICS) {
-                reportGraphStatistics();
-                reportTransitionStatistics();
-                reportIsomorphism();
-                reportGraphElementStatistics();
-                reportCacheStatistics();
-            }
-            reportTime();
-            reportSpace(usedMemory - this.startUsedMemory);
+    /** 
+     * Prints a formatted string to the output stream,
+     * at a given minimum verbosity. 
+     */
+    private void print(Verbosity at, String text, Object... args) {
+        if (at.compareTo(this.sbVerbosity) <= 0) {
+            this.fm.format(text, args);
         }
     }
-
-    /** Returns the statistics report string. */
-    public String getReport() {
-        this.report();
-        return this.sb.toString();
-    }
-
-    // ------------------------------------------------------------------------
-    // Inner Classes
-    // ------------------------------------------------------------------------
 
     /** Listener to an LTS that counts the nodes and edges of the states. */
     private static class StatisticsListener extends GTSAdapter {

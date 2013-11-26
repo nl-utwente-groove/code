@@ -21,13 +21,13 @@ import groove.abstraction.neigh.explore.ShapeGenerator;
 import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.PatternAbstraction;
 import groove.abstraction.pattern.lts.PSTS;
-import groove.explore.Generator;
+import groove.explore.Args4JGenerator;
 import groove.util.CommandLineOption;
 
 import java.io.PrintStream;
 
 /**
- * Counterpart of {@link Generator} for pattern shape state space exploration.
+ * Counterpart of {@link Args4JGenerator} for pattern shape state space exploration.
  * See also {@link ShapeGenerator}.
  * 
  * @author Eduardo Zambon
@@ -92,7 +92,7 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
     /** Writes an exploration prelude to stdout. */
     @Override
     protected void prelude() {
-        if (getVerbosity() > LOW_VERBOSITY) {
+        if (!getVerbosity().isLow()) {
             println("\n======================================================\n");
             println("Grammar:\t" + this.grammarLocation);
             println("Start graph:\t"

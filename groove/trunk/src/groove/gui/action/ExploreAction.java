@@ -95,7 +95,7 @@ public class ExploreAction extends SimulatorAction {
         // create a thread to do the work in the background
         Thread generateThread = new ExploreThread(exploration);
         // go!
-        getSimulatorModel().getExplorationStats().start();
+        getSimulatorModel().getExplorationStats().start(exploration, gts);
         generateThread.start();
         getSimulatorModel().getExplorationStats().stop();
         // emphasise the result states, if required
@@ -103,15 +103,14 @@ public class ExploreAction extends SimulatorAction {
         gts.addLTSListener(ltsJModel);
         // collect the result states
         if (setResult) {
-            gts.setResult(exploration.getLastResult());
+            gts.setResult(exploration.getResult());
         }
         GraphState lastState = exploration.getLastState();
         if (lastState != null) {
             getSimulatorModel().setState(lastState);
         }
         if (emphasise) {
-            Collection<GraphState> result =
-                exploration.getLastResult().getValue();
+            Collection<GraphState> result = exploration.getResult().getValue();
             getLtsDisplay().emphasiseStates(new ArrayList<GraphState>(result),
                 true);
         }

@@ -16,10 +16,17 @@
  */
 package groove.explore;
 
+import groove.explore.util.ExplorationReporter;
+import groove.explore.util.LTSLabels;
+import groove.explore.util.LTSReporter;
+import groove.explore.util.LogReporter;
+import groove.explore.util.StateReporter;
+import groove.grammar.model.FormatException;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.kohsuke.args4j.Argument;
@@ -105,8 +112,8 @@ public class GeneratorOptions {
     /**
      * Returns the settings to be used in generating the LTS.
      */
-    public String getLtsFlags() {
-        return this.ltsFlags;
+    public LTSLabels getLtsLabels() {
+        return this.ltsLabels;
     }
 
     /**
@@ -170,6 +177,27 @@ public class GeneratorOptions {
         return this.startGraphs;
     }
 
+    /** Returns the exploration reporters enabled on the basis of the options. */
+    public List<ExplorationReporter> getReporters() {
+        if (this.reporters == null) {
+            this.reporters = computeReporters();
+        }
+        return this.reporters;
+    }
+
+    private List<ExplorationReporter> computeReporters() {
+        List<ExplorationReporter> result = new ArrayList<ExplorationReporter>();
+        if (isSaveLts()) {
+            result.add(new LTSReporter(getLtsPattern(), getLtsLabels()));
+        }
+        if (isSaveState()) {
+            result.add(new StateReporter(getStatePattern()));
+        }
+        result.add(new LogReporter(getGrammar().getPath(), getStartGraphs(),
+            getVerbosity(), getLogDir()));
+        return result;
+    }
+
     @Option(name = "-h", aliases = "--help",
             usage = "Print this help message and exit",
             handler = HelpHandler.class)
@@ -180,8 +208,8 @@ public class GeneratorOptions {
             handler = DirectoryHandler.class)
     private File logdir;
 
-    @Option(name = "-s", metaVar = "str", usage = ""
-        + "Set the exploration strategy to <str>. Legal values are:\n"
+    @Option(name = "-s", metaVar = "strgy", usage = ""
+        + "Set the exploration strategy to <strgy>. Legal values are:\n"
         + "  bfs         - Breadth-first Exploration\n"
         + "  dfs         - Depth-first Exploration\n"
         + "  linear      - Linear\n" //
@@ -224,29 +252,40 @@ public class GeneratorOptions {
             usage = "Stop exploration after <num> result states (default is infinite)")
     private int resultCount = 0;
 
-    @Option(name = "-ef", metaVar = "flags", depends = "-o", usage = ""
-        + "Flags for the \"-o\" option. Legal values are:\n" //
-        + "  s - label start state\n" //
-        + "  f - label final states\n" //
-        + "  o - label open states\n" //
-        + "  n - export state names")
-    private String ltsFlags;
+    @Option(
+            name = "-ef",
+            metaVar = "flags",
+            depends = "-o",
+            usage = ""
+                + "Flags for the \"-o\" option. Legal values are:\n" //
+                + "  s - label start state (default: 'start')\n" //
+                + "  f - label final states (default: 'final')\n" //
+                + "  o - label open states (default: 'open')\n" //
+                + "  n - label state with number (default: 's#', '#' replaced by number)"
+                + "Specify label to be used by appending flag with 'label' (single-quoted)",
+            handler = LTSFlagsHandler.class)
+    private LTSLabels ltsLabels;
 
-    @Option(name = "-o", metaVar = "file",
-            usage = "Save the generated LTS to <file> (default extension .gxl)")
+    @Option(
+            name = "-o",
+            metaVar = "file",
+            usage = "Save the generated LTS to a file with name derived from <file>, "
+                + "in which '#' is instantiated with the grammar ID. "
+                + "The \"-ef\"-option controls some additional state labels. "
+                + "The optional extension determines the output format (default is .gxl)")
     private String ltsPattern;
 
     @Option(name = "-v", metaVar = "level",
-            usage = "Set verbosity level (range = 0-2, default = 1)",
+            usage = "Set verbosity level (range = -1 to 2, default = 1)",
             handler = VerbosityHandler.class)
     private Verbosity verbosity = Verbosity.MEDIUM;
 
     @Option(
             name = "-f",
-            metaVar = "pat",
-            usage = "Save result states in separate files, with names derived from <pat>, "
-                + "of the form '[path/]a#b[.ext]' where # is instantiated with the state number. "
-                + "The optional extension '.ext' determines the output format (default is .gst)")
+            metaVar = "file",
+            usage = "Save result states in separate files, with names derived from <file>, "
+                + "in which the mandatory '#' is instantiated with the state number. "
+                + "The optional extension determines the output format (default is .gst)")
     private String statePattern;
 
     @Argument(metaVar = "grammar", required = true,
@@ -258,6 +297,9 @@ public class GeneratorOptions {
             usage = "Start graph names (defined in grammar, no extension) "
                 + "or start graph files (extension .gst)")
     private List<String> startGraphs;
+
+    /** The reporters that can be built on the basis of the options. */
+    private List<ExplorationReporter> reporters;
 
     /**
      * Option handler for the help option.
@@ -273,6 +315,7 @@ public class GeneratorOptions {
         @Override
         public int parseArguments(Parameters params) throws CmdLineException {
             this.owner.stopOptionParsing();
+            this.setter.addValue(true);
             return params.size();
         }
 
@@ -351,6 +394,26 @@ public class GeneratorOptions {
         public GrammarHandler(CmdLineParser parser, OptionDef option,
                 Setter<? super File> setter) {
             super(parser, option, setter, FileType.GRAMMAR_FILTER);
+        }
+    }
+
+    /** Hangler for the {@link #ltsLabels} option. */
+    public static class LTSFlagsHandler extends
+            OneArgumentOptionHandler<LTSLabels> {
+        /** The required constructor. */
+        public LTSFlagsHandler(CmdLineParser parser, OptionDef option,
+                Setter<? super LTSLabels> setter) {
+            super(parser, option, setter);
+        }
+
+        @Override
+        protected LTSLabels parse(String argument)
+            throws NumberFormatException, CmdLineException {
+            try {
+                return new LTSLabels(argument);
+            } catch (FormatException e) {
+                throw new CmdLineException(this.owner, e);
+            }
         }
     }
 
