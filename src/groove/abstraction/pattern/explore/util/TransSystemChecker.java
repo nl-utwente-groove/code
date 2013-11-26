@@ -18,6 +18,7 @@ package groove.abstraction.pattern.explore.util;
 
 import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PatternState;
+import groove.explore.util.LTSLabels;
 import groove.grammar.host.HostGraph;
 import groove.graph.iso.IsoChecker;
 import groove.graph.plain.PlainGraph;
@@ -90,8 +91,7 @@ public final class TransSystemChecker {
      * @return true if the systems are equivalent, false otherwise.
      */
     private boolean compare(PrintStream out) {
-        PlainGraph plainSGTS =
-            this.sgts.toPlainGraph(false, false, false, false);
+        PlainGraph plainSGTS = this.sgts.toPlainGraph(LTSLabels.EMPTY);
         PlainGraph plainPGTS = this.pgts.toPlainGraph();
         IsoChecker gtsChecker = IsoChecker.getInstance(true);
         if (gtsChecker.areIsomorphic(plainSGTS, plainPGTS)) {

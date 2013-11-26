@@ -44,6 +44,7 @@ public class Exploration {
     private final Serialized strategy;
     private final Serialized acceptor;
     private final int nrResults;
+    private GTS lastGts;
     /** Result of the last exploration. */
     private Result lastResult;
     /** Message of the last exploration. */
@@ -132,6 +133,13 @@ public class Exploration {
     }
 
     /**
+     * Returns most recently explored GTS.
+     */
+    public GTS getGTS() {
+        return this.lastGts;
+    }
+
+    /**
      * Returns the number of results of the most recent exploration.
      */
     public int getNrResults() {
@@ -141,7 +149,7 @@ public class Exploration {
     /**
      * Returns the result of the most recent exploration. 
      */
-    public Result getLastResult() {
+    public Result getResult() {
         return this.lastResult;
     }
 
@@ -241,6 +249,7 @@ public class Exploration {
         playReporter.stop();
 
         // store result
+        this.lastGts = gts;
         this.lastResult = parsedAcceptor.getResult();
         this.lastState = parsedStrategy.getLastState();
         this.lastMessage = parsedStrategy.getMessage();

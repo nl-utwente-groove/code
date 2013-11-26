@@ -21,6 +21,7 @@ import static groove.io.FileType.GXL_FILTER;
 import static groove.io.FileType.RULE_FILTER;
 import static groove.io.FileType.STATE_FILTER;
 import static groove.io.FileType.TYPE_FILTER;
+import groove.explore.Verbosity;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.FormatException;
@@ -632,7 +633,7 @@ public class Imager extends CommandLineTool {
             initComponents();
             initActions();
             setContentPane(createContentPane());
-            setVerbosity(HIGH_VERBOSITY);
+            setVerbosity(Verbosity.HIGH);
         }
 
         /**

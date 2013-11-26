@@ -16,7 +16,7 @@
  */
 package groove.verify;
 
-import groove.explore.Generator;
+import groove.explore.Args4JGenerator;
 import groove.lts.GTS;
 import groove.util.CommandLineTool;
 
@@ -58,7 +58,11 @@ public class CTLModelChecker extends CommandLineTool {
                     argList.size()));
             CTLModelChecker verifier =
                 new CTLModelChecker(checkerArgs, genArgs);
-            verifier.start();
+            try {
+                verifier.start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -76,12 +80,12 @@ public class CTLModelChecker extends CommandLineTool {
     /**
      * Method managing the actual work to be done.
      */
-    public void start() {
+    public void start() throws Exception {
         processArguments();
-        this.generator = new Generator(this.genArgs);
-        this.generator.start();
-        this.gts = this.generator.getGTS();
-        long startTime = System.currentTimeMillis();
+        this.generator = new Args4JGenerator(this.genArgs);
+        long genStartTime = System.currentTimeMillis();
+        this.gts = this.generator.run();
+        long mcStartTime = System.currentTimeMillis();
 
         while (this.properties.size() > 0) {
             this.setProperty(this.properties.remove(0));
@@ -96,11 +100,9 @@ public class CTLModelChecker extends CommandLineTool {
         }
 
         long endTime = System.currentTimeMillis();
-        long mcTime = endTime - startTime;
 
-        println("** Model Checking Time (ms):\t" + mcTime);
-        println("** Total Running Time (ms):\t"
-            + (this.generator.getRunningTime() + mcTime));
+        println("** Model Checking Time (ms):\t" + (endTime - mcStartTime));
+        println("** Total Running Time (ms):\t" + (endTime - genStartTime));
 
     }
 
@@ -211,7 +213,7 @@ public class CTLModelChecker extends CommandLineTool {
     /**
      * The generator used for generating the state space.
      */
-    private Generator generator;
+    private Args4JGenerator generator;
     /** The list of options to the generator. */
     private String[] genArgs = null;
     /**

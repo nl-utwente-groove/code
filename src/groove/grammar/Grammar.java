@@ -78,6 +78,14 @@ public class Grammar {
         return this.name;
     }
 
+    /**
+     * Returns a string that can be used to identify the grammar model.
+     * The ID is composed from grammar name and start graph name;
+     */
+    public String getId() {
+        return buildId(getName(), getStartGraph().getName());
+    }
+
     /** Convenience method to return the rule with a given name, if any. */
     public Rule getRule(String name) {
         return this.nameRuleMap.get(name);
@@ -417,4 +425,18 @@ public class Grammar {
     private CtrlAut ctrlAut;
     /** The prolog environment derived from the system store. */
     private GrooveEnvironment prologEnvironment;
+
+    /**
+     * Constructs an ID string from the grammar name and start graph name.
+     * The start graph name may be {@code null}.
+     */
+    public static String buildId(String grammarName, String startGraphName) {
+        StringBuilder result = new StringBuilder(grammarName);
+        if (startGraphName != null) {
+            result.append("@");
+            result.append(startGraphName);
+        }
+        return result.toString();
+    }
+
 }

@@ -19,7 +19,7 @@ package groove.test.verify;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import groove.explore.Generator;
+import groove.explore.Args4JGenerator;
 import groove.lts.GTS;
 import groove.verify.DefaultMarker;
 import groove.verify.Formula;
@@ -71,10 +71,14 @@ public class CTLTest {
 
     /** Sets the GTS to a given grammar in the JUnit samples. */
     private void setGTS(String grammarName) {
-        Generator generator =
-            new Generator("-v", "0", "junit/samples/" + grammarName);
-        generator.start();
-        this.gts = generator.getGTS();
+        try {
+            Args4JGenerator generator =
+                new Args4JGenerator("-v", "-1", "junit/samples/" + grammarName);
+            this.gts = generator.run();
+        } catch (Exception e) {
+            // this should not occur
+            e.printStackTrace();
+        }
     }
 
     /** Tests the number of counterexamples in the current;y

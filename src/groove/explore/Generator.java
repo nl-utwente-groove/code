@@ -22,6 +22,7 @@ import groove.explore.encode.TemplateList;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationStatistics;
+import groove.explore.util.LTSLabels;
 import groove.grammar.Grammar;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
@@ -241,7 +242,7 @@ public class Generator extends CommandLineTool {
         if (this.grammarModel == null) {
             Observer loadObserver = new Observer() {
                 public void update(Observable o, Object arg) {
-                    if (getVerbosity() > LOW_VERBOSITY) {
+                    if (!getVerbosity().isLow()) {
                         if (arg instanceof String) {
                             System.out.printf("%s .", arg);
                         } else if (arg == null) {
@@ -417,8 +418,7 @@ public class Generator extends CommandLineTool {
      * <tt>{@link #start}</tt>.
      */
     protected void init() {
-        this.explorationStats = new ExplorationStatistics(getGTS());
-        this.explorationStats.configureForGenerator(this.getVerbosity());
+        this.explorationStats = new ExplorationStatistics(this.getVerbosity());
     }
 
     /**
@@ -426,16 +426,15 @@ public class Generator extends CommandLineTool {
      * <tt>{@link #start}</tt>.
      */
     protected void generate() {
-        if (getVerbosity() > LOW_VERBOSITY) {
+        if (!getVerbosity().isLow()) {
             println("Grammar:\t" + this.grammarLocation);
             println("Start graph:\t"
                 + (this.startGraphs == null ? "default" : this.startGraphs));
             println("Exploration:\t" + getExploration().getIdentifier());
             println("Timestamp:\t" + this.invocationTime);
-            print("\nProgress:\t");
             getGTS().addLTSListener(new GenerateProgressMonitor());
         }
-        this.explorationStats.start();
+        this.explorationStats.start(getExploration(), getGTS());
         try {
             getExploration().play(getGTS(), null);
         } catch (FormatException e) {
@@ -462,18 +461,15 @@ public class Generator extends CommandLineTool {
         }
 
         // Compute the export simulation flags.
-        ExportSimulationFlags flags;
+        LTSLabels flags;
         if (ef) {
             flags = this.exportSimulationFlagsOption.getValue();
         } else {
-            flags = new ExportSimulationFlags();
+            flags = LTSLabels.EMPTY;
         }
 
         // Create the LTS view to be exported.
-        PlainGraph lts =
-            getGTS().toPlainGraph(flags.labelFinalStates,
-                flags.labelStartState, flags.labelOpenStates,
-                flags.exportStateNames);
+        PlainGraph lts = getGTS().toPlainGraph(flags);
 
         // Perform the export.
         try {
@@ -504,7 +500,7 @@ public class Generator extends CommandLineTool {
             if (isOptionActive(this.resultSaveOption)) {
                 ResultSave rs = this.resultSaveOption.getValue();
                 Collection<? extends GraphState> export =
-                    getExploration().getLastResult().getValue();
+                    getExploration().getResult().getValue();
                 for (GraphState state : export) {
                     String stateFilename =
                         path + "/" + rs.prefix + state.getNumber() + rs.suffix
@@ -535,7 +531,7 @@ public class Generator extends CommandLineTool {
     /** Prints a report of the run on the standard output. */
     protected void report() {
         // Advance 2 lines (after the progress).
-        if (getVerbosity() > LOW_VERBOSITY) {
+        if (!getVerbosity().isLow()) {
             println();
             println();
             String report = this.explorationStats.getReport();
@@ -569,13 +565,6 @@ public class Generator extends CommandLineTool {
             }
         }
         exportSimulation();
-    }
-
-    /**
-     * @return the total running time of the generator.
-     */
-    public long getRunningTime() {
-        return this.explorationStats.getRunningTime();
     }
 
     /**
@@ -692,24 +681,6 @@ public class Generator extends CommandLineTool {
     }
 
     /**
-     * The <code>ExportSimulationFlags</code> class is a record that holds all
-     * the flags that can be set with the -ef (export simulation flags) option.
-     * The default value for all flags is <code>false</code>.
-     * 
-     * @see ExportSimulationFlagsOption
-     */
-    static private class ExportSimulationFlags {
-        /** Flag to indicate that the start state must be labeled. */
-        public boolean labelStartState = false;
-        /** Flag to indicate that the final states must be labeled. */
-        public boolean labelFinalStates = false;
-        /** Flag to indicate that the open states must be labeled. */
-        public boolean labelOpenStates = false;
-        /** Flag to indicate that the state names must be exported. */
-        public boolean exportStateNames = false;
-    }
-
-    /**
      * The <code>ExportSimulationFlagsOption</code> is the command line option
      * for additional flags for the export simulation option.
      * It is implemented as a <code>StoreCommandLineOption</code>.
@@ -717,7 +688,7 @@ public class Generator extends CommandLineTool {
      * @see StoreCommandLineOption
      */
     protected static class ExportSimulationFlagsOption extends
-            StoreCommandLineOption<ExportSimulationFlags> {
+            StoreCommandLineOption<LTSLabels> {
 
         /** 
          * Default constructor. Defines '-ef' to be the name of the command
@@ -741,29 +712,12 @@ public class Generator extends CommandLineTool {
         }
 
         @Override
-        public ExportSimulationFlags parseParameter(String parameter) {
-            ExportSimulationFlags result = new ExportSimulationFlags();
-            for (int i = 0; i < parameter.length(); i++) {
-                switch (parameter.charAt(i)) {
-                case 's':
-                    result.labelStartState = true;
-                    break;
-                case 'f':
-                    result.labelFinalStates = true;
-                    break;
-                case 'o':
-                    result.labelOpenStates = true;
-                    break;
-                case 'n':
-                    result.exportStateNames = true;
-                    break;
-                default:
-                    throw new IllegalArgumentException("'"
-                        + parameter.charAt(i)
-                        + "' is not a valid export simulation flag.");
-                }
+        public LTSLabels parseParameter(String parameter) {
+            try {
+                return new LTSLabels(parameter);
+            } catch (FormatException e) {
+                throw new IllegalArgumentException(e.getMessage());
             }
-            return result;
         }
     }
 

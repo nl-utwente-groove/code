@@ -16,6 +16,7 @@
  */
 package groove.util;
 
+import groove.explore.Verbosity;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
 
@@ -59,19 +60,6 @@ public class CommandLineTool {
      */
     static public final String LOG_FILE_EXTENSION = ".log";
 
-    // The verbosity constants are taken from <tt>VerbosityOption</tt>.
-    /**
-     * Low verbosity.
-     */
-    static public final int LOW_VERBOSITY = VerbosityOption.LOW_VERBOSITY;
-    /**
-     * Medium verbosity.
-     */
-    static public final int MEDIUM_VERBOSITY = VerbosityOption.MEDIUM_VERBOSITY;
-    /**
-     * High verbosity.
-     */
-    static public final int HIGH_VERBOSITY = VerbosityOption.HIGH_VERBOSITY;
     /** Symbolic char constant. */
     static protected final char SPACE = ' ';
     /** Symbolic char constant. */
@@ -298,7 +286,7 @@ public class CommandLineTool {
      * supported.
      * @param verbosity the verbosity level; should be a legal verbosity value.
      */
-    public void setVerbosity(int verbosity) {
+    public void setVerbosity(Verbosity verbosity) {
         this.verbosity = verbosity;
     }
 
@@ -306,7 +294,7 @@ public class CommandLineTool {
      * Returns the verbosity level. The default level is
      * <tt>MEDIUM_VERBOSITY</tt>
      */
-    public int getVerbosity() {
+    public Verbosity getVerbosity() {
         return this.verbosity;
     }
 
@@ -364,8 +352,8 @@ public class CommandLineTool {
      * to the log file, provided the verbosity of the tool is at least the given
      * verbosity.
      */
-    protected void println(int verbosity) {
-        if (getVerbosity() >= verbosity) {
+    protected void println(Verbosity verbosity) {
+        if (getVerbosity().compareTo(verbosity) >= 0) {
             println();
         }
     }
@@ -375,8 +363,8 @@ public class CommandLineTool {
      * activated, to the log file, provided the verbosity of the tool is at
      * least the given verbosity.
      */
-    protected void println(String text, int verbosity) {
-        if (getVerbosity() >= verbosity) {
+    protected void println(String text, Verbosity verbosity) {
+        if (getVerbosity().compareTo(verbosity) >= 0) {
             println(text);
         }
     }
@@ -386,8 +374,8 @@ public class CommandLineTool {
      * logging is activated, to the log file, provided the verbosity of the tool
      * is at least the given verbosity.
      */
-    protected void print(String text, int verbosity) {
-        if (getVerbosity() >= verbosity) {
+    protected void print(String text, Verbosity verbosity) {
+        if (getVerbosity().compareTo(verbosity) >= 0) {
             print(text);
         }
     }
@@ -395,31 +383,31 @@ public class CommandLineTool {
     /**
      * Prints a line of text to the standard output and, if logging is
      * activated, to the log file, provided the verbosity of the tool is at
-     * least <tt>{@link #MEDIUM_VERBOSITY}</tt>. Convenience method for
-     * <tt>println(text, MEDIUM_VERBOSITY)</tt>.
+     * least {@link Verbosity#MEDIUM}. Convenience method for
+     * <tt>println(text, Verbosity#MEDIUM)</tt>.
      */
     protected void printlnMedium(String text) {
-        println(text, MEDIUM_VERBOSITY);
+        println(text, Verbosity.MEDIUM);
     }
 
     /**
      * Prints a line of text to the standard output and, if logging is
      * activated, to the log file, provided the verbosity of the tool is at
-     * least <tt>{@link #HIGH_VERBOSITY}</tt>. Convenience method for
-     * <tt>println(text, HIGH_VERBOSITY)</tt>.
+     * least {@link Verbosity#HIGH}. Convenience method for
+     * <tt>println(text, Verbosity.HIGH)</tt>.
      */
     protected void printlnHigh(String text) {
-        println(text, HIGH_VERBOSITY);
+        println(text, Verbosity.HIGH);
     }
 
     /**
      * Prints formatted text to the standard output and, if logging is
      * activated, to the log file, provided the verbosity of the tool is at
-     * least <tt>{@link #MEDIUM_VERBOSITY}</tt>. Convenience method for
-     * <tt>println(text, MEDIUM_VERBOSITY)</tt>.
+     * least {@link Verbosity#MEDIUM}. Convenience method for
+     * <tt>println(text, Verbosity.MEDIUM)</tt>.
      */
     protected void printfMedium(String text, Object... args) {
-        if (this.verbosity >= MEDIUM_VERBOSITY) {
+        if (!this.verbosity.isLow()) {
             printf(text, args);
         }
     }
@@ -427,11 +415,11 @@ public class CommandLineTool {
     /**
      * Prints formatted text to the standard output and, if logging is
      * activated, to the log file, provided the verbosity of the tool is at
-     * least <tt>{@link #HIGH_VERBOSITY}</tt>. Convenience method for
-     * <tt>println(text, HIGH_VERBOSITY)</tt>.
+     * least {@link Verbosity#HIGH}. Convenience method for
+     * <tt>println(text, Verbosity.HIGH)</tt>.
      */
     protected void printfHigh(String text, Object... args) {
-        if (this.verbosity >= HIGH_VERBOSITY) {
+        if (this.verbosity.isHigh()) {
             printf(text, args);
         }
     }
@@ -520,7 +508,7 @@ public class CommandLineTool {
     /**
      * The verbosity with which the generation is carried out.
      */
-    private int verbosity = VerbosityOption.MEDIUM_VERBOSITY;
+    private Verbosity verbosity = Verbosity.MEDIUM;
     /**
      * Flag to indicate that the generation process should be logged.
      */
@@ -601,17 +589,6 @@ public class CommandLineTool {
         static public final String NAME = "v";
         /** Parameter name of the verbosity command line option. */
         static public final String PARAMETER_NAME = "val";
-        /** Low verbosity argument value for the command option. */
-        static public final int LOW_VERBOSITY = 0;
-        /** Medium verbosity argument value for the command option. */
-        static public final int MEDIUM_VERBOSITY = 1;
-        /** High verbosity argument value for the command option. */
-        static public final int HIGH_VERBOSITY = 2;
-        /**
-         * Default verbosity argument value for the command option; set to
-         * medium.
-         */
-        static public final int DEFAULT_VERBOSITY = MEDIUM_VERBOSITY;
 
         /**
          * Constructs an option that works upon a given generator.
@@ -622,8 +599,9 @@ public class CommandLineTool {
 
         public String[] getDescription() {
             return new String[] {"Set the verbosity to '" + getParameterName()
-                + "', in the range " + LOW_VERBOSITY + "-" + HIGH_VERBOSITY
-                + " (default = " + DEFAULT_VERBOSITY + ")"};
+                + "', in the range " + Verbosity.LOWEST + "-"
+                + Verbosity.HIGHEST + " (default = "
+                + Verbosity.MEDIUM.ordinal() + ")"};
         }
 
         public String getParameterName() {
@@ -644,18 +622,18 @@ public class CommandLineTool {
          * exception.
          */
         public void parse(String parameter) throws IllegalArgumentException {
-            int verbosity = MEDIUM_VERBOSITY;
+            int verbosity;
             try {
                 verbosity = Integer.parseInt(parameter);
             } catch (NumberFormatException exc) {
                 throw new IllegalArgumentException("verbosity value '"
                     + parameter + "' must be numeric");
             }
-            if (verbosity < LOW_VERBOSITY || verbosity > HIGH_VERBOSITY) {
+            if (verbosity < Verbosity.LOWEST || verbosity > Verbosity.HIGHEST) {
                 throw new IllegalArgumentException("'" + parameter
                     + "' is outside the range of valid verbosity values");
             }
-            this.tool.setVerbosity(verbosity);
+            this.tool.setVerbosity(Verbosity.values()[verbosity]);
         }
 
         /**

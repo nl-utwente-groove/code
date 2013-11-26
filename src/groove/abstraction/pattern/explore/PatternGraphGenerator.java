@@ -28,7 +28,7 @@ import groove.abstraction.pattern.lts.PatternTransition;
 import groove.abstraction.pattern.shape.TypeGraph;
 import groove.abstraction.pattern.shape.TypeGraphFactory;
 import groove.abstraction.pattern.trans.PatternGraphGrammar;
-import groove.explore.Generator;
+import groove.explore.Args4JGenerator;
 import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.Strategy;
 import groove.grammar.Grammar;
@@ -44,7 +44,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Counterpart of {@link Generator} for pattern graph state space exploration.
+ * Counterpart of {@link Args4JGenerator} for pattern graph state space exploration.
  * See also {@link ShapeGenerator}.
  * 
  * @author Eduardo Zambon
@@ -213,7 +213,7 @@ public class PatternGraphGenerator extends CommandLineTool {
 
     /** Writes an exploration prelude to stdout. */
     protected void prelude() {
-        if (getVerbosity() > LOW_VERBOSITY) {
+        if (!getVerbosity().isLow()) {
             println("\n======================================================\n");
             println("Grammar:\t" + this.grammarLocation);
             println("Start graph:\t"
