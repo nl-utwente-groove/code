@@ -21,6 +21,7 @@ import groove.explore.encode.TemplateList;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationReporter;
+import groove.explore.util.GenerateProgressListener;
 import groove.grammar.Grammar;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
@@ -28,15 +29,16 @@ import groove.grammar.model.GrammarModel;
 import groove.io.FileType;
 import groove.lts.GTS;
 import groove.util.Groove;
+import groove.util.cli.GrooveCmdLineParser;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
+
+import org.kohsuke.args4j.CmdLineException;
 
 /**
  * New command-line Generator class, using the Agrs4J library. 
@@ -46,21 +48,12 @@ import java.util.Observer;
 public class Args4JGenerator {
     /**
      * Constructs the generator and processes the command-line arguments.
-     * @throws Exception if any error was found in the command-line arguments
+     * @throws CmdLineException if any error was found in the command-line arguments
      */
-    public Args4JGenerator(String... args) throws Exception {
+    public Args4JGenerator(String... args) throws CmdLineException {
         this.options = new GeneratorOptions();
-        this.parser = new GrooveCmdLineParser(this.options);
-        try {
-            this.parser.parseArgument(args);
-        } catch (Throwable e) {
-            // only throw the exception if the help option is not invoked
-            // because if it is invoked then only the help message will be printed
-            if (!this.options.isHelp()) {
-                throw new Exception(String.format("Error: %s%n%s",
-                    e.getMessage(), getUsageLine()));
-            }
-        }
+        this.parser = new GrooveCmdLineParser("Generator", this.options);
+        this.parser.parseArgument(args);
     }
 
     /**
@@ -69,7 +62,7 @@ public class Args4JGenerator {
      */
     public GTS run() throws Exception {
         if (this.options.isHelp()) {
-            printHelp();
+            this.parser.printHelp();
             return null;
         } else {
             return generate();
@@ -86,7 +79,7 @@ public class Args4JGenerator {
         grammar.setFixed();
         GTS gts = new GTS(grammar);
         if (!this.options.getVerbosity().isLow()) {
-            gts.addLTSListener(new GenerateProgressMonitor());
+            gts.addLTSListener(new GenerateProgressListener());
         }
         for (ExplorationReporter reporter : getReporters()) {
             reporter.start(exploration, gts);
@@ -193,23 +186,6 @@ public class Args4JGenerator {
         return new Exploration(strategy, acceptor, nrResults);
     }
 
-    private String getUsageLine() {
-        StringBuilder result = new StringBuilder();
-        OutputStream stream = new ByteArrayOutputStream();
-        this.parser.printSingleLineUsage(stream);
-        result.append("Usage: \"Generator");
-        result.append(stream.toString());
-        result.append("\"");
-        return result.toString();
-    }
-
-    private void printHelp() {
-        System.out.println(getUsageLine());
-        System.out.println();
-        this.parser.setUsageWidth(100);
-        this.parser.printUsage(System.out);
-    }
-
     /** Convenience methods to return the verbosity level from the generator options. */
     private Verbosity getVerbosity() {
         return this.options.getVerbosity();
@@ -233,17 +209,18 @@ public class Args4JGenerator {
     static public void main(String[] args) {
         try {
             generate(args);
-        } catch (Throwable e) {
-            System.err.println("Generator failed: " + e.getMessage());
-            e.printStackTrace();
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) {
+                e.printStackTrace();
+            } else {
+                System.err.println(e.getMessage());
+            }
         }
     }
 
     /**
-     * Loads a graph grammar from a given location provided as a
-     * parameter with either default start state or a start state provided as a
-     * second parameter, and returns the generated transition system.
-     * @param args generator options, grammar and start graph name
+     * Loads a graph grammar, and returns the generated transition system.
+     * @param args generator options and arguments
      * @return the generated transition system
      * @throws Exception if any error occurred that prevented the GTS from being fully generated
      */
@@ -252,11 +229,15 @@ public class Args4JGenerator {
         return staticGTS;
     }
 
+    /** Returns the most recently generated GTS. */
+    static public GTS getGts() {
+        return staticGTS;
+    }
+    
     /**
      * The GTS that is being constructed. We make it static to enable memory
      * profiling. The field is cleared in the constructor, so consecutive
      * Generator instances work as expected.
      */
     private static GTS staticGTS;
-
 }

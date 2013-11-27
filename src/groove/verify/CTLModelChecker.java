@@ -18,7 +18,7 @@ package groove.verify;
 
 import groove.explore.Args4JGenerator;
 import groove.lts.GTS;
-import groove.util.CommandLineTool;
+import groove.util.cli.CommandLineTool;
 
 import java.io.BufferedReader;
 import java.io.IOException;

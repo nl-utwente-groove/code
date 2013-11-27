@@ -23,7 +23,6 @@ import groove.abstraction.neigh.lts.AGTS;
 import groove.explore.AcceptorEnumerator;
 import groove.explore.Args4JGenerator;
 import groove.explore.Exploration;
-import groove.explore.GenerateProgressMonitor;
 import groove.explore.Generator.ResultOption;
 import groove.explore.Generator.TemplatedOption;
 import groove.explore.StrategyEnumerator;
@@ -32,6 +31,7 @@ import groove.explore.encode.Serialized;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationStatistics;
+import groove.explore.util.GenerateProgressListener;
 import groove.explore.util.LTSLabels;
 import groove.explore.util.LTSLabels.Flag;
 import groove.grammar.Grammar;
@@ -46,9 +46,9 @@ import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.VariableNode;
 import groove.graph.Node;
 import groove.graph.plain.PlainGraph;
-import groove.util.CommandLineOption;
-import groove.util.CommandLineTool;
 import groove.util.Groove;
+import groove.util.cli.CommandLineOption;
+import groove.util.cli.CommandLineTool;
 
 import java.io.IOException;
 import java.util.List;
@@ -273,7 +273,7 @@ public final class ShapeGenerator extends CommandLineTool {
             }
             println("Timestamp:\t" + this.invocationTime);
             print("\nProgress:\n\n");
-            getGTS().addLTSListener(new GenerateProgressMonitor());
+            getGTS().addLTSListener(new GenerateProgressListener());
         }
         this.explorationStats.start(this.exploration, getGTS());
         try {

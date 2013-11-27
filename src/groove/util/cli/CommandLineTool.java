@@ -14,11 +14,12 @@
 /*
  * $Id: CommandLineTool.java,v 1.4 2008-01-30 09:32:13 iovka Exp $
  */
-package groove.util;
+package groove.util.cli;
 
 import groove.explore.Verbosity;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
+import groove.util.Groove;
 
 import java.io.File;
 import java.io.FileWriter;

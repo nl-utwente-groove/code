@@ -76,15 +76,14 @@ public class LogReporter extends ExplorationReporter {
 
     @Override
     public void report() throws IOException {
-        // First report the statistics
-        String report = this.exploreStats.getReport();
-        if (report.length() > 0) {
-            System.out.printf("%n%s%n", report);
+        // First report the statistics on the standard output
+        if (!this.verbosity.isLow()) {
+            System.out.printf("%n%s%n", this.exploreStats.getReport());
         }
         // now write to the log file, if any
         if (this.log != null) {
             // copy the (high-verbosity) exploration statistics to the log
-            report = this.exploreStats.getReport(HIGH);
+            String report = this.exploreStats.getReport(HIGH);
             if (report.length() > 0) {
                 this.log.append(report);
                 this.log.append("\n\n");
@@ -136,7 +135,7 @@ public class LogReporter extends ExplorationReporter {
 
     /** Outputs a diagnostic message under any verbosity except #NONE, and optionally logs it. */
     private void emit(String message, Object... args) {
-        emit(Verbosity.LOW, message, args);
+        emit(Verbosity.MEDIUM, message, args);
     }
 
     private final String grammarName;

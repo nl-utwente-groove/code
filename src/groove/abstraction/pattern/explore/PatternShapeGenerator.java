@@ -22,7 +22,7 @@ import groove.abstraction.pattern.PatternAbsParam;
 import groove.abstraction.pattern.PatternAbstraction;
 import groove.abstraction.pattern.lts.PSTS;
 import groove.explore.Args4JGenerator;
-import groove.util.CommandLineOption;
+import groove.util.cli.CommandLineOption;
 
 import java.io.PrintStream;
 

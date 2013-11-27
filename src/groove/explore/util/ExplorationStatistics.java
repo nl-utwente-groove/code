@@ -144,9 +144,10 @@ public class ExplorationStatistics extends ExplorationReporter {
         this.fm = new Formatter(this.sb);
         this.sbVerbosity = verbosity;
         reportProfiling();
+        reportStatistics();
         reportTime();
         reportSpace();
-        reportStatistics();
+        reportLTS();
     }
 
     private void reportProfiling() {
@@ -169,7 +170,6 @@ public class ExplorationStatistics extends ExplorationReporter {
             reportIsomorphism();
             reportCacheStatistics();
         }
-        reportLTS();
     }
 
     /**
