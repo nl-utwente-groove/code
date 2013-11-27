@@ -22,6 +22,7 @@ import groove.explore.encode.TemplateList;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
 import groove.explore.util.ExplorationStatistics;
+import groove.explore.util.GenerateProgressListener;
 import groove.explore.util.LTSLabels;
 import groove.grammar.Grammar;
 import groove.grammar.aspect.AspectGraph;
@@ -37,9 +38,9 @@ import groove.io.external.FormatExporter;
 import groove.io.external.PortException;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.util.CommandLineTool;
 import groove.util.Groove;
-import groove.util.StoreCommandLineOption;
+import groove.util.cli.CommandLineTool;
+import groove.util.cli.StoreCommandLineOption;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -432,7 +433,7 @@ public class Generator extends CommandLineTool {
                 + (this.startGraphs == null ? "default" : this.startGraphs));
             println("Exploration:\t" + getExploration().getIdentifier());
             println("Timestamp:\t" + this.invocationTime);
-            getGTS().addLTSListener(new GenerateProgressMonitor());
+            getGTS().addLTSListener(new GenerateProgressListener());
         }
         this.explorationStats.start(getExploration(), getGTS());
         try {

@@ -18,8 +18,8 @@ package groove.match.rete;
 
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
-import groove.util.CommandLineOption;
-import groove.util.CommandLineTool;
+import groove.util.cli.CommandLineOption;
+import groove.util.cli.CommandLineTool;
 
 import java.io.IOException;
 import java.util.List;

@@ -14,7 +14,7 @@
 /*
  * $Id: CommandLineOption.java,v 1.2 2008-01-30 09:32:02 iovka Exp $
  */
-package groove.util;
+package groove.util.cli;
 
 /**
  * Interface for command-line options. Classes implementing this interface must

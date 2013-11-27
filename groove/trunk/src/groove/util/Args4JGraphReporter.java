@@ -19,75 +19,39 @@ package groove.util;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
-import groove.util.cli.CommandLineTool;
+import groove.util.cli.GrooveCmdLineParser;
+import groove.util.cli.HelpHandler;
 import groove.util.collect.Bag;
 import groove.util.collect.TreeBag;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
+
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.Option;
 
 /**
  * Tool to test and report various characteristics of a saved graph.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class GraphReporter extends CommandLineTool {
+public class Args4JGraphReporter {
     /**
      * Constructs a new graph reporter with a given list of arguments. The
      * arguments consist of a list of options followed by a graph file name.
      */
-    private GraphReporter(String... args) {
-        super(args);
-    }
-
-    /**
-     * Constructs a new reporter, with default settings. This reporter should
-     * exclusively be used to call {@link #getReport(Graph)}.
-     */
-    private GraphReporter() {
-        super();
+    private Args4JGraphReporter(String... args) throws CmdLineException {
+        this.parser = new GrooveCmdLineParser("GraphReporter", this);
+        this.parser.parseArgument(args);
     }
 
     /** Starts the reporter, for the given list of arguments. */
-    public void start() {
-        processArguments();
-        List<String> argsList = getArgs();
-        if (argsList.size() > 0) {
-            String graphLocation = argsList.remove(0);
-            if (argsList.size() > 0) {
-                printError(
-                    String.format("Spurious parameters '%s'",
-                        argsList.toString()), true);
-            }
-            try {
-                report(Groove.loadGraph(graphLocation));
-            } catch (IOException e) {
-                printError(e.getMessage(), true);
-            }
+    public void run() throws Exception {
+        if (this.help) {
+            this.parser.printHelp();
         } else {
-            printError("No graph specified", true);
+            report(Groove.loadGraph(this.graphLocation));
         }
-    }
-
-    @Override
-    protected boolean supportsLogOption() {
-        return false;
-    }
-
-    @Override
-    protected boolean supportsOutputOption() {
-        return false;
-    }
-
-    @Override
-    protected boolean supportsVerbosityOption() {
-        return false;
-    }
-
-    @Override
-    protected String getUsageMessage() {
-        return super.getUsageMessage() + " graph-file";
     }
 
     /**
@@ -95,8 +59,7 @@ public class GraphReporter extends CommandLineTool {
      * parameters of this reporter, and is sent to the standard output.
      */
     public void report(Graph graph) {
-        // count the labels
-        println(getReport(graph).toString());
+        System.out.println(getReport(graph).toString());
     }
 
     /**
@@ -118,15 +81,28 @@ public class GraphReporter extends CommandLineTool {
         return result;
     }
 
+    @Option(name = "-h", usage = "Print this help message and exit",
+            handler = HelpHandler.class)
+    private boolean help;
+
+    @Argument(metaVar = "graph", required = true, usage = "graph location")
+    private String graphLocation;
+
+    /** The command-line parser. */
+    private final GrooveCmdLineParser parser;
+
     /**
      * Starts a new graph reporter with the given arguments.
      */
     public static void main(String[] args) {
-        new GraphReporter(args).start();
-    }
-
-    /** Creates a fresh instance of a reporter. */
-    public static GraphReporter createInstance() {
-        return new GraphReporter();
+        try {
+            new Args4JGraphReporter(args).run();
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) {
+                e.printStackTrace();
+            } else {
+                System.err.println(e.getMessage());
+            }
+        }
     }
 }

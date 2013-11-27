@@ -36,8 +36,8 @@ import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.lts.GTS;
-import groove.util.CommandLineTool;
 import groove.util.Groove;
+import groove.util.cli.CommandLineTool;
 
 import java.io.File;
 import java.io.IOException;

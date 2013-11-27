@@ -14,7 +14,8 @@
  *
  * $Id$
  */
-package groove.util;
+package groove.util.cli;
+
 
 /**
  * A <code>StoreCommandLineOption</code> is a <code>CommandLineOption</code>

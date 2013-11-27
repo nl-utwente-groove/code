@@ -39,10 +39,10 @@ import groove.io.external.Format;
 import groove.io.external.FormatExporter;
 import groove.io.external.PortException;
 import groove.io.external.format.NativePorter;
-import groove.util.CommandLineOption;
-import groove.util.CommandLineTool;
 import groove.util.Groove;
 import groove.util.Pair;
+import groove.util.cli.CommandLineOption;
+import groove.util.cli.CommandLineTool;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;

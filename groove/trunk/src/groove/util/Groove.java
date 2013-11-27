@@ -157,7 +157,7 @@ public class Groove {
      */
     static public GrammarModel loadGrammar(String dirname) throws IOException {
         File dir = new File(GRAMMAR_FILTER.addExtension(dirname));
-        return GrammarModel.newInstance(dir, false);
+        return GrammarModel.newInstance(dir);
     }
 
     /**
