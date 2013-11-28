@@ -100,7 +100,7 @@ public class LTLTest {
     private void prepare(String grammarName) {
         try {
             Args4JGenerator generator =
-                new Args4JGenerator("-v", "-1", "junit/samples/" + grammarName);
+                new Args4JGenerator("-v", "0", "junit/samples/" + grammarName);
             this.gts = generator.run();
         } catch (Exception e) {
             // this should not occur
