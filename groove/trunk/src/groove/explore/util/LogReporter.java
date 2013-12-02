@@ -38,18 +38,28 @@ import java.util.List;
  * @version $Revision $
  */
 public class LogReporter extends ExplorationReporter {
-    /** Constructs a log reporter with a verbosity level
+    /**
+     * Constructs a log reporter with a verbosity level
      * and a (possibly empty) file name
      * @param verbosity the verbosity with which messages are printed on standard output
      * @param logDir if not {@code null}, the name of a directory into which a log file should be written
      */
     public LogReporter(String grammarName, List<String> startGraphNames,
             Verbosity verbosity, File logDir) {
+        this(grammarName, startGraphNames == null ? null : Groove.toString(
+            startGraphNames.toArray(), "", "", ", "), verbosity, logDir);
+    }
+
+    /**
+     * Constructor for subclassing.
+     */
+    protected LogReporter(String grammarName, String startGraphNames,
+            Verbosity verbosity, File logDir) {
         this.grammarName = grammarName;
-        this.startGraphNames = startGraphNames;
+        this.startGraphName = startGraphNames;
         this.verbosity = verbosity;
         this.logDir = logDir;
-        this.exploreStats = new ExplorationStatistics(verbosity);
+        this.exploreStats = new StatisticsReporter(verbosity);
     }
 
     @Override
@@ -59,24 +69,17 @@ public class LogReporter extends ExplorationReporter {
             this.log = new StringBuilder();
         }
         this.startTime = new Date();
-        emit("Grammar:\t%s%n", this.grammarName);
-        emit("Start graph:\t%s%n", this.startGraphNames == null ? "default"
-                : Groove.toString(this.startGraphNames.toArray(), "", "", ", "));
-        emit("Exploration:\t%s%n", getExploration().getIdentifier());
-        emit("Timestamp:\t%s%n", this.startTime);
-        emit("%n");
         this.exploreStats.start(exploration, gts);
-    }
-
-    @Override
-    public void stop() {
-        this.exploreStats.stop();
-        super.stop();
+        emitStartMessage();
+        emit("%n");
     }
 
     @Override
     public void report() throws IOException {
+        this.exploreStats.report();
         // First report the statistics on the standard output
+        // Note that this is not done using emit because the log
+        // gets a more verbose version of the statistics.
         if (!this.verbosity.isLow()) {
             System.out.printf("%n%s%n", this.exploreStats.getReport());
         }
@@ -100,6 +103,7 @@ public class LogReporter extends ExplorationReporter {
             try {
                 // copy the initial messages
                 logFile.print(this.log.toString());
+                // copy the garbage collector log, if any, to the log file
                 File gcLogFile = new File(GC_LOG_NAME);
                 if (gcLogFile.exists()) {
                     BufferedReader gcLog =
@@ -122,8 +126,17 @@ public class LogReporter extends ExplorationReporter {
         emit("%s%n", getExploration().getLastMessage());
     }
 
+    /** Emits the message announcing the parameters of the exploration. */
+    protected void emitStartMessage() {
+        emit("Grammar:\t%s%n", this.grammarName);
+        emit("Start graph:\t%s%n", this.startGraphName == null ? "default"
+                : this.startGraphName);
+        emit("Exploration:\t%s%n", getExploration().getIdentifier());
+        emit("Timestamp:\t%s%n", this.startTime);
+    }
+
     /** Outputs a diagnostic message if allowed by the verbosity, and optionally logs it. */
-    private void emit(Verbosity min, String message, Object... args) {
+    protected void emit(Verbosity min, String message, Object... args) {
         String text = String.format(message, args);
         if (min.compareTo(this.verbosity) <= 0) {
             System.out.print(text);
@@ -133,16 +146,16 @@ public class LogReporter extends ExplorationReporter {
         }
     }
 
-    /** Outputs a diagnostic message under any verbosity except #NONE, and optionally logs it. */
-    private void emit(String message, Object... args) {
+    /** Outputs a diagnostic message under any verbosity except {@link Verbosity#LOW}, and optionally logs it. */
+    protected void emit(String message, Object... args) {
         emit(Verbosity.MEDIUM, message, args);
     }
 
     private final String grammarName;
-    private final List<String> startGraphNames;
+    private final String startGraphName;
     private final Verbosity verbosity;
     private final File logDir;
-    private final ExplorationStatistics exploreStats;
+    private final StatisticsReporter exploreStats;
 
     /**
      * Time of invocation, initialised at start time.

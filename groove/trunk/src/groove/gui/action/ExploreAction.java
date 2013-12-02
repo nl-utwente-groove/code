@@ -97,7 +97,7 @@ public class ExploreAction extends SimulatorAction {
         // go!
         getSimulatorModel().getExplorationStats().start(exploration, gts);
         generateThread.start();
-        getSimulatorModel().getExplorationStats().stop();
+        getSimulatorModel().getExplorationStats().report();
         // emphasise the result states, if required
         getSimulatorModel().setGts(gts, true);
         gts.addLTSListener(ltsJModel);

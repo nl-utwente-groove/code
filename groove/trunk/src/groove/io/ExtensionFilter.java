@@ -43,11 +43,11 @@ public abstract class ExtensionFilter extends
     /**
      * Accepts a file if its name ends on this filter's extension, or it is a
      * directory and directories are accepted.
-     * @see #acceptExtension(java.io.File)
+     * @see #acceptExtension(File)
      * @see #acceptDirectories
      */
     @Override
-    public boolean accept(java.io.File file) {
+    public boolean accept(File file) {
         return this.acceptExtension(file)
             || (this.isAcceptDirectories() && file.isDirectory());
     }
@@ -55,7 +55,12 @@ public abstract class ExtensionFilter extends
     /**
      * Accepts a file if its name ends on this filter's extension.
      */
-    abstract public boolean acceptExtension(java.io.File file);
+    abstract public boolean acceptExtension(File file);
+
+    /**
+     * Accepts a filename if it ends on this filter's extension.
+     */
+    abstract public boolean acceptExtension(String file);
 
     /**
      * Returns this filter's description.
@@ -84,6 +89,14 @@ public abstract class ExtensionFilter extends
     }
 
     /**
+     * Strips an extension from a file, if the extension is in fact there.
+     * @param file the file to be stripped
+     */
+    public File stripExtension(File file) {
+        return new File(file.getParentFile(), stripExtension(file.getName()));
+    }
+
+    /**
      * Adds an extension to filename, if the extension is not yet there.
      * @param filename the filename to be provided with an extension
      */
@@ -93,6 +106,14 @@ public abstract class ExtensionFilter extends
         } else {
             return filename + this.getExtension();
         }
+    }
+
+    /**
+     * Adds an extension to a file, if the extension is not yet there.
+     * @param file the file to be provided with an extension
+     */
+    public File addExtension(File file) {
+        return new File(file.getParentFile(), addExtension(file.getName()));
     }
 
     /**
@@ -106,13 +127,33 @@ public abstract class ExtensionFilter extends
     }
 
     /**
+     * Tests if a given file has the extension of this filter.
+     * @param file the file to be tested
+     * @return <code>true</code> if <code>file</code> has the extension
+     *         of this filter
+     */
+    public boolean hasExtension(File file) {
+        return hasExtension(file.getName());
+    }
+
+    /**
      * Tests if a given filename has any extension.
      * @param filename the filename to be tested
      * @return <code>true</code> if <code>filename</code> has an extension
      * (not necessarily of this filter).
      */
     public boolean hasAnyExtension(String filename) {
-        return new File(filename).getName().indexOf(SEPARATOR) >= 0;
+        return hasAnyExtension(new File(filename));
+    }
+
+    /**
+     * Tests if a given file has any extension.
+     * @param file the filename to be tested
+     * @return <code>true</code> if <code>file</code> has an extension
+     * (not necessarily of this filter).
+     */
+    public boolean hasAnyExtension(File file) {
+        return file.getName().indexOf(SEPARATOR) >= 0;
     }
 
     /**

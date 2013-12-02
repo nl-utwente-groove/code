@@ -68,8 +68,22 @@ public final class CompositeExtensionFilter extends ExtensionFilter {
     }
 
     /**
-     * Accepts the given file if there is a filter in the list that accepts
-     * the file extension.
+     * Accepts the given filename if there is a filter in the list that accepts it.
+     */
+    @Override
+    public boolean acceptExtension(String filename) {
+        boolean result = false;
+        for (ExtensionFilter filter : this.filters) {
+            if (filter.acceptExtension(filename)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Accepts the given file if there is a filter in the list that accepts it.
      */
     @Override
     public boolean acceptExtension(File file) {

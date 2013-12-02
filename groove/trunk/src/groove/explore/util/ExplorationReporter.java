@@ -39,19 +39,9 @@ public abstract class ExplorationReporter {
         this.gts = gts;
     }
 
-    /** 
-     * Stops the most recent recording.
-     * This method should take as little time as possible, so as not to 
-     * disturb the recording for other outcomes.
-     * This method will only be called after {@link #start(Exploration, GTS)}.
-     */
-    public void stop() {
-        // the default implementation does nothing
-    }
-
     /**
      * Produces the result of the most recently recorded exploration.
-     * This method will only be called after {@link #stop()}.
+     * This method will only be called after {@link #start}.
      * @throws IOException if an error occurred during reporting
      */
     public void report() throws IOException {

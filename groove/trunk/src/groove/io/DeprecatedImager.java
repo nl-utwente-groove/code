@@ -16,7 +16,6 @@
  */
 package groove.io;
 
-import static groove.explore.Verbosity.MEDIUM;
 import static groove.io.FileType.GRAMMAR_FILTER;
 import static groove.io.FileType.GXL_FILTER;
 import static groove.io.FileType.RULE_FILTER;
@@ -34,18 +33,16 @@ import groove.gui.Options;
 import groove.gui.display.DisplayKind;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.io.external.ConceptualPorter;
 import groove.io.external.Exporter;
 import groove.io.external.Exporter.Exportable;
 import groove.io.external.Format;
 import groove.io.external.FormatExporter;
-import groove.io.external.FormatPorter;
 import groove.io.external.PortException;
 import groove.io.external.format.NativePorter;
 import groove.util.Groove;
 import groove.util.Pair;
-import groove.util.cli.ExistingFileHandler;
-import groove.util.cli.GrooveCmdLineTool;
+import groove.util.cli.CommandLineOption;
+import groove.util.cli.CommandLineTool;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -57,7 +54,6 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -80,84 +76,69 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
-import org.kohsuke.args4j.OptionDef;
-import org.kohsuke.args4j.spi.FileOptionHandler;
-import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
-import org.kohsuke.args4j.spi.Setter;
-
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a
  * directory of them.
  * @author Arend Rensink
  * @version $Revision$
+ * @deprecated Use {@link Imager} instead
  */
-public class Imager extends GrooveCmdLineTool<Object> {
+@Deprecated
+public class DeprecatedImager extends CommandLineTool {
     /**
-     * Constructs the generator and processes the command-line arguments.
-     * @throws CmdLineException if any error was found in the command-line arguments
+     * Constructs a new, command-line Imager.
      */
-    public Imager(String... args) throws CmdLineException {
+    public DeprecatedImager(String... args) {
         this(false, args);
     }
 
     /**
      * Constructs a new imager, which may be GUI-based or command-line.
-     * @param gui <tt>true</tt> if the imager should be GUI-based
-     * @param args command-line arguments. If {@code gui} is {@code true},
-     * the command-line arguments must be absent. 
+     * @param gui <tt>true</tt> if the imager should be GUI-based.
      */
-    public Imager(boolean gui, String... args) throws CmdLineException {
-        super("Imager");
+    public DeprecatedImager(boolean gui, String... args) {
+        super(args);
         // force the LAF to be set
         groove.gui.Options.initLookAndFeel();
         if (gui) {
-            if (args.length > 0) {
-                throw new IllegalArgumentException(
-                    "GUI-based imager is not compatible with arguments"
-                        + Arrays.toString(args));
-            }
-            setVerbosity(Verbosity.HIGH);
             this.imagerFrame = new ImagerFrame();
             this.imagerFrame.pack();
             this.imagerFrame.setVisible(true);
         } else {
-            parseArguments(args);
             this.imagerFrame = null;
-        }
-    }
-
-    @Override
-    protected void emit(Verbosity min, String format, Object... args) {
-        if (this.imagerFrame == null) {
-            super.emit(min, format, args);
-        } else if (getVerbosity().compareTo(min) >= 0) {
-            this.imagerFrame.emit(format, args);
+            addOption(getEditorViewOption());
+            addOption(getFormatOption());
         }
     }
 
     /**
-     * Runs the state space generation process.
-     * @return {@code null} always
-     * @throws Exception if anything goes wrong during generation.
+     * Does the actual conversion work.
+     * @require <tt>getLocation() != null</tt>
      */
-    @Override
-    public Object run() throws Exception {
-        File inFile = getInFile();
-        File outFile = getOutFile();
-        makeImage(inFile, outFile == null ? inFile : outFile);
-        return null;
+    public void start() {
+        try {
+            File inFile = getInFile();
+            File outFile = getOutFile();
+            if (inFile == null) {
+                println("No input file specified");
+            } else if (!inFile.exists()) {
+                println("Input file " + inFile + " does not exist");
+            } else if (outFile == null) {
+                makeImage(inFile, inFile);
+            } else {
+                makeImage(inFile, outFile);
+            }
+        } catch (IOException e) {
+            println(e.getMessage());
+        }
     }
 
     /**
      * Makes an image file from the specified input file. If the input file is a
-     * directory, the method descends recursively.
+     * directory, the method descends recursively. The types of input files
+     * recognized are: gxl, gps and gst
      * @param inFile the input file to be converted
-     * @param outFile the intended output file. If {@code inFile} is a directory,
-     * then {@code outFile} must be a directory as well.
+     * @param outFile the intended output file
      */
     public void makeImage(File inFile, File outFile) throws IOException {
         if (!inFile.exists()) {
@@ -167,10 +148,6 @@ public class Imager extends GrooveCmdLineTool<Object> {
         if (grammarFile == null) {
             throw new IOException("Input file " + inFile
                 + " is not part of a grammar");
-        }
-        if (inFile.isDirectory() && !outFile.isDirectory()) {
-            throw new IOException("Can't image files in directory " + inFile
-                + " to single file " + outFile);
         }
         try {
             GrammarModel grammar = GrammarModel.newInstance(grammarFile, false);
@@ -185,8 +162,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
      * directory, the method descends recursively. The types of input files
      * recognized are: gxl, gps and gst
      * @param inFile the input file to be converted
-     * @param outFile the intended output file. If {@code inFile} is a directory,
-     * then {@code outFile} is guaranteed to be a directory as well.
+     * @param outFile the intended output file
      */
     private void makeImage(GrammarModel grammar, File inFile, File outFile)
         throws IOException {
@@ -197,21 +173,15 @@ public class Imager extends GrooveCmdLineTool<Object> {
             File[] files = inFile.listFiles();
             if (outFile.exists() || outFile.mkdir()) {
                 for (File element : files) {
-                    // see if we want to process this file
-                    boolean process = element.isDirectory();
-                    if (!process) {
-                        Pair<ResourceKind,QualName> resource = parse(element);
-                        process =
-                            resource != null && resource.one().isGraphBased();
-                    }
-                    if (process) {
+                    if (element.isDirectory() || parse(element) != null) {
+                        // only process c
                         makeImage(grammar, element,
                             new File(outFile, element.getName()));
                     }
                 }
             } else {
-                throw new IOException("Output directory " + outFile
-                    + " cannot be created");
+                throw new IOException("Directory " + outFile
+                    + " could not be created");
             }
         }
         // or the input-file is an ordinary Groove-file (state or rule)
@@ -219,72 +189,55 @@ public class Imager extends GrooveCmdLineTool<Object> {
         // --> output-file exists and will be overwritten or the directory in
         // which it will be placed exists or can be created
         else {
+            File outParent = outFile.getParentFile();
+            if (outParent == null) {
+                outParent = inFile.getParentFile();
+            } else if (!outParent.exists() && !outParent.mkdir()) {
+                JOptionPane.showMessageDialog(null, "Output directory "
+                    + outParent + " cannot be created");
+                return;
+            }
+
             Pair<ResourceKind,QualName> resource = parse(inFile);
             if (resource == null) {
                 throw new IOException("Input file " + inFile
-                    + " is not a graph resource");
+                    + " is not a resource file");
             }
-            // Determine output file folder and filename
+            String imageFormat = getImageFormat();
+            if (imageFormat == null) {
+                imageFormat = outFile.toString();
+            }
+            Map<String,Format> formats = getFormatMap();
+            Format outputFormat = null;
+            String extension = null;
+            for (Entry<String,Format> e : formats.entrySet()) {
+                if (imageFormat.endsWith(e.getKey())) {
+                    extension = e.getKey();
+                    outputFormat = e.getValue();
+                    break;
+                }
+            }
             String outFileName;
-            File outParent;
-            if (outFile.isDirectory()) {
-                outParent = outFile;
-                outFileName = inFile.getName();
-            } else {
-                outParent = outFile.getParentFile();
+            if (outputFormat == null) {
+                // Pick first format as default
+                Entry<String,Format> e =
+                    getFormatMap().entrySet().iterator().next();
+                extension = e.getKey();
+                outputFormat = e.getValue();
+                // maybe the output file was set to equal the input file;
+                // try stripping the input extension
                 outFileName = outFile.getName();
-                if (outParent != null && !outParent.exists()
-                    && !outParent.mkdir()) {
-                    throw new IOException("Output directory " + outParent
-                        + " cannot be created");
-                }
+            } else {
+                outFileName = outputFormat.stripExtension(outFile.getName());
             }
-            // Determine output file format
-            String outFormatExt = getOutFormatExt();
-            if (outFormatExt == null) {
-                for (Entry<String,Format> e : getFormatMap().entrySet()) {
-                    if (e.getValue().getFilter().acceptExtension(outFileName)) {
-                        outFormatExt = e.getKey();
-                        break;
-                    }
-                }
-                if (outFormatExt == null) {
-                    // Pick first format as default
-                    outFormatExt = getFormatMap().keySet().iterator().next();
-                }
-            }
-            Format outFormat = getFormatMap().get(outFormatExt);
             outFile =
-                new File(outParent, outFormat.getFilter().addExtension(
-                    outFileName));
+                new File(outParent, outFileName + ExtensionFilter.SEPARATOR
+                    + extension);
 
-            emit(MEDIUM, "Imaging %s as %s%n", inFile, outFile);
             GraphBasedModel<?> resourceModel =
                 (GraphBasedModel<?>) grammar.getResource(resource.one(),
                     resource.two().toString());
-            Exportable exportable =
-                toExportable(resourceModel,
-                    outFormat.getFormatter().getFormatKind());
-            try {
-                ((FormatExporter) outFormat.getFormatter()).doExport(outFile,
-                    outFormat, exportable);
-            } catch (PortException e1) {
-                throw new IOException(e1);
-            }
-        }
-    }
-
-    /** Converts a resource model to an exportable object of the right kind. */
-    private Exportable toExportable(GraphBasedModel<?> resourceModel,
-            FormatPorter.Kind outFormat) {
-        Exportable result;
-        AspectGraph aspectGraph = resourceModel.getSource();
-        // find out what we have to export
-        switch (outFormat) {
-        case GRAPH:
-            result = new Exportable(aspectGraph);
-            break;
-        case JGRAPH:
+            AspectGraph aspectGraph = resourceModel.getSource();
             Options options = new Options();
             options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(
                 isEditorView());
@@ -294,7 +247,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
                 DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
             AspectJGraph jGraph = new AspectJGraph(null, displayKind, false);
             AspectJModel model = jGraph.newModel();
-            model.setGrammar(resourceModel.getGrammar());
+            model.setGrammar(grammar);
             model.loadGraph(aspectGraph);
             jGraph.setModel(model);
             // Ugly hack to prevent clipping of the image. We set the
@@ -305,48 +258,154 @@ public class Imager extends GrooveCmdLineTool<Object> {
             Dimension newPrefSize =
                 new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
             jGraph.setSize(newPrefSize);
-            result = new Exportable(jGraph);
-            break;
-        case RESOURCE:
-            result = new Exportable(resourceModel);
-            break;
-        default:
-            assert false;
-            result = null;
+            printlnMedium("Imaging " + inFile + " as " + outFile);
+            try {
+                Exportable exportable = new Exportable(jGraph);
+                ((FormatExporter) outputFormat.getFormatter()).doExport(
+                    outFile, outputFormat, exportable);
+            } catch (PortException e1) {
+                println("Error exporting graph: " + e1.getMessage());
+            }
         }
-        return result;
     }
 
     /** Returns the location of the file(s) to be imaged. */
-    private File getInFile() {
+    public File getInFile() {
         return this.inFile;
     }
 
     /**
      * Returns the intended location for the image file(s).
      */
-    private File getOutFile() {
+    public File getOutFile() {
         return this.outFile;
+    }
+
+    /**
+     * Sets the location of the file to be imaged. No check is
+     * done if the location actually exists.
+     * @param fileName the name of the files to be imaged
+     */
+    public void setInFile(String fileName) {
+        this.inFile = new File(fileName);
+    }
+
+    /**
+     * Sets the location where to store the image file. No check is done if the
+     * location actually exists.
+     * @param outFileName The name of the outFile to set
+     */
+    public void setOutFile(String outFileName) {
+        this.outFile = new File(outFileName);
+    }
+
+    /** The location of the file(s) to be imaged. */
+    private File inFile;
+
+    /** The  optional location of the output file(s) to be imaged. */
+    private File outFile;
+
+    /**
+     * Processes a list of arguments (which are <tt>String</tt>s) by setting the
+     * attributes of the imager accordingly.
+     * @require <tt>argsList instanceof List of String</tt>
+     */
+    @Override
+    protected void processArguments() {
+        super.processArguments();
+        List<String> argsList = getArgs();
+        if (argsList.size() > 0) {
+            setInFile(argsList.get(0));
+            argsList.remove(0);
+        }
+        if (argsList.size() > 0) {
+            setOutFile(argsList.get(0));
+            argsList.remove(0);
+        }
+        if (argsList.size() > 0) {
+            printError("Invalid number of arguments", true);
+        }
+    }
+
+    @Override
+    protected String getUsageMessage() {
+        return "Usage: Imager [options] inputfile";
+    }
+
+    /**
+     * This tool does not support logging.
+     */
+    @Override
+    protected boolean supportsLogOption() {
+        return false;
+    }
+
+    /**
+     * This tool does not support output file specification through an option.
+     */
+    @Override
+    protected boolean supportsOutputOption() {
+        return true;
+    }
+
+    /** Overwrites the method to write to the system output or to the GUI. */
+    @Override
+    protected void print(String text) {
+        if (this.imagerFrame == null) {
+            super.print(text);
+        } else {
+            this.imagerFrame.print(text);
+        }
+    }
+
+    /** Overwrites the method to write to the system output or to the GUI. */
+    @Override
+    protected void println() {
+        if (this.imagerFrame == null) {
+            super.println();
+        } else {
+            this.imagerFrame.println("");
+        }
+    }
+
+    /** Overwrites the method to write to the system output or to the GUI. */
+    @Override
+    protected void println(String text) {
+        if (this.imagerFrame == null) {
+            super.println(text);
+        } else {
+            this.imagerFrame.println(text);
+        }
     }
 
     /**
      * Returns the image format to which the graphs will be converted.
      */
-    private String getOutFormatExt() {
-        return this.outFormatExt;
+    private String getImageFormat() {
+        return this.imageFormat;
     }
 
     /**
-     * Sets the output format extension to which the graphs will be converted.
+     * Sets the image format to which the graphs will be converted.
      */
-    private void setOutFormatExt(String outFormatExt) {
-        this.outFormatExt = outFormatExt;
+    private void setImageFormat(String imageFormat) {
+        this.imageFormat = imageFormat;
     }
 
+    /** Name of the image format to which the imager converts. */
+    private String imageFormat;
+
     /** Indicates whether the image should show all label prefixes. */
-    private boolean isEditorView() {
+    public final boolean isEditorView() {
         return this.editorView;
     }
+
+    /** Makes sure the image shows all label prefixes. */
+    public final void setEditorView(boolean editorView) {
+        this.editorView = editorView;
+    }
+
+    private boolean editorView;
 
     /**
      * The imager frame if the invocation is gui-based; <tt>null</tt> if it is
@@ -354,45 +413,43 @@ public class Imager extends GrooveCmdLineTool<Object> {
      */
     private final ImagerFrame imagerFrame;
 
-    /** The location of the file to be imaged. */
-    @Argument(metaVar = "input", usage = "Input file or directory",
-            required = true, handler = ExistingFileHandler.class)
-    private File inFile;
-
-    /** The  optional location of the output file to be imaged. */
-    @Argument(
-            metaVar = "output",
-            index = 1,
-            usage = "Output file name; if omitted, the input file name is used. "
-                + "In the absence of the '-f' option, the "
-                + "extension of <output> is taken to specify the output format",
-            handler = FileOptionHandler.class)
-    private File outFile;
-
-    /** Name of the image format to which the imager converts. */
-    @Option(name = "-f", metaVar = "ext", usage = FormatHandler.USAGE,
-            handler = FormatHandler.class)
-    private String outFormatExt;
-
-    @Option(name = "-e", usage = "Enforces editor view export")
-    private boolean editorView;
-
-    /** 
-     * Starts the imager with a list of options and file names.
-     * Always exits with {@link System#exit(int)}.
-     * Call {@link #execute(String[])} for programmatic use instead
-     * of command-line use.
-     */
-    public static void main(String[] args) {
-        tryExecute(Imager.class, args);
+    /** Lazily creates and returns the format option associated with this Imager. */
+    private EditorViewOption getEditorViewOption() {
+        if (this.editorViewOption == null) {
+            this.editorViewOption = new EditorViewOption();
+        }
+        return this.editorViewOption;
     }
 
+    /** 
+     * The option that makes prefixes visible in the imaged graph.
+     * Lazily created by {@link #getEditorViewOption()}.
+     */
+    private EditorViewOption editorViewOption;
+
+    /** Lazily creates and returns the format option associated with this Imager. */
+    private FormatOption getFormatOption() {
+        if (this.formatOption == null) {
+            this.formatOption = new FormatOption();
+        }
+        return this.formatOption;
+    }
+
+    /** 
+     * The format option associated with this Imager.
+     * Lazily created by {@link #getFormatOption()}.
+     */
+    private FormatOption formatOption;
+
     /** Starts the imager with a list of options and file names. */
-    public static void execute(String[] args) throws Exception {
+    public static void main(String[] args) {
+        DeprecatedImager imager;
         if (args.length == 0) {
-            new Imager(true);
+            new DeprecatedImager(true);
         } else {
-            new Imager(args).start();
+            imager = new DeprecatedImager(args);
+            imager.processArguments();
+            imager.start();
         }
     }
 
@@ -453,9 +510,6 @@ public class Imager extends GrooveCmdLineTool<Object> {
                 if (exporter instanceof NativePorter) {
                     continue;
                 }
-                if (exporter instanceof ConceptualPorter) {
-                    continue;
-                }
                 for (Format format : exporter.getSupportedFormats()) {
                     for (String ext : format.getExtensions()) {
                         result.put(ext.substring(1), format); //strip dot
@@ -465,6 +519,13 @@ public class Imager extends GrooveCmdLineTool<Object> {
         }
         return result;
     }
+
+    private static Map<String,Format> formatMap;
+
+    /** Name of the imager application. */
+    static public final String APPLICATION_NAME = "Imager";
+    /** Label for the browse buttons. */
+    static public final String BROWSE_LABEL = "Browse...";
 
     /** An array of all filters identifying files that can be imaged. */
     private static final List<ExtensionFilter> acceptFilters;
@@ -477,35 +538,89 @@ public class Imager extends GrooveCmdLineTool<Object> {
         acceptFilters.add(GXL_FILTER);
     }
 
-    private static Map<String,Format> formatMap;
-
-    /** Name of the imager application. */
-    static public final String APPLICATION_NAME = "Imager";
-    /** Label for the browse buttons. */
-    static public final String BROWSE_LABEL = "Browse...";
-
-    /** Option handler for output format extension. */
-    public static class FormatHandler extends OneArgumentOptionHandler<String> {
-        /** Required constructor. */
-        public FormatHandler(CmdLineParser parser, OptionDef option,
-                Setter<? super String> setter) {
-            super(parser, option, setter);
+    private class EditorViewOption implements CommandLineOption {
+        @Override
+        public String[] getDescription() {
+            return new String[] {DESCRIPTION};
         }
 
         @Override
-        protected String parse(String argument) throws CmdLineException {
-            // first check if parameter is a valid format name
-            if (!getFormatMap().containsKey(argument)) {
-                throw new CmdLineException(this.owner, "Unknown format: "
-                    + argument);
-            }
-            return argument;
+        public String getName() {
+            return NAME;
         }
 
-        /** Usage message for the -f option. */
+        @Override
+        public String getParameterName() {
+            return null;
+        }
 
-        public static final String USAGE =
-            "Specifies the output format extension. Supported formats are:";
+        @Override
+        public boolean hasParameter() {
+            return false;
+        }
+
+        @Override
+        public void parse(String parameter) throws IllegalArgumentException {
+            setEditorView(true);
+        }
+
+        /** Abbreviation of the editor view option. */
+        static public final String NAME = "e";
+        /** Short description of the editor view option. */
+        static public final String DESCRIPTION = "Enforces editor view export";
+    }
+
+    /**
+     * Option to set the output format for the imager.
+     */
+    private class FormatOption implements CommandLineOption {
+        /** Abbreviation of the format option. */
+        static public final String NAME = "f";
+        /** Short description of the format option. */
+        static public final String DESCRIPTION =
+            "Output format extension. Supported formats are:";
+        /** Option parameter name. */
+        static public final String PARAMETER_NAME = "name";
+
+        public String getName() {
+            return NAME;
+        }
+
+        public String[] getDescription() {
+            List<String> result = new LinkedList<String>();
+            result.add(DESCRIPTION);
+            Map<String,Format> exts = getFormatMap();
+            for (String formatName : exts.keySet()) {
+                String format = "* " + formatName;
+                result.add(format);
+            }
+            return result.toArray(new String[result.size()]);
+        }
+
+        public String getParameterName() {
+            return PARAMETER_NAME;
+        }
+
+        public boolean hasParameter() {
+            return true;
+        }
+
+        /**
+         * Changes the current output format of the imager, if the parameter is
+         * a valid format name.
+         */
+        public void parse(String parameter) {
+            String extension = parameter;
+
+            Map<String,Format> exts = getFormatMap();
+
+            // first check if parameter is a valid format name
+            if (!exts.containsKey(extension)) {
+                throw new IllegalArgumentException("Unknown format: "
+                    + parameter);
+            }
+            setImageFormat(extension);
+        }
     }
 
     /**
@@ -520,6 +635,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             initComponents();
             initActions();
             setContentPane(createContentPane());
+            setVerbosity(Verbosity.HIGH);
         }
 
         /**
@@ -575,11 +691,21 @@ public class Imager extends GrooveCmdLineTool<Object> {
         }
 
         /**
-         * Writes a formatted line to the logging area.
+         * Writes a text to the logging area, followed by a new line.
          * @param text the line to be written
          */
-        public void emit(String text, Object... args) {
-            this.logArea.append(String.format(text, args));
+        public void println(String text) {
+            this.logArea.append(text + "\n");
+            validate();
+        }
+
+        /**
+         * Writes a text to the logging area.
+         * @param text the text to be written
+         */
+        public void print(String text) {
+            this.logArea.append(text);
+            validate();
         }
 
         /**
@@ -603,7 +729,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             this.formatBox.setSelectedIndex(1);
             this.formatBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    setOutFormatExt((String) ImagerFrame.this.formatBox.getSelectedItem());
+                    setImageFormat((String) ImagerFrame.this.formatBox.getSelectedItem());
                 }
             });
             // make central panel
@@ -770,6 +896,6 @@ public class Imager extends GrooveCmdLineTool<Object> {
 
         /** Combo box for the available image formats. */
         final JComboBox formatBox = new JComboBox(
-            Imager.getFormatMap().keySet().toArray());
+            DeprecatedImager.getFormatMap().keySet().toArray());
     }
 }

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import groove.abstraction.pattern.explore.PatternGraphGenerator;
 import groove.abstraction.pattern.lts.PGTS;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -43,24 +44,30 @@ public class TestPatternGraphGenerator {
         String typeGraph = "ptgraph.gst";
         PatternGraphGenerator generator;
 
-        generator =
-            new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
-        generator.processArguments();
-        generator.explore();
-        PGTS pgts = generator.getPGTS();
-        assertEquals(6, pgts.getStateCount());
-        assertEquals(12, pgts.getTransitionCount());
-        assertTrue(generator.compareGTSs());
+        PGTS pgts;
+        try {
+            generator =
+                new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH,
+                    typeGraph));
+            pgts = generator.run();
+            assertEquals(6, pgts.getStateCount());
+            assertEquals(12, pgts.getTransitionCount());
+            assertTrue(generator.compareGTSs(pgts));
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
 
         typeGraph = "ptgraph-min.gst";
+        try {
         generator =
             new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
-        generator.processArguments();
-        generator.explore();
-        pgts = generator.getPGTS();
+        pgts = generator.run();
         assertEquals(6, pgts.getStateCount());
         assertEquals(12, pgts.getTransitionCount());
-        assertTrue(generator.compareGTSs());
+        assertTrue(generator.compareGTSs(pgts));
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     @Test
@@ -70,14 +77,16 @@ public class TestPatternGraphGenerator {
         String typeGraph = "ptgraph.gst";
         PatternGraphGenerator generator;
 
+        try {
         generator =
             new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
-        generator.processArguments();
-        generator.explore();
-        PGTS pgts = generator.getPGTS();
+        PGTS pgts = generator.run();
         assertEquals(11, pgts.getStateCount());
         assertEquals(12, pgts.getTransitionCount());
-        assertTrue(generator.compareGTSs());
+        assertTrue(generator.compareGTSs(pgts));
+    } catch (Exception e) {
+        Assert.fail(e.getMessage());
+    }
     }
 
 }

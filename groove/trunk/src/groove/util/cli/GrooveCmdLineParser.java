@@ -26,6 +26,7 @@ import java.util.ResourceBundle;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionHandlerFilter;
+import org.kohsuke.args4j.spi.FieldSetter;
 import org.kohsuke.args4j.spi.OptionHandler;
 
 /**
@@ -90,14 +91,19 @@ public class GrooveCmdLineParser extends CmdLineParser {
         }
 
         // then print
-
-        w.println("ARGUMENTS");
-        for (OptionHandler<?> h : getArguments()) {
-            printOption(w, h, len, rb, filter);
+        if (!getArguments().isEmpty()) {
+            w.println("ARGUMENTS");
+            for (OptionHandler<?> h : getArguments()) {
+                printOption(w, h, len, rb, filter);
+            }
+            w.println();
         }
-        w.println("\nOPTIONS");
-        for (OptionHandler<?> h : getOptions()) {
-            printOption(w, h, len, rb, filter);
+        if (!getOptions().isEmpty()) {
+            w.println("OPTIONS");
+            for (OptionHandler<?> h : getOptions()) {
+                printOption(w, h, len, rb, filter);
+            }
+            w.println();
         }
 
         w.flush();
@@ -127,6 +133,7 @@ public class GrooveCmdLineParser extends CmdLineParser {
             printSingleLineOption(pw, h, rb, true);
         }
         int optArgCount = 0;
+        // nest the argument meta-variables
         for (OptionHandler<?> h : getArguments()) {
             printSingleLineOption(pw, h, rb, false);
             if (!h.option.required()) {
@@ -144,15 +151,20 @@ public class GrooveCmdLineParser extends CmdLineParser {
     private void printSingleLineOption(PrintWriter pw, OptionHandler<?> h,
             ResourceBundle rb, boolean closeOpt) {
         pw.print(' ');
-        if (!h.option.required()) {
+        boolean multiValued = !(h.setter instanceof FieldSetter);
+        boolean brackets = !h.option.required() || multiValued;
+        if (brackets) {
             pw.print('[');
         }
         pw.print(h.getNameAndMeta(rb));
         if (h.option.isMultiValued()) {
             pw.print(" ...");
         }
-        if (!h.option.required() && closeOpt) {
+        if (brackets && closeOpt) {
             pw.print(']');
+        }
+        if (multiValued) {
+            pw.print(h.option.required() ? '+' : '*');
         }
     }
 

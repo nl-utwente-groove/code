@@ -22,8 +22,10 @@ import groove.explore.util.LTSReporter;
 import groove.explore.util.LogReporter;
 import groove.explore.util.StateReporter;
 import groove.grammar.model.FormatException;
-import groove.util.cli.CommandLineOptions;
+import groove.util.cli.DirectoryHandler;
 import groove.util.cli.GrammarHandler;
+import groove.util.cli.HelpHandler;
+import groove.util.cli.VerbosityHandler;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -42,7 +44,52 @@ import org.kohsuke.args4j.spi.Setter;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class GeneratorOptions extends CommandLineOptions {
+public class GeneratorOptions {
+    /** 
+     * Indicates if the help option has been invoked.
+     * If this is the case, then none of the other options have been processed. 
+     * @return {@code true} if the help option has been invoked
+     */
+    public boolean isHelp() {
+        return this.help;
+    }
+
+    /**
+     * Indicates if the log option has been set.
+     * @return {@code true} if {@link #getLogDir()} does not return {@code null}
+     */
+    public boolean isLogging() {
+        return getLogDir() != null;
+    }
+
+    /**
+     * Sets the directory for the log file.
+     * If {@code null}, no logging will take place.
+     */
+    public File getLogDir() {
+        return this.logdir;
+    }
+
+    /**
+     * Returns the verbosity level, as a value between 0 and 2 (inclusive).
+     */
+    public Verbosity getVerbosity() {
+        return this.verbosity;
+    }
+
+    @Option(name = HelpHandler.NAME, usage = HelpHandler.USAGE,
+            handler = HelpHandler.class)
+    private boolean help;
+
+    @Option(name = "-l", metaVar = "dir",
+            usage = "Log the generation process in the directory <dir>",
+            handler = DirectoryHandler.class)
+    private File logdir;
+
+    @Option(name = VerbosityHandler.NAME, metaVar = VerbosityHandler.VAR,
+            usage = VerbosityHandler.USAGE, handler = VerbosityHandler.class)
+    private Verbosity verbosity = Verbosity.MEDIUM;
+
     /**
      * Name of the result option.
      */
@@ -271,9 +318,8 @@ public class GeneratorOptions extends CommandLineOptions {
                 + "The optional extension determines the output format (default is .gst)")
     private String statePattern;
 
-    @Argument(metaVar = "grammar", required = true,
-            usage = "grammar location (default extension .gps)",
-            handler = GrammarHandler.class)
+    @Argument(metaVar = GrammarHandler.META_VAR, required = true,
+            usage = GrammarHandler.USAGE, handler = GrammarHandler.class)
     private File grammar;
 
     @Argument(index = 1, metaVar = "start", multiValued = true,
