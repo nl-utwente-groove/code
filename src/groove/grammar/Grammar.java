@@ -208,12 +208,14 @@ public class Grammar {
 
     /**
      * Sets the rule system to fixed.
+     * @return {@code this}, for convenient chaining of methods.
      * @throws FormatException if the rules are inconsistent with the system
      *         properties or there is some other reason why they cannot be used
      *         in derivations.
      */
-    public void setFixed() throws FormatException {
+    public Grammar setFixed() throws FormatException {
         this.fixed = true;
+        return this;
     }
 
     /**

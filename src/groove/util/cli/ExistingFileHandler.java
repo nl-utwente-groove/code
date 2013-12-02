@@ -16,28 +16,36 @@
  */
 package groove.util.cli;
 
-import groove.io.FileType;
-
 import java.io.File;
 
+import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.spi.FileOptionHandler;
 import org.kohsuke.args4j.spi.Setter;
 
 /**
- * Option handler that adds a {@code .gps} extension to a directory name,
- * if the directory has no extension and does not exist.
+ * Checks if a file option value is an existing file.
+ * @author Arend Rensink
+ * @version $Revision $
  */
-public class GrammarHandler extends DirectoryHandler {
-    /** Required constructor. */
-    public GrammarHandler(CmdLineParser parser, OptionDef option,
+public class ExistingFileHandler extends FileOptionHandler {
+    /**
+     * required constructor.
+     */
+    public ExistingFileHandler(CmdLineParser parser, OptionDef option,
             Setter<? super File> setter) {
-        super(parser, option, setter, FileType.GRAMMAR_FILTER);
+        super(parser, option, setter);
     }
 
-    /** Meta-variable for the grammar argument. */
-    public static final String META_VAR = "grammar";
-    /** Usage message of the grammar argument. */
-    public static final String USAGE =
-        "Grammar location (default extension .gps)";
+    @Override
+    protected File parse(String argument) throws CmdLineException {
+        File result = super.parse(argument);
+        if (!result.exists()) {
+            throw new CmdLineException(this.owner, String.format(
+                "Argument '%s' is not an existing file", argument));
+        }
+        return result;
+    }
+
 }

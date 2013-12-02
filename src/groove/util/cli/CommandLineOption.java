@@ -26,7 +26,9 @@ package groove.util.cli;
  * 
  * @author Arend Rensink
  * @version $Revision$
+ * @deprecated use the args4j library
  */
+@Deprecated
 public interface CommandLineOption {
     /** Returns the (one-word, often one-letter) name of this option. */
     public String getName();

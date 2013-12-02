@@ -1,7 +1,7 @@
 package groove.gui;
 
 import groove.explore.Exploration;
-import groove.explore.util.ExplorationStatistics;
+import groove.explore.util.StatisticsReporter;
 import groove.grammar.Grammar;
 import groove.grammar.GrammarProperties;
 import groove.grammar.aspect.AspectGraph;
@@ -1062,9 +1062,9 @@ public class SimulatorModel implements Cloneable {
      * Returns the exploration statistics object associated with the current
      * GTS.
      */
-    public ExplorationStatistics getExplorationStats() {
+    public StatisticsReporter getExplorationStats() {
         if (this.explorationStats == null) {
-            this.explorationStats = new ExplorationStatistics();
+            this.explorationStats = new StatisticsReporter();
         }
         return this.explorationStats;
     }
@@ -1209,7 +1209,7 @@ public class SimulatorModel implements Cloneable {
      */
     private Exploration exploration = new Exploration();
     /** Statistics for the last exploration performed. */
-    private ExplorationStatistics explorationStats;
+    private StatisticsReporter explorationStats;
 
     /** Flag to indicate that the Simulator is in abstraction mode. */
     private boolean abstractionMode = false;

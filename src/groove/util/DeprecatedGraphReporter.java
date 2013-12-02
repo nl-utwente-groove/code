@@ -19,39 +19,77 @@ package groove.util;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
-import groove.util.cli.GrooveCmdLineParser;
-import groove.util.cli.HelpHandler;
+import groove.util.cli.CommandLineTool;
 import groove.util.collect.Bag;
 import groove.util.collect.TreeBag;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
-
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.Option;
 
 /**
  * Tool to test and report various characteristics of a saved graph.
  * @author Arend Rensink
  * @version $Revision $
+ * @deprecated use {@link GraphReporter} instead
  */
-public class Args4JGraphReporter {
+@Deprecated
+public class DeprecatedGraphReporter extends CommandLineTool {
     /**
      * Constructs a new graph reporter with a given list of arguments. The
      * arguments consist of a list of options followed by a graph file name.
      */
-    private Args4JGraphReporter(String... args) throws CmdLineException {
-        this.parser = new GrooveCmdLineParser("GraphReporter", this);
-        this.parser.parseArgument(args);
+    private DeprecatedGraphReporter(String... args) {
+        super(args);
+    }
+
+    /**
+     * Constructs a new reporter, with default settings. This reporter should
+     * exclusively be used to call {@link #getReport(Graph)}.
+     */
+    private DeprecatedGraphReporter() {
+        super();
     }
 
     /** Starts the reporter, for the given list of arguments. */
-    public void run() throws Exception {
-        if (this.help) {
-            this.parser.printHelp();
+    public void start() {
+        processArguments();
+        List<String> argsList = getArgs();
+        if (argsList.size() > 0) {
+            String graphLocation = argsList.remove(0);
+            if (argsList.size() > 0) {
+                printError(
+                    String.format("Spurious parameters '%s'",
+                        argsList.toString()), true);
+            }
+            try {
+                report(Groove.loadGraph(graphLocation));
+            } catch (IOException e) {
+                printError(e.getMessage(), true);
+            }
         } else {
-            report(Groove.loadGraph(this.graphLocation));
+            printError("No graph specified", true);
         }
+    }
+
+    @Override
+    protected boolean supportsLogOption() {
+        return false;
+    }
+
+    @Override
+    protected boolean supportsOutputOption() {
+        return false;
+    }
+
+    @Override
+    protected boolean supportsVerbosityOption() {
+        return false;
+    }
+
+    @Override
+    protected String getUsageMessage() {
+        return super.getUsageMessage() + " graph-file";
     }
 
     /**
@@ -59,7 +97,8 @@ public class Args4JGraphReporter {
      * parameters of this reporter, and is sent to the standard output.
      */
     public void report(Graph graph) {
-        System.out.println(getReport(graph).toString());
+        // count the labels
+        println(getReport(graph).toString());
     }
 
     /**
@@ -81,28 +120,15 @@ public class Args4JGraphReporter {
         return result;
     }
 
-    @Option(name = "-h", usage = "Print this help message and exit",
-            handler = HelpHandler.class)
-    private boolean help;
-
-    @Argument(metaVar = "graph", required = true, usage = "graph location")
-    private String graphLocation;
-
-    /** The command-line parser. */
-    private final GrooveCmdLineParser parser;
-
     /**
      * Starts a new graph reporter with the given arguments.
      */
     public static void main(String[] args) {
-        try {
-            new Args4JGraphReporter(args).run();
-        } catch (Exception e) {
-            if (e instanceof RuntimeException) {
-                e.printStackTrace();
-            } else {
-                System.err.println(e.getMessage());
-            }
-        }
+        new DeprecatedGraphReporter(args).start();
+    }
+
+    /** Creates a fresh instance of a reporter. */
+    public static DeprecatedGraphReporter createInstance() {
+        return new DeprecatedGraphReporter();
     }
 }

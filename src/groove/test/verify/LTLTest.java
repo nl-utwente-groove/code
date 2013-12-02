@@ -19,7 +19,7 @@ package groove.test.verify;
 
 import static org.junit.Assert.assertEquals;
 import groove.explore.AcceptorValue;
-import groove.explore.Args4JGenerator;
+import groove.explore.Generator;
 import groove.explore.Exploration;
 import groove.explore.StrategyValue;
 import groove.explore.encode.Serialized;
@@ -99,9 +99,9 @@ public class LTLTest {
     /** Sets the GTS to a given grammar in the JUnit samples. */
     private void prepare(String grammarName) {
         try {
-            Args4JGenerator generator =
-                new Args4JGenerator("-v", "0", "junit/samples/" + grammarName);
-            this.gts = generator.run();
+            Generator generator =
+                new Generator("-v", "0", "junit/samples/" + grammarName);
+            this.gts = generator.start();
         } catch (Exception e) {
             // this should not occur
             e.printStackTrace();

@@ -16,7 +16,6 @@
  */
 package groove.util.cli;
 
-
 /**
  * A <code>StoreCommandLineOption</code> is a <code>CommandLineOption</code>
  * that has an argument that is parsed into a locally stored value. This value
@@ -24,7 +23,9 @@ package groove.util.cli;
  * 
  * @see CommandLineOption
  * @author Maarten de Mol
+ * @deprecated use the args4j library
  */
+@Deprecated
 public abstract class StoreCommandLineOption<A> implements CommandLineOption {
 
     // Local store of the parsed value.

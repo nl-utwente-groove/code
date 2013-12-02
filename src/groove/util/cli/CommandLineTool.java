@@ -46,7 +46,9 @@ import java.util.Map;
  * 
  * @author Arend Rensink
  * @version $Revision$
+ * @deprecated use the args4j library
  */
+@Deprecated
 public class CommandLineTool {
     /**
      * Prefix for command line options.

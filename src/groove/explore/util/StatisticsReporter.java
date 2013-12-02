@@ -49,7 +49,7 @@ import java.util.List;
 /**
  * @author Eduardo Zambon
  */
-public class ExplorationStatistics extends ExplorationReporter {
+public class StatisticsReporter extends ExplorationReporter {
 
     // ------------------------------------------------------------------------
     // Static Fields
@@ -88,14 +88,14 @@ public class ExplorationStatistics extends ExplorationReporter {
      * Constructs a exploration statistics object at a 
      * given verbosity level.
      */
-    public ExplorationStatistics(Verbosity verbosity) {
+    public StatisticsReporter(Verbosity verbosity) {
         this.verbosity = verbosity;
     }
 
     /**
      * Constructs a exploration statistics object with high verbosity.
      */
-    public ExplorationStatistics() {
+    public StatisticsReporter() {
         this(Verbosity.HIGH);
     }
 
@@ -116,7 +116,7 @@ public class ExplorationStatistics extends ExplorationReporter {
 
     /** Should be called right after the exploration finishes. */
     @Override
-    public void stop() {
+    public void report() {
         this.endTime = System.currentTimeMillis();
         getGTS().removeLTSListener(this.statisticsListener);
     }
@@ -151,13 +151,13 @@ public class ExplorationStatistics extends ExplorationReporter {
     }
 
     private void reportProfiling() {
-        print(HIGH, "%n");
+        emit(HIGH, "%n");
         if (this.sbVerbosity.isHigh()) {
             StringWriter sw = new StringWriter();
             Reporter.report(new PrintWriter(sw));
             this.sb.append(sw.toString());
         }
-        print(
+        emit(
             HIGH,
             "===============================================================================%n");
     }
@@ -199,18 +199,18 @@ public class ExplorationStatistics extends ExplorationReporter {
             getGTS().nodeCount() - openTransientStateCount
                 - closedTransientStateCount;
         String formatString = "%-14s%d%n";
-        print(MEDIUM, "%n");
-        print(MEDIUM, formatString, "States:", realStateCount);
+        emit(MEDIUM, "%n");
+        emit(MEDIUM, formatString, "States:", realStateCount);
         int openRealStateCount =
             getGTS().openStateCount() - openTransientStateCount;
         if (openRealStateCount > 0) {
-            print(MEDIUM, formatString, "Explored:",
+            emit(MEDIUM, formatString, "Explored:",
                 (realStateCount - openRealStateCount));
         }
         int partialTransitionCount =
             this.statisticsListener.getPartialTransitionCount();
         int realTransitionCount = getGTS().edgeCount() - partialTransitionCount;
-        print(MEDIUM, formatString, "Transitions:", realTransitionCount);
+        emit(MEDIUM, formatString, "Transitions:", realTransitionCount);
     }
 
     /** Gives some statistics regarding the graphs and deltas. */
@@ -218,12 +218,12 @@ public class ExplorationStatistics extends ExplorationReporter {
         String formatString = "    %-20s";
         String intFormatString = formatString + "%d%n";
         String floatFormatString = formatString + "%.1f%n";
-        print(HIGH, "%nGraph count%n");
-        print(HIGH, intFormatString, "Modifiable:",
+        emit(HIGH, "%nGraph count%n");
+        emit(HIGH, intFormatString, "Modifiable:",
             AGraph.getModifiableGraphCount());
-        print(HIGH, intFormatString, "Frozen:",
+        emit(HIGH, intFormatString, "Frozen:",
             AbstractGraphState.getFrozenGraphCount());
-        print(HIGH, floatFormatString, "Bytes/state:",
+        emit(HIGH, floatFormatString, "Bytes/state:",
             getGTS().getBytesPerState());
     }
 
@@ -232,12 +232,12 @@ public class ExplorationStatistics extends ExplorationReporter {
         String format = "    %-20s";
         String intFormat = format + "%d%n";
         String ratioFormat = format + "%d/%d%n";
-        print(HIGH, "%nTransition count%n");
-        print(HIGH, intFormat, "Reused:", MatchCollector.getEventReuse());
-        print(HIGH, intFormat, "Confluent:",
+        emit(HIGH, "%nTransition count%n");
+        emit(HIGH, intFormat, "Reused:", MatchCollector.getEventReuse());
+        emit(HIGH, intFormat, "Confluent:",
             MatchApplier.getConfluentDiamondCount());
-        print(HIGH, intFormat, "Events:", Record.getEventCount());
-        print(HIGH, ratioFormat, "Coanchor reuse:",
+        emit(HIGH, intFormat, "Events:", Record.getEventCount());
+        emit(HIGH, ratioFormat, "Coanchor reuse:",
             HostFactory.getNormaliseGain(), HostFactory.getNormaliseCount());
     }
 
@@ -257,18 +257,18 @@ public class ExplorationStatistics extends ExplorationReporter {
         String stringFormat = format + "%s%n";
         String intIntFormat = format + "%-6d(-%d)%n";
         String percFormat = "   " + format + "%-6d(%4.1f%%)%n";
-        print(HIGH, "%nIsomorphism statistics%n");
-        print(HIGH, intIntFormat, "Predicted:", predicted, intCertOverlap);
-        print(HIGH, percFormat, "False pos 1:", falsePos1, (double) 100
+        emit(HIGH, "%nIsomorphism statistics%n");
+        emit(HIGH, intIntFormat, "Predicted:", predicted, intCertOverlap);
+        emit(HIGH, percFormat, "False pos 1:", falsePos1, (double) 100
             * falsePos1 / (predicted - intCertOverlap));
-        print(HIGH, percFormat, "False pos 2:", falsePos2, (double) 100
+        emit(HIGH, percFormat, "False pos 2:", falsePos2, (double) 100
             * falsePos2 / (predicted - intCertOverlap));
-        print(HIGH, intFormat, "Equal graphs:", equalGraphCount);
-        print(HIGH, intFormat, "Equal certificates:", equalCertsCount);
-        print(HIGH, intFormat, "Equal simulation:", equalSimCount);
-        print(HIGH, stringFormat, "Iterations:",
+        emit(HIGH, intFormat, "Equal graphs:", equalGraphCount);
+        emit(HIGH, intFormat, "Equal certificates:", equalCertsCount);
+        emit(HIGH, intFormat, "Equal simulation:", equalSimCount);
+        emit(HIGH, stringFormat, "Iterations:",
             PartitionRefiner.getIterateCount());
-        print(HIGH, intFormat, "Symmetry breaking:",
+        emit(HIGH, intFormat, "Symmetry breaking:",
             PartitionRefiner.getSymmetryBreakCount());
     }
 
@@ -278,17 +278,17 @@ public class ExplorationStatistics extends ExplorationReporter {
         String format = "    %-20s";
         String intFormat = format + "%d%n";
         String floatFormat = format + "%5.1f%n";
-        print(HIGH, "%nGraph element count%n");
-        print(HIGH, intFormat, "Factory nodes:", factory.getNodeCount());
-        print(HIGH, intFormat, "Factory edges:", factory.getEdgeCount());
+        emit(HIGH, "%nGraph element count%n");
+        emit(HIGH, intFormat, "Factory nodes:", factory.getNodeCount());
+        emit(HIGH, intFormat, "Factory edges:", factory.getEdgeCount());
         double nodeAvg =
             (double) this.statisticsListener.getNodeCount()
                 / getGTS().nodeCount();
-        print(HIGH, floatFormat, "Nodes/state (avg):", nodeAvg);
+        emit(HIGH, floatFormat, "Nodes/state (avg):", nodeAvg);
         double edgeAvg =
             (double) this.statisticsListener.getEdgeCount()
                 / getGTS().edgeCount();
-        print(HIGH, floatFormat, "Edges/state (avg):", edgeAvg);
+        emit(HIGH, floatFormat, "Edges/state (avg):", edgeAvg);
     }
 
     /** Reports on the cache usage. */
@@ -296,13 +296,13 @@ public class ExplorationStatistics extends ExplorationReporter {
         String format = "    %-20s";
         String intFormat = format + "%d%n";
         String stringFormat = format + "%s%n";
-        print(HIGH, "%nCache statistics%n");
-        print(HIGH, intFormat, "Created:", CacheReference.getCreateCount());
-        print(HIGH, intFormat, "Cleared:", CacheReference.getClearCount());
-        print(HIGH, intFormat, "Collected:", CacheReference.getCollectCount());
-        print(HIGH, intFormat, "Reconstructed:",
+        emit(HIGH, "%nCache statistics%n");
+        emit(HIGH, intFormat, "Created:", CacheReference.getCreateCount());
+        emit(HIGH, intFormat, "Cleared:", CacheReference.getClearCount());
+        emit(HIGH, intFormat, "Collected:", CacheReference.getCollectCount());
+        emit(HIGH, intFormat, "Reconstructed:",
             CacheReference.getIncarnationCount());
-        print(HIGH, stringFormat, "Distribution:",
+        emit(HIGH, stringFormat, "Distribution:",
             getCacheReconstructionDistribution());
     }
 
@@ -326,37 +326,37 @@ public class ExplorationStatistics extends ExplorationReporter {
             running - matching - isoChecking - building - measuring;
 
         String format = "%-20s%d%n";
-        print(MEDIUM, "%n");
-        print(MEDIUM, format, "Time (ms):", total);
+        emit(MEDIUM, "%n");
+        emit(MEDIUM, format, "Time (ms):", total);
 
         // Time breakup only reported under high verbosity
         format = "    %-15s%7d    (%4.1f%%)%n";
         String longFormat = "    " + format;
-        print(HIGH, format, "Matching:", matching, 100 * matching
+        emit(HIGH, format, "Matching:", matching, 100 * matching
             / (double) total);
-        print(HIGH, format, "Transforming:", transforming, 100 * transforming
+        emit(HIGH, format, "Transforming:", transforming, 100 * transforming
             / (double) total);
-        print(HIGH, format, "Iso checking:", isoChecking, 100 * isoChecking
+        emit(HIGH, format, "Iso checking:", isoChecking, 100 * isoChecking
             / (double) total);
 
         long certifying = IsoChecker.getCertifyingTime();
         long equalCheck = IsoChecker.getEqualCheckTime();
         long certCheck = IsoChecker.getCertCheckTime();
         long simCheck = IsoChecker.getSimCheckTime();
-        print(HIGH, longFormat, "Certifying:", certifying, 100 * certifying
+        emit(HIGH, longFormat, "Certifying:", certifying, 100 * certifying
             / (double) isoChecking);
-        print(HIGH, longFormat, "Equals check:", equalCheck, 100 * equalCheck
+        emit(HIGH, longFormat, "Equals check:", equalCheck, 100 * equalCheck
             / (double) isoChecking);
-        print(HIGH, longFormat, "Cert check:", certCheck, 100 * certCheck
+        emit(HIGH, longFormat, "Cert check:", certCheck, 100 * certCheck
             / (double) isoChecking);
-        print(HIGH, longFormat, "Sim check:", simCheck, 100 * simCheck
+        emit(HIGH, longFormat, "Sim check:", simCheck, 100 * simCheck
             / (double) isoChecking);
 
-        print(HIGH, format, "Building GTS:", building, 100 * building
+        emit(HIGH, format, "Building GTS:", building, 100 * building
             / (double) total);
-        print(HIGH, format, "Measuring:", measuring, 100 * measuring
+        emit(HIGH, format, "Measuring:", measuring, 100 * measuring
             / (double) total);
-        print(HIGH, format, "Initialization:", overhead, 100 * overhead
+        emit(HIGH, format, "Initialization:", overhead, 100 * overhead
             / (double) total);
     }
 
@@ -380,16 +380,16 @@ public class ExplorationStatistics extends ExplorationReporter {
         System.gc();
         long usedMemory = runTime.totalMemory() - runTime.freeMemory();
         String format = "%-20s%d%n";
-        print(HIGH, "%n");
-        print(MEDIUM, format, "Space (kB):",
-            (usedMemory - this.startUsedMemory) / BYTES_PER_KB);
+        emit(HIGH, "%n");
+        emit(MEDIUM, format, "Space (kB):", (usedMemory - this.startUsedMemory)
+            / BYTES_PER_KB);
     }
 
     /** 
      * Prints a formatted string to the output stream,
      * at a given minimum verbosity. 
      */
-    private void print(Verbosity at, String text, Object... args) {
+    private void emit(Verbosity at, String text, Object... args) {
         if (at.compareTo(this.sbVerbosity) <= 0) {
             this.fm.format(text, args);
         }

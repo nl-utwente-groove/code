@@ -18,7 +18,7 @@ package groove;
 
 /**
  * Wrapper class for the imager utility.
- * @see groove.io.Imager
+ * @see groove.io.DeprecatedImager
  * @author Arend Rensink
  * @version $Revision$
  */

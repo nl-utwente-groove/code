@@ -46,6 +46,7 @@ public class DefaultMarker {
      * GTS.
      */
     public DefaultMarker(Formula formula, GTS gts) {
+        assert gts != null;
         this.formula = formula;
         this.gts = gts;
         init();
