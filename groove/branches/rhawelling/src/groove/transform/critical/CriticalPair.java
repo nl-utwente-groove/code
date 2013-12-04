@@ -16,6 +16,7 @@
  */
 package groove.transform.critical;
 
+import groove.algebra.Algebra;
 import groove.grammar.Rule;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostEdge;
@@ -39,13 +40,13 @@ import java.util.Set;
 
 public class CriticalPair {
 
-    private HostGraph hostGraph;
+    private DefaultHostGraph hostGraph;
     private Rule rule1;
     private Rule rule2;
     private RuleToHostMap match1;
     private RuleToHostMap match2;
 
-    public HostGraph getHostGraph() {
+    public DefaultHostGraph getHostGraph() {
         return this.hostGraph;
     }
 
@@ -65,7 +66,7 @@ public class CriticalPair {
         return this.rule2;
     }
 
-    private CriticalPair(HostGraph target, Rule rule1, Rule rule2,
+    private CriticalPair(DefaultHostGraph target, Rule rule1, Rule rule2,
             RuleToHostMap m1, RuleToHostMap m2) {
         this.hostGraph = target;
         this.match2 = m1;
@@ -131,7 +132,7 @@ public class CriticalPair {
             HashSet<CriticalPair> newParrPairs = new HashSet<CriticalPair>();
             //initial case, parrPairs contains no pairs yet, this can only happen if l1.nodeSet().isEmpty()
             if (parrPairs.isEmpty()) {
-                HostGraph target = new DefaultHostGraph("target");
+                DefaultHostGraph target = new DefaultHostGraph("target");
 
                 RuleToHostMap m1 = new RuleToHostMap(target.getFactory());
                 RuleToHostMap m2 = new RuleToHostMap(target.getFactory());
@@ -169,7 +170,7 @@ public class CriticalPair {
     }
 
     private static void createAndMapNodeWithEdges(RuleNode ruleNode,
-            HostGraph hostGraph, RuleToHostMap m1, RuleToHostMap m2,
+            DefaultHostGraph hostGraph, RuleToHostMap m1, RuleToHostMap m2,
             int matchnum, Set<? extends RuleEdge> edges) {
         HostNode targetNode;
         if (ruleNode instanceof DefaultRuleNode) {
@@ -179,8 +180,11 @@ public class CriticalPair {
             throw new UnsupportedOperationException(
                 "OperatorNode not supported");
         } else if (ruleNode instanceof ValueNode) {
-            //TODO
-            throw new UnsupportedOperationException("ValueNode not supported");
+            Algebra<?> algebra = ((ValueNode) ruleNode).getAlgebra();
+            Object value = ((ValueNode) ruleNode).getValue();
+            targetNode = hostGraph.addNode(algebra, value);
+            /* TODO if this valuenode is not conected to any other elements other than the productNode
+             * then it does not need to be added */
         } else {
             //Not supposed to happen, all supertypes of RuleNode should have been handled above
             throw new UnsupportedOperationException(
