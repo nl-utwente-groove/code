@@ -189,7 +189,7 @@ public class Transformer {
     private AspectGraph computeStartGraph(List<String> startGraphNames)
         throws IOException {
         AspectGraph result = null;
-        if (!startGraphNames.isEmpty()) {
+        if (startGraphNames != null && !startGraphNames.isEmpty()) {
             List<AspectGraph> graphs = new ArrayList<AspectGraph>();
             for (String startGraphName : startGraphNames) {
                 graphs.add(computeStartGraph(startGraphName));
@@ -309,9 +309,9 @@ public class Transformer {
             int resultCount =
                 hasResultCount() ? getResultCount() : result.getNrResults();
             result = new Exploration(strategy, acceptor, resultCount);
-            for (ExplorationListener listener : getListeners()) {
-                result.addListener(listener);
-            }
+        }
+        for (ExplorationListener listener : getListeners()) {
+            result.addListener(listener);
         }
         return result;
     }
