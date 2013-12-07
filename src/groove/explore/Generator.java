@@ -31,10 +31,7 @@ import groove.lts.GTS;
 import groove.transform.Transformer;
 import groove.util.cli.DirectoryHandler;
 import groove.util.cli.GrammarHandler;
-import groove.util.cli.GrooveCmdLineParser;
 import groove.util.cli.GrooveCmdLineTool;
-import groove.util.cli.HelpHandler;
-import groove.util.cli.VerbosityHandler;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,33 +50,20 @@ import org.kohsuke.args4j.spi.Setter;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Generator {
+public class Generator extends GrooveCmdLineTool<GTS> {
     /**
      * Constructs the generator and processes the command-line arguments.
      * @throws CmdLineException if any error was found in the command-line arguments
      */
     public Generator(String... args) throws CmdLineException {
-        this.parser = new GrooveCmdLineParser("Generator", this);
-        this.parser.parseArgument(args);
+        super("Generator", args);
     }
 
     /**
-     * Runs the state space generation process.
-     * @throws Exception if anything goes wrong during generation.
+     * Runs the exploration and returns the generated GTS.
      */
-    public GTS start() throws Exception {
-        if (isHelp()) {
-            this.parser.printHelp();
-            return null;
-        } else {
-            return run();
-        }
-    }
-
-    /**
-     * The processing phase of state space generation.
-     */
-    private GTS run() throws Exception {
+    @Override
+    public GTS run() throws Exception {
         Transformer transformer = computeTransformer();
         transformer.addListener(getReporter());
         if (!getVerbosity().isLow()) {
@@ -110,22 +94,6 @@ public class Generator {
         return result;
     }
 
-    /** The command-line parser. */
-    private final GrooveCmdLineParser parser;
-
-    /** 
-     * Indicates if the help option has been invoked.
-     * If this is the case, then none of the other options have been processed. 
-     * @return {@code true} if the help option has been invoked
-     */
-    public boolean isHelp() {
-        return this.help;
-    }
-
-    @Option(name = HelpHandler.NAME, usage = HelpHandler.USAGE,
-            handler = HelpHandler.class)
-    private boolean help;
-
     /**
      * Indicates if the log option has been set.
      * @return {@code true} if {@link #getLogDir()} does not return {@code null}
@@ -146,17 +114,6 @@ public class Generator {
             usage = "Log the generation process in the directory <dir>",
             handler = DirectoryHandler.class)
     private File logdir;
-
-    /**
-     * Returns the verbosity level, as a value between 0 and 2 (inclusive).
-     */
-    public Verbosity getVerbosity() {
-        return this.verbosity;
-    }
-
-    @Option(name = VerbosityHandler.NAME, metaVar = VerbosityHandler.VAR,
-            usage = VerbosityHandler.USAGE, handler = VerbosityHandler.class)
-    private Verbosity verbosity = Verbosity.MEDIUM;
 
     /** 
      * Indicates if the strategy option is set.
