@@ -282,11 +282,8 @@ public class Grammar {
     }
 
     /**
-     * Returns the start graph of this graph grammar. If the graph is not set at
-     * the time of invocation, an empty start graph is created through the graph
-     * factory.
+     * Returns the start graph of this graph grammar.
      * @return the start graph of this GraphGrammar
-     * @ensure <tt>result != null</tt>
      */
     public HostGraph getStartGraph() {
         return this.startGraph;

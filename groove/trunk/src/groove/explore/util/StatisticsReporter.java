@@ -49,7 +49,7 @@ import java.util.List;
 /**
  * @author Eduardo Zambon
  */
-public class StatisticsReporter extends ExplorationReporter {
+public class StatisticsReporter extends AExplorationReporter {
 
     // ------------------------------------------------------------------------
     // Static Fields
@@ -99,6 +99,7 @@ public class StatisticsReporter extends ExplorationReporter {
         this(Verbosity.HIGH);
     }
 
+    /** Starts up the reporter, for a given GTS. */
     @Override
     public void start(Exploration exploration, GTS gts) {
         super.start(exploration, gts);
@@ -106,7 +107,7 @@ public class StatisticsReporter extends ExplorationReporter {
         runTime.gc();
         this.startUsedMemory = runTime.totalMemory() - runTime.freeMemory();
         if (!this.verbosity.isLow()) {
-            getGTS().addLTSListener(this.statisticsListener);
+            gts.addLTSListener(this.statisticsListener);
         }
         this.startTime = System.currentTimeMillis();
         // clear any previous report
@@ -114,7 +115,8 @@ public class StatisticsReporter extends ExplorationReporter {
         this.fm = null;
     }
 
-    /** Should be called right after the exploration finishes. */
+    /** Reports the statistics of the GTS.
+     * Should be called right after the exploration finishes. */
     @Override
     public void report() {
         this.endTime = System.currentTimeMillis();

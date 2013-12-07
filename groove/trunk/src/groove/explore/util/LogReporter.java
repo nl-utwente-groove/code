@@ -21,7 +21,6 @@ import groove.explore.Exploration;
 import groove.explore.Verbosity;
 import groove.io.FileType;
 import groove.lts.GTS;
-import groove.util.Groove;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -37,26 +36,14 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LogReporter extends ExplorationReporter {
+public class LogReporter extends AExplorationReporter {
     /**
      * Constructs a log reporter with a verbosity level
      * and a (possibly empty) file name
      * @param verbosity the verbosity with which messages are printed on standard output
      * @param logDir if not {@code null}, the name of a directory into which a log file should be written
      */
-    public LogReporter(String grammarName, List<String> startGraphNames,
-            Verbosity verbosity, File logDir) {
-        this(grammarName, startGraphNames == null ? null : Groove.toString(
-            startGraphNames.toArray(), "", "", ", "), verbosity, logDir);
-    }
-
-    /**
-     * Constructor for subclassing.
-     */
-    protected LogReporter(String grammarName, String startGraphNames,
-            Verbosity verbosity, File logDir) {
-        this.grammarName = grammarName;
-        this.startGraphName = startGraphNames;
+    public LogReporter(Verbosity verbosity, File logDir) {
         this.verbosity = verbosity;
         this.logDir = logDir;
         this.exploreStats = new StatisticsReporter(verbosity);
@@ -65,13 +52,42 @@ public class LogReporter extends ExplorationReporter {
     @Override
     public void start(Exploration exploration, GTS gts) {
         super.start(exploration, gts);
+        this.exploreStats.start(exploration, gts);
         if (this.logDir != null) {
             this.log = new StringBuilder();
         }
+        this.extra = new StringBuilder();
         this.startTime = new Date();
-        this.exploreStats.start(exploration, gts);
         emitStartMessage();
         emit("%n");
+    }
+
+    @Override
+    public void stop(GTS gts) {
+        super.stop(gts);
+        this.exploreStats.stop(gts);
+    }
+
+    /**
+     * Adds a line to the end of the log, if the verbosity is at least at
+     * a given level.
+     * @param minVerbosity the minimum verbosity to add the line
+     * @param format the string format for the line
+     * @param args the format arguments for the line
+     */
+    public void append(Verbosity minVerbosity, String format, Object... args) {
+        if (this.verbosity.compareTo(minVerbosity) >= 0) {
+            this.extra.append(String.format(format, args));
+        }
+    }
+
+    /**
+     * Adds a line to the end of the log, if the verbosity is at least {@link Verbosity#MEDIUM}.
+     * @param format the string format for the line
+     * @param args the format arguments for the line
+     */
+    public void append(String format, Object... args) {
+        append(Verbosity.MEDIUM, format, args);
     }
 
     @Override
@@ -124,13 +140,16 @@ public class LogReporter extends ExplorationReporter {
             }
         }
         emit("%s%n", getExploration().getLastMessage());
+        if (this.extra.length() > 0) {
+            emit(Verbosity.LOW, "%n%s%n", this.extra.toString());
+        }
     }
 
     /** Emits the message announcing the parameters of the exploration. */
     protected void emitStartMessage() {
-        emit("Grammar:\t%s%n", this.grammarName);
-        emit("Start graph:\t%s%n", this.startGraphName == null ? "default"
-                : this.startGraphName);
+        emit("Grammar:\t%s%n", getGTS().getGrammar().getName());
+        emit("Start graph:\t%s%n",
+            getGTS().getGrammar().getStartGraph().getName());
         emit("Exploration:\t%s%n", getExploration().getIdentifier());
         emit("Timestamp:\t%s%n", this.startTime);
     }
@@ -151,8 +170,6 @@ public class LogReporter extends ExplorationReporter {
         emit(Verbosity.MEDIUM, message, args);
     }
 
-    private final String grammarName;
-    private final String startGraphName;
     private final Verbosity verbosity;
     private final File logDir;
     private final StatisticsReporter exploreStats;
@@ -162,6 +179,7 @@ public class LogReporter extends ExplorationReporter {
      */
     private Date startTime;
     private StringBuilder log;
+    private StringBuilder extra;
     /**
      * Fixed name of the gc log file. If a file with this name is found, and
      * logging is switched on, the gc log is appended to the generator log.
