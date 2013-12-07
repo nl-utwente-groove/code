@@ -16,30 +16,37 @@
  */
 package groove.explore;
 
-import groove.explore.encode.Serialized;
 import groove.explore.encode.TemplateList;
 import groove.explore.result.Acceptor;
 import groove.explore.strategy.Strategy;
+import groove.explore.util.CompositeReporter;
 import groove.explore.util.ExplorationReporter;
 import groove.explore.util.GenerateProgressListener;
-import groove.grammar.Grammar;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.aspect.GraphConverter;
-import groove.grammar.model.GrammarModel;
-import groove.io.FileType;
+import groove.explore.util.LTSLabels;
+import groove.explore.util.LTSReporter;
+import groove.explore.util.LogReporter;
+import groove.explore.util.StateReporter;
+import groove.grammar.model.FormatException;
 import groove.lts.GTS;
-import groove.util.Groove;
+import groove.transform.Transformer;
+import groove.util.cli.DirectoryHandler;
+import groove.util.cli.GrammarHandler;
 import groove.util.cli.GrooveCmdLineParser;
 import groove.util.cli.GrooveCmdLineTool;
+import groove.util.cli.HelpHandler;
+import groove.util.cli.VerbosityHandler;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
+import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
+import org.kohsuke.args4j.spi.Setter;
 
 /**
  * New command-line Generator class, using the Agrs4J library. 
@@ -52,8 +59,7 @@ public class Generator {
      * @throws CmdLineException if any error was found in the command-line arguments
      */
     public Generator(String... args) throws CmdLineException {
-        this.options = new GeneratorOptions();
-        this.parser = new GrooveCmdLineParser("Generator", this.options);
+        this.parser = new GrooveCmdLineParser("Generator", this);
         this.parser.parseArgument(args);
     }
 
@@ -62,7 +68,7 @@ public class Generator {
      * @throws Exception if anything goes wrong during generation.
      */
     public GTS start() throws Exception {
-        if (this.options.isHelp()) {
+        if (isHelp()) {
             this.parser.printHelp();
             return null;
         } else {
@@ -74,129 +80,325 @@ public class Generator {
      * The processing phase of state space generation.
      */
     private GTS run() throws Exception {
-        GrammarModel grammarModel = computeGrammarModel();
-        Grammar grammar = grammarModel.toGrammar();
-        grammar.setFixed();
-        GTS gts = new GTS(grammar);
+        Transformer transformer = computeTransformer();
+        transformer.addListener(getReporter());
         if (!getVerbosity().isLow()) {
-            gts.addLTSListener(new GenerateProgressListener());
+            transformer.addListener(new GenerateProgressListener());
         }
-        Exploration exploration = computeExploration(grammarModel);
-        for (ExplorationReporter reporter : getReporters()) {
-            reporter.start(exploration, gts);
-        }
-        exploration.play(gts, null);
-        gts.setResult(exploration.getResult());
-        for (ExplorationReporter reporter : getReporters()) {
-            reporter.report();
-        }
-        return gts;
-    }
-
-    /**
-     * Creates and returns a grammar model, using the options
-     * to find the location and other settings.
-     */
-    private GrammarModel computeGrammarModel() throws Exception {
-        GrammarModel result;
-        Observer loadObserver = new Observer() {
-            public void update(Observable o, Object arg) {
-                if (!getVerbosity().isLow()) {
-                    if (arg instanceof String) {
-                        System.out.printf("%s .", arg);
-                    } else if (arg == null) {
-                        System.out.println(" done");
-                    } else {
-                        System.out.print(".");
-                    }
-                }
-            }
-        };
-
-        File grammarFile = this.options.getGrammar();
-        result = GrammarModel.newInstance(grammarFile);
-        if (this.options.getStartGraphs() != null) {
-            List<String> startGraphs =
-                new ArrayList<String>(this.options.getStartGraphs());
-            AspectGraph externalStartGraph =
-                computeStartGraph(grammarFile, startGraphs);
-            if (externalStartGraph != null) {
-                result.setStartGraph(externalStartGraph);
-            }
-        }
-        result.getStore().addObserver(loadObserver);
-        return result;
-    }
-
-    private AspectGraph computeStartGraph(File grammarFile,
-            List<String> startGraphs) throws IOException {
-        AspectGraph result = null;
-        if (!startGraphs.isEmpty()) {
-            List<AspectGraph> graphs = new ArrayList<AspectGraph>();
-            for (String startGraphName : startGraphs) {
-                startGraphName =
-                    FileType.STATE_FILTER.addExtension(startGraphName);
-                File startGraphFile = new File(grammarFile, startGraphName);
-                if (!startGraphFile.exists()) {
-                    startGraphFile = new File(startGraphName);
-                }
-                if (!startGraphFile.exists()) {
-                    throw new IOException("Can't find start graph "
-                        + startGraphName);
-                }
-                graphs.add(GraphConverter.toAspect(Groove.loadGraph(startGraphFile)));
-            }
-            result = AspectGraph.mergeGraphs(graphs);
-        }
-        return result;
+        transformer.explore(getStartGraphs());
+        getReporter().report();
+        return transformer.getGTS();
     }
 
     /**
      * Compute the exploration out of the command line options.
      * Uses the default exploration for components that were not specified.
      */
-    private Exploration computeExploration(GrammarModel grammarModel) {
-        Exploration result = grammarModel.getDefaultExploration();
-        if (result == null) {
-            result = new Exploration();
-        }
-
-        Serialized strategy;
-        if (this.options.hasStrategy()) {
+    private Transformer computeTransformer() throws IOException {
+        Transformer result = new Transformer(getGrammar());
+        if (hasStrategy()) {
             TemplateList<Strategy> enumerator =
                 StrategyEnumerator.newInstance();
-            strategy = enumerator.parseCommandline(this.options.getStrategy());
-        } else {
-            strategy = result.getStrategy();
+            result.setStrategy(enumerator.parseCommandline(getStrategy()));
         }
-
-        Serialized acceptor;
-        if (this.options.hasAcceptor()) {
+        if (hasAcceptor()) {
             TemplateList<Acceptor> enumerator =
                 AcceptorEnumerator.newInstance();
-            acceptor = enumerator.parseCommandline(this.options.getAcceptor());
-        } else {
-            acceptor = result.getAcceptor();
+            result.setAcceptor(enumerator.parseCommandline(getAcceptor()));
         }
-
-        int nrResults = this.options.getResultCount();
-
-        return new Exploration(strategy, acceptor, nrResults);
-    }
-
-    /** Convenience methods to return the verbosity level from the generator options. */
-    private Verbosity getVerbosity() {
-        return this.options.getVerbosity();
-    }
-
-    private List<ExplorationReporter> getReporters() {
-        return this.options.getReporters();
+        result.setResultCount(getResultCount());
+        return result;
     }
 
     /** The command-line parser. */
     private final GrooveCmdLineParser parser;
-    /** The generator options. */
-    private final GeneratorOptions options;
+
+    /** 
+     * Indicates if the help option has been invoked.
+     * If this is the case, then none of the other options have been processed. 
+     * @return {@code true} if the help option has been invoked
+     */
+    public boolean isHelp() {
+        return this.help;
+    }
+
+    @Option(name = HelpHandler.NAME, usage = HelpHandler.USAGE,
+            handler = HelpHandler.class)
+    private boolean help;
+
+    /**
+     * Indicates if the log option has been set.
+     * @return {@code true} if {@link #getLogDir()} does not return {@code null}
+     */
+    public boolean isLogging() {
+        return getLogDir() != null;
+    }
+
+    /**
+     * Sets the directory for the log file.
+     * If {@code null}, no logging will take place.
+     */
+    public File getLogDir() {
+        return this.logdir;
+    }
+
+    @Option(name = "-l", metaVar = "dir",
+            usage = "Log the generation process in the directory <dir>",
+            handler = DirectoryHandler.class)
+    private File logdir;
+
+    /**
+     * Returns the verbosity level, as a value between 0 and 2 (inclusive).
+     */
+    public Verbosity getVerbosity() {
+        return this.verbosity;
+    }
+
+    @Option(name = VerbosityHandler.NAME, metaVar = VerbosityHandler.VAR,
+            usage = VerbosityHandler.USAGE, handler = VerbosityHandler.class)
+    private Verbosity verbosity = Verbosity.MEDIUM;
+
+    /** 
+     * Indicates if the strategy option is set.
+     * @return {@code true} if {@link #getStrategy()} is not {@code null} 
+     */
+    public boolean hasStrategy() {
+        return getStrategy() != null;
+    }
+
+    /**
+     * Returns the optional strategy value.
+     */
+    public String getStrategy() {
+        return this.strategy;
+    }
+
+    @Option(name = STRATEGY_NAME, metaVar = STRATEGY_VAR,
+            usage = STRATEGY_USAGE)
+    private String strategy;
+
+    /** 
+     * Indicates if the acceptor option is set.
+     * @return {@code true} if {@link #getAcceptor()} is not {@code null} 
+     */
+    public boolean hasAcceptor() {
+        return getAcceptor() != null;
+    }
+
+    /**
+     * Returns the optional acceptor value.
+     */
+    public String getAcceptor() {
+        return this.acceptor;
+    }
+
+    @Option(name = ACCEPTOR_NAME, metaVar = ACCEPTOR_VAR,
+            usage = ACCEPTOR_USAGE)
+    private String acceptor;
+
+    /**
+     * Returns the result count.
+     * If not set, the result count is {@code 0}.
+     */
+    public int getResultCount() {
+        return this.resultCount;
+    }
+
+    @Option(name = RESULT_NAME, metaVar = RESULT_VAR, usage = RESULT_USAGE)
+    private int resultCount = 0;
+
+    /**
+     * Returns the settings to be used in generating the LTS.
+     */
+    public LTSLabels getLtsLabels() {
+        return this.ltsLabels;
+    }
+
+    @Option(
+            name = "-ef",
+            metaVar = "flags",
+            depends = "-o",
+            usage = ""
+                + "Flags for the \"-o\" option. Legal values are:\n" //
+                + "  s - label start state (default: 'start')\n" //
+                + "  f - label final states (default: 'final')\n" //
+                + "  o - label open states (default: 'open')\n" //
+                + "  n - label state with number (default: 's#', '#' replaced by number)"
+                + "Specify label to be used by appending flag with 'label' (single-quoted)",
+            handler = LTSLabelsHandler.class)
+    private LTSLabels ltsLabels;
+
+    /** 
+     * Indicates if the LTS output option is set.
+     * @return {@code true} if {@link #getLtsPattern()} is not {@code null} 
+     */
+    public boolean isSaveLts() {
+        return getLtsPattern() != null;
+    }
+
+    /**
+     * Returns the (optional) file to be used for saving the generated LTS to.
+     * @return the file to save the LTS to, or {@code null} if not set 
+     */
+    public String getLtsPattern() {
+        return this.ltsPattern;
+    }
+
+    @Option(
+            name = "-o",
+            metaVar = "file",
+            usage = "Save the generated LTS to a file with name derived from <file>, "
+                + "in which '#' is instantiated with the grammar ID. "
+                + "The \"-ef\"-option controls some additional state labels. "
+                + "The optional extension determines the output format (default is .gxl)")
+    private String ltsPattern;
+
+    /** 
+     * Indicates if the state save option is set.
+     * @return {@code true} if {@link #getStatePattern()} is not {@code null} 
+     */
+    public boolean isSaveState() {
+        return getStatePattern() != null;
+    }
+
+    /**
+     * Returns the (optional) filename pattern to be used for saving result states.
+     * The pattern is of the form {@code [path/]pre#post[.ext]}, where
+     * {@code #} is to be instantiated with the state number, and {@code .ext}
+     * determines the output format.
+     * @return the filename pattern, or {@code null} if not set
+     */
+    public String getStatePattern() {
+        return this.statePattern;
+    }
+
+    @Option(
+            name = "-f",
+            metaVar = "file",
+            usage = "Save result states in separate files, with names derived from <file>, "
+                + "in which the mandatory '#' is instantiated with the state number. "
+                + "The optional extension determines the output format (default is .gst)")
+    private String statePattern;
+
+    /**
+     * Returns the grammar location.
+     * The location is guaranteed to be an existing directory.
+     * @return the (non-{@code null}) grammar location
+     */
+    public File getGrammar() {
+        return this.grammar;
+    }
+
+    @Argument(metaVar = GrammarHandler.META_VAR, required = true,
+            usage = GrammarHandler.USAGE, handler = GrammarHandler.class)
+    private File grammar;
+
+    /**
+     * Returns the optional start graph, if set.
+     * If set, the start graph is guaranteed to either the (qualified) 
+     * name of a host graph within the grammar, or the name of an existing file.
+     * @return the start graph name; may be {@code null} 
+     */
+    public List<String> getStartGraphs() {
+        return this.startGraphs;
+    }
+
+    @Argument(index = 1, metaVar = "start", multiValued = true,
+            usage = "Start graph names (defined in grammar, no extension) "
+                + "or start graph files (extension .gst)")
+    private List<String> startGraphs;
+
+    /** Returns the exploration reporters enabled on the basis of the options. */
+    public ExplorationReporter getReporter() {
+        if (this.reporter == null) {
+            this.reporter = computeReporter();
+        }
+        return this.reporter;
+    }
+
+    /** Factory method for the reporters associated with this invocation. */
+    private CompositeReporter computeReporter() {
+        CompositeReporter result = new CompositeReporter();
+        LogReporter logger = new LogReporter(getVerbosity(), getLogDir());
+        if (isSaveLts()) {
+            result.add(new LTSReporter(getLtsPattern(), getLtsLabels(), logger));
+        }
+        if (isSaveState()) {
+            result.add(new StateReporter(getStatePattern(), logger));
+        }
+        // add the logger last, to ensure that any messages from the 
+        // other reporters are included.
+        result.add(logger);
+        return result;
+    }
+
+    /** The reporters that can be built on the basis of the options. */
+    private CompositeReporter reporter;
+
+    /**
+     * Name of the acceptor option.
+     */
+    public static final String ACCEPTOR_NAME = "-a";
+    /**
+     * Meta-variable of the acceptor option.
+     */
+    public static final String ACCEPTOR_VAR = "acc";
+
+    /** Usage message for the acceptor option. */
+    public final static String ACCEPTOR_USAGE =
+        ""
+            + "Set the acceptor to <acc>. "
+            + "The acceptor determines when a state is counted as a result of the exploration. "
+            + "Legal values are:\n" //
+            + "    final      - When final (default)\n" //
+            + "    inv:[!]id  - If rule <id> is [not] applicable\n" //
+            + "    ruleapp:id - If there is an <id>-labelled transition\n" //
+            + "    formula:f  - If <f> holds (a boolean formula of rules separated by &, |, !)\n" //
+            + "    any        - Always (all states are results)\n" //
+            + "    cycle      - If the state starts a cycle\n" //
+            + "    none       - Never (no states are results)";
+
+    /**
+     * Name of the result option.
+     */
+    public static final String RESULT_NAME = "-r";
+
+    /**
+     * Meta-variable name for the result option.
+     */
+    public static final String RESULT_VAR = "num";
+
+    /**
+     * Usage message for the result option.
+     */
+    public static final String RESULT_USAGE =
+        "Stop exploration after <num> result states (default is 0 for \"unbounded\")";
+
+    /** Option name for the strategy option. */
+    public final static String STRATEGY_NAME = "-s";
+    /** Meta-variable name for the strategy option. */
+    public final static String STRATEGY_VAR = "strgy";
+    /** Usage message for the strategy option. */
+    public final static String STRATEGY_USAGE = ""
+        + "Set the exploration strategy to <strgy>. Legal values are:\n"
+        + "  bfs         - Breadth-first Exploration\n"
+        + "  dfs         - Depth-first Exploration\n"
+        + "  linear      - Linear\n" //
+        + "  random      - Random linear\n"
+        + "  state       - Single-State\n" //
+        + "  rete        - Rete-based DFS\n"
+        + "  retelinear  - Rete-based Linear\n"
+        + "  reterandom  - Rete-based Random Linear\n"
+        + "  crule:[!]id - Conditional (where rule <id> [not] applicable))\n"
+        + "  cnbound:n   - Conditional (up to <n> nodes)\n"
+        + "  cebound:id>n,...\n"
+        + "              - Conditional (up to <n> edges with label <id>)\n"
+        + "  ltl:prop    - LTL Model Checking\n" //
+        + "  ltlbounded:idn,...;prop\n"
+        + "              - Bounded LTL Model Checking\n"
+        + "  ltlpocket:idn,...;prop\n"
+        + "              - Pocket LTL Model Checking\n"
+        + "  remote:host - Remote";
 
     /**
      * Attempts to load a graph grammar from a given location provided as a
@@ -232,4 +434,24 @@ public class Generator {
      * Generator instances work as expected.
      */
     private static GTS staticGTS;
+
+    /** Handler for the {@link #ltsLabels} option. */
+    public static class LTSLabelsHandler extends
+            OneArgumentOptionHandler<LTSLabels> {
+        /** The required constructor. */
+        public LTSLabelsHandler(CmdLineParser parser, OptionDef option,
+                Setter<? super LTSLabels> setter) {
+            super(parser, option, setter);
+        }
+
+        @Override
+        protected LTSLabels parse(String argument)
+            throws NumberFormatException, CmdLineException {
+            try {
+                return new LTSLabels(argument);
+            } catch (FormatException e) {
+                throw new CmdLineException(this.owner, e);
+            }
+        }
+    }
 }

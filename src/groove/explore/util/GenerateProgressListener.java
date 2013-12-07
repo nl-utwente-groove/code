@@ -16,6 +16,8 @@
  */
 package groove.explore.util;
 
+import groove.explore.Exploration;
+import groove.explore.ExplorationListener;
 import groove.lts.GTS;
 import groove.lts.GTSListener;
 import groove.lts.GraphState;
@@ -30,7 +32,23 @@ import groove.lts.GraphTransition;
  * @version $Revision$
  */
 public class GenerateProgressListener extends GenerateProgressMonitor implements
-        GTSListener {
+        ExplorationListener, GTSListener {
+    @Override
+    public void start(Exploration exploration, GTS gts) {
+        restart();
+        gts.addLTSListener(this);
+    }
+
+    @Override
+    public void stop(GTS gts) {
+        gts.removeLTSListener(this);
+    }
+
+    @Override
+    public void abort(GTS gts) {
+        gts.removeLTSListener(this);
+    }
+
     @Override
     public void addUpdate(GTS gts, GraphState state) {
         addState(gts.nodeCount(), gts.edgeCount(), gts.openStateCount());

@@ -30,6 +30,9 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.util.Reporter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * <!=========================================================================>
  * An Exploration is a combination of a serialized strategy, a serialized
@@ -51,6 +54,10 @@ public class Exploration {
     private String lastMessage;
 
     private GraphState lastState;
+
+    /** List of currently active exploration listeners. */
+    private List<ExplorationListener> listeners =
+        new ArrayList<ExplorationListener>();
 
     private boolean interrupted;
 
@@ -215,7 +222,6 @@ public class Exploration {
 
     /**
      * Executes the exploration.
-     * Expects that a LaunchThread (see Simulator.java) is currently active.
      * @param gts - the GTS on which the exploration will be performed
      * @param state - the state in which exploration will start (may be null)
      * @throws FormatException if the rule system of {@code gts} is not
@@ -223,6 +229,7 @@ public class Exploration {
      * @see #test(Grammar)
      */
     final public void play(GTS gts, GraphState state) throws FormatException {
+        this.lastGts = gts;
         Grammar grammar = gts.getGrammar();
         // parse the strategy
         Strategy parsedStrategy = getParsedStrategy(grammar);
@@ -238,6 +245,9 @@ public class Exploration {
         // initialize profiling and prepare graph listener
         playReporter.start();
         parsedStrategy.setAcceptor(parsedAcceptor);
+        for (ExplorationListener listener : this.listeners) {
+            listener.start(this, gts);
+        }
         parsedStrategy.play(new Halter() {
             @Override
             public boolean halt() {
@@ -245,11 +255,17 @@ public class Exploration {
             }
         });
         this.interrupted = parsedStrategy.isInterrupted();
+        for (ExplorationListener listener : this.listeners) {
+            if (this.interrupted) {
+                listener.abort(gts);
+            } else {
+                listener.stop(gts);
+            }
+        }
         // stop profiling    
         playReporter.stop();
 
         // store result
-        this.lastGts = gts;
         this.lastResult = parsedAcceptor.getResult();
         this.lastState = parsedStrategy.getLastState();
         this.lastMessage = parsedStrategy.getMessage();
@@ -269,6 +285,20 @@ public class Exploration {
     @Override
     public String toString() {
         return toParsableString();
+    }
+
+    /**
+     * Adds an exploration listener.
+     * The listener will be notified of the start and end of all subsequent
+     * explorations.
+     */
+    public void addListener(ExplorationListener listener) {
+        this.listeners.add(listener);
+    }
+
+    /** Removes an exploration listener. */
+    public void removeListener(ExplorationListener listener) {
+        this.listeners.remove(listener);
     }
 
     /** 

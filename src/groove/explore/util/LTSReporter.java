@@ -34,13 +34,14 @@ import java.io.IOException;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LTSReporter extends ExplorationReporter {
+public class LTSReporter extends AExplorationReporter {
     /** Constructs a new LTS reporter, for a given output file name pattern
      * and set of format flags.
      */
-    public LTSReporter(String filePattern, LTSLabels labels) {
+    public LTSReporter(String filePattern, LTSLabels labels, LogReporter logger) {
         this.filePattern = filePattern;
         this.labels = labels == null ? LTSLabels.EMPTY : labels;
+        this.logger = logger;
     }
 
     @Override
@@ -66,8 +67,10 @@ public class LTSReporter extends ExplorationReporter {
             }
             Groove.saveGraph(lts, outFile);
         }
+        this.logger.append("LTS saved as %s%n", outFilename);
     }
 
+    private final LogReporter logger;
     private final String filePattern;
     private final LTSLabels labels;
 

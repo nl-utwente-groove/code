@@ -26,6 +26,12 @@ import groove.lts.GTSListener;
  * @version $Revision: 4963 $
  */
 public class GenerateProgressMonitor {
+    /** Resets all counters, in preparation for a new GTS exploration. */
+    protected void restart() {
+        this.started = false;
+        this.printed = 0;
+    }
+
     /** Prints an "s" and potentially ends the current line. */
     protected void addState(int stateCount, int transCount, int openCount) {
         if (stateCount % UNIT == 0) {

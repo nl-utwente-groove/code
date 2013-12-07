@@ -14,22 +14,23 @@
  *
  * $Id$
  */
-package groove.explore.util;
+package groove.explore;
 
-import groove.explore.ExplorationListener;
-
-import java.io.IOException;
+import groove.lts.GTS;
 
 /**
- * Listener that will produce output after invoking a method {@link #report()}.
+ * Interface to be notified by the start and end of an exploration.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface ExplorationReporter extends ExplorationListener {
-    /**
-     * Produces the result of the most recently recorded exploration.
-     * This method will only be called after {@link #start}.
-     * @throws IOException if an error occurred during reporting
-     */
-    public abstract void report() throws IOException;
+public interface ExplorationListener {
+    /** Notification of the start of the exploration of a given GTS. 
+     * @param exploration TODO*/
+    public void start(Exploration exploration, GTS gts);
+
+    /** Notification of the (normal) end of the exploration of a given GTS. */
+    public void stop(GTS gts);
+
+    /** Notification of the interrupted end of the exploration of a given GTS. */
+    public void abort(GTS gts);
 }

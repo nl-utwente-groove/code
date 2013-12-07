@@ -34,7 +34,7 @@ public class ShapeLogReporter extends LogReporter {
      */
     public ShapeLogReporter(String grammarName, String startGraphName,
             Verbosity verbosity, boolean reachability) {
-        super(grammarName, startGraphName, verbosity, null);
+        super(verbosity, null);
         this.reachability = reachability;
     }
 

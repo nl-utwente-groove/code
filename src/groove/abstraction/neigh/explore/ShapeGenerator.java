@@ -16,40 +16,35 @@
  */
 package groove.abstraction.neigh.explore;
 
-import static groove.explore.GeneratorOptions.RESULT_NAME;
-import static groove.explore.GeneratorOptions.RESULT_USAGE;
-import static groove.explore.GeneratorOptions.RESULT_VAR;
+import static groove.explore.Generator.ACCEPTOR_NAME;
+import static groove.explore.Generator.ACCEPTOR_USAGE;
+import static groove.explore.Generator.ACCEPTOR_VAR;
+import static groove.explore.Generator.RESULT_NAME;
+import static groove.explore.Generator.RESULT_USAGE;
+import static groove.explore.Generator.RESULT_VAR;
+import static groove.explore.Generator.STRATEGY_NAME;
+import static groove.explore.Generator.STRATEGY_USAGE;
+import static groove.explore.Generator.STRATEGY_VAR;
 import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.NeighAbstraction;
 import groove.abstraction.neigh.lts.AGTS;
 import groove.abstraction.pattern.explore.PatternShapeGenerator.MultiplicityHandler;
 import groove.explore.AcceptorEnumerator;
-import groove.explore.Exploration;
 import groove.explore.Generator;
 import groove.explore.StrategyEnumerator;
-import groove.explore.encode.Serialized;
+import groove.explore.encode.TemplateList;
+import groove.explore.result.Acceptor;
+import groove.explore.strategy.Strategy;
+import groove.explore.util.CompositeReporter;
 import groove.explore.util.ExplorationReporter;
 import groove.explore.util.LTSLabels;
 import groove.explore.util.LTSLabels.Flag;
 import groove.explore.util.LTSReporter;
-import groove.grammar.Grammar;
-import groove.grammar.Rule;
-import groove.grammar.host.ValueNode;
-import groove.grammar.model.FormatException;
-import groove.grammar.model.GrammarModel;
-import groove.grammar.model.ResourceKind;
-import groove.grammar.rule.OperatorNode;
-import groove.grammar.rule.RuleEdge;
-import groove.grammar.rule.RuleNode;
-import groove.grammar.rule.VariableNode;
-import groove.graph.Node;
 import groove.util.cli.GrammarHandler;
 import groove.util.cli.GrooveCmdLineTool;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -96,115 +91,62 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
         if (isThreeWay()) {
             NeighAbsParam.getInstance().setUseThreeValues(true);
         }
-        GrammarModel grammarModel = computeGrammarModel();
-        Grammar grammar = grammarModel.toGrammar().setFixed();
-        checkGrammarForAbstraction(grammar);
-        AGTS gts = new AGTS(grammar, isReachability());
-        Exploration exploration = computeExploration();
-        for (ExplorationReporter reporter : getReporters()) {
-            reporter.start(exploration, gts);
-        }
-        exploration.play(gts, null);
-        if (exploration.isInterrupted()) {
-            throw new Exception("Exploration interrupted");
-        }
-        gts.setResult(exploration.getResult());
-        for (ExplorationReporter reporter : getReporters()) {
-            reporter.report();
-        }
-        return gts;
+        ShapeTransformer transformer = computeTransformer(getGrammar());
+        transformer.addListener(getReporter());
+        transformer.explore(getStartGraphName());
+        getReporter().report();
+        return transformer.getGTS();
     }
 
     /**
-     * Creates and returns a grammar model, using the options
-     * to find the location and other settings.
+     * Compute the exploration out of the command line options.
+     * Uses the default exploration for components that were not specified.
      */
-    private GrammarModel computeGrammarModel() throws IOException {
-        GrammarModel result;
-        result = GrammarModel.newInstance(getGrammar());
-        if (hasStartGraphName()) {
-            result.setLocalActiveNames(ResourceKind.HOST, getStartGraphName());
+    private ShapeTransformer computeTransformer(File grammarLocation)
+        throws IOException {
+        ShapeTransformer result =
+            new ShapeTransformer(grammarLocation, isReachability());
+        if (hasStrategy()) {
+            TemplateList<Strategy> enumerator =
+                StrategyEnumerator.newInstance();
+            result.setStrategy(enumerator.parseCommandline(getStrategy()));
         }
+        if (hasAcceptor()) {
+            TemplateList<Acceptor> enumerator =
+                AcceptorEnumerator.newInstance();
+            result.setAcceptor(enumerator.parseCommandline(getAcceptor()));
+        }
+        result.setResultCount(getResultCount());
         return result;
     }
 
-    /** 
-     * Returns the exploration strategy to be used, based 
-     * on the command-line settings.
-     */
-    private Exploration computeExploration() throws FormatException {
-        Serialized strategy =
-            StrategyEnumerator.newInstance().parseCommandline(getStrategy());
-        if (strategy == null) {
-            throw new FormatException("Strategy '%s' cannot be parsed",
-                getStrategy());
-        }
-        Serialized acceptor =
-            AcceptorEnumerator.newInstance().parseCommandline(getAcceptor());
-        if (acceptor == null) {
-            throw new FormatException("Acceptor '%s' cannot be parsed",
-                getAcceptor());
-        }
-        return new Exploration(strategy, acceptor, getResultCount());
-    }
-
-    /** Tests whether a given graph grammar is suitable for shape generation. */
-    private void checkGrammarForAbstraction(Grammar grammar)
-        throws FormatException {
-        if (!grammar.getProperties().isInjective()) {
-            throw new FormatException(
-                "Grammar %s is not injective! Abstraction can only work with injective rules...",
-                grammar.getName());
-        }
-        for (Node node : grammar.getStartGraph().nodeSet()) {
-            if (node instanceof ValueNode) {
-                throw new FormatException(
-                    "Grammar start graph has attributes! Abstraction cannot handle attributes...",
-                    grammar.getName());
-            }
-        }
-        for (Rule rule : grammar.getAllRules()) {
-            for (RuleNode node : rule.lhs().nodeSet()) {
-                if (node instanceof OperatorNode
-                    || node instanceof VariableNode) {
-                    throw new FormatException(
-                        "Grammar rule %s operates on attributes! Abstraction cannot handle attributes...",
-                        rule.getFullName());
-                }
-            }
-            for (RuleEdge edge : rule.lhs().edgeSet()) {
-                if (!edge.label().isAtom()) {
-                    throw new FormatException(
-                        "Grammar rule %s has regular expression %s that the abstraction cannot handle!",
-                        rule.getFullName(), edge.label());
-                }
-            }
-        }
-    }
-
     /** Returns the exploration reporters enabled on the basis of the options. */
-    public List<ExplorationReporter> getReporters() {
-        if (this.reporters == null) {
-            this.reporters = computeReporters();
+    private ExplorationReporter getReporter() {
+        if (this.reporter == null) {
+            this.reporter = computeReporter();
         }
-        return this.reporters;
+        return this.reporter;
     }
 
     /** Factory method for the reporters associated with this invocation. */
-    private List<ExplorationReporter> computeReporters() {
-        List<ExplorationReporter> result = new ArrayList<ExplorationReporter>();
-        result.add(new ShapeLogReporter(getGrammar().getPath(),
-            getStartGraphName(), getVerbosity(), isReachability()));
+    private ExplorationReporter computeReporter() {
+        CompositeReporter result = new CompositeReporter();
+        ShapeLogReporter logger =
+            new ShapeLogReporter(getGrammar().getPath(), getStartGraphName(),
+                getVerbosity(), isReachability());
         if (hasLtsPattern()) {
             LTSLabels ltsLabels =
                 new LTSLabels(Flag.START, Flag.FINAL, Flag.OPEN);
-            result.add(new LTSReporter(getLtsPattern(), ltsLabels));
+            result.add(new LTSReporter(getLtsPattern(), ltsLabels, logger));
         }
+        // add the logger last, to ensure that any messages from the 
+        // other reporters are included.
+        result.add(logger);
         return result;
     }
 
     /** The reporters that can be built on the basis of the options. */
-    private List<ExplorationReporter> reporters;
+    private ExplorationReporter reporter;
 
     /** Returns the grammar location. */
     private File getGrammar() {
@@ -215,11 +157,6 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
             usage = GrammarHandler.USAGE, handler = GrammarHandler.class)
     private File grammar;
 
-    /** Indicates if the start graph name has been set. */
-    private boolean hasStartGraphName() {
-        return getStartGraphName() != null;
-    }
-
     /** Returns the start graph name, relative to the grammar location. */
     private String getStartGraphName() {
         return this.startGraphName;
@@ -229,18 +166,28 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
             usage = "Start graph name (defined in grammar, no extension)")
     private String startGraphName;
 
+    private boolean hasStrategy() {
+        return getStrategy() != null;
+    }
+
     private String getStrategy() {
         return this.strategy;
     }
 
-    @Option(name = "-s", metaVar = "str")
+    @Option(name = STRATEGY_NAME, metaVar = STRATEGY_VAR,
+            usage = STRATEGY_USAGE)
     private String strategy = "shapedfs";
+
+    private boolean hasAcceptor() {
+        return getAcceptor() != null;
+    }
 
     private String getAcceptor() {
         return this.acceptor;
     }
 
-    @Option(name = "-a", metaVar = "acc")
+    @Option(name = ACCEPTOR_NAME, metaVar = ACCEPTOR_VAR,
+            usage = ACCEPTOR_USAGE)
     private String acceptor = "final";
 
     private int getResultCount() {

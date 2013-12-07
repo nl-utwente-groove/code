@@ -95,7 +95,7 @@ public class ExploreAction extends SimulatorAction {
         // create a thread to do the work in the background
         Thread generateThread = new ExploreThread(exploration);
         // go!
-        getSimulatorModel().getExplorationStats().start(exploration, gts);
+        exploration.addListener(getSimulatorModel().getExplorationStats());
         generateThread.start();
         getSimulatorModel().getExplorationStats().report();
         // emphasise the result states, if required

@@ -16,7 +16,7 @@
  */
 package groove.explore.util;
 
-import groove.explore.GeneratorOptions;
+import groove.explore.Generator;
 import groove.grammar.model.FormatException;
 import groove.util.ExprParser;
 import groove.util.Pair;
@@ -61,7 +61,7 @@ public class LTSLabels {
 
     /**
      * Constructs a flags object according to a specification
-     * formatted as described in {@link GeneratorOptions}.
+     * formatted as described in {@link Generator}.
      */
     public LTSLabels(String spec) throws FormatException {
         Pair<String,List<String>> parsedFlags = FLAG_PARSER.parse(spec);

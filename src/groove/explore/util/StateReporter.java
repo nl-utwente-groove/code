@@ -29,26 +29,24 @@ import groove.util.Groove;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 
 /**
  * Exploration reporter that saves the result states.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class StateReporter extends ExplorationReporter {
+public class StateReporter extends AExplorationReporter {
     /**
      * Constructs a state reporter with a given file name pattern.
      */
-    public StateReporter(String statePattern) {
+    public StateReporter(String statePattern, LogReporter logger) {
         this.statePattern = statePattern;
+        this.logger = logger;
     }
 
     @Override
     public void report() throws IOException {
-        Collection<? extends GraphState> export =
-            getExploration().getResult().getValue();
-        for (GraphState state : export) {
+        for (GraphState state : getGTS().getResultStates()) {
             String stateFilename =
                 this.statePattern.replace(PLACEHOLDER, "" + state.getNumber());
             File stateFile = new File(stateFilename);
@@ -71,8 +69,10 @@ public class StateReporter extends ExplorationReporter {
                     stateFile);
             }
         }
+        this.logger.append("States saved as %s%n", this.statePattern);
     }
 
+    private final LogReporter logger;
     private final String statePattern;
     /** Placeholder in LTS and state filename patterns to insert further information. */
     static private final String PLACEHOLDER = "#";
