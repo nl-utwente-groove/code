@@ -34,10 +34,14 @@ public abstract class GrooveCmdLineTool<T> {
     /**
      * Constructs an instance of a tool, 
      * with a given application name.
-     * Argument parsing is deferred and must be invoked axplicity using 
      */
     public GrooveCmdLineTool(String appName) {
-        this.parser = new GrooveCmdLineParser(appName, this);
+        this.parser = createParser(appName);
+    }
+
+    /** Callback factory name for the command-line parser. */
+    protected GrooveCmdLineParser createParser(String appName) {
+        return new GrooveCmdLineParser(appName, this);
     }
 
     /**

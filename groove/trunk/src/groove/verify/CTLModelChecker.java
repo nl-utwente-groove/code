@@ -18,15 +18,22 @@ package groove.verify;
 
 import groove.explore.Generator;
 import groove.lts.GTS;
+import groove.util.cli.GrooveCmdLineParser;
 import groove.util.cli.GrooveCmdLineTool;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
+import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.spi.FileOptionHandler;
 import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
@@ -45,9 +52,29 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
      */
     public CTLModelChecker(String... args) throws CmdLineException {
         super("ModelChecker", args);
+    }
+
+    @Override
+    protected GrooveCmdLineParser createParser(String appName) {
+        GrooveCmdLineParser result = new GrooveCmdLineParser(appName, this) {
+            @Override
+            public void printSingleLineUsage(Writer w, ResourceBundle rb) {
+                int optionCount = getOptions().size();
+                PrintWriter pw = new PrintWriter(w);
+                for (int ix = 0; ix < optionCount - 1; ix++) {
+                    printSingleLineOption(pw, getOptions().get(ix), rb, true);
+                }
+                pw.print(" [");
+                pw.print(getOptions().get(optionCount - 1).getNameAndMeta(rb));
+                pw.print(" | ");
+                pw.print(getArguments().get(0).getNameAndMeta(rb));
+                pw.print(']');
+                pw.flush();
+            }
+        };
         // move -g to the final position
         @SuppressWarnings("rawtypes")
-        List<OptionHandler> handlers = getParser().getOptions();
+        List<OptionHandler> handlers = result.getOptions();
         OptionHandler<?> genHandler = null;
         for (OptionHandler<?> handler : handlers) {
             if (handler instanceof GeneratorHandler) {
@@ -56,6 +83,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         }
         handlers.remove(genHandler);
         handlers.add(genHandler);
+        return result;
     }
 
     /**
@@ -69,9 +97,8 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
     private void modelCheck(String[] genArgs) throws Exception {
         try {
-            Generator generator = new Generator(genArgs);
             long genStartTime = System.currentTimeMillis();
-            GTS gts = generator.start();
+            GTS gts = Generator.execute(genArgs);
             long mcStartTime = System.currentTimeMillis();
             int maxWidth = 0;
             for (Formula property : this.properties) {
@@ -88,6 +115,8 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
             emit("%n** Model Checking Time (ms):\t%d%n", endTime - mcStartTime);
             emit("** Total Running Time (ms):\t%d%n", endTime - genStartTime);
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             throw new Exception("Error while invoking Generator\n"
                 + e.getMessage(), e);
@@ -100,8 +129,12 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
     private List<Formula> properties;
     @Option(name = "-g", metaVar = "args",
             usage = "Invoke the generator using <args> as options + arguments",
-            handler = GeneratorHandler.class, required = true)
+            handler = GeneratorHandler.class)
     private GeneratorArgs genArgs;
+
+    @Argument(metaVar = "graph", usage = "File name of graph to be checked",
+            handler = FileOptionHandler.class)
+    private File modelGraph;
 
     /**
      * Main method.

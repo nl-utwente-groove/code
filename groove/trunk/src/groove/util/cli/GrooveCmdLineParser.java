@@ -146,9 +146,9 @@ public class GrooveCmdLineParser extends CmdLineParser {
         pw.flush();
     }
 
-    /* Modified from superclass to add parameter controlling
+    /** Modified from superclass to add parameter controlling
      * closing bracket printing. */
-    private void printSingleLineOption(PrintWriter pw, OptionHandler<?> h,
+    protected void printSingleLineOption(PrintWriter pw, OptionHandler<?> h,
             ResourceBundle rb, boolean closeOpt) {
         pw.print(' ');
         boolean multiValued = !(h.setter instanceof FieldSetter);
