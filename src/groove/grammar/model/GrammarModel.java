@@ -91,7 +91,8 @@ public class GrammarModel implements Observer {
      * The ID is composed from grammar name and start graph name(s);
      */
     public String getId() {
-        return Grammar.buildId(getName(), getStartGraphModel().getFullName());
+        return Grammar.buildId(getName(), getStartGraphModel() == null ? null
+                : getStartGraphModel().getFullName());
     }
 
     /** Returns the backing system store. */
