@@ -344,10 +344,10 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         + "  rete        - Rete-based DFS\n"
         + "  retelinear  - Rete-based Linear\n"
         + "  reterandom  - Rete-based Random Linear\n"
-        + "  crule:[!]id - Conditional (where rule <id> [not] applicable))\n"
-        + "  cnbound:n   - Conditional (up to <n> nodes)\n"
+        + "  crule:[!]id - Conditional: stop when rule <id> [not] applicable\n"
+        + "  cnbound:n   - Conditional: up to <n> nodes\n"
         + "  cebound:id>n,...\n"
-        + "              - Conditional (up to <n> edges with label <id>)\n"
+        + "              - Conditional: up to <n> edges labelled <id>\n"
         + "  ltl:prop    - LTL Model Checking\n" //
         + "  ltlbounded:idn,...;prop\n"
         + "              - Bounded LTL Model Checking\n"
