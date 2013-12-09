@@ -32,14 +32,12 @@ import groove.abstraction.pattern.explore.PatternShapeGenerator.MultiplicityHand
 import groove.explore.AcceptorEnumerator;
 import groove.explore.Generator;
 import groove.explore.StrategyEnumerator;
-import groove.explore.encode.TemplateList;
-import groove.explore.result.Acceptor;
-import groove.explore.strategy.Strategy;
 import groove.explore.util.CompositeReporter;
 import groove.explore.util.ExplorationReporter;
 import groove.explore.util.LTSLabels;
 import groove.explore.util.LTSLabels.Flag;
 import groove.explore.util.LTSReporter;
+import groove.grammar.model.FormatException;
 import groove.util.cli.GrammarHandler;
 import groove.util.cli.GrooveCmdLineTool;
 
@@ -103,18 +101,14 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
      * Uses the default exploration for components that were not specified.
      */
     private ShapeTransformer computeTransformer(File grammarLocation)
-        throws IOException {
+        throws IOException, FormatException {
         ShapeTransformer result =
             new ShapeTransformer(grammarLocation, isReachability());
         if (hasStrategy()) {
-            TemplateList<Strategy> enumerator =
-                StrategyEnumerator.newInstance();
-            result.setStrategy(enumerator.parseCommandline(getStrategy()));
+            result.setStrategy(StrategyEnumerator.parseCommandLineStrategy(getStrategy()));
         }
         if (hasAcceptor()) {
-            TemplateList<Acceptor> enumerator =
-                AcceptorEnumerator.newInstance();
-            result.setAcceptor(enumerator.parseCommandline(getAcceptor()));
+            result.setAcceptor(AcceptorEnumerator.parseCommandLineAcceptor(getAcceptor()));
         }
         result.setResultCount(getResultCount());
         return result;

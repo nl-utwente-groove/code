@@ -119,8 +119,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * with the given keyword and then using its parse method.
      */
     @Override
-    public A parse(Grammar rules, Serialized source)
-        throws FormatException {
+    public A parse(Grammar rules, Serialized source) throws FormatException {
         for (Template<A> template : this.templates) {
             if (template.getKeyword().equals(source.getKeyword())) {
                 return template.parse(rules, source);
@@ -146,13 +145,14 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
      * fails.
      */
     public Serialized parseCommandline(String text) {
+        Serialized result = null;
         for (Template<A> template : this.templates) {
-            Serialized result = template.parseCommandline(text);
+            result = template.parseCommandline(text);
             if (result != null) {
-                return result;
+                break;
             }
         }
-        return null;
+        return result;
     }
 
     /**

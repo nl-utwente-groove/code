@@ -35,27 +35,37 @@ public class LTSLabels {
     /** Constructs a flag object with default values for selected flags. */
     public LTSLabels(boolean showStart, boolean showOpen, boolean showFinal,
             boolean showResult, boolean showNumber) {
-        if (showStart) {
-            setDefaultValue(Flag.START);
-        }
-        if (showOpen) {
-            setDefaultValue(Flag.OPEN);
-        }
-        if (showFinal) {
-            setDefaultValue(Flag.FINAL);
-        }
-        if (showResult) {
-            setDefaultValue(Flag.RESULT);
-        }
-        if (showNumber) {
-            setDefaultValue(Flag.NUMBER);
+        try {
+            if (showStart) {
+                setDefaultValue(Flag.START);
+            }
+            if (showOpen) {
+                setDefaultValue(Flag.OPEN);
+            }
+            if (showFinal) {
+                setDefaultValue(Flag.FINAL);
+            }
+            if (showResult) {
+                setDefaultValue(Flag.RESULT);
+            }
+            if (showNumber) {
+                setDefaultValue(Flag.NUMBER);
+            }
+        } catch (FormatException e) {
+            assert false : "Unexpected error";
+            throw new IllegalStateException(e);
         }
     }
 
     /** Constructs a flag object with default values for selected flags. */
     public LTSLabels(Flag... flags) {
-        for (Flag flag : flags) {
-            setDefaultValue(flag);
+        try {
+            for (Flag flag : flags) {
+                setDefaultValue(flag);
+            }
+        } catch (FormatException e) {
+            assert false : "Unexpected error";
+            throw new IllegalStateException(e);
         }
     }
 
@@ -76,11 +86,11 @@ public class LTSLabels {
             if (flag == null) {
                 throw new FormatException("Unknown flag '%c' in %s", c, spec);
             }
-            if (this.labelMap.containsKey(flag)) {
+            if (this.flagToLabelMap.containsKey(flag)) {
                 throw new FormatException("Start flag '%c' occurs twice in %s",
                     flag.getId(), spec);
             }
-            String value = flag.getDef();
+            String value = flag.getDefault();
             if (charIx < flagPart.length()
                 && flagPart.charAt(charIx) == SINGLE_QUOTE) {
                 String arg = argPart.get(argIx);
@@ -100,9 +110,9 @@ public class LTSLabels {
         }
     }
 
-    /** Indicates if the start label is set. */
+    /** Indicates if the {@link Flag#START} label is set. */
     public boolean showStart() {
-        return this.labelMap.containsKey(Flag.START);
+        return this.flagToLabelMap.containsKey(Flag.START);
     }
 
     /**
@@ -111,12 +121,12 @@ public class LTSLabels {
      * remain unlabelled
      */
     public String getStartLabel() {
-        return getValue(Flag.START);
+        return getLabel(Flag.START);
     }
 
-    /** Indicates if the open label is set. */
+    /** Indicates if the {@link Flag#OPEN} label is set. */
     public boolean showOpen() {
-        return this.labelMap.containsKey(Flag.OPEN);
+        return this.flagToLabelMap.containsKey(Flag.OPEN);
     }
 
     /**
@@ -125,12 +135,12 @@ public class LTSLabels {
      * remain unlabelled
      */
     public String getOpenLabel() {
-        return getValue(Flag.OPEN);
+        return getLabel(Flag.OPEN);
     }
 
-    /** Indicates if the final label is set. */
+    /** Indicates if the {@link Flag#FINAL} label is set. */
     public boolean showFinal() {
-        return this.labelMap.containsKey(Flag.FINAL);
+        return this.flagToLabelMap.containsKey(Flag.FINAL);
     }
 
     /**
@@ -139,12 +149,12 @@ public class LTSLabels {
      * remain unlabelled
      */
     public String getFinalLabel() {
-        return getValue(Flag.FINAL);
+        return getLabel(Flag.FINAL);
     }
 
     /** Indicates if the result label is set. */
     public boolean showResult() {
-        return this.labelMap.containsKey(Flag.RESULT);
+        return this.flagToLabelMap.containsKey(Flag.RESULT);
     }
 
     /**
@@ -153,12 +163,12 @@ public class LTSLabels {
      * remain unlabelled
      */
     public String getResultLabel() {
-        return getValue(Flag.RESULT);
+        return getLabel(Flag.RESULT);
     }
 
-    /** Indicates if the number flag is set. */
+    /** Indicates if the {@link Flag#NUMBER} flag is set. */
     public boolean showNumber() {
-        return this.labelMap.containsKey(Flag.NUMBER);
+        return this.flagToLabelMap.containsKey(Flag.NUMBER);
     }
 
     /**
@@ -167,22 +177,72 @@ public class LTSLabels {
      * are not numbered
      */
     public String getNumberLabel() {
-        return getValue(Flag.NUMBER);
+        return getLabel(Flag.NUMBER);
     }
 
-    private String getValue(Flag flag) {
-        return this.labelMap.get(flag);
+    /**
+     * Returns the label associated with a given flag, if any.
+     */
+    public String getLabel(Flag flag) {
+        return this.flagToLabelMap.get(flag);
     }
 
-    private boolean setDefaultValue(Flag flag) {
-        return setValue(flag, flag.getDef());
+    /** Returns the flag corresponding to a given label text, if any. */
+    public Flag getFlag(String label) {
+        return this.labelToFlagMap.get(label);
     }
 
-    private boolean setValue(Flag flag, String value) {
-        return this.labelMap.put(flag, value) == null;
+    private boolean setDefaultValue(Flag flag) throws FormatException {
+        return setValue(flag, flag.getDefault());
     }
 
-    private Map<Flag,String> labelMap = new EnumMap<Flag,String>(Flag.class);
+    private boolean setValue(Flag flag, String value) throws FormatException {
+        Flag oldFlag = this.labelToFlagMap.put(value, flag);
+        if (oldFlag != null) {
+            throw new FormatException(
+                "Label '%s' used for two different special labels");
+        }
+        return this.flagToLabelMap.put(flag, value) == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.flagToLabelMap.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof LTSLabels)) {
+            return false;
+        }
+        LTSLabels other = (LTSLabels) obj;
+        return this.flagToLabelMap.equals(other.flagToLabelMap);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        for (Flag flag : Flag.values()) {
+            String label = getLabel(flag);
+            if (label != null) {
+                result.append(flag.getId());
+                if (!label.equals(flag.getDefault())) {
+                    result.append(SINGLE_QUOTE);
+                    result.append(label);
+                    result.append(SINGLE_QUOTE);
+                }
+            }
+        }
+        return result.toString();
+    }
+
+    private final Map<Flag,String> flagToLabelMap = new EnumMap<Flag,String>(
+        Flag.class);
+    private final Map<String,Flag> labelToFlagMap =
+        new HashMap<String,LTSLabels.Flag>();
 
     /** Returns the flag for a given identifying character. */
     private static Flag getFlag(char c) {
@@ -234,7 +294,7 @@ public class LTSLabels {
         }
 
         /** Returns the default value for this flag. */
-        public String getDef() {
+        public String getDefault() {
             return this.def;
         }
 

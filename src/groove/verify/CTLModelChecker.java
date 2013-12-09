@@ -17,7 +17,10 @@
 package groove.verify;
 
 import groove.explore.Generator;
-import groove.lts.GTS;
+import groove.explore.Generator.LTSLabelsHandler;
+import groove.explore.util.LTSLabels;
+import groove.graph.Graph;
+import groove.util.Groove;
 import groove.util.cli.GrooveCmdLineParser;
 import groove.util.cli.GrooveCmdLineTool;
 
@@ -25,7 +28,9 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.kohsuke.args4j.Argument;
@@ -91,37 +96,55 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
      */
     @Override
     public Object run() throws Exception {
-        modelCheck(this.genArgs.get());
+        modelCheck(this.genArgs == null ? null : this.genArgs.get());
         return null;
     }
 
     private void modelCheck(String[] genArgs) throws Exception {
-        try {
-            long genStartTime = System.currentTimeMillis();
-            GTS gts = Generator.execute(genArgs);
-            long mcStartTime = System.currentTimeMillis();
-            int maxWidth = 0;
-            for (Formula property : this.properties) {
-                maxWidth = Math.max(maxWidth, property.toString().length());
+        long genStartTime = System.currentTimeMillis();
+        Graph model;
+        if (genArgs != null) {
+            try {
+                model = Generator.execute(genArgs);
+            } catch (Exception e) {
+                throw new Exception("Error while invoking Generator\n"
+                    + e.getMessage(), e);
             }
-            emit("%nModel checking outcome:%n");
-            for (Formula property : this.properties) {
-                DefaultMarker marker = new DefaultMarker(property, gts);
-                marker.verify();
-                emit("    %-" + maxWidth + "s : %s%n", property,
-                    marker.hasValue(true) ? "satisfied" : "violated");
-            }
-            long endTime = System.currentTimeMillis();
-
-            emit("%n** Model Checking Time (ms):\t%d%n", endTime - mcStartTime);
-            emit("** Total Running Time (ms):\t%d%n", endTime - genStartTime);
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new Exception("Error while invoking Generator\n"
-                + e.getMessage(), e);
+        } else {
+            emit("Model: %s%n", this.modelGraph);
+            model = Groove.loadGraph(this.modelGraph);
         }
+        long mcStartTime = System.currentTimeMillis();
+        int maxWidth = 0;
+        Map<Formula,Boolean> outcome = new HashMap<Formula,Boolean>();
+        for (Formula property : this.properties) {
+            maxWidth = Math.max(maxWidth, property.toString().length());
+            CTLMarker marker = new CTLMarker(property, model, this.ltsLabels);
+            outcome.put(property, marker.hasValue(true));
+        }
+        emit("%nModel checking outcome:%n");
+        for (Formula property : this.properties) {
+            emit("    %-" + maxWidth + "s : %s%n", property,
+                outcome.get(property) ? "satisfied" : "violated");
+        }
+        long endTime = System.currentTimeMillis();
+
+        emit("%n** Model Checking Time (ms):\t%d%n", endTime - mcStartTime);
+        emit("** Total Running Time (ms):\t%d%n", endTime - genStartTime);
     }
+
+    @Option(
+            name = "-ef",
+            metaVar = "flags",
+            usage = ""
+                + "Special GTS labels. Legal values are:\n" //
+                + "  s - start state label (default: 'start')\n" //
+                + "  f - final states label (default: 'final')\n" //
+                + "  o - open states label (default: 'open')\n" //
+                + "  r - result state label (default: 'result')" //
+                + "Specify label to be used by appending flag with 'label' (single-quoted)",
+            handler = LTSLabelsHandler.class)
+    private LTSLabels ltsLabels;
 
     @Option(name = "-ctl", metaVar = "form",
             usage = "Check the formula <form> (multiple allowed)",
