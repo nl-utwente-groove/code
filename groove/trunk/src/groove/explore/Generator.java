@@ -16,9 +16,7 @@
  */
 package groove.explore;
 
-import groove.explore.encode.TemplateList;
-import groove.explore.result.Acceptor;
-import groove.explore.strategy.Strategy;
+import groove.explore.encode.Serialized;
 import groove.explore.util.CompositeReporter;
 import groove.explore.util.ExplorationReporter;
 import groove.explore.util.GenerateProgressListener;
@@ -78,17 +76,16 @@ public class Generator extends GrooveCmdLineTool<GTS> {
      * Compute the exploration out of the command line options.
      * Uses the default exploration for components that were not specified.
      */
-    private Transformer computeTransformer() throws IOException {
+    private Transformer computeTransformer() throws IOException,
+        FormatException {
         Transformer result = new Transformer(getGrammar());
         if (hasStrategy()) {
-            TemplateList<Strategy> enumerator =
-                StrategyEnumerator.newInstance();
-            result.setStrategy(enumerator.parseCommandline(getStrategy()));
+            Serialized strategy =
+                StrategyEnumerator.parseCommandLineStrategy(getStrategy());
+            result.setStrategy(strategy);
         }
         if (hasAcceptor()) {
-            TemplateList<Acceptor> enumerator =
-                AcceptorEnumerator.newInstance();
-            result.setAcceptor(enumerator.parseCommandline(getAcceptor()));
+            result.setAcceptor(AcceptorEnumerator.parseCommandLineAcceptor(getAcceptor()));
         }
         result.setResultCount(getResultCount());
         return result;
@@ -180,7 +177,8 @@ public class Generator extends GrooveCmdLineTool<GTS> {
                 + "  s - label start state (default: 'start')\n" //
                 + "  f - label final states (default: 'final')\n" //
                 + "  o - label open states (default: 'open')\n" //
-                + "  n - label state with number (default: 's#', '#' replaced by number)"
+                + "  n - label state with number (default: 's#', '#' replaced by number)" //
+                + "  r - result state label (default: 'result')" //
                 + "Specify label to be used by appending flag with 'label' (single-quoted)",
             handler = LTSLabelsHandler.class)
     private LTSLabels ltsLabels;

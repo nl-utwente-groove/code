@@ -2,13 +2,14 @@ package groove.gui.action;
 
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import groove.grammar.model.FormatException;
+import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.StringDialog;
 import groove.gui.display.DisplayKind;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.verify.DefaultMarker;
+import groove.verify.CTLMarker;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
 import groove.verify.ParseException;
@@ -75,8 +76,7 @@ public class CheckCTLAction extends SimulatorAction {
     }
 
     private void doCheckProperty(GTS gts, Formula formula) {
-        DefaultMarker modelChecker = new DefaultMarker(formula, gts);
-        modelChecker.verify();
+        CTLMarker modelChecker = new CTLMarker(formula, gts);
         int counterExampleCount = modelChecker.getCount(false);
         List<GraphState> counterExamples =
             new ArrayList<GraphState>(counterExampleCount);
@@ -89,8 +89,8 @@ public class CheckCTLAction extends SimulatorAction {
                 confirmBehaviour(VERIFY_ALL_STATES_OPTION,
                     "Verify all states? Choosing 'No' will report only on the start state.");
             if (allStates) {
-                for (GraphState state : modelChecker.getStates(false)) {
-                    counterExamples.add(state);
+                for (Node state : modelChecker.getStates(false)) {
+                    counterExamples.add((GraphState) state);
                 }
                 message =
                     String.format(

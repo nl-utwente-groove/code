@@ -59,12 +59,26 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
     }
 
     /**
+     * Parses a command line argument into a <code>Serialized</code> that
+     * represents a strategy.
+     * @throws FormatException if the argument cannot be parsed
+     */
+    public static Serialized parseCommandLineStrategy(String text)
+        throws FormatException {
+        Serialized result = newInstance().parseCommandline(text);
+        if (result == null) {
+            throw new FormatException("No such strategy '%s'", text);
+        }
+        return result;
+    }
+
+    /**
      * Create a {@link Strategy} out of a {@link Serialized}
      * by finding the template that starts
      * with the given keyword and then using its parse method.
      */
-    public static Strategy parseStrategy(Grammar rules,
-            Serialized source) throws FormatException {
+    public static Strategy parseStrategy(Grammar rules, Serialized source)
+        throws FormatException {
         return INSTANCE.parse(rules, source);
     }
 

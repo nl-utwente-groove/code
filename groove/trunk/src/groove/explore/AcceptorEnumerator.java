@@ -52,6 +52,20 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
     }
 
     /**
+     * Parses a command line argument into a <code>Serialized</code> that
+     * represents an acceptor.
+     * @throws FormatException if the argument cannot be parsed
+     */
+    public static Serialized parseCommandLineAcceptor(String text)
+        throws FormatException {
+        Serialized result = newInstance().parseCommandline(text);
+        if (result == null) {
+            throw new FormatException("No such acceptor '%s'", text);
+        }
+        return result;
+    }
+
+    /**
      * Creates an {@link Acceptor} out of a {@link Serialized}
      * by finding the template that starts
      * with the given keyword and then using its parse method.
