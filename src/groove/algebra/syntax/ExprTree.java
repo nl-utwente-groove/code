@@ -145,7 +145,9 @@ public class ExprTree extends CommonTree {
         String name = getChild(0).getText();
         SignatureKind varSig = varMap.get(name);
         if (varSig == null) {
-            throw new FormatException("Unknown variable %s", name);
+            throw new FormatException(
+                "Unknown variable %s (use 'self.%1$s' to refer to own field)",
+                name);
         }
         if (getChildCount() == 2) {
             String prefix = getChild(1).getText();
