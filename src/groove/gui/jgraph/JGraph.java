@@ -871,7 +871,8 @@ abstract public class JGraph<G extends Graph> extends org.jgraph.JGraph {
         boolean any = complete;
         if (!any) {
             for (JCell<G> jCell : getModel().getRoots()) {
-                if (jCell.isLayoutable()) {
+                if (jCell instanceof JVertex
+                    && ((JVertex<?>) jCell).isLayoutable()) {
                     any = true;
                     break;
                 }

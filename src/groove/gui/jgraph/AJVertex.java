@@ -72,6 +72,23 @@ public abstract class AJVertex<G extends Graph,JG extends JGraph<G>,JM extends J
     /** The graph node modelled by this jgraph node. */
     private Node node;
 
+    @Override
+    final public boolean isLayoutable() {
+        return this.layoutable;
+    }
+
+    @Override
+    final public boolean setLayoutable(boolean layedOut) {
+        boolean result = layedOut != this.layoutable;
+        if (result) {
+            this.layoutable = layedOut;
+        }
+        return result;
+    }
+
+    /** Flag indicating that this cell may be touched by a layouter. */
+    private boolean layoutable;
+
     /**
      * Returns this graph node's one and only port.
      */
