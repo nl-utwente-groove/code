@@ -63,4 +63,15 @@ public interface JVertex<G extends Graph> extends JCell<G> {
      * Subclasses may return {@code null} if there is no useful node identity.
      */
     public String getNodeIdString();
+
+    /** Indicates if this jVertex is currently layed-out. */
+    boolean isLayoutable();
+
+    /** 
+     * Sets this jVertex to layed-out. 
+     * This means that the next attempt to layout the graph will not
+     * change the position of this cell.
+     * @return {@code true} if the layed-out status changed as a result of this call
+     */
+    boolean setLayoutable(boolean layoutable);
 }

@@ -164,9 +164,9 @@ abstract public class AbstractLayouter implements Layouter {
                     Rectangle2D bounds = ((VertexView) view).getCachedBounds();
                     visuals.setNodePos(new Point2D.Double(bounds.getCenterX(),
                         bounds.getCenterY()));
+                    ((JVertex<?>) cell).setLayoutable(false);
                 }
                 change.put(cell, visuals.getAttributes());
-                cell.setLayoutable(false);
             }
         }
         // do the following in the event dispatch thread

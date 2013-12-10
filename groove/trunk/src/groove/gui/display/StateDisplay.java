@@ -614,7 +614,6 @@ public class StateDisplay extends Display implements SimulatorListener {
             Attributes attr = e.getValue();
             jCell.putVisuals(attr.toVisuals());
             jCell.setGrayedOut(attr.grayedOut);
-            jCell.setLayoutable(attr.points == null);
             result.synchroniseLayout(jCell);
         }
     }
@@ -707,7 +706,6 @@ public class StateDisplay extends Display implements SimulatorListener {
             stateEdge.putVisuals(graphEdge.getVisuals());
             stateEdge.setGrayedOut(graphEdge.isGrayedOut());
             result.synchroniseLayout(stateEdge);
-            stateEdge.setLayoutable(false);
         }
     }
 

@@ -238,11 +238,13 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
 
     /**
      * Sets the layoutability of all cells. 
-     * @param layoutable the new value for {@link JCell#setLayoutable(boolean)}
+     * @param layoutable the new value for {@link JVertex#setLayoutable(boolean)}
      */
     public void setLayoutable(boolean layoutable) {
         for (JCell<G> jCell : getRoots()) {
-            jCell.setLayoutable(layoutable);
+            if (jCell instanceof JVertex) {
+                ((JVertex<?>) jCell).setLayoutable(layoutable);
+            }
         }
     }
 
@@ -401,8 +403,6 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
         JEdgeLayout layout = getLayoutMap().getLayout(edge);
         if (layout != null) {
             result.putVisuals(layout.toVisuals());
-        } else {
-            result.setLayoutable(true);
         }
         return result;
     }
