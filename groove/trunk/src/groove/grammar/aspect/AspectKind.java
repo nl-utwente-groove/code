@@ -1308,8 +1308,7 @@ public enum AspectKind {
                     }
                 }
                 if (text.charAt(0) == '$' || text.equals(Keywords.SELF)) {
-                    throw new FormatException(
-                        "Reserved node name '%s' (letter digit+)", text);
+                    throw new FormatException("Reserved node name '%s'", text);
                 }
                 return text;
             }
@@ -1361,8 +1360,7 @@ public enum AspectKind {
                 if (content instanceof Assignment) {
                     return ((Assignment) content).relabel(oldLabel, newLabel);
                 } else {
-                    return ((groove.algebra.syntax.Expression) content).relabel(
-                        oldLabel, newLabel);
+                    return ((Expression) content).relabel(oldLabel, newLabel);
                 }
             }
         },
