@@ -147,6 +147,7 @@ NAT_LIT
   ;
 
 fragment
+// can't include unary - in the constant as then parsing 1-2 would go wrong
 Naturalumber
   : '0' 
   | '1'..'9' ('0'..'9')*     
@@ -157,6 +158,7 @@ REAL_LIT
   ;
 
 fragment
+// can't include unary - in the constant as then parsing 0.1-2.0 would go wrong
 NonIntegerNumber
     :   ('0' .. '9')+ '.' ('0' .. '9')*
     |   '.' ( '0' .. '9' )+

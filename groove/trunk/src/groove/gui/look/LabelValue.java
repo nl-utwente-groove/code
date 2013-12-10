@@ -37,10 +37,10 @@ import groove.gui.jgraph.AspectJEdge;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.CtrlJVertex;
-import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJVertex;
 import groove.gui.look.Line.ColorType;
@@ -146,18 +146,18 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 for (AspectEdge edge : jVertex.getEdges()) {
                     if (!isFiltered(jVertex, edge)) {
                         Line line = getHostLine(edge);
-                        if (id != null
-                            && edge.getDisplayLabel().getRole() == NODE_TYPE) {
-                            line = id.append(" : ").append(line);
+                        if (id != null) {
+                            if (edge.getDisplayLabel().getRole() == NODE_TYPE) {
+                                line = id.append(" : ").append(line);
+                            } else {
+                                // we're not going to have any node types:
+                                // add the node id on a separate line
+                                result.add(id, Direct.NONE);
+                            }
                             id = null;
                         }
                         result.add(line, Direct.NONE);
                     }
-                }
-                if (id != null) {
-                    // we're not going to have any node types:
-                    // add the node id on a separate line
-                    result.add(id, Direct.NONE);
                 }
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
@@ -286,9 +286,12 @@ public class LabelValue implements VisualValue<MultiLabel> {
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (!isFiltered(jVertex, edge)) {
                     Line line = getRuleLine(edge);
-                    if (idLine != null
-                        && edge.getDisplayLabel().getRole() == NODE_TYPE) {
-                        line = idLine.append(" : ").append(line);
+                    if (idLine != null) {
+                        if (edge.getDisplayLabel().getRole() == NODE_TYPE) {
+                            line = idLine.append(" : ").append(line);
+                        } else {
+                            result.add(idLine, Direct.NONE);
+                        }
                         idLine = null;
                     }
                     result.add(line, Direct.NONE);

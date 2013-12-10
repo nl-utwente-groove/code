@@ -2,6 +2,7 @@ package groove.gui.jgraph;
 
 import static groove.grammar.aspect.AspectKind.REMARK;
 import static groove.gui.look.VisualKey.COLOR;
+import groove.algebra.syntax.Expression;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectKind;
@@ -120,10 +121,13 @@ public class AspectJVertex extends
         } else if (getNode().hasAttrAspect()) {
             AspectKind attrKind = getNode().getAttrKind();
             if (attrKind.hasSignature()) {
+                // this is a constant or variable node
                 Object content = getNode().getAttrAspect().getContent();
                 if (content == null) {
                     return VariableNode.TO_STRING_PREFIX
                         + getNode().getNumber();
+                } else if (content instanceof Expression) {
+                    return ((Expression) content).toDisplayString();
                 } else {
                     return content.toString();
                 }
