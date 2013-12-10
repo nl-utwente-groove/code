@@ -16,8 +16,10 @@
  */
 package groove.transform;
 
+import groove.explore.AcceptorEnumerator;
 import groove.explore.Exploration;
 import groove.explore.ExplorationListener;
+import groove.explore.StrategyEnumerator;
 import groove.explore.encode.Serialized;
 import groove.explore.result.Result;
 import groove.grammar.Grammar;
@@ -329,6 +331,16 @@ public class Transformer {
         this.exploration = null;
     }
 
+    /** 
+     * Sets the strategy to be used in the next exploration.
+     * @param strategy the strategy to be used; if {@code null}, the
+     * default strategy of the grammar will be used 
+     * @throws FormatException if the strategy cannot be parsed
+     */
+    public void setStrategy(String strategy) throws FormatException {
+        setStrategy(StrategyEnumerator.parseCommandLineStrategy(strategy));
+    }
+
     /** Returns the user-set strategy for the next exploration. */
     private Serialized getStrategy() {
         return this.strategy;
@@ -348,6 +360,16 @@ public class Transformer {
         this.acceptor = acceptor;
         // reset the exploration, so that it will be regenerated
         this.exploration = null;
+    }
+
+    /** 
+     * Sets the acceptor to be used in the next exploration.
+     * @param acceptor the acceptor to be used; if {@code null}, the
+     * default acceptor of the grammar will be used 
+     * @throws FormatException if the acceptor cannot be parsed
+     */
+    public void setAcceptor(String acceptor) throws FormatException {
+        setAcceptor(AcceptorEnumerator.parseCommandLineAcceptor(acceptor));
     }
 
     /** Returns the user-set acceptor for the next exploration. */
