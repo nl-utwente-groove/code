@@ -1529,6 +1529,8 @@ public enum AspectKind {
                 int alpha = color.getAlpha();
                 String colorString = alpha == 255 ? "%s,%s,%s" : "%s,%s,%s,%s";
                 return String.format(colorString, red, green, blue, alpha);
+            } else if (content instanceof Expression) {
+                return ((Expression) content).toDisplayString();
             } else {
                 return "" + content;
             }

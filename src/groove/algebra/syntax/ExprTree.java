@@ -67,8 +67,8 @@ public class ExprTree extends CommonTree {
         throws FormatException {
         Map<SignatureKind,? extends Expression> choice = toExpressions(varMap);
         if (choice.size() > 1) {
-            throw new IllegalArgumentException(String.format(
-                "Can't derive type of '%s': add type prefix", toInputString()));
+            throw new FormatException(
+                "Can't derive type of '%s': add type prefix", toInputString());
         }
         Expression result = choice.values().iterator().next();
         result.setInputString(toInputString());
