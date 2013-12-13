@@ -18,8 +18,6 @@ package groove.explore;
 
 /** Verbosity in reporting an exploration. */
 public enum Verbosity {
-    /** Quiet: not even error messages. */
-    NONE,
     /** Low: only error messages. */
     LOW,
     /** Medium: basic reporting. */
@@ -37,14 +35,9 @@ public enum Verbosity {
         return this == HIGH;
     }
 
-    /** Tests if this verbosity level is {@link #LOW} or {@link #NONE}. */
+    /** Tests if this verbosity level is {@link #LOW}. */
     public boolean isLow() {
-        return this == NONE || this == LOW;
-    }
-
-    /** Tests if this verbosity level is {@link #NONE}. */
-    public boolean isNone() {
-        return this == NONE;
+        return this == LOW;
     }
 
     /** Returns the numerical value corresponding to this level. */
@@ -54,7 +47,7 @@ public enum Verbosity {
 
     /** 
      * Returns the verbosity corresponding to a numeric level.
-     * For historical reasons, the range is from {@value #LOWEST} ({@link #NONE})
+     * For historical reasons, the range is from {@value #LOWEST} ({@link #LOW})
      * to {@value #HIGHEST} ({@link #HIGH}).
      * @param level a number between {@code -1} and {@code 2} inclusive
      * @return the verbosity value corresponding to the input level
@@ -64,7 +57,7 @@ public enum Verbosity {
     }
 
     /** The lowest numerical verbosity level. */
-    public static final int LOWEST = -1;
+    public static final int LOWEST = 0;
     /** The highest numerical verbosity level. */
     public static final int HIGHEST = LOWEST + Verbosity.values().length;
 }

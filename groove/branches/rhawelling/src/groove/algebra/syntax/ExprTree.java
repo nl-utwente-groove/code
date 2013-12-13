@@ -67,8 +67,8 @@ public class ExprTree extends CommonTree {
         throws FormatException {
         Map<SignatureKind,? extends Expression> choice = toExpressions(varMap);
         if (choice.size() > 1) {
-            throw new IllegalArgumentException(String.format(
-                "Can't derive type of '%s': add type prefix", toInputString()));
+            throw new FormatException(
+                "Can't derive type of '%s': add type prefix", toInputString());
         }
         Expression result = choice.values().iterator().next();
         result.setInputString(toInputString());
@@ -145,7 +145,9 @@ public class ExprTree extends CommonTree {
         String name = getChild(0).getText();
         SignatureKind varSig = varMap.get(name);
         if (varSig == null) {
-            throw new FormatException("Unknown variable %s", name);
+            throw new FormatException(
+                "Unknown variable %s (use 'self.%1$s' to refer to own field)",
+                name);
         }
         if (getChildCount() == 2) {
             String prefix = getChild(1).getText();

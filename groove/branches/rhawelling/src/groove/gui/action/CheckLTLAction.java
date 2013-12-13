@@ -79,7 +79,7 @@ public class CheckLTLAction extends ExploreAction {
         Exploration exploration =
             new Exploration(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
         getActions().getExploreAction().explore(exploration, true, true);
-        Collection<GraphState> result = exploration.getLastResult().getValue();
+        Collection<GraphState> result = exploration.getResult().getValue();
         if (result.isEmpty()) {
             JOptionPane.showMessageDialog(
                 getFrame(),

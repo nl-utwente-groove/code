@@ -16,15 +16,22 @@
  */
 package groove.abstraction.pattern.explore;
 
-import groove.abstraction.Multiplicity.MultKind;
 import groove.abstraction.neigh.explore.ShapeGenerator;
 import groove.abstraction.pattern.PatternAbsParam;
-import groove.abstraction.pattern.PatternAbstraction;
+import groove.abstraction.pattern.lts.PGTS;
 import groove.abstraction.pattern.lts.PSTS;
+import groove.abstraction.pattern.trans.PatternGraphGrammar;
 import groove.explore.Generator;
-import groove.util.CommandLineOption;
 
 import java.io.PrintStream;
+import java.util.Date;
+
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
+import org.kohsuke.args4j.spi.Setter;
 
 /**
  * Counterpart of {@link Generator} for pattern shape state space exploration.
@@ -35,14 +42,6 @@ import java.io.PrintStream;
 public final class PatternShapeGenerator extends PatternGraphGenerator {
 
     // ------------------------------------------------------------------------
-    // Static fields
-    // ------------------------------------------------------------------------
-
-    /** Usage message for the generator. */
-    private static final String USAGE_MESSAGE =
-        "Usage: PatternShapeGenerator [options] <grammar> <start-graph-name> <type-graph-name>";
-
-    // ------------------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------------------
 
@@ -50,74 +49,52 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
      * Constructs the generator. In particular, initializes the command line
      * option classes.
      */
-    public PatternShapeGenerator(String... args) {
-        super(args);
-        addOption(new MultiplicityBoundOption(MultKind.NODE_MULT));
-        addOption(new MultiplicityBoundOption(MultKind.EDGE_MULT));
-        addOption(new ThreeMultValOption());
+    public PatternShapeGenerator(String... args) throws CmdLineException {
+        super("PatternShapeGenerator", args);
     }
 
     // ------------------------------------------------------------------------
     // Overriden methods
     // ------------------------------------------------------------------------
 
-    /**
-     * This implementation returns <tt>{@link #USAGE_MESSAGE}</tt>.
-     */
+    /* Specialises the return type. */
     @Override
-    protected String getUsageMessage() {
-        return USAGE_MESSAGE;
-    }
-
-    /**
-     * Returns the GTS that is being generated. The GTS is lazily obtained from
-     * the grammar if it had not yet been initialised.
-     * @see #getGrammar()
-     */
-    @Override
-    public PSTS getPGTS() {
-        if (pgts == null) {
-            pgts = new PSTS(getGrammar());
+    public PSTS run() throws Exception {
+        if (this.threeWay) {
+            PatternAbsParam.getInstance().setUseThreeValues(true);
         }
-        return (PSTS) pgts;
-    }
-
-    /** Resets the generator. */
-    @Override
-    protected void reset() {
-        PatternAbstraction.initialise();
-        pgts = null;
+        if (this.nodeMult > 0) {
+            PatternAbsParam.getInstance().setNodeMultBound(this.nodeMult);
+        }
+        if (this.edgeMult > 0) {
+            PatternAbsParam.getInstance().setNodeMultBound(this.edgeMult);
+        }
+        return (PSTS) super.run();
     }
 
     /** Writes an exploration prelude to stdout. */
     @Override
-    protected void prelude() {
-        if (getVerbosity() > LOW_VERBOSITY) {
-            println("\n======================================================\n");
-            println("Grammar:\t" + this.grammarLocation);
-            println("Start graph:\t"
-                + (this.startGraphName == null ? "default"
-                        : this.startGraphName));
-            println("Type graph:\t" + this.typeGraphName);
+    protected void announce(PGTS pgts) {
+        super.announce(pgts);
+        if (!getVerbosity().isLow()) {
+            PrintStream out = System.out;
             PatternAbsParam params = PatternAbsParam.getInstance();
-            print("Node bound:\t" + params.getNodeMultBound()
+            out.print("Node bound:\t" + params.getNodeMultBound()
                 + "\tEdge bound:\t" + params.getEdgeMultBound());
             if (params.isUseThreeValues()) {
-                println("\tLIMITING MULTIPLICITIES TO 0, 1 and 0+");
+                out.println("\tLIMITING MULTIPLICITIES TO 0, 1 and 0+");
             } else {
-                println();
+                out.println();
             }
-            println("Timestamp:\t" + this.invocationTime);
-            print("\nProgress:\n\n");
-            addProgressMonitor();
+            out.println("Timestamp:\t" + new Date());
         }
     }
 
     /** Writes output accordingly to options given to the generator. */
     @Override
-    public void report() {
+    protected void report(PGTS pgts) {
+        PSTS psts = (PSTS) pgts;
         PrintStream out = System.out;
-        PSTS psts = getPGTS();
         out.println(String.format(
             "\nPSTS: States: %d -- %d subsumed (%d discarded) / Transitions: %d (%d subsumed)\n",
             psts.getStateCount(), psts.getSubsumedStatesCount(),
@@ -126,141 +103,95 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
     }
 
     // ------------------------------------------------------------------------
+    // Overriden methods
+    // ------------------------------------------------------------------------
+
+    @Override
+    protected PGTS computeGTS(PatternGraphGrammar grammar) {
+        return new PSTS(grammar);
+    }
+
+    @Option(name = "-n", metaVar = MultiplicityHandler.VAR,
+            usage = MultiplicityHandler.NODE_USAGE,
+            handler = MultiplicityHandler.class)
+    private int nodeMult;
+    @Option(name = "-m", metaVar = MultiplicityHandler.VAR,
+            usage = MultiplicityHandler.EDGE_USAGE,
+            handler = MultiplicityHandler.class)
+    private int edgeMult;
+    @Option(
+            name = "-t",
+            usage = "Limit the possible multiplicity values to three: 0, 1, or 0+.")
+    private boolean threeWay;
+
+    // ------------------------------------------------------------------------
     // Main method
     // ------------------------------------------------------------------------
 
     /**
-     * Attempts to load a graph grammar from a given location provided as a
-     * parameter with either default start state or a start state provided as a
-     * second parameter.
+     * Loads a graph grammar, and returns the generated transition system.
+     * This will always exit with {@link System#exit(int)}; see {@link #execute(String[])}
+     * for programmatic use.
      * @param args generator options, grammar and start graph name
      */
     public static void main(String[] args) {
-        new PatternShapeGenerator(args).start();
-    }
-
-    // ------------------------------------------------------------------------
-    // Inner classes
-    // ------------------------------------------------------------------------
-
-    /**
-     * Command line option to specify the use of three values of multiplicity
-     * only.
-     * 
-     * @author Eduardo Zambon
-     */
-    private class ThreeMultValOption implements CommandLineOption {
-
-        @Override
-        public String[] getDescription() {
-            return new String[] {"Limit the possible multiplicity values to three: 0, 1, or 0+."};
-        }
-
-        @Override
-        public String getParameterName() {
-            return null;
-        }
-
-        @Override
-        public String getName() {
-            return "t";
-        }
-
-        @Override
-        public boolean hasParameter() {
-            return false;
-        }
-
-        @Override
-        public void parse(String parameter) {
-            PatternAbsParam.getInstance().setUseThreeValues(true);
-        }
-
+        tryExecute(PatternShapeGenerator.class, args);
     }
 
     /**
-     * Command line option to specify a multiplicity bound.
-     * 
-     * @author Eduardo Zambon
+     * Loads a graph grammar, and returns the generated transition system.
+     * @param args generator options, grammar and start graph name
+     * @return the generated transition system
+     * @throws Exception if any error occurred that prevented the GTS from being fully generated
      */
-    private static class MultiplicityBoundOption implements CommandLineOption {
+    static public PSTS execute(String[] args) throws Exception {
+        staticPSTS = (PSTS) new PatternShapeGenerator(args).start();
+        return staticPSTS;
+    }
 
-        final MultKind kind;
+    /** Returns the most recently generated GTS. */
+    static public PSTS getSGTS() {
+        return staticPSTS;
+    }
 
-        MultiplicityBoundOption(MultKind kind) {
-            this.kind = kind;
+    /**
+     * The GTS that is being constructed. We make it static to enable memory
+     * profiling. The field is cleared in the constructor, so consecutive
+     * Generator instances work as expected.
+     */
+    private static PSTS staticPSTS;
+
+    /** Option handler for (positive) multiplicity values. */
+    public static class MultiplicityHandler extends
+            OneArgumentOptionHandler<Integer> {
+        /**
+         * Required constructor.
+         */
+        public MultiplicityHandler(CmdLineParser parser, OptionDef option,
+                Setter<? super Integer> setter) {
+            super(parser, option, setter);
         }
 
         @Override
-        public String getName() {
-            String name = null;
-            switch (this.kind) {
-            case NODE_MULT:
-                name = "n";
-                break;
-            case EDGE_MULT:
-                name = "m";
-                break;
-            default:
-                assert false;
+        protected Integer parse(String argument) throws NumberFormatException,
+            CmdLineException {
+            int result = Integer.parseInt(argument);
+            if (result < 1) {
+                throw new NumberFormatException();
             }
-            return name;
+            return result;
         }
 
-        @Override
-        public String[] getDescription() {
-            String type = null;
-            switch (this.kind) {
-            case NODE_MULT:
-                type = "node";
-                break;
-            case EDGE_MULT:
-                type = "edge";
-                break;
-            default:
-                assert false;
-            }
-            return new String[] {
-                "Set the " + type + " multiplicity bound to "
-                    + "the given value.",
-                "Argument '" + getParameterName()
-                    + "' must be greater than zero (default value is 1)."};
-        }
-
-        @Override
-        public String getParameterName() {
-            return "val";
-        }
-
-        @Override
-        public boolean hasParameter() {
-            return true;
-        }
-
-        @Override
-        public void parse(String parameter) throws IllegalArgumentException {
-            int bound = 0;
-            try {
-                bound = Integer.parseInt(parameter);
-            } catch (NumberFormatException exc) {
-                throw new IllegalArgumentException("verbosity value '"
-                    + parameter + "' must be numeric");
-            }
-            if (bound < 1) {
-                throw new IllegalArgumentException("'" + parameter
-                    + "' bound must be >= 1.");
-            }
-            switch (this.kind) {
-            case NODE_MULT:
-                PatternAbsParam.getInstance().setNodeMultBound(bound);
-                break;
-            case EDGE_MULT:
-                PatternAbsParam.getInstance().setEdgeMultBound(bound);
-                break;
-            default:
-                assert false;
-            }
-        }
+        /** Meta-variable of the multiplicity option. */
+        public static final String VAR = "val";
+        /** Usage message for node multiplicity. */
+        public static final String NODE_USAGE =
+            "Set the node multiplicity bound to the given value."
+                + "Argument <val> must be greater than zero (default value is 1).";
+        /** Usage message for edge multiplicity. */
+        public static final String EDGE_USAGE =
+            "Set the edge multiplicity bound to the given value."
+                + "Argument <val> must be greater than zero (default value is 1).";
     }
 
 }

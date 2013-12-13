@@ -42,8 +42,13 @@ public final class SimpleExtensionFilter extends ExtensionFilter {
     private final String extension;
 
     @Override
+    public boolean acceptExtension(String filename) {
+        return filename.endsWith(this.getExtension());
+    }
+
+    @Override
     public boolean acceptExtension(File file) {
-        return file.getName().endsWith(this.getExtension());
+        return acceptExtension(file.getName());
     }
 
     @Override

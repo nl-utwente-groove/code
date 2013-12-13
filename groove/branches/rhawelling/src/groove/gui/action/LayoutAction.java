@@ -18,8 +18,8 @@ package groove.gui.action;
 
 import groove.gui.Icons;
 import groove.gui.Options;
-import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JVertex;
 import groove.gui.layout.Layouter;
 
 import java.awt.event.ActionEvent;
@@ -54,8 +54,8 @@ public class LayoutAction extends AbstractAction {
         Object[] selection = this.jGraph.getSelectionCells();
         this.jGraph.getModel().setLayoutable(selection.length == 0);
         for (Object jCell : selection) {
-            if (jCell instanceof JCell) {
-                ((JCell<?>) jCell).setLayoutable(true);
+            if (jCell instanceof JVertex) {
+                ((JVertex<?>) jCell).setLayoutable(true);
             }
         }
         getLayouter().start();

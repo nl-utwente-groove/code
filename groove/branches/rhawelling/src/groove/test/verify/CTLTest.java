@@ -20,11 +20,20 @@ package groove.test.verify;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import groove.explore.Generator;
+import groove.explore.util.LTSLabels;
+import groove.graph.Graph;
 import groove.lts.GTS;
-import groove.verify.DefaultMarker;
+import groove.util.Groove;
+import groove.verify.CTLMarker;
 import groove.verify.Formula;
 import groove.verify.FormulaParser;
-import groove.verify.ParseException;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import junit.framework.Assert;
 
 import org.junit.Test;
 
@@ -36,6 +45,8 @@ import org.junit.Test;
 public class CTLTest {
     /** Transistion system used by this test. */
     private GTS gts;
+    private LTSLabels ltsLabels;
+    private Graph gtsGraph;
 
     /**
      * Tests whether the circular buffer fulfils certain properties and whether
@@ -43,7 +54,7 @@ public class CTLTest {
      */
     @Test
     public void testCircularBuffer() {
-        setGTS("circular-buffer");
+        setGTS("circular-buffer", null);
         testFormula("AG(put|get)", 5);
         testFormula("AX(put)", 4);
         testFormula("EX(put)", 5);
@@ -54,7 +65,7 @@ public class CTLTest {
     /** Test on a specially designed transition system. */
     @Test
     public void testMC() {
-        setGTS("mc");
+        setGTS("mc", null);
         testFormula("p & !q", 1);
         testFormula("E(p U r)", 3);
         testFormula("A(p U r)", 1);
@@ -69,12 +80,43 @@ public class CTLTest {
         testFormula("AG p", 0);
     }
 
+    /** Test on a specially designed transition system. */
+    @Test
+    public void testSpecialLabels() {
+        setGTS("mc", "start-with-final", "-s", "crule:r");
+        testFormula("EF $start", 1);
+        testFormula("EF $open", 3);
+        testFormula("EF $final", 3);
+        testFormula("EF $result", 3);
+        setGTS("mc", null, "-s", "crule:r", "-a", "any");
+        testFormula("EF $start", 1);
+        testFormula("EF $open", 3);
+        testFormula("EF $final", 0);
+        testFormula("EF $result", 2);
+    }
+
     /** Sets the GTS to a given grammar in the JUnit samples. */
-    private void setGTS(String grammarName) {
-        Generator generator =
-            new Generator("-v", "0", "junit/samples/" + grammarName);
-        generator.start();
-        this.gts = generator.getGTS();
+    private void setGTS(String grammarName, String startGraphName,
+            String... otherArgs) {
+        try {
+            File tmp = File.createTempFile("gts-" + grammarName, ".gxl");
+            this.ltsLabels = new LTSLabels("sfro");
+            List<String> genArgs = new ArrayList<String>();
+            genArgs.addAll(Arrays.asList("-v", "0", "-o",
+                tmp.getCanonicalPath(), "-ef", this.ltsLabels.toString()));
+            genArgs.addAll(Arrays.asList(otherArgs));
+            genArgs.add("junit/samples/" + grammarName);
+            if (startGraphName != null) {
+                genArgs.add(startGraphName);
+            }
+            Generator generator = new Generator(genArgs.toArray(new String[0]));
+            this.gts = generator.start();
+            this.gtsGraph = Groove.loadGraph(tmp);
+            tmp.delete();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
     }
 
     /** Tests the number of counterexamples in the current;y
@@ -83,10 +125,12 @@ public class CTLTest {
         try {
             // all states satisfy the following property
             Formula property = FormulaParser.parse(formula).toCtlFormula();
-            DefaultMarker modelChecker = new DefaultMarker(property, this.gts);
-            modelChecker.verify();
+            CTLMarker modelChecker = new CTLMarker(property, this.gts);
             assertEquals(stateCount, modelChecker.getCount(true));
-        } catch (ParseException efe) {
+            modelChecker =
+                new CTLMarker(property, this.gtsGraph, this.ltsLabels);
+            assertEquals(stateCount, modelChecker.getCount(true));
+        } catch (Exception efe) {
             fail(efe.getMessage());
         }
     }

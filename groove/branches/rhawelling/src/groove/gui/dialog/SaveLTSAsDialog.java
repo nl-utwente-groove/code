@@ -16,6 +16,8 @@
  */
 package groove.gui.dialog;
 
+import groove.explore.util.LTSLabels;
+import groove.explore.util.LTSLabels.Flag;
 import groove.gui.Simulator;
 import groove.io.ExtensionFilter;
 import groove.io.FileType;
@@ -26,6 +28,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.EnumSet;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -262,6 +265,24 @@ public class SaveLTSAsDialog {
     /** Returns an absolute path of the directory to export to. */
     public File getFile() {
         return new File(this.dirField.getText());
+    }
+
+    /** Returns the LTS labelling specification. */
+    public LTSLabels getLTSLabels() {
+        EnumSet<LTSLabels.Flag> flags = EnumSet.noneOf(LTSLabels.Flag.class);
+        if (this.openCheck.isSelected()) {
+            flags.add(Flag.OPEN);
+        }
+        if (this.finalCheck.isSelected()) {
+            flags.add(Flag.FINAL);
+        }
+        if (this.startCheck.isSelected()) {
+            flags.add(Flag.START);
+        }
+        if (this.nameCheck.isSelected()) {
+            flags.add(Flag.NUMBER);
+        }
+        return new LTSLabels(flags.toArray(new LTSLabels.Flag[0]));
     }
 
     /** Returns if open states should be labelled with "open". */

@@ -22,7 +22,7 @@ import groove.abstraction.pattern.explore.strategy.PatternDFSStrategy;
 import groove.abstraction.pattern.explore.strategy.PatternStrategy;
 import groove.abstraction.pattern.explore.util.TransSystemChecker;
 import groove.abstraction.pattern.lts.PGTS;
-import groove.abstraction.pattern.lts.PGTSAdapter;
+import groove.abstraction.pattern.lts.PGTSListener;
 import groove.abstraction.pattern.lts.PatternState;
 import groove.abstraction.pattern.lts.PatternTransition;
 import groove.abstraction.pattern.shape.TypeGraph;
@@ -32,16 +32,18 @@ import groove.explore.Generator;
 import groove.explore.strategy.DFSStrategy;
 import groove.explore.strategy.Strategy;
 import groove.grammar.Grammar;
-import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
+import groove.io.FileType;
 import groove.lts.GTS;
-import groove.util.CommandLineTool;
-import groove.util.Groove;
+import groove.util.cli.GrammarHandler;
+import groove.util.cli.GrooveCmdLineTool;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
+import java.io.PrintStream;
+
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 
 /**
  * Counterpart of {@link Generator} for pattern graph state space exploration.
@@ -49,198 +51,76 @@ import java.util.List;
  * 
  * @author Eduardo Zambon
  */
-public class PatternGraphGenerator extends CommandLineTool {
-
-    // ------------------------------------------------------------------------
-    // Static fields
-    // ------------------------------------------------------------------------
-
-    /** Usage message for the generator. */
-    private static final String USAGE_MESSAGE =
-        "Usage: PatternGraphGenerator [options] <grammar> <start-graph-name> <type-graph-name>";
-
+public class PatternGraphGenerator extends GrooveCmdLineTool<PGTS> {
     /**
-     * The GTS that is being constructed. We make it static to enable memory
-     * profiling. The field is cleared in the constructor, so consecutive
-     * Generator instances work as expected.
+     * Constructs the generator with a given name and for a given set of arguments.
      */
-    protected static PGTS pgts;
-
-    // ------------------------------------------------------------------------
-    // Object fields
-    // ------------------------------------------------------------------------
-
-    /** String describing the location where the grammar is to be found. */
-    protected String grammarLocation;
-    /** String describing the start graph within the grammar. */
-    protected String startGraphName;
-    /** String describing the type graph within the grammar. */
-    protected String typeGraphName;
-    /** The graph grammar used for the generation. */
-    private PatternGraphGrammar grammar;
-
-    // ------------------------------------------------------------------------
-    // Constructors
-    // ------------------------------------------------------------------------
-
-    /**
-     * Constructs the generator. In particular, initializes the command line
-     * option classes.
-     */
-    public PatternGraphGenerator(String... args) {
-        super(args);
-    }
-
-    // ------------------------------------------------------------------------
-    // Overriden methods
-    // ------------------------------------------------------------------------
-
-    /**
-     * This implementation returns <tt>{@link #USAGE_MESSAGE}</tt>.
-     */
-    @Override
-    protected String getUsageMessage() {
-        return USAGE_MESSAGE;
+    protected PatternGraphGenerator(String name, String... args)
+        throws CmdLineException {
+        super(name, args);
     }
 
     /**
-     * Goes through the list of command line arguments and tries to find command
-     * line options. The options and their parameters are subsequently removed
-     * from the argument list. If an option cannot be parsed, the method prints
-     * an error message and terminates the program.
+     * Constructs the generator for a given set of arguments.
      */
-    @Override
-    public void processArguments() {
-        super.processArguments();
-
-        List<String> argsList = getArgs();
-        if (argsList.size() > 0) {
-            setGrammarLocation(argsList.remove(0));
-        }
-        if (argsList.size() > 0) {
-            setStartGraph(argsList.remove(0));
-        }
-        if (argsList.size() > 0) {
-            setTypeGraph(argsList.remove(0));
-        }
-        if (this.grammarLocation == null) {
-            printError("No grammar location specified", true);
-        }
-    }
-
-    /**
-     * Callback method to check whether the log command line option is
-     * supported. This implementation returns <tt>false</tt> always.
-     */
-    // EZ says: if you want logs, use pipes... ;-)
-    @Override
-    protected boolean supportsLogOption() {
-        return false;
-    }
-
-    // ------------------------------------------------------------------------
-    // Other methods
-    // ------------------------------------------------------------------------
-
-    /**
-     * Sets the grammar to be used for state space generation.
-     * @param grammarLocation the file name of the grammar (with or without file
-     *        name extension)
-     */
-    private void setGrammarLocation(String grammarLocation) {
-        this.grammarLocation = grammarLocation;
-    }
-
-    /**
-     * Sets the start graph to be used for state space generation.
-     * @param startGraphName the name of the start graph (without file name
-     *        extension)
-     */
-    private void setStartGraph(String startGraphName) {
-        this.startGraphName = startGraphName;
-    }
-
-    /**
-     * Sets the type graph to be used for state space generation.
-     * @param typeGraphName the name of the type graph (with file name
-     *        extension)
-     */
-    private void setTypeGraph(String typeGraphName) {
-        this.typeGraphName = typeGraphName;
-    }
-
-    /** Resets the generator. */
-    protected void reset() {
-        PatternAbstraction.initialise();
-        pgts = null;
-    }
-
-    /**
-     * Returns the GTS that is being generated. The GTS is lazily obtained from
-     * the grammar if it had not yet been initialised.
-     * @see #getGrammar()
-     */
-    public PGTS getPGTS() {
-        if (pgts == null) {
-            pgts = new PGTS(getGrammar());
-        }
-        return pgts;
-    }
-
-    /**
-     * Starts the state space generation process. Before invoking this method,
-     * all relevant parameters should be set.
-     */
-    public void start() {
-        processArguments();
-        explore();
-        report();
+    public PatternGraphGenerator(String... args) throws CmdLineException {
+        this("PatternGraphGenerator", args);
     }
 
     /**
      * Explores the state space.
      */
-    public void explore() {
-        reset();
-        prelude();
+    @Override
+    public PGTS run() throws Exception {
+        return generate(getGrammar());
+    }
+
+    private PGTS generate(PatternGraphGrammar grammar) {
+        PatternAbstraction.initialise();
         PatternStrategy strategy = new PatternDFSStrategy();
-        strategy.prepare(getPGTS());
+        PGTS pgts = computeGTS(grammar);
+        announce(pgts);
+        strategy.prepare(pgts);
         // start working until done or nothing to do
         while (strategy.next()) {
             // Empty
         }
+        report(pgts);
+        return pgts;
+    }
+
+    /** Factory method for creating a GTS object. */
+    protected PGTS computeGTS(PatternGraphGrammar grammar) {
+        return new PGTS(grammar);
     }
 
     /** Writes an exploration prelude to stdout. */
-    protected void prelude() {
-        if (getVerbosity() > LOW_VERBOSITY) {
-            println("\n======================================================\n");
-            println("Grammar:\t" + this.grammarLocation);
-            println("Start graph:\t"
+    protected void announce(PGTS pgts) {
+        if (!getVerbosity().isLow()) {
+            PrintStream out = System.out;
+            out.println("Grammar:\t" + getGrammarLocation());
+            out.println("Start graph:\t"
                 + (this.startGraphName == null ? "default"
                         : this.startGraphName));
-            println("Type graph:\t" + this.typeGraphName);
-            print("\nProgress:\n\n");
-            addProgressMonitor();
+            out.println("Type graph:\t" + this.typeGraphName);
+            pgts.addLTSListener(new GenerateProgressMonitor());
         }
     }
 
-    /** Adds a progress monitor as a listener. */
-    protected void addProgressMonitor() {
-        getPGTS().addLTSListener(new GenerateProgressMonitor());
+    /** Writes output accordingly to options given to the generator. */
+    protected void report(PGTS pgts) {
+        if (!getVerbosity().isLow()) {
+            GTS SGTS = exploreSimpleGrammar(pgts.getGrammar());
+            TransSystemChecker checker = new TransSystemChecker(pgts, SGTS);
+            System.out.println();
+            checker.report();
+        }
     }
 
     /** Writes output accordingly to options given to the generator. */
-    public void report() {
-        GTS SGTS = exploreSimpleGrammar();
-        TransSystemChecker checker = new TransSystemChecker(getPGTS(), SGTS);
-        checker.report();
-    }
-
-    /** Writes output accordingly to options given to the generator. */
-    public boolean compareGTSs() {
-        GTS SGTS = exploreSimpleGrammar();
-        TransSystemChecker checker = new TransSystemChecker(getPGTS(), SGTS);
+    public boolean compareGTSs(PGTS pgts) {
+        GTS SGTS = exploreSimpleGrammar(pgts.getGrammar());
+        TransSystemChecker checker = new TransSystemChecker(pgts, SGTS);
         return checker.compare();
     }
 
@@ -249,42 +129,65 @@ public class PatternGraphGenerator extends CommandLineTool {
      * lazily loaded in. The method throws an error and returns
      * <code>null</code> if the grammar could not be loaded.
      */
-    protected PatternGraphGrammar getGrammar() {
+    protected PatternGraphGrammar getGrammar() throws Exception {
         if (this.grammar == null) {
-            loadGrammar(this.grammarLocation, this.startGraphName,
-                this.typeGraphName);
+            this.grammar = loadGrammar();
         }
         return this.grammar;
     }
 
     /** Loads a grammar from a given grammar location and a start graph. */
-    private void loadGrammar(String grammarFile, String startGraph,
-            String typeGraph) {
-        try {
-            GrammarModel model = Groove.loadGrammar(grammarFile);
-            model.setLocalActiveNames(ResourceKind.HOST, startGraph);
-            Grammar sGrammar = model.toGrammar();
-            sGrammar.setFixed();
-            File typeGraphFile = new File(grammarFile + ".gps/" + typeGraph);
-            TypeGraph type = TypeGraphFactory.unmarshalTypeGraph(typeGraphFile);
-            this.grammar = new PatternGraphGrammar(sGrammar, type);
-        } catch (FormatException exc) {
-            printError("Grammar format error: " + exc.getMessage(), false);
-        } catch (IOException exc) {
-            printError("I/O error while loading grammar: " + exc.getMessage(),
-                false);
-        }
+    private PatternGraphGrammar loadGrammar() throws Exception {
+        GrammarModel model = GrammarModel.newInstance(getGrammarLocation());
+        model.setLocalActiveNames(ResourceKind.HOST, getStartGraphName());
+        Grammar sGrammar = model.toGrammar();
+        sGrammar.setFixed();
+        String typeGraphName =
+            FileType.STATE_FILTER.addExtension(getTypeGraphName());
+        File typeGraphFile = new File(getGrammarLocation(), typeGraphName);
+        TypeGraph type = TypeGraphFactory.unmarshalTypeGraph(typeGraphFile);
+        return new PatternGraphGrammar(sGrammar, type);
     }
 
     /** Explores the grammar using the normal simple graph method. */
-    private GTS exploreSimpleGrammar() {
-        Grammar sGrammar = getGrammar().getSimpleGrammar();
+    private GTS exploreSimpleGrammar(PatternGraphGrammar grammar) {
+        Grammar sGrammar = grammar.getSimpleGrammar();
         GTS result = new GTS(sGrammar);
         Strategy strategy = new DFSStrategy();
         strategy.setGTS(result);
         strategy.play();
         return result;
     }
+
+    /** Returns the grammar location. */
+    private File getGrammarLocation() {
+        return this.grammarLocation;
+    }
+
+    /** Returns the start graph name, relative to the grammar location. */
+    private String getStartGraphName() {
+        return this.startGraphName;
+    }
+
+    /** Returns the type graph name, relative to the grammar location. */
+    private String getTypeGraphName() {
+        return this.typeGraphName;
+    }
+
+    /** The graph grammar used for the generation. */
+    private PatternGraphGrammar grammar;
+
+    @Argument(metaVar = GrammarHandler.META_VAR, required = true,
+            usage = GrammarHandler.USAGE, handler = GrammarHandler.class)
+    private File grammarLocation;
+
+    @Argument(index = 1, metaVar = "start", required = true,
+            usage = "Start graph name (defined in grammar, no extension)")
+    private String startGraphName;
+
+    @Argument(index = 2, metaVar = "type", required = true,
+            usage = "Type graph name (defined in grammar, no extension)")
+    private String typeGraphName;
 
     // ------------------------------------------------------------------------
     // Main method
@@ -294,11 +197,36 @@ public class PatternGraphGenerator extends CommandLineTool {
      * Attempts to load a graph grammar from a given location provided as a
      * parameter with either default start state or a start state provided as a
      * second parameter.
+     * Always exists with {@link System#exit(int)}; see {@link #execute(String[])}
+     * for programmatic use.
      * @param args generator options, grammar and start graph name
      */
     public static void main(String[] args) {
-        new PatternGraphGenerator(args).start();
+        tryExecute(PatternGraphGenerator.class, args);
     }
+
+    /**
+     * Loads a graph grammar, and returns the generated transition system.
+     * @param args generator options, grammar and start graph name
+     * @return the generated transition system
+     * @throws Exception if any error occurred that prevented the GTS from being fully generated
+     */
+    static public PGTS execute(String[] args) throws Exception {
+        staticPGTS = new PatternGraphGenerator(args).start();
+        return staticPGTS;
+    }
+
+    /** Returns the most recently generated GTS. */
+    static public PGTS getPGTS() {
+        return staticPGTS;
+    }
+
+    /**
+     * The GTS that is being constructed. We make it static to enable memory
+     * profiling. The field is cleared in the constructor, so consecutive
+     * Generator instances work as expected.
+     */
+    private static PGTS staticPGTS;
 
     // ------------------------------------------------------------------------
     // Inner class
@@ -309,52 +237,17 @@ public class PatternGraphGenerator extends CommandLineTool {
      * process. 
      * See {@link GenerateProgressMonitor}
      */
-    private class GenerateProgressMonitor extends PGTSAdapter {
-        /**
-         * Creates a monitor that reports on states and transitions generated.
-         */
-        public GenerateProgressMonitor() {
-            // empty
-        }
-
+    private class GenerateProgressMonitor extends
+            groove.explore.util.GenerateProgressMonitor implements PGTSListener {
         @Override
         public void addUpdate(PGTS gts, PatternState state) {
-            if (gts.nodeCount() % UNIT == 0) {
-                System.out.print("s");
-                this.printed++;
-            }
-            endLine(gts);
+            addState(gts.nodeCount(), gts.edgeCount(), gts.openStateCount());
         }
 
         @Override
         public void addUpdate(PGTS gts, PatternTransition transition) {
-            if (gts.edgeCount() % UNIT == 0) {
-                System.out.print("t");
-                this.printed++;
-            }
-            endLine(gts);
+            addTransition(gts.nodeCount(), gts.edgeCount(),
+                gts.openStateCount());
         }
-
-        private void endLine(PGTS gts) {
-            if (this.printed == WIDTH) {
-                int nodeCount = gts.nodeCount();
-                int edgeCount = gts.edgeCount();
-                int explorableCount = gts.openStateCount();
-                System.out.println(" " + nodeCount + "s (" + explorableCount
-                    + "x) " + edgeCount + "t ");
-                this.printed = 0;
-            }
-        }
-
-        /** The number of indications printed on the current line. */
-        private int printed = 0;
-        /**
-         * The number of additions after which an indication is printed to
-         * screen.
-         */
-        static private final int UNIT = 100;
-        /** Number of indications on one line. */
-        static private final int WIDTH = 100;
     }
-
 }

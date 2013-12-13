@@ -228,23 +228,6 @@ public abstract class AJCell<G extends Graph,JG extends JGraph<G>,JM extends JMo
     private Set<VisualKey> staleKeys;
 
     @Override
-    final public boolean isLayoutable() {
-        return this.layoutable;
-    }
-
-    @Override
-    final public boolean setLayoutable(boolean layedOut) {
-        boolean result = layedOut != this.layoutable;
-        if (result) {
-            this.layoutable = layedOut;
-        }
-        return result;
-    }
-
-    /** Flag indicating that this cell may be touched by a layouter. */
-    private boolean layoutable;
-
-    @Override
     final public boolean isGrayedOut() {
         return getLooks().contains(Look.GRAYED_OUT);
     }

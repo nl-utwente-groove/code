@@ -19,83 +19,36 @@ package groove.util;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
+import groove.util.cli.GrooveCmdLineTool;
 import groove.util.collect.Bag;
 import groove.util.collect.TreeBag;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
+
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 
 /**
  * Tool to test and report various characteristics of a saved graph.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class GraphReporter extends CommandLineTool {
+public class GraphReporter extends GrooveCmdLineTool<String> {
     /**
      * Constructs a new graph reporter with a given list of arguments. The
      * arguments consist of a list of options followed by a graph file name.
      */
-    private GraphReporter(String... args) {
-        super(args);
-    }
-
-    /**
-     * Constructs a new reporter, with default settings. This reporter should
-     * exclusively be used to call {@link #getReport(Graph)}.
-     */
-    private GraphReporter() {
-        super();
+    private GraphReporter(String... args) throws CmdLineException {
+        super("GraphReporter", args);
     }
 
     /** Starts the reporter, for the given list of arguments. */
-    public void start() {
-        processArguments();
-        List<String> argsList = getArgs();
-        if (argsList.size() > 0) {
-            String graphLocation = argsList.remove(0);
-            if (argsList.size() > 0) {
-                printError(
-                    String.format("Spurious parameters '%s'",
-                        argsList.toString()), true);
-            }
-            try {
-                report(Groove.loadGraph(graphLocation));
-            } catch (IOException e) {
-                printError(e.getMessage(), true);
-            }
-        } else {
-            printError("No graph specified", true);
-        }
-    }
-
     @Override
-    protected boolean supportsLogOption() {
-        return false;
-    }
-
-    @Override
-    protected boolean supportsOutputOption() {
-        return false;
-    }
-
-    @Override
-    protected boolean supportsVerbosityOption() {
-        return false;
-    }
-
-    @Override
-    protected String getUsageMessage() {
-        return super.getUsageMessage() + " graph-file";
-    }
-
-    /**
-     * Does the actual reporting for a given graph. The report depends on the
-     * parameters of this reporter, and is sent to the standard output.
-     */
-    public void report(Graph graph) {
-        // count the labels
-        println(getReport(graph).toString());
+    public String run() throws Exception {
+        Graph graph = Groove.loadGraph(this.graphLocation);
+        String result = getReport(graph).toString();
+        emit("%s%n", result);
+        return result;
     }
 
     /**
@@ -117,15 +70,22 @@ public class GraphReporter extends CommandLineTool {
         return result;
     }
 
+    @Argument(metaVar = "graph", required = true, usage = "graph location")
+    private String graphLocation;
+
+    /**
+     * Starts a new graph reporter with the given arguments.
+     * Always exits with {@link System#exit(int)}; see
+     * {@link #execute(String...)} for programmatic use.
+     */
+    public static void main(String[] args) {
+        tryExecute(GraphReporter.class, args);
+    }
+
     /**
      * Starts a new graph reporter with the given arguments.
      */
-    public static void main(String[] args) {
-        new GraphReporter(args).start();
-    }
-
-    /** Creates a fresh instance of a reporter. */
-    public static GraphReporter createInstance() {
-        return new GraphReporter();
+    public static String execute(String... args) throws Exception {
+        return new GraphReporter(args).start();
     }
 }

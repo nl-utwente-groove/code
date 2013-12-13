@@ -1308,8 +1308,7 @@ public enum AspectKind {
                     }
                 }
                 if (text.charAt(0) == '$' || text.equals(Keywords.SELF)) {
-                    throw new FormatException(
-                        "Reserved node name '%s' (letter digit+)", text);
+                    throw new FormatException("Reserved node name '%s'", text);
                 }
                 return text;
             }
@@ -1361,8 +1360,7 @@ public enum AspectKind {
                 if (content instanceof Assignment) {
                     return ((Assignment) content).relabel(oldLabel, newLabel);
                 } else {
-                    return ((groove.algebra.syntax.Expression) content).relabel(
-                        oldLabel, newLabel);
+                    return ((Expression) content).relabel(oldLabel, newLabel);
                 }
             }
         },
@@ -1529,6 +1527,8 @@ public enum AspectKind {
                 int alpha = color.getAlpha();
                 String colorString = alpha == 255 ? "%s,%s,%s" : "%s,%s,%s,%s";
                 return String.format(colorString, red, green, blue, alpha);
+            } else if (content instanceof Expression) {
+                return ((Expression) content).toDisplayString();
             } else {
                 return "" + content;
             }

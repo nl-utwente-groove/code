@@ -177,7 +177,7 @@ public class Aspect {
         if (result && getKind().hasSignature()) {
             switch (role) {
             case TYPE:
-                result = !(getContent() instanceof Expression);
+                result = !hasContent();
                 break;
             case RULE:
                 result = !hasContent() || (getContent() instanceof Expression);

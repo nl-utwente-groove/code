@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g 2013-11-24 21:01:00
+// $ANTLR 3.4 D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g 2013-12-10 11:41:22
 
 package groove.algebra.syntax;
 
@@ -145,7 +145,7 @@ public class ExprLexer extends Lexer {
     // $ANTLR start "Naturalumber"
     public final void mNaturalumber() throws RecognitionException {
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:152:3: ( '0' | '1' .. '9' ( '0' .. '9' )* )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:154:3: ( '0' | '1' .. '9' ( '0' .. '9' )* )
             int alt2=2;
             int LA2_0 = input.LA(1);
 
@@ -164,18 +164,18 @@ public class ExprLexer extends Lexer {
             }
             switch (alt2) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:152:5: '0'
+                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:154:5: '0'
                     {
                     match('0'); 
 
                     }
                     break;
                 case 2 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:153:5: '1' .. '9' ( '0' .. '9' )*
+                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:155:5: '1' .. '9' ( '0' .. '9' )*
                     {
                     matchRange('1','9'); 
 
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:153:14: ( '0' .. '9' )*
+                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:155:14: ( '0' .. '9' )*
                     loop1:
                     do {
                         int alt1=2;
@@ -226,8 +226,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = REAL_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:156:3: ( NonIntegerNumber )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:156:5: NonIntegerNumber
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:157:3: ( NonIntegerNumber )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:157:5: NonIntegerNumber
             {
             mNonIntegerNumber(); 
 
@@ -246,7 +246,7 @@ public class ExprLexer extends Lexer {
     // $ANTLR start "NonIntegerNumber"
     public final void mNonIntegerNumber() throws RecognitionException {
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:162:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* | '.' ( '0' .. '9' )+ )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:165:5: ( ( '0' .. '9' )+ '.' ( '0' .. '9' )* | '.' ( '0' .. '9' )+ )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -265,9 +265,9 @@ public class ExprLexer extends Lexer {
             }
             switch (alt6) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:162:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )*
+                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:165:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )*
                     {
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:162:9: ( '0' .. '9' )+
+                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:165:9: ( '0' .. '9' )+
                     int cnt3=0;
                     loop3:
                     do {
@@ -308,7 +308,7 @@ public class ExprLexer extends Lexer {
 
                     match('.'); 
 
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:162:27: ( '0' .. '9' )*
+                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:165:27: ( '0' .. '9' )*
                     loop4:
                     do {
                         int alt4=2;
@@ -345,11 +345,11 @@ public class ExprLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:163:9: '.' ( '0' .. '9' )+
+                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:166:9: '.' ( '0' .. '9' )+
                     {
                     match('.'); 
 
-                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:163:13: ( '0' .. '9' )+
+                    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:166:13: ( '0' .. '9' )+
                     int cnt5=0;
                     loop5:
                     do {
@@ -405,13 +405,13 @@ public class ExprLexer extends Lexer {
         try {
             int _type = STRING_LIT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:166:3: ( QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:166:5: QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:168:3: ( QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:168:5: QUOTE ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )* QUOTE
             {
             mQUOTE(); 
 
 
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:167:5: ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )*
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:169:5: ( EscapeSequence |~ ( BSLASH | QUOTE | '\\r' | '\\n' ) )*
             loop7:
             do {
                 int alt7=3;
@@ -427,7 +427,7 @@ public class ExprLexer extends Lexer {
 
                 switch (alt7) {
             	case 1 :
-            	    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:167:7: EscapeSequence
+            	    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:169:7: EscapeSequence
             	    {
             	    mEscapeSequence(); 
 
@@ -435,7 +435,7 @@ public class ExprLexer extends Lexer {
             	    }
             	    break;
             	case 2 :
-            	    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:168:7: ~ ( BSLASH | QUOTE | '\\r' | '\\n' )
+            	    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:170:7: ~ ( BSLASH | QUOTE | '\\r' | '\\n' )
             	    {
             	    if ( (input.LA(1) >= '\u0000' && input.LA(1) <= '\t')||(input.LA(1) >= '\u000B' && input.LA(1) <= '\f')||(input.LA(1) >= '\u000E' && input.LA(1) <= '!')||(input.LA(1) >= '#' && input.LA(1) <= '[')||(input.LA(1) >= ']' && input.LA(1) <= '\uFFFF') ) {
             	        input.consume();
@@ -473,14 +473,14 @@ public class ExprLexer extends Lexer {
     // $ANTLR start "EscapeSequence"
     public final void mEscapeSequence() throws RecognitionException {
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:176:3: ( BSLASH ( QUOTE BSLASH ) )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:176:5: BSLASH ( QUOTE BSLASH )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:178:3: ( BSLASH ( QUOTE BSLASH ) )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:178:5: BSLASH ( QUOTE BSLASH )
             {
             mBSLASH(); 
 
 
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:177:5: ( QUOTE BSLASH )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:177:7: QUOTE BSLASH
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:179:5: ( QUOTE BSLASH )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:179:7: QUOTE BSLASH
             {
             mQUOTE(); 
 
@@ -506,8 +506,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:181:5: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )* )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:181:7: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:183:5: ( ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )* )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:183:7: ( 'a' .. 'z' | 'A' .. 'Z' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )*
             {
             if ( (input.LA(1) >= 'A' && input.LA(1) <= 'Z')||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
                 input.consume();
@@ -519,13 +519,13 @@ public class ExprLexer extends Lexer {
             }
 
 
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:181:27: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '-' )*
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:183:27: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )*
             loop8:
             do {
                 int alt8=2;
                 int LA8_0 = input.LA(1);
 
-                if ( (LA8_0=='-'||(LA8_0 >= '0' && LA8_0 <= '9')||(LA8_0 >= 'A' && LA8_0 <= 'Z')||LA8_0=='_'||(LA8_0 >= 'a' && LA8_0 <= 'z')) ) {
+                if ( ((LA8_0 >= '0' && LA8_0 <= '9')||(LA8_0 >= 'A' && LA8_0 <= 'Z')||LA8_0=='_'||(LA8_0 >= 'a' && LA8_0 <= 'z')) ) {
                     alt8=1;
                 }
 
@@ -534,7 +534,7 @@ public class ExprLexer extends Lexer {
             	case 1 :
             	    // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:
             	    {
-            	    if ( input.LA(1)=='-'||(input.LA(1) >= '0' && input.LA(1) <= '9')||(input.LA(1) >= 'A' && input.LA(1) <= 'Z')||input.LA(1)=='_'||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
+            	    if ( (input.LA(1) >= '0' && input.LA(1) <= '9')||(input.LA(1) >= 'A' && input.LA(1) <= 'Z')||input.LA(1)=='_'||(input.LA(1) >= 'a' && input.LA(1) <= 'z') ) {
             	        input.consume();
             	    }
             	    else {
@@ -569,8 +569,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = AMP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:183:11: ( '&' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:183:13: '&'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:185:11: ( '&' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:185:13: '&'
             {
             match('&'); 
 
@@ -590,8 +590,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = DOLLAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:184:11: ( '$' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:184:13: '$'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:186:11: ( '$' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:186:13: '$'
             {
             match('$'); 
 
@@ -611,8 +611,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:185:11: ( '.' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:185:13: '.'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:187:11: ( '.' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:187:13: '.'
             {
             match('.'); 
 
@@ -632,8 +632,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:186:11: ( '!' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:186:13: '!'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:188:11: ( '!' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:188:13: '!'
             {
             match('!'); 
 
@@ -653,8 +653,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = BAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:187:11: ( '|' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:187:13: '|'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:189:11: ( '|' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:189:13: '|'
             {
             match('|'); 
 
@@ -674,8 +674,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = SHARP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:188:11: ( '#' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:188:13: '#'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:190:11: ( '#' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:190:13: '#'
             {
             match('#'); 
 
@@ -695,8 +695,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = PLUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:189:11: ( '+' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:189:13: '+'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:191:11: ( '+' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:191:13: '+'
             {
             match('+'); 
 
@@ -716,8 +716,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = ASTERISK;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:190:11: ( '*' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:190:13: '*'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:192:11: ( '*' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:192:13: '*'
             {
             match('*'); 
 
@@ -737,8 +737,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = DONT_CARE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:191:11: ( '_' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:191:13: '_'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:193:11: ( '_' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:193:13: '_'
             {
             match('_'); 
 
@@ -758,8 +758,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = MINUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:192:11: ( '-' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:192:13: '-'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:194:11: ( '-' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:194:13: '-'
             {
             match('-'); 
 
@@ -779,8 +779,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = QUOTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:193:11: ( '\"' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:193:13: '\"'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:195:11: ( '\"' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:195:13: '\"'
             {
             match('\"'); 
 
@@ -800,8 +800,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = BSLASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:194:11: ( '\\\\' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:194:13: '\\\\'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:196:11: ( '\\\\' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:196:13: '\\\\'
             {
             match('\\'); 
 
@@ -821,8 +821,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = SLASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:195:11: ( '/' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:195:13: '/'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:197:11: ( '/' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:197:13: '/'
             {
             match('/'); 
 
@@ -842,8 +842,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = PERCENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:196:11: ( '%' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:196:13: '%'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:198:11: ( '%' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:198:13: '%'
             {
             match('%'); 
 
@@ -863,8 +863,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = COMMA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:197:11: ( ',' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:197:13: ','
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:199:11: ( ',' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:199:13: ','
             {
             match(','); 
 
@@ -884,8 +884,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = SEMI;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:198:11: ( ';' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:198:13: ';'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:200:11: ( ';' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:200:13: ';'
             {
             match(';'); 
 
@@ -905,8 +905,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = COLON;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:199:11: ( ':' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:199:13: ':'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:201:11: ( ':' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:201:13: ':'
             {
             match(':'); 
 
@@ -926,8 +926,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = LPAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:200:11: ( '(' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:200:13: '('
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:202:11: ( '(' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:202:13: '('
             {
             match('('); 
 
@@ -947,8 +947,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = RPAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:201:11: ( ')' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:201:13: ')'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:203:11: ( ')' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:203:13: ')'
             {
             match(')'); 
 
@@ -968,8 +968,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = LCURLY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:202:11: ( '{' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:202:13: '{'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:204:11: ( '{' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:204:13: '{'
             {
             match('{'); 
 
@@ -989,8 +989,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = RCURLY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:203:11: ( '}' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:203:13: '}'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:205:11: ( '}' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:205:13: '}'
             {
             match('}'); 
 
@@ -1010,8 +1010,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = EQ;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:204:11: ( '==' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:204:13: '=='
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:206:11: ( '==' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:206:13: '=='
             {
             match("=="); 
 
@@ -1033,8 +1033,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = NEQ;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:205:11: ( '!=' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:205:13: '!='
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:207:11: ( '!=' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:207:13: '!='
             {
             match("!="); 
 
@@ -1056,8 +1056,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = GT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:206:11: ( '>' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:206:13: '>'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:208:11: ( '>' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:208:13: '>'
             {
             match('>'); 
 
@@ -1077,8 +1077,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = GE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:207:11: ( '>=' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:207:13: '>='
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:209:11: ( '>=' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:209:13: '>='
             {
             match(">="); 
 
@@ -1100,8 +1100,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = LT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:208:11: ( '<' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:208:13: '<'
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:210:11: ( '<' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:210:13: '<'
             {
             match('<'); 
 
@@ -1121,8 +1121,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = LE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:209:11: ( '<=' )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:209:13: '<='
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:211:11: ( '<=' )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:211:13: '<='
             {
             match("<="); 
 
@@ -1144,10 +1144,10 @@ public class ExprLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:211:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:211:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:213:5: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:213:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:211:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:213:9: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt9=0;
             loop9:
             do {
@@ -1490,8 +1490,8 @@ public class ExprLexer extends Lexer {
         "\64\uffff";
     static final String DFA10_minS =
         "\1\11\1\162\1\141\2\56\1\60\1\0\3\uffff\1\75\21\uffff\2\75\1\uffff"+
-        "\1\165\1\154\2\uffff\1\56\11\uffff\1\145\1\163\1\55\1\145\1\uffff"+
-        "\1\55\1\uffff";
+        "\1\165\1\154\2\uffff\1\56\11\uffff\1\145\1\163\1\60\1\145\1\uffff"+
+        "\1\60\1\uffff";
     static final String DFA10_maxS =
         "\1\175\1\162\1\141\3\71\1\uffff\3\uffff\1\75\21\uffff\2\75\1\uffff"+
         "\1\165\1\154\2\uffff\1\71\11\uffff\1\145\1\163\1\172\1\145\1\uffff"+
@@ -1554,10 +1554,10 @@ public class ExprLexer extends Lexer {
             "",
             "\1\57",
             "\1\60",
-            "\1\7\2\uffff\12\7\7\uffff\32\7\4\uffff\1\7\1\uffff\32\7",
+            "\12\7\7\uffff\32\7\4\uffff\1\7\1\uffff\32\7",
             "\1\62",
             "",
-            "\1\7\2\uffff\12\7\7\uffff\32\7\4\uffff\1\7\1\uffff\32\7",
+            "\12\7\7\uffff\32\7\4\uffff\1\7\1\uffff\32\7",
             ""
     };
 

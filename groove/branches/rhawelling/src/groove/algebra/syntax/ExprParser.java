@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g 2013-11-24 21:01:00
+// $ANTLR 3.4 D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g 2013-12-10 11:41:22
 
 package groove.algebra.syntax;
 import groove.grammar.model.FormatErrorSet;
@@ -1260,7 +1260,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: LPAR, RPAR, or_expr
+                    // elements: or_expr, RPAR, LPAR
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1384,7 +1384,7 @@ public TreeAdaptor getTreeAdaptor() {
                     stream_literal.add(literal33.getTree());
 
                     // AST REWRITE
-                    // elements: ID, literal
+                    // elements: literal, ID
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1550,7 +1550,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: prefix, NAT_LIT
+                    // elements: NAT_LIT, prefix
                     // token labels: prefix
                     // rule labels: retval
                     // token list labels: 
@@ -1764,7 +1764,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                             // AST REWRITE
-                            // elements: prefix, name, field1
+                            // elements: field1, prefix, name
                             // token labels: name, prefix, field1
                             // rule labels: retval
                             // token list labels: 
@@ -1806,15 +1806,15 @@ public TreeAdaptor getTreeAdaptor() {
                             // D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g:113:7: 
                             {
                             // AST REWRITE
-                            // elements: prefix, name
-                            // token labels: name, prefix
+                            // elements: name, prefix
+                            // token labels: prefix, name
                             // rule labels: retval
                             // token list labels: 
                             // rule list labels: 
                             // wildcard labels: 
                             retval.tree = root_0;
-                            RewriteRuleTokenStream stream_name=new RewriteRuleTokenStream(adaptor,"token name",name);
                             RewriteRuleTokenStream stream_prefix=new RewriteRuleTokenStream(adaptor,"token prefix",prefix);
+                            RewriteRuleTokenStream stream_name=new RewriteRuleTokenStream(adaptor,"token name",name);
                             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                             root_0 = (ExprTree)adaptor.nil();
@@ -1884,7 +1884,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                             // AST REWRITE
-                            // elements: name, field2
+                            // elements: field2, name
                             // token labels: field2, name
                             // rule labels: retval
                             // token list labels: 
@@ -2097,7 +2097,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: or_expr, oper, RPAR
+            // elements: oper, RPAR, or_expr
             // token labels: 
             // rule labels: retval
             // token list labels: 

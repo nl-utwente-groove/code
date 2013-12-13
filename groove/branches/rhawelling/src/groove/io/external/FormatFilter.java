@@ -33,14 +33,18 @@ public class FormatFilter extends ExtensionFilter {
     }
 
     @Override
-    public boolean acceptExtension(File f) {
-        f.getName();
+    public boolean acceptExtension(String filename) {
         for (String ext : this.format.getExtensions()) {
-            if (f.getName().endsWith(ext)) {
+            if (filename.endsWith(ext)) {
                 return true;
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean acceptExtension(File f) {
+        return acceptExtension(f.getName());
     }
 
     @Override

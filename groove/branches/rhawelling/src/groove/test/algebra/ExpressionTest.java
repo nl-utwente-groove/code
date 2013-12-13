@@ -67,6 +67,13 @@ public class ExpressionTest {
         testOperators(SignatureKind.BOOL, "true", "false", "true");
     }
 
+    /** Tests more complex expressions. */
+    @Test
+    public void testComplex() {
+        parseFail("self.x-max(p1.speed,p2.speed)");
+        parse("int:self.x-max(p1.speed,p2.speed)");
+    }
+
     private void testOperators(SignatureKind sig, String... args) {
         for (OpValue opValue : sig.getOpValues()) {
             Operator op = opValue.getOperator();
@@ -130,17 +137,23 @@ public class ExpressionTest {
     }
 
     private Expression parse(String expr) {
+        Expression result = null;
         try {
-            Expression result = Expression.parse(expr);
-            String display = result.toDisplayString();
-            assertEquals(result, Expression.parse(display));
-            return result;
+            result = Expression.parse(expr);
         } catch (FormatException e) {
             fail(String.format(
                 "Expression %s should have been parsable but fails with %s",
                 expr, e.getMessage()));
-            return null;
         }
+        if (result != null) {
+            String display = result.toDisplayString();
+            try {
+                assertEquals(result, Expression.parse(display));
+            } catch (FormatException e) {
+                // the display string didn't have enough typing information; proceed
+            }
+        }
+        return result;
     }
 
     private void parseFail(String expr) {

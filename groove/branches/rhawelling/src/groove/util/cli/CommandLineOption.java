@@ -14,7 +14,7 @@
 /*
  * $Id: CommandLineOption.java,v 1.2 2008-01-30 09:32:02 iovka Exp $
  */
-package groove.util;
+package groove.util.cli;
 
 /**
  * Interface for command-line options. Classes implementing this interface must
@@ -26,7 +26,9 @@ package groove.util;
  * 
  * @author Arend Rensink
  * @version $Revision$
+ * @deprecated use the args4j library
  */
+@Deprecated
 public interface CommandLineOption {
     /** Returns the (one-word, often one-letter) name of this option. */
     public String getName();

@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import groove.abstraction.neigh.NeighAbsParam;
 import groove.abstraction.neigh.explore.ShapeGenerator;
 import groove.abstraction.neigh.lts.AGTS;
+import junit.framework.Assert;
 
 import org.junit.Test;
 
@@ -46,25 +47,24 @@ public class TestShapeGenerator {
         NeighAbsParam.getInstance().setNodeMultBound(1);
         NeighAbsParam.getInstance().setEdgeMultBound(1);
 
-        generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
-        generator.start();
-        AGTS gts = generator.getReducedGTS();
-        assertEquals(6, gts.getStateCount());
-        assertEquals(11, gts.getTransitionCount());
+        try {
+            generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
+            AGTS gts = generator.run().reduceGTS();
+            assertEquals(6, gts.getStateCount());
+            assertEquals(11, gts.getTransitionCount());
 
-        NeighAbsParam.getInstance().setNodeMultBound(2);
-        generator.explore();
-        generator.report();
-        gts = generator.getReducedGTS();
-        assertEquals(6, gts.getStateCount());
-        assertEquals(11, gts.getTransitionCount());
+            NeighAbsParam.getInstance().setNodeMultBound(2);
+            gts = generator.run().reduceGTS();
+            assertEquals(6, gts.getStateCount());
+            assertEquals(11, gts.getTransitionCount());
 
-        NeighAbsParam.getInstance().setNodeMultBound(3);
-        generator.explore();
-        generator.report();
-        gts = generator.getReducedGTS();
-        assertEquals(6, gts.getStateCount());
-        assertEquals(11, gts.getTransitionCount());
+            NeighAbsParam.getInstance().setNodeMultBound(3);
+            gts = generator.run().reduceGTS();
+            assertEquals(6, gts.getStateCount());
+            assertEquals(11, gts.getTransitionCount());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     @Test
@@ -76,11 +76,15 @@ public class TestShapeGenerator {
         NeighAbsParam.getInstance().setNodeMultBound(1);
         NeighAbsParam.getInstance().setEdgeMultBound(1);
 
-        generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
-        generator.start();
-        AGTS gts = generator.getReducedGTS();
-        assertEquals(3, gts.getStateCount());
-        assertEquals(3, gts.getTransitionCount());
+        try {
+            generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
+            AGTS gts =
+                ShapeGenerator.execute(getArgs(GRAMMAR, START_GRAPH)).reduceGTS();
+            assertEquals(3, gts.getStateCount());
+            assertEquals(3, gts.getTransitionCount());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     @Test
@@ -92,11 +96,14 @@ public class TestShapeGenerator {
         NeighAbsParam.getInstance().setNodeMultBound(1);
         NeighAbsParam.getInstance().setEdgeMultBound(1);
 
-        generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
-        generator.start();
-        AGTS gts = generator.getReducedGTS();
-        assertEquals(26, gts.getStateCount());
-        assertEquals(59, gts.getTransitionCount());
+        try {
+            AGTS gts =
+                ShapeGenerator.execute(getArgs(GRAMMAR, START_GRAPH)).reduceGTS();
+            assertEquals(26, gts.getStateCount());
+            assertEquals(59, gts.getTransitionCount());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     @Test
@@ -108,11 +115,14 @@ public class TestShapeGenerator {
         NeighAbsParam.getInstance().setNodeMultBound(1);
         NeighAbsParam.getInstance().setEdgeMultBound(1);
 
-        generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
-        generator.start();
-        AGTS gts = generator.getReducedGTS();
-        assertEquals(17, gts.getStateCount());
-        assertEquals(40, gts.getTransitionCount());
+        try {
+            generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
+            AGTS gts = generator.run().reduceGTS();
+            assertEquals(17, gts.getStateCount());
+            assertEquals(40, gts.getTransitionCount());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     @Test
@@ -124,11 +134,14 @@ public class TestShapeGenerator {
         NeighAbsParam.getInstance().setNodeMultBound(1);
         NeighAbsParam.getInstance().setEdgeMultBound(1);
 
-        generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
-        generator.start();
-        AGTS gts = generator.getReducedGTS();
-        assertEquals(8, gts.getStateCount());
-        assertEquals(42, gts.getTransitionCount());
+        try {
+            generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
+            AGTS gts = generator.run().reduceGTS();
+            assertEquals(8, gts.getStateCount());
+            assertEquals(42, gts.getTransitionCount());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     @Test
@@ -140,11 +153,14 @@ public class TestShapeGenerator {
         NeighAbsParam.getInstance().setNodeMultBound(2);
         NeighAbsParam.getInstance().setEdgeMultBound(1);
 
-        generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
-        generator.start();
-        AGTS gts = generator.getReducedGTS();
-        assertEquals(36, gts.getStateCount());
-        assertEquals(64, gts.getTransitionCount());
+        try {
+            generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
+            AGTS gts = generator.run().reduceGTS();
+            assertEquals(36, gts.getStateCount());
+            assertEquals(64, gts.getTransitionCount());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
 }

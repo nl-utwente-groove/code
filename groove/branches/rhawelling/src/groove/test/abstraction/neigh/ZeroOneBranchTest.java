@@ -38,17 +38,20 @@ public class ZeroOneBranchTest {
         NeighAbsParam.getInstance().setNodeMultBound(1);
         NeighAbsParam.getInstance().setEdgeMultBound(1);
 
-        generator = new ShapeGenerator(args);
-        generator.start();
-        AGTS gts1 = generator.getReducedGTS();
-        EquationSystem.ENABLE_ZERO_ONE_BRANCHES = false;
-        generator = new ShapeGenerator(args);
-        generator.start();
-        AGTS gts2 = generator.getReducedGTS();
-        for (GraphState state : gts2.nodeSet()) {
-            if (!gts1.containsNode(state)) {
-                System.out.println(state.getGraph());
+        try {
+            AGTS gts = ShapeGenerator.execute(args);
+            AGTS gts1 = gts.reduceGTS();
+            EquationSystem.ENABLE_ZERO_ONE_BRANCHES = false;
+            gts = ShapeGenerator.execute(args);
+            AGTS gts2 = gts.reduceGTS();
+            for (GraphState state : gts2.nodeSet()) {
+                if (!gts1.containsNode(state)) {
+                    System.out.println(state.getGraph());
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 }

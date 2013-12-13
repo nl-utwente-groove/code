@@ -35,7 +35,6 @@ import static groove.verify.FormulaParser.Token.S_RELEASE;
 import static groove.verify.FormulaParser.Token.TRUE;
 import static groove.verify.FormulaParser.Token.UNTIL;
 import static groove.verify.FormulaParser.Token.W_UNTIL;
-import groove.lts.GTS;
 import groove.util.ExprParser;
 import groove.verify.FormulaParser.Token;
 
@@ -436,11 +435,6 @@ public class Formula {
         }
         return result;
     }
-
-    /** Proposition text expressing that a state is open, i.e., not fully explored. */
-    static public final String OPEN_ATOM = "$" + GTS.OPEN_LABEL_TEXT;
-    /** Proposition text expressing that a state is final in the GTS. */
-    static public final String FINAL_ATOM = "$" + GTS.OPEN_LABEL_TEXT;
 
     /** Factory method for a propositional formula. */
     public static Formula Atom(String prop) {

@@ -19,8 +19,8 @@ package groove.test.verify;
 
 import static org.junit.Assert.assertEquals;
 import groove.explore.AcceptorValue;
-import groove.explore.Exploration;
 import groove.explore.Generator;
+import groove.explore.Exploration;
 import groove.explore.StrategyValue;
 import groove.explore.encode.Serialized;
 import groove.explore.encode.Template;
@@ -98,10 +98,14 @@ public class LTLTest {
 
     /** Sets the GTS to a given grammar in the JUnit samples. */
     private void prepare(String grammarName) {
-        Generator generator =
-            new Generator("-v", "0", "junit/samples/" + grammarName);
-        generator.start();
-        this.gts = generator.getGTS();
+        try {
+            Generator generator =
+                new Generator("-v", "0", "junit/samples/" + grammarName);
+            this.gts = generator.start();
+        } catch (Exception e) {
+            // this should not occur
+            e.printStackTrace();
+        }
     }
 
     /** Tests the number of counterexamples in the current;y
@@ -125,6 +129,6 @@ public class LTLTest {
         } catch (FormatException e) {
             Assert.fail();
         }
-        assertEquals(succeed, exploration.getLastResult().getValue().isEmpty());
+        assertEquals(succeed, exploration.getResult().getValue().isEmpty());
     }
 }

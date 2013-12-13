@@ -16,6 +16,7 @@
  */
 package groove.gui.action;
 
+import groove.explore.util.LTSLabels;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
 import groove.graph.GraphRole;
@@ -55,21 +56,18 @@ public class SaveLTSAsAction extends SimulatorAction {
         }
         if (dialog.showDialog(getSimulator())) {
             File ltsFile = dialog.getFile();
-            doSave(ltsFile, dialog.getExportStates(), dialog.showFinal(),
-                dialog.showNames(), dialog.showStart(), dialog.showOpen());
+            doSave(ltsFile, dialog.getExportStates(), dialog.getLTSLabels());
         }
     }
 
-    private void doSave(File ltsFile, int exportStates, boolean showFinal,
-            boolean showNames, boolean showStart, boolean showOpen) {
+    private void doSave(File ltsFile, int exportStates, LTSLabels flags) {
         ExtensionFilter ltsFilter = FileType.getFilter(GraphRole.LTS);
         if (ltsFile.isDirectory()) {
             ltsFile = new File(ltsFile, ltsFilter.addExtension("lts"));
         }
         GTS gts = getSimulatorModel().getGts();
         gts.setName(ltsFilter.stripExtension(ltsFile.getName()));
-        PlainGraph lts =
-            gts.toPlainGraph(showFinal, showStart, showOpen, showNames);
+        PlainGraph lts = gts.toPlainGraph(flags);
 
         Collection<? extends GraphState> export = new HashSet<GraphState>(0);
 

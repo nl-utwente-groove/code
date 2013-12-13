@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.util;
+package groove.util.cli;
 
 /**
  * A <code>StoreCommandLineOption</code> is a <code>CommandLineOption</code>
@@ -23,7 +23,9 @@ package groove.util;
  * 
  * @see CommandLineOption
  * @author Maarten de Mol
+ * @deprecated use the args4j library
  */
+@Deprecated
 public abstract class StoreCommandLineOption<A> implements CommandLineOption {
 
     // Local store of the parsed value.

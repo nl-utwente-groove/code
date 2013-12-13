@@ -1,918 +1,412 @@
-// GROOVE: GRaphs for Object Oriented VErification
-// Copyright 2003--2007 University of Twente
-
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// http://www.apache.org/licenses/LICENSE-2.0
-
-// Unless required by applicable law or agreed to in writing,
-// software distributed under the License is distributed on an
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
-// either express or implied. See the License for the specific
-// language governing permissions and limitations under the License.
-/*
- * $Id $
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2011 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
  */
 package groove.explore;
 
-import static groove.io.FileType.GRAMMAR_FILTER;
 import groove.explore.encode.Serialized;
-import groove.explore.encode.TemplateList;
-import groove.explore.result.Acceptor;
-import groove.explore.strategy.Strategy;
-import groove.explore.util.ExplorationStatistics;
-import groove.grammar.Grammar;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.aspect.GraphConverter;
+import groove.explore.util.CompositeReporter;
+import groove.explore.util.ExplorationReporter;
+import groove.explore.util.GenerateProgressListener;
+import groove.explore.util.LTSLabels;
+import groove.explore.util.LTSReporter;
+import groove.explore.util.LogReporter;
+import groove.explore.util.StateReporter;
 import groove.grammar.model.FormatException;
-import groove.grammar.model.GrammarModel;
-import groove.graph.plain.PlainGraph;
-import groove.io.FileType;
-import groove.io.external.Exporter;
-import groove.io.external.Exporter.Exportable;
-import groove.io.external.Format;
-import groove.io.external.FormatExporter;
-import groove.io.external.PortException;
 import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.util.CommandLineTool;
-import groove.util.Groove;
-import groove.util.StoreCommandLineOption;
+import groove.transform.Transformer;
+import groove.util.cli.DirectoryHandler;
+import groove.util.cli.GrammarHandler;
+import groove.util.cli.GrooveCmdLineTool;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
+
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
+import org.kohsuke.args4j.spi.Setter;
 
 /**
- * A class that takes care of loading in a rule system consisting of a set of
- * individual files containing graph rules, from a given location | presumably
- * the top level directory containing the rule files.
+ * New command-line Generator class, using the Agrs4J library. 
  * @author Arend Rensink
- * @version $Revision: 3108 $
+ * @version $Revision $
  */
-public class Generator extends CommandLineTool {
+public class Generator extends GrooveCmdLineTool<GTS> {
     /**
-     * Fixed name of the gc log file. If a file with this name is found, and
-     * logging is switched on, the gc log is appended to the generator log.
+     * Constructs the generator and processes the command-line arguments.
+     * @throws CmdLineException if any error was found in the command-line arguments
      */
-    static public final String GC_LOG_NAME = "gc.log";
-
-    /**
-     * Fixed prefix for the identity string.
-     */
-    static public final String ID_PREFIX = "gts";
-
-    /** Error message in case grammar cannot be found. */
-    static public final String LOAD_ERROR = "Can't load graph grammar";
-    /** Usage message for the generator. */
-    static public final String USAGE_MESSAGE =
-        "Usage: Generator [options] <grammar> [<start-graph-name> | <start-graphs-dir>]";
-
-    /**
-     * Value for the output file name to indicate that the name should be
-     * computed from the grammar name.
-     * @see #getOutputFileName()
-     */
-    static public final String GRAMMAR_NAME_VAR = "@";
-    /** Separator between grammar name and start state name in reporting. */
-    static public final char START_STATE_SEPARATOR = '@';
-
-    /** Local references to the command line options. */
-    private final TemplatedOption<Strategy> strategyOption;
-    private final TemplatedOption<Acceptor> acceptorOption;
-    private final ResultOption resultOption;
-
-    private final ResultSaveOption resultSaveOption;
-
-    private final ExportSimulationOption exportSimulationOption;
-    private final ExportSimulationFlagsOption exportSimulationFlagsOption;
-
-    /**
-     * Attempts to load a graph grammar from a given location provided as a
-     * parameter with either default start state or a start state provided as a
-     * second parameter.
-     * @param args generator options, grammar and start graph name
-     */
-    static public void main(String[] args) {
-        generate(args);
+    public Generator(String... args) throws CmdLineException {
+        super("Generator", args);
     }
 
     /**
-     * Loads a graph grammar from a given location provided as a
-     * parameter with either default start state or a start state provided as a
-     * second parameter, and returns the generated transition system.
-     * @param args generator options, grammar and start graph name
-     * @return the generated transition system
-     */
-    static public GTS generate(String[] args) {
-        return new Generator(args).start();
-    }
-
-    /**
-     * Constructs the generator. In particular, initializes the command line
-     * option classes.
-     */
-    public Generator(String... args) {
-        super(false, args);
-        this.startGraphs = new ArrayList<String>();
-
-        this.strategyOption =
-            new TemplatedOption<Strategy>(
-                "s",
-                "str",
-                StrategyEnumerator.newInstance(StrategyValue.CONCRETE_STRATEGIES));
-        this.acceptorOption =
-            new TemplatedOption<Acceptor>("a", "acc",
-                AcceptorEnumerator.newInstance());
-        this.resultOption = new ResultOption();
-
-        this.resultSaveOption = new ResultSaveOption();
-
-        this.exportSimulationOption = new ExportSimulationOption();
-        this.exportSimulationFlagsOption = new ExportSimulationFlagsOption();
-
-        addOption(this.verbosityOption);
-        addOption(this.logOption);
-        addOption(this.strategyOption);
-        addOption(this.acceptorOption);
-        addOption(this.resultOption);
-        addOption(this.exportSimulationOption);
-        addOption(this.exportSimulationFlagsOption);
-        addOption(this.outputOption);
-        addOption(this.resultSaveOption);
-
-        // clear the static field gts
-        gts = null;
-    }
-
-    /**
-     * Starts the state space generation process. Before invoking this method,
-     * all relevant parameters should be set. The method successively calls
-     * <tt>{@link #init}</tt>, <tt>{@link #generate}</tt> and
-     * <tt>{@link #exit}</tt>.
-     */
-    public GTS start() {
-        processArguments();
-        try {
-            startLog();
-            init();
-            generate();
-            report();
-            exit();
-            endLog();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return gts;
-    }
-
-    /**
-     * Sets the grammar to be used for state space generation.
-     * @param grammarLocation the file name of the grammar (with or without file
-     *        name extension)
-     */
-    public void setGrammarLocation(String grammarLocation) {
-        this.grammarLocation = grammarLocation;
-    }
-
-    /**
-     * Adds an active start graph to be used for state space generation.
-     * Also processes the name, removing the extension and the leading
-     * grammar location.
-     * @param startGraphName the name of the start graph (as processed by the
-     *    command line)
-     */
-    private void addStartGraph(String startGraphName) {
-        String name = startGraphName;
-        if (name.startsWith(this.grammarLocation)) {
-            name = name.substring(this.grammarLocation.length() + 1);
-        }
-        if (name.endsWith(".gst")) {
-            name = name.substring(0, name.length() - 4);
-        }
-        this.startGraphs.add(name);
-    }
-
-    /**
-     * This implementation lazily creates and returns the id of this generator
-     * run.
+     * Runs the exploration and returns the generated GTS.
      */
     @Override
-    protected String getId() {
-        if (this.id == null) {
-            this.id = computeId();
+    public GTS run() throws Exception {
+        Transformer transformer = computeTransformer();
+        transformer.addListener(getReporter());
+        if (!getVerbosity().isLow()) {
+            transformer.addListener(new GenerateProgressListener());
         }
-        return this.id;
-    }
-
-    /** Computes an ID from the grammar location and the time. */
-    protected String computeId() {
-        return ID_PREFIX + ID_SEPARATOR + getGrammarName() + ID_SEPARATOR
-            + super.getId();
-    }
-
-    /**
-     * Returns the GTS that is being generated. The GTS is lazily obtained from
-     * the grammar if it had not yet been initialised.
-     * @see #getGrammar()
-     */
-    public GTS getGTS() {
-        if (gts == null) {
-            gts = new GTS(getGrammar());
-        }
-        return gts;
-    }
-
-    /**
-     * Creates and returns a grammar model for the (supposedly initialised)
-     * grammar location and start graph name.
-     */
-    public GrammarModel getGrammarModel() {
-        if (this.grammarModel == null) {
-            Observer loadObserver = new Observer() {
-                public void update(Observable o, Object arg) {
-                    if (getVerbosity() > LOW_VERBOSITY) {
-                        if (arg instanceof String) {
-                            System.out.printf("%s .", arg);
-                        } else if (arg == null) {
-                            System.out.println(" done");
-                        } else {
-                            System.out.print(".");
-                        }
-                    }
-                }
-            };
-
-            URL url;
-
-            File f =
-                new File(GRAMMAR_FILTER.addExtension(this.grammarLocation));
-            try {
-                if (f.exists()) {
-                    url = Groove.toURL(f);
-                } else {
-                    url = new URL(this.grammarLocation);
-                }
-                /*
-                 * Disabled adding ?START_GRAPH_NAME to the URL. MdM.
-                 * MdM.
-                if (this.startGraphs != null) {
-                    url =
-                        new URL(url.toExternalForm() + "?" + this.startGraphs);
-                }
-                */
-            } catch (MalformedURLException e) {
-                printError("Can't load grammar: " + e.getMessage(), false);
-                return null;
-            }
-            // now we are guaranteed to have a URL
-
-            try {
-                List<String> startGraphNames =
-                    new ArrayList<String>(this.startGraphs);
-                if (this.startGraphs.isEmpty()) {
-                    startGraphNames.add(Groove.DEFAULT_START_GRAPH_NAME);
-                }
-                this.grammarModel = GrammarModel.newInstance(url);
-                AspectGraph externalStartGraph = getStartGraph(url);
-                if (externalStartGraph != null) {
-                    this.grammarModel.setStartGraph(externalStartGraph);
-                }
-                this.grammarModel.getStore().addObserver(loadObserver);
-            } catch (IOException exc) {
-                printError("Can't load grammar: " + exc.getMessage(), false);
-            }
-        }
-        return this.grammarModel;
-    }
-
-    private AspectGraph getStartGraph(URL url) throws IOException {
-        AspectGraph result = null;
-        if (!this.startGraphs.isEmpty()) {
-            String grammarFileName = url.getFile();
-            File grammarFile =
-                grammarFileName.isEmpty() ? null : new File(grammarFileName);
-            List<AspectGraph> graphs = new ArrayList<AspectGraph>();
-            for (String startGraphName : this.startGraphs) {
-                startGraphName =
-                    FileType.STATE_FILTER.addExtension(startGraphName);
-                File startGraphFile = new File(grammarFile, startGraphName);
-                if (!startGraphFile.exists()) {
-                    startGraphFile = new File(startGraphName);
-                }
-                if (!startGraphFile.exists()) {
-                    throw new IOException("Can't find start graph "
-                        + startGraphName);
-                }
-                graphs.add(GraphConverter.toAspect(Groove.loadGraph(startGraphFile)));
-            }
-            result = AspectGraph.mergeGraphs(graphs);
-        }
-        return result;
-    }
-
-    /**
-     * Returns the grammar used for generating the state space. The grammar is
-     * lazily loaded in. The method throws an error and returns
-     * <code>null</code> if the grammar could not be loaded.
-     */
-    public Grammar getGrammar() {
-        if (this.grammar == null) {
-            try {
-                this.grammar = getGrammarModel().toGrammar();
-                this.grammar.setFixed();
-            } catch (FormatException exc) {
-                printError("Grammar format error: " + exc.getMessage(), false);
-            }
-        }
-        return this.grammar;
-    }
-
-    /**
-     * Goes through the list of command line arguments and tries to find command
-     * line options. The options and their parameters are subsequently removed
-     * from the argument list. If an option cannot be parsed, the method prints
-     * an error message and terminates the program.
-     */
-    @Override
-    public void processArguments() {
-        super.processArguments();
-        List<String> argsList = getArgs();
-        if (argsList.size() > 0) {
-            setGrammarLocation(argsList.remove(0));
-        }
-        while (argsList.size() > 0) {
-            String arg = argsList.remove(0);
-            if (arg.startsWith(OPTIONS_PREFIX)) {
-                if (argsList.size() > 0) {
-                    argsList.remove(0);
-                }
-            } else {
-                addStartGraph(arg);
-            }
-        }
-        if (this.grammarLocation == null) {
-            printError("No grammar location specified", true);
-        }
-    }
-
-    /**
-      * Returns the exploration strategy set for the generator. The strategy is
-      * lazily retrieved from the command line options, or set to the default
-      * exploration if nothing was specified.
-      */
-    protected Exploration getExploration() {
-        if (this.exploration == null) {
-            this.exploration = computeExploration();
-        }
-        return this.exploration;
+        transformer.explore(getStartGraphs());
+        getReporter().report();
+        return transformer.getGTS();
     }
 
     /**
      * Compute the exploration out of the command line options.
      * Uses the default exploration for components that were not specified.
      */
-    protected Exploration computeExploration() {
-        Exploration result = getGrammarModel().getDefaultExploration();
-        if (result == null) {
-            result = new Exploration();
+    private Transformer computeTransformer() throws IOException,
+        FormatException {
+        Transformer result = new Transformer(getGrammar());
+        if (hasStrategy()) {
+            Serialized strategy =
+                StrategyEnumerator.parseCommandLineStrategy(getStrategy());
+            result.setStrategy(strategy);
         }
-
-        Serialized strategy;
-        if (isOptionActive(this.strategyOption)) {
-            strategy = this.strategyOption.getValue();
-        } else {
-            strategy = result.getStrategy();
+        if (hasAcceptor()) {
+            result.setAcceptor(AcceptorEnumerator.parseCommandLineAcceptor(getAcceptor()));
         }
-
-        Serialized acceptor;
-        if (isOptionActive(this.acceptorOption)) {
-            acceptor = this.acceptorOption.getValue();
-        } else {
-            acceptor = result.getAcceptor();
-        }
-
-        int nrResults;
-        if (isOptionActive(this.resultOption)) {
-            nrResults = this.resultOption.getValue();
-        } else {
-            nrResults = 0;
-        }
-
-        return new Exploration(strategy, acceptor, nrResults);
-    }
-
-    /**
-     * The initialisation phase of state space generation. Called from
-     * <tt>{@link #start}</tt>.
-     */
-    protected void init() {
-        this.explorationStats = new ExplorationStatistics(getGTS());
-        this.explorationStats.configureForGenerator(this.getVerbosity());
-    }
-
-    /**
-     * The processing phase of state space generation. Called from
-     * <tt>{@link #start}</tt>.
-     */
-    protected void generate() {
-        if (getVerbosity() > LOW_VERBOSITY) {
-            println("Grammar:\t" + this.grammarLocation);
-            println("Start graph:\t"
-                + (this.startGraphs == null ? "default" : this.startGraphs));
-            println("Exploration:\t" + getExploration().getIdentifier());
-            println("Timestamp:\t" + this.invocationTime);
-            print("\nProgress:\t");
-            getGTS().addLTSListener(new GenerateProgressMonitor());
-        }
-        this.explorationStats.start();
-        try {
-            getExploration().play(getGTS(), null);
-        } catch (FormatException e) {
-            printError("The specified exploration is not "
-                + "valid for the loaded grammar.\n" + e.getMessage(), false);
-        }
-        this.explorationStats.stop();
-    }
-
-    /**
-     * Export the performed simulation to an output file, if either the -e or
-     * the -ep was specified on the command line.
-     */
-    protected void exportSimulation() {
-        // Local variables for the related active command line options. 
-        boolean e = isOptionActive(this.exportSimulationOption);
-        boolean ef = isOptionActive(this.exportSimulationFlagsOption);
-
-        String path;
-        if (e) {
-            path = this.exportSimulationOption.getValue();
-        } else {
-            path = ".";
-        }
-
-        // Compute the export simulation flags.
-        ExportSimulationFlags flags;
-        if (ef) {
-            flags = this.exportSimulationFlagsOption.getValue();
-        } else {
-            flags = new ExportSimulationFlags();
-        }
-
-        // Create the LTS view to be exported.
-        PlainGraph lts =
-            getGTS().toPlainGraph(flags.labelFinalStates,
-                flags.labelStartState, flags.labelOpenStates,
-                flags.exportStateNames);
-
-        // Perform the export.
-        try {
-            // Export GTS.
-            if (isOptionActive(this.outputOption)) {
-                String outFilename = getOutputFileName();
-                String ltsFilename;
-                if (outFilename == null) {
-                    ltsFilename = path + "/gts" + FileType.GXL.getExtension();
-                } else {
-                    ltsFilename = path + "/" + outFilename;
-                }
-                File ltsFile = new File(ltsFilename);
-                Format gtsFormat = Exporter.getAcceptingFormat(lts, ltsFile);
-                if (gtsFormat != null) {
-                    try {
-                        ((FormatExporter) gtsFormat.getFormatter()).doExport(
-                            ltsFile, gtsFormat, new Exportable(lts));
-                    } catch (PortException e1) {
-                        throw new IOException(e1);
-                    }
-                } else {
-                    Groove.saveGraph(lts, ltsFile);
-                }
-            }
-
-            // Export results.
-            if (isOptionActive(this.resultSaveOption)) {
-                ResultSave rs = this.resultSaveOption.getValue();
-                Collection<? extends GraphState> export =
-                    getExploration().getLastResult().getValue();
-                for (GraphState state : export) {
-                    String stateFilename =
-                        path + "/" + rs.prefix + state.getNumber() + rs.suffix
-                            + rs.type.getExtension();
-                    File stateFile = new File(stateFilename);
-                    Format stateFormat =
-                        Exporter.getAcceptingFormat(state.getGraph(), stateFile);
-                    if (stateFormat != null) {
-                        try {
-                            ((FormatExporter) stateFormat.getFormatter()).doExport(
-                                stateFile, stateFormat,
-                                new Exportable(state.getGraph()));
-                        } catch (PortException e1) {
-                            throw new IOException(e1);
-                        }
-                    } else {
-                        Groove.saveGraph(
-                            GraphConverter.toAspect(state.getGraph()),
-                            stateFile);
-                    }
-                }
-            }
-        } catch (IOException exc) {
-            exc.printStackTrace();
-        }
-    }
-
-    /** Prints a report of the run on the standard output. */
-    protected void report() {
-        // Advance 2 lines (after the progress).
-        if (getVerbosity() > LOW_VERBOSITY) {
-            println();
-            println();
-            String report = this.explorationStats.getReport();
-            if (report.length() > 0) {
-                println(report);
-            }
-            println(getExploration().getLastMessage());
-        }
-        // transfer the garbage collector log (if any) to the log file (if any)
-        if (isLogging()) {
-            File gcLogFile = new File(GC_LOG_NAME);
-            if (gcLogFile.exists()) {
-                try {
-                    BufferedReader gcLog =
-                        new BufferedReader(new FileReader(gcLogFile));
-                    List<String> gcList = new ArrayList<String>();
-                    String nextLine = gcLog.readLine();
-                    while (nextLine != null) {
-                        gcList.add(nextLine);
-                        nextLine = gcLog.readLine();
-                    }
-                    for (int i = 1; i < gcList.size() - 2; i++) {
-                        getLogWriter().println(gcList.get(i));
-                    }
-                    gcLog.close();
-                } catch (FileNotFoundException exc) {
-                    System.err.println("Error while opening GC log");
-                } catch (IOException exc) {
-                    System.err.println("Error while reading from GC log");
-                }
-            }
-        }
-        exportSimulation();
-    }
-
-    /**
-     * @return the total running time of the generator.
-     */
-    public long getRunningTime() {
-        return this.explorationStats.getRunningTime();
-    }
-
-    /**
-     * The finalisation phase of state space generation. Called from
-     * <tt>{@link #start}</tt>.
-     */
-    protected void exit() {
-        // Does nothing.
-    }
-
-    /**
-     * This implementation expands any occurrence of {@link #GRAMMAR_NAME_VAR}
-     * into the grammar name.
-     */
-    @Override
-    protected String getOutputFileName() {
-        String result = super.getOutputFileName();
-        if (result != null) {
-            String grammarNameRegExpr = GRAMMAR_NAME_VAR;
-            result = result.replaceAll(grammarNameRegExpr, getGrammarName());
-        }
+        result.setResultCount(getResultCount());
         return result;
     }
 
     /**
-     * Convenience method to derive the name of a grammar from its location.
-     * Strips the directory and extension.
+     * Indicates if the log option has been set.
+     * @return {@code true} if {@link #getLogDir()} does not return {@code null}
      */
-    protected String getGrammarName() {
-        StringBuilder result =
-            new StringBuilder(new File(
-                GRAMMAR_FILTER.stripExtension(this.grammarLocation)).getName());
-        if (this.startGraphs != null) {
-            result.append(START_STATE_SEPARATOR);
-            result.append(this.startGraphs);
+    public boolean isLogging() {
+        return getLogDir() != null;
+    }
+
+    /**
+     * Sets the directory for the log file.
+     * If {@code null}, no logging will take place.
+     */
+    public File getLogDir() {
+        return this.logdir;
+    }
+
+    @Option(name = "-l", metaVar = "dir",
+            usage = "Log the generation process in the directory <dir>",
+            handler = DirectoryHandler.class)
+    private File logdir;
+
+    /** 
+     * Indicates if the strategy option is set.
+     * @return {@code true} if {@link #getStrategy()} is not {@code null} 
+     */
+    public boolean hasStrategy() {
+        return getStrategy() != null;
+    }
+
+    /**
+     * Returns the optional strategy value.
+     */
+    public String getStrategy() {
+        return this.strategy;
+    }
+
+    @Option(name = STRATEGY_NAME, metaVar = STRATEGY_VAR,
+            usage = STRATEGY_USAGE)
+    private String strategy;
+
+    /** 
+     * Indicates if the acceptor option is set.
+     * @return {@code true} if {@link #getAcceptor()} is not {@code null} 
+     */
+    public boolean hasAcceptor() {
+        return getAcceptor() != null;
+    }
+
+    /**
+     * Returns the optional acceptor value.
+     */
+    public String getAcceptor() {
+        return this.acceptor;
+    }
+
+    @Option(name = ACCEPTOR_NAME, metaVar = ACCEPTOR_VAR,
+            usage = ACCEPTOR_USAGE)
+    private String acceptor;
+
+    /**
+     * Returns the result count.
+     * If not set, the result count is {@code 0}.
+     */
+    public int getResultCount() {
+        return this.resultCount;
+    }
+
+    @Option(name = RESULT_NAME, metaVar = RESULT_VAR, usage = RESULT_USAGE)
+    private int resultCount = 0;
+
+    /**
+     * Returns the settings to be used in generating the LTS.
+     */
+    public LTSLabels getLtsLabels() {
+        return this.ltsLabels;
+    }
+
+    @Option(
+            name = "-ef",
+            metaVar = "flags",
+            depends = "-o",
+            usage = ""
+                + "Flags for the \"-o\" option. Legal values are:\n" //
+                + "  s - label start state (default: 'start')\n" //
+                + "  f - label final states (default: 'final')\n" //
+                + "  o - label open states (default: 'open')\n" //
+                + "  n - label state with number (default: 's#', '#' replaced by number)" //
+                + "  r - result state label (default: 'result')" //
+                + "Specify label to be used by appending flag with 'label' (single-quoted)",
+            handler = LTSLabelsHandler.class)
+    private LTSLabels ltsLabels;
+
+    /** 
+     * Indicates if the LTS output option is set.
+     * @return {@code true} if {@link #getLtsPattern()} is not {@code null} 
+     */
+    public boolean isSaveLts() {
+        return getLtsPattern() != null;
+    }
+
+    /**
+     * Returns the (optional) file to be used for saving the generated LTS to.
+     * @return the file to save the LTS to, or {@code null} if not set 
+     */
+    public String getLtsPattern() {
+        return this.ltsPattern;
+    }
+
+    @Option(
+            name = "-o",
+            metaVar = "file",
+            usage = "Save the generated LTS to a file with name derived from <file>, "
+                + "in which '#' is instantiated with the grammar ID. "
+                + "The \"-ef\"-option controls some additional state labels. "
+                + "The optional extension determines the output format (default is .gxl)")
+    private String ltsPattern;
+
+    /** 
+     * Indicates if the state save option is set.
+     * @return {@code true} if {@link #getStatePattern()} is not {@code null} 
+     */
+    public boolean isSaveState() {
+        return getStatePattern() != null;
+    }
+
+    /**
+     * Returns the (optional) filename pattern to be used for saving result states.
+     * The pattern is of the form {@code [path/]pre#post[.ext]}, where
+     * {@code #} is to be instantiated with the state number, and {@code .ext}
+     * determines the output format.
+     * @return the filename pattern, or {@code null} if not set
+     */
+    public String getStatePattern() {
+        return this.statePattern;
+    }
+
+    @Option(
+            name = "-f",
+            metaVar = "file",
+            usage = "Save result states in separate files, with names derived from <file>, "
+                + "in which the mandatory '#' is instantiated with the state number. "
+                + "The optional extension determines the output format (default is .gst)")
+    private String statePattern;
+
+    /**
+     * Returns the grammar location.
+     * The location is guaranteed to be an existing directory.
+     * @return the (non-{@code null}) grammar location
+     */
+    public File getGrammar() {
+        return this.grammar;
+    }
+
+    @Argument(metaVar = GrammarHandler.META_VAR, required = true,
+            usage = GrammarHandler.USAGE, handler = GrammarHandler.class)
+    private File grammar;
+
+    /**
+     * Returns the optional start graph, if set.
+     * If set, the start graph is guaranteed to either the (qualified) 
+     * name of a host graph within the grammar, or the name of an existing file.
+     * @return the start graph name; may be {@code null} 
+     */
+    public List<String> getStartGraphs() {
+        return this.startGraphs;
+    }
+
+    @Argument(index = 1, metaVar = "start", multiValued = true,
+            usage = "Start graph names (defined in grammar, no extension) "
+                + "or start graph files (extension .gst)")
+    private List<String> startGraphs;
+
+    /** Returns the exploration reporters enabled on the basis of the options. */
+    public ExplorationReporter getReporter() {
+        if (this.reporter == null) {
+            this.reporter = computeReporter();
         }
-        return result.toString();
+        return this.reporter;
     }
 
-    /** This implementation returns <tt>getId()</tt>. */
-    @Override
-    protected String getLogFileName() {
-        return getId();
+    /** Factory method for the reporters associated with this invocation. */
+    private CompositeReporter computeReporter() {
+        CompositeReporter result = new CompositeReporter();
+        LogReporter logger = new LogReporter(getVerbosity(), getLogDir());
+        if (isSaveLts()) {
+            result.add(new LTSReporter(getLtsPattern(), getLtsLabels(), logger));
+        }
+        if (isSaveState()) {
+            result.add(new StateReporter(getStatePattern(), logger));
+        }
+        // add the logger last, to ensure that any messages from the 
+        // other reporters are included.
+        result.add(logger);
+        return result;
+    }
+
+    /** The reporters that can be built on the basis of the options. */
+    private CompositeReporter reporter;
+
+    /**
+     * Name of the acceptor option.
+     */
+    public static final String ACCEPTOR_NAME = "-a";
+    /**
+     * Meta-variable of the acceptor option.
+     */
+    public static final String ACCEPTOR_VAR = "acc";
+
+    /** Usage message for the acceptor option. */
+    public final static String ACCEPTOR_USAGE =
+        ""
+            + "Set the acceptor to <acc>. "
+            + "The acceptor determines when a state is counted as a result of the exploration. "
+            + "Legal values are:\n" //
+            + "    final      - When final (default)\n" //
+            + "    inv:[!]id  - If rule <id> is [not] applicable\n" //
+            + "    ruleapp:id - If there is an <id>-labelled transition\n" //
+            + "    formula:f  - If <f> holds (a boolean formula of rules separated by &, |, !)\n" //
+            + "    any        - Always (all states are results)\n" //
+            + "    cycle      - If the state starts a cycle\n" //
+            + "    none       - Never (no states are results)";
+
+    /**
+     * Name of the result option.
+     */
+    public static final String RESULT_NAME = "-r";
+
+    /**
+     * Meta-variable name for the result option.
+     */
+    public static final String RESULT_VAR = "num";
+
+    /**
+     * Usage message for the result option.
+     */
+    public static final String RESULT_USAGE =
+        "Stop exploration after <num> result states (default is 0 for \"unbounded\")";
+
+    /** Option name for the strategy option. */
+    public final static String STRATEGY_NAME = "-s";
+    /** Meta-variable name for the strategy option. */
+    public final static String STRATEGY_VAR = "strgy";
+    /** Usage message for the strategy option. */
+    public final static String STRATEGY_USAGE = ""
+        + "Set the exploration strategy to <strgy>. Legal values are:\n"
+        + "  bfs         - Breadth-first Exploration\n"
+        + "  dfs         - Depth-first Exploration\n"
+        + "  linear      - Linear\n" //
+        + "  random      - Random linear\n"
+        + "  state       - Single-State\n" //
+        + "  rete        - Rete-based DFS\n"
+        + "  retelinear  - Rete-based Linear\n"
+        + "  reterandom  - Rete-based Random Linear\n"
+        + "  crule:[!]id - Conditional: stop when rule <id> [not] applicable\n"
+        + "  cnbound:n   - Conditional: up to <n> nodes\n"
+        + "  cebound:id>n,...\n"
+        + "              - Conditional: up to <n> edges labelled <id>\n"
+        + "  ltl:prop    - LTL Model Checking\n" //
+        + "  ltlbounded:idn,...;prop\n"
+        + "              - Bounded LTL Model Checking\n"
+        + "  ltlpocket:idn,...;prop\n"
+        + "              - Pocket LTL Model Checking\n"
+        + "  remote:host - Remote";
+
+    /**
+     * Attempts to load a graph grammar from a given location provided as a
+     * parameter with either default start state or a start state provided as a
+     * second parameter.
+     * This will always exit with {@link System#exit(int)}; see
+     * {@link #execute(String[])} for programmatic use.
+     * @param args generator options, grammar and start graph name
+     */
+    static public void main(String[] args) {
+        GrooveCmdLineTool.tryExecute(Generator.class, args);
     }
 
     /**
-     * This implementation returns <tt>{@link #USAGE_MESSAGE}</tt>.
+     * Loads a graph grammar, and returns the generated transition system.
+     * @param args generator options and arguments
+     * @return the generated transition system
+     * @throws Exception if any error occurred that prevented the GTS from being fully generated
      */
-    @Override
-    protected String getUsageMessage() {
-        return USAGE_MESSAGE;
+    static public GTS execute(String[] args) throws Exception {
+        staticGTS = new Generator(args).start();
+        return staticGTS;
     }
 
-    /**
-     * The identity for this generator, constructed from grammar name and time
-     * of invocation.
-     */
-    private String id;
+    /** Returns the most recently generated GTS. */
+    static public GTS getGts() {
+        return staticGTS;
+    }
 
     /**
      * The GTS that is being constructed. We make it static to enable memory
      * profiling. The field is cleared in the constructor, so consecutive
      * Generator instances work as expected.
      */
-    private static GTS gts;
+    private static GTS staticGTS;
 
-    /**
-     * The exploration to be used for the state space generation.
-     */
-    private Exploration exploration;
-
-    /** The exploration statistics for the generated state space. */
-    private ExplorationStatistics explorationStats;
-
-    /** String describing the location where the grammar is to be found. */
-    private String grammarLocation;
-    /** The set of start graphs to be used in the grammar. May be empty. */
-    private final List<String> startGraphs;
-    /** The model of the graph grammar used for the generation. */
-    private GrammarModel grammarModel;
-
-    /** The graph grammar used for the generation. */
-    private Grammar grammar;
-
-    /**
-     * The <code>ExportSimulationPathOption</code> is the command line option
-     * to export the simulation to an explicitly specified absolute path. It is
-     * implemented by means <code>StoreCommandLineOption</code> that stores a
-     * <code>String</code> with the path.
-     * 
-     * @see StoreCommandLineOption
-     */
-    protected static class ExportSimulationOption extends
-            StoreCommandLineOption<String> {
-
-        /** 
-         * Default constructor. Defines '-e' to be the name of the command
-         * line option, and 'path' to be the name of its argument.
-         */
-        public ExportSimulationOption() {
-            super("e", "path");
+    /** Handler for the {@link #ltsLabels} option. */
+    public static class LTSLabelsHandler extends
+            OneArgumentOptionHandler<LTSLabels> {
+        /** The required constructor. */
+        public LTSLabelsHandler(CmdLineParser parser, OptionDef option,
+                Setter<? super LTSLabels> setter) {
+            super(parser, option, setter);
         }
 
         @Override
-        public String[] getDescription() {
-            return new String[] {"Export the simulation to the specified "
-                + "path (default is grammar path)"};
-        }
-
-        @Override
-        public String parseParameter(String parameter) {
-            return parameter; // no parsing needed
-        }
-    }
-
-    /**
-     * The <code>ExportSimulationFlags</code> class is a record that holds all
-     * the flags that can be set with the -ef (export simulation flags) option.
-     * The default value for all flags is <code>false</code>.
-     * 
-     * @see ExportSimulationFlagsOption
-     */
-    static private class ExportSimulationFlags {
-        /** Flag to indicate that the start state must be labeled. */
-        public boolean labelStartState = false;
-        /** Flag to indicate that the final states must be labeled. */
-        public boolean labelFinalStates = false;
-        /** Flag to indicate that the open states must be labeled. */
-        public boolean labelOpenStates = false;
-        /** Flag to indicate that the state names must be exported. */
-        public boolean exportStateNames = false;
-    }
-
-    /**
-     * The <code>ExportSimulationFlagsOption</code> is the command line option
-     * for additional flags for the export simulation option.
-     * It is implemented as a <code>StoreCommandLineOption</code>.
-     * 
-     * @see StoreCommandLineOption
-     */
-    protected static class ExportSimulationFlagsOption extends
-            StoreCommandLineOption<ExportSimulationFlags> {
-
-        /** 
-         * Default constructor. Defines '-ef' to be the name of the command
-         * line option, and 'flags' to be the name of its argument.
-         */
-        public ExportSimulationFlagsOption() {
-            super("ef", "flags");
-        }
-
-        @Override
-        public String[] getDescription() {
-            String[] desc = new String[5];
-
-            desc[0] =
-                "Flags for the export simulation option. Legal flags are:";
-            desc[1] = "  s - label start state";
-            desc[2] = "  f - label final states";
-            desc[3] = "  o - label open states";
-            desc[4] = "  n - export state names";
-            return desc;
-        }
-
-        @Override
-        public ExportSimulationFlags parseParameter(String parameter) {
-            ExportSimulationFlags result = new ExportSimulationFlags();
-            for (int i = 0; i < parameter.length(); i++) {
-                switch (parameter.charAt(i)) {
-                case 's':
-                    result.labelStartState = true;
-                    break;
-                case 'f':
-                    result.labelFinalStates = true;
-                    break;
-                case 'o':
-                    result.labelOpenStates = true;
-                    break;
-                case 'n':
-                    result.exportStateNames = true;
-                    break;
-                default:
-                    throw new IllegalArgumentException("'"
-                        + parameter.charAt(i)
-                        + "' is not a valid export simulation flag.");
-                }
-            }
-            return result;
-        }
-    }
-
-    static class ResultSave {
-        String prefix = "";
-        String suffix = "";
-        FileType type = FileType.GXL;
-    }
-
-    /**
-     * The <code>ResultSaveOption</code> is the command line option for saving
-     * all final states in separate files. It is implemented by means of a
-     * <code>StoreCommandLineOption</code> that stores a <code>String</code>
-     * to indicate the names of the files to be written.
-     * 
-     * @see StoreCommandLineOption 
-     */
-    protected static class ResultSaveOption extends
-            StoreCommandLineOption<ResultSave> {
-
-        /** 
-         * Default constructor. Defines '-f' to be the name of the command
-         * line option, and 'file' to be the name of its argument.
-         */
-        public ResultSaveOption() {
-            super("f", "a#b.e");
-        }
-
-        @Override
-        public String[] getDescription() {
-            return new String[] {
-                "Save all result states using '" + getParameterName()
-                    + "' with # being state number.",
-                "Saving format is determined by extension 'e' (default is GXL)."};
-        }
-
-        @Override
-        public ResultSave parseParameter(String parameter) {
-            ResultSave result = new ResultSave();
+        protected LTSLabels parse(String argument)
+            throws NumberFormatException, CmdLineException {
             try {
-                String[] s = parameter.split("#");
-                result.prefix = s[0];
-                String[] t = s[1].split("\\.");
-                result.suffix = t[0];
-                for (FileType type : FileType.layoutless) {
-                    if (t[1].equals(type.getExtensionName())) {
-                        result.type = type;
-                        break;
-                    }
-                }
-            } catch (ArrayIndexOutOfBoundsException e) {
-                // Do nothing.
-            }
-            return result;
-        }
-    }
-
-    /**
-     * The <code>ResultOption</code> is the command line option for setting the
-     * nrResults stored by the exploration. It is implemented by means of a
-     * <code>StoreCommandLineOption<code> that stores a <code>Integer</code> to
-     * indicate the number of results to be stored.
-     * 
-     * @see StoreCommandLineOption
-     */
-    public static class ResultOption extends StoreCommandLineOption<Integer> {
-
-        /** 
-         * Default constructor. Defines '-r' to be the name of the command
-         * line option, and 'num' to be the name of its argument.
-         */
-        public ResultOption() {
-            super("r", "num");
-        }
-
-        @Override
-        public String[] getDescription() {
-            return new String[] {"The number of accepted exploration results (default is infinite)"};
-        }
-
-        @Override
-        public Integer parseParameter(String parameter) {
-            Integer result;
-            try {
-                result = Integer.parseInt(parameter);
-                if (result <= 0) {
-                    throw new IllegalArgumentException("'" + parameter
-                        + "' is not a valid positive number.");
-                } else {
-                    return result;
-                }
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("'" + parameter
-                    + "' is not a valid positive number.");
+                return new LTSLabels(argument);
+            } catch (FormatException e) {
+                throw new CmdLineException(this.owner, e);
             }
         }
     }
-
-    /**
-     * A <code>TemplatedOption</code> is a command line option for a
-     * <code>TemplateList</code>. It is implemented by means of a
-     * <code>StoreCommandLineOption</code> that stores a <code>Serialized</code>. 
-     * 
-     * @see TemplateList
-     * @see Serialized
-     * @see StoreCommandLineOption
-     */
-    public static class TemplatedOption<A> extends
-            StoreCommandLineOption<Serialized> {
-
-        // Enumerator of all allowed options.
-        private final TemplateList<A> enumerator;
-
-        /** 
-         * Generic constructor that takes as arguments the name of the option,
-         * the name of its parameter and an enumerator that describes the valid
-         * values of this parameter.
-         */
-        public TemplatedOption(String name, String parameterName,
-                TemplateList<A> enumerator) {
-            super(name, parameterName);
-            this.enumerator = enumerator;
-        }
-
-        @Override
-        public String[] getDescription() {
-            String[] lines = this.enumerator.describeCommandlineGrammar();
-            String[] desc = new String[lines.length + 1];
-
-            desc[0] =
-                "The " + this.enumerator.getTypeIdentifier()
-                    + ". Legal values for '" + getParameterName() + "' are:";
-            desc[1] = "  " + lines[0] + " (default value)";
-            for (int i = 1; i < lines.length; i++) {
-                desc[i + 1] = "  " + lines[i];
-            }
-            return desc;
-        }
-
-        @Override
-        public Serialized parseParameter(String parameter) {
-            Serialized result = this.enumerator.parseCommandline(parameter);
-            if (result == null) {
-                throw new IllegalArgumentException("Unable to parse "
-                    + getName() + " argument '" + parameter + "'.");
-            } else {
-                return result;
-            }
-        }
-    }
-
 }

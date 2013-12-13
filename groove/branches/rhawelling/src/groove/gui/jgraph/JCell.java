@@ -60,17 +60,6 @@ public interface JCell<G extends Graph> extends GraphCell, Serializable {
      */
     public Label getKey(Edge edge);
 
-    /** Indicates if this cell is currently layed-out. */
-    boolean isLayoutable();
-
-    /** 
-     * Sets this cell to layed-out. 
-     * This means that the next attempt to layout the graph will not
-     * change the position of this cell.
-     * @return {@code true} if the layed-out status changed as a result of this call
-     */
-    boolean setLayoutable(boolean layoutable);
-
     /** Indicates if this cell is currently grayed-out. */
     boolean isGrayedOut();
 

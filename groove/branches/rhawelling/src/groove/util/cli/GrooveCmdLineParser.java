@@ -14,26 +14,64 @@
  *
  * $Id$
  */
-package groove.explore;
+package groove.util.cli;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ResourceBundle;
 
+import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionHandlerFilter;
+import org.kohsuke.args4j.spi.FieldSetter;
 import org.kohsuke.args4j.spi.OptionHandler;
 
 /**
- * Overwrites 
+ * Specialised command-line parser that provides better help support.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class GrooveCmdLineParser extends CmdLineParser {
-    /** Constructor from superclass. */
-    public GrooveCmdLineParser(Object bean) {
+    /** 
+     * Constructs an instance for a given options object.
+     * @param appName the name of the application, printed in the usage message
+     * @param bean the options object
+     */
+    public GrooveCmdLineParser(String appName, Object bean) {
         super(bean);
+        this.appName = appName;
+    }
+
+    /**
+     * Called when the help option has been invoked.
+     * This causes the parser to stop parsing and never give a {@link CmdLineException}. 
+     */
+    public void setHelp() {
+        this.help = true;
+        stopOptionParsing();
+    }
+
+    /** Returns a single-line description of the tool usage. */
+    public String getUsageLine() {
+        StringBuilder result = new StringBuilder();
+        OutputStream stream = new ByteArrayOutputStream();
+        printSingleLineUsage(stream);
+        result.append("Usage: \"");
+        result.append(this.appName);
+        result.append(stream.toString());
+        result.append("\"");
+        return result.toString();
+    }
+
+    /** Prints a help message, consisting of the usage line and arguments and options descriptions. */
+    public void printHelp() {
+        System.out.println(getUsageLine());
+        System.out.println();
+        setUsageWidth(100);
+        printUsage(System.out);
     }
 
     /* Copied from superclass; Adds a few intermediate lines. */
@@ -53,14 +91,19 @@ public class GrooveCmdLineParser extends CmdLineParser {
         }
 
         // then print
-
-        w.println("ARGUMENTS");
-        for (OptionHandler<?> h : getArguments()) {
-            printOption(w, h, len, rb, filter);
+        if (!getArguments().isEmpty()) {
+            w.println("ARGUMENTS");
+            for (OptionHandler<?> h : getArguments()) {
+                printOption(w, h, len, rb, filter);
+            }
+            w.println();
         }
-        w.println("\nOPTIONS");
-        for (OptionHandler<?> h : getOptions()) {
-            printOption(w, h, len, rb, filter);
+        if (!getOptions().isEmpty()) {
+            w.println("OPTIONS");
+            for (OptionHandler<?> h : getOptions()) {
+                printOption(w, h, len, rb, filter);
+            }
+            w.println();
         }
 
         w.flush();
@@ -90,6 +133,7 @@ public class GrooveCmdLineParser extends CmdLineParser {
             printSingleLineOption(pw, h, rb, true);
         }
         int optArgCount = 0;
+        // nest the argument meta-variables
         for (OptionHandler<?> h : getArguments()) {
             printSingleLineOption(pw, h, rb, false);
             if (!h.option.required()) {
@@ -102,20 +146,43 @@ public class GrooveCmdLineParser extends CmdLineParser {
         pw.flush();
     }
 
-    /* Modified from superclass to add parameter controlling
+    /** Modified from superclass to add parameter controlling
      * closing bracket printing. */
-    private void printSingleLineOption(PrintWriter pw, OptionHandler<?> h,
+    protected void printSingleLineOption(PrintWriter pw, OptionHandler<?> h,
             ResourceBundle rb, boolean closeOpt) {
         pw.print(' ');
-        if (!h.option.required()) {
+        boolean multiValued = !(h.setter instanceof FieldSetter);
+        boolean brackets = !h.option.required() || multiValued;
+        if (brackets) {
             pw.print('[');
         }
         pw.print(h.getNameAndMeta(rb));
         if (h.option.isMultiValued()) {
             pw.print(" ...");
         }
-        if (!h.option.required() && closeOpt) {
+        if (brackets && closeOpt) {
             pw.print(']');
         }
+        if (multiValued) {
+            pw.print(h.option.required() ? '+' : '*');
+        }
     }
+
+    /* Does not generate an exception if the help has been invoked. */
+    @Override
+    public void parseArgument(String... args) throws CmdLineException {
+        try {
+            super.parseArgument(args);
+        } catch (CmdLineException e) {
+            if (!this.help) {
+                throw new CmdLineException(this, String.format("Error: %s%n%s",
+                    e.getMessage(), getUsageLine()));
+            }
+        }
+    }
+
+    /** Name of the application of which the command-line options are parsed. */
+    private final String appName;
+    /** Flag indicating that the help option has been invoked. */
+    private boolean help;
 }

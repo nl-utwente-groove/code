@@ -1,4 +1,5 @@
-Antlr;compiling control programs;http://www.antlr.org;3.4
+Antlr;compiling control programs and expressions;http://www.antlr.org;3.4
+Args4J;command-line option parsing;http://args4j.kohsuke.org/;2.0.26
 Asm;Java bytecode manipulation and analysis;http://asm.ow2.org/;4.0
 EMF;converting to and from Eclipse ecore format;http://eclipse.org;2.7.0
 EPSGraphics;exporting displayed graphs to EPS format;http://www.abeel.be/epsgraphics/;1.2

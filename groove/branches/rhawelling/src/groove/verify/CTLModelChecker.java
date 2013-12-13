@@ -17,15 +17,32 @@
 package groove.verify;
 
 import groove.explore.Generator;
-import groove.lts.GTS;
-import groove.util.CommandLineTool;
+import groove.explore.Generator.LTSLabelsHandler;
+import groove.explore.util.LTSLabels;
+import groove.graph.Graph;
+import groove.util.Groove;
+import groove.util.cli.GrooveCmdLineParser;
+import groove.util.cli.GrooveCmdLineTool;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.spi.FileOptionHandler;
+import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
+import org.kohsuke.args4j.spi.OptionHandler;
+import org.kohsuke.args4j.spi.Parameters;
+import org.kohsuke.args4j.spi.Setter;
 
 /**
  * Command-line tool directing the model checking process.
@@ -33,204 +50,195 @@ import java.util.List;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-03-28 07:03:03 $
  */
-public class CTLModelChecker extends CommandLineTool {
-
-    /** Usage message for the generator. */
-    static public final String USAGE_MESSAGE =
-        "Usage: ModelChecker <grammar-location> [property] [-g [generator-options]]";
-    /** QUIT option */
-    private static final String QUIT_OPTION = "Q";
-
-    /**
-     * Main method.
-     * @param args the list of command-line arguments
-     */
-    public static void main(String args[]) {
-        List<String> argList = new LinkedList<String>(Arrays.asList(args));
-        int splitPoint = argList.indexOf("-g");
-        if (splitPoint < 0) {
-            System.err.printf(USAGE_MESSAGE);
-        } else {
-            List<String> checkerArgs =
-                new LinkedList<String>(argList.subList(0, splitPoint));
-            List<String> genArgs =
-                new LinkedList<String>(argList.subList(splitPoint + 1,
-                    argList.size()));
-            CTLModelChecker verifier =
-                new CTLModelChecker(checkerArgs, genArgs);
-            verifier.start();
-        }
-    }
-
+public class CTLModelChecker extends GrooveCmdLineTool<Object> {
     /**
      * Constructor.
-     * @param checkerArgs the command line arguments for the model checker.
-     * @param genArgs the command line arguments for the generator.
+     * @param args the command-line arguments for the model checker
      */
-    public CTLModelChecker(List<String> checkerArgs, List<String> genArgs) {
-        super(checkerArgs.toArray(new String[0]));
-        this.genArgs = genArgs.toArray(new String[0]);
-        this.properties = new LinkedList<Formula>();
+    public CTLModelChecker(String... args) throws CmdLineException {
+        super("ModelChecker", args);
+    }
+
+    @Override
+    protected GrooveCmdLineParser createParser(String appName) {
+        GrooveCmdLineParser result = new GrooveCmdLineParser(appName, this) {
+            @Override
+            public void printSingleLineUsage(Writer w, ResourceBundle rb) {
+                int optionCount = getOptions().size();
+                PrintWriter pw = new PrintWriter(w);
+                for (int ix = 0; ix < optionCount - 1; ix++) {
+                    printSingleLineOption(pw, getOptions().get(ix), rb, true);
+                }
+                pw.print(" [");
+                pw.print(getOptions().get(optionCount - 1).getNameAndMeta(rb));
+                pw.print(" | ");
+                pw.print(getArguments().get(0).getNameAndMeta(rb));
+                pw.print(']');
+                pw.flush();
+            }
+        };
+        // move -g to the final position
+        @SuppressWarnings("rawtypes")
+        List<OptionHandler> handlers = result.getOptions();
+        OptionHandler<?> genHandler = null;
+        for (OptionHandler<?> handler : handlers) {
+            if (handler instanceof GeneratorHandler) {
+                genHandler = handler;
+            }
+        }
+        handlers.remove(genHandler);
+        handlers.add(genHandler);
+        return result;
     }
 
     /**
      * Method managing the actual work to be done.
      */
-    public void start() {
-        processArguments();
-        this.generator = new Generator(this.genArgs);
-        this.generator.start();
-        this.gts = this.generator.getGTS();
-        long startTime = System.currentTimeMillis();
+    @Override
+    public Object run() throws Exception {
+        modelCheck(this.genArgs == null ? null : this.genArgs.get());
+        return null;
+    }
 
-        while (this.properties.size() > 0) {
-            this.setProperty(this.properties.remove(0));
-            this.marker = new DefaultMarker(this.property, this.gts);
-            System.out.println("Checking CTL formula: " + this.property);
-            this.marker.verify();
-            if (this.marker.hasValue(false)) {
-                System.out.println("The model violates the given property.");
-            } else {
-                System.out.println("The model satisfies the given property.");
+    private void modelCheck(String[] genArgs) throws Exception {
+        long genStartTime = System.currentTimeMillis();
+        Graph model;
+        if (genArgs != null) {
+            try {
+                model = Generator.execute(genArgs);
+            } catch (Exception e) {
+                throw new Exception("Error while invoking Generator\n"
+                    + e.getMessage(), e);
             }
+        } else {
+            emit("Model: %s%n", this.modelGraph);
+            model = Groove.loadGraph(this.modelGraph);
         }
-
+        long mcStartTime = System.currentTimeMillis();
+        int maxWidth = 0;
+        Map<Formula,Boolean> outcome = new HashMap<Formula,Boolean>();
+        for (Formula property : this.properties) {
+            maxWidth = Math.max(maxWidth, property.toString().length());
+            CTLMarker marker = new CTLMarker(property, model, this.ltsLabels);
+            outcome.put(property, marker.hasValue(true));
+        }
+        emit("%nModel checking outcome:%n");
+        for (Formula property : this.properties) {
+            emit("    %-" + maxWidth + "s : %s%n", property,
+                outcome.get(property) ? "satisfied" : "violated");
+        }
         long endTime = System.currentTimeMillis();
-        long mcTime = endTime - startTime;
 
-        println("** Model Checking Time (ms):\t" + mcTime);
-        println("** Total Running Time (ms):\t"
-            + (this.generator.getRunningTime() + mcTime));
-
+        emit("%n** Model Checking Time (ms):\t%d%n", endTime - mcStartTime);
+        emit("** Total Running Time (ms):\t%d%n", endTime - genStartTime);
     }
 
-    /**
-     * Goes through the list of command line arguments and tries to find command
-     * line options. The options and their parameters are subsequently removed
-     * from the argument list. If an option cannot be parsed, the method prints
-     * an error message and terminates the program.
-     */
-    @Override
-    public void processArguments() {
-        List<String> argsList = getArgs();
-        while (argsList.size() > 1) {
-            this.addProperty(argsList.remove(1));
-        }
-        if (argsList.size() == 0) {
-            this.printError("No grammar location specified", true);
-        }
-    }
+    @Option(
+            name = "-ef",
+            metaVar = "flags",
+            usage = ""
+                + "Special GTS labels. Legal values are:\n" //
+                + "  s - start state label (default: 'start')\n" //
+                + "  f - final states label (default: 'final')\n" //
+                + "  o - open states label (default: 'open')\n" //
+                + "  r - result state label (default: 'result')" //
+                + "Specify label to be used by appending flag with 'label' (single-quoted)",
+            handler = LTSLabelsHandler.class)
+    private LTSLabels ltsLabels;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see groove.util.CommandLineTool#supportsLogOption()
-     */
-    @Override
-    protected boolean supportsLogOption() {
-        return false;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see groove.util.CommandLineTool#supportsOutputOption()
-     */
-    @Override
-    protected boolean supportsOutputOption() {
-        return false;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see groove.util.CommandLineTool#supportsVerbosityOption()
-     */
-    @Override
-    protected boolean supportsVerbosityOption() {
-        return false;
-    }
-
-    /** Adds the string property to the list of properties to be checked. */
-    public void addProperty(String property) {
-        try {
-            this.properties.add(FormulaParser.parse(property).toCtlFormula());
-        } catch (ParseException efe) {
-            print("Format error in property: " + efe.getMessage());
-        }
-    }
-
-    /**
-     * Ordinary set-method.
-     * @param property the property to be checked
-     */
-    public void setProperty(Formula property) {
-        this.property = property;
-    }
-
-    /**
-     * Asks the user for the next property to be verified.
-     * @return <tt>true</tt> if the user wants to verify another property,
-     *         <tt>false</tt> otherwise
-     */
-    public boolean nextProperty() {
-        boolean result = false;
-        try {
-            BufferedReader in =
-                new BufferedReader(new InputStreamReader(System.in));
-            System.out.print("Enter CTL-expression (or '" + QUIT_OPTION
-                + "' to quit):\n> ");
-            String expression = in.readLine();
-            if (!(expression.equals(QUIT_OPTION))) {
-                setProperty(FormulaParser.parse(expression).toCtlFormula());
-                result = true;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException efe) {
-            System.err.println("Wrong format. Retry.");
-            return nextProperty();
-            // efe.printStackTrace();
-        }
-        return result;
-    }
-
-    /**
-     * Returns a usage message for the command line tool.
-     */
-    @Override
-    protected String getUsageMessage() {
-        return USAGE_MESSAGE;
-    }
-
-    /**
-     * Flag to indicate whether to check a single property or to ask for
-     * properties interactively.
-     */
-    // private boolean checkSingleProperty = false;
-    /**
-     * The generator used for generating the state space.
-     */
-    private Generator generator;
-    /** The list of options to the generator. */
-    private String[] genArgs = null;
-    /**
-     * The state space (with graphs as states) to be model-checked.
-     */
-    private GTS gts;
-
-    /**
-     * The CTL-expression to be checked for.
-     */
-    private Formula property;
-
-    /**
-     * The list of CTL formulas to be checked.
-     */
+    @Option(name = "-ctl", metaVar = "form",
+            usage = "Check the formula <form> (multiple allowed)",
+            handler = FormulaHandler.class, required = true)
     private List<Formula> properties;
+    @Option(name = "-g", metaVar = "args",
+            usage = "Invoke the generator using <args> as options + arguments",
+            handler = GeneratorHandler.class)
+    private GeneratorArgs genArgs;
+
+    @Argument(metaVar = "graph", usage = "File name of graph to be checked",
+            handler = FileOptionHandler.class)
+    private File modelGraph;
 
     /**
-     * The state marker.
+     * Main method.
+     * Always exits with {@link System#exit(int)}; see {@link #execute(String[])}
+     * for programmatic use.
+     * @param args the list of command-line arguments
      */
-    private DefaultMarker marker;
+    public static void main(String args[]) {
+        tryExecute(CTLModelChecker.class, args);
+    }
+
+    /**
+     * Constructs and invokes a model checker instance.
+     * @param args the list of command-line arguments
+     */
+    public static void execute(String args[]) throws Exception {
+        new CTLModelChecker(args).start();
+    }
+
+    /** Option handler for CTL formulas. */
+    public static class FormulaHandler extends
+            OneArgumentOptionHandler<Formula> {
+        /**
+         * Required constructor.
+         */
+        public FormulaHandler(CmdLineParser parser, OptionDef option,
+                Setter<? super Formula> setter) {
+            super(parser, option, setter);
+        }
+
+        @Override
+        protected Formula parse(String argument) throws CmdLineException {
+            try {
+                return FormulaParser.parse(argument).toCtlFormula();
+            } catch (ParseException e) {
+                throw new CmdLineException(this.owner, e);
+            }
+        }
+    }
+
+    /** Option handler for the '-g' option. */
+    public static class GeneratorHandler extends OptionHandler<GeneratorArgs> {
+        /** Required constructor. */
+        public GeneratorHandler(CmdLineParser parser, OptionDef option,
+                Setter<? super GeneratorArgs> setter) {
+            super(parser, option, setter);
+        }
+
+        @Override
+        public int parseArguments(Parameters params) throws CmdLineException {
+            ArrayList<String> genArgs = new ArrayList<String>();
+            for (int ix = 0; ix < params.size(); ix++) {
+                genArgs.add(params.getParameter(ix));
+            }
+            this.setter.addValue(new GeneratorArgs(params));
+            return params.size();
+        }
+
+        @Override
+        public String getDefaultMetaVariable() {
+            return "generator-args";
+        }
+    }
+
+    /**
+     * Option value class collecting all remaining arguments.
+     * Wrapped into a class to fool Args4J into understanding this is not a multiple value.
+     */
+    private static class GeneratorArgs {
+        GeneratorArgs(Parameters params) throws CmdLineException {
+            this.args = new ArrayList<String>();
+            for (int ix = 0; ix < params.size(); ix++) {
+                this.args.add(params.getParameter(ix));
+            }
+        }
+
+        /** Returns the content of this argument, as a string array. */
+        public String[] get() {
+            return this.args.toArray(new String[0]);
+        }
+
+        private final List<String> args;
+    }
 }
