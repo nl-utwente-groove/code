@@ -69,8 +69,10 @@ public class CriticalPair {
     private CriticalPair(DefaultHostGraph target, Rule rule1, Rule rule2,
             RuleToHostMap m1, RuleToHostMap m2) {
         this.hostGraph = target;
-        this.match2 = m1;
+        this.match1 = m1;
         this.match2 = m2;
+        this.rule1 = rule1;
+        this.rule2 = rule2;
     }
 
     private CriticalPair(CriticalPair other) {
@@ -109,7 +111,6 @@ public class CriticalPair {
                 it.remove();
             }
         }
-        //The resulting critical pairs are all parallel dependent
         //TODO assert that m1 and m2 are jointly surjective
         return parrPairs;
     }
@@ -124,7 +125,7 @@ public class CriticalPair {
     private static Set<CriticalPair> buildCriticalSet(RuleGraph ruleGraph,
             Set<CriticalPair> parrPairs, Rule rule1, Rule rule2, int matchnum) {
         Set<RuleNode> nodes = ruleGraph.nodeSet();
-        if (matchnum != 1 || matchnum != 2) {
+        if (matchnum != 1 && matchnum != 2) {
             throw new IllegalArgumentException("matchnum may only be 1 or 2");
         }
         for (RuleNode rnode : nodes) {
@@ -154,13 +155,12 @@ public class CriticalPair {
                     //Repeat the following for every node tnode in pair.getTarget():
                     //Map rnode to tnode in M1 (if the types coincide)
                     for (HostNode tnode : pair.getHostGraph().nodeSet()) {
-                        if (tnode.getType().equals(rnode.getType())) {
-                            newPair = new CriticalPair(pair);
-                            mapNodeAndAddEdges(rnode, tnode,
-                                newPair.getHostGraph(), newPair.getMatch1(),
-                                newPair.getMatch2(), matchnum, edges);
-                            newParrPairs.add(newPair);
-                        }
+                        //TODO compare types for typed graphs
+                        newPair = new CriticalPair(pair);
+                        mapNodeAndAddEdges(rnode, tnode,
+                            newPair.getHostGraph(), newPair.getMatch1(),
+                            newPair.getMatch2(), matchnum, edges);
+                        newParrPairs.add(newPair);
                     }
                 }
             }
@@ -202,7 +202,7 @@ public class CriticalPair {
         RuleToHostMap match;
         if (matchnum == 1) {
             match = m1;
-        } else if (matchnum == 1) {
+        } else if (matchnum == 2) {
             match = m2;
         } else {
             throw new IllegalArgumentException("matchnum must be 1 or 2");
@@ -237,7 +237,7 @@ public class CriticalPair {
      */
     private boolean isParallelDependent() {
         return isWeaklyParallelDependent(this.rule1, this.match1, this.match2)
-            && isWeaklyParallelDependent(this.rule2, this.match2, this.match1);
+            || isWeaklyParallelDependent(this.rule2, this.match2, this.match1);
     }
 
     private boolean isWeaklyParallelDependent(Rule rule, RuleToHostMap match,
@@ -246,18 +246,18 @@ public class CriticalPair {
         RuleApplication app = new RuleApplication(ruleEvent, this.hostGraph);
         HostGraphMorphism transformationMorphism = app.getMorphism();
         //check if transformationMorphism1 is defined for all target elements of this.match1
-        for (HostNode hn : this.match1.nodeMap().values()) {
-            if (!transformationMorphism.nodeMap().containsKey(hn)) {
-                return false;
+        for (HostNode hn : otherMatch.nodeMap().values()) {
+            if (transformationMorphism.nodeMap().get(hn) == null) {
+                return true;
             }
         }
         //same process for edges
-        for (HostEdge he : this.match1.edgeMap().values()) {
-            if (!transformationMorphism.edgeMap().containsKey(he)) {
-                return false;
+        for (HostEdge he : otherMatch.edgeMap().values()) {
+            if (transformationMorphism.edgeMap().get(he) == null) {
+                return true;
             }
         }
-        //all checks complete
-        return true;
+        //all checks complete, no dependencies found
+        return false;
     }
 }
