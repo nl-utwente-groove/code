@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.transform.critical;
+package groove.transform.criticalpair;
 
 import groove.algebra.Algebra;
 import groove.grammar.Rule;
