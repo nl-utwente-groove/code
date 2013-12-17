@@ -79,7 +79,7 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
 
     /** Maximum of two real numbers. */
     @Syntax("Q%s.LPAR.r1.COMMA.r2.RPAR")
-    @ToolTipHeader("Real number minimum")
+    @ToolTipHeader("Real number maximum")
     @ToolTipBody("Returns the maximum of %s and %s")
     public abstract Real max(Real arg0, Real arg1);
 
