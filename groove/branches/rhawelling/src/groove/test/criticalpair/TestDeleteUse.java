@@ -17,7 +17,6 @@
 package groove.test.criticalpair;
 
 import static org.junit.Assert.assertTrue;
-import groove.abstraction.pattern.PatternAbstraction;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
@@ -35,12 +34,11 @@ import org.junit.Test;
  */
 public class TestDeleteUse {
 
-    static private final String GRAMMAR = "junit/criticalpair/basic1.gps/";
+    static private final String GRAMMAR = "junit/criticalpair/basic.gps/";
     static private GrammarModel view;
 
     @BeforeClass
     public static void setUp() {
-        PatternAbstraction.initialise();
         File grammarFile = new File(GRAMMAR);
         try {
             view = GrammarModel.newInstance(grammarFile, false);
@@ -50,17 +48,72 @@ public class TestDeleteUse {
     }
 
     @Test
-    public void testBasic1() {
-        Rule r1 = getSimpleRule("r1");
-        Rule r2 = getSimpleRule("r2");
-        Set<CriticalPair> pairs = CriticalPair.computeCriticalPairs(r1, r2);
-        assertTrue(pairs.size() == 1);
-        pairs = CriticalPair.computeCriticalPairs(r2, r1);
-        assertTrue(pairs.size() == 1);
-        pairs = CriticalPair.computeCriticalPairs(r2, r1);
-        assertTrue(pairs.size() == 1);
-        pairs = CriticalPair.computeCriticalPairs(r2, r2);
+    public void testBasic() {
+        Rule addNodeAndEdge = getSimpleRule("addNodeAndEdge");
+        Rule constantNode = getSimpleRule("constantNode");
+        Rule constant_3_clique = getSimpleRule("constant_3_clique");
+        Rule constantSelfEdge = getSimpleRule("constantSelfEdge");
+        Rule deleteEdge = getSimpleRule("deleteEdge");
+        Rule deleteNode = getSimpleRule("deleteNode");
+        Rule deleteSelfEdge = getSimpleRule("deleteSelfEdge");
+
+        Set<CriticalPair> pairs =
+            CriticalPair.computeCriticalPairs(addNodeAndEdge, constantNode);
         assertTrue(pairs.size() == 0);
+        pairs =
+            CriticalPair.computeCriticalPairs(addNodeAndEdge, constant_3_clique);
+        assertTrue(pairs.size() == 0);
+        pairs =
+            CriticalPair.computeCriticalPairs(addNodeAndEdge, constantSelfEdge);
+        assertTrue(pairs.size() == 0);
+        pairs = CriticalPair.computeCriticalPairs(addNodeAndEdge, deleteEdge);
+        assertTrue(pairs.size() == 0);
+
+        pairs = CriticalPair.computeCriticalPairs(addNodeAndEdge, deleteNode);
+        assertTrue(pairs.size() == 1);
+        pairs =
+            CriticalPair.computeCriticalPairs(addNodeAndEdge, deleteSelfEdge);
+        assertTrue(pairs.size() == 0);
+        pairs =
+            CriticalPair.computeCriticalPairs(constantNode, constant_3_clique);
+        assertTrue(pairs.size() == 0);
+        pairs =
+            CriticalPair.computeCriticalPairs(constantNode, constantSelfEdge);
+        assertTrue(pairs.size() == 0);
+        pairs = CriticalPair.computeCriticalPairs(constantNode, deleteEdge);
+        assertTrue(pairs.size() == 0);
+        pairs = CriticalPair.computeCriticalPairs(constantNode, deleteNode);
+        assertTrue(pairs.size() == 1);
+        pairs = CriticalPair.computeCriticalPairs(constantNode, deleteSelfEdge);
+        assertTrue(pairs.size() == 0);
+
+        pairs =
+            CriticalPair.computeCriticalPairs(constant_3_clique,
+                constantSelfEdge);
+        assertTrue(pairs.size() == 0);
+        pairs =
+            CriticalPair.computeCriticalPairs(constant_3_clique, deleteEdge);
+        assertTrue(pairs.size() == 16);
+
+        pairs =
+            CriticalPair.computeCriticalPairs(constant_3_clique, deleteNode);
+        assertTrue(pairs.size() == 10);
+        pairs =
+            CriticalPair.computeCriticalPairs(constant_3_clique, deleteSelfEdge);
+        assertTrue(pairs.size() == 4);
+
+        pairs = CriticalPair.computeCriticalPairs(constantSelfEdge, deleteEdge);
+        assertTrue(pairs.size() == 1);
+        pairs = CriticalPair.computeCriticalPairs(constantSelfEdge, deleteNode);
+        assertTrue(pairs.size() == 1);
+        pairs =
+            CriticalPair.computeCriticalPairs(constantSelfEdge, deleteSelfEdge);
+        assertTrue(pairs.size() == 1);
+
+        pairs = CriticalPair.computeCriticalPairs(deleteEdge, deleteNode);
+        assertTrue(pairs.size() == 3);
+        pairs = CriticalPair.computeCriticalPairs(deleteEdge, deleteSelfEdge);
+        assertTrue(pairs.size() == 1);
     }
 
     private Rule getSimpleRule(String name) {

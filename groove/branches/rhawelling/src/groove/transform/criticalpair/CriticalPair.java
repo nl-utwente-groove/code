@@ -30,6 +30,7 @@ import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleGraph;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
+import groove.grammar.type.TypeLabel;
 import groove.transform.BasicEvent;
 import groove.transform.RuleApplication;
 import groove.transform.RuleEvent.Reuse;
@@ -221,8 +222,13 @@ public class CriticalPair {
                 HostNode edgeTarget = match.getNode(ruleEdge.target());
                 //addEdge returns the existing edge, if an edge with these properties already exists
                 //this is exactly what we need
+                TypeLabel label = ruleEdge.label().getTypeLabel();
+                if (label == null) {
+                    throw new UnsupportedOperationException(
+                        "RuleLabel cannot be converted to TypeLabel");
+                }
                 HostEdge hostEdge =
-                    hostGraph.addEdge(edgeSource, ruleEdge.label(), edgeTarget);
+                    hostGraph.addEdge(edgeSource, label, edgeTarget);
                 //TODO are all possible values for ruleEdge.label() valid for host graphs?
                 //TODO use typeEdges?
                 match.putEdge(ruleEdge, hostEdge);
@@ -260,4 +266,51 @@ public class CriticalPair {
         //all checks complete, no dependencies found
         return false;
     }
+
+    //    /**
+    //     * Prints a textual representation of the node, matches critical pair
+    //     */
+    //    public void printNodes() {
+    //        Map<RuleNode,Integer> nodeNumbers1 = new HashMap<RuleNode,Integer>();
+    //        Map<RuleNode,Integer> nodeNumbers2 = new HashMap<RuleNode,Integer>();
+    //        System.out.print("Nodes in rule1: {");
+    //        int counter = 1;
+    //        Iterator<RuleNode> nodeIt = this.rule1.lhs().nodeSet().iterator();
+    //        while (nodeIt.hasNext()) {
+    //            RuleNode rn = nodeIt.next();
+    //            nodeNumbers1.put(rn, counter);
+    //            System.out.print(counter);
+    //            if (nodeIt.hasNext()) {
+    //                System.out.print(",");
+    //            }
+    //            counter++;
+    //        }
+    //        System.out.print("}\nNodes in rule2: {");
+    //        nodeIt = this.rule2.lhs().nodeSet().iterator();
+    //        while (nodeIt.hasNext()) {
+    //            RuleNode rn = nodeIt.next();
+    //            nodeNumbers2.put(rn, counter);
+    //            System.out.print(counter);
+    //            if (nodeIt.hasNext()) {
+    //                System.out.print(",");
+    //            }
+    //            counter++;
+    //        }
+    //        System.out.print("}\nMatch in hostgraph: <");
+    //        for (HostNode hn : this.hostGraph.nodeSet()) {
+    //            System.out.print("(");
+    //            for (RuleNode rn : this.match1.nodeMap().keySet()) {
+    //                if (hn.equals(this.match1.nodeMap().get(rn))) {
+    //                    System.out.print(nodeNumbers1.get(rn) + " ");
+    //                }
+    //            }
+    //            for (RuleNode rn : this.match2.nodeMap().keySet()) {
+    //                if (hn.equals(this.match2.nodeMap().get(rn))) {
+    //                    System.out.print(nodeNumbers2.get(rn) + " ");
+    //                }
+    //            }
+    //            System.out.print(") ");
+    //        }
+    //        System.out.print(">");
+    //    }
 }
