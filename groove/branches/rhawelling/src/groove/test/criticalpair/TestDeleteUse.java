@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -34,28 +33,23 @@ import org.junit.Test;
  */
 public class TestDeleteUse {
 
-    static private final String GRAMMAR = "junit/criticalpair/basic.gps/";
-    static private GrammarModel view;
-
-    @BeforeClass
-    public static void setUp() {
-        File grammarFile = new File(GRAMMAR);
+    @Test
+    public void testBasic() {
+        String grammar = "junit/criticalpair/basic.gps/";
+        File grammarFile = new File(grammar);
+        GrammarModel view = null;
         try {
             view = GrammarModel.newInstance(grammarFile, false);
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    @Test
-    public void testBasic() {
-        Rule addNodeAndEdge = getSimpleRule("addNodeAndEdge");
-        Rule constantNode = getSimpleRule("constantNode");
-        Rule constant_3_clique = getSimpleRule("constant_3_clique");
-        Rule constantSelfEdge = getSimpleRule("constantSelfEdge");
-        Rule deleteEdge = getSimpleRule("deleteEdge");
-        Rule deleteNode = getSimpleRule("deleteNode");
-        Rule deleteSelfEdge = getSimpleRule("deleteSelfEdge");
+        Rule addNodeAndEdge = getSimpleRule("addNodeAndEdge", view);
+        Rule constantNode = getSimpleRule("constantNode", view);
+        Rule constant_3_clique = getSimpleRule("constant_3_clique", view);
+        Rule constantSelfEdge = getSimpleRule("constantSelfEdge", view);
+        Rule deleteEdge = getSimpleRule("deleteEdge", view);
+        Rule deleteNode = getSimpleRule("deleteNode", view);
+        Rule deleteSelfEdge = getSimpleRule("deleteSelfEdge", view);
 
         Set<CriticalPair> pairs =
             CriticalPair.computeCriticalPairs(addNodeAndEdge, constantNode);
@@ -116,7 +110,39 @@ public class TestDeleteUse {
         assertTrue(pairs.size() == 1);
     }
 
-    private Rule getSimpleRule(String name) {
+    @Test
+    public void testFlag() {
+        String grammar = "junit/criticalpair/flags.gps/";
+        File grammarFile = new File(grammar);
+        GrammarModel view = null;
+        try {
+            view = GrammarModel.newInstance(grammarFile, false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Rule deleteFlagA = getSimpleRule("deleteFlagA", view);
+        Rule nodeWithEdgeA = getSimpleRule("nodeWithEdgeA", view);
+        Rule nodewithFlagA = getSimpleRule("nodeWithFlagA", view);
+        Rule threeNodesOneFlag = getSimpleRule("threeNodesOneFlag", view);
+        Rule threeNodesThreeFlags = getSimpleRule("threeNodesThreeFlags", view);
+
+        Set<CriticalPair> pairs =
+            CriticalPair.computeCriticalPairs(deleteFlagA, nodeWithEdgeA);
+        assertTrue(pairs.size() == 0);
+        pairs = CriticalPair.computeCriticalPairs(deleteFlagA, nodeWithEdgeA);
+        assertTrue(pairs.size() == 0);
+        pairs = CriticalPair.computeCriticalPairs(deleteFlagA, nodewithFlagA);
+        assertTrue(pairs.size() == 1);
+        pairs =
+            CriticalPair.computeCriticalPairs(deleteFlagA, threeNodesOneFlag);
+        assertTrue(pairs.size() == 5);
+        pairs =
+            CriticalPair.computeCriticalPairs(deleteFlagA, threeNodesThreeFlags);
+        assertTrue(pairs.size() == 10);
+
+    }
+
+    private Rule getSimpleRule(String name, GrammarModel view) {
         Rule result = null;
         try {
             result = view.getRuleModel(name).toResource();

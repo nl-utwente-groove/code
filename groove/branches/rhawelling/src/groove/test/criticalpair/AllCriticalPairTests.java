@@ -22,7 +22,7 @@ import org.junit.runners.Suite;
  * @author Ruud Welling
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({})
+@Suite.SuiteClasses({TestDeleteUse.class})
 public class AllCriticalPairTests {
     // Empty by design.
 }
