@@ -95,7 +95,7 @@ public abstract class IntSignature<Int,Bool,String> implements Signature {
 
     /** Maximum of two integers. */
     @Syntax("Q%s.LPAR.i1.COMMA.i2.RPAR")
-    @ToolTipHeader("Integer minimum")
+    @ToolTipHeader("Integer maximum")
     @ToolTipBody("Returns the maximum of %s and %s")
     public abstract Int max(Int arg0, Int arg1);
 

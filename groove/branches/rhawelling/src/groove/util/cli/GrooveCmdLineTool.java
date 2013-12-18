@@ -26,6 +26,16 @@ import org.kohsuke.args4j.Option;
 
 /**
  * Command-line tool superclass that implements help and verbosity options.
+ * A prototypical implementation should have the following static methods:<p>
+ * <pre>
+   static public void main(String[] args) {
+       GrooveCmdLineTool.tryExecute(MyClass.class, args);
+   }
+   
+   static public T execute(String[] args) throws Exception {
+       return new MyClass(args).start();
+   }
+ * </pre>
  * @param <T> return type for the {@link #start()} method.
  * @author Arend Rensink
  * @version $Revision $

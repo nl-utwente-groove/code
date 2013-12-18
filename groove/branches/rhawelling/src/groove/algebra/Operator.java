@@ -5,6 +5,7 @@ import groove.algebra.syntax.CallExpr;
 import groove.algebra.syntax.Expression;
 import groove.annotation.InfixSymbol;
 import groove.annotation.PrefixSymbol;
+import groove.annotation.ToolTipHeader;
 import groove.util.Groove;
 
 import java.lang.reflect.Method;
@@ -62,6 +63,7 @@ public class Operator {
         this.precedence =
             infix == null ? (prefix == null ? Precedence.ATOM
                     : prefix.precedence()) : infix.precedence();
+        this.description = method.getAnnotation(ToolTipHeader.class).value();
     }
 
     /** Returns the signature to which this operator belongs. */
@@ -110,6 +112,13 @@ public class Operator {
         return this.precedence;
     }
 
+    /**
+     * Returns the description in the {@link ToolTipHeader} annotation of the method.
+     */
+    public String getDescription() {
+        return this.description;
+    }
+
     @Override
     public String toString() {
         return getFullName()
@@ -131,6 +140,7 @@ public class Operator {
     private final String name;
     private final String symbol;
     private final Precedence precedence;
+    private final String description;
 
     /** 
      * Returns the method from a given signature class with a given name. 
