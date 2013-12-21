@@ -105,8 +105,23 @@ public class CriticalPair {
         parrPairs = buildCriticalSet(l1, parrPairs, rule1, rule2, 1);
         parrPairs = buildCriticalSet(l2, parrPairs, rule1, rule2, 2);
 
+        Iterator<CriticalPair> it;
+
+        /*
+         * If rule1 and rule2 are the same, then for every critical pair
+         * match1 must not equal match2
+         */
+        if (rule1.equals(rule2)) {
+            it = parrPairs.iterator();
+            while (it.hasNext()) {
+                CriticalPair c = it.next();
+                if (c.getMatch1().equals(c.getMatch2())) {
+                    it.remove();
+                }
+            }
+        }
         //Filter out all critical pairs which are not parallel dependent
-        Iterator<CriticalPair> it = parrPairs.iterator();
+        it = parrPairs.iterator();
         while (it.hasNext()) {
             if (!it.next().isParallelDependent()) {
                 it.remove();

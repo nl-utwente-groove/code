@@ -52,7 +52,9 @@ public class TestDeleteUse {
         Rule deleteSelfEdge = getSimpleRule("deleteSelfEdge", view);
 
         Set<CriticalPair> pairs =
-            CriticalPair.computeCriticalPairs(addNodeAndEdge, constantNode);
+            CriticalPair.computeCriticalPairs(addNodeAndEdge, addNodeAndEdge);
+        assertTrue(pairs.size() == 0);
+        pairs = CriticalPair.computeCriticalPairs(addNodeAndEdge, constantNode);
         assertTrue(pairs.size() == 0);
         pairs =
             CriticalPair.computeCriticalPairs(addNodeAndEdge, constant_3_clique);
@@ -63,6 +65,9 @@ public class TestDeleteUse {
         pairs = CriticalPair.computeCriticalPairs(addNodeAndEdge, deleteEdge);
         assertTrue(pairs.size() == 0);
 
+        pairs =
+            CriticalPair.computeCriticalPairs(addNodeAndEdge, addNodeAndEdge);
+        assertTrue(pairs.size() == 0);
         pairs = CriticalPair.computeCriticalPairs(addNodeAndEdge, deleteNode);
         assertTrue(pairs.size() == 1);
         pairs =
@@ -108,6 +113,22 @@ public class TestDeleteUse {
         assertTrue(pairs.size() == 3);
         pairs = CriticalPair.computeCriticalPairs(deleteEdge, deleteSelfEdge);
         assertTrue(pairs.size() == 1);
+
+        pairs = CriticalPair.computeCriticalPairs(deleteNode, deleteSelfEdge);
+        assertTrue(pairs.size() == 1);
+
+        /* For the following rules, the number of critical pairs must be zero, 
+         * because same rule and same match is always strictly confluent
+         * and therefore not a critical pair
+         */
+        pairs = CriticalPair.computeCriticalPairs(deleteEdge, deleteEdge);
+        assertTrue(pairs.size() == 0);
+        pairs = CriticalPair.computeCriticalPairs(deleteNode, deleteNode);
+        assertTrue(pairs.size() == 0);
+        pairs =
+            CriticalPair.computeCriticalPairs(deleteSelfEdge, deleteSelfEdge);
+        assertTrue(pairs.size() == 0);
+
     }
 
     @Test
