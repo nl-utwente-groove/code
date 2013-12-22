@@ -80,12 +80,11 @@ public class DefaultFileSystemStore extends SystemStore {
      * @throws IllegalArgumentException if <code>file</code> is not an existing
      *         directory, or does not have the correct extension.
      */
-    public DefaultFileSystemStore(File file, boolean create)
-        throws IllegalArgumentException {
+    public DefaultFileSystemStore(File file, boolean create) throws IOException {
         if (!file.exists()) {
             if (create) {
                 if (!file.mkdirs()) {
-                    throw new IllegalArgumentException(String.format(
+                    throw new IOException(String.format(
                         "Could not create directory '%s'", file));
                 }
             } else {
@@ -119,7 +118,7 @@ public class DefaultFileSystemStore extends SystemStore {
      *         conform to URI syntax, or does not point to an existing
      *         directory, or does not have the correct extension.
      */
-    public DefaultFileSystemStore(URL location) throws IllegalArgumentException {
+    public DefaultFileSystemStore(URL location) throws IOException {
         this(toFile(location), false);
         this.url = location;
     }
