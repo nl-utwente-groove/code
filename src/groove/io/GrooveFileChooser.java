@@ -18,6 +18,8 @@ package groove.io;
 
 import groove.util.Groove;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +27,7 @@ import java.util.Map;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileView;
 
@@ -51,6 +54,36 @@ public class GrooveFileChooser extends JFileChooser {
         setFileView(createFileView());
         setAcceptAllFileFilterUsed(false);
         ToolTipManager.sharedInstance().registerComponent(this);
+        addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propName = evt.getPropertyName();
+                if (propName.equals(SELECTED_FILE_CHANGED_PROPERTY)) {
+                    // locally store the newly selected file
+                    File newFile = (File) evt.getNewValue();
+                    if (newFile == null || !isTraversable(newFile)) {
+                        this.selectedFile = newFile;
+                    }
+                }
+                if (propName.equals(DIRECTORY_CHANGED_PROPERTY)
+                    && this.selectedFile != null) {
+                    // change the selected file in the dialog to the local value
+                    // upon directory changes
+                    final File newFile =
+                        new File((File) evt.getNewValue(),
+                            this.selectedFile.getName());
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            setSelectedFile(newFile);
+                        }
+                    });
+                }
+            }
+
+            /** Local alias of the hitherto selected file. */
+            File selectedFile;
+        });
     }
 
     /**
@@ -62,6 +95,18 @@ public class GrooveFileChooser extends JFileChooser {
     public boolean isTraversable(File file) {
         return super.isTraversable(file)
             && !(getFileFilter() instanceof ExtensionFilter && ((ExtensionFilter) getFileFilter()).acceptExtension(file));
+    }
+
+    /** Does not set the selected file if it is a traversable directory. */
+    @Override
+    public void setSelectedFile(File file) {
+        System.out.print("Attempt to set selected file to " + file);
+        if (!isTraversable(file)) {
+            System.out.println(": Admitted");
+            super.setSelectedFile(file);
+        } else {
+            System.out.println(": Refused");
+        }
     }
 
     /**
@@ -80,8 +125,7 @@ public class GrooveFileChooser extends JFileChooser {
         if (result != null && !result.exists()
             && getFileFilter() instanceof ExtensionFilter) {
             ExtensionFilter fileFilter = (ExtensionFilter) getFileFilter();
-            String resultName = fileFilter.addExtension(result.getName());
-            result = new File(result.getParentFile(), resultName);
+            result = fileFilter.addExtension(result);
         }
         return result;
     }
