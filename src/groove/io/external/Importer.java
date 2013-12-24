@@ -32,23 +32,25 @@ import java.util.Set;
  */
 public interface Importer extends Porter {
     /**
-     * Import resource from file.
-     * @param file File to read from.
-     * @param fileType Format to use.
-     * @param grammar Grammar used as target (treat read-only)
-     * @return Resources to be added to the grammar.
+     * Imports resource from file.
+     * @param file file to read from
+     * @param fileType determines format (importer) to be used
+     * @param grammar target grammar for the imported resources; used to 
+     * determine import parameters but treated read-only
+     * @return set of imported resources; may be empty but not {@code null}
      * @throws PortException if an error (typically IO-related) occurred during import
      */
-    public Set<Resource> doImport(File file, FileType fileType, GrammarModel grammar)
-        throws PortException;
+    public Set<Resource> doImport(File file, FileType fileType,
+            GrammarModel grammar) throws PortException;
 
     /**
-     * Import resource from data stream
-     * @param name Name of resource to import
-     * @param stream Stream to read data from
-     * @param fileType Format to use.
-     * @param grammar Grammar used as target (treat read-only)
-     * @return Resources to be added to the grammar.
+     * Imports resource from data stream.
+     * @param name name of resource to import
+     * @param stream stream to read data from
+     * @param fileType determines format (importer) to be used
+     * @param grammar target grammar for the imported resources; used to 
+     * determine import parameters but treated read-only
+     * @return set of imported resources; may be empty but not {@code null}
      * @throws PortException if an error (typically IO-related) occurred during import
      */
     public Set<Resource> doImport(String name, InputStream stream,

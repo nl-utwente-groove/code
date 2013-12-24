@@ -43,8 +43,7 @@ import java.util.Set;
  * @author Harold Bruijntjes
  * @version $Revision $
  */
-public class NativePorter extends AbstractExporter implements
-        Importer {
+public class NativePorter extends AbstractExporter implements Importer {
     private NativePorter() {
         super(Kind.RESOURCE);
         register(ResourceKind.TYPE);
@@ -59,10 +58,10 @@ public class NativePorter extends AbstractExporter implements
     @Override
     public Set<Resource> doImport(File file, FileType fileType,
             GrammarModel grammar) throws PortException {
-        ResourceKind kind = getResourceKind(fileType);
         Resource result;
         try {
             String name = fileType.stripExtension(file.getName());
+            ResourceKind kind = getResourceKind(fileType);
             if (kind.isGraphBased()) {
                 // read graph from file
                 AttrGraph xmlGraph = GxlIO.getInstance().loadGraph(file);
@@ -98,7 +97,7 @@ public class NativePorter extends AbstractExporter implements
     }
 
     @Override
-    public void doExport(File file, FileType fileType, Exportable exportable)
+    public void doExport(Exportable exportable, File file, FileType fileType)
         throws PortException {
         ResourceModel<?> model = exportable.getModel();
         ResourceKind kind = model.getKind();

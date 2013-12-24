@@ -50,8 +50,7 @@ import java.util.Set;
  * Class that implements load/save of graphs in the CADP .aut format.
  * @author Eduardo Zambon
  */
-public final class AutPorter extends AbstractExporter implements
-        Importer {
+public final class AutPorter extends AbstractExporter implements Importer {
     private AutPorter() {
         super(Kind.GRAPH);
         register(FileType.AUT);
@@ -76,7 +75,6 @@ public final class AutPorter extends AbstractExporter implements
     @Override
     public Set<Resource> doImport(String name, InputStream stream,
             FileType fileType, GrammarModel grammar) throws PortException {
-        Map<String,PlainNode> result = new HashMap<String,PlainNode>();
         BufferedReader reader =
             new BufferedReader(new InputStreamReader(stream));
         int linenr = 0;
@@ -89,7 +87,6 @@ public final class AutPorter extends AbstractExporter implements
             int root =
                 Integer.parseInt(line.substring(rootStart, edgeCountStart - 1).trim());
             PlainNode rootNode = graph.addNode(root);
-            result.put("" + root, rootNode);
             graph.addEdge(rootNode, ROOT_LABEL, rootNode);
             for (line = reader.readLine(); line != null; line =
                 reader.readLine()) {
@@ -107,8 +104,6 @@ public final class AutPorter extends AbstractExporter implements
                             line.lastIndexOf(')')).trim());
                     PlainNode sourceNode = graph.addNode(source);
                     PlainNode targetNode = graph.addNode(target);
-                    result.put("" + source, sourceNode);
-                    result.put("" + target, targetNode);
                     graph.addEdge(sourceNode, label, targetNode);
                 }
             }
@@ -131,7 +126,7 @@ public final class AutPorter extends AbstractExporter implements
     }
 
     @Override
-    public void doExport(File file, FileType fileType, Exportable exportable)
+    public void doExport(Exportable exportable, File file, FileType fileType)
         throws PortException {
         Graph graph = exportable.getGraph();
         try {

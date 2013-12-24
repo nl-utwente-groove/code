@@ -62,7 +62,7 @@ public class ExportAction extends SimulatorAction {
             // Export resource
             exportable = new Exportable(getResource());
         }
-        Exporters.doExport(getSimulator(), exportable);
+        Exporters.doExport(exportable, getSimulator());
     }
 
     /** Refreshes the name of this action. */

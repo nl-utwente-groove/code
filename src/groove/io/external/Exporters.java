@@ -51,12 +51,13 @@ import java.util.Map;
  */
 public class Exporters {
     /**
-     * Exports object contained in exportable. Parent is used as parent of save dialog
-     * @param simulator parent of save dialog; may be {@code null}
+     * Exports the object contained in an exportable, using an
+     * exporter chosen through a dialog.
      * @param exportable Container with object to export
+     * @param simulator parent of save dialog; may be {@code null}
      */
-    public static void doExport(Simulator simulator, Exportable exportable) {
-        //JGraph first, then graph, then resource
+    public static void doExport(Exportable exportable, Simulator simulator) {
+        // determine the set of suitable file types and exporters
         Map<FileType,Exporter> exporters =
             new EnumMap<FileType,Exporter>(FileType.class);
         for (Exporter exporter : getExporters()) {
@@ -64,17 +65,14 @@ public class Exporters {
                 exporters.put(fileType, exporter);
             }
         }
-
-        // No exporter available, stop
-        if (exporters.isEmpty()) {
-            return;
-        }
-
+        assert !exporters.isEmpty();
+        // choose a file and exporter
         GrooveFileChooser chooser =
             GrooveFileChooser.getInstance(exporters.keySet());
         chooser.setSelectedFile(new File(exportable.getName()));
         File selectedFile =
-            SaveDialog.show(chooser, simulator.getFrame(), null);
+            SaveDialog.show(chooser,
+                simulator == null ? null : simulator.getFrame(), null);
         // now save, if so required
         if (selectedFile != null) {
             try {
@@ -82,9 +80,10 @@ public class Exporters {
                 FileType fileType = chooser.getFileType();
                 Exporter e = exporters.get(fileType);
                 e.setSimulator(simulator);
-                e.doExport(selectedFile, fileType, exportable);
+                e.doExport(exportable, selectedFile, fileType);
             } catch (PortException e) {
-                showErrorDialog(simulator.getFrame(), e,
+                showErrorDialog(
+                    simulator == null ? null : simulator.getFrame(), e,
                     "Error while exporting to " + selectedFile);
             }
         }
