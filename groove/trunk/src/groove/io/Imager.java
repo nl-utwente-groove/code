@@ -253,7 +253,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             Exportable exportable =
                 toExportable(resourceModel, exporter.getFormatKind());
             try {
-                exporter.doExport(outFile, fileType, exportable);
+                exporter.doExport(exportable, outFile, fileType);
             } catch (PortException e1) {
                 throw new IOException(e1);
             }

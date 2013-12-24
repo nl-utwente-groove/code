@@ -27,7 +27,10 @@ import java.util.Set;
  * @version $Revision $
  */
 public interface Exporter extends Porter {
-    /** Indicates if this exporter is suitable for processing a given exportable. */
+    /** 
+     * Indicates if this exporter is suitable for processing a given exportable.
+     * This is true if and only if {@link #getFileTypes(Exportable)} is non-empty.
+     */
     public boolean exports(Exportable exportable);
 
     /** Returns the file types that can be used for a given exportable. */
@@ -36,8 +39,10 @@ public interface Exporter extends Porter {
     /** 
      * Exports a given exportable resource.
      * @param exportable the (non-{@code null}) resource to be exported
+     * @param file destination file
+     * @param fileType used to determine format and extension
      * @throws PortException if something went wrong during export (typically I/O-related)
      */
-    public void doExport(File file, FileType fileType, Exportable exportable)
+    public void doExport(Exportable exportable, File file, FileType fileType)
         throws PortException;
 }

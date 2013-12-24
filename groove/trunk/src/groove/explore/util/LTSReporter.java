@@ -55,8 +55,8 @@ public class LTSReporter extends AExplorationReporter {
             Exporters.getAcceptingFormat(lts, outFile);
         if (gtsFormat != null) {
             try {
-                gtsFormat.two().doExport(outFile, gtsFormat.one(),
-                    new Exportable(lts));
+                gtsFormat.two().doExport(new Exportable(lts), outFile,
+                    gtsFormat.one());
             } catch (PortException e1) {
                 throw new IOException(e1);
             }

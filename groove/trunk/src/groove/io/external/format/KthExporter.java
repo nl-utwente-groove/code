@@ -42,7 +42,7 @@ public final class KthExporter extends AbstractExporter {
     }
 
     @Override
-    public void doExport(File file, FileType fileType, Exportable exportable)
+    public void doExport(Exportable exportable, File file, FileType fileType)
         throws PortException {
         AspectGraph graph = (AspectGraph) exportable.getGraph();
         try {

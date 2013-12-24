@@ -84,7 +84,7 @@ public class ColImporter implements Importer {
         try {
             FileInputStream stream = new FileInputStream(file);
             resources =
-                this.doImport(fileType.stripExtension(file.getName()), stream,
+                doImport(fileType.stripExtension(file.getName()), stream,
                     fileType, grammar);
             stream.close();
         } catch (IOException e) {

@@ -53,8 +53,8 @@ public class StateReporter extends AExplorationReporter {
                 Exporters.getAcceptingFormat(state.getGraph(), stateFile);
             if (stateFormat != null) {
                 try {
-                    stateFormat.two().doExport(stateFile, stateFormat.one(),
-                        new Exportable(state.getGraph()));
+                    stateFormat.two().doExport(new Exportable(state.getGraph()), stateFile,
+                        stateFormat.one());
                 } catch (PortException e1) {
                     throw new IOException(e1);
                 }

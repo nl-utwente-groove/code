@@ -64,7 +64,7 @@ public class VectorExporter extends AbstractExporter {
     }
 
     @Override
-    public void doExport(File file, FileType fileType, Exportable exportable)
+    public void doExport(Exportable exportable, File file, FileType fileType)
         throws PortException {
         JGraph<?> jGraph = exportable.getJGraph();
         this.formats.get(fileType).renderGraph(jGraph, file);

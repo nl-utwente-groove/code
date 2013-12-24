@@ -28,9 +28,9 @@ import groove.io.external.Porter.Kind;
 import java.util.EnumSet;
 
 /**
- * Wrapper class to transfer object to be exported form ExportAction to Exporter.
- * Can wrap either {@link GGraph}s, {@link JGraph}s or {@link ResourceModel}s.
- * @author Harold
+ * Wrapper class for resources to be exported.
+ * Can wrap either {@link Graph}s, {@link JGraph}s or {@link ResourceModel}s.
+ * @author Harold Bruijntjes
  * @version $Revision $
  */
 public class Exportable {
@@ -81,8 +81,7 @@ public class Exportable {
 
     /** Constructs an exportable for a given {@link ResourceModel} that is displayed in a {@link JGraph}. */
     public Exportable(JGraph<?> jGraph, ResourceModel<?> model) {
-        this.porterKinds =
-            EnumSet.of(Kind.GRAPH, Kind.JGRAPH, Kind.RESOURCE);
+        this.porterKinds = EnumSet.of(Kind.GRAPH, Kind.JGRAPH, Kind.RESOURCE);
         this.name = model.getFullName();
         this.jGraph = jGraph;
         this.graph = jGraph.getModel().getGraph();

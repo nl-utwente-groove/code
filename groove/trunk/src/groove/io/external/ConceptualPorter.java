@@ -45,6 +45,7 @@ import groove.util.Pair;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -63,7 +64,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements
     @Override
     public Set<Resource> doImport(File file, FileType fileType,
             GrammarModel grammar) throws PortException {
-        Set<Resource> result = null;
+        Set<Resource> result = Collections.emptySet();
         Pair<TypeModel,InstanceModel> models = null;
         try {
             if (fileType == getFileType(ResourceKind.HOST)) {
@@ -99,7 +100,7 @@ public abstract class ConceptualPorter extends AbstractExporter implements
     }
 
     @Override
-    public void doExport(File file, FileType fileType, Exportable exportable)
+    public void doExport(Exportable exportable, File file, FileType fileType)
         throws PortException {
         String name = exportable.getName();
         String namespace = name;

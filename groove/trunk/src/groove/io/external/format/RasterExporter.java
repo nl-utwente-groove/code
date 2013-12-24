@@ -52,7 +52,7 @@ public class RasterExporter extends AbstractExporter {
         FileType.class);
 
     @Override
-    public void doExport(File file, FileType fileType, Exportable exportable)
+    public void doExport(Exportable exportable, File file, FileType fileType)
         throws PortException {
         JGraph<?> jGraph = exportable.getJGraph();
         BufferedImage image = jGraph.toImage();
