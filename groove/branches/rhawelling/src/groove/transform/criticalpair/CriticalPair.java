@@ -16,27 +16,20 @@
  */
 package groove.transform.criticalpair;
 
-import groove.algebra.Algebra;
+import groove.algebra.Constant;
 import groove.grammar.Rule;
 import groove.grammar.host.DefaultHostGraph;
-import groove.grammar.host.HostEdge;
-import groove.grammar.host.HostGraph;
-import groove.grammar.host.HostGraphMorphism;
-import groove.grammar.host.HostNode;
-import groove.grammar.host.ValueNode;
 import groove.grammar.rule.DefaultRuleNode;
 import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleGraph;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
-import groove.grammar.type.TypeLabel;
-import groove.transform.BasicEvent;
-import groove.transform.RuleApplication;
-import groove.transform.RuleEvent.Reuse;
+import groove.grammar.rule.VariableNode;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 public class CriticalPair {
@@ -46,6 +39,12 @@ public class CriticalPair {
     private Rule rule2;
     private RuleToHostMap match1;
     private RuleToHostMap match2;
+
+    //    private static Map<RuleNode,String> nodeNumbers1 =
+    //        new HashMap<RuleNode,String>();
+    //    private static Map<RuleNode,String> nodeNumbers2 =
+    //        new HashMap<RuleNode,String>();
+    //    private static int counter = 1;
 
     public DefaultHostGraph getHostGraph() {
         return this.hostGraph;
@@ -67,7 +66,7 @@ public class CriticalPair {
         return this.rule2;
     }
 
-    private CriticalPair(DefaultHostGraph target, Rule rule1, Rule rule2,
+    CriticalPair(DefaultHostGraph target, Rule rule1, Rule rule2,
             RuleToHostMap m1, RuleToHostMap m2) {
         this.hostGraph = target;
         this.match1 = m1;
@@ -100,12 +99,12 @@ public class CriticalPair {
     public static Set<CriticalPair> computeCriticalPairs(Rule rule1, Rule rule2) {
         RuleGraph l1 = rule1.lhs();
         RuleGraph l2 = rule2.lhs();
-        Set<CriticalPair> parrPairs = new HashSet<CriticalPair>();
+        Set<ParallelPair> parrPairs = new HashSet<ParallelPair>();
 
         parrPairs = buildCriticalSet(l1, parrPairs, rule1, rule2, 1);
         parrPairs = buildCriticalSet(l2, parrPairs, rule1, rule2, 2);
 
-        Iterator<CriticalPair> it;
+        Iterator<ParallelPair> it;
 
         /*
          * If rule1 and rule2 are the same, then for every critical pair
@@ -114,21 +113,23 @@ public class CriticalPair {
         if (rule1.equals(rule2)) {
             it = parrPairs.iterator();
             while (it.hasNext()) {
-                CriticalPair c = it.next();
-                if (c.getMatch1().equals(c.getMatch2())) {
+                ParallelPair p = it.next();
+                if (p.getNodeMatch1().equals(p.getNodeMatch2())
+                    && p.getEdgeMatch1().equals(p.getEdgeMatch2())) {
                     it.remove();
                 }
             }
         }
         //Filter out all critical pairs which are not parallel dependent
-        it = parrPairs.iterator();
-        while (it.hasNext()) {
-            if (!it.next().isParallelDependent()) {
-                it.remove();
+        System.out.println("Pairsbefore parallelDep check:" + parrPairs.size());
+        Set<CriticalPair> critPairs = new HashSet<CriticalPair>();
+        for (ParallelPair pair : parrPairs) {
+            CriticalPair criticalPair = pair.getCriticalPair();
+            if (criticalPair != null) {
+                critPairs.add(criticalPair);
             }
         }
-        //TODO assert that m1 and m2 are jointly surjective
-        return parrPairs;
+        return critPairs;
     }
 
     /**
@@ -138,180 +139,235 @@ public class CriticalPair {
      * @param matchnum the match number (1 or 2) this number states to which match mappings should be added
      * @return a set of parallel pairs
      */
-    private static Set<CriticalPair> buildCriticalSet(RuleGraph ruleGraph,
-            Set<CriticalPair> parrPairs, Rule rule1, Rule rule2, int matchnum) {
-        Set<RuleNode> nodes = ruleGraph.nodeSet();
+    private static Set<ParallelPair> buildCriticalSet(RuleGraph ruleGraph,
+            Set<ParallelPair> parrPairs, Rule rule1, Rule rule2, int matchnum) {
         if (matchnum != 1 && matchnum != 2) {
             throw new IllegalArgumentException("matchnum may only be 1 or 2");
         }
-        for (RuleNode rnode : nodes) {
+
+        //        //DEBUG
+        //
+        //        counter = 1;
+        //        nodeNumbers1 = new HashMap<RuleNode,String>();
+        //        nodeNumbers2 = new HashMap<RuleNode,String>();
+        //        Iterator<RuleNode> nodeIter = rule1.lhs().nodeSet().iterator();
+        //        while (nodeIter.hasNext()) {
+        //            RuleNode rn = nodeIter.next();
+        //            String nodeString = "";
+        //            if (rn instanceof OperatorNode) {
+        //                nodeString += "o";
+        //            } else if (rn instanceof VariableNode) {
+        //                nodeString += "v";
+        //                VariableNode vn = (VariableNode) rn;
+        //                Expression term = vn.getTerm();
+        //                Object value;
+        //                if (term.getKind() == Kind.CONST || term.getKind() == Kind.CALL) {
+        //                    value = AlgebraFamily.TERM.toValue(term);
+        //                    nodeString += value;
+        //                }
+        //            } else if (rn instanceof DefaultRuleNode) {
+        //                nodeString += "d";
+        //            }
+        //            nodeString += "-" + counter;
+        //            nodeNumbers1.put(rn, nodeString);
+        //            counter++;
+        //        }
+        //        nodeIter = rule2.lhs().nodeSet().iterator();
+        //        while (nodeIter.hasNext()) {
+        //            RuleNode rn = nodeIter.next();
+        //            String nodeString = "";
+        //            if (rn instanceof OperatorNode) {
+        //                nodeString += "o";
+        //            } else if (rn instanceof VariableNode) {
+        //                nodeString += "v";
+        //                VariableNode vn = (VariableNode) rn;
+        //                Expression term = vn.getTerm();
+        //                Object value;
+        //                if (term.getKind() == Kind.CONST || term.getKind() == Kind.CALL) {
+        //                    value = AlgebraFamily.TERM.toValue(term);
+        //                    nodeString += value;
+        //                }
+        //            } else if (rn instanceof DefaultRuleNode) {
+        //                nodeString += "d";
+        //            }
+        //            nodeString += "-" + counter;
+        //            nodeNumbers2.put(rn, nodeString);
+        //            counter++;
+        //        }
+        //
+        //        //endofDEBUG
+
+        Set<RuleNode> nodesToProcess =
+            new HashSet<RuleNode>(ruleGraph.nodeSet());
+        Iterator<RuleNode> nodeIt = nodesToProcess.iterator();
+        while (nodeIt.hasNext()) {
+            RuleNode curNode = nodeIt.next();
+            if (curNode instanceof OperatorNode) {
+                nodeIt.remove();
+            } else if (curNode instanceof VariableNode
+                && ((VariableNode) curNode).getTerm() instanceof Constant) {
+                Set<? extends RuleEdge> edges = ruleGraph.edgeSet(curNode);
+                boolean connectedToLhs = false;
+                for (RuleEdge e : edges) {
+                    RuleNode source = e.source();
+                    RuleNode target = e.target();
+                    if (source instanceof DefaultRuleNode
+                        || target instanceof DefaultRuleNode) {
+                        //curNode is only connected to OperatorNodes or variableNodes
+                        //it must be included in the match
+                        connectedToLhs = true;
+                        break;
+                    }
+                }
+                if (!connectedToLhs) {
+                    nodeIt.remove();
+                }
+            }
+        }
+
+        for (RuleNode rnode : nodesToProcess) {
             Set<? extends RuleEdge> edges = ruleGraph.edgeSet(rnode);
-            HashSet<CriticalPair> newParrPairs = new HashSet<CriticalPair>();
+            HashSet<ParallelPair> newParrPairs = new HashSet<ParallelPair>();
             //initial case, parrPairs contains no pairs yet, this can only happen if l1.nodeSet().isEmpty()
             if (parrPairs.isEmpty()) {
-                DefaultHostGraph target = new DefaultHostGraph("target");
-
-                RuleToHostMap m1 = new RuleToHostMap(target.getFactory());
-                RuleToHostMap m2 = new RuleToHostMap(target.getFactory());
-                createAndMapNodeWithEdges(rnode, target, m1, m2, matchnum,
-                    edges);
-                newParrPairs.add(new CriticalPair(target, rule1, rule2, m1, m2));
+                ParallelPair pair = new ParallelPair(rule1, rule2);
+                createAndAddNodeToPairWithEdges(rnode, pair, matchnum, edges);
+                newParrPairs.add(pair);
             } else {
-                for (CriticalPair pair : parrPairs) {
+                for (ParallelPair pair : parrPairs) {
                     //case 1: do not overlap rnode with an existing node of pair.getTarget()
                     //This means we create a copy of pair and add the set containing rnode as a separate element
-
-                    CriticalPair newPair = new CriticalPair(pair);
-                    createAndMapNodeWithEdges(rnode, newPair.getHostGraph(),
-                        newPair.getMatch1(), newPair.getMatch2(), matchnum,
+                    ParallelPair newPair = pair.clone();
+                    createAndAddNodeToPairWithEdges(rnode, newPair, matchnum,
                         edges);
                     newParrPairs.add(newPair);
 
                     //case 2: 
                     //Repeat the following for every node tnode in pair.getTarget():
                     //Map rnode to tnode in M1 (if the types coincide)
-                    for (HostNode tnode : pair.getHostGraph().nodeSet()) {
-                        //TODO compare types for typed graphs
-                        newPair = new CriticalPair(pair);
-                        mapNodeAndAddEdges(rnode, tnode,
-                            newPair.getHostGraph(), newPair.getMatch1(),
-                            newPair.getMatch2(), matchnum, edges);
-                        newParrPairs.add(newPair);
+                    for (Set<RuleNode> combination : pair.getNodeCombinations()) {
+                        if (isCompatible(rnode, combination)) {
+                            newPair = pair.clone();
+                            mapNodeAndAddEdges(rnode, targetGroup, newPair,
+                                matchnum, edges);
+                            newParrPairs.add(newPair);
+                        }
                     }
                 }
             }
             parrPairs = newParrPairs;
+            //            System.out.println("\nEnd of Iteration\n");
+            //            for (CriticalPair pair : parrPairs) {
+            //                pair.printNodes();
+            //            }
+            //            System.out.println();
         }
         return parrPairs;
     }
 
-    private static void createAndMapNodeWithEdges(RuleNode ruleNode,
-            DefaultHostGraph hostGraph, RuleToHostMap m1, RuleToHostMap m2,
-            int matchnum, Set<? extends RuleEdge> edges) {
-        HostNode targetNode;
+    private static void createAndAddNodeToPairWithEdges(RuleNode ruleNode,
+            ParallelPair pair, int matchnum, Set<? extends RuleEdge> edges) {
+        Long targetGroup = ParallelPair.getNextMatchTargetNumer();
+        mapNodeAndAddEdges(ruleNode, targetGroup, pair, matchnum, edges);
+    }
+
+    private static boolean isCompatible(RuleNode ruleNode,
+            Set<RuleNode> combination) {
+        //TODO compare types to support typed graphs
+        //combination is nonempty
+        RuleNode firstNode = combination.iterator().next();
         if (ruleNode instanceof DefaultRuleNode) {
-            targetNode = hostGraph.addNode();
+            return firstNode instanceof DefaultRuleNode;
+        } else if (ruleNode instanceof VariableNode) {
+            if (firstNode instanceof VariableNode) {
+                //TODO is ruleNode is a constant, and the same constant already exist, they MUST be combined
+
+                //                VariableNode varNode = (VariableNode) ruleNode;
+                //                VariableNode varCombNode = (VariableNode) firstNode;
+
+                //Constants may be merged, this can create different critical pairs for the point algebra
+                return true;
+            } else {
+                //the ruleNode is a variable, but the combination is not for variables
+                return false;
+            }
         } else if (ruleNode instanceof OperatorNode) {
-            //TODO
-            throw new UnsupportedOperationException(
-                "OperatorNode not supported");
-        } else if (ruleNode instanceof ValueNode) {
-            Algebra<?> algebra = ((ValueNode) ruleNode).getAlgebra();
-            Object value = ((ValueNode) ruleNode).getValue();
-            targetNode = hostGraph.addNode(algebra, value);
-            /* TODO if this valuenode is not conected to any other elements other than the productNode
-             * then it does not need to be added */
+            throw new IllegalArgumentException(
+                "OperatorNodes may not be in matches");
         } else {
-            //Not supposed to happen, all supertypes of RuleNode should have been handled above
             throw new UnsupportedOperationException(
                 "Unknown type for RuleNode " + ruleNode);
         }
-        //TODO zorgen dat een node van het goede type is (DefaultRuleNode, OperatorNode of VariableNode)
-        //TODO zorgen dat de TypeNode goed gezet wordt
-        mapNodeAndAddEdges(ruleNode, targetNode, hostGraph, m1, m2, matchnum,
-            edges);
+
     }
 
     private static <T extends RuleEdge> void mapNodeAndAddEdges(
-            RuleNode ruleNode, HostNode targetNode, HostGraph hostGraph,
-            RuleToHostMap m1, RuleToHostMap m2, int matchnum, Set<T> edges) {
-        RuleToHostMap match;
-        if (matchnum == 1) {
-            match = m1;
-        } else if (matchnum == 2) {
-            match = m2;
-        } else {
-            throw new IllegalArgumentException("matchnum must be 1 or 2");
+            RuleNode ruleNode, Long targetGroup, ParallelPair pair,
+            int matchnum, Set<? extends RuleEdge> edges) {
+        Map<Long,Set<RuleNode>> nodeMatch = pair.getNodeMatch(matchnum);
+        if (!nodeMatch.containsKey(targetGroup)) {
+            nodeMatch.put(targetGroup, new HashSet<RuleNode>());
         }
-        //Add the mapping (ruleNode -> targetNode) to the match
-        match.putNode(ruleNode, targetNode);
-        //For all edges for which both the source and target are defined in match
-        //Add a similar edge to the hostgraph (if it does not yet exist) and add
-        //the mapping (ruleEdge -> hostEdge) the the match
-        for (T ruleEdge : edges) {
-            if (match.nodeMap().containsKey(ruleEdge.source())
-                && match.nodeMap().containsKey(ruleEdge.target())) {
-                //since edges was the set of edges adjacent to ruleNode, one of the next two
-                //HostNodes will be equal to targetNode
-                HostNode edgeSource = match.getNode(ruleEdge.source());
-                HostNode edgeTarget = match.getNode(ruleEdge.target());
-                //addEdge returns the existing edge, if an edge with these properties already exists
-                //this is exactly what we need
-                TypeLabel label = ruleEdge.label().getTypeLabel();
-                if (label == null) {
-                    throw new UnsupportedOperationException(
-                        "RuleLabel cannot be converted to TypeLabel");
-                }
-                HostEdge hostEdge =
-                    hostGraph.addEdge(edgeSource, label, edgeTarget);
-                //TODO are all possible values for ruleEdge.label() valid for host graphs?
-                //TODO use typeEdges?
-                match.putEdge(ruleEdge, hostEdge);
-            }
-        }
-    }
+        Set<RuleNode> nodeSet = nodeMatch.get(targetGroup);
 
-    /**
-     * Checks if this instance of CriticalPair is a parallel dependent pair
-     * This method is used to filter out parallel pairs wich are no real critical pairs
-     * @return true if the pair is parallel dependent, false if it is parallel independent
-     */
-    private boolean isParallelDependent() {
-        return isWeaklyParallelDependent(this.rule1, this.match1, this.match2)
-            || isWeaklyParallelDependent(this.rule2, this.match2, this.match1);
-    }
-
-    private boolean isWeaklyParallelDependent(Rule rule, RuleToHostMap match,
-            RuleToHostMap otherMatch) {
-        BasicEvent ruleEvent = new BasicEvent(rule, match, Reuse.NONE);
-        RuleApplication app = new RuleApplication(ruleEvent, this.hostGraph);
-        HostGraphMorphism transformationMorphism = app.getMorphism();
-        //check if transformationMorphism1 is defined for all target elements of this.match1
-        for (HostNode hn : otherMatch.nodeMap().values()) {
-            if (transformationMorphism.nodeMap().get(hn) == null) {
-                return true;
-            }
-        }
-        //same process for edges
-        for (HostEdge he : otherMatch.edgeMap().values()) {
-            if (transformationMorphism.edgeMap().get(he) == null) {
-                return true;
-            }
-        }
-        //all checks complete, no dependencies found
-        return false;
+        //Add ruleNode to the Set
+        nodeSet.add(ruleNode);
+        //        //For all edges for which both the source and target are defined in the nodeMatch
+        //        //Add a similar edge to the hostgraph (if it does not yet exist) and add
+        //        //the mapping (ruleEdge -> hostEdge) the the match
+        //        for (RuleEdge ruleEdge : edges) {
+        //            if (pair.isContainedInMatch(ruleEdge.source(), matchnum)
+        //                && pair.isContainedInMatch(ruleEdge.target(), matchnum)) {
+        //                TypeLabel label = ruleEdge.label().getTypeLabel();
+        //                if (label == null) {
+        //                    throw new UnsupportedOperationException(
+        //                        "RuleLabel cannot be converted to TypeLabel");
+        //                }
+        //                //since edges was the set of edges adjacent to ruleNode, one of the next two
+        //                //HostNodes will be equal to targetNode
+        //                HostNode edgeSource = match.getNode(ruleEdge.source());
+        //                HostNode edgeTarget = match.getNode(ruleEdge.target());
+        //                //addEdge returns the existing edge, if an edge with these properties already exists
+        //                //this is exactly what we need
+        //                TypeLabel label = ruleEdge.label().getTypeLabel();
+        //
+        //                HostEdge hostEdge =
+        //                    this.hostGraph.addEdge(edgeSource, label, edgeTarget);
+        //                //TODO use typeEdges?
+        //                edgeMatch.putEdge(ruleEdge);
+        //            }
+        //        }
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //TODO
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
 
     //    /**
     //     * Prints a textual representation of the node, matches critical pair
     //     */
     //    public void printNodes() {
-    //        Map<RuleNode,Integer> nodeNumbers1 = new HashMap<RuleNode,Integer>();
-    //        Map<RuleNode,Integer> nodeNumbers2 = new HashMap<RuleNode,Integer>();
-    //        System.out.print("Nodes in rule1: {");
-    //        int counter = 1;
-    //        Iterator<RuleNode> nodeIt = this.rule1.lhs().nodeSet().iterator();
+    //        System.out.print("Nodes in rule1 (" + nodeNumbers1.keySet().size()
+    //            + "): {");
+    //        Iterator<RuleNode> nodeIt = nodeNumbers1.keySet().iterator();
     //        while (nodeIt.hasNext()) {
-    //            RuleNode rn = nodeIt.next();
-    //            nodeNumbers1.put(rn, counter);
-    //            System.out.print(counter);
+    //            System.out.print(nodeNumbers1.get(nodeIt.next()));
     //            if (nodeIt.hasNext()) {
-    //                System.out.print(",");
+    //                System.out.print(", ");
     //            }
-    //            counter++;
     //        }
-    //        System.out.print("}\nNodes in rule2: {");
-    //        nodeIt = this.rule2.lhs().nodeSet().iterator();
+    //        System.out.println('}');
+    //        System.out.print("Nodes in rule2 (" + nodeNumbers2.keySet().size()
+    //            + "): {");
+    //        nodeIt = nodeNumbers2.keySet().iterator();
     //        while (nodeIt.hasNext()) {
-    //            RuleNode rn = nodeIt.next();
-    //            nodeNumbers2.put(rn, counter);
-    //            System.out.print(counter);
+    //            System.out.print(nodeNumbers2.get(nodeIt.next()));
     //            if (nodeIt.hasNext()) {
-    //                System.out.print(",");
+    //                System.out.print(", ");
     //            }
-    //            counter++;
     //        }
-    //        System.out.print("}\nMatch in hostgraph: <");
+    //        System.out.print("}\n");
+    //
+    //        System.out.print("Match in hostgraph: <");
     //        for (HostNode hn : this.hostGraph.nodeSet()) {
     //            System.out.print("(");
     //            for (RuleNode rn : this.match1.nodeMap().keySet()) {
@@ -324,8 +380,27 @@ public class CriticalPair {
     //                    System.out.print(nodeNumbers2.get(rn) + " ");
     //                }
     //            }
-    //            System.out.print(") ");
+    //            System.out.print(")=" + hn + "  ");
     //        }
     //        System.out.println(">");
+    //
+    //        System.out.print("Edges in hostgraph: < ");
+    //        for (HostEdge e : this.hostGraph.edgeSet()) {
+    //            System.out.print(e + "   ");
+    //        }
+    //        System.out.println('>');
+    //
+    //        System.out.print("Edgemappings1 < ");
+    //        for (Entry<RuleEdge,? extends HostEdge> entry : this.match1.edgeMap().entrySet()) {
+    //            System.out.print(entry.getKey() + " mapsTo " + entry.getValue()
+    //                + ",  ");
+    //        }
+    //        System.out.println('>');
+    //        System.out.print("Edgemappings2 < ");
+    //        for (Entry<RuleEdge,? extends HostEdge> entry : this.match2.edgeMap().entrySet()) {
+    //            System.out.print(entry.getKey() + " mapsTo " + entry.getValue()
+    //                + ",  ");
+    //        }
+    //        System.out.println('>');
     //    }
 }

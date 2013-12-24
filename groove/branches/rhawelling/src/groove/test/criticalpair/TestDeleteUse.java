@@ -18,12 +18,25 @@ package groove.test.criticalpair;
 
 import static org.junit.Assert.assertTrue;
 import groove.grammar.Rule;
+import groove.grammar.host.DefaultHostGraph;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraphMorphism;
+import groove.grammar.host.HostNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
+import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleGraph;
+import groove.grammar.rule.RuleNode;
+import groove.grammar.rule.RuleToHostMap;
+import groove.grammar.type.TypeLabel;
+import groove.transform.BasicEvent;
+import groove.transform.RuleApplication;
+import groove.transform.RuleEvent.Reuse;
 import groove.transform.criticalpair.CriticalPair;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Test;
@@ -160,6 +173,58 @@ public class TestDeleteUse {
         pairs =
             CriticalPair.computeCriticalPairs(deleteFlagA, threeNodesThreeFlags);
         assertTrue(pairs.size() == 10);
+
+    }
+
+    @Test
+    /**
+     * Tests whether the transformation morphism works as expected
+     * When an edge is deleted and added, it should not be included in the
+     * transformation morphism
+     */
+    public void testTransformationMorphism() {
+        String grammar = "junit/criticalpair/morphism.gps/";
+        File grammarFile = new File(grammar);
+        GrammarModel view = null;
+        try {
+            view = GrammarModel.newInstance(grammarFile, false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //first create a match for the rule
+        Rule deleteAndAddEdge = getSimpleRule("deleteAndAddEdge", view);
+        RuleGraph lhs = deleteAndAddEdge.lhs();
+        DefaultHostGraph host = new DefaultHostGraph("target");
+        RuleToHostMap match = new RuleToHostMap(host.getFactory());
+
+        HostNode hostSource = host.addNode();
+        HostNode hostTarget = host.addNode();
+        RuleNode ruleSource = null;
+        RuleNode ruleTarget = null;
+        for (RuleEdge re : lhs.edgeSet()) {
+            ruleSource = re.source();
+            ruleTarget = re.target();
+            match.putNode(re.source(), hostSource);
+            match.putNode(re.target(), hostTarget);
+            TypeLabel label = re.label().getTypeLabel();
+            HostEdge hostEdge = host.addEdge(hostSource, label, hostTarget);
+            match.putEdge(re, hostEdge);
+        }
+
+        Set<RuleNode> nodeSet = new HashSet<RuleNode>(lhs.nodeSet());
+        nodeSet.remove(ruleSource);
+        nodeSet.remove(ruleTarget);
+
+        for (RuleNode rn : nodeSet) {
+            match.putNode(rn, hostTarget);
+        }
+
+        //now that we have a match, apply the transformation
+        BasicEvent ruleEvent =
+            new BasicEvent(deleteAndAddEdge, match, Reuse.NONE);
+        RuleApplication app = new RuleApplication(ruleEvent, host);
+        HostGraphMorphism transformationMorphism = app.getMorphism();
+        assertTrue(transformationMorphism.edgeMap().isEmpty());
 
     }
 
