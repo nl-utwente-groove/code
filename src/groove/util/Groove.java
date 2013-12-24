@@ -16,9 +16,9 @@
  */
 package groove.util;
 
-import static groove.io.FileType.GRAMMAR_FILTER;
-import static groove.io.FileType.GXL_FILTER;
-import static groove.io.FileType.STATE_FILTER;
+import static groove.io.FileType.GRAMMAR;
+import static groove.io.FileType.GXL;
+import static groove.io.FileType.STATE;
 import groove.grammar.model.GrammarModel;
 import groove.graph.Graph;
 import groove.graph.plain.PlainGraph;
@@ -89,10 +89,10 @@ public class Groove {
     static public PlainGraph loadGraph(String filename) throws IOException {
         // attempt to find the intended file
         File file = new File(filename);
-        if (GXL_FILTER.accept(file) || STATE_FILTER.accept(file)) {
-            file = new File(GXL_FILTER.addExtension(filename));
+        if (GXL.hasExtension(file) || STATE.hasExtension(file)) {
+            file = new File(GXL.addExtension(filename));
             if (!file.exists()) {
-                file = new File(STATE_FILTER.addExtension(filename));
+                file = new File(STATE.addExtension(filename));
             }
         }
         return loadGraph(file);
@@ -118,8 +118,8 @@ public class Groove {
      */
     static public File saveGraph(Graph graph, String filename)
         throws IOException {
-        if (!STATE_FILTER.hasExtension(filename)) {
-            filename = GXL_FILTER.addExtension(filename);
+        if (!STATE.hasExtension(filename)) {
+            filename = GXL.addExtension(filename);
         }
         File file = new File(filename);
         saveGraph(graph, file);
@@ -156,7 +156,7 @@ public class Groove {
      *         formatted
      */
     static public GrammarModel loadGrammar(String dirname) throws IOException {
-        File dir = new File(GRAMMAR_FILTER.addExtension(dirname));
+        File dir = new File(GRAMMAR.addExtension(dirname));
         return GrammarModel.newInstance(dir);
     }
 

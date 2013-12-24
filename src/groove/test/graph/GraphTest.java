@@ -16,7 +16,7 @@
  */
 package groove.test.graph;
 
-import static groove.io.FileType.GXL_FILTER;
+import static groove.io.FileType.GXL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -134,7 +134,7 @@ public abstract class GraphTest {
     }
 
     private File testFile(String fileName) {
-        return new File(GraphTestDir, GXL_FILTER.addExtension(fileName));
+        return new File(GraphTestDir, GXL.addExtension(fileName));
     }
 
     @Test

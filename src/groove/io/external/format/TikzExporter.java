@@ -18,9 +18,8 @@ package groove.io.external.format;
 
 import groove.gui.jgraph.JGraph;
 import groove.io.FileType;
-import groove.io.external.AbstractFormatExporter;
-import groove.io.external.Exporter.Exportable;
-import groove.io.external.Format;
+import groove.io.external.AbstractExporter;
+import groove.io.external.Exportable;
 import groove.io.external.PortException;
 import groove.io.external.util.GraphToTikz;
 
@@ -28,8 +27,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collection;
-import java.util.Collections;
 
 /** 
  * Class that implements saving graphs in the Tikz format.
@@ -37,7 +34,7 @@ import java.util.Collections;
  * 
  * @author Eduardo Zambon 
  */
-public final class TikzExporter extends AbstractFormatExporter {
+public final class TikzExporter extends AbstractExporter {
     private static final TikzExporter instance = new TikzExporter();
 
     /** Returns the singleton instance of this class. */
@@ -45,24 +42,13 @@ public final class TikzExporter extends AbstractFormatExporter {
         return instance;
     }
 
-    private static Format tikzformat;
-
     private TikzExporter() {
-        tikzformat = new Format(this, FileType.TIKZ);
+        super(Kind.JGRAPH);
+        register(FileType.TIKZ);
     }
 
     @Override
-    public Kind getFormatKind() {
-        return Kind.JGRAPH;
-    }
-
-    @Override
-    public Collection<? extends Format> getSupportedFormats() {
-        return Collections.singletonList(tikzformat);
-    }
-
-    @Override
-    public void doExport(File file, Format format, Exportable exportable)
+    public void doExport(File file, FileType fileType, Exportable exportable)
         throws PortException {
         JGraph<?> jGraph = exportable.getJGraph();
         try {
@@ -73,5 +59,4 @@ public final class TikzExporter extends AbstractFormatExporter {
             throw new PortException(e);
         }
     }
-
 }

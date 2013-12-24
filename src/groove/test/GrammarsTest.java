@@ -57,7 +57,7 @@ public class GrammarsTest {
             }
         }
         for (File file : location.listFiles()) {
-            if (FileType.GRAMMAR_FILTER.hasExtension(file)) {
+            if (FileType.GRAMMAR.hasExtension(file)) {
                 testGrammar(file);
             }
         }

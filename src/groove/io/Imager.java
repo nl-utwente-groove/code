@@ -17,11 +17,11 @@
 package groove.io;
 
 import static groove.explore.Verbosity.MEDIUM;
-import static groove.io.FileType.GRAMMAR_FILTER;
-import static groove.io.FileType.GXL_FILTER;
-import static groove.io.FileType.RULE_FILTER;
-import static groove.io.FileType.STATE_FILTER;
-import static groove.io.FileType.TYPE_FILTER;
+import static groove.io.FileType.GRAMMAR;
+import static groove.io.FileType.GXL;
+import static groove.io.FileType.RULE;
+import static groove.io.FileType.STATE;
+import static groove.io.FileType.TYPE;
 import groove.explore.Verbosity;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
@@ -34,14 +34,12 @@ import groove.gui.Options;
 import groove.gui.display.DisplayKind;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
-import groove.io.external.ConceptualPorter;
+import groove.io.external.Exportable;
+import groove.io.external.Exporters;
 import groove.io.external.Exporter;
-import groove.io.external.Exporter.Exportable;
-import groove.io.external.Format;
-import groove.io.external.FormatExporter;
-import groove.io.external.FormatPorter;
+import groove.io.external.Porter;
+import groove.io.external.Porter.Kind;
 import groove.io.external.PortException;
-import groove.io.external.format.NativePorter;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.cli.ExistingFileHandler;
@@ -56,13 +54,13 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -240,34 +238,22 @@ public class Imager extends GrooveCmdLineTool<Object> {
                 }
             }
             // Determine output file format
-            String outFormatExt = getOutFormatExt();
-            if (outFormatExt == null) {
-                for (Entry<String,Format> e : getFormatMap().entrySet()) {
-                    if (e.getValue().getFilter().acceptExtension(outFileName)) {
-                        outFormatExt = e.getKey();
-                        break;
-                    }
-                }
-                if (outFormatExt == null) {
-                    // Pick first format as default
-                    outFormatExt = getFormatMap().keySet().iterator().next();
-                }
+            FileType fileType = getFormatMap().get(getOutFormatExt());
+            if (fileType == null) {
+                // Pick first format as default
+                fileType = getFormatMap().values().iterator().next();
             }
-            Format outFormat = getFormatMap().get(outFormatExt);
-            outFile =
-                new File(outParent, outFormat.getFilter().addExtension(
-                    outFileName));
+            Exporter exporter = Exporters.getExporter(fileType);
+            outFile = new File(outParent, fileType.addExtension(outFileName));
 
             emit(MEDIUM, "Imaging %s as %s%n", inFile, outFile);
             GraphBasedModel<?> resourceModel =
                 (GraphBasedModel<?>) grammar.getResource(resource.one(),
                     resource.two().toString());
             Exportable exportable =
-                toExportable(resourceModel,
-                    outFormat.getFormatter().getFormatKind());
+                toExportable(resourceModel, exporter.getFormatKind());
             try {
-                ((FormatExporter) outFormat.getFormatter()).doExport(outFile,
-                    outFormat, exportable);
+                exporter.doExport(outFile, fileType, exportable);
             } catch (PortException e1) {
                 throw new IOException(e1);
             }
@@ -276,7 +262,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
 
     /** Converts a resource model to an exportable object of the right kind. */
     private Exportable toExportable(GraphBasedModel<?> resourceModel,
-            FormatPorter.Kind outFormat) {
+            Porter.Kind outFormat) {
         Exportable result;
         AspectGraph aspectGraph = resourceModel.getSource();
         // find out what we have to export
@@ -403,7 +389,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
      * @return a parent file of {@code file}, or {@code null}
      */
     private static File getGrammarFile(File file) {
-        while (file != null && !GRAMMAR_FILTER.accept(file)) {
+        while (file != null && !GRAMMAR.hasExtension(file)) {
             file = file.getParentFile();
         }
         return file;
@@ -418,17 +404,17 @@ public class Imager extends GrooveCmdLineTool<Object> {
         ResourceKind kind = null;
         // find out the resource kind
         for (ResourceKind k : ResourceKind.values()) {
-            if (k.isGraphBased() && k.getFilter().accept(file)) {
+            if (k.isGraphBased() && k.getFileType().hasExtension(file)) {
                 kind = k;
                 break;
             }
         }
         QualName qualName = null;
         if (kind != null) {
-            file = new File(kind.getFilter().stripExtension(file.toString()));
+            file = kind.getFileType().stripExtension(file);
             // break the filename into fragments, up to the containing grammar
             List<String> fragments = new LinkedList<String>();
-            while (file != null && !GRAMMAR_FILTER.accept(file)) {
+            while (file != null && !GRAMMAR.hasExtension(file)) {
                 fragments.add(0, file.getName());
                 file = file.getParentFile();
             }
@@ -445,39 +431,34 @@ public class Imager extends GrooveCmdLineTool<Object> {
     }
 
     /** Collects a mapping from file extensions to formats. */
-    public static Map<String,Format> getFormatMap() {
-        Map<String,Format> result = formatMap;
+    public static Map<String,FileType> getFormatMap() {
+        Map<String,FileType> result = formatMap;
         if (result == null) {
-            result = formatMap = new HashMap<String,Format>();
-            for (FormatExporter exporter : Exporter.getExporters()) {
-                if (exporter instanceof NativePorter) {
+            result = formatMap = new HashMap<String,FileType>();
+            for (Exporter exporter : Exporters.getExporters()) {
+                if (exporter.getFormatKind() == Kind.RESOURCE) {
                     continue;
                 }
-                if (exporter instanceof ConceptualPorter) {
-                    continue;
-                }
-                for (Format format : exporter.getSupportedFormats()) {
-                    for (String ext : format.getExtensions()) {
-                        result.put(ext.substring(1), format); //strip dot
-                    }
+                for (FileType fileType : exporter.getSupportedFileTypes()) {
+                    result.put(fileType.getExtensionName(), fileType); //strip dot
                 }
             }
         }
         return result;
     }
 
-    /** An array of all filters identifying files that can be imaged. */
-    private static final List<ExtensionFilter> acceptFilters;
+    /** An array of all file types that can be imaged. */
+    private static final Set<FileType> acceptedTypes;
     static {
-        acceptFilters = new ArrayList<ExtensionFilter>(4);
-        acceptFilters.add(GRAMMAR_FILTER);
-        acceptFilters.add(TYPE_FILTER);
-        acceptFilters.add(STATE_FILTER);
-        acceptFilters.add(RULE_FILTER);
-        acceptFilters.add(GXL_FILTER);
+        acceptedTypes = EnumSet.noneOf(FileType.class);
+        acceptedTypes.add(GRAMMAR);
+        acceptedTypes.add(TYPE);
+        acceptedTypes.add(STATE);
+        acceptedTypes.add(RULE);
+        acceptedTypes.add(GXL);
     }
 
-    private static Map<String,Format> formatMap;
+    private static Map<String,FileType> formatMap;
 
     /** Name of the imager application. */
     static public final String APPLICATION_NAME = "Imager";
@@ -763,7 +744,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
 
         /** File chooser for the browse actions. */
         final JFileChooser browseChooser =
-            GrooveFileChooser.getFileChooser(acceptFilters);
+            GrooveFileChooser.getInstance(acceptedTypes);
 
         /** File chooser for the browse actions. */
         private final JTextArea logArea = new JTextArea();

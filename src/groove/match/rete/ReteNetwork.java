@@ -1295,7 +1295,7 @@ public class ReteNetwork {
     public void save(String filePath, String name) {
         PlainGraph graph = toPlainGraph();
         graph.setName(name);
-        File file = new File(FileType.GXL_FILTER.addExtension(filePath));
+        File file = new File(FileType.GXL.addExtension(filePath));
         try {
             Groove.saveGraph(graph, file);
         } catch (IOException exc) {

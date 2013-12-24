@@ -18,9 +18,10 @@ package groove.io;
 
 import groove.graph.GraphRole;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Enumeration of file types supported by Groove.
@@ -31,134 +32,135 @@ import java.util.Map;
 public enum FileType {
     // Native Groove files.
     /** GXL (Graph eXchange Language) files. */
-    GXL(".gxl", "GXL files"),
+    GXL("GXL files", ".gxl"),
     /** GPR (Graph Production Rule) files. */
-    RULE(".gpr", "Groove production rules"),
+    RULE("Groove production rules", ".gpr"),
     /** GST (Graph STate) files. */
-    STATE(".gst", "Groove state graphs"),
+    STATE("Groove state graphs", ".gst"),
     /** GTP (Graph TYpe) files. */
-    TYPE(".gty", "Groove type graphs"),
+    TYPE("Groove type graphs", ".gty"),
     /** GPS (Graph Production System) files. */
-    GRAMMAR(".gps", "Groove production systems"),
+    GRAMMAR("Groove production systems", ".gps"),
     /** Graph Layout files. */
-    LAYOUT(".gl", "Groove old layout files"),
+    LAYOUT("Groove layout files (deprecated)", ".gl"),
     /** Control files. */
-    CONTROL(".gcp", "Groove control files"),
+    CONTROL("Groove control files", ".gcp"),
     /** Property files. */
-    PROPERTY(".properties", "Groove property files"),
+    PROPERTY("Groove property files", ".properties"),
 
     // Text files.
     /** Log files. */
-    LOG(".log", "Log files"),
-    /** Simple text files. */
-    TEXT(".txt", "Simple text files"),
+    LOG("Log files", ".log"),
+    /** Plain text files. */
+    TEXT("Simple text files", ".txt"),
     /** Prolog files. */
-    PROLOG1(".pro", "Prolog files"),
+    PROLOG1("Prolog files", ".pro"),
     /** Prolog files. */
-    PROLOG2(".pl", "Prolog files"),
+    PROLOG2("Prolog files", ".pl"),
     /** Configuration files. */
-    CONFIG(".xml", "Configuration files"),
+    CONFIG("Configuration files", ".xml"),
     /** Groovy files. */
-    GROOVY(".groovy", "Groovy files"),
-
-    // Compressed files.
-    /** ZIP files. */
-    ZIP(".zip", "ZIP files"),
-    /** JAR files. */
-    JAR(".jar", "JAR files"),
+    GROOVY("Groovy files", ".groovy"),
 
     // External file formats.
     /** CADP .aut files. */
-    AUT(".aut", "CADP .aut files"),
+    AUT("CADP automata files", ".aut"),
     /** DIMACS .col files. */
-    COL(".col", "DIMACS graph format"),
+    COL("DIMACS graph format", ".col"),
+    /** Comma-separated value files. */
+    CSV("Comma-separated values", ".csv"),
+    /** GraphViz .dot type graph files. */
+    DOT_META("GraphViz type graphs", ".viz"),
+    /** GraphViz .dot instance graph files. */
+    DOT_MODEL("GraphViz instance graphs", ".viz"),
+    /** ECore meta-models. */
+    ECORE_META("ECore meta-models", ".ecore"),
+    /** ECore instance models. */
+    ECORE_MODEL("ECore instance models", ".xmi"),
     /**  EPS (Embedded PostScript) files. */
-    EPS(".eps", "EPS image files"),
+    EPS("EPS image files", ".eps"),
     /**  FSM (Finite State Machine) files. */
-    FSM(".fsm", "FSM layout files"),
+    FSM("FSM layout files", ".fsm"),
+    /** GXL type graph files. */
+    GXL_META("GXL type graphs", ".gxl"),
+    /** GXL instance graph files. */
+    GXL_MODEL("GXL instance graphs", ".gxl"),
+    /** JAR files. */
+    JAR("JAR files", ".jar"),
     /** JPEG files. */
-    JPG(".jpg", "JPEG image files"),
-    /** PNG (Portable Network Graphics) files. */
-    PNG(".png", "PNG image files"),
-    /** LaTeX Tikz files. */
-    TIKZ(".tikz", "LaTeX Tikz files"),
-    /** KTH file format, used by Marieke et al. */
-    KTH(".kth", "Simple KTH files"),
+    JPG("JPEG image files", ".jpg"),
     /** PDF file format, export graphs */
-    PDF(".pdf", "Adobe PDF documents");
+    PDF("Adobe PDF documents", ".pdf"),
+    /** PNG (Portable Network Graphics) files. */
+    PNG("PNG image files", ".png"),
+    /** LaTeX TikZ files. */
+    TIKZ("LaTeX TikZ files", ".tikz"),
+    /** KTH file format, used by Marieke et al. */
+    KTH("Simple KTH files", ".kth"),
+    /** ZIP files. */
+    ZIP("ZIP files", ".zip"),
 
-    /** Enumeration of importable native files. */
-    public static final EnumSet<FileType> importNative = EnumSet.of(RULE,
-        STATE, TYPE, CONTROL);
+    // Composed file types
+    /** Arbitrary grammar files, including compressed grammars. */
+    GRAMMARS("Grammar files", GRAMMAR, ZIP, JAR),
+    /** Arbitrary graph files. */
+    GRAPHS("Graph files", STATE, RULE, TYPE, GXL),
+    /** Arbitrary host graph formats ({@link #STATE} or {@link #GXL}). */
+    HOSTS("Host graphs", STATE, GXL),
+    /** Arbitrary Prolog files ({@link #PROLOG1} or {@link #PROLOG2}). */
+    PROLOG("Prolog files", PROLOG1, PROLOG2), ;
 
-    // Composite enumerations.
-
-    private static final Map<EnumSet<FileType>,String> compositeDescriptions =
-        new HashMap<EnumSet<FileType>,String>();
-
-    /** Returns the description associated with the given enum of file types. */
-    private static String getDescription(EnumSet<FileType> fileTypes) {
-        return compositeDescriptions.get(fileTypes);
-    }
-
-    /** Enum of graph files. */
-    public static final EnumSet<FileType> graphs = EnumSet.of(STATE, RULE,
-        TYPE, GXL);
-    static {
-        compositeDescriptions.put(graphs, String.format(
-            "Graph files (*%s, *%s, *%s, *%s)", STATE.getExtension(),
-            RULE.getExtension(), TYPE.getExtension(), GXL.getExtension()));
-    }
-
-    /** Enum of grammar files. */
-    public static final EnumSet<FileType> grammars = EnumSet.of(GRAMMAR, ZIP,
-        JAR);
-    static {
-        compositeDescriptions.put(
-            grammars,
-            String.format("Grammar files (*%s, *%s, *%s)",
-                GRAMMAR.getExtension(), ZIP.getExtension(), JAR.getExtension()));
-    }
-
-    /** Enum of Prolog files. */
-    public static final EnumSet<FileType> prolog = EnumSet.of(PROLOG1, PROLOG2);
-    static {
-        compositeDescriptions.put(prolog, String.format(
-            "Prolog files (*%s, *%s)", PROLOG1.getExtension(),
-            PROLOG2.getExtension()));
-    }
-
-    /** Enum of host graphs. */
-    public static final EnumSet<FileType> hosts = EnumSet.of(STATE, GXL);
-    static {
-        compositeDescriptions.put(
-            hosts,
-            String.format("Host graphs (*%s, *%s)", STATE.getExtension(),
-                GXL.getExtension()));
-    }
-
-    /** Enum of formats without layout. */
-    public static final EnumSet<FileType> layoutless = EnumSet.of(STATE, AUT,
-        COL, FSM);
-
-    // Fields and methods.
-
-    private final String extension;
-    private final String description;
-
-    private FileType(String extension, String description) {
+    /** Constructs a singular file type. */
+    private FileType(String description, String extension) {
+        assert description != null && description.length() > 0 : String.format(
+            "Badly formatted file type description: %s", description);
+        assert extension != null && extension.length() > 1
+            && extension.charAt(0) == SEPARATOR : String.format(
+            "Badly formatted file type extension: %s", extension);
         this.extension = extension;
         this.description = description;
     }
 
-    /** Returns the extension of this file type. A dot "." is prefixed. */
+    /** 
+     * Constructs a composed file type from a 
+     * series of predefined file sub-types.
+     * The first of the sub-types will be the primary file type.
+     */
+    private FileType(String description, FileType... subTypes) {
+        this(description, subTypes[0].getExtension());
+        this.subTypes = subTypes;
+    }
+
+    /** Returns the primary extension of this file type,
+     * with {@link #SEPARATOR} prefix. */
     public String getExtension() {
         return this.extension;
     }
 
-    /** Returns the three letter string for the extension of this file type. */
+    /** 
+     * Returns the primary extension of this file type, without {@link #SEPARATOR} prefix.
+     * @see #getExtension() 
+     */
     public String getExtensionName() {
         return this.extension.substring(1);
+    }
+
+    /** Returns the list of all file extensions for this file type. */
+    public List<String> getExtensions() {
+        List<String> result = this.extensions;
+        if (result == null) {
+            if (isMultiple()) {
+                result = new ArrayList<String>();
+                for (FileType subType : this.subTypes) {
+                    result.add(subType.getExtension());
+                }
+                result = Collections.unmodifiableList(result);
+            } else {
+                result = Collections.singletonList(getExtension());
+            }
+            this.extensions = result;
+        }
+        return result;
     }
 
     /** Returns the description associated with this file type. */
@@ -166,185 +168,190 @@ public enum FileType {
         return this.description;
     }
 
-    // ------------------------------------------------------------------------
-    // List of all file filters.
-    // ------------------------------------------------------------------------
+    /** Returns the extension filter associated with this file type. */
+    public ExtensionFilter getFilter() {
+        if (this.filter == null) {
+            this.filter = new ExtensionFilter(this);
+        }
+        return this.filter;
+    }
 
     /**
-     * Mapping from extensions to pairs of filters recognising/not recognising
-     * directories.
+     * Strips the extension of this file type from a filename, if the extension is in fact there.
+     * @param filename the filename to be stripped
      */
-    private static final Map<FileType,ExtensionFilter> simpleFilterMap =
-        new HashMap<FileType,ExtensionFilter>();
-
-    private static final Map<EnumSet<FileType>,ExtensionFilter> compositeFilterMap =
-        new HashMap<EnumSet<FileType>,ExtensionFilter>();
-
-    // Native Groove files.
-
-    /** Filter for GXL files. */
-    public static final ExtensionFilter GXL_FILTER = createFilter(GXL, true);
-
-    /** Filter for rule files. */
-    public static final ExtensionFilter RULE_FILTER = createFilter(RULE, true);
-
-    /** Filter for state graph files. */
-    public static final ExtensionFilter STATE_FILTER =
-        createFilter(STATE, true);
-
-    /** Filter for type graph files. */
-    public static final ExtensionFilter TYPE_FILTER = createFilter(TYPE, true);
-
-    /** Filter for uncompressed grammar files (.gps). */
-    public static final ExtensionFilter GRAMMAR_FILTER = createFilter(GRAMMAR,
-        true);
-
-    /** Filter for layout files. */
-    public static final ExtensionFilter LAYOUT_FILTER = createFilter(LAYOUT,
-        true);
-
-    /** Filter for control files. */
-    public static final ExtensionFilter CONTROL_FILTER = createFilter(CONTROL,
-        true);
-
-    /** Filter for property files. */
-    public static final ExtensionFilter PROPERTIES_FILTER = createFilter(
-        PROPERTY, true);
-
-    /** Filter for configuration files. */
-    public static final ExtensionFilter CONFIGURATION_FILTER = createFilter(
-        CONFIG, false);
-
-    // Text files.
-
-    /** Filter for log files. */
-    public static final ExtensionFilter LOG_FILTER = createFilter(LOG, true);
-    /** Filter for simple text files. */
-    public static final ExtensionFilter TEXT_FILTER = createFilter(TEXT, true);
-
-    // See also the composite Prolog filter below.
-    /** Filter for Prolog files. */
-    public static final ExtensionFilter PROLOG1_FILTER = createFilter(PROLOG1,
-        true);
-    /** Filter for Prolog files. */
-    public static final ExtensionFilter PROLOG2_FILTER = createFilter(PROLOG2,
-        true);
-
-    /** Filter for Prolog files. */
-    public static final ExtensionFilter GROOVY_FILTER = createFilter(GROOVY,
-        true);
-
-    // Compressed files.
-
-    /** Filter for ZIP files. */
-    public static final ExtensionFilter ZIP_FILTER = createFilter(ZIP, true);
-
-    /** Filter for JAR files. */
-    public static final ExtensionFilter JAR_FILTER = createFilter(JAR, true);
-
-    // External file formats.
-
-    /** Filter for AUT files. */
-    public static final ExtensionFilter AUT_FILTER = createFilter(AUT, true);
-
-    /** Filter for COL files. */
-    public static final ExtensionFilter COL_FILTER = createFilter(COL, true);
-
-    /** Filter for EPS files. */
-    public static final ExtensionFilter EPS_FILTER = createFilter(EPS, true);
-
-    /** Filter for FSM files. */
-    public static final ExtensionFilter FSM_FILTER = createFilter(FSM, true);
-
-    /** Filter for JPG files. */
-    public static final ExtensionFilter JPG_FILTER = createFilter(JPG, true);
-
-    /** Filter for PNG files. */
-    public static final ExtensionFilter PNG_FILTER = createFilter(PNG, true);
-
-    /** Filter for Tikz files. */
-    public static final ExtensionFilter TIKZ_FILTER = createFilter(TIKZ, true);
-
-    /** Filter for KTH files. */
-    public static final ExtensionFilter KTH_FILTER = createFilter(KTH, true);
-
-    /** Filter for PDF files. */
-    public static final ExtensionFilter PDF_FILTER = createFilter(PDF, true);
-
-    // Composite filters.
-
-    /** Filter for all Groove graphs. */
-    public static final ExtensionFilter GRAPHS_FILTER = createFilter(graphs,
-        true);
-
-    /** Filter for all grammar files, including compressed grammars. */
-    public static final ExtensionFilter GRAMMARS_FILTER = createFilter(
-        grammars, true);
-
-    /** Filter for Prolog files. */
-    public static final ExtensionFilter PROLOG_FILTER = createFilter(prolog,
-        true);
-
-    /** Filter for host graphs. */
-    public static final ExtensionFilter HOSTS_FILTER =
-        createFilter(hosts, true);
-
-    /**
-     * Returns an extension filter with the required properties.
-     * @param fileType the file type for which the filter is associated
-     * @param acceptDir flag controlling whether directories should be
-     *        accepted by the filter.
-     * @return a filter with the required properties
-     */
-    private static ExtensionFilter createFilter(FileType fileType,
-            boolean acceptDir) {
-        ExtensionFilter result =
-            new SimpleExtensionFilter(fileType.getDescription(),
-                fileType.getExtension(), acceptDir);
-        simpleFilterMap.put(fileType, result);
+    public String stripExtension(String filename) {
+        String result = filename;
+        if (isMultiple()) {
+            for (FileType subType : this.subTypes) {
+                if (subType.hasExtension(filename)) {
+                    result = subType.stripExtension(filename);
+                    break;
+                }
+            }
+        } else if (filename.endsWith(this.getExtension())) {
+            result =
+                filename.substring(0, filename.length()
+                    - getExtension().length());
+        }
         return result;
     }
 
     /**
-     * Returns an extension filter with the required properties.
-     * @param fileTypes the file type for which the filter is associated
-     * @param acceptDir flag controlling whether directories should be
-     *        accepted by the filter.
-     * @return a filter with the required properties
+     * Strips the extension of this file type from a file, if the extension is in fact there.
+     * @param file the file to be stripped
      */
-    private static ExtensionFilter createFilter(EnumSet<FileType> fileTypes,
-            boolean acceptDir) {
-        ExtensionFilter result =
-            new CompositeExtensionFilter(fileTypes, getDescription(fileTypes),
-                acceptDir);
-        compositeFilterMap.put(fileTypes, result);
+    public File stripExtension(File file) {
+        return new File(file.getParentFile(), stripExtension(file.getName()));
+    }
+
+    /**
+     * Adds the (primary) extension of this file type to filename, if there is no extension.
+     * @param filename the filename to be provided with an extension
+     */
+    public String addExtension(String filename) {
+        String result = filename;
+        if (!hasExtension(filename)) {
+            result = filename + getExtension();
+        }
         return result;
     }
 
-    /** Returns the extension filter associated with the given file type. */
-    public static ExtensionFilter getFilter(FileType fileTypes) {
-        return simpleFilterMap.get(fileTypes);
+    /**
+     * Adds the (primary) extension of this file type to a file, if there is no extension.
+     * @param file the file to be provided with an extension
+     */
+    public File addExtension(File file) {
+        return new File(file.getParentFile(), addExtension(file.getName()));
     }
+
+    /**
+     * Tests if a given filename has the extension of this file type.
+     * @param filename the filename to be tested
+     * @return <code>true</code> if <code>filename</code> has the extension
+     *         of this filter
+     */
+    public boolean hasExtension(String filename) {
+        boolean result = false;
+        if (isMultiple()) {
+            for (FileType subType : this.subTypes) {
+                if (subType.hasExtension(filename)) {
+                    result = true;
+                    break;
+                }
+            }
+        } else {
+            result = filename.endsWith(this.getExtension());
+        }
+        return result;
+    }
+
+    /**
+     * Tests if a given file has the extension of this file type.
+     * @param file the file to be tested
+     * @return <code>true</code> if <code>file</code> has the extension
+     *         of this filter
+     */
+    public boolean hasExtension(File file) {
+        return hasExtension(file.getName());
+    }
+
+    /** Tests if this is a file type with multiple extensions. */
+    private boolean isMultiple() {
+        return this.subTypes != null;
+    }
+
+    // Fields and methods.
+
+    /** The primary file extension. */
+    private final String extension;
+    /** Description of the file type. */
+    private final String description;
+    /** Set of sub-file types, if this is a collective file type. */
+    private FileType[] subTypes;
+    /** List of all file extensions. */
+    private List<String> extensions;
+    /** Extension filter for this file type. */
+    private ExtensionFilter filter;
 
     /** Returns the extension filter associated with the given graph role. */
     public static ExtensionFilter getFilter(GraphRole role) {
         switch (role) {
         case HOST:
-            return STATE_FILTER;
+            return FileType.STATE.getFilter();
         case RULE:
-            return RULE_FILTER;
+            return FileType.RULE.getFilter();
         case TYPE:
-            return TYPE_FILTER;
+            return FileType.TYPE.getFilter();
         case LTS:
-            return GXL_FILTER;
+            return FileType.GXL.getFilter();
         default:
             return null;
         }
     }
 
-    /** Returns the extension filter associated with the given file type. */
-    public static ExtensionFilter getFilter(EnumSet<FileType> fileTypes) {
-        return compositeFilterMap.get(fileTypes);
+    /**
+     * Returns the extension part of a file name. The extension is taken to be
+     * the part from the last #SEPARATOR occurrence (inclusive).
+     * @param file the file to obtain the name from
+     * @return the extension part of <code>file.getName()</code>
+     * @see File#getName()
+     */
+    static public String getExtension(File file) {
+        String name = file.getName();
+        return name.substring(name.lastIndexOf(SEPARATOR));
     }
 
+    /**
+     * Returns the name part of a file name, without extension. The extension is
+     * taken to be the part from the last #SEPARATOR occurrence (inclusive).
+     * @param file the file to obtain the name from
+     * @return the name part of <code>file.getName()</code>, without the
+     *         extension
+     * @see File#getName()
+     */
+    static public String getPureName(File file) {
+        return getPureName(file.getName());
+    }
+
+    /**
+     * Returns the name part of a file name, without extension. The extension is
+     * taken to be the part from the last #SEPARATOR occurrence (inclusive).
+     * @param filename the filename to be stripped
+     * @return the name part of <code>file.getName()</code>, without the
+     *         extension
+     */
+    static public String getPureName(String filename) {
+        int index = filename.lastIndexOf(SEPARATOR);
+        if (index < 0) {
+            return filename;
+        } else {
+            return filename.substring(0, index);
+        }
+    }
+
+    /**
+     * Tests if a given filename has any extension.
+     * @param filename the filename to be tested
+     * @return <code>true</code> if <code>filename</code> has an extension
+     * (not necessarily of this filter).
+     */
+    public static boolean hasAnyExtension(String filename) {
+        return hasAnyExtension(new File(filename));
+    }
+
+    /**
+     * Tests if a given file has any extension.
+     * @param file the filename to be tested
+     * @return <code>true</code> if <code>file</code> has an extension
+     * (not necessarily of this filter).
+     */
+    public static boolean hasAnyExtension(File file) {
+        return file.getName().indexOf(SEPARATOR) >= 0;
+    }
+
+    /**
+     * Separator character between filename and extension.
+     */
+    static public final char SEPARATOR = '.';
 }

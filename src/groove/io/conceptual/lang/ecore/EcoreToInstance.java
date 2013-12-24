@@ -1,6 +1,6 @@
 package groove.io.conceptual.lang.ecore;
 
-import groove.io.ExtensionFilter;
+import groove.io.FileType;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.InstanceModel;
@@ -90,7 +90,7 @@ public class EcoreToInstance extends InstanceImporter {
         }
 
         int timer = Timer.start("Ecore to IM");
-        this.m_instanceName = ExtensionFilter.getPureName(file);
+        this.m_instanceName = FileType.getPureName(file);
         getInstanceModel(this.m_instanceName);
         Timer.stop(timer);
     }

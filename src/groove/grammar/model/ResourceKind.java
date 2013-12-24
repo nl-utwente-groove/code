@@ -17,7 +17,6 @@
 package groove.grammar.model;
 
 import groove.graph.GraphRole;
-import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.util.Groove;
 
@@ -33,42 +32,41 @@ import java.util.Set;
  */
 public enum ResourceKind {
     /** Host graph resources; in other words, potential start graphs of the grammar. */
-    HOST("Graph", "host graph", GraphRole.HOST, FileType.STATE_FILTER,
+    HOST("Graph", "host graph", GraphRole.HOST, FileType.STATE,
             Groove.DEFAULT_START_GRAPH_NAME),
     /** Transformation rule resources. */
-    RULE("Rule", "rule", GraphRole.RULE, FileType.RULE_FILTER, null),
+    RULE("Rule", "rule", GraphRole.RULE, FileType.RULE, null),
     /** Type graph resources. */
-    TYPE("Type", "type graph", GraphRole.TYPE, FileType.TYPE_FILTER,
+    TYPE("Type", "type graph", GraphRole.TYPE, FileType.TYPE,
             Groove.DEFAULT_TYPE_NAME),
     /**
      * Control program resources.
      */
-    CONTROL("Control", "control program", FileType.CONTROL_FILTER,
+    CONTROL("Control", "control program", FileType.CONTROL,
             Groove.DEFAULT_CONTROL_NAME),
     /** Prolog program resources. */
-    PROLOG("Prolog", "prolog program", FileType.PROLOG_FILTER, null),
+    PROLOG("Prolog", "prolog program", FileType.PROLOG, null),
     /** Grammar properties resource. */
-    PROPERTIES("Properties", "grammar properties", FileType.PROPERTIES_FILTER,
+    PROPERTIES("Properties", "grammar properties", FileType.PROPERTY,
             Groove.PROPERTY_NAME),
     /** Groovy script resources. */
-    GROOVY("Groovy", "groovy script", FileType.GROOVY_FILTER, null),
+    GROOVY("Groovy", "groovy script", FileType.GROOVY, null),
     /** Configuration resource. */
-    CONFIG("Configuration", "configuration file",
-            FileType.CONFIGURATION_FILTER, null);
+    CONFIG("Configuration", "configuration file", FileType.CONFIG, null);
 
     /** Constructs a value with no corresponding graph role. */
-    private ResourceKind(String name, String description,
-            ExtensionFilter filter, String defaultName) {
-        this(name, description, GraphRole.NONE, filter, defaultName);
+    private ResourceKind(String name, String description, FileType fileType,
+            String defaultName) {
+        this(name, description, GraphRole.NONE, fileType, defaultName);
     }
 
     /** Constructs a value with a given graph role. */
     private ResourceKind(String name, String description, GraphRole graphRole,
-            ExtensionFilter filter, String defaultName) {
+            FileType fileType, String defaultName) {
         this.graphRole = graphRole;
         this.description = description;
         this.name = name;
-        this.filter = filter;
+        this.fileType = fileType;
         this.defaultName = defaultName;
     }
 
@@ -119,8 +117,8 @@ public enum ResourceKind {
     }
 
     /** Returns the file filter for this kind of resource. */
-    public ExtensionFilter getFilter() {
-        return this.filter;
+    public FileType getFileType() {
+        return this.fileType;
     }
 
     /** Flag indicating if this resource kind has additional (editable) properties. */
@@ -147,7 +145,7 @@ public enum ResourceKind {
     /** Description starting with lowercase letter. */
     private final String description;
     /** File filter for this resource kind. */
-    private final ExtensionFilter filter;
+    private final FileType fileType;
     /** Default name of this resource kind, if any. */
     private final String defaultName;
 

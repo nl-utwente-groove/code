@@ -17,14 +17,13 @@
 package groove.explore.util;
 
 import groove.graph.plain.PlainGraph;
-import groove.io.ExtensionFilter;
 import groove.io.FileType;
+import groove.io.external.Exportable;
+import groove.io.external.Exporters;
 import groove.io.external.Exporter;
-import groove.io.external.Exporter.Exportable;
-import groove.io.external.Format;
-import groove.io.external.FormatExporter;
 import groove.io.external.PortException;
 import groove.util.Groove;
+import groove.util.Pair;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,18 +51,18 @@ public class LTSReporter extends AExplorationReporter {
         String outFilename =
             this.filePattern.replace(PLACEHOLDER, getGTS().getGrammar().getId());
         File outFile = new File(outFilename);
-        Format gtsFormat = Exporter.getAcceptingFormat(lts, outFile);
+        Pair<FileType,Exporter> gtsFormat =
+            Exporters.getAcceptingFormat(lts, outFile);
         if (gtsFormat != null) {
             try {
-                ((FormatExporter) gtsFormat.getFormatter()).doExport(outFile,
-                    gtsFormat, new Exportable(lts));
+                gtsFormat.two().doExport(outFile, gtsFormat.one(),
+                    new Exportable(lts));
             } catch (PortException e1) {
                 throw new IOException(e1);
             }
         } else {
-            ExtensionFilter gxlFilter = FileType.GXL_FILTER;
-            if (!gxlFilter.hasAnyExtension(outFilename)) {
-                outFile = new File(gxlFilter.addExtension(outFilename));
+            if (!FileType.hasAnyExtension(outFilename)) {
+                outFile = new File(FileType.GXL.addExtension(outFilename));
             }
             Groove.saveGraph(lts, outFile);
         }
