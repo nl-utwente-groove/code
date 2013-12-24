@@ -24,6 +24,7 @@ import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
 import groove.graph.GraphRole;
 import groove.gui.SimulatorModel;
+import groove.io.FileType;
 import groove.io.conceptual.InstanceModel;
 import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.configuration.Config;
@@ -40,64 +41,34 @@ import groove.io.conceptual.lang.groove.GrooveUtil;
 import groove.io.conceptual.lang.groove.InstanceToGroove;
 import groove.io.conceptual.lang.groove.MetaToGroove;
 import groove.io.conceptual.lang.groove.TypeToGroove;
-import groove.io.external.Exporter.Exportable;
 import groove.util.Pair;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /** Im- and exporter for conceptual model-based formats. */
-public abstract class ConceptualPorter extends AbstractFormatExporter implements
-        FormatImporter {
-    /** 
-     * Constructs a porter for a given format, with equal instance and
-     * type extension.
-     */
-    protected ConceptualPorter(String formatName, String extension) {
-        this(formatName, extension, extension);
-    }
-
+public abstract class ConceptualPorter extends AbstractExporter implements
+        Importer {
     /** Constructs a porter for a given format, with given instance format and type extensions. */
-    protected ConceptualPorter(String formatName, String typeExtension,
-            String instanceExtension) {
-        this.instanceFormat =
-            new Format(this, formatName + " instance model", instanceExtension);
-        this.typeFormat =
-            new Format(this, formatName + " type model", typeExtension);
-
-        this.formats = Arrays.asList(this.instanceFormat, this.typeFormat);
-    }
-
-    /** Returns the instance format of this model porter. */
-    protected Format getInstanceFormat() {
-        return this.instanceFormat;
-    }
-
-    /** Returns the instance format of this model porter. */
-    protected Format getTypeFormat() {
-        return this.typeFormat;
+    protected ConceptualPorter(FileType typeFileType, FileType instanceFileType) {
+        super(Kind.RESOURCE);
+        register(ResourceKind.TYPE, typeFileType);
+        register(ResourceKind.HOST, instanceFileType);
     }
 
     @Override
-    public List<Format> getSupportedFormats() {
-        return this.formats;
-    }
-
-    @Override
-    public Set<Resource> doImport(File file, Format format, GrammarModel grammar)
-        throws PortException {
+    public Set<Resource> doImport(File file, FileType fileType,
+            GrammarModel grammar) throws PortException {
         Set<Resource> result = null;
         Pair<TypeModel,InstanceModel> models = null;
         try {
-            if (format == getInstanceFormat()) {
+            if (fileType == getFileType(ResourceKind.HOST)) {
                 models = importInstanceModel(file, grammar);
-            } else if (format == getTypeFormat()) {
+            } else if (fileType == getFileType(ResourceKind.TYPE)) {
                 models = importTypeModel(file, grammar);
             }
         } catch (ImportException e) {
@@ -122,13 +93,13 @@ public abstract class ConceptualPorter extends AbstractFormatExporter implements
 
     @Override
     public Set<Resource> doImport(String name, InputStream stream,
-            Format format, GrammarModel grammar) throws PortException {
+            FileType fileType, GrammarModel grammar) throws PortException {
         //TODO: play nice with streams
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void doExport(File file, Format format, Exportable exportable)
+    public void doExport(File file, FileType fileType, Exportable exportable)
         throws PortException {
         String name = exportable.getName();
         String namespace = name;
@@ -152,13 +123,13 @@ public abstract class ConceptualPorter extends AbstractFormatExporter implements
         Pair<TypeModel,InstanceModel> outcome = null;
         switch (kind) {
         case HOST:
-            assert format == getInstanceFormat();
+            assert fileType == getFileType(ResourceKind.HOST);
             outcome = constructModels(cfg, grammar, namespace, null, name);
             break;
         case RULE:
             throw new PortException("Rules cannot be exported in this format");
         case TYPE:
-            assert format == getTypeFormat();
+            assert fileType == getFileType(ResourceKind.TYPE);
             outcome = constructModels(cfg, grammar, namespace, name, null);
             break;
         default:
@@ -268,8 +239,4 @@ public abstract class ConceptualPorter extends AbstractFormatExporter implements
 
         return result;
     }
-
-    private final Format instanceFormat;
-    private final Format typeFormat;
-    private final List<Format> formats;
 }

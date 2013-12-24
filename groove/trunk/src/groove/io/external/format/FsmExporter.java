@@ -19,16 +19,14 @@ package groove.io.external.format;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.io.external.AbstractFormatExporter;
-import groove.io.external.Exporter.Exportable;
-import groove.io.external.Format;
+import groove.io.FileType;
+import groove.io.external.AbstractExporter;
+import groove.io.external.Exportable;
 import groove.io.external.PortException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,23 +37,14 @@ import java.util.Map;
  * 
  * @author Arend Rensink 
  */
-public final class FsmExporter extends AbstractFormatExporter {
+public final class FsmExporter extends AbstractExporter {
     private FsmExporter() {
-        this.fsmformat = new Format(this, "FSM layout files", ".fsm");
+        super(Kind.GRAPH);
+        register(FileType.FSM);
     }
 
     @Override
-    public Kind getFormatKind() {
-        return Kind.GRAPH;
-    }
-
-    @Override
-    public Collection<? extends Format> getSupportedFormats() {
-        return Collections.singletonList(this.fsmformat);
-    }
-
-    @Override
-    public void doExport(File file, Format format, Exportable exportable)
+    public void doExport(File file, FileType fileType, Exportable exportable)
         throws PortException {
         Graph graph = exportable.getGraph();
         try {
@@ -84,8 +73,6 @@ public final class FsmExporter extends AbstractFormatExporter {
                 + nodeMap.get(edge.target()) + " " + "\"" + edge.label() + "\"");
         }
     }
-
-    private final Format fsmformat;
 
     /** Returns the singleton instance of this class. */
     public static final FsmExporter getInstance() {

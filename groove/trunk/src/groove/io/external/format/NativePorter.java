@@ -23,11 +23,9 @@ import groove.grammar.model.ResourceKind;
 import groove.grammar.model.ResourceModel;
 import groove.grammar.model.TextBasedModel;
 import groove.io.FileType;
-import groove.io.external.AbstractFormatExporter;
-import groove.io.external.Exporter.Exportable;
-import groove.io.external.Format;
-import groove.io.external.FormatImporter;
-import groove.io.external.FormatPorter;
+import groove.io.external.AbstractExporter;
+import groove.io.external.Exportable;
+import groove.io.external.Importer;
 import groove.io.external.PortException;
 import groove.io.graph.AttrGraph;
 import groove.io.graph.GxlIO;
@@ -37,10 +35,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -48,43 +43,29 @@ import java.util.Set;
  * @author Harold Bruijntjes
  * @version $Revision $
  */
-public class NativePorter extends AbstractFormatExporter implements
-        FormatImporter {
+public class NativePorter extends AbstractExporter implements
+        Importer {
     private NativePorter() {
-        addFormat(ResourceKind.TYPE, FileType.TYPE);
-        addFormat(ResourceKind.HOST, FileType.STATE, FileType.GXL);
-        addFormat(ResourceKind.RULE, FileType.RULE);
-        addFormat(ResourceKind.CONTROL, FileType.CONTROL);
-        addFormat(ResourceKind.PROLOG, FileType.PROLOG1, FileType.PROLOG2);
-        addFormat(ResourceKind.GROOVY, FileType.GROOVY);
-        addFormat(ResourceKind.CONFIG, FileType.CONFIG);
-    }
-
-    private void addFormat(ResourceKind kind, FileType... fileTypes) {
-        this.formats.add(new ResourceFormat(this, kind, fileTypes));
+        super(Kind.RESOURCE);
+        register(ResourceKind.TYPE);
+        register(ResourceKind.HOST);
+        register(ResourceKind.RULE);
+        register(ResourceKind.CONTROL);
+        register(ResourceKind.PROLOG);
+        register(ResourceKind.GROOVY);
+        register(ResourceKind.CONFIG);
     }
 
     @Override
-    public Kind getFormatKind() {
-        return Kind.RESOURCE;
-    }
-
-    @Override
-    public Collection<? extends Format> getSupportedFormats() {
-        return this.formats;
-    }
-
-    @Override
-    public Set<Resource> doImport(File file, Format format, GrammarModel grammar)
-        throws PortException {
-        ResourceKind kind = ((ResourceFormat) format).getKind();
+    public Set<Resource> doImport(File file, FileType fileType,
+            GrammarModel grammar) throws PortException {
+        ResourceKind kind = getResourceKind(fileType);
         Resource result;
         try {
-            String name = format.stripExtension(file.getName());
+            String name = fileType.stripExtension(file.getName());
             if (kind.isGraphBased()) {
                 // read graph from file
-                AttrGraph xmlGraph =
-                    GxlIO.getInstance().loadGraph(file);
+                AttrGraph xmlGraph = GxlIO.getInstance().loadGraph(file);
                 xmlGraph.setRole(kind.getGraphRole());
                 xmlGraph.setName(name);
                 result = new Resource(kind, name, xmlGraph.toAspectGraph());
@@ -100,8 +81,8 @@ public class NativePorter extends AbstractFormatExporter implements
 
     @Override
     public Set<Resource> doImport(String name, InputStream stream,
-            Format format, GrammarModel grammar) throws PortException {
-        ResourceKind kind = ((ResourceFormat) format).getKind();
+            FileType fileType, GrammarModel grammar) throws PortException {
+        ResourceKind kind = getResourceKind(fileType);
         if (kind.isGraphBased()) {
             throw new PortException("Cannot import from stream");
         }
@@ -117,7 +98,7 @@ public class NativePorter extends AbstractFormatExporter implements
     }
 
     @Override
-    public void doExport(File file, Format format, Exportable exportable)
+    public void doExport(File file, FileType fileType, Exportable exportable)
         throws PortException {
         ResourceModel<?> model = exportable.getModel();
         ResourceKind kind = model.getKind();
@@ -125,8 +106,7 @@ public class NativePorter extends AbstractFormatExporter implements
             GraphBasedModel<?> graphModel = (GraphBasedModel<?>) model;
             AspectGraph graph = graphModel.getSource();
             try {
-                GxlIO.getInstance().saveGraph(graph.toPlainGraph(),
-                    file);
+                GxlIO.getInstance().saveGraph(graph.toPlainGraph(), file);
             } catch (IOException e) {
                 throw new PortException(e);
             }
@@ -150,35 +130,10 @@ public class NativePorter extends AbstractFormatExporter implements
         }
     }
 
-    private final List<ResourceFormat> formats =
-        new ArrayList<ResourceFormat>();
-
     /** Returns the singleton instance of this class. */
     public static final NativePorter getInstance() {
         return instance;
     }
 
     private static final NativePorter instance = new NativePorter();
-
-    /** Format for one of the resource kinds of grammars. */
-    public class ResourceFormat extends Format {
-        private final ResourceKind kind;
-
-        /**
-         * Constructs a new resource format, for a given resource kind
-         * and supporting a list of file types.
-         */
-        protected ResourceFormat(FormatPorter formatter, ResourceKind kind,
-                FileType... types) {
-            super(formatter, types);
-
-            this.kind = kind;
-        }
-
-        /** The resource kind of this format. */
-        public ResourceKind getKind() {
-            return this.kind;
-        }
-
-    }
 }

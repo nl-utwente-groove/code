@@ -19,8 +19,7 @@ package groove.util;
 import groove.algebra.Operator;
 import groove.algebra.Signature.OpValue;
 import groove.algebra.SignatureKind;
-import groove.io.ExtensionFilter;
-import groove.io.SimpleExtensionFilter;
+import groove.io.FileType;
 import groove.util.cli.GrooveCmdLineTool;
 
 import java.io.FileWriter;
@@ -48,10 +47,7 @@ public class OperatorLister extends GrooveCmdLineTool<List<String[]>> {
     @Override
     public List<String[]> run() throws Exception {
         List<String[]> result = collectOperators();
-        ExtensionFilter csvFilter =
-            new SimpleExtensionFilter("Comma-separated values file", ".csv",
-                false);
-        String outFileName = csvFilter.addExtension(this.outFileName);
+        String outFileName = FileType.CSV.addExtension(this.outFileName);
         CSVWriter writer = new CSVWriter(new FileWriter(outFileName));
         writer.writeAll(result);
         writer.flush();

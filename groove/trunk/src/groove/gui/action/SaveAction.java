@@ -9,7 +9,7 @@ import groove.gui.Simulator;
 import groove.gui.display.GraphEditorTab;
 import groove.gui.display.ResourceTab;
 import groove.gui.display.TextTab;
-import groove.io.ExtensionFilter;
+import groove.io.FileType;
 import groove.io.graph.GxlIO;
 
 import java.io.File;
@@ -111,10 +111,10 @@ public final class SaveAction extends SimulatorAction {
             try {
                 String nameInGrammar = getNameInGrammar(selectedFile);
                 if (nameInGrammar == null) {
-                    ExtensionFilter filter = getResourceKind().getFilter();
+                    FileType fileType = getResourceKind().getFileType();
                     // save in external file
                     String newName =
-                        filter.stripExtension(selectedFile.getName());
+                        fileType.stripExtension(selectedFile.getName());
                     GxlIO.getInstance().saveGraph(
                         graph.rename(newName).toPlainGraph(), selectedFile);
                 } else {

@@ -31,8 +31,7 @@ import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
 import groove.gui.Simulator;
 import groove.io.FileType;
-import groove.io.external.Format;
-import groove.io.external.FormatImporter;
+import groove.io.external.Importer;
 import groove.io.external.PortException;
 
 import java.awt.Frame;
@@ -42,10 +41,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.EnumSet;
 import java.util.Set;
 
 /** 
@@ -61,32 +58,34 @@ import java.util.Set;
  * 
  * @author Arend Rensink 
  */
-public class ColImporter implements FormatImporter {
+public class ColImporter implements Importer {
     private ColImporter() {
-        this.formats = Arrays.asList(new Format(this, FileType.COL));
+        this.fileTypes = EnumSet.of(FileType.COL);
     }
+
+    @Override
+    public Set<FileType> getSupportedFileTypes() {
+        return this.fileTypes;
+    }
+
+    private final Set<FileType> fileTypes;
 
     @Override
     public Kind getFormatKind() {
         return Kind.RESOURCE;
     }
 
-    @Override
-    public Collection<? extends Format> getSupportedFormats() {
-        return this.formats;
-    }
-
     // Methods from FileFormat.
 
     @Override
-    public Set<Resource> doImport(File file, Format format, GrammarModel grammar)
-        throws PortException {
+    public Set<Resource> doImport(File file, FileType fileType,
+            GrammarModel grammar) throws PortException {
         Set<Resource> resources;
         try {
             FileInputStream stream = new FileInputStream(file);
             resources =
-                this.doImport(format.stripExtension(file.getName()), stream,
-                    format, grammar);
+                this.doImport(fileType.stripExtension(file.getName()), stream,
+                    fileType, grammar);
             stream.close();
         } catch (IOException e) {
             throw new PortException(e);
@@ -96,7 +95,7 @@ public class ColImporter implements FormatImporter {
 
     @Override
     public Set<Resource> doImport(String name, InputStream stream,
-            Format format, GrammarModel grammar) throws PortException {
+            FileType fileType, GrammarModel grammar) throws PortException {
         try {
             BufferedReader reader =
                 new BufferedReader(new InputStreamReader(stream));
@@ -149,7 +148,6 @@ public class ColImporter implements FormatImporter {
         this.parent = simulator.getFrame();
     }
 
-    private final List<Format> formats;
     private Frame parent;
 
     /** Returns the singleton instance of this class. */

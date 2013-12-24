@@ -651,7 +651,7 @@ public class ShowHideMenu<G extends Graph> extends JMenu {
         @Override
         public void actionPerformed(ActionEvent evt) {
             GrooveFileChooser fileChooser =
-                GrooveFileChooser.getFileChooser(FileType.TEXT_FILTER);
+                GrooveFileChooser.getInstance(FileType.TEXT);
             int result = fileChooser.showOpenDialog(this.jgraph);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File labelsFile = fileChooser.getSelectedFile();

@@ -142,8 +142,7 @@ public class PatternGraphGenerator extends GrooveCmdLineTool<PGTS> {
         model.setLocalActiveNames(ResourceKind.HOST, getStartGraphName());
         Grammar sGrammar = model.toGrammar();
         sGrammar.setFixed();
-        String typeGraphName =
-            FileType.STATE_FILTER.addExtension(getTypeGraphName());
+        String typeGraphName = FileType.STATE.addExtension(getTypeGraphName());
         File typeGraphFile = new File(getGrammarLocation(), typeGraphName);
         TypeGraph type = TypeGraphFactory.unmarshalTypeGraph(typeGraphFile);
         return new PatternGraphGrammar(sGrammar, type);

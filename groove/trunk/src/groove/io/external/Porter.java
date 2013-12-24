@@ -20,15 +20,16 @@ import groove.grammar.model.ResourceModel;
 import groove.graph.Graph;
 import groove.gui.Simulator;
 import groove.gui.jgraph.JGraph;
+import groove.io.FileType;
 
-import java.util.Collection;
+import java.util.Set;
 
 /**
  * Supertype for exporters and importers.
  * @author Harold Bruintjes
  * @version $Revision $
  */
-public interface FormatPorter {
+public interface Porter {
     /** Indicates what kind of objects this porter handles. */
     public Kind getFormatKind();
 
@@ -36,10 +37,10 @@ public interface FormatPorter {
     public void setSimulator(Simulator simulator);
 
     /**
-     * Get list of formats this im-/exporter can handle.
-     * @return list of supported formats.
+     * Get list of file types this im-/exporter can handle.
+     * @return list of supported file types.
      */
-    public Collection<? extends Format> getSupportedFormats();
+    public Set<FileType> getSupportedFileTypes();
 
     /** Kinds of objects that can be ported. */
     public enum Kind {

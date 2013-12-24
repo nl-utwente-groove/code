@@ -17,6 +17,7 @@
 package groove.io.external.format;
 
 import groove.grammar.model.GrammarModel;
+import groove.io.FileType;
 import groove.io.conceptual.InstanceModel;
 import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.lang.ExportableResource;
@@ -34,12 +35,7 @@ import java.io.File;
 /** Importer and exporter for the DOT format. */
 public class DotPorter extends ConceptualPorter {
     private DotPorter() {
-        super("Graphviz DOT", ".viz");
-    }
-
-    @Override
-    public Kind getFormatKind() {
-        return Kind.RESOURCE;
+        super(FileType.DOT_META, FileType.DOT_MODEL);
     }
 
     @Override

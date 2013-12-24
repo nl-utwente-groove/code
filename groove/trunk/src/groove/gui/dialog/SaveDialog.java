@@ -16,12 +16,11 @@
  */
 package groove.gui.dialog;
 
-import groove.io.ExtensionFilter;
+import groove.io.GrooveFileChooser;
 
 import java.io.File;
 
 import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileFilter;
 
 /**
  * Class that shows a dialog for saving files.
@@ -36,8 +35,8 @@ public class SaveDialog {
      *        loaded; <code>null</code> if there is none such
      * @return the chosen file, if any; if null, no file has been chosen
      */
-    public static File show(JFileChooser chooser, java.awt.Component parent,
-            File originalFile) {
+    public static File show(GrooveFileChooser chooser,
+            java.awt.Component parent, File originalFile) {
         File result = null;
         chooser.rescanCurrentDirectory();
         // choose a file name to save to,
@@ -48,11 +47,8 @@ public class SaveDialog {
             // apparently we're set to save
             result = chooser.getSelectedFile();
             // extend file name if chosen under an extension filter
-            FileFilter filter = chooser.getFileFilter();
-            if (filter instanceof ExtensionFilter) {
-                result =
-                    new File(
-                        ((ExtensionFilter) filter).addExtension(result.getPath()));
+            if (chooser.hasFileType()) {
+                result = chooser.getFileType().addExtension(result);
             }
         }
         return result;

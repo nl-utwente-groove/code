@@ -23,7 +23,6 @@ import groove.gui.display.PrologDisplay;
 import groove.gui.display.ResourceDisplay;
 import groove.gui.display.RuleDisplay;
 import groove.gui.display.StateDisplay;
-import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.store.EditType;
@@ -270,8 +269,8 @@ public abstract class SimulatorAction extends AbstractAction implements
      * and returns the chosen (possibly {@code null}) file.
      */
     final protected File askSaveResource(String name) {
-        ExtensionFilter filter = getResourceKind().getFilter();
-        GrooveFileChooser chooser = GrooveFileChooser.getFileChooser(filter);
+        FileType filter = getResourceKind().getFileType();
+        GrooveFileChooser chooser = GrooveFileChooser.getInstance(filter);
         chooser.setSelectedFile(new File(name));
         return SaveDialog.show(chooser, getFrame(), null);
     }
@@ -389,7 +388,7 @@ public abstract class SimulatorAction extends AbstractAction implements
      * Returns the file chooser for rule (GPR) files, lazily creating it first.
      */
     final protected JFileChooser getRuleFileChooser() {
-        return GrooveFileChooser.getFileChooser(FileType.RULE_FILTER);
+        return GrooveFileChooser.getInstance(FileType.RULE);
     }
 
     /**
@@ -397,14 +396,14 @@ public abstract class SimulatorAction extends AbstractAction implements
      * first.
      */
     final protected JFileChooser getStateFileChooser() {
-        return GrooveFileChooser.getFileChooser(FileType.HOSTS_FILTER);
+        return GrooveFileChooser.getInstance(FileType.HOSTS);
     }
 
     /**
      * Return a file chooser for prolog files
      */
     final protected JFileChooser getPrologFileChooser() {
-        return GrooveFileChooser.getFileChooser(FileType.PROLOG_FILTER);
+        return GrooveFileChooser.getInstance(FileType.PROLOG);
     }
 
     /**
@@ -423,9 +422,9 @@ public abstract class SimulatorAction extends AbstractAction implements
      */
     final protected JFileChooser getGrammarFileChooser(boolean includeArchives) {
         if (includeArchives) {
-            return GrooveFileChooser.getFileChooser(FileType.GRAMMARS_FILTER);
+            return GrooveFileChooser.getInstance(FileType.GRAMMARS);
         } else {
-            return GrooveFileChooser.getFileChooser(FileType.GRAMMAR_FILTER);
+            return GrooveFileChooser.getInstance(FileType.GRAMMAR);
         }
     }
 
@@ -452,7 +451,7 @@ public abstract class SimulatorAction extends AbstractAction implements
      */
     final protected String getNameInGrammar(File selectedFile)
         throws IOException {
-        ExtensionFilter filter = getResourceKind().getFilter();
+        FileType filter = getResourceKind().getFileType();
         // find out if this is within the grammar directory
         String selectedPath =
             filter.stripExtension(selectedFile.getCanonicalPath());

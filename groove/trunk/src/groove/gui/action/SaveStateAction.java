@@ -74,7 +74,7 @@ public final class SaveStateAction extends SimulatorAction {
                 if (nameInGrammar == null) {
                     // save in external file
                     String newName =
-                        getResourceKind().getFilter().stripExtension(
+                        getResourceKind().getFileType().stripExtension(
                             selectedFile.getName());
                     GxlIO.getInstance().saveGraph(
                         graph.rename(newName).toPlainGraph(), selectedFile);

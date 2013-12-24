@@ -16,10 +16,9 @@
  */
 package groove.test.graph;
 
+import static groove.io.FileType.STATE;
 import groove.graph.iso.IsoChecker;
 import groove.graph.plain.PlainGraph;
-import groove.io.ExtensionFilter;
-import groove.io.FileType;
 import groove.util.Groove;
 
 import java.io.File;
@@ -45,13 +44,12 @@ public class IsoTest {
     /** Setup method loading all comparable graphs. */
     @Before
     public void setUp() {
-        ExtensionFilter stateFilter = FileType.getFilter(FileType.STATE);
         this.graphMap = new HashMap<String,List<PlainGraph>>();
-        for (File stateFile : new File(INPUT_DIR).listFiles(stateFilter)) {
+        for (File stateFile : new File(INPUT_DIR).listFiles(STATE.getFilter())) {
             if (stateFile.isDirectory()) {
                 continue;
             }
-            String name = stateFilter.stripExtension(stateFile.getName());
+            String name = STATE.stripExtension(stateFile.getName());
             try {
                 addGraph(name, Groove.loadGraph(stateFile));
             } catch (IOException e) {

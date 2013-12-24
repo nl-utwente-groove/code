@@ -18,8 +18,7 @@ package groove.io.store;
 
 import static groove.grammar.model.ResourceKind.PROPERTIES;
 import static groove.grammar.model.ResourceKind.RULE;
-import static groove.io.FileType.GRAMMAR_FILTER;
-import static groove.io.FileType.PROPERTIES_FILTER;
+import static groove.io.FileType.GRAMMAR;
 import static groove.io.store.EditType.LAYOUT;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
@@ -96,12 +95,12 @@ public class DefaultFileSystemStore extends SystemStore {
             throw new IllegalArgumentException(String.format(
                 "File '%s' is not a directory", file));
         }
-        if (!GRAMMAR_FILTER.acceptExtension(file)) {
+        if (!GRAMMAR.hasExtension(file)) {
             throw new IllegalArgumentException(String.format(
                 "File '%s' does not refer to a production system", file));
         }
         this.file = file;
-        this.name = GRAMMAR_FILTER.stripExtension(this.file.getName());
+        this.name = GRAMMAR.stripExtension(this.file.getName());
         this.marshaller = GxlIO.getInstance();
         if (create) {
             this.createVersionProperties();
@@ -571,9 +570,9 @@ public class DefaultFileSystemStore extends SystemStore {
             if (kind == PROPERTIES) {
                 loadProperties();
             } else if (kind.isTextBased()) {
-                loadTexts(kind, kind.getFilter());
+                loadTexts(kind);
             } else {
-                loadGraphs(kind, kind.getFilter());
+                loadGraphs(kind);
             }
         }
         notifyObservers(new MyEdit(EditType.CREATE,
@@ -640,8 +639,7 @@ public class DefaultFileSystemStore extends SystemStore {
      * Collects all aspect graphs from the {@link #file} directory with a given
      * extension, and a given role.
      */
-    private void loadGraphs(ResourceKind kind, ExtensionFilter filter)
-        throws IOException {
+    private void loadGraphs(ResourceKind kind) throws IOException {
         getGraphMap(kind).clear();
         Map<QualName,File> files;
         try {
@@ -672,8 +670,7 @@ public class DefaultFileSystemStore extends SystemStore {
      * Collects all text resources from the {@link #file} directory with a given
      * extension, and a given kind.
      */
-    private void loadTexts(ResourceKind kind, ExtensionFilter filter)
-        throws IOException {
+    private void loadTexts(ResourceKind kind) throws IOException {
         getTextMap(kind).clear();
         Map<QualName,File> files;
         try {
@@ -705,9 +702,8 @@ public class DefaultFileSystemStore extends SystemStore {
     private Map<QualName,File> collectResources(ResourceKind kind, File path,
             QualName pathName) throws IOException, FormatException {
         Map<QualName,File> result = new HashMap<QualName,File>();
-        kind.getFilter();
         // find all files in the current path 
-        File[] curfiles = path.listFiles(kind.getFilter());
+        File[] curfiles = path.listFiles(kind.getFileType().getFilter());
         if (curfiles == null) {
             throw new IOException(LOAD_ERROR + ": unable to get list of files "
                 + "in path " + path);
@@ -717,7 +713,7 @@ public class DefaultFileSystemStore extends SystemStore {
         // process all files one by one
         for (File file : curfiles) {
             // get qualified name of file
-            String fileName = kind.getFilter().stripExtension(file.getName());
+            String fileName = kind.getFileType().stripExtension(file.getName());
 
             int separatorPos = fileName.indexOf(QualName.SEPARATOR);
             // File contains separator, must be renamed to use subdirectories instead
@@ -773,13 +769,14 @@ public class DefaultFileSystemStore extends SystemStore {
 
     /** Returns the file that by default holds the system properties. */
     private File getDefaultPropertiesFile() {
-        return new File(this.file,
-            PROPERTIES_FILTER.addExtension(Groove.PROPERTY_NAME));
+        return new File(this.file, PROPERTIES.getFileType().addExtension(
+            Groove.PROPERTY_NAME));
     }
 
     /** Returns the file that held the system properties in the distant past. */
     private File getOldDefaultPropertiesFile() {
-        return new File(this.file, PROPERTIES_FILTER.addExtension(this.name));
+        return new File(this.file, PROPERTIES.getFileType().addExtension(
+            this.name));
     }
 
     private void saveText(ResourceKind kind, String name, String program)
@@ -832,7 +829,7 @@ public class DefaultFileSystemStore extends SystemStore {
                 basis.mkdir();
             }
             String shortName = qualName.child();
-            return new File(basis, kind.getFilter().addExtension(shortName));
+            return new File(basis, kind.getFileType().addExtension(shortName));
         } catch (FormatException e) {
             throw new IOException(e.getMessage());
         }

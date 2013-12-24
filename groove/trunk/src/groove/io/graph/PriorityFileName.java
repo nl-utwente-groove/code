@@ -18,7 +18,7 @@ package groove.io.graph;
 
 import groove.grammar.Action;
 import groove.grammar.Rule;
-import groove.io.ExtensionFilter;
+import groove.io.FileType;
 import groove.util.Groove;
 
 import java.io.File;
@@ -73,7 +73,7 @@ public class PriorityFileName {
      * an integer, the priority is assumed to be 0.
      */
     public PriorityFileName(File file) {
-        this(ExtensionFilter.getPureName(file));
+        this(FileType.getPureName(file));
         this.extension = file.getName().substring(this.ruleName.length());
     }
 

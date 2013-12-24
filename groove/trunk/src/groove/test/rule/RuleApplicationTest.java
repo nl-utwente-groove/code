@@ -214,7 +214,7 @@ public class RuleApplicationTest {
                     try {
                         File tmpFile =
                             File.createTempFile("error",
-                                FileType.STATE_FILTER.getExtension(), new File(
+                                FileType.STATE.getExtension(), new File(
                                     INPUT_DIR));
                         Groove.saveGraph(GraphConverter.toAspect(target),
                             tmpFile);
