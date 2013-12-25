@@ -34,7 +34,6 @@ import groove.graph.AGraph;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
-import groove.graph.Label;
 import groove.graph.Node;
 
 import java.util.Collection;
@@ -135,11 +134,6 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
     @SuppressWarnings("unchecked")
     public Set<ShapeEdge> inEdgeSet(Node node) {
         return (Set<ShapeEdge>) super.inEdgeSet(node);
-    }
-
-    @Override
-    public ShapeEdge createEdge(HostNode source, Label label, HostNode target) {
-        return (ShapeEdge) super.createEdge(source, label, target);
     }
 
     @Override

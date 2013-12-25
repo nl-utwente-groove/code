@@ -16,7 +16,7 @@
  */
 package groove.io.graph;
 
-import groove.graph.ElementFactory;
+import groove.graph.AbstractFactory;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.plain.PlainLabel;
@@ -26,26 +26,20 @@ import groove.graph.plain.PlainLabel;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AttrFactory implements ElementFactory<AttrNode,AttrEdge> {
+public class AttrFactory extends AbstractFactory<AttrNode,AttrEdge> {
     /** Private constructor for the singleton instance. */
     private AttrFactory() {
         // empty
     }
 
     @Override
-    public AttrNode createNode(int nr) {
-        this.maxNodeNr = Math.max(this.maxNodeNr, nr);
+    protected AttrNode newNode(int nr) {
         return new AttrNode(nr);
     }
 
     @Override
     public Label createLabel(String text) {
         return PlainLabel.createLabel(text);
-    }
-
-    @Override
-    public AttrEdge createEdge(AttrNode source, String text, AttrNode target) {
-        return createEdge(source, createLabel(text), target);
     }
 
     @Override
@@ -57,13 +51,6 @@ public class AttrFactory implements ElementFactory<AttrNode,AttrEdge> {
     public Morphism<AttrNode,AttrEdge> createMorphism() {
         throw new UnsupportedOperationException();
     }
-
-    @Override
-    public int getMaxNodeNr() {
-        return this.maxNodeNr;
-    }
-
-    private int maxNodeNr;
 
     /** Returns the singleton instance of this class. */
     public static AttrFactory instance() {

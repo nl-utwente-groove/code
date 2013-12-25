@@ -18,11 +18,10 @@ package groove.grammar.host;
 
 import groove.grammar.type.TypeNode;
 import groove.graph.Node;
-import groove.graph.plain.PlainNode;
 
 /**
  * Supertype of all nodes that can occur in a {@link DefaultHostGraph}.
- * These are {@link PlainNode}s and {@link ValueNode}s.
+ * These are {@link DefaultHostNode}s and {@link ValueNode}s.
  * @author Arend Rensink
  * @version $Revision $
  */

@@ -36,9 +36,9 @@ import groove.grammar.aspect.AspectNode;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostNode;
 import groove.grammar.type.TypeGraph;
+import groove.graph.AElementMap;
 import groove.graph.Edge;
 import groove.graph.ElementFactory;
-import groove.graph.AElementMap;
 import groove.graph.GGraph;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
@@ -138,7 +138,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
         }
         AttrNode result = null;
         if (digitFound) {
-            AttrNode node = createNode(nodeNr);
+            AttrNode node = getFactory().createNode(nodeNr);
             // tests if a node with this number exists already
             if (addNode(node)) {
                 result = node;

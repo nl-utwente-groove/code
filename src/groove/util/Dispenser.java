@@ -14,12 +14,25 @@
 /* $Id: Dispenser.java,v 1.2 2008-01-30 09:32:14 iovka Exp $ */
 package groove.util;
 
+import java.util.NoSuchElementException;
+
 /**
  * Interface for a number dispenser.
  * @author Arend Rensink
  * @version $Revision $
  */
 public interface Dispenser {
-    /** Returns a number, according to the policy of this dispenser. */
-    int getNext();
+    /** 
+     * Returns a number, according to the policy of this dispenser.
+     * This fill result in a {@link NoSuchElementException} if
+     * {@link #hasNext()} is {@code false}.
+     * @throws NoSuchElementException if the dispenser has no next number
+     */
+    int getNext() throws NoSuchElementException;
+
+    /** 
+     * Indicates if this dispenser has a next number to return.
+     * @return if {@code false}, any call to {@link #getNext()} will fail
+     */
+    boolean hasNext();
 }

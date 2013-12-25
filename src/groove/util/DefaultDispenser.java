@@ -28,23 +28,33 @@ public class DefaultDispenser implements Dispenser {
     }
 
     /**
+     * Sets the counter to the maximum of the current count and a given number.
+     */
+    public void maxCount(int count) {
+        setCount(Math.max(getCount(), count));
+    }
+
+    /**
      * Resets the counter to zero.
      */
     public void reset() {
         setCount(0);
     }
 
-    /**
-     * Returns the current value of the counter, and increases the counter.
-     */
     public int getNext() {
         int result = this.count;
         this.count++;
         return result;
     }
 
+    @Override
+    public boolean hasNext() {
+        return true;
+    }
+
     /**
      * Returns the current value of the counter, without increasing it.
+     * Thus, the return value is the same as that of {@link #getNext()}.
      */
     public int getCount() {
         return this.count;

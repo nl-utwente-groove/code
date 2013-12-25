@@ -24,8 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** Factory class for graph elements. */
-public class PlainFactory extends
-        StoreFactory<PlainNode,PlainEdge,PlainLabel> {
+public class PlainFactory extends StoreFactory<PlainNode,PlainEdge,PlainLabel> {
     /** Private constructor. */
     protected PlainFactory() {
         // empty
@@ -65,13 +64,6 @@ public class PlainFactory extends
     @Override
     public Morphism<PlainNode,PlainEdge> createMorphism() {
         return new Morphism<PlainNode,PlainEdge>(this);
-    }
-
-    /** Clears the store of canonical edges. */
-    @Override
-    public void clear() {
-        super.clear();
-        this.labelMap.clear();
     }
 
     @Override

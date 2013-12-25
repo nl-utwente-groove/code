@@ -534,11 +534,6 @@ public abstract class AbstractPatternGraph<N extends AbstractPatternNode,E exten
     // ------------------------------------------------------------------------
 
     @Override
-    protected E createEdge(N source, Label label, N target) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public N addNode() {
         throw new UnsupportedOperationException();
     }

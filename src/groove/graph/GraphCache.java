@@ -87,10 +87,7 @@ public class GraphCache<N extends Node,E extends Edge> {
         addToNodeEdgeMap(this.nodeInEdgeMap, node);
         addToNodeEdgeMap(this.nodeOutEdgeMap, node);
         DefaultDispenser nodeCounter = getNodeCounter();
-        int nodeNr = node.getNumber();
-        if (nodeCounter.getCount() <= nodeNr) {
-            nodeCounter.setCount(nodeNr + 1);
-        }
+        nodeCounter.maxCount(node.getNumber() + 1);
     }
 
     /**
@@ -527,8 +524,7 @@ public class GraphCache<N extends Node,E extends Edge> {
             result = this.certificateStrategy;
         } else {
             result =
-                AGraph.getCertificateFactory().newInstance(getGraph(),
-                    strong);
+                AGraph.getCertificateFactory().newInstance(getGraph(), strong);
             if (this.graph.isFixed()) {
                 this.certificateStrategy = result;
             }
