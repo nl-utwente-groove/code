@@ -18,7 +18,6 @@ package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.PartitionRefiner;
-import groove.graph.plain.PlainEdge;
 import groove.util.Dispenser;
 import groove.util.Groove;
 import groove.util.cache.AbstractCacheHolder;
@@ -55,7 +54,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
         return edgeSet().size();
     }
 
-    /**
+    /*
      * Defers the containment question to {@link #nodeSet()}
      */
     public boolean containsNode(Node elem) {
@@ -63,13 +62,21 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
         return nodeSet().contains(elem);
     }
 
-    /**
+    /*
      * Defers the containment question to {@link #edgeSet()}
      */
     public boolean containsEdge(Edge elem) {
         assert isTypeCorrect(elem) : String.format(
             "Edge %s is not of correct type", elem);
         return edgeSet().contains(elem);
+    }
+
+    /**
+     * Tests whether this graph contains an edge with given
+     * source, label and target.
+     */
+    public boolean containsEdge(N source, Label label, N target) {
+        return containsEdge(getFactory().createEdge(source, label, target));
     }
 
     public int size() {
@@ -251,34 +258,14 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     }
 
     /**
-     * Factory method for numbered nodes of this graph.
-     * @return the freshly created node
-     */
-    final protected N createNode(int nr) {
-        return getFactory().createNode(nr);
-    }
-
-    /**
      * Returns the node counter used to number nodes distinctly.
      */
     final protected Dispenser getNodeCounter() {
         return getCache().getNodeCounter();
     }
 
-    /**
-     * Factory method for binary edges of this graph. This implementation
-     * returns a {@link PlainEdge}.
-     * @param source the source node of the new edge
-     * @param label the label of the new edge
-     * @param target the target node of the new edge
-     * @return the freshly binary created edge
-     */
-    protected E createEdge(N source, Label label, N target) {
-        return getFactory().createEdge(source, label, target);
-    }
-
     public N addNode() {
-        N freshNode = createNode(getNodeCounter().getNext());
+        N freshNode = getFactory().createNode(getNodeCounter());
         assert !nodeSet().contains(freshNode) : String.format(
             "Fresh node %s already in node set %s", freshNode, nodeSet());
         addNode(freshNode);
@@ -286,7 +273,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     }
 
     public N addNode(int nr) {
-        N freshNode = createNode(nr);
+        N freshNode = getFactory().createNode(nr);
         assert !nodeSet().contains(freshNode) : String.format(
             "Fresh node %s already in node set %s", freshNode, nodeSet());
         addNode(freshNode);
@@ -302,19 +289,19 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     }
 
     /**
-     * Creates its result using {@link #createEdge(Node, Label, Node)}.
+     * Creates its result using {@link ElementFactory#createEdge(Node, Label, Node)}.
      */
     public E addEdge(N source, String label, N target) {
         return addEdge(source, getFactory().createLabel(label), target);
     }
 
     /**
-     * Creates its result using {@link #createEdge(Node, Label, Node)}.
+     * Creates its result using {@link ElementFactory#createEdge(Node, Label, Node)}.
      */
     public E addEdge(N source, Label label, N target) {
         assert containsNode(source);
         assert containsNode(target);
-        E result = createEdge(source, label, target);
+        E result = getFactory().createEdge(source, label, target);
         addEdge(result);
         return result;
     }
@@ -414,8 +401,7 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
                 }
                 if (changed) {
                     Label label = edge.label();
-                    E newEdge = createEdge(source, label, target);
-                    addEdge(newEdge);
+                    addEdge(source, label, target);
                     removeEdge(edge);
                 }
             }

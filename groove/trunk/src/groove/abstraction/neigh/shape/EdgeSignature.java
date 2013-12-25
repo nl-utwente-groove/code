@@ -135,8 +135,7 @@ public final class EdgeSignature {
         for (ShapeNode opposite : getEquivClass()) {
             ShapeNode source = outgoing ? this.node : opposite;
             ShapeNode target = outgoing ? opposite : this.node;
-            ShapeEdge edge = shape.createEdge(source, this.label, target);
-            if (shape.containsEdge(edge)) {
+            if (shape.containsEdge(source, this.label, target)) {
                 result = true;
                 break;
             }
@@ -151,7 +150,8 @@ public final class EdgeSignature {
         for (ShapeNode opposite : getEquivClass()) {
             ShapeNode source = outgoing ? this.node : opposite;
             ShapeNode target = outgoing ? opposite : this.node;
-            ShapeEdge edge = shape.createEdge(source, this.label, target);
+            ShapeEdge edge =
+                shape.getFactory().createEdge(source, this.label, target);
             if (shape.containsEdge(edge)) {
                 result.add(edge);
             }

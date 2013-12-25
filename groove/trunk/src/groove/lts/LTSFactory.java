@@ -22,6 +22,7 @@ import groove.graph.GGraph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.util.Dispenser;
 
 /**
  * Factory that fails on all method calls except the call to get the maximum
@@ -51,7 +52,17 @@ public final class LTSFactory<N extends Node,E extends Edge> implements
     }
 
     @Override
+    public N createNode() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public N createNode(int nr) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public N createNode(Dispenser dispenser) {
         throw new UnsupportedOperationException();
     }
 
@@ -69,5 +80,4 @@ public final class LTSFactory<N extends Node,E extends Edge> implements
     public E createEdge(N source, Label label, N target) {
         throw new UnsupportedOperationException();
     }
-
 }

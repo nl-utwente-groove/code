@@ -787,8 +787,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                             throw new FormatException(
                                 "Abstract node type '%s'", type, nodeTypeEdge);
                         }
-                        image =
-                            hostFactory.createNode(node.getNumber(), nodeType);
+                        image = hostFactory.createNode(node.getNumber(), type);
                     }
                 }
                 morphism.putNode(node, image);

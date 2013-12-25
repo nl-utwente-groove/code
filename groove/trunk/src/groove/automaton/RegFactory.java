@@ -17,7 +17,7 @@
 package groove.automaton;
 
 import groove.grammar.rule.RuleLabel;
-import groove.graph.ElementFactory;
+import groove.graph.AbstractFactory;
 import groove.graph.Label;
 import groove.graph.Morphism;
 
@@ -25,21 +25,15 @@ import groove.graph.Morphism;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RegFactory implements ElementFactory<RegNode,RegEdge> {
+public class RegFactory extends AbstractFactory<RegNode,RegEdge> {
     @Override
-    public RegNode createNode(int nr) {
-        this.maxNodeNr = Math.max(this.maxNodeNr, nr);
+    protected RegNode newNode(int nr) {
         return new RegNode(nr);
     }
 
     @Override
     public RuleLabel createLabel(String text) {
         return new RuleLabel(text);
-    }
-
-    @Override
-    public RegEdge createEdge(RegNode source, String text, RegNode target) {
-        return createEdge(source, createLabel(text), target);
     }
 
     @Override
@@ -51,13 +45,6 @@ public class RegFactory implements ElementFactory<RegNode,RegEdge> {
     public Morphism<RegNode,RegEdge> createMorphism() {
         throw new UnsupportedOperationException();
     }
-
-    public int getMaxNodeNr() {
-        return this.maxNodeNr;
-    }
-
-    /** The highest node number returned by this factory. */
-    private int maxNodeNr;
 
     /** Returns the singleton instance of this factory. */
     public static RegFactory instance() {

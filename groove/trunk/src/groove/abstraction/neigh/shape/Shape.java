@@ -42,6 +42,7 @@ import groove.grammar.host.HostNode;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
 import groove.graph.GGraph;
 import groove.graph.Graph;
 import groove.graph.Label;
@@ -165,6 +166,11 @@ public final class Shape extends ShapeGraph {
         return added;
     }
 
+    @Override
+    public ShapeEdge addEdge(HostNode source, Label label, HostNode target) {
+        return (ShapeEdge) super.addEdge(source, label, target);
+    }
+
     /** Removes the node from the shape and updates all related structures. */
     @Override
     public boolean removeNodeContext(HostNode node) {
@@ -252,7 +258,7 @@ public final class Shape extends ShapeGraph {
      * because the second has side-effects that we don't want when creating
      * a new node.
      */
-    private ShapeNode createNode(TypeLabel type) {
+    private ShapeNode createNode(TypeNode type) {
         ShapeNode freshNode = this.getFactory().createNode(type, nodeSet());
         assert !nodeSet().contains(freshNode) : String.format(
             "Fresh node %s already in node set %s", freshNode, nodeSet());
@@ -265,9 +271,9 @@ public final class Shape extends ShapeGraph {
             EdgeMultDir direction) {
         switch (direction) {
         case OUTGOING:
-            return this.createEdge(node0, label, node1);
+            return getFactory().createEdge(node0, label, node1);
         case INCOMING:
-            return this.createEdge(node1, label, node0);
+            return getFactory().createEdge(node1, label, node0);
         default:
             assert false;
             return null;
@@ -355,7 +361,7 @@ public final class Shape extends ShapeGraph {
             // Get an arbitrary host node from the equivalence class so we know
             // the type of the shape node that we have to create.
             HostNode nodeG = ec.iterator().next();
-            ShapeNode nodeS = this.createNode(nodeG.getType().label());
+            ShapeNode nodeS = this.createNode(nodeG.getType());
             // Fill the shape node multiplicity.
             int size = ec.size();
             Multiplicity mult = Multiplicity.approx(size, size, NODE_MULT);
@@ -434,8 +440,7 @@ public final class Shape extends ShapeGraph {
             ShapeNode srcS = map.getNode(srcG);
             ShapeNode tgtS = map.getNode(tgtG);
             TypeLabel labelS = edgeG.label();
-            ShapeEdge edgeS = this.createEdge(srcS, labelS, tgtS);
-            addEdge(edgeS);
+            ShapeEdge edgeS = addEdge(srcS, labelS, tgtS);
             // Update the abstraction morphism map.
             for (HostEdge eG : ecG) {
                 map.putEdge(eG, edgeS);
@@ -767,8 +772,7 @@ public final class Shape extends ShapeGraph {
         Iterator<RuleNode> iter = nodesR.iterator();
         for (int i = 0; i < copies; i++) {
             RuleNode nodeR = iter.next();
-            ShapeNode newNode =
-                this.createNode(collectorNode.getType().label());
+            ShapeNode newNode = this.createNode(collectorNode.getType());
             // The new node is concrete so set its multiplicity to one.
             this.setNodeMult(newNode, ONE_NODE_MULT);
             // Copy the labels from the original node.
@@ -826,10 +830,7 @@ public final class Shape extends ShapeGraph {
             // Get the image of source and target from the match.
             ShapeNode srcS = match.getNode(edgeR.source());
             ShapeNode tgtS = match.getNode(edgeR.target());
-            ShapeEdge newEdge = this.createEdge(srcS, label, tgtS);
-            // Add the new edge to the shape. The edge multiplicity maps are
-            // properly adjusted.
-            this.addEdge(newEdge);
+            ShapeEdge newEdge = addEdge(srcS, label, tgtS);
             // Add the new edge to the materialisation.
             mat.addMatEdge(newEdge, inconsistentEdge, edgeR);
         }
@@ -922,7 +923,7 @@ public final class Shape extends ShapeGraph {
         EquivClass<ShapeNode> newEc = oldEc.clone();
         for (int i = 0; i < copies; i++) {
             // Create a new shape node.
-            ShapeNode newNode = this.createNode(nodeS.getType().label());
+            ShapeNode newNode = this.createNode(nodeS.getType());
             // Copy the labels from the pulled node.
             this.copyUnaryEdges(nodeS, newNode, null, null);
             newEc.add(newNode);
@@ -938,7 +939,7 @@ public final class Shape extends ShapeGraph {
         for (ShapeEdge edge : this.outEdgeSet(from)) {
             if (edge.getRole() != BINARY) {
                 TypeLabel label = edge.label();
-                ShapeEdge edgeS = (ShapeEdge) this.addEdge(to, label, to);
+                ShapeEdge edgeS = this.addEdge(to, label, to);
                 if (match != null && nodeR != null) {
                     RuleEdge edgeR = match.getSelfEdge(nodeR, label);
                     if (edgeR != null) {

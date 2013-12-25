@@ -65,8 +65,8 @@ public abstract class AbstractPathChecker extends ReteNetworkNode implements
         assert (network != null) && (expression != null);
         this.expression = expression;
         RuleFactory f = RuleFactory.newInstance();
-        RuleNode n1 = f.createNode(f.getMaxNodeNr());
-        RuleNode n2 = (isLoop) ? n1 : f.createNode(f.getMaxNodeNr());
+        RuleNode n1 = f.createNode();
+        RuleNode n2 = (isLoop) ? n1 : f.createNode();
         this.pattern =
             new RuleEdge[] {f.createEdge(n1, new RuleLabel(expression), n2)};
         this.loop = isLoop;

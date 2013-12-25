@@ -22,7 +22,7 @@ import groove.grammar.host.HostNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeFactory;
-import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
 import groove.graph.Label;
 
 import java.util.Set;
@@ -42,43 +42,24 @@ public final class ShapeFactory extends HostFactory {
         super(typeFactory);
     }
 
-    // ------------------------------------------------------------------------
-    // Overriden methods
-    // ------------------------------------------------------------------------
-    @Override
-    protected ShapeNode newNode(int nr) {
-        return new ShapeNode(nr, getLastNodeType());
-    }
-
-    @Override
-    public ShapeNode createNode() {
-        return (ShapeNode) super.createNode();
-    }
-
     @Override
     public ShapeNode createNode(int nr) {
         return (ShapeNode) super.createNode(nr);
     }
 
     @Override
-    public ShapeNode createNode(TypeLabel type) {
-        return (ShapeNode) super.createNode(type);
-    }
-
-    @Override
-    public ShapeNode createNode(int nr, TypeLabel type) {
-        return (ShapeNode) super.createNode(nr, type);
-    }
-
-    @Override
-    public ShapeNode createNode(TypeLabel type,
-            Set<? extends HostNode> usedNodes) {
+    public ShapeNode createNode(TypeNode type, Set<? extends HostNode> usedNodes) {
         return (ShapeNode) super.createNode(type, usedNodes);
     }
 
     @Override
     public ShapeNode getNode(int nr) {
         return (ShapeNode) super.getNode(nr);
+    }
+
+    @Override
+    protected ShapeNode newNode(int nr, TypeNode type) {
+        return new ShapeNode(nr, type);
     }
 
     @Override
