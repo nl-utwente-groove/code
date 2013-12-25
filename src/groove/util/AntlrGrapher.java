@@ -7,7 +7,6 @@ import groove.algebra.JavaStringAlgebra;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
-import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
@@ -134,7 +133,7 @@ public class AntlrGrapher {
             TypeLabel.createLabel(EdgeRole.NODE_TYPE, this.tokens[tokenType]),
             result);
         if (this.textTypes.get(tokenType) && tree.getText() != null) {
-            ValueNode nameNode =
+            HostNode nameNode =
                 graph.addNode(JavaStringAlgebra.instance, tree.getText());
             graph.addEdge(result, TEXT_LABEL, nameNode);
         }

@@ -156,7 +156,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         public void initialise(HostGraph host) {
             super.initialise(host);
             this.image =
-                host.getFactory().createValueNode(
+                host.getFactory().createNode(
                     ValueNodeSearchItem.this.algebra,
                     ValueNodeSearchItem.this.value);
         }
@@ -210,7 +210,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         boolean write(Constant image) {
             Algebra<?> algebra = ValueNodeSearchItem.this.algebra;
             ValueNode imageNode =
-                this.factory.createValueNode(algebra,
+                this.factory.createNode(algebra,
                     algebra.toValueFromConstant(image));
             return this.search.putNode(ValueNodeSearchItem.this.nodeIx,
                 imageNode);

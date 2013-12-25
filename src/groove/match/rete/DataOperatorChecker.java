@@ -136,11 +136,11 @@ public class DataOperatorChecker extends ReteNetworkNode {
         if (this.isDataCreator()) {
             passDown = true;
             resultValueNode =
-                this.getOwner().getHostFactory().createValueNode(
+                this.getOwner().getHostFactory().createNode(
                     this.operation.getResultAlgebra(), outcome);
         } else if (opResultVarNode.getConstant() != null) {
             resultValueNode =
-                this.getOwner().getHostFactory().createValueNode(
+                this.getOwner().getHostFactory().createNode(
                     this.operation.getResultAlgebra(), outcome);
             passDown =
                 this.operation.getResultAlgebra().toTerm(outcome).equals(

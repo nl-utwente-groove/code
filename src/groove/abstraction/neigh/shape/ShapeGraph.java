@@ -21,12 +21,10 @@ import groove.abstraction.Multiplicity;
 import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
-import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
-import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
@@ -106,16 +104,6 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
 
     public Set<ShapeNode> nodeSet() {
         return getCache().getNodeSet();
-    }
-
-    /**
-     * Creates, adds and returns a value node created for a given
-     * algebra and value.
-     */
-    public ValueNode addNode(Algebra<?> algebra, Object value) {
-        ValueNode result = getFactory().createValueNode(algebra, value);
-        addNode(result);
-        return result;
     }
 
     @Override

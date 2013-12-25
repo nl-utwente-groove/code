@@ -24,7 +24,6 @@ import groove.grammar.aspect.GraphConverter;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
-import groove.grammar.host.ValueNode;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
@@ -109,7 +108,7 @@ public class ColImporter implements Importer {
                 String[] fragments = nextLine.split(" ");
                 if (fragments[0].equals("n")) {
                     HostNode node = this.addNode(graph, fragments[1]);
-                    ValueNode valueNode =
+                    HostNode valueNode =
                         graph.addNode(intAlgebra,
                             intAlgebra.toValueFromJava(fragments[2]));
                     graph.addEdge(node, valueLabel, valueNode);

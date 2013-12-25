@@ -21,29 +21,25 @@ package groove.util;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SingleDispenser implements Dispenser {
+public class SingleDispenser extends Dispenser {
     /** Creates a new one-shot dispenser, for a given number. */
     public SingleDispenser(int nr) {
         this.nr = nr;
     }
 
     @Override
-    public int getNext() {
-        if (this.used) {
-            throw new IllegalStateException(String.format(
-                "One-shot dispenser for %d has been used", this.nr));
-        }
-        this.used = true;
+    protected int computeNext() {
+        setExhausted();
         return this.nr;
     }
 
-    /** Indicates if this dispenser is exhausted. */
-    public boolean hasNext() {
-        return !this.used;
+    @Override
+    public void notifyUsed(int nr) {
+        if (nr == this.nr) {
+            setExhausted();
+        }
     }
 
     /** Number with which the dispenser was initialised. */
     private final int nr;
-    /** Flag indicated that the dispenser has been used. */
-    private boolean used;
 }

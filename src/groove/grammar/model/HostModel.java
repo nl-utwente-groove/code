@@ -262,7 +262,7 @@ public class HostModel extends GraphBasedModel<HostGraph> {
                 Aspect dataType = modelNode.getAttrAspect();
                 Expression term = (Expression) dataType.getContent();
                 nodeImage =
-                    result.getFactory().createValueNode(nodeAlgebra,
+                    result.getFactory().createNode(nodeAlgebra,
                         nodeAlgebra.toValue(term));
                 result.addNode(nodeImage);
             } else {

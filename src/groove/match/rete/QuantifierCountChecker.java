@@ -251,11 +251,10 @@ public class QuantifierCountChecker extends ReteNetworkNode implements
         }
         if (this.condition.getCountNode().getConstant() == null) {
             Algebra<Integer> intAlgebra = JavaIntAlgebra.instance;
-            this.dummyMatch =
-                new ReteCountMatch(
-                    this,
-                    this.getOwner().getOwnerEngine().getNetwork().getHostFactory().createValueNode(
-                        intAlgebra, intAlgebra.toValueFromJava(0)));
+            ValueNode countNode =
+                this.getOwner().getOwnerEngine().getNetwork().getHostFactory().createNode(
+                    intAlgebra, intAlgebra.toValueFromJava(0));
+            this.dummyMatch = new ReteCountMatch(this, countNode);
         } else {
             this.dummyMatch = null;
         }
@@ -271,7 +270,7 @@ public class QuantifierCountChecker extends ReteNetworkNode implements
             anchor, collector);
         Algebra<Integer> intAlgebra = JavaIntAlgebra.instance;
         ValueNode vn =
-            this.getOwner().getOwnerEngine().getNetwork().getHostFactory().createValueNode(
+            this.getOwner().getOwnerEngine().getNetwork().getHostFactory().createNode(
                 intAlgebra, intAlgebra.toValueFromJava(matchList.size()));
         if (this.getCountNode().hasConstant()) {
             if (this.getCountNode().getConstant().equals(vn.getTerm())) {

@@ -345,7 +345,7 @@ class ConditionSearchItem extends AbstractSearchItem {
             } else if (ConditionSearchItem.this.countNode != null) {
                 Algebra<?> intAlgebra = ConditionSearchItem.this.intAlgebra;
                 this.countImage =
-                    this.host.getFactory().createValueNode(intAlgebra,
+                    this.host.getFactory().createNode(intAlgebra,
                         intAlgebra.toValueFromJava(matches.size()));
             }
             if (result) {

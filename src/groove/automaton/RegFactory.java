@@ -17,7 +17,7 @@
 package groove.automaton;
 
 import groove.grammar.rule.RuleLabel;
-import groove.graph.AbstractFactory;
+import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.Morphism;
 
@@ -25,7 +25,7 @@ import groove.graph.Morphism;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RegFactory extends AbstractFactory<RegNode,RegEdge> {
+public class RegFactory extends ElementFactory<RegNode,RegEdge> {
     @Override
     protected RegNode newNode(int nr) {
         return new RegNode(nr);

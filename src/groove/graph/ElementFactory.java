@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
+ * Copyright 2003--2011 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -17,49 +17,97 @@
 package groove.graph;
 
 import groove.util.Dispenser;
-import groove.util.SingleDispenser;
 
-/** Factory class for graph elements. */
-public interface ElementFactory<N extends Node,E extends Edge> {
-    /** 
-     * Creates a fresh node with a number that is as yet
-     * unused according to this factory.
-     * @see ElementFactory#createNode(Dispenser)
-     */
-    N createNode();
+/**
+ * Factory class for graph elements.
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+public abstract class ElementFactory<N extends Node,E extends Edge>
+        extends NodeFactory<N> {
+    /** Constructor for subclassing. */
+    protected ElementFactory() {
+        this.nodeNrs = createNodeNrDispenser();
+        this.maxNodeNr = -1;
+    }
 
-    /** 
-     * Returns a suitable node with a given (non-negative) node number.
-     * The node is created if no such node is known to this factory, but
-     * the call may fail if a node with the given number is known but unsuitable.
-     * This calls {@link #createNode(Dispenser)} with a {@link SingleDispenser}
-     * initialised at the given number.
-     * @throws IllegalStateException if the number is unsuitable
-     * @see #createNode(Dispenser)
-     */
-    N createNode(int nr);
+    /** Returns the fresh node number dispenser of this factory. */
+    @Override
+    protected final Dispenser getNodeNrDispenser() {
+        return this.nodeNrs;
+    }
 
-    /** 
-     * Returns a suitable node with a number obtained from a dispenser.
-     * Typically the node will get the first available number,
-     * but if node numbers may be unsuitable for some reason then
-     * the dispenser may be invoked multiple times. 
-     * @throws IllegalStateException if the dispenser runs out of numbers
-     */
-    N createNode(Dispenser dispenser);
+    /** Callback factory method to create the node number dispenser. */
+    protected Dispenser createNodeNrDispenser() {
+        return Dispenser.counter();
+    }
 
-    /** Creates a label with the given text. */
-    Label createLabel(String text);
-
-    /** Creates an edge with the given source, label text and target. */
-    E createEdge(N source, String text, N target);
-
-    /** Creates an edge with the given source, label and target. */
-    E createEdge(N source, Label label, N target);
-
-    /** Creates a fresh morphism between the elements of this factory. */
-    Morphism<N,E> createMorphism();
+    private final Dispenser nodeNrs;
 
     /** Returns the maximum node number known to this factory. */
-    int getMaxNodeNr();
+    public int getMaxNodeNr() {
+        return this.maxNodeNr;
+    }
+
+    /**
+     * Callback method from {@link #createNode()} to register a given node 
+     * as having been created by this factory.
+     * It is an error to register the same node number more than once.
+     */
+    @Override
+    protected void registerNode(N node) {
+        int nr = node.getNumber();
+        this.maxNodeNr = Math.max(this.maxNodeNr, nr);
+        getNodeNrDispenser().notifyUsed(nr);
+    }
+
+    private int maxNodeNr;
+
+    @Override
+    protected boolean isAllowed(N node) {
+        return true;
+    }
+
+    @Override
+    protected N getNode(int nr) {
+        return null;
+    }
+
+    /** Creates a label with the given text. */
+    public abstract Label createLabel(String text);
+
+    /** Creates an edge with the given source, label text and target. */
+    public E createEdge(N source, String text, N target) {
+        return createEdge(source, createLabel(text), target);
+    }
+
+    /** Creates an edge with the given source, label and target. */
+    public abstract E createEdge(N source, Label label, N target);
+
+    /** Creates a fresh morphism between the elements of this factory. */
+    public abstract Morphism<N,E> createMorphism();
+
+    /** 
+     * Node factory that delegates its globally implemented methods to the
+     * embedding element factory.
+     * @author rensink
+     * @version $Revision $
+     */
+    abstract protected class DependentNodeFactory extends
+            NodeFactory<N> {
+        @Override
+        protected N getNode(int nr) {
+            return ElementFactory.this.getNode(nr);
+        }
+
+        @Override
+        protected void registerNode(N node) {
+            ElementFactory.this.registerNode(node);
+        }
+
+        @Override
+        protected Dispenser getNodeNrDispenser() {
+            return ElementFactory.this.getNodeNrDispenser();
+        }
+    }
 }

@@ -28,8 +28,8 @@ import groove.grammar.type.TypeFactory;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
-import groove.graph.Edge;
 import groove.graph.ElementFactory;
+import groove.graph.Edge;
 import groove.graph.NodeSetEdgeSetGraph;
 
 import java.util.ArrayList;

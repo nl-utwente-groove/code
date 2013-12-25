@@ -259,7 +259,8 @@ public final class Shape extends ShapeGraph {
      * a new node.
      */
     private ShapeNode createNode(TypeNode type) {
-        ShapeNode freshNode = this.getFactory().createNode(type, nodeSet());
+        ShapeNode freshNode =
+            (ShapeNode) this.getFactory().nodes(type).createNode(nodeSet());
         assert !nodeSet().contains(freshNode) : String.format(
             "Fresh node %s already in node set %s", freshNode, nodeSet());
         super.addNode(freshNode);

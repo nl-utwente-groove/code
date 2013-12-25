@@ -18,16 +18,17 @@ package groove.abstraction.pattern.trans;
 
 import groove.abstraction.pattern.shape.TypeEdge;
 import groove.abstraction.pattern.shape.TypeNode;
-import groove.graph.AbstractFactory;
+import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.Morphism;
 
 /** Factory class for rule elements. */
-public class RuleFactory extends AbstractFactory<RuleNode,RuleEdge> {
+public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
     /** Creates a new rule node with given number and type. */
     public RuleNode createNode(int nr, TypeNode type) {
-        notifyNodeNr(nr);
-        return new RuleNode(nr, type);
+        RuleNode result = new RuleNode(nr, type);
+        registerNode(result);
+        return result;
     }
 
     /** Creates a new rule edge with given number and type. */

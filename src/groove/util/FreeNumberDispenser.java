@@ -25,7 +25,7 @@ import java.util.Collection;
  * @author Eduardo Zambon
 
  */
-public class FreeNumberDispenser implements Dispenser {
+public class FreeNumberDispenser extends Dispenser {
     /**
      * Creates the dispenser for the given array. The array is modified
      * in the process.
@@ -54,11 +54,7 @@ public class FreeNumberDispenser implements Dispenser {
     }
 
     @Override
-    public boolean hasNext() {
-        return true;
-    }
-
-    public int getNext() {
+    protected int computeNext() {
         this.lastVal++;
         // keep increasing until we find an unused number
         // or we run out of numbers
