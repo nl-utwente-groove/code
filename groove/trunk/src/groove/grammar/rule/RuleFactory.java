@@ -23,58 +23,61 @@ import groove.grammar.type.TypeFactory;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
-import groove.graph.AbstractFactory;
+import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.util.Dispenser;
-import groove.util.SingleDispenser;
 
 import java.util.List;
 
 /** Factory class for graph elements. */
-public class RuleFactory extends AbstractFactory<RuleNode,RuleEdge> {
+public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
     /** Private constructor. */
     private RuleFactory(TypeFactory typeFactory) {
         this.typeFactory = typeFactory;
     }
 
-    /** This implementation creates a node with top node type. */
-    @Override
-    public RuleNode createNode(Dispenser dispenser) {
-        return createNode(dispenser, TypeLabel.NODE, true, null);
+    /** Factory method for a default rule node. */
+    public RuleNode createNode(int nr, TypeLabel typeLabel, boolean sharp,
+            List<TypeGuard> typeGuards) {
+        return createNode(Dispenser.single(nr), typeLabel, sharp, typeGuards);
     }
 
     /** Factory method for a default rule node. */
-    public DefaultRuleNode createNode(int nr, TypeLabel typeLabel,
-            boolean sharp, List<TypeGuard> typeGuards) {
-        return createNode(new SingleDispenser(nr), typeLabel, sharp, typeGuards);
-    }
-
-    /** Factory method for a default rule node. */
-    public DefaultRuleNode createNode(Dispenser dispenser, TypeLabel typeLabel,
+    public RuleNode createNode(Dispenser dispenser, TypeLabel typeLabel,
             boolean sharp, List<TypeGuard> typeGuards) {
         int nr = dispenser.getNext();
-        notifyNodeNr(nr);
         TypeNode type = getTypeFactory().createNode(typeLabel);
-        return new DefaultRuleNode(nr, type, sharp, typeGuards);
+        DefaultRuleNode result = newNode(nr, type, sharp, typeGuards);
+        registerNode(result);
+        return result;
     }
 
     /** Creates a variable node for a given algebra term, and with a given node number. */
     public VariableNode createVariableNode(int nr, Expression term) {
-        notifyNodeNr(nr);
         TypeNode type = getTypeFactory().getDataType(term.getSignature());
-        return new VariableNode(nr, term, type);
+        VariableNode result = new VariableNode(nr, term, type);
+        registerNode(result);
+        return result;
     }
 
     /** Creates an operator node for a given node number and arity. */
-    public OperatorNode createOperatorNode(int nr, Operator operator,
+    public RuleNode createOperatorNode(int nr, Operator operator,
             List<VariableNode> arguments, VariableNode target) {
-        notifyNodeNr(nr);
-        return new OperatorNode(nr, operator, arguments, target);
+        RuleNode result = new OperatorNode(nr, operator, arguments, target);
+        registerNode(result);
+        return result;
     }
 
+    /* This implementation creates a node with top node type. */
     @Override
     protected RuleNode newNode(int nr) {
-        throw new UnsupportedOperationException();
+        return newNode(nr, getTypeFactory().getTopNode(), true, null);
+    }
+
+    /** Callback factory node for a rule node. */
+    private DefaultRuleNode newNode(int nr, TypeNode type, boolean sharp,
+            List<TypeGuard> typeGuards) {
+        return new DefaultRuleNode(nr, type, sharp, typeGuards);
     }
 
     /** Creates a label with the given text. */

@@ -509,7 +509,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 (VariableNode) result.getNode(opNode.getTarget());
             imageOk &= newTarget != null;
             if (imageOk) {
-                OperatorNode image =
+                RuleNode image =
                     ruleFactory.createOperatorNode(opNode.getNumber(),
                         opNode.getOperator(), newArgs, newTarget);
                 result.putNode(opNode, image);
@@ -762,8 +762,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 if (node instanceof ValueNode) {
                     ValueNode valueNode = (ValueNode) node;
                     image =
-                        hostFactory.createValueNode(valueNode.getNumber(),
-                            valueNode.getAlgebra(), valueNode.getValue());
+                        hostFactory.values(valueNode.getAlgebra(),
+                            valueNode.getValue()).createNode(
+                            valueNode.getNumber());
                 } else if (isImplicit()) {
                     image = hostFactory.createNode(node.getNumber());
                 } else {
@@ -787,7 +788,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                             throw new FormatException(
                                 "Abstract node type '%s'", type, nodeTypeEdge);
                         }
-                        image = hostFactory.createNode(node.getNumber(), type);
+                        image =
+                            hostFactory.nodes(type).createNode(node.getNumber());
                     }
                 }
                 morphism.putNode(node, image);

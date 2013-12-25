@@ -70,7 +70,7 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
             if (sn instanceof ValueNode && family != null) {
                 ValueNode vn = (ValueNode) sn;
                 tn =
-                    getFactory().createValueNode(
+                    getFactory().createNode(
                         family.getAlgebra(vn.getSignature()),
                         family.toValue(vn.getTerm()));
             } else {
@@ -112,8 +112,8 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge>
      * Creates, adds and returns a value node created for a given
      * algebra and value.
      */
-    public ValueNode addNode(Algebra<?> algebra, Object value) {
-        ValueNode result = getFactory().createValueNode(algebra, value);
+    public HostNode addNode(Algebra<?> algebra, Object value) {
+        HostNode result = getFactory().createNode(algebra, value);
         addNode(result);
         return result;
     }

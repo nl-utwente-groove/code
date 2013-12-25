@@ -31,7 +31,7 @@ import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
 import groove.graph.AElementMap;
-import groove.graph.AbstractFactory;
+import groove.graph.ElementFactory;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.Graph;
@@ -952,7 +952,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
 
     /** Factory for AspectGraph elements. */
     public static class AspectFactory extends
-            AbstractFactory<AspectNode,AspectEdge> {
+            ElementFactory<AspectNode,AspectEdge> {
         /** Private constructor to ensure singleton usage. */
         protected AspectFactory(GraphRole graphRole) {
             this.graphRole = graphRole;

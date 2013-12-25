@@ -610,7 +610,7 @@ final public class BasicEvent extends
             }
         }
         assert i == numbers.length;
-        return getHostFactory().createNode(type, numbers);
+        return getHostFactory().nodes(type).createNode(numbers);
     }
 
     /**
@@ -633,7 +633,7 @@ final public class BasicEvent extends
     private HostNode createNode(TypeNode type) {
         BasicEvent.freshNodeCount++;
         HostFactory record = getHostFactory();
-        return record.createNode(type);
+        return record.nodes(type).createNode();
     }
 
     /**
@@ -793,7 +793,7 @@ final public class BasicEvent extends
                 if (creatorEnd instanceof ValueNode) {
                     ValueNode node = (ValueNode) creatorEnd;
                     createdValue =
-                        BasicEvent.this.hostFactory.createValueNode(
+                        BasicEvent.this.hostFactory.createNode(
                             node.getAlgebra(), node.getValue());
                 } else {
                     createdValue = anchorMap.getNode(creatorEnd);

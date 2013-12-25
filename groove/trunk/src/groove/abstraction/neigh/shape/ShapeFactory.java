@@ -24,8 +24,7 @@ import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeFactory;
 import groove.grammar.type.TypeNode;
 import groove.graph.Label;
-
-import java.util.Set;
+import groove.graph.NodeFactory;
 
 /**
  * Factory class for shape elements.
@@ -43,23 +42,18 @@ public final class ShapeFactory extends HostFactory {
     }
 
     @Override
+    public NodeFactory<HostNode> nodes(TypeNode type) {
+        return new ShapeNodeFactory(type);
+    }
+
+    @Override
     public ShapeNode createNode(int nr) {
         return (ShapeNode) super.createNode(nr);
     }
 
     @Override
-    public ShapeNode createNode(TypeNode type, Set<? extends HostNode> usedNodes) {
-        return (ShapeNode) super.createNode(type, usedNodes);
-    }
-
-    @Override
     public ShapeNode getNode(int nr) {
         return (ShapeNode) super.getNode(nr);
-    }
-
-    @Override
-    protected ShapeNode newNode(int nr, TypeNode type) {
-        return new ShapeNode(nr, type);
     }
 
     @Override
@@ -100,5 +94,16 @@ public final class ShapeFactory extends HostFactory {
     /** Returns a new instance of this factory for a given type graph. */
     public static ShapeFactory newInstance(TypeFactory typeFactory) {
         return new ShapeFactory(typeFactory);
+    }
+
+    private class ShapeNodeFactory extends DefaultHostNodeFactory {
+        ShapeNodeFactory(TypeNode type) {
+            super(type);
+        }
+
+        @Override
+        protected HostNode newNode(int nr) {
+            return new ShapeNode(nr, getType());
+        }
     }
 }

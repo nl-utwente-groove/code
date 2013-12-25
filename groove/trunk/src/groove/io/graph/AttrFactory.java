@@ -16,7 +16,7 @@
  */
 package groove.io.graph;
 
-import groove.graph.AbstractFactory;
+import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.plain.PlainLabel;
@@ -26,7 +26,7 @@ import groove.graph.plain.PlainLabel;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AttrFactory extends AbstractFactory<AttrNode,AttrEdge> {
+public class AttrFactory extends ElementFactory<AttrNode,AttrEdge> {
     /** Private constructor for the singleton instance. */
     private AttrFactory() {
         // empty

@@ -16,13 +16,12 @@
  */
 package groove.lts;
 
-import groove.graph.Edge;
 import groove.graph.ElementFactory;
+import groove.graph.Edge;
 import groove.graph.GGraph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.util.Dispenser;
 
 /**
  * Factory that fails on all method calls except the call to get the maximum
@@ -31,7 +30,7 @@ import groove.util.Dispenser;
  *  
  * @author Eduardo Zambon
  */
-public final class LTSFactory<N extends Node,E extends Edge> implements
+public final class LTSFactory<N extends Node,E extends Edge> extends
         ElementFactory<N,E> {
 
     private final GGraph<N,E> graph;
@@ -52,27 +51,12 @@ public final class LTSFactory<N extends Node,E extends Edge> implements
     }
 
     @Override
-    public N createNode() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public N createNode(int nr) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public N createNode(Dispenser dispenser) {
+    protected N newNode(int nr) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Label createLabel(String text) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public E createEdge(N source, String text, N target) {
         throw new UnsupportedOperationException();
     }
 

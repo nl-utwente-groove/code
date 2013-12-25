@@ -24,16 +24,14 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.Label;
+import groove.graph.NodeFactory;
 import groove.graph.StoreFactory;
 import groove.util.Dispenser;
-import groove.util.FreeNumberDispenser;
-import groove.util.SingleDispenser;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Factory class for host graph elements.
@@ -49,71 +47,43 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      */
     protected HostFactory(TypeFactory typeFactory) {
         this.typeFactory = typeFactory;
+        this.valueMaps = new HashMap<String,Map<Object,ValueNode>>();
     }
 
-    /** 
+    /*
      * This implementation creates a host node with top type.
      * Should only be called if the graph is implicitly typed.
      */
     @Override
-    public HostNode createNode(Dispenser dispenser) {
-        assert this.typeFactory.getGraph().isImplicit();
-        return createNode(dispenser, this.typeFactory.getTopNode());
+    protected final HostNode newNode(int nr) {
+        return getTopNodeFactory().createNode(nr);
     }
 
-    /** Creates and returns a node with a given type label, and the next available node number. */
-    public HostNode createNode(TypeNode type) {
-        return createNode(getNodeNrs(), type);
+    /** Returns the fixed node factory for the top type. */
+    private DefaultHostNodeFactory getTopNodeFactory() {
+        assert getTypeGraph().isImplicit();
+        if (this.topNodeFactory == null) {
+            this.topNodeFactory =
+                (DefaultHostNodeFactory) nodes(getTypeFactory().getTopNode());
+        }
+        return this.topNodeFactory;
     }
 
-    /** Creates and returns a node with a given number and node type. */
-    public HostNode createNode(int nr, TypeNode typeNode) {
-        return createNode(new SingleDispenser(nr), typeNode);
+    private DefaultHostNodeFactory topNodeFactory;
+
+    @Override
+    protected boolean isAllowed(HostNode node) {
+        return node.getType().isTopType();
     }
 
-    /**
-     * Creates and returns a node with the given type. Tries to re-use node
-     * numbers that do not occur in the given set, while ensuring type
-     * consistency.
-     * @see #createNode(Dispenser, TypeNode)
-     */
-    public HostNode createNode(TypeNode type, Set<? extends HostNode> usedNodes) {
-        FreeNumberDispenser dispenser = new FreeNumberDispenser(usedNodes);
-        return createNode(dispenser, type);
+    /** Returns a node factory for typed default host nodes. */
+    public NodeFactory<HostNode> nodes(TypeNode type) {
+        return new DefaultHostNodeFactory(type);
     }
 
-    /**
-     * Creates and returns a node with the given type. Tries to re-use node
-     * numbers that do not occur in the given array, while ensuring type
-     * consistency.
-     * @see #createNode(Dispenser, TypeNode)
-     */
-    public HostNode createNode(TypeNode type, int usedNodes[]) {
-        FreeNumberDispenser dispenser = new FreeNumberDispenser(usedNodes);
-        return createNode(dispenser, type);
-    }
-
-    /**
-     * Creates and returns a node with the given type. Tries to re-use node
-     * numbers that do not occur in the set given to the dispenser, while
-     * ensuring type consistency. 
-     */
-    public HostNode createNode(Dispenser dispenser, TypeNode type) {
-        HostNode result = null;
-        assert type.getGraph() == getTypeGraph();
-        do {
-            int nr = dispenser.getNext();
-            result = getNode(nr);
-            if (result == null) {
-                // create a new node of the correct type
-                result = newNode(nr, type);
-                storeNode(result);
-            } else if (!result.getType().equals(type)) {
-                // use the existing node with this number
-                result = null;
-            }
-        } while (result == null);
-        return result;
+    /** Returns a node factory for a given value node. */
+    public NodeFactory<HostNode> values(Algebra<?> algebra, Object value) {
+        return new ValueNodeFactory(algebra, value);
     }
 
     /**
@@ -122,40 +92,15 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      * @param algebra the algebra of the value
      * @param value algebra representation of the value for the new node
      */
-    public ValueNode createValueNode(Algebra<?> algebra, Object value) {
-        return createValueNode(getNextNodeNr(), algebra, value);
-    }
-
-    /**
-     * Returns a numbered value node for a given algebra and value, creating
-     * it if necessary. Stores previously generated instances for reuse.
-     * @param algebra the algebra of the value
-     * @param value algebra representation of the value for the new node
-     */
-    public ValueNode createValueNode(int nr, Algebra<?> algebra, Object value) {
-        Map<Object,ValueNode> valueMap = getValueMap(algebra);
-        ValueNode result = valueMap.get(value);
-        if (result == null) {
-            result = newValueNode(nr, algebra, value);
-            valueMap.put(value, result);
-            storeNode(result);
-        }
-        return result;
-    }
-
-    /** 
-     * Creates a new value node with a given node number, algebra and value.
-     * Raises an exception if a different node with that number already exists.
-     */
-    private ValueNode newValueNode(int nr, Algebra<?> algebra, Object value) {
-        TypeNode type = this.typeFactory.getDataType(algebra.getSignature());
-        return new ValueNode(nr, algebra, value, type);
+    public ValueNode createNode(Algebra<?> algebra, Object value) {
+        // implemented as a convenience method delegating to values()
+        return (ValueNode) values(algebra, value).createNode();
     }
 
     /** Retrieves the value-to-node map for a given algebra,
      * creating it if necessary.
      */
-    private Map<Object,ValueNode> getValueMap(Algebra<?> algebra) {
+    Map<Object,ValueNode> getValueMap(Algebra<?> algebra) {
         Map<Object,ValueNode> result = this.valueMaps.get(algebra.getName());
         if (result == null) {
             result = new HashMap<Object,ValueNode>();
@@ -163,6 +108,9 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         }
         return result;
     }
+
+    /** Internal store of previously generated value nodes. */
+    private final Map<String,Map<Object,ValueNode>> valueMaps;
 
     @Override
     public HostEdge createEdge(HostNode source, Label label, HostNode target) {
@@ -177,16 +125,6 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     public HostEdge createEdge(HostNode source, TypeEdge type, HostNode target) {
         HostEdge edge = newEdge(source, type, target, getEdgeCount());
         return storeEdge(edge);
-    }
-
-    @Override
-    protected HostNode newNode(int nr) {
-        throw new UnsupportedOperationException();
-    }
-
-    /** Callback factory method for a host node with a given number and type. */
-    protected HostNode newNode(int nr, TypeNode type) {
-        return new DefaultHostNode(nr, type);
     }
 
     /** 
@@ -225,15 +163,18 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         return new RuleToHostMap(this);
     }
 
+    /** Returns the type graph used in this host factory. */
+    public TypeGraph getTypeGraph() {
+        return getTypeFactory().getGraph();
+    }
+
     /** Returns the type factory used in this host factory. */
     public TypeFactory getTypeFactory() {
         return this.typeFactory;
     }
 
-    /** Returns the type graph used in this host factory. */
-    public TypeGraph getTypeGraph() {
-        return getTypeFactory().getGraph();
-    }
+    /** The type factory used for creating node and edge types. */
+    private final TypeFactory typeFactory;
 
     /** 
      * Method to normalise an array of host nodes.
@@ -255,11 +196,6 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         return result;
     }
 
-    /** Internal store of previously generated value nodes. */
-    private final Map<String,Map<Object,ValueNode>> valueMaps =
-        new HashMap<String,Map<Object,ValueNode>>();
-    /** The type factory used for creating node and edge types. */
-    private final TypeFactory typeFactory;
     /** Store of normalised host node arrays. */
     private Map<List<HostNode>,HostNode[]> normalHostNodeMap;
 
@@ -291,4 +227,67 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     static private int normaliseGain;
     /** Counter for the normalised node array. */
     static private int normaliseCount;
+
+    /** Factory for (typed) {@link DefaultHostNode}s. */
+    protected class DefaultHostNodeFactory extends DependentNodeFactory {
+        /** Constructor for subclassing. */
+        protected DefaultHostNodeFactory(TypeNode type) {
+            this.type = type;
+        }
+
+        @Override
+        protected boolean isAllowed(HostNode node) {
+            return node.getType() == this.type;
+        }
+
+        @Override
+        protected HostNode newNode(int nr) {
+            return new DefaultHostNode(nr, this.type);
+        }
+
+        /** Returns the type wrapped into this factory. */
+        protected TypeNode getType() {
+            return this.type;
+        }
+
+        private final TypeNode type;
+    }
+
+    /** Factory for (typed) {@link DefaultHostNode}s. */
+    private class ValueNodeFactory extends DependentNodeFactory {
+        ValueNodeFactory(Algebra<?> algebra, Object value) {
+            this.algebra = algebra;
+            this.value = value;
+        }
+
+        /* Overridden as value nodes should always be reused when possible. */
+        @Override
+        public HostNode createNode(Dispenser dispenser) {
+            Map<Object,ValueNode> valueMap = getValueMap(this.algebra);
+            ValueNode result = valueMap.get(this.value);
+            if (result == null) {
+                // create a new node only if it is currently unknown
+                result = newNode(dispenser.getNext());
+                valueMap.put(this.value, result);
+                registerNode(result);
+            }
+            return result;
+        }
+
+        @Override
+        protected boolean isAllowed(HostNode node) {
+            assert false : "This should never have to be called";
+            return false;
+        }
+
+        @Override
+        protected ValueNode newNode(int nr) {
+            TypeNode type =
+                getTypeFactory().getDataType(this.algebra.getSignature());
+            return new ValueNode(nr, this.algebra, this.value, type);
+        }
+
+        private final Algebra<?> algebra;
+        private final Object value;
+    }
 }

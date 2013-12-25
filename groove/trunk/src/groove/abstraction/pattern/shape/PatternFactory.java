@@ -17,7 +17,7 @@
 package groove.abstraction.pattern.shape;
 
 import groove.grammar.host.HostEdge;
-import groove.graph.AbstractFactory;
+import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.plain.PlainEdge;
@@ -33,7 +33,7 @@ import java.util.Collection;
  * @author Eduardo Zambon
  */
 public final class PatternFactory extends
-        AbstractFactory<PatternNode,PatternEdge> {
+        ElementFactory<PatternNode,PatternEdge> {
 
     // ------------------------------------------------------------------------
     // Static Fields
@@ -89,7 +89,7 @@ public final class PatternFactory extends
      * node number.
      */
     public PatternNode createNode(TypeNode type) {
-        return createNode(getNodeNrs(), type);
+        return createNode(getNodeNrDispenser(), type);
     }
 
     /**
@@ -134,7 +134,7 @@ public final class PatternFactory extends
                 // store the new node
                 this.nodes[nr] = result;
                 // register the node number
-                notifyNodeNr(nr);
+                registerNode(result);
             } else if (this.nodes[nr].getType().equals(type)) {
                 // use the existing node with this number
                 result = this.nodes[nr];
@@ -226,15 +226,8 @@ public final class PatternFactory extends
     }
 
     @Override
-    public PatternEdge createEdge(PatternNode source, String text,
-            PatternNode target) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public PatternEdge createEdge(PatternNode source, Label label,
             PatternNode target) {
         throw new UnsupportedOperationException();
     }
-
 }

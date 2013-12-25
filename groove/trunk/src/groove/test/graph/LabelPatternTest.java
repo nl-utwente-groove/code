@@ -74,15 +74,15 @@ public class LabelPatternTest {
         Algebra<?> stringAlgebra =
             AlgebraFamily.getInstance().getAlgebra(SignatureKind.STRING);
         HostNode i1 =
-            graph.getFactory().createValueNode(intAlgebra,
+            graph.getFactory().createNode(intAlgebra,
                 intAlgebra.toValueFromJava(11));
         graph.addNode(i1);
         HostNode i2 =
-            graph.getFactory().createValueNode(intAlgebra,
+            graph.getFactory().createNode(intAlgebra,
                 intAlgebra.toValueFromJava(22));
         graph.addNode(i2);
         HostNode s =
-            graph.getFactory().createValueNode(stringAlgebra,
+            graph.getFactory().createNode(stringAlgebra,
                 stringAlgebra.toValueFromJava("text"));
         graph.addNode(s);
         graph.addEdge(n1, "i1", i1);

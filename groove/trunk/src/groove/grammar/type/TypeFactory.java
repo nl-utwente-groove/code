@@ -1,8 +1,8 @@
 package groove.grammar.type;
 
 import groove.algebra.SignatureKind;
-import groove.graph.AbstractFactory;
 import groove.graph.EdgeRole;
+import groove.graph.ElementFactory;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.util.Pair;
@@ -16,7 +16,7 @@ import java.util.Map;
  * Factory creating type nodes and edges.
  * The type nodes are numbered consecutively from 0 onwards.
  */
-public class TypeFactory extends AbstractFactory<TypeNode,TypeEdge> {
+public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
     /**
      * Constructs a factory for a given type graph.
      * Should only be called from the constructor of {@link TypeGraph}.
@@ -55,14 +55,17 @@ public class TypeFactory extends AbstractFactory<TypeNode,TypeEdge> {
         assert label.getRole() == EdgeRole.NODE_TYPE;
         TypeNode result = this.typeNodeMap.get(label);
         if (result == null) {
-            result = new TypeNode(getNodeNrs().getNext(), label, getGraph());
+            result =
+                new TypeNode(getNodeNrDispenser().getNext(), label, getGraph());
             this.typeNodeMap.put(label, result);
             getGraph().addNode(result);
+            registerNode(result);
         }
         return result;
     }
 
     /** Creates a label with the given kind-prefixed text. */
+    @Override
     public TypeLabel createLabel(String text) {
         Pair<EdgeRole,String> parsedLabel = EdgeRole.parseLabel(text);
         return createLabel(parsedLabel.one(), parsedLabel.two());

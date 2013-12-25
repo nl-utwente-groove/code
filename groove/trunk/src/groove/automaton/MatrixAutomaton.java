@@ -29,10 +29,10 @@ import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
+import groove.graph.ElementFactory;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.Element;
-import groove.graph.ElementFactory;
 import groove.graph.NodeSetEdgeSetGraph;
 
 import java.util.ArrayList;
