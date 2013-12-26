@@ -722,8 +722,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             }
         }
         RuleNode result =
-            parentTyping.getFactory().createNode(node.getNumber(),
-                type.label(), sharp, typeGuards);
+            parentTyping.getFactory().nodes(type, sharp, typeGuards).createNode(
+                node.getNumber());
         result.getMatchingTypes().retainAll(validTypes);
         return result;
     }

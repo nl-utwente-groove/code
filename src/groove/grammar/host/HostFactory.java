@@ -56,7 +56,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      */
     @Override
     protected final HostNode newNode(int nr) {
-        return getTopNodeFactory().createNode(nr);
+        return getTopNodeFactory().newNode(nr);
     }
 
     /** Returns the fixed node factory for the top type. */

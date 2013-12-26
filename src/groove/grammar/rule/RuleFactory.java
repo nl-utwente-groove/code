@@ -18,6 +18,7 @@ package groove.grammar.rule;
 
 import groove.algebra.Operator;
 import groove.algebra.syntax.Expression;
+import groove.grammar.host.DefaultHostNode;
 import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeFactory;
 import groove.grammar.type.TypeGuard;
@@ -25,7 +26,7 @@ import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.ElementFactory;
 import groove.graph.Label;
-import groove.util.Dispenser;
+import groove.graph.NodeFactory;
 
 import java.util.List;
 
@@ -36,20 +37,34 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
         this.typeFactory = typeFactory;
     }
 
-    /** Factory method for a default rule node. */
-    public RuleNode createNode(int nr, TypeLabel typeLabel, boolean sharp,
-            List<TypeGuard> typeGuards) {
-        return createNode(Dispenser.single(nr), typeLabel, sharp, typeGuards);
+    /* This implementation creates a node with top node type. */
+    @Override
+    protected RuleNode newNode(int nr) {
+        return getTopNodeFactory().newNode(nr);
     }
 
-    /** Factory method for a default rule node. */
-    public RuleNode createNode(Dispenser dispenser, TypeLabel typeLabel,
-            boolean sharp, List<TypeGuard> typeGuards) {
-        int nr = dispenser.getNext();
-        TypeNode type = getTypeFactory().createNode(typeLabel);
-        DefaultRuleNode result = newNode(nr, type, sharp, typeGuards);
-        registerNode(result);
-        return result;
+    @Override
+    protected boolean isAllowed(RuleNode node) {
+        return node.getType().isTopType() && !node.isSharp()
+            && node.getTypeGuards() == null;
+    }
+
+    /** Returns the fixed node factory for the top type. */
+    private RuleNodeFactory getTopNodeFactory() {
+        if (this.topNodeFactory == null) {
+            this.topNodeFactory =
+                (RuleNodeFactory) nodes(getTypeFactory().getTopNode(), false,
+                    null);
+        }
+        return this.topNodeFactory;
+    }
+
+    private RuleNodeFactory topNodeFactory;
+
+    /** Returns a node factory for typed default host nodes. */
+    public NodeFactory<RuleNode> nodes(TypeNode type, boolean sharp,
+            List<TypeGuard> typeGuards) {
+        return new RuleNodeFactory(type, sharp, typeGuards);
     }
 
     /** Creates a variable node for a given algebra term, and with a given node number. */
@@ -68,19 +83,8 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
         return result;
     }
 
-    /* This implementation creates a node with top node type. */
-    @Override
-    protected RuleNode newNode(int nr) {
-        return newNode(nr, getTypeFactory().getTopNode(), true, null);
-    }
-
-    /** Callback factory node for a rule node. */
-    private DefaultRuleNode newNode(int nr, TypeNode type, boolean sharp,
-            List<TypeGuard> typeGuards) {
-        return new DefaultRuleNode(nr, type, sharp, typeGuards);
-    }
-
     /** Creates a label with the given text. */
+    @Override
     public RuleLabel createLabel(String text) {
         return new RuleLabel(text);
     }
@@ -118,4 +122,37 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
     public static RuleFactory newInstance(TypeFactory typeFactory) {
         return new RuleFactory(typeFactory);
     }
+
+    /** Factory for (typed) {@link DefaultHostNode}s. */
+    protected class RuleNodeFactory extends DependentNodeFactory {
+        /** Constructor for subclassing. */
+        protected RuleNodeFactory(TypeNode type, boolean sharp,
+                List<TypeGuard> typeGuards) {
+            this.type = type;
+            this.sharp = sharp;
+            this.typeGuards = typeGuards;
+        }
+
+        @Override
+        protected boolean isAllowed(RuleNode node) {
+            return node.getType() == this.type && node.isSharp() == this.sharp
+                && node.getTypeGuards().equals(this.typeGuards);
+        }
+
+        @Override
+        protected RuleNode newNode(int nr) {
+            return new DefaultRuleNode(nr, this.type, this.sharp,
+                this.typeGuards);
+        }
+
+        /** Returns the type wrapped into this factory. */
+        protected TypeNode getType() {
+            return this.type;
+        }
+
+        private final TypeNode type;
+        private final boolean sharp;
+        private final List<TypeGuard> typeGuards;
+    }
+
 }
