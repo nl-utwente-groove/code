@@ -21,6 +21,7 @@ import groove.grammar.type.TypeLabel;
 import groove.graph.ALabel;
 import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
+import groove.graph.Label;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -59,6 +60,30 @@ public class AspectLabel extends ALabel {
     @Override
     public EdgeRole getRole() {
         return EdgeRole.parseLabel(getInnerText()).one();
+    }
+
+    @Override
+    public int compareTo(Label obj) {
+        int result = getRole().compareTo(obj.getRole());
+        if (result == 0 && obj instanceof AspectLabel) {
+            // Labels starting with letters precede all other labels
+            String myText = EdgeRole.parseLabel(getInnerText()).two();
+            boolean myTextIsAlpha =
+                myText.length() > 0
+                    && Character.isJavaIdentifierStart(myText.charAt(0));
+            String hisText =
+                EdgeRole.parseLabel(((AspectLabel) obj).getInnerText()).two();
+            boolean hisTextIsAlpha =
+                hisText.length() > 0
+                    && Character.isJavaIdentifierStart(hisText.charAt(0));
+            if (myTextIsAlpha != hisTextIsAlpha) {
+                result = myTextIsAlpha ? -1 : +1;
+            }
+        }
+        if (result == 0) {
+            result = text().compareTo(obj.text());
+        }
+        return result;
     }
 
     /** Returns the graph role for which this label is intended. */

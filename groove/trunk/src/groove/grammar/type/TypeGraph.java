@@ -702,10 +702,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 throw new FormatException("Untyped node", node);
             }
             // find a maximal element w.r.t. subtyping
-            type = getLub(validTypes);
+            type = getMaximum(validTypes);
             if (type == null) {
                 throw new FormatException(
-                    "Ambiguous typing: %s do not have least common supertype",
+                    "Ambiguous typing: %s do not have a common supertype",
                     validTypes, node);
             }
         } else if (validTypes.retainAll(type.getSubtypes())) {
@@ -1140,6 +1140,23 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             result.add(getNode(label));
         } else {
             result.addAll(edgeSet(label));
+        }
+        return result;
+    }
+
+    /** Returns a minimal element with respect to subtyping, if this exists. */
+    public TypeNode getMaximum(Collection<TypeNode> types) {
+        TypeNode result = null;
+        for (TypeNode typeNode : types) {
+            if (typeNode.isDataType()) {
+                continue;
+            }
+            if (result == null || isSubtype(result, typeNode)) {
+                result = typeNode;
+            }
+        }
+        if (result != null && !result.getSubtypes().containsAll(types)) {
+            result = null;
         }
         return result;
     }
