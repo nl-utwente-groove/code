@@ -28,7 +28,7 @@ import java.util.Set;
  * @version $Revision $
  */
 public interface RuleNode extends Node, RuleElement {
-    /** Specialises the return type. */
+    /* Specialises the return type. */
     @Override
     public TypeNode getType();
 
@@ -38,7 +38,7 @@ public interface RuleNode extends Node, RuleElement {
      */
     public boolean isSharp();
 
-    /** Specialises the return type. */
+    /* Specialises the return type. */
     @Override
     public Set<TypeNode> getMatchingTypes();
 

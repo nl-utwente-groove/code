@@ -45,19 +45,24 @@
                 <string>type:A1</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>flag:a1</string>
-            </attr>
-        </edge>
         <edge to="n2" from="n1">
             <attr name="label">
                 <string>a1ToB</string>
             </attr>
         </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>flag:a1</string>
+            </attr>
+        </edge>
         <edge to="n0" from="n1">
             <attr name="label">
                 <string>sub:</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n0">
+            <attr name="label">
+                <string>aToB</string>
             </attr>
         </edge>
         <edge to="n0" from="n0">
@@ -70,24 +75,19 @@
                 <string>flag:a</string>
             </attr>
         </edge>
-        <edge to="n2" from="n0">
-            <attr name="label">
-                <string>aToB</string>
-            </attr>
-        </edge>
         <edge to="n3" from="n3">
             <attr name="label">
                 <string>type:A2</string>
             </attr>
         </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>flag:a2</string>
-            </attr>
-        </edge>
         <edge to="n2" from="n3">
             <attr name="label">
                 <string>a1ToB</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>flag:a2</string>
             </attr>
         </edge>
         <edge to="n0" from="n3">

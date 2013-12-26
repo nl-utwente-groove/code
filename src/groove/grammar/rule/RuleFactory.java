@@ -53,7 +53,7 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
     private RuleNodeFactory getTopNodeFactory() {
         if (this.topNodeFactory == null) {
             this.topNodeFactory =
-                (RuleNodeFactory) nodes(getTypeFactory().getTopNode(), false,
+                (RuleNodeFactory) nodes(getTypeFactory().getTopNode(), true,
                     null);
         }
         return this.topNodeFactory;

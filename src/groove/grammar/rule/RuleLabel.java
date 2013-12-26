@@ -24,6 +24,7 @@ import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
 import groove.graph.ALabel;
 import groove.graph.EdgeRole;
+import groove.graph.Label;
 
 import java.util.List;
 import java.util.Set;
@@ -65,6 +66,21 @@ public class RuleLabel extends ALabel {
      */
     public RuleLabel(String text) {
         this(RegExpr.atom(text));
+    }
+
+    @Override
+    public int compareTo(Label obj) {
+        int result = getRole().compareTo(obj.getRole());
+        if (result == 0 && obj instanceof RuleLabel) {
+            RuleLabel other = (RuleLabel) obj;
+            if (isAtom() != other.isAtom()) {
+                result = isAtom() ? -1 : +1;
+            }
+        }
+        if (result == 0) {
+            result = text().compareTo(obj.text());
+        }
+        return result;
     }
 
     @Override
