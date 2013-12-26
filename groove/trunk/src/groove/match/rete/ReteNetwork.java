@@ -719,8 +719,8 @@ public class ReteNetwork {
                 DefaultRuleNode dn = (DefaultRuleNode) n;
                 result.nodeMap().put(
                     dn,
-                    rfact.createNode(maxNodeNr++, dn.getType().label(),
-                        n.isSharp(), dn.getTypeGuards()));
+                    rfact.nodes(dn.getType(), n.isSharp(), dn.getTypeGuards()).createNode(
+                        maxNodeNr++));
             }
 
         }
