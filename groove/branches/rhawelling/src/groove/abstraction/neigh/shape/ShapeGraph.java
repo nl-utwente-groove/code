@@ -21,12 +21,10 @@ import groove.abstraction.Multiplicity;
 import groove.abstraction.neigh.EdgeMultDir;
 import groove.abstraction.neigh.equiv.EquivClass;
 import groove.abstraction.neigh.equiv.EquivRelation;
-import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
-import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
@@ -34,7 +32,6 @@ import groove.graph.AGraph;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
-import groove.graph.Label;
 import groove.graph.Node;
 
 import java.util.Collection;
@@ -109,16 +106,6 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
         return getCache().getNodeSet();
     }
 
-    /**
-     * Creates, adds and returns a value node created for a given
-     * algebra and value.
-     */
-    public ValueNode addNode(Algebra<?> algebra, Object value) {
-        ValueNode result = getFactory().createValueNode(algebra, value);
-        addNode(result);
-        return result;
-    }
-
     @Override
     @SuppressWarnings("unchecked")
     public Set<ShapeEdge> edgeSet(Node node) {
@@ -135,11 +122,6 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
     @SuppressWarnings("unchecked")
     public Set<ShapeEdge> inEdgeSet(Node node) {
         return (Set<ShapeEdge>) super.inEdgeSet(node);
-    }
-
-    @Override
-    public ShapeEdge createEdge(HostNode source, Label label, HostNode target) {
-        return (ShapeEdge) super.createEdge(source, label, target);
     }
 
     @Override

@@ -22,10 +22,9 @@ import groove.grammar.host.HostNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeFactory;
-import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
 import groove.graph.Label;
-
-import java.util.Set;
+import groove.graph.NodeFactory;
 
 /**
  * Factory class for shape elements.
@@ -42,38 +41,14 @@ public final class ShapeFactory extends HostFactory {
         super(typeFactory);
     }
 
-    // ------------------------------------------------------------------------
-    // Overriden methods
-    // ------------------------------------------------------------------------
     @Override
-    protected ShapeNode newNode(int nr) {
-        return new ShapeNode(nr, getLastNodeType());
-    }
-
-    @Override
-    public ShapeNode createNode() {
-        return (ShapeNode) super.createNode();
+    public NodeFactory<HostNode> nodes(TypeNode type) {
+        return new ShapeNodeFactory(type);
     }
 
     @Override
     public ShapeNode createNode(int nr) {
         return (ShapeNode) super.createNode(nr);
-    }
-
-    @Override
-    public ShapeNode createNode(TypeLabel type) {
-        return (ShapeNode) super.createNode(type);
-    }
-
-    @Override
-    public ShapeNode createNode(int nr, TypeLabel type) {
-        return (ShapeNode) super.createNode(nr, type);
-    }
-
-    @Override
-    public ShapeNode createNode(TypeLabel type,
-            Set<? extends HostNode> usedNodes) {
-        return (ShapeNode) super.createNode(type, usedNodes);
     }
 
     @Override
@@ -119,5 +94,16 @@ public final class ShapeFactory extends HostFactory {
     /** Returns a new instance of this factory for a given type graph. */
     public static ShapeFactory newInstance(TypeFactory typeFactory) {
         return new ShapeFactory(typeFactory);
+    }
+
+    private class ShapeNodeFactory extends DefaultHostNodeFactory {
+        ShapeNodeFactory(TypeNode type) {
+            super(type);
+        }
+
+        @Override
+        protected HostNode newNode(int nr) {
+            return new ShapeNode(nr, getType());
+        }
     }
 }

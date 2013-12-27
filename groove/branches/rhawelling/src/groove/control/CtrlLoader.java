@@ -16,6 +16,7 @@
  */
 package groove.control;
 
+import static groove.io.FileType.CONTROL;
 import groove.algebra.AlgebraFamily;
 import groove.control.parse.CtrlBuilder;
 import groove.control.parse.CtrlChecker;
@@ -30,8 +31,6 @@ import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
-import groove.io.ExtensionFilter;
-import groove.io.FileType;
 import groove.util.Groove;
 
 import java.io.File;
@@ -188,7 +187,7 @@ public class CtrlLoader {
             String grammarName = args[0];
             Grammar grammar = Groove.loadGrammar(grammarName).toGrammar();
             for (int i = 1; i < args.length; i++) {
-                String programName = controlFilter.stripExtension(args[1]);
+                String programName = CONTROL.stripExtension(args[1]);
                 System.out.printf("Control automaton for %s:%n%s", programName,
                     run(grammar, programName, new File(grammarName)));
             }
@@ -199,8 +198,6 @@ public class CtrlLoader {
         }
     }
 
-    private static final ExtensionFilter controlFilter =
-        FileType.CONTROL_FILTER;
     private static final boolean DEBUG = false;
 
     /** Parses a single control program on the basis of a given grammar. */
@@ -213,8 +210,8 @@ public class CtrlLoader {
     }
 
     /** Parses a single control program on the basis of a given grammar. */
-    public static CtrlAut run(Grammar grammar, String programName,
-            File base) throws FormatException, IOException {
+    public static CtrlAut run(Grammar grammar, String programName, File base)
+        throws FormatException, IOException {
         instance.init(grammar.getProperties().getAlgebraFamily(),
             grammar.getAllRules());
         QualName qualName = new QualName(programName);
@@ -222,7 +219,7 @@ public class CtrlLoader {
         for (String part : qualName.tokens()) {
             control = new File(control, part);
         }
-        String inputFileName = controlFilter.addExtension(control.getPath());
+        String inputFileName = CONTROL.addExtension(control.getPath());
         instance.parse(programName, new ANTLRFileStream(inputFileName));
         return instance.buildAutomaton(programName);
     }

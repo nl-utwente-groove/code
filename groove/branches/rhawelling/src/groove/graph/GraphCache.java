@@ -18,6 +18,7 @@ package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
 import groove.util.DefaultDispenser;
+import groove.util.Dispenser;
 import groove.util.Groove;
 import groove.util.collect.TreeHashSet;
 
@@ -86,11 +87,7 @@ public class GraphCache<N extends Node,E extends Edge> {
         addToNodeEdgeMap(this.nodeEdgeMap, node);
         addToNodeEdgeMap(this.nodeInEdgeMap, node);
         addToNodeEdgeMap(this.nodeOutEdgeMap, node);
-        DefaultDispenser nodeCounter = getNodeCounter();
-        int nodeNr = node.getNumber();
-        if (nodeCounter.getCount() <= nodeNr) {
-            nodeCounter.setCount(nodeNr + 1);
-        }
+        getNodeCounter().notifyUsed(node.getNumber());
     }
 
     /**
@@ -492,15 +489,13 @@ public class GraphCache<N extends Node,E extends Edge> {
     private Map<N,Set<E>> nodeEdgeMap;
 
     /** Counter to ensure distinctness of fresh node identities. */
-    protected DefaultDispenser getNodeCounter() {
+    protected Dispenser getNodeCounter() {
         if (this.nodeCounter == null) {
             this.nodeCounter = new DefaultDispenser();
             // make sure all existing node numbers are accounted for
-            int maxNodeNr = -1;
             for (Node node : getGraph().nodeSet()) {
-                maxNodeNr = Math.max(maxNodeNr, node.getNumber());
+                this.nodeCounter.notifyUsed(node.getNumber());
             }
-            this.nodeCounter.setCount(maxNodeNr + 1);
         }
         return this.nodeCounter;
     }
@@ -527,8 +522,7 @@ public class GraphCache<N extends Node,E extends Edge> {
             result = this.certificateStrategy;
         } else {
             result =
-                AGraph.getCertificateFactory().newInstance(getGraph(),
-                    strong);
+                AGraph.getCertificateFactory().newInstance(getGraph(), strong);
             if (this.graph.isFixed()) {
                 this.certificateStrategy = result;
             }
@@ -544,7 +538,7 @@ public class GraphCache<N extends Node,E extends Edge> {
     }
 
     /** Counter for node numbers. */
-    private DefaultDispenser nodeCounter;
+    private Dispenser nodeCounter;
     /**
      * The certificate strategy set for the graph. Initially set to
      * <tt>null</tt>.

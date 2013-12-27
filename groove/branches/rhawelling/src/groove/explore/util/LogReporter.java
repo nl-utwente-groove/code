@@ -113,7 +113,7 @@ public class LogReporter extends AExplorationReporter {
                     + "-"
                     + this.startTime.toString().replace(' ', '_').replace(':',
                         '-');
-            String logFileName = FileType.LOG_FILTER.addExtension(logId);
+            String logFileName = FileType.LOG.addExtension(logId);
             PrintWriter logFile =
                 new PrintWriter(new File(this.logDir, logFileName));
             try {

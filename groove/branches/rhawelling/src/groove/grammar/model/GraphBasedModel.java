@@ -23,11 +23,11 @@ import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeFactory;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
+import groove.graph.AElementMap;
+import groove.graph.ElementFactory;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.ElementFactory;
 import groove.graph.ElementMap;
-import groove.graph.AElementMap;
 import groove.graph.Node;
 
 import java.util.HashMap;

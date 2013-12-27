@@ -34,7 +34,7 @@ import groove.grammar.rule.LabelVar;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
-import groove.grammar.type.TypeLabel;
+import groove.grammar.type.TypeNode;
 import groove.graph.Node;
 import groove.graph.plain.PlainNode;
 import groove.match.TreeMatch;
@@ -528,16 +528,16 @@ final public class BasicEvent extends
                 added = new ArrayList<HostNode>();
             }
             for (int i = 0; i < count; i++) {
-                TypeLabel label;
+                TypeNode type;
                 if (creatorNodes[i].getTypeGuards().isEmpty()) {
-                    label = creatorNodes[i].getType().label();
+                    type = creatorNodes[i].getType();
                 } else {
                     // get the type from the image of the first label variable
-                    label =
-                        getCoanchorMap().getVar(
-                            creatorNodes[i].getTypeGuards().get(0).getVar()).label();
+                    type =
+                        (TypeNode) getCoanchorMap().getVar(
+                            creatorNodes[i].getTypeGuards().get(0).getVar());
                 }
-                result[i] = createNode(i, label, sourceNodes, added);
+                result[i] = createNode(i, type, sourceNodes, added);
             }
         }
         // normalise the result to a previously stored instance
@@ -552,7 +552,7 @@ final public class BasicEvent extends
      * of already added nodes. The previously created fresh nodes are tried first
      * (see {@link BasicEvent#getFreshNodes(int)}; only if all of those are
      * already in the graph, a new fresh node is created using
-     * {@link #createNode(TypeLabel)}.
+     * {@link #createNode(TypeNode)}.
      * @param creatorIndex index in the creator nodes array indicating the node
      *        of the rule for which a new image is to be created
      * @param sourceNodes the existing nodes, which should not contain the
@@ -560,7 +560,7 @@ final public class BasicEvent extends
      * @param current the collection of already added nodes; the newly added node
      *        is guaranteed to be fresh with respect to these
      */
-    private HostNode createNode(int creatorIndex, TypeLabel type,
+    private HostNode createNode(int creatorIndex, TypeNode type,
             Set<? extends HostNode> sourceNodes, Collection<HostNode> current) {
         HostNode result = null;
         boolean added = false;
@@ -592,7 +592,7 @@ final public class BasicEvent extends
     }
 
     private HostNode getFreshNode(Set<? extends HostNode> sourceNodes,
-            Collection<HostNode> current, TypeLabel type) {
+            Collection<HostNode> current, TypeNode type) {
         int size = sourceNodes.size();
         if (current != null) {
             size += current.size();
@@ -610,7 +610,7 @@ final public class BasicEvent extends
             }
         }
         assert i == numbers.length;
-        return getHostFactory().createNode(type, numbers);
+        return getHostFactory().nodes(type).createNode(numbers);
     }
 
     /**
@@ -630,10 +630,10 @@ final public class BasicEvent extends
      * returns a {@link PlainNode}, with a node number determined by the
      * grammar's node counter.
      */
-    private HostNode createNode(TypeLabel type) {
+    private HostNode createNode(TypeNode type) {
         BasicEvent.freshNodeCount++;
         HostFactory record = getHostFactory();
-        return record.createNode(type);
+        return record.nodes(type).createNode();
     }
 
     /**
@@ -676,7 +676,7 @@ final public class BasicEvent extends
      */
     private final AnchorValue[] anchorImage;
     /**
-     * The list of nodes created by {@link #createNode(TypeLabel)}.
+     * The list of nodes created by {@link #createNode(TypeNode)}.
      */
     private final List<List<HostNode>> freshNodeList;
 
@@ -793,7 +793,7 @@ final public class BasicEvent extends
                 if (creatorEnd instanceof ValueNode) {
                     ValueNode node = (ValueNode) creatorEnd;
                     createdValue =
-                        BasicEvent.this.hostFactory.createValueNode(
+                        BasicEvent.this.hostFactory.createNode(
                             node.getAlgebra(), node.getValue());
                 } else {
                     createdValue = anchorMap.getNode(creatorEnd);

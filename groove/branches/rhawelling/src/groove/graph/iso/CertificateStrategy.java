@@ -216,7 +216,7 @@ abstract public class CertificateStrategy {
         int nodeNr = node.getNumber();
         assert nodeNr < this.defaultNodeCerts.length : String.format(
             "Node nr %d higher than maximum %d", nodeNr,
-            this.defaultNodeCerts.length);
+            this.defaultNodeCerts.length - 1);
         this.defaultNodeCerts[nodeNr] = nodeCert;
     }
 

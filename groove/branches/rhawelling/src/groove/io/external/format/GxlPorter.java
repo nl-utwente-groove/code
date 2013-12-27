@@ -17,6 +17,7 @@
 package groove.io.external.format;
 
 import groove.grammar.model.GrammarModel;
+import groove.io.FileType;
 import groove.io.conceptual.InstanceModel;
 import groove.io.conceptual.TypeModel;
 import groove.io.conceptual.lang.ExportableResource;
@@ -35,12 +36,7 @@ import java.io.File;
 /** Importer and exporter for the GXL format. */
 public class GxlPorter extends ConceptualPorter {
     private GxlPorter() {
-        super("GXL", ".gxl");
-    }
-
-    @Override
-    public Kind getFormatKind() {
-        return Kind.RESOURCE;
+        super(FileType.GXL_META, FileType.GXL_MODEL);
     }
 
     @Override

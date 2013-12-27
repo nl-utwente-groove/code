@@ -18,7 +18,7 @@ package groove.io.graph;
 
 import static groove.grammar.aspect.AspectKind.ABSTRACT;
 import static groove.grammar.aspect.AspectKind.SUBTYPE;
-import static groove.io.FileType.LAYOUT_FILTER;
+import static groove.io.FileType.LAYOUT;
 import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
@@ -36,7 +36,7 @@ import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
 import groove.gui.look.LineStyle;
-import groove.io.ExtensionFilter;
+import groove.io.FileType;
 import groove.util.Groove;
 import groove.util.Version;
 
@@ -107,7 +107,7 @@ public class GxlIO implements GraphIO {
      * file name.
      */
     private File toLayoutFile(File graphFile) {
-        return new File(LAYOUT_FILTER.addExtension(graphFile.toString()));
+        return new File(LAYOUT.addExtension(graphFile.toString()));
     }
 
     @Override
@@ -356,7 +356,7 @@ public class GxlIO implements GraphIO {
                 "Error while loading '%s':\n%s", file, exc.getMessage()), exc);
         }
         // set the graph name from the file name
-        result.setName(ExtensionFilter.getPureName(file));
+        result.setName(FileType.getPureName(file));
         // add old-style priority, if necessitated by the file name
         PriorityFileName priorityName = new PriorityFileName(file);
         if (priorityName.hasPriority()) {

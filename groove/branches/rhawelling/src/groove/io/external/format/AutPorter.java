@@ -26,10 +26,9 @@ import groove.graph.Node;
 import groove.graph.plain.PlainGraph;
 import groove.graph.plain.PlainNode;
 import groove.io.FileType;
-import groove.io.external.AbstractFormatExporter;
-import groove.io.external.Exporter.Exportable;
-import groove.io.external.Format;
-import groove.io.external.FormatImporter;
+import groove.io.external.AbstractExporter;
+import groove.io.external.Exportable;
+import groove.io.external.Importer;
 import groove.io.external.PortException;
 
 import java.io.BufferedReader;
@@ -40,13 +39,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,33 +50,21 @@ import java.util.Set;
  * Class that implements load/save of graphs in the CADP .aut format.
  * @author Eduardo Zambon
  */
-public final class AutPorter extends AbstractFormatExporter implements
-        FormatImporter {
-
+public final class AutPorter extends AbstractExporter implements Importer {
     private AutPorter() {
-        Format autFormat = new Format(this, FileType.AUT);
-        this.formats = Arrays.asList(autFormat);
+        super(Kind.GRAPH);
+        register(FileType.AUT);
     }
 
     @Override
-    public Kind getFormatKind() {
-        return Kind.GRAPH;
-    }
-
-    @Override
-    public Collection<? extends Format> getSupportedFormats() {
-        return this.formats;
-    }
-
-    @Override
-    public Set<Resource> doImport(File file, Format format, GrammarModel grammar)
-        throws PortException {
+    public Set<Resource> doImport(File file, FileType fileType,
+            GrammarModel grammar) throws PortException {
         Set<Resource> resources;
         try {
             FileInputStream stream = new FileInputStream(file);
             resources =
-                doImport(format.stripExtension(file.getName()), stream, format,
-                    grammar);
+                doImport(fileType.stripExtension(file.getName()), stream,
+                    fileType, grammar);
             stream.close();
         } catch (IOException e) {
             throw new PortException(e);
@@ -90,8 +74,7 @@ public final class AutPorter extends AbstractFormatExporter implements
 
     @Override
     public Set<Resource> doImport(String name, InputStream stream,
-            Format format, GrammarModel grammar) throws PortException {
-        Map<String,PlainNode> result = new HashMap<String,PlainNode>();
+            FileType fileType, GrammarModel grammar) throws PortException {
         BufferedReader reader =
             new BufferedReader(new InputStreamReader(stream));
         int linenr = 0;
@@ -104,7 +87,6 @@ public final class AutPorter extends AbstractFormatExporter implements
             int root =
                 Integer.parseInt(line.substring(rootStart, edgeCountStart - 1).trim());
             PlainNode rootNode = graph.addNode(root);
-            result.put("" + root, rootNode);
             graph.addEdge(rootNode, ROOT_LABEL, rootNode);
             for (line = reader.readLine(); line != null; line =
                 reader.readLine()) {
@@ -122,8 +104,6 @@ public final class AutPorter extends AbstractFormatExporter implements
                             line.lastIndexOf(')')).trim());
                     PlainNode sourceNode = graph.addNode(source);
                     PlainNode targetNode = graph.addNode(target);
-                    result.put("" + source, sourceNode);
-                    result.put("" + target, targetNode);
                     graph.addEdge(sourceNode, label, targetNode);
                 }
             }
@@ -146,7 +126,7 @@ public final class AutPorter extends AbstractFormatExporter implements
     }
 
     @Override
-    public void doExport(File file, Format format, Exportable exportable)
+    public void doExport(Exportable exportable, File file, FileType fileType)
         throws PortException {
         Graph graph = exportable.getGraph();
         try {
@@ -197,8 +177,6 @@ public final class AutPorter extends AbstractFormatExporter implements
                 nodeNrMap.get(edge.target()));
         }
     }
-
-    private final List<Format> formats;
 
     /** Returns the singleton instance of this class. */
     public static final AutPorter getInstance() {

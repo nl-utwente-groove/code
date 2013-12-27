@@ -143,7 +143,7 @@ public class PatternGraph extends AbstractPatternGraph<PatternNode,PatternEdge> 
 
     /** Returns a fresh pattern node. The node is not added to the graph. */
     public PatternNode createNode(TypeNode type) {
-        return getFactory().createNode(type, nodeSet());
+        return getFactory().nodes(type).createNode(nodeSet());
     }
 
     /** Returns a fresh pattern edge. The edge is not added to the graph. */

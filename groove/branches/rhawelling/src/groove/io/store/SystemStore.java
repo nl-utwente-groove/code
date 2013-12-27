@@ -17,7 +17,7 @@
 package groove.io.store;
 
 import static groove.grammar.model.ResourceKind.PROPERTIES;
-import static groove.io.FileType.GRAMMAR_FILTER;
+import static groove.io.FileType.GRAMMAR;
 import groove.grammar.GrammarProperties;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.model.GrammarModel;
@@ -261,7 +261,7 @@ abstract public class SystemStore extends UndoableEditSupport {
     /** Saves the content of a given system store to file. */
     static public SystemStore save(File file, SystemStore store,
             boolean clearDir) throws IOException {
-        if (!GRAMMAR_FILTER.accept(file)) {
+        if (!GRAMMAR.hasExtension(file)) {
             throw new IOException(String.format(
                 "File '%s' does not refer to a production system", file));
         }

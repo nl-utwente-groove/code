@@ -19,14 +19,18 @@ package groove.io;
 import groove.util.Groove;
 
 import java.io.File;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.ToolTipManager;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
+import javax.swing.plaf.FileChooserUI;
+import javax.swing.plaf.basic.BasicFileChooserUI;
 
 /**
  * A file chooser with a {@link GrooveFileView}, which prevents traversal of
@@ -51,6 +55,7 @@ public class GrooveFileChooser extends JFileChooser {
         setFileView(createFileView());
         setAcceptAllFileFilterUsed(false);
         ToolTipManager.sharedInstance().registerComponent(this);
+        setFileSelectionMode(FILES_ONLY);
     }
 
     /**
@@ -61,7 +66,17 @@ public class GrooveFileChooser extends JFileChooser {
     @Override
     public boolean isTraversable(File file) {
         return super.isTraversable(file)
-            && !(getFileFilter() instanceof ExtensionFilter && ((ExtensionFilter) getFileFilter()).acceptExtension(file));
+            && !(hasFileType() && getFileType().hasExtension(file));
+    }
+
+    /* Makes sure the file name is set in the UI. */
+    @Override
+    public void setSelectedFile(File file) {
+        super.setSelectedFile(file);
+        FileChooserUI ui = getUI();
+        if (file != null && ui instanceof BasicFileChooserUI) {
+            ((BasicFileChooserUI) ui).setFileName(file.getName());
+        }
     }
 
     /**
@@ -77,11 +92,26 @@ public class GrooveFileChooser extends JFileChooser {
         }
 
         File result = super.getSelectedFile();
-        if (result != null && !result.exists()
-            && getFileFilter() instanceof ExtensionFilter) {
-            ExtensionFilter fileFilter = (ExtensionFilter) getFileFilter();
-            String resultName = fileFilter.addExtension(result.getName());
-            result = new File(result.getParentFile(), resultName);
+        if (result != null && !result.exists() && hasFileType()) {
+            result = getFileType().addExtension(result);
+        }
+        return result;
+    }
+
+    /** Indicates if the currently selected file filter has an associated {@link FileType}. */
+    public boolean hasFileType() {
+        return getFileFilter() instanceof ExtensionFilter;
+    }
+
+    /** 
+     * Returns the file type of the currently selected file filter, 
+     * if that file filter is an {@link ExtensionFilter}.
+     */
+    public FileType getFileType() {
+        FileType result = null;
+        FileFilter current = getFileFilter();
+        if (current instanceof ExtensionFilter) {
+            result = ((ExtensionFilter) current).getFileType();
         }
         return result;
     }
@@ -142,40 +172,32 @@ public class GrooveFileChooser extends JFileChooser {
     }
 
     // Maps from filters to choosers.
-    private static final Map<ExtensionFilter,GrooveFileChooser> simpleMap =
-        new HashMap<ExtensionFilter,GrooveFileChooser>();
-    private static final Map<List<ExtensionFilter>,GrooveFileChooser> listMap =
-        new HashMap<List<ExtensionFilter>,GrooveFileChooser>();
+    private static final Map<Set<FileType>,GrooveFileChooser> listMap =
+        new HashMap<Set<FileType>,GrooveFileChooser>();
+
+    /** Returns the file chooser object associated with the given file type. */
+    public static GrooveFileChooser getInstance(FileType fileType) {
+        return getInstance(EnumSet.of(fileType));
+    }
 
     /** Returns the file chooser object associated with the given filter. */
-    public static GrooveFileChooser getFileChooser(ExtensionFilter filter) {
-        GrooveFileChooser chooser = simpleMap.get(filter);
-        if (chooser == null) {
-            chooser = new GrooveFileChooser();
-            chooser.addChoosableFileFilter(filter);
-            chooser.setFileSelectionMode(filter.getFileSelectionMode());
-            simpleMap.put(filter, chooser);
-        }
-        chooser.setCurrentDirectory(chooser.getFileSystemView().createFileObject(
-            Groove.CURRENT_WORKING_DIR));
-        return chooser;
-    }
-
-    /** Returns the file chooser object associated with the given filter list. */
-    public static GrooveFileChooser getFileChooser(List<ExtensionFilter> filters) {
-        GrooveFileChooser chooser = listMap.get(filters);
-        if (chooser == null) {
-            chooser = new GrooveFileChooser();
-            for (ExtensionFilter filter : filters) {
-                chooser.addChoosableFileFilter(filter);
+    public static GrooveFileChooser getInstance(Set<FileType> fileTypes) {
+        GrooveFileChooser result = listMap.get(fileTypes);
+        if (result == null) {
+            result = new GrooveFileChooser();
+            ExtensionFilter first = null;
+            for (FileType fileType : fileTypes) {
+                ExtensionFilter filter = fileType.getFilter();
+                result.addChoosableFileFilter(filter);
+                if (first == null) {
+                    first = filter;
+                }
             }
-            chooser.setFileFilter(filters.get(0));
-            chooser.setFileSelectionMode(filters.get(0).getFileSelectionMode());
-            listMap.put(filters, chooser);
+            result.setFileFilter(first);
+            listMap.put(fileTypes, result);
         }
-        chooser.setCurrentDirectory(chooser.getFileSystemView().createFileObject(
+        result.setCurrentDirectory(result.getFileSystemView().createFileObject(
             Groove.CURRENT_WORKING_DIR));
-        return chooser;
+        return result;
     }
-
 }

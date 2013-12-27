@@ -64,7 +64,7 @@ public class ReteTool extends GrooveCmdLineTool<Object> {
         String filePath = hasOutFileName() ? getOutFileName() : name;
         new ReteSearchEngine(grammar.toGrammar()).getNetwork().save(filePath,
             name);
-        return FileType.GXL_FILTER.addExtension(filePath);
+        return FileType.GXL.addExtension(filePath);
     }
 
     private File getGrammarDir() {

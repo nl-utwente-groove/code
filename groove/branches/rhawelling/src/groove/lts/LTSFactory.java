@@ -16,8 +16,8 @@
  */
 package groove.lts;
 
-import groove.graph.Edge;
 import groove.graph.ElementFactory;
+import groove.graph.Edge;
 import groove.graph.GGraph;
 import groove.graph.Label;
 import groove.graph.Morphism;
@@ -30,7 +30,7 @@ import groove.graph.Node;
  *  
  * @author Eduardo Zambon
  */
-public final class LTSFactory<N extends Node,E extends Edge> implements
+public final class LTSFactory<N extends Node,E extends Edge> extends
         ElementFactory<N,E> {
 
     private final GGraph<N,E> graph;
@@ -51,7 +51,7 @@ public final class LTSFactory<N extends Node,E extends Edge> implements
     }
 
     @Override
-    public N createNode(int nr) {
+    protected N newNode(int nr) {
         throw new UnsupportedOperationException();
     }
 
@@ -61,13 +61,7 @@ public final class LTSFactory<N extends Node,E extends Edge> implements
     }
 
     @Override
-    public E createEdge(N source, String text, N target) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public E createEdge(N source, Label label, N target) {
         throw new UnsupportedOperationException();
     }
-
 }

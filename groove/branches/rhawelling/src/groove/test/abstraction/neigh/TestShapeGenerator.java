@@ -159,6 +159,7 @@ public class TestShapeGenerator {
             assertEquals(36, gts.getStateCount());
             assertEquals(64, gts.getTransitionCount());
         } catch (Exception e) {
+            e.printStackTrace();
             Assert.fail(e.getMessage());
         }
     }

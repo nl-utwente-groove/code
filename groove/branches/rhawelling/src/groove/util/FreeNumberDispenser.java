@@ -25,8 +25,7 @@ import java.util.Collection;
  * @author Eduardo Zambon
 
  */
-public class FreeNumberDispenser implements Dispenser {
-
+public class FreeNumberDispenser extends Dispenser {
     /**
      * Creates the dispenser for the given array. The array is modified
      * in the process.
@@ -54,36 +53,17 @@ public class FreeNumberDispenser implements Dispenser {
         return numbers;
     }
 
-    /**
-     * Returns the first free node number not occurring in the node set
-     * passed to the constructor. Or -1 if no free number can be found. 
-     */
-    public int getNext() {
+    @Override
+    protected int computeNext() {
         this.lastVal++;
-        if (this.currIdx < this.numbers.length
-            && this.lastVal != this.numbers[this.currIdx]) {
-            return this.lastVal;
-        } else {
-            do {
-                this.currIdx++;
-                this.lastVal++;
-            } while (this.currIdx < this.numbers.length
-                && this.lastVal == this.numbers[this.currIdx]);
-            if (this.currIdx < this.numbers.length) {
-                return this.lastVal;
-            } else {
-                return -1;
-            }
+        // keep increasing until we find an unused number
+        // or we run out of numbers
+        while (this.currIdx < this.numbers.length
+            && this.lastVal == this.numbers[this.currIdx]) {
+            this.currIdx++;
+            this.lastVal++;
         }
-    }
-
-    /** Returns the highest number on the given array. */
-    public int getMaxNumber() {
-        if (this.numbers.length == 0) {
-            return 0;
-        } else {
-            return this.numbers[this.numbers.length - 1];
-        }
+        return this.lastVal;
     }
 
     /** The sorted array for which a new number is computed. */
@@ -92,5 +72,4 @@ public class FreeNumberDispenser implements Dispenser {
     private int currIdx;
     /** The last returned value. */
     private int lastVal;
-
 }

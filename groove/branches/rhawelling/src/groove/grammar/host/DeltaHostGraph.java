@@ -434,13 +434,14 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge> implements
 
     @Override
     protected boolean isTypeCorrect(Node node) {
-        return node instanceof HostNode && !getFactory().addNode(node);
+        return node instanceof HostNode
+            && getFactory().containsNode((HostNode) node);
     }
 
     @Override
     protected boolean isTypeCorrect(Edge edge) {
         return edge instanceof HostEdge
-            && !getFactory().addEdge((HostEdge) edge);
+            && getFactory().containsEdge((HostEdge) edge);
     }
 
     @Override

@@ -17,6 +17,7 @@
 package groove.io.external.format;
 
 import groove.grammar.model.GrammarModel;
+import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 import groove.io.conceptual.InstanceModel;
 import groove.io.conceptual.TypeModel;
@@ -28,7 +29,6 @@ import groove.io.conceptual.lang.ecore.EcoreToType;
 import groove.io.conceptual.lang.ecore.InstanceToEcore;
 import groove.io.conceptual.lang.ecore.TypeToEcore;
 import groove.io.external.ConceptualPorter;
-import groove.io.external.FormatFilter;
 import groove.io.external.PortException;
 import groove.util.Pair;
 
@@ -39,16 +39,9 @@ import javax.swing.JFileChooser;
 /** Importer and exporter for the ECORE format. */
 public class EcorePorter extends ConceptualPorter {
     private EcorePorter() {
-        super("Ecore ", ".ecore", ".xmi");
-
-        FormatFilter typeFilter = getTypeFormat().getFilter();
-        this.typemodelChooser = GrooveFileChooser.getFileChooser(typeFilter);
-        this.typemodelChooser.setFileFilter(typeFilter);
-    }
-
-    @Override
-    public Kind getFormatKind() {
-        return Kind.RESOURCE;
+        super(FileType.ECORE_META, FileType.ECORE_MODEL);
+        this.typemodelChooser =
+            GrooveFileChooser.getInstance(FileType.ECORE_META);
     }
 
     @Override

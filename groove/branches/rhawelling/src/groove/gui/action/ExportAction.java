@@ -14,15 +14,15 @@ import groove.gui.display.ResourceDisplay;
 import groove.gui.display.ResourceTab;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.JGraph;
-import groove.io.external.Exporter;
-import groove.io.external.Exporter.Exportable;
+import groove.io.external.Exportable;
+import groove.io.external.Exporters;
 
 /**
  * Action to save the content of a {@link JGraph},
  * as a graph or in some export format.
  * There is a discrepancy between exporter action for JGraphs and for displays: JGraph exports have no access to the original resource (if any)
  * and so an export initiated from a JGraph directly (as opposed for example form the menu) will never show an export option that requires a resource 
- * @see Exporter#doExport
+ * @see Exporters#doExport
  */
 public class ExportAction extends SimulatorAction {
     /** Constructs an instance of the action for a given display. */
@@ -62,7 +62,7 @@ public class ExportAction extends SimulatorAction {
             // Export resource
             exportable = new Exportable(getResource());
         }
-        Exporter.instance().doExport(getSimulator(), exportable);
+        Exporters.doExport(exportable, getSimulator());
     }
 
     /** Refreshes the name of this action. */

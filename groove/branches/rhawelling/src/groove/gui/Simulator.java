@@ -29,7 +29,7 @@ import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.SHOW_UNFILTERED_EDGES_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.VERIFY_ALL_STATES_OPTION;
-import static groove.io.FileType.GRAMMAR_FILTER;
+import static groove.io.FileType.GRAMMAR;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.GrammarModel;
@@ -115,7 +115,7 @@ public class Simulator implements SimulatorListener {
         this();
         if (grammarLocation != null) {
             final File location =
-                new File(GRAMMAR_FILTER.addExtension(grammarLocation)).getAbsoluteFile();
+                new File(GRAMMAR.addExtension(grammarLocation)).getAbsoluteFile();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {

@@ -509,7 +509,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 (VariableNode) result.getNode(opNode.getTarget());
             imageOk &= newTarget != null;
             if (imageOk) {
-                OperatorNode image =
+                RuleNode image =
                     ruleFactory.createOperatorNode(opNode.getNumber(),
                         opNode.getOperator(), newArgs, newTarget);
                 result.putNode(opNode, image);
@@ -702,10 +702,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 throw new FormatException("Untyped node", node);
             }
             // find a maximal element w.r.t. subtyping
-            type = getLub(validTypes);
+            type = getMaximum(validTypes);
             if (type == null) {
                 throw new FormatException(
-                    "Ambiguous typing: %s do not have least common supertype",
+                    "Ambiguous typing: %s do not have a common supertype",
                     validTypes, node);
             }
         } else if (validTypes.retainAll(type.getSubtypes())) {
@@ -722,8 +722,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             }
         }
         RuleNode result =
-            parentTyping.getFactory().createNode(node.getNumber(),
-                type.label(), sharp, typeGuards);
+            parentTyping.getFactory().nodes(type, sharp, typeGuards).createNode(
+                node.getNumber());
         result.getMatchingTypes().retainAll(validTypes);
         return result;
     }
@@ -762,8 +762,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                 if (node instanceof ValueNode) {
                     ValueNode valueNode = (ValueNode) node;
                     image =
-                        hostFactory.createValueNode(valueNode.getNumber(),
-                            valueNode.getAlgebra(), valueNode.getValue());
+                        hostFactory.values(valueNode.getAlgebra(),
+                            valueNode.getValue()).createNode(
+                            valueNode.getNumber());
                 } else if (isImplicit()) {
                     image = hostFactory.createNode(node.getNumber());
                 } else {
@@ -788,7 +789,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
                                 "Abstract node type '%s'", type, nodeTypeEdge);
                         }
                         image =
-                            hostFactory.createNode(node.getNumber(), nodeType);
+                            hostFactory.nodes(type).createNode(node.getNumber());
                     }
                 }
                 morphism.putNode(node, image);
@@ -1139,6 +1140,23 @@ public class TypeGraph extends NodeSetEdgeSetGraph<TypeNode,TypeEdge> {
             result.add(getNode(label));
         } else {
             result.addAll(edgeSet(label));
+        }
+        return result;
+    }
+
+    /** Returns a minimal element with respect to subtyping, if this exists. */
+    public TypeNode getMaximum(Collection<TypeNode> types) {
+        TypeNode result = null;
+        for (TypeNode typeNode : types) {
+            if (typeNode.isDataType()) {
+                continue;
+            }
+            if (result == null || isSubtype(result, typeNode)) {
+                result = typeNode;
+            }
+        }
+        if (result != null && !result.getSubtypes().containsAll(types)) {
+            result = null;
         }
         return result;
     }

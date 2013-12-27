@@ -16,15 +16,15 @@
  */
 package groove.io;
 
-import static groove.io.FileType.CONTROL_FILTER;
-import static groove.io.FileType.GRAMMAR_FILTER;
-import static groove.io.FileType.GXL_FILTER;
-import static groove.io.FileType.JAR_FILTER;
-import static groove.io.FileType.PROLOG_FILTER;
-import static groove.io.FileType.RULE_FILTER;
-import static groove.io.FileType.STATE_FILTER;
-import static groove.io.FileType.TYPE_FILTER;
-import static groove.io.FileType.ZIP_FILTER;
+import static groove.io.FileType.CONTROL;
+import static groove.io.FileType.GRAMMAR;
+import static groove.io.FileType.GXL;
+import static groove.io.FileType.JAR;
+import static groove.io.FileType.PROLOG;
+import static groove.io.FileType.RULE;
+import static groove.io.FileType.STATE;
+import static groove.io.FileType.TYPE;
+import static groove.io.FileType.ZIP;
 import groove.gui.Icons;
 
 import java.io.File;
@@ -153,7 +153,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @return <tt>true</tt> if <code>f</code> is a control program file
      */
     static protected boolean isControlFile(File f) {
-        return CONTROL_FILTER.acceptExtension(f);
+        return CONTROL.hasExtension(f);
     }
 
     /**
@@ -174,7 +174,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @require <tt>f != null</tt>
      */
     static protected boolean isStateFile(File f) {
-        return STATE_FILTER.acceptExtension(f);
+        return STATE.hasExtension(f);
     }
 
     /**
@@ -184,7 +184,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @require <tt>f != null</tt>
      */
     static protected boolean isGxlFile(File f) {
-        return GXL_FILTER.acceptExtension(f);
+        return GXL.hasExtension(f);
     }
 
     /**
@@ -193,7 +193,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @return <tt>true</tt> if <code>f</code> is a prolog program file
      */
     static protected boolean isPrologFile(File f) {
-        return PROLOG_FILTER.acceptExtension(f);
+        return PROLOG.hasExtension(f);
     }
 
     /**
@@ -203,7 +203,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @require <tt>f != null</tt>
      */
     static protected boolean isRuleFile(File f) {
-        return RULE_FILTER.acceptExtension(f);
+        return RULE.hasExtension(f);
     }
 
     /**
@@ -212,7 +212,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @return <tt>true</tt> if <code>f</code> is a graph type file
      */
     static protected boolean isTypeFile(File f) {
-        return TYPE_FILTER.acceptExtension(f);
+        return TYPE.hasExtension(f);
     }
 
     /**
@@ -223,11 +223,11 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @require <tt>f != null</tt>
      */
     static protected boolean isGpsFolder(File f) {
-        return GRAMMAR_FILTER.acceptExtension(f);
+        return GRAMMAR.hasExtension(f);
     }
 
     /** Tests whether a given file is a compressed GPS. */
     static protected boolean isCompressedGpsFolder(File f) {
-        return ZIP_FILTER.acceptExtension(f) || JAR_FILTER.acceptExtension(f);
+        return ZIP.hasExtension(f) || JAR.hasExtension(f);
     }
 }

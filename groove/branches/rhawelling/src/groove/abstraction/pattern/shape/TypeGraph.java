@@ -214,12 +214,12 @@ public final class TypeGraph extends AbstractPatternGraph<TypeNode,TypeEdge> {
     }
 
     private PatternNode createPatternNode(PatternGraph pGraph, TypeNode type) {
-        return pGraph.getFactory().createNode(type);
+        return pGraph.getFactory().nodes(type).createNode();
     }
 
     private PatternNode createPatternNode(PatternGraph pGraph, TypeNode type,
             Collection<PatternNode> used) {
-        return pGraph.getFactory().createNode(type, used);
+        return pGraph.getFactory().nodes(type).createNode(used);
     }
 
     private PatternEdge createPatternEdge(PatternGraph pGraph,

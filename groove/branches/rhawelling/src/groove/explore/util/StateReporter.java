@@ -17,15 +17,14 @@
 package groove.explore.util;
 
 import groove.grammar.aspect.GraphConverter;
-import groove.io.ExtensionFilter;
 import groove.io.FileType;
+import groove.io.external.Exportable;
+import groove.io.external.Exporters;
 import groove.io.external.Exporter;
-import groove.io.external.Exporter.Exportable;
-import groove.io.external.Format;
-import groove.io.external.FormatExporter;
 import groove.io.external.PortException;
 import groove.lts.GraphState;
 import groove.util.Groove;
+import groove.util.Pair;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,20 +49,18 @@ public class StateReporter extends AExplorationReporter {
             String stateFilename =
                 this.statePattern.replace(PLACEHOLDER, "" + state.getNumber());
             File stateFile = new File(stateFilename);
-            Format stateFormat =
-                Exporter.getAcceptingFormat(state.getGraph(), stateFile);
+            Pair<FileType,Exporter> stateFormat =
+                Exporters.getAcceptingFormat(state.getGraph(), stateFile);
             if (stateFormat != null) {
                 try {
-                    ((FormatExporter) stateFormat.getFormatter()).doExport(
-                        stateFile, stateFormat,
-                        new Exportable(state.getGraph()));
+                    stateFormat.two().doExport(new Exportable(state.getGraph()), stateFile,
+                        stateFormat.one());
                 } catch (PortException e1) {
                     throw new IOException(e1);
                 }
             } else {
-                ExtensionFilter gstFilter = FileType.STATE_FILTER;
-                if (!gstFilter.hasAnyExtension(stateFilename)) {
-                    stateFile = new File(gstFilter.addExtension(stateFilename));
+                if (!FileType.hasAnyExtension(stateFile)) {
+                    stateFile = FileType.STATE.addExtension(stateFile);
                 }
                 Groove.saveGraph(GraphConverter.toAspect(state.getGraph()),
                     stateFile);

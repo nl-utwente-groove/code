@@ -19,13 +19,11 @@ package groove.gui.action;
 import groove.explore.util.LTSLabels;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
-import groove.graph.GraphRole;
 import groove.graph.plain.PlainGraph;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.SaveLTSAsDialog;
-import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.graph.GxlIO;
 import groove.lts.GTS;
@@ -61,12 +59,12 @@ public class SaveLTSAsAction extends SimulatorAction {
     }
 
     private void doSave(File ltsFile, int exportStates, LTSLabels flags) {
-        ExtensionFilter ltsFilter = FileType.getFilter(GraphRole.LTS);
+        FileType ltsType = FileType.GXL;
         if (ltsFile.isDirectory()) {
-            ltsFile = new File(ltsFile, ltsFilter.addExtension("lts"));
+            ltsFile = new File(ltsFile, ltsType.addExtension("lts"));
         }
         GTS gts = getSimulatorModel().getGts();
-        gts.setName(ltsFilter.stripExtension(ltsFile.getName()));
+        gts.setName(ltsType.stripExtension(ltsFile.getName()));
         PlainGraph lts = gts.toPlainGraph(flags);
 
         Collection<? extends GraphState> export = new HashSet<GraphState>(0);
@@ -79,13 +77,12 @@ public class SaveLTSAsAction extends SimulatorAction {
 
         try {
             Groove.saveGraph(lts, ltsFile);
-            ExtensionFilter stateFilter = FileType.STATE_FILTER;
             for (GraphState state : export) {
                 AspectGraph stateGraph =
                     GraphConverter.toAspect(state.getGraph());
                 File file =
                     new File(ltsFile.getParentFile(),
-                        stateFilter.addExtension(state.toString()));
+                        FileType.STATE.addExtension(state.toString()));
                 GxlIO.getInstance().saveGraph(stateGraph.toPlainGraph(), file);
             }
         } catch (IOException e) {

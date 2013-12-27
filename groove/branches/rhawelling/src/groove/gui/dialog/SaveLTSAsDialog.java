@@ -19,7 +19,6 @@ package groove.gui.dialog;
 import groove.explore.util.LTSLabels;
 import groove.explore.util.LTSLabels.Flag;
 import groove.gui.Simulator;
-import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 
@@ -307,8 +306,8 @@ public class SaveLTSAsDialog {
 
     class BrowseButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            ExtensionFilter filter = FileType.GXL_FILTER;
-            JFileChooser chooser = GrooveFileChooser.getFileChooser(filter);
+            JFileChooser chooser =
+                GrooveFileChooser.getInstance(FileType.GXL);
             int result =
                 chooser.showOpenDialog(SaveLTSAsDialog.this.simulator.getFrame());
             // now load, if so required

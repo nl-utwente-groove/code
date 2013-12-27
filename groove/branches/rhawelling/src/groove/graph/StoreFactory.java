@@ -18,9 +18,8 @@ package groove.graph;
 
 import groove.grammar.host.HostEdge;
 import groove.graph.plain.PlainEdge;
+import groove.util.Dispenser;
 import groove.util.collect.TreeHashSet;
-
-import java.util.Arrays;
 
 /**
  * Abstract factory class that stores canonical representatives 
@@ -29,77 +28,34 @@ import java.util.Arrays;
  * @version $Revision $
  */
 abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label>
-        implements ElementFactory<N,E> {
+        extends ElementFactory<N,E> {
     /** Constructor for a fresh factory. */
+    @SuppressWarnings("unchecked")
     protected StoreFactory() {
+        this.nodes = (N[]) new Node[INIT_CAPACITY];
         this.edgeStore = createEdgeStore();
     }
 
-    /** Returns a node with a given type and the first currently unused node number. */
-    public N createNode() {
-        return createNode(getNextNodeNr());
-    }
-
-    /**
-     * Factory method to create a node with given type a certain (positive) number. 
-     * The idea is to create canonical representatives, so node equality is object
-     * equality.
-     * @param nr the number of the new node
-     */
-    public N createNode(int nr) {
-        N result;
-        assert nr >= 0;
-        if (nr >= this.nodes.length || this.nodes[nr] == null) {
-            addNode(result = newNode(nr));
-        } else {
-            result = this.nodes[nr];
-        }
-        return result;
-    }
-
-    /** Factory method to create a fresh node with a given number. */
-    abstract protected N newNode(int nr);
-
-    /** Factory method to retrieve a node with a given number. */
-    public N getNode(int nr) {
-        assert nr >= 0 && nr < this.nodes.length;
-        N result = this.nodes[nr];
-        assert result != null;
-        return result;
+    /** Tests if a given node number is currently in use. */
+    public boolean isUsed(int nr) {
+        return nr < this.nodes.length && this.nodes[nr] != null;
     }
 
     /** 
-     * Adds a canonical node to the store.
-     * This is only correct if a node with this number does not already
-     * exist, or is identical to the added node. 
-     * @throws IllegalArgumentException if a different node with the same number 
-     * is already in the store
-     * @return {@code true} if the store changed as a result of this operation
+     * Returns a node with a given number, if created by this factory.
+     * @return a node with number {@code nr}, or {@code null} if this factory
+     * never created such a node
      */
-    @SuppressWarnings("unchecked")
-    public boolean addNode(Node node) throws IllegalArgumentException {
-        int nr = node.getNumber();
-        if (nr < this.nodes.length && this.nodes[nr] != null
-            && node != this.nodes[nr]) {
-            throw new IllegalArgumentException(String.format(
-                "Duplicate nodes %s and %s with the same number %d", node,
-                this.nodes[nr], nr));
-        }
-        if (nr >= this.nodes.length) {
-            int newSize =
-                Math.max((int) (this.nodes.length * GROWTH_FACTOR), nr + 1);
-            N[] newNodes = (N[]) new Node[newSize];
-            System.arraycopy(this.nodes, 0, newNodes, 0, this.nodes.length);
-            this.nodes = newNodes;
-        }
-        if (this.nodes[nr] == null) {
-            this.nodes[nr] = (N) node;
-            this.nodeCount++;
-            this.maxNodeNr = Math.max(this.maxNodeNr, nr);
-            return true;
-        } else {
-            return false;
-        }
+    @Override
+    public N getNode(int nr) {
+        assert nr >= 0;
+        return nr < this.nodes.length ? this.nodes[nr] : null;
+    }
+
+    /** Tests if a given node was created by this factory. */
+    public boolean containsNode(N node) {
+        Node stored = getNode(node.getNumber());
+        return stored == node;
     }
 
     /**
@@ -110,51 +66,60 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
         return this.nodeCount;
     }
 
-    /** 
-     * Resets the node store.
-     * Nodes created after calling this method will not be compatible
-     * with old nodes. 
+    /*
+     * Puts a node into the store kept by this factory.
+     * This is only allowed if there is no node with this number.
      */
-    public void clear() {
-        Arrays.fill(this.nodes, null);
-        this.nodeCount = 0;
-        this.nextNodeNr = 0;
-        this.maxNodeNr = -1;
-        this.edgeStore.clear();
+    @Override
+    protected void registerNode(N node) {
+        super.registerNode(node);
+        int nr = node.getNumber();
+        assert !isUsed(nr);
+        if (nr >= this.nodes.length) {
+            // extend the nodes array
+            int newSize =
+                Math.max((int) (this.nodes.length * GROWTH_FACTOR), nr + 1);
+            @SuppressWarnings("unchecked")
+            N[] newNodes = (N[]) new Node[newSize];
+            System.arraycopy(this.nodes, 0, newNodes, 0, this.nodes.length);
+            this.nodes = newNodes;
+        }
+        this.nodes[nr] = node;
+        this.nodeCount++;
+    }
+
+    @Override
+    protected Dispenser createNodeNrDispenser() {
+        return new Dispenser() {
+            @Override
+            protected int computeNext() {
+                do {
+                    this.last++;
+                } while (isUsed(this.last));
+                return this.last;
+            }
+
+            @Override
+            public void notifyUsed(int nr) {
+                // do nothing; the usage is recorded in the nodes array
+            }
+
+            private int last = -1;
+        };
     }
 
     /**
-     * Returns the next free node number.
+     * Array of canonical nodes, such that <code>nodes[i] == 0</code> or
+     * <code>nodes[i].getNumber() == i</code> for all <code>i</code>.
      */
-    public int getNextNodeNr() {
-        while (this.nextNodeNr < this.nodes.length
-            && this.nodes[this.nextNodeNr] != null) {
-            this.nextNodeNr++;
-        }
-        return this.nextNodeNr;
-    }
+    private N[] nodes;
 
-    /** Returns the highest node number in the store.
-     * @return the highest number of a node in the store, or {@code -1} if
-     * the store is empty.
+    /**
+     * The total number of nodes in the {@link #nodes} array.
      */
-    public int getMaxNodeNr() {
-        return this.maxNodeNr;
-    }
-
-    /** Returns the node in the store with the given number. */
-    public Node getNodeFromNr(int nr) {
-        return this.nodes[nr];
-    }
-
-    /** Creates a label with the given text. */
-    abstract public L createLabel(String text);
+    private int nodeCount;
 
     @Override
-    public E createEdge(N source, String text, N target) {
-        return createEdge(source, createLabel(text), target);
-    }
-
     public E createEdge(N source, Label label, N target) {
         assert source != null : "Source node of host edge should not be null";
         assert target != null : "Target node of host edge should not be null";
@@ -162,12 +127,18 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
         return storeEdge(edge);
     }
 
-    /** 
-     * Callback factory method to create a new edge object.
-     * This will then be compared with the edge store to replace it by its
-     * canonical representative.
+    /** Tests if a given edge was constructed by this factory. */
+    public boolean containsEdge(E edge) {
+        return this.edgeStore.put(edge) == edge;
+    }
+
+    /**
+     * Returns the total number of host edges created.
+     * Since they are numbered in sequence, this is also the next free edge number.
      */
-    abstract protected E newEdge(N source, Label label, N target, int nr);
+    public int getEdgeCount() {
+        return this.edgeStore.size();
+    }
 
     /** Puts an edge in the store and returns its canonical representative. */
     protected E storeEdge(E edge) {
@@ -179,29 +150,11 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
     }
 
     /** 
-     * Adds a given edge to the edges known to this store.
-     * The source and target nodes are assumed to be known already.
-     * Throws an exception if an equal but not identical edge was already in the store
-     * @return {@code true} if the edge was not already known in this store.
-     * @throws IllegalArgumentException if an equal but not identical edge
-     * was already in the store
+     * Callback factory method to create a new edge object.
+     * This will then be compared with the edge store to replace it by its
+     * canonical representative.
      */
-    public boolean addEdge(E edge) throws IllegalArgumentException {
-        E oldEdge = this.edgeStore.put(edge);
-        if (oldEdge != null && oldEdge != edge) {
-            throw new IllegalArgumentException(String.format(
-                "Duplicate edges %s", edge));
-        }
-        return oldEdge == null;
-    }
-
-    /**
-     * Returns the total number of host edges created.
-     * Since they are numbered in sequence, this is also the next free edge number.
-     */
-    public int getEdgeCount() {
-        return this.edgeStore.size();
-    }
+    abstract protected E newEdge(N source, Label label, N target, int nr);
 
     /** Callback factory method to initialise the edge store. */
     protected TreeHashSet<E> createEdgeStore() {
@@ -223,28 +176,6 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
             }
         };
     }
-
-    /**
-     * The total number of nodes in the {@link #nodes} array.
-     */
-    private int nodeCount;
-
-    /**
-     * First (potentially) fresh node number available.
-     */
-    private int nextNodeNr;
-
-    /**
-     * Highest node number in the store.
-     */
-    private int maxNodeNr = -1;
-
-    /**
-     * Array of canonical nodes, such that <code>nodes[i] == 0</code> or
-     * <code>nodes[i].getNumber() == i</code> for all <code>i</code>.
-     */
-    @SuppressWarnings("unchecked")
-    private N[] nodes = (N[]) new Node[INIT_CAPACITY];
 
     /**
      * A identity map, mapping previously created instances of

@@ -18,6 +18,7 @@ package groove.grammar.rule;
 
 import groove.algebra.Operator;
 import groove.algebra.syntax.Expression;
+import groove.grammar.host.DefaultHostNode;
 import groove.grammar.type.TypeEdge;
 import groove.grammar.type.TypeFactory;
 import groove.grammar.type.TypeGuard;
@@ -25,51 +26,67 @@ import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.ElementFactory;
 import groove.graph.Label;
+import groove.graph.NodeFactory;
 
 import java.util.List;
 
 /** Factory class for graph elements. */
-public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
+public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
     /** Private constructor. */
     private RuleFactory(TypeFactory typeFactory) {
         this.typeFactory = typeFactory;
     }
 
-    /** This implementation creates a node with top node type. */
-    public RuleNode createNode(int nr) {
-        return createNode(nr, TypeLabel.NODE, true, null);
+    /* This implementation creates a node with top node type. */
+    @Override
+    protected RuleNode newNode(int nr) {
+        return getTopNodeFactory().newNode(nr);
     }
 
-    /** Factory method for a default rule node. */
-    public DefaultRuleNode createNode(int nr, TypeLabel typeLabel,
-            boolean sharp, List<TypeGuard> typeGuards) {
-        updateMaxNodeNr(nr);
-        TypeNode type = getTypeFactory().createNode(typeLabel);
-        return new DefaultRuleNode(nr, type, sharp, typeGuards);
+    @Override
+    protected boolean isAllowed(RuleNode node) {
+        return node.getType().isTopType() && !node.isSharp()
+            && node.getTypeGuards() == null;
+    }
+
+    /** Returns the fixed node factory for the top type. */
+    private RuleNodeFactory getTopNodeFactory() {
+        if (this.topNodeFactory == null) {
+            this.topNodeFactory =
+                (RuleNodeFactory) nodes(getTypeFactory().getTopNode(), true,
+                    null);
+        }
+        return this.topNodeFactory;
+    }
+
+    private RuleNodeFactory topNodeFactory;
+
+    /** Returns a node factory for typed default host nodes. */
+    public NodeFactory<RuleNode> nodes(TypeNode type, boolean sharp,
+            List<TypeGuard> typeGuards) {
+        return new RuleNodeFactory(type, sharp, typeGuards);
     }
 
     /** Creates a variable node for a given algebra term, and with a given node number. */
     public VariableNode createVariableNode(int nr, Expression term) {
-        updateMaxNodeNr(nr);
         TypeNode type = getTypeFactory().getDataType(term.getSignature());
-        return new VariableNode(nr, term, type);
+        VariableNode result = new VariableNode(nr, term, type);
+        registerNode(result);
+        return result;
     }
 
     /** Creates an operator node for a given node number and arity. */
-    public OperatorNode createOperatorNode(int nr, Operator operator,
+    public RuleNode createOperatorNode(int nr, Operator operator,
             List<VariableNode> arguments, VariableNode target) {
-        updateMaxNodeNr(nr);
-        return new OperatorNode(nr, operator, arguments, target);
+        RuleNode result = new OperatorNode(nr, operator, arguments, target);
+        registerNode(result);
+        return result;
     }
 
     /** Creates a label with the given text. */
+    @Override
     public RuleLabel createLabel(String text) {
         return new RuleLabel(text);
-    }
-
-    @Override
-    public RuleEdge createEdge(RuleNode source, String text, RuleNode target) {
-        return createEdge(source, createLabel(text), target);
     }
 
     /** Gets the appropriate type edge from the type factory. */
@@ -88,25 +105,13 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
         return new RuleGraphMorphism();
     }
 
-    @Override
-    public int getMaxNodeNr() {
-        return this.maxNodeNr;
-    }
-
     /** Returns the type factory used by this rule factory. */
     public TypeFactory getTypeFactory() {
         return this.typeFactory;
     }
 
-    /** Maximises the current maximum node number with another number. */
-    private void updateMaxNodeNr(int nr) {
-        this.maxNodeNr = Math.max(this.maxNodeNr, nr);
-    }
-
     /** The type factory used for creating node and edge types. */
     private final TypeFactory typeFactory;
-    /** The highest node number returned by this factory. */
-    private int maxNodeNr;
 
     /** Returns a fresh instance of this factory, without type graph. */
     public static RuleFactory newInstance() {
@@ -117,4 +122,37 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
     public static RuleFactory newInstance(TypeFactory typeFactory) {
         return new RuleFactory(typeFactory);
     }
+
+    /** Factory for (typed) {@link DefaultHostNode}s. */
+    protected class RuleNodeFactory extends DependentNodeFactory {
+        /** Constructor for subclassing. */
+        protected RuleNodeFactory(TypeNode type, boolean sharp,
+                List<TypeGuard> typeGuards) {
+            this.type = type;
+            this.sharp = sharp;
+            this.typeGuards = typeGuards;
+        }
+
+        @Override
+        protected boolean isAllowed(RuleNode node) {
+            return node.getType() == this.type && node.isSharp() == this.sharp
+                && node.getTypeGuards().equals(this.typeGuards);
+        }
+
+        @Override
+        protected RuleNode newNode(int nr) {
+            return new DefaultRuleNode(nr, this.type, this.sharp,
+                this.typeGuards);
+        }
+
+        /** Returns the type wrapped into this factory. */
+        protected TypeNode getType() {
+            return this.type;
+        }
+
+        private final TypeNode type;
+        private final boolean sharp;
+        private final List<TypeGuard> typeGuards;
+    }
+
 }

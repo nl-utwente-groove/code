@@ -15,39 +15,24 @@
 package groove.util;
 
 /**
- * Dispenser that works on the basis of a resettable counter.
+ * Dispenser that works on the basis of a counter.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultDispenser implements Dispenser {
-    /**
-     * Sets the counter to a given number.
+public class DefaultDispenser extends Dispenser {
+    /*
+     * Sets the counter to the maximum of the current count and a given number.
      */
-    public void setCount(int count) {
-        this.count = count;
+    @Override
+    public void notifyUsed(int nr) {
+        this.count = Math.max(this.count, nr + 1);
     }
 
-    /**
-     * Resets the counter to zero.
-     */
-    public void reset() {
-        setCount(0);
-    }
-
-    /**
-     * Returns the current value of the counter, and increases the counter.
-     */
-    public int getNext() {
+    @Override
+    protected int computeNext() {
         int result = this.count;
         this.count++;
         return result;
-    }
-
-    /**
-     * Returns the current value of the counter, without increasing it.
-     */
-    public int getCount() {
-        return this.count;
     }
 
     /** The value of the counter. */

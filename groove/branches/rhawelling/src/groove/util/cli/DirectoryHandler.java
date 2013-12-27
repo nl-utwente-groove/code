@@ -16,7 +16,7 @@
  */
 package groove.util.cli;
 
-import groove.io.ExtensionFilter;
+import groove.io.FileType;
 
 import java.io.File;
 
@@ -32,7 +32,7 @@ import org.kohsuke.args4j.spi.Setter;
 public class DirectoryHandler extends FileOptionHandler {
     /** Constructor that allows an optional extension filter to be specified. */
     protected DirectoryHandler(CmdLineParser parser, OptionDef option,
-            Setter<? super File> setter, ExtensionFilter filter) {
+            Setter<? super File> setter, FileType filter) {
         super(parser, option, setter);
         this.filter = filter;
     }
@@ -48,18 +48,16 @@ public class DirectoryHandler extends FileOptionHandler {
         File result = super.parse(argument);
         if (!result.isDirectory()) {
             // see if we can set an extension
-            if (this.filter != null && !this.filter.acceptExtension(result)) {
-                result =
-                    new File(this.filter.addExtension(result.getPath()));
+            if (this.filter != null && !this.filter.hasExtension(result)) {
+                result = new File(this.filter.addExtension(result.getPath()));
             }
             if (!result.isDirectory()) {
                 throw new CmdLineException(this.owner, String.format(
-                    "File name \"%s\" must be an existing directory",
-                    result));
+                    "File name \"%s\" must be an existing directory", result));
             }
         }
         return result;
     }
 
-    private final ExtensionFilter filter;
+    private final FileType filter;
 }

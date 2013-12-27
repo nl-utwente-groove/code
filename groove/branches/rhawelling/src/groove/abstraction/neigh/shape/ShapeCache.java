@@ -75,7 +75,7 @@ public class ShapeCache extends GraphCache<HostNode,HostEdge> {
 
     /** Convenience method to retrieve the maximum node number plus one. */
     int getNodeStoreSize() {
-        return getNodeCounter().getCount();
+        return getFactory().getMaxNodeNr() + 1;
     }
 
     /** Lazily creates and returns the node set of the underlying shape. */

@@ -163,8 +163,7 @@ public class Transformer {
                     startGraphName);
             if (hostModel == null) {
                 // try to load the graph as a standalone file
-                startGraphName =
-                    FileType.STATE_FILTER.addExtension(startGraphName);
+                startGraphName = FileType.STATE.addExtension(startGraphName);
                 File startGraphFile = new File(startGraphName);
                 if (!startGraphFile.exists()) {
                     // look for the name within the grammar location

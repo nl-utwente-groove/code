@@ -16,251 +16,33 @@
  */
 package groove.io.external;
 
-import groove.grammar.model.GraphBasedModel;
-import groove.grammar.model.ResourceKind;
-import groove.grammar.model.ResourceModel;
-import groove.graph.GGraph;
-import groove.graph.Graph;
-import groove.gui.Simulator;
-import groove.gui.dialog.ErrorDialog;
-import groove.gui.dialog.SaveDialog;
-import groove.gui.jgraph.AspectJGraph;
-import groove.gui.jgraph.JGraph;
-import groove.io.ExtensionFilter;
-import groove.io.GrooveFileChooser;
-import groove.io.external.FormatPorter.Kind;
-import groove.io.external.format.AutPorter;
-import groove.io.external.format.DotPorter;
-import groove.io.external.format.EcorePorter;
-import groove.io.external.format.FsmExporter;
-import groove.io.external.format.GxlPorter;
-import groove.io.external.format.KthExporter;
-import groove.io.external.format.NativePorter;
-import groove.io.external.format.RasterExporter;
-import groove.io.external.format.TikzExporter;
-import groove.io.external.format.VectorExporter;
+import groove.io.FileType;
 
-import java.awt.Component;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.Set;
 
 /**
- * Class used to export various resources and graphs to external formats.
- * Export gets initiated by ExportAction.
- * @author Harold Bruijntjes
+ * Subtype of exporters.
+ * @author Arend Rensink
  * @version $Revision $
  */
-public class Exporter {
-    /** Returns the singleton instance of this class. */
-    public static Exporter instance() {
-        return instance;
-    }
-
-    private static final Exporter instance = new Exporter();
-
-    /**
-     * Private constructor for singleton object.
+public interface Exporter extends Porter {
+    /** 
+     * Indicates if this exporter is suitable for processing a given exportable.
+     * This is true if and only if {@link #getFileTypes(Exportable)} is non-empty.
      */
-    private Exporter() {
-        // empty
-    }
+    public boolean exports(Exportable exportable);
 
-    /**
-     * Exports object contained in exportable. Parent is used as parent of save dialog
-     * @param simulator parent of save dialog; may be {@code null}
-     * @param exportable Container with object to export
+    /** Returns the file types that can be used for a given exportable. */
+    public Set<FileType> getFileTypes(Exportable exportable);
+
+    /** 
+     * Exports a given exportable resource.
+     * @param exportable the (non-{@code null}) resource to be exported
+     * @param file destination file
+     * @param fileType used to determine format and extension
+     * @throws PortException if something went wrong during export (typically I/O-related)
      */
-    public void doExport(Simulator simulator, Exportable exportable) {
-        //JGraph first, then graph, then resource
-        List<Format> formats = new ArrayList<Format>();
-        for (FormatExporter rf : getExporters()) {
-            if (exportable.containsKind(rf.getFormatKind())) {
-                formats.addAll(rf.getSupportedFormats());
-            }
-        }
-
-        // No exporter available, stop
-        if (formats.size() == 0) {
-            return;
-        }
-
-        GrooveFileChooser chooser = getChooser(formats);
-        chooser.setSelectedFile(new File(exportable.getName()));
-        File selectedFile =
-            SaveDialog.show(chooser, simulator.getFrame(), null);
-        // now save, if so required
-        if (selectedFile != null) {
-            try {
-                // Get exporter
-                FormatFilter filter = (FormatFilter) chooser.getFileFilter();
-                Format format = filter.getFormat();
-                FormatPorter e = filter.getFormat().getFormatter();
-                e.setSimulator(simulator);
-                ((FormatExporter) e).doExport(selectedFile, format, exportable);
-            } catch (PortException e) {
-                showErrorDialog(simulator.getFrame(), e,
-                    "Error while exporting to " + selectedFile);
-            }
-        }
-    }
-
-    /** Creates chooser based on list of formats. */
-    private GrooveFileChooser getChooser(List<Format> formats) {
-        GrooveFileChooser result = null;
-        List<ExtensionFilter> filters = new ArrayList<ExtensionFilter>();
-
-        for (Format f : formats) {
-            filters.add(f.getFilter());
-        }
-
-        result = GrooveFileChooser.getFileChooser(filters);
-        return result;
-    }
-
-    /**
-     * Creates and shows an {@link ErrorDialog} for a given message and
-     * exception.
-     */
-    private void showErrorDialog(Component parent, Throwable exc,
-            String message, Object... args) {
-        new ErrorDialog(parent, String.format(message, args), exc).setVisible(true);
-    }
-
-    /**
-     * Get suitable export format for a given file.
-      * Backwards compatibility function for now.
-     */
-    static public Format getAcceptingFormat(Graph graph, File file) {
-        Format result = null;
-        outer: for (FormatExporter rf : exporters) {
-            if (rf.getFormatKind() == Kind.GRAPH) {
-                for (Format format : rf.getSupportedFormats()) {
-                    for (String ext : format.getExtensions()) {
-                        if (file.getName().endsWith(ext)) {
-                            result = format;
-                            break outer;
-                        }
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    /** Returns the list of all known dedicated exporters. */
-    public static List<FormatExporter> getExporters() {
-        return Collections.unmodifiableList(exporters);
-    }
-
-    /** List of available exporters. */
-    private static final List<FormatExporter> exporters =
-        new ArrayList<FormatExporter>();
-    static {
-        exporters.add(NativePorter.getInstance());
-        exporters.add(RasterExporter.getInstance());
-        exporters.add(VectorExporter.getInstance());
-        exporters.add(AutPorter.getInstance());
-        exporters.add(KthExporter.getInstance());
-        exporters.add(FsmExporter.getInstance());
-        exporters.add(TikzExporter.getInstance());
-        exporters.add(EcorePorter.instance());
-        exporters.add(GxlPorter.instance());
-        exporters.add(DotPorter.getInstance());
-    }
-
-    /**
-     * Wrapper class to transfer object to be exported form ExportAction to Exporter.
-     * Can wrap either {@link GGraph}s, {@link JGraph}s or {@link ResourceModel}s.
-     * @author Harold
-     * @version $Revision $
-     */
-    public static class Exportable {
-        private final EnumSet<FormatPorter.Kind> porterKinds;
-        private final String name;
-        private final Graph graph;
-        private final JGraph<?> jGraph;
-        private final ResourceModel<?> model;
-
-        /** Constructs an exportable for a given {@link JGraph}. */
-        public Exportable(Graph graph) {
-            this.porterKinds = EnumSet.of(Kind.GRAPH);
-            this.name = graph.getName();
-            this.jGraph = null;
-            this.graph = graph;
-            this.model = null;
-        }
-
-        /** Constructs an exportable for a given {@link JGraph}. */
-        public Exportable(JGraph<?> jGraph) {
-            this.porterKinds = EnumSet.of(Kind.GRAPH, Kind.JGRAPH);
-            this.jGraph = jGraph;
-            this.graph = jGraph.getModel().getGraph();
-            this.model =
-                jGraph instanceof AspectJGraph
-                        ? ((AspectJGraph) jGraph).getModel().getResourceModel()
-                        : null;
-            if (this.model != null) {
-                this.porterKinds.add(Kind.RESOURCE);
-            }
-            this.name = this.graph.getName();
-        }
-
-        /** Constructs an exportable for a given {@link ResourceModel}. */
-        public Exportable(ResourceModel<?> model) {
-            this.porterKinds = EnumSet.of(Kind.RESOURCE);
-            if (model.getKind().isGraphBased()) {
-                this.porterKinds.add(Kind.GRAPH);
-                this.graph = ((GraphBasedModel<?>) model).getSource();
-            } else {
-                this.graph = null;
-            }
-
-            this.name = model.getFullName();
-            this.model = model;
-            this.jGraph = null;
-        }
-
-        /** Constructs an exportable for a given {@link ResourceModel} that is displayed in a {@link JGraph}. */
-        public Exportable(JGraph<?> jGraph, ResourceModel<?> model) {
-            this.porterKinds =
-                EnumSet.of(Kind.GRAPH, Kind.JGRAPH, Kind.RESOURCE);
-            this.name = model.getFullName();
-            this.jGraph = jGraph;
-            this.graph = jGraph.getModel().getGraph();
-            this.model = model;
-        }
-
-        /** Indicates if this exportable contains an object of a given porter kind. */
-        public boolean containsKind(Kind kind) {
-            return this.porterKinds.contains(kind);
-        }
-
-        /** Returns the name of the object wrapped by this exportable. */
-        public String getName() {
-            return this.name;
-        }
-
-        /** Returns the {@link GGraph} wrapped by this exportable, if any. */
-        public Graph getGraph() {
-            return this.graph;
-        }
-
-        /** Returns the {@link JGraph} wrapped by this exportable, if any. */
-        public JGraph<?> getJGraph() {
-            return this.jGraph;
-        }
-
-        /** Returns the resource kind of the model wrapped by this exportable, if any. */
-        public ResourceKind getKind() {
-            return getModel() == null ? null : getModel().getKind();
-        }
-
-        /** Returns the {@link ResourceModel} wrapped by this exportable, if any. */
-        public ResourceModel<?> getModel() {
-            return this.model;
-        }
-    }
+    public void doExport(Exportable exportable, File file, FileType fileType)
+        throws PortException;
 }

@@ -17,220 +17,78 @@
 package groove.io;
 
 import java.io.File;
-
-import javax.swing.JFileChooser;
+import java.util.List;
 
 /**
- * Implements a file filter based on filename extension.
+ * Implements a file filter based on the filename extensions of a file type.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-11 15:46:59 $
  */
-public abstract class ExtensionFilter extends
-        javax.swing.filechooser.FileFilter implements java.io.FileFilter {
-
+public class ExtensionFilter extends javax.swing.filechooser.FileFilter
+        implements java.io.FileFilter {
     /**
-     * Constructs a new extension file filter, with a given description and
-     * filename extension, and a flag to set whether directories are accepted.
-     * @param description the textual description of the files to be accepted
-     * @param acceptDirectories <tt>true</tt> if the filter is to accept
-     *        directories
+     * Constructs a new extension file filter, to be
+     * associated with a given file type.
      */
-    public ExtensionFilter(String description, boolean acceptDirectories) {
-        this.description = description;
-        setAcceptDirectories(acceptDirectories);
+    public ExtensionFilter(FileType fileType) {
+        this.fileType = fileType;
     }
 
     /**
-     * Accepts a file if its name ends on this filter's extension, or it is a
-     * directory and directories are accepted.
-     * @see #acceptExtension(File)
-     * @see #acceptDirectories
+     * Returns the file type associated with this filter.
      */
-    @Override
-    public boolean accept(File file) {
-        return this.acceptExtension(file)
-            || (this.isAcceptDirectories() && file.isDirectory());
+    public FileType getFileType() {
+        return this.fileType;
     }
-
-    /**
-     * Accepts a file if its name ends on this filter's extension.
-     */
-    abstract public boolean acceptExtension(File file);
-
-    /**
-     * Accepts a filename if it ends on this filter's extension.
-     */
-    abstract public boolean acceptExtension(String file);
 
     /**
      * Returns this filter's description.
      */
     @Override
     public String getDescription() {
+        if (this.description == null) {
+            this.description = createDescription();
+        }
         return this.description;
     }
 
     /**
-     * Returns this filter's extension.
+     * Returns this filter's extensions.
      */
-    abstract public String getExtension();
+    public List<String> getExtensions() {
+        return getFileType().getExtensions();
+    }
 
     /**
-     * Strips an extension from a filename, if the extension is in fact there.
-     * @param filename the filename to be stripped
+     * Accepts a file if its name ends on this filter's extension, or it is a
+     * directory.
+     * @see FileType#hasExtension(File)
      */
-    public String stripExtension(String filename) {
-        if (filename.endsWith(this.getExtension())) {
-            return filename.substring(0,
-                filename.lastIndexOf(this.getExtension()));
-        } else {
-            return filename;
+    @Override
+    public boolean accept(File file) {
+        return getFileType().hasExtension(file) || file.isDirectory();
+    }
+
+    private String createDescription() {
+        StringBuilder result =
+            new StringBuilder(this.fileType.getDescription());
+        result.append(" (");
+        boolean first = true;
+        for (String extension : getExtensions()) {
+            if (first) {
+                first = false;
+            } else {
+                result.append(", ");
+            }
+            result.append("*");
+            result.append(extension);
         }
-    }
-
-    /**
-     * Strips an extension from a file, if the extension is in fact there.
-     * @param file the file to be stripped
-     */
-    public File stripExtension(File file) {
-        return new File(file.getParentFile(), stripExtension(file.getName()));
-    }
-
-    /**
-     * Adds an extension to filename, if the extension is not yet there.
-     * @param filename the filename to be provided with an extension
-     */
-    public String addExtension(String filename) {
-        if (hasExtension(filename)) {
-            return filename;
-        } else {
-            return filename + this.getExtension();
-        }
-    }
-
-    /**
-     * Adds an extension to a file, if the extension is not yet there.
-     * @param file the file to be provided with an extension
-     */
-    public File addExtension(File file) {
-        return new File(file.getParentFile(), addExtension(file.getName()));
-    }
-
-    /**
-     * Tests if a given filename has the extension of this filter.
-     * @param filename the filename to be tested
-     * @return <code>true</code> if <code>filename</code> has the extension
-     *         of this filter
-     */
-    public boolean hasExtension(String filename) {
-        return filename.endsWith(this.getExtension());
-    }
-
-    /**
-     * Tests if a given file has the extension of this filter.
-     * @param file the file to be tested
-     * @return <code>true</code> if <code>file</code> has the extension
-     *         of this filter
-     */
-    public boolean hasExtension(File file) {
-        return hasExtension(file.getName());
-    }
-
-    /**
-     * Tests if a given filename has any extension.
-     * @param filename the filename to be tested
-     * @return <code>true</code> if <code>filename</code> has an extension
-     * (not necessarily of this filter).
-     */
-    public boolean hasAnyExtension(String filename) {
-        return hasAnyExtension(new File(filename));
-    }
-
-    /**
-     * Tests if a given file has any extension.
-     * @param file the filename to be tested
-     * @return <code>true</code> if <code>file</code> has an extension
-     * (not necessarily of this filter).
-     */
-    public boolean hasAnyExtension(File file) {
-        return file.getName().indexOf(SEPARATOR) >= 0;
-    }
-
-    /**
-     * Indicates whether this filter accepts directory files, in addition to
-     * files ending on the required extension.
-     */
-    public boolean isAcceptDirectories() {
-        return this.acceptDirectories;
-    }
-
-    /**
-     * Sets whether this filter accepts directory files, in addition to files
-     * ending on the required extension.
-     * @param accept if true, this filter will accept directories
-     */
-    public final void setAcceptDirectories(boolean accept) {
-        this.acceptDirectories = accept;
-    }
-
-    /** Returns the proper mode for a file chooser dialog. */
-    public final int getFileSelectionMode() {
-        int result;
-        if (this.isAcceptDirectories()) {
-            result = JFileChooser.FILES_AND_DIRECTORIES;
-        } else {
-            result = JFileChooser.FILES_ONLY;
-        }
-        return result;
+        result.append(')');
+        return result.toString();
     }
 
     /** The description of this filter. */
-    private final String description;
-    /** Indicates whether this filter also accepts directories. */
-    private boolean acceptDirectories;
-
-    /**
-     * Returns the extension part of a file name. The extension is taken to be
-     * the part from the last #SEPARATOR occurrence (inclusive).
-     * @param file the file to obtain the name from
-     * @return the extension part of <code>file.getName()</code>
-     * @see File#getName()
-     */
-    static public String getExtension(File file) {
-        String name = file.getName();
-        return name.substring(name.lastIndexOf(SEPARATOR));
-    }
-
-    /**
-     * Returns the name part of a file name, without extension. The extension is
-     * taken to be the part from the last #SEPARATOR occurrence (inclusive).
-     * @param file the file to obtain the name from
-     * @return the name part of <code>file.getName()</code>, without the
-     *         extension
-     * @see File#getName()
-     */
-    static public String getPureName(File file) {
-        return getPureName(file.getName());
-    }
-
-    /**
-     * Returns the name part of a file name, without extension. The extension is
-     * taken to be the part from the last #SEPARATOR occurrence (inclusive).
-     * @param filename the filename to be stripped
-     * @return the name part of <code>file.getName()</code>, without the
-     *         extension
-     */
-    static public String getPureName(String filename) {
-        int index = filename.lastIndexOf(SEPARATOR);
-        if (index < 0) {
-            return filename;
-        } else {
-            return filename.substring(0, index);
-        }
-    }
-
-    /**
-     * Separator character between filename and extension.
-     */
-    static public final char SEPARATOR = '.';
+    private String description;
+    /** The file type associated with this filter. */
+    private final FileType fileType;
 }

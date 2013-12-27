@@ -23,37 +23,12 @@ import groove.graph.Label;
 import groove.graph.Morphism;
 
 /** Factory class for rule elements. */
-public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
-
-    // ------------------------------------------------------------------------
-    // Object Fields
-    // ------------------------------------------------------------------------
-
-    /** The highest node number returned by this factory. */
-    private int maxNodeNr;
-
-    // ------------------------------------------------------------------------
-    // Overridden methods
-    // ------------------------------------------------------------------------
-
-    @Override
-    public int getMaxNodeNr() {
-        return this.maxNodeNr;
-    }
-
-    // ------------------------------------------------------------------------
-    // Other methods
-    // ------------------------------------------------------------------------
-
-    /** Maximises the current maximum node number with another number. */
-    private void updateMaxNodeNr(int nr) {
-        this.maxNodeNr = Math.max(this.maxNodeNr, nr);
-    }
-
+public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
     /** Creates a new rule node with given number and type. */
     public RuleNode createNode(int nr, TypeNode type) {
-        updateMaxNodeNr(nr);
-        return new RuleNode(nr, type);
+        RuleNode result = new RuleNode(nr, type);
+        registerNode(result);
+        return result;
     }
 
     /** Creates a new rule edge with given number and type. */
@@ -67,17 +42,7 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
     // ------------------------------------------------------------------------
 
     @Override
-    public RuleNode createNode(int nr) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Label createLabel(String text) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public RuleEdge createEdge(RuleNode source, String text, RuleNode target) {
         throw new UnsupportedOperationException();
     }
 
@@ -91,4 +56,8 @@ public class RuleFactory implements ElementFactory<RuleNode,RuleEdge> {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    protected RuleNode newNode(int nr) {
+        throw new UnsupportedOperationException();
+    }
 }

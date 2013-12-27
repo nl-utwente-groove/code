@@ -30,6 +30,7 @@ import groove.grammar.rule.RuleLabel;
 import groove.grammar.type.ImplicitTypeGraph;
 import groove.grammar.type.TypeGraph;
 import groove.util.DefaultDispenser;
+import groove.util.Dispenser;
 
 import java.util.Iterator;
 import java.util.List;
@@ -65,7 +66,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * @param typeGraph the type graph for the automaton (non-{@code null})
      */
     public RegAut compute(RegExpr expr, TypeGraph typeGraph) {
-        this.nodeDispenser.reset();
+        this.nodeDispenser = new DefaultDispenser();
         this.typeGraph = typeGraph;
         RegAut result = expr.apply(this);
         result.setFixed();
@@ -275,5 +276,5 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
     /** Label store currently used to build automata. */
     private TypeGraph typeGraph;
     /** the dispenser for automaton node identities. */
-    private final DefaultDispenser nodeDispenser = new DefaultDispenser();
+    private Dispenser nodeDispenser = new DefaultDispenser();
 }

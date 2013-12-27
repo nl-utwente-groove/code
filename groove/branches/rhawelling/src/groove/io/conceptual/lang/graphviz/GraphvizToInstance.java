@@ -16,7 +16,7 @@
  */
 package groove.io.conceptual.lang.graphviz;
 
-import groove.io.ExtensionFilter;
+import groove.io.FileType;
 import groove.io.conceptual.Field;
 import groove.io.conceptual.Id;
 import groove.io.conceptual.InstanceModel;
@@ -81,7 +81,7 @@ public class GraphvizToInstance extends InstanceImporter {
         //Import all graphs in the same instance model.
         TypeModel typeModel = new TypeModel("DOTType");
         InstanceModel instanceModel =
-            new InstanceModel(typeModel, ExtensionFilter.getPureName(file));
+            new InstanceModel(typeModel, FileType.getPureName(file));
         int timer = Timer.start("DOT to IM");
         visitGraphs(instanceModel, graphs, Id.ROOT);
         Timer.stop(timer);

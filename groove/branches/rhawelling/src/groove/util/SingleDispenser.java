@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
+ * Copyright 2003--2011 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
@@ -14,19 +14,32 @@
  *
  * $Id$
  */
-package groove.grammar.host;
-
-import groove.grammar.type.TypeNode;
-import groove.graph.Node;
+package groove.util;
 
 /**
- * Supertype of all nodes that can occur in a {@link DefaultHostGraph}.
- * These are {@link DefaultHostNode}s and {@link ValueNode}s.
+ * One-shot dispenser that can only return a single number.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface HostNode extends Node, HostElement, AnchorValue {
-    /** Returns the type of the host node, or {@code null} if
-     * the host node is untyped. */
-    public TypeNode getType();
+public class SingleDispenser extends Dispenser {
+    /** Creates a new one-shot dispenser, for a given number. */
+    public SingleDispenser(int nr) {
+        this.nr = nr;
+    }
+
+    @Override
+    protected int computeNext() {
+        setExhausted();
+        return this.nr;
+    }
+
+    @Override
+    public void notifyUsed(int nr) {
+        if (nr == this.nr) {
+            setExhausted();
+        }
+    }
+
+    /** Number with which the dispenser was initialised. */
+    private final int nr;
 }

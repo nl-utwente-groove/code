@@ -18,15 +18,13 @@ package groove.io.external.format;
 
 import groove.gui.jgraph.JGraph;
 import groove.io.FileType;
-import groove.io.external.AbstractFormatExporter;
-import groove.io.external.Exporter.Exportable;
-import groove.io.external.Format;
+import groove.io.external.AbstractExporter;
+import groove.io.external.Exportable;
 import groove.io.external.PortException;
 import groove.io.external.util.GraphToVector;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.LinkedHashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 /** 
@@ -35,29 +33,17 @@ import java.util.Map;
  * 
  * @author Arend Rensink / Harold Bruintjes
  */
-public class VectorExporter extends AbstractFormatExporter {
+public class VectorExporter extends AbstractExporter {
     /** Private constructor for the singleton instance. */
     private VectorExporter() {
-        this.formats = new LinkedHashMap<Format,GraphToVector>();
-
-        Format pdfformat = new Format(this, FileType.PDF);
-        GraphToVector pdfObject =
-            getGraphToVector("groove.io.external.util.GraphToPDF");
-        if (pdfObject != null) {
-            this.formats.put(pdfformat, pdfObject);
-        }
-
-        Format epsformat = new Format(this, FileType.EPS);
-        GraphToVector epsObject =
-            getGraphToVector("groove.io.external.util.GraphToEPS");
-        if (epsObject != null) {
-            this.formats.put(epsformat, epsObject);
-        }
+        super(Kind.JGRAPH);
+        addFormat(FileType.PDF, "groove.io.external.util.GraphToPDF");
+        addFormat(FileType.EPS, "groove.io.external.util.GraphToEPS");
     }
 
-    @Override
-    public Kind getFormatKind() {
-        return Kind.JGRAPH;
+    private void addFormat(FileType fileType, String vectorClassName) {
+        register(fileType);
+        this.formats.put(fileType, getGraphToVector(vectorClassName));
     }
 
     private GraphToVector getGraphToVector(String vectorClassName) {
@@ -78,18 +64,14 @@ public class VectorExporter extends AbstractFormatExporter {
     }
 
     @Override
-    public Collection<? extends Format> getSupportedFormats() {
-        return this.formats.keySet();
-    }
-
-    @Override
-    public void doExport(File file, Format format, Exportable exportable)
+    public void doExport(Exportable exportable, File file, FileType fileType)
         throws PortException {
         JGraph<?> jGraph = exportable.getJGraph();
-        this.formats.get(format).renderGraph(jGraph, file);
+        this.formats.get(fileType).renderGraph(jGraph, file);
     }
 
-    private final Map<Format,GraphToVector> formats;
+    private final Map<FileType,GraphToVector> formats =
+        new EnumMap<FileType,GraphToVector>(FileType.class);
 
     /** Returns the singleton instance of this class. */
     public static final VectorExporter getInstance() {

@@ -32,7 +32,7 @@ public class GrammarHandler extends DirectoryHandler {
     /** Required constructor. */
     public GrammarHandler(CmdLineParser parser, OptionDef option,
             Setter<? super File> setter) {
-        super(parser, option, setter, FileType.GRAMMAR_FILTER);
+        super(parser, option, setter, FileType.GRAMMAR);
     }
 
     /** Meta-variable for the grammar argument. */

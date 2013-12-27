@@ -31,9 +31,9 @@ import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
 import groove.graph.AElementMap;
+import groove.graph.ElementFactory;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
-import groove.graph.ElementFactory;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
@@ -951,7 +951,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
     private static final AspectParser parser = AspectParser.getInstance();
 
     /** Factory for AspectGraph elements. */
-    public static class AspectFactory implements
+    public static class AspectFactory extends
             ElementFactory<AspectNode,AspectEdge> {
         /** Private constructor to ensure singleton usage. */
         protected AspectFactory(GraphRole graphRole) {
@@ -959,20 +959,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         }
 
         @Override
-        public AspectNode createNode(int nr) {
-            this.maxNodeNr = Math.max(this.maxNodeNr, nr);
+        protected AspectNode newNode(int nr) {
             return new AspectNode(nr, this.graphRole);
         }
 
         @Override
         public AspectLabel createLabel(String text) {
             return AspectParser.getInstance().parse(text, this.graphRole);
-        }
-
-        @Override
-        public AspectEdge createEdge(AspectNode source, String text,
-                AspectNode target) {
-            return new AspectEdge(source, createLabel(text), target);
         }
 
         @Override
@@ -985,14 +978,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         public AspectGraphMorphism createMorphism() {
             return new AspectGraphMorphism(this.graphRole);
         }
-
-        @Override
-        public int getMaxNodeNr() {
-            return this.maxNodeNr;
-        }
-
-        /** The highest node number returned by this factory. */
-        private int maxNodeNr;
 
         /** The graph role of the created elements. */
         private final GraphRole graphRole;

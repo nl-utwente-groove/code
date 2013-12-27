@@ -18,12 +18,11 @@ package groove.io.store;
 
 import static groove.grammar.model.ResourceKind.PROPERTIES;
 import static groove.grammar.model.ResourceKind.TYPE;
-import static groove.io.FileType.GRAMMAR_FILTER;
-import static groove.io.FileType.JAR_FILTER;
-import static groove.io.FileType.LAYOUT_FILTER;
-import static groove.io.FileType.PROPERTIES_FILTER;
-import static groove.io.FileType.RULE_FILTER;
-import static groove.io.FileType.ZIP_FILTER;
+import static groove.io.FileType.GRAMMAR;
+import static groove.io.FileType.JAR;
+import static groove.io.FileType.LAYOUT;
+import static groove.io.FileType.RULE;
+import static groove.io.FileType.ZIP;
 import groove.grammar.GrammarProperties;
 import groove.grammar.QualName;
 import groove.grammar.aspect.AspectGraph;
@@ -31,7 +30,6 @@ import groove.grammar.model.FormatException;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
 import groove.graph.GraphInfo;
-import groove.io.ExtensionFilter;
 import groove.io.FileType;
 import groove.io.graph.AttrGraph;
 import groove.io.graph.GxlIO;
@@ -81,10 +79,10 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
                 "File '%s' does not exist", file));
         }
         String extendedName;
-        if (!file.isDirectory() && JAR_FILTER.accept(file)) {
-            extendedName = JAR_FILTER.stripExtension(file.getName());
-        } else if (!file.isDirectory() && ZIP_FILTER.accept(file)) {
-            extendedName = ZIP_FILTER.stripExtension(file.getName());
+        if (!file.isDirectory() && JAR.hasExtension(file)) {
+            extendedName = JAR.stripExtension(file.getName());
+        } else if (!file.isDirectory() && ZIP.hasExtension(file)) {
+            extendedName = ZIP.stripExtension(file.getName());
         } else {
             throw new IllegalArgumentException(String.format("File '%s' "
                 + NO_JAR_OR_ZIP_SUFFIX, file));
@@ -92,7 +90,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         this.location = file.toString();
         this.file = file;
         this.entryName = extendedName;
-        this.grammarName = GRAMMAR_FILTER.stripExtension(extendedName);
+        this.grammarName = GRAMMAR.stripExtension(extendedName);
         this.url = null;
     }
 
@@ -119,8 +117,8 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         this.location = url.toString();
         // artificially append the jar protocol, if it is not yet there
         if (!url.getProtocol().equals(JAR_PROTOCOL)) {
-            if (!JAR_FILTER.hasExtension(url.getPath())
-                && !ZIP_FILTER.hasExtension(url.getPath())) {
+            if (!JAR.hasExtension(url.getPath())
+                && !ZIP.hasExtension(url.getPath())) {
                 throw new IllegalArgumentException(String.format(
                     "URL '%s' is not a JAR or ZIP file", url));
             }
@@ -129,8 +127,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         this.entryName = extractEntryName(url);
         // take the last part of the entry name as grammar name
         File fileFromEntry = new File(this.entryName);
-        this.grammarName =
-            GRAMMAR_FILTER.stripExtension(fileFromEntry.getName());
+        this.grammarName = GRAMMAR.stripExtension(fileFromEntry.getName());
         this.url = url;
         this.file = null;
     }
@@ -151,7 +148,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         result = connection.getEntryName();
         if (result == null) {
             result =
-                ExtensionFilter.getPureName(new File(
+                FileType.getPureName(new File(
                     connection.getJarFileURL().getPath()));
         }
         return result;
@@ -256,14 +253,14 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
                 // find out the resource kind by testing the extension
                 ResourceKind kind = null;
                 for (ResourceKind tryKind : ResourceKind.values()) {
-                    if (restName.endsWith(tryKind.getFilter().getExtension())) {
+                    if (restName.endsWith(tryKind.getFileType().getExtension())) {
                         kind = tryKind;
                         break;
                     }
                 }
                 if (kind == PROPERTIES) {
                     String propertiesName =
-                        PROPERTIES_FILTER.stripExtension(restName);
+                        PROPERTIES.getFileType().stripExtension(restName);
                     if (propertiesName.equals(Groove.PROPERTY_NAME)) {
                         // preferably take the one with the default name
                         properties = entry;
@@ -274,9 +271,8 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
                     }
                 } else if (kind == null) {
                     // must be a layout file
-                    if (restName.endsWith(LAYOUT_FILTER.getExtension())) {
-                        String objectName =
-                            LAYOUT_FILTER.stripExtension(restName);
+                    if (LAYOUT.hasExtension(restName)) {
+                        String objectName = LAYOUT.stripExtension(restName);
                         this.layoutEntryMap.put(objectName, entry);
                     }
                 } else {
@@ -363,7 +359,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
         getTextMap(kind).clear();
         for (Map.Entry<String,ZipEntry> textEntry : texts.entrySet()) {
             String controlName =
-                kind.getFilter().stripExtension(textEntry.getKey());
+                kind.getFileType().stripExtension(textEntry.getKey());
             InputStream in = file.getInputStream(textEntry.getValue());
             String program = groove.io.Util.readInputStreamToString(in);
             getTextMap(kind).put(controlName, program);
@@ -421,7 +417,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      */
     private Map<String,AspectGraph> loadObjects(ResourceKind kind,
             ZipFile file, Map<String,ZipEntry> graphs) throws IOException {
-        ExtensionFilter filter = kind.getFilter();
+        FileType filter = kind.getFileType();
         Map<String,AspectGraph> result = new HashMap<String,AspectGraph>();
         for (Map.Entry<String,ZipEntry> graphEntry : graphs.entrySet()) {
             String graphName = filter.stripExtension(graphEntry.getKey());
@@ -472,7 +468,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
      */
     private QualName createQualName(String restName) throws IOException {
         StringBuilder result = new StringBuilder();
-        File nameAsFile = new File(RULE_FILTER.stripExtension(restName));
+        File nameAsFile = new File(RULE.stripExtension(restName));
         result.append(nameAsFile.getName());
         while (nameAsFile.getParent() != null) {
             nameAsFile = nameAsFile.getParentFile();

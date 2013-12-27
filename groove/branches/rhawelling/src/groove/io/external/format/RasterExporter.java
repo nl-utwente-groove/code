@@ -18,16 +18,14 @@ package groove.io.external.format;
 
 import groove.gui.jgraph.JGraph;
 import groove.io.FileType;
-import groove.io.external.AbstractFormatExporter;
-import groove.io.external.Exporter.Exportable;
-import groove.io.external.Format;
+import groove.io.external.AbstractExporter;
+import groove.io.external.Exportable;
 import groove.io.external.PortException;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.LinkedHashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -38,27 +36,23 @@ import javax.imageio.ImageIO;
  * 
  * @author Arend Rensink 
  */
-public class RasterExporter extends AbstractFormatExporter {
+public class RasterExporter extends AbstractExporter {
     private RasterExporter() {
-        Format pngformat = new Format(this, FileType.PNG);
-        Format jpgformat = new Format(this, FileType.JPG);
-        this.formats = new LinkedHashMap<Format,String>();
-        this.formats.put(pngformat, "png");
-        this.formats.put(jpgformat, "jpg");
+        super(Kind.JGRAPH);
+        addFormat(FileType.PNG, "png");
+        addFormat(FileType.JPG, "jpg");
     }
 
-    @Override
-    public Kind getFormatKind() {
-        return Kind.JGRAPH;
+    private void addFormat(FileType fileType, String descr) {
+        register(fileType);
+        this.formats.put(fileType, descr);
     }
 
-    @Override
-    public Collection<? extends Format> getSupportedFormats() {
-        return this.formats.keySet();
-    }
+    private final Map<FileType,String> formats = new EnumMap<FileType,String>(
+        FileType.class);
 
     @Override
-    public void doExport(File file, Format format, Exportable exportable)
+    public void doExport(Exportable exportable, File file, FileType fileType)
         throws PortException {
         JGraph<?> jGraph = exportable.getJGraph();
         BufferedImage image = jGraph.toImage();
@@ -66,13 +60,11 @@ public class RasterExporter extends AbstractFormatExporter {
             throw new PortException("Cannot export blank image");
         }
         try {
-            ImageIO.write(image, this.formats.get(format), file);
+            ImageIO.write(image, this.formats.get(fileType), file);
         } catch (IOException e) {
             throw new PortException(e);
         }
     }
-
-    private final Map<Format,String> formats;
 
     /** Returns the singleton instance of this class. */
     public static final RasterExporter getInstance() {

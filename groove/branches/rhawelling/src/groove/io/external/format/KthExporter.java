@@ -18,9 +18,8 @@ package groove.io.external.format;
 
 import groove.grammar.aspect.AspectGraph;
 import groove.io.FileType;
-import groove.io.external.AbstractFormatExporter;
-import groove.io.external.Exporter.Exportable;
-import groove.io.external.Format;
+import groove.io.external.AbstractExporter;
+import groove.io.external.Exportable;
 import groove.io.external.PortException;
 import groove.io.external.util.GraphToKth;
 
@@ -28,8 +27,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collection;
-import java.util.Collections;
 
 /** 
  * Class that implements saving graphs in the KTH file format,
@@ -38,23 +35,14 @@ import java.util.Collections;
  * 
  * @author Eduardo Zambon 
  */
-public final class KthExporter extends AbstractFormatExporter {
+public final class KthExporter extends AbstractExporter {
     private KthExporter() {
-        this.kthformat = new Format(this, FileType.KTH);
+        super(Kind.GRAPH);
+        register(FileType.KTH);
     }
 
     @Override
-    public Kind getFormatKind() {
-        return Kind.GRAPH;
-    }
-
-    @Override
-    public Collection<? extends Format> getSupportedFormats() {
-        return Collections.singletonList(this.kthformat);
-    }
-
-    @Override
-    public void doExport(File file, Format format, Exportable exportable)
+    public void doExport(Exportable exportable, File file, FileType fileType)
         throws PortException {
         AspectGraph graph = (AspectGraph) exportable.getGraph();
         try {
@@ -65,8 +53,6 @@ public final class KthExporter extends AbstractFormatExporter {
             throw new PortException(e);
         }
     }
-
-    private final Format kthformat;
 
     /** Returns the singleton instance of this class. */
     public static final KthExporter getInstance() {
