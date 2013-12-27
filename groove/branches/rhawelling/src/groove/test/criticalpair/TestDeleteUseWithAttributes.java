@@ -50,11 +50,6 @@ public class TestDeleteUseWithAttributes {
 
         Set<CriticalPair> pairs =
             CriticalPair.computeCriticalPairs(addOneToNumber, addOneToNumber);
-        System.out.println("numPairs: " + pairs.size());
-        System.out.println("numNodes: " + addOneToNumber.lhs().nodeCount());
-        for (CriticalPair cr : pairs) {
-            //cr.printNodes();
-        }
         //TODO the result should be 5
         assertTrue(pairs.size() == 5 || pairs.size() == 3);
         pairs =
@@ -64,17 +59,12 @@ public class TestDeleteUseWithAttributes {
         assertTrue(pairs.size() == 2);
         pairs =
             CriticalPair.computeCriticalPairs(addOneToNumber, deleteNumberOne);
-        for (CriticalPair cr : pairs) {
-            //cr.printNodes();
-        }
         System.out.println(deleteNumberOne.lhs().nodeCount());
         assertTrue(pairs.size() == 2);
 
         pairs =
             CriticalPair.computeCriticalPairs(addOneToNumber_2,
                 addOneToNumber_2);
-        System.out.println("numPairs: " + pairs.size());
-        System.out.println("numNodes: " + addOneToNumber.lhs().nodeCount());
         //TODO the result should be 5
         assertTrue(pairs.size() == 5 || pairs.size() == 3);
         pairs =

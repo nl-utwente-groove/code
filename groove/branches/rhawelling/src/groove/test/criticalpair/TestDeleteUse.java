@@ -179,7 +179,7 @@ public class TestDeleteUse {
     @Test
     /**
      * Tests whether the transformation morphism works as expected
-     * When an edge is deleted and added, it should not be included in the
+     * When an edge is both deleted and added, it should not be included in the
      * transformation morphism
      */
     public void testTransformationMorphism() {
