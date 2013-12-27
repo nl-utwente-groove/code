@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="ERR-doubleMerge">
+    <graph edgemode="directed" edgeids="false" role="rule" id="OK-targetUniversalMerge">
         <attr name="transitionLabel">
             <string></string>
         </attr>
         <attr name="enabled">
-            <string>false</string>
+            <string>true</string>
         </attr>
         <attr name="priority">
             <string>0</string>
@@ -21,12 +21,7 @@
         </attr>
         <node id="n2">
             <attr name="layout">
-                <string>275 239 8 15</string>
-            </attr>
-        </node>
-        <node id="n0">
-            <attr name="layout">
-                <string>111 109 250 15</string>
+                <string>273 105 10 15</string>
             </attr>
         </node>
         <node id="n3">
@@ -34,14 +29,29 @@
                 <string>273 178 8 15</string>
             </attr>
         </node>
+        <node id="n0">
+            <attr name="layout">
+                <string>98 60 304 15</string>
+            </attr>
+        </node>
         <node id="n1">
             <attr name="layout">
-                <string>167 213 18 15</string>
+                <string>177 179 18 15</string>
             </attr>
         </node>
         <edge to="n2" from="n2">
             <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
                 <string>type:C</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n3">
+            <attr name="label">
+                <string>at</string>
             </attr>
         </edge>
         <edge to="n0" from="n0">
@@ -51,12 +61,7 @@
         </edge>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>rem:Multiple outgoing merge edges are disallowed</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>type:C</string>
+                <string>rem:A linear set of possible types has an unambiguous minimum</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">
@@ -65,11 +70,6 @@
             </attr>
         </edge>
         <edge to="n3" from="n1">
-            <attr name="label">
-                <string>new:=</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n1">
             <attr name="label">
                 <string>new:=</string>
             </attr>

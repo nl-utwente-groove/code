@@ -53,6 +53,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
     public RuleEffect getEffect(HostGraph host) {
         RuleEffect result = new RuleEffect(host);
         recordEffect(result);
+        result.setFixed();
         return result;
     }
 

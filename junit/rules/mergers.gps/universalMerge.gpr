@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="ERR-doubleMerge">
+    <graph edgemode="directed" edgeids="false" role="rule" id="universalMerge">
         <attr name="transitionLabel">
             <string></string>
         </attr>
         <attr name="enabled">
-            <string>false</string>
+            <string>true</string>
         </attr>
         <attr name="priority">
             <string>0</string>
@@ -19,59 +19,49 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n2">
+        <node id="n4">
             <attr name="layout">
-                <string>275 239 8 15</string>
+                <string>228 59 9 15</string>
             </attr>
         </node>
-        <node id="n0">
+        <node id="n5">
             <attr name="layout">
-                <string>111 109 250 15</string>
+                <string>311 59 10 15</string>
             </attr>
         </node>
-        <node id="n3">
+        <node id="n6">
             <attr name="layout">
-                <string>273 178 8 15</string>
+                <string>138 60 9 15</string>
             </attr>
         </node>
-        <node id="n1">
-            <attr name="layout">
-                <string>167 213 18 15</string>
-            </attr>
-        </node>
-        <edge to="n2" from="n2">
+        <edge to="n4" from="n4">
             <attr name="label">
-                <string>type:C</string>
+                <string>type:A</string>
             </attr>
         </edge>
-        <edge to="n0" from="n0">
+        <edge to="n5" from="n4">
             <attr name="label">
-                <string>rem:</string>
+                <string>at</string>
             </attr>
         </edge>
-        <edge to="n0" from="n0">
+        <edge to="n5" from="n5">
             <attr name="label">
-                <string>rem:Multiple outgoing merge edges are disallowed</string>
+                <string>forall:</string>
             </attr>
         </edge>
-        <edge to="n3" from="n3">
+        <edge to="n6" from="n6">
             <attr name="label">
-                <string>type:C</string>
+                <string>new:</string>
             </attr>
         </edge>
-        <edge to="n1" from="n1">
+        <edge to="n6" from="n6">
             <attr name="label">
                 <string>type:#A</string>
             </attr>
         </edge>
-        <edge to="n3" from="n1">
+        <edge to="n4" from="n6">
             <attr name="label">
-                <string>new:=</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n1">
-            <attr name="label">
-                <string>new:=</string>
+                <string>=</string>
             </attr>
         </edge>
     </graph>

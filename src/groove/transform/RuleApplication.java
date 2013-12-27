@@ -30,13 +30,11 @@ import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.graph.Edge;
 import groove.graph.GGraph;
-import groove.graph.Node;
 import groove.match.TreeMatch;
 import groove.util.Property;
 import groove.util.Visitor;
 import groove.util.Visitor.Finder;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -237,13 +235,11 @@ public class RuleApplication implements DeltaApplier {
     public void applyDelta(DeltaTarget target) {
         if (this.rule.isModifying()) {
             RuleEffect record = getEffect();
-            eraseEdges(record, target);
-            // either merge or erase the LHS nodes
-            mergeNodes(record, target);
-            eraseNodes(record, target);
-            createNodes(record, target);
-            createEdges(record, target);
-            eraseIsolatedValueNodes(target);
+            removeEdges(record, target);
+            removeNodes(record, target);
+            addNodes(record, target);
+            addEdges(record, target);
+            removeIsolatedValueNodes(target);
         }
     }
 
@@ -253,9 +249,10 @@ public class RuleApplication implements DeltaApplier {
             if (this.addedNodes == null) {
                 this.record = new RuleEffect(getSource());
             } else {
-                this.record = new RuleEffect(this.addedNodes);
+                this.record = new RuleEffect(getSource(), this.addedNodes);
             }
             getEvent().recordEffect(this.record);
+            this.record.setFixed();
         }
         return this.record;
     }
@@ -269,27 +266,14 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /**
-     * Erases the images of the reader nodes of the rule, together with their
-     * incident edges.
+     * Erases the images of the reader nodes of the rule.
      * @param target the target to which to apply the changes
      */
-    protected void eraseNodes(RuleEffect record, DeltaTarget target) {
-        HostNodeSet nodeSet = record.getErasedNodes();
-        // also remove the incident edges of the eraser nodes
-        if (nodeSet != null && !nodeSet.isEmpty()) {
-            // there is a choice here to query the graph for its incident edge
-            // set, which may be expensive if it hasn't yet been computed
-            // the alternative is to iterate over all edges of the source
-            // graph
-            for (HostNode node : nodeSet) {
-                for (HostEdge edge : this.source.edgeSet(node)) {
-                    if (!record.isErasedEdge(edge)) {
-                        target.removeEdge(edge);
-                        registerErasure(edge);
-                    }
-                }
+    protected void removeNodes(RuleEffect record, DeltaTarget target) {
+        if (record.hasRemovedNodes()) {
+            for (HostNode node : record.getRemovedNodes()) {
+                target.removeNode(node);
             }
-            removeNodeSet(target, nodeSet);
         }
     }
 
@@ -297,7 +281,7 @@ public class RuleApplication implements DeltaApplier {
      * Removes those value nodes whose incoming edges have all been erased
      * (and none have been added).
      */
-    private void eraseIsolatedValueNodes(DeltaTarget target) {
+    private void removeIsolatedValueNodes(DeltaTarget target) {
         // for efficiency we don't use the getter but test for null
         if (this.isolatedValueNodes != null) {
             for (ValueNode node : this.isolatedValueNodes) {
@@ -311,51 +295,20 @@ public class RuleApplication implements DeltaApplier {
      * @param record object holding the set of edges to be erased
      * @param target the target to which to apply the changes
      */
-    private void eraseEdges(RuleEffect record, DeltaTarget target) {
-        Collection<HostEdge> erasedEdges = record.getErasedEdges();
-        if (erasedEdges != null) {
-            for (HostEdge erasedEdge : erasedEdges) {
-                target.removeEdge(erasedEdge);
-                registerErasure(erasedEdge);
-            }
-        }
-    }
-
-    /**
-     * Callback method to notify that an edge has been erased. Used to ensure
-     * that isolated value nodes are removed from the graph.
-     */
-    protected void registerErasure(HostEdge edge) {
-        HostNode target = edge.target();
-        if (target instanceof ValueNode) {
-            HostEdgeSet edges = getValueNodeEdges((ValueNode) target);
-            edges.remove(edge);
-            if (edges.isEmpty()) {
-                addIsolatedValueNode((ValueNode) target);
-            }
-        }
-    }
-
-    /**
-     * Performs the node (and edge) merging.
-     * @param target the target to which to apply the changes
-     */
-    protected void mergeNodes(RuleEffect record, DeltaTarget target) {
-        // delete the merged nodes
-        MergeMap mergeMap = record.getMergeMap();
-        if (mergeMap != null) {
-            for (HostNode mergedElem : mergeMap.nodeMap().keySet()) {
-                // replace the incident edges of the merged nodes
-                for (HostEdge sourceEdge : this.source.edgeSet(mergedElem)) {
-                    if (!record.isErasedEdge(sourceEdge)) {
-                        target.removeEdge(sourceEdge);
-                        registerErasure(sourceEdge);
-                        // we register this as an edge to be added later
-                        // at that point the merge map is taken into account
-                        record.addCreatedEdge(sourceEdge);
+    private void removeEdges(RuleEffect record, DeltaTarget target) {
+        if (record.hasRemovedEdges()) {
+            for (HostEdge edge : record.getRemovedEdges()) {
+                target.removeEdge(edge);
+                // register the removal of an edge pointing to a value node
+                HostNode edgeTarget = edge.target();
+                if (edgeTarget instanceof ValueNode) {
+                    HostEdgeSet edges =
+                        getValueNodeEdges((ValueNode) edgeTarget);
+                    edges.remove(edge);
+                    if (edges.isEmpty()) {
+                        addIsolatedValueNode((ValueNode) edgeTarget);
                     }
                 }
-                removeNode(target, mergedElem);
             }
         }
     }
@@ -365,10 +318,9 @@ public class RuleApplication implements DeltaApplier {
      * 
      * @param target the target to which to apply the changes
      */
-    private void createNodes(RuleEffect record, DeltaTarget target) {
-        Collection<HostNode> createdNodes = record.getCreatedNodes();
-        if (createdNodes != null) {
-            for (HostNode node : createdNodes) {
+    private void addNodes(RuleEffect record, DeltaTarget target) {
+        if (record.hasAddedNodes()) {
+            for (HostNode node : record.getAddedNodes()) {
                 target.addNode(node);
             }
         }
@@ -378,14 +330,10 @@ public class RuleApplication implements DeltaApplier {
      * Adds edges to the target, as dictated by the rule's RHS.
      * @param target the target to which to apply the changes
      */
-    private void createEdges(RuleEffect record, DeltaTarget target) {
-        Iterable<HostEdge> createdEdges = record.getCreatedTargetEdges();
-        if (createdEdges != null) {
-            for (HostEdge createdEdge : createdEdges) {
-                boolean existing = this.source.containsEdge(createdEdge);
-                if (!existing || record.isErasedEdge(createdEdge)) {
-                    addEdge(target, createdEdge);
-                }
+    private void addEdges(RuleEffect record, DeltaTarget target) {
+        if (record.hasAddedEdges()) {
+            for (HostEdge createdEdge : record.getAddedEdges()) {
+                addEdge(target, createdEdge);
             }
         }
     }
@@ -462,33 +410,7 @@ public class RuleApplication implements DeltaApplier {
                 target.addNode(targetNode);
             }
         }
-        if (target instanceof HostGraph) {
-            ((HostGraph) target).addEdge(edge);
-        } else {
-            // apparently the target wasn't a HostGraph
-            // so we can't do efficient edge addition
-            target.addEdge(edge);
-        }
-    }
-
-    /**
-     * Removes a node from a delta target. Optimises by trying to call
-     * {@link GGraph#removeNode(Node)} if the target is an
-     * {@link GGraph}.
-     */
-    private void removeNode(DeltaTarget target, HostNode node) {
-        target.removeNode(node);
-    }
-
-    /**
-     * Removes a set of nodes from a delta target. Optimizes by trying to call
-     * {@link GGraph#removeNode(Node)} if the target is an
-     * {@link GGraph}.
-     */
-    private void removeNodeSet(DeltaTarget target, Collection<HostNode> nodeSet) {
-        for (HostNode node : nodeSet) {
-            target.removeNode(node);
-        }
+        target.addEdge(edge);
     }
 
     /**
