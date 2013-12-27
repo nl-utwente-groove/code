@@ -81,10 +81,15 @@ public class RuleEffect extends DefaultFixable {
         return this.source;
     }
 
+    private final HostGraph source;
+
     /** Returns the fragment of the record that is to be generated. */
     final Fragment getFragment() {
         return this.fragment;
     }
+
+    /** The part of the record that is generated. */
+    private final Fragment fragment;
 
     /** 
      * Indicates that the created nodes have been predefined.
@@ -95,6 +100,9 @@ public class RuleEffect extends DefaultFixable {
     final boolean isNodesPredefined() {
         return this.nodesPredefined;
     }
+
+    /** Flag indicating that the effect was initialised with predefined nodes. */
+    private final boolean nodesPredefined;
 
     /**
      * Returns the currently stored map from rule node creators to
@@ -156,6 +164,15 @@ public class RuleEffect extends DefaultFixable {
         }
     }
 
+    /** Mapping from rule node creators to the corresponding created nodes. */
+    private Map<RuleNode,HostNode> createdNodeMap;
+    /** 
+     * List of created nodes, either predefined or built up during construction
+     */
+    private final List<HostNode> createdNodeList;
+    /** Index of the first unused element in {@link #createdNodeList}. */
+    private int createdNodeIndex;
+
     /** 
      * Adds a collection of erased nodes to those already stored in this record.
      */
@@ -191,6 +208,12 @@ public class RuleEffect extends DefaultFixable {
         }
     }
 
+    /** Flag indicating that the created nodes are predefined. */
+    /** Collection of erased nodes. */
+    private HostNodeSet erasedNodes;
+    /** Flag indicating if {@link #erasedNodes} is currently an alias. */
+    private boolean erasedNodesAliased;
+
     /** 
      * Adds a collection of erased edges to those already stored in this record.
      */
@@ -217,6 +240,11 @@ public class RuleEffect extends DefaultFixable {
         }
         this.erasedEdges = newErasedEdges;
     }
+
+    /** Collection of erased edges. */
+    private HostEdgeSet erasedEdges;
+    /** Flag indicating if {@link #erasedEdges} is currently an alias. */
+    private boolean erasedEdgesAliased;
 
     /** 
      * Adds a collection of created edges to those already stored in this record.
@@ -266,6 +294,11 @@ public class RuleEffect extends DefaultFixable {
         this.createdEdges = newCreatedEdges;
     }
 
+    /** Collection of created edges. */
+    private HostEdgeSet createdEdges;
+    /** Flag indicating if {@link #createdEdges} is currently an alias. */
+    private boolean createdEdgesAliased;
+
     /** 
      * Adds a merge map to that already stored in this record.
      */
@@ -298,9 +331,43 @@ public class RuleEffect extends DefaultFixable {
         this.mergeMap = newMergeMap;
     }
 
+    /** Mapping from merged nodes to their merge targets. */
+    private MergeMap mergeMap;
+    /** Flag indicating if {@link #mergeMap} is currently an alias. */
+    private boolean mergeMapAliased;
+
+    /** 
+     * Returns the (possibly {@code null}) array of created nodes.
+     * The elements of the array are given in the order of the rule creators.
+     * Created nodes may be duplicated or {@code null} due to the
+     * combined effect of creation, merging and deletion.
+     */
+    final public HostNode[] getCreatedNodeArray() {
+        assert isFixed();
+        List<HostNode> createdNodes = this.createdNodeList;
+        int createdNodeCount = createdNodes.size();
+        HostNode[] result = new HostNode[createdNodeCount];
+        for (int i = 0; i < createdNodeCount; i++) {
+            HostNode n = createdNodes.get(i);
+            if (!isNodesPredefined() && hasMergeMap()) {
+                n = getMergeMap().getNode(n);
+            }
+            result[i] = n;
+        }
+        return result;
+    }
+
+    /** Indicates if the set of removed nodes is non-empty.
+     * @see #getRemovedNodes() 
+     */
+    final public boolean hasRemovedNodes() {
+        assert isFixed();
+        return this.erasedNodes != null || hasMergeMap();
+    }
+
     /** 
      * Returns the (possibly {@code null}) set of removed nodes.
-     * This combines the explicitly erased nodes and the merged nodes. 
+     * This combines the explicitly erased nodes and the merged nodes.
      */
     final public Set<HostNode> getRemovedNodes() {
         assert isFixed();
@@ -321,14 +388,18 @@ public class RuleEffect extends DefaultFixable {
         return result;
     }
 
+    /**
+     * The computed set of removed nodes, in case there is a merge map.
+     * Otherwise, {@link #erasedNodes} is used
+     */
     private Set<HostNode> removedNodes;
 
-    /** Indicates if the set of removed nodes is non-empty.
-     * @see #getRemovedNodes() 
+    /** Indicates if the set of removed edges is non-empty.
+     * @see #getRemovedEdges() 
      */
-    final public boolean hasRemovedNodes() {
+    final public boolean hasRemovedEdges() {
         assert isFixed();
-        return this.erasedNodes != null || hasMergeMap();
+        return this.erasedEdges != null || hasRemovedNodes();
     }
 
     /** 
@@ -355,15 +426,11 @@ public class RuleEffect extends DefaultFixable {
         return result;
     }
 
-    private HostEdgeSet removedEdges;
-
-    /** Indicates if the set of removed edges is non-empty.
-     * @see #getRemovedEdges() 
+    /**
+     * The computed set of removed edges, in case there are removed nodes.
+     * Otherwise, {@link #erasedNodes} is used
      */
-    final public boolean hasRemovedEdges() {
-        assert isFixed();
-        return this.erasedEdges != null || hasRemovedNodes();
-    }
+    private HostEdgeSet removedEdges;
 
     /** Tests if a given edge is among the explicitly erased edges. */
     final public boolean isErasedEdge(HostEdge edge) {
@@ -372,24 +439,12 @@ public class RuleEffect extends DefaultFixable {
     }
 
     /** 
-     * Returns the (possibly {@code null}) array of created nodes.
-     * The elements of the array are given in the order of the rule creators.
-     * Created nodes may be duplicated or {@code null} due to the
-     * combined effect of creation, merging and deletion.
+     * Indicates if the set of added nodes is non-empty.
+     * @see #getAddedNodes()
      */
-    final public HostNode[] getCreatedNodeArray() {
+    final public boolean hasAddedNodes() {
         assert isFixed();
-        List<HostNode> createdNodes = this.createdNodeList;
-        int createdNodeCount = createdNodes.size();
-        HostNode[] result = new HostNode[createdNodeCount];
-        for (int i = 0; i < createdNodeCount; i++) {
-            HostNode n = createdNodes.get(i);
-            if (!isNodesPredefined() && hasMergeMap()) {
-                n = getMergeMap().getNode(n);
-            }
-            result[i] = n;
-        }
-        return result;
+        return !this.createdNodeList.isEmpty();
     }
 
     /** 
@@ -421,12 +476,16 @@ public class RuleEffect extends DefaultFixable {
     private HostNodeSet addedNodes;
 
     /** 
-     * Indicates if the set of added nodes is non-empty.
-     * @see #getAddedNodes()
+     * Indicates if there are any added edges, either through 
+     * explicit edge creation or through node merging.
+     * Note that the {@link #getAddedEdges()} may nevertheless
+     * return an empty set, if node deletion
+     * or merging invalidates all created edges.
+     * @see #getAddedEdges()
      */
-    final public boolean hasAddedNodes() {
+    public final boolean hasAddedEdges() {
         assert isFixed();
-        return !this.createdNodeList.isEmpty();
+        return this.createdEdges != null || hasMergeMap();
     }
 
     /** 
@@ -514,25 +573,6 @@ public class RuleEffect extends DefaultFixable {
     private HostEdgeSet addedEdges;
 
     /** 
-     * Indicates if there are any added edges, either through 
-     * explicit edge creation or through node merging.
-     * Note that the {@link #getAddedEdges()} may nevertheless
-     * return an empty set, if node deletion
-     * or merging invalidates all created edges.
-     * @see #getAddedEdges()
-     */
-    public final boolean hasAddedEdges() {
-        assert isFixed();
-        return this.createdEdges != null || hasMergeMap();
-    }
-
-    /** Returns the (possibly {@code null}) merge map. */
-    public final MergeMap getMergeMap() {
-        assert isFixed();
-        return this.mergeMap;
-    }
-
-    /** 
      * Indicates if there are mergers.
      * @see #getMergeMap() 
      */
@@ -541,36 +581,11 @@ public class RuleEffect extends DefaultFixable {
         return this.mergeMap != null;
     }
 
-    private final HostGraph source;
-    /** The part of the record that is generated. */
-    private final Fragment fragment;
-    /** Flag indicating that the created nodes are predefined. */
-    /** Collection of erased nodes. */
-    private HostNodeSet erasedNodes;
-    /** Flag indicating if {@link #erasedNodes} is currently an alias. */
-    private boolean erasedNodesAliased;
-    /** Collection of erased edges. */
-    private HostEdgeSet erasedEdges;
-    /** Flag indicating if {@link #erasedEdges} is currently an alias. */
-    private boolean erasedEdgesAliased;
-    /** Mapping from rule node creators to the corresponding created nodes. */
-    private Map<RuleNode,HostNode> createdNodeMap;
-    /** Flag indicating that the effect was initialised with predefined nodes. */
-    private final boolean nodesPredefined;
-    /** 
-     * List of created nodes, either predefined or built up during construction
-     */
-    private final List<HostNode> createdNodeList;
-    /** Index of the first unused element in {@link #createdNodeList}. */
-    private int createdNodeIndex;
-    /** Collection of created edges. */
-    private HostEdgeSet createdEdges;
-    /** Flag indicating if {@link #createdEdges} is currently an alias. */
-    private boolean createdEdgesAliased;
-    /** Mapping from merged nodes to their merge targets. */
-    private MergeMap mergeMap;
-    /** Flag indicating if {@link #mergeMap} is currently an alias. */
-    private boolean mergeMapAliased;
+    /** Returns the (possibly {@code null}) merge map. */
+    public final MergeMap getMergeMap() {
+        assert isFixed();
+        return this.mergeMap;
+    }
 
     /** Values indicating which part of the effect is recorded. */
     public static enum Fragment {
