@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="mergeSpecialise">
+    <graph edgemode="directed" edgeids="false" role="graph" id="combinedMerge-0-3">
         <attr name="transitionLabel">
             <string></string>
         </attr>
@@ -19,49 +19,29 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n2">
+        <node id="n8">
             <attr name="layout">
-                <string>28 53 356 15</string>
+                <string>114 98 8 15</string>
             </attr>
         </node>
         <node id="n0">
             <attr name="layout">
-                <string>134 110 9 15</string>
+                <string>208 97 9 15</string>
             </attr>
         </node>
-        <node id="n1">
-            <attr name="layout">
-                <string>233 112 8 15</string>
-            </attr>
-        </node>
-        <edge to="n2" from="n2">
+        <edge to="n8" from="n8">
             <attr name="label">
-                <string>rem:</string>
+                <string>type:C</string>
             </attr>
         </edge>
-        <edge to="n2" from="n2">
+        <edge to="n0" from="n8">
             <attr name="label">
-                <string>rem:The merge edge has been drawn from the old node to the new</string>
+                <string>a</string>
             </attr>
         </edge>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>type:#A</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n0">
-            <attr name="label">
-                <string>new:=</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>new:</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:B</string>
+                <string>type:A</string>
             </attr>
         </edge>
     </graph>

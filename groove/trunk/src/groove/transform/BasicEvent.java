@@ -44,7 +44,6 @@ import groove.util.cache.CacheReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -364,12 +363,12 @@ final public class BasicEvent extends
     /** Adds the created nodes to the application record. */
     private void recordCreatedNodes(RuleEffect record) {
         RuleNode[] creatorNodes = getRule().getCreatorNodes();
-        if (record.isNodesInitialised()) {
+        if (record.isNodesPredefined()) {
             record.addCreatorNodes(creatorNodes);
         } else {
             HostNode[] createdNodes =
-                getCreatedNodes(record.getSourceNodes(),
-                    record.getCreatedNodes());
+                getCreatedNodes(record.getSource().nodeSet(),
+                    record.getCreatedNodeMap());
             record.addCreatedNodes(creatorNodes, createdNodes);
         }
     }
@@ -405,15 +404,14 @@ final public class BasicEvent extends
         }
     }
 
-    /** Adds the created nodes to the application record. */
+    /** Records the effect of node merging in the application record. */
     private void recordMergeMap(RuleEffect record) {
         MergeMap lhsMergeMap = getCache().getMergeMap();
         Map<RuleNode,RuleNode> rhsMergers = getRule().getRhsMergeMap();
         if (rhsMergers.isEmpty()) {
             record.addMergeMap(lhsMergeMap);
         } else {
-            MergeMap rhsMergeMap = new MergeMap(lhsMergeMap.getFactory());
-            rhsMergeMap.putAll(lhsMergeMap);
+            MergeMap rhsMergeMap = lhsMergeMap.clone();
             RuleToHostMap anchorMap = getAnchorMap();
             Map<RuleNode,HostNode> createdNodeMap = record.getCreatedNodeMap();
             for (Map.Entry<RuleNode,RuleNode> rhsMergeEntry : rhsMergers.entrySet()) {
@@ -426,6 +424,11 @@ final public class BasicEvent extends
                 HostNode target = anchorMap.getNode(ruleTarget);
                 if (target == null) {
                     target = createdNodeMap.get(ruleTarget);
+                }
+                if (source == null && target != null) {
+                    rhsMergeMap.removeNode(target);
+                } else if (target == null) {
+                    rhsMergeMap.removeNode(source);
                 }
                 rhsMergeMap.putNode(source, target);
             }
@@ -512,11 +515,11 @@ final public class BasicEvent extends
      * with respect to a given set of source graph nodes and with respect
      * to a set of nodes that were already created.
      * @param sourceNodes the set of nodes in the source graph
-     * @param added the set of nodes already added with respect to the source graph
+     * @param created possibly {@code null} mapping from creators to created nodes
      * @return array of fresh nodes, in the order of the node creators
      */
     private HostNode[] getCreatedNodes(Set<? extends HostNode> sourceNodes,
-            Collection<HostNode> added) {
+            Map<RuleNode,HostNode> created) {
         HostNode[] result;
         RuleNode[] creatorNodes = getRule().getCreatorNodes();
         int count = creatorNodes.length;
@@ -524,8 +527,14 @@ final public class BasicEvent extends
             result = AbstractRuleEvent.EMPTY_NODE_ARRAY;
         } else {
             result = new HostNode[count];
-            if (added == null && getReuse() == AGGRESSIVE) {
-                added = new ArrayList<HostNode>();
+            Set<HostNode> current = null;
+            if (getReuse() == AGGRESSIVE) {
+                current = new HostNodeSet();
+                if (created != null) {
+                    for (HostNode n : created.values()) {
+                        current.add(n);
+                    }
+                }
             }
             for (int i = 0; i < count; i++) {
                 TypeNode type;
@@ -537,12 +546,12 @@ final public class BasicEvent extends
                         (TypeNode) getCoanchorMap().getVar(
                             creatorNodes[i].getTypeGuards().get(0).getVar());
                 }
-                result[i] = createNode(i, type, sourceNodes, added);
+                result[i] = createNode(i, type, sourceNodes, current);
             }
-        }
-        // normalise the result to a previously stored instance
-        if (getReuse() != NONE) {
-            result = getHostFactory().normalise(result);
+            // normalise the result to a previously stored instance
+            if (getReuse() != NONE) {
+                result = getHostFactory().normalise(result);
+            }
         }
         return result;
     }
@@ -561,7 +570,7 @@ final public class BasicEvent extends
      *        is guaranteed to be fresh with respect to these
      */
     private HostNode createNode(int creatorIndex, TypeNode type,
-            Set<? extends HostNode> sourceNodes, Collection<HostNode> current) {
+            Set<? extends HostNode> sourceNodes, Set<HostNode> current) {
         HostNode result = null;
         boolean added = false;
         List<HostNode> previous = getFreshNodes(creatorIndex);
@@ -592,7 +601,7 @@ final public class BasicEvent extends
     }
 
     private HostNode getFreshNode(Set<? extends HostNode> sourceNodes,
-            Collection<HostNode> current, TypeNode type) {
+            Set<HostNode> current, TypeNode type) {
         int size = sourceNodes.size();
         if (current != null) {
             size += current.size();

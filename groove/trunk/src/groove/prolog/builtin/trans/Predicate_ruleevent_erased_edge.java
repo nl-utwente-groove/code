@@ -44,7 +44,7 @@ public class Predicate_ruleevent_erased_edge extends TransPrologCode {
             RuleEvent event = getRuleEvent(args[0]);
             HostGraph graph = (HostGraph) getGraph(args[1]);
             RuleEffect record = event.getEffect(graph);
-            Iterable<HostEdge> erasedEdges = record.getErasedEdges();
+            Iterable<HostEdge> erasedEdges = record.getRemovedEdges();
             if (erasedEdges == null) {
                 return FAIL;
             } else {

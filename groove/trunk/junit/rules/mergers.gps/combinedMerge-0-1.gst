@@ -1,35 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="merge-a-b">
+    <graph edgemode="directed" edgeids="false" role="graph" id="combinedMerge-0-1">
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <attr name="$version">
-            <string>curly</string>
-        </attr>
-        <node id="n23">
+        <node id="n4">
             <attr name="layout">
-                <string>173 85 7 15</string>
+                <string>114 98 8 15</string>
             </attr>
         </node>
-        <node id="n24">
+        <node id="n5">
             <attr name="layout">
-                <string>270 86 15 15</string>
+                <string>208 97 8 15</string>
             </attr>
         </node>
-        <edge to="n23" from="n23">
+        <edge to="n4" from="n4">
             <attr name="label">
-                <string>flag:a</string>
+                <string>type:B</string>
             </attr>
         </edge>
-        <edge to="n24" from="n23">
+        <edge to="n5" from="n4">
             <attr name="label">
-                <string>new:=</string>
+                <string>a</string>
             </attr>
         </edge>
-        <edge to="n24" from="n24">
+        <edge to="n5" from="n5">
             <attr name="label">
-                <string>del:flag:b</string>
+                <string>type:C</string>
             </attr>
         </edge>
     </graph>

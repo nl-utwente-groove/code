@@ -19,13 +19,14 @@ package groove.lts;
 import groove.control.CtrlTransition;
 import groove.grammar.Rule;
 import groove.grammar.host.HostNode;
-import groove.grammar.host.HostNodeSet;
 import groove.transform.CompositeEvent;
 import groove.transform.MergeMap;
 import groove.transform.RuleEffect;
 import groove.transform.RuleEffect.Fragment;
 import groove.transform.RuleEvent;
 import groove.util.Reporter;
+
+import java.util.Set;
 
 /**
  * Provides functionality to add states and transitions to a GTS, based on known
@@ -121,6 +122,7 @@ public class MatchApplier {
             RuleEffect record =
                 new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
             event.recordEffect(record);
+            record.setFixed();
             addedNodes = record.getCreatedNodeArray();
         } else {
             addedNodes = EMPTY_NODE_ARRAY;
@@ -129,8 +131,10 @@ public class MatchApplier {
         if (ctrlTrans.target().getBoundVars().isEmpty()) {
             boundNodes = EMPTY_NODE_ARRAY;
         } else {
-            RuleEffect record = new RuleEffect(addedNodes, Fragment.NODE_ALL);
+            RuleEffect record =
+                new RuleEffect(source.getGraph(), addedNodes, Fragment.NODE_ALL);
             event.recordEffect(record);
+            record.setFixed();
             boundNodes = computeBoundNodes(source, event, ctrlTrans, record);
         }
         assert boundNodes.length == ctrlTrans.getTargetVarBinding().length;
@@ -150,13 +154,14 @@ public class MatchApplier {
         if (reuseCreatedNodes(source, match)) {
             RuleTransition parentOut = match.getRuleTransition();
             addedNodes = parentOut.getAddedNodes();
-        } else {
+        } else if (match.getRule().hasNodeCreators()) {
             RuleEffect record =
                 new RuleEffect(source.getGraph(), Fragment.NODE_CREATION);
             event.recordEffect(record);
-            addedNodes =
-                record.hasCreatedNodes() ? record.getCreatedNodeArray()
-                        : EMPTY_NODE_ARRAY;
+            record.setFixed();
+            addedNodes = record.getCreatedNodeArray();
+        } else {
+            addedNodes = EMPTY_NODE_ARRAY;
         }
         return new DefaultRuleTransition(source, match, addedNodes, target,
             symmetry);
@@ -198,7 +203,7 @@ public class MatchApplier {
         Rule rule = event.getRule();
         int anchorSize = rule.getAnchor().size();
         HostNode[] createdNodes = record.getCreatedNodeArray();
-        HostNodeSet erasedNodes = record.getErasedNodes();
+        Set<HostNode> removedNodes = record.getRemovedNodes();
         MergeMap mergeMap = record.getMergeMap();
         for (int i = 0; i < valueCount; i++) {
             int fromI = varBinding[i];
@@ -210,7 +215,7 @@ public class MatchApplier {
                     // the parameter is not a creator node
                     HostNode sourceValue =
                         (HostNode) event.getAnchorImage(binding);
-                    value = getNodeImage(sourceValue, mergeMap, erasedNodes);
+                    value = getNodeImage(sourceValue, mergeMap, removedNodes);
                 } else {
                     // the parameter is a creator node
                     value = createdNodes[binding - anchorSize];
@@ -218,7 +223,7 @@ public class MatchApplier {
             } else {
                 // this is an input parameter of the rule
                 HostNode sourceValue = parentValues[fromI];
-                value = getNodeImage(sourceValue, mergeMap, erasedNodes);
+                value = getNodeImage(sourceValue, mergeMap, removedNodes);
             }
             result[i] = value;
         }
@@ -226,9 +231,9 @@ public class MatchApplier {
     }
 
     private HostNode getNodeImage(HostNode key, MergeMap mergeMap,
-            HostNodeSet erasedNodes) {
+            Set<HostNode> removedNodes) {
         if (mergeMap == null) {
-            if (erasedNodes == null || !erasedNodes.contains(key)) {
+            if (removedNodes == null || !removedNodes.contains(key)) {
                 return key;
             } else {
                 return null;

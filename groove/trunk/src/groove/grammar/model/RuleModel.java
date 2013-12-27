@@ -542,6 +542,19 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             return this.positive;
         }
 
+        /** 
+         * Indicates if this or any parent level is universally quantified.
+         * This implies that nodes on this level may be matched multiple times.
+         */
+        public boolean isUniversal() {
+            testFixed(true);
+            boolean result = this.operator == Op.FORALL;
+            if (!result && !isTopLevel()) {
+                result = getParent().isUniversal();
+            }
+            return result;
+        }
+
         @Override
         public String toString() {
             return this.index.toString();
@@ -1828,6 +1841,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     private class Level3 {
         public Level3(Level2 origin, Level3 parent,
                 RuleGraphMorphism globalTypeMap) throws FormatException {
+            this.parent = parent;
             this.factory = globalTypeMap.getFactory();
             this.index = origin.index;
             this.matchCountImage = origin.matchCountImage;
@@ -1860,7 +1874,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                         Groove.toString(lhsTypes.toArray(), "", "", ", "), var);
                 }
             }
+            this.errors.throwException();
+            for (RuleGraph nac : origin.nacs) {
+                this.nacs.add(toTypedGraph(nac, this.typeMap, null));
+            }
             // check for correct type specialisation
+            // this has to be done after the NACs have been added
             try {
                 Set<RuleNode> parentNodes = new HashSet<RuleNode>();
                 for (RuleNode origParentNode : parentTypeMap.nodeMap().keySet()) {
@@ -1869,10 +1888,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 checkTypeSpecialisation(parentNodes, this.lhs, this.rhs);
             } catch (FormatException exc) {
                 this.errors.addAll(transferErrors(exc.getErrors(), this.typeMap));
-            }
-            this.errors.throwException();
-            for (RuleGraph nac : origin.nacs) {
-                this.nacs.add(toTypedGraph(nac, this.typeMap, null));
             }
             this.errors.throwException();
             for (Map.Entry<RuleNode,Color> colorEntry : origin.colorMap.entrySet()) {
@@ -1953,31 +1968,31 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                 }
             }
             // check for ambiguous mergers
+            List<RuleEdge> mergers = new ArrayList<RuleEdge>();
             Set<RuleNode> mergedNodes = new HashSet<RuleNode>();
             for (RuleEdge edge : this.rhs.edgeSet()) {
                 if (isMerger(edge)) {
+                    mergers.add(edge);
                     RuleNode source = edge.source();
                     TypeNode sourceType = source.getType();
                     RuleNode target = edge.target();
                     TypeNode targetType = target.getType();
-                    if (!source.isSharp()) {
-                        errors.add("Merged %s-node must be sharply typed",
-                            sourceType.label().text(), source);
-                    } else if (parentNodes.contains(source)
-                        && !target.isSharp()) {
+                    if (!targetType.getSupertypes().containsAll(
+                        source.getMatchingTypes())) {
                         errors.add(
-                            "Merged %s-node must be on same quantification level as merge target",
+                            "Actual type of merged %s-node may be subtype of merge target",
+                            sourceType.label().text(), edge);
+                    } else if (!mergedNodes.add(source)) {
+                        errors.add("%s-node is merged with two distinct nodes",
                             sourceType.label().text(), source);
+                    } else if (isUniversal(target) && !haveMinType(target)) {
+                        errors.add(
+                            "Actual target types of %s-merger may be ambiguous",
+                            sourceType.label().text(), edge);
                     } else if (!getType().isSubtype(targetType, sourceType)) {
                         errors.add("Merged %s-node must be supertype of %s",
                             sourceType.label().text(),
                             targetType.label().text(), source);
-                    } else if (!target.isSharp()) {
-                        if (!mergedNodes.add(edge.source())) {
-                            errors.add(
-                                "%s-node is merged with two distinct non-sharp nodes",
-                                sourceType.label().text(), source);
-                        }
                     } else if (source.getType().isDataType()) {
                         errors.add("Primitive %s-node can't be merged",
                             sourceType.label().text(), source);
@@ -1991,7 +2006,129 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     }
                 }
             }
+            // check for non-injectively matched merge sources
+            if (!getGrammar().getProperties().isInjective()) {
+                outer: for (RuleEdge merger1 : mergers) {
+                    for (RuleEdge merger2 : mergers) {
+                        // only check lower left half of matrix
+                        if (merger1 == merger2) {
+                            continue outer;
+                        }
+                        RuleNode source1 = merger1.source();
+                        RuleNode source2 = merger2.source();
+                        RuleNode target1 = merger1.target();
+                        RuleNode target2 = merger2.target();
+                        if (!injective(source1, source2)
+                            && !target1.equals(target2)
+                            && !haveMinType(target1, target2)) {
+                            errors.add(
+                                "Non-injectively matched mergers have ambiguous target types",
+                                merger1, merger2);
+                        }
+                    }
+                }
+            }
             errors.throwException();
+        }
+
+        /** Tests if a given node is matched on a universal level. */
+        private boolean isUniversal(RuleNode node) {
+            Level3 highestLevel = this;
+            Level3 parent = this.parent;
+            while (parent != null && parent.rhs.containsNode(node)) {
+                highestLevel = parent;
+                parent = highestLevel.parent;
+            }
+            return highestLevel.getIndex().isUniversal();
+        }
+
+        private boolean injective(RuleNode n1, RuleNode n2) {
+            boolean result = false;
+            // check for type overlap
+            Set<TypeNode> types = new HashSet<TypeNode>(n1.getMatchingTypes());
+            types.retainAll(n2.getMatchingTypes());
+            result = types.isEmpty();
+            if (!result) {
+                // check for != edges
+                RuleLabel injection = new RuleLabel(RegExpr.empty().neg());
+                for (RuleEdge edge : this.lhs.edgeSet(injection)) {
+                    if (edge.source().equals(n1) && edge.target().equals(n2)
+                        || edge.source().equals(n2) && edge.target().equals(n1)) {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+            if (!result) {
+                // check for NACs
+                for (RuleGraph nac : this.nacs) {
+                    Set<RuleNode> nacNodes = nac.nodeSet();
+                    Set<RuleEdge> nacEdges = nac.edgeSet();
+                    if (nacNodes.size() == 2 && nacNodes.contains(n1)
+                        && nacNodes.contains(n2) && nacEdges.size() == 1
+                        && nacEdges.iterator().next().label().isEmpty()) {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+            if (!result && this.parent != null
+                && this.parent.lhs.containsNode(n1)
+                && this.parent.lhs.containsNode(n2)) {
+                result = this.parent.injective(n1, n2);
+            }
+            return result;
+        }
+
+        /** Tests if the host nodes that can be matched non-injectively by
+         * a given non-empty set of rule nodes are certain to have a minimum type. */
+        private boolean haveMinType(RuleNode... mergeTargets) {
+            boolean result = true;
+            // collect the common type label variables
+            Set<LabelVar> commonVars = null;
+            if (mergeTargets.length == 1) {
+                commonVars = mergeTargets[0].getVars();
+            } else {
+                for (RuleNode node : mergeTargets) {
+                    if (commonVars == null) {
+                        commonVars = new HashSet<LabelVar>(node.getVars());
+                    } else {
+                        commonVars.retainAll(node.getVars());
+                    }
+                }
+            }
+            // if there is a common variable, the types are fixed and equal
+            if (commonVars.isEmpty()) {
+                // take the union of all merge target types
+                Set<TypeNode> allTypes = null;
+                if (mergeTargets.length == 1) {
+                    allTypes = mergeTargets[0].getMatchingTypes();
+                } else {
+                    for (RuleNode node : mergeTargets) {
+                        if (allTypes == null) {
+                            allTypes =
+                                new HashSet<TypeNode>(node.getMatchingTypes());
+                        } else {
+                            allTypes.addAll(node.getMatchingTypes());
+                        }
+                    }
+                }
+                // check that the set of types is linearly ordered
+                outer: for (TypeNode one : allTypes) {
+                    for (TypeNode two : allTypes) {
+                        // we only check the lower left part of the matrix
+                        if (two == one) {
+                            continue outer;
+                        }
+                        if (!one.getSubtypes().contains(two)
+                            && !one.getSupertypes().contains(two)) {
+                            result = false;
+                            break outer;
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         /** Tests if a given RHS edge is a merger. */
@@ -2007,6 +2144,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             return new RuleGraph(name, this.factory);
         }
 
+        private final Level3 parent;
         private final RuleFactory factory;
         /** Index of this level. */
         private final Index index;

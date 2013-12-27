@@ -21,6 +21,7 @@ import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
 import groove.grammar.host.HostNodeSet;
 import groove.grammar.host.ValueNode;
+import groove.grammar.type.TypeNode;
 import groove.graph.AElementMap;
 import groove.graph.Morphism;
 import groove.graph.Node;
@@ -55,6 +56,21 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
         return internalToExternal(super.getNode(key), (HostNode) key);
     }
 
+    @Override
+    public void putAll(AElementMap<HostNode,HostEdge,HostNode,HostEdge> other) {
+        assert other instanceof MergeMap;
+        // first copy the edges
+        for (Map.Entry<HostEdge,? extends HostEdge> edgeEntry : other.edgeMap().entrySet()) {
+            HostEdge oldTarget =
+                putEdge(edgeEntry.getKey(), edgeEntry.getValue());
+            assert oldTarget == null : "Edges should not be remapped during merging";
+        }
+        // override to make sure putNode is called
+        for (Map.Entry<HostNode,? extends HostNode> nodeEntry : other.nodeMap().entrySet()) {
+            putNode(nodeEntry.getKey(), nodeEntry.getValue());
+        }
+    }
+
     /**
      * In this implementation, adding a key-value pair means <i>merging</i> the
      * key and value. If the key and/or value are currently already in the map,
@@ -86,15 +102,43 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
         return keyImage;
     }
 
-    @Override
-    public void putAll(AElementMap<HostNode,HostEdge,HostNode,HostEdge> other) {
-        // override to make sure putNode is called
-        for (Map.Entry<HostNode,? extends HostNode> nodeEntry : other.nodeMap().entrySet()) {
-            putNode(nodeEntry.getKey(), nodeEntry.getValue());
+    /**
+     * Merges two nodes, one of which will be the key and the other the image.
+     * This means that the key and its current
+     * pre-images will be mapped to the image.
+     * @param n1 one of the nodes to be merged; should not be <code>null</code>
+     * @param n2 the other node to be merged; should not be <code>null</code>
+     * @return the node chosen as image
+     */
+    private HostNode merge(HostNode n1, HostNode n2) {
+        // determine key and image
+        HostNode key;
+        HostNode image;
+        // choose node with most specialised type as image
+        TypeNode oldType = n1.getType();
+        TypeNode newType = n2.getType();
+        if (newType.getSubtypes().contains(oldType)) {
+            key = n2;
+            image = n1;
+        } else if (oldType.getSubtypes().contains(newType)) {
+            key = n1;
+            image = n2;
+        } else {
+            throw new IllegalStateException(String.format(
+                "Merge targets %s and %s have incompatible types", n1, n2));
         }
-        for (Map.Entry<HostEdge,? extends HostEdge> edgeEntry : other.edgeMap().entrySet()) {
-            putEdge(edgeEntry.getKey(), edgeEntry.getValue());
+        super.putNode(key, image);
+        this.mergeTargets.add(image);
+        // now redirect all pre-images of key, if necessary
+        if (this.mergeTargets.remove(key)) {
+            // map all pre-images of key to image
+            for (Map.Entry<HostNode,HostNode> entry : nodeMap().entrySet()) {
+                if (entry.getValue() == key) {
+                    setValue(entry, image);
+                }
+            }
         }
+        return image;
     }
 
     /**
@@ -109,28 +153,6 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
             return key;
         } else {
             return super.mapEdge(key);
-        }
-    }
-
-    /**
-     * Merges a given key and image. This means that the key and its current
-     * pre-images will be mapped to the image.
-     * @param key the key to be merged; should not be <code>null</code>
-     * @param image the merge image; should not be <code>null</code>
-     */
-    private void merge(HostNode key, HostNode image) {
-        assert key != null && image != null : "Merging " + key + " and "
-            + image + " not correct: neither should be null";
-        super.putNode(key, image);
-        this.mergeTargets.add(image);
-        // now redirect all pre-images of key, if necessary
-        if (this.mergeTargets.remove(key)) {
-            // map all pre-images of key to image
-            for (Map.Entry<HostNode,HostNode> entry : nodeMap().entrySet()) {
-                if (entry.getValue() == key) {
-                    setValue(entry, image);
-                }
-            }
         }
     }
 
@@ -199,6 +221,12 @@ public class MergeMap extends Morphism<HostNode,HostEdge> {
         } else {
             return value;
         }
+    }
+
+    /* Specialises the return type. */
+    @Override
+    public MergeMap clone() {
+        return (MergeMap) super.clone();
     }
 
     @Override
