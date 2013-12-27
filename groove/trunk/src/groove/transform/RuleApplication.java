@@ -27,9 +27,6 @@ import groove.grammar.host.ValueNode;
 import groove.grammar.rule.Anchor;
 import groove.grammar.rule.AnchorKey;
 import groove.grammar.rule.RuleNode;
-import groove.grammar.rule.RuleToHostMap;
-import groove.graph.Edge;
-import groove.graph.GGraph;
 import groove.match.TreeMatch;
 import groove.util.Property;
 import groove.util.Visitor;
@@ -77,11 +74,23 @@ public class RuleApplication implements DeltaApplier {
         this.rule = event.getRule();
         this.source = source;
         this.addedNodes = coanchorImage;
-        if (event instanceof BasicEvent) {
-            this.anchorMap = ((BasicEvent) event).getAnchorMap();
-        }
         assert testEvent(event, source) : String.format(
             "Event error for %s applied to %s", event, source);
+    }
+
+    /**
+     * Reconstructs a derivation on the basis of a given rule event, host
+     * graph and target graph, and created nodes.
+     * @param event the production rule instance involved
+     * @param source the host graph to which the rule is to be applied
+     * @param coanchorImage the created nodes, in the order of the rule's
+     *        coanchor. If <code>null</code>, the coanchor image has to be
+     *        computed from the source graph.
+     */
+    public RuleApplication(RuleEvent event, HostGraph source, HostGraph target,
+            HostNode[] coanchorImage) {
+        this(event, source, coanchorImage);
+        this.target = target;
     }
 
     /**
@@ -104,26 +113,11 @@ public class RuleApplication implements DeltaApplier {
             };
         Finder<TreeMatch> matchFinder = Visitor.newFinder(matchContainsProof);
         boolean result =
-            this.rule.getEventMatcher().traverse(source, event.getAnchorMap(),
+            getRule().getEventMatcher().traverse(source, event.getAnchorMap(),
                 matchFinder) != null;
         eventFinder.dispose();
         matchFinder.dispose();
         return result;
-    }
-
-    /**
-     * Reconstructs a derivation on the basis of a given rule event, host
-     * graph and target graph, and created nodes.
-     * @param event the production rule instance involved
-     * @param source the host graph to which the rule is to be applied
-     * @param coanchorImage the created nodes, in the order of the rule's
-     *        coanchor. If <code>null</code>, the coanchor image has to be
-     *        computed from the source graph.
-     */
-    public RuleApplication(RuleEvent event, HostGraph source, HostGraph target,
-            HostNode[] coanchorImage) {
-        this(event, source, coanchorImage);
-        this.target = target;
     }
 
     /**
@@ -134,11 +128,32 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /**
+     * The source graph of this derivation. May not be <tt>null</tt>.
+     */
+    private final HostGraph source;
+
+    /**
      * Returns the rule for which this is an application.
      */
     public Rule getRule() {
         return this.rule;
     }
+
+    /**
+     * Matching from the rule's lhs to the source graph.
+     */
+    private final Rule rule;
+
+    /** Returns the (possibly {@code null}) array of added nodes for the rule application. */
+    private HostNode[] getAddedNodes() {
+        return this.addedNodes;
+    }
+
+    /**
+     * The images of the creator nodes. This is part of the information needed
+     * to (re)construct the derivation target.
+     */
+    private final HostNode[] addedNodes;
 
     /**
      * Returns a target graph created as a result of the application. The target
@@ -149,7 +164,7 @@ public class RuleApplication implements DeltaApplier {
             if (this.rule.isModifying()) {
                 this.target = computeTarget();
             } else {
-                this.target = this.source;
+                this.target = getSource();
             }
         }
         return this.target;
@@ -164,6 +179,21 @@ public class RuleApplication implements DeltaApplier {
         target.setFixed();
         return target;
     }
+
+    /**
+     * Callback factory method for creating the target graph of an application.
+     * This implementation clones the source.
+     * @see HostGraph#clone()
+     */
+    protected HostGraph createTarget() {
+        return getSource().clone();
+    }
+
+    /**
+     * The target graph of this derivation, created lazily in
+     * {@link #computeTarget()}.
+     */
+    private HostGraph target;
 
     /**
      * Returns the match of the rule's LHS in the source graph of this
@@ -184,6 +214,12 @@ public class RuleApplication implements DeltaApplier {
     private Proof computeMatch() {
         return getEvent().getMatch(this.source);
     }
+
+    /**
+     * Matching from the rule's LHS to the source. Created lazily in
+     * {@link #getMatch()}.
+     */
+    private Proof match;
 
     /**
      * Returns the transformation morphism underlying this derivation.
@@ -226,6 +262,36 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /**
+     * Callback factory method to create a morphism from source to target graph.
+     * Note that this is <i>not</i> the same kind of object as the matching.
+     */
+    private HostGraphMorphism createMorphism() {
+        return getSource().getFactory().createMorphism();
+    }
+
+    /**
+     * Underlying morphism from the source to the target.
+     */
+    private HostGraphMorphism morphism;
+
+    private RuleEffect getEffect() {
+        if (this.effect == null) {
+            // use the predefined created nodes, if available
+            if (getAddedNodes() == null) {
+                this.effect = new RuleEffect(getSource());
+            } else {
+                this.effect = new RuleEffect(getSource(), getAddedNodes());
+            }
+            getEvent().recordEffect(this.effect);
+            this.effect.setFixed();
+        }
+        return this.effect;
+    }
+
+    /** The application record. */
+    private RuleEffect effect;
+
+    /**
      * Applies the rule to a given delta target. This is presumably the host
      * graph to which the underlying rule is to be applied. The source should
      * coincide with that for which the footprint was originally created
@@ -233,7 +299,7 @@ public class RuleApplication implements DeltaApplier {
      *        performed
      */
     public void applyDelta(DeltaTarget target) {
-        if (this.rule.isModifying()) {
+        if (getRule().isModifying()) {
             RuleEffect record = getEffect();
             removeEdges(record, target);
             removeNodes(record, target);
@@ -241,20 +307,6 @@ public class RuleApplication implements DeltaApplier {
             addEdges(record, target);
             removeIsolatedValueNodes(target);
         }
-    }
-
-    private RuleEffect getEffect() {
-        if (this.record == null) {
-            // use the predefined created nodes, if available
-            if (this.addedNodes == null) {
-                this.record = new RuleEffect(getSource());
-            } else {
-                this.record = new RuleEffect(getSource(), this.addedNodes);
-            }
-            getEvent().recordEffect(this.record);
-            this.record.setFixed();
-        }
-        return this.record;
     }
 
     /**
@@ -332,8 +384,17 @@ public class RuleApplication implements DeltaApplier {
      */
     private void addEdges(RuleEffect record, DeltaTarget target) {
         if (record.hasAddedEdges()) {
-            for (HostEdge createdEdge : record.getAddedEdges()) {
-                addEdge(target, createdEdge);
+            for (HostEdge edge : record.getAddedEdges()) {
+                HostNode targetNode = edge.target();
+                if (targetNode instanceof ValueNode) {
+                    ValueNode valueNode = (ValueNode) targetNode;
+                    if (this.source.containsNode(targetNode)) {
+                        removeIsolatedValueNode(valueNode);
+                    } else if (registerAddedValueNode(valueNode)) {
+                        target.addNode(targetNode);
+                    }
+                }
+                target.addEdge(edge);
             }
         }
     }
@@ -365,8 +426,8 @@ public class RuleApplication implements DeltaApplier {
     @Override
     public String toString() {
         StringBuffer result =
-            new StringBuffer("Derivation for rule " + getRule().getFullName());
-        result.append("\nMatching:\n  " + this.anchorMap);
+            new StringBuffer("Application of rule " + getRule().getFullName());
+        result.append("\nEffect: " + getEffect());
         return result.toString();
     }
 
@@ -378,40 +439,9 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /**
-     * Callback factory method to create a morphism from source to target graph.
-     * Note that this is <i>not</i> the same kind of object as the matching.
+     * The event from which we get the rule and anchor image.
      */
-    private HostGraphMorphism createMorphism() {
-        return getSource().getFactory().createMorphism();
-    }
-
-    /**
-     * Callback factory method for creating the target graph of an application.
-     * This implementation clones the source.
-     * @see HostGraph#clone()
-     */
-    protected HostGraph createTarget() {
-        return getSource().clone();
-    }
-
-    /**
-     * Adds an edge to a delta target, if the edge is not <code>null</code>
-     * and not already in the source graph. Optimises by trying to call
-     * {@link GGraph#addEdge(Edge)} if the target is an
-     * {@link GGraph}.
-     */
-    private void addEdge(DeltaTarget target, HostEdge edge) {
-        HostNode targetNode = edge.target();
-        if (targetNode instanceof ValueNode) {
-            ValueNode valueNode = (ValueNode) targetNode;
-            if (this.source.containsNode(targetNode)) {
-                removeIsolatedValueNode(valueNode);
-            } else if (registerAddedValueNode(valueNode)) {
-                target.addNode(targetNode);
-            }
-        }
-        target.addEdge(edge);
-    }
+    private final RuleEvent event;
 
     /**
      * Lazily creates and returns the set of remaining incident edges of a given
@@ -428,6 +458,12 @@ public class RuleApplication implements DeltaApplier {
         }
         return result;
     }
+
+    /**
+     * A mapping from target value nodes of erased edges to their remaining
+     * incident edges, used to judge spurious value nodes.
+     */
+    private Map<ValueNode,HostEdgeSet> valueNodeEdgesMap;
 
     /**
      * Adds a node to the set of value nodes that have become isolated
@@ -449,6 +485,9 @@ public class RuleApplication implements DeltaApplier {
         }
     }
 
+    /** The set of value nodes that have become isolated due to edge erasure. */
+    private Set<ValueNode> isolatedValueNodes;
+
     /**
      * Registers that a value node has been added.
      * @return {@code true} if this is a newly registered node
@@ -459,6 +498,9 @@ public class RuleApplication implements DeltaApplier {
         }
         return this.addedValueNodes.add(node);
     }
+
+    /** The set of value nodes that have been added due to edge creation. */
+    private Set<ValueNode> addedValueNodes;
 
     /** Returns the relation between rule nodes and target graph nodes. */
     public Map<RuleNode,HostNodeSet> getComatch() {
@@ -514,54 +556,8 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /**
-     * Matching from the rule's lhs to the source graph.
-     */
-    private final Rule rule;
-    /**
-     * The source graph of this derivation. May not be <tt>null</tt>.
-     */
-    private final HostGraph source;
-    /**
-     * Matching from the rule's lhs to the source graph.
-     */
-    private RuleToHostMap anchorMap;
-    /**
-     * The event from which we get the rule and anchor image.
-     */
-    private final RuleEvent event;
-    /** The application record. */
-    private RuleEffect record;
-    /**
      * Mapping from selected RHS elements to target graph. The comatch is
      * constructed in the course of rule application.
      */
     private Map<RuleNode,HostNodeSet> comatch;
-    /**
-     * The target graph of this derivation, created lazily in
-     * {@link #computeTarget()}.
-     */
-    private HostGraph target;
-    /**
-     * Matching from the rule's LHS to the source. Created lazily in
-     * {@link #getMatch()}.
-     */
-    private Proof match;
-    /**
-     * Underlying morphism from the source to the target.
-     */
-    private HostGraphMorphism morphism;
-    /**
-     * The images of the creator nodes. This is part of the information needed
-     * to (re)construct the derivation target.
-     */
-    private HostNode[] addedNodes;
-    /**
-     * A mapping from target value nodes of erased edges to their remaining
-     * incident edges, used to judge spurious value nodes.
-     */
-    private Map<ValueNode,HostEdgeSet> valueNodeEdgesMap;
-    /** The set of value nodes that have become isolated due to edge erasure. */
-    private Set<ValueNode> isolatedValueNodes;
-    /** The set of value nodes that have been added due to edge creation. */
-    private Set<ValueNode> addedValueNodes;
 }

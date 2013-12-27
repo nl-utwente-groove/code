@@ -56,7 +56,7 @@ import java.util.Set;
  * @version $Revision$ $Date: 2008-03-04 11:01:33 $
  */
 final public class BasicEvent extends
-        AbstractRuleEvent<Rule,BasicEvent.SPOEventCache> {
+        AbstractRuleEvent<Rule,BasicEvent.BasicEventCache> {
     /**
      * Constructs a new event on the basis of a given production rule and anchor
      * map. A further parameter determines whether information should be stored
@@ -87,6 +87,29 @@ final public class BasicEvent extends
     }
 
     /**
+     * Returns the derivation record associated with this event. May be
+     * <code>null</code>.
+     */
+    public HostFactory getHostFactory() {
+        return this.hostFactory;
+    }
+
+    /** The factory for fresh host nodes. */
+    private final HostFactory hostFactory;
+
+    /** 
+     * Returns the store of previously created fresh nodes.
+     */
+    private List<List<HostNode>> getFreshNodeList() {
+        return this.freshNodeList;
+    }
+
+    /**
+     * The list of nodes created by {@link #createNode(TypeNode)}.
+     */
+    private final List<List<HostNode>> freshNodeList;
+
+    /**
      * Returns a map from the rule anchors to elements of the host graph. 
      * @see Rule#getAnchor()
      */
@@ -113,9 +136,9 @@ final public class BasicEvent extends
 
     @Override
     Reuse getReuse() {
-        if (this.freshNodeList == NO_REUSE_LIST) {
+        if (getFreshNodeList() == NO_REUSE_LIST) {
             return NONE;
-        } else if (this.freshNodeList == AGGRESIVE_REUSE_LIST) {
+        } else if (getFreshNodeList() == AGGRESIVE_REUSE_LIST) {
             return AGGRESSIVE;
         } else {
             return EVENT;
@@ -250,6 +273,11 @@ final public class BasicEvent extends
     }
 
     /**
+     * The array of source elements that form the anchor image.
+     */
+    private final AnchorValue[] anchorImage;
+
+    /**
      * Callback method to lazily compute the set of source elements that form
      * the anchor image.
      */
@@ -304,10 +332,12 @@ final public class BasicEvent extends
     public boolean disables(RuleEvent other) {
         boolean result = false;
         Set<AnchorValue> anchorImage = ((BasicEvent) other).getAnchorImageSet();
+        // we have conflict if any anchor image node has been erased
         Iterator<HostNode> nodeIter = getErasedNodes().iterator();
         while (!result && nodeIter.hasNext()) {
             result = anchorImage.contains(nodeIter.next());
         }
+        // we have conflict if any anchor image edge has been erased
         Iterator<HostEdge> edgeIter = getErasedEdges().iterator();
         while (!result && edgeIter.hasNext()) {
             result = anchorImage.contains(edgeIter.next());
@@ -424,11 +454,6 @@ final public class BasicEvent extends
                 HostNode target = anchorMap.getNode(ruleTarget);
                 if (target == null) {
                     target = createdNodeMap.get(ruleTarget);
-                }
-                if (source == null && target != null) {
-                    rhsMergeMap.removeNode(target);
-                } else if (target == null) {
-                    rhsMergeMap.removeNode(source);
                 }
                 rhsMergeMap.putNode(source, target);
             }
@@ -646,48 +671,21 @@ final public class BasicEvent extends
     }
 
     /**
-     * Returns the derivation record associated with this event. May be
-     * <code>null</code>.
-     */
-    public HostFactory getHostFactory() {
-        return this.hostFactory;
-    }
-
-    /**
      * Returns the list of all previously created fresh nodes. Returns
      * <code>null</code> if the reuse policy is set to <code>false</code>.
      */
     private List<HostNode> getFreshNodes(int creatorIndex) {
         if (getReuse() == EVENT) {
-            return this.freshNodeList.get(creatorIndex);
+            return getFreshNodeList().get(creatorIndex);
         } else {
             return null;
         }
     }
 
-    /**
-     * Callback factory method to create the rule-to-host map.
-     * @return a fresh instance of {@link RuleToHostMap}
-     */
-    private RuleToHostMap createRuleToHostMap() {
-        return getHostFactory().createRuleToHostMap();
-    }
-
     @Override
-    protected SPOEventCache createCache() {
-        return new SPOEventCache();
+    protected BasicEventCache createCache() {
+        return new BasicEventCache();
     }
-
-    /** The derivation record that has created this event, if any. */
-    private final HostFactory hostFactory;
-    /**
-     * The array of source elements that form the anchor image.
-     */
-    private final AnchorValue[] anchorImage;
-    /**
-     * The list of nodes created by {@link #createNode(TypeNode)}.
-     */
-    private final List<List<HostNode>> freshNodeList;
 
     /**
      * Returns the number of nodes that were created during rule application.
@@ -725,12 +723,12 @@ final public class BasicEvent extends
     static private List<List<HostNode>> AGGRESIVE_REUSE_LIST =
         new ArrayList<List<HostNode>>();
     /** Template reference to create empty caches. */
-    static private final CacheReference<SPOEventCache> reference =
-        CacheReference.<SPOEventCache>newInstance(false);
+    static private final CacheReference<BasicEventCache> reference =
+        CacheReference.<BasicEventCache>newInstance(false);
 
-    /** Cache holding the anchor map. */
-    final class SPOEventCache extends
-            AbstractRuleEvent<Rule,SPOEventCache>.AbstractEventCache {
+    /** Cache holding auxiliary data structures for the event. */
+    final class BasicEventCache extends
+            AbstractRuleEvent<Rule,BasicEventCache>.AbstractEventCache {
         /**
          * @return Returns the anchorMap.
          */
@@ -765,6 +763,11 @@ final public class BasicEvent extends
         }
 
         /**
+         * Matching from the rule's lhs to the source graph.
+         */
+        private RuleToHostMap anchorMap;
+
+        /**
          * Returns the set of source elements that form the anchor image.
          */
         Set<AnchorValue> getAnchorImageSet() {
@@ -776,6 +779,11 @@ final public class BasicEvent extends
             }
             return this.anchorImageSet;
         }
+
+        /**
+         * The set of source elements that form the anchor image.
+         */
+        private Set<AnchorValue> anchorImageSet;
 
         /**
          * Constructs a map from the reader nodes of the RHS that are endpoints
@@ -825,6 +833,11 @@ final public class BasicEvent extends
         }
 
         /**
+         * Matching from the rule's rhs to the target graph.
+         */
+        private RuleToHostMap coanchorMap;
+
+        /**
          * Returns a mapping from source to source graph nodes, dictated by the
          * LHS mergers and erasers in the rule.
          * @return an {@link MergeMap} that maps nodes of the source that are
@@ -862,6 +875,13 @@ final public class BasicEvent extends
         }
 
         /**
+         * Minimal mapping from the source graph to target graph to reconstruct
+         * the underlying morphism. The merge map is constructed in the course
+         * of rule application.
+         */
+        private MergeMap mergeMap;
+
+        /**
          * Returns the pre-computed and cached set of explicitly erased edges.
          */
         final HostEdgeSet getErasedEdges() {
@@ -872,6 +892,11 @@ final public class BasicEvent extends
         }
 
         /**
+         * Set of edges from the source that are to be erased in the target.
+         */
+        private HostEdgeSet erasedEdgeSet;
+
+        /**
          * Returns the pre-computed and cached set of explicitly erased edges.
          */
         final HostEdgeSet getSimpleCreatedEdges() {
@@ -880,6 +905,11 @@ final public class BasicEvent extends
             }
             return this.simpleCreatedEdgeSet;
         }
+
+        /**
+         * Images of the simple creator edges.
+         */
+        private HostEdgeSet simpleCreatedEdgeSet;
 
         /**
          * Callback factory method to create the merge map object for
@@ -903,31 +933,13 @@ final public class BasicEvent extends
          * Set of nodes from the source that are to be erased in the target.
          */
         private HostNodeSet erasedNodeSet;
+
         /**
-         * Matching from the rule's lhs to the source graph.
+         * Callback factory method to create the rule-to-host map.
+         * @return a fresh instance of {@link RuleToHostMap}
          */
-        private RuleToHostMap anchorMap;
-        /**
-         * The set of source elements that form the anchor image.
-         */
-        private Set<AnchorValue> anchorImageSet;
-        /**
-         * Matching from the rule's rhs to the target graph.
-         */
-        private RuleToHostMap coanchorMap;
-        /**
-         * Minimal mapping from the source graph to target graph to reconstruct
-         * the underlying morphism. The merge map is constructed in the course
-         * of rule application.
-         */
-        private MergeMap mergeMap;
-        /**
-         * Set of edges from the source that are to be erased in the target.
-         */
-        private HostEdgeSet erasedEdgeSet;
-        /**
-         * Images of the simple creator edges.
-         */
-        private HostEdgeSet simpleCreatedEdgeSet;
+        private RuleToHostMap createRuleToHostMap() {
+            return getHostFactory().createRuleToHostMap();
+        }
     }
 }
