@@ -31,11 +31,11 @@ import org.junit.Test;
 /**
  * @author Ruud Welling
  */
-public class TestConfluence {
+public class TestConfluenceWithAttributes {
 
     @Test
-    public void testConfluence() {
-        String grammarStr = "junit/criticalpair/basic.gps/";
+    public void testConfluenceWithAttributes() {
+        String grammarStr = "junit/criticalpair/attributes.gps/";
         File grammarFile = new File(grammarStr);
         GrammarModel view = null;
         Grammar grammar = null;

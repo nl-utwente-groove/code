@@ -23,7 +23,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({TestDeleteUse.class, TestDeleteUseWithAttributes.class,
-    TestConfluence.class})
+    TestConfluence.class, TestConfluenceWithAttributes.class})
 public class AllCriticalPairTests {
     // Empty by design.
 }
