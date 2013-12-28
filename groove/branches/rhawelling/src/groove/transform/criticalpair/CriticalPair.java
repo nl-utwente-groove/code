@@ -17,8 +17,13 @@
 package groove.transform.criticalpair;
 
 import groove.algebra.Constant;
+import groove.grammar.Grammar;
 import groove.grammar.Rule;
 import groove.grammar.host.DefaultHostGraph;
+import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostGraphMorphism;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
 import groove.grammar.rule.DefaultRuleNode;
 import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleEdge;
@@ -26,7 +31,11 @@ import groove.grammar.rule.RuleGraph;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.rule.VariableNode;
+import groove.transform.BasicEvent;
+import groove.transform.RuleApplication;
+import groove.transform.RuleEvent.Reuse;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +50,10 @@ public class CriticalPair {
     private RuleToHostMap match1;
     private RuleToHostMap match2;
 
+    //The ruleApplications for this critical pair
+    private RuleApplication app1;
+    private RuleApplication app2;
+
     public DefaultHostGraph getHostGraph() {
         return this.hostGraph;
     }
@@ -53,12 +66,65 @@ public class CriticalPair {
         return this.match2;
     }
 
+    RuleToHostMap getMatch(MatchNumber matchnum) {
+        switch (matchnum) {
+        case One:
+            return getMatch1();
+        case Two:
+            return getMatch2();
+        default:
+            throw new IllegalArgumentException("matchnum must be one or two");
+        }
+    }
+
     public Rule getRule1() {
         return this.rule1;
     }
 
     public Rule getRule2() {
         return this.rule2;
+    }
+
+    Rule getRule(MatchNumber matchnum) {
+        switch (matchnum) {
+        case One:
+            return getRule1();
+        case Two:
+            return getRule2();
+        default:
+            throw new IllegalArgumentException("matchnum must be one or two");
+        }
+    }
+
+    public RuleApplication getRuleApplication1() {
+        if (this.app1 == null) {
+            this.app1 = createRuleApplication(MatchNumber.One);
+        }
+        return this.app1;
+    }
+
+    public RuleApplication getRuleApplication2() {
+        if (this.app2 == null) {
+            this.app2 = createRuleApplication(MatchNumber.Two);
+        }
+        return this.app2;
+    }
+
+    RuleApplication getRuleApplication(MatchNumber matchnum) {
+        switch (matchnum) {
+        case One:
+            return getRuleApplication1();
+        case Two:
+            return getRuleApplication2();
+        default:
+            throw new IllegalArgumentException("matchnum must be one or two");
+        }
+    }
+
+    private RuleApplication createRuleApplication(MatchNumber matchnum) {
+        BasicEvent ruleEvent =
+            new BasicEvent(getRule(matchnum), getMatch(matchnum), Reuse.NONE);
+        return new RuleApplication(ruleEvent, this.hostGraph);
     }
 
     CriticalPair(DefaultHostGraph target, Rule rule1, Rule rule2,
@@ -85,6 +151,32 @@ public class CriticalPair {
         return new CriticalPair(this);
     }
 
+    public static Set<CriticalPair> computeCriticalPairs(Grammar grammar) {
+        return computeCriticalPairs(grammar.getAllRules());
+    }
+
+    public static Set<CriticalPair> computeCriticalPairs(Set<Rule> rules) {
+        Set<CriticalPair> result = new HashSet<CriticalPair>();
+        List<Rule> ruleList = new ArrayList<Rule>(rules);
+        for (int i = 0; i < ruleList.size(); i++) {
+            for (int j = i; j < ruleList.size(); j++) {
+                result.addAll(computeCriticalPairs(ruleList.get(i),
+                    ruleList.get(j)));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Tests whether this Critical Pair is strictly locally confluent
+     * @param grammar the grammar containing the rules which are used
+     * for confluence analysis
+     * @return true only if the critical pair is strictly locally confluent
+     */
+    public boolean isStrictlyConfluent(Grammar grammar) {
+        return ConfluenceAnalyzer.isConfluent(this, grammar);
+    }
+
     /**
      * Compute all possble overlappings of the given set of nodes
      * Every element (set of combinations) in the result is an overlap
@@ -92,12 +184,18 @@ public class CriticalPair {
      * @return All possble overlappings of the given set of nodes
      */
     public static Set<CriticalPair> computeCriticalPairs(Rule rule1, Rule rule2) {
+        if ((rule1.getTypeGraph() == null && rule2.getTypeGraph() != null)
+            || !rule1.getTypeGraph().equals(rule2.getTypeGraph())) {
+            throw new IllegalArgumentException("Type graphs must be equal");
+        }
         RuleGraph l1 = rule1.lhs();
         RuleGraph l2 = rule2.lhs();
         Set<ParallelPair> parrPairs = new HashSet<ParallelPair>();
 
-        parrPairs = buildCriticalSet(l1, parrPairs, rule1, rule2, 1);
-        parrPairs = buildCriticalSet(l2, parrPairs, rule1, rule2, 2);
+        parrPairs =
+            buildCriticalSet(l1, parrPairs, rule1, rule2, MatchNumber.One);
+        parrPairs =
+            buildCriticalSet(l2, parrPairs, rule1, rule2, MatchNumber.Two);
 
         Iterator<ParallelPair> it;
 
@@ -105,30 +203,29 @@ public class CriticalPair {
          * If rule1 and rule2 are the same, then for every critical pair
          * match1 must not equal match2
          */
-        Set<ParallelPair> deletedPairs = new HashSet<ParallelPair>();
         if (rule1.equals(rule2)) {
             it = parrPairs.iterator();
             while (it.hasNext()) {
                 ParallelPair p = it.next();
                 if (p.getNodeMatch1().equals(p.getNodeMatch2())) {
                     it.remove();
-                    deletedPairs.add(p);
                 }
             }
         }
-        //Filter out all critical pairs which are not parallel dependent
-        System.out.println("\nPairs before parallelDep check:"
-            + parrPairs.size());
-        for (ParallelPair pair : parrPairs) {
-            System.out.println(pair);
-        }
-        System.out.println("\n");
 
+        //        System.out.println("\nPairs before parallelDep check:"
+        //            + parrPairs.size());
+        //        for (ParallelPair pair : parrPairs) {
+        //            System.out.println(pair);
+        //        }
+        //        System.out.println("\n");
+
+        //Filter out all critical pairs which are not parallel dependent
         Set<CriticalPair> critPairs = new HashSet<CriticalPair>();
         for (ParallelPair pair : parrPairs) {
             CriticalPair criticalPair = pair.getCriticalPair();
             if (criticalPair != null) {
-                System.out.println(pair);
+                //                System.out.println(pair);
                 critPairs.add(criticalPair);
             }
         }
@@ -148,10 +245,8 @@ public class CriticalPair {
      * @return a set of parallel pairs
      */
     private static Set<ParallelPair> buildCriticalSet(RuleGraph ruleGraph,
-            Set<ParallelPair> parrPairs, Rule rule1, Rule rule2, int matchnum) {
-        if (matchnum != 1 && matchnum != 2) {
-            throw new IllegalArgumentException("matchnum may only be 1 or 2");
-        }
+            Set<ParallelPair> parrPairs, Rule rule1, Rule rule2,
+            MatchNumber matchnum) {
 
         Set<RuleNode> nodesToProcess =
             new HashSet<RuleNode>(ruleGraph.nodeSet());
@@ -218,27 +313,30 @@ public class CriticalPair {
                 }
             }
             parrPairs = newParrPairs;
-            System.out.println("\nEnd of Iteration\n");
-            for (ParallelPair pair : parrPairs) {
-                System.out.println(pair);
-            }
-            System.out.println();
+            //            System.out.println("\nEnd of Iteration\n");
+            //            for (ParallelPair pair : parrPairs) {
+            //                System.out.println(pair);
+            //            }
+            //            System.out.println();
         }
         return parrPairs;
     }
 
     private static void addNodeToNewGroup(RuleNode ruleNode, ParallelPair pair,
-            int matchnum, Set<? extends RuleEdge> edges) {
+            MatchNumber matchnum, Set<? extends RuleEdge> edges) {
         Long targetGroup = ParallelPair.getNextMatchTargetNumer();
         addNodeToGroup(ruleNode, targetGroup, pair, matchnum, edges);
     }
 
     private static boolean isCompatible(RuleNode ruleNode, Long group,
             ParallelPair pair) {
-        //TODO compare types to support typed graphs
         //combination is nonempty
         List<RuleNode> combination = pair.getCombination(group);
         RuleNode firstNode = combination.iterator().next();
+        //If the types are not equal return false in any case
+        if (!ruleNode.getType().equals(firstNode.getType())) {
+            return false;
+        }
         if (ruleNode instanceof DefaultRuleNode) {
             return firstNode instanceof DefaultRuleNode;
         } else if (ruleNode instanceof VariableNode) {
@@ -272,7 +370,7 @@ public class CriticalPair {
     }
 
     private static <T extends RuleEdge> void addNodeToGroup(RuleNode ruleNode,
-            Long targetGroup, ParallelPair pair, int matchnum,
+            Long targetGroup, ParallelPair pair, MatchNumber matchnum,
             Set<? extends RuleEdge> edges) {
         Map<Long,Set<RuleNode>> nodeMatch = pair.getNodeMatch(matchnum);
         if (!nodeMatch.containsKey(targetGroup)) {
@@ -281,5 +379,52 @@ public class CriticalPair {
         Set<RuleNode> nodeSet = nodeMatch.get(targetGroup);
         //Add ruleNode to the Set
         nodeSet.add(ruleNode);
+    }
+
+    /**
+     * Checks whether this pair is parallel dependent
+     * Used only within this package, all critical pairs visible outside this package
+     * should be parallel dependent
+     */
+    boolean isParallelDependent() {
+        return isWeaklyParallelDependent(MatchNumber.One)
+            || isWeaklyParallelDependent(MatchNumber.Two);
+    }
+
+    private boolean isWeaklyParallelDependent(MatchNumber matchnum) {
+        RuleApplication app = getRuleApplication(matchnum);
+        HostGraphMorphism transformationMorphism = app.getMorphism();
+        //check if transformationMorphism1 is defined for all target elements of this.match1
+        for (HostNode hn : getMatch(matchnum.getOther()).nodeMap().values()) {
+            //valueNodes may be not be defined under the transformation morphism
+            //however all values exist universally, values can not actually be deleted
+            if (!(hn instanceof ValueNode)
+                && transformationMorphism.nodeMap().get(hn) == null) {
+                //                System.out.println("Node dependency found: " + hn);
+                return true;
+            }
+        }
+        //same process for edges
+        for (HostEdge he : getMatch(matchnum.getOther()).edgeMap().values()) {
+            if (transformationMorphism.edgeMap().get(he) == null) {
+                //                System.out.println("Edge dependency found: " + he);
+                return true;
+            }
+        }
+        //all checks complete, no dependencies found
+        return false;
+    }
+}
+
+enum MatchNumber {
+    One, Two;
+
+    MatchNumber getOther() {
+        if (this == One) {
+            return Two;
+        } else {
+            //this == Two
+            return One;
+        }
     }
 }

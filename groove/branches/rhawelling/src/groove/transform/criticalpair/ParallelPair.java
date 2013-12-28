@@ -23,19 +23,15 @@ import groove.algebra.syntax.Variable;
 import groove.grammar.Rule;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostEdge;
-import groove.grammar.host.HostGraph;
-import groove.grammar.host.HostGraphMorphism;
+import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
-import groove.grammar.host.ValueNode;
 import groove.grammar.rule.DefaultRuleNode;
 import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleEdge;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.rule.VariableNode;
-import groove.transform.BasicEvent;
-import groove.transform.RuleApplication;
-import groove.transform.RuleEvent.Reuse;
+import groove.graph.NodeFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -114,19 +110,19 @@ public class ParallelPair {
         return new ParallelPair(this);
     }
 
-    public Map<Long,Set<RuleNode>> getNodeMatch(int matchnum) {
+    public Map<Long,Set<RuleNode>> getNodeMatch(MatchNumber matchnum) {
         Map<Long,Set<RuleNode>> nodeMatch;
-        if (matchnum == 1) {
+        if (matchnum == MatchNumber.One) {
             nodeMatch = this.nodeMatch1;
-        } else if (matchnum == 2) {
+        } else if (matchnum == MatchNumber.Two) {
             nodeMatch = this.nodeMatch2;
         } else {
-            throw new IllegalArgumentException("matchnum must be 1 or 2");
+            throw new IllegalArgumentException("matchnum must be One or Two");
         }
         return nodeMatch;
     }
 
-    public boolean isContainedInMatch(RuleNode rn, int matchnum) {
+    public boolean isContainedInMatch(RuleNode rn, MatchNumber matchnum) {
         Map<Long,Set<RuleNode>> nodeMatch = getNodeMatch(matchnum);
         for (Set<RuleNode> nodes : nodeMatch.values()) {
             for (RuleNode node : nodes) {
@@ -156,7 +152,7 @@ public class ParallelPair {
         return result;
     }
 
-    public Set<RuleNode> getCombination(Long group, int matchnum) {
+    public Set<RuleNode> getCombination(Long group, MatchNumber matchnum) {
         Map<Long,Set<RuleNode>> nodeMatch = getNodeMatch(matchnum);
         Set<RuleNode> result = new HashSet<RuleNode>();
         if (nodeMatch.containsKey(group)) {
@@ -173,7 +169,10 @@ public class ParallelPair {
      */
     CriticalPair getCriticalPair() {
         if (!this.criticalPairComputed) {
-            DefaultHostGraph host = new DefaultHostGraph("target");
+            DefaultHostGraph host =
+                new DefaultHostGraph(
+                    "target",
+                    HostFactory.newInstance(this.rule1.getTypeGraph().getFactory()));
             RuleToHostMap match1 =
                 createRuleToHostMap(this.nodeMatch1, host,
                     this.rule1.lhs().edgeSet());
@@ -181,12 +180,11 @@ public class ParallelPair {
                 createRuleToHostMap(this.nodeMatch2, host,
                     this.rule2.lhs().edgeSet());
 
-            if (isWeaklyParallelDependent(this.rule1, match1, match2, host)
-                || isWeaklyParallelDependent(this.rule2, match2, match1, host)) {
+            CriticalPair potentialPair =
+                new CriticalPair(host, this.rule1, this.rule2, match1, match2);
+            if (potentialPair.isParallelDependent()) {
                 //the pair is a critical pair
-                this.critPair =
-                    new CriticalPair(host, this.rule1, this.rule2, match1,
-                        match2);
+                this.critPair = potentialPair;
             } else {
                 //the pair is not a critical pair
                 this.critPair = null;
@@ -218,8 +216,10 @@ public class ParallelPair {
                 //else create a hostnode depending on its type
                 RuleNode firstNode = ruleNodes.iterator().next();
                 if (firstNode instanceof DefaultRuleNode) {
-                    //TODO use TypeLabel for Typed graphs
-                    target = host.getFactory().createNode();
+                    //use the typefactory to ensure that the typenode is correct
+                    NodeFactory<HostNode> typeFactory =
+                        host.getFactory().nodes(firstNode.getType());
+                    target = typeFactory.createNode();
                 } else if (firstNode instanceof VariableNode) {
                     VariableNode varNode = (VariableNode) firstNode;
                     Algebra<?> alg =
@@ -262,10 +262,9 @@ public class ParallelPair {
                 //this is because source or target is a ProductNode,
                 //or a constant which is only connected to a ProductNode
             } else {
-                //TODO use typeEdge for typed graphs
                 HostEdge newEdge =
-                    host.getFactory().createEdge(hostSource,
-                        re.label().getTypeLabel(), hostTarget);
+                    host.getFactory().createEdge(hostSource, re.getType(),
+                        hostTarget);
                 host.addEdge(newEdge);
                 result.putEdge(re, newEdge);
             }
@@ -306,32 +305,6 @@ public class ParallelPair {
             }
         }
         return null;
-    }
-
-    private boolean isWeaklyParallelDependent(Rule rule, RuleToHostMap match,
-            RuleToHostMap otherMatch, HostGraph host) {
-        BasicEvent ruleEvent = new BasicEvent(rule, match, Reuse.NONE);
-        RuleApplication app = new RuleApplication(ruleEvent, host);
-        HostGraphMorphism transformationMorphism = app.getMorphism();
-        //check if transformationMorphism1 is defined for all target elements of this.match1
-        for (HostNode hn : otherMatch.nodeMap().values()) {
-            //valueNodes may be not be defined under the transformation morphism
-            //however all values exist universally, values can not actually be deleted
-            if (!(hn instanceof ValueNode)
-                && transformationMorphism.nodeMap().get(hn) == null) {
-                System.out.println("Node dependency found: " + hn);
-                return true;
-            }
-        }
-        //same process for edges
-        for (HostEdge he : otherMatch.edgeMap().values()) {
-            if (transformationMorphism.edgeMap().get(he) == null) {
-                System.out.println("Edge dependency found: " + he);
-                return true;
-            }
-        }
-        //all checks complete, no dependencies found
-        return false;
     }
 
     @Override
@@ -379,8 +352,8 @@ public class ParallelPair {
         result += " }\nmatch: {";
         for (Long group : getCombinationGroups()) {
             result += " (";
-            Set<RuleNode> r1nodes = getCombination(group, 1);
-            Set<RuleNode> r2nodes = getCombination(group, 2);
+            Set<RuleNode> r1nodes = getCombination(group, MatchNumber.One);
+            Set<RuleNode> r2nodes = getCombination(group, MatchNumber.Two);
             for (RuleNode rn : r1nodes) {
                 result += " " + nodeName1.get(rn);
             }

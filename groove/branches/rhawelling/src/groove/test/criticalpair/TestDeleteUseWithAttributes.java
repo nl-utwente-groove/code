@@ -55,7 +55,6 @@ public class TestDeleteUseWithAttributes {
         assertTrue(pairs.size() == 2);
         pairs =
             CriticalPair.computeCriticalPairs(addOneToNumber, deleteNumberOne);
-        System.out.println(deleteNumberOne.lhs().nodeCount());
         assertTrue(pairs.size() == 2);
 
         pairs =
