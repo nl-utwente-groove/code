@@ -39,6 +39,15 @@ public class NestedIterator<T> extends AbstractNestedIterator<T> {
     /**
      * Constructs a nested iterator from existing iterators.
      */
+    @SuppressWarnings("unchecked")
+    public NestedIterator(Iterator<? extends T> iter1,
+            Iterator<? extends T> iter2) {
+        this(Arrays.asList(iter1, iter2));
+    }
+
+    /**
+     * Constructs a nested iterator from existing iterators.
+     */
     public NestedIterator(Iterator<? extends T>... iters) {
         this(Arrays.asList(iters));
     }
