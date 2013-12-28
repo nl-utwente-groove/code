@@ -49,10 +49,6 @@ public class TestDeleteUseWithAttributes {
         Rule deleteNumberOne = getSimpleRule("deleteNumberOne", view);
 
         Set<CriticalPair> pairs =
-            CriticalPair.computeCriticalPairs(addOneToNumber, addOneToNumber);
-        //TODO the result should be 5
-        assertTrue(pairs.size() == 5 || pairs.size() == 3);
-        pairs =
             CriticalPair.computeCriticalPairs(addOneToNumber, addOneToNumber_2);
         assertTrue(pairs.size() == 5);
         pairs = CriticalPair.computeCriticalPairs(addOneToNumber, deleteNumber);
@@ -63,27 +59,70 @@ public class TestDeleteUseWithAttributes {
         assertTrue(pairs.size() == 2);
 
         pairs =
-            CriticalPair.computeCriticalPairs(addOneToNumber_2,
-                addOneToNumber_2);
-        //TODO the result should be 5
-        assertTrue(pairs.size() == 5 || pairs.size() == 3);
-        pairs =
             CriticalPair.computeCriticalPairs(addOneToNumber_2, deleteNumber);
         assertTrue(pairs.size() == 2);
         pairs =
             CriticalPair.computeCriticalPairs(addOneToNumber_2, deleteNumberOne);
         assertTrue(pairs.size() == 2);
-
-        pairs = CriticalPair.computeCriticalPairs(deleteNumber, deleteNumber);
-        System.out.println("numPairs: " + pairs.size());
-        System.out.println("numNodes: " + deleteNumber.lhs().nodeCount());
-        assertTrue(pairs.size() == 1);
         pairs =
             CriticalPair.computeCriticalPairs(deleteNumber, deleteNumberOne);
         assertTrue(pairs.size() == 1);
 
+    }
+
+    @Test
+    public void testAttributes_SameRule() {
+        String grammar = "junit/criticalpair/attributes.gps/";
+        File grammarFile = new File(grammar);
+        GrammarModel view = null;
+        try {
+            view = GrammarModel.newInstance(grammarFile, false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Rule addOneToNumber = getSimpleRule("addOneToNumber", view);
+        Rule addOneToNumber_2 = getSimpleRule("addOneToNumber_2", view);
+        Rule deleteNumber = getSimpleRule("deleteNumber", view);
+        Rule deleteNumberOne = getSimpleRule("deleteNumberOne", view);
+
+        Set<CriticalPair> pairs =
+            CriticalPair.computeCriticalPairs(addOneToNumber, addOneToNumber);
+        //This situation has 5 critical pairs, however two of these have identical matches
+        //therefore they are not considered critical because the transformation is the same
+        assertTrue(pairs.size() == 3);
+        pairs =
+            CriticalPair.computeCriticalPairs(addOneToNumber_2,
+                addOneToNumber_2);
+        //Similar to the previous
+        assertTrue(pairs.size() == 3);
+        pairs = CriticalPair.computeCriticalPairs(deleteNumber, deleteNumber);
+        //There is one way to overlap the rule deleteNumber with itself such that
+        //a conflicting parallel pair is formed, however, in this case the matches are equal
+        //therefore the conflict is not a critical pair
+        assertTrue(pairs.size() == 0);
+        //Again, similarly to the previous same rules with the same match is not a critical pair
+        //therefore there are no critical pairs for the following rule
         pairs =
             CriticalPair.computeCriticalPairs(deleteNumberOne, deleteNumberOne);
+        assertTrue(pairs.size() == 0);
+
+    }
+
+    @Test
+    public void testAttributes_Point() {
+        String grammar = "junit/criticalpair/attributes.gps/";
+        File grammarFile = new File(grammar);
+        GrammarModel view = null;
+        try {
+            view = GrammarModel.newInstance(grammarFile, false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Rule deleteNumberTwo = getSimpleRule("deleteNumberTwo", view);
+        Rule deleteNumberOne = getSimpleRule("deleteNumberOne", view);
+        //Both left-hand
+        Set<CriticalPair> pairs =
+            CriticalPair.computeCriticalPairs(deleteNumberOne, deleteNumberTwo);
         assertTrue(pairs.size() == 1);
 
     }

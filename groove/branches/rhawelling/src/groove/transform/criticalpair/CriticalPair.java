@@ -105,28 +105,38 @@ public class CriticalPair {
          * If rule1 and rule2 are the same, then for every critical pair
          * match1 must not equal match2
          */
+        Set<ParallelPair> deletedPairs = new HashSet<ParallelPair>();
         if (rule1.equals(rule2)) {
             it = parrPairs.iterator();
             while (it.hasNext()) {
                 ParallelPair p = it.next();
                 if (p.getNodeMatch1().equals(p.getNodeMatch2())) {
                     it.remove();
+                    deletedPairs.add(p);
                 }
             }
         }
         //Filter out all critical pairs which are not parallel dependent
-        System.out.println("\nPairsbefore parallelDep check:"
+        System.out.println("\nPairs before parallelDep check:"
             + parrPairs.size());
         for (ParallelPair pair : parrPairs) {
             System.out.println(pair);
         }
+        System.out.println("\n");
+
         Set<CriticalPair> critPairs = new HashSet<CriticalPair>();
         for (ParallelPair pair : parrPairs) {
             CriticalPair criticalPair = pair.getCriticalPair();
             if (criticalPair != null) {
+                System.out.println(pair);
                 critPairs.add(criticalPair);
             }
         }
+        //        System.out.println("\nDeleted pairs: " + deletedPairs.size());
+        //        for (ParallelPair pair : deletedPairs) {
+        //            System.out.println(pair);
+        //            System.out.println("WasCritical: " + pair.getCriticalPair() != null);
+        //        }
         return critPairs;
     }
 
@@ -181,11 +191,18 @@ public class CriticalPair {
                 newParrPairs.add(pair);
             } else {
                 for (ParallelPair pair : parrPairs) {
+                    ParallelPair newPair;
                     //case 1: do not overlap rnode with an existing node of pair.getTarget()
                     //This means we create a copy of pair and add the set containing rnode as a separate element
-                    ParallelPair newPair = pair.clone();
-                    addNodeToNewGroup(rnode, newPair, matchnum, edges);
-                    newParrPairs.add(newPair);
+                    if (rnode instanceof VariableNode
+                        && pair.findConstant(((VariableNode) rnode).getConstant()) != null) {
+                        //rnode is a VariableNode with a constant, however this constant already exists in some group
+                        //case 1 is not applicable because constants are unique
+                    } else {
+                        newPair = pair.clone();
+                        addNodeToNewGroup(rnode, newPair, matchnum, edges);
+                        newParrPairs.add(newPair);
+                    }
 
                     //case 2: 
                     //Repeat the following for every node tnode in pair.getTarget():
@@ -226,13 +243,20 @@ public class CriticalPair {
             return firstNode instanceof DefaultRuleNode;
         } else if (ruleNode instanceof VariableNode) {
             if (firstNode instanceof VariableNode) {
-                //TODO is ruleNode is a constant, and the same constant already exist, they MUST be combined
-
-                //                VariableNode varNode = (VariableNode) ruleNode;
-                //                VariableNode varCombNode = (VariableNode) firstNode;
-
-                //Constants may be merged, this can create different critical pairs for the point algebra
-                return true;
+                VariableNode varRuleNode = (VariableNode) ruleNode;
+                if (varRuleNode.hasConstant()) {
+                    Constant cons = varRuleNode.getConstant();
+                    //check if the constant already exists in a group
+                    Long constantGroup = pair.findConstant(cons);
+                    //The constant may be merged if no group contains the constant
+                    //i.e. constantGroup == null or if constantGroup is equal to group
+                    return constantGroup == null || constantGroup.equals(group);
+                    //Note: the line above may put two different constants in the same group,
+                    //this can result in critical pairs which are only relevant for when the point algebra is used
+                } else {
+                    //ruleNode is not a constant, it can be merged with any variableNode
+                    return true;
+                }
             } else {
                 //the ruleNode is a variable, but the combination is not for variables
                 return false;

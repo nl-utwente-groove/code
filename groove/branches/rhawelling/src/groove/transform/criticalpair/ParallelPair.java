@@ -289,6 +289,25 @@ public class ParallelPair {
         return null;
     }
 
+    /**
+     * Searches all the ruleNode in both nodematches to find the group which contains
+     * the Constant cons
+     */
+    public Long findConstant(Constant cons) {
+        if (cons == null) {
+            return null;
+        }
+        for (Long group : getCombinationGroups()) {
+            for (RuleNode rn : getCombination(group)) {
+                if (rn instanceof VariableNode
+                    && cons.equals(((VariableNode) rn).getConstant())) {
+                    return group;
+                }
+            }
+        }
+        return null;
+    }
+
     private boolean isWeaklyParallelDependent(Rule rule, RuleToHostMap match,
             RuleToHostMap otherMatch, HostGraph host) {
         BasicEvent ruleEvent = new BasicEvent(rule, match, Reuse.NONE);
@@ -307,16 +326,6 @@ public class ParallelPair {
         //same process for edges
         for (HostEdge he : otherMatch.edgeMap().values()) {
             if (transformationMorphism.edgeMap().get(he) == null) {
-                if (he.target() instanceof ValueNode) {
-                    System.out.println("targetIsValue");
-                    ValueNode val = (ValueNode) he.target();
-                    System.out.println("Kind = " + val.getTerm().getKind());
-                    if (otherMatch.nodeMap().keySet().contains(val)) {
-                        System.out.println("target is defined");
-                    } else {
-                        System.out.println("target is NOT defined");
-                    }
-                }
                 System.out.println("Edge dependency found: " + he);
                 return true;
             }
