@@ -1,20 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
     <graph edgemode="directed" edgeids="false" role="rule" id="universalMerge">
-        <attr name="transitionLabel">
-            <string></string>
-        </attr>
-        <attr name="enabled">
-            <string>true</string>
-        </attr>
-        <attr name="priority">
-            <string>0</string>
-        </attr>
-        <attr name="printFormat">
-            <string></string>
-        </attr>
-        <attr name="remark">
-            <string></string>
+        <attr name="$version">
+            <string>curly</string>
         </attr>
         <attr name="$version">
             <string>curly</string>
@@ -54,14 +42,14 @@
                 <string>new:</string>
             </attr>
         </edge>
-        <edge to="n6" from="n6">
-            <attr name="label">
-                <string>type:#A</string>
-            </attr>
-        </edge>
         <edge to="n4" from="n6">
             <attr name="label">
                 <string>=</string>
+            </attr>
+        </edge>
+        <edge to="n6" from="n6">
+            <attr name="label">
+                <string>type:#A</string>
             </attr>
         </edge>
     </graph>

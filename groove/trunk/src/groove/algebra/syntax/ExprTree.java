@@ -89,16 +89,11 @@ public class ExprTree extends CommonTree {
             result =
                 Collections.singletonMap(constant.getSignature(), constant);
             break;
-        case ExprParser.VAR:
-            Variable variable = toVariable(varMap);
-            result =
-                Collections.singletonMap(variable.getSignature(), variable);
-            break;
         case ExprParser.PAR:
             result = toParameters();
             break;
         case ExprParser.FIELD:
-            result = toFieldExprs();
+            result = toFieldOrVarExprs(varMap);
             break;
         case ExprParser.CALL:
             result = toCallExprs(varMap);
@@ -140,30 +135,6 @@ public class ExprTree extends CommonTree {
         return result;
     }
 
-    private Variable toVariable(Map<String,SignatureKind> varMap)
-        throws FormatException {
-        String name = getChild(0).getText();
-        SignatureKind varSig = varMap.get(name);
-        if (varSig == null) {
-            throw new FormatException(
-                "Unknown variable %s (use 'self.%1$s' to refer to own field)",
-                name);
-        }
-        if (getChildCount() == 2) {
-            String prefix = getChild(1).getText();
-            SignatureKind prefixSig = SignatureKind.getKind(prefix);
-            if (prefixSig == null) {
-                throw new FormatException(
-                    "Prefix '%s' does not represent a type", prefix);
-            }
-            if (varSig != prefixSig) {
-                throw new FormatException("Variable %s is of type %s, not %s",
-                    name, varSig.getName(), prefix);
-            }
-        }
-        return new Variable(name, varSig);
-    }
-
     private Map<SignatureKind,Parameter> toParameters() throws FormatException {
         assert getType() == ExprParser.PAR;
         Map<SignatureKind,Parameter> result =
@@ -190,23 +161,53 @@ public class ExprTree extends CommonTree {
         return result;
     }
 
-    private Map<SignatureKind,FieldExpr> toFieldExprs() throws FormatException {
+    private Map<SignatureKind,Expression> toFieldOrVarExprs(
+            Map<String,SignatureKind> varMap) throws FormatException {
         assert getType() == ExprParser.FIELD;
-        Map<SignatureKind,FieldExpr> result =
-            new EnumMap<SignatureKind,FieldExpr>(SignatureKind.class);
-        String target = getChild(0).getText();
-        String field = getChild(1).getText();
-        if (getChildCount() == 3) {
-            String prefix = getChild(2).getText();
+        Map<SignatureKind,Expression> result =
+            new EnumMap<SignatureKind,Expression>(SignatureKind.class);
+        if (getChildCount() == 2) {
+            String prefix = getChild(1).getText();
             SignatureKind type = SignatureKind.getKind(prefix);
             if (type == null) {
                 throw new FormatException(
                     "Prefix '%s' does not represent a type", prefix);
             }
-            result.put(type, new FieldExpr(target, field, type));
+            result.put(type, getChild(0).toFieldOrVarExpr(varMap, type));
         } else {
             for (SignatureKind type : SignatureKind.values()) {
-                result.put(type, new FieldExpr(target, field, type));
+                result.put(type, getChild(0).toFieldOrVarExpr(varMap, type));
+            }
+        }
+        return result;
+    }
+
+    /** 
+     * Converts this tree to a {@link Variable} or a {@link FieldExpr}.
+     * Chained field expressions are currently unsupported.
+     * @param varMap variable typing
+     * @param type expected type of the expression
+     */
+    private Expression toFieldOrVarExpr(Map<String,SignatureKind> varMap,
+            SignatureKind type) throws FormatException {
+        Expression result;
+        if (getType() == ExprParser.DOT) {
+            assert getChildCount() == 2;
+            result =
+                new FieldExpr(getChild(0).getText(), getChild(1).getText(),
+                    type);
+        } else {
+            assert getChildCount() == 0;
+            String name = getText();
+            SignatureKind varSig = varMap.get(name);
+            if (varSig == null) {
+                // this is a self-field
+                result = new FieldExpr(null, name, type);
+            } else if (varSig != type) {
+                throw new FormatException("Variable %s is of type %s, not %s",
+                    name, varSig.getName(), type.getName());
+            } else {
+                result = new Variable(name, type);
             }
         }
         return result;
@@ -227,6 +228,11 @@ public class ExprTree extends CommonTree {
         return toCallExprs(getText(), args, varMap);
     }
 
+    /**
+     * Returns the set of derivable expressions for a call tree,
+     * i.e., in which the root is a {@link ExprParser#CALL} node.
+     * @param varMap variable typing
+     */
     private Map<SignatureKind,CallExpr> toCallExprs(
             Map<String,SignatureKind> varMap) throws FormatException {
         Map<SignatureKind,CallExpr> result =
@@ -248,6 +254,15 @@ public class ExprTree extends CommonTree {
         return result;
     }
 
+    /**
+     * Returns the set of derivable expressions for an operator call
+     * with an explicitly typed operator.
+     * @param prefix signature name of the operator
+     * @param opName operator name
+     * @param args operator arguments. Each argument is a map from 
+     * possible types to corresponding expressions
+     * @param varMap variable typing
+     */
     private Map<SignatureKind,CallExpr> toCallExprs(String prefix,
             String opName, List<Map<SignatureKind,? extends Expression>> args,
             Map<String,SignatureKind> varMap) throws FormatException {
@@ -263,6 +278,14 @@ public class ExprTree extends CommonTree {
         return result;
     }
 
+    /**
+     * Returns the set of derivable expressions for an operator call
+     * with an untyped typed operator.
+     * @param opName operator name
+     * @param args operator arguments. Each argument is a map from 
+     * possible types to corresponding expressions
+     * @param varMap variable typing
+     */
     private Map<SignatureKind,CallExpr> toCallExprs(String opName,
             List<Map<SignatureKind,? extends Expression>> args,
             Map<String,SignatureKind> varMap) throws FormatException {
@@ -296,6 +319,14 @@ public class ExprTree extends CommonTree {
         return result;
     }
 
+    /**
+     * Factory method for a new operator call expression.
+     * @param op the operator of the new expression
+     * @param args operator arguments. Each argument is a map from 
+     * possible types to corresponding expressions
+     * @throws FormatException if {@code args} does not have values
+     * for the required operator types
+     */
     private CallExpr newCallExp(Operator op,
             List<Map<SignatureKind,? extends Expression>> args)
         throws FormatException {

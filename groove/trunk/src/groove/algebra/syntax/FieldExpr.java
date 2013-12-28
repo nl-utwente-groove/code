@@ -32,7 +32,7 @@ import java.util.Map;
 public class FieldExpr extends Expression {
     /** Constructs a new field expression. */
     public FieldExpr(String target, String field, SignatureKind type) {
-        assert field != null && target != null && type != null;
+        assert field != null && type != null;
         this.target = target;
         this.field = field;
         this.type = type;
@@ -43,7 +43,10 @@ public class FieldExpr extends Expression {
         return this.type;
     }
 
-    /** Returns the target of this field expression. */
+    /** 
+     * Returns the target of this field expression.
+     * If {@code null}, the target is self.
+     */
     public String getTarget() {
         return this.target;
     }
@@ -55,7 +58,7 @@ public class FieldExpr extends Expression {
 
     @Override
     public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel) {
-        if (oldLabel.getRole() == BINARY && oldLabel.text().equals(this.field)) {
+        if (oldLabel.getRole() == BINARY && oldLabel.text().equals(getField())) {
             return new FieldExpr(getTarget(), newLabel.text(), getSignature());
         } else {
             return this;
@@ -64,8 +67,10 @@ public class FieldExpr extends Expression {
 
     @Override
     protected void buildDisplayString(StringBuilder result, Precedence context) {
-        result.append(getTarget());
-        result.append(".");
+        if (getTarget() != null) {
+            result.append(getTarget());
+            result.append(".");
+        }
         result.append(getField());
     }
 
@@ -96,7 +101,11 @@ public class FieldExpr extends Expression {
         if (this.type != other.type) {
             return false;
         }
-        if (!this.target.equals(other.target)) {
+        if (this.target == null) {
+            if (other.target != null) {
+                return false;
+            }
+        } else if (!this.target.equals(other.target)) {
             return false;
         }
         return this.field.equals(other.field);
@@ -106,7 +115,8 @@ public class FieldExpr extends Expression {
     public int hashCode() {
         final int prime = 31;
         int result = this.field.hashCode();
-        result = prime * result + this.target.hashCode();
+        result =
+            prime * result + this.target == null ? 0 : this.target.hashCode();
         result = prime * result + this.type.hashCode();
         return result;
     }
