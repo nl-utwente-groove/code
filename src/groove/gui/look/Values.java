@@ -39,12 +39,6 @@ public class Values {
     public static final float[] ABSTRACT_DASH = new float[] {6.0f, 2.0f};
     /** Dash pattern of connect edges. */
     public static final float[] CONNECT_DASH = new float[] {2f, 4f};
-    /** Dash pattern of embargo nodes and edges. */
-    public static final float[] EMBARGO_DASH = new float[] {2f, 2f};
-    /** Dash pattern of eraser nodes and edges. */
-    public static final float[] ERASER_DASH = new float[] {4f, 4f};
-    /** Dash pattern of nesting nodes and edges. */
-    public static final float[] NESTED_DASH = new float[] {2.0f, 3.0f};
     /** No dash pattern. */
     public static final float[] NO_DASH = new float[] {10.f, 0.f};
     /** Foreground colour of creator nodes and edges. */
@@ -60,15 +54,23 @@ public class Values {
      */
     public static final Color DEFAULT_BACKGROUND =
         Colors.findColor("243 243 243");
+    /** Dash pattern of embargo nodes and edges. */
+    public static final float[] EMBARGO_DASH = new float[] {2f, 2f};
     /** Foreground colour of embargo nodes and edges. */
     public static final Color EMBARGO_FOREGROUND = Color.RED;
     /** Background colour of embargo nodes and edges. */
     public static final Color EMBARGO_BACKGROUND = null;
+    /** Dash pattern of eraser nodes and edges. */
+    public static final float[] ERASER_DASH = new float[] {4f, 4f};
     /** Foreground colour of eraser nodes and edges. */
     public static final Color ERASER_FOREGROUND = Color.BLUE;
     /** Background colour of eraser nodes and edges. */
     public static final Color ERASER_BACKGROUND =
         Colors.findColor("200 240 255");
+    /** Dash pattern of nesting nodes and edges. */
+    public static final float[] NESTED_DASH = new float[] {2.0f, 3.0f};
+    /** Colour used for nesting nodes and states. */
+    static public final Color NESTED_COLOR = Colors.findColor("165 42 42");
     /** Foreground colour of remark nodes and edges. */
     public static final Color REMARK_FOREGROUND = Colors.findColor("255 140 0");
     /** Background colour of remark nodes and edges. */
@@ -81,12 +83,12 @@ public class Values {
     public static final Color FINAL_BACKGROUND = Color.RED;
     /** Background colour of result states. */
     public static final Color RESULT_BACKGROUND = Colors.findColor("255 165 0");
+    /** Foreground colour of the start state. */
+    public static final Color START_FOREGROUND = JAttr.STATE_BACKGROUND;
     /** Background colour of the start state. */
     public static final Color START_BACKGROUND = Color.BLACK;
     /** Background colour of the start state while it is still open. */
     public static final Color START_OPEN_BACKGROUND = Color.GRAY.darker();
-    /** Foreground colour of the start state. */
-    public static final Color START_FOREGROUND = JAttr.STATE_BACKGROUND;
     /** Foreground colour for active nodes and edges. */
     public static final Color ACTIVE_COLOR = Color.BLUE;
     /** Foreground colour for the active start node. */
