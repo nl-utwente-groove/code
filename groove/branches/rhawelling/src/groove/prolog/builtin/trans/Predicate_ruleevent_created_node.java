@@ -27,8 +27,6 @@ import groove.grammar.host.HostNode;
 import groove.transform.RuleEffect;
 import groove.transform.RuleEvent;
 
-import java.util.Collection;
-
 /**
  * Predicate created_node(+RuleEvent,+Graph,?Node)
  * @author Michiel Hendriks
@@ -46,7 +44,7 @@ public class Predicate_ruleevent_created_node extends TransPrologCode {
             RuleEvent event = getRuleEvent(args[0]);
             HostGraph graph = (HostGraph) getGraph(args[1]);
             RuleEffect record = event.getEffect(graph);
-            Collection<HostNode> createdNodes = record.getCreatedNodes();
+            Iterable<HostNode> createdNodes = record.getAddedNodes();
             if (createdNodes == null) {
                 return FAIL;
             } else {

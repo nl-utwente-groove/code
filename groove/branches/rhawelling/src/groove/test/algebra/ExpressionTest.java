@@ -18,11 +18,13 @@ package groove.test.algebra;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import groove.algebra.Operator;
 import groove.algebra.Signature.OpValue;
 import groove.algebra.SignatureKind;
 import groove.algebra.syntax.Expression;
+import groove.algebra.syntax.FieldExpr;
 import groove.grammar.model.FormatException;
 
 import org.junit.Test;
@@ -37,7 +39,7 @@ public class ExpressionTest {
         assertFalse(empty.equals(parse("\"a\"")));
         assertEquals(empty, parse("string:\"\""));
         parseFail("\"");
-        parseFail("string:a");
+        assertTrue(parse("string:a") instanceof FieldExpr);
         // reals
         Expression oneReal = parse("1.");
         assertFalse(oneReal.equals(parse(".1")));
@@ -55,7 +57,7 @@ public class ExpressionTest {
         Expression tru = parse("true");
         assertEquals(tru, parse("bool:true"));
         assertFalse(tru.equals(parse("false")));
-        parseFail("bool:tru");
+        assertTrue(parse("bool:tru") instanceof FieldExpr);
     }
 
     /** Tests all operators. */

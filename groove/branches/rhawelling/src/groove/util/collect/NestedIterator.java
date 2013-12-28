@@ -16,7 +16,6 @@
  */
 package groove.util.collect;
 
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -38,15 +37,19 @@ public class NestedIterator<T> extends AbstractNestedIterator<T> {
     }
 
     /**
-     * Constructs a nested iterator from two existing iterators. The outer
-     * iterator should yield the inner iterators.
-     * @param iter1 the first inner iterator
-     * @param iter2 the second inner iterator
+     * Constructs a nested iterator from existing iterators.
      */
     @SuppressWarnings("unchecked")
     public NestedIterator(Iterator<? extends T> iter1,
             Iterator<? extends T> iter2) {
         this(Arrays.asList(iter1, iter2));
+    }
+
+    /**
+     * Constructs a nested iterator from existing iterators.
+     */
+    public NestedIterator(Iterator<? extends T>... iters) {
+        this(Arrays.asList(iters));
     }
 
     /**

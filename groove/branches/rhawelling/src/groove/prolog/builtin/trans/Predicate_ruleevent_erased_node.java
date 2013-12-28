@@ -44,7 +44,7 @@ public class Predicate_ruleevent_erased_node extends TransPrologCode {
             RuleEvent event = getRuleEvent(args[0]);
             HostGraph graph = (HostGraph) getGraph(args[1]);
             RuleEffect record = event.getEffect(graph);
-            Iterable<HostNode> erasedNodes = record.getErasedNodes();
+            Iterable<HostNode> erasedNodes = record.getRemovedNodes();
             if (erasedNodes == null) {
                 return FAIL;
             } else {

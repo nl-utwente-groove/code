@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="mergeSpecialise">
+    <graph edgemode="directed" edgeids="false" role="graph" id="mergeDeleteNode-0">
         <attr name="transitionLabel">
             <string></string>
         </attr>
@@ -19,44 +19,24 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n2">
-            <attr name="layout">
-                <string>28 53 356 15</string>
-            </attr>
-        </node>
         <node id="n0">
             <attr name="layout">
-                <string>134 110 9 15</string>
+                <string>136 99 9 15</string>
             </attr>
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>233 112 8 15</string>
+                <string>234 98 8 15</string>
             </attr>
         </node>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>rem:</string>
-            </attr>
-        </edge>
-        <edge to="n2" from="n2">
-            <attr name="label">
-                <string>rem:The merge edge has been drawn from the old node to the new</string>
-            </attr>
-        </edge>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>type:#A</string>
+                <string>type:A</string>
             </attr>
         </edge>
         <edge to="n1" from="n0">
             <attr name="label">
-                <string>new:=</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>new:</string>
+                <string>a</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">

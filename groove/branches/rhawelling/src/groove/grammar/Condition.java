@@ -826,7 +826,7 @@ public class Condition implements Fixable {
     }
 
     /** 
-     * The (top-level) operator of this condition.
+     * Condition operator.
      */
     public static enum Op {
         /** Universally quantified pattern. */

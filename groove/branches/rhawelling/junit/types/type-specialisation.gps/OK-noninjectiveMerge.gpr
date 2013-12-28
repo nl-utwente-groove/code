@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="mergeDeleteNode">
+    <graph edgemode="directed" edgeids="false" role="rule" id="OK-noninjectiveMerge">
         <attr name="transitionLabel">
             <string></string>
         </attr>
@@ -21,57 +21,52 @@
         </attr>
         <node id="n1">
             <attr name="layout">
-                <string>286 113 9 15</string>
-            </attr>
-        </node>
-        <node id="n0">
-            <attr name="layout">
-                <string>172 108 18 15</string>
-            </attr>
-        </node>
-        <node id="n2">
-            <attr name="layout">
-                <string>211 221 8 15</string>
+                <string>164 237 17 15</string>
             </attr>
         </node>
         <node id="n3">
             <attr name="layout">
-                <string>82 108 8 15</string>
+                <string>273 178 8 15</string>
+            </attr>
+        </node>
+        <node id="n0">
+            <attr name="layout">
+                <string>138 109 196 15</string>
+            </attr>
+        </node>
+        <node id="n2">
+            <attr name="layout">
+                <string>275 239 8 15</string>
             </attr>
         </node>
         <node id="n4">
             <attr name="layout">
-                <string>85 37 10 15</string>
+                <string>166 175 18 15</string>
             </attr>
         </node>
         <edge to="n1" from="n1">
             <attr name="label">
-                <string>del:</string>
-            </attr>
-        </edge>
-        <edge to="n1" from="n1">
-            <attr name="label">
-                <string>type:A</string>
+                <string>type:#B</string>
             </attr>
         </edge>
         <edge to="n2" from="n1">
             <attr name="label">
-                <string>del:a</string>
+                <string>new:=</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>type:C</string>
             </attr>
         </edge>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>type:#A</string>
+                <string>rem:</string>
             </attr>
         </edge>
-        <edge to="n2" from="n0">
+        <edge to="n0" from="n0">
             <attr name="label">
-                <string>a</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n0">
-            <attr name="label">
-                <string>new:=</string>
+                <string>rem:Merge sources are certainly injective (by type)</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">
@@ -79,24 +74,14 @@
                 <string>type:B</string>
             </attr>
         </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>new:</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>type:B</string>
-            </attr>
-        </edge>
-        <edge to="n4" from="n3">
-            <attr name="label">
-                <string>at</string>
-            </attr>
-        </edge>
         <edge to="n4" from="n4">
             <attr name="label">
-                <string>forall:</string>
+                <string>type:#A</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n4">
+            <attr name="label">
+                <string>new:=</string>
             </attr>
         </edge>
     </graph>

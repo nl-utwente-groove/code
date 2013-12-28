@@ -44,7 +44,7 @@ public class Predicate_ruleevent_created_edge extends TransPrologCode {
             RuleEvent re = getRuleEvent(args[0]);
             HostGraph graph = (HostGraph) getGraph(args[1]);
             RuleEffect record = re.getEffect(graph);
-            Iterable<HostEdge> createdEdges = record.getCreatedTargetEdges();
+            Iterable<HostEdge> createdEdges = record.getAddedEdges();
             if (createdEdges == null) {
                 return FAIL;
             } else {
