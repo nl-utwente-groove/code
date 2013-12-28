@@ -170,6 +170,7 @@ public enum Look {
         void init() {
             add(VisualKey.DASH, Values.NESTED_DASH);
             add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.SIMPLE);
+            add(VisualKey.FOREGROUND, Values.NESTED_COLOR);
         }
 
     },

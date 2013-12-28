@@ -489,11 +489,14 @@ public class LabelValue implements VisualValue<MultiLabel> {
         Line result = line;
         if (edge.getKind().isRole()) {
             String name = edge.getLevelName();
-            if (name != null && name.length() != 0) {
-                if (!name.equals(edge.source().getLevelName())
-                    && !name.equals(edge.source().getLevelName())) {
-                    result = result.append(LEVEL_NAME_SEPARATOR + name);
-                }
+            // only consider proper names unequal to source or target level
+            if (name != null && name.length() != 0
+                && !name.equals(edge.source().getLevelName())
+                && !name.equals(edge.target().getLevelName())) {
+                Line suffix =
+                    Line.atom(LEVEL_NAME_SEPARATOR + name).color(
+                        Values.NESTED_COLOR);
+                result = result.append(suffix);
             }
         }
         return result;
