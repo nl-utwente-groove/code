@@ -31,9 +31,9 @@ import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
 import groove.graph.AElementMap;
-import groove.graph.ElementFactory;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
+import groove.graph.ElementFactory;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphRole;
@@ -378,7 +378,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         // look up the field owner
         AspectNode owner;
         String ownerName = field.getTarget();
-        if (ownerName.equals(Keywords.SELF)) {
+        if (ownerName == null || ownerName.equals(Keywords.SELF)) {
             owner = source;
         } else {
             owner = this.nodeIdMap.get(ownerName);
@@ -417,7 +417,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             AspectKind fieldKind) {
         AspectNode result = null;
         for (AspectEdge edge : outEdgeSet(owner)) {
-            if (edge.getDisplayLabel().text().equals(fieldName)) {
+            if (edge.getRuleLabel().text().equals(fieldName)) {
                 AspectNode target = edge.target();
                 // make sure we have an LHS edge or a count edge
                 if (target.getAttrKind() == fieldKind

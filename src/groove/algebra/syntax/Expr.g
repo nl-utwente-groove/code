@@ -6,16 +6,15 @@ options {
 }
 
 tokens {
-  CONST;
-  VAR;
-  PAR;
-  CALL;
-  FIELD;
-  OPER;
-  STRING;
-  REAL;
-  INT;
-  BOOL;
+  CALL;  // operation call
+  CONST; // constant expression
+  PAR;   // rule parameter expression
+  FIELD; // possibly typed field or variable
+  OPER;  // possibly typed operator
+  STRING;// string literal
+  REAL;  // real number literal
+  INT;   // integer literal
+  BOOL;  // boolean literal
 }
 
 @lexer::header {
@@ -42,7 +41,19 @@ import groove.grammar.model.FormatErrorSet;
     }
 }
 
-// PARSER ACTIONS
+/** Content of a let:-prefix. */
+assignment
+  : ID ASSIGN^ expression
+  ;
+
+/** Expression as it may occur after a test:-prefix. */
+test_expression
+  : // legacy special case: "var = expression"
+    // which is equivalent to "var == expression"
+    ID ASSIGN expression -> ^(EQ ID expression)
+  | expression
+  ;
+
 /** Either a variable or constant, or an operator applied to terms. */
 expression
   : or_expr EOF!
@@ -86,7 +97,7 @@ unary_expr
 
 atom_expr
   : constant
-  | variableOrField
+  | typedFieldOrVar
   | call
   | open=LPAR or_expr close=RPAR
     -> ^(LPAR[$open,""] or_expr RPAR[$close,""])
@@ -106,17 +117,15 @@ parameter
     -> ^(PAR NAT_LIT)
   ;
 
-variableOrField
-  : prefix=ID COLON name=ID 
-    ( DOT field1=ID
-      -> ^(FIELD $name $field1 $prefix)
-    | -> ^(VAR $name $prefix)
-    )
-  | name=ID
-    ( DOT field2=ID
-      -> ^(FIELD $name $field2)
-    | -> ^(VAR $name)
-    )
+typedFieldOrVar
+  : ID COLON fieldOrVar
+    -> ^(FIELD fieldOrVar ID)
+  | fieldOrVar
+    -> ^(FIELD fieldOrVar)
+  ;
+
+fieldOrVar
+  : ID (DOT^ ID)?
   ;
 
 call
@@ -183,26 +192,28 @@ EscapeSequence
 ID  : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*;
 
 AMP       : '&' ;
-DOLLAR    : '$' ;
-DOT       : '.' ;
-NOT       : '!' ;
-BAR       : '|' ;
-SHARP     : '#' ;
-PLUS      : '+' ;
 ASTERISK  : '*' ;
-DONT_CARE	: '_' ;
-MINUS     : '-' ;
-QUOTE     : '"' ;
+BAR       : '|' ;
 BSLASH    : '\\';
-SLASH     : '/';
-PERCENT   : '%';
-COMMA     : ',' ;
-SEMI      : ';' ;
 COLON     : ':' ;
+COMMA     : ',' ;
+DOLLAR    : '$' ;
+DONT_CARE : '_' ;
+DOT       : '.' ;
+MINUS     : '-' ;
+NOT       : '!' ;
+PERCENT   : '%';
+PLUS      : '+' ;
+QUOTE     : '"' ;
+SEMI      : ';' ;
+SHARP     : '#' ;
+SLASH     : '/';
 LPAR      : '(' ;
 RPAR      : ')' ;
 LCURLY    : '{' ;
 RCURLY    : '}' ;
+ASSIGN    : '=' ;
+BECOMES   : ':=' ;
 EQ        : '==' ;
 NEQ       : '!=' ;
 GT        : '>' ;

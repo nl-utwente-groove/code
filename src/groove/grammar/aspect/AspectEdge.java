@@ -33,6 +33,7 @@ import static groove.grammar.aspect.AspectKind.TEST;
 import static groove.graph.GraphRole.RULE;
 import groove.algebra.Operator;
 import groove.algebra.SignatureKind;
+import groove.algebra.syntax.Expression;
 import groove.automaton.RegExpr;
 import groove.grammar.aspect.AspectKind.NestedValue;
 import groove.grammar.model.FormatError;
@@ -369,8 +370,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
                 if (getPredicate() instanceof Assignment) {
                     text = ((Assignment) getPredicate()).toDisplayString("?=");
                 } else {
-                    text =
-                        ((groove.algebra.syntax.Expression) getPredicate()).toDisplayString();
+                    text = ((Expression) getPredicate()).toDisplayString();
                 }
             } else if (isAssign()) {
                 text =
@@ -403,8 +403,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
 
     /** 
      * Returns the rule label that this aspect edge gives rise to, if any.
-     * @return a type label generated from the aspects on this edge, or {@code null}
-     * if the edge does not give rise to a type label.
+     * @return a rule label generated from the aspects on this edge, or {@code null}
+     * if the edge does not give rise to a rule label.
      */
     private RuleLabel createRuleLabel() throws FormatException {
         assert getGraphRole() == RULE;
