@@ -104,7 +104,6 @@ public enum Look {
         @Override
         void init() {
             add(VisualKey.DASH, Values.ABSTRACT_DASH);
-            add(VisualKey.FONT, Font.ITALIC);
         }
     },
     /** Remark node and edge look. */
