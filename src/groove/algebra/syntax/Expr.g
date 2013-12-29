@@ -39,6 +39,16 @@ import groove.grammar.model.FormatErrorSet;
     public FormatErrorSet getErrors() {
         return this.errors;
     }
+    
+    /** Instantiates the parser for a given string. */
+    public static ExprParser instance(String term) {
+        ANTLRStringStream input = new ANTLRStringStream(term);
+        ExprLexer lexer = new ExprLexer(input);
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        ExprParser parser = new ExprParser(tokenStream);
+        parser.setTreeAdaptor(new ExprTreeAdaptor(tokenStream));
+        return parser;
+    }
 }
 
 /** Content of a let:-prefix. */
@@ -50,7 +60,7 @@ assignment
 test_expression
   : // legacy special case: "var = expression"
     // which is equivalent to "var == expression"
-    ID ASSIGN expression -> ^(EQ ID expression)
+    ID op=ASSIGN expression -> ^(EQ[$op,"=="] ^(FIELD ID) expression)
   | expression
   ;
 
@@ -95,17 +105,25 @@ unary_expr
   | atom_expr
   ;
 
+/** Atomic expression, i.e., without operator occurrences. */
 atom_expr
   : constant
   | typedFieldOrVar
   | call
-  | open=LPAR or_expr close=RPAR
+  | par_expr
+  ;
+
+/** Parenthesised expression. */
+par_expr
+  : open=LPAR or_expr close=RPAR
     -> ^(LPAR[$open,""] or_expr RPAR[$close,""])
   ;
 
 constant
-  : prefix=ID COLON literal
-    -> ^(CONST literal ID)
+  : prefix=ID COLON
+    ( literal -> ^(CONST literal ID)
+    | MINUS literal -> ^(CONST ^(MINUS literal) ID)
+    )
   | literal
     -> ^(CONST literal)
   ;

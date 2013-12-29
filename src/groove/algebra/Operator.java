@@ -30,10 +30,11 @@ public class Operator {
      * @throws IllegalArgumentException if the method parameter or return types
      * are not type variables.
      */
-    private Operator(SignatureKind signature, Method method)
+    private Operator(SignatureKind signature, OpValue opValue, Method method)
         throws IllegalArgumentException {
         Type[] methodParameterTypes = method.getGenericParameterTypes();
         this.signature = signature;
+        this.opValue = opValue;
         this.arity = methodParameterTypes.length;
         this.name = method.getName();
         this.parameterTypes = new ArrayList<SignatureKind>();
@@ -71,15 +72,28 @@ public class Operator {
         return this.signature;
     }
 
+    private final SignatureKind signature;
+
+    /** Returns the enumerated operator value of the operator. */
+    public OpValue getOpValue() {
+        return this.opValue;
+    }
+
+    private final OpValue opValue;
+
     /** Returns the name of the operator. */
     public String getName() {
         return this.name;
     }
 
+    private final String name;
+
     /** Returns the number of parameters of this operator. */
     public int getArity() {
         return this.arity;
     }
+
+    private final int arity;
 
     /** 
      * Returns the parameter type names of this operator.
@@ -89,6 +103,8 @@ public class Operator {
         return this.parameterTypes;
     }
 
+    private final List<SignatureKind> parameterTypes;
+
     /** 
      * Returns the result type name of this operator.
      * The type name is actually the name of the defining signature.
@@ -97,26 +113,34 @@ public class Operator {
         return this.returnType;
     }
 
-    /** Returns the name of the operator, preceded with its containing signature. */
-    public String getFullName() {
-        return this.signature + ":" + this.name;
-    }
+    private final SignatureKind returnType;
 
     /** Returns the in- or prefix symbol of this operator, or {@code null} if it has none. */
     public String getSymbol() {
         return this.symbol;
     }
 
+    private final String symbol;
+
     /** Returns the priority of this operator. */
     public Precedence getPrecedence() {
         return this.precedence;
     }
+
+    private final Precedence precedence;
 
     /**
      * Returns the description in the {@link ToolTipHeader} annotation of the method.
      */
     public String getDescription() {
         return this.description;
+    }
+
+    private final String description;
+
+    /** Returns the name of the operator, preceded with its containing signature. */
+    public String getFullName() {
+        return getSignature() + ":" + getName();
     }
 
     @Override
@@ -132,15 +156,6 @@ public class Operator {
     public CallExpr newTerm(Expression... args) {
         return new CallExpr(this, args);
     }
-
-    private final SignatureKind signature;
-    private final int arity;
-    private final List<SignatureKind> parameterTypes;
-    private final SignatureKind returnType;
-    private final String name;
-    private final String symbol;
-    private final Precedence precedence;
-    private final String description;
 
     /** 
      * Returns the method from a given signature class with a given name. 
@@ -199,12 +214,12 @@ public class Operator {
         return result.toString();
     }
 
-    /** Computes the name of an (all-caps) enum-value and converts it to camel case. */
-    static Operator newInstance(SignatureKind sigKind, OpValue enumValue) {
-        String opName = getOperatorName(enumValue);
+    /** Creates the operator for a given signature and operator value. */
+    static Operator newInstance(SignatureKind sigKind, OpValue opValue) {
+        String opName = getOperatorName(opValue);
         Method opMethod =
-            getOperatorMethod(enumValue.getClass().getEnclosingClass(), opName);
-        return new Operator(sigKind, opMethod);
+            getOperatorMethod(opValue.getClass().getEnclosingClass(), opName);
+        return new Operator(sigKind, opValue, opMethod);
     }
 
     /** Returns the operators for a given (prefix or infix) operator symbol or name. */
