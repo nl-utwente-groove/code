@@ -1326,25 +1326,18 @@ public enum AspectKind {
             }
 
             @Override
-            Object parseContent(String text, GraphRole role)
+            Expression parseContent(String text, GraphRole role)
                 throws FormatException {
-                Object result;
-                if (text.indexOf('=') < 0) {
-                    Expression expr = Expression.parse(text);
-                    if (expr.getKind() == Kind.FIELD) {
-                        throw new FormatException(
-                            "Identifier '%s' not allowed as predicate expression",
-                            text);
-                    }
-                    SignatureKind type = expr.getSignature();
-                    if (type != SignatureKind.BOOL) {
-                        throw new FormatException(
-                            "Non-boolean expression '%s' not allowed as predicate expression",
-                            text);
-                    }
-                    result = expr;
-                } else {
-                    result = Assignment.parse(text);
+                Expression result = Expression.parseTest(text);
+                if (result.getKind() == Kind.FIELD) {
+                    throw new FormatException(
+                        "Field expression '%s' not allowed as predicate expression",
+                        text);
+                }
+                if (result.getSignature() != SignatureKind.BOOL) {
+                    throw new FormatException(
+                        "Non-boolean expression '%s' not allowed as predicate expression",
+                        text);
                 }
                 return result;
             }
@@ -1357,11 +1350,7 @@ public enum AspectKind {
             @Override
             Object relabel(Object content, TypeLabel oldLabel,
                     TypeLabel newLabel) {
-                if (content instanceof Assignment) {
-                    return ((Assignment) content).relabel(oldLabel, newLabel);
-                } else {
-                    return ((Expression) content).relabel(oldLabel, newLabel);
-                }
+                return ((Expression) content).relabel(oldLabel, newLabel);
             }
         },
         /** Let expression content. */

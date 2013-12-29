@@ -266,22 +266,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
                 AspectNode source = edge.source();
                 boolean nac =
                     edge.getKind().inNAC() && !source.getKind().inNAC();
-                Object predicate = edge.getPredicate();
-                AspectNode outcome;
-                if (predicate instanceof Assignment) {
-                    Assignment test = (Assignment) predicate;
-                    AspectNode value = addExpression(source, test.getRhs());
-                    String aspect = nac ? edge.getAspect().toString() : "";
-                    AspectLabel idLabel =
-                        parser.parse(aspect + test.getLhs(), getRole());
-                    addEdge(source, idLabel, value).setFixed();
-                } else {
-                    outcome =
-                        addExpression(source, (Expression) edge.getPredicate());
-                    // specify whether the outcome should be true or false
-                    Constant value = Constant.instance(!nac);
-                    outcome.setAspects(parser.parse(value.toString(), getRole()));
-                }
+                Expression predicate = edge.getPredicate();
+                AspectNode outcome = addExpression(source, predicate);
+                // specify whether the outcome should be true or false
+                Constant value = Constant.instance(!nac);
+                outcome.setAspects(parser.parse(value.toString(), getRole()));
+                //                }
             } catch (FormatException e) {
                 errors.addAll(e.getErrors());
             }
@@ -417,7 +407,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
             AspectKind fieldKind) {
         AspectNode result = null;
         for (AspectEdge edge : outEdgeSet(owner)) {
-            if (edge.getRuleLabel().text().equals(fieldName)) {
+            if (edge.getInnerText().equals(fieldName)) {
                 AspectNode target = edge.target();
                 // make sure we have an LHS edge or a count edge
                 if (target.getAttrKind() == fieldKind
