@@ -20,6 +20,8 @@ import static groove.graph.EdgeRole.BINARY;
 import groove.algebra.Precedence;
 import groove.algebra.SignatureKind;
 import groove.grammar.type.TypeLabel;
+import groove.gui.look.Line;
+import groove.gui.look.Line.Style;
 
 import java.util.Collections;
 import java.util.Map;
@@ -75,6 +77,19 @@ public class FieldExpr extends Expression {
     }
 
     @Override
+    protected Line toLine(Precedence context) {
+        Line result;
+        if (getTarget() != null) {
+            result =
+                Line.atom(getTarget()).style(Style.ITALIC).append(
+                    "." + getField());
+        } else {
+            result = Line.atom(getField());
+        }
+        return result;
+    }
+
+    @Override
     public boolean isTerm() {
         return false;
     }
@@ -116,7 +131,7 @@ public class FieldExpr extends Expression {
         final int prime = 31;
         int result = this.field.hashCode();
         result =
-            prime * result + this.target == null ? 0 : this.target.hashCode();
+            prime * result + (this.target == null ? 0 : this.target.hashCode());
         result = prime * result + this.type.hashCode();
         return result;
     }

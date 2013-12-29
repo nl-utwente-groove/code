@@ -21,12 +21,11 @@ import groove.algebra.Precedence;
 import groove.algebra.SignatureKind;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
+import groove.gui.look.Line;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 
 /**
@@ -50,9 +49,7 @@ public abstract class Expression {
      * the display string does not contain type prefixes.
      */
     final public String toDisplayString() {
-        StringBuilder result = new StringBuilder();
-        buildDisplayString(result, Precedence.NONE);
-        return result.toString();
+        return toLine().toFlatString();
     }
 
     /**
@@ -61,6 +58,21 @@ public abstract class Expression {
      */
     abstract protected void buildDisplayString(StringBuilder result,
             Precedence context);
+
+    /**
+     * Returns a text representation of the term.
+     * The difference with {@link #toString()} is that
+     * the display string does not contain type prefixes.
+     */
+    final public Line toLine() {
+        return toLine(Precedence.NONE);
+    }
+
+    /**
+     * Builds the display string for this expression in the 
+     * result parameter.
+     */
+    abstract protected Line toLine(Precedence context);
 
     /** 
      * Returns a string representation from which
@@ -144,25 +156,34 @@ public abstract class Expression {
     private Map<String,SignatureKind> varMap;
 
     /**
-     * Returns the expression tree for a given string. 
-     * @param term the string to be parsed as an expression
+     * Returns the expression tree for a given test:-content string. 
+     * @param term the string to be parsed as a test-expression
      */
-    public static Expression parse(String term) throws FormatException {
-        return parseToTree(term).toExpression();
+    public static Expression parseTest(String term) throws FormatException {
+        return parseToTree(term, true).toExpression();
     }
 
     /**
      * Returns the expression tree for a given string. 
      * @param term the string to be parsed as an expression
      */
-    private static ExprTree parseToTree(String term) throws FormatException {
-        ANTLRStringStream input = new ANTLRStringStream(term);
-        ExprLexer lexer = new ExprLexer(input);
-        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        ExprParser parser = new ExprParser(tokenStream);
-        parser.setTreeAdaptor(new ExprTreeAdaptor(tokenStream));
+    public static Expression parse(String term) throws FormatException {
+        return parseToTree(term, false).toExpression();
+    }
+
+    /**
+     * Returns the expression tree for a given string. 
+     * @param term the string to be parsed as an expression
+     * @param test if {@code true}, {@link ExprParser#test_expression()}
+     * is used for parsing, otherwise {@link ExprParser#expression()}
+     */
+    private static ExprTree parseToTree(String term, boolean test)
+        throws FormatException {
+        ExprParser parser = ExprParser.instance(term);
         try {
-            ExprTree result = (ExprTree) parser.expression().getTree();
+            ExprTree result =
+                (ExprTree) (test ? parser.test_expression().getTree()
+                        : parser.expression().getTree());
             parser.getErrors().throwException();
             return result;
         } catch (FormatException e) {
@@ -174,10 +195,10 @@ public abstract class Expression {
         }
     }
 
-    /** Call with <expression> */
+    /** Call with &lt;expression> */
     public static void main(String[] args) {
         try {
-            ExprTree tree = parseToTree(args[0]);
+            ExprTree tree = parseToTree(args[0], false);
             System.out.printf("Original expression: %s%n", args[0]);
             System.out.printf("Flattened term tree: %s%n", tree.toStringTree());
             System.out.printf("Corresponding term:  %s%n", tree.toExpression());

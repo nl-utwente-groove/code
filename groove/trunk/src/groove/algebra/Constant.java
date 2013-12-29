@@ -18,6 +18,7 @@ package groove.algebra;
 
 import groove.algebra.syntax.Expression;
 import groove.grammar.model.FormatException;
+import groove.gui.look.Line;
 import groove.util.ExprParser;
 import groove.util.Keywords;
 
@@ -125,6 +126,11 @@ public class Constant extends Expression {
     @Override
     protected void buildDisplayString(StringBuilder result, Precedence context) {
         result.append(this.symbol);
+    }
+
+    @Override
+    protected Line toLine(Precedence context) {
+        return Line.atom(this.symbol);
     }
 
     /**

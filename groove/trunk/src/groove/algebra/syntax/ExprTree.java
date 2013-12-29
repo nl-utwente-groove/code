@@ -1,7 +1,10 @@
 package groove.algebra.syntax;
 
 import groove.algebra.Constant;
+import groove.algebra.IntSignature;
 import groove.algebra.Operator;
+import groove.algebra.RealSignature;
+import groove.algebra.Signature.OpValue;
 import groove.algebra.SignatureKind;
 import groove.grammar.model.FormatException;
 
@@ -135,6 +138,16 @@ public class ExprTree extends CommonTree {
         return result;
     }
 
+    /** Returns the constant represented by this subtree. */
+    private Constant findConstant() {
+        boolean minus = getType() == ExprParser.MINUS;
+        ExprTree literal = minus ? getChild(0) : this;
+        SignatureKind type = getSigKind(literal.getToken());
+        String literalText = minus ? getText() : "";
+        literalText += literal.getChild(0).getText();
+        return Constant.instance(type, literalText);
+    }
+
     private Map<SignatureKind,Parameter> toParameters() throws FormatException {
         assert getType() == ExprParser.PAR;
         Map<SignatureKind,Parameter> result =
@@ -217,7 +230,7 @@ public class ExprTree extends CommonTree {
      * Returns the set of derivable expressions for an operator tree,
      * i.e., in which the root represents an operator.
      */
-    private Map<SignatureKind,CallExpr> toOpExprs(
+    private Map<SignatureKind,Expression> toOpExprs(
             Map<String,SignatureKind> varMap) throws FormatException {
         List<Map<SignatureKind,? extends Expression>> args =
             new ArrayList<Map<SignatureKind,? extends Expression>>();
@@ -233,10 +246,10 @@ public class ExprTree extends CommonTree {
      * i.e., in which the root is a {@link ExprParser#CALL} node.
      * @param varMap variable typing
      */
-    private Map<SignatureKind,CallExpr> toCallExprs(
+    private Map<SignatureKind,Expression> toCallExprs(
             Map<String,SignatureKind> varMap) throws FormatException {
-        Map<SignatureKind,CallExpr> result =
-            new EnumMap<SignatureKind,CallExpr>(SignatureKind.class);
+        Map<SignatureKind,Expression> result =
+            new EnumMap<SignatureKind,Expression>(SignatureKind.class);
         List<Map<SignatureKind,? extends Expression>> args =
             new ArrayList<Map<SignatureKind,? extends Expression>>();
         // last token is an artificial CLOSE
@@ -263,11 +276,11 @@ public class ExprTree extends CommonTree {
      * possible types to corresponding expressions
      * @param varMap variable typing
      */
-    private Map<SignatureKind,CallExpr> toCallExprs(String prefix,
+    private Map<SignatureKind,Expression> toCallExprs(String prefix,
             String opName, List<Map<SignatureKind,? extends Expression>> args,
             Map<String,SignatureKind> varMap) throws FormatException {
-        Map<SignatureKind,CallExpr> result =
-            new EnumMap<SignatureKind,CallExpr>(SignatureKind.class);
+        Map<SignatureKind,Expression> result =
+            new EnumMap<SignatureKind,Expression>(SignatureKind.class);
         SignatureKind opSig = SignatureKind.getKind(prefix);
         Operator op = opSig.getOperator(opName);
         if (op == null) {
@@ -286,11 +299,11 @@ public class ExprTree extends CommonTree {
      * possible types to corresponding expressions
      * @param varMap variable typing
      */
-    private Map<SignatureKind,CallExpr> toCallExprs(String opName,
+    private Map<SignatureKind,Expression> toCallExprs(String opName,
             List<Map<SignatureKind,? extends Expression>> args,
             Map<String,SignatureKind> varMap) throws FormatException {
-        Map<SignatureKind,CallExpr> result =
-            new EnumMap<SignatureKind,CallExpr>(SignatureKind.class);
+        Map<SignatureKind,Expression> result =
+            new EnumMap<SignatureKind,Expression>(SignatureKind.class);
         List<Operator> ops = Operator.getOps(opName);
         // look up op based on argument types
         if (ops.isEmpty()) {
@@ -327,7 +340,7 @@ public class ExprTree extends CommonTree {
      * @throws FormatException if {@code args} does not have values
      * for the required operator types
      */
-    private CallExpr newCallExp(Operator op,
+    private Expression newCallExp(Operator op,
             List<Map<SignatureKind,? extends Expression>> args)
         throws FormatException {
         if (op.getArity() != args.size()) {
@@ -346,17 +359,21 @@ public class ExprTree extends CommonTree {
             }
             selectedArgs.add(arg);
         }
-        return new CallExpr(op, selectedArgs);
-    }
-
-    /** Returns the constant represented by this subtree. */
-    private Constant findConstant() {
-        return Constant.instance(getSigKind(getToken()), getChild(0).getText());
+        // we distinguish negated constants, to make sure that
+        // int:-1 parses to the same expression as -1
+        OpValue opValue = op.getOpValue();
+        if ((opValue == IntSignature.Op.NEG || opValue == RealSignature.Op.NEG)
+            && selectedArgs.get(0) instanceof Constant) {
+            return Constant.instance(op.getResultType(), op.getSymbol()
+                + selectedArgs.get(0).toDisplayString());
+        } else {
+            return new CallExpr(op, selectedArgs);
+        }
     }
 
     /** Returns the signature kind corresponding to a given type token. */
     private SignatureKind getSigKind(Token token) {
-        switch (getToken().getType()) {
+        switch (token.getType()) {
         case ExprParser.STRING:
             return SignatureKind.STRING;
         case ExprParser.INT:
