@@ -33,6 +33,11 @@ public abstract class Line {
     /** Converts this object to a string representation by applying a given renderer. */
     abstract public <R extends Builder<R>> R toString(LineFormat<R> renderer);
 
+    /** Returns a flattened string rendering of this line. */
+    public String toFlatString() {
+        return toString(StringFormat.instance()).toString();
+    }
+
     /** Returns a coloured version of this line,
      * where the colour is specified as a logical colour type. 
      */
