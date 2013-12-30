@@ -23,6 +23,7 @@ import groove.algebra.Precedence.Direction;
 import groove.algebra.Precedence.Placement;
 import groove.algebra.SignatureKind;
 import groove.grammar.type.TypeLabel;
+import groove.gui.look.Line;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -150,6 +151,7 @@ public class CallExpr extends Expression {
         }
     }
 
+    /** Builds a display string for an operator without symbol. */
     private void buildCallString(StringBuilder result) {
         result.append(this.op.getName());
         result.append('(');
@@ -165,6 +167,7 @@ public class CallExpr extends Expression {
         result.append(')');
     }
 
+    /** Builds a display string for an operator with an infix or prefix symbol. */
     private void buildFixString(StringBuilder result, Precedence context) {
         Precedence me = getOperator().getPrecedence();
         boolean addPars = me.compareTo(context) < 0;
@@ -195,6 +198,67 @@ public class CallExpr extends Expression {
         if (addPars) {
             result.append(')');
         }
+    }
+
+    @Override
+    protected Line toLine(Precedence context) {
+        if (getOperator().getSymbol() == null) {
+            return toCallLine();
+        } else {
+            return toFixLine(context);
+        }
+    }
+
+    /** Builds a display string for an operator without symbol. */
+    private Line toCallLine() {
+        List<Line> result = new ArrayList<Line>();
+        result.add(Line.atom(this.op.getName() + '('));
+        boolean firstArg = true;
+        for (Expression arg : getArgs()) {
+            if (!firstArg) {
+                result.add(Line.atom(", "));
+            } else {
+                firstArg = false;
+            }
+            result.add(arg.toLine(Precedence.NONE));
+        }
+        result.add(Line.atom(")"));
+        return Line.composed(result);
+    }
+
+    /** Builds a display string for an operator with an infix or prefix symbol. */
+    private Line toFixLine(Precedence context) {
+        List<Line> result = new ArrayList<Line>();
+        Precedence me = getOperator().getPrecedence();
+        boolean addPars = me.compareTo(context) < 0;
+        boolean addSpaces = me.compareTo(Precedence.MULT) < 0;
+        int nextArgIx = 0;
+        if (addPars) {
+            result.add(Line.atom("("));
+        }
+        if (me.getPlace() != Placement.PREFIX) {
+            // add left argument
+            result.add(this.args.get(nextArgIx).toLine(
+                me.getDirection() == Direction.LEFT ? me : me.increase()));
+            nextArgIx++;
+            if (addSpaces) {
+                result.add(Line.atom(" "));
+            }
+        }
+        result.add(Line.atom(getOperator().getSymbol()));
+        if (me.getPlace() != Placement.POSTFIX) {
+            // add left argument
+            if (addSpaces) {
+                result.add(Line.atom(" "));
+            }
+            result.add(this.args.get(nextArgIx).toLine(
+                me.getDirection() == Direction.RIGHT ? me : me.increase()));
+            nextArgIx++;
+        }
+        if (addPars) {
+            result.add(Line.atom(")"));
+        }
+        return Line.composed(result);
     }
 
     @Override

@@ -158,10 +158,10 @@ public class EncodedRuleFormula implements
         skipSpaces();
 
         // + <operator> formula
-        if (parseLiteral("&&")) {
+        if (parseLiteral("&&") || parseLiteral("&")) {
             Predicate<GraphState> Q = parseFormula();
             return new Predicate.And<GraphState>(P, Q);
-        } else if (parseLiteral("||")) {
+        } else if (parseLiteral("||") || parseLiteral("|")) {
             Predicate<GraphState> Q = parseFormula();
             return new Predicate.Or<GraphState>(P, Q);
         } else if (parseLiteral("->")) {

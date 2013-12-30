@@ -44,7 +44,6 @@ public class GenerateProgressMonitor {
     protected void addTransition(int stateCount, int transCount, int openCount) {
         if (transCount % UNIT == 0) {
             print("t");
-            this.printed++;
             endLine(stateCount, transCount, openCount);
         }
     }
@@ -61,8 +60,8 @@ public class GenerateProgressMonitor {
 
     private void endLine(int stateCount, int transCount, int openCount) {
         if (this.printed == WIDTH) {
-            System.out.printf(" %ss (%sx) %st%n  ", stateCount, transCount,
-                openCount);
+            System.out.printf(" %ss (%sx) %st%n  ", stateCount, openCount,
+                transCount);
             this.printed = 0;
         }
     }

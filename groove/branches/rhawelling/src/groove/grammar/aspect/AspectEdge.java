@@ -30,6 +30,7 @@ import static groove.grammar.aspect.AspectKind.READER;
 import static groove.grammar.aspect.AspectKind.REMARK;
 import static groove.grammar.aspect.AspectKind.SUBTYPE;
 import static groove.grammar.aspect.AspectKind.TEST;
+import static groove.graph.EdgeRole.NODE_TYPE;
 import static groove.graph.GraphRole.RULE;
 import groove.algebra.Operator;
 import groove.algebra.SignatureKind;
@@ -47,9 +48,15 @@ import groove.graph.EdgeRole;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.plain.PlainLabel;
+import groove.gui.look.Line;
+import groove.gui.look.Line.ColorType;
+import groove.gui.look.Line.Style;
 import groove.io.Util;
 import groove.util.ExprParser;
 import groove.util.Fixable;
+
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * Edge enriched with aspect data. Aspect edge labels are interpreted as
@@ -105,7 +112,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
             // We just want the edge role to be non-binary...
             return EdgeRole.FLAG;
         } else {
-            return getDisplayLabel().getRole();
+            Label label =
+                getGraphRole() == RULE ? getRuleLabel() : getTypeLabel();
+            return label == null ? EdgeRole.BINARY : label.getRole();
         }
     }
 
@@ -350,12 +359,28 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
         return PlainLabel.createLabel(label().toString());
     }
 
+    /** 
+     * Returns the rule label or the type label, whichever is appropriate.
+     * @see #getRuleLabel()
+     * @see #getTypeLabel()
+     */
+    public Label getMatchLabel() {
+        Label result = null;
+        if (this.graphRole == RULE) {
+            result = getRuleLabel();
+        } else {
+            result = getTypeLabel();
+        }
+        return result;
+    }
+
     /**
      * Returns the label of this edge as it should be displayed. 
      * This is either the type label, or the rule label, or (if neither are defined)
      * a default edge constructed from the inner text of the aspect label.
      */
     public Label getDisplayLabel() {
+        testFixed(true);
         Label result = null;
         if (this.graphRole == RULE) {
             result = getRuleLabel();
@@ -367,15 +392,12 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
             if (getKind() == NESTED) {
                 text = getAspect().getContentString();
             } else if (isPredicate()) {
-                if (getPredicate() instanceof Assignment) {
-                    text = ((Assignment) getPredicate()).toDisplayString("?=");
-                } else {
-                    text = ((Expression) getPredicate()).toDisplayString();
-                }
+                text = getPredicate().toDisplayString();
             } else if (isAssign()) {
                 text =
                     getAssign().toDisplayString(
-                        getGraphRole() == RULE ? ":=" : "=");
+                        getGraphRole() == RULE
+                            && !source().getKind().isCreator() ? ":=" : "=");
             } else if (getKind() == CONNECT) {
                 text = "+";
             } else if (getAttrKind() == ARGUMENT) {
@@ -391,6 +413,78 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
                 text = getInnerText();
             }
             result = PlainLabel.createLabel(text);
+        }
+        return result;
+    }
+
+    public Line getLine() {
+        Line result = null;
+        // line text, if the line is just atomic text
+        String text = null;
+        // set of line styles to be added to the entire line
+        Set<Style> styles = EnumSet.noneOf(Style.class);
+        // colour to be set for the entire line
+        ColorType color = null;
+        // prefix 
+        switch (getKind()) {
+        case CONNECT:
+            text = "+";
+            break;
+        case LET:
+            String symbol =
+                getGraphRole() == RULE && !source().getKind().isCreator()
+                        ? ":=" : "=";
+            result = Line.atom(getAssign().toDisplayString(symbol));
+            break;
+        case NESTED:
+            text = getAspect().getContentString();
+            break;
+        case ABSTRACT:
+            text = getTypeLabel().text();
+            if (getRole() == NODE_TYPE) {
+                styles.add(Style.ITALIC);
+            }
+            break;
+        case REMARK:
+            color = ColorType.REMARK;
+
+        case READER:
+        case ERASER:
+        case CREATOR:
+        case ADDER:
+        case EMBARGO:
+        case DEFAULT:
+            switch (getAttrKind()) {
+            case ARGUMENT:
+                text = "" + Util.LC_PI + getArgument();
+            case PRODUCT:
+            case INT:
+            case REAL:
+            case STRING:
+            case BOOL:
+            case TEST:
+            }
+            break;
+        }
+        // set bold or italic depending on edge role
+        switch (getRole()) {
+        case FLAG:
+            styles.add(Style.ITALIC);
+            break;
+        case NODE_TYPE:
+            styles.add(Style.BOLD);
+        }
+        if (result == null) {
+            if (text == null) {
+                text = getInnerText();
+            }
+            result = Line.atom(text);
+        }
+        for (Style s : styles) {
+            result = result.style(s);
+        }
+        if (color != null) {
+            result = result.color(color);
         }
         return result;
     }
@@ -628,9 +722,9 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
     }
 
     /** Convenience method to retrieve the attribute aspect content as a predicate. */
-    public Object getPredicate() {
+    public Expression getPredicate() {
         assert isPredicate();
-        return getAttrAspect().getContent();
+        return (Expression) getAttrAspect().getContent();
     }
 
     /**

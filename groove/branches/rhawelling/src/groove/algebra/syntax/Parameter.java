@@ -18,6 +18,7 @@ package groove.algebra.syntax;
 
 import groove.algebra.Precedence;
 import groove.algebra.SignatureKind;
+import groove.gui.look.Line;
 
 import java.util.Collections;
 import java.util.Map;
@@ -44,6 +45,11 @@ public class Parameter extends Expression {
     protected void buildDisplayString(StringBuilder result, Precedence context) {
         result.append("$");
         result.append(getNumber());
+    }
+
+    @Override
+    protected Line toLine(Precedence context) {
+        return Line.atom("$" + getNumber());
     }
 
     /** Returns the parameter number. */
