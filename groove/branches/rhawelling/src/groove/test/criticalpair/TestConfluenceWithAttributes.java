@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import groove.grammar.Grammar;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
+import groove.transform.criticalpair.ConfluenceStatus;
 import groove.transform.criticalpair.CriticalPair;
 
 import java.io.File;
@@ -51,7 +52,7 @@ public class TestConfluenceWithAttributes {
         for (CriticalPair pair : pairs) {
             System.out.println(pair.getRule1().getFullName());
             System.out.println(pair.getRule2().getFullName() + "\n");
-            assertTrue(pair.isStrictlyConfluent(grammar));
+            assertTrue(pair.getStrictlyConfluent(grammar) == ConfluenceStatus.CONFLUENT);
         }
 
     }

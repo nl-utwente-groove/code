@@ -112,9 +112,9 @@ public class ParallelPair {
 
     public Map<Long,Set<RuleNode>> getNodeMatch(MatchNumber matchnum) {
         Map<Long,Set<RuleNode>> nodeMatch;
-        if (matchnum == MatchNumber.One) {
+        if (matchnum == MatchNumber.ONE) {
             nodeMatch = this.nodeMatch1;
-        } else if (matchnum == MatchNumber.Two) {
+        } else if (matchnum == MatchNumber.TWO) {
             nodeMatch = this.nodeMatch2;
         } else {
             throw new IllegalArgumentException("matchnum must be One or Two");
@@ -352,8 +352,8 @@ public class ParallelPair {
         result += " }\nmatch: {";
         for (Long group : getCombinationGroups()) {
             result += " (";
-            Set<RuleNode> r1nodes = getCombination(group, MatchNumber.One);
-            Set<RuleNode> r2nodes = getCombination(group, MatchNumber.Two);
+            Set<RuleNode> r1nodes = getCombination(group, MatchNumber.ONE);
+            Set<RuleNode> r2nodes = getCombination(group, MatchNumber.TWO);
             for (RuleNode rn : r1nodes) {
                 result += " " + nodeName1.get(rn);
             }

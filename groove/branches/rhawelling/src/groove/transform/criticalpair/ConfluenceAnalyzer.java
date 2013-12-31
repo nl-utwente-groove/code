@@ -30,6 +30,7 @@ import groove.transform.RuleEvent;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -46,9 +47,10 @@ class ConfluenceAnalyzer {
      * confluent such that the transformation morphisms commute.
      * @param pair
      * @param rules
-     * @return
+     * @return true only if the pair is confluent
      */
-    static boolean isConfluent(CriticalPair pair, Grammar grammar) {
+    static ConfluenceStatus getStrictlyConfluent(CriticalPair pair,
+            Grammar grammar) {
         Set<HostGraphWithMorphism> oldStates1 =
             new HashSet<HostGraphWithMorphism>();
         Set<HostGraphWithMorphism> oldStates2 =
@@ -68,7 +70,7 @@ class ConfluenceAnalyzer {
         if (isConfluent(hwm1, hwm2)) {
             //the pair was already strictly confluent
             System.out.println("Directly Confluent");
-            return true;
+            return ConfluenceStatus.CONFLUENT;
         }
         newStates1.add(hwm1);
         newStates2.add(hwm2);
@@ -84,21 +86,55 @@ class ConfluenceAnalyzer {
             Set<HostGraphWithMorphism> nextStates1 =
                 computeNewStates(newStates1, grammar);
             if (containsConfluentStatePair(nextStates1, oldStates2)) {
-                return true;
+                pair.setStrictlyConfluent(ConfluenceStatus.CONFLUENT, grammar);
+                return ConfluenceStatus.CONFLUENT;
             }
             Set<HostGraphWithMorphism> nextStates2 =
                 computeNewStates(newStates2, grammar);
             if (containsConfluentStatePair(nextStates1, nextStates2)
                 | containsConfluentStatePair(oldStates1, nextStates2)) {
-                return true;
+                pair.setStrictlyConfluent(ConfluenceStatus.CONFLUENT, grammar);
+                return ConfluenceStatus.CONFLUENT;
             }
-            //else continue the search
+            //no evidence for confluence has been found, we continue the search
+
+            //It is possible that nextStates1 or nextStates2 contains a state that is similar to one of the states
+            //we have already visited, check this
+            Iterator<HostGraphWithMorphism> stateIt = nextStates1.iterator();
+            while (stateIt.hasNext()) {
+                HostGraphWithMorphism current = stateIt.next();
+                for (HostGraphWithMorphism oldState : oldStates1) {
+                    //if the state is confluent with a state we have already discovered, then the states are isomorphic
+                    //this means we can remove it from nextStates because it is not actually a new state
+                    if (isConfluent(current, oldState)) {
+                        stateIt.remove();
+                        break;
+                    }
+                }
+            }
+            //repeat for nextStates2
+            stateIt = nextStates2.iterator();
+            while (stateIt.hasNext()) {
+                HostGraphWithMorphism current = stateIt.next();
+                for (HostGraphWithMorphism oldState : oldStates2) {
+                    if (isConfluent(current, oldState)) {
+                        stateIt.remove();
+                        break;
+                    }
+                }
+            }
 
             newStates1 = nextStates1;
             newStates2 = nextStates2;
+
+            if (oldStates1.size() + oldStates2.size() > 100) {
+                pair.setStrictlyConfluent(ConfluenceStatus.UNDECIDED, grammar);
+                return ConfluenceStatus.UNDECIDED;
+            }
         }
         //all states have been analyzed however no proof for strict local confluence has been found
-        return false;
+        pair.setStrictlyConfluent(ConfluenceStatus.NOTCONFLUENT, grammar);
+        return ConfluenceStatus.NOTCONFLUENT;
     }
 
     private static Set<HostGraphWithMorphism> computeNewStates(
@@ -115,7 +151,11 @@ class ConfluenceAnalyzer {
                 if (matches.isEmpty()) {
                     System.out.println("No matches found");
                 } else {
-                    System.out.println(matches.size() + " matches found");
+                    System.out.print(matches.size() + " matches found: ");
+                    for (Proof proof : matches) {
+                        System.out.print(" " + proof.getRule().getFullName());
+                    }
+                    System.out.println();
                 }
                 for (Proof proof : matches) {
                     //TODO unsure if it matters whether the argument is record or null

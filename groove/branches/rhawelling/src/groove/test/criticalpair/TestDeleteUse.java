@@ -101,6 +101,10 @@ public class TestDeleteUse {
 
         pairs =
             CriticalPair.computeCriticalPairs(constant_3_clique,
+                constant_3_clique);
+        assertTrue(pairs.size() == 0);
+        pairs =
+            CriticalPair.computeCriticalPairs(constant_3_clique,
                 constantSelfEdge);
         assertTrue(pairs.size() == 0);
         pairs =
