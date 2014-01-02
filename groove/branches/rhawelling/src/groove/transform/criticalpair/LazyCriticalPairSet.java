@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
@@ -159,7 +158,12 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
     public Iterator<CriticalPair> iterator() {
         return new Iterator<CriticalPair>() {
 
-            CriticalPair last = null;
+            private CriticalPair last = null;
+
+            //true if currentIt has been replaced with a new iterator
+            //this is needed to implement remove() correctly
+            private boolean currentItReplaced = false;
+
             Iterator<CriticalPair> currentIt =
                 LazyCriticalPairSet.this.pairs.iterator();
 
@@ -167,27 +171,34 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
             public boolean hasNext() {
                 if (!this.currentIt.hasNext()) {
                     this.currentIt = computeMorePairs().iterator();
+                    this.currentItReplaced = true;
+
                 }
                 return this.currentIt.hasNext();
             }
 
             @Override
             public CriticalPair next() {
-                if (!this.hasNext()) {
-                    throw new NoSuchElementException();
-                } else {
-                    this.last = this.currentIt.next();
-                    return this.last;
-                }
+                /* hasNext() ensures that currentIt is replaced
+                 * with a new iterator if currentIt.isEmpty()
+                 */
+                hasNext();
+                this.last = this.currentIt.next();
+                this.currentItReplaced = false;
+                return this.last;
             }
 
             @Override
             public void remove() {
-                if (this.last == null) {
-                    throw new IllegalStateException();
+                if (this.currentItReplaced) {
+                    if (this.last == null) {
+                        throw new IllegalStateException();
+                    } else {
+                        LazyCriticalPairSet.this.pairs.remove(this.last);
+                        this.last = null;
+                    }
                 } else {
-                    LazyCriticalPairSet.this.remove(this.last);
-                    this.last = null;
+                    this.currentIt.remove();
                 }
             }
         };

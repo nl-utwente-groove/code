@@ -39,6 +39,8 @@ import java.util.Set;
  */
 class ConfluenceAnalyzer {
 
+    private static int DEFAULTSEARCHDEPTH = 100;
+
     private static IsoChecker isoChecker = IsoChecker.getInstance(true);
 
     /**
@@ -47,10 +49,24 @@ class ConfluenceAnalyzer {
      * confluent such that the transformation morphisms commute.
      * @param pair
      * @param rules
-     * @return true only if the pair is confluent
+     * @return {@link ConfluenceStatus.CONFLUENT} only if the pair is confluent
      */
     static ConfluenceStatus getStrictlyConfluent(CriticalPair pair,
             Grammar grammar) {
+        return getStrictlyConfluent(pair, grammar, DEFAULTSEARCHDEPTH);
+    }
+
+    /**
+     * Checks if the given CriticalPair is strictly locally confluent
+     * Strict local confluence means that the pair of direct transformations is locally
+     * confluent such that the transformation morphisms commute.
+     * @param pair
+     * @param rules
+     * @param searchDepth
+     * @return {@link ConfluenceStatus.CONFLUENT} only if the pair is confluent
+     */
+    static ConfluenceStatus getStrictlyConfluent(CriticalPair pair,
+            Grammar grammar, int searchDepth) {
         Set<HostGraphWithMorphism> oldStates1 =
             new HashSet<HostGraphWithMorphism>();
         Set<HostGraphWithMorphism> oldStates2 =
@@ -127,7 +143,7 @@ class ConfluenceAnalyzer {
             newStates1 = nextStates1;
             newStates2 = nextStates2;
 
-            if (oldStates1.size() + oldStates2.size() > 100) {
+            if (oldStates1.size() + oldStates2.size() > searchDepth) {
                 pair.setStrictlyConfluent(ConfluenceStatus.UNDECIDED, grammar);
                 return ConfluenceStatus.UNDECIDED;
             }
@@ -149,13 +165,13 @@ class ConfluenceAnalyzer {
                 Collection<Proof> matches =
                     rule.getAllMatches(state.getHostGraph(), null);
                 if (matches.isEmpty()) {
-                    System.out.println("No matches found");
+                    //System.out.println("No matches found");
                 } else {
-                    System.out.print(matches.size() + " matches found: ");
-                    for (Proof proof : matches) {
-                        System.out.print(" " + proof.getRule().getFullName());
-                    }
-                    System.out.println();
+                    //                    System.out.print(matches.size() + " matches found: ");
+                    //                    for (Proof proof : matches) {
+                    //                        System.out.print(" " + proof.getRule().getFullName());
+                    //                    }
+                    //                    System.out.println();
                 }
                 for (Proof proof : matches) {
                     //TODO unsure if it matters whether the argument is record or null

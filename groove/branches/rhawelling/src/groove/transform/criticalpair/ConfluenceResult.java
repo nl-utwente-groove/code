@@ -27,7 +27,7 @@ public class ConfluenceResult {
 
     private Grammar grammar;
 
-    private ConfluenceStatus status = ConfluenceStatus.UNDECIDED;
+    private ConfluenceStatus status = ConfluenceStatus.UNTESTED;
 
     /*
      * These untestedPairs should not be visible outside of this class, because the confluenceResult
@@ -86,38 +86,7 @@ public class ConfluenceResult {
             boolean done = false;
             while (it.hasNext() && !done) {
                 CriticalPair pair = it.next();
-                ConfluenceStatus pairStatus =
-                    pair.getStrictlyConfluent(this.grammar);
-                switch (pair.getStrictlyConfluent(this.grammar)) {
-                case CONFLUENT:
-                    //nothing
-                    break;
-                case UNDECIDED:
-                    if (this.status == ConfluenceStatus.CONFLUENT
-                        || this.status == ConfluenceStatus.UNTESTED) {
-                        this.status = ConfluenceStatus.UNDECIDED;
-                    }
-                    this.undecidedPairs.add(pair);
-                    if (target == ConfluenceStatus.UNDECIDED) {
-                        done = true;
-                    }
-                    break;
-                case NOTCONFLUENT:
-                    this.status = ConfluenceStatus.NOTCONFLUENT;
-                    this.nonConfluentPairs.add(pair);
-                    if (target == ConfluenceStatus.UNDECIDED
-                        || target == ConfluenceStatus.NOTCONFLUENT) {
-                        done = true;
-                    }
-                    break;
-                case UNTESTED:
-                    throw new RuntimeException("Test for confluence failed: "
-                        + pairStatus);
-                default:
-                    //can not happen unless the pairStatus enum is modified
-                    throw new RuntimeException("Unknown ConfluenceStatus: "
-                        + pairStatus);
-                }
+                done = updateStatus(pair, target);
                 //remove the pair from the untested set
                 it.remove();
             }
@@ -134,38 +103,63 @@ public class ConfluenceResult {
         Iterator<CriticalPair> it = this.untestedPairs.iterator();
         while (it.hasNext()) {
             CriticalPair pair = it.next();
-            ConfluenceStatus pairStatus =
-                pair.getStrictlyConfluent(this.grammar);
-            switch (pair.getStrictlyConfluent(this.grammar)) {
-            case CONFLUENT:
-                //nothing
-                break;
-            case UNDECIDED:
-                if (this.status == ConfluenceStatus.CONFLUENT
-                    || this.status == ConfluenceStatus.UNTESTED) {
-                    this.status = ConfluenceStatus.UNDECIDED;
-                }
-                this.undecidedPairs.add(pair);
-                break;
-            case NOTCONFLUENT:
-                this.status = ConfluenceStatus.NOTCONFLUENT;
-                this.nonConfluentPairs.add(pair);
-                break;
-            case UNTESTED:
-                throw new RuntimeException("Test for confluence failed: "
-                    + pairStatus);
-            default:
-                //can not happen unless the pairStatus enum is modified
-                throw new RuntimeException("Unknown ConfluenceStatus: "
-                    + pairStatus);
-            }
+            updateStatus(pair);
             //remove the pair from the untested set
             it.remove();
         }
-        assert this.untestedPairs.isEmpty();
+        if (!this.undecidedPairs.isEmpty()) {
+            System.out.println(this.untestedPairs.size());
+            assert this.untestedPairs.isEmpty();
+        }
         if (this.status == ConfluenceStatus.UNTESTED) {
             //everything has been analyzed but all pairs are confluent
             this.status = ConfluenceStatus.CONFLUENT;
         }
+    }
+
+    /**
+     * 
+     * @param pair
+     */
+    private void updateStatus(CriticalPair pair) {
+        updateStatus(pair, null);
+    }
+
+    private boolean updateStatus(CriticalPair pair, ConfluenceStatus target) {
+        boolean result = false;
+        ConfluenceStatus pairStatus = pair.getStrictlyConfluent(this.grammar);
+        switch (pairStatus) {
+        case CONFLUENT:
+            //do nothing
+            break;
+        case UNDECIDED:
+            System.out.println("UNDECIDEDFOUND!!!! "
+                + getUndecidedPairs().size());
+            if (this.status == ConfluenceStatus.CONFLUENT
+                || this.status == ConfluenceStatus.UNTESTED) {
+                this.status = ConfluenceStatus.UNDECIDED;
+            }
+            this.undecidedPairs.add(pair);
+            if (target == ConfluenceStatus.UNDECIDED) {
+                result = true;
+            }
+            break;
+        case NOTCONFLUENT:
+            this.status = ConfluenceStatus.NOTCONFLUENT;
+            this.nonConfluentPairs.add(pair);
+            if (target == ConfluenceStatus.UNDECIDED
+                || target == ConfluenceStatus.NOTCONFLUENT) {
+                result = true;
+            }
+            break;
+        case UNTESTED:
+            throw new RuntimeException("Test for confluence failed: "
+                + pairStatus);
+        default:
+            //can not happen unless the pairStatus enum is modified
+            throw new RuntimeException("Unknown ConfluenceStatus: "
+                + pairStatus);
+        }
+        return result;
     }
 }

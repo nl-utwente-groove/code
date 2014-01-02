@@ -230,18 +230,15 @@ public class CriticalPair {
             || rule2.hasNodeErasers() || rule2.hasEdgeErasers())) {
             return Collections.emptySet();
         }
-
-        RuleGraph l1 = rule1.lhs();
-        RuleGraph l2 = rule2.lhs();
         Set<ParallelPair> parrPairs = new HashSet<ParallelPair>();
 
-        parrPairs =
-            buildCriticalSet(l1, parrPairs, rule1, rule2, MatchNumber.ONE);
-        parrPairs =
-            buildCriticalSet(l2, parrPairs, rule1, rule2, MatchNumber.TWO);
+        parrPairs = buildCriticalSet(parrPairs, rule1, rule2, MatchNumber.ONE);
+        parrPairs = buildCriticalSet(parrPairs, rule1, rule2, MatchNumber.TWO);
 
         Iterator<ParallelPair> it;
 
+        System.out.println(parrPairs.size()
+            + " parralel pairs found (before removing)");
         /*
          * If rule1 and rule2 are the same, then for every critical pair
          * match1 must not equal match2
@@ -289,9 +286,22 @@ public class CriticalPair {
      * @param matchnum the match number (1 or 2) this number states to which match mappings should be added
      * @return a set of parallel pairs
      */
-    private static Set<ParallelPair> buildCriticalSet(RuleGraph ruleGraph,
+    private static Set<ParallelPair> buildCriticalSet(
             Set<ParallelPair> parrPairs, Rule rule1, Rule rule2,
             MatchNumber matchnum) {
+        boolean injectiveOnly;
+        RuleGraph ruleGraph;
+        if (matchnum == MatchNumber.ONE) {
+            ruleGraph = rule1.lhs();
+            injectiveOnly =
+                rule1.getCondition().getSystemProperties().isInjective();
+        } else if (matchnum == MatchNumber.TWO) {
+            ruleGraph = rule2.lhs();
+            injectiveOnly =
+                rule2.getCondition().getSystemProperties().isInjective();
+        } else {
+            throw new IllegalArgumentException("matchnum must be ONE or TWO");
+        }
 
         Set<RuleNode> nodesToProcess =
             new HashSet<RuleNode>(ruleGraph.nodeSet());
@@ -348,7 +358,8 @@ public class CriticalPair {
                     //Repeat the following for every node tnode in pair.getTarget():
                     //Map rnode to tnode in M1 (if the types coincide)
                     for (Long group : pair.getCombinationGroups()) {
-                        if (isCompatible(rnode, group, pair)) {
+                        if (isCompatible(rnode, group, pair, injectiveOnly,
+                            matchnum)) {
                             newPair = pair.clone();
                             addNodeToGroup(rnode, group, newPair, matchnum,
                                 edges);
@@ -374,10 +385,26 @@ public class CriticalPair {
     }
 
     private static boolean isCompatible(RuleNode ruleNode, Long group,
-            ParallelPair pair) {
-        //combination is nonempty
+            ParallelPair pair, boolean injectiveOnly, MatchNumber matchnum) {
+        //combination is always nonempty
         List<RuleNode> combination = pair.getCombination(group);
         RuleNode firstNode = combination.iterator().next();
+
+        if (injectiveOnly) {
+            //If we only allow injective matches, then isCompatible will only return true
+            //when no group exists yet for this MatchNumber
+
+            if (ruleNode instanceof VariableNode
+                && ((VariableNode) ruleNode).hasConstant()) {
+                /* the ruleNode is a constant, these may be merged non-injectively because
+                 * two constants in the Term Algebra, may be the same constant in some other Algebra
+                 */
+                //do nothing
+            } else if (!pair.getCombination(group, matchnum).isEmpty()) {
+                return false;
+            }
+        }
+
         //If the types are not equal return false in any case
         if (!ruleNode.getType().equals(firstNode.getType())) {
             return false;
@@ -502,10 +529,10 @@ public class CriticalPair {
         boolean result = true;
         //the rule may not have subconditions
         result &= rule.getCondition().getSubConditions().isEmpty();
-        //Not only injective matches are allowed, but all matches are
-        result &= !rule.getCondition().getSystemProperties().isInjective();
         //Matches with dangling edges must be allowed
         result &= !rule.getCondition().getSystemProperties().isCheckDangling();
+        //RHS as NAC is not allowed
+        result &= !rule.getCondition().getSystemProperties().isRhsAsNac();
         //Creator edges must not be treated as NACs
         result &=
             !rule.getCondition().getSystemProperties().isCheckCreatorEdges();
@@ -517,8 +544,15 @@ public class CriticalPair {
                 result &= set.isEmpty();
             }
         }
+        //TODO rule priorities are not allowed (these are NACs)
         //TODO this may not be complete
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Criticalpair(" + this.rule1.getFullName() + ", "
+            + this.rule2.getFullName() + ")";
     }
 }
 
