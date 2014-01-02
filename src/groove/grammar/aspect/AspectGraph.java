@@ -21,6 +21,7 @@ import static groove.graph.GraphRole.RULE;
 import static groove.graph.GraphRole.TYPE;
 import groove.algebra.Constant;
 import groove.algebra.Operator;
+import groove.algebra.syntax.Assignment;
 import groove.algebra.syntax.CallExpr;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.FieldExpr;

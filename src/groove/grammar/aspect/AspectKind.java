@@ -22,6 +22,7 @@ import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.algebra.Signature.OpValue;
 import groove.algebra.SignatureKind;
+import groove.algebra.syntax.Assignment;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.Expression.Kind;
 import groove.annotation.Help;
