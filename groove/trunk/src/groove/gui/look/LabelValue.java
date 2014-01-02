@@ -34,7 +34,6 @@ import groove.graph.Edge;
 import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.gui.jgraph.AspectJEdge;
-import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJVertex;
 import groove.gui.jgraph.CtrlJVertex;
 import groove.gui.jgraph.JCell;
@@ -43,7 +42,6 @@ import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJEdge;
 import groove.gui.jgraph.LTSJVertex;
-import groove.gui.look.Line.ColorType;
 import groove.gui.look.Line.Style;
 import groove.gui.look.MultiLabel.Direct;
 import groove.gui.tree.LabelTree;
@@ -145,9 +143,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
                                 Style.ITALIC) : null;
                 for (AspectEdge edge : jVertex.getEdges()) {
                     if (!isFiltered(jVertex, edge)) {
-                        Line line = getHostLine(edge);
+                        Line line = edge.toLine(true);
                         if (id != null) {
-                            if (edge.getDisplayLabel().getRole() == NODE_TYPE) {
+                            if (edge.getRole() == NODE_TYPE) {
                                 line = id.append(" : ").append(line);
                             } else {
                                 // we're not going to have any node types:
@@ -162,26 +160,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (!isFiltered(jVertex, edge)) {
-                    result.add(getHostLine(edge), Direct.NONE);
+                    result.add(edge.toLine(true), Direct.NONE);
                 }
             }
-        }
-        return result;
-    }
-
-    /**
-     * On demand prefixes the label with the edge's aspect values.
-     */
-    private Line getHostLine(AspectEdge edge) {
-        edge.testFixed(true);
-        Line result = getAspectEdgeLine(edge);
-        if (edge.target() != edge.source()) {
-            // this is an attribute edge displayed as a node label
-            String suffix =
-                ASSIGN_TEXT + edge.target().getAttrAspect().getContentString();
-            result = result.append(suffix);
-        } else {
-            result = addRoleIndicator(result, edge);
         }
         return result;
     }
@@ -195,7 +176,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result.add(jVertex.getUserObject().toLines(Direct.NONE));
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (!isFiltered(jVertex, edge)) {
-                    result.add(getTypeLine(edge), Direct.NONE);
+                    result.add(edge.toLine(true), Direct.NONE);
                 }
             }
         } else {
@@ -207,12 +188,12 @@ public class LabelValue implements VisualValue<MultiLabel> {
             // show the visible self-edges
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (!isFiltered(jVertex, edge)) {
-                    result.add(getTypeLine(edge), Direct.NONE);
+                    result.add(edge.toLine(true), Direct.NONE);
                 }
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (!isFiltered(jVertex, edge)) {
-                    result.add(getTypeLine(edge), Direct.NONE);
+                    result.add(edge.toLine(true), Direct.NONE);
                 }
             }
             if (node.isEdge()) {
@@ -223,30 +204,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(Line.atom(line.toString()), Direct.NONE);
             }
         }
-        return result;
-    }
-
-    /**
-     * On demand prefixes the label with the edge's aspect values.
-     */
-    private Line getTypeLine(AspectEdge edge) {
-        edge.testFixed(true);
-        Line result = getAspectEdgeLine(edge);
-        if (edge.getKind() == AspectKind.ABSTRACT
-            && edge.label().getRole() == NODE_TYPE) {
-            result = result.style(Style.ITALIC);
-        }
-        if (edge.target() != edge.source()) {
-            result = result.append(TYPE_TEXT);
-            result =
-                result.append(getSignatureLine(edge.target().getAttrKind().getSignature()));
-        } else if (edge.getAttrKind().hasSignature()) {
-            // this is a field declaration
-            result = result.append(TYPE_TEXT);
-            result =
-                result.append(getSignatureLine(edge.getAttrKind().getSignature()));
-        }
-        result = addRoleIndicator(result, edge);
         return result;
     }
 
@@ -264,7 +221,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result.add(jVertex.getUserObject().toLines(Direct.NONE));
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (!isFiltered(jVertex, edge)) {
-                    result.add(getRuleLine(edge), Direct.NONE);
+                    result.add(edge.toLine(true), Direct.NONE);
                 }
             }
             if (node.hasColor()) {
@@ -285,9 +242,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
             // show the visible self-edges
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (!isFiltered(jVertex, edge)) {
-                    Line line = getRuleLine(edge);
+                    Line line = edge.toLine(true);
                     if (idLine != null) {
-                        if (edge.getDisplayLabel().getRole() == NODE_TYPE) {
+                        if (edge.getRole() == NODE_TYPE) {
                             line = idLine.append(" : ").append(line);
                         } else {
                             result.add(idLine, Direct.NONE);
@@ -304,7 +261,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (!isFiltered(jVertex, edge)) {
-                    result.add(getRuleLine(edge), Direct.NONE);
+                    result.add(edge.toLine(true), Direct.NONE);
                 }
             }
             if (node.hasColor()) {
@@ -320,19 +277,28 @@ public class LabelValue implements VisualValue<MultiLabel> {
     }
 
     /**
-     * On demand prefixes the label with the edge's aspect values.
+     * Returns the lines describing this node's main aspect.
+     * Currently this just concerns a possible quantifier.
      */
-    private Line getRuleLine(AspectEdge edge) {
-        edge.testFixed(true);
-        Line result = getAspectEdgeLine(edge);
-        if (edge.target() != edge.source()) {
-            // this is an attribute edge displayed as a node label
-            String suffix =
-                ASSIGN_TEXT + edge.target().getAttrAspect().getContentString();
-            result = result.append(suffix);
+    private MultiLabel getQuantifierLines(AspectNode node, Line id) {
+        Line line = Line.empty();
+        if (id != null) {
+            line = line.append(id).append(" : ");
         }
-        result = addRoleIndicator(result, edge);
-        return result;
+        switch (node.getKind()) {
+        case FORALL:
+            line = line.append(FORALL);
+            break;
+        case FORALL_POS:
+            line = line.append(FORALL_POS);
+            break;
+        case EXISTS:
+            line = line.append(EXISTS);
+            break;
+        case EXISTS_OPT:
+            line = line.append(EXISTS_OPT);
+        }
+        return MultiLabel.singleton(line, Direct.NONE);
     }
 
     /** This implementation adds the data edges to the super result. */
@@ -442,7 +408,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             for (AspectEdge edge : jEdge.getEdges()) {
                 // only add edges that have an unfiltered label
                 if (!isFiltered(jEdge, edge)) {
-                    result.add(getAspectEdgeLine(edge), jEdge.getDirect(edge));
+                    result.add(edge.toLine(false), jEdge.getDirect(edge));
                 }
             }
         }
@@ -459,90 +425,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 GraphTransition trans = (GraphTransition) edge;
                 result.add(Line.atom(trans.text(isShowAnchors)),
                     jEdge.getDirect(edge));
-            }
-        }
-        return result;
-    }
-
-    /** Returns a line representing the label of a given edge. */
-    private Line getAspectEdgeLine(AspectEdge edge) {
-        Label label =
-            ((AspectJGraph) getJGraph()).isShowAspects() ? edge.label()
-                    : edge.getDisplayLabel();
-        Line result = Line.atom(label.text());
-        switch (label.getRole()) {
-        case FLAG:
-            result = result.style(Style.ITALIC);
-            break;
-        case NODE_TYPE:
-            result = result.style(Style.BOLD);
-        }
-        result = addLevelName(result, edge);
-        return result;
-    }
-
-    /**
-     * Appends a level name to a given text,
-     * depending on an edge role.
-     */
-    private Line addLevelName(Line line, AspectEdge edge) {
-        Line result = line;
-        if (edge.getKind().isRole()) {
-            String name = edge.getLevelName();
-            // only consider proper names unequal to source or target level
-            if (name != null && name.length() != 0
-                && !name.equals(edge.source().getLevelName())
-                && !name.equals(edge.target().getLevelName())) {
-                Line suffix =
-                    Line.atom(LEVEL_NAME_SEPARATOR + name).color(
-                        Values.NESTED_COLOR);
-                result = result.append(suffix);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Decorates a given line with an optional prefix and colour.
-     */
-    private Line addRoleIndicator(Line text, AspectEdge edge) {
-        Line result = text;
-        Aspect aspect = edge.getAspect();
-        if (aspect != null && !aspect.equals(edge.source().getAspect())) {
-            AspectKind kind = aspect.getKind();
-            result = getRolePrefix(kind).append(result);
-            switch (kind) {
-            case ERASER:
-                result = result.color(ColorType.ERASER);
-                break;
-            case ADDER:
-                result = result.color(ColorType.CREATOR);
-                break;
-            case LET:
-                if (edge.getGraphRole() == GraphRole.RULE) {
-                    result = result.color(ColorType.CREATOR);
-                }
-                break;
-            case CREATOR:
-                result = result.color(ColorType.CREATOR);
-                break;
-            case EMBARGO:
-                result = result.color(ColorType.EMBARGO);
-                break;
-            case REMARK:
-                result = result.color(ColorType.REMARK);
-                /* TODO test if there are errors caused by commenting out
-                // replace all newlines by // as well
-                String NEWLINE = HTMLConverter.HTML_LINEBREAK;
-                int lineStart = text.indexOf(NEWLINE);
-                while (lineStart >= 0) {
-                    text.insert(lineStart + NEWLINE.length(),
-                        REMARK.getDisplayPrefix());
-                    lineStart =
-                        text.indexOf(NEWLINE, lineStart + NEWLINE.length());
-                }
-                */
-                break;
             }
         }
         return result;
@@ -578,31 +460,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result.add(Line.atom(id).style(Style.ITALIC), Direct.NONE);
         }
         return result;
-    }
-
-    /**
-     * Returns the lines describing this node's main aspect.
-     * Currently this just concerns a possible quantifier.
-     */
-    private MultiLabel getQuantifierLines(AspectNode node, Line id) {
-        Line line = Line.empty();
-        if (id != null) {
-            line = line.append(id).append(" : ");
-        }
-        switch (node.getKind()) {
-        case FORALL:
-            line = line.append(FORALL);
-            break;
-        case FORALL_POS:
-            line = line.append(FORALL_POS);
-            break;
-        case EXISTS:
-            line = line.append(EXISTS);
-            break;
-        case EXISTS_OPT:
-            line = line.append(EXISTS_OPT);
-        }
-        return MultiLabel.singleton(line, Direct.NONE);
     }
 
     /** Returns lines describing any data content of the JVertex. */
@@ -651,11 +508,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
         return sigLineMap.get(kind);
     }
 
-    /** Returns the label prefix associated with a given role. */
-    private static Line getRolePrefix(AspectKind kind) {
-        return rolePrefixMap.get(kind);
-    }
-
     static private final Map<SignatureKind,Line> sigLineMap;
     static {
         Map<SignatureKind,Line> map =
@@ -664,36 +516,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
             map.put(kind, Line.atom(kind.getName()).style(Style.BOLD));
         }
         sigLineMap = map;
-    }
-
-    static private final Map<AspectKind,Line> rolePrefixMap;
-    static {
-        Map<AspectKind,Line> map =
-            new EnumMap<AspectKind,Line>(AspectKind.class);
-        for (AspectKind kind : AspectKind.values()) {
-            Line prefix;
-            switch (kind) {
-            case ADDER:
-                prefix = Line.atom("!+ ");
-                break;
-            case CREATOR:
-                prefix = Line.atom("+ ");
-                break;
-            case EMBARGO:
-                prefix = Line.atom("! ");
-                break;
-            case ERASER:
-                prefix = Line.atom("- ");
-                break;
-            case REMARK:
-                prefix = Line.atom("// ");
-                break;
-            default:
-                prefix = Line.empty();
-            }
-            map.put(kind, prefix);
-        }
-        rolePrefixMap = map;
     }
 
     static private final String IMPORT_TEXT = String.format("%simport%s",
@@ -706,8 +528,4 @@ public class LabelValue implements VisualValue<MultiLabel> {
     static private final Line FORALL = Line.atom("" + Util.FORALL);
     static private final Line FORALL_POS = FORALL.append(Line.atom(">0").style(
         Style.SUPER));
-    static private final String ASSIGN_TEXT = " = ";
-    static private final String TYPE_TEXT = ": ";
-    /** Separator between level name and edge label. */
-    static final char LEVEL_NAME_SEPARATOR = '@';
 }

@@ -44,6 +44,7 @@ public class ExpressionTest {
         Expression oneReal = parse("1.");
         assertFalse(oneReal.equals(parse(".1")));
         assertEquals(oneReal, parse("real:1."));
+        parse("real:-1.");
         parseFail(".");
         parseFail(".1.");
         parseFail("real:1");
@@ -51,6 +52,7 @@ public class ExpressionTest {
         Expression one = parse("1");
         assertFalse(one.equals(parse("1.")));
         assertFalse(one.equals(parse("\"1\"")));
+        parse("int:-1");
         parseFail("1 1");
         parseFail("int:1.");
         // booleans
@@ -67,6 +69,8 @@ public class ExpressionTest {
         testOperators(SignatureKind.REAL, "1.", "2.", "3.");
         testOperators(SignatureKind.STRING, "\"1\"", "\"2\"", "\"3\"");
         testOperators(SignatureKind.BOOL, "true", "false", "true");
+
+        assertEquals(parse("x == 2"), parse("x=2", true));
     }
 
     /** Tests more complex expressions. */
@@ -139,9 +143,13 @@ public class ExpressionTest {
     }
 
     private Expression parse(String expr) {
+        return parse(expr, false);
+    }
+
+    private Expression parse(String expr, boolean test) {
         Expression result = null;
         try {
-            result = Expression.parse(expr);
+            result = test ? Expression.parseTest(expr) : Expression.parse(expr);
         } catch (FormatException e) {
             fail(String.format(
                 "Expression %s should have been parsable but fails with %s",

@@ -138,6 +138,29 @@ public class Operator {
 
     private final String description;
 
+    /**
+     * Indicates if there are more operators with the same name
+     * and parameter count.
+     */
+    public boolean isAmbiguous() {
+        List<Operator> ops = getOps(getName());
+        boolean result = ops.size() > 1;
+        if (result) {
+            // there are more operators with the same name
+            result = false;
+            for (Operator op : ops) {
+                if (op == this) {
+                    continue;
+                }
+                if (op.getArity() == getArity()) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
     /** Returns the name of the operator, preceded with its containing signature. */
     public String getFullName() {
         return getSignature() + ":" + getName();
