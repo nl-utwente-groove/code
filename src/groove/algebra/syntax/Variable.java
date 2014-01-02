@@ -30,19 +30,20 @@ import java.util.Map;
  */
 public class Variable extends Expression {
     /** Constructs a new variable with a given name and signature. */
-    public Variable(String name, SignatureKind signature) {
+    public Variable(boolean prefixed, String name, SignatureKind signature) {
+        super(prefixed);
         this.signature = signature;
         this.name = name;
+    }
+
+    /** Constructs a new, non-prefixed variable with a given name and signature. */
+    public Variable(String name, SignatureKind signature) {
+        this(false, name, signature);
     }
 
     /** Returns the name of this variable. */
     public String getName() {
         return this.name;
-    }
-
-    @Override
-    protected void buildDisplayString(StringBuilder result, Precedence context) {
-        result.append(getName());
     }
 
     @Override
@@ -89,6 +90,15 @@ public class Variable extends Expression {
         }
         assert getSignature() == other.getSignature();
         return true;
+    }
+
+    @Override
+    protected String createParseString() {
+        String result = toDisplayString();
+        if (isPrefixed()) {
+            result = getSignature() + ":" + toDisplayString();
+        }
+        return result;
     }
 
     @Override

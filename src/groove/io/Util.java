@@ -357,4 +357,6 @@ public class Util {
     static public final char DLA = '\u2199';
     /** Unicode thin space symbol. */
     static public final char THIN_SPACE = '\u2009';
+    /** Unicode plusminus symbol. */
+    static public final char PLUSMINUS = '\u00b1';
 }

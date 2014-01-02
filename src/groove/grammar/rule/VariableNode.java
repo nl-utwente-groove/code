@@ -36,17 +36,6 @@ import java.util.Set;
  */
 public class VariableNode extends ANode implements RuleNode, AnchorKey {
     /**
-     * Constructs a (numbered) typed variable node.
-     */
-    public VariableNode(int nr, SignatureKind signature, TypeNode type) {
-        super(nr);
-        assert signature != null;
-        this.term = new Variable(super.toString(), signature);
-        assert type != null;
-        this.type = type;
-    }
-
-    /**
      * Constructs a (numbered) constant variable node.
      */
     public VariableNode(int nr, Expression term, TypeNode type) {

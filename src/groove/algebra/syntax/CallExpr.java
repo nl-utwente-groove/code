@@ -39,16 +39,22 @@ import java.util.Map;
  */
 public class CallExpr extends Expression {
     /** Constructs a term from a given operator and list of arguments. */
-    public CallExpr(Operator op, List<Expression> args) {
+    public CallExpr(boolean prefixed, Operator op, List<Expression> args) {
+        super(prefixed);
         this.op = op;
         this.args = new ArrayList<Expression>(args);
         assert isTypeCorrect() : String.format("%s is not a type correct term",
             toString());
     }
 
-    /** Constructs a term from a given operator and sequence of arguments. */
+    /**
+     * Constructs a term from a given operator and sequence of arguments.
+     * The term will be considered type prefixed if the operator is ambiguous.
+     * @see #isPrefixed()
+     * @see Operator#isAmbiguous() 
+     */
     public CallExpr(Operator op, Expression... args) {
-        this(op, Arrays.asList(args));
+        this(op.isAmbiguous(), op, Arrays.asList(args));
     }
 
     /* A call expression is a term if all its arguments are terms. */
@@ -106,7 +112,8 @@ public class CallExpr extends Expression {
                 isNew |= newArg != oldArg;
             }
             if (isNew) {
-                result = new CallExpr(getOperator(), newArgs);
+                result =
+                    new CallExpr(isPrefixed(), getOperator(), newArgs);
             }
         }
         return result;
@@ -140,64 +147,6 @@ public class CallExpr extends Expression {
             return false;
         }
         return true;
-    }
-
-    @Override
-    protected void buildDisplayString(StringBuilder result, Precedence context) {
-        if (getOperator().getSymbol() == null) {
-            buildCallString(result);
-        } else {
-            buildFixString(result, context);
-        }
-    }
-
-    /** Builds a display string for an operator without symbol. */
-    private void buildCallString(StringBuilder result) {
-        result.append(this.op.getName());
-        result.append('(');
-        boolean firstArg = true;
-        for (Expression arg : getArgs()) {
-            if (!firstArg) {
-                result.append(", ");
-            } else {
-                firstArg = false;
-            }
-            arg.buildDisplayString(result, Precedence.NONE);
-        }
-        result.append(')');
-    }
-
-    /** Builds a display string for an operator with an infix or prefix symbol. */
-    private void buildFixString(StringBuilder result, Precedence context) {
-        Precedence me = getOperator().getPrecedence();
-        boolean addPars = me.compareTo(context) < 0;
-        boolean addSpaces = me.compareTo(Precedence.MULT) < 0;
-        int nextArgIx = 0;
-        if (addPars) {
-            result.append('(');
-        }
-        if (me.getPlace() != Placement.PREFIX) {
-            // add left argument
-            this.args.get(nextArgIx).buildDisplayString(result,
-                me.getDirection() == Direction.LEFT ? me : me.increase());
-            nextArgIx++;
-            if (addSpaces) {
-                result.append(' ');
-            }
-        }
-        result.append(getOperator().getSymbol());
-        if (me.getPlace() != Placement.POSTFIX) {
-            // add left argument
-            if (addSpaces) {
-                result.append(' ');
-            }
-            this.args.get(nextArgIx).buildDisplayString(result,
-                me.getDirection() == Direction.RIGHT ? me : me.increase());
-            nextArgIx++;
-        }
-        if (addPars) {
-            result.append(')');
-        }
     }
 
     @Override
@@ -259,6 +208,28 @@ public class CallExpr extends Expression {
             result.add(Line.atom(")"));
         }
         return Line.composed(result);
+    }
+
+    @Override
+    protected String createParseString() {
+        StringBuilder result = new StringBuilder();
+        if (isPrefixed()) {
+            result.append(getOperator().getFullName());
+        } else {
+            result.append(getOperator().getName());
+        }
+        result.append('(');
+        boolean firstArg = true;
+        for (Expression arg : getArgs()) {
+            if (!firstArg) {
+                result.append(", ");
+            } else {
+                firstArg = false;
+            }
+            result.append(arg.toParseString());
+        }
+        result.append(')');
+        return result.toString();
     }
 
     @Override
