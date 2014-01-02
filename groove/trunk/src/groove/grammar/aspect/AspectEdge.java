@@ -33,6 +33,7 @@ import static groove.grammar.aspect.AspectKind.TEST;
 import static groove.graph.GraphRole.RULE;
 import groove.algebra.Operator;
 import groove.algebra.SignatureKind;
+import groove.algebra.syntax.Assignment;
 import groove.algebra.syntax.Expression;
 import groove.automaton.RegExpr;
 import groove.grammar.aspect.AspectKind.NestedValue;
@@ -400,7 +401,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
             String symbol =
                 getGraphRole() == RULE && !source().getKind().isCreator()
                         ? ":=" : "=";
-            result = Line.atom(getAssign().toDisplayString(symbol));
+            result = getAssign().toLine(symbol);
             if (getGraphRole() == RULE) {
                 color = ColorType.CREATOR;
             }

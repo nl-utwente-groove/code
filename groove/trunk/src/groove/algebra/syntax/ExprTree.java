@@ -53,9 +53,24 @@ public class ExprTree extends CommonTree {
         return (ExprTree) super.getChild(i);
     }
 
+    /** 
+     * Converts this parse tree into an {@link Assignment}.
+     */
+    public Assignment toAssignment() throws FormatException {
+        if (getType() != ExprParser.ASSIGN) {
+            throw new FormatException("'%s' is not an assignment",
+                toInputString());
+        }
+        String lhs = getChild(0).getText();
+        Expression rhs = getChild(1).toExpression();
+        Assignment result = new Assignment(lhs, rhs);
+        result.setParseString(toInputString());
+        return result;
+    }
+
     /**
      * Returns the term object corresponding to this tree.
-     * The term cannot contain any variables.
+     * All free variables in the tree must be type-derivable.
      */
     public Expression toExpression() throws FormatException {
         return toExpression(Collections.<String,SignatureKind>emptyMap());

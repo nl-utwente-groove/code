@@ -14,12 +14,14 @@
  *
  * $Id$
  */
-package groove.grammar.aspect;
+package groove.algebra.syntax;
 
-import groove.algebra.syntax.Expression;
 import groove.grammar.model.FormatException;
 import groove.grammar.type.TypeLabel;
 import groove.graph.EdgeRole;
+import groove.gui.look.Line;
+
+import org.antlr.runtime.RecognitionException;
 
 /**
  * Assignment in a host or rule graph.
@@ -33,32 +35,52 @@ public class Assignment {
         this.rhs = rhs;
     }
 
-    /** Returns the identifier, if this is an identifier expression. */
+    /** Returns the target (left hand side) of the assignment. */
     public String getLhs() {
         return this.lhs;
     }
 
-    /** Returns the right hand side of the assignment. */
+    /** Returns the right hand side expression of the assignment. */
     public Expression getRhs() {
         return this.rhs;
+    }
+
+    /** 
+     * Returns a string representation from which
+     * this assignment can be been parsed.
+     * If the assignment has been constructed rather
+     * than parsed, calls {@link #toString()}.
+     */
+    public String toParseString() {
+        if (this.parseString == null) {
+            this.parseString = toString();
+        }
+        return this.parseString;
+    }
+
+    /** Sets the string from which this expression has been parsed. */
+    public void setParseString(String parseString) {
+        this.parseString = parseString;
+    }
+
+    /** The string from which this expression has been parsed, if any. */
+    private String parseString;
+
+    /** 
+     * Returns the display line used by the GUI.
+     * @param assignSymbol the assignment symbol to be used
+     */
+    public Line toLine(String assignSymbol) {
+        StringBuilder result = new StringBuilder(getLhs());
+        result.append(' ');
+        result.append(assignSymbol == null ? "=" : assignSymbol);
+        result.append(' ');
+        return Line.atom(result.toString()).append(getRhs().toLine());
     }
 
     @Override
     public String toString() {
         return getLhs() + " = " + getRhs().toParseString();
-    }
-
-    /** 
-     * Returns the string to be used by the GUI.
-     * @param assignSymbol the assignment symbol to be used
-     */
-    public String toDisplayString(String assignSymbol) {
-        StringBuilder result = new StringBuilder(getLhs());
-        result.append(' ');
-        result.append(assignSymbol == null ? "=" : assignSymbol);
-        result.append(' ');
-        result.append(getRhs().toDisplayString());
-        return result.toString();
     }
 
     @Override
@@ -93,8 +115,7 @@ public class Assignment {
     public Assignment relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         Assignment result = this;
         if (oldLabel.getRole() == EdgeRole.BINARY) {
-            groove.algebra.syntax.Expression newRhs =
-                getRhs().relabel(oldLabel, newLabel);
+            Expression newRhs = getRhs().relabel(oldLabel, newLabel);
             String newLhs =
                 oldLabel.text().equals(getLhs()) ? newLabel.text() : getLhs();
             if (newRhs != getRhs() || newLhs != getLhs()) {
@@ -104,42 +125,36 @@ public class Assignment {
         return result;
     }
 
-    private final groove.algebra.syntax.Expression rhs;
+    private final Expression rhs;
     private final String lhs;
 
     /**
-     * Attempts to parse a given string as an expression.
-     * @param text the string that is to be parsed as expression
-     * @return the resulting expression
+     * Attempts to parse a given string as an assignment.
+     * @param text the string that is to be parsed as assignment
+     * @return the resulting assignment
      * @throws FormatException if the input string contains syntax errors
      */
     public static Assignment parse(String text) throws FormatException {
-        if (text.length() == 0) {
-            throw new FormatException(
-                "Empty string cannot be parsed as assignment");
-        }
-        int pos = text.indexOf('=');
-        if (pos < 0) {
-            throw new FormatException(
-                "Assignment expression '%s' does not contain '='", text);
-        }
-        String lhs = text.substring(0, pos).trim();
-        String rhs = text.substring(pos + 1, text.length()).trim();
-        if (!isIdentifier(lhs)) {
-            throw new FormatException(
-                "Assignment target '%s' is not an identifier", lhs);
-        }
-        return new Assignment(lhs, groove.algebra.syntax.Expression.parse(rhs));
+        return parseToTree(text).toAssignment();
     }
 
-    private static boolean isIdentifier(String text) {
-        boolean result = text.length() > 0;
-        if (result) {
-            result = Character.isJavaIdentifierStart(text.charAt(0));
-            for (int i = 1; result && i < text.length(); i++) {
-                result = Character.isJavaIdentifierPart(text.charAt(i));
-            }
+    /**
+     * Returns the expression tree for a given string, using the
+     * {@link ExprParser#assignment()} as start rule. 
+     * @param term the string to be parsed as an expression
+     */
+    private static ExprTree parseToTree(String term) throws FormatException {
+        ExprParser parser = ExprParser.instance(term);
+        try {
+            ExprTree result = (ExprTree) parser.assignment().getTree();
+            parser.getErrors().throwException();
+            return result;
+        } catch (FormatException e) {
+            throw new FormatException("Can't parse %s: %s", term,
+                e.getMessage());
+        } catch (RecognitionException re) {
+            throw new FormatException(re.getMessage(), re.line,
+                re.charPositionInLine);
         }
-        return result;
     }
 }
