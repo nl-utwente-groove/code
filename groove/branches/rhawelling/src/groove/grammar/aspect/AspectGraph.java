@@ -21,6 +21,7 @@ import static groove.graph.GraphRole.RULE;
 import static groove.graph.GraphRole.TYPE;
 import groove.algebra.Constant;
 import groove.algebra.Operator;
+import groove.algebra.syntax.Assignment;
 import groove.algebra.syntax.CallExpr;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.FieldExpr;
@@ -346,7 +347,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         if (!constant.isTerm()) {
             throw new FormatException(
                 "Expression '%s' not allowed as constant value",
-                constant.toInputString());
+                constant.toParseString());
         }
         result.setAspects(parser.parse(constant.toString(), getRole()));
         return result;
@@ -432,7 +433,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
         if (getRole() != RULE) {
             throw new FormatException(
                 "Call expression '%s' only allowed in rules",
-                call.toInputString(), source);
+                call.toParseString(), source);
         }
         AspectNode result = addNestedNode(source);
         result.setAspects(createLabel(AspectKind.toAspectKind(call.getSignature())));

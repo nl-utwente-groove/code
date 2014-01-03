@@ -33,7 +33,9 @@ public class Constant extends Expression {
      * Constructs a new constant from a given signature and 
      * constant symbol.
      */
-    private Constant(SignatureKind signature, String symbol) {
+    private Constant(boolean explicitType, SignatureKind signature,
+            String symbol) {
+        super(explicitType);
         assert signature != null && symbol != null;
         this.signature = signature;
         this.symbol = symbol;
@@ -43,7 +45,7 @@ public class Constant extends Expression {
      * Constructs a new string constant from a given string value.
      */
     private Constant(String value) {
-        this(SignatureKind.STRING, ExprParser.toQuoted(value, '"'));
+        this(false, SignatureKind.STRING, ExprParser.toQuoted(value, '"'));
         this.stringRepr = value;
     }
 
@@ -51,7 +53,7 @@ public class Constant extends Expression {
      * Constructs a new boolean constant from a given boolean value.
      */
     private Constant(Boolean value) {
-        this(SignatureKind.BOOL, value.toString());
+        this(false, SignatureKind.BOOL, value.toString());
         this.boolRepr = value;
     }
 
@@ -59,7 +61,7 @@ public class Constant extends Expression {
      * Constructs a new real constant from a given {@link BigDecimal} value.
      */
     private Constant(BigDecimal value) {
-        this(SignatureKind.REAL, value.toString());
+        this(false, SignatureKind.REAL, value.toString());
         this.realRepr = value;
     }
 
@@ -67,7 +69,7 @@ public class Constant extends Expression {
      * Constructs a new integer constant from a given {@link BigInteger} value.
      */
     private Constant(BigInteger value) {
-        this(SignatureKind.INT, value.toString());
+        this(false, SignatureKind.INT, value.toString());
         this.intRepr = value;
     }
 
@@ -124,13 +126,17 @@ public class Constant extends Expression {
     }
 
     @Override
-    protected void buildDisplayString(StringBuilder result, Precedence context) {
-        result.append(this.symbol);
+    protected Line toLine(Precedence context) {
+        return Line.atom(this.symbol);
     }
 
     @Override
-    protected Line toLine(Precedence context) {
-        return Line.atom(this.symbol);
+    protected String createParseString() {
+        String result = toDisplayString();
+        if (isPrefixed()) {
+            result = getSignature() + ":" + result;
+        }
+        return result;
     }
 
     /**
@@ -221,7 +227,7 @@ public class Constant extends Expression {
 
     /** Returns a string constant of a certain type and symbolic value. */
     public static Constant instance(SignatureKind signature, String symbol) {
-        return new Constant(signature, symbol);
+        return new Constant(true, signature, symbol);
     }
 
     /** Returns a string constant containing the given boolean representation. */

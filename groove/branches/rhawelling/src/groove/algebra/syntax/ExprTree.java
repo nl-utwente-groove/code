@@ -53,9 +53,24 @@ public class ExprTree extends CommonTree {
         return (ExprTree) super.getChild(i);
     }
 
+    /** 
+     * Converts this parse tree into an {@link Assignment}.
+     */
+    public Assignment toAssignment() throws FormatException {
+        if (getType() != ExprParser.ASSIGN) {
+            throw new FormatException("'%s' is not an assignment",
+                toInputString());
+        }
+        String lhs = getChild(0).getText();
+        Expression rhs = getChild(1).toExpression();
+        Assignment result = new Assignment(lhs, rhs);
+        result.setParseString(toInputString());
+        return result;
+    }
+
     /**
      * Returns the term object corresponding to this tree.
-     * The term cannot contain any variables.
+     * All free variables in the tree must be type-derivable.
      */
     public Expression toExpression() throws FormatException {
         return toExpression(Collections.<String,SignatureKind>emptyMap());
@@ -74,7 +89,7 @@ public class ExprTree extends CommonTree {
                 "Can't derive type of '%s': add type prefix", toInputString());
         }
         Expression result = choice.values().iterator().next();
-        result.setInputString(toInputString());
+        result.setParseString(toInputString());
         return result;
     }
 
@@ -134,7 +149,7 @@ public class ExprTree extends CommonTree {
                     result, prefix);
             }
         }
-        result.setInputString(toInputString());
+        result.setParseString(toInputString());
         return result;
     }
 
@@ -165,10 +180,10 @@ public class ExprTree extends CommonTree {
                 throw new FormatException(
                     "Prefix '%s' does not represent a type", prefix);
             }
-            result.put(type, new Parameter(number, type));
+            result.put(type, new Parameter(true, number, type));
         } else {
             for (SignatureKind type : SignatureKind.values()) {
-                result.put(type, new Parameter(number, type));
+                result.put(type, new Parameter(false, number, type));
             }
         }
         return result;
@@ -186,10 +201,11 @@ public class ExprTree extends CommonTree {
                 throw new FormatException(
                     "Prefix '%s' does not represent a type", prefix);
             }
-            result.put(type, getChild(0).toFieldOrVarExpr(varMap, type));
+            result.put(type, getChild(0).toFieldOrVarExpr(true, varMap, type));
         } else {
             for (SignatureKind type : SignatureKind.values()) {
-                result.put(type, getChild(0).toFieldOrVarExpr(varMap, type));
+                result.put(type,
+                    getChild(0).toFieldOrVarExpr(false, varMap, type));
             }
         }
         return result;
@@ -198,29 +214,31 @@ public class ExprTree extends CommonTree {
     /** 
      * Converts this tree to a {@link Variable} or a {@link FieldExpr}.
      * Chained field expressions are currently unsupported.
+     * @param prefixed signals if the expression was explicitly typed in the parsed text
      * @param varMap variable typing
      * @param type expected type of the expression
      */
-    private Expression toFieldOrVarExpr(Map<String,SignatureKind> varMap,
-            SignatureKind type) throws FormatException {
+    private Expression toFieldOrVarExpr(boolean prefixed,
+            Map<String,SignatureKind> varMap, SignatureKind type)
+        throws FormatException {
         Expression result;
         if (getType() == ExprParser.DOT) {
             assert getChildCount() == 2;
             result =
-                new FieldExpr(getChild(0).getText(), getChild(1).getText(),
-                    type);
+                new FieldExpr(prefixed, getChild(0).getText(),
+                    getChild(1).getText(), type);
         } else {
             assert getChildCount() == 0;
             String name = getText();
             SignatureKind varSig = varMap.get(name);
             if (varSig == null) {
                 // this is a self-field
-                result = new FieldExpr(null, name, type);
+                result = new FieldExpr(prefixed, null, name, type);
             } else if (varSig != type) {
                 throw new FormatException("Variable %s is of type %s, not %s",
                     name, varSig.getName(), type.getName());
             } else {
-                result = new Variable(name, type);
+                result = new Variable(prefixed, name, type);
             }
         }
         return result;
@@ -287,13 +305,13 @@ public class ExprTree extends CommonTree {
             throw new FormatException("Operator '%s:%s' does exist",
                 opSig.getName(), opName);
         }
-        result.put(op.getResultType(), newCallExp(op, args));
+        result.put(op.getResultType(), newCallExp(true, op, args));
         return result;
     }
 
     /**
      * Returns the set of derivable expressions for an operator call
-     * with an untyped typed operator.
+     * with an untyped operator.
      * @param opName operator name
      * @param args operator arguments. Each argument is a map from 
      * possible types to corresponding expressions
@@ -314,7 +332,7 @@ public class ExprTree extends CommonTree {
             boolean duplicate = false;
             try {
                 duplicate =
-                    (result.put(op.getResultType(), newCallExp(op, args)) != null);
+                    (result.put(op.getResultType(), newCallExp(false, op, args)) != null);
             } catch (FormatException e) {
                 // this candidate did not work out; proceed
             }
@@ -340,7 +358,7 @@ public class ExprTree extends CommonTree {
      * @throws FormatException if {@code args} does not have values
      * for the required operator types
      */
-    private Expression newCallExp(Operator op,
+    private Expression newCallExp(boolean prefixed, Operator op,
             List<Map<SignatureKind,? extends Expression>> args)
         throws FormatException {
         if (op.getArity() != args.size()) {
@@ -367,7 +385,7 @@ public class ExprTree extends CommonTree {
             return Constant.instance(op.getResultType(), op.getSymbol()
                 + selectedArgs.get(0).toDisplayString());
         } else {
-            return new CallExpr(op, selectedArgs);
+            return new CallExpr(prefixed, op, selectedArgs);
         }
     }
 

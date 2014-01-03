@@ -30,7 +30,8 @@ import java.util.Map;
  */
 public class Parameter extends Expression {
     /** Constructs a new parameter. */
-    public Parameter(int nr, SignatureKind type) {
+    public Parameter(boolean prefixed, int nr, SignatureKind type) {
+        super(prefixed);
         assert nr >= 0;
         this.nr = nr;
         this.type = type;
@@ -39,12 +40,6 @@ public class Parameter extends Expression {
     @Override
     public SignatureKind getSignature() {
         return this.type;
-    }
-
-    @Override
-    protected void buildDisplayString(StringBuilder result, Precedence context) {
-        result.append("$");
-        result.append(getNumber());
     }
 
     @Override
@@ -87,6 +82,15 @@ public class Parameter extends Expression {
         }
         Parameter other = (Parameter) obj;
         return this.nr == other.nr;
+    }
+
+    @Override
+    protected String createParseString() {
+        String result = toDisplayString();
+        if (isPrefixed()) {
+            result = getSignature() + ":" + toDisplayString();
+        }
+        return result;
     }
 
     @Override

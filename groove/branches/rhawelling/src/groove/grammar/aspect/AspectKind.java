@@ -22,6 +22,7 @@ import groove.algebra.Constant;
 import groove.algebra.Operator;
 import groove.algebra.Signature.OpValue;
 import groove.algebra.SignatureKind;
+import groove.algebra.syntax.Assignment;
 import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.Expression.Kind;
 import groove.annotation.Help;
@@ -1505,7 +1506,7 @@ public enum AspectKind {
             if (content == null) {
                 return "";
             } else if (content instanceof Constant) {
-                return ((Constant) content).toInputString();
+                return ((Constant) content).toParseString();
             } else if (content instanceof Operator) {
                 return ((Operator) content).getName();
             } else if (content instanceof Color) {

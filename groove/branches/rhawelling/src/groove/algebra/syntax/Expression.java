@@ -34,8 +34,13 @@ import org.antlr.runtime.RecognitionException;
  * @version $Revision $
  */
 public abstract class Expression {
-    /** Constructor for subclasses. */
-    protected Expression() {
+    /**
+     * Constructor for subclasses.
+     * @param prefixed indicates if the expression was explicitly typed
+     * my a type prefix in the parsed text
+     */
+    protected Expression(boolean prefixed) {
+        this.prefixed = prefixed;
         this.kind = kindMap.get(getClass());
         assert this.kind != null;
     }
@@ -51,13 +56,6 @@ public abstract class Expression {
     final public String toDisplayString() {
         return toLine().toFlatString();
     }
-
-    /**
-     * Builds the display string for this expression in the 
-     * result parameter.
-     */
-    abstract protected void buildDisplayString(StringBuilder result,
-            Precedence context);
 
     /**
      * Returns a text representation of the term.
@@ -76,23 +74,31 @@ public abstract class Expression {
 
     /** 
      * Returns a string representation from which
-     * this expression has been parsed.
+     * this expression can be been parsed.
      * If the expression has been constructed rather
-     * than parsed, returns the display string instead.
+     * than parsed, calls {@link #createParseString()}.
      * @see #toDisplayString()
      */
-    public String toInputString() {
-        if (this.inputString == null) {
-            return toDisplayString();
-        } else {
-            return this.inputString;
+    public String toParseString() {
+        if (this.parseString == null) {
+            this.parseString = createParseString();
         }
+        return this.parseString;
     }
 
+    /**
+     * Callback method to create the input string for such 
+     * expressions that were constructed rather than parsed.
+     */
+    abstract protected String createParseString();
+
     /** Sets the string from which this expression has been parsed. */
-    public void setInputString(String inputString) {
-        this.inputString = inputString;
+    public void setParseString(String parseString) {
+        this.parseString = parseString;
     }
+
+    /** The string from which this expression has been parsed, if any. */
+    private String parseString;
 
     /**
      * Indicates if this expression is a term,
@@ -150,8 +156,17 @@ public abstract class Expression {
 
     /** The expression kind of this expression. */
     private final Kind kind;
-    /** The string from which this expression has been parsed, if any. */
-    private String inputString;
+
+    /** 
+     * Indicates if the parsed text for this expression has an explicit
+     * type prefix. 
+     */
+    public boolean isPrefixed() {
+        return this.prefixed;
+    }
+
+    /** Flag indicating if the parsed text for this expression had a type prefix. */
+    private final boolean prefixed;
     /** The mapping from variables occurring in this expression to their types. */
     private Map<String,SignatureKind> varMap;
 

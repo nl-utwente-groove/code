@@ -30,10 +30,10 @@ import static groove.grammar.aspect.AspectKind.READER;
 import static groove.grammar.aspect.AspectKind.REMARK;
 import static groove.grammar.aspect.AspectKind.SUBTYPE;
 import static groove.grammar.aspect.AspectKind.TEST;
-import static groove.graph.EdgeRole.NODE_TYPE;
 import static groove.graph.GraphRole.RULE;
 import groove.algebra.Operator;
 import groove.algebra.SignatureKind;
+import groove.algebra.syntax.Assignment;
 import groove.algebra.syntax.Expression;
 import groove.automaton.RegExpr;
 import groove.grammar.aspect.AspectKind.NestedValue;
@@ -51,6 +51,7 @@ import groove.graph.plain.PlainLabel;
 import groove.gui.look.Line;
 import groove.gui.look.Line.ColorType;
 import groove.gui.look.Line.Style;
+import groove.gui.look.Values;
 import groove.io.Util;
 import groove.util.ExprParser;
 import groove.util.Fixable;
@@ -374,51 +375,15 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
         return result;
     }
 
-    /**
-     * Returns the label of this edge as it should be displayed. 
-     * This is either the type label, or the rule label, or (if neither are defined)
-     * a default edge constructed from the inner text of the aspect label.
+    /** 
+     * Returns the display line corresponding to this aspect edge.
+     * @param onNode if {@code true}, the line will be part of the node label,
+     * otherwise it is labelling a binary edge
      */
-    public Label getDisplayLabel() {
-        testFixed(true);
-        Label result = null;
-        if (this.graphRole == RULE) {
-            result = getRuleLabel();
-        } else {
-            result = getTypeLabel();
-        }
-        if (result == null) {
-            String text = null;
-            if (getKind() == NESTED) {
-                text = getAspect().getContentString();
-            } else if (isPredicate()) {
-                text = getPredicate().toDisplayString();
-            } else if (isAssign()) {
-                text =
-                    getAssign().toDisplayString(
-                        getGraphRole() == RULE
-                            && !source().getKind().isCreator() ? ":=" : "=");
-            } else if (getKind() == CONNECT) {
-                text = "+";
-            } else if (getAttrKind() == ARGUMENT) {
-                text = "" + Util.LC_PI + getArgument();
-            } else if (getAttrKind().hasSignature()) {
-                if (getGraphRole() == GraphRole.TYPE) {
-                    text = getAttrAspect().getContentString();
-                } else if (getOperator() != null) {
-                    text = getOperator().getName();
-                }
-            }
-            if (text == null) {
-                text = getInnerText();
-            }
-            result = PlainLabel.createLabel(text);
-        }
-        return result;
-    }
-
-    public Line getLine() {
+    public Line toLine(boolean onNode) {
         Line result = null;
+        // Role prefix
+        String rolePrefix = null;
         // line text, if the line is just atomic text
         String text = null;
         // set of line styles to be added to the entire line
@@ -428,63 +393,144 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
         // prefix 
         switch (getKind()) {
         case CONNECT:
+            assert !onNode;
             text = "+";
             break;
         case LET:
+            assert onNode;
             String symbol =
                 getGraphRole() == RULE && !source().getKind().isCreator()
                         ? ":=" : "=";
-            result = Line.atom(getAssign().toDisplayString(symbol));
+            result = getAssign().toLine(symbol);
+            if (getGraphRole() == RULE) {
+                color = ColorType.CREATOR;
+            }
             break;
         case NESTED:
+            assert !onNode;
             text = getAspect().getContentString();
-            break;
-        case ABSTRACT:
-            text = getTypeLabel().text();
-            if (getRole() == NODE_TYPE) {
-                styles.add(Style.ITALIC);
-            }
             break;
         case REMARK:
             color = ColorType.REMARK;
-
-        case READER:
-        case ERASER:
-        case CREATOR:
+            rolePrefix = "// ";
+            break;
         case ADDER:
+            color = ColorType.CREATOR;
+            rolePrefix = "!+ ";
+            break;
         case EMBARGO:
-        case DEFAULT:
+            color = ColorType.EMBARGO;
+            rolePrefix = "! ";
+            break;
+        case ERASER:
+            color = ColorType.ERASER;
+            rolePrefix = "- ";
+            break;
+        case CREATOR:
+            color = ColorType.CREATOR;
+            rolePrefix = "+ ";
+            break;
+        }
+        if (result == null && text == null) {
             switch (getAttrKind()) {
             case ARGUMENT:
                 text = "" + Util.LC_PI + getArgument();
-            case PRODUCT:
+                break;
+            case TEST:
+                result = getPredicate().toLine();
+                break;
             case INT:
             case REAL:
             case STRING:
             case BOOL:
-            case TEST:
+                if (getGraphRole() == GraphRole.TYPE) {
+                    text = getAttrAspect().getContentString();
+                } else {
+                    text = getOperator().getName();
+                }
+                break;
             }
-            break;
-        }
-        // set bold or italic depending on edge role
-        switch (getRole()) {
-        case FLAG:
-            styles.add(Style.ITALIC);
-            break;
-        case NODE_TYPE:
-            styles.add(Style.BOLD);
         }
         if (result == null) {
             if (text == null) {
-                text = getInnerText();
+                if (getGraphRole() == RULE) {
+                    text = getRuleLabel().text();
+                } else {
+                    text = getTypeLabel().text();
+                }
+                // set bold or italic depending on edge role
+                switch (getRole()) {
+                case FLAG:
+                    styles.add(Style.ITALIC);
+                    break;
+                case NODE_TYPE:
+                    styles.add(Style.BOLD);
+                    if (source().getKind() == ABSTRACT) {
+                        styles.add(Style.ITALIC);
+                    }
+                    break;
+                }
             }
             result = Line.atom(text);
+        }
+        if (onNode) {
+            SignatureKind type = null;
+            if (!isLoop()) {
+                switch (getGraphRole()) {
+                case HOST:
+                case RULE:
+                    // this is an attribute edge displayed as a node label
+                    String suffix =
+                        ASSIGN_TEXT
+                            + target().getAttrAspect().getContentString();
+                    result = result.append(suffix);
+                    break;
+                case TYPE:
+                    // this is a primitive type field declaration modelled through an 
+                    // edge to the target type
+                    type = target().getAttrKind().getSignature();
+                }
+            } else if (getAttrKind().hasSignature()) {
+                // this is a primitive type field declaration
+                // modelled through a self-edge
+                type = getAttrKind().getSignature();
+            }
+            if (type != null) {
+                result = result.append(TYPE_TEXT);
+                result =
+                    result.append(Line.atom(type.getName()).style(Style.BOLD));
+            }
+            if (rolePrefix != null && getAspect() != source().getAspect()) {
+                result = Line.atom(rolePrefix).append(result);
+            }
         }
         for (Style s : styles) {
             result = result.style(s);
         }
         if (color != null) {
             result = result.color(color);
+        }
+        Line levelSuffix = toLevelName();
+        if (levelSuffix != null) {
+            result.append(levelSuffix);
+        }
+        return result;
+    }
+
+    /**
+     * Appends a level name to a given text,
+     * depending on an edge role.
+     */
+    private Line toLevelName() {
+        Line result = null;
+        String name = getLevelName();
+        // only consider proper names unequal to source or target level
+        if (name != null && name.length() != 0
+            && !name.equals(source().getLevelName())
+            && !name.equals(target().getLevelName())) {
+            result =
+                Line.atom(LEVEL_NAME_SEPARATOR + name).color(
+                    Values.NESTED_COLOR);
         }
         return result;
     }
@@ -832,4 +878,8 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
     private boolean fixed;
     /** List of syntax errors in this edge. */
     private final FormatErrorSet errors = new FormatErrorSet();
+    /** Separator between level name and edge label. */
+    static private final char LEVEL_NAME_SEPARATOR = '@';
+    static private final String ASSIGN_TEXT = " = ";
+    static private final String TYPE_TEXT = ": ";
 }

@@ -33,7 +33,9 @@ import java.util.Map;
  */
 public class FieldExpr extends Expression {
     /** Constructs a new field expression. */
-    public FieldExpr(String target, String field, SignatureKind type) {
+    public FieldExpr(boolean prefixed, String target, String field,
+            SignatureKind type) {
+        super(prefixed);
         assert field != null && type != null;
         this.target = target;
         this.field = field;
@@ -61,19 +63,11 @@ public class FieldExpr extends Expression {
     @Override
     public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         if (oldLabel.getRole() == BINARY && oldLabel.text().equals(getField())) {
-            return new FieldExpr(getTarget(), newLabel.text(), getSignature());
+            return new FieldExpr(isPrefixed(), getTarget(),
+                newLabel.text(), getSignature());
         } else {
             return this;
         }
-    }
-
-    @Override
-    protected void buildDisplayString(StringBuilder result, Precedence context) {
-        if (getTarget() != null) {
-            result.append(getTarget());
-            result.append(".");
-        }
-        result.append(getField());
     }
 
     @Override
@@ -133,6 +127,15 @@ public class FieldExpr extends Expression {
         result =
             prime * result + (this.target == null ? 0 : this.target.hashCode());
         result = prime * result + this.type.hashCode();
+        return result;
+    }
+
+    @Override
+    protected String createParseString() {
+        String result = toDisplayString();
+        if (isPrefixed()) {
+            result = getSignature() + ":" + toDisplayString();
+        }
         return result;
     }
 
