@@ -102,7 +102,31 @@ public class GrammarModel implements Observer {
 
     /** Returns the system properties of this grammar model. */
     public GrammarProperties getProperties() {
-        return this.store.getProperties();
+        GrammarProperties result = this.localProperties;
+        if (result == null) {
+            result = this.store.getProperties();
+        }
+        return result;
+    }
+
+    /** 
+     * Sets a local properties object.
+     * This circumvents the stored properties.
+     * @param properties a local properties object; if {@code null}, the
+     * properties are reset to the stored properties
+     * @throws FormatException if the properties object is not {@code null}
+     * and does not satisfy {@link GrammarProperties#check(GrammarModel)}
+     */
+    public void setProperties(GrammarProperties properties)
+        throws FormatException {
+        if (properties != null) {
+            properties.check(this);
+        }
+        this.localProperties = properties;
+        for (ResourceKind kind : ResourceKind.all(false)) {
+            syncResource(kind);
+        }
+        invalidate();
     }
 
     /** Returns all names of grammar resources of a given kind. */
@@ -668,6 +692,8 @@ public class GrammarModel implements Observer {
     private final ChangeCount changeCount;
     private final Map<ResourceKind,ChangeCount> resourceChangeCounts =
         new EnumMap<ResourceKind,ChangeCount>(ResourceKind.class);
+    /** Local properties; if {@code null}, the stored properties are used. */
+    private GrammarProperties localProperties;
     /** Flag to indicate if the start graph is external. */
     private boolean isExternalStartGraphModel = false;
     /** Possibly empty list of errors found in the conversion to a grammar. */

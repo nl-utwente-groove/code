@@ -26,7 +26,7 @@ import java.util.ResourceBundle;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionHandlerFilter;
-import org.kohsuke.args4j.spi.FieldSetter;
+import org.kohsuke.args4j.spi.MapOptionHandler;
 import org.kohsuke.args4j.spi.OptionHandler;
 
 /**
@@ -151,19 +151,20 @@ public class GrooveCmdLineParser extends CmdLineParser {
     protected void printSingleLineOption(PrintWriter pw, OptionHandler<?> h,
             ResourceBundle rb, boolean closeOpt) {
         pw.print(' ');
-        boolean multiValued = !(h.setter instanceof FieldSetter);
-        boolean brackets = !h.option.required() || multiValued;
+        boolean multiOccurrences =
+            (h instanceof MapOptionHandler) || h.option.isMultiValued();
+        boolean brackets = !h.option.required() || multiOccurrences;
         if (brackets) {
             pw.print('[');
         }
         pw.print(h.getNameAndMeta(rb));
-        if (h.option.isMultiValued()) {
+        if (h.option.isArgument() && h.option.isMultiValued()) {
             pw.print(" ...");
         }
         if (brackets && closeOpt) {
             pw.print(']');
         }
-        if (multiValued) {
+        if (!h.option.isArgument() && multiOccurrences) {
             pw.print(h.option.required() ? '+' : '*');
         }
     }

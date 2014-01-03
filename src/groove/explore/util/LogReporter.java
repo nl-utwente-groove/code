@@ -150,6 +150,7 @@ public class LogReporter extends AExplorationReporter {
         emit("Grammar:\t%s%n", getGTS().getGrammar().getName());
         emit("Start graph:\t%s%n",
             getGTS().getGrammar().getStartGraph().getName());
+        emit("Control:\t%s%n", getGTS().getGrammar().getCtrlAut().getName());
         emit("Exploration:\t%s%n", getExploration().getIdentifier());
         emit("Timestamp:\t%s%n", this.startTime);
     }

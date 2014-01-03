@@ -24,6 +24,8 @@ import groove.explore.util.LTSLabels;
 import groove.explore.util.LTSReporter;
 import groove.explore.util.LogReporter;
 import groove.explore.util.StateReporter;
+import groove.grammar.GrammarProperties;
+import groove.grammar.GrammarProperties.Key;
 import groove.grammar.model.FormatException;
 import groove.lts.GTS;
 import groove.transform.Transformer;
@@ -33,13 +35,16 @@ import groove.util.cli.GrooveCmdLineTool;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.spi.MapOptionHandler;
 import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
 import org.kohsuke.args4j.spi.Setter;
 
@@ -86,6 +91,12 @@ public class Generator extends GrooveCmdLineTool<GTS> {
         }
         if (hasAcceptor()) {
             result.setAcceptor(AcceptorEnumerator.parseCommandLineAcceptor(getAcceptor()));
+        }
+        Map<Key,String> properties = getGrammarProperties();
+        if (properties != null) {
+            for (Map.Entry<Key,String> e : properties.entrySet()) {
+                result.setProperty(e.getKey(), e.getValue());
+            }
         }
         result.setResultCount(getResultCount());
         return result;
@@ -161,8 +172,25 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     @Option(name = RESULT_NAME, metaVar = RESULT_VAR, usage = RESULT_USAGE)
     private int resultCount = 0;
 
+    /** Returns the locally set grammar properties, if any. */
+    public Map<Key,String> getGrammarProperties() {
+        return this.grammarProperties;
+    }
+
+    @Option(
+            name = "-D",
+            metaVar = "key=val",
+            usage = ""
+                + "Set grammar property <key> to <val>. Legal settings are:\n"
+                + "  - checkIsomorphism=boolean - switch isomorphism checking on or off\n"
+                + "  - controlProgram=names - set the control program(s) to be used\n"
+                + "See groove.grammar.GrammarProperties "
+                + "for other allowed key/value pairs",
+            handler = PropertiesHandler.class)
+    private Map<Key,String> grammarProperties;
+
     /**
-     * Returns the settings to be used in generating the LTS.
+     * Returns the settings to be used in storing the LTS.
      */
     public LTSLabels getLtsLabels() {
         return this.ltsLabels;
@@ -408,5 +436,54 @@ public class Generator extends GrooveCmdLineTool<GTS> {
                 throw new CmdLineException(this.owner, e);
             }
         }
+    }
+
+    /** Handler for the {@link #grammarProperties} option. */
+    public static class PropertiesHandler extends MapOptionHandler {
+        /** The required constructor. */
+        public PropertiesHandler(CmdLineParser parser, OptionDef option,
+                Setter<? super Map<?,?>> setter) {
+            super(parser, option, setter);
+        }
+
+        @SuppressWarnings("rawtypes")
+        @Override
+        protected void addToMap(String argument, Map m) throws CmdLineException {
+            super.addToMap(argument, m);
+            if (this.error != null) {
+                throw new CmdLineException(this.owner, this.error);
+            }
+        }
+
+        @SuppressWarnings("rawtypes")
+        @Override
+        protected Map<Key,String> createNewCollection(Class<? extends Map> type) {
+            return new EnumMap<Key,String>(Key.class);
+        }
+
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        @Override
+        protected void addToMap(Map m, String key, String value) {
+            this.error = null;
+            Key property = GrammarProperties.KEYS.get(key);
+            if (property == null) {
+                this.error = String.format("Unknown property key '%s'", key);
+            } else if (property.isSystem()) {
+                this.error =
+                    String.format("Cannot set system property '%s'", key);
+            } else if (!property.getFormat().isSatisfied(value)) {
+                this.error =
+                    String.format("Incorrect value '%s' for property '%s'",
+                        value, key);
+            } else {
+                m.put(property, value);
+            }
+        }
+
+        /**
+         * Error detected in {@link #addToMap(Map, String, String)}
+         * and to be reported in {@link #addToMap(String, Map)}.
+         */
+        private String error;
     }
 }

@@ -2,7 +2,9 @@ package groove.grammar;
 
 import groove.algebra.AlgebraFamily;
 import groove.explore.Exploration;
+import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
+import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.grammar.type.TypeLabel;
 import groove.gui.dialog.PropertyKey;
@@ -522,6 +524,27 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
         }
     }
 
+    /** 
+     * Checks if the stored properties are valid in a given grammar.
+     */
+    public void check(GrammarModel grammar) throws FormatException {
+        FormatErrorSet errors = new FormatErrorSet();
+        for (ResourceKind kind : ResourceKind.values()) {
+            switch (kind) {
+            case CONTROL:
+            case HOST:
+            case PROLOG:
+                for (String name : getActiveNames(kind)) {
+                    if (!grammar.getNames(kind).contains(name)) {
+                        errors.add("'%s' is not an existing %s", name,
+                            kind.getDescription());
+                    }
+                }
+            }
+        }
+        errors.throwException();
+    }
+
     /** Retrieves a property by key. */
     private String getProperty(Key key) {
         return getProperty(key.getName());
@@ -674,8 +697,8 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
         ALGEBRA("algebraFamily", PropertyKind.ALGEBRA,
                 "Flag controlling if matches should be injective"),
         /**
-         * Flag determining the injectivity of the rule system. If <code>true</code>
-         * , all rules should be matched injectively. Default is <code>false</code>.
+         * Flag determining the injectivity of the rule system. If <code>true</code>,
+         * all rules should be matched injectively. Default is <code>false</code>.
          */
         INJECTIVE("matchInjective", PropertyKind.BOOLEAN,
                 "Flag controlling if matches should be injective"),
@@ -694,7 +717,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
         CREATOR_EDGE("checkCreatorEdges", PropertyKind.BOOLEAN,
                 "Flag controlling if creator edges should be treated as implicit NACs"),
         /**
-         * HS-as-NAC property. If <code>true</code>, each RHS
+         * RHS-as-NAC property. If <code>true</code>, each RHS
          * is implicitly treated as a NAC. Default is <code>false</code>.
          */
         RHS_AS_NAC("rhsIsNAC", PropertyKind.BOOLEAN,
