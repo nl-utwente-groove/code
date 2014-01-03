@@ -17,9 +17,13 @@
 package groove.test.criticalpair;
 
 import static org.junit.Assert.assertTrue;
+import groove.algebra.AlgebraFamily;
 import groove.grammar.Grammar;
+import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
+import groove.transform.criticalpair.ConfluenceResult;
 import groove.transform.criticalpair.ConfluenceStatus;
 import groove.transform.criticalpair.CriticalPair;
 
@@ -48,12 +52,59 @@ public class TestConfluenceWithAttributes {
         } catch (FormatException e) {
             e.printStackTrace();
         }
-        Set<CriticalPair> pairs = CriticalPair.computeCriticalPairs(grammar);
-        for (CriticalPair pair : pairs) {
-            System.out.println(pair.getRule1().getFullName());
-            System.out.println(pair.getRule2().getFullName() + "\n");
-            assertTrue(pair.getStrictlyConfluent(grammar) == ConfluenceStatus.CONFLUENT);
+        ConfluenceStatus expected = ConfluenceStatus.CONFLUENT;
+        ConfluenceResult result =
+            ConfluenceResult.checkStrictlyConfluent(grammar);
+        result.analyzeAll();
+        System.out.println("Not confluent:");
+        for (CriticalPair nonConf : result.getNonConfluentPairs()) {
+            System.out.println(nonConf + " " + nonConf.getHostGraph());
+            System.out.println(nonConf.getRuleApplication1().getTarget());
+            System.out.println(nonConf.getRuleApplication2().getTarget());
+            for (HostNode hn : nonConf.getRuleApplication2().getTarget().nodeSet()) {
+                if (hn instanceof ValueNode) {
+                    ValueNode valnode = (ValueNode) hn;
+                    System.out.println(valnode.getTerm());
+                    System.out.println(valnode.getValue());
+                }
+            }
         }
+        System.out.println(result.getStatus());
+        assertTrue(result.getStatus() == expected);
+
+    }
+
+    @Test
+    public void testConfluenceWithAttributes_OneTwo() {
+        String grammarStr = "junit/criticalpair/attributes/delete-one-two.gps/";
+        File grammarFile = new File(grammarStr);
+        GrammarModel view = null;
+        Grammar grammar = null;
+        try {
+            view = GrammarModel.newInstance(grammarFile, false);
+            grammar = view.toGrammar();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        Set<CriticalPair> pairs = CriticalPair.computeCriticalPairs(grammar);
+        assertTrue(pairs.size() == 0);
+        assertTrue(ConfluenceResult.checkStrictlyConfluent(grammar).getStatus() == ConfluenceStatus.CONFLUENT);
+
+        //test the same with pointalgebra
+
+        view.getProperties().setAlgebraFamily(AlgebraFamily.POINT);
+        try {
+            grammar = view.toGrammar();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
+        pairs = CriticalPair.computeCriticalPairs(grammar);
+        System.out.println(pairs);
+        System.out.println(pairs.size());
+        assertTrue(pairs.size() == 1);
+        assertTrue(ConfluenceResult.checkStrictlyConfluent(grammar).getStatus() == ConfluenceStatus.CONFLUENT);
 
     }
 }

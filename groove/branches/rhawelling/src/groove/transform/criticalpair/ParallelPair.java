@@ -19,6 +19,7 @@ package groove.transform.criticalpair;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Constant;
+import groove.algebra.Operator;
 import groove.algebra.syntax.Variable;
 import groove.grammar.Rule;
 import groove.grammar.host.DefaultHostGraph;
@@ -76,6 +77,16 @@ public class ParallelPair {
 
     public Rule getRule2() {
         return this.rule2;
+    }
+
+    public Rule getRule(MatchNumber matchnum) {
+        if (matchnum == MatchNumber.ONE) {
+            return this.rule1;
+        } else if (matchnum == MatchNumber.TWO) {
+            return this.rule2;
+        } else {
+            throw new IllegalArgumentException("matchnum must be One or Two");
+        }
     }
 
     /**
@@ -224,7 +235,8 @@ public class ParallelPair {
                     VariableNode varNode = (VariableNode) firstNode;
                     Algebra<?> alg =
                         AlgebraFamily.TERM.getAlgebra(varNode.getSignature());
-                    //TODO set can contain multiple constants
+                    //The set can contain multiple constants, the values of these constants
+                    //in the algebra of the rule is the same
                     Constant constant = getFirstConstant(ruleNodes);
                     if (constant == null) {
                         target =
@@ -273,6 +285,22 @@ public class ParallelPair {
         return result;
     }
 
+    //    /**
+    //     * Finds all constants in a group
+    //     * @param group, the group in wich constant will be seached for
+    //     * @return all constants in the group (possibly an empty set)
+    //     */
+    //    Set<Constant> getConstantsFromGroup(Long group) {
+    //        Set<Constant> result = new HashSet<Constant>();
+    //        for (RuleNode node : getCombination(group)) {
+    //            if (node instanceof VariableNode
+    //                && ((VariableNode) node).hasConstant()) {
+    //                result.add(((VariableNode) node).getConstant());
+    //            }
+    //        }
+    //        return result;
+    //    }
+
     /**
      * Searches a set of rulenodes for a VariableNode which has a Constant
      * @param nodes the set of RuleNodes which is traversed in search of a constant
@@ -289,10 +317,10 @@ public class ParallelPair {
     }
 
     /**
-     * Searches all the ruleNode in both nodematches to find the group which contains
-     * the Constant cons
+     * Searches all the ruleNodes in both nodematches to find the group which contains
+     * a constant with a value object equal to value
      */
-    public Long findConstant(Constant cons) {
+    public Long findConstant(Constant cons, AlgebraFamily family) {
         if (cons == null) {
             return null;
         }
@@ -305,6 +333,146 @@ public class ParallelPair {
             }
         }
         return null;
+    }
+
+    //    public Long findConstant(Constant cons, AlgebraFamily family) {
+    //        System.out.println("findConstant " + cons);
+    //        if (cons == null) {
+    //            return null;
+    //        }
+    //        Algebra<?> alg = family.getAlgebra(cons.getSignature());
+    //        Object value = alg.toValueFromConstant(cons);
+    //
+    //        for (Long group : getCombinationGroups()) {
+    //            for (RuleNode rn : getCombination(group)) {
+    //                if (rn instanceof VariableNode) {
+    //                    VariableNode varNode = (VariableNode) rn;
+    //                    if (varNode.hasConstant() //if the varnode has a constant
+    //                        //and the signature is the same as the signature of cons
+    //                        && varNode.getSignature().equals(cons.getSignature())
+    //                        //and the values of both constants are equal
+    //                        && alg.toValueFromConstant(varNode.getConstant()).equals(
+    //                            value)) {
+    //                        //we found a group with a similar valued constant, return this group
+    //                        System.out.println("findConstant returned " + group
+    //                            + " because " + varNode);
+    //                        return group;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //        System.out.println("findConstant returned null");
+    //        //no result found
+    //        return null;
+    //    }
+
+    private Long findNode(RuleNode ruleNode, MatchNumber matchnum) {
+        Map<Long,Set<RuleNode>> nodeMatch = getNodeMatch(matchnum);
+        for (Long l : nodeMatch.keySet()) {
+            if (nodeMatch.get(l).contains(ruleNode)) {
+                return l;
+            }
+        }
+        //no result found
+        return null;
+    }
+
+    //    public boolean canMergeVariable(VariableNode varRuleNode, Long group,
+    //            AlgebraFamily algebraFamily) {
+    //        if (varRuleNode.hasConstant()) {
+    //            Constant cons = varRuleNode.getConstant();
+    //            Set<Constant> constantsInGroup = this.getConstantsFromGroup(group);
+    //            if (constantsInGroup.contains(cons)) {
+    //                // A similar constant is already in this group.
+    //                // This constant must be merged in this group
+    //                return true;
+    //            } else {
+    //                //check if cons may be merged with existing constants
+    //                SignatureKind consSigKind = cons.getSignature();
+    //                Algebra<?> algebra = algebraFamily.getAlgebra(consSigKind);
+    //                Object value = algebra.toValueFromConstant(cons);
+    //                for (Constant existing : constantsInGroup) {
+    //                    if (!existing.getSignature().equals(consSigKind)
+    //                        || !value.equals(algebra.toValueFromConstant(existing))) {
+    //                        //either the signature or the value of the constant is not the same in the algebra
+    //                        //these constants may not be merged
+    //                        return false;
+    //                    }
+    //                }
+    //            }
+    //            //the constant may also not be added to group if there exists another group with a same valued constant
+    //            Long constantGroup = this.findConstant(cons, algebraFamily);
+    //            //The constant may be merged if no group contains the constant
+    //            //i.e. constantGroup == null or if constantGroup is equal to group
+    //            if (constantGroup != null) {
+    //                if (!constantGroup.equals(group)) {
+    //                    // a constant with a similar value exists in another group, it may not be merged in group
+    //                    return false;
+    //                } else {
+    //                    // a similar valued constant is already in group, therefore varRuleNode must me merged to group
+    //                    return true;
+    //                }
+    //            } else {
+    //                //The constant (and its value) is not in any group yet
+    //                //It can only be merged if this does not cause any problems in the algebra
+    //                return canMergeVariableUsingAlgebra(varRuleNode, group,
+    //                    algebraFamily);
+    //            }
+    //        } else {
+    //            //ruleNode is not a constant
+    //            //It can only be merged if this does not cause any problems in the algebra
+    //            return canMergeVariableUsingAlgebra(varRuleNode, group,
+    //                algebraFamily);
+    //        }
+    //    }
+    //
+    //    private boolean canMergeVariableUsingAlgebra(VariableNode varRuleNode,
+    //            Long group, AlgebraFamily algebraFamily) {
+    //
+    //        //compute sets of product nodes
+    //        for (MatchNumber matchnum : MatchNumber.values()) {
+    //            nodeLoop: for (RuleNode rn : getRule(matchnum).lhs().nodeSet()) {
+    //                if (rn instanceof OperatorNode) {
+    //                    OperatorNode opNode = (OperatorNode) rn;
+    //                    List<VariableNode> args = opNode.getArguments();
+    //                    Operator op = opNode.getOperator();
+    //
+    //                    Long opResultGroup = findNode(opNode.getTarget(), matchnum);
+    //                    if (opResultGroup == null) {
+    //                        //the target has not yet been defined
+    //                        //merging is allowed
+    //                        continue nodeLoop;
+    //                    }
+    //                    List<Long> argGroups = new ArrayList<Long>(args.size());
+    //                    for (VariableNode arg : args) {
+    //                        Long argGroup = findNode(arg, matchnum);
+    //                        if (argGroup == null) {
+    //                            //one of the arguments has not yet been defined
+    //                            //merging is allowed
+    //                            continue nodeLoop;
+    //                        }
+    //                        argGroups.add(argGroup);
+    //                    }
+    //                    //if the target or arguments of the operator node have anything to do with this group
+    //                    if ((opResultGroup == group || argGroups.contains(group))
+    //                    //and application of the operator to this algebra is not possible
+    //                    // (not with this result)
+    //                        && !canApply(op, argGroups, opResultGroup,
+    //                            algebraFamily)) {
+    //                        //merging is not allowed because this operator can not give such a result in the algebra
+    //                        return false;
+    //                    }
+    //
+    //                }
+    //            }
+    //        }
+    //
+    //        return true;
+    //    }
+
+    private boolean canApply(Operator op, List<Long> argGroups,
+            Long resultGroup, AlgebraFamily algebraFamily) {
+        return true;//TODO
     }
 
     @Override

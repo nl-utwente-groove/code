@@ -17,6 +17,7 @@
 package groove.test.criticalpair;
 
 import static org.junit.Assert.assertTrue;
+import groove.algebra.AlgebraFamily;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
@@ -117,6 +118,7 @@ public class TestDeleteUseWithAttributes {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        view.getProperties().setAlgebraFamily(AlgebraFamily.POINT);
         Rule deleteNumberTwo = getSimpleRule("deleteNumberTwo", view);
         Rule deleteNumberOne = getSimpleRule("deleteNumberOne", view);
         //Both left-hand

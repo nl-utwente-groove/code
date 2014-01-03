@@ -16,7 +16,10 @@
  */
 package groove.transform.criticalpair;
 
+import groove.algebra.Algebra;
+import groove.algebra.AlgebraFamily;
 import groove.algebra.Constant;
+import groove.algebra.SignatureKind;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
 import groove.grammar.host.DefaultHostGraph;
@@ -219,6 +222,8 @@ public class CriticalPair {
      * @return All possble overlappings of the given set of nodes
      */
     public static Set<CriticalPair> computeCriticalPairs(Rule rule1, Rule rule2) {
+        assert canComputePairs(rule1);
+        assert canComputePairs(rule2);
         System.out.println("computeCriticalPairs(" + rule1.getFullName()
             + " , " + rule2.getFullName() + ")");
         if ((rule1.getTypeGraph() == null && rule2.getTypeGraph() != null)
@@ -302,6 +307,9 @@ public class CriticalPair {
         } else {
             throw new IllegalArgumentException("matchnum must be ONE or TWO");
         }
+        AlgebraFamily algebraFamily =
+            rule1.getSystemProperties().getAlgebraFamily();
+        assert algebraFamily == rule2.getSystemProperties().getAlgebraFamily();
 
         Set<RuleNode> nodesToProcess =
             new HashSet<RuleNode>(ruleGraph.nodeSet());
@@ -311,7 +319,7 @@ public class CriticalPair {
             if (curNode instanceof OperatorNode) {
                 nodeIt.remove();
             } else if (curNode instanceof VariableNode
-                && ((VariableNode) curNode).getTerm() instanceof Constant) {
+                && ((VariableNode) curNode).hasConstant()) {
                 Set<? extends RuleEdge> edges = ruleGraph.edgeSet(curNode);
                 boolean connectedToLhs = false;
                 for (RuleEdge e : edges) {
@@ -319,13 +327,15 @@ public class CriticalPair {
                     RuleNode target = e.target();
                     if (source instanceof DefaultRuleNode
                         || target instanceof DefaultRuleNode) {
-                        //curNode is only connected to OperatorNodes or variableNodes
+                        //curNode is connected to a DefaultRuleNode
                         //it must be included in the match
                         connectedToLhs = true;
                         break;
                     }
                 }
                 if (!connectedToLhs) {
+                    //curNode is only connected to OperatorNodes
+                    //we do not need to include it in the match
                     nodeIt.remove();
                 }
             }
@@ -345,7 +355,8 @@ public class CriticalPair {
                     //case 1: do not overlap rnode with an existing node of pair.getTarget()
                     //This means we create a copy of pair and add the set containing rnode as a separate element
                     if (rnode instanceof VariableNode
-                        && pair.findConstant(((VariableNode) rnode).getConstant()) != null) {
+                        && pair.findConstant(
+                            ((VariableNode) rnode).getConstant(), algebraFamily) != null) {
                         //rnode is a VariableNode with a constant, however this constant already exists in some group
                         //case 1 is not applicable because constants are unique
                     } else {
@@ -358,12 +369,15 @@ public class CriticalPair {
                     //Repeat the following for every node tnode in pair.getTarget():
                     //Map rnode to tnode in M1 (if the types coincide)
                     for (Long group : pair.getCombinationGroups()) {
+                        System.out.println("isCompatible " + rnode + "   "
+                            + pair.getCombination(group));
                         if (isCompatible(rnode, group, pair, injectiveOnly,
-                            matchnum)) {
+                            matchnum, algebraFamily)) {
                             newPair = pair.clone();
                             addNodeToGroup(rnode, group, newPair, matchnum,
                                 edges);
                             newParrPairs.add(newPair);
+                            System.out.println(true);
                         }
                     }
                 }
@@ -385,7 +399,8 @@ public class CriticalPair {
     }
 
     private static boolean isCompatible(RuleNode ruleNode, Long group,
-            ParallelPair pair, boolean injectiveOnly, MatchNumber matchnum) {
+            ParallelPair pair, boolean injectiveOnly, MatchNumber matchnum,
+            AlgebraFamily algebraFamily) {
         //combination is always nonempty
         List<RuleNode> combination = pair.getCombination(group);
         RuleNode firstNode = combination.iterator().next();
@@ -393,14 +408,10 @@ public class CriticalPair {
         if (injectiveOnly) {
             //If we only allow injective matches, then isCompatible will only return true
             //when no group exists yet for this MatchNumber
+            //VariablesNodes are an exception, these may always be merged non-injectively
 
-            if (ruleNode instanceof VariableNode
-                && ((VariableNode) ruleNode).hasConstant()) {
-                /* the ruleNode is a constant, these may be merged non-injectively because
-                 * two constants in the Term Algebra, may be the same constant in some other Algebra
-                 */
-                //do nothing
-            } else if (!pair.getCombination(group, matchnum).isEmpty()) {
+            if (!(ruleNode instanceof VariableNode)
+                && !pair.getCombination(group, matchnum).isEmpty()) {
                 return false;
             }
         }
@@ -416,13 +427,40 @@ public class CriticalPair {
                 VariableNode varRuleNode = (VariableNode) ruleNode;
                 if (varRuleNode.hasConstant()) {
                     Constant cons = varRuleNode.getConstant();
-                    //check if the constant already exists in a group
-                    Long constantGroup = pair.findConstant(cons);
+                    System.out.println(cons);
+                    //check if the constant already exists in some group
+                    Long constantGroup = pair.findConstant(cons, algebraFamily);
+                    System.out.println(constantGroup);
                     //The constant may be merged if no group contains the constant
                     //i.e. constantGroup == null or if constantGroup is equal to group
-                    return constantGroup == null || constantGroup.equals(group);
-                    //Note: the line above may put two different constants in the same group,
-                    //this can result in critical pairs which are only relevant for when the point algebra is used
+                    if (constantGroup == null || constantGroup.equals(group)) {
+                        SignatureKind sigKind = varRuleNode.getSignature();
+                        Algebra<?> alg = algebraFamily.getAlgebra(sigKind);
+                        Object consValue = alg.toValueFromConstant(cons);
+                        for (RuleNode other : pair.getCombination(group)) {
+                            if (other instanceof VariableNode) {
+                                VariableNode varOther = (VariableNode) other;
+                                if (sigKind.equals(varOther.getSignature())) {
+                                    if (varOther.hasConstant()
+                                        && !consValue.equals(alg.toValueFromConstant(varOther.getConstant()))) {
+                                        //The other variable has a constant which has a different value in the algebra
+                                        return false;
+                                    }
+                                }
+
+                            } else {
+                                //only variables with the same signature kind may be merged
+                                return false;
+                            }
+
+                        }
+                        //the constant may be merged because all constants in the group have the same value
+                        //(or no constants are in the group)
+                        return true;
+                    } else {
+                        //there exists another group containing a constant with the same value
+                        return false;
+                    }
                 } else {
                     //ruleNode is not a constant, it can be merged with any variableNode
                     return true;
@@ -552,7 +590,7 @@ public class CriticalPair {
     @Override
     public String toString() {
         return "Criticalpair(" + this.rule1.getFullName() + ", "
-            + this.rule2.getFullName() + ")";
+            + this.rule2.getFullName() + ", hostGraph: " + this.hostGraph + ")";
     }
 }
 
