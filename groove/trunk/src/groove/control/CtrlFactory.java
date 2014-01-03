@@ -376,7 +376,7 @@ public class CtrlFactory {
      */
     public CtrlAut buildDefault(Collection<? extends Action> actions,
             boolean symbolic) throws FormatException {
-        CtrlAut result = new CtrlAut("control");
+        CtrlAut result = new CtrlAut("none (arbitrary rule application)");
         FormatErrorSet errors = new FormatErrorSet();
         SortedMap<Integer,Set<Action>> priorityMap =
             new TreeMap<Integer,Set<Action>>();
