@@ -1,7 +1,7 @@
 /**
  * 
  */
-package groove.util;
+package groove.util.antlr;
 
 import groove.algebra.JavaStringAlgebra;
 import groove.grammar.host.DefaultHostGraph;
@@ -12,6 +12,7 @@ import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeLabel;
 import groove.grammar.type.TypeNode;
 import groove.graph.EdgeRole;
+import groove.util.ExprParser;
 
 import java.util.BitSet;
 import java.util.HashMap;

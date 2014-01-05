@@ -2,7 +2,7 @@ grammar Expr;
 
 options {
 	output=AST;
-	ASTLabelType = ExprTree;
+	ASTLabelType = NewExprTree;
 }
 
 tokens {
@@ -38,16 +38,6 @@ import groove.grammar.model.FormatErrorSet;
 
     public FormatErrorSet getErrors() {
         return this.errors;
-    }
-    
-    /** Instantiates the parser for a given string. */
-    public static ExprParser instance(String term) {
-        ANTLRStringStream input = new ANTLRStringStream(term);
-        ExprLexer lexer = new ExprLexer(input);
-        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        ExprParser parser = new ExprParser(tokenStream);
-        parser.setTreeAdaptor(new ExprTreeAdaptor(tokenStream));
-        return parser;
     }
 }
 
@@ -115,8 +105,7 @@ atom_expr
 
 /** Parenthesised expression. */
 par_expr
-  : open=LPAR or_expr close=RPAR
-    -> ^(LPAR[$open,""] or_expr RPAR[$close,""])
+  : LPAR^ or_expr RPAR
   ;
 
 constant
