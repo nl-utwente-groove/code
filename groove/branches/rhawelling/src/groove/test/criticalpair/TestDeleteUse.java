@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import groove.grammar.Rule;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostEdge;
+import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostGraphMorphism;
 import groove.grammar.host.HostNode;
 import groove.grammar.model.FormatException;
@@ -198,7 +199,10 @@ public class TestDeleteUse {
         //first create a match for the rule
         Rule deleteAndAddEdge = getSimpleRule("deleteAndAddEdge", view);
         RuleGraph lhs = deleteAndAddEdge.lhs();
-        DefaultHostGraph host = new DefaultHostGraph("target");
+        DefaultHostGraph host =
+            new DefaultHostGraph(
+                "target",
+                HostFactory.newInstance(deleteAndAddEdge.getTypeGraph().getFactory()));
         RuleToHostMap match = new RuleToHostMap(host.getFactory());
 
         HostNode hostSource = host.addNode();

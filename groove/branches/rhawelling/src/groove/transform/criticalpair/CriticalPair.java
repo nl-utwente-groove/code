@@ -244,6 +244,14 @@ public class CriticalPair {
 
         System.out.println(parrPairs.size()
             + " parralel pairs found (before removing)");
+        int totalNodes =
+            getNodesToProcess(rule1.lhs()).size()
+                + getNodesToProcess(rule2.lhs()).size();
+        System.out.println(calculateMaxPairs(totalNodes));
+        System.out.println(totalNodes);
+        assert parrPairs.size() <= calculateMaxPairs(getNodesToProcess(
+            rule1.lhs()).size()
+            + getNodesToProcess(rule2.lhs()).size());
         /*
          * If rule1 and rule2 are the same, then for every critical pair
          * match1 must not equal match2
@@ -285,6 +293,39 @@ public class CriticalPair {
     }
 
     /**
+     * Calculate the maximal numer of critical pairs that this algorithm could return
+     * @param numnodes the number of nodes that can be overlapped in both rules
+     * @return
+     */
+    private static long calculateMaxPairs(int numnodes) {
+        long sum = 0;
+        for (int i = 1; i <= numnodes; i++) {
+            sum += calculateMaxPairs(numnodes, i);
+        }
+
+        return sum;
+    }
+
+    /**
+     * Help method for calculateMaxPairs
+     * Calculates the number of critical pairs for wich the hostGraphs have nodesInPair nodes
+     * Where the total number of nodes being overlapped is numnodes
+     * @param numnodes the number of nodes in the two rules
+     * @param the number of nodes in the hostgraph of the pair
+     * @return
+     */
+    private static long calculateMaxPairs(int numnodes, int nodesInPair) {
+        if (numnodes < nodesInPair) {
+            return 0;
+        }
+        if (nodesInPair == 1) {
+            return 1;
+        }
+        return calculateMaxPairs(numnodes - 1, nodesInPair) * nodesInPair
+            + calculateMaxPairs(numnodes - 1, nodesInPair - 1);
+    }
+
+    /**
      * Help method for formAllOverlaps(...)
      * @param nodes the nodes which should be added
      * @param parrPairs the exists critical pairs (may be empty)
@@ -311,35 +352,9 @@ public class CriticalPair {
             rule1.getSystemProperties().getAlgebraFamily();
         assert algebraFamily == rule2.getSystemProperties().getAlgebraFamily();
 
-        Set<RuleNode> nodesToProcess =
-            new HashSet<RuleNode>(ruleGraph.nodeSet());
-        Iterator<RuleNode> nodeIt = nodesToProcess.iterator();
-        while (nodeIt.hasNext()) {
-            RuleNode curNode = nodeIt.next();
-            if (curNode instanceof OperatorNode) {
-                nodeIt.remove();
-            } else if (curNode instanceof VariableNode
-                && ((VariableNode) curNode).hasConstant()) {
-                Set<? extends RuleEdge> edges = ruleGraph.edgeSet(curNode);
-                boolean connectedToLhs = false;
-                for (RuleEdge e : edges) {
-                    RuleNode source = e.source();
-                    RuleNode target = e.target();
-                    if (source instanceof DefaultRuleNode
-                        || target instanceof DefaultRuleNode) {
-                        //curNode is connected to a DefaultRuleNode
-                        //it must be included in the match
-                        connectedToLhs = true;
-                        break;
-                    }
-                }
-                if (!connectedToLhs) {
-                    //curNode is only connected to OperatorNodes
-                    //we do not need to include it in the match
-                    nodeIt.remove();
-                }
-            }
-        }
+        //get the nodes from the rule that need to be in the match
+        Set<RuleNode> nodesToProcess = getNodesToProcess(ruleGraph);
+
         System.out.println(nodesToProcess.size() + " nodes to process");
         for (RuleNode rnode : nodesToProcess) {
             Set<? extends RuleEdge> edges = ruleGraph.edgeSet(rnode);
@@ -369,15 +384,12 @@ public class CriticalPair {
                     //Repeat the following for every node tnode in pair.getTarget():
                     //Map rnode to tnode in M1 (if the types coincide)
                     for (Long group : pair.getCombinationGroups()) {
-                        System.out.println("isCompatible " + rnode + "   "
-                            + pair.getCombination(group));
                         if (isCompatible(rnode, group, pair, injectiveOnly,
                             matchnum, algebraFamily)) {
                             newPair = pair.clone();
                             addNodeToGroup(rnode, group, newPair, matchnum,
                                 edges);
                             newParrPairs.add(newPair);
-                            System.out.println(true);
                         }
                     }
                 }
@@ -427,10 +439,8 @@ public class CriticalPair {
                 VariableNode varRuleNode = (VariableNode) ruleNode;
                 if (varRuleNode.hasConstant()) {
                     Constant cons = varRuleNode.getConstant();
-                    System.out.println(cons);
                     //check if the constant already exists in some group
                     Long constantGroup = pair.findConstant(cons, algebraFamily);
-                    System.out.println(constantGroup);
                     //The constant may be merged if no group contains the constant
                     //i.e. constantGroup == null or if constantGroup is equal to group
                     if (constantGroup == null || constantGroup.equals(group)) {
@@ -523,6 +533,45 @@ public class CriticalPair {
         }
         //all checks complete, no dependencies found
         return false;
+    }
+
+    /**
+     * Computes the set of ruleNodes which are DefaultRuleNodes, non-constant VariableNodesn
+     * or Constant VariableNodes which are connected to a DefaultRuleNode
+     * These are the ruleNodes which are required in a match for the rule 
+     * @param ruleGraph the ruleGraph containing the nodes
+     * @return a subset of ruleGraph.nodeSet()
+     */
+    private static Set<RuleNode> getNodesToProcess(RuleGraph ruleGraph) {
+        Set<RuleNode> result = new HashSet<RuleNode>(ruleGraph.nodeSet());
+        Iterator<RuleNode> nodeIt = result.iterator();
+        while (nodeIt.hasNext()) {
+            RuleNode curNode = nodeIt.next();
+            if (curNode instanceof OperatorNode) {
+                nodeIt.remove();
+            } else if (curNode instanceof VariableNode
+                && ((VariableNode) curNode).hasConstant()) {
+                Set<? extends RuleEdge> edges = ruleGraph.edgeSet(curNode);
+                boolean connectedToLhs = false;
+                for (RuleEdge e : edges) {
+                    RuleNode source = e.source();
+                    RuleNode target = e.target();
+                    if (source instanceof DefaultRuleNode
+                        || target instanceof DefaultRuleNode) {
+                        //curNode is connected to a DefaultRuleNode
+                        //it must be included in the match
+                        connectedToLhs = true;
+                        break;
+                    }
+                }
+                if (!connectedToLhs) {
+                    //curNode is only connected to OperatorNodes
+                    //we do not need to include it in the match
+                    nodeIt.remove();
+                }
+            }
+        }
+        return result;
     }
 
     //    private boolean isWeaklyParallelDependent2(MatchNumber matchnum) {
