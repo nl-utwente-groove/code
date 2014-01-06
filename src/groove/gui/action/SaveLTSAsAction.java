@@ -18,15 +18,12 @@ package groove.gui.action;
 
 import groove.explore.util.LTSLabels;
 import groove.explore.util.LTSReporter;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.aspect.GraphConverter;
+import groove.explore.util.StateReporter;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.SaveLTSAsDialog;
 import groove.gui.dialog.SaveLTSAsDialog.StateExport;
-import groove.io.FileType;
-import groove.io.graph.GxlIO;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 
@@ -53,13 +50,14 @@ public class SaveLTSAsAction extends SimulatorAction {
             dialog.setCurrentDirectory(getLastGrammarFile().getAbsolutePath());
         }
         if (dialog.showDialog(getSimulator())) {
-            doSave(dialog.getFile(), dialog.getExportStates(),
+            doSave(dialog.getDirectory(), dialog.getLtsPattern(),
+                dialog.getStatePattern(), dialog.getExportStates(),
                 dialog.getLTSLabels());
         }
     }
 
-    private void doSave(String ltsFilename, StateExport exportStates,
-            LTSLabels flags) {
+    private void doSave(String dir, String ltsPattern, String statePattern,
+            StateExport exportStates, LTSLabels flags) {
         GTS gts = getSimulatorModel().getGts();
 
         Collection<? extends GraphState> export = new HashSet<GraphState>(0);
@@ -78,17 +76,14 @@ public class SaveLTSAsAction extends SimulatorAction {
         }
 
         try {
-            File ltsFile = LTSReporter.exportLTS(gts, ltsFilename, flags);
-            File dir = ltsFile.getParentFile();
+            LTSReporter.exportLTS(gts, new File(dir, ltsPattern).toString(),
+                flags);
             for (GraphState state : export) {
-                AspectGraph stateGraph =
-                    GraphConverter.toAspect(state.getGraph());
-                File file =
-                    new File(dir, FileType.STATE.addExtension(state.toString()));
-                GxlIO.getInstance().saveGraph(stateGraph.toPlainGraph(), file);
+                StateReporter.exportState(
+                    state, new File(dir, statePattern).toString());
             }
         } catch (IOException e) {
-            showErrorDialog(e, "Error while saving LTS to %s", ltsFilename);
+            showErrorDialog(e, "Error while saving LTS to %s", dir);
         }
     }
 
