@@ -19,6 +19,7 @@ package groove.io;
 import groove.util.Groove;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -175,12 +176,19 @@ public class GrooveFileChooser extends JFileChooser {
     private static final Map<Set<FileType>,GrooveFileChooser> listMap =
         new HashMap<Set<FileType>,GrooveFileChooser>();
 
+    /** Returns a file chooser object for selecting directories. */
+    public static GrooveFileChooser getInstance() {
+        return getInstance(Collections.<FileType>emptySet());
+    }
+
     /** Returns the file chooser object associated with the given file type. */
     public static GrooveFileChooser getInstance(FileType fileType) {
         return getInstance(EnumSet.of(fileType));
     }
 
-    /** Returns the file chooser object associated with the given filter. */
+    /** Returns the file chooser object associated with the given set
+     * of file types. If the set is empty, the chooser will accept
+     * directories only. */
     public static GrooveFileChooser getInstance(Set<FileType> fileTypes) {
         GrooveFileChooser result = listMap.get(fileTypes);
         if (result == null) {
@@ -192,6 +200,10 @@ public class GrooveFileChooser extends JFileChooser {
                 if (first == null) {
                     first = filter;
                 }
+            }
+            if (fileTypes.isEmpty()) {
+                result.setFileSelectionMode(DIRECTORIES_ONLY);
+                result.setApproveButtonText("Select");
             }
             result.setFileFilter(first);
             listMap.put(fileTypes, result);

@@ -73,8 +73,8 @@ public class LTSReporter extends AExplorationReporter {
         if (dir.isDirectory()) {
             ltsName = PLACEHOLDER;
         } else {
-            dir = dir.getParentFile();
             ltsName = dir.getName();
+            dir = dir.getParentFile();
         }
         ltsName = ltsName.replace(PLACEHOLDER, lts.getGrammar().getId());
         File outFile = new File(dir, ltsName);
