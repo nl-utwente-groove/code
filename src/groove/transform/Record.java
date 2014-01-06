@@ -2,6 +2,7 @@
 package groove.transform;
 
 import static groove.transform.RuleEvent.Reuse.EVENT;
+import groove.algebra.AlgebraFamily;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
 import groove.grammar.RuleDependencies;
@@ -51,6 +52,7 @@ public class Record {
         this.hostFactory = hostFactory;
         grammar.testFixed(true);
         this.checkIso = grammar.getProperties().isCheckIsomorphism();
+        this.family = grammar.getProperties().getAlgebraFamily();
     }
 
     /** Returns the stored rule system on which the derivations are based. */
@@ -58,10 +60,27 @@ public class Record {
         return this.grammar;
     }
 
+    /**
+     * The associated graph grammar.
+     */
+    private final Grammar grammar;
+
     /** Returns the host factory associated with the GTS. */
     public HostFactory getFactory() {
         return this.hostFactory;
     }
+
+    /**
+     * The associated host factory.
+     */
+    private final HostFactory hostFactory;
+
+    /** Returns the algebra family associated with the GTS. */
+    public AlgebraFamily getFamily() {
+        return this.family;
+    }
+
+    private final AlgebraFamily family;
 
     /**
      * Returns an event for a given rule match. If {@link #getReuse()} is
@@ -161,14 +180,6 @@ public class Record {
      * Rule dependencies of the rule system.
      */
     private RuleDependencies dependencies;
-    /**
-     * The associated graph grammar.
-     */
-    private final Grammar grammar;
-    /**
-     * The associated host factory.
-     */
-    private final HostFactory hostFactory;
     /**
      * Identity map for events that have been encountered during exploration.
      * Events are stored only if {@link #getReuse()} is set.

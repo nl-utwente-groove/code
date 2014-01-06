@@ -4,14 +4,15 @@ options {
 	tokenVocab=Ctrl;
 	output=AST;
 	rewrite=true;
-	ASTLabelType=CtrlTree;
+	ASTLabelType=NewCtrlTree;
 }
 
 @header {
 package groove.control.parse;
 import groove.control.*;
-import groove.control.CtrlCall.Kind;
 import groove.grammar.model.FormatErrorSet;
+import groove.util.antlr.ParseTreeAdaptor;
+import groove.util.antlr.ParseInfo;
 import java.util.Set;
 import java.util.HashSet;
 }
@@ -24,28 +25,32 @@ import java.util.HashSet;
     /** Helper class for some final static semantic checks. */
     private CtrlHelper helper;
 
+    /** Initialises the internal variables, based on the given name space. */
+    public void initialise(ParseInfo namespace) {
+        this.builder = CtrlFactory.instance();
+        this.namespace = (Namespace) namespace;
+        this.helper = new CtrlHelper(this.namespace);
+    }
+    
     /**
      * Runs the builder on a given, checked syntax tree.
      */
-    public CtrlAut run(CtrlTree tree, Namespace namespace) throws RecognitionException {
+    public CtrlAut run(NewCtrlTree tree, Namespace namespace) throws RecognitionException {
         this.builder = CtrlFactory.instance();
         this.namespace = namespace;
-        this.helper = new CtrlHelper(this, namespace, null);
-        CtrlTreeAdaptor treeAdaptor = new CtrlTreeAdaptor();
+        this.helper = new CtrlHelper(namespace);
+        ParseTreeAdaptor treeAdaptor = new ParseTreeAdaptor(new NewCtrlTree());
         setTreeAdaptor(treeAdaptor);
         setTreeNodeStream(treeAdaptor.createTreeNodeStream(tree));
         CtrlAut result = program().aut;
         return result == null ? null : result.clone(namespace.getFullName());
     }
-    
-    public FormatErrorSet getErrors() {
-        return this.helper.getErrors();
-    }
 }
 
 program returns [ CtrlAut aut ]
   : ^(PROGRAM package_decl import_decl* functions recipes block)
-    { if ($block.tree.getChildCount() == 0) {
+    { // at least one child due to closing RCURLY
+      if ($block.tree.getChildCount() == 1) {
           $aut = null;
       } else {
           $aut = $block.aut;
@@ -54,7 +59,7 @@ program returns [ CtrlAut aut ]
   ;
 
 package_decl
-  : ^(PACKAGE ID)
+  : ^(PACKAGE ID SEMI)
   ;
   
 import_decl
@@ -89,11 +94,14 @@ block returns [ CtrlAut aut ]
        ( stat
          { $aut = builder.buildSeq($aut, $stat.aut); }
        )*
+       RCURLY
      )
   ;
 
 stat returns [ CtrlAut aut ]
-  : block
+  : ^(SEMI s=stat)
+    { $aut = $s.aut; }
+  | block
     { $aut = $block.aut; }
   | var_decl
     { $aut = builder.buildTrue(); }
@@ -128,7 +136,7 @@ stat returns [ CtrlAut aut ]
   ;
 
 rule
-  : ^(CALL ID (^(ARGS arg*))?)
+  : ^(CALL ID (^(ARGS arg* RPAR))?)
   ;
 
 var_decl

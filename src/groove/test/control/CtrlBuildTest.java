@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import groove.algebra.AlgebraFamily;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlFactory;
@@ -82,7 +83,7 @@ public class CtrlBuildTest extends CtrlTester {
         try {
             aut =
                 CtrlFactory.instance().buildDefault(
-                    this.prioGrammar.getActions(), false);
+                    this.prioGrammar.getActions(), AlgebraFamily.DEFAULT);
         } catch (FormatException e) {
             fail();
         }
@@ -130,7 +131,7 @@ public class CtrlBuildTest extends CtrlTester {
                 transM2.label(), transM3.label(), transC1.label(),
                 transC2.label(), transC3.label()));
         CtrlTransition omega =
-            first.addTransition(createLabel(CtrlCall.OMEGA, omegaGuard),
+            first.addTransition(createLabel(CtrlCall.OMEGA_CALL, omegaGuard),
                 expected.getFinal());
         Set<CtrlLabel> expectedOmegaLabels =
             new HashSet<CtrlLabel>(Arrays.asList(omega.label()));

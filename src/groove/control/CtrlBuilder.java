@@ -17,11 +17,9 @@
 package groove.control;
 
 import groove.algebra.AlgebraFamily;
-import groove.control.CtrlEdge.Kind;
+import groove.control.parse.CtrlNameSpace;
 import groove.control.parse.Namespace;
 import groove.grammar.Action;
-import groove.grammar.Recipe;
-import groove.grammar.Rule;
 import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.graph.GraphInfo;
@@ -42,53 +40,35 @@ import java.util.TreeMap;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlFactory {
+public class CtrlBuilder {
     /** Private constructor for the singleton instance. */
-    private CtrlFactory() {
-        // empty
+    private CtrlBuilder(CtrlNameSpace namespace) {
+        this.namespace = namespace;
     }
+
+    private final CtrlNameSpace namespace;
 
     /** 
      * Closes a given control automaton under the <i>as long as possible</i>
      * operator.
      */
-    public CtrlAut buildAlap(CtrlAut aut) {
+    public NewCtrlAut buildAlap(NewCtrlAut aut) {
         return buildLoop(aut, aut.getInitGuard());
     }
 
     /** 
      * Closes a given control automaton under arbitrary repetition
      */
-    public CtrlAut buildStar(CtrlAut aut) {
+    public NewCtrlAut buildStar(NewCtrlAut aut) {
         return buildLoop(aut, EMPTY_GUARD);
     }
 
-    /** Factory method for a rule or function call. */
-    public CtrlAut buildCall(CtrlCall call, Namespace namespace) {
-        if (call.getKind() == Kind.RULE) {
-            return buildRuleCall(call);
-        } else {
-            assert !call.isOmega();
-            return buildBodyCall(call, namespace);
-        }
-    }
-
-    /** Factory method for a rule call. */
-    private CtrlAut buildRuleCall(CtrlCall call) {
-        CtrlAut result = createCtrlAut(call.getName());
-        CtrlState middle = result.addState();
-        // convert the call arguments using the context
-        result.getStart().addTransition(createLabel(call), middle);
-        middle.addTransition(createOmegaLabel(), result.getFinal());
+    /** Factory method for a call. */
+    public NewCtrlAut buildCall(Callable unit, List<CtrlPar> args) {
+        NewCtrlAut result = createCtrlAut(unit.getFullName());
+        result.addEdge(new CtrlEdge(result.getStart(), result.getEnd(), unit,
+            args));
         return result;
-    }
-
-    /** Factory method for a function or transaction call. */
-    private CtrlAut buildBodyCall(CtrlCall call, Namespace namespace) {
-        CtrlAut body = namespace.getBody(call.getName());
-        assert call.getArgs() == null || call.getArgs().isEmpty() : "Function and recipe parameters not yet implemented";
-        return body.clone(call.getKind() == Kind.RECIPE
-                ? namespace.getRecipe(call.getName()) : null);
     }
 
     /**
@@ -99,7 +79,7 @@ public class CtrlFactory {
      * @param second the condition of the loop; modified in the course 
      * of the construction
      */
-    public CtrlAut buildDoUntil(CtrlAut first, CtrlAut second) {
+    public NewCtrlAut buildDoUntil(NewCtrlAut first, NewCtrlAut second) {
         buildUntilDo(second, first);
         return buildSeq(first, second);
     }
@@ -112,7 +92,7 @@ public class CtrlFactory {
      * @param second the condition of the loop; modified in the course 
      * of the construction
      */
-    public CtrlAut buildDoWhile(CtrlAut first, CtrlAut second) {
+    public NewCtrlAut buildDoWhile(NewCtrlAut first, NewCtrlAut second) {
         buildWhileDo(second, first);
         return buildSeq(first, second);
     }
@@ -121,7 +101,8 @@ public class CtrlFactory {
      * Builds an <i>if-then-else</i> construct out of three automata,
      * by modifying the first of the three.
      */
-    public CtrlAut buildIfThenElse(CtrlAut first, CtrlAut second, CtrlAut third) {
+    public NewCtrlAut buildIfThenElse(NewCtrlAut first, NewCtrlAut second,
+            NewCtrlAut third) {
         CtrlGuard guard = first.getInitGuard();
         buildSeq(first, second);
         if (third == null) {
@@ -131,34 +112,23 @@ public class CtrlFactory {
     }
 
     /** Builds an automation for an {@code any}-call. */
-    public CtrlAut buildAny(Namespace namespace) {
-        return buildGroupCall(namespace.getTopNames(), namespace);
+    public NewCtrlAut buildAny() {
+        return buildGroupCall(this.namespace.getTopNames());
     }
 
     /** Builds an automation for an {@code other}-call. */
-    public CtrlAut buildOther(Namespace namespace) {
-        Set<String> unusedRules = new HashSet<String>(namespace.getTopNames());
-        unusedRules.removeAll(namespace.getUsedNames());
-        return buildGroupCall(unusedRules, namespace);
+    public NewCtrlAut buildOther() {
+        Set<String> unusedRules =
+            new HashSet<String>(this.namespace.getTopNames());
+        unusedRules.removeAll(this.namespace.getUsedNames());
+        return buildGroupCall(unusedRules);
     }
 
     /** Builds an automation for a choice among a set of rules. */
-    private CtrlAut buildGroupCall(Set<String> ruleNames, Namespace namespace) {
-        CtrlAut result = null;
-        for (String ruleName : ruleNames) {
-            CtrlCall call;
-            switch (namespace.getKind(ruleName)) {
-            case RULE:
-                call = new CtrlCall(namespace.getRule(ruleName), null);
-                break;
-            case RECIPE:
-                call = new CtrlCall(Kind.RECIPE, ruleName, null);
-                break;
-            default:
-                call = null;
-                assert false;
-            }
-            CtrlAut callAut = buildCall(call, namespace);
+    private NewCtrlAut buildGroupCall(Set<String> names) {
+        NewCtrlAut result = null;
+        for (String name : names) {
+            NewCtrlAut callAut = buildCall(this.namespace.getUnit(name), null);
             if (result == null) {
                 result = callAut;
             } else {
@@ -176,7 +146,7 @@ public class CtrlFactory {
      * @param first the automaton to be executed first; contains the result upon return
      * @param second the automaton to be executed second
      */
-    public CtrlAut buildSeq(CtrlAut first, CtrlAut second) {
+    public NewCtrlAut buildSeq(NewCtrlAut first, NewCtrlAut second) {
         CtrlMorphism secondToFirstMap = copyStates(second, first, false);
         // remove omega-transitions from first
         Set<CtrlTransition> firstOmega = removeOmegas(first);
@@ -200,18 +170,18 @@ public class CtrlFactory {
     }
 
     /** Adds a second control automaton as alternative to a given one. */
-    public CtrlAut buildOr(CtrlAut first, CtrlAut second) {
+    public NewCtrlAut buildOr(NewCtrlAut first, NewCtrlAut second) {
         return buildOr(first, second, EMPTY_GUARD);
     }
 
     /** Factory method for immediate, unconditional success. */
-    public CtrlAut buildTrue() {
-        CtrlAut result = createCtrlAut("true");
+    public NewCtrlAut buildTrue() {
+        NewCtrlAut result = createCtrlAut("true");
         return addOmega(result);
     }
 
     /** Adds an unconditional terminating transition between start and final state. */
-    public CtrlAut addOmega(CtrlAut result) {
+    public NewCtrlAut addOmega(NewCtrlAut result) {
         result.getStart().addTransition(createOmegaLabel(), result.getFinal());
         return result;
     }
@@ -220,7 +190,7 @@ public class CtrlFactory {
      * Adds a second control automaton as <i>else</i> parameter in
      * a <i>try</i> construct with the first automaton as try block.
      */
-    public CtrlAut buildTryElse(CtrlAut first, CtrlAut second) {
+    public NewCtrlAut buildTryElse(NewCtrlAut first, NewCtrlAut second) {
         if (second == null) {
             second = buildTrue();
         }
@@ -233,7 +203,7 @@ public class CtrlFactory {
      * @param first the condition automaton; contains the result upon return
      * @param second the until body automaton
      */
-    public CtrlAut buildUntilDo(CtrlAut first, CtrlAut second) {
+    public NewCtrlAut buildUntilDo(NewCtrlAut first, NewCtrlAut second) {
         // get the automaton guard before the omegas are removed
         CtrlGuard firstGuard = first.getInitGuard();
         if (firstGuard != null) {
@@ -257,7 +227,7 @@ public class CtrlFactory {
      * @param first the condition automaton; contains the result upon return
      * @param second the while body automaton
      */
-    public CtrlAut buildWhileDo(CtrlAut first, CtrlAut second) {
+    public NewCtrlAut buildWhileDo(NewCtrlAut first, NewCtrlAut second) {
         // get the automaton guard before the omegas are removed
         CtrlGuard firstGuard = first.getInitGuard();
         // sequentially compose first and second
@@ -270,7 +240,7 @@ public class CtrlFactory {
      * predefined guard.
      * The result is constructed by modifying the parameter.
      */
-    private CtrlAut buildLoop(CtrlAut aut, CtrlGuard guard) {
+    private NewCtrlAut buildLoop(NewCtrlAut aut, CtrlGuard guard) {
         Set<CtrlTransition> omegas = removeOmegas(aut);
         // create an identity state map for the automaton
         Map<CtrlState,CtrlState> id = new HashMap<CtrlState,CtrlState>();
@@ -296,13 +266,14 @@ public class CtrlFactory {
      * under a given guard. The guard may be {@code null}, meaning that
      * the second automaton is unreachable.
      */
-    private CtrlAut buildOr(CtrlAut first, CtrlAut second, CtrlGuard guard) {
+    private NewCtrlAut buildOr(NewCtrlAut first, NewCtrlAut second,
+            CtrlGuard guard) {
         // if the guard is degenerate, the second automaton is unreachable
         if (guard != null) {
             CtrlMorphism secondToFirstMap = copyStates(second, first, true);
             Map<CtrlState,CtrlState> stateMap = secondToFirstMap.nodeMap();
             // copy transitions from second to first
-            for (CtrlState state : second.nodeSet()) {
+            for (CtrlLocation state : second.nodeSet()) {
                 // only copy transitions if the source and target are not omega-only
                 if (!state.isOmegaOnly() || !stateMap.get(state).isOmegaOnly()) {
                     boolean isInit = state.equals(second.getStart());
@@ -372,21 +343,21 @@ public class CtrlFactory {
 
     /** 
      * Builds the default control automaton for a set of actions. 
-     * @param family the algebra family to be used
+     * @param symbolic if {@code true}, the automaton will be used for symbolic exploration,
+     *  which means that input parameters can be matched even in the default automaton
      */
-    public CtrlAut buildDefault(Collection<? extends Action> actions,
-            AlgebraFamily family) throws FormatException {
-        CtrlAut result = new CtrlAut("none (arbitrary rule application)");
+    public NewCtrlAut buildDefault(Collection<? extends Action> actions,
+            boolean symbolic) throws FormatException {
+        NewCtrlAut result = new NewCtrlAut("none (arbitrary rule application)");
         FormatErrorSet errors = new FormatErrorSet();
         SortedMap<Integer,Set<Action>> priorityMap =
             new TreeMap<Integer,Set<Action>>();
-        Namespace namespace = new Namespace(family);
         // first add the names and signatures to the namespace
         for (Action action : actions) {
             boolean needsInput = false;
             for (CtrlPar.Var var : action.getSignature()) {
                 if (var.isInOnly()
-                    && (var.getType() == CtrlType.NODE || !family.supportsSymbolic())) {
+                    && (var.getType() == CtrlType.NODE || !symbolic)) {
                     needsInput = true;
                     break;
                 }
@@ -397,17 +368,6 @@ public class CtrlFactory {
                     action.getKind(), action.getFullName(),
                     AlgebraFamily.POINT.getName(), action);
                 continue;
-            }
-            switch (action.getKind()) {
-            case RULE:
-                namespace.addRule((Rule) action);
-                break;
-            case RECIPE:
-                Recipe recipe = (Recipe) action;
-                namespace.addRecipe(action.getFullName(), action.getPriority(),
-                    action.getSignature(), recipe.getControlName(),
-                    recipe.getStartLine());
-                namespace.addBody(action.getFullName(), recipe.getBody());
             }
             int priority = action.getPriority();
             Set<Action> priorityActions = priorityMap.get(priority);
@@ -421,19 +381,19 @@ public class CtrlFactory {
             GraphInfo.addErrors(result, errors);
         }
         // List of control automata for different levels of priority
-        List<CtrlAut> prioAutList = new ArrayList<CtrlAut>();
+        List<NewCtrlAut> prioAutList = new ArrayList<NewCtrlAut>();
         for (Set<Action> priorityActions : priorityMap.values()) {
             // collect the names
             Set<String> actionNames = new HashSet<String>();
             for (Action action : priorityActions) {
                 actionNames.add(action.getFullName());
             }
-            prioAutList.add(buildGroupCall(actionNames, namespace));
+            prioAutList.add(buildGroupCall(actionNames));
         }
         if (prioAutList.isEmpty()) {
             addOmega(result);
         } else {
-            ListIterator<CtrlAut> levelIter =
+            ListIterator<NewCtrlAut> levelIter =
                 prioAutList.listIterator(prioAutList.size());
             while (levelIter.hasPrevious()) {
                 result = buildTryElse(result, levelIter.previous());
@@ -449,17 +409,15 @@ public class CtrlFactory {
     /** Constructs an empty control automaton. 
      * @param name name of the new automaton
      */
-    private CtrlAut createCtrlAut(String name) {
-        return new CtrlAut(name);
+    private NewCtrlAut createCtrlAut(String name) {
+        return new NewCtrlAut(name);
     }
 
-    /** Returns the singleton instance of this class. */
-    public static CtrlFactory instance() {
-        return INSTANCE;
+    /** Returns a new instance of this class, for a given name space. */
+    public static CtrlBuilder instance(Namespace namespace) {
+        return new CtrlBuilder(namespace);
     }
 
-    /** The singleton instance of this class. */
-    private static final CtrlFactory INSTANCE = new CtrlFactory();
     /** Constant empty set of guard rule names. */
     private static final CtrlGuard EMPTY_GUARD = new CtrlGuard();
 }

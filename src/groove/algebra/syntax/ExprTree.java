@@ -7,6 +7,7 @@ import groove.algebra.RealSignature;
 import groove.algebra.Signature.OpValue;
 import groove.algebra.SignatureKind;
 import groove.grammar.model.FormatException;
+import groove.util.antlr.ParseInfo;
 import groove.util.antlr.ParseTree;
 
 import java.util.ArrayList;
@@ -15,7 +16,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import org.antlr.runtime.Parser;
 import org.antlr.runtime.Token;
 
 /**
@@ -23,7 +23,7 @@ import org.antlr.runtime.Token;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ExprTree extends ParseTree<ExprTree> {
+public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
     /** 
      * Converts this parse tree into an {@link Assignment}.
      */
@@ -375,14 +375,9 @@ public class ExprTree extends ParseTree<ExprTree> {
         return null;
     }
 
-    @Override
-    protected Class<? extends Parser> getParserType() {
-        return ExprParser.class;
-    }
-
     /** Returns an expression parser for a given string. */
     public static ExprParser getParser(String term) {
-        return (ExprParser) PROTOTYPE.createParser(term);
+        return PROTOTYPE.createParser(ExprParser.class, null, term);
     }
 
     private static final ExprTree PROTOTYPE = new ExprTree();

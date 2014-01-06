@@ -3,7 +3,7 @@ grammar Ctrl;
 options {
 	output=AST;
 	k=4;
-	ASTLabelType = CommonTree;
+	ASTLabelType = NewCtrlTree;
 }
 
 tokens {
@@ -22,54 +22,35 @@ tokens {
 @lexer::header {
 package groove.control.parse;
 import groove.control.*;
+import groove.util.antlr.*;
 import java.util.LinkedList;
 }
 
 @lexer::members {
-    /** Line number of the first line of a control fragment. */
-    private int startLine;
-    /** Last token read when start position is recorded. */
-    private String lastToken;
-    /** Start position of a recorded substring of the input. */
-    private int recordPos;
-    /** Helper class to convert AST trees to namespace. */
-    private CtrlHelper helper;
+    /** Name space to record lexer errors. */
+    private Namespace namespace;
     
-    /** Starts recording the input string. */
-    public void startRecord() {
-        lastToken = this.state.token.getText();
-        recordPos = getCharIndex();
-        startLine = this.state.token.getLine();
-    }
-    
-    public CtrlFragment getRecord() {
-        return new CtrlFragment(helper.getControlName(), startLine);
-    }
-    
-    public void setHelper(CtrlHelper helper) {
-        this.helper = helper;
+    public void initialise(ParseInfo namespace) {
+        this.namespace = (Namespace) namespace;
     }
     
     public void displayRecognitionError(String[] tokenNames,
             RecognitionException e) {
         String hdr = getErrorHeader(e);
         String msg = getErrorMessage(e, tokenNames);
-        this.helper.addError(hdr + " " + msg, e.line, e.charPositionInLine);
+        this.namespace.addError(hdr + " " + msg, e.line, e.charPositionInLine);
     }
 }
 
 @header {
 package groove.control.parse;
 import groove.control.*;
-import groove.control.CtrlCall.Kind;
-import groove.algebra.AlgebraFamily;
+import groove.util.antlr.*;
 import groove.grammar.model.FormatErrorSet;
 import java.util.LinkedList;
 }
 
 @members {
-    /** Lexer for the GCL language. */
-    private static CtrlLexer lexer = new CtrlLexer(null);
     /** Helper class to convert AST trees to namespace. */
     private CtrlHelper helper;
     
@@ -80,22 +61,8 @@ import java.util.LinkedList;
         this.helper.addError(hdr + " " + msg, e.line, e.charPositionInLine);
     }
 
-    public FormatErrorSet getErrors() {
-        return this.helper.getErrors();
-    }
-
-    /**
-     * Runs the lexer and parser on a given input character stream,
-     * with a (presumably empty) namespace.
-     * @return the resulting syntax tree
-     */
-    public CtrlTree run(CharStream input, Namespace namespace, AlgebraFamily family) throws RecognitionException {
-        this.helper = new CtrlHelper(this, namespace, family);
-        lexer.setCharStream(input);
-        lexer.setHelper(this.helper);
-        setTokenStream(new CommonTokenStream(lexer));
-        setTreeAdaptor(new CtrlTreeAdaptor());
-        return (CtrlTree) program().getTree();
+    public void initialise(ParseInfo namespace) {
+        this.helper = new CtrlHelper((Namespace) namespace);
     }
 }
 
@@ -112,11 +79,11 @@ program
     (function|recipe|stat)* EOF
     { helper.checkEOF($EOF.tree); }
     -> ^( PROGRAM
-          package_decl?
+          package_decl
           import_decl*
           ^(FUNCTIONS function*) 
           ^(RECIPES recipe*) 
-          ^(BLOCK stat*)
+          ^(BLOCK stat* RCURLY)
         )
   ;
 
@@ -124,9 +91,9 @@ program
 package_decl
   : //@S PACKAGE qual_name
     //@B Causes all rules and functions to be qualified by %s
-    ( PACKAGE qual_name SEMI
+    ( key=PACKAGE qual_name close=SEMI
       { helper.setPackage($qual_name.tree); }
-      -> ^(PACKAGE qual_name )
+      -> ^(PACKAGE[$key] qual_name SEMI[$close])
     | -> { helper.emptyPackage() }
     )
   ;
@@ -135,7 +102,7 @@ package_decl
 import_decl
   : //@S IMPORT qual_name
     //@B Declares the last part of %s to stand for the entire name
-    IMPORT^ qual_name SEMI!
+    IMPORT^ qual_name SEMI
     { helper.addImport($qual_name.tree);
     }
   ;
@@ -152,12 +119,11 @@ qual_name
 recipe
   : //@S RECIPE name LPAR RPAR block
     //@B Declares an atomic rule %s, with body %s.
-    { lexer.startRecord(); }
     RECIPE^ ID LPAR! RPAR!
     // (PRIORITY! INT_LIT)? disable priorities for now
     // as recipe refusal is not yet implemented correctly
     block
-    { helper.declareName($RECIPE.tree, lexer.getRecord()); }
+    { helper.declareName($RECIPE.tree); }
   ;
 
 /** @H Function declaration.
@@ -168,14 +134,15 @@ function
   : //@S FUNCTION name LPAR RPAR block
     //@B Declares the function %s, with body %s.
     FUNCTION^ ID LPAR! RPAR! block
-    { helper.declareName($FUNCTION.tree, null); }
+    { helper.declareName($FUNCTION.tree); }
   ;
 
 /** @H Statement block. */
 block
   : //@S LCURLY stat* RCURLY
     //@B Possibly empty sequence of statements, surrounded by curly braces.
-    LCURLY stat* RCURLY -> ^(BLOCK stat*);
+    open=LCURLY stat* close=RCURLY
+    -> ^(BLOCK[$open] stat* RCURLY[$close]);
 
 /** @H Atomic statement. */
 stat
@@ -223,10 +190,10 @@ stat
     CHOICE^ stat ( (OR) => OR! stat)+
 	| //@S expr SEMI
 	  //@B An expression used as a statement.
-	  expr SEMI!
+	  expr SEMI^ // SEMI retained for token positioning
 	| //@S var_decl SEMI
 	  //@B A variable declaration.
-	  var_decl SEMI!
+	  var_decl SEMI^ // SEMI retained for token positioning
   ;
 
 /** @H Condition. */
@@ -270,15 +237,15 @@ expr2
     //@B Note that this is <i>not</i> equivalent to "%1$s SHARP" or
     //@B "ALAP %1$s SEMI".
     e=expr_atom
-    ( PLUS -> ^(BLOCK $e ^(STAR $e))
-    | ASTERISK -> ^(STAR $e)
+    ( plus=PLUS -> ^(BLOCK $e ^(STAR $e) RCURLY[$plus])
+    | ast=ASTERISK -> ^(STAR[$ast] $e)
     | -> $e
     )
   | //@S expr: SHARP expr
     //@B Executes %s as long as possible.<p>    
     //@B Equivalent to "ALAP %1$s SEMI",
     //@B except that this is an expression and ALAP is a statement.
-    SHARP expr_atom -> ^(ALAP expr_atom)
+    op=SHARP expr_atom -> ^(ALAP[$op] expr_atom)
   ;
 
 expr_atom
@@ -291,7 +258,8 @@ expr_atom
 	  OTHER
 	| //@S expr: LPAR expr RPAR
 	  //@B Bracketed expression.
-	  LPAR! expr RPAR!
+	  open=LPAR expr close=RPAR
+	  -> ^(BLOCK[$open] expr RCURLY[$close])
 	| //@S expr: call
 	  //@B Invokes a function or rule.
 	  call
@@ -313,8 +281,8 @@ call
 arg_list
   : //@S [ arg (COMMA arg)* ]
     //@B Possibly empty, comma-separated list of arguments
-    LPAR (arg (COMMA arg)*)? RPAR
-    -> ^(ARGS arg*)
+    open=LPAR (arg (COMMA arg)*)? close=RPAR
+    -> ^(ARGS[$open] arg* RPAR[$close])
   ;
 
 /** @H Argument

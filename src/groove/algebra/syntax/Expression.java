@@ -205,8 +205,7 @@ public abstract class Expression {
             throw new FormatException("Can't parse %s: %s", term,
                 e.getMessage());
         } catch (RecognitionException re) {
-            throw new FormatException(re.getMessage(), re.line,
-                re.charPositionInLine);
+            throw new FormatException(re);
         }
     }
 

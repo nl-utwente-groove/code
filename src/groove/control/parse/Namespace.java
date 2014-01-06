@@ -16,15 +16,17 @@
  */
 package groove.control.parse;
 
+import groove.algebra.AlgebraFamily;
 import groove.control.CtrlAut;
-import groove.control.CtrlCall;
-import groove.control.CtrlCall.Kind;
+import groove.control.CtrlEdge.Kind;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.grammar.Action;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
+import groove.grammar.model.FormatErrorSet;
+import groove.util.antlr.ParseInfo;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,7 +41,19 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Namespace {
+public class Namespace implements ParseInfo {
+    /** Constructs a new name space, on the basis of a given algebra family. */
+    public Namespace(AlgebraFamily family) {
+        this.family = family;
+    }
+
+    /** Returns the algebra family of this name space. */
+    public AlgebraFamily getAlgebraFamily() {
+        return this.family;
+    }
+
+    private final AlgebraFamily family;
+
     /**
      * Adds a function or recipe name to the set of declared names.
      * @return {@code true} if the name is new.
@@ -63,7 +77,7 @@ public class Namespace {
         if (result) {
             this.kindMap.put(name, Kind.RECIPE);
             this.sigMap.put(name, sig);
-            this.allNames.add(name);
+            this.topNames.add(name);
             this.recipeMap.put(name, new Recipe(name, priority, sig,
                 controlName, startLine));
         }
@@ -77,9 +91,9 @@ public class Namespace {
         String ruleName = rule.getFullName();
         boolean result = !this.kindMap.containsKey(ruleName);
         if (result) {
-            this.kindMap.put(ruleName, CtrlCall.Kind.RULE);
+            this.kindMap.put(ruleName, Kind.RULE);
             this.ruleMap.put(ruleName, rule);
-            this.allNames.add(ruleName);
+            this.topNames.add(ruleName);
             this.sigMap.put(ruleName, rule.getSignature());
         }
         return result;
@@ -95,10 +109,10 @@ public class Namespace {
         assert hasName(name) && getKind(name).hasBody() : String.format(
             "Unknown or inappropriate name %s", name);
         // the rules in a transaction body are no longer available
-        if (getKind(name) == CtrlCall.Kind.RECIPE) {
+        if (getKind(name) == Kind.RECIPE) {
             body = body.clone(getRecipe(name));
             for (Rule rule : body.getRules()) {
-                this.allNames.remove(rule.getFullName());
+                this.topNames.remove(rule.getFullName());
             }
             getRecipe(name).setBody(body);
         }
@@ -121,7 +135,7 @@ public class Namespace {
      * @return the kind of object {@code name} has been declared as,
      * or {@code null} if {@code name} is unknown
      */
-    public CtrlCall.Kind getKind(String name) {
+    public Kind getKind(String name) {
         return this.kindMap.get(name);
     }
 
@@ -144,9 +158,11 @@ public class Namespace {
 
     /**
      * Returns the set of all top-level rule and recipe names.
+     * Rules and recipes invoked from (other) recipes are 
+     * excluded from this set.
      */
     public Set<String> getTopNames() {
-        return this.allNames;
+        return this.topNames;
     }
 
     /** 
@@ -213,7 +229,7 @@ public class Namespace {
     @Override
     public String toString() {
         return String.format("Namespace for %s, defining %s", getFullName(),
-            this.allNames);
+            this.topNames);
     }
 
     /** Full name of the program file being parsed. */
@@ -224,16 +240,27 @@ public class Namespace {
     private final Map<String,List<Var>> sigMap =
         new HashMap<String,List<Var>>();
     /** Mapping from declared names to their kinds. */
-    private final Map<String,CtrlCall.Kind> kindMap =
-        new HashMap<String,CtrlCall.Kind>();
+    private final Map<String,Kind> kindMap = new HashMap<String,Kind>();
     /** Mapping from declared rules names to the rules. */
     private final Map<String,Rule> ruleMap = new HashMap<String,Rule>();
     /** Mapping from names to their declared bodies. */
     private final Map<String,CtrlAut> bodyMap = new HashMap<String,CtrlAut>();
     /** Mapping from declared recipe names to their body text. */
     private final Map<String,Recipe> recipeMap = new HashMap<String,Recipe>();
-    /** Set of all rule names. */
-    private final Set<String> allNames = new HashSet<String>();
+    /** Set of top-level rule and recipe names. */
+    private final Set<String> topNames = new HashSet<String>();
     /** Set of used rule names. */
     private final Set<String> usedNames = new HashSet<String>();
+
+    /** Adds an error to the errors contained in this name space. */
+    public void addError(String message, Object... args) {
+        this.errors.add(message, args);
+    }
+
+    /** Returns the errors collected in this name space. */
+    public FormatErrorSet getErrors() {
+        return this.errors;
+    }
+
+    private final FormatErrorSet errors = new FormatErrorSet();
 }
