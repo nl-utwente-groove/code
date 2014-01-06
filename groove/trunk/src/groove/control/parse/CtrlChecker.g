@@ -4,15 +4,17 @@ options {
 	tokenVocab=Ctrl;
 	output=AST;
 	rewrite=true;
-	ASTLabelType=CtrlTree;
+	ASTLabelType=NewCtrlTree;
 }
 
 @header {
 package groove.control.parse;
 import groove.control.*;
-import groove.control.CtrlCall.Kind;
+import groove.control.CtrlEdge.Kind;
 import groove.algebra.AlgebraFamily;
 import groove.grammar.model.FormatErrorSet;
+import groove.util.antlr.ParseTreeAdaptor;
+import groove.util.antlr.ParseInfo;
 import java.util.LinkedList;
 import java.util.Stack;
 import java.util.HashSet;
@@ -30,21 +32,22 @@ import java.util.HashMap;
         this.helper.addError(hdr + " " + msg, e.line, e.charPositionInLine);
     }
 
-    public FormatErrorSet getErrors() {
-        return this.helper.getErrors();
+    /** Constructs a helper class, based on the given name space and algebra. */
+    public void initialise(ParseInfo namespace) {
+        this.helper = new CtrlHelper((Namespace) namespace);
     }
-
+    
     /**
      * Runs the lexer and parser on a given input character stream,
      * with a (presumably empty) namespace.
      * @return the resulting syntax tree
      */
-    public CtrlTree run(CtrlTree tree, Namespace namespace, AlgebraFamily family) throws RecognitionException {
-        this.helper = new CtrlHelper(this, namespace, family);
-        CtrlTreeAdaptor treeAdaptor = new CtrlTreeAdaptor();
+    public NewCtrlTree run(NewCtrlTree tree, Namespace namespace) throws RecognitionException {
+        this.helper = new CtrlHelper(namespace);
+        ParseTreeAdaptor treeAdaptor = new ParseTreeAdaptor(new NewCtrlTree());
         setTreeAdaptor(treeAdaptor);
         setTreeNodeStream(treeAdaptor.createTreeNodeStream(tree));
-        return (CtrlTree) program().getTree();
+        return (NewCtrlTree) program().getTree();
     }
 }
 
@@ -57,13 +60,13 @@ program
   ;
 
 package_decl
-  : ^( PACKAGE ID
+  : ^( PACKAGE ID SEMI
        { helper.checkPackage($ID); }
      )
   ;
   
 import_decl
-  : ^( IMPORT ID
+  : ^( IMPORT ID SEMI
        { helper.checkImport($ID); }
      )
   ;
@@ -98,12 +101,14 @@ block returns [ CtrlAut aut ]
        { helper.openScope(); }
        stat*
        { helper.closeScope(); }
+       RCURLY
      )
   ;
 
 stat
   : block
-  | var_decl
+  | ^(SEMI var_decl)
+  | ^(SEMI stat)
   | ^(ALAP stat)
   | ^( WHILE
        stat
@@ -157,7 +162,7 @@ stat
 
 rule
 @after{ helper.checkCall($tree); }
-  : ^(CALL id=ID (^(ARGS arg*))?)
+  : ^(CALL id=ID (^(ARGS arg* RPAR))?)
   ;
 
 var_decl

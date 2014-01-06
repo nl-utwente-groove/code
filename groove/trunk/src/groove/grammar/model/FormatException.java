@@ -20,6 +20,8 @@ import groove.util.Groove;
 
 import java.util.Collection;
 
+import org.antlr.runtime.RecognitionException;
+
 /**
  * General exception class signalling a format error found during a conversion
  * between one model to another. The class can build on prior exceptions,
@@ -28,9 +30,6 @@ import java.util.Collection;
  * @version $Revision$ $Date: 2008-01-30 09:33:26 $
  */
 public class FormatException extends Exception {
-    /** Text used for an empty format exception message. */
-    static public final String FORMAT_EXCEPTION = "Format exception";
-
     /**
      * Constructs a format exception with a given formatted
      * message. Calls {@link String#format(String, Object[])} with the message
@@ -58,11 +57,9 @@ public class FormatException extends Exception {
         }
     }
 
-    /**
-     * Constructs a format exception with an empty message.
-     */
-    public FormatException() {
-        this(FORMAT_EXCEPTION);
+    /** Constructs a format exception from an (ANTLR) recognition exception. */
+    public FormatException(RecognitionException exc) {
+        this(exc.getMessage(), exc.line, exc.charPositionInLine);
     }
 
     /**

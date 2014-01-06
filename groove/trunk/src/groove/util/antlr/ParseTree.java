@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.BaseRecognizer;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Lexer;
@@ -14,6 +15,8 @@ import org.antlr.runtime.TokenStream;
 import org.antlr.runtime.tree.CommonErrorNode;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.TreeAdaptor;
+import org.antlr.runtime.tree.TreeNodeStream;
+import org.antlr.runtime.tree.TreeParser;
 
 /**
  * Dedicated parse tree with the ability to reconstruct
@@ -21,7 +24,8 @@ import org.antlr.runtime.tree.TreeAdaptor;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class ParseTree<T extends ParseTree<T>> extends CommonTree {
+abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo>
+        extends CommonTree {
     /** Empty constructor for subclassing. */
     protected ParseTree() {
         // empty
@@ -32,7 +36,7 @@ abstract public class ParseTree<T extends ParseTree<T>> extends CommonTree {
      * same token stream as this tree.
      */
     public T newNode() {
-        return newNode(this.tokenStream);
+        return newNode(this.tokenStream, this.info);
     }
 
     /**
@@ -40,16 +44,14 @@ abstract public class ParseTree<T extends ParseTree<T>> extends CommonTree {
      * using a given token stream.
      */
     @SuppressWarnings("unchecked")
-    final T newNode(CommonTokenStream tokenStream) {
+    final T newNode(CommonTokenStream tokenStream, I info) {
         T result = null;
         try {
             result = (T) getClass().newInstance();
             result.tokenStream = tokenStream;
+            result.info = info;
         } catch (Exception e) {
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            }
-            // other exceptions should not occur and will be ignored
+            throw toRuntime(e);
         }
         return result;
     }
@@ -83,6 +85,13 @@ abstract public class ParseTree<T extends ParseTree<T>> extends CommonTree {
 
     /** The token stream from which this tree has been created. */
     private CommonTokenStream tokenStream;
+
+    /** Returns the additional parse information. */
+    protected I getInfo() {
+        return this.info;
+    }
+
+    private I info;
 
     /** 
      * Returns the part of the input token stream corresponding to this tree.
@@ -142,20 +151,48 @@ abstract public class ParseTree<T extends ParseTree<T>> extends CommonTree {
         return two;
     }
 
-    /** Creates a parser for a given term, generating trees of this kind. */
-    public Parser createParser(String term) {
+    /** Creates a tree parser for a given tree of this kind. */
+    public <P extends TreeParser> P createTreeParser(Class<P> parserType, I info) {
         try {
-            Lexer lexer = createLexer(term);
             // instantiate the parser
-            Class<? extends Parser> parserType = getParserType();
-            CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-            Constructor<? extends Parser> parserConstructor =
-                parserType.getConstructor(TokenStream.class);
-            Parser result = parserConstructor.newInstance(tokenStream);
+            ParseTreeAdaptor<T,I> adaptor = new ParseTreeAdaptor<T,I>(this);
+            Constructor<P> parserConstructor =
+                parserType.getConstructor(TreeNodeStream.class);
+            P result =
+                parserConstructor.newInstance(adaptor.createTreeNodeStream(this));
             Method adaptorSetter =
                 parserType.getMethod("setTreeAdaptor", TreeAdaptor.class);
-            adaptorSetter.invoke(result, new ParseTreeAdaptor<T>(this,
+            adaptorSetter.invoke(result, adaptor);
+            callInitialise(result, info);
+            return result;
+        } catch (Exception e) {
+            throw toRuntime(e);
+        }
+    }
+
+    /** Creates a parser for a given term, generating trees of this kind. */
+    public <P extends Parser> P createParser(Class<P> parserType, I info,
+            String term) {
+        try {
+            // find the lexer type
+            String parserName = parserType.getName();
+            String lexerName =
+                parserName.substring(0, parserName.indexOf("Parser")).concat(
+                    "Lexer");
+            @SuppressWarnings("unchecked")
+            Class<? extends Lexer> lexerType =
+                (Class<? extends Lexer>) Class.forName(lexerName);
+            Lexer lexer = createLexer(lexerType, info, term);
+            // instantiate the parser
+            CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+            Constructor<P> parserConstructor =
+                parserType.getConstructor(TokenStream.class);
+            P result = parserConstructor.newInstance(tokenStream);
+            Method adaptorSetter =
+                parserType.getMethod("setTreeAdaptor", TreeAdaptor.class);
+            adaptorSetter.invoke(result, new ParseTreeAdaptor<T,I>(this, info,
                 tokenStream));
+            callInitialise(result, info);
             return result;
         } catch (Exception e) {
             throw toRuntime(e);
@@ -163,35 +200,34 @@ abstract public class ParseTree<T extends ParseTree<T>> extends CommonTree {
     }
 
     /** Factory method for a lexer generating this kind of tree. */
-    protected Lexer createLexer(String term) {
+    public Lexer createLexer(Class<? extends Lexer> lexerType, I info,
+            String term) {
         try {
-            // find the lexer type
-            String parserName = getParserType().getName();
-            String lexerName =
-                parserName.substring(0, parserName.indexOf("Parser")).concat(
-                    "Lexer");
-            @SuppressWarnings("unchecked")
-            Class<? extends Lexer> lexerType =
-                (Class<? extends Lexer>) Class.forName(lexerName);
             // instantiate the lexer
             ANTLRStringStream input = new ANTLRStringStream(term);
             Constructor<? extends Lexer> lexerConstructor =
                 lexerType.getConstructor(CharStream.class);
-            return lexerConstructor.newInstance(input);
+            Lexer result = lexerConstructor.newInstance(input);
+            callInitialise(result, info);
+            return result;
         } catch (Exception e) {
             throw toRuntime(e);
         }
     }
 
-    /** Returns the parser type for this kind of tree. */
-    abstract protected Class<? extends Parser> getParserType();
-
-    /** Throws a given exception as a runtime exception. */
-    private RuntimeException toRuntime(Exception exc) {
-        if (exc instanceof RuntimeException) {
-            return (RuntimeException) exc;
-        } else {
-            return new IllegalStateException(exc);
+    /**
+     * Calls the initialise(ParseInfo) method on a given recogniser,
+     * if the recogniser has such a method.
+     */
+    private void callInitialise(BaseRecognizer recognizer, I info) {
+        try {
+            Method initialise =
+                recognizer.getClass().getMethod("initialise", ParseInfo.class);
+            initialise.invoke(recognizer, info);
+        } catch (NoSuchMethodException e) {
+            // the method does not exist; do nothing
+        } catch (Exception e) {
+            throw toRuntime(e);
         }
     }
 
@@ -249,4 +285,13 @@ abstract public class ParseTree<T extends ParseTree<T>> extends CommonTree {
     }
 
     private CommonErrorNode delegate;
+
+    /** Throws a given exception as a runtime exception. */
+    private static RuntimeException toRuntime(Exception exc) {
+        if (exc instanceof RuntimeException) {
+            return (RuntimeException) exc;
+        } else {
+            return new IllegalStateException(exc);
+        }
+    }
 }

@@ -16,6 +16,11 @@
  */
 package groove.control;
 
+import static groove.control.CtrlEdge.Kind.FUNCTION;
+import static groove.control.CtrlEdge.Kind.OMEGA;
+import static groove.control.CtrlEdge.Kind.RECIPE;
+import static groove.control.CtrlEdge.Kind.RULE;
+import groove.control.CtrlEdge.Kind;
 import groove.grammar.Action;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
@@ -34,7 +39,7 @@ import java.util.Map;
 public class CtrlCall {
     /** Constructor for the singleton success call. */
     private CtrlCall() {
-        this.kind = Kind.OMEGA;
+        this.kind = OMEGA;
         this.name = OMEGA_NAME;
         this.rule = null;
         this.args = null;
@@ -48,8 +53,9 @@ public class CtrlCall {
      * @param args list of arguments for the call; may be {@code null}
      * for a transaction call
      */
-    public CtrlCall(CtrlCall.Kind kind, String name, List<CtrlPar> args) {
-        assert kind == CtrlCall.Kind.RECIPE || kind == CtrlCall.Kind.FUNCTION;
+    public CtrlCall(groove.control.CtrlEdge.Kind kind, String name,
+            List<CtrlPar> args) {
+        assert kind == RECIPE || kind == FUNCTION;
         this.kind = kind;
         this.name = name;
         this.rule = null;
@@ -74,7 +80,7 @@ public class CtrlCall {
      * @param recipe enclosing recipe; may be {@code null}
      */
     private CtrlCall(Rule rule, List<CtrlPar> args, Recipe recipe) {
-        this.kind = CtrlCall.Kind.RULE;
+        this.kind = RULE;
         this.name = rule.getFullName();
         this.args = args;
         this.rule = rule;
@@ -141,10 +147,10 @@ public class CtrlCall {
 
     /**
      * Indicates if this is an omega call.
-     * @see #OMEGA
+     * @see #OMEGA_CALL
      */
     public boolean isOmega() {
-        return getKind() == Kind.OMEGA;
+        return getKind() == OMEGA;
     }
 
     /**
@@ -238,18 +244,18 @@ public class CtrlCall {
     private Map<CtrlVar,Integer> outVars;
 
     /** Returns the kind of object being called. */
-    public CtrlCall.Kind getKind() {
+    public groove.control.CtrlEdge.Kind getKind() {
         return this.kind;
     }
 
     /** The kind of object being called. */
-    private final CtrlCall.Kind kind;
+    private final groove.control.CtrlEdge.Kind kind;
 
     /** 
      * Returns the arguments of the call.
      * @return the list of arguments; or {@code null} if this is an omega call
      * or a parameterless call.
-     * @see #OMEGA
+     * @see #OMEGA_CALL
      */
     public final List<CtrlPar> getArgs() {
         return this.args;
@@ -334,45 +340,6 @@ public class CtrlCall {
      * A special call, indicating that the control program is successful.
      * Can be seen as a call to a rule that always matches and makes no changes.
      */
-    public static final CtrlCall OMEGA = new CtrlCall();
-
-    /** Kinds of calls encountered in a control program. */
-    public static enum Kind {
-        /** Graph transformation rules. */
-        RULE("rule"),
-        /** Transactions (declared by {@code rule} blocks). */
-        RECIPE("recipe"),
-        /** Functions (declared by {@code function} blocks). */
-        FUNCTION("function"),
-        /** Termination. */
-        OMEGA("omega");
-
-        private Kind(String name) {
-            this.name = name;
-        }
-
-        /** 
-         * Indicates if this kind of name has an associated body
-         * (translated to a control automaton).
-         */
-        public boolean hasBody() {
-            return this != RULE;
-        }
-
-        /** 
-         * Returns the description of this name kind,
-         * with the initial letter optionally capitalised.
-         */
-        public String getName(boolean upper) {
-            StringBuilder result = new StringBuilder(this.name);
-            if (upper) {
-                result.replace(0, 1,
-                    "" + Character.toUpperCase(this.name.charAt(0)));
-            }
-            return result.toString();
-        }
-
-        private final String name;
-    }
+    public static final CtrlCall OMEGA_CALL = new CtrlCall();
 
 }
