@@ -22,6 +22,7 @@ import groove.gui.Simulator;
 import groove.io.FileType;
 import groove.io.GrooveFileChooser;
 
+import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -29,16 +30,19 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.EnumSet;
 
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.ToolTipManager;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 
 /**
  * @author Tom Staijen
@@ -64,30 +68,27 @@ public class SaveLTSAsDialog {
     /** The simulator, for fetching the frame instance */
     private Simulator simulator;
 
-    // directory to export to
+    /** directory to export to */
     private JTextField dirField;
-    // label start states
+    /** label start states */
     private JCheckBox startCheck;
-    // label final states
+    /** label final states */
     private JCheckBox finalCheck;
-    // label open states
+    /** label result states */
+    private JCheckBox resultCheck;
+    /** label open states */
     private JCheckBox openCheck;
-    // add state names
+    /** add state names */
     private JCheckBox nameCheck;
 
-    // export no states
-    JRadioButton list0;
-    // export all states
-    JRadioButton list1;
-    // export final states only
-    JRadioButton list2;
-
-    /** Value that indicates no states are exported **/
-    public static final int STATES_NONE = 0;
-    /** Value that indicates only final states are exported **/
-    public static final int STATES_FINAL = 1;
-    /** Value that indicates all states are exported **/
-    public static final int STATES_ALL = 2;
+    /** export no states */
+    JRadioButton noExportButton;
+    /** export all states */
+    JRadioButton allExportButton;
+    /** export result states only */
+    JRadioButton resultExportButton;
+    /** export final states only */
+    JRadioButton finalExportButton;
 
     /** Creates a new dialog for options to export the LTS * */
     public SaveLTSAsDialog(Simulator simulator) {
@@ -121,7 +122,7 @@ public class SaveLTSAsDialog {
             this.pane =
                 new JOptionPane(createPanel(), JOptionPane.PLAIN_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION, null, buttons);
-
+            ToolTipManager.sharedInstance().registerComponent(this.pane);
             // new JOptionPane(createPanel(), JOptionPane.PLAIN_MESSAGE,
             // JOptionPane.OK_CANCEL_OPTION, null, buttons);
         }
@@ -133,67 +134,84 @@ public class SaveLTSAsDialog {
      * @return the main panel.
      */
     private JPanel createPanel() {
-        JPanel result = new JPanel();
-        JPanel panel = new JPanel();
-        JPanel buttons = new JPanel();
-
-        panel.setLayout(new GridLayout(0, 1));
-
-        // editing formula
-
-        JLabel exportLabel = new JLabel("Target directory:");
-        panel.add(exportLabel);
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
         JPanel filePanel = new JPanel();
+        filePanel.setBorder(new TitledBorder(new EtchedBorder(), "Destination"));
         filePanel.setLayout(new FlowLayout());
-        this.dirField = new JTextField(this.currentDirectory);
+        this.dirField =
+            new JTextField(new File(this.currentDirectory, "#.gxl").toString());
+        this.dirField.setColumns(25);
         filePanel.add(this.dirField);
         JButton browseButton = new JButton("Browse");
         browseButton.addActionListener(new BrowseButtonListener());
         filePanel.add(browseButton);
-        panel.add(filePanel);
+        filePanel.setToolTipText("Filename pattern: '#' is replaced by grammar ID, file extension determines file format");
+        mainPanel.add(filePanel);
 
-        panel.add(new JLabel(" "));
-        panel.add(new JLabel("Saving options:"));
+        JPanel labelPanel = new JPanel(new GridLayout(0, 1));
+        labelPanel.setBorder(new TitledBorder(new EtchedBorder(),
+            "Label options"));
+        this.startCheck = new JCheckBox("Mark start state");
+        this.startCheck.setToolTipText(String.format(
+            "If ticked, the start state will be labelled '%s'",
+            LTSLabels.Flag.START.getDefault()));
+        this.finalCheck = new JCheckBox("Mark final states");
+        this.finalCheck.setToolTipText(String.format(
+            "If ticked, all final states will be labelled '%s'",
+            LTSLabels.Flag.FINAL.getDefault()));
+        this.resultCheck = new JCheckBox("Mark result states");
+        this.resultCheck.setToolTipText(String.format(
+            "If ticked, all result states will be labelled '%s'",
+            LTSLabels.Flag.RESULT.getDefault()));
+        this.openCheck = new JCheckBox("Mark open states");
+        this.openCheck.setToolTipText(String.format(
+            "If ticked, all open states will be labelled '%s'",
+            LTSLabels.Flag.OPEN.getDefault()));
+        this.nameCheck = new JCheckBox("Number all states");
+        this.nameCheck.setToolTipText(String.format(
+            "If ticked, all states will be labelled '%s', with '#' replaced by the state number",
+            LTSLabels.Flag.NUMBER.getDefault()));
 
-        this.startCheck = new JCheckBox("Label start state");
-        this.finalCheck = new JCheckBox("Label final states");
-        this.openCheck = new JCheckBox("Label open states");
-        this.nameCheck = new JCheckBox("Save state names");
+        labelPanel.add(this.startCheck);
+        labelPanel.add(this.finalCheck);
+        labelPanel.add(this.resultCheck);
+        labelPanel.add(this.openCheck);
+        labelPanel.add(this.nameCheck);
+        mainPanel.add(labelPanel);
 
-        panel.add(this.startCheck);
-        panel.add(this.finalCheck);
-        panel.add(this.openCheck);
-        panel.add(this.nameCheck);
-
-        panel.add(new JLabel(" "));
-        panel.add(new JLabel("Save States:"));
-
-        this.list0 = new JRadioButton("None", true);
-        this.list1 = new JRadioButton("All states", false);
-        this.list2 = new JRadioButton("Final states", false);
+        JPanel savePanel = new JPanel(new GridLayout(0, 1));
+        savePanel.setBorder(new TitledBorder(new EtchedBorder(), "Save states"));
+        savePanel.setToolTipText("Select which states should be saved along with the LTS (in the same directory)");
+        this.noExportButton = new JRadioButton("None", true);
+        this.allExportButton = new JRadioButton("All states", false);
+        this.resultExportButton = new JRadioButton("Result states", false);
+        this.finalExportButton = new JRadioButton("Final states", false);
 
         ButtonGroup group = new ButtonGroup();
-        group.add(this.list0);
-        group.add(this.list1);
-        group.add(this.list2);
+        group.add(this.noExportButton);
+        group.add(this.allExportButton);
+        group.add(this.resultExportButton);
+        group.add(this.finalExportButton);
 
-        panel.add(this.list0);
-        panel.add(this.list1);
-        panel.add(this.list2);
+        savePanel.add(this.noExportButton);
+        savePanel.add(this.allExportButton);
+        savePanel.add(this.resultExportButton);
+        savePanel.add(this.finalExportButton);
 
-        panel.add(new JLabel(" "));
+        mainPanel.add(savePanel);
 
+        JPanel buttons = new JPanel();
         // OK or CANCEL
         this.okButton = getOkButton();
         this.cancelButton = getCancelButton();
         buttons.add(this.okButton);
         buttons.add(this.cancelButton);
 
-        result.add(panel);
-        result.add(buttons);
-        result.add(panel);
-
+        JPanel result = new JPanel(new BorderLayout());
+        result.add(mainPanel);
+        result.add(buttons, BorderLayout.SOUTH);
         return result;
     }
 
@@ -245,25 +263,29 @@ public class SaveLTSAsDialog {
             getContentPane().setValue(value);
             getContentPane().setVisible(false);
             // ExportDialog.this.dialog.setVisible(false);
+            ToolTipManager.sharedInstance().registerComponent(
+                SaveLTSAsDialog.this.pane);
 
         }
     }
 
     /** Retuns the current selection for exporting the individual states * */
-    public int getExportStates() {
-        if (this.list0.isSelected()) {
-            return STATES_NONE;
-        } else if (this.list1.isSelected()) {
-            return STATES_ALL;
-        } else if (this.list2.isSelected()) {
-            return STATES_FINAL;
+    public StateExport getExportStates() {
+        if (this.noExportButton.isSelected()) {
+            return StateExport.NONE;
+        } else if (this.allExportButton.isSelected()) {
+            return StateExport.ALL;
+        } else if (this.resultExportButton.isSelected()) {
+            return StateExport.RESULT;
+        } else if (this.finalExportButton.isSelected()) {
+            return StateExport.FINAL;
         }
-        return -1;
+        return StateExport.NONE;
     }
 
     /** Returns an absolute path of the directory to export to. */
-    public File getFile() {
-        return new File(this.dirField.getText());
+    public String getFile() {
+        return this.dirField.getText();
     }
 
     /** Returns the LTS labelling specification. */
@@ -306,8 +328,7 @@ public class SaveLTSAsDialog {
 
     class BrowseButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            JFileChooser chooser =
-                GrooveFileChooser.getInstance(FileType.GXL);
+            JFileChooser chooser = GrooveFileChooser.getInstance(FileType.GXL);
             int result =
                 chooser.showOpenDialog(SaveLTSAsDialog.this.simulator.getFrame());
             // now load, if so required
@@ -324,4 +345,15 @@ public class SaveLTSAsDialog {
         }
     }
 
+    /** State export mode. */
+    public static enum StateExport {
+        /** Export no states. */
+        NONE,
+        /** Export all states. */
+        ALL,
+        /** Export final states. */
+        FINAL,
+        /** Export result states. */
+        RESULT, ;
+    }
 }

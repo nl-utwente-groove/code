@@ -205,8 +205,8 @@ public class Generator extends GrooveCmdLineTool<GTS> {
                 + "  s - label start state (default: 'start')\n" //
                 + "  f - label final states (default: 'final')\n" //
                 + "  o - label open states (default: 'open')\n" //
-                + "  n - label state with number (default: 's#', '#' replaced by number)" //
-                + "  r - result state label (default: 'result')" //
+                + "  n - label state with number (default: 's#', '#' replaced by number)\n" //
+                + "  r - result state label (default: 'result')\n" //
                 + "Specify label to be used by appending flag with 'label' (single-quoted)",
             handler = LTSLabelsHandler.class)
     private LTSLabels ltsLabels;
