@@ -28,7 +28,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.EnumSet;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -48,6 +48,8 @@ import javax.swing.JTextField;
 import javax.swing.ToolTipManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -74,26 +76,6 @@ public class SaveLTSAsDialog {
     private JDialog dialog;
     /** The simulator, for fetching the frame instance */
     private Simulator simulator;
-
-    /** label start states */
-    private JCheckBox startCheck;
-    /** label final states */
-    private JCheckBox finalCheck;
-    /** label result states */
-    private JCheckBox resultCheck;
-    /** label open states */
-    private JCheckBox openCheck;
-    /** add state names */
-    private JCheckBox nameCheck;
-
-    /** export no states */
-    JRadioButton noExportButton;
-    /** export all states */
-    JRadioButton allExportButton;
-    /** export result states only */
-    JRadioButton resultExportButton;
-    /** export final states only */
-    JRadioButton finalExportButton;
 
     /** Creates a new dialog for options to export the LTS * */
     public SaveLTSAsDialog(Simulator simulator) {
@@ -151,25 +133,26 @@ public class SaveLTSAsDialog {
         dirPanel.add(getDirField());
         JButton browseButton = new JButton("Browse");
         browseButton.addActionListener(new BrowseButtonListener());
+        browseButton.setPreferredSize(PREF_RIGHT);
         dirPanel.add(browseButton);
 
         JPanel ltsPanel = new JPanel();
         ltsPanel.setLayout(new BoxLayout(ltsPanel, BoxLayout.X_AXIS));
         JLabel ltsLabel = new JLabel("LTS filename pattern: ");
-        ltsLabel.setPreferredSize(new Dimension(125, 0));
+        ltsLabel.setPreferredSize(PREF_LEFT);
         ltsLabel.setToolTipText("LTS file name: '#' is replaced by the grammar ID, extension determines file format");
         ltsPanel.add(ltsLabel);
         ltsPanel.add(getLTSPatternField());
-        ltsPanel.add(Box.createHorizontalStrut(browseButton.getPreferredSize().width));
+        ltsPanel.add(Box.createHorizontalStrut(PREF_RIGHT.width));
 
         JPanel statePanel = new JPanel();
         statePanel.setLayout(new BoxLayout(statePanel, BoxLayout.X_AXIS));
         JLabel stateLabel = new JLabel("State filename pattern: ");
-        stateLabel.setPreferredSize(new Dimension(125, 0));
+        stateLabel.setPreferredSize(PREF_LEFT);
         stateLabel.setToolTipText("Pattern for state file names: '#' is replaced by the state number, extension determines file format");
         statePanel.add(stateLabel);
         statePanel.add(getStatePatternField());
-        statePanel.add(Box.createHorizontalStrut(browseButton.getPreferredSize().width));
+        statePanel.add(Box.createHorizontalStrut(PREF_RIGHT.width));
 
         JPanel filePanel = new JPanel(new BorderLayout());
         filePanel.setLayout(new BoxLayout(filePanel, BoxLayout.PAGE_AXIS));
@@ -182,53 +165,21 @@ public class SaveLTSAsDialog {
         JPanel labelPanel = new JPanel(new GridLayout(0, 1));
         labelPanel.setBorder(new TitledBorder(new EtchedBorder(),
             "Label options"));
-        this.startCheck = new JCheckBox("Mark start state");
-        this.startCheck.setToolTipText(String.format(
-            "If ticked, the start state will be labelled '%s'",
-            LTSLabels.Flag.START.getDefault()));
-        this.finalCheck = new JCheckBox("Mark final states");
-        this.finalCheck.setToolTipText(String.format(
-            "If ticked, all final states will be labelled '%s'",
-            LTSLabels.Flag.FINAL.getDefault()));
-        this.resultCheck = new JCheckBox("Mark result states");
-        this.resultCheck.setToolTipText(String.format(
-            "If ticked, all result states will be labelled '%s'",
-            LTSLabels.Flag.RESULT.getDefault()));
-        this.openCheck = new JCheckBox("Mark open states");
-        this.openCheck.setToolTipText(String.format(
-            "If ticked, all open states will be labelled '%s'",
-            LTSLabels.Flag.OPEN.getDefault()));
-        this.nameCheck = new JCheckBox("Number all states");
-        this.nameCheck.setToolTipText(String.format(
-            "If ticked, all states will be labelled '%s', with '#' replaced by the state number",
-            LTSLabels.Flag.NUMBER.getDefault()));
-
-        labelPanel.add(this.startCheck);
-        labelPanel.add(this.finalCheck);
-        labelPanel.add(this.resultCheck);
-        labelPanel.add(this.openCheck);
-        labelPanel.add(this.nameCheck);
+        labelPanel.add(createFlagPanel(Flag.START));
+        labelPanel.add(createFlagPanel(Flag.FINAL));
+        labelPanel.add(createFlagPanel(Flag.RESULT));
+        labelPanel.add(createFlagPanel(Flag.OPEN));
+        labelPanel.add(createFlagPanel(Flag.NUMBER));
         mainPanel.add(labelPanel);
 
         JPanel savePanel = new JPanel(new GridLayout(0, 1));
         savePanel.setBorder(new TitledBorder(new EtchedBorder(), "Save states"));
         savePanel.setToolTipText("Select which states should be saved along with the LTS (in the same directory)");
-        this.noExportButton = new JRadioButton("None", true);
-        this.allExportButton = new JRadioButton("All states", false);
-        this.resultExportButton = new JRadioButton("Result states", false);
-        this.finalExportButton = new JRadioButton("Final states", false);
 
-        ButtonGroup group = new ButtonGroup();
-        group.add(this.noExportButton);
-        group.add(this.allExportButton);
-        group.add(this.resultExportButton);
-        group.add(this.finalExportButton);
-
-        savePanel.add(this.noExportButton);
-        savePanel.add(this.allExportButton);
-        savePanel.add(this.resultExportButton);
-        savePanel.add(this.finalExportButton);
-
+        savePanel.add(getExportButton(StateExport.NONE));
+        savePanel.add(getExportButton(StateExport.ALL));
+        savePanel.add(getExportButton(StateExport.RESULT));
+        savePanel.add(getExportButton(StateExport.FINAL));
         mainPanel.add(savePanel);
 
         mainPanel.add(getErrorLabel());
@@ -253,6 +204,15 @@ public class SaveLTSAsDialog {
         return DIALOG_TITLE;
     }
 
+    private JPanel createFlagPanel(Flag flag) {
+        JPanel result = new JPanel();
+        result.setLayout(new BoxLayout(result, BoxLayout.X_AXIS));
+        result.add(getFlagCheckBox(flag));
+        result.add(getFlagTextField(flag));
+        result.add(Box.createHorizontalStrut(PREF_RIGHT.width));
+        return result;
+    }
+
     /**
      * Constructs and returns the directory field.
      */
@@ -262,13 +222,8 @@ public class SaveLTSAsDialog {
                 this.dirField = new JTextField(this.currentDirectory);
             result.setColumns(20);
             result.getDocument().addDocumentListener(
-                new FieldListener(result,
-                    "Destination must be a valid directory") {
-                    @Override
-                    boolean hasError(String text) {
-                        return !new File(text).isDirectory();
-                    }
-                });
+                new DirectoryFieldListener(result,
+                    "Destination must be a valid directory"));
         }
         return this.dirField;
     }
@@ -284,13 +239,8 @@ public class SaveLTSAsDialog {
             final JTextField result =
                 this.ltsPatternField = new JTextField("#.gxl");
             result.getDocument().addDocumentListener(
-                new FieldListener(result,
-                    "LTS name pattern should not be empty") {
-                    @Override
-                    boolean hasError(String text) {
-                        return text.isEmpty();
-                    }
-                });
+                new EmptyFieldListener(result,
+                    "LTS name pattern should not be empty"));
         }
         return this.ltsPatternField;
     }
@@ -306,19 +256,147 @@ public class SaveLTSAsDialog {
             final JTextField result =
                 this.statePatternField = new JTextField("s#.gst");
             result.getDocument().addDocumentListener(
-                new FieldListener(result,
-                    "State name pattern should contain '#'") {
-                    @Override
-                    boolean hasError(String text) {
-                        return text.indexOf('#') < 0;
-                    }
-                });
+                new PlaceholderFieldListener(result,
+                    "State name pattern should contain '#'"));
         }
         return this.statePatternField;
     }
 
     /** directory to export to */
     private JTextField statePatternField;
+
+    private JRadioButton getExportButton(StateExport mode) {
+        if (this.exportButtonMap == null) {
+            this.exportButtonMap = computeExportButtonMap();
+        }
+        return this.exportButtonMap.get(mode);
+    }
+
+    private Map<StateExport,JRadioButton> computeExportButtonMap() {
+        Map<StateExport,JRadioButton> result =
+            new EnumMap<StateExport,JRadioButton>(StateExport.class);
+        ButtonGroup group = new ButtonGroup();
+        for (StateExport mode : StateExport.values()) {
+            String text = null;
+            switch (mode) {
+            case ALL:
+                text = "All states";
+                break;
+            case FINAL:
+                text = "Final states";
+                break;
+            case NONE:
+                text = "None";
+                break;
+            case RESULT:
+                text = "Result states";
+                break;
+            default:
+                assert false;
+            }
+            JRadioButton button =
+                new JRadioButton(text, mode == StateExport.NONE);
+            result.put(mode, button);
+            group.add(button);
+        }
+        return result;
+    }
+
+    private Map<StateExport,JRadioButton> exportButtonMap;
+
+    private JCheckBox getFlagCheckBox(Flag flag) {
+        if (this.flagCheckMap == null) {
+            this.flagCheckMap = computeFlagCheckMap();
+        }
+        return this.flagCheckMap.get(flag);
+    }
+
+    private Map<Flag,JCheckBox> computeFlagCheckMap() {
+        Map<Flag,JCheckBox> result = new EnumMap<Flag,JCheckBox>(Flag.class);
+        for (Flag flag : Flag.values()) {
+            String text = null;
+            String tip = null;
+            switch (flag) {
+            case FINAL:
+                text = "Mark final states with:";
+                tip = "If ticked, all final states will be labelled";
+                break;
+            case NUMBER:
+                text = "Number all states with:";
+                tip =
+                    "If ticked, all states will be labelled, with '#' replaced by the state number";
+                break;
+            case OPEN:
+                text = "Mark open states with:";
+                tip = "If ticked, all open states will be labelled";
+                break;
+            case RESULT:
+                text = "Mark result states with:";
+                tip = "If ticked, all result states will be labelled";
+                break;
+            case START:
+                text = "Mark start state with:";
+                tip = "If ticked, the start state will be labelled";
+                break;
+            default:
+                assert false;
+            }
+            final JCheckBox checkBox = new JCheckBox(text);
+            checkBox.setPreferredSize(LARGE_LEFT);
+            checkBox.setToolTipText(tip);
+            final JTextField textField = getFlagTextField(flag);
+            checkBox.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    textField.setEnabled(checkBox.isSelected());
+                    textField.setEditable(checkBox.isSelected());
+                }
+            });
+            result.put(flag, checkBox);
+        }
+        return result;
+    }
+
+    private Map<LTSLabels.Flag,JCheckBox> flagCheckMap;
+
+    private JTextField getFlagTextField(Flag flag) {
+        if (this.flagTextMap == null) {
+            this.flagTextMap = computeFlagTextMap();
+        }
+        return this.flagTextMap.get(flag);
+    }
+
+    private Map<Flag,JTextField> computeFlagTextMap() {
+        Map<Flag,JTextField> result = new EnumMap<Flag,JTextField>(Flag.class);
+        for (Flag flag : Flag.values()) {
+            JTextField textField = new JTextField(flag.getDefault());
+            FieldListener listener = null;
+            switch (flag) {
+            case FINAL:
+            case OPEN:
+            case RESULT:
+            case START:
+                String message =
+                    flag.getDescription() + " label must be non-empty";
+                listener = new EmptyFieldListener(textField, message);
+                break;
+            case NUMBER:
+                message =
+                    flag.getDescription()
+                        + " label must contain placeholde '#'";
+                listener = new PlaceholderFieldListener(textField, message);
+                break;
+            default:
+                assert false;
+            }
+            textField.getDocument().addDocumentListener(listener);
+            textField.setEnabled(false);
+            textField.setEditable(false);
+            result.put(flag, textField);
+        }
+        return result;
+    }
+
+    private Map<LTSLabels.Flag,JTextField> flagTextMap;
 
     private void error(JComponent source, String message) {
         if (message == null) {
@@ -373,16 +451,12 @@ public class SaveLTSAsDialog {
         return this.cancelButton;
     }
 
-    /** Retuns the current selection for exporting the individual states * */
+    /** Returns the current selection for exporting the individual states * */
     public StateExport getExportStates() {
-        if (this.noExportButton.isSelected()) {
-            return StateExport.NONE;
-        } else if (this.allExportButton.isSelected()) {
-            return StateExport.ALL;
-        } else if (this.resultExportButton.isSelected()) {
-            return StateExport.RESULT;
-        } else if (this.finalExportButton.isSelected()) {
-            return StateExport.FINAL;
+        for (StateExport result : StateExport.values()) {
+            if (getExportButton(result).isSelected()) {
+                return result;
+            }
         }
         return StateExport.NONE;
     }
@@ -404,40 +478,47 @@ public class SaveLTSAsDialog {
 
     /** Returns the LTS labelling specification. */
     public LTSLabels getLTSLabels() {
-        EnumSet<LTSLabels.Flag> flags = EnumSet.noneOf(LTSLabels.Flag.class);
-        if (this.openCheck.isSelected()) {
-            flags.add(Flag.OPEN);
+        EnumMap<Flag,String> flags =
+            new EnumMap<LTSLabels.Flag,String>(Flag.class);
+        for (Flag flag : Flag.values()) {
+            if (getFlagCheckBox(flag).isSelected()) {
+                flags.put(flag, getFlagTextField(flag).getText());
+            }
         }
-        if (this.finalCheck.isSelected()) {
-            flags.add(Flag.FINAL);
-        }
-        if (this.startCheck.isSelected()) {
-            flags.add(Flag.START);
-        }
-        if (this.nameCheck.isSelected()) {
-            flags.add(Flag.NUMBER);
-        }
-        return new LTSLabels(flags.toArray(new LTSLabels.Flag[0]));
+        return new LTSLabels(flags);
     }
 
-    /** Returns if open states should be labelled with "open". */
-    public boolean showOpen() {
-        return this.openCheck.isSelected();
+    private final class PlaceholderFieldListener extends FieldListener {
+        private PlaceholderFieldListener(JTextField field, String message) {
+            super(field, message);
+        }
+
+        @Override
+        boolean hasError(String text) {
+            return text.indexOf('#') < 0;
+        }
     }
 
-    /** Returns if final states should be labelled with "final". */
-    public boolean showFinal() {
-        return this.finalCheck.isSelected();
+    private final class EmptyFieldListener extends FieldListener {
+        private EmptyFieldListener(JTextField field, String message) {
+            super(field, message);
+        }
+
+        @Override
+        boolean hasError(String text) {
+            return text.isEmpty();
+        }
     }
 
-    /** Returns if states should be labelled with their name. */
-    public boolean showNames() {
-        return this.nameCheck.isSelected();
-    }
+    private final class DirectoryFieldListener extends FieldListener {
+        private DirectoryFieldListener(JTextField field, String message) {
+            super(field, message);
+        }
 
-    /** Returns if the start state should be labelled with "start". */
-    public boolean showStart() {
-        return this.startCheck.isSelected();
+        @Override
+        boolean hasError(String text) {
+            return !new File(text).isDirectory();
+        }
     }
 
     class BrowseButtonListener implements ActionListener {
@@ -458,6 +539,10 @@ public class SaveLTSAsDialog {
 
         }
     }
+
+    private static final Dimension PREF_LEFT = new Dimension(125, 0);
+    private static final Dimension LARGE_LEFT = new Dimension(150, 0);
+    private static final Dimension PREF_RIGHT = new Dimension(50, 0);
 
     /**
      * @author Arend Rensink

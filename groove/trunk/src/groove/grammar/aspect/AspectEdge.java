@@ -453,11 +453,12 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
         }
         if (result == null) {
             if (text == null) {
-                if (getGraphRole() == RULE) {
-                    text = getRuleLabel().text();
-                } else {
-                    text = getTypeLabel().text();
+                Label label =
+                    getGraphRole() == RULE ? getRuleLabel() : getTypeLabel();
+                if (label == null) {
+                    label = label();
                 }
+                text = label.text();
                 // set bold or italic depending on edge role
                 switch (getRole()) {
                 case FLAG:

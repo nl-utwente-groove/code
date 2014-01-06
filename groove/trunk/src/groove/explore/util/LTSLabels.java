@@ -69,6 +69,18 @@ public class LTSLabels {
         }
     }
 
+    /** Constructs a flag object with default values for selected flags. */
+    public LTSLabels(Map<Flag,String> flags) {
+        try {
+            for (Flag flag : flags.keySet()) {
+                setValue(flag, flags.get(flag));
+            }
+        } catch (FormatException e) {
+            assert false : "Unexpected error";
+            throw new IllegalStateException(e);
+        }
+    }
+
     /**
      * Constructs a flags object according to a specification
      * formatted as described in {@link Generator}.
@@ -273,24 +285,30 @@ public class LTSLabels {
     /** Flag controlling extra labels in serialised LTSs. */
     public static enum Flag {
         /** Labelling for start states. */
-        START('s', "start"),
+        START('s', "start", "Start state"),
         /** Labelling for open states. */
-        OPEN('o', "open"),
+        OPEN('o', "open", "Open states"),
         /** Labelling for final states. */
-        FINAL('f', "final"),
+        FINAL('f', "final", "Final states"),
         /** Labelling for result states. */
-        RESULT('r', "result"),
+        RESULT('r', "result", "Result states"),
         /** Labelling of state numbers. */
-        NUMBER('n', "s#");
+        NUMBER('n', "s#", "State number");
 
-        private Flag(char id, String def) {
+        private Flag(char id, String def, String descr) {
             this.id = id;
             this.def = def;
+            this.descr = descr;
         }
 
         /** Returns the identifying character for this flag. */
         public char getId() {
             return this.id;
+        }
+
+        /** Returns the description text of this flag. */
+        public String getDescription() {
+            return this.descr;
         }
 
         /** Returns the default value for this flag. */
@@ -299,6 +317,7 @@ public class LTSLabels {
         }
 
         private final char id;
+        private final String descr;
         private final String def;
     }
 }
