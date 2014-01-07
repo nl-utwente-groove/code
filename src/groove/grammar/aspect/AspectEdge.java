@@ -407,7 +407,6 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
             }
             break;
         case NESTED:
-            assert !onNode;
             text = getAspect().getContentString();
             break;
         case REMARK:
