@@ -2,7 +2,7 @@ grammar Expr;
 
 options {
 	output=AST;
-	ASTLabelType = NewExprTree;
+	ASTLabelType = ExprTree;
 }
 
 tokens {
