@@ -394,7 +394,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
     /** Mapping from level indices to conditions on those levels. */
     private LevelTree levelTree;
     /** Debug flag for creating rules. */
-    static private final boolean TO_RULE_DEBUG = true;
+    static private final boolean TO_RULE_DEBUG = false;
     /** Debug flag for the attribute syntax normalisation. */
     static private final boolean NORMALISE_DEBUG = false;
 
