@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
 /**
@@ -62,7 +61,7 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
      * Constructs the generator. In particular, initializes the command line
      * option classes.
      */
-    public ShapeGenerator(String... args) throws CmdLineException {
+    public ShapeGenerator(String... args) {
         super("Generator", args);
     }
 

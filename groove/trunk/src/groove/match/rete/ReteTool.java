@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
 /**
@@ -45,7 +44,7 @@ public class ReteTool extends GrooveCmdLineTool<Object> {
      * 
      * @param args The command-line arguments.
      */
-    public ReteTool(String... args) throws CmdLineException {
+    public ReteTool(String... args) {
         super("ReteTool", args);
     }
 

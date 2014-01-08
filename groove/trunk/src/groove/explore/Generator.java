@@ -170,7 +170,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     }
 
     @Option(name = RESULT_NAME, metaVar = RESULT_VAR, usage = RESULT_USAGE)
-    private int resultCount = 0;
+    private int resultCount;
 
     /** Returns the locally set grammar properties, if any. */
     public Map<Key,String> getGrammarProperties() {

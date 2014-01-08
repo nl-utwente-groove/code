@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
 import au.com.bytecode.opencsv.CSVWriter;
@@ -40,7 +39,7 @@ public class OperatorLister extends GrooveCmdLineTool<List<String[]>> {
     /**
      * Creates a new instance.
      */
-    public OperatorLister(String[] args) throws CmdLineException {
+    public OperatorLister(String[] args) {
         super("OperatorLister", args);
     }
 
@@ -81,7 +80,7 @@ public class OperatorLister extends GrooveCmdLineTool<List<String[]>> {
     private String outFileName;
 
     @Option(name = "-s", metaVar = "sep", usage = "Argument type separator")
-    private final String argTypeSeparator = ", ";
+    private String argTypeSeparator = ", ";
 
     /**
      * Main method to produce the list of operators and exit gracefully on errors.

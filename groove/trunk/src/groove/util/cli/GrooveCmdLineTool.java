@@ -49,43 +49,29 @@ public abstract class GrooveCmdLineTool<T> {
         this.parser = createParser(appName);
     }
 
-    /** Callback factory name for the command-line parser. */
-    protected GrooveCmdLineParser createParser(String appName) {
-        return new GrooveCmdLineParser(appName, this);
-    }
-
     /**
      * Constructs an instance of a tool, 
      * with a given application name and list of arguments.
-     * The arguments are parsed by invoking {@link #parseArguments(String...)}; 
-     * any exceptions are passed up by the constructor.
-     * @throws CmdLineException if such an exception occurred while parsing
-     * {@code args}
+     * Parsing the arguments is deferred to {@link #start()},
+     * in order to avoid that they are overridden by 
+     * default initialisers in the field declarations.
      */
-    public GrooveCmdLineTool(String appName, String... args)
-        throws CmdLineException {
+    public GrooveCmdLineTool(String appName, String... args) {
         this(appName);
-        parseArguments(args);
+        this.args = args;
     }
 
     /**
-     * Invokes the parser of this tool on a given list of arguments. 
-     * @throws CmdLineException if such an exception occurred while parsing
-     * {@code args}
-     */
-    public void parseArguments(String... args) throws CmdLineException {
-        getParser().parseArgument(args);
-    }
-
-    /**
-     * Starts the tool and returns the result.
+     * Starts the tool, parses the arguments and returns the result.
      * If the help option has been invoked (see {@link #isHelp()},
      * prints the help message and exits immediately with return value {@code null};
      * otherwise, invokes {@link #run()} and passes up its result (return value
      * or exception).
+     * @throws CmdLineException if such an exception occurred while parsing the arguments
      * @throws Exception if the exception is thrown by {@link #run()}.
      */
     public final T start() throws Exception {
+        parseArguments();
         if (isHelp()) {
             getParser().printHelp();
             return null;
@@ -100,6 +86,60 @@ public abstract class GrooveCmdLineTool<T> {
      * help option.
      */
     abstract public T run() throws Exception;
+
+    /** Indicates whether the help option has been invoked. */
+    protected final boolean isHelp() {
+        return this.help;
+    }
+
+    @Option(name = HelpHandler.NAME, usage = HelpHandler.USAGE,
+            handler = HelpHandler.class)
+    private boolean help;
+
+    /** Returns the verbosity of the tool. */
+    protected final Verbosity getVerbosity() {
+        return this.verbosity;
+    }
+
+    /** Sets the verbosity of the tool to a given level. */
+    protected final void setVerbosity(Verbosity verbosity) {
+        this.verbosity = verbosity;
+    }
+
+    @Option(name = VerbosityHandler.NAME, metaVar = VerbosityHandler.VAR,
+            usage = VerbosityHandler.USAGE, handler = VerbosityHandler.class)
+    private Verbosity verbosity = Verbosity.MEDIUM;
+
+    /** 
+     * Returns the parser used for parsing the command-line arguments
+     * passed in to the constructor.
+     */
+    protected final GrooveCmdLineParser getParser() {
+        return this.parser;
+    }
+
+    private final GrooveCmdLineParser parser;
+
+    /** Callback factory name for the command-line parser. */
+    protected GrooveCmdLineParser createParser(String appName) {
+        return new GrooveCmdLineParser(appName, this);
+    }
+
+    /**
+     * Callback method to apply the parser of this tool 
+     * to the list of arguments passed in at construction time.
+     * Calling this method more than once will have no effect.
+     * @throws CmdLineException if such an exception occurred while parsing
+     */
+    protected void parseArguments() throws CmdLineException {
+        if (this.args != null) {
+            getParser().parseArgument(this.args);
+            this.args = null;
+        }
+    }
+
+    /** The arguments originally provided for the tool. */
+    private String[] args;
 
     /**
      * Convenience method for {@link #emit(Verbosity, String, String...)}
@@ -121,39 +161,6 @@ public abstract class GrooveCmdLineTool<T> {
             System.out.printf(format, args);
         }
     }
-
-    /** Indicates whether the help option has been invoked. */
-    protected final boolean isHelp() {
-        return this.help;
-    }
-
-    /** Returns the verbosity of the tool. */
-    protected final Verbosity getVerbosity() {
-        return this.verbosity;
-    }
-
-    /** Sets the verbosity of the tool to a given level. */
-    protected final void setVerbosity(Verbosity verbosity) {
-        this.verbosity = verbosity;
-    }
-
-    /** 
-     * Returns the parser used for parsing the command-line arguments
-     * passed in to the constructor.
-     */
-    protected final GrooveCmdLineParser getParser() {
-        return this.parser;
-    }
-
-    private final GrooveCmdLineParser parser;
-
-    @Option(name = HelpHandler.NAME, usage = HelpHandler.USAGE,
-            handler = HelpHandler.class)
-    private boolean help;
-
-    @Option(name = VerbosityHandler.NAME, metaVar = VerbosityHandler.VAR,
-            usage = VerbosityHandler.USAGE, handler = VerbosityHandler.class)
-    private Verbosity verbosity = Verbosity.MEDIUM;
 
     /**
      * Tries to invoke the static method "execute" of a given {@link GrooveCmdLineTool}
