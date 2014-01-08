@@ -44,7 +44,7 @@ public class OperatorLister extends GrooveCmdLineTool<List<String[]>> {
     }
 
     @Override
-    public List<String[]> run() throws Exception {
+    protected List<String[]> run() throws Exception {
         List<String[]> result = collectOperators();
         String outFileName = FileType.CSV.addExtension(this.outFileName);
         CSVWriter writer = new CSVWriter(new FileWriter(outFileName));

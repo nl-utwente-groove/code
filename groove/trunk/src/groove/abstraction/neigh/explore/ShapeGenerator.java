@@ -70,7 +70,7 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
      * all relevant parameters should be set.
      */
     @Override
-    public AGTS run() throws Exception {
+    protected AGTS run() throws Exception {
         return explore();
     }
 
@@ -276,7 +276,7 @@ public final class ShapeGenerator extends GrooveCmdLineTool<AGTS> {
      * @throws Exception if any error occurred that prevented the GTS from being fully generated
      */
     static public AGTS execute(String... args) throws Exception {
-        staticGTS = new ShapeGenerator(args).run();
+        staticGTS = new ShapeGenerator(args).start();
         return staticGTS;
     }
 

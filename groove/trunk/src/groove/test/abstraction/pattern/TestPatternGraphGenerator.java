@@ -49,7 +49,7 @@ public class TestPatternGraphGenerator {
             generator =
                 new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH,
                     typeGraph));
-            pgts = generator.run();
+            pgts = generator.start();
             assertEquals(6, pgts.getStateCount());
             assertEquals(12, pgts.getTransitionCount());
             assertTrue(generator.compareGTSs(pgts));
@@ -59,12 +59,13 @@ public class TestPatternGraphGenerator {
 
         typeGraph = "ptgraph-min.gst";
         try {
-        generator =
-            new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
-        pgts = generator.run();
-        assertEquals(6, pgts.getStateCount());
-        assertEquals(12, pgts.getTransitionCount());
-        assertTrue(generator.compareGTSs(pgts));
+            generator =
+                new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH,
+                    typeGraph));
+            pgts = generator.start();
+            assertEquals(6, pgts.getStateCount());
+            assertEquals(12, pgts.getTransitionCount());
+            assertTrue(generator.compareGTSs(pgts));
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
@@ -78,15 +79,16 @@ public class TestPatternGraphGenerator {
         PatternGraphGenerator generator;
 
         try {
-        generator =
-            new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH, typeGraph));
-        PGTS pgts = generator.run();
-        assertEquals(11, pgts.getStateCount());
-        assertEquals(12, pgts.getTransitionCount());
-        assertTrue(generator.compareGTSs(pgts));
-    } catch (Exception e) {
-        Assert.fail(e.getMessage());
-    }
+            generator =
+                new PatternGraphGenerator(getArgs(GRAMMAR, START_GRAPH,
+                    typeGraph));
+            PGTS pgts = generator.start();
+            assertEquals(11, pgts.getStateCount());
+            assertEquals(12, pgts.getTransitionCount());
+            assertTrue(generator.compareGTSs(pgts));
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
 }

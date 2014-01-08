@@ -48,16 +48,6 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
         }
     }
 
-    /** Returns a fresh instance of this class. */
-    public static StrategyEnumerator newInstance() {
-        return new StrategyEnumerator(EnumSet.allOf(StrategyValue.class));
-    }
-
-    /** Returns a fresh instance of this class. */
-    public static StrategyEnumerator newInstance(EnumSet<StrategyValue> enumSet) {
-        return new StrategyEnumerator(enumSet);
-    }
-
     /**
      * Parses a command line argument into a <code>Serialized</code> that
      * represents a strategy.
@@ -65,11 +55,16 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
      */
     public static Serialized parseCommandLineStrategy(String text)
         throws FormatException {
-        Serialized result = newInstance().parseCommandline(text);
+        Serialized result = instance().parseCommandline(text);
         if (result == null) {
             throw new FormatException("No such strategy '%s'", text);
         }
         return result;
+    }
+
+    /** Inverse to {@link #parseCommandLineStrategy(String)}. */
+    public static String toParsableStrategy(Serialized source) {
+        return instance().toParsableString(source);
     }
 
     /**
@@ -79,11 +74,17 @@ public class StrategyEnumerator extends TemplateList<Strategy> {
      */
     public static Strategy parseStrategy(Grammar rules, Serialized source)
         throws FormatException {
-        return INSTANCE.parse(rules, source);
+        return instance().parse(rules, source);
+    }
+
+    /** Returns the singleton instance of this class. */
+    public static StrategyEnumerator instance() {
+        return INSTANCE;
     }
 
     /** The singleton instance of this class. */
-    private final static StrategyEnumerator INSTANCE = newInstance();
+    private final static StrategyEnumerator INSTANCE = new StrategyEnumerator(
+        EnumSet.allOf(StrategyValue.class));
     private static final String STRATEGY_TOOLTIP = "<HTML>"
         + "The exploration strategy determines at each state:<BR>"
         + "<B>1.</B> Which of the applicable transitions will be taken; "

@@ -55,6 +55,17 @@ public class PLiteral implements SerializedParser {
         }
     }
 
+    public String toParsableString(Serialized serialized) {
+        String result = null;
+        String value = serialized.getArgument(this.argumentName);
+        if (value.startsWith(this.literal)) {
+            result = this.literal;
+            serialized.setArgument(this.argumentName,
+                value.substring(result.length()));
+        }
+        return result;
+    }
+
     @Override
     public String describeGrammar() {
         return this.literal;

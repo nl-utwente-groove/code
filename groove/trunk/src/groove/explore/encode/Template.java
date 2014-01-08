@@ -177,6 +177,19 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         return result;
     }
 
+    /** 
+     * Inverse to {@link #parseCommandline(String)}.
+     * @param source the object to be converted to string; may
+     * be modified as a result of this call
+     */
+    String toParsableString(Serialized source) {
+        String result = getKeyword();
+        if (this.commandlineParser != null) {
+            result += ":" + this.commandlineParser.toParsableString(source);
+        }
+        return result;
+    }
+
     /**
      * Returns a description of the grammar that is used to parse this template
      * on the command line. The grammar is displayed as a (pretty-printed)
@@ -343,8 +356,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         @Override
-        public X parse(Grammar rules, Serialized source)
-            throws FormatException {
+        public X parse(Grammar rules, Serialized source) throws FormatException {
             if (!source.getKeyword().equals(getKeyword())) {
                 throw new FormatException("Type mismatch between '"
                     + source.getKeyword() + "' and '" + getKeyword() + "'.");
@@ -391,8 +403,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         @Override
-        public X parse(Grammar rules, Serialized source)
-            throws FormatException {
+        public X parse(Grammar rules, Serialized source) throws FormatException {
             P1 v1;
 
             if (!source.getKeyword().equals(getKeyword())) {
@@ -457,8 +468,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         @Override
-        public X parse(Grammar rules, Serialized source)
-            throws FormatException {
+        public X parse(Grammar rules, Serialized source) throws FormatException {
             P1 v1;
             P2 v2;
 

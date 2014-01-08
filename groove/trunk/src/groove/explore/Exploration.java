@@ -277,8 +277,9 @@ public class Exploration {
      */
     public String toParsableString() {
         String result =
-            this.strategy.toParsableString() + " "
-                + this.acceptor.toParsableString() + " " + this.nrResults;
+            StrategyEnumerator.toParsableStrategy(this.strategy) + " "
+                + AcceptorEnumerator.toParsableAcceptor(this.acceptor) + " "
+                + this.nrResults;
         return result;
     }
 
@@ -350,10 +351,10 @@ public class Exploration {
         "Exploration syntax: \"<strategy> <acceptor> [<resultcount>]\"";
     /** Static instance of the strategy enumerator. */
     static private final StrategyEnumerator strategies =
-        StrategyEnumerator.newInstance();
+        StrategyEnumerator.instance();
     /** Static instance of the acceptor enumerator. */
     static private final AcceptorEnumerator acceptors =
-        AcceptorEnumerator.newInstance();
+        AcceptorEnumerator.instance();
     /** Reporter for profiling information. */
     static private final Reporter reporter =
         Reporter.register(Exploration.class);

@@ -162,7 +162,7 @@ public class RecipeTest {
                 exploration = new Exploration();
             } else {
                 Serialized strategy =
-                    StrategyEnumerator.newInstance().parseCommandline(
+                    StrategyEnumerator.instance().parseCommandline(
                         strategyDescr);
                 Serialized acceptor = new Serialized("final");
                 exploration = new Exploration(strategy, acceptor, 0);

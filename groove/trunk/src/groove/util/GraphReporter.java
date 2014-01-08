@@ -43,7 +43,7 @@ public class GraphReporter extends GrooveCmdLineTool<String> {
 
     /** Starts the reporter, for the given list of arguments. */
     @Override
-    public String run() throws Exception {
+    protected String run() throws Exception {
         Graph graph = Groove.loadGraph(this.graphLocation);
         String result = getReport(graph).toString();
         emit("%s%n", result);

@@ -66,7 +66,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
      * Runs the exploration and returns the generated GTS.
      */
     @Override
-    public GTS run() throws Exception {
+    protected GTS run() throws Exception {
         Transformer transformer = computeTransformer();
         transformer.addListener(getReporter());
         if (!getVerbosity().isLow()) {

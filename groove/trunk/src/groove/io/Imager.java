@@ -142,7 +142,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
      * @throws Exception if anything goes wrong during generation.
      */
     @Override
-    public Object run() throws Exception {
+    protected Object run() throws Exception {
         File inFile = getInFile();
         File outFile = getOutFile();
         makeImage(inFile, outFile == null ? inFile : outFile);
