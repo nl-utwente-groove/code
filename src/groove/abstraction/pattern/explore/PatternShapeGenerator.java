@@ -49,7 +49,7 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
      * Constructs the generator. In particular, initializes the command line
      * option classes.
      */
-    public PatternShapeGenerator(String... args) throws CmdLineException {
+    public PatternShapeGenerator(String... args) {
         super("PatternShapeGenerator", args);
     }
 
