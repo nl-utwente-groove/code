@@ -266,29 +266,16 @@ public class CriticalPair {
             }
         }
 
-        //        System.out.println("\nPairs before parallelDep check:"
-        //            + parrPairs.size());
-        //        for (ParallelPair pair : parrPairs) {
-        //            System.out.println(pair);
-        //        }
-        //        System.out.println("\n");
-
         //Filter out all critical pairs which are not parallel dependent
         Set<CriticalPair> critPairs = new HashSet<CriticalPair>();
         System.out.println(parrPairs.size() + " parralel pairs found");
         for (ParallelPair pair : parrPairs) {
             CriticalPair criticalPair = pair.getCriticalPair();
             if (criticalPair != null) {
-                //                System.out.println(pair);
                 critPairs.add(criticalPair);
             }
         }
         System.out.println(critPairs.size() + " critical pairs found");
-        //        System.out.println("\nDeleted pairs: " + deletedPairs.size());
-        //        for (ParallelPair pair : deletedPairs) {
-        //            System.out.println(pair);
-        //            System.out.println("WasCritical: " + pair.getCriticalPair() != null);
-        //        }
         return critPairs;
     }
 
@@ -395,11 +382,6 @@ public class CriticalPair {
                 }
             }
             parrPairs = newParrPairs;
-            //            System.out.println("\nEnd of Iteration\n");
-            //            for (ParallelPair pair : parrPairs) {
-            //                System.out.println(pair);
-            //            }
-            //            System.out.println();
         }
         return parrPairs;
     }
@@ -573,40 +555,6 @@ public class CriticalPair {
         }
         return result;
     }
-
-    //    private boolean isWeaklyParallelDependent2(MatchNumber matchnum) {
-    //        Rule rule = getRule(matchnum);
-    //        RuleToHostMap match = getMatch(matchnum);
-    //        RuleToHostMap otherMatch = getMatch(matchnum.getOther());
-    //        Set<HostNode> eraserNodes = new HashSet<HostNode>();
-    //        for (DefaultRuleNode rn : rule.getEraserNodes()) {
-    //            HostNode hn = match.getNode(rn);
-    //            assert hn != null;
-    //            eraserNodes.add(hn);
-    //        }
-    //
-    //        for (HostNode node : otherMatch.nodeMap().values()) {
-    //            if (eraserNodes.contains(node)) {
-    //                //node dependency found
-    //                return true;
-    //            }
-    //        }
-    //        //if no node dependencies are found check edge dependencies
-    //        Set<HostEdge> eraserEdges = new HashSet<HostEdge>();
-    //        for (RuleEdge re : rule.getEraserEdges()) {
-    //            HostEdge he = match.getEdge(re);
-    //            assert he != null;
-    //            eraserEdges.add(he);
-    //        }
-    //        for (HostEdge edge : otherMatch.edgeMap().values()) {
-    //            if (eraserEdges.contains(edge)) {
-    //                //edge dependency found
-    //                return true;
-    //            }
-    //        }
-    //        //no dependencies found
-    //        return false;
-    //    }
 
     /**
      * Checks if the rule is can be used with this algorithm
