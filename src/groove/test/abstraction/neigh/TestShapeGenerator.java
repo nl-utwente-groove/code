@@ -49,17 +49,17 @@ public class TestShapeGenerator {
 
         try {
             generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
-            AGTS gts = generator.run().reduceGTS();
+            AGTS gts = generator.start().reduceGTS();
             assertEquals(6, gts.getStateCount());
             assertEquals(11, gts.getTransitionCount());
 
             NeighAbsParam.getInstance().setNodeMultBound(2);
-            gts = generator.run().reduceGTS();
+            gts = generator.start().reduceGTS();
             assertEquals(6, gts.getStateCount());
             assertEquals(11, gts.getTransitionCount());
 
             NeighAbsParam.getInstance().setNodeMultBound(3);
-            gts = generator.run().reduceGTS();
+            gts = generator.start().reduceGTS();
             assertEquals(6, gts.getStateCount());
             assertEquals(11, gts.getTransitionCount());
         } catch (Exception e) {
@@ -117,7 +117,7 @@ public class TestShapeGenerator {
 
         try {
             generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
-            AGTS gts = generator.run().reduceGTS();
+            AGTS gts = generator.start().reduceGTS();
             assertEquals(17, gts.getStateCount());
             assertEquals(40, gts.getTransitionCount());
         } catch (Exception e) {
@@ -136,7 +136,7 @@ public class TestShapeGenerator {
 
         try {
             generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
-            AGTS gts = generator.run().reduceGTS();
+            AGTS gts = generator.start().reduceGTS();
             assertEquals(8, gts.getStateCount());
             assertEquals(42, gts.getTransitionCount());
         } catch (Exception e) {
@@ -155,7 +155,7 @@ public class TestShapeGenerator {
 
         try {
             generator = new ShapeGenerator(getArgs(GRAMMAR, START_GRAPH));
-            AGTS gts = generator.run().reduceGTS();
+            AGTS gts = generator.start().reduceGTS();
             assertEquals(36, gts.getStateCount());
             assertEquals(64, gts.getTransitionCount());
         } catch (Exception e) {

@@ -46,11 +46,6 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
         }
     }
 
-    /** Returns the singleton instance of this class. */
-    public static AcceptorEnumerator newInstance() {
-        return new AcceptorEnumerator();
-    }
-
     /**
      * Parses a command line argument into a <code>Serialized</code> that
      * represents an acceptor.
@@ -58,11 +53,16 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
      */
     public static Serialized parseCommandLineAcceptor(String text)
         throws FormatException {
-        Serialized result = newInstance().parseCommandline(text);
+        Serialized result = instance().parseCommandline(text);
         if (result == null) {
             throw new FormatException("No such acceptor '%s'", text);
         }
         return result;
+    }
+
+    /** Inverse to {@link #parseCommandLineAcceptor(String)}. */
+    public static String toParsableAcceptor(Serialized source) {
+        return instance().toParsableString(source);
     }
 
     /**
@@ -72,7 +72,12 @@ public class AcceptorEnumerator extends TemplateList<Acceptor> {
      */
     public static Acceptor parseAcceptor(Grammar rules, Serialized source)
         throws FormatException {
-        return INSTANCE.parse(rules, source);
+        return instance().parse(rules, source);
+    }
+
+    /** Returns the singleton instance of this class. */
+    public static AcceptorEnumerator instance() {
+        return INSTANCE;
     }
 
     /** Singleton instance of this class. */

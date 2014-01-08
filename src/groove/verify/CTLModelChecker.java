@@ -95,7 +95,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
      * Method managing the actual work to be done.
      */
     @Override
-    public Object run() throws Exception {
+    protected Object run() throws Exception {
         modelCheck(this.genArgs == null ? null : this.genArgs.get());
         return null;
     }

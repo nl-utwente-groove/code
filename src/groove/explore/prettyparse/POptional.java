@@ -66,6 +66,17 @@ public class POptional implements SerializedParser {
         return true;
     }
 
+    public String toParsableString(Serialized serialized) {
+        String result = null;
+        String keyword = serialized.getArgument(this.argumentName);
+        if (this.presentValue.equals(keyword)) {
+            result = this.literal;
+        } else if (this.absentValue.equals(keyword)) {
+            result = "";
+        }
+        return result;
+    }
+
     @Override
     public String describeGrammar() {
         return "[" + this.literal + "]";

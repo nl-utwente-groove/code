@@ -50,7 +50,7 @@ public class ReteTool extends GrooveCmdLineTool<Object> {
 
     /** Runs the tool. */
     @Override
-    public Object run() throws Exception {
+    protected Object run() throws Exception {
         String outFileName = doSaveReteNetwork();
         emit("RETE network shape for %s was successfully saved to %s ",
             getGrammarDir(), outFileName);

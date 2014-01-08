@@ -47,4 +47,12 @@ public interface SerializedParser {
      */
     public String describeGrammar();
 
+    /** Converts a serialized source object back to a string that,
+     * when parsed by {@link #parse(StringConsumer, Serialized)},
+     * will result in an object equal to the argument.
+     * Returns {@code null} if the source was not produced by this parser.
+     * @param source the source to be converted to string; may be
+     * modified as a result of this call
+     */
+    public String toParsableString(Serialized source);
 }

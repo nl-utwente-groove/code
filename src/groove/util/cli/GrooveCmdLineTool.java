@@ -85,7 +85,7 @@ public abstract class GrooveCmdLineTool<T> {
      * This method can be invoked instead of {@link #start()} to bypass the
      * help option.
      */
-    abstract public T run() throws Exception;
+    protected abstract T run() throws Exception;
 
     /** Indicates whether the help option has been invoked. */
     protected final boolean isHelp() {

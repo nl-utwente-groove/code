@@ -50,6 +50,17 @@ public class PChoice implements SerializedParser {
         return false;
     }
 
+    public String toParsableString(Serialized source) {
+        String result = null;
+        for (SerializedParser parser : this.parsers) {
+            result = parser.toParsableString(source.clone());
+            if (result != null) {
+                break;
+            }
+        }
+        return result;
+    }
+
     @Override
     public String describeGrammar() {
         StringBuffer buffer = new StringBuffer();

@@ -151,7 +151,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
 
         // Create the strategy editor.
         StrategyEnumerator strategyEnumerator =
-            StrategyEnumerator.newInstance();
+            StrategyEnumerator.instance();
         strategyEnumerator.setMask(StrategyValue.DIALOG_STRATEGIES);
         this.strategyEditor = strategyEnumerator.createEditor(getGrammar());
         Serialized defaultStrategy =
@@ -159,7 +159,7 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
 
         // Create the acceptor editor.
         AcceptorEnumerator acceptorEnumerator =
-            AcceptorEnumerator.newInstance();
+            AcceptorEnumerator.instance();
         Set<AcceptorValue> acceptorMask =
             new HashSet<AcceptorValue>(EnumSet.allOf(AcceptorValue.class));
         acceptorMask.remove(AcceptorValue.CYCLE);

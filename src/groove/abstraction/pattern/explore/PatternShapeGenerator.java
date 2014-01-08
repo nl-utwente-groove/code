@@ -59,7 +59,7 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
 
     /* Specialises the return type. */
     @Override
-    public PSTS run() throws Exception {
+    protected PSTS run() throws Exception {
         if (this.threeWay) {
             PatternAbsParam.getInstance().setUseThreeValues(true);
         }

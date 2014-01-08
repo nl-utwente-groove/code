@@ -71,7 +71,7 @@ public class ControlVariablesTest {
             sgv.setLocalActiveNames(ResourceKind.CONTROL, control);
             GTS lts = new GTS(sgv.toGrammar());
 
-            Exploration scenario = new Exploration("bfs", "final", 0);
+            Exploration scenario = new Exploration();
             scenario.play(lts, lts.startState());
 
             assertFalse(scenario.isInterrupted());

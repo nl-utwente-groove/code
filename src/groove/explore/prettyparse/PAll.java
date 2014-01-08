@@ -46,9 +46,12 @@ public class PAll implements SerializedParser {
         return true;
     }
 
+    public String toParsableString(Serialized serialized) {
+        return serialized.getArgument(this.argumentName);
+    }
+
     @Override
     public String describeGrammar() {
         return this.argumentName;
     }
-
 }

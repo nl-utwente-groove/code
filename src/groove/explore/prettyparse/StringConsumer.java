@@ -85,36 +85,14 @@ public class StringConsumer {
      * @see StringConsumer#getLastConsumed
      */
     public boolean consumeIdentifier() {
-        if (this.text.length() == 0) {
+        String identifier = parseIdentifier(this.text);
+        if (identifier == null) {
             return false;
-        } else if (Character.isLetter(this.text.charAt(0))) {
-            int endOfIdentifier = 0;
-            while (endOfIdentifier + 1 < this.text.length()
-                && isIdentChar(this.text.charAt(endOfIdentifier + 1))) {
-                endOfIdentifier++;
-            }
-            this.lastConsumed = this.text.substring(0, endOfIdentifier + 1);
-            this.text = this.text.substring(this.lastConsumed.length());
-            return true;
-        } else if (this.text.charAt(0) == '\'') {
-            int secondQuote = this.text.substring(1).indexOf("'");
-            if (secondQuote < 1) {
-                return false;
-            }
-            this.lastConsumed = this.text.substring(1, secondQuote + 1);
-            this.text = this.text.substring(this.lastConsumed.length() + 2);
-            return true;
         } else {
-            return false;
+            this.lastConsumed = identifier;
+            this.text = this.text.substring(identifier.length());
+            return true;
         }
-    }
-
-    /**
-     * Convenience method for determining if a character is valid within an
-     * identifier.
-     */
-    private boolean isIdentChar(char c) {
-        return (Character.isLetterOrDigit(c) || c == '_' || c == '$' || c == '-');
     }
 
     /**
@@ -133,19 +111,73 @@ public class StringConsumer {
      * @see StringConsumer#getLastConsumed
      */
     public boolean consumeNumber() {
-        if (this.text.length() == 0) {
+        String identifier = parseNumber(this.text);
+        if (identifier == null) {
             return false;
-        } else if (Character.isDigit(this.text.charAt(0))) {
+        } else {
+            this.lastConsumed = identifier;
+            this.text = this.text.substring(identifier.length());
+            return true;
+        }
+    }
+
+    /**
+     * Returns an identifier at the beginning of a string.
+     * Returns {@code null} if no identifier was found.
+     * The grammar for an identifier is:
+     * <pre>{@code
+     * Ident :== SingleQuotedText | Letter IdentChar*
+     *IdentChar :== Letter | Digit | DOLLAR | UNDERSCORE
+     * }</pre>
+     * 
+     * @see StringConsumer#getLastConsumed
+     */
+    public static String parseIdentifier(String text) {
+        if (text.length() == 0) {
+            return null;
+        } else if (Character.isLetter(text.charAt(0))) {
+            int endOfIdentifier = 0;
+            while (endOfIdentifier + 1 < text.length()
+                && isIdentChar(text.charAt(endOfIdentifier + 1))) {
+                endOfIdentifier++;
+            }
+            return text.substring(0, endOfIdentifier + 1);
+        } else if (text.charAt(0) == '\'') {
+            int secondQuote = text.substring(1).indexOf("'");
+            if (secondQuote < 1) {
+                return null;
+            }
+            return text.substring(1, secondQuote + 1);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Convenience method for determining if a character is valid within an
+     * identifier.
+     */
+    private static boolean isIdentChar(char c) {
+        return (Character.isLetterOrDigit(c) || c == '_' || c == '$' || c == '-');
+    }
+
+    /**
+     * Returns a positive number from the beginning of the text.
+     * Returns {@code null} if the text does not start with a number.
+     * @see StringConsumer#getLastConsumed
+     */
+    public static String parseNumber(String text) {
+        if (text.length() == 0) {
+            return null;
+        } else if (Character.isDigit(text.charAt(0))) {
             int endOfNumber = 0;
-            while (endOfNumber + 1 < this.text.length()
-                && Character.isDigit(this.text.charAt(endOfNumber + 1))) {
+            while (endOfNumber + 1 < text.length()
+                && Character.isDigit(text.charAt(endOfNumber + 1))) {
                 endOfNumber++;
             }
-            this.lastConsumed = this.text.substring(0, endOfNumber + 1);
-            this.text = this.text.substring(this.lastConsumed.length());
-            return true;
+            return text.substring(0, endOfNumber + 1);
         } else {
-            return false;
+            return null;
         }
     }
 }

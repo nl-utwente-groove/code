@@ -69,7 +69,7 @@ public class PatternGraphGenerator extends GrooveCmdLineTool<PGTS> {
      * Explores the state space.
      */
     @Override
-    public PGTS run() throws Exception {
+    protected PGTS run() throws Exception {
         return generate(getGrammar());
     }
 

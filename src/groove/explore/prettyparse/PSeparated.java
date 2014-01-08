@@ -62,6 +62,24 @@ public class PSeparated implements SerializedParser {
         }
     }
 
+    public String toParsableString(Serialized source) {
+        String result = this.itemParser.toParsableString(source);
+        if (result != null) {
+            String next = this.separatorParser.toParsableString(source);
+            while (next != null) {
+                result = result + next;
+                next = this.itemParser.toParsableString(source);
+                if (next == null) {
+                    result = null;
+                } else {
+                    result = result + next;
+                    next = this.separatorParser.toParsableString(source);
+                }
+            }
+        }
+        return result;
+    }
+
     @Override
     public String describeGrammar() {
         return this.itemParser.describeGrammar()
