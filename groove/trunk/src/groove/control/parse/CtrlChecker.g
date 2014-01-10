@@ -4,7 +4,7 @@ options {
 	tokenVocab=Ctrl;
 	output=AST;
 	rewrite=true;
-	ASTLabelType=NewCtrlTree;
+	ASTLabelType=CtrlTree;
 }
 
 @header {
@@ -36,19 +36,6 @@ import java.util.HashMap;
     public void initialise(ParseInfo namespace) {
         this.helper = new CtrlHelper((Namespace) namespace);
     }
-    
-    /**
-     * Runs the lexer and parser on a given input character stream,
-     * with a (presumably empty) namespace.
-     * @return the resulting syntax tree
-     */
-    public NewCtrlTree run(NewCtrlTree tree, Namespace namespace) throws RecognitionException {
-        this.helper = new CtrlHelper(namespace);
-        ParseTreeAdaptor treeAdaptor = new ParseTreeAdaptor(new NewCtrlTree());
-        setTreeAdaptor(treeAdaptor);
-        setTreeNodeStream(treeAdaptor.createTreeNodeStream(tree));
-        return (NewCtrlTree) program().getTree();
-    }
 }
 
 program 
@@ -76,7 +63,7 @@ recipes
   ;
 
 recipe
-  : ^( RECIPE ID INT_LIT?
+  : ^( RECIPE ID PARS INT_LIT?
        { helper.startBody($ID, Kind.RECIPE); } 
        block
        { helper.endBody(); } 
@@ -89,7 +76,7 @@ functions
   ;
 
 function
-  : ^( FUNCTION ID
+  : ^( FUNCTION ID PARS INT_LIT?
        { helper.startBody($ID, Kind.FUNCTION); } 
        block
        { helper.endBody(); } 

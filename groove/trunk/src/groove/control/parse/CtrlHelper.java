@@ -18,6 +18,7 @@ package groove.control.parse;
 
 import groove.algebra.AlgebraFamily;
 import groove.algebra.syntax.Expression;
+import groove.control.Callable;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlEdge;
@@ -126,10 +127,10 @@ public class CtrlHelper {
      * Creates a new tree with a CtrlParser#ID} token at the root, and 
      * an empty text.
      */
-    NewCtrlTree emptyPackage() {
-        NewCtrlTree result = new NewCtrlTree(CtrlParser.PACKAGE);
+    CtrlTree emptyPackage() {
+        CtrlTree result = new CtrlTree(CtrlParser.PACKAGE);
         result.addChild(toQualName(Collections.<Token>emptyList()));
-        result.addChild(new NewCtrlTree(CtrlParser.SEMI));
+        result.addChild(new CtrlTree(CtrlParser.SEMI));
         return result;
     }
 
@@ -144,7 +145,7 @@ public class CtrlHelper {
             token.setLine(child.getLine());
             token.setTokenIndex(child.getTokenIndex());
         }
-        return new NewCtrlTree(token);
+        return new CtrlTree(token);
     }
 
     /** 
@@ -164,7 +165,7 @@ public class CtrlHelper {
             CommonToken token = new CommonToken(CtrlParser.ID, name);
             token.setLine(ruleNameToken.getLine());
             token.setTokenIndex(ruleNameToken.getToken().getTokenIndex());
-            result = new NewCtrlTree(token);
+            result = new CtrlTree(token);
         }
         if (!this.namespace.hasName(name)) {
             emitErrorMessage(result, "Unknown name or identifier %s", name);
@@ -205,34 +206,36 @@ public class CtrlHelper {
      * @return {@code true} if no rule, function or recipe with the name of this one was
      * already declared; {@code false} otherwise
      */
-    boolean declareName(Tree functionTree) {
+    boolean declareCtrlUnit(Tree tree) {
         boolean result = false;
-        assert (functionTree.getType() == CtrlParser.FUNCTION || functionTree.getType() == CtrlParser.RECIPE)
-            && functionTree.getChildCount() <= 3;
-        String name = qualify(functionTree.getChild(0).getText());
+        assert (tree.getType() == CtrlParser.FUNCTION || tree.getType() == CtrlParser.RECIPE)
+            && tree.getChildCount() <= 3;
+        String name = qualify(tree.getChild(0).getText());
         if (this.namespace.hasName(name)) {
-            emitErrorMessage(functionTree,
-                "Duplicate name: %s %s already defined",
+            emitErrorMessage(tree, "Duplicate name: %s %s already defined",
                 this.namespace.getKind(name).getName(true), name);
-        } else if (functionTree.getType() == CtrlParser.FUNCTION) {
-            // it's a function
-            this.namespace.addFunction(name, new ArrayList<CtrlPar.Var>());
-            result = true;
         } else {
-            // it's a recipe
             String priority =
-                functionTree.getChildCount() == 2 ? "0"
-                        : functionTree.getChild(1).getText();
-            this.namespace.addRecipe(name, Integer.parseInt(priority),
-                new ArrayList<CtrlPar.Var>(), this.namespace.getFullName(),
-                functionTree.getLine());
+                tree.getChildCount() == 3 ? "0" : tree.getChild(1).getText();
+            if (tree.getType() == CtrlParser.FUNCTION) {
+                // it's a function
+                this.namespace.addFunction(name, Integer.parseInt(priority),
+                    new ArrayList<CtrlPar.Var>(), this.namespace.getFullName(),
+                    tree.getLine());
+                result = true;
+            } else {
+                // it's a recipe
+                this.namespace.addRecipe(name, Integer.parseInt(priority),
+                    new ArrayList<CtrlPar.Var>(), this.namespace.getFullName(),
+                    tree.getLine());
+            }
             result = true;
         }
         return result;
     }
 
     /** Sets the current function name to a given value. */
-    void startBody(NewCtrlTree nameTree, CtrlEdge.Kind kind) {
+    void startBody(CtrlTree nameTree, CtrlEdge.Kind kind) {
         assert this.currentName == null;
         this.currentName = nameTree.getText();
         this.currentKind = kind;
@@ -246,12 +249,12 @@ public class CtrlHelper {
     }
 
     /** Reorders the functions according to their dependencies. */
-    void reorderFunctions(NewCtrlTree functionsTree) {
+    void reorderFunctions(CtrlTree functionsTree) {
         assert functionsTree.getType() == CtrlChecker.FUNCTIONS;
         int functionsCount = functionsTree.getChildCount();
-        Map<String,NewCtrlTree> functionMap = new HashMap<String,NewCtrlTree>();
+        Map<String,CtrlTree> functionMap = new HashMap<String,CtrlTree>();
         for (int i = 0; i < functionsCount; i++) {
-            NewCtrlTree function = functionsTree.getChild(i);
+            CtrlTree function = functionsTree.getChild(i);
             functionMap.put(function.getChild(0).getText(), function);
         }
         Set<String> resolved = new LinkedHashSet<String>();
@@ -292,7 +295,7 @@ public class CtrlHelper {
     /** The kind ofr {@link #currentName}. */
     private CtrlEdge.Kind currentKind;
 
-    boolean declareVar(Tree nameTree, NewCtrlTree typeTree) {
+    boolean declareVar(Tree nameTree, CtrlTree typeTree) {
         boolean result = true;
         String name = toLocalName(nameTree.getText());
         if (!this.symbolTable.declareSymbol(name, typeTree.getCtrlType())) {
@@ -303,7 +306,7 @@ public class CtrlHelper {
     }
 
     /** Tests whether a package declaration is appropriate. */
-    void checkPackage(NewCtrlTree importTree) {
+    void checkPackage(CtrlTree importTree) {
         String name = importTree.getText();
         String actualName = this.namespace.getParentName();
         if (!name.equals(actualName)) {
@@ -313,7 +316,7 @@ public class CtrlHelper {
     }
 
     /** Tests whether an imported name actually exists. */
-    void checkImport(NewCtrlTree importTree) {
+    void checkImport(CtrlTree importTree) {
         String name = importTree.getText();
         if (!this.namespace.hasName(name)) {
             emitErrorMessage(importTree, "Imported name '%s' does not exist",
@@ -325,7 +328,7 @@ public class CtrlHelper {
      * Checks the control type generated by a type tree node.
      * Returns the type and stores in the tree node.
      */
-    CtrlType checkType(NewCtrlTree typeTree) {
+    CtrlType checkType(CtrlTree typeTree) {
         CtrlType result;
         if (typeTree.getType() == CtrlChecker.NODE) {
             result = CtrlType.NODE;
@@ -344,7 +347,7 @@ public class CtrlHelper {
      * @param checkInit if {@code true}, the variable should also be checked for initialisation
      * @return the type of the variable, if it was declared
      */
-    CtrlVar checkVar(NewCtrlTree nameTree, boolean checkInit) {
+    CtrlVar checkVar(CtrlTree nameTree, boolean checkInit) {
         CtrlVar result = null;
         String name = toLocalName(nameTree.getText());
         CtrlType type = this.symbolTable.getType(name);
@@ -363,7 +366,7 @@ public class CtrlHelper {
         return result;
     }
 
-    CtrlPar checkVarArg(NewCtrlTree argTree) {
+    CtrlPar checkVarArg(CtrlTree argTree) {
         CtrlPar result = null;
         int childCount = argTree.getChildCount();
         assert argTree.getType() == CtrlChecker.ARG && childCount > 0
@@ -377,7 +380,7 @@ public class CtrlHelper {
         return result;
     }
 
-    CtrlPar checkDontCareArg(NewCtrlTree argTree) {
+    CtrlPar checkDontCareArg(CtrlTree argTree) {
         assert argTree.getType() == CtrlChecker.ARG
             && argTree.getChildCount() == 1;
         CtrlPar result = new CtrlPar.Wild();
@@ -385,7 +388,7 @@ public class CtrlHelper {
         return result;
     }
 
-    CtrlPar checkConstArg(NewCtrlTree argTree) {
+    CtrlPar checkConstArg(CtrlTree argTree) {
         assert argTree.getType() == CtrlChecker.ARG
             && argTree.getChildCount() == 1;
         try {
@@ -406,7 +409,7 @@ public class CtrlHelper {
         }
     }
 
-    CtrlCall checkCall(NewCtrlTree callTree) {
+    CtrlCall checkCall(CtrlTree callTree) {
         int childCount = callTree.getChildCount();
         assert callTree.getType() == CtrlChecker.CALL && childCount >= 1;
         CtrlCall result = null;
@@ -416,7 +419,7 @@ public class CtrlHelper {
             List<CtrlPar> args = null;
             if (childCount == 2) {
                 args = new ArrayList<CtrlPar>();
-                NewCtrlTree argsTree = callTree.getChild(1);
+                CtrlTree argsTree = callTree.getChild(1);
                 // stop at the closing LPAR
                 for (int i = 0; i < argsTree.getChildCount() - 1; i++) {
                     CtrlPar arg = argsTree.getChild(i).getCtrlPar();
@@ -432,14 +435,23 @@ public class CtrlHelper {
                 // create the (rule or function) call
                 Kind kind = this.namespace.getKind(name);
                 this.namespace.useName(name);
-                if (kind == Kind.RULE) {
-                    result = new CtrlCall(this.namespace.getRule(name), args);
-                } else {
-                    // it's a function call
-                    result = new CtrlCall(kind, name, args);
-                    if (this.currentName != null) {
-                        addDependency(this.currentName, name);
-                    }
+                Callable unit = null;
+                switch (kind) {
+                case RULE:
+                    unit = this.namespace.getRule(name);
+                    break;
+                case FUNCTION:
+                    unit = this.namespace.getFunction(name);
+                    break;
+                case RECIPE:
+                    unit = this.namespace.getRecipe(name);
+                    break;
+                default:
+                    assert false;
+                }
+                result = new CtrlCall(unit, args);
+                if (kind.hasBody() && this.currentName != null) {
+                    addDependency(this.currentName, name);
                 }
                 callTree.setCtrlCall(result);
             }
@@ -447,7 +459,7 @@ public class CtrlHelper {
         return result;
     }
 
-    void checkAny(NewCtrlTree anyTree) {
+    void checkAny(CtrlTree anyTree) {
         if (this.currentKind == Kind.RECIPE) {
             emitErrorMessage(anyTree, "'any' may not be used within a recipe");
         }
@@ -457,7 +469,7 @@ public class CtrlHelper {
         checkGroupCall(anyTree, anyNames);
     }
 
-    void checkOther(NewCtrlTree otherTree) {
+    void checkOther(CtrlTree otherTree) {
         if (this.currentKind == Kind.RECIPE) {
             emitErrorMessage(otherTree,
                 "'other' may not be used within a recipe");
@@ -468,7 +480,7 @@ public class CtrlHelper {
         checkGroupCall(otherTree, unusedRules);
     }
 
-    private void checkGroupCall(NewCtrlTree callTree, Set<String> rules) {
+    private void checkGroupCall(CtrlTree callTree, Set<String> rules) {
         for (String ruleName : rules) {
             checkCall(callTree, ruleName, null);
         }
@@ -486,8 +498,7 @@ public class CtrlHelper {
      * Tests if a call with a given argument list is compatible with
      * the declared signature.
      */
-    private boolean checkCall(NewCtrlTree callTree, String name,
-            List<CtrlPar> args) {
+    private boolean checkCall(CtrlTree callTree, String name, List<CtrlPar> args) {
         Kind kind = this.namespace.getKind(name);
         List<CtrlPar.Var> sig =
             kind == null ? null : this.namespace.getSig(name);
@@ -495,7 +506,7 @@ public class CtrlHelper {
         if (!result) {
             emitErrorMessage(callTree, "Unknown action '%s'", name);
         } else if (args == null) {
-            result = kind == Kind.RULE || kind == Kind.RECIPE;
+            result = true;
             for (int i = 0; result && i < sig.size(); i++) {
                 result = sig.get(i).compatibleWith(new CtrlPar.Wild());
             }
@@ -554,6 +565,10 @@ public class CtrlHelper {
         this.namespace.addError(message, line, column);
     }
 
+    /**
+     * Registers that the control unit named {@code from} depends on (i.e., calls) the
+     * control unit named {@code to}.
+     */
     private void addDependency(String from, String to) {
         Set<String> dependencies = this.dependencyMap.get(from);
         if (dependencies == null) {
@@ -566,7 +581,7 @@ public class CtrlHelper {
      * Tests if a given control automaton is suitable as body of a 
      * recipe.
      */
-    boolean checkRecipeBody(NewCtrlTree actionTree, String name, CtrlAut aut) {
+    boolean checkRecipeBody(CtrlTree actionTree, String name, CtrlAut aut) {
         boolean result = true;
         for (CtrlState state : aut.nodeSet()) {
             if (state.isTransient()) {

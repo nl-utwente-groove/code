@@ -55,6 +55,12 @@ public class RuleApplicationTest {
         test("creators");
     }
 
+    /** Tests the rules in the control grammar. */
+    @Test
+    public void testControl() {
+        test("control");
+    }
+
     /** Tests the rules in the erasers grammar. */
     @Test
     public void testErasers() {

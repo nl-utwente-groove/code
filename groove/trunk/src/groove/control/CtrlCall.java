@@ -16,9 +16,7 @@
  */
 package groove.control;
 
-import static groove.control.CtrlEdge.Kind.FUNCTION;
 import static groove.control.CtrlEdge.Kind.OMEGA;
-import static groove.control.CtrlEdge.Kind.RECIPE;
 import static groove.control.CtrlEdge.Kind.RULE;
 import groove.control.CtrlEdge.Kind;
 import groove.grammar.Action;
@@ -41,50 +39,33 @@ public class CtrlCall {
     private CtrlCall() {
         this.kind = OMEGA;
         this.name = OMEGA_NAME;
-        this.rule = null;
+        this.unit = null;
         this.args = null;
-        this.recipe = null;
+        this.context = null;
     }
 
     /**
-     * Constructs a call for a given function or recipe and list of arguments.
-     * @param kind indices whether this concerns a function or recipe call
-     * @param name name of the function or recipe to be called; non-{@code null}
+     * Constructs an instantiated call for a given callable unit and list of arguments.
+     * @param unit the unit to be called; non-{@code null}
      * @param args list of arguments for the call; may be {@code null}
-     * for a transaction call
      */
-    public CtrlCall(groove.control.CtrlEdge.Kind kind, String name,
-            List<CtrlPar> args) {
-        assert kind == RECIPE || kind == FUNCTION;
-        this.kind = kind;
-        this.name = name;
-        this.rule = null;
-        this.recipe = null;
+    public CtrlCall(Callable unit, List<CtrlPar> args) {
+        this(unit, args, null);
+    }
+
+    /**
+     * Constructs an instantiated call for a given callable unit, list of arguments
+     * and contextual recipe.
+     * @param unit the unit to be called; non-{@code null}
+     * @param args list of arguments for the call; may be {@code null}
+     * @param context enclosing recipe; may be {@code null}
+     */
+    private CtrlCall(Callable unit, List<CtrlPar> args, Recipe context) {
+        this.kind = unit.getKind();
+        this.name = unit.getFullName();
         this.args = args;
-    }
-
-    /**
-     * Constructs an instantiated call for a given rule and list of arguments.
-     * @param rule the rule to be called; non-{@code null}
-     * @param args list of arguments for the call; may be {@code null}
-     */
-    public CtrlCall(Rule rule, List<CtrlPar> args) {
-        this(rule, args, null);
-    }
-
-    /**
-     * Constructs an instantiated call for a given rule, list of arguments
-     * and enclosing recipe.
-     * @param rule the rule to be called; non-{@code null}
-     * @param args list of arguments for the call; may be {@code null}
-     * @param recipe enclosing recipe; may be {@code null}
-     */
-    private CtrlCall(Rule rule, List<CtrlPar> args, Recipe recipe) {
-        this.kind = RULE;
-        this.name = rule.getFullName();
-        this.args = args;
-        this.rule = rule;
-        this.recipe = recipe;
+        this.unit = unit;
+        this.context = context;
     }
 
     @Override
@@ -112,10 +93,10 @@ public class CtrlCall {
         } else if (!getArgs().equals(other.getArgs())) {
             return false;
         }
-        if (getRecipe() == null) {
-            return other.getRecipe() == null;
+        if (getContext() == null) {
+            return other.getContext() == null;
         } else {
-            return getRecipe().equals(other.getRecipe());
+            return getContext().equals(other.getContext());
         }
     }
 
@@ -127,8 +108,8 @@ public class CtrlCall {
         if (getName() != null) {
             result = prime * result + getName().hashCode();
         }
-        if (getRecipe() != null) {
-            result = prime * result + getRecipe().hashCode();
+        if (getContext() != null) {
+            result = prime * result + getContext().hashCode();
         }
         if (getArgs() != null) {
             result = prime * result + getArgs().hashCode();
@@ -160,16 +141,18 @@ public class CtrlCall {
      */
     public CtrlCall copy(List<CtrlPar> args) {
         assert args == null || args.size() == getArgs().size();
-        CtrlCall result;
+        CtrlCall result = null;
         switch (getKind()) {
         case OMEGA:
             result = this;
             break;
         case RULE:
-            result = new CtrlCall(getRule(), args);
+        case FUNCTION:
+        case RECIPE:
+            result = new CtrlCall(getUnit(), args);
             break;
         default:
-            result = new CtrlCall(getKind(), getName(), args);
+            assert false;
         }
         return result;
     }
@@ -267,42 +250,49 @@ public class CtrlCall {
     private final List<CtrlPar> args;
 
     /** 
+     * Returns the callable unit being called.
+     */
+    public final Callable getUnit() {
+        return this.unit;
+    }
+
+    /** 
      * Returns the rule being called.
      * @return the rule being called; or {@code null} if this is a
      * function, recipe or omega call.
      * @see #getKind()
      */
     public final Rule getRule() {
-        return this.rule;
+        return getKind() == RULE ? (Rule) getUnit() : null;
     }
 
     /** 
      * The rule being called. 
      * May be {@code null} if this is a function or omega call.
      */
-    private final Rule rule;
+    private final Callable unit;
 
     /** 
-     * Returns the enclosing recipe of this call, if any
-     * @return the enclosing recipe, if this is a rule call within a recipe
+     * Returns the contextual recipe of this call, if any
+     * @return the contextual recipe, if this is a rule call within a recipe
      * @see #getKind()
      */
-    public final Recipe getRecipe() {
-        return this.recipe;
+    public final Recipe getContext() {
+        return this.context;
     }
 
     /** 
      * Indicates if this call has an enclosing recipe.
      */
-    public final boolean hasRecipe() {
-        return getRecipe() != null;
+    public final boolean hasContext() {
+        return getContext() != null;
     }
 
     /** 
      * The enclosing recipe of this call.
      * May be {@code null} if this is not a sub-rule call.
      */
-    private final Recipe recipe;
+    private final Recipe context;
 
     /** 
      * Returns the name of the function being called.

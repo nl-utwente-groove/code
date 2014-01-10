@@ -4,7 +4,7 @@ options {
 	tokenVocab=Ctrl;
 	output=AST;
 	rewrite=true;
-	ASTLabelType=NewCtrlTree;
+	ASTLabelType=CtrlTree;
 }
 
 @header {
@@ -31,20 +31,6 @@ import java.util.HashSet;
         this.namespace = (Namespace) namespace;
         this.helper = new CtrlHelper(this.namespace);
     }
-    
-    /**
-     * Runs the builder on a given, checked syntax tree.
-     */
-    public CtrlAut run(NewCtrlTree tree, Namespace namespace) throws RecognitionException {
-        this.builder = CtrlFactory.instance();
-        this.namespace = namespace;
-        this.helper = new CtrlHelper(namespace);
-        ParseTreeAdaptor treeAdaptor = new ParseTreeAdaptor(new NewCtrlTree());
-        setTreeAdaptor(treeAdaptor);
-        setTreeNodeStream(treeAdaptor.createTreeNodeStream(tree));
-        CtrlAut result = program().aut;
-        return result == null ? null : result.clone(namespace.getFullName());
-    }
 }
 
 program returns [ CtrlAut aut ]
@@ -63,7 +49,7 @@ package_decl
   ;
   
 import_decl
-  : ^(IMPORT ID)
+  : ^(IMPORT ID SEMI)
   ;
 
 functions
@@ -71,7 +57,7 @@ functions
   ;
 
 function
-  : ^(FUNCTION ID block)
+  : ^(FUNCTION ID PARS INT_LIT? block)
     { namespace.addBody(helper.qualify($ID.text), $block.aut); }
   ;
   
@@ -80,7 +66,7 @@ recipes
   ;
 
 recipe
-  : ^(RECIPE ID INT_LIT? block)
+  : ^(RECIPE ID PARS INT_LIT? block)
     { 
       String recipeName = helper.qualify($ID.text);
       helper.checkRecipeBody($RECIPE, recipeName, $block.aut);

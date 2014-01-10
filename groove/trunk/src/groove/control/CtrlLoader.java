@@ -20,7 +20,7 @@ import static groove.io.FileType.CONTROL;
 import groove.algebra.AlgebraFamily;
 import groove.control.parse.CtrlLexer;
 import groove.control.parse.Namespace;
-import groove.control.parse.NewCtrlTree;
+import groove.control.parse.CtrlTree;
 import groove.grammar.Action;
 import groove.grammar.Grammar;
 import groove.grammar.QualName;
@@ -68,7 +68,7 @@ public class CtrlLoader {
      */
     public void parse(String name, String program) throws FormatException {
         this.namespace.setFullName(name);
-        NewCtrlTree tree = NewCtrlTree.parse(this.namespace, program);
+        CtrlTree tree = CtrlTree.parse(this.namespace, program);
         tree = tree.check();
         Object oldRecord = this.treeMap.put(name, tree);
         assert oldRecord == null;
@@ -80,7 +80,7 @@ public class CtrlLoader {
      */
     public CtrlAut buildAutomaton(String name) throws FormatException {
         this.namespace.setFullName(name);
-        NewCtrlTree tree = this.treeMap.get(name);
+        CtrlTree tree = this.treeMap.get(name);
         return tree.build();
     }
 
@@ -113,7 +113,7 @@ public class CtrlLoader {
      * TODO extend this to deal correctly with qualified names (SF Feature Request #3581300) 
      */
     public String rename(String name, String oldCallName, String newCallName) {
-        NewCtrlTree tree = this.treeMap.get(name);
+        CtrlTree tree = this.treeMap.get(name);
         CtrlLexer lexer = new CtrlLexer(null);
         lexer.setCharStream(new ANTLRStringStream(tree.toInputString()));
         TokenRewriteStream rewriter = new TokenRewriteStream(lexer);
@@ -129,8 +129,8 @@ public class CtrlLoader {
     /** Algebra family for this control loader. */
     private AlgebraFamily family;
     /** Mapping from program names to corresponding syntax trees. */
-    private final Map<String,NewCtrlTree> treeMap =
-        new TreeMap<String,NewCtrlTree>();
+    private final Map<String,CtrlTree> treeMap =
+        new TreeMap<String,CtrlTree>();
 
     /** Call with [grammarfile] [controlfile]* */
     public static void main(String[] args) {
