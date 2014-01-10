@@ -18,10 +18,7 @@ package groove.grammar.model;
 
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
-import groove.grammar.Recipe;
 import groove.graph.GraphInfo;
-
-import java.util.Set;
 
 /**
  * Bridge between control programs (which are just strings) and control
@@ -49,24 +46,16 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
 
     @Override
     public CtrlAut compute() throws FormatException {
-        this.loader.init(getGrammar().getProperties().getAlgebraFamily(),
-            getRules());
-        this.loader.parse(getFullName(), getProgram());
-        CtrlAut result = this.loader.buildAutomaton(getFullName());
+        getLoader().parse(getFullName(), getProgram());
+        CtrlAut result = getLoader().buildAutomaton(getFullName());
         if (result == null) {
-            result = this.loader.buildDefaultAutomaton();
+            result = getLoader().buildDefaultAutomaton();
         } else {
             GraphInfo.throwException(result);
             result = result.normalise();
         }
         result.setFixed();
         return result;
-    }
-
-    /** Returns the set of recipes defined in the control program. */
-    public Set<Recipe> getRecipes() {
-        synchronise();
-        return this.recipes;
     }
 
     /** 
@@ -84,8 +73,22 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
         return result;
     }
 
+    /** Returns the control loader used in this control model. */
+    public CtrlLoader getLoader() {
+        if (this.loader == null) {
+            this.loader =
+                new CtrlLoader(getGrammar().getProperties().getAlgebraFamily(),
+                    getRules());
+        }
+        return this.loader;
+    }
+
+    @Override
+    void notifyWillRebuild() {
+        this.loader = null;
+        super.notifyWillRebuild();
+    }
+
     /** The control parser. */
-    private final CtrlLoader loader = new CtrlLoader();
-    /** The set of recipes found in the last computation of the control automaton. */
-    private Set<Recipe> recipes;
+    private CtrlLoader loader;
 }

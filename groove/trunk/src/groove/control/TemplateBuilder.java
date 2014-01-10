@@ -16,7 +16,6 @@
  */
 package groove.control;
 
-import groove.control.parse.CtrlNameSpace;
 import groove.control.symbolic.OutEdge;
 import groove.control.symbolic.Term;
 
@@ -32,11 +31,9 @@ import java.util.Set;
  */
 public class TemplateBuilder {
     /** Private constructor for the singleton instance. */
-    private TemplateBuilder(CtrlNameSpace namespace) {
-        this.namespace = namespace;
+    private TemplateBuilder() {
+        // empty
     }
-
-    private final CtrlNameSpace namespace;
 
     /** Constructs a template from a symbolic location. */
     public Template build(String name, Term init) {
@@ -115,8 +112,10 @@ public class TemplateBuilder {
         return new Template(name);
     }
 
-    /** Returns a new instance of this class, for a given name space. */
-    public static TemplateBuilder instance(CtrlNameSpace namespace) {
-        return new TemplateBuilder(namespace);
+    /** Returns the singleton instance of this class. */
+    public static TemplateBuilder instance() {
+        return INSTANCE;
     }
+
+    private static final TemplateBuilder INSTANCE = new TemplateBuilder();
 }

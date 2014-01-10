@@ -19,8 +19,8 @@ package groove.control;
 import static groove.io.FileType.CONTROL;
 import groove.algebra.AlgebraFamily;
 import groove.control.parse.CtrlLexer;
-import groove.control.parse.Namespace;
 import groove.control.parse.CtrlTree;
+import groove.control.parse.Namespace;
 import groove.grammar.Action;
 import groove.grammar.Grammar;
 import groove.grammar.QualName;
@@ -45,11 +45,11 @@ import org.antlr.runtime.TokenRewriteStream;
  */
 public class CtrlLoader {
     /** 
-     * Initialises the loader to a given graph grammar.
+     * Constructs a control loader for a given set of rules and algebra family.
      * @param algebraFamily name of the algebra family to compute constant data values
      * @param rules set of rules that can be invoked by the grammar
      */
-    public void init(AlgebraFamily algebraFamily, Collection<Rule> rules) {
+    public CtrlLoader(AlgebraFamily algebraFamily, Collection<Rule> rules) {
         this.family =
             algebraFamily == null ? AlgebraFamily.DEFAULT : algebraFamily;
         this.namespace = new Namespace(this.family);
@@ -66,12 +66,13 @@ public class CtrlLoader {
      * @param name the qualified name of the control program to be parsed
      * @param program the control program
      */
-    public void parse(String name, String program) throws FormatException {
+    public CtrlTree parse(String name, String program) throws FormatException {
         this.namespace.setFullName(name);
         CtrlTree tree = CtrlTree.parse(this.namespace, program);
         tree = tree.check();
         Object oldRecord = this.treeMap.put(name, tree);
         assert oldRecord == null;
+        return tree;
     }
 
     /**
@@ -94,7 +95,7 @@ public class CtrlLoader {
 
     /** 
      * Returns the set of all top-level actions collected in the course of
-     * processing all control files since the last {@link #init}.
+     * processing all control files since construction of this loader.
      */
     public Collection<Action> getActions() {
         return this.namespace.getActions();
@@ -102,7 +103,7 @@ public class CtrlLoader {
 
     /** 
      * Returns the set of all recipes collected in the course of
-     * processing all control files since the last {@link #init}.
+     * processing all control files since construction of this loader.
      */
     public Collection<Recipe> getRecipes() {
         return this.namespace.getRecipes();
@@ -129,8 +130,7 @@ public class CtrlLoader {
     /** Algebra family for this control loader. */
     private AlgebraFamily family;
     /** Mapping from program names to corresponding syntax trees. */
-    private final Map<String,CtrlTree> treeMap =
-        new TreeMap<String,CtrlTree>();
+    private final Map<String,CtrlTree> treeMap = new TreeMap<String,CtrlTree>();
 
     /** Call with [grammarfile] [controlfile]* */
     public static void main(String[] args) {
@@ -152,8 +152,9 @@ public class CtrlLoader {
     /** Parses a single control program on the basis of a given grammar. */
     public static CtrlAut run(Grammar grammar, String programName,
             String program) throws FormatException {
-        instance.init(grammar.getProperties().getAlgebraFamily(),
-            grammar.getAllRules());
+        CtrlLoader instance =
+            new CtrlLoader(grammar.getProperties().getAlgebraFamily(),
+                grammar.getAllRules());
         instance.parse(programName, program);
         return instance.buildAutomaton(programName).normalise();
     }
@@ -161,8 +162,9 @@ public class CtrlLoader {
     /** Parses a single control program on the basis of a given grammar. */
     public static CtrlAut run(Grammar grammar, String programName, File base)
         throws FormatException, IOException {
-        instance.init(grammar.getProperties().getAlgebraFamily(),
-            grammar.getAllRules());
+        CtrlLoader instance =
+            new CtrlLoader(grammar.getProperties().getAlgebraFamily(),
+                grammar.getAllRules());
         QualName qualName = new QualName(programName);
         File control = base;
         for (String part : qualName.tokens()) {
@@ -174,6 +176,4 @@ public class CtrlLoader {
         scanner.close();
         return instance.buildAutomaton(programName);
     }
-
-    private static final CtrlLoader instance = new CtrlLoader();
 }

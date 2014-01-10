@@ -24,18 +24,18 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class WhileTerm extends IfTerm {
+public class WhileTerm extends Term {
     /**
      * Constructor for subclassing.
      */
     public WhileTerm(Op op, Term arg0) {
-        super(op, arg0, arg0.epsilon());
+        super(op, arg0);
     }
 
     /**
      * Constructs a while-do term.
      */
-    public WhileTerm(TermPool pool, Term arg0) {
+    public WhileTerm(Term arg0) {
         this(Op.WHILE, arg0);
     }
 
@@ -55,5 +55,20 @@ public class WhileTerm extends IfTerm {
             return super.getSuccess().seq(this);
         }
         return result;
+    }
+
+    @Override
+    protected Term computeFailure() {
+        return epsilon();
+    }
+
+    @Override
+    protected int computeTransitDepth() {
+        return 0;
+    }
+
+    @Override
+    protected boolean computeFinal() {
+        return false;
     }
 }
