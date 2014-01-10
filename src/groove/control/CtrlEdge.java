@@ -30,13 +30,13 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlEdge extends ALabelEdge<CtrlLocation> {
+public class CtrlEdge extends ALabelEdge<Location> {
     /** Constructs a choice edge.
      * @param source source location of the edge
      * @param target target location of the edge
      * @param success flag indicating if this is a success or failure edge
      */
-    public CtrlEdge(CtrlLocation source, CtrlLocation target, boolean success) {
+    public CtrlEdge(Location source, Location target, boolean success) {
         super(source, target);
         this.kind = Kind.CHOICE;
         this.success = success;
@@ -49,10 +49,26 @@ public class CtrlEdge extends ALabelEdge<CtrlLocation> {
      * Constructs a control edge for a call.
      * @param source source location of the edge
      * @param target target location of the edge
+     * @param call call to be used as label
+     */
+    public CtrlEdge(Location source, Location target, Call call) {
+        super(source, target);
+        Callable unit = call.getUnit();
+        this.kind = unit.getKind();
+        this.name = unit.getFullName();
+        this.unit = unit;
+        this.args = call.getArgs();
+        this.success = false;
+    }
+
+    /**
+     * Constructs a control edge for a call.
+     * @param source source location of the edge
+     * @param target target location of the edge
      * @param unit callable unit to be invoked
      * @param args list of arguments for the call; non-{@code null}
      */
-    public CtrlEdge(CtrlLocation source, CtrlLocation target, Callable unit,
+    public CtrlEdge(Location source, Location target, Callable unit,
             List<CtrlPar> args) {
         super(source, target);
         this.kind = unit.getKind();
@@ -107,8 +123,7 @@ public class CtrlEdge extends ALabelEdge<CtrlLocation> {
     private final List<CtrlPar> args;
 
     /** 
-     * Returns the invoked recipe of this call.
-     * Should only be invoked if this is a recipe edge.
+     * Returns the invoked unit of this call.
      * @see #getKind()
      */
     public final Callable getUnit() {
@@ -117,8 +132,8 @@ public class CtrlEdge extends ALabelEdge<CtrlLocation> {
     }
 
     /** 
-     * The enclosing recipe of this call.
-     * Is {@code null} if this is not a recipe call.
+     * The invoked unit of this call.
+     * Is {@code null} if this is not a call edge.
      */
     private final Callable unit;
 
@@ -178,6 +193,54 @@ public class CtrlEdge extends ALabelEdge<CtrlLocation> {
     private Map<CtrlVar,Integer> inVars;
     private Map<CtrlVar,Integer> outVars;
 
+    /** 
+     * Returns a list of assignment sources for the variables in the target state.
+     * For each variable, the source is either a variable of
+     * the source state, or to an argument in the call.
+     */
+    public AssignSource[] getAssignment() {
+        if (this.assignment == null) {
+            this.assignment = computeAssignment();
+        }
+        return this.assignment;
+    }
+
+    /**
+     * Computes the binding of target variables to source
+     * variables and call parameters.
+     * @see #getAssignment()
+     */
+    private AssignSource[] computeAssignment() {
+        AssignSource[] result;
+        List<CtrlVar> targetVars = target().getVars();
+        int targetVarCount = targetVars.size();
+        if (targetVarCount == 0) {
+            result = EMPTY_BINDING;
+        } else {
+            result = new AssignSource[targetVarCount];
+            for (int i = 0; i < targetVarCount; i++) {
+                result[i] = computeAssignSource(targetVars.get(i));
+            }
+        }
+        return result;
+    }
+
+    private AssignSource computeAssignSource(CtrlVar var) {
+        AssignSource result;
+        if (getOutVars().containsKey(var)) {
+            int index = getOutVars().get(var);
+            result = AssignSource.arg(index);
+        } else {
+            List<CtrlVar> sourceVars = label().source().getVars();
+            int index = sourceVars.indexOf(var);
+            result = AssignSource.var(index);
+        }
+        return result;
+    }
+
+    /** Binding of bound target variables to bound source variables and transition parameters. */
+    private AssignSource[] assignment;
+
     @Override
     protected int computeLabelHash() {
         final int prime = 31;
@@ -234,6 +297,9 @@ public class CtrlEdge extends ALabelEdge<CtrlLocation> {
         }
         return result;
     }
+
+    /** Constant value for the empty binding. */
+    private static final AssignSource[] EMPTY_BINDING = new AssignSource[0];
 
     /** Control transition kind. */
     public static enum Kind {

@@ -21,7 +21,9 @@ import groove.grammar.QualName;
 import groove.util.Fixable;
 import groove.util.Groove;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Control-defined callable unit.
@@ -88,20 +90,45 @@ public abstract class CtrlUnit implements Callable, Fixable {
      * Should only be invoked once, before the function is fixed.
      * The call fixes the function.
      */
-    public void setUnitBody(NewCtrlAut body) {
+    public void setTemplate(Template body) {
         assert body != null && body.getName().equals(getFullName());
         assert body == null && !isFixed();
-        this.body = body;
+        this.template = body;
         setFixed();
     }
 
     /** Returns the body of this control unit. */
-    public NewCtrlAut getUnitBody() {
+    public Template getTemplate() {
         assert isFixed();
-        return this.body;
+        return this.template;
     }
 
-    private NewCtrlAut body;
+    private Template template;
+
+    /**
+     * Returns a mapping from input variables occurring in the signature of this unit
+     * to their corresponding indices in the signature.
+     */
+    public Map<CtrlVar,Integer> getParIxMap() {
+        assert isFixed();
+        if (this.parIxMap == null) {
+            this.parIxMap = computeParIxMap();
+        }
+        return this.parIxMap;
+    }
+
+    private Map<CtrlVar,Integer> computeParIxMap() {
+        Map<CtrlVar,Integer> result = new LinkedHashMap<CtrlVar,Integer>();
+        for (int i = 0; i < getSignature().size(); i++) {
+            CtrlPar.Var par = getSignature().get(i);
+            if (par.isInOnly()) {
+                result.put(par.getVar(), i);
+            }
+        }
+        return result;
+    }
+
+    private Map<CtrlVar,Integer> parIxMap;
 
     public boolean setFixed() {
         boolean result = this.fixed;

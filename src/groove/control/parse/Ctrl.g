@@ -3,13 +3,15 @@ grammar Ctrl;
 options {
 	output=AST;
 	k=4;
-	ASTLabelType = NewCtrlTree;
+	ASTLabelType = CtrlTree;
 }
 
 tokens {
   RECIPES;
   ARG;
   ARGS;
+  PAR;
+  PARS;
 	BLOCK;
 	CALL;
   DO_WHILE;
@@ -117,13 +119,13 @@ qual_name
   * @B During exploration, the body is treated as an atomic transaction.
   */
 recipe
-  : //@S RECIPE name LPAR RPAR block
-    //@B Declares an atomic rule %s, with body %s.
-    RECIPE^ ID LPAR! RPAR!
+  : //@S RECIPE name par_list block
+    //@B Declares an atomic rule %s, with parameters %s and body %s.
+    RECIPE^ ID par_list
     // (PRIORITY! INT_LIT)? disable priorities for now
     // as recipe refusal is not yet implemented correctly
     block
-    { helper.declareName($RECIPE.tree); }
+    { helper.declareCtrlUnit($RECIPE.tree); }
   ;
 
 /** @H Function declaration.
@@ -131,12 +133,36 @@ recipe
   * @B Functions currently can have no parameters. 
   */
 function
-  : //@S FUNCTION name LPAR RPAR block
-    //@B Declares the function %s, with body %s.
-    FUNCTION^ ID LPAR! RPAR! block
-    { helper.declareName($FUNCTION.tree); }
+  : //@S FUNCTION name par_list block
+    //@B Declares the function %s, with parameters %s and body %s.
+    FUNCTION^ ID par_list block
+    { helper.declareCtrlUnit($FUNCTION.tree); }
   ;
 
+/** @H Parameter list 
+  * @B List of parameters for a function or recipe declaration. 
+  */
+par_list
+  : //@S [ par (COMMA par)* ]
+    //@B Possibly empty, comma-separated list of parameters
+    LPAR (par (COMMA par)*)? RPAR
+    -> ^(PARS par*)
+  ;
+  
+/** @H Parameter declaration
+  * @B Parameter in a function or recipe declaration. 
+  */
+par
+  : //@S OUT var_type id
+    //@H Output parameter
+    //@B Variable %s will receive a value in the course of the function or recipe.
+    OUT var_type ID -> ^(PAR OUT var_type ID)
+  | //@S var_type id
+    //@H Input parameter
+    //@B Variable %s is initialised by the argument passed into the call.
+    var_type ID -> ^(PAR var_type ID)
+  ;
+  
 /** @H Statement block. */
 block
   : //@S LCURLY stat* RCURLY
@@ -276,7 +302,7 @@ call
 	;
 
 /** @H Argument list 
-  * @B List of arguments for a rule or function call. 
+  * @B List of arguments for a rule, function or recipe call. 
   */
 arg_list
   : //@S [ arg (COMMA arg)* ]

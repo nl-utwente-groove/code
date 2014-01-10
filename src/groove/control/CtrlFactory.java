@@ -142,17 +142,17 @@ public class CtrlFactory {
         return buildGroupCall(unusedRules, namespace);
     }
 
-    /** Builds an automation for a choice among a set of rules. */
-    private CtrlAut buildGroupCall(Set<String> ruleNames, Namespace namespace) {
+    /** Builds an automation for a choice among a set of callables. */
+    private CtrlAut buildGroupCall(Set<String> names, Namespace namespace) {
         CtrlAut result = null;
-        for (String ruleName : ruleNames) {
+        for (String name : names) {
             CtrlCall call;
-            switch (namespace.getKind(ruleName)) {
+            switch (namespace.getKind(name)) {
             case RULE:
-                call = new CtrlCall(namespace.getRule(ruleName), null);
+                call = new CtrlCall(namespace.getRule(name), null);
                 break;
             case RECIPE:
-                call = new CtrlCall(Kind.RECIPE, ruleName, null);
+                call = new CtrlCall(namespace.getRecipe(name), null);
                 break;
             default:
                 call = null;

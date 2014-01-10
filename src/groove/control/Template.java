@@ -32,28 +32,27 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class NewCtrlAut extends NodeSetEdgeSetGraph<CtrlLocation,CtrlEdge> {
+public class Template extends NodeSetEdgeSetGraph<Location,CtrlEdge> {
     /**
      * Constructs a automaton for a given control unit and name.
      */
-    private NewCtrlAut(String name, CtrlUnit unit) {
+    private Template(String name, CtrlUnit unit) {
         super(name);
         this.parent = unit;
-        this.start = addNode(0, false);
-        this.end = addNode(0, true);
+        this.start = addLocation(0);
     }
 
     /**
      * Constructs a named automaton.
      */
-    protected NewCtrlAut(String name) {
+    protected Template(String name) {
         this(name, null);
     }
 
     /**
      * Constructs a automaton for a given control unit.
      */
-    protected NewCtrlAut(CtrlUnit unit) {
+    protected Template(CtrlUnit unit) {
         this(unit.getFullName(), unit);
     }
 
@@ -82,23 +81,35 @@ public class NewCtrlAut extends NodeSetEdgeSetGraph<CtrlLocation,CtrlEdge> {
     private final CtrlUnit parent;
 
     /** Returns the initial location of this automaton. */
-    public CtrlLocation getStart() {
+    public Location getStart() {
         return this.start;
     }
 
-    private final CtrlLocation start;
+    private final Location start;
 
-    /** Returns the final location of this automaton. */
-    public CtrlLocation getEnd() {
+    /**
+     * Returns the final location of this automaton.
+     * Should only be called after the automaton is fixed.
+     */
+    public Location getFinal() {
+        assert isFixed();
+        if (this.end == null) {
+            for (Location loc : nodeSet()) {
+                if (loc.isFinal()) {
+                    this.end = loc;
+                    break;
+                }
+            }
+        }
+        assert this.end != null;
         return this.end;
     }
 
-    private final CtrlLocation end;
+    private Location end;
 
     /** Creates and adds a control location to this automaton. */
-    public CtrlLocation addNode(int depth, boolean isFinal) {
-        CtrlLocation result =
-            new CtrlLocation(this, this.maxNodeNr + 1, depth, isFinal);
+    public Location addLocation(int depth) {
+        Location result = new Location(this, this.maxNodeNr + 1, depth);
         this.maxNodeNr++;
         addNode(result);
         return result;
@@ -113,17 +124,17 @@ public class NewCtrlAut extends NodeSetEdgeSetGraph<CtrlLocation,CtrlEdge> {
     public Set<Action> getActions() {
         Set<Action> result = new LinkedHashSet<Action>();
         Set<Function> seen = new HashSet<Function>();
-        Queue<NewCtrlAut> todo = new LinkedList<NewCtrlAut>();
+        Queue<Template> todo = new LinkedList<Template>();
         todo.add(this);
         while (!todo.isEmpty()) {
-            NewCtrlAut next = todo.poll();
+            Template next = todo.poll();
             for (CtrlEdge edge : next.edgeSet()) {
                 Callable unit = edge.getUnit();
                 if (unit instanceof Action) {
                     result.add((Action) unit);
                 } else {
                     Function function = (Function) unit;
-                    NewCtrlAut fresh = ((Function) unit).getUnitBody();
+                    Template fresh = ((Function) unit).getTemplate();
                     if (seen.add(function) && fresh != null) {
                         todo.add(fresh);
                     }
@@ -134,8 +145,8 @@ public class NewCtrlAut extends NodeSetEdgeSetGraph<CtrlLocation,CtrlEdge> {
     }
 
     /** Returns a copy of this automaton with a given parent unit. */
-    public NewCtrlAut clone(CtrlUnit parent) {
-        return new NewCtrlAut(parent);
+    public Template clone(CtrlUnit parent) {
+        return new Template(parent);
     }
 
     @Override
@@ -148,12 +159,12 @@ public class NewCtrlAut extends NodeSetEdgeSetGraph<CtrlLocation,CtrlEdge> {
     }
 
     @Override
-    public NewCtrlAut newGraph(String name) {
-        return new NewCtrlAut(name);
+    public Template newGraph(String name) {
+        return new Template(name);
     }
 
     @Override
-    public boolean addNode(CtrlLocation node) {
+    public boolean addNode(Location node) {
         throw new UnsupportedOperationException("Use addState(CtrlState)");
     }
 
@@ -163,7 +174,7 @@ public class NewCtrlAut extends NodeSetEdgeSetGraph<CtrlLocation,CtrlEdge> {
     }
 
     @Override
-    public boolean removeNode(CtrlLocation node) {
+    public boolean removeNode(Location node) {
         throw new UnsupportedOperationException();
     }
 

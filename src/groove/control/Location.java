@@ -21,8 +21,11 @@ import groove.graph.ANode;
 import groove.util.Fixable;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -30,15 +33,14 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlLocation extends ANode implements Fixable {
+public class Location extends ANode implements Fixable {
     /**
      * Constructs a numbered location for a given automaton.
      */
-    public CtrlLocation(NewCtrlAut aut, int nr, int depth, boolean isFinal) {
+    public Location(Template aut, int nr, int depth) {
         super(nr);
         this.aut = aut;
         this.depth = depth;
-        this.isFinal = isFinal;
         this.outEdges = new LinkedHashSet<CtrlEdge>();
         this.outCalls = new ArrayList<CtrlEdge>();
     }
@@ -46,11 +48,11 @@ public class CtrlLocation extends ANode implements Fixable {
     /**
      * Returns the control automaton of which this is a state.
      */
-    public NewCtrlAut getAut() {
+    public Template getAut() {
         return this.aut;
     }
 
-    private final NewCtrlAut aut;
+    private final Template aut;
 
     /** Returns the atomicity depth of this location. */
     public int getDepth() {
@@ -59,6 +61,13 @@ public class CtrlLocation extends ANode implements Fixable {
 
     private final int depth;
 
+    /** Sets this state to final. */
+    public void setFinal() {
+        assert !isFixed();
+        assert !isFinal();
+        this.isFinal = true;
+    }
+
     /**
      * Indicates if this is the final state of the automaton.
      */
@@ -66,7 +75,7 @@ public class CtrlLocation extends ANode implements Fixable {
         return this.isFinal;
     }
 
-    private final boolean isFinal;
+    private boolean isFinal;
 
     /**
      * Adds an outgoing edge to this location.
@@ -127,12 +136,12 @@ public class CtrlLocation extends ANode implements Fixable {
      * Should only be called after the state is fixed.
      * @return the next state after success; may be {@code null}
      */
-    public CtrlLocation getFailureNext() {
+    public Location getFailureNext() {
         assert isFixed();
         return this.failureNext;
     }
 
-    private CtrlLocation failureNext;
+    private Location failureNext;
 
     /** 
      * Indicates if there is a next state after success.
@@ -149,12 +158,63 @@ public class CtrlLocation extends ANode implements Fixable {
      * Should only be called after the state is fixed.
      * @return the next state after success; may be {@code null}
      */
-    public CtrlLocation getSuccessNext() {
+    public Location getSuccessNext() {
         assert isFixed();
         return this.successNext;
     }
 
-    private CtrlLocation successNext;
+    private Location successNext;
+
+    /**
+     * Returns the list of control variables in this state,
+     * ordered according to the natural ordering of the control variables.
+     */
+    public List<CtrlVar> getVars() {
+        assert isFixed();
+        return this.vars;
+    }
+
+    /**
+     * Adds control variables to this state.
+     */
+    public void addars(Collection<CtrlVar> variables) {
+        assert !isFixed();
+        CtrlVarSet newVars = new CtrlVarSet(variables);
+        newVars.addAll(this.vars);
+        this.vars.clear();
+        this.vars.addAll(newVars);
+    }
+
+    /**
+     * Sets the control variables of this state to the elements of a given collection.
+     */
+    public void setVars(Collection<CtrlVar> variables) {
+        assert !isFixed();
+        this.vars.clear();
+        this.vars.addAll(new CtrlVarSet(variables));
+    }
+
+    /** The collection of variables of this control location. */
+    private final List<CtrlVar> vars = new ArrayList<CtrlVar>();
+
+    /** Returns a mapping from variables to their indices for this location. */
+    public Map<CtrlVar,Integer> getVarIxMap() {
+        assert isFixed();
+        if (this.varIxMap == null) {
+            this.varIxMap = computeVarIxMap();
+        }
+        return this.varIxMap;
+    }
+
+    private Map<CtrlVar,Integer> computeVarIxMap() {
+        Map<CtrlVar,Integer> result = new LinkedHashMap<CtrlVar,Integer>();
+        for (int i = 0; i < getVars().size(); i++) {
+            result.put(getVars().get(i), i);
+        }
+        return result;
+    }
+
+    private Map<CtrlVar,Integer> varIxMap;
 
     @Override
     protected String getToStringPrefix() {

@@ -21,6 +21,7 @@ import groove.control.CtrlAut;
 import groove.control.CtrlEdge.Kind;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
+import groove.control.Function;
 import groove.grammar.Action;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
@@ -58,11 +59,14 @@ public class Namespace implements ParseInfo {
      * Adds a function or recipe name to the set of declared names.
      * @return {@code true} if the name is new.
      */
-    public boolean addFunction(String name, List<CtrlPar.Var> sig) {
+    public boolean addFunction(String name, int priority,
+            List<CtrlPar.Var> sig, String controlName, int startLine) {
         boolean result = !this.kindMap.containsKey(name);
         if (result) {
             this.kindMap.put(name, Kind.FUNCTION);
             this.sigMap.put(name, sig);
+            this.functionMap.put(name, new Function(name, priority, sig,
+                controlName, startLine));
         }
         return result;
     }
@@ -189,9 +193,14 @@ public class Namespace implements ParseInfo {
         return this.sigMap.get(name);
     }
 
-    /** Returns the recipe text associated with a given recipe name. */
+    /** Returns the recipe associated with a given recipe name. */
     public Recipe getRecipe(String name) {
         return this.recipeMap.get(name);
+    }
+
+    /** Returns the declared function with a given name. */
+    public Function getFunction(String name) {
+        return this.functionMap.get(name);
     }
 
     /** Sets the full name of the control program currently being explored. */
@@ -245,7 +254,10 @@ public class Namespace implements ParseInfo {
     private final Map<String,Rule> ruleMap = new HashMap<String,Rule>();
     /** Mapping from names to their declared bodies. */
     private final Map<String,CtrlAut> bodyMap = new HashMap<String,CtrlAut>();
-    /** Mapping from declared recipe names to their body text. */
+    /** Mapping from declared function names to the corresponding functions. */
+    private final Map<String,Function> functionMap =
+        new HashMap<String,Function>();
+    /** Mapping from declared recipe names to the corresponding recipes. */
     private final Map<String,Recipe> recipeMap = new HashMap<String,Recipe>();
     /** Set of top-level rule and recipe names. */
     private final Set<String> topNames = new HashSet<String>();

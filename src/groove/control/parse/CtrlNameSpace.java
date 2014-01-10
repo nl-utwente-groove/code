@@ -21,7 +21,7 @@ import groove.control.CtrlEdge.Kind;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.Function;
-import groove.control.NewCtrlAut;
+import groove.control.Template;
 import groove.grammar.Action;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
@@ -87,7 +87,7 @@ public class CtrlNameSpace {
      * If this concerns a recipe, the body is cloned and the rules appearing
      * in the recipe are removed from the set of known rules.
      */
-    public void addBody(String name, NewCtrlAut body) {
+    public void addBody(String name, Template body) {
         assert hasName(name) && getKind(name).hasBody() : String.format(
             "Unknown or inappropriate name %s", name);
         Callable unit = getUnit(name);
@@ -99,11 +99,11 @@ public class CtrlNameSpace {
             for (Action action : body.getActions()) {
                 this.topNames.remove(action.getFullName());
             }
-            recipe.setUnitBody(body);
+            recipe.setTemplate(body);
             break;
         case FUNCTION:
             Function function = (Function) unit;
-            function.setUnitBody(body);
+            function.setTemplate(body);
         }
     }
 
