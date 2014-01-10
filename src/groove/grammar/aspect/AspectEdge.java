@@ -412,6 +412,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
         case REMARK:
             color = ColorType.REMARK;
             rolePrefix = "// ";
+            text = getInnerText();
             break;
         case ADDER:
             color = ColorType.CREATOR;
@@ -500,7 +501,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
                 result =
                     result.append(Line.atom(type.getName()).style(Style.BOLD));
             }
-            if (rolePrefix != null && getAspect() != source().getAspect()) {
+            if (rolePrefix != null && getKind() != source().getKind()) {
                 result = Line.atom(rolePrefix).append(result);
             }
         }
