@@ -20,12 +20,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
+import groove.control.symbolic.Term;
 import groove.grammar.Grammar;
+import groove.grammar.Rule;
 import groove.grammar.model.FormatException;
 import groove.util.Groove;
 
 import java.io.File;
 import java.io.IOException;
+
+import junit.framework.Assert;
 
 /**
  * Tests the revised control automaton building.
@@ -33,16 +37,18 @@ import java.io.IOException;
  * @version $Revision $
  */
 public class CtrlTester {
-    private static final String GRAMMAR_DIR = "junit/samples/";
     private static final String CONTROL_DIR = "junit/control/";
 
     private Grammar testGrammar;
     {
+        initGrammar("emptyrules");
+    }
+
+    void initGrammar(String name) {
         try {
             this.testGrammar =
-                Groove.loadGrammar(GRAMMAR_DIR + "emptyrules").toGrammar();
+                Groove.loadGrammar(CONTROL_DIR + name).toGrammar();
         } catch (Exception e) {
-            e.printStackTrace();
             fail(e.getMessage());
         }
     }
@@ -74,6 +80,19 @@ public class CtrlTester {
             if (DEBUG) {
                 System.out.println(e.getMessage());
             }
+        }
+    }
+
+    /** 
+     * Builds a symbolic term from a control program.
+     * @param program control expression; non-{@code null}
+     */
+    protected Term buildTerm(String program) {
+        try {
+            return createLoader().parse("dummy", program).getChild(3).toTerm();
+        } catch (FormatException e) {
+            Assert.fail(e.getMessage());
+            return null;
         }
     }
 
@@ -135,6 +154,18 @@ public class CtrlTester {
                 result);
         }
         return result;
+    }
+
+    /** Returns the rule with a given name. */
+    protected Rule getRule(String name) {
+        return this.testGrammar.getRule(name);
+    }
+
+    /** Callback factory method for a loader of the test grammar. */
+    protected CtrlLoader createLoader() {
+        return new CtrlLoader(
+            this.testGrammar.getProperties().getAlgebraFamily(),
+            this.testGrammar.getAllRules());
     }
 
     static private final boolean DEBUG = false;

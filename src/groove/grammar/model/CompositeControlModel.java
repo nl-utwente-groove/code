@@ -56,8 +56,6 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
     @Override
     CtrlAut compute() throws FormatException {
         FormatErrorSet errors = createErrors();
-        this.loader.init(getGrammar().getProperties().getAlgebraFamily(),
-            getRules());
         Collection<String> controlNames = getGrammar().getActiveNames(CONTROL);
         for (String controlName : controlNames) {
             ControlModel controlModel =
@@ -66,7 +64,7 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
                 errors.add("Control program '%s' cannot be found", controlName);
             } else {
                 try {
-                    this.loader.parse(controlName, controlModel.getProgram());
+                    getLoader().parse(controlName, controlModel.getProgram());
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
                         errors.add("Error in control program '%s': %s",
@@ -80,7 +78,7 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
         List<String> programNames = new ArrayList<String>();
         for (String controlName : controlNames) {
             try {
-                CtrlAut aut = this.loader.buildAutomaton(controlName);
+                CtrlAut aut = getLoader().buildAutomaton(controlName);
                 if (aut != null) {
                     result = aut;
                     programNames.add(controlName);
@@ -99,7 +97,7 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
         }
         try {
             if (result == null) {
-                result = this.loader.buildDefaultAutomaton();
+                result = getLoader().buildDefaultAutomaton();
             } else {
                 result = result.normalise();
             }
@@ -116,17 +114,22 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
     /** Returns the set of all top-level actions of the enabled control programs. */
     public Collection<Action> getActions() {
         synchronise();
-        return this.loader.getActions();
+        return getLoader().getActions();
     }
 
     /** Returns the set of all top-level actions of the enabled control programs. */
     public Collection<Recipe> getRecipes() {
         synchronise();
-        return this.loader.getRecipes();
+        return getLoader().getRecipes();
     }
 
     /** Returns the control loader used in this composite control model. */
     public CtrlLoader getLoader() {
+        if (this.loader == null) {
+            this.loader =
+                new CtrlLoader(getGrammar().getProperties().getAlgebraFamily(),
+                    getRules());
+        }
         return this.loader;
     }
 
@@ -168,9 +171,10 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
     @Override
     void notifyWillRebuild() {
         this.ruleRecipeMap = null;
+        this.loader = null;
         super.notifyWillRebuild();
     }
 
-    private final CtrlLoader loader = new CtrlLoader();
+    private CtrlLoader loader;
     private Map<String,Set<String>> ruleRecipeMap;
 }

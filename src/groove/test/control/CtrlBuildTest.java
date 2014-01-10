@@ -49,15 +49,15 @@ import org.junit.Test;
  * @version $Revision $
  */
 public class CtrlBuildTest extends CtrlTester {
-    private static final String GRAMMAR_DIR = "junit/samples/";
+    private static final String GRAMMAR_DIR = "junit/control/";
 
     private Grammar prioGrammar;
+
     {
         try {
             this.prioGrammar =
                 Groove.loadGrammar(GRAMMAR_DIR + "emptypriorules").toGrammar();
         } catch (Exception e) {
-            e.printStackTrace();
             fail(e.getMessage());
         }
     }

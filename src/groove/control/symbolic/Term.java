@@ -200,9 +200,6 @@ abstract public class Term implements Cloneable {
             return false;
         }
         Term other = (Term) obj;
-        if (this.pool != other.pool) {
-            return false;
-        }
         if (!Arrays.equals(this.args, other.args)) {
             return false;
         }
@@ -214,8 +211,7 @@ abstract public class Term implements Cloneable {
 
     @Override
     public String toString() {
-        return "LocTerm [op=" + this.op + ", args="
-            + Arrays.toString(this.args) + "]";
+        return getClass().getSimpleName() + Arrays.toString(this.args);
     }
 
     /** Returns the sequential composition of this term with another. */
@@ -256,7 +252,7 @@ abstract public class Term implements Cloneable {
 
     /** Returns the while of this term. */
     public Term whileDo() {
-        Term result = new WhileTerm(getPool(), this);
+        Term result = new WhileTerm(this);
         return getPool().normalise(result);
     }
 

@@ -158,69 +158,101 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
      * This is only well-defined if the root of the tree is a statement.
      */
     public Term toTerm() {
+        return toTerm(Term.prototype());
+    }
+
+    /**
+     * Constructs a control term from this tree, using a given term prototype.
+     */
+    public Term toTerm(Term prot) {
         Term result = null;
-        Term prototype = Term.prototype();
         switch (getType()) {
         case CtrlParser.BLOCK:
-            result = prototype.epsilon();
-            for (int i = getChildCount() - 1; i >= 0; i--) {
-                result = getChild(i).toTerm().seq(result);
+            result = prot.epsilon();
+            for (int i = 0; i < getChildCount() - 1; i++) {
+                result = result.seq(arg(prot, i));
             }
             break;
         case CtrlParser.SEMI:
-            result = getChild(0).toTerm();
+            result = arg0(prot);
             break;
         case CtrlParser.TRUE:
         case CtrlParser.VAR:
-            result = prototype.epsilon();
+            result = prot.epsilon();
             break;
         case CtrlParser.ALAP:
-            result = getChild(0).toTerm().alap();
+            result = arg0(prot).alap();
             break;
         case CtrlParser.WHILE:
-            result = getChild(0).toTerm().seq(getChild(1).toTerm()).whileDo();
+            result = arg0(prot).seq(arg1(prot)).whileDo();
             break;
         case CtrlParser.UNTIL:
-            result = getChild(0).toTerm().untilDo(getChild(1).toTerm());
+            result = arg0(prot).untilDo(arg1(prot));
             break;
         case CtrlParser.TRY:
-            result = getChild(0).toTerm().tryElse(getChild(1).toTerm());
+            result = arg0(prot).tryElse(arg1(prot));
             break;
         case CtrlParser.IF:
-            result = getChild(0).toTerm().ifElse(getChild(1).toTerm());
+            if (getChildCount() == 2) {
+                // without else clause
+                result = arg0(prot).seq(arg1(prot)).ifElse(prot.epsilon());
+            } else {
+                // with else clause
+                result = arg0(prot).seq(arg1(prot)).ifElse(arg2(prot));
+            }
             break;
         case CtrlParser.CHOICE:
-            result = getChild(0).toTerm();
+            result = arg0(prot);
             for (int i = 1; i < getChildCount(); i++) {
-                result = result.or(getChild(i).toTerm());
+                result = result.or(arg(prot, i));
             }
             break;
         case CtrlParser.STAR:
-            result = getChild(0).toTerm().star();
+            result = arg0(prot).star();
             break;
         case CtrlParser.CALL:
             CtrlCall call = getCtrlCall();
             Call newCall = new Call(call.getUnit(), call.getArgs());
-            result = prototype.call(newCall);
+            result = prot.call(newCall);
             break;
         case CtrlParser.ANY:
-            result = prototype.delta();
+            result = prot.delta();
             for (Action action : getInfo().getActions()) {
                 Call part = new Call(action);
-                result = result.or(prototype.call(part));
+                result = result.or(prot.call(part));
             }
             break;
         case CtrlParser.OTHER:
-            result = prototype.delta();
+            result = prot.delta();
             for (Action action : getInfo().getActions()) {
                 if (!getInfo().getUsedNames().contains(action.getFullName())) {
                     Call part = new Call(action);
-                    result = result.or(prototype.call(part));
+                    result = result.or(prot.call(part));
                 }
             }
             break;
         }
         return result;
+    }
+
+    /** Convenience method to turn the {@code i}th child into a term. */
+    private Term arg(Term prot, int i) {
+        return getChild(i).toTerm(prot);
+    }
+
+    /** Convenience method to turn the first child into a term. */
+    private Term arg0(Term prot) {
+        return arg(prot, 0);
+    }
+
+    /** Convenience method to turn the second child into a term. */
+    private Term arg1(Term prot) {
+        return arg(prot, 1);
+    }
+
+    /** Convenience method to turn the third child into a term. */
+    private Term arg2(Term prot) {
+        return arg(prot, 2);
     }
 
     /** Creates a builder for this tree */
