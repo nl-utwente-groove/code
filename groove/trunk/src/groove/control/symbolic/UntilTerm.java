@@ -23,7 +23,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class UntilTerm extends IfTerm {
+public class UntilTerm extends Term {
     /**
      * Constructs an until-do term.
      */
@@ -38,12 +38,22 @@ public class UntilTerm extends IfTerm {
 
     @Override
     protected Term computeSuccess() {
-        return arg0().getSuccess();
+        Term result = null;
+        if (arg0().hasSuccess()) {
+            result = arg0().getSuccess();
+        }
+        return result;
     }
 
     @Override
     protected Term computeFailure() {
-        return arg1().seq(this);
+        Term result = null;
+        if (arg0().hasFailure()) {
+            result = arg0().getFailure().ifElse(arg1().seq(this));
+        } else if (!arg0().isFinal()) {
+            result = arg1().seq(this);
+        }
+        return result;
     }
 
     @Override
@@ -53,6 +63,11 @@ public class UntilTerm extends IfTerm {
 
     @Override
     protected boolean computeFinal() {
-        return false;
+        return arg0().isFinal();
+    }
+
+    @Override
+    public boolean hasClearFinal() {
+        return arg0().hasClearFinal();
     }
 }
