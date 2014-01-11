@@ -61,15 +61,19 @@ public class Location extends ANode implements Fixable {
 
     private final int depth;
 
-    /** Sets this state to final. */
+    /**
+     * Sets this state to final.
+     * Should only be called if the location is not yet fixed.
+     */
     public void setFinal() {
         assert !isFixed();
-        assert !isFinal();
+        assert !this.isFinal;
+        assert this.successNext == null && this.failureNext == null;
         this.isFinal = true;
     }
 
     /**
-     * Indicates if this is the final state of the automaton.
+     * Indicates if this is a final location of the template.
      */
     public boolean isFinal() {
         return this.isFinal;
@@ -88,6 +92,7 @@ public class Location extends ANode implements Fixable {
         assert !isFinal();
         this.outEdges.add(edge);
         if (edge.getKind() == Kind.CHOICE) {
+            assert !this.isFinal;
             if (edge.isSuccess()) {
                 this.successNext = edge.target();
             } else {

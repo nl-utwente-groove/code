@@ -45,4 +45,9 @@ public class OutEdge extends Pair<Call,Term> {
     public Term getTarget() {
         return two();
     }
+
+    /** Creates a new edge, with the call of this edge but another target. */
+    public OutEdge newEdge(Term target) {
+        return new OutEdge(getCall(), target);
+    }
 }

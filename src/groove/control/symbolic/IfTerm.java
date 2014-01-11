@@ -31,13 +31,12 @@ public class IfTerm extends Term {
         super(op, arg0, arg1);
         assert arg0.isTopLevel();
         assert arg1.isTopLevel();
-        assert !arg0.isFinal();
     }
 
     /**
      * Constructs an if-else term.
      */
-    IfTerm(TermPool pool, Term arg0, Term arg1) {
+    IfTerm(Term arg0, Term arg1) {
         this(Op.IF, arg0, arg1);
     }
 
@@ -48,12 +47,24 @@ public class IfTerm extends Term {
 
     @Override
     protected Term computeSuccess() {
-        return arg0().getSuccess();
+        Term result = null;
+        if (arg0().hasSuccess()) {
+            result = arg0().getSuccess();
+        } else if (!arg0().isFinal()) {
+            result = delta();
+        }
+        return result;
     }
 
     @Override
     protected Term computeFailure() {
-        return arg1();
+        Term result = null;
+        if (arg0().hasFailure()) {
+            result = arg0().getFailure().ifElse(arg1());
+        } else if (!arg0().isFinal()) {
+            result = arg1();
+        }
+        return result;
     }
 
     @Override
@@ -63,6 +74,11 @@ public class IfTerm extends Term {
 
     @Override
     protected boolean computeFinal() {
-        return false;
+        return arg0().isFinal();
+    }
+
+    @Override
+    public boolean hasClearFinal() {
+        return arg0().hasClearFinal() && arg1().hasClearFinal();
     }
 }

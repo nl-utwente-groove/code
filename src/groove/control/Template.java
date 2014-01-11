@@ -87,25 +87,50 @@ public class Template extends NodeSetEdgeSetGraph<Location,CtrlEdge> {
 
     private final Location start;
 
-    /**
-     * Returns the final location of this automaton.
-     * Should only be called after the automaton is fixed.
-     */
-    public Location getFinal() {
-        assert isFixed();
-        if (this.end == null) {
-            for (Location loc : nodeSet()) {
-                if (loc.isFinal()) {
-                    this.end = loc;
-                    break;
-                }
-            }
-        }
-        assert this.end != null;
-        return this.end;
+    /** Indicates if this template has a single final state without outgoing transitions. */
+    public boolean hasSingleFinal() {
+        return getFinal().size() == 1 && this.clearFinal;
     }
 
-    private Location end;
+    /** 
+     * Returns the single final state of this template.
+     * Should only be called if {@link #hasSingleFinal()} holds.
+     */
+    public Location getSingleFinal() {
+        assert hasSingleFinal();
+        return getFinal().iterator().next();
+    }
+
+    /**
+     * Returns the set of final location of this automaton.
+     * Should only be called after the automaton is fixed.
+     */
+    public Set<Location> getFinal() {
+        assert isFixed();
+        if (this.finalLocs == null) {
+            this.finalLocs = computeFinal();
+            this.clearFinal =
+                this.finalLocs.size() == 1
+                    && this.finalLocs.iterator().next().getOutEdges().isEmpty();
+        }
+        return this.finalLocs;
+    }
+
+    private Set<Location> finalLocs;
+    private boolean clearFinal;
+
+    /**
+     * Computes the set of final location of this template.
+     */
+    private Set<Location> computeFinal() {
+        Set<Location> result = new LinkedHashSet<Location>();
+        for (Location loc : nodeSet()) {
+            if (loc.isFinal()) {
+                result.add(loc);
+            }
+        }
+        return result;
+    }
 
     /** Creates and adds a control location to this automaton. */
     public Location addLocation(int depth) {

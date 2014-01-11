@@ -37,7 +37,7 @@ public class SeqTerm extends Term {
     protected List<OutEdge> computeOutEdges() {
         List<OutEdge> result = new ArrayList<OutEdge>();
         for (OutEdge out : arg0().getOutEdges()) {
-            result.add(new OutEdge(out.getCall(), out.getTarget().seq(arg1())));
+            result.add(out.newEdge(out.getTarget().seq(arg1())));
         }
         if (arg0().isFinal()) {
             result.addAll(arg1().getOutEdges());
@@ -75,5 +75,11 @@ public class SeqTerm extends Term {
     @Override
     protected boolean computeFinal() {
         return arg0().isFinal() && arg1().isFinal();
+    }
+
+    @Override
+    public boolean hasClearFinal() {
+        return (arg0().hasClearFinal() || !arg1().isFinal())
+            && arg1().hasClearFinal();
     }
 }

@@ -26,11 +26,12 @@ import java.util.List;
 public class AtomTerm extends Term {
     /**
      * Constructs an atomic block.
+     * The argument must have a clear final location (see {@link #hasClearFinal()}).
      */
     public AtomTerm(Term arg0) {
         super(Op.ATOM, arg0);
-        assert !arg0.isFinal();
         assert arg0.isTopLevel();
+        assert arg0.hasClearFinal();
     }
 
     @Override
@@ -40,12 +41,20 @@ public class AtomTerm extends Term {
 
     @Override
     protected Term computeSuccess() {
-        return arg0().getSuccess();
+        Term result = null;
+        if (arg0().hasSuccess()) {
+            result = arg0().getSuccess().atom();
+        }
+        return result;
     }
 
     @Override
     protected Term computeFailure() {
-        return arg0().getFailure();
+        Term result = null;
+        if (arg0().hasFailure()) {
+            result = arg0().getFailure().atom();
+        }
+        return result;
     }
 
     @Override
@@ -55,6 +64,17 @@ public class AtomTerm extends Term {
 
     @Override
     protected boolean computeFinal() {
-        return false;
+        return arg0().isFinal();
+    }
+
+    @Override
+    public boolean hasClearFinal() {
+        // this term has a clear final location because that is demanded of the argument
+        return true;
+    }
+
+    @Override
+    public Term atom() {
+        return this;
     }
 }

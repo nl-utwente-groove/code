@@ -28,7 +28,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class Term implements Cloneable {
+abstract public class Term {
     /** Constructor for a prototype term. */
     private Term(TermPool pool) {
         this.pool = pool;
@@ -100,6 +100,11 @@ abstract public class Term implements Cloneable {
     /** Returns the second argument of this term. */
     protected final Term arg1() {
         return getArgs()[1];
+    }
+
+    /** Indicates if this term has any outgoing edges. */
+    public final boolean hasOutEdges() {
+        return !getOutEdges().isEmpty();
     }
 
     /** Returns the set of outgoing call edges for this symbolic location. */
@@ -182,6 +187,13 @@ abstract public class Term implements Cloneable {
     /** Computes whether this symbolic location is final. */
     abstract protected boolean computeFinal();
 
+    /** 
+     * Indicates if this term will always go to a clear final term.
+     * A clear final term is one which is final and has no outgoing
+     * transitions. Atomic terms operands must be clear final.
+     */
+    abstract public boolean hasClearFinal();
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -211,37 +223,82 @@ abstract public class Term implements Cloneable {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + Arrays.toString(this.args);
+        String name = getClass().getSimpleName();
+        name = name.substring(0, name.lastIndexOf("Term"));
+        String args = getOp().arity == 0 ? "" : Arrays.toString(getArgs());
+        return name + args;
+    }
+
+    /** Yields an extensive description of the term. */
+    public String toDebugString() {
+        String result = toString() + ":";
+        if (isFinal()) {
+            result = result + " final, ";
+        }
+        result = result + " transient depth " + getTransitDepth();
+        for (OutEdge edge : getOutEdges()) {
+            result =
+                result + "\n  --" + edge.getCall() + "--> "
+                    + edge.getTarget().toString();
+        }
+        result =
+            result + "\nSuccess: "
+                + (hasSuccess() ? getSuccess().toString() : "none");
+        result =
+            result + "\nFailure: "
+                + (hasFailure() ? getFailure().toString() : "none");
+        return result;
     }
 
     /** Returns the sequential composition of this term with another. */
     public Term seq(Term arg1) {
-        SeqTerm result = new SeqTerm(this, arg1);
-        return getPool().normalise(result);
+        if (arg1.equals(epsilon())) {
+            return this;
+        } else {
+            SeqTerm result = new SeqTerm(this, arg1);
+            return getPool().normalise(result);
+        }
     }
 
     /** Returns the choice between this term and another. */
     public Term or(Term arg1) {
-        Term result = new OrTerm(this, arg1);
-        return getPool().normalise(result);
+        if (arg1.equals(delta())) {
+            return this;
+        } else {
+            Term result = new OrTerm(this, arg1);
+            return getPool().normalise(result);
+        }
     }
 
     /** Returns the if-else of this term and another. */
     public Term ifElse(Term arg1) {
-        Term result = new IfTerm(getPool(), this, arg1);
+        Term result = new IfTerm(this, arg1);
         return getPool().normalise(result);
     }
 
-    /** Returns the try-else of this term and another. */
-    public Term tryElse(Term arg1) {
-        Term result = new TryTerm(this, arg1);
-        return getPool().normalise(result);
+    /** Returns the if of this term (which is the same as try-else-epsilon). */
+    public final Term ifNoElse() {
+        return ifElse(epsilon());
     }
 
-    /** Returns the as-long-as-possible of this term. */
-    public Term alap() {
-        Term result = new AlapTerm(this);
-        return getPool().normalise(result);
+    /** Returns the try-else of this term and another.
+     * This is implemented as <code>if atomic { this } else arg1</code>.
+     */
+    public final Term tryElse(Term arg1) {
+        return atom().ifElse(arg1);
+    }
+
+    /** Returns the try of this term (which is the same as try-else-epsilon). */
+    public final Term tryNoElse() {
+        return tryElse(epsilon());
+    }
+
+    /** 
+     * Returns the as-long-as-possible of this term.
+     * This is implemented as <code>while atomic { this }</code>.
+     */
+    public final Term alap() {
+        return atom().whileDo();
     }
 
     /** Returns the until of this term and another. */
@@ -319,6 +376,11 @@ abstract public class Term implements Cloneable {
             protected boolean computeFinal() {
                 throw new UnsupportedOperationException();
             }
+
+            @Override
+            public boolean hasClearFinal() {
+                return false;
+            }
         };
     }
 
@@ -329,7 +391,7 @@ abstract public class Term implements Cloneable {
     static List<OutEdge> makeTransit(List<OutEdge> edges) {
         List<OutEdge> result = new ArrayList<OutEdge>();
         for (OutEdge edge : edges) {
-            result.add(new OutEdge(edge.getCall(), edge.getTarget().transit()));
+            result.add(edge.newEdge(edge.getTarget().transit()));
         }
         return result;
     }

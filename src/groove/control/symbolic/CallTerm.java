@@ -62,4 +62,38 @@ public class CallTerm extends Term {
     protected boolean computeFinal() {
         return false;
     }
+
+    @Override
+    public boolean hasClearFinal() {
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int prime = 31;
+        return prime * super.hashCode() + this.call.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        return this.call.equals(((CallTerm) obj).call);
+    }
+
+    @Override
+    public String toString() {
+        return "Call " + this.call;
+    }
+
+    @Override
+    public Term atom() {
+        if (this.call.getUnit().getKind().isAction()) {
+            // actions are executed atomically anyway
+            return this;
+        } else {
+            return super.atom();
+        }
+    }
 }
