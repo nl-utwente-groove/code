@@ -25,7 +25,8 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({ControlAttributeParametersTest.class,
     ControlVariablesTest.class, ControlGrammarsTest.class, CtrlBuildTest.class,
-    ControlUnitTest.class, RecipeTest.class, TermBuildTest.class})
+    ControlUnitTest.class, RecipeTest.class, TermBuildTest.class,
+    TermDerivationTest.class})
 public class AllControlTests {
     // Empty by design.
 }
