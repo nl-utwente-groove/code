@@ -58,6 +58,11 @@ public class DeltaTerm extends Term {
     }
 
     @Override
+    public boolean hasClearFinal() {
+        return true;
+    }
+
+    @Override
     public Term seq(Term arg1) {
         return this;
     }
@@ -68,27 +73,22 @@ public class DeltaTerm extends Term {
     }
 
     @Override
-    public Term alap() {
-        throw new UnsupportedOperationException("Delta cannot be atomic");
+    public Term atom() {
+        return this;
+    }
+
+    @Override
+    public Term transit() {
+        return this;
     }
 
     @Override
     public Term ifElse(Term arg1) {
-        throw new UnsupportedOperationException("Delta cannot be a then block");
-    }
-
-    @Override
-    public Term tryElse(Term arg1) {
-        throw new UnsupportedOperationException("Delta cannot be atomic");
+        return arg1;
     }
 
     @Override
     public Term whileDo() {
-        throw new UnsupportedOperationException("Delta cannot be a while body");
-    }
-
-    @Override
-    public Term atom() {
-        throw new UnsupportedOperationException("Delta cannot be atomic");
+        return epsilon();
     }
 }

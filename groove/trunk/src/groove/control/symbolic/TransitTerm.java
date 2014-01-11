@@ -26,10 +26,11 @@ import java.util.List;
 public class TransitTerm extends Term {
     /**
      * Creates a term with increased transient depth.
+     * The argument must satisfy {@link #hasClearFinal()}.
      */
     public TransitTerm(Term arg0) {
         super(Op.TRANSIT, arg0);
-        assert !arg0.isFinal();
+        assert arg0.hasClearFinal();
     }
 
     @Override
@@ -63,5 +64,11 @@ public class TransitTerm extends Term {
     @Override
     protected boolean computeFinal() {
         return false;
+    }
+
+    @Override
+    public boolean hasClearFinal() {
+        // this term has a clear final location because that is demanded of the argument
+        return true;
     }
 }

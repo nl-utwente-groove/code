@@ -42,8 +42,8 @@ public class WhileTerm extends Term {
     @Override
     protected List<OutEdge> computeOutEdges() {
         List<OutEdge> result = new ArrayList<OutEdge>();
-        for (OutEdge edge : super.getOutEdges()) {
-            result.add(new OutEdge(edge.getCall(), edge.getTarget().seq(this)));
+        for (OutEdge edge : arg0().getOutEdges()) {
+            result.add(edge.newEdge(edge.getTarget().seq(this)));
         }
         return result;
     }
@@ -51,15 +51,23 @@ public class WhileTerm extends Term {
     @Override
     protected Term computeSuccess() {
         Term result = null;
-        if (super.hasSuccess()) {
-            return super.getSuccess().seq(this);
+        if (arg0().hasSuccess()) {
+            result = arg0().getSuccess().seq(this);
+        } else if (!arg0().isFinal()) {
+            result = delta();
         }
         return result;
     }
 
     @Override
     protected Term computeFailure() {
-        return epsilon();
+        Term result = null;
+        if (arg0().hasFailure()) {
+            result = arg0().getFailure().seq(this).ifNoElse();
+        } else if (!arg0().isFinal()) {
+            result = epsilon();
+        }
+        return result;
     }
 
     @Override
@@ -70,5 +78,12 @@ public class WhileTerm extends Term {
     @Override
     protected boolean computeFinal() {
         return false;
+    }
+
+    @Override
+    public boolean hasClearFinal() {
+        // By definition, while only terminates if
+        // it cannot do any transitions
+        return true;
     }
 }

@@ -127,7 +127,7 @@ public class Step extends AEdge<Frame,CtrlEdge> {
         List<CtrlPar.Var> sig = call.getUnit().getSignature();
         Map<CtrlVar,Integer> callerVars = call.source().getVarIxMap();
         Map<CtrlVar,Integer> finalVars =
-            ((CtrlUnit) call.getUnit()).getTemplate().getFinal().getVarIxMap();
+            ((CtrlUnit) call.getUnit()).getTemplate().getSingleFinal().getVarIxMap();
         for (CtrlVar var : call.target().getVars()) {
             Integer ix = call.getOutVars().get(var);
             AssignSource rhs;

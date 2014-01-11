@@ -37,7 +37,7 @@ public class StarTerm extends Term {
     protected List<OutEdge> computeOutEdges() {
         List<OutEdge> result = new ArrayList<OutEdge>();
         for (OutEdge edge : arg0().getOutEdges()) {
-            result.add(new OutEdge(edge.getCall(), edge.getTarget().seq(this)));
+            result.add(edge.newEdge(edge.getTarget().seq(this)));
         }
         return result;
     }
@@ -68,5 +68,10 @@ public class StarTerm extends Term {
     @Override
     protected boolean computeFinal() {
         return true;
+    }
+
+    @Override
+    public boolean hasClearFinal() {
+        return !hasOutEdges();
     }
 }

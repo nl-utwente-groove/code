@@ -83,16 +83,11 @@ public class TemplateBuilder {
     private Location addLocation(Term symb) {
         Location result = this.locMap.get(symb);
         if (result == null) {
-            if (symb.isFinal() && this.finalLoc != null) {
-                result = this.finalLoc;
-            } else {
-                this.fresh.add(symb);
-                result = this.template.addLocation(symb.getTransitDepth());
-                this.locMap.put(symb, result);
-                if (symb.isFinal()) {
-                    result.setFinal();
-                    this.finalLoc = result;
-                }
+            this.fresh.add(symb);
+            result = this.template.addLocation(symb.getTransitDepth());
+            this.locMap.put(symb, result);
+            if (symb.isFinal()) {
+                result.setFinal();
             }
         }
         return result;
@@ -104,8 +99,6 @@ public class TemplateBuilder {
     private Map<Term,Location> locMap;
     /** Unexplored set of symbolic locations. */
     private Set<Term> fresh;
-    /** Final location of the template. */
-    private Location finalLoc;
 
     /** Callback factory method for a template. */
     private Template createTemplate(String name) {

@@ -16,6 +16,7 @@
  */
 package groove.control;
 
+import groove.util.Groove;
 import groove.util.Pair;
 
 import java.util.ArrayList;
@@ -50,6 +51,12 @@ public class Call extends Pair<Callable,List<CtrlPar>> {
     /** Returns the list of arguments. */
     public List<CtrlPar> getArgs() {
         return two();
+    }
+
+    @Override
+    public String toString() {
+        return getUnit().getFullName()
+            + Groove.toString(getArgs().toArray(), "(", ")", ", ");
     }
 
     static private List<CtrlPar> createWildArgs(int count) {

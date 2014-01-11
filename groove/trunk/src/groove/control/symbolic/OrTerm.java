@@ -76,4 +76,13 @@ public class OrTerm extends Term {
     protected boolean computeFinal() {
         return arg0().isFinal() || arg1().isFinal();
     }
+
+    @Override
+    public boolean hasClearFinal() {
+        boolean result = !(isFinal() && hasOutEdges());
+        if (result) {
+            result = arg0().hasClearFinal() && arg1().hasClearFinal();
+        }
+        return result;
+    }
 }

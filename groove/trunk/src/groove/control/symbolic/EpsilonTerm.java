@@ -58,6 +58,11 @@ public class EpsilonTerm extends Term {
     }
 
     @Override
+    public boolean hasClearFinal() {
+        return true;
+    }
+
+    @Override
     public Term seq(Term arg1) {
         return arg1;
     }
@@ -68,27 +73,17 @@ public class EpsilonTerm extends Term {
     }
 
     @Override
+    public Term atom() {
+        return this;
+    }
+
+    @Override
     public Term whileDo() {
         return delta();
     }
 
     @Override
-    public Term alap() {
-        throw new UnsupportedOperationException("Delta cannot be atomic");
-    }
-
-    @Override
     public Term ifElse(Term arg1) {
-        throw new UnsupportedOperationException("Delta cannot be a then block");
-    }
-
-    @Override
-    public Term tryElse(Term arg1) {
-        throw new UnsupportedOperationException("Delta cannot be atomic");
-    }
-
-    @Override
-    public Term atom() {
-        throw new UnsupportedOperationException("Delta cannot be atomic");
+        return this;
     }
 }
