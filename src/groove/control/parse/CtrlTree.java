@@ -212,7 +212,12 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             break;
         case CtrlParser.CALL:
             CtrlCall call = getCtrlCall();
-            Call newCall = new Call(call.getUnit(), call.getArgs());
+            Call newCall;
+            if (call.getArgs() == null) {
+                newCall = new Call(call.getUnit());
+            } else {
+                newCall = new Call(call.getUnit(), call.getArgs());
+            }
             result = prot.call(newCall);
             break;
         case CtrlParser.ANY:

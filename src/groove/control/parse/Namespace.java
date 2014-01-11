@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Namespace for building a control automaton.
@@ -221,7 +222,7 @@ public class Namespace implements ParseInfo {
 
     /** Returns the set of (top-level) actions in this namespace. */
     public Collection<Action> getActions() {
-        Set<Action> result = new HashSet<Action>();
+        Set<Action> result = new TreeSet<Action>();
         result.addAll(this.ruleMap.values());
         for (Recipe recipe : this.recipeMap.values()) {
             result.add(recipe);
