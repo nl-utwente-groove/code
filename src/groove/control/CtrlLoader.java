@@ -31,6 +31,7 @@ import groove.util.Groove;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Scanner;
@@ -90,15 +91,14 @@ public class CtrlLoader {
      * parsed in previous calls of the {@link #parse} methods.
      */
     public CtrlAut buildDefaultAutomaton() throws FormatException {
-        return CtrlFactory.instance().buildDefault(getActions(), this.family);
-    }
-
-    /** 
-     * Returns the set of all top-level actions collected in the course of
-     * processing all control files since construction of this loader.
-     */
-    public Collection<Action> getActions() {
-        return this.namespace.getActions();
+        Collection<Action> actions = new ArrayList<Action>();
+        for (String name : this.namespace.getTopNames()) {
+            Callable unit = this.namespace.getCallable(name);
+            if (unit instanceof Action) {
+                actions.add((Action) unit);
+            }
+        }
+        return CtrlFactory.instance().buildDefault(actions, this.family);
     }
 
     /** 
@@ -106,7 +106,13 @@ public class CtrlLoader {
      * processing all control files since construction of this loader.
      */
     public Collection<Recipe> getRecipes() {
-        return this.namespace.getRecipes();
+        Collection<Recipe> result = new ArrayList<Recipe>();
+        for (Callable unit : this.namespace.getCallables()) {
+            if (unit instanceof Recipe) {
+                result.add((Recipe) unit);
+            }
+        }
+        return result;
     }
 
     /** 

@@ -37,8 +37,8 @@ public class Step extends AEdge<Frame,Switch> {
      * @param entered the control units that are entered by this step
      * @param exits the number of control units that are exited by this step
      */
-    public Step(Switch edge, Frame source, Frame target,
-            List<Switch> entered, int exits) {
+    public Step(Switch edge, Frame source, Frame target, List<Switch> entered,
+            int exits) {
         super(source, edge, target);
         assert target.getDepth() == source.getDepth() + entered.size() - exits;
         this.entered = entered;
@@ -127,7 +127,7 @@ public class Step extends AEdge<Frame,Switch> {
         List<CtrlPar.Var> sig = call.getUnit().getSignature();
         Map<CtrlVar,Integer> callerVars = call.source().getVarIxMap();
         Map<CtrlVar,Integer> finalVars =
-            ((Procedure) call.getUnit()).getBody().getSingleFinal().getVarIxMap();
+            ((Procedure) call.getUnit()).getTemplate().getSingleFinal().getVarIxMap();
         for (CtrlVar var : call.target().getVars()) {
             Integer ix = call.getOutVars().get(var);
             AssignSource rhs;

@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g 2014-01-12 16:19:08
+// $ANTLR 3.4 D:\\Eclipse\\groove\\src\\groove\\control\\parse\\Ctrl.g 2014-01-12 19:53:19
 
 package groove.control.parse;
 import groove.control.*;
@@ -300,7 +300,7 @@ public TreeAdaptor getTreeAdaptor() {
             if ( state.backtracking==0 ) { helper.checkEOF(eof_tree); }
 
             // AST REWRITE
-            // elements: package_decl, recipe, import_decl, stat, function
+            // elements: package_decl, stat, function, import_decl, recipe
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -489,7 +489,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( state.backtracking==0 ) { helper.setPackage((qual_name6!=null?((CtrlTree)qual_name6.tree):null)); }
 
                     // AST REWRITE
-                    // elements: PACKAGE, SEMI, qual_name
+                    // elements: qual_name, PACKAGE, SEMI
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1261,7 +1261,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: OUT, ID, var_type
+                    // elements: var_type, OUT, ID
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1318,7 +1318,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: var_type, ID
+                    // elements: ID, var_type
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1891,7 +1891,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                             // AST REWRITE
-                            // elements: WHILE, stat, stat, cond
+                            // elements: cond, WHILE, stat, stat
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -1962,7 +1962,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                             // AST REWRITE
-                            // elements: stat, UNTIL, cond, stat
+                            // elements: UNTIL, cond, stat, stat
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 
@@ -3489,7 +3489,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: RPAR, arg
+            // elements: arg, RPAR
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -3636,7 +3636,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: ID, OUT
+                    // elements: OUT, ID
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -3949,7 +3949,7 @@ public TreeAdaptor getTreeAdaptor() {
             root_0 = (CtrlTree)adaptor.nil();
             // 360:5: ->
             {
-                adaptor.addChild(root_0,  helper.lookup((qual_name102!=null?((CtrlTree)qual_name102.tree):null)) );
+                adaptor.addChild(root_0,  helper.qualify((qual_name102!=null?((CtrlTree)qual_name102.tree):null)) );
 
             }
 

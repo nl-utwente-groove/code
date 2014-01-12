@@ -85,11 +85,11 @@ public class CtrlFactory {
 
     /** Factory method for a function or transaction call. */
     private CtrlAut buildBodyCall(CtrlCall call, Namespace namespace) {
-        CtrlAut body = namespace.getBody(call.getName());
+        CtrlAut body = ((Procedure) call.getUnit()).getBody();
         // ignore the arguments; they have been reported as erroneous already.
         // assert call.getArgs() == null || call.getArgs().isEmpty() : "Function and recipe parameters not yet implemented";
         return body.clone(call.getKind() == Kind.RECIPE
-                ? namespace.getRecipe(call.getName()) : null);
+                ? (Recipe) namespace.getCallable(call.getName()) : null);
     }
 
     /**
@@ -147,18 +147,7 @@ public class CtrlFactory {
     private CtrlAut buildGroupCall(Set<String> names, Namespace namespace) {
         CtrlAut result = null;
         for (String name : names) {
-            CtrlCall call;
-            switch (namespace.getKind(name)) {
-            case RULE:
-                call = new CtrlCall(namespace.getRule(name), null);
-                break;
-            case RECIPE:
-                call = new CtrlCall(namespace.getRecipe(name), null);
-                break;
-            default:
-                call = null;
-                assert false;
-            }
+            CtrlCall call = new CtrlCall(namespace.getCallable(name), null);
             CtrlAut callAut = buildCall(call, namespace);
             if (result == null) {
                 result = callAut;

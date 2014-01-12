@@ -294,11 +294,11 @@ expr_atom
 	  call
 	; 
 
-/** @H Rule or function call. */
+/** @H Rule or procedure call. */
 call
 	: //@S name [ LPAR arg_list RPAR ]
-	  //@B Invokes a rule or function %s, with optional arguments %s.
-	  //@P the rule or function name
+	  //@B Invokes a rule or procedure %s, with optional arguments %s.
+	  //@P the rule or preocedure name
 	  //@P optional comma-separated list of arguments
 	  rule_name arg_list?
 	  -> ^(CALL[$rule_name.start] rule_name arg_list?)
@@ -357,7 +357,7 @@ literal
  */
 rule_name
   : qual_name
-    -> { helper.lookup($qual_name.tree) }
+    -> { helper.qualify($qual_name.tree) }
   ;
 
 /** @H Variable declaration. */

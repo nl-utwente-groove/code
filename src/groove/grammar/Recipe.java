@@ -16,10 +16,9 @@
  */
 package groove.grammar;
 
-import groove.control.CtrlAut;
-import groove.control.CtrlEdge;
 import groove.control.CtrlPar;
-import groove.control.CtrlUnit;
+import groove.control.Procedure;
+import groove.control.Switch;
 
 import java.util.List;
 import java.util.Set;
@@ -30,7 +29,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Recipe extends CtrlUnit implements Action {
+public class Recipe extends Procedure implements Action {
     /** Constructs a recipe from a control automaton, given a priority. */
     public Recipe(String name, int priority, List<CtrlPar.Var> sig,
             String controlName, int startLine) {
@@ -38,24 +37,9 @@ public class Recipe extends CtrlUnit implements Action {
     }
 
     @Override
-    public CtrlEdge.Kind getKind() {
-        return CtrlEdge.Kind.RECIPE;
+    public Switch.Kind getKind() {
+        return Switch.Kind.RECIPE;
     }
-
-    /** Sets the body of the recipe. */
-    public void setBody(CtrlAut body) {
-        assert this.body == null : String.format(
-            "%s body of %s already set to %s", getKind().getName(true),
-            getFullName(), body);
-        this.body = body;
-    }
-
-    /** Returns the body of this recipe. */
-    public CtrlAut getBody() {
-        return this.body;
-    }
-
-    private CtrlAut body;
 
     /** 
      * Returns the set of rules called by this recipe.

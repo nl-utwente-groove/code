@@ -17,10 +17,10 @@
 package groove.control.parse;
 
 import groove.control.Callable;
-import groove.control.Switch.Kind;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.Function;
+import groove.control.Switch.Kind;
 import groove.control.Template;
 import groove.grammar.Action;
 import groove.grammar.QualName;
@@ -99,11 +99,11 @@ public class CtrlNameSpace {
             for (Action action : body.getActions()) {
                 this.topNames.remove(action.getFullName());
             }
-            recipe.setBody(body);
+            recipe.setTemplate(body);
             break;
         case FUNCTION:
             Function function = (Function) unit;
-            function.setBody(body);
+            function.setTemplate(body);
         }
     }
 

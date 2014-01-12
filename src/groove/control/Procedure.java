@@ -90,20 +90,35 @@ public abstract class Procedure implements Callable, Fixable {
      * Should only be invoked once, before the procedure is fixed.
      * The call fixes the function.
      */
-    public void setBody(Template body) {
+    public void setTemplate(Template body) {
         assert body != null && body.getName().equals(getFullName());
         assert body == null && !isFixed();
-        this.body = body;
+        this.template = body;
         setFixed();
     }
 
     /** Returns the body of this procedure. */
-    public Template getBody() {
+    public Template getTemplate() {
         assert isFixed();
+        return this.template;
+    }
+
+    private Template template;
+
+    /** Sets the control automaton of the procedure. */
+    public void setBody(CtrlAut body) {
+        assert this.body == null : String.format(
+            "%s body of %s already set to %s", getKind().getName(true),
+            getFullName(), body);
+        this.body = body;
+    }
+
+    /** Returns the control automaton of this procedure, if set. */
+    public CtrlAut getBody() {
         return this.body;
     }
 
-    private Template body;
+    private CtrlAut body;
 
     /**
      * Returns a mapping from input variables occurring in the signature of this procedure
@@ -169,6 +184,6 @@ public abstract class Procedure implements Callable, Fixable {
             return false;
         }
         Procedure other = (Procedure) obj;
-        return !getFullName().equals(other.getFullName());
+        return getFullName().equals(other.getFullName());
     }
 }
