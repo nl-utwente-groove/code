@@ -86,7 +86,8 @@ public class CtrlFactory {
     /** Factory method for a function or transaction call. */
     private CtrlAut buildBodyCall(CtrlCall call, Namespace namespace) {
         CtrlAut body = namespace.getBody(call.getName());
-        assert call.getArgs() == null || call.getArgs().isEmpty() : "Function and recipe parameters not yet implemented";
+        // ignore the arguments; they have been reported as erroneous already.
+        // assert call.getArgs() == null || call.getArgs().isEmpty() : "Function and recipe parameters not yet implemented";
         return body.clone(call.getKind() == Kind.RECIPE
                 ? namespace.getRecipe(call.getName()) : null);
     }

@@ -19,6 +19,7 @@ package groove.grammar.model;
 import groove.util.Groove;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.antlr.runtime.RecognitionException;
 
@@ -55,6 +56,11 @@ public class FormatException extends Exception {
                 this.errors.add(error.toString());
             }
         }
+    }
+
+    /** Constructs a format exception from a format error. */
+    public FormatException(FormatError err) {
+        this(Collections.singleton(err));
     }
 
     /** Constructs a format exception from an (ANTLR) recognition exception. */

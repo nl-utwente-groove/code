@@ -20,7 +20,9 @@ import groove.control.CtrlType;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Keeps track of symbols used in the control language, including scopes.
@@ -50,18 +52,40 @@ public class SymbolTable {
     }
 
     /**
-     * Declares a symbol in the current scope
+     * Declares a symbol in the current scope.
      * @param symbolName the name of the symbol to be declared
      * @require this.scopes.peek().get(symbolName) == null
      * @return true if the declaration succeeded, false if not
      */
     public boolean declareSymbol(String symbolName, CtrlType symbolType) {
         if (!this.scopes.peek().isDeclared(symbolName)) {
-            this.scopes.peek().declare(symbolName, symbolType);
+            this.scopes.peek().declare(symbolName, symbolType, false);
             return true;
         } else {
             return false;
         }
+    }
+
+    /**
+     * Declares a symbol in the current scope, optionally 
+     * declaring it to be an output parameter.
+     * @param symbolName the name of the symbol to be declared
+     * @require this.scopes.peek().get(symbolName) == null
+     * @return true if the declaration succeeded, false if not
+     */
+    public boolean declareSymbol(String symbolName, CtrlType symbolType,
+            boolean out) {
+        if (!this.scopes.peek().isDeclared(symbolName)) {
+            this.scopes.peek().declare(symbolName, symbolType, out);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /** Returns the output parameters in the current scope. */
+    public Set<String> getOutPars() {
+        return this.scopes.peek().getOutPars();
     }
 
     /**
@@ -94,7 +118,7 @@ public class SymbolTable {
         return type;
     }
 
-    private ArrayDeque<Scope> scopes;
+    private final ArrayDeque<Scope> scopes;
 
     /**
      * Keeps track of variables declared and initialised in a given scope.
@@ -102,20 +126,24 @@ public class SymbolTable {
      * @author Olaf Keijsers
      * @version $Revision $
      */
-    private class Scope {
+    private static class Scope {
         /**
          * Creates a new Scope with empty declared and initialised sets
          */
         public Scope() {
             this.declared = new HashMap<String,CtrlType>();
+            this.outPars = new LinkedHashSet<String>();
         }
 
         /**
          * Declares a variable in this Scope
          * @param var the variable to declare
          */
-        public void declare(String var, CtrlType type) {
+        public void declare(String var, CtrlType type, boolean out) {
             this.declared.put(var, type);
+            if (out) {
+                this.outPars.add(var);
+            }
         }
 
         /**
@@ -136,6 +164,12 @@ public class SymbolTable {
             return this.declared.get(var);
         }
 
-        private Map<String,CtrlType> declared;
+        /** Returns the output parameters in the top scope. */
+        public Set<String> getOutPars() {
+            return this.outPars;
+        }
+
+        private final Map<String,CtrlType> declared;
+        private final Set<String> outPars;
     }
 }

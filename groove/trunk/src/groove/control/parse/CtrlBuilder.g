@@ -35,7 +35,7 @@ import java.util.HashSet;
 
 program returns [ CtrlAut aut ]
   : ^(PROGRAM package_decl import_decl* functions recipes block)
-    { // at least one child due to closing RCURLY
+    { // at least one child due to closing TRUE
       if ($block.tree.getChildCount() == 1) {
           $aut = null;
       } else {
@@ -57,8 +57,10 @@ functions
   ;
 
 function
-  : ^(FUNCTION ID PARS INT_LIT? block)
-    { namespace.addBody(helper.qualify($ID.text), $block.aut); }
+  : ^(FUNCTION ID par_list priority block)
+    { 
+      namespace.addBody(helper.qualify($ID.text), $block.aut);
+    }
   ;
   
 recipes
@@ -66,12 +68,24 @@ recipes
   ;
 
 recipe
-  : ^(RECIPE ID PARS INT_LIT? block)
+  : ^(RECIPE ID par_list priority block)
     { 
       String recipeName = helper.qualify($ID.text);
       helper.checkRecipeBody($RECIPE, recipeName, $block.aut);
       namespace.addBody(recipeName, $block.aut);
     }
+  ;
+
+priority
+  : ( INT_LIT )?
+  ;
+
+par_list
+  : ^(PARS par_decl* )
+  ;
+
+par_decl
+  : ^(PAR OUT? type ID)
   ;
 
 block returns [ CtrlAut aut ]
@@ -80,7 +94,6 @@ block returns [ CtrlAut aut ]
        ( stat
          { $aut = builder.buildSeq($aut, $stat.aut); }
        )*
-       RCURLY
      )
   ;
 
@@ -93,6 +106,10 @@ stat returns [ CtrlAut aut ]
     { $aut = builder.buildTrue(); }
   | ^(ALAP s=stat)
     { $aut = builder.buildAlap($s.aut); }
+  | ^(ATOM s=stat)
+    { helper.emitErrorMessage($s.tree, "Atomic blocks are not supported in this version");
+      $aut = $s.aut;
+    }
   | ^(WHILE c=stat s=stat)
     { $aut = builder.buildWhileDo($c.aut, $s.aut); }
   | ^(UNTIL c=stat s=stat)
