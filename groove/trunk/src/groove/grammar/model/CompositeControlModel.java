@@ -19,7 +19,6 @@ package groove.grammar.model;
 import static groove.grammar.model.ResourceKind.CONTROL;
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
-import groove.grammar.Action;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 
@@ -109,12 +108,6 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
         errors.throwException();
         result.setFixed();
         return result;
-    }
-
-    /** Returns the set of all top-level actions of the enabled control programs. */
-    public Collection<Action> getActions() {
-        synchronise();
-        return getLoader().getActions();
     }
 
     /** Returns the set of all top-level actions of the enabled control programs. */

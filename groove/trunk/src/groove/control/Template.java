@@ -158,7 +158,7 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
                     result.add((Action) unit);
                 } else {
                     Function function = (Function) unit;
-                    Template fresh = ((Function) unit).getBody();
+                    Template fresh = ((Function) unit).getTemplate();
                     if (seen.add(function) && fresh != null) {
                         todo.add(fresh);
                     }

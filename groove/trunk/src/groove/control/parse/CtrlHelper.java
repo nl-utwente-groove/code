@@ -21,13 +21,13 @@ import groove.algebra.syntax.Expression;
 import groove.control.Callable;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
-import groove.control.Switch;
-import groove.control.Switch.Kind;
 import groove.control.CtrlPar;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
+import groove.control.Switch;
+import groove.control.Switch.Kind;
 import groove.grammar.QualName;
 import groove.grammar.model.FormatException;
 
@@ -152,7 +152,7 @@ public class CtrlHelper {
      * if not, first tries to look it up in the import map, and if that fails,
      * prefixes it with the package name.
      */
-    CommonTree lookup(CommonTree ruleNameToken) {
+    CommonTree qualify(CommonTree ruleNameToken) {
         CommonTree result = ruleNameToken;
         String name = ruleNameToken.getText();
         if (QualName.getParent(name).isEmpty()) {
@@ -207,9 +207,10 @@ public class CtrlHelper {
         assert (unitTree.getType() == CtrlParser.FUNCTION || unitTree.getType() == CtrlParser.RECIPE)
             && unitTree.getChildCount() <= 4;
         String name = qualify(unitTree.getChild(0).getText());
-        if (this.namespace.hasName(name)) {
+        Callable unit = this.namespace.getCallable(name);
+        if (unit != null) {
             emitErrorMessage(unitTree, "Duplicate name: %s %s already defined",
-                this.namespace.getKind(name).getName(true), name);
+                unit.getKind().getName(true), name);
         } else {
             int priority =
                 unitTree.getChildCount() == 3 ? 0
@@ -259,14 +260,14 @@ public class CtrlHelper {
 
     /** Starts a function or recipe declaration. */
     void startBody(CtrlTree unitTree) {
-        assert this.currentName == null;
-        this.currentName = unitTree.getChild(0).getText();
+        assert this.procName == null;
+        this.procName = unitTree.getChild(0).getText();
         switch (unitTree.getType()) {
         case CtrlChecker.RECIPE:
-            this.currentKind = Kind.RECIPE;
+            this.procKind = Kind.RECIPE;
             break;
         case CtrlChecker.FUNCTION:
-            this.currentKind = Kind.FUNCTION;
+            this.procKind = Kind.FUNCTION;
             break;
         default:
             assert false;
@@ -277,7 +278,7 @@ public class CtrlHelper {
 
     /** Sets the current function name to {@code null}. */
     void endBody(CtrlTree bodyTree) {
-        assert this.currentName != null;
+        assert this.procName != null;
         for (String outPar : this.symbolTable.getOutPars()) {
             if (!this.initVars.contains(outPar)) {
                 emitErrorMessage(bodyTree,
@@ -285,8 +286,8 @@ public class CtrlHelper {
             }
         }
         closeScope();
-        this.currentName = null;
-        this.currentKind = null;
+        this.procName = null;
+        this.procKind = null;
     }
 
     /** Reorders the functions according to their dependencies. */
@@ -326,15 +327,15 @@ public class CtrlHelper {
         }
     }
 
-    /** Prefixes a given name with the current function name, if any. */
+    /** Prefixes a given name with the current procedure name, if any. */
     private String toLocalName(String name) {
-        return this.currentName == null ? name : this.currentName + "." + name;
+        return this.procName == null ? name : this.procName + "." + name;
     }
 
     /** The function or transaction name currently processed. */
-    private String currentName;
-    /** The kind ofr {@link #currentName}. */
-    private Switch.Kind currentKind;
+    private String procName;
+    /** The kind of {@link #procName}. */
+    private Switch.Kind procKind;
 
     /** Adds a formal parameter to the symbol table. */
     boolean declarePar(CtrlTree nameTree, CtrlTree typeTree, CtrlTree out) {
@@ -374,7 +375,7 @@ public class CtrlHelper {
     /** Tests whether an imported name actually exists. */
     void checkImport(CtrlTree importTree) {
         String name = importTree.getText();
-        if (!this.namespace.hasName(name)) {
+        if (!this.namespace.hasCallable(name)) {
             emitErrorMessage(importTree, "Imported name '%s' does not exist",
                 name);
         }
@@ -469,10 +470,6 @@ public class CtrlHelper {
         int childCount = callTree.getChildCount();
         assert callTree.getType() == CtrlChecker.CALL && childCount >= 1;
         String unitName = callTree.getChild(0).getText();
-        if (!this.namespace.hasName(unitName)) {
-            emitErrorMessage(callTree, "Unknown name or identifier %s",
-                unitName);
-        }
         CtrlCall result = null;
         testArgs: {
             // get the arguments
@@ -492,30 +489,12 @@ public class CtrlHelper {
                 }
             }
             if (checkCall(callTree, unitName, args)) {
-                // create the (rule or function) call
-                Kind kind = this.namespace.getKind(unitName);
-                this.namespace.useName(unitName);
-                Callable unit = null;
-                switch (kind) {
-                case RULE:
-                    unit = this.namespace.getRule(unitName);
-                    break;
-                case FUNCTION:
-                    unit = this.namespace.getFunction(unitName);
-                    break;
-                case RECIPE:
-                    unit = this.namespace.getRecipe(unitName);
-                    if (OLD_CONTROL && this.currentKind == Kind.RECIPE) {
-                        emitErrorMessage(callTree,
-                            "Nested recipe call to %s not allowed", unitName);
-                    }
-                    break;
-                default:
-                    assert false;
-                }
+                // create the call
+                this.namespace.addUsedName(unitName);
+                Callable unit = this.namespace.getCallable(unitName);
                 result = new CtrlCall(unit, args);
-                if (kind.isProcedure() && this.currentName != null) {
-                    addDependency(this.currentName, unitName);
+                if (unit.getKind().isProcedure() && this.procName != null) {
+                    addDependency(this.procName, unitName);
                 }
                 callTree.setCtrlCall(result);
             }
@@ -524,7 +503,7 @@ public class CtrlHelper {
     }
 
     void checkAny(CtrlTree anyTree) {
-        if (this.currentKind == Kind.RECIPE) {
+        if (this.procKind == Kind.RECIPE) {
             emitErrorMessage(anyTree, "'any' may not be used within a recipe");
         }
         Set<String> anyNames =
@@ -534,7 +513,7 @@ public class CtrlHelper {
     }
 
     void checkOther(CtrlTree otherTree) {
-        if (this.currentKind == Kind.RECIPE) {
+        if (this.procKind == Kind.RECIPE) {
             emitErrorMessage(otherTree,
                 "'other' may not be used within a recipe");
         }
@@ -563,10 +542,9 @@ public class CtrlHelper {
      * the declared signature.
      */
     private boolean checkCall(CtrlTree callTree, String name, List<CtrlPar> args) {
-        Kind kind = this.namespace.getKind(name);
-        List<CtrlPar.Var> sig =
-            kind == null ? null : this.namespace.getSig(name);
-        boolean result = sig != null;
+        Callable unit = this.namespace.getCallable(name);
+        List<CtrlPar.Var> sig = unit == null ? null : unit.getSignature();
+        boolean result = unit != null;
         if (!result) {
             emitErrorMessage(callTree, "Unknown action '%s'", name);
         } else if (args == null) {
@@ -577,8 +555,8 @@ public class CtrlHelper {
             if (!result) {
                 String message = "%s %s%s not applicable without arguments";
                 String ruleSig = toTypeString(sig);
-                emitErrorMessage(callTree, message, kind.getName(true), name,
-                    ruleSig);
+                emitErrorMessage(callTree, message,
+                    unit.getKind().getName(true), name, ruleSig);
             }
         } else {
             result = args.size() == sig.size();
@@ -589,8 +567,8 @@ public class CtrlHelper {
                 String message = "%s %s%s not applicable for arguments %s";
                 String callSig = toTypeString(args);
                 String ruleSig = toTypeString(sig);
-                emitErrorMessage(callTree, message, kind.getName(true), name,
-                    ruleSig, callSig);
+                emitErrorMessage(callTree, message,
+                    unit.getKind().getName(true), name, ruleSig, callSig);
             }
         }
         return result;

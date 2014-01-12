@@ -1,13 +1,17 @@
 package groove.control.parse;
 
 import groove.control.Call;
+import groove.control.Callable;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
+import groove.control.Procedure;
+import groove.control.Program;
+import groove.control.Template;
+import groove.control.TemplateBuilder;
 import groove.control.symbolic.Term;
-import groove.grammar.Action;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatException;
 import groove.util.antlr.ParseTree;
@@ -201,16 +205,16 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             break;
         case CtrlParser.ANY:
             result = prot.delta();
-            for (Action action : getInfo().getActions()) {
-                Call part = new Call(action);
+            for (String name : getInfo().getTopNames()) {
+                Call part = new Call(getInfo().getCallable(name));
                 result = result.or(prot.call(part));
             }
             break;
         case CtrlParser.OTHER:
             result = prot.delta();
-            for (Action action : getInfo().getActions()) {
-                if (!getInfo().getUsedNames().contains(action.getFullName())) {
-                    Call part = new Call(action);
+            for (String name : getInfo().getTopNames()) {
+                if (!getInfo().getUsedNames().contains(name)) {
+                    Call part = new Call(getInfo().getCallable(name));
                     result = result.or(prot.call(part));
                 }
             }
@@ -226,6 +230,21 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             throw new FormatException(
                 createError("Atomically wrapped argument does not have a clear final state"));
         }
+    }
+
+    /** Constructs a control program from a top-level control tree. */
+    public Program toProgram(String name) throws FormatException {
+        assert getType() == CtrlParser.PROGRAM;
+        CtrlTree block = getChild(2);
+        Template main = TemplateBuilder.instance().build(name, block.toTerm());
+        Program result = new Program(main);
+        for (Callable unit : getInfo().getCallables()) {
+            if (unit instanceof Procedure) {
+                result.addProc((Procedure) unit);
+            }
+        }
+        result.setFixed();
+        return result;
     }
 
     /**

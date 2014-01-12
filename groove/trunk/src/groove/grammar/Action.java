@@ -17,7 +17,7 @@
 package groove.grammar;
 
 import groove.control.Callable;
-import groove.control.CtrlEdge.Kind;
+import groove.control.Switch.Kind;
 
 import java.util.Comparator;
 
