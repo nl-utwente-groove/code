@@ -31,21 +31,21 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Step extends AEdge<Frame,CtrlEdge> {
+public class Step extends AEdge<Frame,Switch> {
     /**
      * Instantiates a given control edge, from a source to a target frame.
      * @param entered the control units that are entered by this step
      * @param exits the number of control units that are exited by this step
      */
-    public Step(CtrlEdge edge, Frame source, Frame target,
-            List<CtrlEdge> entered, int exits) {
+    public Step(Switch edge, Frame source, Frame target,
+            List<Switch> entered, int exits) {
         super(source, edge, target);
         assert target.getDepth() == source.getDepth() + entered.size() - exits;
         this.entered = entered;
         this.exits = exits;
     }
 
-    private final List<CtrlEdge> entered;
+    private final List<Switch> entered;
 
     private final int exits;
 
@@ -68,13 +68,13 @@ public class Step extends AEdge<Frame,CtrlEdge> {
         List<StepAction> result = new ArrayList<StepAction>();
         // add pop actions for every successive call on the
         // stack of entered calls
-        for (CtrlEdge call : this.entered) {
+        for (Switch call : this.entered) {
             result.add(StepAction.push(enter(call)));
         }
         result.add(StepAction.modify(rule(label())));
         // add pop actions for the calls that are finished
         for (int down = 0; down < this.exits; down++) {
-            CtrlEdge call;
+            Switch call;
             int depth = this.entered.size() - down - 1;
             if (depth >= 0) {
                 call = this.entered.get(depth);
@@ -91,12 +91,12 @@ public class Step extends AEdge<Frame,CtrlEdge> {
      * from the variables of the caller location and the arguments of the call.
      * @param call the template call
      */
-    private Map<CtrlVar,AssignSource> enter(CtrlEdge call) {
-        assert call.getKind().hasBody();
+    private Map<CtrlVar,AssignSource> enter(Switch call) {
+        assert call.getKind().isProcedure();
         Map<CtrlVar,AssignSource> result =
             new LinkedHashMap<CtrlVar,AssignSource>();
         Map<CtrlVar,Integer> sourceVars = call.source().getVarIxMap();
-        Map<CtrlVar,Integer> sig = ((CtrlUnit) call.getUnit()).getParIxMap();
+        Map<CtrlVar,Integer> sig = ((Procedure) call.getUnit()).getParIxMap();
         for (CtrlVar var : call.target().getVars()) {
             // all initial state variables are formal input parameters 
             Integer ix = sig.get(var);
@@ -120,14 +120,14 @@ public class Step extends AEdge<Frame,CtrlEdge> {
      * template and the source state of the call.
      * @param call the template call
      */
-    private Map<CtrlVar,AssignSource> exit(CtrlEdge call) {
-        assert call.getKind().hasBody();
+    private Map<CtrlVar,AssignSource> exit(Switch call) {
+        assert call.getKind().isProcedure();
         Map<CtrlVar,AssignSource> result =
             new LinkedHashMap<CtrlVar,AssignSource>();
         List<CtrlPar.Var> sig = call.getUnit().getSignature();
         Map<CtrlVar,Integer> callerVars = call.source().getVarIxMap();
         Map<CtrlVar,Integer> finalVars =
-            ((CtrlUnit) call.getUnit()).getTemplate().getSingleFinal().getVarIxMap();
+            ((Procedure) call.getUnit()).getBody().getSingleFinal().getVarIxMap();
         for (CtrlVar var : call.target().getVars()) {
             Integer ix = call.getOutVars().get(var);
             AssignSource rhs;
@@ -153,8 +153,8 @@ public class Step extends AEdge<Frame,CtrlEdge> {
      * a rule call, using the variables of the source location
      * combined with the output parameters of the call.
      */
-    private Map<CtrlVar,AssignSource> rule(CtrlEdge call) {
-        assert !call.getKind().hasBody();
+    private Map<CtrlVar,AssignSource> rule(Switch call) {
+        assert !call.getKind().isProcedure();
         Map<CtrlVar,AssignSource> result =
             new LinkedHashMap<CtrlVar,AssignSource>();
         Map<CtrlVar,Integer> sourceVars = call.source().getVarIxMap();

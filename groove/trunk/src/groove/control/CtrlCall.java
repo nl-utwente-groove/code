@@ -16,9 +16,9 @@
  */
 package groove.control;
 
-import static groove.control.CtrlEdge.Kind.OMEGA;
-import static groove.control.CtrlEdge.Kind.RULE;
-import groove.control.CtrlEdge.Kind;
+import static groove.control.Switch.Kind.OMEGA;
+import static groove.control.Switch.Kind.RULE;
+import groove.control.Switch.Kind;
 import groove.grammar.Action;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
@@ -227,12 +227,12 @@ public class CtrlCall {
     private Map<CtrlVar,Integer> outVars;
 
     /** Returns the kind of object being called. */
-    public groove.control.CtrlEdge.Kind getKind() {
+    public groove.control.Switch.Kind getKind() {
         return this.kind;
     }
 
     /** The kind of object being called. */
-    private final groove.control.CtrlEdge.Kind kind;
+    private final groove.control.Switch.Kind kind;
 
     /** 
      * Returns the arguments of the call.

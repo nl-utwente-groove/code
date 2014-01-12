@@ -17,7 +17,7 @@
 package groove.control.parse;
 
 import groove.control.Callable;
-import groove.control.CtrlEdge.Kind;
+import groove.control.Switch.Kind;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.Function;
@@ -88,7 +88,7 @@ public class CtrlNameSpace {
      * in the recipe are removed from the set of known rules.
      */
     public void addBody(String name, Template body) {
-        assert hasName(name) && getKind(name).hasBody() : String.format(
+        assert hasName(name) && getKind(name).isProcedure() : String.format(
             "Unknown or inappropriate name %s", name);
         Callable unit = getUnit(name);
         switch (unit.getKind()) {
@@ -99,11 +99,11 @@ public class CtrlNameSpace {
             for (Action action : body.getActions()) {
                 this.topNames.remove(action.getFullName());
             }
-            recipe.setTemplate(body);
+            recipe.setBody(body);
             break;
         case FUNCTION:
             Function function = (Function) unit;
-            function.setTemplate(body);
+            function.setBody(body);
         }
     }
 

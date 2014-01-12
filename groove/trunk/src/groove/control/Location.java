@@ -16,7 +16,7 @@
  */
 package groove.control;
 
-import groove.control.CtrlEdge.Kind;
+import groove.control.Switch.Kind;
 import groove.graph.ANode;
 import groove.util.Fixable;
 
@@ -41,8 +41,8 @@ public class Location extends ANode implements Fixable {
         super(nr);
         this.aut = aut;
         this.depth = depth;
-        this.outEdges = new LinkedHashSet<CtrlEdge>();
-        this.outCalls = new ArrayList<CtrlEdge>();
+        this.outEdges = new LinkedHashSet<Switch>();
+        this.outCalls = new ArrayList<Switch>();
     }
 
     /**
@@ -86,7 +86,7 @@ public class Location extends ANode implements Fixable {
      * Should only be invoked if the location is not yet fixed.
      * @param edge the edge to be added
      */
-    public void addOutEdge(CtrlEdge edge) {
+    public void addOutEdge(Switch edge) {
         assert edge.source() == this;
         assert !isFixed();
         assert !isFinal();
@@ -107,7 +107,7 @@ public class Location extends ANode implements Fixable {
      * Returns the list of all outgoing edges of this location.
      * Should only be invoked after the location is fixed.
      */
-    public Set<CtrlEdge> getOutEdges() {
+    public Set<Switch> getOutEdges() {
         assert isFixed();
         return this.outEdges;
     }
@@ -116,16 +116,16 @@ public class Location extends ANode implements Fixable {
      * Returns the list of outgoing call edges of this location.
      * Should only be invoked after the location is fixed.
      */
-    public List<CtrlEdge> getOutCalls() {
+    public List<Switch> getOutCalls() {
         assert isFixed();
         return this.outCalls;
     }
 
     /** The set of all outgoing edges. */
-    private final Set<CtrlEdge> outEdges;
+    private final Set<Switch> outEdges;
 
     /** The set of outgoing call edges. */
-    private final List<CtrlEdge> outCalls;
+    private final List<Switch> outCalls;
 
     /** 
      * Indicates if there is a next state after failure.

@@ -16,7 +16,7 @@
  */
 package groove.control;
 
-import groove.control.CtrlEdge.Kind;
+import groove.control.Switch.Kind;
 import groove.control.CtrlPar.Var;
 import groove.util.Fixable;
 
@@ -27,7 +27,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Function extends CtrlUnit implements Fixable {
+public class Function extends Procedure implements Fixable {
     /**
      * Constructs a function with a given name, priority and signature.
      */

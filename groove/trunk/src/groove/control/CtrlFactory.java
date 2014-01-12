@@ -17,7 +17,7 @@
 package groove.control;
 
 import groove.algebra.AlgebraFamily;
-import groove.control.CtrlEdge.Kind;
+import groove.control.Switch.Kind;
 import groove.control.parse.Namespace;
 import groove.grammar.Action;
 import groove.grammar.Recipe;

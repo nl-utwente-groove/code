@@ -26,17 +26,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Control automaton edge.
+ * Control template edge.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CtrlEdge extends ALabelEdge<Location> {
-    /** Constructs a choice edge.
-     * @param source source location of the edge
-     * @param target target location of the edge
-     * @param success flag indicating if this is a success or failure edge
+public class Switch extends ALabelEdge<Location> {
+    /** Constructs a choice switch.
+     * @param source source location of the switch
+     * @param target target location of the switch
+     * @param success flag indicating if this is a success or failure switch
      */
-    public CtrlEdge(Location source, Location target, boolean success) {
+    public Switch(Location source, Location target, boolean success) {
         super(source, target);
         this.kind = Kind.CHOICE;
         this.success = success;
@@ -46,12 +46,12 @@ public class CtrlEdge extends ALabelEdge<Location> {
     }
 
     /**
-     * Constructs a control edge for a call.
-     * @param source source location of the edge
-     * @param target target location of the edge
+     * Constructs a call switch.
+     * @param source source location of the switch
+     * @param target target location of the switch
      * @param call call to be used as label
      */
-    public CtrlEdge(Location source, Location target, Call call) {
+    public Switch(Location source, Location target, Call call) {
         super(source, target);
         Callable unit = call.getUnit();
         this.kind = unit.getKind();
@@ -62,24 +62,7 @@ public class CtrlEdge extends ALabelEdge<Location> {
     }
 
     /**
-     * Constructs a control edge for a call.
-     * @param source source location of the edge
-     * @param target target location of the edge
-     * @param unit callable unit to be invoked
-     * @param args list of arguments for the call; non-{@code null}
-     */
-    public CtrlEdge(Location source, Location target, Callable unit,
-            List<CtrlPar> args) {
-        super(source, target);
-        this.kind = unit.getKind();
-        this.name = unit.getFullName();
-        this.unit = unit;
-        this.args = args;
-        this.success = false;
-    }
-
-    /**
-     * Convenience method testing if this is a choice edge.
+     * Convenience method testing if this is a choice switch.
      * @see #getKind() 
      */
     public boolean isChoice() {
@@ -96,9 +79,9 @@ public class CtrlEdge extends ALabelEdge<Location> {
     private final Kind kind;
 
     /**
-     * Returns the name of the rule, function or recipe invoked in
-     * this edge.
-     * Should only be called if this is not a choice edge.
+     * Returns the name of the callable unit invoked in
+     * this switch.
+     * Should only be called if this is a call switch.
      */
     public String getName() {
         assert !isChoice();
@@ -108,8 +91,8 @@ public class CtrlEdge extends ALabelEdge<Location> {
     private final String name;
 
     /** 
-     * Returns the arguments of the call of this edge.
-     * Should only be invoked if this is not a choice edge.
+     * Returns the arguments of the call of this switch.
+     * Should only be invoked if this is a call switch.
      * @return the list of arguments
      */
     public final List<CtrlPar> getArgs() {
@@ -124,6 +107,7 @@ public class CtrlEdge extends ALabelEdge<Location> {
 
     /** 
      * Returns the invoked unit of this call.
+     * Should only be invoked if this is a call switch.
      * @see #getKind()
      */
     public final Callable getUnit() {
@@ -133,15 +117,15 @@ public class CtrlEdge extends ALabelEdge<Location> {
 
     /** 
      * The invoked unit of this call.
-     * Is {@code null} if this is not a call edge.
+     * Is {@code null} if this is not a call switch.
      */
     private final Callable unit;
 
     /**
-     * Indicates if this transition is a success or failure edge.
-     * Should only be invoked if this is a choice edge.
-     * @return {@code true} if this is a success edge, {@code false} if
-     * this is a failure edge.
+     * Indicates if this transition is a success switch.
+     * Should only be invoked if this is a choice switch.
+     * @return {@code true} if this is a success switch, {@code false} if
+     * this is a failure switch.
      */
     public boolean isSuccess() {
         assert isChoice();
@@ -194,9 +178,9 @@ public class CtrlEdge extends ALabelEdge<Location> {
     private Map<CtrlVar,Integer> outVars;
 
     /** 
-     * Returns a list of assignment sources for the variables in the target state.
+     * Returns a list of assignment sources for the variables in the target location.
      * For each variable, the source is either a variable of
-     * the source state, or to an argument in the call.
+     * the source location, or an output argument in the call.
      */
     public AssignSource[] getAssignment() {
         if (this.assignment == null) {
@@ -238,7 +222,7 @@ public class CtrlEdge extends ALabelEdge<Location> {
         return result;
     }
 
-    /** Binding of bound target variables to bound source variables and transition parameters. */
+    /** Binding of target variables to source variables and call parameters. */
     private AssignSource[] assignment;
 
     @Override
@@ -257,7 +241,7 @@ public class CtrlEdge extends ALabelEdge<Location> {
 
     @Override
     protected boolean isTypeEqual(Object obj) {
-        return obj instanceof CtrlEdge;
+        return obj instanceof Switch;
     }
 
     @Override
@@ -265,7 +249,7 @@ public class CtrlEdge extends ALabelEdge<Location> {
         if (this == obj) {
             return true;
         }
-        CtrlEdge other = (CtrlEdge) obj;
+        Switch other = (Switch) obj;
         if (getKind() != other.getKind()) {
             return false;
         }
@@ -301,7 +285,7 @@ public class CtrlEdge extends ALabelEdge<Location> {
     /** Constant value for the empty binding. */
     private static final AssignSource[] EMPTY_BINDING = new AssignSource[0];
 
-    /** Control transition kind. */
+    /** Control switch kind. */
     public static enum Kind {
         /** Rule invocation transition. */
         RULE("rule"),
@@ -319,10 +303,9 @@ public class CtrlEdge extends ALabelEdge<Location> {
         }
 
         /** 
-         * Indicates if this kind of name has an associated body
-         * (translated to a control automaton).
+         * Indicates if this kind of name denotes a procedure.
          */
-        public boolean hasBody() {
+        public boolean isProcedure() {
             return this == FUNCTION || this == RECIPE;
         }
 
@@ -337,7 +320,7 @@ public class CtrlEdge extends ALabelEdge<Location> {
         }
 
         /** 
-         * Returns the description of this name kind,
+         * Returns the description of this kind,
          * with the initial letter optionally capitalised.
          */
         public String getName(boolean upper) {

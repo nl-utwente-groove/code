@@ -30,7 +30,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class CtrlUnit implements Callable, Fixable {
+public abstract class Procedure implements Callable, Fixable {
     /**
      * Constructor for subclassing.
      * @param fullName name of the unit
@@ -41,7 +41,7 @@ public abstract class CtrlUnit implements Callable, Fixable {
      * @param startLine first line in the control program at
      * which the unit declaration starts
      */
-    protected CtrlUnit(String fullName, int priority, List<Var> signature,
+    protected Procedure(String fullName, int priority, List<Var> signature,
             String controlName, int startLine) {
         this.fullName = fullName;
         this.priority = priority;
@@ -72,41 +72,41 @@ public abstract class CtrlUnit implements Callable, Fixable {
 
     private final List<Var> signature;
 
-    /** Returns the full name of the control program in which this recipe is declared. */
+    /** Returns the full name of the control program in which this procedure is declared. */
     public String getControlName() {
         return this.controlName;
     }
 
     private final String controlName;
 
-    /** Returns the start line of this recipe's declaration within the control program. */
+    /** Returns the start line of this procedure's declaration within the control program. */
     public int getStartLine() {
         return this.startLine;
     }
 
     private final int startLine;
 
-    /** Sets the body of the control unit. 
-     * Should only be invoked once, before the function is fixed.
+    /** Sets the body of the procedure. 
+     * Should only be invoked once, before the procedure is fixed.
      * The call fixes the function.
      */
-    public void setTemplate(Template body) {
+    public void setBody(Template body) {
         assert body != null && body.getName().equals(getFullName());
         assert body == null && !isFixed();
-        this.template = body;
+        this.body = body;
         setFixed();
     }
 
-    /** Returns the body of this control unit. */
-    public Template getTemplate() {
+    /** Returns the body of this procedure. */
+    public Template getBody() {
         assert isFixed();
-        return this.template;
+        return this.body;
     }
 
-    private Template template;
+    private Template body;
 
     /**
-     * Returns a mapping from input variables occurring in the signature of this unit
+     * Returns a mapping from input variables occurring in the signature of this procedure
      * to their corresponding indices in the signature.
      */
     public Map<CtrlVar,Integer> getParIxMap() {
@@ -165,10 +165,10 @@ public abstract class CtrlUnit implements Callable, Fixable {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof CtrlUnit)) {
+        if (!(obj instanceof Procedure)) {
             return false;
         }
-        CtrlUnit other = (CtrlUnit) obj;
+        Procedure other = (Procedure) obj;
         return !getFullName().equals(other.getFullName());
     }
 }

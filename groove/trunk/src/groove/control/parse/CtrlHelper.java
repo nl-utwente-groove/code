@@ -21,8 +21,8 @@ import groove.algebra.syntax.Expression;
 import groove.control.Callable;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
-import groove.control.CtrlEdge;
-import groove.control.CtrlEdge.Kind;
+import groove.control.Switch;
+import groove.control.Switch.Kind;
 import groove.control.CtrlPar;
 import groove.control.CtrlState;
 import groove.control.CtrlTransition;
@@ -334,7 +334,7 @@ public class CtrlHelper {
     /** The function or transaction name currently processed. */
     private String currentName;
     /** The kind ofr {@link #currentName}. */
-    private CtrlEdge.Kind currentKind;
+    private Switch.Kind currentKind;
 
     /** Adds a formal parameter to the symbol table. */
     boolean declarePar(CtrlTree nameTree, CtrlTree typeTree, CtrlTree out) {
@@ -514,7 +514,7 @@ public class CtrlHelper {
                     assert false;
                 }
                 result = new CtrlCall(unit, args);
-                if (kind.hasBody() && this.currentName != null) {
+                if (kind.isProcedure() && this.currentName != null) {
                     addDependency(this.currentName, unitName);
                 }
                 callTree.setCtrlCall(result);
