@@ -51,17 +51,17 @@ public class TemplateBuilder {
             fresh.remove(next);
             for (OutEdge edge : next.getOutEdges()) {
                 Location target = addLocation(edge.getTarget());
-                addEdge(new CtrlEdge(source, target, edge.getCall()));
+                addEdge(new Switch(source, target, edge.getCall()));
             }
             Term succTerm = next.getSuccess();
             if (succTerm != null) {
                 Location target = addLocation(succTerm);
-                addEdge(new CtrlEdge(source, target, true));
+                addEdge(new Switch(source, target, true));
             }
             Term failTerm = next.getSuccess();
             if (failTerm != null) {
                 Location target = addLocation(failTerm);
-                addEdge(new CtrlEdge(source, target, false));
+                addEdge(new Switch(source, target, false));
             }
         }
         return result;
@@ -70,7 +70,7 @@ public class TemplateBuilder {
     /**
      * Adds an edge to the template under construction.
      */
-    private void addEdge(CtrlEdge edge) {
+    private void addEdge(Switch edge) {
         this.template.addEdge(edge);
     }
 

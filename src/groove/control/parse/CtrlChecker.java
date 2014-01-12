@@ -2,7 +2,7 @@
 
 package groove.control.parse;
 import groove.control.*;
-import groove.control.CtrlEdge.Kind;
+import groove.control.Switch.Kind;
 import groove.algebra.AlgebraFamily;
 import groove.grammar.model.FormatErrorSet;
 import groove.util.antlr.ParseTreeAdaptor;

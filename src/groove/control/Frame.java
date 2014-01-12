@@ -34,7 +34,7 @@ public class Frame extends ANode {
     /**
      * Nested frame instantiating a given control location.
      */
-    public Frame(Instance ctrl, Frame parent, CtrlEdge call,
+    public Frame(Instance ctrl, Frame parent, Switch call,
             Location location) {
         super(ctrl.getNextFrameNr());
         this.ctrl = ctrl;
@@ -89,11 +89,11 @@ public class Frame extends ANode {
     /** 
      * Returns the (possibly {@code null}) control call.
      */
-    public CtrlEdge getCall() {
+    public Switch getCall() {
         return this.call;
     }
 
-    private final CtrlEdge call;
+    private final Switch call;
 
     /** Returns the recursive depth of this frame. */
     public int getDepth() {

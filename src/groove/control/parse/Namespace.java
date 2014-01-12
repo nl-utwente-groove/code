@@ -18,7 +18,7 @@ package groove.control.parse;
 
 import groove.algebra.AlgebraFamily;
 import groove.control.CtrlAut;
-import groove.control.CtrlEdge.Kind;
+import groove.control.Switch.Kind;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.Function;
@@ -112,7 +112,7 @@ public class Namespace implements ParseInfo {
      * in the recipe are removed from the set of known rules.
      */
     public void addBody(String name, CtrlAut body) {
-        assert hasName(name) && getKind(name).hasBody() : String.format(
+        assert hasName(name) && getKind(name).isProcedure() : String.format(
             "Unknown or inappropriate name %s", name);
         // the rules in a transaction body are no longer available
         if (getKind(name) == Kind.RECIPE) {
@@ -146,11 +146,13 @@ public class Namespace implements ParseInfo {
     }
 
     /**
-     * Returns the automaton for a named function.
+     * Returns the automaton for a procedure.
      */
     public CtrlAut getBody(String name) {
-        assert hasName(name) && getKind(name).hasBody() : String.format(
+        assert hasName(name) : String.format(
             "Unknown or inappropriate name %s", name);
+        assert getKind(name).isProcedure() : String.format(
+            "%s does not denote a procedure", name);
         CtrlAut result = this.bodyMap.get(name);
         return result;
     }

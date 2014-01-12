@@ -32,13 +32,13 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Template extends NodeSetEdgeSetGraph<Location,CtrlEdge> {
+public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
     /**
      * Constructs a automaton for a given control unit and name.
      */
-    private Template(String name, CtrlUnit unit) {
+    private Template(String name, Procedure proc) {
         super(name);
-        this.parent = unit;
+        this.parent = proc;
         this.start = addLocation(0);
     }
 
@@ -52,8 +52,8 @@ public class Template extends NodeSetEdgeSetGraph<Location,CtrlEdge> {
     /**
      * Constructs a automaton for a given control unit.
      */
-    protected Template(CtrlUnit unit) {
-        this(unit.getFullName(), unit);
+    protected Template(Procedure proc) {
+        this(proc.getFullName(), proc);
     }
 
     @Override
@@ -62,8 +62,7 @@ public class Template extends NodeSetEdgeSetGraph<Location,CtrlEdge> {
     }
 
     /** 
-     * Indicates if this automaton is the body of a
-     * control unit.
+     * Indicates if this automaton is the body of a procedure.
      * @see #getParent()
      */
     public boolean hasParent() {
@@ -71,14 +70,14 @@ public class Template extends NodeSetEdgeSetGraph<Location,CtrlEdge> {
     }
 
     /**
-     * Returns the control unit of which this automaton
+     * Returns the procedure of which this automaton
      * constitutes the body, if any.
      */
-    public CtrlUnit getParent() {
+    public Procedure getParent() {
         return this.parent;
     }
 
-    private final CtrlUnit parent;
+    private final Procedure parent;
 
     /** Returns the initial location of this automaton. */
     public Location getStart() {
@@ -153,13 +152,13 @@ public class Template extends NodeSetEdgeSetGraph<Location,CtrlEdge> {
         todo.add(this);
         while (!todo.isEmpty()) {
             Template next = todo.poll();
-            for (CtrlEdge edge : next.edgeSet()) {
+            for (Switch edge : next.edgeSet()) {
                 Callable unit = edge.getUnit();
                 if (unit instanceof Action) {
                     result.add((Action) unit);
                 } else {
                     Function function = (Function) unit;
-                    Template fresh = ((Function) unit).getTemplate();
+                    Template fresh = ((Function) unit).getBody();
                     if (seen.add(function) && fresh != null) {
                         todo.add(fresh);
                     }
@@ -169,13 +168,13 @@ public class Template extends NodeSetEdgeSetGraph<Location,CtrlEdge> {
         return result;
     }
 
-    /** Returns a copy of this automaton with a given parent unit. */
-    public Template clone(CtrlUnit parent) {
+    /** Returns a copy of this automaton for a given enclosing procedure. */
+    public Template clone(Procedure parent) {
         return new Template(parent);
     }
 
     @Override
-    public boolean addEdge(CtrlEdge edge) {
+    public boolean addEdge(Switch edge) {
         boolean result = super.addEdge(edge);
         if (result) {
             edge.source().addOutEdge(edge);
@@ -194,7 +193,7 @@ public class Template extends NodeSetEdgeSetGraph<Location,CtrlEdge> {
     }
 
     @Override
-    public boolean removeEdge(CtrlEdge edge) {
+    public boolean removeEdge(Switch edge) {
         throw new UnsupportedOperationException();
     }
 
