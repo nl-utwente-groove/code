@@ -8,6 +8,7 @@ import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.control.symbolic.Term;
 import groove.grammar.Action;
+import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatException;
 import groove.util.antlr.ParseTree;
 
@@ -49,6 +50,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
 
     /** Stores a type in this tree node. */
     public void setCtrlType(CtrlType type) {
+        assert type != null;
         this.type = type;
     }
 
@@ -61,6 +63,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
 
     /** Stores a control variable in this tree node. */
     public void setCtrlVar(CtrlVar var) {
+        assert var != null;
         this.var = var;
     }
 
@@ -73,6 +76,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
 
     /** Stores a control parameter in this tree node. */
     public void setCtrlPar(CtrlPar par) {
+        assert par != null;
         this.par = par;
     }
 
@@ -85,6 +89,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
 
     /** Stores a rule call in this tree node. */
     public void setCtrlCall(CtrlCall call) {
+        assert call != null;
         this.call = call;
     }
 
@@ -108,13 +113,218 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         }
     }
 
-    @Override
-    protected void setNode(CtrlTree node) {
-        super.setNode(node);
-        this.par = node.par;
-        this.var = node.var;
-        this.call = node.call;
-        this.type = node.type;
+    /**
+     * Constructs a control term from this tree.
+     * This is only well-defined if the root of the tree is a statement.
+     * @throws FormatException if the term being built violates static semantic assumptions
+     */
+    public Term toTerm() throws FormatException {
+        return toTerm(Term.prototype());
+    }
+
+    /**
+     * Constructs a control term from this tree, using a given term prototype.
+     * @throws FormatException if the term being built violates static semantic assumptions
+     */
+    private Term toTerm(Term prot) throws FormatException {
+        Term result = null;
+        int arity = getType() == CtrlParser.CALL ? 0 : getChildCount();
+        Term[] args = new Term[arity];
+        for (int i = 0; i < arity; i++) {
+            args[i] = getChild(i).toTerm(prot);
+        }
+        switch (getType()) {
+        case CtrlParser.BLOCK:
+            result = prot.epsilon();
+            for (Term arg : args) {
+                result = result.seq(arg);
+            }
+            break;
+        case CtrlParser.ATOM:
+            checkSuitableForAtom(args[0]);
+            result = args[0].atom();
+            break;
+        case CtrlParser.SEMI:
+            result = args[0];
+            break;
+        case CtrlParser.TRUE:
+        case CtrlParser.VAR:
+            result = prot.epsilon();
+            break;
+        case CtrlParser.ALAP:
+            checkSuitableForAtom(args[0]);
+            result = args[0].alap();
+            break;
+        case CtrlParser.WHILE:
+            result = args[0].seq(args[1]).whileDo();
+            break;
+        case CtrlParser.UNTIL:
+            result = args[0].untilDo(args[1]);
+            break;
+        case CtrlParser.TRY:
+            args[0] = args[0];
+            checkSuitableForAtom(args[0]);
+            if (getChildCount() == 1) {
+                // without else clause
+                result = args[0].tryNoElse();
+            } else {
+                result = args[0].tryElse(args[1]);
+            }
+            break;
+        case CtrlParser.IF:
+            if (getChildCount() == 2) {
+                // without else clause
+                result = args[0].seq(args[1]).ifNoElse();
+            } else {
+                // with else clause
+                result = args[0].seq(args[1]).ifElse(args[2]);
+            }
+            break;
+        case CtrlParser.CHOICE:
+            result = prot.delta();
+            for (Term a : args) {
+                result = result.or(a);
+            }
+            break;
+        case CtrlParser.STAR:
+            result = args[0].star();
+            break;
+        case CtrlParser.CALL:
+            CtrlCall call = getCtrlCall();
+            Call newCall;
+            if (call.getArgs() == null) {
+                newCall = new Call(call.getUnit());
+            } else {
+                newCall = new Call(call.getUnit(), call.getArgs());
+            }
+            result = prot.call(newCall);
+            break;
+        case CtrlParser.ANY:
+            result = prot.delta();
+            for (Action action : getInfo().getActions()) {
+                Call part = new Call(action);
+                result = result.or(prot.call(part));
+            }
+            break;
+        case CtrlParser.OTHER:
+            result = prot.delta();
+            for (Action action : getInfo().getActions()) {
+                if (!getInfo().getUsedNames().contains(action.getFullName())) {
+                    Call part = new Call(action);
+                    result = result.or(prot.call(part));
+                }
+            }
+            break;
+        default:
+            assert false;
+        }
+        return result;
+    }
+
+    private void checkSuitableForAtom(Term term) throws FormatException {
+        if (!term.hasClearFinal()) {
+            throw new FormatException(
+                createError("Atomically wrapped argument does not have a clear final state"));
+        }
+    }
+
+    /**
+     * Tests if this term can evolve to a final state.
+     */
+    public boolean maybeFinal() {
+        boolean result = false;
+        CtrlTree arg0 = getChildCount() > 0 ? getChild(0) : null;
+        CtrlTree arg1 = getChildCount() > 1 ? getChild(1) : null;
+        switch (getType()) {
+        case CtrlParser.TRUE:
+        case CtrlParser.VAR:
+        case CtrlParser.ALAP:
+        case CtrlParser.STAR:
+            result = true;
+            break;
+        case CtrlParser.CALL:
+        case CtrlParser.ANY:
+        case CtrlParser.OTHER:
+            result = false;
+            break;
+        case CtrlParser.BLOCK:
+            result = true;
+            for (int i = 0; i < getChildCount(); i++) {
+                result &= getChild(i).maybeFinal();
+            }
+            break;
+        case CtrlParser.ATOM:
+        case CtrlParser.SEMI:
+        case CtrlParser.UNTIL:
+            result = arg0.maybeFinal();
+            break;
+        case CtrlParser.WHILE:
+            result = arg0.maybeFinal() && arg1.maybeFinal();
+            break;
+        case CtrlParser.TRY:
+        case CtrlParser.IF:
+            result = arg0.maybeFinal() || (arg1 != null && arg1.maybeFinal());
+            break;
+        case CtrlParser.CHOICE:
+            result = false;
+            for (int i = 0; i < getChildCount(); i++) {
+                result |= getChild(i).maybeFinal();
+            }
+            break;
+        default:
+            assert false;
+        }
+        return result;
+    }
+
+    /**
+     * Tests if this term always evolves to a clean final state.
+     * A final state is clean if it has no outgoing transitions.
+     */
+    public boolean hasCleanFinal() {
+        boolean result = false;
+        CtrlTree arg0 = getChildCount() > 0 ? getChild(0) : null;
+        CtrlTree arg1 = getChildCount() > 1 ? getChild(1) : null;
+        switch (getType()) {
+        case CtrlParser.TRUE:
+        case CtrlParser.VAR:
+        case CtrlParser.CALL:
+        case CtrlParser.ANY:
+        case CtrlParser.OTHER:
+            result = true;
+            break;
+        case CtrlParser.STAR:
+        case CtrlParser.ALAP:
+            result = false;
+            break;
+        case CtrlParser.BLOCK:
+            result = true;
+            for (int i = 0; i < getChildCount(); i++) {
+                result &= getChild(i).maybeFinal();
+            }
+            break;
+        case CtrlParser.ATOM:
+        case CtrlParser.SEMI:
+        case CtrlParser.UNTIL:
+            result = arg0.maybeFinal();
+            break;
+        case CtrlParser.WHILE:
+            result = arg0.maybeFinal() && arg1.maybeFinal();
+            break;
+        case CtrlParser.TRY:
+        case CtrlParser.IF:
+            result = arg0.maybeFinal() || (arg1 != null && arg1.maybeFinal());
+            break;
+        case CtrlParser.CHOICE:
+            result = false;
+            for (int i = 0; i < getChildCount(); i++) {
+                result |= getChild(i).maybeFinal();
+            }
+            break;
+        default:
+            assert false;
+        }
+        return result;
     }
 
     /**
@@ -153,116 +363,29 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         }
     }
 
-    /**
-     * Constructs a control term from this tree.
-     * This is only well-defined if the root of the tree is a statement.
-     */
-    public Term toTerm() {
-        return toTerm(Term.prototype());
-    }
-
-    /**
-     * Constructs a control term from this tree, using a given term prototype.
-     */
-    public Term toTerm(Term prot) {
-        Term result = null;
-        switch (getType()) {
-        case CtrlParser.BLOCK:
-            result = prot.epsilon();
-            for (int i = 0; i < getChildCount() - 1; i++) {
-                result = result.seq(arg(prot, i));
-            }
-            break;
-        case CtrlParser.SEMI:
-            result = arg0(prot);
-            break;
-        case CtrlParser.TRUE:
-        case CtrlParser.VAR:
-            result = prot.epsilon();
-            break;
-        case CtrlParser.ALAP:
-            result = arg0(prot).alap();
-            break;
-        case CtrlParser.WHILE:
-            result = arg0(prot).seq(arg1(prot)).whileDo();
-            break;
-        case CtrlParser.UNTIL:
-            result = arg0(prot).untilDo(arg1(prot));
-            break;
-        case CtrlParser.TRY:
-            result = arg0(prot).tryElse(arg1(prot));
-            break;
-        case CtrlParser.IF:
-            if (getChildCount() == 2) {
-                // without else clause
-                result = arg0(prot).seq(arg1(prot)).ifElse(prot.epsilon());
-            } else {
-                // with else clause
-                result = arg0(prot).seq(arg1(prot)).ifElse(arg2(prot));
-            }
-            break;
-        case CtrlParser.CHOICE:
-            result = arg0(prot);
-            for (int i = 1; i < getChildCount(); i++) {
-                result = result.or(arg(prot, i));
-            }
-            break;
-        case CtrlParser.STAR:
-            result = arg0(prot).star();
-            break;
-        case CtrlParser.CALL:
-            CtrlCall call = getCtrlCall();
-            Call newCall;
-            if (call.getArgs() == null) {
-                newCall = new Call(call.getUnit());
-            } else {
-                newCall = new Call(call.getUnit(), call.getArgs());
-            }
-            result = prot.call(newCall);
-            break;
-        case CtrlParser.ANY:
-            result = prot.delta();
-            for (Action action : getInfo().getActions()) {
-                Call part = new Call(action);
-                result = result.or(prot.call(part));
-            }
-            break;
-        case CtrlParser.OTHER:
-            result = prot.delta();
-            for (Action action : getInfo().getActions()) {
-                if (!getInfo().getUsedNames().contains(action.getFullName())) {
-                    Call part = new Call(action);
-                    result = result.or(prot.call(part));
-                }
-            }
-            break;
-        }
-        return result;
-    }
-
-    /** Convenience method to turn the {@code i}th child into a term. */
-    private Term arg(Term prot, int i) {
-        return getChild(i).toTerm(prot);
-    }
-
-    /** Convenience method to turn the first child into a term. */
-    private Term arg0(Term prot) {
-        return arg(prot, 0);
-    }
-
-    /** Convenience method to turn the second child into a term. */
-    private Term arg1(Term prot) {
-        return arg(prot, 1);
-    }
-
-    /** Convenience method to turn the third child into a term. */
-    private Term arg2(Term prot) {
-        return arg(prot, 2);
-    }
-
     /** Creates a builder for this tree */
     public CtrlBuilder createBuilder() {
         return createTreeParser(CtrlBuilder.class, getInfo());
+    }
+
+    @Override
+    protected void setNode(CtrlTree node) {
+        super.setNode(node);
+        this.par = node.par;
+        this.var = node.var;
+        this.call = node.call;
+        this.type = node.type;
+    }
+
+    /**
+     * Constructs an error object from a given message and arguments,
+     * by adding a line and column indicator in front.
+     */
+    public FormatError createError(String message, Object... args) {
+        FormatError inner = new FormatError(message, args);
+        int line = getLine();
+        int column = getCharPositionInLine();
+        return new FormatError("line %d:%d %s", line, column, inner);
     }
 
     /** Parses a given term, using an existing name space. */

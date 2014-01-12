@@ -40,7 +40,7 @@ import java.util.HashMap;
 
 program 
   : ^(PROGRAM package_decl import_decl* functions recipes block) 
-    { if ($block.tree.getChildCount() == 0) {
+    { if ($block.tree.getChildCount() == 1) {
           helper.checkAny($PROGRAM);
       }
     }
@@ -63,10 +63,11 @@ recipes
   ;
 
 recipe
-  : ^( RECIPE ID PARS INT_LIT?
-       { helper.startBody($ID, Kind.RECIPE); } 
+  : ^( RECIPE
+       { helper.startBody($RECIPE); } 
+       ID ^(PARS par_decl*) INT_LIT?
        block
-       { helper.endBody(); } 
+       { helper.endBody($block.tree); } 
      )
   ;
 
@@ -76,11 +77,17 @@ functions
   ;
 
 function
-  : ^( FUNCTION ID PARS INT_LIT?
-       { helper.startBody($ID, Kind.FUNCTION); } 
+  : ^( FUNCTION
+       { helper.startBody($FUNCTION); }
+       ID ^(PARS par_decl*) INT_LIT?
        block
-       { helper.endBody(); } 
+       { helper.endBody($block.tree); } 
      )
+  ;
+  
+par_decl
+  : ^(PAR OUT? type ID)
+    { helper.declarePar($ID, $type.tree, $OUT); }
   ;
   
 block returns [ CtrlAut aut ]
@@ -88,7 +95,6 @@ block returns [ CtrlAut aut ]
        { helper.openScope(); }
        stat*
        { helper.closeScope(); }
-       RCURLY
      )
   ;
 
@@ -97,6 +103,7 @@ stat
   | ^(SEMI var_decl)
   | ^(SEMI stat)
   | ^(ALAP stat)
+  | ^(ATOM stat)
   | ^( WHILE
        stat
        { helper.startBranch(); }

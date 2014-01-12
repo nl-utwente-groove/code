@@ -26,6 +26,7 @@ import groove.grammar.Action;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
+import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.util.antlr.ParseInfo;
 
@@ -268,6 +269,11 @@ public class Namespace implements ParseInfo {
     /** Adds an error to the errors contained in this name space. */
     public void addError(String message, Object... args) {
         this.errors.add(message, args);
+    }
+
+    /** Adds an error to the errors contained in this name space. */
+    public void addError(FormatError error) {
+        this.errors.add(error);
     }
 
     /** Returns the errors collected in this name space. */

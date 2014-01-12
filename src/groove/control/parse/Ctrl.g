@@ -78,14 +78,14 @@ program
     //@B Java-like packages and imports are provided for modularity. 
     package_decl
     import_decl*
-    (function|recipe|stat)* EOF
+    (function|recipe|stat)* eof=EOF
     { helper.checkEOF($EOF.tree); }
     -> ^( PROGRAM
           package_decl
           import_decl*
           ^(FUNCTIONS function*) 
           ^(RECIPES recipe*) 
-          ^(BLOCK stat* RCURLY)
+          ^(BLOCK stat* TRUE[$eof])
         )
   ;
 
@@ -119,12 +119,10 @@ qual_name
   * @B During exploration, the body is treated as an atomic transaction.
   */
 recipe
-  : //@S RECIPE name par_list block
-    //@B Declares an atomic rule %s, with parameters %s and body %s.
-    RECIPE^ ID par_list
-    // (PRIORITY! INT_LIT)? disable priorities for now
-    // as recipe refusal is not yet implemented correctly
-    block
+  : //@S RECIPE name par_list (PRIORITY int)? block
+    //@B Declares an atomic rule %s, with parameters %s and body %3$s.
+    //@B The optional priority %3$s assigns preference in a choice.
+    RECIPE^ ID par_list (PRIORITY! INT_LIT)? block
     { helper.declareCtrlUnit($RECIPE.tree); }
   ;
 
@@ -133,9 +131,10 @@ recipe
   * @B Functions currently can have no parameters. 
   */
 function
-  : //@S FUNCTION name par_list block
-    //@B Declares the function %s, with parameters %s and body %s.
-    FUNCTION^ ID par_list block
+  : //@S FUNCTION name par_list (PRIORITY int)? block
+    //@B Declares the function %s, with parameters %s and body %3$s.
+    //@B The optional priority %3$s assigns preference in a choice.
+    FUNCTION^ ID par_list (PRIORITY! INT_LIT)? block
     { helper.declareCtrlUnit($FUNCTION.tree); }
   ;
 
@@ -168,7 +167,7 @@ block
   : //@S LCURLY stat* RCURLY
     //@B Possibly empty sequence of statements, surrounded by curly braces.
     open=LCURLY stat* close=RCURLY
-    -> ^(BLOCK[$open] stat* RCURLY[$close]);
+    -> ^(BLOCK[$open] stat* TRUE[$close]);
 
 /** @H Atomic statement. */
 stat
@@ -178,13 +177,17 @@ stat
 	  //@B The body %s is repeated as long as it remains enabled.
 	  //@B Enabledness is determined by the first rule of the statement.
 	  ALAP^ stat
+	| //@S ATOM stat
+	  //@B The body %s is evaluated atomically, meaning that it is only
+	  //@B added to the transition system if it finishes successfully
+	  ATOM^ stat
 	| //@S WHILE LPAR cond RPAR stat
 	  //@B As long as the condition %1$s is successfully applied,
 	  //@B the body %2$s is repeated. 
 	  //@B <p>This is equivalent to "ALAP LCURLY %1$s SEMI %2$s RCURLY".
 	  WHILE^ LPAR! cond RPAR! stat
 	| //@S UNTIL LPAR cond RPAR stat
-    //@B As long as the condition %2$s is disabled, the body %2$s is repeated. 
+    //@B As long as the condition %2$s fails, the body %2$s is repeated. 
     //@B Note that if this terminates, the last action is an application of %1$s.
     UNTIL^ LPAR! cond RPAR! stat
 	| DO stat 
@@ -263,7 +266,7 @@ expr2
     //@B Note that this is <i>not</i> equivalent to "%1$s SHARP" or
     //@B "ALAP %1$s SEMI".
     e=expr_atom
-    ( plus=PLUS -> ^(BLOCK $e ^(STAR $e) RCURLY[$plus])
+    ( plus=PLUS -> ^(BLOCK $e ^(STAR[$plus] $e))
     | ast=ASTERISK -> ^(STAR[$ast] $e)
     | -> $e
     )
@@ -285,7 +288,7 @@ expr_atom
 	| //@S expr: LPAR expr RPAR
 	  //@B Bracketed expression.
 	  open=LPAR expr close=RPAR
-	  -> ^(BLOCK[$open] expr RCURLY[$close])
+	  -> ^(BLOCK[$open] expr TRUE[$close])
 	| //@S expr: call
 	  //@B Invokes a function or rule.
 	  call
@@ -387,6 +390,7 @@ var_type
 
 ALAP     : 'alap';
 ANY		   : 'any';
+ATOM     : 'atomic';
 BOOL     : 'bool';
 CHOICE   : 'choice';
 DO       : 'do';
