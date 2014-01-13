@@ -78,7 +78,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
             result.append(BEGIN_CHAR);
         }
         if (getCtrlTransition().hasRecipe()) {
-            result.append(getCtrlTransition().getRecipe());
+            result.append(getCtrlTransition().getRecipe().getFullName());
             result.append('/');
         }
         result.append(((AbstractRuleEvent<?,?>) getEvent()).getLabelText(

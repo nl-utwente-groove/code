@@ -21,7 +21,9 @@ import groove.util.DefaultFixable;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Control program, consisting of a main template
@@ -30,26 +32,54 @@ import java.util.TreeMap;
  * @version $Revision $
  */
 public class Program extends DefaultFixable {
-    /** Constructs a program with a main template. */
-    public Program(Template main) {
-        this.main = main;
-    }
-
-    /** Returns the main template of this program.
-     */
-    public Template getMain() {
-        return this.main;
+    /** Constructs a named, initially empty program. */
+    public Program(String name) {
+        this.names = new TreeSet<String>();
+        this.names.add(name);
     }
 
     /**
-     * Returns the name of this program, which is the same as
-     * the name of its main template.
+     * Returns the name of this program, which is the concatenation
+     * of the names of the constituent fragments, alphabetically ordered.
      */
     public String getName() {
-        return this.main.getName();
+        StringBuilder result = new StringBuilder();
+        for (String name : this.names) {
+            if (result.length() > 0) {
+                result.append('+');
+            }
+            result.append(name);
+        }
+        return result.toString();
     }
 
-    private final Template main;
+    private final Set<String> names;
+
+    /** Sets the main template in this program. */
+    public void setMain(Template main) {
+        assert main != null && this.main == null;
+        assert !isFixed();
+        this.main = main;
+    }
+
+    /**
+     * Indicates if the program has a main block.
+     * Should only be invoked after the template is fixed.
+     */
+    public boolean hasMain() {
+        return getMain() != null;
+    }
+
+    /** Returns the main block of this program, if any.
+     * Should only be invoked after the program is fixed.
+     * May be {@code null} if this program has no main body.
+     */
+    public Template getMain() {
+        assert isFixed();
+        return this.main;
+    }
+
+    private Template main;
 
     /** Adds a procedure to this program. */
     public void addProc(Procedure proc) {
@@ -75,25 +105,49 @@ public class Program extends DefaultFixable {
         assert this.main != null;
         boolean result = super.setFixed();
         if (result) {
-            this.main.setFixed();
+            if (this.main != null) {
+                this.main.setFixed();
+            }
             for (Procedure proc : this.procs.values()) {
                 proc.setFixed();
             }
-            checkCalls();
         }
         return result;
     }
 
-    /** Checks that all calls in the main template and procedures are resolved within the program. */
-    private void checkCalls() {
-        checkCalls(this.main);
-        for (Procedure proc : this.procs.values()) {
+    /** Checks that all calls in the program are resolved. */
+    public void checkCalls() {
+        if (hasMain()) {
+            checkCalls(getMain());
+        }
+        for (Procedure proc : getProcs().values()) {
             checkCalls(proc.getTemplate());
         }
     }
 
-    /** Checks that all calls in the a given template are resolved within the program. */
-    private void checkCalls(Template template) {
+    /** 
+     * Adds all procedures of another program to this one.
+     * At most one of the programs may have a main template,
+     * and the procedure names may not overlap.
+     * This program may not be fixed.
+     */
+    public void add(Program other) {
+        assert !isFixed();
+        this.names.addAll(other.names);
+        if (hasMain() && other.hasMain()) {
+            throw new IllegalArgumentException(
+                "Both programs have a main template");
+        }
+        if (!hasMain()) {
+            this.main = other.main;
+        }
+        for (Procedure proc : other.procs.values()) {
+            addProc(proc);
+        }
+    }
+
+    /** Checks that all calls in a given template are resolved within the program. */
+    public void checkCalls(Template template) {
         for (Switch edge : template.edgeSet()) {
             if (edge.isChoice()) {
                 continue;

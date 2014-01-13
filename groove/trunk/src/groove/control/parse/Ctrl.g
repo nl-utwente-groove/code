@@ -85,7 +85,7 @@ program
           import_decl*
           ^(FUNCTIONS function*) 
           ^(RECIPES recipe*) 
-          ^(BLOCK stat* TRUE[$eof])
+          ^(BLOCK stat*)
         )
   ;
 

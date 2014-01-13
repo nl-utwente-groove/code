@@ -341,7 +341,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (jVertex.isTransient()) {
             StringBuilder action = new StringBuilder();
             action.append('<');
-            action.append(state.getRecipe());
+            action.append(state.getRecipe().getFullName());
             action.append('>');
             result.add(Line.atom(action.toString()), Direct.NONE);
         }

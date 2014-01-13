@@ -29,30 +29,30 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Control state automaton.
+ * Location in a control template.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Location extends ANode implements Fixable {
+public class Location extends ANode implements Fixable, Comparable<Location> {
     /**
      * Constructs a numbered location for a given automaton.
      */
-    public Location(Template aut, int nr, int depth) {
+    public Location(Template template, int nr, int depth) {
         super(nr);
-        this.aut = aut;
+        this.template = template;
         this.depth = depth;
         this.outEdges = new LinkedHashSet<Switch>();
         this.outCalls = new ArrayList<Switch>();
     }
 
     /**
-     * Returns the control automaton of which this is a state.
+     * Returns the control template of which this is a location.
      */
-    public Template getAut() {
-        return this.aut;
+    public Template getTemplate() {
+        return this.template;
     }
 
-    private final Template aut;
+    private final Template template;
 
     /** Returns the atomicity depth of this location. */
     public int getDepth() {
@@ -67,7 +67,6 @@ public class Location extends ANode implements Fixable {
      */
     public void setFinal() {
         assert !isFixed();
-        assert !this.isFinal;
         assert this.successNext == null && this.failureNext == null;
         this.isFinal = true;
     }
@@ -89,13 +88,14 @@ public class Location extends ANode implements Fixable {
     public void addOutEdge(Switch edge) {
         assert edge.source() == this;
         assert !isFixed();
-        assert !isFinal();
         this.outEdges.add(edge);
         if (edge.getKind() == Kind.CHOICE) {
             assert !this.isFinal;
             if (edge.isSuccess()) {
+                assert this.successNext == null;
                 this.successNext = edge.target();
             } else {
+                assert this.failureNext == null;
                 this.failureNext = edge.target();
             }
         } else {
@@ -171,36 +171,38 @@ public class Location extends ANode implements Fixable {
     private Location successNext;
 
     /**
-     * Returns the list of control variables in this state,
-     * ordered according to the natural ordering of the control variables.
+     * Returns the list of control variables in this location,
+     * ordered alphabetically according to their names.
      */
     public List<CtrlVar> getVars() {
-        assert isFixed();
+        if (this.vars == null) {
+            getTemplate().initVars();
+        }
         return this.vars;
     }
 
     /**
-     * Adds control variables to this state.
+     * Callback method from {@link Template#initVars()} to add variables to this location.
      */
-    public void addars(Collection<CtrlVar> variables) {
-        assert !isFixed();
+    void addVars(Collection<CtrlVar> variables) {
+        assert isFixed();
         CtrlVarSet newVars = new CtrlVarSet(variables);
-        newVars.addAll(this.vars);
-        this.vars.clear();
-        this.vars.addAll(newVars);
+        if (this.vars != null) {
+            newVars.addAll(this.vars);
+        }
+        this.vars = new ArrayList<CtrlVar>(newVars);
     }
 
     /**
-     * Sets the control variables of this state to the elements of a given collection.
+     * Callback method from {@link Template#initVars()} to set variables for this location.
      */
-    public void setVars(Collection<CtrlVar> variables) {
-        assert !isFixed();
-        this.vars.clear();
-        this.vars.addAll(new CtrlVarSet(variables));
+    void setVars(Collection<CtrlVar> variables) {
+        assert isFixed();
+        this.vars = new ArrayList<CtrlVar>(variables);
     }
 
     /** The collection of variables of this control location. */
-    private final List<CtrlVar> vars = new ArrayList<CtrlVar>();
+    private List<CtrlVar> vars;
 
     /** Returns a mapping from variables to their indices for this location. */
     public Map<CtrlVar,Integer> getVarIxMap() {
@@ -244,4 +246,8 @@ public class Location extends ANode implements Fixable {
     }
 
     private boolean fixed;
+
+    public int compareTo(Location o) {
+        return getNumber() - o.getNumber();
+    }
 }
