@@ -160,7 +160,6 @@ rule
 
 var_decl
 	: ^( VAR type
-	     //{ helper.checkType($type.tree); }
 	     ( ID 
          { helper.declareVar($ID, $type.tree); }
 	     )+
@@ -168,11 +167,13 @@ var_decl
 	;
 
 type
-  : NODE
-  | BOOL
-  | STRING
-  | INT
-  | REAL
+  // no idea why, but for some reason without the rewriting
+  // the result tree is empty
+  : NODE -> NODE
+  | BOOL -> BOOL
+  | STRING -> STRING
+  | INT -> INT
+  | REAL -> REAL
   ;
   
 arg

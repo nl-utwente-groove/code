@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g 2014-01-12 20:42:10
+// $ANTLR 3.4 D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g 2014-01-13 14:35:11
 
 package groove.control.parse;
 import groove.control.*;
@@ -2215,7 +2215,7 @@ public TreeAdaptor getTreeAdaptor() {
             if ( _first_1==null ) _first_1 = type71.tree;
 
 
-            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:164:7: ( ID )+
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:163:7: ( ID )+
             int cnt16=0;
             loop16:
             do {
@@ -2229,10 +2229,10 @@ public TreeAdaptor getTreeAdaptor() {
 
                 switch (alt16) {
             	case 1 :
-            	    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:164:9: ID
+            	    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:163:9: ID
             	    {
             	    _last = (CtrlTree)input.LT(1);
-            	    ID72=(CtrlTree)match(input,ID,FOLLOW_ID_in_var_decl966); 
+            	    ID72=(CtrlTree)match(input,ID,FOLLOW_ID_in_var_decl959); 
             	     
             	    if ( _first_1==null ) _first_1 = ID72;
 
@@ -2288,7 +2288,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "type"
-    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:170:1: type : ( NODE | BOOL | STRING | INT | REAL );
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:169:1: type : ( NODE -> NODE | BOOL -> BOOL | STRING -> STRING | INT -> INT | REAL -> REAL );
     public final CtrlChecker.type_return type() throws RecognitionException {
         CtrlChecker.type_return retval = new CtrlChecker.type_return();
         retval.start = input.LT(1);
@@ -2299,33 +2299,243 @@ public TreeAdaptor getTreeAdaptor() {
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree set73=null;
+        CtrlTree NODE73=null;
+        CtrlTree BOOL74=null;
+        CtrlTree STRING75=null;
+        CtrlTree INT76=null;
+        CtrlTree REAL77=null;
 
-        CtrlTree set73_tree=null;
+        CtrlTree NODE73_tree=null;
+        CtrlTree BOOL74_tree=null;
+        CtrlTree STRING75_tree=null;
+        CtrlTree INT76_tree=null;
+        CtrlTree REAL77_tree=null;
+        RewriteRuleNodeStream stream_REAL=new RewriteRuleNodeStream(adaptor,"token REAL");
+        RewriteRuleNodeStream stream_INT=new RewriteRuleNodeStream(adaptor,"token INT");
+        RewriteRuleNodeStream stream_NODE=new RewriteRuleNodeStream(adaptor,"token NODE");
+        RewriteRuleNodeStream stream_STRING=new RewriteRuleNodeStream(adaptor,"token STRING");
+        RewriteRuleNodeStream stream_BOOL=new RewriteRuleNodeStream(adaptor,"token BOOL");
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:171:3: ( NODE | BOOL | STRING | INT | REAL )
-            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:
-            {
-            _last = (CtrlTree)input.LT(1);
-            set73=(CtrlTree)input.LT(1);
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:172:3: ( NODE -> NODE | BOOL -> BOOL | STRING -> STRING | INT -> INT | REAL -> REAL )
+            int alt17=5;
+            switch ( input.LA(1) ) {
+            case NODE:
+                {
+                alt17=1;
+                }
+                break;
+            case BOOL:
+                {
+                alt17=2;
+                }
+                break;
+            case STRING:
+                {
+                alt17=3;
+                }
+                break;
+            case INT:
+                {
+                alt17=4;
+                }
+                break;
+            case REAL:
+                {
+                alt17=5;
+                }
+                break;
+            default:
+                NoViableAltException nvae =
+                    new NoViableAltException("", 17, 0, input);
 
-            if ( input.LA(1)==BOOL||input.LA(1)==INT||input.LA(1)==NODE||input.LA(1)==REAL||input.LA(1)==STRING ) {
-                input.consume();
-                state.errorRecovery=false;
+                throw nvae;
+
             }
-            else {
-                MismatchedSetException mse = new MismatchedSetException(null,input);
-                throw mse;
+
+            switch (alt17) {
+                case 1 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:172:5: NODE
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    NODE73=(CtrlTree)match(input,NODE,FOLLOW_NODE_in_type1004);  
+                    stream_NODE.add(NODE73);
+
+
+                    // AST REWRITE
+                    // elements: NODE
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CtrlTree)adaptor.nil();
+                    // 172:10: -> NODE
+                    {
+                        adaptor.addChild(root_0, 
+                        stream_NODE.nextNode()
+                        );
+
+                    }
+
+
+                    retval.tree = (CtrlTree)adaptor.rulePostProcessing(root_0);
+                    input.replaceChildren(adaptor.getParent(retval.start),
+                                          adaptor.getChildIndex(retval.start),
+                                          adaptor.getChildIndex(_last),
+                                          retval.tree);
+
+                    }
+                    break;
+                case 2 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:173:5: BOOL
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    BOOL74=(CtrlTree)match(input,BOOL,FOLLOW_BOOL_in_type1014);  
+                    stream_BOOL.add(BOOL74);
+
+
+                    // AST REWRITE
+                    // elements: BOOL
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CtrlTree)adaptor.nil();
+                    // 173:10: -> BOOL
+                    {
+                        adaptor.addChild(root_0, 
+                        stream_BOOL.nextNode()
+                        );
+
+                    }
+
+
+                    retval.tree = (CtrlTree)adaptor.rulePostProcessing(root_0);
+                    input.replaceChildren(adaptor.getParent(retval.start),
+                                          adaptor.getChildIndex(retval.start),
+                                          adaptor.getChildIndex(_last),
+                                          retval.tree);
+
+                    }
+                    break;
+                case 3 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:174:5: STRING
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    STRING75=(CtrlTree)match(input,STRING,FOLLOW_STRING_in_type1024);  
+                    stream_STRING.add(STRING75);
+
+
+                    // AST REWRITE
+                    // elements: STRING
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CtrlTree)adaptor.nil();
+                    // 174:12: -> STRING
+                    {
+                        adaptor.addChild(root_0, 
+                        stream_STRING.nextNode()
+                        );
+
+                    }
+
+
+                    retval.tree = (CtrlTree)adaptor.rulePostProcessing(root_0);
+                    input.replaceChildren(adaptor.getParent(retval.start),
+                                          adaptor.getChildIndex(retval.start),
+                                          adaptor.getChildIndex(_last),
+                                          retval.tree);
+
+                    }
+                    break;
+                case 4 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:175:5: INT
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    INT76=(CtrlTree)match(input,INT,FOLLOW_INT_in_type1034);  
+                    stream_INT.add(INT76);
+
+
+                    // AST REWRITE
+                    // elements: INT
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CtrlTree)adaptor.nil();
+                    // 175:9: -> INT
+                    {
+                        adaptor.addChild(root_0, 
+                        stream_INT.nextNode()
+                        );
+
+                    }
+
+
+                    retval.tree = (CtrlTree)adaptor.rulePostProcessing(root_0);
+                    input.replaceChildren(adaptor.getParent(retval.start),
+                                          adaptor.getChildIndex(retval.start),
+                                          adaptor.getChildIndex(_last),
+                                          retval.tree);
+
+                    }
+                    break;
+                case 5 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:176:5: REAL
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    REAL77=(CtrlTree)match(input,REAL,FOLLOW_REAL_in_type1044);  
+                    stream_REAL.add(REAL77);
+
+
+                    // AST REWRITE
+                    // elements: REAL
+                    // token labels: 
+                    // rule labels: retval
+                    // token list labels: 
+                    // rule list labels: 
+                    // wildcard labels: 
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+
+                    root_0 = (CtrlTree)adaptor.nil();
+                    // 176:10: -> REAL
+                    {
+                        adaptor.addChild(root_0, 
+                        stream_REAL.nextNode()
+                        );
+
+                    }
+
+
+                    retval.tree = (CtrlTree)adaptor.rulePostProcessing(root_0);
+                    input.replaceChildren(adaptor.getParent(retval.start),
+                                          adaptor.getChildIndex(retval.start),
+                                          adaptor.getChildIndex(_last),
+                                          retval.tree);
+
+                    }
+                    break;
+
             }
-
-            retval.tree = (CtrlTree)_first_0;
-            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
-                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
-             
-
-            }
-
         }
         catch (RecognitionException re) {
             reportError(re);
@@ -2347,7 +2557,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "arg"
-    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:178:1: arg : ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) ;
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:179:1: arg : ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) ;
     public final CtrlChecker.arg_return arg() throws RecognitionException {
         CtrlChecker.arg_return retval = new CtrlChecker.arg_return();
         retval.start = input.LT(1);
@@ -2358,44 +2568,44 @@ public TreeAdaptor getTreeAdaptor() {
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree ARG74=null;
-        CtrlTree OUT75=null;
-        CtrlTree ID76=null;
-        CtrlTree DONT_CARE77=null;
-        CtrlChecker.literal_return literal78 =null;
+        CtrlTree ARG78=null;
+        CtrlTree OUT79=null;
+        CtrlTree ID80=null;
+        CtrlTree DONT_CARE81=null;
+        CtrlChecker.literal_return literal82 =null;
 
 
-        CtrlTree ARG74_tree=null;
-        CtrlTree OUT75_tree=null;
-        CtrlTree ID76_tree=null;
-        CtrlTree DONT_CARE77_tree=null;
+        CtrlTree ARG78_tree=null;
+        CtrlTree OUT79_tree=null;
+        CtrlTree ID80_tree=null;
+        CtrlTree DONT_CARE81_tree=null;
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:179:2: ( ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) )
-            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:179:4: ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:180:2: ( ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:180:4: ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) )
             {
             _last = (CtrlTree)input.LT(1);
             {
             CtrlTree _save_last_1 = _last;
             CtrlTree _first_1 = null;
             _last = (CtrlTree)input.LT(1);
-            ARG74=(CtrlTree)match(input,ARG,FOLLOW_ARG_in_arg1045); 
+            ARG78=(CtrlTree)match(input,ARG,FOLLOW_ARG_in_arg1064); 
 
 
-            if ( _first_0==null ) _first_0 = ARG74;
+            if ( _first_0==null ) _first_0 = ARG78;
             match(input, Token.DOWN, null); 
-            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:180:7: ( ( OUT )? ID | DONT_CARE | literal )
-            int alt18=3;
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:181:7: ( ( OUT )? ID | DONT_CARE | literal )
+            int alt19=3;
             switch ( input.LA(1) ) {
             case ID:
             case OUT:
                 {
-                alt18=1;
+                alt19=1;
                 }
                 break;
             case DONT_CARE:
                 {
-                alt18=2;
+                alt19=2;
                 }
                 break;
             case FALSE:
@@ -2404,36 +2614,36 @@ public TreeAdaptor getTreeAdaptor() {
             case STRING_LIT:
             case TRUE:
                 {
-                alt18=3;
+                alt19=3;
                 }
                 break;
             default:
                 NoViableAltException nvae =
-                    new NoViableAltException("", 18, 0, input);
+                    new NoViableAltException("", 19, 0, input);
 
                 throw nvae;
 
             }
 
-            switch (alt18) {
+            switch (alt19) {
                 case 1 :
-                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:180:9: ( OUT )? ID
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:181:9: ( OUT )? ID
                     {
-                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:180:9: ( OUT )?
-                    int alt17=2;
-                    int LA17_0 = input.LA(1);
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:181:9: ( OUT )?
+                    int alt18=2;
+                    int LA18_0 = input.LA(1);
 
-                    if ( (LA17_0==OUT) ) {
-                        alt17=1;
+                    if ( (LA18_0==OUT) ) {
+                        alt18=1;
                     }
-                    switch (alt17) {
+                    switch (alt18) {
                         case 1 :
-                            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:180:9: OUT
+                            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:181:9: OUT
                             {
                             _last = (CtrlTree)input.LT(1);
-                            OUT75=(CtrlTree)match(input,OUT,FOLLOW_OUT_in_arg1056); 
+                            OUT79=(CtrlTree)match(input,OUT,FOLLOW_OUT_in_arg1075); 
                              
-                            if ( _first_1==null ) _first_1 = OUT75;
+                            if ( _first_1==null ) _first_1 = OUT79;
 
 
                             retval.tree = (CtrlTree)_first_0;
@@ -2447,12 +2657,12 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     _last = (CtrlTree)input.LT(1);
-                    ID76=(CtrlTree)match(input,ID,FOLLOW_ID_in_arg1059); 
+                    ID80=(CtrlTree)match(input,ID,FOLLOW_ID_in_arg1078); 
                      
-                    if ( _first_1==null ) _first_1 = ID76;
+                    if ( _first_1==null ) _first_1 = ID80;
 
 
-                     helper.checkVarArg(ARG74); 
+                     helper.checkVarArg(ARG78); 
 
                     retval.tree = (CtrlTree)_first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
@@ -2461,15 +2671,15 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:181:9: DONT_CARE
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:182:9: DONT_CARE
                     {
                     _last = (CtrlTree)input.LT(1);
-                    DONT_CARE77=(CtrlTree)match(input,DONT_CARE,FOLLOW_DONT_CARE_in_arg1071); 
+                    DONT_CARE81=(CtrlTree)match(input,DONT_CARE,FOLLOW_DONT_CARE_in_arg1090); 
                      
-                    if ( _first_1==null ) _first_1 = DONT_CARE77;
+                    if ( _first_1==null ) _first_1 = DONT_CARE81;
 
 
-                     helper.checkDontCareArg(ARG74); 
+                     helper.checkDontCareArg(ARG78); 
 
                     retval.tree = (CtrlTree)_first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
@@ -2478,19 +2688,19 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 3 :
-                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:182:9: literal
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:183:9: literal
                     {
                     _last = (CtrlTree)input.LT(1);
-                    pushFollow(FOLLOW_literal_in_arg1083);
-                    literal78=literal();
+                    pushFollow(FOLLOW_literal_in_arg1102);
+                    literal82=literal();
 
                     state._fsp--;
 
                      
-                    if ( _first_1==null ) _first_1 = literal78.tree;
+                    if ( _first_1==null ) _first_1 = literal82.tree;
 
 
-                     helper.checkConstArg(ARG74); 
+                     helper.checkConstArg(ARG78); 
 
                     retval.tree = (CtrlTree)_first_0;
                     if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
@@ -2534,7 +2744,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "literal"
-    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:187:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:188:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
     public final CtrlChecker.literal_return literal() throws RecognitionException {
         CtrlChecker.literal_return retval = new CtrlChecker.literal_return();
         retval.start = input.LT(1);
@@ -2545,16 +2755,16 @@ public TreeAdaptor getTreeAdaptor() {
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree set79=null;
+        CtrlTree set83=null;
 
-        CtrlTree set79_tree=null;
+        CtrlTree set83_tree=null;
 
         try {
-            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:188:3: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:189:3: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
             // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlChecker.g:
             {
             _last = (CtrlTree)input.LT(1);
-            set79=(CtrlTree)input.LT(1);
+            set83=(CtrlTree)input.LT(1);
 
             if ( input.LA(1)==FALSE||input.LA(1)==INT_LIT||input.LA(1)==REAL_LIT||(input.LA(1) >= STRING_LIT && input.LA(1) <= TRUE) ) {
                 input.consume();
@@ -2662,11 +2872,16 @@ public TreeAdaptor getTreeAdaptor() {
     public static final BitSet FOLLOW_RPAR_in_rule929 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_VAR_in_var_decl947 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_type_in_var_decl949 = new BitSet(new long[]{0x0000000010000000L});
-    public static final BitSet FOLLOW_ID_in_var_decl966 = new BitSet(new long[]{0x0000000010000008L});
-    public static final BitSet FOLLOW_ARG_in_arg1045 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_OUT_in_arg1056 = new BitSet(new long[]{0x0000000010000000L});
-    public static final BitSet FOLLOW_ID_in_arg1059 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_DONT_CARE_in_arg1071 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_literal_in_arg1083 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_ID_in_var_decl959 = new BitSet(new long[]{0x0000000010000008L});
+    public static final BitSet FOLLOW_NODE_in_type1004 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_BOOL_in_type1014 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_STRING_in_type1024 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_INT_in_type1034 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_REAL_in_type1044 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ARG_in_arg1064 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_OUT_in_arg1075 = new BitSet(new long[]{0x0000000010000000L});
+    public static final BitSet FOLLOW_ID_in_arg1078 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_DONT_CARE_in_arg1090 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_literal_in_arg1102 = new BitSet(new long[]{0x0000000000000008L});
 
 }
