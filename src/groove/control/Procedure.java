@@ -124,26 +124,41 @@ public abstract class Procedure implements Callable, Fixable {
      * Returns a mapping from input variables occurring in the signature of this procedure
      * to their corresponding indices in the signature.
      */
-    public Map<CtrlVar,Integer> getParIxMap() {
+    public Map<CtrlVar,Integer> getInPars() {
         assert isFixed();
-        if (this.parIxMap == null) {
-            this.parIxMap = computeParIxMap();
+        if (this.inParMap == null) {
+            initParMaps();
         }
-        return this.parIxMap;
+        return this.inParMap;
     }
 
-    private Map<CtrlVar,Integer> computeParIxMap() {
-        Map<CtrlVar,Integer> result = new LinkedHashMap<CtrlVar,Integer>();
+    /**
+     * Returns a mapping from output variables occurring in the signature of this procedure
+     * to their corresponding indices in the signature.
+     */
+    public Map<CtrlVar,Integer> getOutPars() {
+        assert isFixed();
+        if (this.outParMap == null) {
+            initParMaps();
+        }
+        return this.outParMap;
+    }
+
+    private void initParMaps() {
+        this.inParMap = new LinkedHashMap<CtrlVar,Integer>();
+        this.outParMap = new LinkedHashMap<CtrlVar,Integer>();
         for (int i = 0; i < getSignature().size(); i++) {
             CtrlPar.Var par = getSignature().get(i);
             if (par.isInOnly()) {
-                result.put(par.getVar(), i);
+                this.inParMap.put(par.getVar(), i);
+            } else {
+                this.outParMap.put(par.getVar(), i);
             }
         }
-        return result;
     }
 
-    private Map<CtrlVar,Integer> parIxMap;
+    private Map<CtrlVar,Integer> inParMap;
+    private Map<CtrlVar,Integer> outParMap;
 
     public boolean setFixed() {
         boolean result = this.fixed;

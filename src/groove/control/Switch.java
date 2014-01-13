@@ -40,9 +40,7 @@ public class Switch extends ALabelEdge<Location> {
         super(source, target);
         this.kind = Kind.CHOICE;
         this.success = success;
-        this.name = null;
-        this.unit = null;
-        this.args = null;
+        this.call = null;
     }
 
     /**
@@ -55,9 +53,7 @@ public class Switch extends ALabelEdge<Location> {
         super(source, target);
         Callable unit = call.getUnit();
         this.kind = unit.getKind();
-        this.name = unit.getFullName();
-        this.unit = unit;
-        this.args = call.getArgs();
+        this.call = call;
         this.success = false;
     }
 
@@ -85,10 +81,8 @@ public class Switch extends ALabelEdge<Location> {
      */
     public String getName() {
         assert !isChoice();
-        return this.name;
+        return getUnit().getFullName();
     }
-
-    private final String name;
 
     /** 
      * Returns the arguments of the call of this switch.
@@ -97,13 +91,8 @@ public class Switch extends ALabelEdge<Location> {
      */
     public final List<CtrlPar> getArgs() {
         assert !isChoice();
-        return this.args;
+        return getCall().getArgs();
     }
-
-    /** 
-     * The list of arguments of the control call.
-     */
-    private final List<CtrlPar> args;
 
     /** 
      * Returns the invoked unit of this call.
@@ -111,15 +100,24 @@ public class Switch extends ALabelEdge<Location> {
      * @see #getKind()
      */
     public final Callable getUnit() {
+        return getCall().getUnit();
+    }
+
+    /** 
+     * Returns the call of this switch.
+     * Should only be invoked if this is a call switch.
+     * @see #getKind()
+     */
+    public final Call getCall() {
         assert getKind().isCallable();
-        return this.unit;
+        return this.call;
     }
 
     /** 
      * The invoked unit of this call.
      * Is {@code null} if this is not a call switch.
      */
-    private final Callable unit;
+    private final Call call;
 
     /**
      * Indicates if this transition is a success switch.
@@ -228,14 +226,12 @@ public class Switch extends ALabelEdge<Location> {
     @Override
     protected int computeLabelHash() {
         final int prime = 31;
-        int result = super.hashCode();
+        int result = 1;
         result = prime * result + getKind().hashCode();
         // don't call isSuccess here to escape kind test
         result = prime * result + (this.success ? 1231 : 1237);
         result =
-            prime * result + ((this.args == null) ? 0 : this.args.hashCode());
-        result =
-            prime * result + ((this.name == null) ? 0 : this.name.hashCode());
+            prime * result + ((this.call == null) ? 0 : this.call.hashCode());
         return result;
     }
 

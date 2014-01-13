@@ -10,7 +10,6 @@ options {
 @header {
 package groove.control.parse;
 import groove.control.*;
-import groove.control.CtrlEdge.Kind;
 import groove.algebra.AlgebraFamily;
 import groove.grammar.model.FormatErrorSet;
 import groove.util.antlr.ParseTreeAdaptor;
@@ -40,10 +39,10 @@ import java.util.HashMap;
 
 program 
   : ^(PROGRAM package_decl import_decl* functions recipes block) 
-    { if ($block.tree.getChildCount() == 1) {
-          helper.checkAny($PROGRAM);
-      }
-    }
+    //{ if ($block.tree.getChildCount() == 0) {
+    //      helper.checkAny($PROGRAM);
+    //}
+    //}
   ;
 
 package_decl
@@ -169,11 +168,11 @@ var_decl
 	;
 
 type
-  : NODE   { helper.checkType($NODE); }
-  | BOOL   { helper.checkType($BOOL); }
-  | STRING { helper.checkType($STRING); }
-  | INT    { helper.checkType($INT); }
-  | REAL   { helper.checkType($REAL); }
+  : NODE
+  | BOOL
+  | STRING
+  | INT
+  | REAL
   ;
   
 arg

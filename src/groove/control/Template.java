@@ -21,9 +21,11 @@ import groove.grammar.Action;
 import groove.graph.GraphRole;
 import groove.graph.NodeSetEdgeSetGraph;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -38,6 +40,7 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
      */
     private Template(String name, Procedure proc) {
         super(name);
+        this.maxNodeNr = -1;
         this.parent = proc;
         this.start = addLocation(0);
     }
@@ -168,9 +171,56 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
         return result;
     }
 
+    /**
+     * Computes and sets the variables of every state, based on the
+     * input parameters of their outgoing transitions and the output parameters
+     * of the enclosing procedure, if any.
+     */
+    void initVars() {
+        // compute the map of incoming transitions
+        Map<Location,Set<Switch>> inMap = new HashMap<Location,Set<Switch>>();
+        for (Location state : nodeSet()) {
+            inMap.put(state, new HashSet<Switch>());
+            if (state.isFinal() && hasParent()) {
+                state.addVars(getParent().getOutPars().keySet());
+            }
+        }
+        for (Switch trans : edgeSet()) {
+            inMap.get(trans.target()).add(trans);
+            trans.source().addVars(trans.getInVars().keySet());
+        }
+        Queue<Switch> queue = new LinkedList<Switch>(edgeSet());
+        while (!queue.isEmpty()) {
+            Switch next = queue.poll();
+            Location source = next.source();
+            CtrlVarSet sourceVars = new CtrlVarSet(source.getVars());
+            boolean modified = false;
+            for (CtrlVar targetVar : next.target().getVars()) {
+                if (!next.getOutVars().containsKey(targetVar)) {
+                    modified |= sourceVars.add(targetVar);
+                }
+            }
+            if (modified) {
+                source.setVars(sourceVars);
+                queue.addAll(inMap.get(source));
+            }
+        }
+    }
+
     /** Returns a copy of this automaton for a given enclosing procedure. */
     public Template clone(Procedure parent) {
         return new Template(parent);
+    }
+
+    @Override
+    public boolean setFixed() {
+        boolean result = super.setFixed();
+        if (result) {
+            for (Location loc : nodeSet()) {
+                loc.setFixed();
+            }
+        }
+        return result;
     }
 
     @Override
@@ -185,11 +235,6 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
     @Override
     public Template newGraph(String name) {
         return new Template(name);
-    }
-
-    @Override
-    public boolean addNode(Location node) {
-        throw new UnsupportedOperationException("Use addState(CtrlState)");
     }
 
     @Override

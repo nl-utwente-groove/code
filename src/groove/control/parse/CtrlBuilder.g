@@ -35,8 +35,7 @@ import java.util.HashSet;
 
 program returns [ CtrlAut aut ]
   : ^(PROGRAM package_decl import_decl* functions recipes block)
-    { // at least one child due to closing TRUE
-      if ($block.tree.getChildCount() == 1) {
+    { if ($block.tree.getChildCount() == 0) {
           $aut = null;
       } else {
           $aut = $block.aut;

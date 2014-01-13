@@ -1,7 +1,6 @@
 package groove.control.parse;
 
 import groove.control.Call;
-import groove.control.Callable;
 import groove.control.CtrlAut;
 import groove.control.CtrlCall;
 import groove.control.CtrlPar;
@@ -12,6 +11,7 @@ import groove.control.Program;
 import groove.control.Template;
 import groove.control.TemplateBuilder;
 import groove.control.symbolic.Term;
+import groove.grammar.QualName;
 import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatException;
 import groove.util.antlr.ParseTree;
@@ -49,16 +49,14 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
 
     /** Returns the derived type stored in this tree node, if any. */
     public CtrlType getCtrlType() {
-        return this.type;
+        CtrlType result;
+        if (getType() == CtrlChecker.NODE) {
+            result = CtrlType.NODE;
+        } else {
+            result = CtrlType.valueOf(getText().toUpperCase());
+        }
+        return result;
     }
-
-    /** Stores a type in this tree node. */
-    public void setCtrlType(CtrlType type) {
-        assert type != null;
-        this.type = type;
-    }
-
-    private CtrlType type;
 
     /** Returns the control variable stored in this tree node, if any. */
     public CtrlVar getCtrlVar() {
@@ -235,15 +233,42 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     /** Constructs a control program from a top-level control tree. */
     public Program toProgram(String name) throws FormatException {
         assert getType() == CtrlParser.PROGRAM;
-        CtrlTree block = getChild(2);
-        Template main = TemplateBuilder.instance().build(name, block.toTerm());
-        Program result = new Program(main);
-        for (Callable unit : getInfo().getCallables()) {
-            if (unit instanceof Procedure) {
-                result.addProc((Procedure) unit);
-            }
+        Program result = new Program(name);
+        CtrlTree pack = getChild(0);
+        CtrlTree functions = getChild(2);
+        CtrlTree recipes = getChild(3);
+        CtrlTree body = getChild(4);
+        TemplateBuilder builder = TemplateBuilder.instance();
+        if (body.getChildCount() > 0) {
+            Template main = builder.build(name, body.toTerm());
+            result.setMain(main);
+        }
+        String packName = pack.getText();
+        for (int i = 0; i < functions.getChildCount(); i++) {
+            CtrlTree funcTree = functions.getChild(i);
+            result.addProc(funcTree.toProcedure(packName));
+        }
+        for (int i = 0; i < recipes.getChildCount(); i++) {
+            CtrlTree recipeTree = recipes.getChild(i);
+            result.addProc(recipeTree.toProcedure(packName));
         }
         result.setFixed();
+        return result;
+    }
+
+    /**
+     * Converts this control tree to a procedure object.
+     * This is only valid if the root is a function or recipe node.
+     * @param packName the package name within which the procedure is declared
+     * @throws FormatException if there are static semantic errors in the declaration.
+     */
+    public Procedure toProcedure(String packName) throws FormatException {
+        String name = QualName.extend(packName, getChild(0).getText());
+        Procedure result = (Procedure) getInfo().getCallable(name);
+        CtrlTree bodyTree = getChild(getChildCount() - 1);
+        Template body =
+            TemplateBuilder.instance().build(name, bodyTree.toTerm());
+        result.setTemplate(body);
         return result;
     }
 
@@ -393,7 +418,6 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         this.par = node.par;
         this.var = node.var;
         this.call = node.call;
-        this.type = node.type;
     }
 
     /**

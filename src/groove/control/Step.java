@@ -96,7 +96,7 @@ public class Step extends AEdge<Frame,Switch> {
         Map<CtrlVar,AssignSource> result =
             new LinkedHashMap<CtrlVar,AssignSource>();
         Map<CtrlVar,Integer> sourceVars = call.source().getVarIxMap();
-        Map<CtrlVar,Integer> sig = ((Procedure) call.getUnit()).getParIxMap();
+        Map<CtrlVar,Integer> sig = ((Procedure) call.getUnit()).getInPars();
         for (CtrlVar var : call.target().getVars()) {
             // all initial state variables are formal input parameters 
             Integer ix = sig.get(var);
