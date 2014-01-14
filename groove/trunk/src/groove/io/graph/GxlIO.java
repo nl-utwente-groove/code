@@ -235,8 +235,10 @@ public class GxlIO extends GraphIO<AttrGraph> {
                     (String) entry.getValue());
             }
             // Add version info
-            storeAttribute(gxlGraph, GraphProperties.Key.VERSION.getName(),
-                Version.GXL_VERSION);
+            if (!properties.containsKey(GraphProperties.Key.VERSION.getName())) {
+                storeAttribute(gxlGraph, GraphProperties.Key.VERSION.getName(),
+                    Version.GXL_VERSION);
+            }
         }
         return gxlGraph;
     }
