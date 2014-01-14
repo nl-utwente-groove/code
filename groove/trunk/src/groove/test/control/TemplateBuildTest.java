@@ -26,6 +26,7 @@ import groove.control.Switch;
 import groove.control.Template;
 import groove.control.TemplateBuilder;
 import groove.control.symbolic.Term;
+import groove.gui.Viewer;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -130,9 +131,18 @@ public class TemplateBuildTest extends CtrlTester {
     }
 
     @Test
-    public void testAnyOther() {
-        build("a; other;");
-        build("a; any;");
+    public void testOther() {
+        build("choice a; or { alap other; }");
+        Viewer.showGraph(this.template);
+        Viewer.showGraph(this.minimal);
+        assertSize(6, 10);
+        assertTrue(getNext(getFailure(getStart()), this.aCall).isFinal());
+        Location loc = getInit(this.bCall);
+        assertEquals(loc, getInit(this.cCall));
+        assertEquals(loc, getNext(loc, this.bCall));
+        assertEquals(loc, getNext(loc, this.cCall));
+        assertTrue(getFailure(loc).isFinal());
+        assertFalse(getSuccess(loc).isFinal());
     }
 
     private void assertSize(int locCount, int switchCount) {
@@ -141,7 +151,7 @@ public class TemplateBuildTest extends CtrlTester {
     }
 
     private void build(String program) {
-        this.template = builder.build("name", buildTerm(program));
+        this.template = builder.build(program, buildTerm(program));
         this.minimal = builder.normalise(this.template);
     }
 

@@ -82,12 +82,13 @@ final public class AspectJModel extends JModel<AspectGraph> {
         this.resource = new Derived<GraphBasedModel<?>>(this.graphModCount) {
             @Override
             protected GraphBasedModel<?> computeValue() {
-                GraphBasedModel<?> result = null;
-                if (getJGraph().isEditable() || getJGraph().isForState()) {
+                GraphBasedModel<?> result;
+                ResourceKind kind =
+                    ResourceKind.toResource(getJGraph().getGraphRole());
+                if (getJGraph().isEditable() || getJGraph().isForState()
+                    || !getGrammar().hasResource(kind, getName())) {
                     result = getGrammar().createGraphModel(getGraph());
                 } else {
-                    ResourceKind kind =
-                        ResourceKind.toResource(getJGraph().getGraphRole());
                     result = getGrammar().getGraphResource(kind, getName());
                 }
                 return result;

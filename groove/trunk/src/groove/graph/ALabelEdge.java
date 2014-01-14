@@ -40,6 +40,9 @@ public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>>
     }
 
     @Override
+    abstract public EdgeRole getRole();
+
+    @Override
     protected int computeHashCode() {
         final int prime = 31;
         int result = 1;

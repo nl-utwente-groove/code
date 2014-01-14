@@ -17,11 +17,21 @@
 package groove.io;
 
 import groove.graph.GraphRole;
+import groove.io.external.format.DotPorter;
+import groove.io.external.format.EcorePorter;
+import groove.io.external.format.GxlPorter;
+import groove.io.graph.AutIO;
+import groove.io.graph.ColIO;
+import groove.io.graph.ConceptualIO;
+import groove.io.graph.GraphIO;
+import groove.io.graph.GxlIO;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Enumeration of file types supported by Groove.
@@ -256,6 +266,62 @@ public enum FileType {
         return hasExtension(file.getName());
     }
 
+    /** Indicates if this file format has an associated loader/saver for graphs. 
+     * @see #getGraphIO()
+     */
+    public boolean hasGraphIO() {
+        return getGraphIO() != null;
+    }
+
+    /** Returns the default loader/saver for graphs to and from this file type, if any.
+     * Note that this only applies to structural graph formats, not image or vector formats. 
+     */
+    public GraphIO<?> getGraphIO() {
+        if (this.io == null) {
+            this.io = computeGraphIO();
+        }
+        return this.io;
+    }
+
+    /**
+     * Computes the default loader/saver for graphs to and from this file type, if any.
+     * Note that this only applies to structural graph formats, not image or vector formats. 
+     */
+    public GraphIO<?> computeGraphIO() {
+        switch (this) {
+        case AUT:
+            return new AutIO();
+        case COL:
+            return new ColIO();
+        case GXL_META:
+            return new ConceptualIO(GxlPorter.instance(), GXL_META,
+                GraphRole.TYPE);
+        case GXL_MODEL:
+            return new ConceptualIO(GxlPorter.instance(), GXL_META,
+                GraphRole.HOST);
+        case ECORE_META:
+            return new ConceptualIO(EcorePorter.instance(), GXL_META,
+                GraphRole.TYPE);
+        case ECORE_MODEL:
+            return new ConceptualIO(EcorePorter.instance(), GXL_META,
+                GraphRole.HOST);
+        case DOT_META:
+            return new ConceptualIO(DotPorter.instance(), GXL_META,
+                GraphRole.TYPE);
+        case DOT_MODEL:
+            return new ConceptualIO(DotPorter.instance(), GXL_META,
+                GraphRole.HOST);
+        case GXL:
+        case RULE:
+        case TYPE:
+        case STATE:
+            return GxlIO.instance();
+        }
+        return null;
+    }
+
+    private GraphIO<?> io;
+
     /** Tests if this is a file type with multiple extensions. */
     private boolean isMultiple() {
         return this.subTypes != null;
@@ -290,6 +356,26 @@ public enum FileType {
         }
     }
 
+    /** 
+     * Returns the set of possible file types of a given file, going by its filename extension.
+     */
+    static public Set<FileType> getType(File file) {
+        return getType(file.getName());
+    }
+
+    /** 
+     * Returns the set of possible file types for a given file, going by its filename extension.
+     */
+    static public Set<FileType> getType(String filename) {
+        Set<FileType> result = EnumSet.noneOf(FileType.class);
+        for (FileType type : FileType.values()) {
+            if (type.hasExtension(filename)) {
+                result.add(type);
+            }
+        }
+        return result;
+    }
+
     /**
      * Returns the extension part of a file name. The extension is taken to be
      * the part from the last #SEPARATOR occurrence (inclusive).
@@ -298,8 +384,17 @@ public enum FileType {
      * @see File#getName()
      */
     static public String getExtension(File file) {
-        String name = file.getName();
-        return name.substring(name.lastIndexOf(SEPARATOR));
+        return getExtension(file.getName());
+    }
+
+    /**
+     * Returns the extension part of a file name. The extension is taken to be
+     * the part from the last #SEPARATOR occurrence (inclusive).
+     * @param filename the file name to obtain the extension from
+     * @return the extension part of {@code filename}
+     */
+    static public String getExtension(String filename) {
+        return filename.substring(filename.lastIndexOf(SEPARATOR));
     }
 
     /**

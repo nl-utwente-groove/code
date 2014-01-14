@@ -82,6 +82,12 @@ public class TermDerivationTest {
         assertEdge(this.aCall, a);
         assertSuccFail(c, c.or(b));
         assertRest(false, 0);
+        // a | { alap other }
+        setSource(a.or(b.or(c).alap()));
+        assertEdge(this.bCall, b.or(c).alap());
+        assertEdge(this.cCall, b.or(c).alap());
+        assertSuccFail(a, a.or(epsilon()));
+        assertRest(false, 0);
     }
 
     @Test
@@ -276,6 +282,6 @@ public class TermDerivationTest {
 
     private final static Term p = Term.prototype();
     private static final String CONTROL_DIR = "junit/control/";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
 }

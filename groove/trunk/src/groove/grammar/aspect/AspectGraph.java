@@ -79,7 +79,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<AspectNode,AspectEdge> {
      */
     public AspectGraph(String name, GraphRole graphRole) {
         super(name);
-        assert graphRole.inGrammar();
+        assert graphRole.inGrammar() : String.format(
+            "Cannot create aspect graph for %s", graphRole.toString());
         this.role = graphRole;
         this.normal = true;
         // make sure the properties object is initialised

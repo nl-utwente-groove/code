@@ -18,6 +18,7 @@ package groove.util.cli;
 
 import groove.explore.Verbosity;
 
+import java.awt.Window;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -188,6 +189,25 @@ public abstract class GrooveCmdLineTool<T> {
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
+        waitForWindows();
         System.exit(0);
+    }
+
+    static private void waitForWindows() {
+        boolean exit;
+        do {
+            exit = true;
+            for (Window win : Window.getWindows()) {
+                if (win.isShowing()) {
+                    exit = false;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        // do nothing
+                    }
+                    break;
+                }
+            }
+        } while (!exit);
     }
 }

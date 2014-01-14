@@ -369,16 +369,16 @@ public class Imager extends GrooveCmdLineTool<Object> {
      * of command-line use.
      */
     public static void main(String[] args) {
-        tryExecute(Imager.class, args);
+        if (args.length == 0) {
+            new Imager(true);
+        } else {
+            tryExecute(Imager.class, args);
+        }
     }
 
     /** Starts the imager with a list of options and file names. */
     public static void execute(String[] args) throws Exception {
-        if (args.length == 0) {
-            new Imager(true);
-        } else {
-            new Imager(args).start();
-        }
+        new Imager(args).start();
     }
 
     /** Returns the parent file of a given file that corresponds

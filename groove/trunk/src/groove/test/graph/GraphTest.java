@@ -125,7 +125,7 @@ public abstract class GraphTest {
     protected GGraph<PlainNode,PlainEdge> loadGraph(File file) {
         GGraph<PlainNode,PlainEdge> result = createGraph(file.getName());
         try {
-            AttrGraph graph = GxlIO.getInstance().loadGraph(file);
+            AttrGraph graph = GxlIO.instance().loadGraph(file);
             graph.copyTo(result);
         } catch (IOException e) {
             e.printStackTrace();

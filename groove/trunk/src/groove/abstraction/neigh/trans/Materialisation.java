@@ -1200,7 +1200,7 @@ public final class Materialisation {
             Grammar grammar = view.toGrammar();
             Rule rule = grammar.getRule("rule");
             Shape shape =
-                GxlIO.getInstance().loadGraph(file).toShape(
+                GxlIO.instance().loadGraph(file).toShape(
                     view.getTypeGraph());
             Set<Proof> preMatches = PreMatch.getPreMatches(shape, rule);
             for (Proof preMatch : preMatches) {
