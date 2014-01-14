@@ -224,6 +224,19 @@ public class Location extends ANode implements Fixable, Comparable<Location> {
     private Map<CtrlVar,Integer> varIxMap;
 
     @Override
+    public String toString() {
+        String result = super.toString();
+        if (this.isFinal) {
+            result = result + ", final";
+        } else if (this.depth == 0) {
+            result = result + ", top";
+        } else {
+            result = result + ", depth=" + this.depth;
+        }
+        return result;
+    }
+
+    @Override
     protected String getToStringPrefix() {
         return "c";
     }

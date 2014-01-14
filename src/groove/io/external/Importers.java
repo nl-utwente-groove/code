@@ -73,7 +73,7 @@ public class Importers {
         throws PortException, IOException {
         FileType fileType = getFormatChooser().getFileType();
         File file = getFormatChooser().getSelectedFile();
-        Importer ri = getImporterMap().get(fileType);
+        Importer ri = getImporter(fileType);
         ri.setSimulator(simulator);
         Set<Resource> resources = ri.doImport(file, fileType, grammar);
         if (resources != null) {
@@ -144,16 +144,21 @@ public class Importers {
     private static List<Importer> createImporters() {
         List<Importer> result = new ArrayList<Importer>();
         result.add(NativePorter.getInstance());
-        result.add(AutPorter.getInstance());
+        result.add(AutPorter.instance());
         result.add(ColImporter.getInstance());
         result.add(EcorePorter.instance());
         result.add(GxlPorter.instance());
-        result.add(DotPorter.getInstance());
+        result.add(DotPorter.instance());
         return Collections.unmodifiableList(result);
     }
 
     /** List of importers */
     private static List<Importer> importers;
+
+    /** Returns the importer for a given file type, if any. */
+    public static Importer getImporter(FileType fileType) {
+        return getImporterMap().get(fileType);
+    }
 
     /** Returns the mapping from file types to importers supporting them. */
     private static Map<FileType,Importer> getImporterMap() {

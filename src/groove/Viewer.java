@@ -19,12 +19,12 @@ package groove;
 import groove.gui.dialog.BugReportDialog;
 
 /**
- * Wrapper class for the imager utility.
- * @see groove.io.Imager
+ * Wrapper class for the viewer utility.
+ * @see groove.gui.Viewer
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 5032 $
  */
-public class Imager {
+public class Viewer {
     /**
      * Main method.
      * @param args list of command-line arguments
@@ -37,6 +37,6 @@ public class Imager {
             }
         });
 
-        groove.io.Imager.main(args);
+        groove.gui.Viewer.main(args);
     }
 }

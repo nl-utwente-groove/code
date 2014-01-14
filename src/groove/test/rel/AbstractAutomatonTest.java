@@ -99,7 +99,7 @@ abstract public class AbstractAutomatonTest {
     public static void initStatics() {
         try {
             testGraph =
-                new DefaultHostGraph(GxlIO.getInstance().loadGraph(
+                new DefaultHostGraph(GxlIO.instance().loadGraph(
                     new File(GRAPH_TEST_DIR + "/" + testGraphName + ".gxl")));
         } catch (IOException e) {
             e.printStackTrace();

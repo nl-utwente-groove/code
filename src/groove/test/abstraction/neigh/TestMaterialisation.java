@@ -65,7 +65,7 @@ public class TestMaterialisation {
         try {
             view = GrammarModel.newInstance(file, false);
             grammar = view.toGrammar();
-            marshaller = GxlIO.getInstance();
+            marshaller = GxlIO.instance();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (FormatException e) {

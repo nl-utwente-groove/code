@@ -115,7 +115,7 @@ public final class SaveAction extends SimulatorAction {
                     // save in external file
                     String newName =
                         fileType.stripExtension(selectedFile.getName());
-                    GxlIO.getInstance().saveGraph(
+                    GxlIO.instance().saveGraph(
                         graph.rename(newName).toPlainGraph(), selectedFile);
                 } else {
                     // save within the grammar

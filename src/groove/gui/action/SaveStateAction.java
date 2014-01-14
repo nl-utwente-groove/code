@@ -76,7 +76,7 @@ public final class SaveStateAction extends SimulatorAction {
                     String newName =
                         getResourceKind().getFileType().stripExtension(
                             selectedFile.getName());
-                    GxlIO.getInstance().saveGraph(
+                    GxlIO.instance().saveGraph(
                         graph.rename(newName).toPlainGraph(), selectedFile);
                 } else {
                     // save within the grammar

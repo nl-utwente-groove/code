@@ -18,43 +18,122 @@ package groove.io.graph;
 
 import groove.grammar.model.FormatException;
 import groove.graph.Graph;
+import groove.graph.GraphRole;
+import groove.io.FileType;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 /**
- * Interface for saving and loading graphs.
+ * Class for saving and loading graphs.
  * @author Arend Rensink
  * @version $Revision: 2968 $
  */
-public interface GraphIO {
+public abstract class GraphIO<G extends Graph> {
+    /** Indicates if this IO implementation can save graphs. 
+     * If {@code false}, {@link #saveGraph(Graph, File)} and {@link #doSaveGraph(Graph, File)}
+     * will throw {@link UnsupportedOperationException}s. 
+     */
+    abstract public boolean canSave();
+
     /**
      * Saves a graph to file.
      * @param graph the graph to be saved
      * @param file the file to write to
      * @throws IOException if an error occurred during file output
      */
-    public void saveGraph(Graph graph, File file) throws IOException;
+    public void saveGraph(Graph graph, File file) throws IOException {
+        // create parent dirs if necessary
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+        doSaveGraph(graph, file);
+    }
 
     /**
-     * Saves a graph to an output stream.
+     * Callback method to save a graph to a file, after all 
+     * necessary directories have been created.
      */
-    public void saveGraph(Graph graph, OutputStream out) throws IOException;
+    protected abstract void doSaveGraph(Graph graph, File file)
+        throws IOException;
+
+    /** 
+     * Indicates if this IO implementation can load graphs.
+     * If {@code false}, {@link #loadGraph(File)} and {@link #loadGraph(InputStream)}
+     * will throw {@link UnsupportedOperationException}s. 
+     */
+    public abstract boolean canLoad();
 
     /**
      * Loads an attributed graph from a file.
      * @throws IOException if an error occurred during file input
      */
-    public AttrGraph loadGraph(File file) throws IOException;
+    public G loadGraph(File file) throws FormatException, IOException {
+        setGraphName(FileType.getPureName(file));
+        return loadGraph(new FileInputStream(file));
+    }
 
     /**
      * Loads a graph from an input stream.
      */
-    public AttrGraph loadGraph(InputStream in) throws FormatException,
+    abstract public G loadGraph(InputStream in) throws FormatException,
         IOException;
 
     /** Deletes a file together with further information (such as layout info). */
-    public void deleteGraph(File file);
+    public void deleteGraph(File file) {
+        deleteFile(file);
+    }
+
+    /**
+     * Deletes the given file.
+     */
+    protected void deleteFile(File file) {
+        if (file.exists() && file.canWrite()) {
+            file.delete();
+        }
+    }
+
+    /** 
+     * Sets the name for the next graph to be loaded.
+     * This is only used for formats which do not store the graph name.
+     * The default graph name is "graph".
+     * @param graphName the name for the next graph; non-{@code null}
+     */
+    public void setGraphName(String graphName) {
+        assert graphName != null;
+        this.graphName = graphName;
+    }
+
+    /** Returns the currently set graph name.
+     * @see #setGraphName(String)
+     */
+    public String getGraphName() {
+        return this.graphName;
+    }
+
+    private String graphName = "graph";
+
+    /**
+     * Sets a graph role for the next graph to be loaded.
+     * This is only used for formats which do not store the graph role.
+     * The default graph role is {@link GraphRole#UNKNOWN}.
+     * @param graphRole the role of the next graph to be loaded;non-{@code null}
+     */
+    public void setGraphRole(GraphRole graphRole) {
+        assert graphRole != null;
+        this.graphRole = graphRole;
+    }
+
+    /** Returns the currently set graph role.
+     * @see #setGraphRole(GraphRole)
+     */
+    public GraphRole getGraphRole() {
+        return this.graphRole;
+    }
+
+    private GraphRole graphRole = GraphRole.UNKNOWN;
+
 }

@@ -149,7 +149,6 @@ public abstract class AGraph<N extends Node,E extends Edge> extends
     @Override
     public GraphInfo getInfo() {
         if (this.graphInfo == null) {
-            assert !isFixed();
             this.graphInfo = new GraphInfo();
         }
         return this.graphInfo;

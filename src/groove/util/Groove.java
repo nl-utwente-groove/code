@@ -511,7 +511,7 @@ public class Groove {
     /**
      * The fixed GXL graph loader.
      */
-    static private final GxlIO gxlGraphLoader = GxlIO.getInstance();
+    static private final GxlIO gxlGraphLoader = GxlIO.instance();
 
     // Platform dependent information.
 

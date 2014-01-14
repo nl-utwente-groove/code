@@ -16,30 +16,22 @@
  */
 package groove.io.external.format;
 
-import groove.algebra.Algebra;
-import groove.algebra.AlgebraFamily;
-import groove.algebra.SignatureKind;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.GraphConverter;
-import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostGraph;
-import groove.grammar.host.HostNode;
 import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
-import groove.grammar.type.TypeLabel;
-import groove.graph.EdgeRole;
 import groove.gui.Simulator;
 import groove.io.FileType;
 import groove.io.external.Importer;
 import groove.io.external.PortException;
+import groove.io.graph.ColIO;
 
 import java.awt.Frame;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
@@ -96,45 +88,14 @@ public class ColImporter implements Importer {
     public Set<Resource> doImport(String name, InputStream stream,
             FileType fileType, GrammarModel grammar) throws PortException {
         try {
-            BufferedReader reader =
-                new BufferedReader(new InputStreamReader(stream));
-
-            DefaultHostGraph graph = new DefaultHostGraph(name);
-            Algebra<?> intAlgebra =
-                AlgebraFamily.getInstance().getAlgebra(SignatureKind.INT);
-            TypeLabel valueLabel = TypeLabel.createBinaryLabel("value");
-            for (String nextLine = reader.readLine(); nextLine != null; nextLine =
-                reader.readLine()) {
-                String[] fragments = nextLine.split(" ");
-                if (fragments[0].equals("n")) {
-                    HostNode node = this.addNode(graph, fragments[1]);
-                    HostNode valueNode =
-                        graph.addNode(intAlgebra,
-                            intAlgebra.toValueFromJava(fragments[2]));
-                    graph.addEdge(node, valueLabel, valueNode);
-                } else if (fragments[0].equals("e")) {
-                    HostNode source = this.addNode(graph, fragments[1]);
-                    HostNode target = this.addNode(graph, fragments[2]);
-                    graph.addEdge(source, LABEL, target);
-                }
-            }
+            this.io.setGraphName(name);
+            HostGraph graph = this.io.loadGraph(stream);
             AspectGraph aGraph = GraphConverter.toAspect(graph);
-
             Resource res = new Resource(ResourceKind.HOST, name, aGraph);
-
-            reader.close();
-
             return Collections.singleton(res);
         } catch (IOException e) {
             throw new PortException(e);
         }
-    }
-
-    private HostNode addNode(HostGraph result, String id) {
-        HostNode node = result.getFactory().createNode(Integer.parseInt(id));
-        result.addEdge(node, TypeLabel.createLabel(EdgeRole.FLAG, "i" + id),
-            node);
-        return node;
     }
 
     /** Returns the parent component for a dialog. */
@@ -148,6 +109,8 @@ public class ColImporter implements Importer {
     }
 
     private Frame parent;
+    /** Reader for the .col format */
+    private final ColIO io = new ColIO();
 
     /** Returns the singleton instance of this class. */
     public static final ColImporter getInstance() {
@@ -155,9 +118,4 @@ public class ColImporter implements Importer {
     }
 
     private static final ColImporter instance = new ColImporter();
-
-    // Methods from FileFormat.
-
-    private static final TypeLabel LABEL = TypeLabel.createBinaryLabel("n");
-
 }

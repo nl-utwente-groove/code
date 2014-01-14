@@ -21,10 +21,10 @@ import groove.control.symbolic.Term;
 import groove.graph.GraphInfo;
 import groove.util.Pair;
 
-import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
@@ -177,15 +177,15 @@ public class TemplateBuilder {
      */
     private Partition refinePartition(Partition orig) {
         Partition result = new Partition();
-        for (Map.Entry<Location,Cell> e : orig.entrySet()) {
+        for (Cell cell : orig) {
             Map<Record<Cell>,Cell> split = new HashMap<Record<Cell>,Cell>();
-            for (Location loc : e.getValue()) {
+            for (Location loc : cell) {
                 Record<Cell> rec = append(this.recordMap.get(loc), orig);
-                Cell cell = split.get(rec);
-                if (cell == null) {
-                    split.put(rec, cell = new Cell());
+                Cell locCell = split.get(rec);
+                if (locCell == null) {
+                    split.put(rec, locCell = new Cell());
                 }
-                cell.add(loc);
+                locCell.add(loc);
             }
             result.addAll(split.values());
         }
@@ -209,15 +209,13 @@ public class TemplateBuilder {
 
     /** Converts a record pointing to locations, to a record pointing to cells. */
     private Record<Cell> append(Record<Location> record, Partition part) {
-        Cell success =
-            record.hasSuccess() ? part.get(record.getSuccess()) : null;
-        Cell failure =
-            record.hasFailure() ? part.get(record.getFailure()) : null;
+        Cell success = part.getCell(record.getSuccess());
+        Cell failure = part.getCell(record.getFailure());
         Map<Call,Set<Cell>> map = new HashMap<Call,Set<Cell>>();
         for (Map.Entry<Call,Set<Location>> e : record.getMap().entrySet()) {
             Set<Cell> target = new HashSet<Cell>();
             for (Location loc : e.getValue()) {
-                target.add(part.get(loc));
+                target.add(part.getCell(loc));
             }
             map.put(e.getKey(), target);
         }
@@ -226,12 +224,13 @@ public class TemplateBuilder {
 
     /** Computes the quotient of {@link #template} from a given partition. */
     private Template computeQuotient(Partition partition) {
-        Template result = createTemplate(this.template.getName());
+        Template result =
+            createTemplate("Normalised " + this.template.getName());
         // set of representative source locations
         Set<Location> reprSet = new HashSet<Location>();
         // map from all source locations to the result locations
         Map<Location,Location> locMap = new HashMap<Location,Location>();
-        for (Cell cell : partition.values()) {
+        for (Cell cell : partition) {
             // representative location of the cell
             Location repr;
             Location image;
@@ -289,18 +288,24 @@ public class TemplateBuilder {
     }
 
     /** Local type for a partition of locations. */
-    private static class Partition extends TreeMap<Location,Cell> {
-        void add(Cell cell) {
-            for (Location loc : cell) {
-                put(loc, cell);
+    private static class Partition extends LinkedHashSet<Cell> {
+        @Override
+        public boolean add(Cell cell) {
+            boolean result = super.add(cell);
+            if (result) {
+                for (Location loc : cell) {
+                    this.cellMap.put(loc, cell);
+                }
             }
+            return result;
         }
 
-        void addAll(Collection<Cell> cells) {
-            for (Cell cell : cells) {
-                add(cell);
-            }
+        Cell getCell(Location loc) {
+            return loc == null ? null : this.cellMap.get(loc);
         }
+
+        private final Map<Location,Cell> cellMap =
+            new TreeMap<Location,TemplateBuilder.Cell>();
     }
 
     /**
@@ -313,16 +318,8 @@ public class TemplateBuilder {
             super(Pair.newPair(success, failure), transMap);
         }
 
-        boolean hasSuccess() {
-            return getSuccess() != null;
-        }
-
         L getSuccess() {
             return one().one();
-        }
-
-        boolean hasFailure() {
-            return getFailure() != null;
         }
 
         L getFailure() {

@@ -149,7 +149,7 @@ public class TestMaterialisation {
             File file = new File(DIRECTORY + HOST);
             try {
                 pShape =
-                    GxlIO.getInstance().loadGraph(file).toPattern(
+                    GxlIO.instance().loadGraph(file).toPattern(
                         pTGraph);
             } catch (IOException e) {
                 throw new IllegalArgumentException();

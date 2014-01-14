@@ -19,6 +19,7 @@ package groove.control;
 import groove.grammar.Action;
 import groove.graph.ALabelEdge;
 import groove.graph.Edge;
+import groove.graph.EdgeRole;
 import groove.util.Groove;
 
 import java.util.HashMap;
@@ -262,6 +263,11 @@ public class Switch extends ALabelEdge<Location> {
             }
         }
         return true;
+    }
+
+    @Override
+    public EdgeRole getRole() {
+        return EdgeRole.BINARY;
     }
 
     public String text() {
