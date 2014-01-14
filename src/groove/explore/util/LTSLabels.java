@@ -34,7 +34,7 @@ import java.util.Map;
 public class LTSLabels {
     /** Constructs a flag object with default values for selected flags. */
     public LTSLabels(boolean showStart, boolean showOpen, boolean showFinal,
-            boolean showResult, boolean showNumber) {
+            boolean showResult, boolean showNumber, boolean showTransience) {
         try {
             if (showStart) {
                 setDefaultValue(Flag.START);
@@ -50,6 +50,9 @@ public class LTSLabels {
             }
             if (showNumber) {
                 setDefaultValue(Flag.NUMBER);
+            }
+            if (showTransience) {
+                setDefaultValue(Flag.TRANSIENT);
             }
         } catch (FormatException e) {
             assert false : "Unexpected error";
@@ -109,10 +112,10 @@ public class LTSLabels {
                 value = arg.substring(1, arg.length() - 1);
                 argIx++;
                 charIx++;
-                if (flag == Flag.NUMBER && value.indexOf('#') < 0) {
+                if (flag == Flag.NUMBER && value.indexOf(PLACEHOLDER) < 0) {
                     throw new FormatException(
-                        "State number label %s does not contain placeholder '#'",
-                        value);
+                        "State number label %s does not contain placeholder '%s'",
+                        value, PLACEHOLDER);
                 }
             }
             if (!setValue(flag, value)) {
@@ -192,6 +195,20 @@ public class LTSLabels {
         return getLabel(Flag.NUMBER);
     }
 
+    /** Indicates if the {@link Flag#TRANSIENT} flag is set. */
+    public boolean showTransience() {
+        return this.flagToLabelMap.containsKey(Flag.TRANSIENT);
+    }
+
+    /**
+     * Returns the label to be used for transient states in serialised LTSs, if any.
+     * @return the label to be used for state numbers; if {@code null}, transient states
+     * are not marked
+     */
+    public String getTransienceLabel() {
+        return getLabel(Flag.TRANSIENT);
+    }
+
     /**
      * Returns the label associated with a given flag, if any.
      */
@@ -261,6 +278,8 @@ public class LTSLabels {
         return flagMap.get(c);
     }
 
+    /** Placeholder text for state and transience numbers. */
+    public static final String PLACEHOLDER = "#";
     /** Flags object with all labels set to null. */
     public static final LTSLabels EMPTY = new LTSLabels();
     /** Flags object with all labels set to default. */
@@ -293,7 +312,9 @@ public class LTSLabels {
         /** Labelling for result states. */
         RESULT('r', "result", "Result states"),
         /** Labelling of state numbers. */
-        NUMBER('n', "s#", "State number");
+        NUMBER('n', "s" + PLACEHOLDER, "State number"),
+        /** Labelling of state numbers. */
+        TRANSIENT('t', "t" + PLACEHOLDER, "Transience"), ;
 
         private Flag(char id, String def, String descr) {
             this.id = id;

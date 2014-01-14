@@ -63,6 +63,7 @@ public class Viewer extends GrooveCmdLineTool<Object> {
         for (FileType type : FileType.getType(file)) {
             if (type.hasGraphIO() && type.getGraphIO().canLoad()) {
                 io = type.getGraphIO();
+                break;
             }
         }
         GrammarModel grammar = getGrammar();
