@@ -307,9 +307,10 @@ final public class GraphEditorTab extends ResourceTab implements
     private void loadProperties(AspectGraph newGraph,
             boolean updatePropertiesPanel) {
         if (updatePropertiesPanel) {
+            // get the table first as creating it sets listenToPropertiesPanel to true
+            PropertiesTable panel = getPropertiesPanel();
             this.listenToPropertiesPanel = false;
-            getPropertiesPanel().setProperties(
-                GraphInfo.getProperties(newGraph));
+            panel.setProperties(GraphInfo.getProperties(newGraph));
             this.listenToPropertiesPanel = true;
         }
     }

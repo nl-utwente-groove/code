@@ -17,12 +17,14 @@
 package groove.gui.dialog;
 
 import groove.graph.GraphProperties;
+import groove.graph.GraphProperties.Key;
 import groove.util.Property;
 import groove.util.collect.ListComparator;
 
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -109,8 +111,26 @@ public class PropertiesTable extends JTable {
     /**
      * Returns an alias to the properties object in the dialog.
      */
-    final public Map<String,String> getProperties() {
+    final Map<String,String> aliasProperties() {
         return this.properties;
+    }
+
+    /**
+     * Returns a copy of the properties object in the dialog,
+     * with all default values removed.
+     */
+    final public Map<String,String> getProperties() {
+        Map<String,String> result = new HashMap<String,String>();
+        // only copy non-default properties
+        for (Map.Entry<String,String> entry : this.properties.entrySet()) {
+            String stringKey = entry.getKey();
+            String value = entry.getValue();
+            Key key = GraphProperties.getKeyMap().get(stringKey);
+            if (key == null || !key.getDefaultValue().equals(value)) {
+                result.put(stringKey, value);
+            }
+        }
+        return result;
     }
 
     /**
@@ -396,7 +416,7 @@ public class PropertiesTable extends JTable {
         }
 
         public int getRowCount() {
-            int size = getProperties().size();
+            int size = aliasProperties().size();
             return isEditable() ? size + 1 : size;
         }
 
@@ -410,12 +430,12 @@ public class PropertiesTable extends JTable {
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {
-            if (rowIndex == getProperties().size()) {
+            if (rowIndex == aliasProperties().size()) {
                 return "";
             } else if (columnIndex == PROPERTY_COLUMN) {
                 return getPropertyKey(rowIndex);
             } else {
-                return getProperties().get(getPropertyKey(rowIndex));
+                return aliasProperties().get(getPropertyKey(rowIndex));
             }
         }
 
@@ -426,7 +446,7 @@ public class PropertiesTable extends JTable {
             } else if (columnIndex == PROPERTY_COLUMN) {
                 return rowIndex >= PropertiesTable.this.nonSystemKeyCount;
             } else { // VALUE_COLUMN
-                if (rowIndex >= getProperties().size()) {
+                if (rowIndex >= aliasProperties().size()) {
                     return false;
                 } else {
                     PropertyKey key =
@@ -440,24 +460,25 @@ public class PropertiesTable extends JTable {
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            if (rowIndex == getProperties().size()) {
+            if (rowIndex == aliasProperties().size()) {
                 // key added
                 if (aValue instanceof String && ((String) aValue).length() > 0) {
-                    getProperties().put((String) aValue, "");
+                    aliasProperties().put((String) aValue, "");
                     refreshPropertyKeys();
                 }
             } else if (columnIndex == VALUE_COLUMN) {
                 // value changed
                 String keyword = getPropertyKey(rowIndex);
-                if (!aValue.equals(getProperties().get(keyword))) {
-                    getProperties().put(keyword, (String) aValue);
+                if (!aValue.equals(aliasProperties().get(keyword))) {
+                    aliasProperties().put(keyword, (String) aValue);
                     fireTableCellUpdated(rowIndex, columnIndex);
                 }
             } else {
                 // key changed
-                String value = getProperties().remove(getPropertyKey(rowIndex));
+                String value =
+                    aliasProperties().remove(getPropertyKey(rowIndex));
                 if (aValue instanceof String && ((String) aValue).length() > 0) {
-                    getProperties().put((String) aValue, value);
+                    aliasProperties().put((String) aValue, value);
                 }
                 fireTableCellUpdated(rowIndex, columnIndex);
                 refreshPropertyKeys();
@@ -491,7 +512,7 @@ public class PropertiesTable extends JTable {
          */
         private void initPropertyKeys() {
             this.propertyKeyList =
-                new ArrayList<String>(getProperties().keySet());
+                new ArrayList<String>(aliasProperties().keySet());
         }
 
         /** Retrieves a property key by index. */
