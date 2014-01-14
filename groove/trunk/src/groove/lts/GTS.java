@@ -182,6 +182,15 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
         return !getFinalStates().isEmpty();
     }
 
+    /** 
+     * Indicates if this GTS has at any point included transient states.
+     * Note that the transient nature may have dissipated when the 
+     * state was done.
+     */
+    public boolean hasTransientStates() {
+        return this.transientStates;
+    }
+
     /**
      * Indicates whether a given state is final. Equivalent to
      * <tt>getFinalStates().contains(state)</tt>.
@@ -405,7 +414,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
                 addPostErrors(newState, this.verifier.getErrors());
                 newState.setError();
             }
-
+            if (newState.isTransient()) {
+                this.transientStates = true;
+            }
         }
 
         return result;
@@ -488,6 +499,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
                 setFinal(state);
             }
             this.closedStateCount++;
+            break;
+        case DONE:
         }
         for (GTSListener listener : getGraphListeners()) {
             listener.statusUpdate(this, state, flag);
@@ -538,6 +551,10 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
         PlainGraph result = new PlainGraph(getName());
         Map<GraphState,PlainNode> nodeMap = new HashMap<GraphState,PlainNode>();
         for (GraphState state : nodeSet()) {
+            // don't include transient states unless forced to
+            if (state.isTransient() && !flags.showTransience()) {
+                continue;
+            }
             PlainNode image = result.addNode(state.getNumber());
             nodeMap.put(state, image);
             if (flags.showResult() && isResult(state)) {
@@ -553,15 +570,24 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
                 result.addEdge(image, flags.getOpenLabel(), image);
             }
             if (flags.showNumber()) {
-                result.addEdge(
-                    image,
+                String label =
                     flags.getNumberLabel().replaceAll("#",
-                        "" + state.getNumber()), image);
+                        "" + state.getNumber());
+                result.addEdge(image, label, image);
+            }
+            if (flags.showTransience() && state.isTransient()) {
+                String label = flags.getTransienceLabel().replaceAll("#", "1");
+                result.addEdge(image, label, image);
             }
         }
         for (GraphTransition transition : edgeSet()) {
-            result.addEdge(nodeMap.get(transition.source()),
-                transition.label().text(), nodeMap.get(transition.target()));
+            // don't include partial transitions unless forced to
+            if (transition.isPartial() && !flags.showTransience()) {
+                continue;
+            }
+            PlainNode sourceImage = nodeMap.get(transition.source());
+            PlainNode targetImage = nodeMap.get(transition.target());
+            result.addEdge(sourceImage, transition.label().text(), targetImage);
         }
         return result;
     }
@@ -656,6 +682,10 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
      * The number of closed states in the GTS.
      */
     private int closedStateCount = 0;
+    /**
+     * The number of transient states in the GTS.
+     */
+    private boolean transientStates = false;
     /**
      * The number of transitions in the GTS.
      */

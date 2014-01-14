@@ -29,8 +29,10 @@ import groove.lts.GraphState;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Action that takes care of saving the LTS graph under a certain name.
@@ -65,6 +67,15 @@ public class SaveLTSAsAction extends SimulatorAction {
         case ALL:
             export = gts.nodeSet();
             break;
+        case TOP:
+            List<GraphState> states = new ArrayList<GraphState>();
+            for (GraphState state : gts.nodeSet()) {
+                if (!state.isTransient()) {
+                    states.add(state);
+                }
+            }
+            export = states;
+            break;
         case FINAL:
             export = gts.getFinalStates();
             break;
@@ -79,8 +90,8 @@ public class SaveLTSAsAction extends SimulatorAction {
             LTSReporter.exportLTS(gts, new File(dir, ltsPattern).toString(),
                 flags);
             for (GraphState state : export) {
-                StateReporter.exportState(
-                    state, new File(dir, statePattern).toString());
+                StateReporter.exportState(state,
+                    new File(dir, statePattern).toString());
             }
         } catch (IOException e) {
             showErrorDialog(e, "Error while saving LTS to %s", dir);

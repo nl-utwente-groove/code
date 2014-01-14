@@ -16,10 +16,12 @@
  */
 package groove.gui.dialog;
 
+import static groove.explore.util.LTSLabels.PLACEHOLDER;
 import groove.explore.util.LTSLabels;
 import groove.explore.util.LTSLabels.Flag;
 import groove.gui.Simulator;
 import groove.io.GrooveFileChooser;
+import groove.lts.GTS;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -140,7 +142,10 @@ public class SaveLTSAsDialog {
         ltsPanel.setLayout(new BoxLayout(ltsPanel, BoxLayout.X_AXIS));
         JLabel ltsLabel = new JLabel("LTS filename pattern: ");
         ltsLabel.setPreferredSize(PREF_LEFT);
-        ltsLabel.setToolTipText("LTS file name: '#' is replaced by the grammar ID, extension determines file format");
+        ltsLabel.setToolTipText(String.format(
+            "LTS file name: "
+                + "'%s' is replaced by the grammar ID, extension determines file format",
+            PLACEHOLDER));
         ltsPanel.add(ltsLabel);
         ltsPanel.add(getLTSPatternField());
         ltsPanel.add(Box.createHorizontalStrut(PREF_RIGHT.width));
@@ -149,7 +154,10 @@ public class SaveLTSAsDialog {
         statePanel.setLayout(new BoxLayout(statePanel, BoxLayout.X_AXIS));
         JLabel stateLabel = new JLabel("State filename pattern: ");
         stateLabel.setPreferredSize(PREF_LEFT);
-        stateLabel.setToolTipText("Pattern for state file names: '#' is replaced by the state number, extension determines file format");
+        stateLabel.setToolTipText(String.format(
+            "Pattern for state file names: "
+                + "'%s' is replaced by the state number, extension determines file format",
+            PLACEHOLDER));
         statePanel.add(stateLabel);
         statePanel.add(getStatePatternField());
         statePanel.add(Box.createHorizontalStrut(PREF_RIGHT.width));
@@ -170,6 +178,9 @@ public class SaveLTSAsDialog {
         labelPanel.add(createFlagPanel(Flag.RESULT));
         labelPanel.add(createFlagPanel(Flag.OPEN));
         labelPanel.add(createFlagPanel(Flag.NUMBER));
+        if (getGTS().hasTransientStates()) {
+            labelPanel.add(createFlagPanel(Flag.TRANSIENT));
+        }
         mainPanel.add(labelPanel);
 
         JPanel savePanel = new JPanel(new GridLayout(0, 1));
@@ -177,9 +188,12 @@ public class SaveLTSAsDialog {
         savePanel.setToolTipText("Select which states should be saved along with the LTS (in the same directory)");
 
         savePanel.add(getExportButton(StateExport.NONE));
-        savePanel.add(getExportButton(StateExport.ALL));
         savePanel.add(getExportButton(StateExport.RESULT));
         savePanel.add(getExportButton(StateExport.FINAL));
+        if (getGTS().hasTransientStates()) {
+            savePanel.add(getExportButton(StateExport.TOP));
+        }
+        savePanel.add(getExportButton(StateExport.ALL));
         mainPanel.add(savePanel);
 
         mainPanel.add(getErrorLabel());
@@ -237,7 +251,7 @@ public class SaveLTSAsDialog {
     private JTextField getLTSPatternField() {
         if (this.ltsPatternField == null) {
             final JTextField result =
-                this.ltsPatternField = new JTextField("#.gxl");
+                this.ltsPatternField = new JTextField(PLACEHOLDER + ".gxl");
             result.getDocument().addDocumentListener(
                 new EmptyFieldListener(result,
                     "LTS name pattern should not be empty"));
@@ -254,10 +268,11 @@ public class SaveLTSAsDialog {
     private JTextField getStatePatternField() {
         if (this.statePatternField == null) {
             final JTextField result =
-                this.statePatternField = new JTextField("s#.gst");
+                this.statePatternField =
+                    new JTextField("s" + PLACEHOLDER + ".gst");
             result.getDocument().addDocumentListener(
-                new PlaceholderFieldListener(result,
-                    "State name pattern should contain '#'"));
+                new PlaceholderFieldListener(result, String.format(
+                    "State name pattern should contain '%s'", PLACEHOLDER)));
         }
         return this.statePatternField;
     }
@@ -279,8 +294,14 @@ public class SaveLTSAsDialog {
         for (StateExport mode : StateExport.values()) {
             String text = null;
             switch (mode) {
+            case TOP:
+                text = "Top-level states";
+                break;
             case ALL:
                 text = "All states";
+                if (getGTS().hasTransientStates()) {
+                    text += " (including transient)";
+                }
                 break;
             case FINAL:
                 text = "Final states";
@@ -324,7 +345,17 @@ public class SaveLTSAsDialog {
             case NUMBER:
                 text = "Number all states with:";
                 tip =
-                    "If ticked, all states will be labelled, with '#' replaced by the state number";
+                    String.format(
+                        "If ticked, all states will be labelled, with '%s' replaced by the state number",
+                        PLACEHOLDER);
+                break;
+            case TRANSIENT:
+                text = "Mark transient states with:";
+                tip =
+                    String.format(
+                        "If ticked, transient states will be included and optionally labelled, "
+                            + "with '%s' replaced by the transient depth",
+                        PLACEHOLDER);
                 break;
             case OPEN:
                 text = "Mark open states with:";
@@ -381,14 +412,19 @@ public class SaveLTSAsDialog {
                 break;
             case NUMBER:
                 message =
-                    flag.getDescription()
-                        + " label must contain placeholde '#'";
+                    String.format("%s label must contain placeholde '%s'",
+                        flag.getDescription(), PLACEHOLDER);
                 listener = new PlaceholderFieldListener(textField, message);
+                break;
+            case TRANSIENT:
+                // no listener
                 break;
             default:
                 assert false;
             }
-            textField.getDocument().addDocumentListener(listener);
+            if (listener != null) {
+                textField.getDocument().addDocumentListener(listener);
+            }
             textField.setEnabled(false);
             textField.setEditable(false);
             result.put(flag, textField);
@@ -426,6 +462,10 @@ public class SaveLTSAsDialog {
     }
 
     private JLabel errorLabel;
+
+    private GTS getGTS() {
+        return this.simulator.getModel().getGts();
+    }
 
     /**
      * Lazily creates and returns a button labelled OK.
@@ -495,7 +535,7 @@ public class SaveLTSAsDialog {
 
         @Override
         boolean hasError(String text) {
-            return text.indexOf('#') < 0;
+            return text.indexOf(PLACEHOLDER) < 0;
         }
     }
 
@@ -610,6 +650,8 @@ public class SaveLTSAsDialog {
         NONE,
         /** Export all states. */
         ALL,
+        /** Export only top-level states. */
+        TOP,
         /** Export final states. */
         FINAL,
         /** Export result states. */
