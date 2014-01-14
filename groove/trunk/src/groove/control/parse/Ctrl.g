@@ -72,13 +72,15 @@ import java.util.LinkedList;
 
 /** @H Main program. */
 program
+@init { helper.clearErrors(); }
+@after { helper.declareProgram($tree); }
   : //@S package? import* ( function | recipe | stat )*
     //@B Main program, consisting of a sequence top-level statements,
     //@B control function definitions and recipe definitions.
     //@B Java-like packages and imports are provided for modularity. 
     package_decl
     import_decl*
-    (function|recipe|stat)* eof=EOF
+    (function|recipe|stat)* EOF
     { helper.checkEOF($EOF.tree); }
     -> ^( PROGRAM
           package_decl

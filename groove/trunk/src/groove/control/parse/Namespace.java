@@ -29,8 +29,11 @@ import groove.grammar.model.FormatError;
 import groove.grammar.model.FormatErrorSet;
 import groove.util.antlr.ParseInfo;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,12 +63,12 @@ public class Namespace implements ParseInfo {
      * Adds a function or recipe name to the set of declared names.
      * @return {@code true} if the name is new.
      */
-    public boolean addFunction(String name, int priority,
+    public boolean addFunction(String fullName, int priority,
             List<CtrlPar.Var> sig, String controlName, int startLine) {
-        boolean result = !hasCallable(name);
+        boolean result = !hasCallable(fullName);
         if (result) {
-            this.callableMap.put(name, new Function(name, priority, sig,
-                controlName, startLine));
+            addProcedure(new Function(fullName, priority, sig, controlName,
+                startLine));
         }
         return result;
     }
@@ -74,15 +77,26 @@ public class Namespace implements ParseInfo {
      * Adds a function or recipe name to the set of declared names.
      * @return {@code true} if the name is new.
      */
-    public boolean addRecipe(String name, int priority, List<CtrlPar.Var> sig,
-            String controlName, int startLine) {
-        boolean result = !hasCallable(name);
+    public boolean addRecipe(String fullName, int priority,
+            List<CtrlPar.Var> sig, String controlName, int startLine) {
+        boolean result = !hasCallable(fullName);
         if (result) {
-            this.topNames.add(name);
-            this.callableMap.put(name, new Recipe(name, priority, sig, controlName,
+            this.topNames.add(fullName);
+            addProcedure(new Recipe(fullName, priority, sig, controlName,
                 startLine));
         }
         return result;
+    }
+
+    private void addProcedure(Procedure proc) {
+        String fullName = proc.getFullName();
+        this.callableMap.put(fullName, proc);
+        Set<String> callers = new HashSet<String>();
+        this.callerMap.put(fullName, callers);
+        callers.add(fullName);
+        Set<String> callees = new HashSet<String>();
+        callees.add(fullName);
+        this.calleeMap.put(fullName, callees);
     }
 
     /**
@@ -138,17 +152,18 @@ public class Namespace implements ParseInfo {
     }
 
     /** Mapping from declared callable unit names to the units. */
-    private final Map<String,Callable> callableMap = new TreeMap<String,Callable>();
+    private final Map<String,Callable> callableMap =
+        new TreeMap<String,Callable>();
 
     /** Sets the full name of the control program currently being explored. */
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-        this.parentName = QualName.getParent(fullName);
+    public void setControlName(String controlName) {
+        this.controlName = controlName;
+        this.parentName = QualName.getParent(controlName);
     }
 
     /** Returns the full name of the control program being parsed. */
-    public String getFullName() {
-        return this.fullName;
+    public String getControlName() {
+        return this.controlName;
     }
 
     /** Returns the parent name space of the control program being parsed. */
@@ -157,8 +172,8 @@ public class Namespace implements ParseInfo {
     }
 
     /** Full name of the program file being parsed. */
-    private String fullName;
-    /** Parent name of {@link #fullName}. */
+    private String controlName;
+    /** Parent name of {@link #controlName}. */
     private String parentName;
 
     /**
@@ -192,10 +207,81 @@ public class Namespace implements ParseInfo {
     /** Set of used rule names. */
     private final Set<String> usedNames = new HashSet<String>();
 
+    /** Indicates if a certain procedure name has been resolved. */
+    public boolean isResolved(String name) {
+        return this.resolved.contains(name);
+    }
+
+    private Set<String> resolved = new HashSet<String>();
+
+    /** Tries to add a dependency from a caller to a callee.
+     * @return {@code true} if the dependency was added; {@code false} if this
+     * was prevented by a circularity
+     */
+    public boolean addDependency(String caller, String callee) {
+        Set<String> parentCallers = this.callerMap.get(caller);
+        Set<String> callees = this.calleeMap.get(caller);
+        boolean result = !parentCallers.contains(callee);
+        if (result && callees.add(callee)) {
+            Set<String> childCallees = this.calleeMap.get(callee);
+            for (String parentCaller : parentCallers) {
+                this.calleeMap.get(parentCaller).addAll(childCallees);
+            }
+            for (String childCallee : childCallees) {
+                this.callerMap.get(childCallee).addAll(parentCallers);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns a set of function names in an order in which there are no
+     * forward dependencies.
+     * Functions that already have bodies do not count as dependencies.
+     * @return an ordered list consisting of the elements of {@code functions};
+     * or {@code null} if no order exists
+     */
+    public List<String> resolveFunctions(Set<String> functions) {
+        List<String> result = new ArrayList<String>();
+        // collect the remaining functions to be resolved
+        Set<String> resolved = this.resolved;
+        functions = new HashSet<String>(functions);
+        while (!functions.isEmpty()) {
+            Iterator<String> remainingIter = functions.iterator();
+            String candidate = null;
+            while (remainingIter.hasNext()) {
+                candidate = remainingIter.next();
+                resolved.add(candidate);
+                if (resolved.containsAll(this.calleeMap.get(candidate))) {
+                    remainingIter.remove();
+                    break;
+                } else {
+                    resolved.remove(candidate);
+                    candidate = null;
+                }
+            }
+            if (candidate == null) {
+                result = null;
+                break;
+            } else {
+                result.add(candidate);
+            }
+        }
+        return result;
+    }
+
+    /** Mapping from function names to other functions being invoked from it. */
+    private final Map<String,Set<String>> calleeMap =
+        new HashMap<String,Set<String>>();
+
+    /** Mapping from function names to other functions invoking it. */
+    private final Map<String,Set<String>> callerMap =
+        new HashMap<String,Set<String>>();
+
     @Override
     public String toString() {
-        return String.format("Namespace for %s, defining %s", getFullName(),
-            this.topNames);
+        return String.format("Namespace for %s, defining %s", getControlName(),
+            this.callableMap.keySet());
     }
 
     /** Adds an error to the errors contained in this name space. */

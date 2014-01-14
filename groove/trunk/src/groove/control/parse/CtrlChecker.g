@@ -38,11 +38,8 @@ import java.util.HashMap;
 }
 
 program 
+@init { helper.clearErrors(); }
   : ^(PROGRAM package_decl import_decl* functions recipes block) 
-    //{ if ($block.tree.getChildCount() == 0) {
-    //      helper.checkAny($PROGRAM);
-    //}
-    //}
   ;
 
 package_decl
@@ -71,8 +68,8 @@ recipe
   ;
 
 functions
-  : ^(FUNCTIONS function*)
-    { helper.reorderFunctions($FUNCTIONS); }
+  : ^( FUNCTIONS function*)
+       { helper.reorderFunctions($FUNCTIONS); }
   ;
 
 function

@@ -27,11 +27,11 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Call extends Pair<Callable,List<CtrlPar>> {
+public class Call extends Pair<Callable,List<? extends CtrlPar>> {
     /**
      * Constructs a call of a given unit, with arguments.
      */
-    public Call(Callable unit, List<CtrlPar> args) {
+    public Call(Callable unit, List<? extends CtrlPar> args) {
         super(unit, args);
     }
 
@@ -49,7 +49,7 @@ public class Call extends Pair<Callable,List<CtrlPar>> {
     }
 
     /** Returns the list of arguments. */
-    public List<CtrlPar> getArgs() {
+    public List<? extends CtrlPar> getArgs() {
         return two();
     }
 

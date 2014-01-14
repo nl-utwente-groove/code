@@ -17,6 +17,7 @@
 package groove.control;
 
 import groove.control.CtrlPar.Var;
+import groove.control.symbolic.Term;
 import groove.grammar.QualName;
 import groove.util.Fixable;
 import groove.util.Groove;
@@ -88,18 +89,29 @@ public abstract class Procedure implements Callable, Fixable {
 
     /** Sets the body of the procedure. 
      * Should only be invoked once, before the procedure is fixed.
-     * The call fixes the function.
+     * The call fixes the procedure.
      */
-    public void setTemplate(Template body) {
-        assert body != null && body.getName().equals(getFullName());
+    public void setTerm(Term body) {
         assert body == null && !isFixed();
-        this.template = body;
+        this.term = body;
         setFixed();
     }
 
     /** Returns the body of this procedure. */
+    public Term getTerm() {
+        assert isFixed();
+        return this.term;
+    }
+
+    private Term term;
+
+    /** Returns the body of this procedure. */
     public Template getTemplate() {
         assert isFixed();
+        if (this.template == null) {
+            this.template =
+                TemplateBuilder.instance().build(getFullName(), getTerm());
+        }
         return this.template;
     }
 

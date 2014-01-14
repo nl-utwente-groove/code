@@ -71,6 +71,13 @@ abstract public class ParseTree<T extends ParseTree<T,I>,I extends ParseInfo>
         return (T) super.getChild(i);
     }
 
+    /* Overridden to specialise the type. */
+    @SuppressWarnings("unchecked")
+    @Override
+    public T getParent() {
+        return (T) super.getParent();
+    }
+
     /** Sets this tree to be a duplicate of another. */
     protected void setNode(T node) {
         this.token = node.token;

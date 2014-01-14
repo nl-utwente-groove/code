@@ -21,13 +21,15 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import groove.control.Call;
+import groove.control.CtrlPar;
+import groove.control.CtrlType;
+import groove.control.CtrlVar;
 import groove.control.Location;
 import groove.control.Switch;
 import groove.control.Template;
 import groove.control.TemplateBuilder;
-import groove.control.symbolic.Term;
-import groove.gui.Viewer;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,7 +37,6 @@ import java.util.Set;
 import junit.framework.Assert;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -44,27 +45,24 @@ import org.junit.Test;
  */
 @SuppressWarnings("javadoc")
 public class TemplateBuildTest extends CtrlTester {
-    {
-        initGrammar("abc");
-    }
-
-    @BeforeClass
-    public static void initPrototype() {
-        p = Term.prototype();
-    }
-
     @Before
     public void initCalls() {
+        initGrammar("abc");
         this.aCall = new Call(getRule("a"));
         this.bCall = new Call(getRule("b"));
         this.cCall = new Call(getRule("c"));
-        this.a = p.call(this.aCall);
-        this.b = p.call(this.bCall);
-        this.c = p.call(this.cCall);
+        this.xInt = new CtrlVar("x", CtrlType.INT);
+        this.xIntOut = new CtrlPar.Var(this.xInt, false);
     }
 
+    private Call aCall;
+    private Call bCall;
+    private Call cCall;
+    private CtrlVar xInt;
+    private CtrlPar xIntOut;
+
     @Test
-    public void test() {
+    public void testSimple() {
         build("a;");
         assertSize(2, 1);
         //
@@ -133,8 +131,6 @@ public class TemplateBuildTest extends CtrlTester {
     @Test
     public void testOther() {
         build("choice a; or { alap other; }");
-        Viewer.showGraph(this.template);
-        Viewer.showGraph(this.minimal);
         assertSize(6, 10);
         assertTrue(getNext(getFailure(getStart()), this.aCall).isFinal());
         Location loc = getInit(this.bCall);
@@ -143,6 +139,40 @@ public class TemplateBuildTest extends CtrlTester {
         assertEquals(loc, getNext(loc, this.cCall));
         assertTrue(getFailure(loc).isFinal());
         assertFalse(getSuccess(loc).isFinal());
+    }
+
+    @Test
+    public void testNormalise() {
+        build("if (a) { b;choice {} or {} } else b;");
+        assertEquals(6, this.template.nodeCount());
+        assertEquals(5, this.template.edgeCount());
+        assertSize(4, 4);
+    }
+
+    @Test
+    public void testVars() {
+        initGrammar("emptyRules");
+        Call call = new Call(getRule("bInt"), Arrays.asList(this.xIntOut));
+        //
+        build("int x; bInt(out x);");
+        Location loc = getInit(call);
+        assertTrue(loc.getVars().isEmpty());
+        assertTrue(loc.isFinal());
+        //
+        build("int x; bInt(out x); a;");
+        loc = getInit(call);
+        assertTrue(loc.getVars().isEmpty());
+        assertFalse(loc.isFinal());
+        //
+        build("int x; bInt(out x); bInt(x);");
+        loc = getInit(call);
+        assertEquals(Collections.singletonList(this.xInt), loc.getVars());
+        assertFalse(loc.isFinal());
+    }
+
+    @Test
+    public void testFunction() {
+        build("function f() { a; b; }");
     }
 
     private void assertSize(int locCount, int switchCount) {
@@ -195,10 +225,7 @@ public class TemplateBuildTest extends CtrlTester {
         return loc.getFailureNext();
     }
 
-    private Call aCall, bCall, cCall;
-    private Term a, b, c;
     private Template template;
     private Template minimal;
-    static private Term p;
     static private final TemplateBuilder builder = TemplateBuilder.instance();
 }
