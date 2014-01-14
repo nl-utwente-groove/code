@@ -151,7 +151,7 @@ public class TemplateBuildTest extends CtrlTester {
 
     @Test
     public void testVars() {
-        initGrammar("emptyRules");
+        initGrammar("emptyrules");
         Call call = new Call(getRule("bInt"), Arrays.asList(this.xIntOut));
         //
         build("int x; bInt(out x);");
