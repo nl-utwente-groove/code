@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
@@ -61,19 +62,30 @@ public class CtrlLoader {
     }
 
     /**
-     * Parses a given, named control program on the basis of a set of rules.
+     * Parses a given, named control program.
      * The parse result is stored internally; a later call to {@link #buildAutomaton(String)}
      * will collect all parse trees and build a control automaton.
-     * @param name the qualified name of the control program to be parsed
+     * The tree is not yet checked.
+     * @param controlName the qualified name of the control program to be parsed
      * @param program the control program
      */
-    public CtrlTree parse(String name, String program) throws FormatException {
-        this.namespace.setFullName(name);
+    public CtrlTree parse(String controlName, String program)
+        throws FormatException {
+        this.namespace.setControlName(controlName);
         CtrlTree tree = CtrlTree.parse(this.namespace, program);
-        tree = tree.check();
-        Object oldRecord = this.treeMap.put(name, tree);
+        Object oldRecord = this.treeMap.put(controlName, tree);
         assert oldRecord == null;
         return tree;
+    }
+
+    /** Checks all control trees parsed by this loader. */
+    public Map<String,CtrlTree> check() throws FormatException {
+        Map<String,CtrlTree> result = new HashMap<String,CtrlTree>();
+        for (Map.Entry<String,CtrlTree> entry : this.treeMap.entrySet()) {
+            entry.setValue(entry.getValue().check());
+            result.put(entry.getKey(), entry.getValue());
+        }
+        return result;
     }
 
     /**
@@ -81,7 +93,8 @@ public class CtrlLoader {
      * Should only be called after the {@link #parse} methods.
      */
     public CtrlAut buildAutomaton(String name) throws FormatException {
-        this.namespace.setFullName(name);
+        this.namespace.setControlName(name);
+        check();
         CtrlTree tree = this.treeMap.get(name);
         return tree.build();
     }
@@ -91,6 +104,7 @@ public class CtrlLoader {
      * parsed in previous calls of the {@link #parse} methods.
      */
     public CtrlAut buildDefaultAutomaton() throws FormatException {
+        check();
         Collection<Action> actions = new ArrayList<Action>();
         for (String name : this.namespace.getTopNames()) {
             Callable unit = this.namespace.getCallable(name);

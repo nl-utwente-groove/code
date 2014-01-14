@@ -90,7 +90,7 @@ public class Switch extends ALabelEdge<Location> {
      * Should only be invoked if this is a call switch.
      * @return the list of arguments
      */
-    public final List<CtrlPar> getArgs() {
+    public final List<? extends CtrlPar> getArgs() {
         assert !isChoice();
         return getCall().getArgs();
     }

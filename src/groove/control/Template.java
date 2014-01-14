@@ -21,6 +21,7 @@ import groove.grammar.Action;
 import groove.graph.GraphRole;
 import groove.graph.NodeSetEdgeSetGraph;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -181,9 +182,13 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
         Map<Location,Set<Switch>> inMap = new HashMap<Location,Set<Switch>>();
         for (Location state : nodeSet()) {
             inMap.put(state, new HashSet<Switch>());
+            Set<CtrlVar> vars;
             if (state.isFinal() && hasParent()) {
-                state.addVars(getParent().getOutPars().keySet());
+                vars = getParent().getOutPars().keySet();
+            } else {
+                vars = Collections.emptySet();
             }
+            state.addVars(vars);
         }
         for (Switch trans : edgeSet()) {
             inMap.get(trans.target()).add(trans);

@@ -8,8 +8,6 @@ import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.control.Procedure;
 import groove.control.Program;
-import groove.control.Template;
-import groove.control.TemplateBuilder;
 import groove.control.symbolic.Term;
 import groove.grammar.QualName;
 import groove.grammar.model.FormatError;
@@ -57,6 +55,20 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         }
         return result;
     }
+
+    /** Returns the control program name stored in this tree node, if any. */
+    public String getControlName() {
+        return this.controlName;
+    }
+
+    /** Stores a control variable in this tree node. */
+    public void setControlName(String controlName) {
+        assert getType() == CtrlParser.PROGRAM;
+        assert controlName != null;
+        this.controlName = controlName;
+    }
+
+    private String controlName;
 
     /** Returns the control variable stored in this tree node, if any. */
     public CtrlVar getCtrlVar() {
@@ -115,6 +127,20 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         }
     }
 
+    /** Sets this tree to checked. */
+    private void setChecked() {
+        this.checked = true;
+    }
+
+    /** Indicates if this tree has been checked,
+     * i.e., it is the result of a {@link #check()} call.
+     */
+    public boolean isChecked() {
+        return this.checked;
+    }
+
+    private boolean checked;
+
     /**
      * Constructs a control term from this tree.
      * This is only well-defined if the root of the tree is a statement.
@@ -130,7 +156,15 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
      */
     private Term toTerm(Term prot) throws FormatException {
         Term result = null;
-        int arity = getType() == CtrlParser.CALL ? 0 : getChildCount();
+        int arity;
+        switch (getType()) {
+        case CtrlParser.VAR:
+        case CtrlParser.CALL:
+            arity = 0;
+            break;
+        default:
+            arity = getChildCount();
+        }
         Term[] args = new Term[arity];
         for (int i = 0; i < arity; i++) {
             args[i] = getChild(i).toTerm(prot);
@@ -231,44 +265,48 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
     }
 
     /** Constructs a control program from a top-level control tree. */
-    public Program toProgram(String name) throws FormatException {
+    public Program toProgram() throws FormatException {
         assert getType() == CtrlParser.PROGRAM;
-        Program result = new Program(name);
-        CtrlTree pack = getChild(0);
+        Program result = new Program(getControlName());
         CtrlTree functions = getChild(2);
         CtrlTree recipes = getChild(3);
         CtrlTree body = getChild(4);
-        TemplateBuilder builder = TemplateBuilder.instance();
         if (body.getChildCount() > 0) {
-            Template main = builder.build(name, body.toTerm());
-            result.setMain(main);
+            result.setTerm(body.toTerm());
         }
-        String packName = pack.getText();
         for (int i = 0; i < functions.getChildCount(); i++) {
             CtrlTree funcTree = functions.getChild(i);
-            result.addProc(funcTree.toProcedure(packName));
+            result.addProc(funcTree.toProcedure());
         }
         for (int i = 0; i < recipes.getChildCount(); i++) {
             CtrlTree recipeTree = recipes.getChild(i);
-            result.addProc(recipeTree.toProcedure(packName));
+            result.addProc(recipeTree.toProcedure());
         }
         result.setFixed();
         return result;
     }
 
+    /** Returns the package name from a top-level control tree. */
+    public String toPackageName() {
+        assert getType() == CtrlParser.PROGRAM;
+        CtrlTree pack = getChild(0);
+        return pack == null ? "" : pack.getText();
+    }
+
     /**
      * Converts this control tree to a procedure object.
      * This is only valid if the root is a function or recipe node.
-     * @param packName the package name within which the procedure is declared
      * @throws FormatException if there are static semantic errors in the declaration.
      */
-    public Procedure toProcedure(String packName) throws FormatException {
+    public Procedure toProcedure() throws FormatException {
+        assert getType() == CtrlParser.FUNCTION
+            || getType() == CtrlParser.RECIPE;
+        // look up the package name
+        String packName = getParent().getParent().toPackageName();
         String name = QualName.extend(packName, getChild(0).getText());
         Procedure result = (Procedure) getInfo().getCallable(name);
         CtrlTree bodyTree = getChild(getChildCount() - 1);
-        Template body =
-            TemplateBuilder.instance().build(name, bodyTree.toTerm());
-        result.setTemplate(body);
+        result.setTerm(bodyTree.toTerm());
         return result;
     }
 
@@ -376,13 +414,20 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
      * @return the resulting (transformed) syntax tree
      */
     public CtrlTree check() throws FormatException {
-        try {
-            CtrlChecker checker = createChecker();
-            CtrlTree result = (CtrlTree) checker.program().getTree();
-            getInfo().getErrors().throwException();
-            return result;
-        } catch (RecognitionException e) {
-            throw new FormatException(e);
+        assert getType() == CtrlParser.PROGRAM;
+        if (isChecked()) {
+            return this;
+        } else {
+            try {
+                CtrlChecker checker = createChecker();
+                CtrlTree result = (CtrlTree) checker.program().getTree();
+                getInfo().getErrors().throwException();
+                result.setControlName(getControlName());
+                result.setChecked();
+                return result;
+            } catch (RecognitionException e) {
+                throw new FormatException(e);
+            }
         }
     }
 
@@ -393,17 +438,21 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
 
     /**
      * Runs the builder on this tree.
+     * Checks the tree first, if this has not yet been done.
      * @return the resulting control automaton
      */
     public CtrlAut build() throws FormatException {
-        try {
-            CtrlBuilder builder = createBuilder();
-            CtrlAut result = builder.program().aut;
-            getInfo().getErrors().throwException();
-            return result == null ? null
-                    : result.clone(getInfo().getFullName());
-        } catch (RecognitionException e) {
-            throw new FormatException(e);
+        if (isChecked()) {
+            try {
+                CtrlBuilder builder = createBuilder();
+                CtrlAut result = builder.program().aut;
+                getInfo().getErrors().throwException();
+                return result == null ? null : result.clone(getControlName());
+            } catch (RecognitionException e) {
+                throw new FormatException(e);
+            }
+        } else {
+            return check().build();
         }
     }
 
@@ -418,6 +467,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         this.par = node.par;
         this.var = node.var;
         this.call = node.call;
+        this.controlName = node.controlName;
     }
 
     /**

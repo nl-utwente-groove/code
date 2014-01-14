@@ -17,6 +17,7 @@
 package groove.control;
 
 import groove.control.Switch.Kind;
+import groove.control.symbolic.Term;
 import groove.util.DefaultFixable;
 
 import java.util.Collections;
@@ -32,9 +33,14 @@ import java.util.TreeSet;
  * @version $Revision $
  */
 public class Program extends DefaultFixable {
+    /** Constructs an unnamed, initially empty program. */
+    public Program() {
+        this.names = new TreeSet<String>();
+    }
+
     /** Constructs a named, initially empty program. */
     public Program(String name) {
-        this.names = new TreeSet<String>();
+        this();
         this.names.add(name);
     }
 
@@ -55,31 +61,46 @@ public class Program extends DefaultFixable {
 
     private final Set<String> names;
 
-    /** Sets the main template in this program. */
-    public void setMain(Template main) {
-        assert main != null && this.main == null;
+    /** Sets the body of this program to a given term. */
+    public void setTerm(Term term) {
+        assert term != null && this.term == null;
         assert !isFixed();
-        this.main = main;
+        this.term = term;
     }
 
     /**
-     * Indicates if the program has a main block.
-     * Should only be invoked after the template is fixed.
+     * Indicates if the program has a main body.
+     * Should only be invoked after the program is fixed.
      */
-    public boolean hasMain() {
-        return getMain() != null;
+    public boolean hasBody() {
+        return getTerm() != null;
     }
 
     /** Returns the main block of this program, if any.
      * Should only be invoked after the program is fixed.
      * May be {@code null} if this program has no main body.
      */
-    public Template getMain() {
+    public Term getTerm() {
         assert isFixed();
-        return this.main;
+        return this.term;
     }
 
-    private Template main;
+    private Term term;
+
+    /** Returns the main template of this program, if any.
+     * Should only be invoked after the program is fixed.
+     * May be {@code null} if this program has no main body.
+     */
+    public Template getTemplate() {
+        assert isFixed();
+        if (this.template == null && hasBody()) {
+            this.template =
+                TemplateBuilder.instance().build(getName(), getTerm());
+        }
+        return this.template;
+    }
+
+    private Template template;
 
     /** Adds a procedure to this program. */
     public void addProc(Procedure proc) {
@@ -102,12 +123,8 @@ public class Program extends DefaultFixable {
 
     @Override
     public boolean setFixed() {
-        assert this.main != null;
         boolean result = super.setFixed();
         if (result) {
-            if (this.main != null) {
-                this.main.setFixed();
-            }
             for (Procedure proc : this.procs.values()) {
                 proc.setFixed();
             }
@@ -117,8 +134,8 @@ public class Program extends DefaultFixable {
 
     /** Checks that all calls in the program are resolved. */
     public void checkCalls() {
-        if (hasMain()) {
-            checkCalls(getMain());
+        if (hasBody()) {
+            checkCalls(getTemplate());
         }
         for (Procedure proc : getProcs().values()) {
             checkCalls(proc.getTemplate());
@@ -133,13 +150,14 @@ public class Program extends DefaultFixable {
      */
     public void add(Program other) {
         assert !isFixed();
+        assert other.isFixed();
         this.names.addAll(other.names);
-        if (hasMain() && other.hasMain()) {
+        if (this.term != null && other.hasBody()) {
             throw new IllegalArgumentException(
                 "Both programs have a main template");
         }
-        if (!hasMain()) {
-            this.main = other.main;
+        if (this.term == null) {
+            this.term = other.getTerm();
         }
         for (Procedure proc : other.procs.values()) {
             addProc(proc);

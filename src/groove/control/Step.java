@@ -191,7 +191,7 @@ public class Step extends AEdge<Frame,Switch> {
     /** Computes the binding of call arguments to source location variables.
      */
     private AssignSource[] computeParAssign() {
-        List<CtrlPar> args = label().getArgs();
+        List<? extends CtrlPar> args = label().getArgs();
         int size = args == null ? 0 : args.size();
         AssignSource[] result = new AssignSource[size];
         Map<CtrlVar,Integer> sourceVars = source().getLocation().getVarIxMap();

@@ -46,15 +46,28 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
 
     @Override
     public CtrlAut compute() throws FormatException {
-        getLoader().parse(getFullName(), getProgram());
-        CtrlAut result = getLoader().buildAutomaton(getFullName());
-        if (result == null) {
-            result = getLoader().buildDefaultAutomaton();
+        CtrlAut result;
+        if (isEnabled()) {
+            CompositeControlModel model = getGrammar().getControlModel();
+            if (model.hasErrors()) {
+                model.getPartErrors(this).throwException();
+                // there were errors in the composite model but not in this particular part
+                throw new FormatException(
+                    "The composite control model cannot be built");
+            } else {
+                result = getGrammar().getControlModel().toResource();
+            }
         } else {
-            GraphInfo.throwException(result);
-            result = result.normalise();
+            getLoader().parse(getFullName(), getProgram());
+            result = getLoader().buildAutomaton(getFullName());
+            if (result == null) {
+                result = getLoader().buildDefaultAutomaton();
+            } else {
+                GraphInfo.throwException(result);
+                result = result.normalise();
+            }
+            result.setFixed();
         }
-        result.setFixed();
         return result;
     }
 

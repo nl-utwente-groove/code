@@ -33,7 +33,6 @@ import groove.control.CtrlTransition;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatException;
-import groove.util.Groove;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,18 +48,12 @@ import org.junit.Test;
  * @version $Revision $
  */
 public class CtrlBuildTest extends CtrlTester {
-    private static final String GRAMMAR_DIR = "junit/control/";
+    {
+        initGrammar("emptyrules");
+        this.prioGrammar = loadGrammar("emptypriorules");
+    }
 
     private Grammar prioGrammar;
-
-    {
-        try {
-            this.prioGrammar =
-                Groove.loadGrammar(GRAMMAR_DIR + "emptypriorules").toGrammar();
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
-    }
 
     /** Regression test for errors found in old control programs. */
     @Test
@@ -170,7 +163,7 @@ public class CtrlBuildTest extends CtrlTester {
 
     /** Test for in/output parameter errors. */
     @Test
-    public void testDirErrors() {
+    public void testDirectionErrors() {
         buildWrong("node x; bNode(out x); oNode(x);");
         buildWrong("int x; iInt(out x);");
         buildWrong("oNode(_)");
