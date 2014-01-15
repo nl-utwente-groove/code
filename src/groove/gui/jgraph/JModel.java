@@ -158,15 +158,25 @@ abstract public class JModel<G extends Graph> extends DefaultGraphModel {
             Collection<? extends Edge> edgeSet, boolean replace) {
         prepareInsert();
         getJGraph().notifyProgress("Loading");
-        for (Node node : nodeSet) {
-            addNode(node);
-        }
-        for (Edge edge : edgeSet) {
-            addEdge(edge);
-        }
+        addNodes(nodeSet);
+        addEdges(edgeSet);
         getJGraph().notifyProgress("Rendering");
         doInsert(replace);
         getJGraph().notifyProgress("");
+    }
+
+    /** Adds the given set of nodes to this JModel. */
+    protected void addNodes(Collection<? extends Node> nodeSet) {
+        for (Node node : nodeSet) {
+            addNode(node);
+        }
+    }
+
+    /** Adds the given set of edges to this JModel. */
+    protected void addEdges(Collection<? extends Edge> edgeSet) {
+        for (Edge edge : edgeSet) {
+            addEdge(edge);
+        }
     }
 
     /**

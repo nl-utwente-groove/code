@@ -16,6 +16,8 @@
  */
 package groove.gui.jgraph;
 
+import groove.graph.Edge;
+import groove.graph.Node;
 import groove.gui.look.Look;
 import groove.gui.look.VisualKey;
 import groove.lts.GTS;
@@ -23,6 +25,8 @@ import groove.lts.GTSListener;
 import groove.lts.GraphState;
 import groove.lts.GraphState.Flag;
 import groove.lts.GraphTransition;
+
+import java.util.Collection;
 
 /**
  * Graph model adding a concept of active state and transition, with special
@@ -114,8 +118,10 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
                 }
                 jCell.setLook(Look.TRANSIENT, true);
             }
-            jCell.setLook(Look.FINAL, lts.isFinal(explored));
-            jCell.setLook(Look.RESULT, lts.isResult(explored));
+            if (jCell != null) {
+                jCell.setLook(Look.FINAL, lts.isFinal(explored));
+                jCell.setLook(Look.RESULT, lts.isResult(explored));
+            }
         }
     }
 
@@ -133,6 +139,31 @@ final public class LTSJModel extends JModel<GTS> implements GTSListener {
         }
         getJGraph().reactivate();
         this.listening = true;
+    }
+
+    /** Overriden to ensure that the node rendering limit is used. */
+    @Override
+    protected void addNodes(Collection<? extends Node> nodeSet) {
+        int nodesAdded = 0;
+        for (Node node : nodeSet) {
+            addNode(node);
+            nodesAdded++;
+            if (nodesAdded > getStateBound()) {
+                return;
+            }
+        }
+    }
+
+    /** Overriden to ensure that the node rendering limit is used. */
+    @Override
+    protected void addEdges(Collection<? extends Edge> edgeSet) {
+        for (Edge edge : edgeSet) {
+            // Only add the edges for which we know the state was added.
+            if (edge.source().getNumber() <= getStateBound()
+                && edge.target().getNumber() <= getStateBound()) {
+                addEdge(edge);
+            }
+        }
     }
 
     private boolean listening = true;
