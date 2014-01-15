@@ -19,11 +19,7 @@ package groove.gui.action;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.display.LTSDisplay;
-import groove.gui.jgraph.JCell;
-import groove.gui.jgraph.JEdge;
-import groove.gui.jgraph.JVertex;
 import groove.gui.jgraph.LTSJModel;
-import groove.gui.look.VisualKey;
 
 /**
  * Action to reload the LTS into the LTSDisplay, with the current state bound.
@@ -40,22 +36,8 @@ public class ReloadLTSAction extends SimulatorAction {
     public void execute() {
         LTSDisplay display = getLtsDisplay();
         LTSJModel ltsJModel = display.getJModel();
-        int newBound = display.getStateBound();
-        int oldBound = ltsJModel.setStateBound(newBound);
-        int lower = Math.min(oldBound, newBound);
-        int upper = Math.max(oldBound, newBound);
-        for (JCell<?> jCell : ltsJModel.getRoots()) {
-            if (jCell instanceof JVertex<?>) {
-                JVertex<?> jVertex = (JVertex<?>) jCell;
-                int nr = jVertex.getNumber();
-                if (lower <= nr && nr <= upper) {
-                    jVertex.setStale(VisualKey.VISIBLE);
-                    for (JEdge<?> jEdge : jVertex.getContext()) {
-                        jEdge.setStale(VisualKey.VISIBLE);
-                    }
-                }
-            }
-        }
+        ltsJModel.setStateBound(display.getStateBound());
+        ltsJModel.loadGraph(ltsJModel.getGraph());
         display.getJGraph().refreshAllCells();
         display.getGraphPanel().refreshBackground();
     }
