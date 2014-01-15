@@ -1345,7 +1345,7 @@ public enum AspectKind {
 
             @Override
             String toString(Object content) {
-                return content.toString();
+                return ((Expression) content).toParseString();
             }
 
             @Override

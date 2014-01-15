@@ -64,7 +64,7 @@ public class NativePorter extends AbstractExporter implements Importer {
             ResourceKind kind = getResourceKind(fileType);
             if (kind.isGraphBased()) {
                 // read graph from file
-                AttrGraph xmlGraph = GxlIO.getInstance().loadGraph(file);
+                AttrGraph xmlGraph = GxlIO.instance().loadGraph(file);
                 xmlGraph.setRole(kind.getGraphRole());
                 xmlGraph.setName(name);
                 result = new Resource(kind, name, xmlGraph.toAspectGraph());
@@ -105,7 +105,7 @@ public class NativePorter extends AbstractExporter implements Importer {
             GraphBasedModel<?> graphModel = (GraphBasedModel<?>) model;
             AspectGraph graph = graphModel.getSource();
             try {
-                GxlIO.getInstance().saveGraph(graph.toPlainGraph(), file);
+                GxlIO.instance().saveGraph(graph.toPlainGraph(), file);
             } catch (IOException e) {
                 throw new PortException(e);
             }

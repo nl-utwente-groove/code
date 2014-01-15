@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.PrintStream;
 
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
 
 /**
  * Counterpart of {@link Generator} for pattern graph state space exploration.
@@ -55,15 +54,14 @@ public class PatternGraphGenerator extends GrooveCmdLineTool<PGTS> {
     /**
      * Constructs the generator with a given name and for a given set of arguments.
      */
-    protected PatternGraphGenerator(String name, String... args)
-        throws CmdLineException {
+    protected PatternGraphGenerator(String name, String... args) {
         super(name, args);
     }
 
     /**
      * Constructs the generator for a given set of arguments.
      */
-    public PatternGraphGenerator(String... args) throws CmdLineException {
+    public PatternGraphGenerator(String... args) {
         this("PatternGraphGenerator", args);
     }
 
@@ -71,7 +69,7 @@ public class PatternGraphGenerator extends GrooveCmdLineTool<PGTS> {
      * Explores the state space.
      */
     @Override
-    public PGTS run() throws Exception {
+    protected PGTS run() throws Exception {
         return generate(getGrammar());
     }
 

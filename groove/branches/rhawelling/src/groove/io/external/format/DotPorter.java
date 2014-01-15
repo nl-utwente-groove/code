@@ -68,7 +68,7 @@ public class DotPorter extends ConceptualPorter {
     }
 
     /** Returns the singleton instance of this class. */
-    public static final DotPorter getInstance() {
+    public static final DotPorter instance() {
         return instance;
     }
 

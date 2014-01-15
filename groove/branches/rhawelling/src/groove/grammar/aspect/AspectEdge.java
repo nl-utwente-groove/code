@@ -407,12 +407,12 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
             }
             break;
         case NESTED:
-            assert !onNode;
             text = getAspect().getContentString();
             break;
         case REMARK:
             color = ColorType.REMARK;
             rolePrefix = "// ";
+            text = getInnerText();
             break;
         case ADDER:
             color = ColorType.CREATOR;
@@ -453,11 +453,12 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
         }
         if (result == null) {
             if (text == null) {
-                if (getGraphRole() == RULE) {
-                    text = getRuleLabel().text();
-                } else {
-                    text = getTypeLabel().text();
+                Label label =
+                    getGraphRole() == RULE ? getRuleLabel() : getTypeLabel();
+                if (label == null) {
+                    label = label();
                 }
+                text = label.text();
                 // set bold or italic depending on edge role
                 switch (getRole()) {
                 case FLAG:
@@ -500,7 +501,7 @@ public class AspectEdge extends AEdge<AspectNode,AspectLabel> implements
                 result =
                     result.append(Line.atom(type.getName()).style(Style.BOLD));
             }
-            if (rolePrefix != null && getAspect() != source().getAspect()) {
+            if (rolePrefix != null && getKind() != source().getKind()) {
                 result = Line.atom(rolePrefix).append(result);
             }
         }

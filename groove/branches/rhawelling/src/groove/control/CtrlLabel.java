@@ -50,9 +50,9 @@ public class CtrlLabel extends ALabel {
      */
     private CtrlLabel(int number, CtrlCall call, CtrlGuard guard, boolean start) {
         assert start || !call.isOmega();
-        assert start || call.hasRecipe();
+        assert start || call.hasContext();
         this.call = call;
-        this.recipe = call.getRecipe();
+        this.recipe = call.getContext();
         this.start = start;
         this.guard.addAll(guard);
         this.number = number;
@@ -72,7 +72,7 @@ public class CtrlLabel extends ALabel {
         result.append(getNumber());
         result.append(':');
         if (hasRecipe()) {
-            result.append(getRecipe());
+            result.append(getRecipe().getFullName());
             result.append('/');
         }
         if (!this.guard.isEmpty()) {

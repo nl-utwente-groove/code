@@ -26,7 +26,6 @@ import groove.util.collect.TreeBag;
 import java.util.Map;
 
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
 
 /**
  * Tool to test and report various characteristics of a saved graph.
@@ -38,13 +37,13 @@ public class GraphReporter extends GrooveCmdLineTool<String> {
      * Constructs a new graph reporter with a given list of arguments. The
      * arguments consist of a list of options followed by a graph file name.
      */
-    private GraphReporter(String... args) throws CmdLineException {
+    private GraphReporter(String... args) {
         super("GraphReporter", args);
     }
 
     /** Starts the reporter, for the given list of arguments. */
     @Override
-    public String run() throws Exception {
+    protected String run() throws Exception {
         Graph graph = Groove.loadGraph(this.graphLocation);
         String result = getReport(graph).toString();
         emit("%s%n", result);

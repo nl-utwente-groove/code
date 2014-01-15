@@ -117,17 +117,19 @@ public class Proof {
     /**
      * Creates an event on the basis of this proof.
      * This is only allowed if the proved condition has an associated rule.
-     * @param nodeFactory factory for fresh nodes; may be <code>null</code>
+     * An optional event factory can be used for event reuse
+     * @param record factory for fresh nodes; may be <code>null</code>, in which case
+     * events are not reused among transitions
      */
-    public RuleEvent newEvent(Record nodeFactory) {
+    public RuleEvent newEvent(Record record) {
         assert hasRule();
         Collection<BasicEvent> eventSet = new ArrayList<BasicEvent>();
-        collectEvents(eventSet, nodeFactory);
+        collectEvents(eventSet, record);
         assert !eventSet.isEmpty();
         if (eventSet.size() == 1 && !getRule().hasSubRules()) {
             return eventSet.iterator().next();
         } else {
-            return createCompositeEvent(nodeFactory, eventSet);
+            return createCompositeEvent(record, eventSet);
         }
     }
 
@@ -135,22 +137,23 @@ public class Proof {
      * Recursively collects the events of this proof and all sub-proofs into a
      * given collection.
      * @param events the resulting set of events
-     * @param nodeFactory factory for fresh nodes; may be <code>null</code>
+     * @param record factory for events; may be <code>null</code>, in which case
+     * events are not reused among transitions
      */
-    private void collectEvents(Collection<BasicEvent> events, Record nodeFactory) {
+    private void collectEvents(Collection<BasicEvent> events, Record record) {
         if (hasRule()) {
-            BasicEvent myEvent = createSimpleEvent(nodeFactory);
+            BasicEvent myEvent = createSimpleEvent(record);
             events.add(myEvent);
         }
         for (Proof subMatch : getSubProofs()) {
-            subMatch.collectEvents(events, nodeFactory);
+            subMatch.collectEvents(events, record);
         }
     }
 
     /**
      * Callback factory method to create a simple event. Delegates to
      * {@link Record#createSimpleEvent(Rule, RuleToHostMap)} if
-     * <code>nodeFactory</code> is not <code>null</code>.
+     * <code>record</code> is not <code>null</code>.
      */
     private BasicEvent createSimpleEvent(Record record) {
         assert hasRule();

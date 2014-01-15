@@ -39,13 +39,13 @@ public class GraphvizResource extends ExportableResource {
     private File m_instanceFile;
 
     public GraphvizResource(File typeTarget, File instanceTarget) {
-        m_typeFile = typeTarget;
-        m_instanceFile = instanceTarget;
+        this.m_typeFile = typeTarget;
+        this.m_instanceFile = instanceTarget;
     }
 
     public Graph getTypeGraph(String name) {
-        if (m_typeGraphs.containsKey(name)) {
-            return m_typeGraphs.get(name);
+        if (this.m_typeGraphs.containsKey(name)) {
+            return this.m_typeGraphs.get(name);
         }
 
         Graph g = new Graph();
@@ -54,14 +54,14 @@ public class GraphvizResource extends ExportableResource {
         g.setType(com.alexmerz.graphviz.objects.Graph.DIRECTED);
         g.addGenericNodeAttribute("shape", "box");
 
-        m_typeGraphs.put(name, g);
+        this.m_typeGraphs.put(name, g);
 
         return g;
     }
 
     public Graph getInstanceGraph(String name) {
-        if (m_instanceGraphs.containsKey(name)) {
-            return m_instanceGraphs.get(name);
+        if (this.m_instanceGraphs.containsKey(name)) {
+            return this.m_instanceGraphs.get(name);
         }
 
         Graph g = new Graph();
@@ -70,16 +70,17 @@ public class GraphvizResource extends ExportableResource {
         g.setType(com.alexmerz.graphviz.objects.Graph.DIRECTED);
         g.addGenericNodeAttribute("shape", "box");
 
-        m_instanceGraphs.put(name, g);
+        this.m_instanceGraphs.put(name, g);
 
         return g;
     }
 
     @Override
     public boolean export() throws ExportException {
-        for (Entry<String,Graph> entry : m_typeGraphs.entrySet()) {
+        for (Entry<String,Graph> entry : this.m_typeGraphs.entrySet()) {
             try {
-                BufferedWriter out = new BufferedWriter(new FileWriter(m_typeFile));
+                BufferedWriter out =
+                    new BufferedWriter(new FileWriter(this.m_typeFile));
                 int timer = Timer.start("Save DOT");
                 out.write(entry.getValue().toString());
                 Timer.stop(timer);
@@ -89,10 +90,11 @@ public class GraphvizResource extends ExportableResource {
             }
         }
 
-        if (m_instanceFile != null) {
-            for (Entry<String,Graph> entry : m_instanceGraphs.entrySet()) {
+        if (this.m_instanceFile != null) {
+            for (Entry<String,Graph> entry : this.m_instanceGraphs.entrySet()) {
                 try {
-                    BufferedWriter out = new BufferedWriter(new FileWriter(m_instanceFile));
+                    BufferedWriter out =
+                        new BufferedWriter(new FileWriter(this.m_instanceFile));
                     int timer = Timer.start("Save DOT");
                     out.write(entry.getValue().toString());
                     Timer.stop(timer);

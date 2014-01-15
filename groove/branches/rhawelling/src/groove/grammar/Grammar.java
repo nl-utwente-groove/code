@@ -193,6 +193,10 @@ public class Grammar {
                 subRule.setPartial();
                 this.allRules.add(subRule);
             }
+            break;
+        default:
+            assert false : String.format("'%s' is not a rule or recipe",
+                action.getFullName());
         }
     }
 

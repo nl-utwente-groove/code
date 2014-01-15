@@ -16,34 +16,21 @@
  */
 package groove.grammar;
 
-import groove.control.CtrlPar.Var;
+import groove.control.Callable;
+import groove.control.Switch.Kind;
 
 import java.util.Comparator;
-import java.util.List;
 
 /**
  * Supertype of the actions in a rule system. 
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface Action extends Comparable<Action> {
-    /** Returns the full (qualified) name of the action. */
-    public String getFullName();
-
+public interface Action extends Callable, Comparable<Action> {
     /** 
-     * Returns the last part of the action name.
+     * Returns the action kind of this action.
+     * @return the action kind; can only be {@link Kind#RECIPE} or {@link Kind#RULE}.
      */
-    public String getLastName();
-
-    /**
-     * Returns the priority of the action.
-     */
-    public int getPriority();
-
-    /** Returns the signature of the action. */
-    public List<Var> getSignature();
-
-    /** Returns the action kind of this action. */
     public Kind getKind();
 
     /**
@@ -57,6 +44,7 @@ public interface Action extends Comparable<Action> {
             }
 
         };
+
     /**
      * A comparator for actions. This
      * implementation orders priorities from high to low, and within priority,
@@ -82,18 +70,4 @@ public interface Action extends Comparable<Action> {
      * priority is given.
      */
     public static final int DEFAULT_PRIORITY = 0;
-
-    /** Enumeration of the kind of actions. */
-    public static enum Kind {
-        /** Recipe kind, represented by {@link Recipe}.*/
-        RECIPE,
-        /** Recipe kind, represented by {@link Recipe}.*/
-        RULE;
-
-        /** Returns the lower case version of the name. */
-        @Override
-        public String toString() {
-            return name().toLowerCase();
-        }
-    }
 }

@@ -48,6 +48,20 @@ public class PSequence implements SerializedParser {
         return true;
     }
 
+    public String toParsableString(Serialized source) {
+        String result = "";
+        for (SerializedParser parser : this.parsers) {
+            String next = parser.toParsableString(source);
+            if (next == null) {
+                result = null;
+                break;
+            } else {
+                result = result + next;
+            }
+        }
+        return result;
+    }
+
     @Override
     public String describeGrammar() {
         StringBuffer buffer = new StringBuffer();
@@ -56,5 +70,4 @@ public class PSequence implements SerializedParser {
         }
         return buffer.toString();
     }
-
 }

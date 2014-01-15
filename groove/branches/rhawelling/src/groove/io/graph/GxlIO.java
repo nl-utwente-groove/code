@@ -44,10 +44,8 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -78,27 +76,16 @@ import de.gupro.gxl.gxl_1_0.TypedElementType;
  * @author Arend Rensink
  * @version $Revision: 2973 $
  */
-public class GxlIO implements GraphIO {
+public class GxlIO extends GraphIO<AttrGraph> {
     private GxlIO() {
         // Private to avoid object creation. Use getInstance() method.
     }
 
-    /**
-     * Deletes the graph file and all dependent files.
-     */
+    @Override
     public void deleteGraph(File file) {
         deleteFile(file);
         // delete the layout file as well, if any
         deleteFile(toLayoutFile(file));
-    }
-
-    /**
-     * Deletes the given file.
-     */
-    private void deleteFile(File file) {
-        if (file.exists() && file.canWrite()) {
-            file.delete();
-        }
     }
 
     /**
@@ -111,18 +98,13 @@ public class GxlIO implements GraphIO {
     }
 
     @Override
+    public boolean canSave() {
+        return true;
+    }
+
+    @Override
     public void saveGraph(Graph graph, File file) throws IOException {
-        // create parent dirs if necessary
-        File parent = file.getParentFile();
-        if (parent != null && !parent.exists()) {
-            parent.mkdirs();
-        }
-        FileOutputStream out = new FileOutputStream(file);
-        try {
-            saveGraph(graph, out);
-        } finally {
-            out.close();
-        }
+        super.saveGraph(graph, file);
         // layout is now saved in the gxl file; delete the layout file
         deleteFile(toLayoutFile(file));
     }
@@ -130,14 +112,14 @@ public class GxlIO implements GraphIO {
     /**
      * Saves a graph to an output stream.
      */
-    public void saveGraph(Graph graph, OutputStream out) throws IOException {
+    @Override
+    protected void doSaveGraph(Graph graph, File file) throws IOException {
         GraphType gxlGraph = graphToGxl(graph);
         // now marshal the attribute graph
         try {
             GxlType document = new GxlType();
             document.getGraph().add(gxlGraph);
-            this.marshaller.marshal(this.factory.createGxl(document), out);
-            out.close();
+            this.marshaller.marshal(this.factory.createGxl(document), file);
         } catch (JAXBException e) {
             throw new IOException(e);
         }
@@ -253,8 +235,10 @@ public class GxlIO implements GraphIO {
                     (String) entry.getValue());
             }
             // Add version info
-            storeAttribute(gxlGraph, GraphProperties.Key.VERSION.getName(),
-                Version.GXL_VERSION);
+            if (!properties.containsKey(GraphProperties.Key.VERSION.getName())) {
+                storeAttribute(gxlGraph, GraphProperties.Key.VERSION.getName(),
+                    Version.GXL_VERSION);
+            }
         }
         return gxlGraph;
     }
@@ -341,6 +325,12 @@ public class GxlIO implements GraphIO {
         return result;
     }
 
+    @Override
+    public boolean canLoad() {
+        return true;
+    }
+
+    @Override
     public AttrGraph loadGraph(File file) throws IOException {
         // first get the non-layed out result
         AttrGraph result;
@@ -379,6 +369,7 @@ public class GxlIO implements GraphIO {
      * Loads a graph from an input stream. Convenience method for
      * <code>loadGraphWithMap(in).first()</code>.
      */
+    @Override
     public AttrGraph loadGraph(InputStream in) throws IOException,
         FormatException {
         try {
@@ -613,7 +604,7 @@ public class GxlIO implements GraphIO {
     private final ObjectFactory factory = new ObjectFactory();
 
     /** Returns the singleton instance of this class. */
-    public static GxlIO getInstance() {
+    public static GxlIO instance() {
         return INSTANCE;
     }
 

@@ -194,7 +194,7 @@ public abstract class Expression {
      */
     private static ExprTree parseToTree(String term, boolean test)
         throws FormatException {
-        ExprParser parser = ExprParser.instance(term);
+        ExprParser parser = ExprTree.getParser(term);
         try {
             ExprTree result =
                 (ExprTree) (test ? parser.test_expression().getTree()
@@ -205,8 +205,7 @@ public abstract class Expression {
             throw new FormatException("Can't parse %s: %s", term,
                 e.getMessage());
         } catch (RecognitionException re) {
-            throw new FormatException(re.getMessage(), re.line,
-                re.charPositionInLine);
+            throw new FormatException(re);
         }
     }
 

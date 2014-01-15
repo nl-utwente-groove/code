@@ -17,7 +17,7 @@
 package groove.control;
 
 import static groove.graph.GraphRole.CTRL;
-import groove.control.CtrlCall.Kind;
+import groove.control.Switch.Kind;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatException;

@@ -23,6 +23,7 @@ import static groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
 import groove.grammar.aspect.AspectEdge;
 import groove.grammar.aspect.AspectGraph;
 import groove.grammar.aspect.AspectNode;
+import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -113,9 +114,12 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
     @Override
     public AspectJModel newModel() {
         AspectJModel result = (AspectJModel) super.newModel();
-        if (getSimulatorModel() != null) {
-            result.setGrammar(getSimulatorModel().getGrammar());
+        GrammarModel grammar = getGrammar();
+        if (grammar == null) {
+            assert getSimulatorModel() != null : "Can't create AspectJGraphs without grammar model";
+            grammar = getSimulatorModel().getGrammar();
         }
+        result.setGrammar(grammar);
         return result;
     }
 
@@ -388,6 +392,22 @@ final public class AspectJGraph extends JGraph<AspectGraph> {
     /** Map from line style names to corresponding actions. */
     private final Map<LineStyle,JCellEditAction> setLineStyleActionMap =
         new EnumMap<LineStyle,JCellEditAction>(LineStyle.class);
+
+    /** Returns the grammar that has manually been set for this JGraph. */
+    public GrammarModel getGrammar() {
+        return this.grammar;
+    }
+
+    /** Manually sets a new grammar in this JGraph.
+     * This should only be done if there is no underlying simulator.
+     * @param grammar the grammar to be used.
+     */
+    public void setGrammar(GrammarModel grammar) {
+        assert getSimulatorModel() == null;
+        this.grammar = grammar;
+    }
+
+    private GrammarModel grammar;
 
     /**
      * Abstract class for j-cell edit actions.

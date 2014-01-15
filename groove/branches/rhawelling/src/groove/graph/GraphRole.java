@@ -45,7 +45,9 @@ public enum GraphRole {
     /** Shape role. */
     SHAPE("shape", "Abstract graph"),
     /** Shape role. */
-    PATTERN("pattern", "Pattern graph");
+    PATTERN("pattern", "Pattern graph"),
+    /** Unknown role. */
+    UNKNOWN("unknown", "Unknown graph type");
 
     private GraphRole(String name, String description) {
         this.name = name;

@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
 /**
@@ -45,13 +44,13 @@ public class ReteTool extends GrooveCmdLineTool<Object> {
      * 
      * @param args The command-line arguments.
      */
-    public ReteTool(String... args) throws CmdLineException {
+    public ReteTool(String... args) {
         super("ReteTool", args);
     }
 
     /** Runs the tool. */
     @Override
-    public Object run() throws Exception {
+    protected Object run() throws Exception {
         String outFileName = doSaveReteNetwork();
         emit("RETE network shape for %s was successfully saved to %s ",
             getGrammarDir(), outFileName);

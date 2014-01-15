@@ -7,6 +7,8 @@ import groove.algebra.RealSignature;
 import groove.algebra.Signature.OpValue;
 import groove.algebra.SignatureKind;
 import groove.grammar.model.FormatException;
+import groove.util.antlr.ParseInfo;
+import groove.util.antlr.ParseTree;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,45 +16,14 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.Token;
-import org.antlr.runtime.tree.CommonTree;
-import org.antlr.runtime.tree.Tree;
 
 /**
  * Dedicated tree node for term parsing.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ExprTree extends CommonTree {
-    /** Constructor to duplicate a given tree node. */
-    private ExprTree(ExprTree node, CommonTokenStream tokenStream) {
-        super(node);
-        this.tokenStream = tokenStream;
-    }
-
-    /** Constructor for the factory method. */
-    public ExprTree(Token t, CommonTokenStream tokenStream) {
-        super(t);
-        this.tokenStream = tokenStream;
-    }
-
-    /** Empty constructor for subclassing. */
-    protected ExprTree(CommonTokenStream tokenStream) {
-        this.tokenStream = tokenStream;
-    }
-
-    @Override
-    public Tree dupNode() {
-        return new ExprTree(this, this.tokenStream);
-    }
-
-    /** Overridden to specialise the type. */
-    @Override
-    public ExprTree getChild(int i) {
-        return (ExprTree) super.getChild(i);
-    }
-
+public class ExprTree extends ParseTree<ExprTree,ParseInfo> {
     /** 
      * Converts this parse tree into an {@link Assignment}.
      */
@@ -404,64 +375,10 @@ public class ExprTree extends CommonTree {
         return null;
     }
 
-    /** 
-     * Returns the part of the input token stream corresponding to this tree.
-     * This is determined by the token numbers of the first and last tokens. 
-     */
-    private String toInputString() {
-        Token first = findFirstToken();
-        Token last = findLastToken();
-        return this.tokenStream.toString(first, last);
+    /** Returns an expression parser for a given string. */
+    public static ExprParser getParser(String term) {
+        return PROTOTYPE.createParser(ExprParser.class, null, term);
     }
 
-    /** Returns the first token among the root and its children. */
-    private Token findFirstToken() {
-        Token result = getToken();
-        for (int i = 0; i < getChildCount(); i++) {
-            Token childFirst = getChild(i).findFirstToken();
-            result = getMin(result, childFirst);
-        }
-        return result;
-    }
-
-    /** Returns the last token among the root and its children. */
-    private Token findLastToken() {
-        Token result = getToken();
-        for (int i = 0; i < getChildCount(); i++) {
-            Token childFirst = getChild(i).findLastToken();
-            result = getMax(result, childFirst);
-        }
-        return result;
-    }
-
-    /** Returns the token that comes first in the input stream. */
-    private Token getMin(Token one, Token two) {
-        if (one.getTokenIndex() < 0) {
-            return two;
-        }
-        if (two.getTokenIndex() < 0) {
-            return one;
-        }
-        if (one.getTokenIndex() < two.getTokenIndex()) {
-            return one;
-        }
-        return two;
-    }
-
-    /** Returns the token that comes last in the input stream. */
-    private Token getMax(Token one, Token two) {
-        if (one.getTokenIndex() < 0) {
-            return two;
-        }
-        if (two.getTokenIndex() < 0) {
-            return one;
-        }
-        if (one.getTokenIndex() > two.getTokenIndex()) {
-            return one;
-        }
-        return two;
-    }
-
-    /** The token stream from which this token is created. */
-    private final CommonTokenStream tokenStream;
+    private static final ExprTree PROTOTYPE = new ExprTree();
 }

@@ -52,6 +52,16 @@ public class PIdentifier implements SerializedParser {
         }
     }
 
+    public String toParsableString(Serialized serialized) {
+        String value = serialized.getArgument(this.argumentName);
+        String result = StringConsumer.parseIdentifier(value);
+        if (result != null) {
+            serialized.setArgument(this.argumentName,
+                value.substring(result.length()));
+        }
+        return result;
+    }
+
     @Override
     public String describeGrammar() {
         return "id";

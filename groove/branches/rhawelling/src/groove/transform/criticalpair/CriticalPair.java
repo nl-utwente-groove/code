@@ -242,13 +242,13 @@ public class CriticalPair {
 
         Iterator<ParallelPair> it;
 
-        System.out.println(parrPairs.size()
-            + " parralel pairs found (before removing)");
+        //        System.out.println(parrPairs.size()
+        //            + " parralel pairs found (before removing)");
         int totalNodes =
             getNodesToProcess(rule1.lhs()).size()
                 + getNodesToProcess(rule2.lhs()).size();
-        System.out.println(calculateMaxPairs(totalNodes));
-        System.out.println(totalNodes);
+        //        System.out.println(calculateMaxPairs(totalNodes));
+        //        System.out.println(totalNodes);
         assert parrPairs.size() <= calculateMaxPairs(getNodesToProcess(
             rule1.lhs()).size()
             + getNodesToProcess(rule2.lhs()).size());
@@ -268,7 +268,7 @@ public class CriticalPair {
 
         //Filter out all critical pairs which are not parallel dependent
         Set<CriticalPair> critPairs = new HashSet<CriticalPair>();
-        System.out.println(parrPairs.size() + " parralel pairs found");
+        //        System.out.println(parrPairs.size() + " parralel pairs found");
         for (ParallelPair pair : parrPairs) {
             CriticalPair criticalPair = pair.getCriticalPair();
             if (criticalPair != null) {
@@ -342,7 +342,7 @@ public class CriticalPair {
         //get the nodes from the rule that need to be in the match
         Set<RuleNode> nodesToProcess = getNodesToProcess(ruleGraph);
 
-        System.out.println(nodesToProcess.size() + " nodes to process");
+        //        System.out.println(nodesToProcess.size() + " nodes to process");
         for (RuleNode rnode : nodesToProcess) {
             Set<? extends RuleEdge> edges = ruleGraph.edgeSet(rnode);
             HashSet<ParallelPair> newParrPairs = new HashSet<ParallelPair>();
@@ -579,7 +579,7 @@ public class CriticalPair {
                 result &= set.isEmpty();
             }
         }
-        //TODO rule priorities are not allowed (these are NACs)
+        //TODO rule priorities are not allowed (these are NACs?)
         //TODO this may not be complete
         return result;
     }

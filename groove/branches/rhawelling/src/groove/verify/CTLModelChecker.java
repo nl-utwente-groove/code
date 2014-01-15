@@ -55,7 +55,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
      * Constructor.
      * @param args the command-line arguments for the model checker
      */
-    public CTLModelChecker(String... args) throws CmdLineException {
+    public CTLModelChecker(String... args) {
         super("ModelChecker", args);
     }
 
@@ -95,7 +95,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
      * Method managing the actual work to be done.
      */
     @Override
-    public Object run() throws Exception {
+    protected Object run() throws Exception {
         modelCheck(this.genArgs == null ? null : this.genArgs.get());
         return null;
     }

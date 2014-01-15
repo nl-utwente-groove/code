@@ -37,6 +37,10 @@ import org.junit.Test;
 
 /** Test case to exercise some otherwise uncovered methods. */
 public class ControlUnitTest extends CtrlTester {
+    {
+        initGrammar("emptyrules");
+    }
+
     /** Exercises some otherwise uncovered methods of {@link CtrlGuard}. */
     @Test
     public void testCtrlState() {

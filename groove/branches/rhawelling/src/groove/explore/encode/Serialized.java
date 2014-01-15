@@ -27,7 +27,7 @@ import java.util.TreeMap;
  * <!=========================================================================>
  * @author Maarten de Mol
  */
-public class Serialized {
+public class Serialized implements Cloneable {
 
     private final String keyword;
     private final TreeMap<String,String> arguments;
@@ -76,26 +76,6 @@ public class Serialized {
         setArgument(name, getArgument(name) + value);
     }
 
-    /** 
-     * Returns a string that, when used as input for {@link Template#parseCommandline(String)},
-     * will return an object equal to this one.
-     */
-    public String toParsableString() {
-        StringBuffer result = new StringBuffer(getKeyword());
-        if (!this.arguments.keySet().isEmpty()) {
-            boolean isFirst = true;
-            result.append(":");
-            for (Map.Entry<String,String> entry : this.arguments.entrySet()) {
-                if (!isFirst) {
-                    result.append(",");
-                }
-                result.append(entry.getValue());
-                isFirst = false;
-            }
-        }
-        return result.toString();
-    }
-
     /**
      * Compress the serialized into a String representation of the form
      * keyword(arg=value, ..., arg=value). The order of the arguments is
@@ -119,5 +99,12 @@ public class Serialized {
             result.append(")");
         }
         return result.toString();
+    }
+
+    @Override
+    public Serialized clone() {
+        Serialized result = new Serialized(getKeyword());
+        result.arguments.putAll(this.arguments);
+        return result;
     }
 }

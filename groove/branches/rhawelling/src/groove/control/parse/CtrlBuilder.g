@@ -10,8 +10,9 @@ options {
 @header {
 package groove.control.parse;
 import groove.control.*;
-import groove.control.CtrlCall.Kind;
 import groove.grammar.model.FormatErrorSet;
+import groove.util.antlr.ParseTreeAdaptor;
+import groove.util.antlr.ParseInfo;
 import java.util.Set;
 import java.util.HashSet;
 }
@@ -24,22 +25,11 @@ import java.util.HashSet;
     /** Helper class for some final static semantic checks. */
     private CtrlHelper helper;
 
-    /**
-     * Runs the builder on a given, checked syntax tree.
-     */
-    public CtrlAut run(CtrlTree tree, Namespace namespace) throws RecognitionException {
+    /** Initialises the internal variables, based on the given name space. */
+    public void initialise(ParseInfo namespace) {
         this.builder = CtrlFactory.instance();
-        this.namespace = namespace;
-        this.helper = new CtrlHelper(this, namespace, null);
-        CtrlTreeAdaptor treeAdaptor = new CtrlTreeAdaptor();
-        setTreeAdaptor(treeAdaptor);
-        setTreeNodeStream(treeAdaptor.createTreeNodeStream(tree));
-        CtrlAut result = program().aut;
-        return result == null ? null : result.clone(namespace.getFullName());
-    }
-    
-    public FormatErrorSet getErrors() {
-        return this.helper.getErrors();
+        this.namespace = (Namespace) namespace;
+        this.helper = new CtrlHelper(this.namespace);
     }
 }
 
@@ -54,11 +44,11 @@ program returns [ CtrlAut aut ]
   ;
 
 package_decl
-  : ^(PACKAGE ID)
+  : ^(PACKAGE ID SEMI)
   ;
   
 import_decl
-  : ^(IMPORT ID)
+  : ^(IMPORT ID SEMI)
   ;
 
 functions
@@ -66,8 +56,10 @@ functions
   ;
 
 function
-  : ^(FUNCTION ID block)
-    { namespace.addBody(helper.qualify($ID.text), $block.aut); }
+  : ^(FUNCTION ID par_list priority block)
+    { 
+      namespace.addBody(helper.qualify($ID.text), $block.aut);
+    }
   ;
   
 recipes
@@ -75,12 +67,24 @@ recipes
   ;
 
 recipe
-  : ^(RECIPE ID INT_LIT? block)
+  : ^(RECIPE ID par_list priority block)
     { 
       String recipeName = helper.qualify($ID.text);
       helper.checkRecipeBody($RECIPE, recipeName, $block.aut);
       namespace.addBody(recipeName, $block.aut);
     }
+  ;
+
+priority
+  : ( INT_LIT )?
+  ;
+
+par_list
+  : ^(PARS par_decl* )
+  ;
+
+par_decl
+  : ^(PAR OUT? type ID)
   ;
 
 block returns [ CtrlAut aut ]
@@ -93,12 +97,18 @@ block returns [ CtrlAut aut ]
   ;
 
 stat returns [ CtrlAut aut ]
-  : block
+  : ^(SEMI s=stat)
+    { $aut = $s.aut; }
+  | block
     { $aut = $block.aut; }
   | var_decl
     { $aut = builder.buildTrue(); }
   | ^(ALAP s=stat)
     { $aut = builder.buildAlap($s.aut); }
+  | ^(ATOM s=stat)
+    { helper.emitErrorMessage($s.tree, "Atomic blocks are not supported in this version");
+      $aut = $s.aut;
+    }
   | ^(WHILE c=stat s=stat)
     { $aut = builder.buildWhileDo($c.aut, $s.aut); }
   | ^(UNTIL c=stat s=stat)
@@ -128,7 +138,7 @@ stat returns [ CtrlAut aut ]
   ;
 
 rule
-  : ^(CALL ID (^(ARGS arg*))?)
+  : ^(CALL ID (^(ARGS arg* RPAR))?)
   ;
 
 var_decl

@@ -138,13 +138,13 @@ public class Exporters {
         result.add(NativePorter.getInstance());
         result.add(RasterExporter.getInstance());
         result.add(VectorExporter.getInstance());
-        result.add(AutPorter.getInstance());
+        result.add(AutPorter.instance());
         result.add(KthExporter.getInstance());
         result.add(FsmExporter.getInstance());
         result.add(TikzExporter.getInstance());
         result.add(EcorePorter.instance());
         result.add(GxlPorter.instance());
-        result.add(DotPorter.getInstance());
+        result.add(DotPorter.instance());
         return result;
     }
 

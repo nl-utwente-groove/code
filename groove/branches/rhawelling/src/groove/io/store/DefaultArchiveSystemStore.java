@@ -423,7 +423,7 @@ public class DefaultArchiveSystemStore extends SystemStore { //UndoableEditSuppo
             String graphName = filter.stripExtension(graphEntry.getKey());
             InputStream in = file.getInputStream(graphEntry.getValue());
             try {
-                AttrGraph xmlGraph = GxlIO.getInstance().loadGraph(in);
+                AttrGraph xmlGraph = GxlIO.instance().loadGraph(in);
                 /*
                  * For backward compatibility, we set the role and name of the
                  * graph.

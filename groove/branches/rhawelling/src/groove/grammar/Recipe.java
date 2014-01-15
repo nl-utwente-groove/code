@@ -16,9 +16,9 @@
  */
 package groove.grammar;
 
-import groove.control.CtrlAut;
 import groove.control.CtrlPar;
-import groove.control.CtrlPar.Var;
+import groove.control.Procedure;
+import groove.control.Switch;
 
 import java.util.List;
 import java.util.Set;
@@ -29,42 +29,16 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Recipe implements Action {
+public class Recipe extends Procedure implements Action {
     /** Constructs a recipe from a control automaton, given a priority. */
     public Recipe(String name, int priority, List<CtrlPar.Var> sig,
             String controlName, int startLine) {
-        this.name = name;
-        this.priority = priority;
-        this.sig = sig;
-        this.controlName = controlName;
-        this.startLine = startLine;
+        super(name, priority, sig, controlName, startLine);
     }
 
     @Override
-    public String getFullName() {
-        return this.name;
-    }
-
-    @Override
-    public String getLastName() {
-        return QualName.getLastName(getFullName());
-    }
-
-    @Override
-    public int getPriority() {
-        return this.priority;
-    }
-
-    /** Sets the body of the recipe. */
-    public void setBody(CtrlAut body) {
-        assert this.body == null : String.format(
-            "Recipe body of %s already set to %s", this.name, body);
-        this.body = body;
-    }
-
-    /** Returns the body of this recipe. */
-    public CtrlAut getBody() {
-        return this.body;
+    public Switch.Kind getKind() {
+        return Switch.Kind.RECIPE;
     }
 
     /** 
@@ -79,26 +53,6 @@ public class Recipe implements Action {
         return result;
     }
 
-    /** Returns the full name of the control program in which this recipe is declared. */
-    public String getControlName() {
-        return this.controlName;
-    }
-
-    /** Returns the start line of this recipe's declaration within the control program. */
-    public int getStartLine() {
-        return this.startLine;
-    }
-
-    @Override
-    public List<Var> getSignature() {
-        return this.sig;
-    }
-
-    @Override
-    public Kind getKind() {
-        return Kind.RECIPE;
-    }
-
     /**
      * Compares two actions on the basis of their names.
      */
@@ -106,36 +60,5 @@ public class Recipe implements Action {
         return getFullName().compareTo(other.getFullName());
     }
 
-    @Override
-    public String toString() {
-        return this.name;
-    }
-
-    @Override
-    public int hashCode() {
-        return this.name.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof Recipe)) {
-            return false;
-        }
-        Recipe other = (Recipe) obj;
-        if (!this.name.equals(other.name)) {
-            return false;
-        }
-        return true;
-    }
-
-    private final String name;
-    private final int priority;
-    private final List<CtrlPar.Var> sig;
-    private CtrlAut body;
     private Set<Rule> rules;
-    private final String controlName;
-    private final int startLine;
 }

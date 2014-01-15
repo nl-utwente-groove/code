@@ -35,11 +35,11 @@ import groove.gui.display.DisplayKind;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.io.external.Exportable;
-import groove.io.external.Exporters;
 import groove.io.external.Exporter;
+import groove.io.external.Exporters;
+import groove.io.external.PortException;
 import groove.io.external.Porter;
 import groove.io.external.Porter.Kind;
-import groove.io.external.PortException;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.util.cli.ExistingFileHandler;
@@ -108,8 +108,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
      * @param args command-line arguments. If {@code gui} is {@code true},
      * the command-line arguments must be absent. 
      */
-    public Imager(boolean gui, String... args) throws CmdLineException {
-        super("Imager");
+    public Imager(boolean gui, String... args) {
+        super("Imager", args);
         // force the LAF to be set
         groove.gui.Options.initLookAndFeel();
         if (gui) {
@@ -123,7 +123,6 @@ public class Imager extends GrooveCmdLineTool<Object> {
             this.imagerFrame.pack();
             this.imagerFrame.setVisible(true);
         } else {
-            parseArguments(args);
             this.imagerFrame = null;
         }
     }
@@ -143,7 +142,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
      * @throws Exception if anything goes wrong during generation.
      */
     @Override
-    public Object run() throws Exception {
+    protected Object run() throws Exception {
         File inFile = getInFile();
         File outFile = getOutFile();
         makeImage(inFile, outFile == null ? inFile : outFile);
@@ -370,16 +369,16 @@ public class Imager extends GrooveCmdLineTool<Object> {
      * of command-line use.
      */
     public static void main(String[] args) {
-        tryExecute(Imager.class, args);
+        if (args.length == 0) {
+            new Imager(true);
+        } else {
+            tryExecute(Imager.class, args);
+        }
     }
 
     /** Starts the imager with a list of options and file names. */
     public static void execute(String[] args) throws Exception {
-        if (args.length == 0) {
-            new Imager(true);
-        } else {
-            new Imager(args).start();
-        }
+        new Imager(args).start();
     }
 
     /** Returns the parent file of a given file that corresponds

@@ -144,7 +144,7 @@ public class Assignment {
      * @param term the string to be parsed as an expression
      */
     private static ExprTree parseToTree(String term) throws FormatException {
-        ExprParser parser = ExprParser.instance(term);
+        ExprParser parser = ExprTree.getParser(term);
         try {
             ExprTree result = (ExprTree) parser.assignment().getTree();
             parser.getErrors().throwException();
@@ -153,8 +153,7 @@ public class Assignment {
             throw new FormatException("Can't parse %s: %s", term,
                 e.getMessage());
         } catch (RecognitionException re) {
-            throw new FormatException(re.getMessage(), re.line,
-                re.charPositionInLine);
+            throw new FormatException(re);
         }
     }
 }

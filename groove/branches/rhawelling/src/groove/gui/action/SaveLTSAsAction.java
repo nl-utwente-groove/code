@@ -17,23 +17,22 @@
 package groove.gui.action;
 
 import groove.explore.util.LTSLabels;
-import groove.grammar.aspect.AspectGraph;
-import groove.grammar.aspect.GraphConverter;
-import groove.graph.plain.PlainGraph;
+import groove.explore.util.LTSReporter;
+import groove.explore.util.StateReporter;
 import groove.gui.Icons;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.dialog.SaveLTSAsDialog;
-import groove.io.FileType;
-import groove.io.graph.GxlIO;
+import groove.gui.dialog.SaveLTSAsDialog.StateExport;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.util.Groove;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Action that takes care of saving the LTS graph under a certain name.
@@ -53,40 +52,49 @@ public class SaveLTSAsAction extends SimulatorAction {
             dialog.setCurrentDirectory(getLastGrammarFile().getAbsolutePath());
         }
         if (dialog.showDialog(getSimulator())) {
-            File ltsFile = dialog.getFile();
-            doSave(ltsFile, dialog.getExportStates(), dialog.getLTSLabels());
+            doSave(dialog.getDirectory(), dialog.getLtsPattern(),
+                dialog.getStatePattern(), dialog.getExportStates(),
+                dialog.getLTSLabels());
         }
     }
 
-    private void doSave(File ltsFile, int exportStates, LTSLabels flags) {
-        FileType ltsType = FileType.GXL;
-        if (ltsFile.isDirectory()) {
-            ltsFile = new File(ltsFile, ltsType.addExtension("lts"));
-        }
+    private void doSave(String dir, String ltsPattern, String statePattern,
+            StateExport exportStates, LTSLabels flags) {
         GTS gts = getSimulatorModel().getGts();
-        gts.setName(ltsType.stripExtension(ltsFile.getName()));
-        PlainGraph lts = gts.toPlainGraph(flags);
 
         Collection<? extends GraphState> export = new HashSet<GraphState>(0);
-
-        if (exportStates == SaveLTSAsDialog.STATES_ALL) {
+        switch (exportStates) {
+        case ALL:
             export = gts.nodeSet();
-        } else if (exportStates == SaveLTSAsDialog.STATES_FINAL) {
+            break;
+        case TOP:
+            List<GraphState> states = new ArrayList<GraphState>();
+            for (GraphState state : gts.nodeSet()) {
+                if (!state.isTransient()) {
+                    states.add(state);
+                }
+            }
+            export = states;
+            break;
+        case FINAL:
             export = gts.getFinalStates();
+            break;
+        case RESULT:
+            export = gts.getResultStates();
+            break;
+        default:
+            assert exportStates == StateExport.NONE;
         }
 
         try {
-            Groove.saveGraph(lts, ltsFile);
+            LTSReporter.exportLTS(gts, new File(dir, ltsPattern).toString(),
+                flags);
             for (GraphState state : export) {
-                AspectGraph stateGraph =
-                    GraphConverter.toAspect(state.getGraph());
-                File file =
-                    new File(ltsFile.getParentFile(),
-                        FileType.STATE.addExtension(state.toString()));
-                GxlIO.getInstance().saveGraph(stateGraph.toPlainGraph(), file);
+                StateReporter.exportState(state,
+                    new File(dir, statePattern).toString());
             }
         } catch (IOException e) {
-            showErrorDialog(e, "Error while saving LTS to %s", ltsFile);
+            showErrorDialog(e, "Error while saving LTS to %s", dir);
         }
     }
 

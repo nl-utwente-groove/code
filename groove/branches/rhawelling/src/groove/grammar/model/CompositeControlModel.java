@@ -19,7 +19,6 @@ package groove.grammar.model;
 import static groove.grammar.model.ResourceKind.CONTROL;
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
-import groove.grammar.Action;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 
@@ -56,31 +55,29 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
     @Override
     CtrlAut compute() throws FormatException {
         FormatErrorSet errors = createErrors();
-        this.loader.init(getGrammar().getProperties().getAlgebraFamily(),
-            getRules());
         Collection<String> controlNames = getGrammar().getActiveNames(CONTROL);
         for (String controlName : controlNames) {
             ControlModel controlModel =
                 getGrammar().getControlModel(controlName);
             if (controlModel == null) {
-                errors.add("Control program '%s' cannot be found", controlName);
+                addPartError(controlModel, new FormatError(
+                    "Control program cannot be found"));
             } else {
                 try {
-                    this.loader.parse(controlName, controlModel.getProgram());
+                    getLoader().parse(controlName, controlModel.getProgram()).check();
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
-                        errors.add("Error in control program '%s': %s",
-                            controlName, error, controlModel);
+                        addPartError(controlModel, error);
                     }
                 }
             }
         }
-        errors.throwException();
+        getAllPartErrors().throwException();
         CtrlAut result = null;
         List<String> programNames = new ArrayList<String>();
         for (String controlName : controlNames) {
             try {
-                CtrlAut aut = this.loader.buildAutomaton(controlName);
+                CtrlAut aut = getLoader().buildAutomaton(controlName);
                 if (aut != null) {
                     result = aut;
                     programNames.add(controlName);
@@ -89,17 +86,17 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
                 ControlModel controlModel =
                     getGrammar().getControlModel(controlName);
                 for (FormatError error : exc.getErrors()) {
-                    errors.add("Error in control program '%s': %s",
-                        controlName, error, controlModel);
+                    addPartError(controlModel, error);
                 }
             }
         }
+        getAllPartErrors().throwException();
         if (programNames.size() > 1) {
             errors.add("Duplicate control programs %s", programNames);
         }
         try {
             if (result == null) {
-                result = this.loader.buildDefaultAutomaton();
+                result = getLoader().buildDefaultAutomaton();
             } else {
                 result = result.normalise();
             }
@@ -114,19 +111,18 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
     }
 
     /** Returns the set of all top-level actions of the enabled control programs. */
-    public Collection<Action> getActions() {
-        synchronise();
-        return this.loader.getActions();
-    }
-
-    /** Returns the set of all top-level actions of the enabled control programs. */
     public Collection<Recipe> getRecipes() {
         synchronise();
-        return this.loader.getRecipes();
+        return getLoader().getRecipes();
     }
 
     /** Returns the control loader used in this composite control model. */
     public CtrlLoader getLoader() {
+        if (this.loader == null) {
+            this.loader =
+                new CtrlLoader(getGrammar().getProperties().getAlgebraFamily(),
+                    getRules());
+        }
         return this.loader;
     }
 
@@ -168,9 +164,45 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
     @Override
     void notifyWillRebuild() {
         this.ruleRecipeMap = null;
+        this.loader = null;
+        this.partErrorsMap = null;
         super.notifyWillRebuild();
     }
 
-    private final CtrlLoader loader = new CtrlLoader();
+    /** Adds an error for a particular control program. */
+    private void addPartError(ControlModel part, FormatError error) {
+        getPartErrorsMap().get(part).add(error);
+    }
+
+    /** Collects and returns all errors found in the partial control models. */
+    private FormatErrorSet getAllPartErrors() {
+        FormatErrorSet result = createErrors();
+        for (Map.Entry<ControlModel,FormatErrorSet> entry : getPartErrorsMap().entrySet()) {
+            for (FormatError error : entry.getValue()) {
+                result.add("Error in control program '%s': %s",
+                    entry.getKey().getFullName(), error, entry.getKey());
+            }
+        }
+        return result;
+    }
+
+    /** Returns the errors found in a given partial control model. */
+    FormatErrorSet getPartErrors(ControlModel part) {
+        return getPartErrorsMap().get(part);
+    }
+
+    private Map<ControlModel,FormatErrorSet> getPartErrorsMap() {
+        if (this.partErrorsMap == null) {
+            this.partErrorsMap = new HashMap<ControlModel,FormatErrorSet>();
+            for (String name : getGrammar().getActiveNames(CONTROL)) {
+                this.partErrorsMap.put(getGrammar().getControlModel(name),
+                    createErrors());
+            }
+        }
+        return this.partErrorsMap;
+    }
+
+    private CtrlLoader loader;
     private Map<String,Set<String>> ruleRecipeMap;
+    private Map<ControlModel,FormatErrorSet> partErrorsMap;
 }

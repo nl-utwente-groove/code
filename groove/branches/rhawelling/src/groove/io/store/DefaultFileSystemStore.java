@@ -101,7 +101,7 @@ public class DefaultFileSystemStore extends SystemStore {
         }
         this.file = file;
         this.name = GRAMMAR.stripExtension(this.file.getName());
-        this.marshaller = GxlIO.getInstance();
+        this.marshaller = GxlIO.instance();
         if (create) {
             this.createVersionProperties();
         }

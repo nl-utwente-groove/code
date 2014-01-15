@@ -85,7 +85,8 @@ class ConfluenceAnalyzer {
 
         if (isConfluent(hwm1, hwm2)) {
             //the pair was already strictly confluent
-            System.out.println("Directly Confluent");
+            //System.out.println("Directly Confluent");
+            pair.setStrictlyConfluent(ConfluenceStatus.CONFLUENT, grammar);
             return ConfluenceStatus.CONFLUENT;
         }
         newStates1.add(hwm1);
@@ -93,7 +94,7 @@ class ConfluenceAnalyzer {
 
         //loop as long as either newStates1 or newStates2 is nonempty
         while (!newStates1.isEmpty() || !newStates2.isEmpty()) {
-            System.out.print("*");
+            //System.out.print("*");
             //add the new states to the old states
             oldStates1.addAll(newStates1);
             oldStates2.addAll(newStates2);
@@ -174,7 +175,6 @@ class ConfluenceAnalyzer {
                     //                    System.out.println();
                 }
                 for (Proof proof : matches) {
-                    //TODO unsure if it matters whether the argument is record or null
                     RuleEvent event = proof.newEvent(record);
                     RuleApplication app =
                         new RuleApplication(event, state.getHostGraph());
@@ -188,7 +188,7 @@ class ConfluenceAnalyzer {
 
     private static boolean containsConfluentStatePair(
             Set<HostGraphWithMorphism> first, Set<HostGraphWithMorphism> second) {
-        System.out.print(".");
+        //System.out.print(".");
         for (HostGraphWithMorphism hwm1 : first) {
             for (HostGraphWithMorphism hwm2 : second) {
                 if (isConfluent(hwm1, hwm2)) {

@@ -1409,6 +1409,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
                     nac.addNode(node);
                     if (node instanceof OperatorNode) {
                         nac.addNodeSet(((OperatorNode) node).getArguments());
+                        nac.addNode(((OperatorNode) node).getTarget());
                     }
                 }
                 nac.addEdgeSetContext(cell.getEdges());

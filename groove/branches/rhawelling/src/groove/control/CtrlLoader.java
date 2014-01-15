@@ -18,10 +18,7 @@ package groove.control;
 
 import static groove.io.FileType.CONTROL;
 import groove.algebra.AlgebraFamily;
-import groove.control.parse.CtrlBuilder;
-import groove.control.parse.CtrlChecker;
 import groove.control.parse.CtrlLexer;
-import groove.control.parse.CtrlParser;
 import groove.control.parse.CtrlTree;
 import groove.control.parse.Namespace;
 import groove.grammar.Action;
@@ -29,19 +26,19 @@ import groove.grammar.Grammar;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
-import groove.grammar.model.FormatErrorSet;
 import groove.grammar.model.FormatException;
 import groove.util.Groove;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.TreeMap;
 
-import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenRewriteStream;
 
@@ -50,58 +47,45 @@ import org.antlr.runtime.TokenRewriteStream;
  */
 public class CtrlLoader {
     /** 
-     * Initialises the loader to a given graph grammar.
+     * Constructs a control loader for a given set of rules and algebra family.
      * @param algebraFamily name of the algebra family to compute constant data values
      * @param rules set of rules that can be invoked by the grammar
      */
-    public void init(AlgebraFamily algebraFamily, Collection<Rule> rules) {
+    public CtrlLoader(AlgebraFamily algebraFamily, Collection<Rule> rules) {
         this.family =
             algebraFamily == null ? AlgebraFamily.DEFAULT : algebraFamily;
-        this.namespace = new Namespace();
+        this.namespace = new Namespace(this.family);
         for (Rule rule : rules) {
             this.namespace.addRule(rule);
         }
         this.treeMap.clear();
-        this.errors = null;
     }
 
     /**
-     * Parses a given, named control program on the basis of a set of rules.
+     * Parses a given, named control program.
      * The parse result is stored internally; a later call to {@link #buildAutomaton(String)}
      * will collect all parse trees and build a control automaton.
-     * @param name the qualified name of the control program to be parsed
+     * The tree is not yet checked.
+     * @param controlName the qualified name of the control program to be parsed
      * @param program the control program
      */
-    public void parse(String name, String program) throws FormatException {
-        assert this.errors == null;
-        ANTLRStringStream charStream = new ANTLRStringStream(program);
-        CtrlTree tree = parse(name, charStream);
-        Object oldRecord = this.treeMap.put(name, tree);
+    public CtrlTree parse(String controlName, String program)
+        throws FormatException {
+        this.namespace.setControlName(controlName);
+        CtrlTree tree = CtrlTree.parse(this.namespace, program);
+        Object oldRecord = this.treeMap.put(controlName, tree);
         assert oldRecord == null;
+        return tree;
     }
 
-    /**
-     * Returns the syntax tree for a given program. 
-     * @param name the qualified name of the control program to be parsed
-     */
-    private CtrlTree parse(String name, ANTLRStringStream inputStream)
-        throws FormatException {
-        try {
-            this.namespace.setFullName(name);
-            CtrlTree tree =
-                this.parser.run(inputStream, this.namespace, this.family);
-            if (DEBUG) {
-                System.out.printf("Parse tree: %s%n", tree.toStringTree());
-            }
-            this.parser.getErrors().throwException();
-            tree = this.checker.run(tree, this.namespace, this.family);
-            this.checker.getErrors().throwException();
-            tree.setInputStream(inputStream);
-            return tree;
-        } catch (RecognitionException re) {
-            throw new FormatException(re.getMessage(), re.line,
-                re.charPositionInLine);
+    /** Checks all control trees parsed by this loader. */
+    public Map<String,CtrlTree> check() throws FormatException {
+        Map<String,CtrlTree> result = new HashMap<String,CtrlTree>();
+        for (Map.Entry<String,CtrlTree> entry : this.treeMap.entrySet()) {
+            entry.setValue(entry.getValue().check());
+            result.put(entry.getKey(), entry.getValue());
         }
+        return result;
     }
 
     /**
@@ -109,16 +93,10 @@ public class CtrlLoader {
      * Should only be called after the {@link #parse} methods.
      */
     public CtrlAut buildAutomaton(String name) throws FormatException {
-        this.namespace.setFullName(name);
+        this.namespace.setControlName(name);
+        check();
         CtrlTree tree = this.treeMap.get(name);
-        try {
-            CtrlAut result = this.builder.run(tree, this.namespace);
-            this.builder.getErrors().throwException();
-            return result == null ? null : result.clone(name);
-        } catch (RecognitionException re) {
-            throw new FormatException(re.getMessage(), re.line,
-                re.charPositionInLine);
-        }
+        return tree.build();
     }
 
     /** 
@@ -126,24 +104,29 @@ public class CtrlLoader {
      * parsed in previous calls of the {@link #parse} methods.
      */
     public CtrlAut buildDefaultAutomaton() throws FormatException {
-        return CtrlFactory.instance().buildDefault(getActions(),
-            this.family.supportsSymbolic());
-    }
-
-    /** 
-     * Returns the set of all top-level actions collected in the course of
-     * processing all control files since the last {@link #init}.
-     */
-    public Collection<Action> getActions() {
-        return this.namespace.getActions();
+        check();
+        Collection<Action> actions = new ArrayList<Action>();
+        for (String name : this.namespace.getTopNames()) {
+            Callable unit = this.namespace.getCallable(name);
+            if (unit instanceof Action) {
+                actions.add((Action) unit);
+            }
+        }
+        return CtrlFactory.instance().buildDefault(actions, this.family);
     }
 
     /** 
      * Returns the set of all recipes collected in the course of
-     * processing all control files since the last {@link #init}.
+     * processing all control files since construction of this loader.
      */
     public Collection<Recipe> getRecipes() {
-        return this.namespace.getRecipes();
+        Collection<Recipe> result = new ArrayList<Recipe>();
+        for (Callable unit : this.namespace.getCallables()) {
+            if (unit instanceof Recipe) {
+                result.add((Recipe) unit);
+            }
+        }
+        return result;
     }
 
     /** 
@@ -153,9 +136,7 @@ public class CtrlLoader {
     public String rename(String name, String oldCallName, String newCallName) {
         CtrlTree tree = this.treeMap.get(name);
         CtrlLexer lexer = new CtrlLexer(null);
-        ANTLRStringStream charStream = tree.getInputStream();
-        charStream.reset();
-        lexer.setCharStream(charStream);
+        lexer.setCharStream(new ANTLRStringStream(tree.toInputString()));
         TokenRewriteStream rewriter = new TokenRewriteStream(lexer);
         rewriter.fill();
         for (Token t : tree.getCallTokens(oldCallName)) {
@@ -170,16 +151,6 @@ public class CtrlLoader {
     private AlgebraFamily family;
     /** Mapping from program names to corresponding syntax trees. */
     private final Map<String,CtrlTree> treeMap = new TreeMap<String,CtrlTree>();
-    /** The possibly empty set of errors in the control automaton,
-     * if an attempt to build the automaton has been made. 
-     */
-    private FormatErrorSet errors;
-    /** The parser object. */
-    private final CtrlParser parser = new CtrlParser(null);
-    /** The parser object. */
-    private final CtrlChecker checker = new CtrlChecker(null);
-    /** The parser object. */
-    private final CtrlBuilder builder = new CtrlBuilder(null);
 
     /** Call with [grammarfile] [controlfile]* */
     public static void main(String[] args) {
@@ -198,13 +169,12 @@ public class CtrlLoader {
         }
     }
 
-    private static final boolean DEBUG = false;
-
     /** Parses a single control program on the basis of a given grammar. */
     public static CtrlAut run(Grammar grammar, String programName,
             String program) throws FormatException {
-        instance.init(grammar.getProperties().getAlgebraFamily(),
-            grammar.getAllRules());
+        CtrlLoader instance =
+            new CtrlLoader(grammar.getProperties().getAlgebraFamily(),
+                grammar.getAllRules());
         instance.parse(programName, program);
         return instance.buildAutomaton(programName).normalise();
     }
@@ -212,17 +182,18 @@ public class CtrlLoader {
     /** Parses a single control program on the basis of a given grammar. */
     public static CtrlAut run(Grammar grammar, String programName, File base)
         throws FormatException, IOException {
-        instance.init(grammar.getProperties().getAlgebraFamily(),
-            grammar.getAllRules());
+        CtrlLoader instance =
+            new CtrlLoader(grammar.getProperties().getAlgebraFamily(),
+                grammar.getAllRules());
         QualName qualName = new QualName(programName);
         File control = base;
         for (String part : qualName.tokens()) {
             control = new File(control, part);
         }
-        String inputFileName = CONTROL.addExtension(control.getPath());
-        instance.parse(programName, new ANTLRFileStream(inputFileName));
+        File inputFile = CONTROL.addExtension(control);
+        Scanner scanner = new Scanner(inputFile).useDelimiter("\\A");
+        instance.parse(programName, scanner.next());
+        scanner.close();
         return instance.buildAutomaton(programName);
     }
-
-    private static final CtrlLoader instance = new CtrlLoader();
 }

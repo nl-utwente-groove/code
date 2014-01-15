@@ -16,22 +16,29 @@
  */
 package groove.control.parse;
 
+import groove.algebra.AlgebraFamily;
+import groove.control.Callable;
 import groove.control.CtrlAut;
-import groove.control.CtrlCall;
-import groove.control.CtrlCall.Kind;
 import groove.control.CtrlPar;
-import groove.control.CtrlPar.Var;
-import groove.grammar.Action;
+import groove.control.Function;
+import groove.control.Procedure;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
+import groove.grammar.model.FormatError;
+import groove.grammar.model.FormatErrorSet;
+import groove.util.antlr.ParseInfo;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Namespace for building a control automaton.
@@ -39,16 +46,29 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Namespace {
+public class Namespace implements ParseInfo {
+    /** Constructs a new name space, on the basis of a given algebra family. */
+    public Namespace(AlgebraFamily family) {
+        this.family = family;
+    }
+
+    /** Returns the algebra family of this name space. */
+    public AlgebraFamily getAlgebraFamily() {
+        return this.family;
+    }
+
+    private final AlgebraFamily family;
+
     /**
      * Adds a function or recipe name to the set of declared names.
      * @return {@code true} if the name is new.
      */
-    public boolean addFunction(String name, List<CtrlPar.Var> sig) {
-        boolean result = !this.kindMap.containsKey(name);
+    public boolean addFunction(String fullName, int priority,
+            List<CtrlPar.Var> sig, String controlName, int startLine) {
+        boolean result = !hasCallable(fullName);
         if (result) {
-            this.kindMap.put(name, Kind.FUNCTION);
-            this.sigMap.put(name, sig);
+            addProcedure(new Function(fullName, priority, sig, controlName,
+                startLine));
         }
         return result;
     }
@@ -57,17 +77,26 @@ public class Namespace {
      * Adds a function or recipe name to the set of declared names.
      * @return {@code true} if the name is new.
      */
-    public boolean addRecipe(String name, int priority, List<CtrlPar.Var> sig,
-            String controlName, int startLine) {
-        boolean result = !this.kindMap.containsKey(name);
+    public boolean addRecipe(String fullName, int priority,
+            List<CtrlPar.Var> sig, String controlName, int startLine) {
+        boolean result = !hasCallable(fullName);
         if (result) {
-            this.kindMap.put(name, Kind.RECIPE);
-            this.sigMap.put(name, sig);
-            this.allNames.add(name);
-            this.recipeMap.put(name, new Recipe(name, priority, sig,
-                controlName, startLine));
+            this.topNames.add(fullName);
+            addProcedure(new Recipe(fullName, priority, sig, controlName,
+                startLine));
         }
         return result;
+    }
+
+    private void addProcedure(Procedure proc) {
+        String fullName = proc.getFullName();
+        this.callableMap.put(fullName, proc);
+        Set<String> callers = new HashSet<String>();
+        this.callerMap.put(fullName, callers);
+        callers.add(fullName);
+        Set<String> callees = new HashSet<String>();
+        callees.add(fullName);
+        this.calleeMap.put(fullName, callees);
     }
 
     /**
@@ -75,12 +104,10 @@ public class Namespace {
      */
     public boolean addRule(Rule rule) {
         String ruleName = rule.getFullName();
-        boolean result = !this.kindMap.containsKey(ruleName);
+        boolean result = !hasCallable(ruleName);
         if (result) {
-            this.kindMap.put(ruleName, CtrlCall.Kind.RULE);
-            this.ruleMap.put(ruleName, rule);
-            this.allNames.add(ruleName);
-            this.sigMap.put(ruleName, rule.getSignature());
+            this.callableMap.put(ruleName, rule);
+            this.topNames.add(ruleName);
         }
         return result;
     }
@@ -92,101 +119,51 @@ public class Namespace {
      * in the recipe are removed from the set of known rules.
      */
     public void addBody(String name, CtrlAut body) {
-        assert hasName(name) && getKind(name).hasBody() : String.format(
-            "Unknown or inappropriate name %s", name);
-        // the rules in a transaction body are no longer available
-        if (getKind(name) == CtrlCall.Kind.RECIPE) {
-            body = body.clone(getRecipe(name));
+        Callable unit = getCallable(name);
+        assert unit != null : String.format("Unknown name %s", name);
+        assert unit instanceof Procedure : String.format(
+            "Non-procedure name %s", name);
+        if (unit instanceof Recipe) {
+            Recipe recipe = (Recipe) unit;
+            body = body.clone(recipe);
+            // the rules in a transaction body are no longer available
             for (Rule rule : body.getRules()) {
-                this.allNames.remove(rule.getFullName());
+                this.topNames.remove(rule.getFullName());
             }
-            getRecipe(name).setBody(body);
+        } else {
+            body = body.clone(name);
         }
-        this.bodyMap.put(name, body);
+        ((Procedure) unit).setBody(body);
     }
 
-    /** Returns the set of all names known to this namespace. */
-    public Set<String> getNames() {
-        return this.kindMap.keySet();
+    /** Checks if a callable unit with a given name has been declared. */
+    public boolean hasCallable(String name) {
+        return this.callableMap.containsKey(name);
     }
 
-    /** Checks if a given name has been declared. */
-    public boolean hasName(String name) {
-        return getKind(name) != null;
+    /** Returns the callable unit with a given name. */
+    public Callable getCallable(String name) {
+        return this.callableMap.get(name);
     }
 
-    /**
-     * Checks the kind of object a given name has been declared as.
-     * @param name the name to be checked
-     * @return the kind of object {@code name} has been declared as,
-     * or {@code null} if {@code name} is unknown
-     */
-    public CtrlCall.Kind getKind(String name) {
-        return this.kindMap.get(name);
+    /** Returns the collection of all callable units known in this name space. */
+    public Collection<Callable> getCallables() {
+        return this.callableMap.values();
     }
 
-    /**
-     * Returns the automaton for a named function.
-     */
-    public CtrlAut getBody(String name) {
-        assert hasName(name) && getKind(name).hasBody() : String.format(
-            "Unknown or inappropriate name %s", name);
-        CtrlAut result = this.bodyMap.get(name);
-        return result;
-    }
-
-    /**
-     * Returns the rule with a given name.
-     */
-    public Rule getRule(String name) {
-        return this.ruleMap.get(name);
-    }
-
-    /**
-     * Returns the set of all top-level rule and recipe names.
-     */
-    public Set<String> getTopNames() {
-        return this.allNames;
-    }
-
-    /** 
-     * Signals that a given name should be added to the used names.
-     * The name should be a known rule or recipe name. 
-     */
-    public void useName(String name) {
-        assert getKind(name) != Kind.OMEGA;
-        this.usedNames.add(name);
-    }
-
-    /** Returns the set of all used rules,
-     * i.e., all rules for which {@link Namespace#useName(String)}
-     * has been invoked.
-     */
-    public Set<String> getUsedNames() {
-        return this.usedNames;
-    }
-
-    /**
-     * Returns the signature associated with a given rule name
-     */
-    public List<Var> getSig(String name) {
-        return this.sigMap.get(name);
-    }
-
-    /** Returns the recipe text associated with a given recipe name. */
-    public Recipe getRecipe(String name) {
-        return this.recipeMap.get(name);
-    }
+    /** Mapping from declared callable unit names to the units. */
+    private final Map<String,Callable> callableMap =
+        new TreeMap<String,Callable>();
 
     /** Sets the full name of the control program currently being explored. */
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-        this.parentName = QualName.getParent(fullName);
+    public void setControlName(String controlName) {
+        this.controlName = controlName;
+        this.parentName = QualName.getParent(controlName);
     }
 
     /** Returns the full name of the control program being parsed. */
-    public String getFullName() {
-        return this.fullName;
+    public String getControlName() {
+        return this.controlName;
     }
 
     /** Returns the parent name space of the control program being parsed. */
@@ -194,46 +171,133 @@ public class Namespace {
         return this.parentName;
     }
 
-    /** Returns the set of (top-level) actions in this namespace. */
-    public Collection<Action> getActions() {
-        Set<Action> result = new HashSet<Action>();
-        result.addAll(this.ruleMap.values());
-        for (Recipe recipe : this.recipeMap.values()) {
-            result.add(recipe);
-            result.removeAll(recipe.getRules());
+    /** Full name of the program file being parsed. */
+    private String controlName;
+    /** Parent name of {@link #controlName}. */
+    private String parentName;
+
+    /**
+     * Returns the set of all top-level rule and recipe names.
+     * Rules and recipes invoked from (other) recipes are 
+     * excluded from this set.
+     */
+    public Set<String> getTopNames() {
+        return this.topNames;
+    }
+
+    /** Set of top-level rule and recipe names. */
+    private final Set<String> topNames = new TreeSet<String>();
+
+    /** 
+     * Signals that a given name should be added to the used names.
+     * The name should be a known rule or recipe name. 
+     */
+    public void addUsedName(String name) {
+        this.usedNames.add(name);
+    }
+
+    /** Returns the set of all used rules,
+     * i.e., all rules for which {@link Namespace#addUsedName(String)}
+     * has been invoked.
+     */
+    public Set<String> getUsedNames() {
+        return this.usedNames;
+    }
+
+    /** Set of used rule names. */
+    private final Set<String> usedNames = new HashSet<String>();
+
+    /** Indicates if a certain procedure name has been resolved. */
+    public boolean isResolved(String name) {
+        return this.resolved.contains(name);
+    }
+
+    private Set<String> resolved = new HashSet<String>();
+
+    /** Tries to add a dependency from a caller to a callee.
+     * @return {@code true} if the dependency was added; {@code false} if this
+     * was prevented by a circularity
+     */
+    public boolean addDependency(String caller, String callee) {
+        Set<String> parentCallers = this.callerMap.get(caller);
+        Set<String> callees = this.calleeMap.get(caller);
+        boolean result = !parentCallers.contains(callee);
+        if (result && callees.add(callee)) {
+            Set<String> childCallees = this.calleeMap.get(callee);
+            for (String parentCaller : parentCallers) {
+                this.calleeMap.get(parentCaller).addAll(childCallees);
+            }
+            for (String childCallee : childCallees) {
+                this.callerMap.get(childCallee).addAll(parentCallers);
+            }
         }
         return result;
     }
 
-    /** Returns the set of recipes in this namespace. */
-    public Collection<Recipe> getRecipes() {
-        return this.recipeMap.values();
+    /**
+     * Returns a set of function names in an order in which there are no
+     * forward dependencies.
+     * Functions that already have bodies do not count as dependencies.
+     * @return an ordered list consisting of the elements of {@code functions};
+     * or {@code null} if no order exists
+     */
+    public List<String> resolveFunctions(Set<String> functions) {
+        List<String> result = new ArrayList<String>();
+        // collect the remaining functions to be resolved
+        Set<String> resolved = this.resolved;
+        functions = new HashSet<String>(functions);
+        while (!functions.isEmpty()) {
+            Iterator<String> remainingIter = functions.iterator();
+            String candidate = null;
+            while (remainingIter.hasNext()) {
+                candidate = remainingIter.next();
+                resolved.add(candidate);
+                if (resolved.containsAll(this.calleeMap.get(candidate))) {
+                    remainingIter.remove();
+                    break;
+                } else {
+                    resolved.remove(candidate);
+                    candidate = null;
+                }
+            }
+            if (candidate == null) {
+                result = null;
+                break;
+            } else {
+                result.add(candidate);
+            }
+        }
+        return result;
     }
+
+    /** Mapping from function names to other functions being invoked from it. */
+    private final Map<String,Set<String>> calleeMap =
+        new HashMap<String,Set<String>>();
+
+    /** Mapping from function names to other functions invoking it. */
+    private final Map<String,Set<String>> callerMap =
+        new HashMap<String,Set<String>>();
 
     @Override
     public String toString() {
-        return String.format("Namespace for %s, defining %s", getFullName(),
-            this.allNames);
+        return String.format("Namespace for %s, defining %s", getControlName(),
+            this.callableMap.keySet());
     }
 
-    /** Full name of the program file being parsed. */
-    private String fullName;
-    /** Parent name of {@link #fullName}. */
-    private String parentName;
-    /** Mapping from declared names to their signatures. */
-    private final Map<String,List<Var>> sigMap =
-        new HashMap<String,List<Var>>();
-    /** Mapping from declared names to their kinds. */
-    private final Map<String,CtrlCall.Kind> kindMap =
-        new HashMap<String,CtrlCall.Kind>();
-    /** Mapping from declared rules names to the rules. */
-    private final Map<String,Rule> ruleMap = new HashMap<String,Rule>();
-    /** Mapping from names to their declared bodies. */
-    private final Map<String,CtrlAut> bodyMap = new HashMap<String,CtrlAut>();
-    /** Mapping from declared recipe names to their body text. */
-    private final Map<String,Recipe> recipeMap = new HashMap<String,Recipe>();
-    /** Set of all rule names. */
-    private final Set<String> allNames = new HashSet<String>();
-    /** Set of used rule names. */
-    private final Set<String> usedNames = new HashSet<String>();
+    /** Adds an error to the errors contained in this name space. */
+    public void addError(String message, Object... args) {
+        this.errors.add(message, args);
+    }
+
+    /** Adds an error to the errors contained in this name space. */
+    public void addError(FormatError error) {
+        this.errors.add(error);
+    }
+
+    /** Returns the errors collected in this name space. */
+    public FormatErrorSet getErrors() {
+        return this.errors;
+    }
+
+    private final FormatErrorSet errors = new FormatErrorSet();
 }

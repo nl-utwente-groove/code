@@ -165,6 +165,11 @@ public class GrammarModel implements Observer {
         return (TextBasedModel<?>) getResourceMap(kind).get(name);
     }
 
+    /** Indicates if this grammar model has a named resource model of a given kind. */
+    public boolean hasResource(ResourceKind kind, String name) {
+        return getResource(kind, name) != null;
+    }
+
     /** Returns a named resource model of a given kind. */
     public ResourceModel<?> getResource(ResourceKind kind, String name) {
         assert name != null;

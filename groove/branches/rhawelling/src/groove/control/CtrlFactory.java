@@ -17,6 +17,7 @@
 package groove.control;
 
 import groove.algebra.AlgebraFamily;
+import groove.control.Switch.Kind;
 import groove.control.parse.Namespace;
 import groove.grammar.Action;
 import groove.grammar.Recipe;
@@ -64,7 +65,7 @@ public class CtrlFactory {
 
     /** Factory method for a rule or function call. */
     public CtrlAut buildCall(CtrlCall call, Namespace namespace) {
-        if (call.getKind() == CtrlCall.Kind.RULE) {
+        if (call.getKind() == Kind.RULE) {
             return buildRuleCall(call);
         } else {
             assert !call.isOmega();
@@ -84,10 +85,11 @@ public class CtrlFactory {
 
     /** Factory method for a function or transaction call. */
     private CtrlAut buildBodyCall(CtrlCall call, Namespace namespace) {
-        CtrlAut body = namespace.getBody(call.getName());
-        assert call.getArgs() == null || call.getArgs().isEmpty() : "Function and recipe parameters not yet implemented";
-        return body.clone(call.getKind() == CtrlCall.Kind.RECIPE
-                ? namespace.getRecipe(call.getName()) : null);
+        CtrlAut body = ((Procedure) call.getUnit()).getBody();
+        // ignore the arguments; they have been reported as erroneous already.
+        // assert call.getArgs() == null || call.getArgs().isEmpty() : "Function and recipe parameters not yet implemented";
+        return body.clone(call.getKind() == Kind.RECIPE
+                ? (Recipe) namespace.getCallable(call.getName()) : null);
     }
 
     /**
@@ -141,22 +143,11 @@ public class CtrlFactory {
         return buildGroupCall(unusedRules, namespace);
     }
 
-    /** Builds an automation for a choice among a set of rules. */
-    private CtrlAut buildGroupCall(Set<String> ruleNames, Namespace namespace) {
+    /** Builds an automation for a choice among a set of callables. */
+    private CtrlAut buildGroupCall(Set<String> names, Namespace namespace) {
         CtrlAut result = null;
-        for (String ruleName : ruleNames) {
-            CtrlCall call;
-            switch (namespace.getKind(ruleName)) {
-            case RULE:
-                call = new CtrlCall(namespace.getRule(ruleName), null);
-                break;
-            case RECIPE:
-                call = new CtrlCall(CtrlCall.Kind.RECIPE, ruleName, null);
-                break;
-            default:
-                call = null;
-                assert false;
-            }
+        for (String name : names) {
+            CtrlCall call = new CtrlCall(namespace.getCallable(name), null);
             CtrlAut callAut = buildCall(call, namespace);
             if (result == null) {
                 result = callAut;
@@ -278,7 +269,7 @@ public class CtrlFactory {
         }
         // create new omega transitions if the automaton guard is non-degenerate
         if (guard != null) {
-            CtrlLabel newLabel = createLabel(CtrlCall.OMEGA, guard);
+            CtrlLabel newLabel = createLabel(CtrlCall.OMEGA_CALL, guard);
             aut.getStart().addTransition(newLabel, aut.getFinal());
         }
         // loop back from final to post-initial states
@@ -366,27 +357,26 @@ public class CtrlFactory {
 
     /** Factory method for omega control labels, with an empty guard. */
     private CtrlLabel createOmegaLabel() {
-        return createLabel(CtrlCall.OMEGA);
+        return createLabel(CtrlCall.OMEGA_CALL);
     }
 
     /** 
      * Builds the default control automaton for a set of actions. 
-     * @param symbolic if {@code true}, the automaton will be used for symbolic exploration,
-     *  which means that input parameters can be matched even in the default automaton
+     * @param family the algebra family to be used
      */
     public CtrlAut buildDefault(Collection<? extends Action> actions,
-            boolean symbolic) throws FormatException {
+            AlgebraFamily family) throws FormatException {
         CtrlAut result = new CtrlAut("none (arbitrary rule application)");
         FormatErrorSet errors = new FormatErrorSet();
         SortedMap<Integer,Set<Action>> priorityMap =
             new TreeMap<Integer,Set<Action>>();
-        Namespace namespace = new Namespace();
+        Namespace namespace = new Namespace(family);
         // first add the names and signatures to the namespace
         for (Action action : actions) {
             boolean needsInput = false;
             for (CtrlPar.Var var : action.getSignature()) {
                 if (var.isInOnly()
-                    && (var.getType() == CtrlType.NODE || !symbolic)) {
+                    && (var.getType() == CtrlType.NODE || !family.supportsSymbolic())) {
                     needsInput = true;
                     break;
                 }

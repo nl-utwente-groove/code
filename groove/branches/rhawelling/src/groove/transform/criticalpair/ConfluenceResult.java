@@ -37,6 +37,10 @@ public class ConfluenceResult {
     private Set<CriticalPair> undecidedPairs = new HashSet<CriticalPair>();
     private Set<CriticalPair> nonConfluentPairs = new HashSet<CriticalPair>();
 
+    public int getSizeOfUntestedPairs() {
+        return this.untestedPairs.size();
+    }
+
     public ConfluenceResult(Grammar grammar) {
         this.grammar = grammar;
         Set<Rule> rules = grammar.getAllRules();
@@ -68,8 +72,13 @@ public class ConfluenceResult {
     }
 
     public static ConfluenceResult checkStrictlyConfluent(Grammar grammar) {
+        return checkStrictlyConfluent(grammar, ConfluenceStatus.NOTCONFLUENT);
+    }
+
+    public static ConfluenceResult checkStrictlyConfluent(Grammar grammar,
+            ConfluenceStatus target) {
         ConfluenceResult result = new ConfluenceResult(grammar);
-        result.analyzeUntil(ConfluenceStatus.NOTCONFLUENT);
+        result.analyzeUntil(target);
         return result;
     }
 
@@ -133,8 +142,8 @@ public class ConfluenceResult {
             //do nothing
             break;
         case UNDECIDED:
-            System.out.println("UNDECIDEDFOUND!!!! "
-                + getUndecidedPairs().size());
+            //            System.out.println("UNDECIDEDFOUND!!!! "
+            //                + getUndecidedPairs().size());
             if (this.status == ConfluenceStatus.CONFLUENT
                 || this.status == ConfluenceStatus.UNTESTED) {
                 this.status = ConfluenceStatus.UNDECIDED;

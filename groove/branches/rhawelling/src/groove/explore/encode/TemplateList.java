@@ -155,6 +155,17 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         return result;
     }
 
+    /** Inverse operation to {@link #parseCommandline(String)}. */
+    public String toParsableString(Serialized source) {
+        source = source.clone();
+        for (Template<A> template : this.templates) {
+            if (template.getKeyword().equals(source.getKeyword())) {
+                return template.toParsableString(source);
+            }
+        }
+        return null;
+    }
+
     /**
      * Returns a description of the grammar that is used to parse this template
      * list on the command line. The grammar is displayed as a (pretty-printed)

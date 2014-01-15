@@ -16,6 +16,8 @@
  */
 package groove;
 
+import groove.gui.dialog.BugReportDialog;
+
 /**
  * Wrapper class for the imager utility.
  * @see groove.io.Imager
@@ -28,6 +30,13 @@ public class Imager {
      * @param args list of command-line arguments
      */
     public static void main(String[] args) {
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            public void uncaughtException(Thread t, Throwable e) {
+                new BugReportDialog(e);
+                System.exit(1);
+            }
+        });
+
         groove.io.Imager.main(args);
     }
 }

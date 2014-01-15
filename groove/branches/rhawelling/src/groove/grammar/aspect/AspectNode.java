@@ -506,7 +506,10 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     public List<PlainLabel> getPlainLabels() {
         List<PlainLabel> result = new ArrayList<PlainLabel>();
         for (AspectLabel label : this.nodeLabels) {
-            result.add(PlainLabel.createLabel(label.toString()));
+            String text = label.toString();
+            if (text.length() > 0) {
+                result.add(PlainLabel.createLabel(text));
+            }
         }
         return result;
     }

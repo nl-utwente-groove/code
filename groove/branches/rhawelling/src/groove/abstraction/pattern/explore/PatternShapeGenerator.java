@@ -49,7 +49,7 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
      * Constructs the generator. In particular, initializes the command line
      * option classes.
      */
-    public PatternShapeGenerator(String... args) throws CmdLineException {
+    public PatternShapeGenerator(String... args) {
         super("PatternShapeGenerator", args);
     }
 
@@ -59,7 +59,7 @@ public final class PatternShapeGenerator extends PatternGraphGenerator {
 
     /* Specialises the return type. */
     @Override
-    public PSTS run() throws Exception {
+    protected PSTS run() throws Exception {
         if (this.threeWay) {
             PatternAbsParam.getInstance().setUseThreeValues(true);
         }

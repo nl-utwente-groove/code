@@ -299,7 +299,7 @@ public class TestMatching {
 
     private Shape loadShape(File file) {
         try {
-            return GxlIO.getInstance().loadGraph(file).toShape(
+            return GxlIO.instance().loadGraph(file).toShape(
                 view.getTypeGraph());
         } catch (IOException e) {
             throw new IllegalArgumentException();

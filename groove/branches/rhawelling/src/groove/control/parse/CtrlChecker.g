@@ -10,9 +10,10 @@ options {
 @header {
 package groove.control.parse;
 import groove.control.*;
-import groove.control.CtrlCall.Kind;
 import groove.algebra.AlgebraFamily;
 import groove.grammar.model.FormatErrorSet;
+import groove.util.antlr.ParseTreeAdaptor;
+import groove.util.antlr.ParseInfo;
 import java.util.LinkedList;
 import java.util.Stack;
 import java.util.HashSet;
@@ -30,40 +31,25 @@ import java.util.HashMap;
         this.helper.addError(hdr + " " + msg, e.line, e.charPositionInLine);
     }
 
-    public FormatErrorSet getErrors() {
-        return this.helper.getErrors();
-    }
-
-    /**
-     * Runs the lexer and parser on a given input character stream,
-     * with a (presumably empty) namespace.
-     * @return the resulting syntax tree
-     */
-    public CtrlTree run(CtrlTree tree, Namespace namespace, AlgebraFamily family) throws RecognitionException {
-        this.helper = new CtrlHelper(this, namespace, family);
-        CtrlTreeAdaptor treeAdaptor = new CtrlTreeAdaptor();
-        setTreeAdaptor(treeAdaptor);
-        setTreeNodeStream(treeAdaptor.createTreeNodeStream(tree));
-        return (CtrlTree) program().getTree();
+    /** Constructs a helper class, based on the given name space and algebra. */
+    public void initialise(ParseInfo namespace) {
+        this.helper = new CtrlHelper((Namespace) namespace);
     }
 }
 
 program 
+@init { helper.clearErrors(); }
   : ^(PROGRAM package_decl import_decl* functions recipes block) 
-    { if ($block.tree.getChildCount() == 0) {
-          helper.checkAny($PROGRAM);
-      }
-    }
   ;
 
 package_decl
-  : ^( PACKAGE ID
+  : ^( PACKAGE ID SEMI
        { helper.checkPackage($ID); }
      )
   ;
   
 import_decl
-  : ^( IMPORT ID
+  : ^( IMPORT ID SEMI
        { helper.checkImport($ID); }
      )
   ;
@@ -73,24 +59,31 @@ recipes
   ;
 
 recipe
-  : ^( RECIPE ID INT_LIT?
-       { helper.startBody($ID, Kind.RECIPE); } 
+  : ^( RECIPE
+       { helper.startBody($RECIPE); } 
+       ID ^(PARS par_decl*) INT_LIT?
        block
-       { helper.endBody(); } 
+       { helper.endBody($block.tree); } 
      )
   ;
 
 functions
-  : ^(FUNCTIONS function*)
-    { helper.reorderFunctions($FUNCTIONS); }
+  : ^( FUNCTIONS function*)
+       { helper.reorderFunctions($FUNCTIONS); }
   ;
 
 function
-  : ^( FUNCTION ID
-       { helper.startBody($ID, Kind.FUNCTION); } 
+  : ^( FUNCTION
+       { helper.startBody($FUNCTION); }
+       ID ^(PARS par_decl*) INT_LIT?
        block
-       { helper.endBody(); } 
+       { helper.endBody($block.tree); } 
      )
+  ;
+  
+par_decl
+  : ^(PAR OUT? type ID)
+    { helper.declarePar($ID, $type.tree, $OUT); }
   ;
   
 block returns [ CtrlAut aut ]
@@ -103,8 +96,10 @@ block returns [ CtrlAut aut ]
 
 stat
   : block
-  | var_decl
+  | ^(SEMI var_decl)
+  | ^(SEMI stat)
   | ^(ALAP stat)
+  | ^(ATOM stat)
   | ^( WHILE
        stat
        { helper.startBranch(); }
@@ -157,12 +152,11 @@ stat
 
 rule
 @after{ helper.checkCall($tree); }
-  : ^(CALL id=ID (^(ARGS arg*))?)
+  : ^(CALL id=ID (^(ARGS arg* RPAR))?)
   ;
 
 var_decl
 	: ^( VAR type
-	     //{ helper.checkType($type.tree); }
 	     ( ID 
          { helper.declareVar($ID, $type.tree); }
 	     )+
@@ -170,11 +164,13 @@ var_decl
 	;
 
 type
-  : NODE   { helper.checkType($NODE); }
-  | BOOL   { helper.checkType($BOOL); }
-  | STRING { helper.checkType($STRING); }
-  | INT    { helper.checkType($INT); }
-  | REAL   { helper.checkType($REAL); }
+  // no idea why, but for some reason without the rewriting
+  // the result tree is empty
+  : NODE -> NODE
+  | BOOL -> BOOL
+  | STRING -> STRING
+  | INT -> INT
+  | REAL -> REAL
   ;
   
 arg

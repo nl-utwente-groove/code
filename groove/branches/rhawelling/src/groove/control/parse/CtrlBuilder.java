@@ -1,2381 +1,2652 @@
-// $ANTLR 3.3 Nov 30, 2010 12:45:30 D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g 2013-05-07 17:42:21
+// $ANTLR 3.4 D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g 2014-01-12 20:41:32
 
 package groove.control.parse;
-
-import groove.control.CtrlAut;
-import groove.control.CtrlFactory;
+import groove.control.*;
 import groove.grammar.model.FormatErrorSet;
+import groove.util.antlr.ParseTreeAdaptor;
+import groove.util.antlr.ParseInfo;
+import java.util.Set;
+import java.util.HashSet;
 
-import org.antlr.runtime.BitSet;
-import org.antlr.runtime.EarlyExitException;
-import org.antlr.runtime.MismatchedSetException;
-import org.antlr.runtime.NoViableAltException;
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.RecognizerSharedState;
-import org.antlr.runtime.Token;
-import org.antlr.runtime.tree.CommonTreeAdaptor;
-import org.antlr.runtime.tree.TreeAdaptor;
-import org.antlr.runtime.tree.TreeNodeStream;
-import org.antlr.runtime.tree.TreeParser;
-import org.antlr.runtime.tree.TreeRuleReturnScope;
 
-@SuppressWarnings("all")
+import org.antlr.runtime.*;
+import org.antlr.runtime.tree.*;
+import java.util.Stack;
+import java.util.List;
+import java.util.ArrayList;
+
+
+@SuppressWarnings({"all", "warnings", "unchecked"})
 public class CtrlBuilder extends TreeParser {
-    public static final String[] tokenNames = new String[] {"<invalid>",
-        "<EOR>", "<DOWN>", "<UP>", "RECIPES", "ARG", "ARGS", "BLOCK", "CALL",
-        "DO_WHILE", "DO_UNTIL", "FUNCTIONS", "PROGRAM", "VAR", "PACKAGE",
-        "SEMI", "IMPORT", "ID", "DOT", "RECIPE", "LPAR", "RPAR", "FUNCTION",
-        "LCURLY", "RCURLY", "ALAP", "WHILE", "UNTIL", "DO", "IF", "ELSE",
-        "TRY", "CHOICE", "OR", "BAR", "TRUE", "PLUS", "ASTERISK", "SHARP",
-        "ANY", "OTHER", "COMMA", "OUT", "DONT_CARE", "FALSE", "STRING_LIT",
-        "INT_LIT", "REAL_LIT", "NODE", "BOOL", "STRING", "INT", "REAL",
-        "PRIORITY", "STAR", "IntegerNumber", "NonIntegerNumber", "QUOTE",
-        "EscapeSequence", "BSLASH", "AMP", "NOT", "MINUS", "ML_COMMENT",
-        "SL_COMMENT", "WS"};
-    public static final int EOF = -1;
-    public static final int RECIPES = 4;
-    public static final int ARG = 5;
-    public static final int ARGS = 6;
-    public static final int BLOCK = 7;
-    public static final int CALL = 8;
-    public static final int DO_WHILE = 9;
-    public static final int DO_UNTIL = 10;
-    public static final int FUNCTIONS = 11;
-    public static final int PROGRAM = 12;
-    public static final int VAR = 13;
-    public static final int PACKAGE = 14;
-    public static final int SEMI = 15;
-    public static final int IMPORT = 16;
-    public static final int ID = 17;
-    public static final int DOT = 18;
-    public static final int RECIPE = 19;
-    public static final int LPAR = 20;
-    public static final int RPAR = 21;
-    public static final int FUNCTION = 22;
-    public static final int LCURLY = 23;
-    public static final int RCURLY = 24;
-    public static final int ALAP = 25;
-    public static final int WHILE = 26;
-    public static final int UNTIL = 27;
-    public static final int DO = 28;
-    public static final int IF = 29;
-    public static final int ELSE = 30;
-    public static final int TRY = 31;
-    public static final int CHOICE = 32;
-    public static final int OR = 33;
-    public static final int BAR = 34;
-    public static final int TRUE = 35;
-    public static final int PLUS = 36;
-    public static final int ASTERISK = 37;
-    public static final int SHARP = 38;
-    public static final int ANY = 39;
-    public static final int OTHER = 40;
-    public static final int COMMA = 41;
-    public static final int OUT = 42;
-    public static final int DONT_CARE = 43;
-    public static final int FALSE = 44;
-    public static final int STRING_LIT = 45;
-    public static final int INT_LIT = 46;
-    public static final int REAL_LIT = 47;
-    public static final int NODE = 48;
-    public static final int BOOL = 49;
-    public static final int STRING = 50;
-    public static final int INT = 51;
-    public static final int REAL = 52;
-    public static final int PRIORITY = 53;
-    public static final int STAR = 54;
-    public static final int IntegerNumber = 55;
-    public static final int NonIntegerNumber = 56;
-    public static final int QUOTE = 57;
-    public static final int EscapeSequence = 58;
-    public static final int BSLASH = 59;
-    public static final int AMP = 60;
-    public static final int NOT = 61;
-    public static final int MINUS = 62;
-    public static final int ML_COMMENT = 63;
-    public static final int SL_COMMENT = 64;
-    public static final int WS = 65;
+    public static final String[] tokenNames = new String[] {
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "ALAP", "AMP", "ANY", "ARG", "ARGS", "ASTERISK", "ATOM", "BAR", "BLOCK", "BOOL", "BSLASH", "CALL", "CHOICE", "COMMA", "DO", "DONT_CARE", "DOT", "DO_UNTIL", "DO_WHILE", "ELSE", "EscapeSequence", "FALSE", "FUNCTION", "FUNCTIONS", "ID", "IF", "IMPORT", "INT", "INT_LIT", "IntegerNumber", "LCURLY", "LPAR", "MINUS", "ML_COMMENT", "NODE", "NOT", "NonIntegerNumber", "OR", "OTHER", "OUT", "PACKAGE", "PAR", "PARS", "PLUS", "PRIORITY", "PROGRAM", "QUOTE", "RCURLY", "REAL", "REAL_LIT", "RECIPE", "RECIPES", "RPAR", "SEMI", "SHARP", "SL_COMMENT", "STAR", "STRING", "STRING_LIT", "TRUE", "TRY", "UNTIL", "VAR", "WHILE", "WS"
+    };
+
+    public static final int EOF=-1;
+    public static final int ALAP=4;
+    public static final int AMP=5;
+    public static final int ANY=6;
+    public static final int ARG=7;
+    public static final int ARGS=8;
+    public static final int ASTERISK=9;
+    public static final int ATOM=10;
+    public static final int BAR=11;
+    public static final int BLOCK=12;
+    public static final int BOOL=13;
+    public static final int BSLASH=14;
+    public static final int CALL=15;
+    public static final int CHOICE=16;
+    public static final int COMMA=17;
+    public static final int DO=18;
+    public static final int DONT_CARE=19;
+    public static final int DOT=20;
+    public static final int DO_UNTIL=21;
+    public static final int DO_WHILE=22;
+    public static final int ELSE=23;
+    public static final int EscapeSequence=24;
+    public static final int FALSE=25;
+    public static final int FUNCTION=26;
+    public static final int FUNCTIONS=27;
+    public static final int ID=28;
+    public static final int IF=29;
+    public static final int IMPORT=30;
+    public static final int INT=31;
+    public static final int INT_LIT=32;
+    public static final int IntegerNumber=33;
+    public static final int LCURLY=34;
+    public static final int LPAR=35;
+    public static final int MINUS=36;
+    public static final int ML_COMMENT=37;
+    public static final int NODE=38;
+    public static final int NOT=39;
+    public static final int NonIntegerNumber=40;
+    public static final int OR=41;
+    public static final int OTHER=42;
+    public static final int OUT=43;
+    public static final int PACKAGE=44;
+    public static final int PAR=45;
+    public static final int PARS=46;
+    public static final int PLUS=47;
+    public static final int PRIORITY=48;
+    public static final int PROGRAM=49;
+    public static final int QUOTE=50;
+    public static final int RCURLY=51;
+    public static final int REAL=52;
+    public static final int REAL_LIT=53;
+    public static final int RECIPE=54;
+    public static final int RECIPES=55;
+    public static final int RPAR=56;
+    public static final int SEMI=57;
+    public static final int SHARP=58;
+    public static final int SL_COMMENT=59;
+    public static final int STAR=60;
+    public static final int STRING=61;
+    public static final int STRING_LIT=62;
+    public static final int TRUE=63;
+    public static final int TRY=64;
+    public static final int UNTIL=65;
+    public static final int VAR=66;
+    public static final int WHILE=67;
+    public static final int WS=68;
 
     // delegates
+    public TreeParser[] getDelegates() {
+        return new TreeParser[] {};
+    }
+
     // delegators
+
 
     public CtrlBuilder(TreeNodeStream input) {
         this(input, new RecognizerSharedState());
     }
-
     public CtrlBuilder(TreeNodeStream input, RecognizerSharedState state) {
         super(input, state);
-
     }
 
-    protected TreeAdaptor adaptor = new CommonTreeAdaptor();
+protected TreeAdaptor adaptor = new CommonTreeAdaptor();
 
-    public void setTreeAdaptor(TreeAdaptor adaptor) {
-        this.adaptor = adaptor;
-    }
+public void setTreeAdaptor(TreeAdaptor adaptor) {
+    this.adaptor = adaptor;
+}
+public TreeAdaptor getTreeAdaptor() {
+    return adaptor;
+}
+    public String[] getTokenNames() { return CtrlBuilder.tokenNames; }
+    public String getGrammarFileName() { return "D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g"; }
 
-    public TreeAdaptor getTreeAdaptor() {
-        return this.adaptor;
-    }
 
-    public String[] getTokenNames() {
-        return CtrlBuilder.tokenNames;
-    }
+        /** Builder for control automata. */
+        private CtrlFactory builder;
+        /** Namespace used for building the automaton. */
+        private Namespace namespace;
+        /** Helper class for some final static semantic checks. */
+        private CtrlHelper helper;
 
-    public String getGrammarFileName() {
-        return "D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g";
-    }
+        /** Initialises the internal variables, based on the given name space. */
+        public void initialise(ParseInfo namespace) {
+            this.builder = CtrlFactory.instance();
+            this.namespace = (Namespace) namespace;
+            this.helper = new CtrlHelper(this.namespace);
+        }
 
-    /** Builder for control automata. */
-    private CtrlFactory builder;
-    /** Namespace used for building the automaton. */
-    private Namespace namespace;
-    /** Helper class for some final static semantic checks. */
-    private CtrlHelper helper;
-
-    /**
-     * Runs the builder on a given, checked syntax tree.
-     */
-    public CtrlAut run(CtrlTree tree, Namespace namespace)
-        throws RecognitionException {
-        this.builder = CtrlFactory.instance();
-        this.namespace = namespace;
-        this.helper = new CtrlHelper(this, namespace, null);
-        CtrlTreeAdaptor treeAdaptor = new CtrlTreeAdaptor();
-        setTreeAdaptor(treeAdaptor);
-        setTreeNodeStream(treeAdaptor.createTreeNodeStream(tree));
-        CtrlAut result = program().aut;
-        return result == null ? null : result.clone(namespace.getFullName());
-    }
-
-    public FormatErrorSet getErrors() {
-        return this.helper.getErrors();
-    }
 
     public static class program_return extends TreeRuleReturnScope {
         public CtrlAut aut;
         CtrlTree tree;
-
-        public Object getTree() {
-            return this.tree;
-        }
+        public Object getTree() { return tree; }
     };
 
+
     // $ANTLR start "program"
-    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:46:1: program returns [ CtrlAut aut ] : ^( PROGRAM package_decl ( import_decl )* functions recipes block ) ;
-    public final CtrlBuilder.program_return program()
-        throws RecognitionException {
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:36:1: program returns [ CtrlAut aut ] : ^( PROGRAM package_decl ( import_decl )* functions recipes block ) ;
+    public final CtrlBuilder.program_return program() throws RecognitionException {
         CtrlBuilder.program_return retval = new CtrlBuilder.program_return();
-        retval.start = this.input.LT(1);
+        retval.start = input.LT(1);
+
 
         CtrlTree root_0 = null;
 
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree PROGRAM1 = null;
-        CtrlBuilder.package_decl_return package_decl2 = null;
+        CtrlTree PROGRAM1=null;
+        CtrlBuilder.package_decl_return package_decl2 =null;
 
-        CtrlBuilder.import_decl_return import_decl3 = null;
+        CtrlBuilder.import_decl_return import_decl3 =null;
 
-        CtrlBuilder.functions_return functions4 = null;
+        CtrlBuilder.functions_return functions4 =null;
 
-        CtrlBuilder.recipes_return recipes5 = null;
+        CtrlBuilder.recipes_return recipes5 =null;
 
-        CtrlBuilder.block_return block6 = null;
+        CtrlBuilder.block_return block6 =null;
 
-        CtrlTree PROGRAM1_tree = null;
+
+        CtrlTree PROGRAM1_tree=null;
 
         try {
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:47:3: ( ^( PROGRAM package_decl ( import_decl )* functions recipes block ) )
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:47:5: ^( PROGRAM package_decl ( import_decl )* functions recipes block )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:37:3: ( ^( PROGRAM package_decl ( import_decl )* functions recipes block ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:37:5: ^( PROGRAM package_decl ( import_decl )* functions recipes block )
             {
-                _last = (CtrlTree) this.input.LT(1);
-                {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    PROGRAM1 =
-                        (CtrlTree) match(this.input, PROGRAM,
-                            FOLLOW_PROGRAM_in_program59);
+            _last = (CtrlTree)input.LT(1);
+            {
+            CtrlTree _save_last_1 = _last;
+            CtrlTree _first_1 = null;
+            _last = (CtrlTree)input.LT(1);
+            PROGRAM1=(CtrlTree)match(input,PROGRAM,FOLLOW_PROGRAM_in_program59); 
 
-                    if (_first_0 == null) {
-                        _first_0 = PROGRAM1;
-                    }
-                    match(this.input, Token.DOWN, null);
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_package_decl_in_program61);
-                    package_decl2 = package_decl();
 
-                    this.state._fsp--;
+            if ( _first_0==null ) _first_0 = PROGRAM1;
+            match(input, Token.DOWN, null); 
+            _last = (CtrlTree)input.LT(1);
+            pushFollow(FOLLOW_package_decl_in_program61);
+            package_decl2=package_decl();
 
-                    if (_first_1 == null) {
-                        _first_1 = package_decl2.tree;
-                    }
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:47:28: ( import_decl )*
-                    loop1: do {
-                        int alt1 = 2;
-                        int LA1_0 = this.input.LA(1);
+            state._fsp--;
 
-                        if ((LA1_0 == IMPORT)) {
-                            alt1 = 1;
-                        }
+             
+            if ( _first_1==null ) _first_1 = package_decl2.tree;
 
-                        switch (alt1) {
-                        case 1:
-                        // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:47:28: import_decl
-                        {
-                            _last = (CtrlTree) this.input.LT(1);
-                            pushFollow(FOLLOW_import_decl_in_program63);
-                            import_decl3 = import_decl();
 
-                            this.state._fsp--;
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:37:28: ( import_decl )*
+            loop1:
+            do {
+                int alt1=2;
+                int LA1_0 = input.LA(1);
 
-                            if (_first_1 == null) {
-                                _first_1 = import_decl3.tree;
-                            }
-
-                            retval.tree = (CtrlTree) _first_0;
-                            if (this.adaptor.getParent(retval.tree) != null
-                                && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                                retval.tree =
-                                    (CtrlTree) this.adaptor.getParent(retval.tree);
-                            }
-                        }
-                            break;
-
-                        default:
-                            break loop1;
-                        }
-                    } while (true);
-
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_functions_in_program66);
-                    functions4 = functions();
-
-                    this.state._fsp--;
-
-                    if (_first_1 == null) {
-                        _first_1 = functions4.tree;
-                    }
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_recipes_in_program68);
-                    recipes5 = recipes();
-
-                    this.state._fsp--;
-
-                    if (_first_1 == null) {
-                        _first_1 = recipes5.tree;
-                    }
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_block_in_program70);
-                    block6 = block();
-
-                    this.state._fsp--;
-
-                    if (_first_1 == null) {
-                        _first_1 = block6.tree;
-                    }
-
-                    match(this.input, Token.UP, null);
-                    _last = _save_last_1;
+                if ( (LA1_0==IMPORT) ) {
+                    alt1=1;
                 }
 
-                if ((block6 != null ? ((CtrlTree) block6.tree) : null).getChildCount() == 0) {
-                    retval.aut = null;
-                } else {
-                    retval.aut = (block6 != null ? block6.aut : null);
-                }
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
+                switch (alt1) {
+            	case 1 :
+            	    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:37:28: import_decl
+            	    {
+            	    _last = (CtrlTree)input.LT(1);
+            	    pushFollow(FOLLOW_import_decl_in_program63);
+            	    import_decl3=import_decl();
+
+            	    state._fsp--;
+
+            	     
+            	    if ( _first_1==null ) _first_1 = import_decl3.tree;
+
+
+            	    retval.tree = (CtrlTree)_first_0;
+            	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+            	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop1;
                 }
+            } while (true);
+
+
+            _last = (CtrlTree)input.LT(1);
+            pushFollow(FOLLOW_functions_in_program66);
+            functions4=functions();
+
+            state._fsp--;
+
+             
+            if ( _first_1==null ) _first_1 = functions4.tree;
+
+
+            _last = (CtrlTree)input.LT(1);
+            pushFollow(FOLLOW_recipes_in_program68);
+            recipes5=recipes();
+
+            state._fsp--;
+
+             
+            if ( _first_1==null ) _first_1 = recipes5.tree;
+
+
+            _last = (CtrlTree)input.LT(1);
+            pushFollow(FOLLOW_block_in_program70);
+            block6=block();
+
+            state._fsp--;
+
+             
+            if ( _first_1==null ) _first_1 = block6.tree;
+
+
+            match(input, Token.UP, null); 
+            _last = _save_last_1;
             }
 
-        } catch (RecognitionException re) {
+
+             if ((block6!=null?((CtrlTree)block6.tree):null).getChildCount() == 0) {
+                      retval.aut = null;
+                  } else {
+                      retval.aut = (block6!=null?block6.aut:null);
+                  }
+                
+
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            }
+
+        }
+        catch (RecognitionException re) {
             reportError(re);
-            recover(this.input, re);
-        } finally {
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
         }
         return retval;
     }
-
     // $ANTLR end "program"
+
 
     public static class package_decl_return extends TreeRuleReturnScope {
         CtrlTree tree;
-
-        public Object getTree() {
-            return this.tree;
-        }
+        public Object getTree() { return tree; }
     };
 
+
     // $ANTLR start "package_decl"
-    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:56:1: package_decl : ^( PACKAGE ID ) ;
-    public final CtrlBuilder.package_decl_return package_decl()
-        throws RecognitionException {
-        CtrlBuilder.package_decl_return retval =
-            new CtrlBuilder.package_decl_return();
-        retval.start = this.input.LT(1);
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:46:1: package_decl : ^( PACKAGE ID SEMI ) ;
+    public final CtrlBuilder.package_decl_return package_decl() throws RecognitionException {
+        CtrlBuilder.package_decl_return retval = new CtrlBuilder.package_decl_return();
+        retval.start = input.LT(1);
+
 
         CtrlTree root_0 = null;
 
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree PACKAGE7 = null;
-        CtrlTree ID8 = null;
+        CtrlTree PACKAGE7=null;
+        CtrlTree ID8=null;
+        CtrlTree SEMI9=null;
 
-        CtrlTree PACKAGE7_tree = null;
-        CtrlTree ID8_tree = null;
+        CtrlTree PACKAGE7_tree=null;
+        CtrlTree ID8_tree=null;
+        CtrlTree SEMI9_tree=null;
 
         try {
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:57:3: ( ^( PACKAGE ID ) )
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:57:5: ^( PACKAGE ID )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:47:3: ( ^( PACKAGE ID SEMI ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:47:5: ^( PACKAGE ID SEMI )
             {
-                _last = (CtrlTree) this.input.LT(1);
-                {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    PACKAGE7 =
-                        (CtrlTree) match(this.input, PACKAGE,
-                            FOLLOW_PACKAGE_in_package_decl91);
+            _last = (CtrlTree)input.LT(1);
+            {
+            CtrlTree _save_last_1 = _last;
+            CtrlTree _first_1 = null;
+            _last = (CtrlTree)input.LT(1);
+            PACKAGE7=(CtrlTree)match(input,PACKAGE,FOLLOW_PACKAGE_in_package_decl91); 
 
-                    if (_first_0 == null) {
-                        _first_0 = PACKAGE7;
-                    }
-                    match(this.input, Token.DOWN, null);
-                    _last = (CtrlTree) this.input.LT(1);
-                    ID8 =
-                        (CtrlTree) match(this.input, ID,
-                            FOLLOW_ID_in_package_decl93);
 
-                    if (_first_1 == null) {
-                        _first_1 = ID8;
-                    }
+            if ( _first_0==null ) _first_0 = PACKAGE7;
+            match(input, Token.DOWN, null); 
+            _last = (CtrlTree)input.LT(1);
+            ID8=(CtrlTree)match(input,ID,FOLLOW_ID_in_package_decl93); 
+             
+            if ( _first_1==null ) _first_1 = ID8;
 
-                    match(this.input, Token.UP, null);
-                    _last = _save_last_1;
-                }
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
+            _last = (CtrlTree)input.LT(1);
+            SEMI9=(CtrlTree)match(input,SEMI,FOLLOW_SEMI_in_package_decl95); 
+             
+            if ( _first_1==null ) _first_1 = SEMI9;
+
+
+            match(input, Token.UP, null); 
+            _last = _save_last_1;
             }
 
-        } catch (RecognitionException re) {
+
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            }
+
+        }
+        catch (RecognitionException re) {
             reportError(re);
-            recover(this.input, re);
-        } finally {
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
         }
         return retval;
     }
-
     // $ANTLR end "package_decl"
+
 
     public static class import_decl_return extends TreeRuleReturnScope {
         CtrlTree tree;
-
-        public Object getTree() {
-            return this.tree;
-        }
+        public Object getTree() { return tree; }
     };
 
+
     // $ANTLR start "import_decl"
-    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:60:1: import_decl : ^( IMPORT ID ) ;
-    public final CtrlBuilder.import_decl_return import_decl()
-        throws RecognitionException {
-        CtrlBuilder.import_decl_return retval =
-            new CtrlBuilder.import_decl_return();
-        retval.start = this.input.LT(1);
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:50:1: import_decl : ^( IMPORT ID SEMI ) ;
+    public final CtrlBuilder.import_decl_return import_decl() throws RecognitionException {
+        CtrlBuilder.import_decl_return retval = new CtrlBuilder.import_decl_return();
+        retval.start = input.LT(1);
+
 
         CtrlTree root_0 = null;
 
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree IMPORT9 = null;
-        CtrlTree ID10 = null;
+        CtrlTree IMPORT10=null;
+        CtrlTree ID11=null;
+        CtrlTree SEMI12=null;
 
-        CtrlTree IMPORT9_tree = null;
-        CtrlTree ID10_tree = null;
+        CtrlTree IMPORT10_tree=null;
+        CtrlTree ID11_tree=null;
+        CtrlTree SEMI12_tree=null;
 
         try {
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:61:3: ( ^( IMPORT ID ) )
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:61:5: ^( IMPORT ID )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:51:3: ( ^( IMPORT ID SEMI ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:51:5: ^( IMPORT ID SEMI )
             {
-                _last = (CtrlTree) this.input.LT(1);
-                {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    IMPORT9 =
-                        (CtrlTree) match(this.input, IMPORT,
-                            FOLLOW_IMPORT_in_import_decl110);
+            _last = (CtrlTree)input.LT(1);
+            {
+            CtrlTree _save_last_1 = _last;
+            CtrlTree _first_1 = null;
+            _last = (CtrlTree)input.LT(1);
+            IMPORT10=(CtrlTree)match(input,IMPORT,FOLLOW_IMPORT_in_import_decl112); 
 
-                    if (_first_0 == null) {
-                        _first_0 = IMPORT9;
-                    }
-                    match(this.input, Token.DOWN, null);
-                    _last = (CtrlTree) this.input.LT(1);
-                    ID10 =
-                        (CtrlTree) match(this.input, ID,
-                            FOLLOW_ID_in_import_decl112);
 
-                    if (_first_1 == null) {
-                        _first_1 = ID10;
-                    }
+            if ( _first_0==null ) _first_0 = IMPORT10;
+            match(input, Token.DOWN, null); 
+            _last = (CtrlTree)input.LT(1);
+            ID11=(CtrlTree)match(input,ID,FOLLOW_ID_in_import_decl114); 
+             
+            if ( _first_1==null ) _first_1 = ID11;
 
-                    match(this.input, Token.UP, null);
-                    _last = _save_last_1;
-                }
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
+            _last = (CtrlTree)input.LT(1);
+            SEMI12=(CtrlTree)match(input,SEMI,FOLLOW_SEMI_in_import_decl116); 
+             
+            if ( _first_1==null ) _first_1 = SEMI12;
+
+
+            match(input, Token.UP, null); 
+            _last = _save_last_1;
             }
 
-        } catch (RecognitionException re) {
+
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            }
+
+        }
+        catch (RecognitionException re) {
             reportError(re);
-            recover(this.input, re);
-        } finally {
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
         }
         return retval;
     }
-
     // $ANTLR end "import_decl"
+
 
     public static class functions_return extends TreeRuleReturnScope {
         CtrlTree tree;
-
-        public Object getTree() {
-            return this.tree;
-        }
+        public Object getTree() { return tree; }
     };
 
+
     // $ANTLR start "functions"
-    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:64:1: functions : ^( FUNCTIONS ( function )* ) ;
-    public final CtrlBuilder.functions_return functions()
-        throws RecognitionException {
-        CtrlBuilder.functions_return retval =
-            new CtrlBuilder.functions_return();
-        retval.start = this.input.LT(1);
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:54:1: functions : ^( FUNCTIONS ( function )* ) ;
+    public final CtrlBuilder.functions_return functions() throws RecognitionException {
+        CtrlBuilder.functions_return retval = new CtrlBuilder.functions_return();
+        retval.start = input.LT(1);
+
 
         CtrlTree root_0 = null;
 
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree FUNCTIONS11 = null;
-        CtrlBuilder.function_return function12 = null;
+        CtrlTree FUNCTIONS13=null;
+        CtrlBuilder.function_return function14 =null;
 
-        CtrlTree FUNCTIONS11_tree = null;
+
+        CtrlTree FUNCTIONS13_tree=null;
 
         try {
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:65:3: ( ^( FUNCTIONS ( function )* ) )
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:65:5: ^( FUNCTIONS ( function )* )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:55:3: ( ^( FUNCTIONS ( function )* ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:55:5: ^( FUNCTIONS ( function )* )
             {
-                _last = (CtrlTree) this.input.LT(1);
-                {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    FUNCTIONS11 =
-                        (CtrlTree) match(this.input, FUNCTIONS,
-                            FOLLOW_FUNCTIONS_in_functions127);
+            _last = (CtrlTree)input.LT(1);
+            {
+            CtrlTree _save_last_1 = _last;
+            CtrlTree _first_1 = null;
+            _last = (CtrlTree)input.LT(1);
+            FUNCTIONS13=(CtrlTree)match(input,FUNCTIONS,FOLLOW_FUNCTIONS_in_functions131); 
 
-                    if (_first_0 == null) {
-                        _first_0 = FUNCTIONS11;
+
+            if ( _first_0==null ) _first_0 = FUNCTIONS13;
+            if ( input.LA(1)==Token.DOWN ) {
+                match(input, Token.DOWN, null); 
+                // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:55:17: ( function )*
+                loop2:
+                do {
+                    int alt2=2;
+                    int LA2_0 = input.LA(1);
+
+                    if ( (LA2_0==FUNCTION) ) {
+                        alt2=1;
                     }
-                    if (this.input.LA(1) == Token.DOWN) {
-                        match(this.input, Token.DOWN, null);
-                        // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:65:17: ( function )*
-                        loop2: do {
-                            int alt2 = 2;
-                            int LA2_0 = this.input.LA(1);
 
-                            if ((LA2_0 == FUNCTION)) {
-                                alt2 = 1;
-                            }
 
-                            switch (alt2) {
-                            case 1:
-                            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:65:17: function
-                            {
-                                _last = (CtrlTree) this.input.LT(1);
-                                pushFollow(FOLLOW_function_in_functions129);
-                                function12 = function();
+                    switch (alt2) {
+                	case 1 :
+                	    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:55:17: function
+                	    {
+                	    _last = (CtrlTree)input.LT(1);
+                	    pushFollow(FOLLOW_function_in_functions133);
+                	    function14=function();
 
-                                this.state._fsp--;
+                	    state._fsp--;
 
-                                if (_first_1 == null) {
-                                    _first_1 = function12.tree;
-                                }
+                	     
+                	    if ( _first_1==null ) _first_1 = function14.tree;
 
-                                retval.tree = (CtrlTree) _first_0;
-                                if (this.adaptor.getParent(retval.tree) != null
-                                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                                    retval.tree =
-                                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                                }
-                            }
-                                break;
 
-                            default:
-                                break loop2;
-                            }
-                        } while (true);
+                	    retval.tree = (CtrlTree)_first_0;
+                	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
-                        match(this.input, Token.UP, null);
+                	    }
+                	    break;
+
+                	default :
+                	    break loop2;
                     }
-                    _last = _save_last_1;
-                }
+                } while (true);
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
+
+                match(input, Token.UP, null); 
+            }
+            _last = _save_last_1;
             }
 
-        } catch (RecognitionException re) {
+
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            }
+
+        }
+        catch (RecognitionException re) {
             reportError(re);
-            recover(this.input, re);
-        } finally {
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
         }
         return retval;
     }
-
     // $ANTLR end "functions"
+
 
     public static class function_return extends TreeRuleReturnScope {
         CtrlTree tree;
-
-        public Object getTree() {
-            return this.tree;
-        }
+        public Object getTree() { return tree; }
     };
 
+
     // $ANTLR start "function"
-    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:68:1: function : ^( FUNCTION ID block ) ;
-    public final CtrlBuilder.function_return function()
-        throws RecognitionException {
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:58:1: function : ^( FUNCTION ID par_list priority block ) ;
+    public final CtrlBuilder.function_return function() throws RecognitionException {
         CtrlBuilder.function_return retval = new CtrlBuilder.function_return();
-        retval.start = this.input.LT(1);
+        retval.start = input.LT(1);
+
 
         CtrlTree root_0 = null;
 
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree FUNCTION13 = null;
-        CtrlTree ID14 = null;
-        CtrlBuilder.block_return block15 = null;
+        CtrlTree FUNCTION15=null;
+        CtrlTree ID16=null;
+        CtrlBuilder.par_list_return par_list17 =null;
 
-        CtrlTree FUNCTION13_tree = null;
-        CtrlTree ID14_tree = null;
+        CtrlBuilder.priority_return priority18 =null;
+
+        CtrlBuilder.block_return block19 =null;
+
+
+        CtrlTree FUNCTION15_tree=null;
+        CtrlTree ID16_tree=null;
 
         try {
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:69:3: ( ^( FUNCTION ID block ) )
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:69:5: ^( FUNCTION ID block )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:59:3: ( ^( FUNCTION ID par_list priority block ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:59:5: ^( FUNCTION ID par_list priority block )
             {
-                _last = (CtrlTree) this.input.LT(1);
-                {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    FUNCTION13 =
-                        (CtrlTree) match(this.input, FUNCTION,
-                            FOLLOW_FUNCTION_in_function145);
+            _last = (CtrlTree)input.LT(1);
+            {
+            CtrlTree _save_last_1 = _last;
+            CtrlTree _first_1 = null;
+            _last = (CtrlTree)input.LT(1);
+            FUNCTION15=(CtrlTree)match(input,FUNCTION,FOLLOW_FUNCTION_in_function149); 
 
-                    if (_first_0 == null) {
-                        _first_0 = FUNCTION13;
-                    }
-                    match(this.input, Token.DOWN, null);
-                    _last = (CtrlTree) this.input.LT(1);
-                    ID14 =
-                        (CtrlTree) match(this.input, ID,
-                            FOLLOW_ID_in_function147);
 
-                    if (_first_1 == null) {
-                        _first_1 = ID14;
-                    }
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_block_in_function149);
-                    block15 = block();
+            if ( _first_0==null ) _first_0 = FUNCTION15;
+            match(input, Token.DOWN, null); 
+            _last = (CtrlTree)input.LT(1);
+            ID16=(CtrlTree)match(input,ID,FOLLOW_ID_in_function151); 
+             
+            if ( _first_1==null ) _first_1 = ID16;
 
-                    this.state._fsp--;
 
-                    if (_first_1 == null) {
-                        _first_1 = block15.tree;
-                    }
+            _last = (CtrlTree)input.LT(1);
+            pushFollow(FOLLOW_par_list_in_function153);
+            par_list17=par_list();
 
-                    match(this.input, Token.UP, null);
-                    _last = _save_last_1;
-                }
+            state._fsp--;
 
-                this.namespace.addBody(
-                    this.helper.qualify((ID14 != null ? ID14.getText() : null)),
-                    (block15 != null ? block15.aut : null));
+             
+            if ( _first_1==null ) _first_1 = par_list17.tree;
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
+
+            _last = (CtrlTree)input.LT(1);
+            pushFollow(FOLLOW_priority_in_function155);
+            priority18=priority();
+
+            state._fsp--;
+
+             
+            if ( _first_1==null ) _first_1 = priority18.tree;
+
+
+            _last = (CtrlTree)input.LT(1);
+            pushFollow(FOLLOW_block_in_function157);
+            block19=block();
+
+            state._fsp--;
+
+             
+            if ( _first_1==null ) _first_1 = block19.tree;
+
+
+            match(input, Token.UP, null); 
+            _last = _save_last_1;
             }
 
-        } catch (RecognitionException re) {
+
+             
+                  namespace.addBody(helper.qualify((ID16!=null?ID16.getText():null)), (block19!=null?block19.aut:null));
+                
+
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            }
+
+        }
+        catch (RecognitionException re) {
             reportError(re);
-            recover(this.input, re);
-        } finally {
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
         }
         return retval;
     }
-
     // $ANTLR end "function"
+
 
     public static class recipes_return extends TreeRuleReturnScope {
         CtrlTree tree;
-
-        public Object getTree() {
-            return this.tree;
-        }
+        public Object getTree() { return tree; }
     };
 
+
     // $ANTLR start "recipes"
-    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:73:1: recipes : ^( RECIPES ( recipe )* ) ;
-    public final CtrlBuilder.recipes_return recipes()
-        throws RecognitionException {
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:65:1: recipes : ^( RECIPES ( recipe )* ) ;
+    public final CtrlBuilder.recipes_return recipes() throws RecognitionException {
         CtrlBuilder.recipes_return retval = new CtrlBuilder.recipes_return();
-        retval.start = this.input.LT(1);
+        retval.start = input.LT(1);
+
 
         CtrlTree root_0 = null;
 
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree RECIPES16 = null;
-        CtrlBuilder.recipe_return recipe17 = null;
+        CtrlTree RECIPES20=null;
+        CtrlBuilder.recipe_return recipe21 =null;
 
-        CtrlTree RECIPES16_tree = null;
+
+        CtrlTree RECIPES20_tree=null;
 
         try {
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:74:3: ( ^( RECIPES ( recipe )* ) )
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:74:5: ^( RECIPES ( recipe )* )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:66:3: ( ^( RECIPES ( recipe )* ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:66:5: ^( RECIPES ( recipe )* )
             {
-                _last = (CtrlTree) this.input.LT(1);
-                {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    RECIPES16 =
-                        (CtrlTree) match(this.input, RECIPES,
-                            FOLLOW_RECIPES_in_recipes172);
+            _last = (CtrlTree)input.LT(1);
+            {
+            CtrlTree _save_last_1 = _last;
+            CtrlTree _first_1 = null;
+            _last = (CtrlTree)input.LT(1);
+            RECIPES20=(CtrlTree)match(input,RECIPES,FOLLOW_RECIPES_in_recipes180); 
 
-                    if (_first_0 == null) {
-                        _first_0 = RECIPES16;
+
+            if ( _first_0==null ) _first_0 = RECIPES20;
+            if ( input.LA(1)==Token.DOWN ) {
+                match(input, Token.DOWN, null); 
+                // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:66:15: ( recipe )*
+                loop3:
+                do {
+                    int alt3=2;
+                    int LA3_0 = input.LA(1);
+
+                    if ( (LA3_0==RECIPE) ) {
+                        alt3=1;
                     }
-                    if (this.input.LA(1) == Token.DOWN) {
-                        match(this.input, Token.DOWN, null);
-                        // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:74:15: ( recipe )*
-                        loop3: do {
-                            int alt3 = 2;
-                            int LA3_0 = this.input.LA(1);
 
-                            if ((LA3_0 == RECIPE)) {
-                                alt3 = 1;
-                            }
 
-                            switch (alt3) {
-                            case 1:
-                            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:74:15: recipe
-                            {
-                                _last = (CtrlTree) this.input.LT(1);
-                                pushFollow(FOLLOW_recipe_in_recipes174);
-                                recipe17 = recipe();
+                    switch (alt3) {
+                	case 1 :
+                	    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:66:15: recipe
+                	    {
+                	    _last = (CtrlTree)input.LT(1);
+                	    pushFollow(FOLLOW_recipe_in_recipes182);
+                	    recipe21=recipe();
 
-                                this.state._fsp--;
+                	    state._fsp--;
 
-                                if (_first_1 == null) {
-                                    _first_1 = recipe17.tree;
-                                }
+                	     
+                	    if ( _first_1==null ) _first_1 = recipe21.tree;
 
-                                retval.tree = (CtrlTree) _first_0;
-                                if (this.adaptor.getParent(retval.tree) != null
-                                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                                    retval.tree =
-                                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                                }
-                            }
-                                break;
 
-                            default:
-                                break loop3;
-                            }
-                        } while (true);
+                	    retval.tree = (CtrlTree)_first_0;
+                	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
-                        match(this.input, Token.UP, null);
+                	    }
+                	    break;
+
+                	default :
+                	    break loop3;
                     }
-                    _last = _save_last_1;
-                }
+                } while (true);
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
+
+                match(input, Token.UP, null); 
+            }
+            _last = _save_last_1;
             }
 
-        } catch (RecognitionException re) {
+
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            }
+
+        }
+        catch (RecognitionException re) {
             reportError(re);
-            recover(this.input, re);
-        } finally {
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
         }
         return retval;
     }
-
     // $ANTLR end "recipes"
+
 
     public static class recipe_return extends TreeRuleReturnScope {
         CtrlTree tree;
-
-        public Object getTree() {
-            return this.tree;
-        }
+        public Object getTree() { return tree; }
     };
 
+
     // $ANTLR start "recipe"
-    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:77:1: recipe : ^( RECIPE ID ( INT_LIT )? block ) ;
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:69:1: recipe : ^( RECIPE ID par_list priority block ) ;
     public final CtrlBuilder.recipe_return recipe() throws RecognitionException {
         CtrlBuilder.recipe_return retval = new CtrlBuilder.recipe_return();
-        retval.start = this.input.LT(1);
+        retval.start = input.LT(1);
+
 
         CtrlTree root_0 = null;
 
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree RECIPE18 = null;
-        CtrlTree ID19 = null;
-        CtrlTree INT_LIT20 = null;
-        CtrlBuilder.block_return block21 = null;
+        CtrlTree RECIPE22=null;
+        CtrlTree ID23=null;
+        CtrlBuilder.par_list_return par_list24 =null;
 
-        CtrlTree RECIPE18_tree = null;
-        CtrlTree ID19_tree = null;
-        CtrlTree INT_LIT20_tree = null;
+        CtrlBuilder.priority_return priority25 =null;
+
+        CtrlBuilder.block_return block26 =null;
+
+
+        CtrlTree RECIPE22_tree=null;
+        CtrlTree ID23_tree=null;
 
         try {
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:78:3: ( ^( RECIPE ID ( INT_LIT )? block ) )
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:78:5: ^( RECIPE ID ( INT_LIT )? block )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:70:3: ( ^( RECIPE ID par_list priority block ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:70:5: ^( RECIPE ID par_list priority block )
             {
-                _last = (CtrlTree) this.input.LT(1);
-                {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    RECIPE18 =
-                        (CtrlTree) match(this.input, RECIPE,
-                            FOLLOW_RECIPE_in_recipe190);
+            _last = (CtrlTree)input.LT(1);
+            {
+            CtrlTree _save_last_1 = _last;
+            CtrlTree _first_1 = null;
+            _last = (CtrlTree)input.LT(1);
+            RECIPE22=(CtrlTree)match(input,RECIPE,FOLLOW_RECIPE_in_recipe198); 
 
-                    if (_first_0 == null) {
-                        _first_0 = RECIPE18;
-                    }
-                    match(this.input, Token.DOWN, null);
-                    _last = (CtrlTree) this.input.LT(1);
-                    ID19 =
-                        (CtrlTree) match(this.input, ID, FOLLOW_ID_in_recipe192);
 
-                    if (_first_1 == null) {
-                        _first_1 = ID19;
-                    }
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:78:17: ( INT_LIT )?
-                    int alt4 = 2;
-                    int LA4_0 = this.input.LA(1);
+            if ( _first_0==null ) _first_0 = RECIPE22;
+            match(input, Token.DOWN, null); 
+            _last = (CtrlTree)input.LT(1);
+            ID23=(CtrlTree)match(input,ID,FOLLOW_ID_in_recipe200); 
+             
+            if ( _first_1==null ) _first_1 = ID23;
 
-                    if ((LA4_0 == INT_LIT)) {
-                        alt4 = 1;
-                    }
-                    switch (alt4) {
-                    case 1:
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:78:17: INT_LIT
-                    {
-                        _last = (CtrlTree) this.input.LT(1);
-                        INT_LIT20 =
-                            (CtrlTree) match(this.input, INT_LIT,
-                                FOLLOW_INT_LIT_in_recipe194);
 
-                        if (_first_1 == null) {
-                            _first_1 = INT_LIT20;
-                        }
+            _last = (CtrlTree)input.LT(1);
+            pushFollow(FOLLOW_par_list_in_recipe202);
+            par_list24=par_list();
 
-                        retval.tree = (CtrlTree) _first_0;
-                        if (this.adaptor.getParent(retval.tree) != null
-                            && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                            retval.tree =
-                                (CtrlTree) this.adaptor.getParent(retval.tree);
-                        }
-                    }
-                        break;
+            state._fsp--;
 
-                    }
+             
+            if ( _first_1==null ) _first_1 = par_list24.tree;
 
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_block_in_recipe197);
-                    block21 = block();
 
-                    this.state._fsp--;
+            _last = (CtrlTree)input.LT(1);
+            pushFollow(FOLLOW_priority_in_recipe204);
+            priority25=priority();
 
-                    if (_first_1 == null) {
-                        _first_1 = block21.tree;
-                    }
+            state._fsp--;
 
-                    match(this.input, Token.UP, null);
-                    _last = _save_last_1;
-                }
+             
+            if ( _first_1==null ) _first_1 = priority25.tree;
 
-                String recipeName =
-                    this.helper.qualify((ID19 != null ? ID19.getText() : null));
-                this.helper.checkRecipeBody(RECIPE18, recipeName,
-                    (block21 != null ? block21.aut : null));
-                this.namespace.addBody(recipeName, (block21 != null
-                        ? block21.aut : null));
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
+            _last = (CtrlTree)input.LT(1);
+            pushFollow(FOLLOW_block_in_recipe206);
+            block26=block();
+
+            state._fsp--;
+
+             
+            if ( _first_1==null ) _first_1 = block26.tree;
+
+
+            match(input, Token.UP, null); 
+            _last = _save_last_1;
             }
 
-        } catch (RecognitionException re) {
+
+             
+                  String recipeName = helper.qualify((ID23!=null?ID23.getText():null));
+                  helper.checkRecipeBody(RECIPE22, recipeName, (block26!=null?block26.aut:null));
+                  namespace.addBody(recipeName, (block26!=null?block26.aut:null));
+                
+
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            }
+
+        }
+        catch (RecognitionException re) {
             reportError(re);
-            recover(this.input, re);
-        } finally {
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
         }
         return retval;
     }
-
     // $ANTLR end "recipe"
+
+
+    public static class priority_return extends TreeRuleReturnScope {
+        CtrlTree tree;
+        public Object getTree() { return tree; }
+    };
+
+
+    // $ANTLR start "priority"
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:78:1: priority : ( INT_LIT )? ;
+    public final CtrlBuilder.priority_return priority() throws RecognitionException {
+        CtrlBuilder.priority_return retval = new CtrlBuilder.priority_return();
+        retval.start = input.LT(1);
+
+
+        CtrlTree root_0 = null;
+
+        CtrlTree _first_0 = null;
+        CtrlTree _last = null;
+
+        CtrlTree INT_LIT27=null;
+
+        CtrlTree INT_LIT27_tree=null;
+
+        try {
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:79:3: ( ( INT_LIT )? )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:79:5: ( INT_LIT )?
+            {
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:79:5: ( INT_LIT )?
+            int alt4=2;
+            int LA4_0 = input.LA(1);
+
+            if ( (LA4_0==INT_LIT) ) {
+                alt4=1;
+            }
+            switch (alt4) {
+                case 1 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:79:7: INT_LIT
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    INT_LIT27=(CtrlTree)match(input,INT_LIT,FOLLOW_INT_LIT_in_priority228); 
+                     
+                    if ( _first_0==null ) _first_0 = INT_LIT27;
+
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    }
+                    break;
+
+            }
+
+
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
+        }
+        return retval;
+    }
+    // $ANTLR end "priority"
+
+
+    public static class par_list_return extends TreeRuleReturnScope {
+        CtrlTree tree;
+        public Object getTree() { return tree; }
+    };
+
+
+    // $ANTLR start "par_list"
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:82:1: par_list : ^( PARS ( par_decl )* ) ;
+    public final CtrlBuilder.par_list_return par_list() throws RecognitionException {
+        CtrlBuilder.par_list_return retval = new CtrlBuilder.par_list_return();
+        retval.start = input.LT(1);
+
+
+        CtrlTree root_0 = null;
+
+        CtrlTree _first_0 = null;
+        CtrlTree _last = null;
+
+        CtrlTree PARS28=null;
+        CtrlBuilder.par_decl_return par_decl29 =null;
+
+
+        CtrlTree PARS28_tree=null;
+
+        try {
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:83:3: ( ^( PARS ( par_decl )* ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:83:5: ^( PARS ( par_decl )* )
+            {
+            _last = (CtrlTree)input.LT(1);
+            {
+            CtrlTree _save_last_1 = _last;
+            CtrlTree _first_1 = null;
+            _last = (CtrlTree)input.LT(1);
+            PARS28=(CtrlTree)match(input,PARS,FOLLOW_PARS_in_par_list245); 
+
+
+            if ( _first_0==null ) _first_0 = PARS28;
+            if ( input.LA(1)==Token.DOWN ) {
+                match(input, Token.DOWN, null); 
+                // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:83:12: ( par_decl )*
+                loop5:
+                do {
+                    int alt5=2;
+                    int LA5_0 = input.LA(1);
+
+                    if ( (LA5_0==PAR) ) {
+                        alt5=1;
+                    }
+
+
+                    switch (alt5) {
+                	case 1 :
+                	    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:83:12: par_decl
+                	    {
+                	    _last = (CtrlTree)input.LT(1);
+                	    pushFollow(FOLLOW_par_decl_in_par_list247);
+                	    par_decl29=par_decl();
+
+                	    state._fsp--;
+
+                	     
+                	    if ( _first_1==null ) _first_1 = par_decl29.tree;
+
+
+                	    retval.tree = (CtrlTree)_first_0;
+                	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                	    }
+                	    break;
+
+                	default :
+                	    break loop5;
+                    }
+                } while (true);
+
+
+                match(input, Token.UP, null); 
+            }
+            _last = _save_last_1;
+            }
+
+
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
+        }
+        return retval;
+    }
+    // $ANTLR end "par_list"
+
+
+    public static class par_decl_return extends TreeRuleReturnScope {
+        CtrlTree tree;
+        public Object getTree() { return tree; }
+    };
+
+
+    // $ANTLR start "par_decl"
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:86:1: par_decl : ^( PAR ( OUT )? type ID ) ;
+    public final CtrlBuilder.par_decl_return par_decl() throws RecognitionException {
+        CtrlBuilder.par_decl_return retval = new CtrlBuilder.par_decl_return();
+        retval.start = input.LT(1);
+
+
+        CtrlTree root_0 = null;
+
+        CtrlTree _first_0 = null;
+        CtrlTree _last = null;
+
+        CtrlTree PAR30=null;
+        CtrlTree OUT31=null;
+        CtrlTree ID33=null;
+        CtrlBuilder.type_return type32 =null;
+
+
+        CtrlTree PAR30_tree=null;
+        CtrlTree OUT31_tree=null;
+        CtrlTree ID33_tree=null;
+
+        try {
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:87:3: ( ^( PAR ( OUT )? type ID ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:87:5: ^( PAR ( OUT )? type ID )
+            {
+            _last = (CtrlTree)input.LT(1);
+            {
+            CtrlTree _save_last_1 = _last;
+            CtrlTree _first_1 = null;
+            _last = (CtrlTree)input.LT(1);
+            PAR30=(CtrlTree)match(input,PAR,FOLLOW_PAR_in_par_decl264); 
+
+
+            if ( _first_0==null ) _first_0 = PAR30;
+            match(input, Token.DOWN, null); 
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:87:11: ( OUT )?
+            int alt6=2;
+            int LA6_0 = input.LA(1);
+
+            if ( (LA6_0==OUT) ) {
+                alt6=1;
+            }
+            switch (alt6) {
+                case 1 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:87:11: OUT
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    OUT31=(CtrlTree)match(input,OUT,FOLLOW_OUT_in_par_decl266); 
+                     
+                    if ( _first_1==null ) _first_1 = OUT31;
+
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    }
+                    break;
+
+            }
+
+
+            _last = (CtrlTree)input.LT(1);
+            pushFollow(FOLLOW_type_in_par_decl269);
+            type32=type();
+
+            state._fsp--;
+
+             
+            if ( _first_1==null ) _first_1 = type32.tree;
+
+
+            _last = (CtrlTree)input.LT(1);
+            ID33=(CtrlTree)match(input,ID,FOLLOW_ID_in_par_decl271); 
+             
+            if ( _first_1==null ) _first_1 = ID33;
+
+
+            match(input, Token.UP, null); 
+            _last = _save_last_1;
+            }
+
+
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
+        }
+        return retval;
+    }
+    // $ANTLR end "par_decl"
+
 
     public static class block_return extends TreeRuleReturnScope {
         public CtrlAut aut;
         CtrlTree tree;
-
-        public Object getTree() {
-            return this.tree;
-        }
+        public Object getTree() { return tree; }
     };
 
+
     // $ANTLR start "block"
-    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:86:1: block returns [ CtrlAut aut ] : ^( BLOCK ( stat )* ) ;
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:90:1: block returns [ CtrlAut aut ] : ^( BLOCK ( stat )* ) ;
     public final CtrlBuilder.block_return block() throws RecognitionException {
         CtrlBuilder.block_return retval = new CtrlBuilder.block_return();
-        retval.start = this.input.LT(1);
+        retval.start = input.LT(1);
+
 
         CtrlTree root_0 = null;
 
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree BLOCK22 = null;
-        CtrlBuilder.stat_return stat23 = null;
+        CtrlTree BLOCK34=null;
+        CtrlBuilder.stat_return stat35 =null;
 
-        CtrlTree BLOCK22_tree = null;
+
+        CtrlTree BLOCK34_tree=null;
 
         try {
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:87:3: ( ^( BLOCK ( stat )* ) )
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:87:5: ^( BLOCK ( stat )* )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:91:3: ( ^( BLOCK ( stat )* ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:91:5: ^( BLOCK ( stat )* )
             {
-                _last = (CtrlTree) this.input.LT(1);
-                {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    BLOCK22 =
-                        (CtrlTree) match(this.input, BLOCK,
-                            FOLLOW_BLOCK_in_block223);
+            _last = (CtrlTree)input.LT(1);
+            {
+            CtrlTree _save_last_1 = _last;
+            CtrlTree _first_1 = null;
+            _last = (CtrlTree)input.LT(1);
+            BLOCK34=(CtrlTree)match(input,BLOCK,FOLLOW_BLOCK_in_block291); 
 
-                    if (_first_0 == null) {
-                        _first_0 = BLOCK22;
+
+            if ( _first_0==null ) _first_0 = BLOCK34;
+             retval.aut = builder.buildTrue(); 
+
+            if ( input.LA(1)==Token.DOWN ) {
+                match(input, Token.DOWN, null); 
+                // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:93:8: ( stat )*
+                loop7:
+                do {
+                    int alt7=2;
+                    int LA7_0 = input.LA(1);
+
+                    if ( (LA7_0==ALAP||LA7_0==ANY||LA7_0==ATOM||LA7_0==BLOCK||(LA7_0 >= CALL && LA7_0 <= CHOICE)||LA7_0==IF||LA7_0==OTHER||LA7_0==SEMI||LA7_0==STAR||(LA7_0 >= TRUE && LA7_0 <= WHILE)) ) {
+                        alt7=1;
                     }
-                    retval.aut = this.builder.buildTrue();
 
-                    if (this.input.LA(1) == Token.DOWN) {
-                        match(this.input, Token.DOWN, null);
-                        // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:89:8: ( stat )*
-                        loop5: do {
-                            int alt5 = 2;
-                            int LA5_0 = this.input.LA(1);
 
-                            if (((LA5_0 >= BLOCK && LA5_0 <= CALL)
-                                || LA5_0 == VAR
-                                || (LA5_0 >= ALAP && LA5_0 <= UNTIL)
-                                || LA5_0 == IF
-                                || (LA5_0 >= TRY && LA5_0 <= CHOICE)
-                                || LA5_0 == TRUE
-                                || (LA5_0 >= ANY && LA5_0 <= OTHER) || LA5_0 == STAR)) {
-                                alt5 = 1;
-                            }
+                    switch (alt7) {
+                	case 1 :
+                	    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:93:10: stat
+                	    {
+                	    _last = (CtrlTree)input.LT(1);
+                	    pushFollow(FOLLOW_stat_in_block311);
+                	    stat35=stat();
 
-                            switch (alt5) {
-                            case 1:
-                            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:89:10: stat
-                            {
-                                _last = (CtrlTree) this.input.LT(1);
-                                pushFollow(FOLLOW_stat_in_block243);
-                                stat23 = stat();
+                	    state._fsp--;
 
-                                this.state._fsp--;
+                	     
+                	    if ( _first_1==null ) _first_1 = stat35.tree;
 
-                                if (_first_1 == null) {
-                                    _first_1 = stat23.tree;
-                                }
-                                retval.aut =
-                                    this.builder.buildSeq(retval.aut,
-                                        (stat23 != null ? stat23.aut : null));
 
-                                retval.tree = (CtrlTree) _first_0;
-                                if (this.adaptor.getParent(retval.tree) != null
-                                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                                    retval.tree =
-                                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                                }
-                            }
-                                break;
+                	     retval.aut = builder.buildSeq(retval.aut, (stat35!=null?stat35.aut:null)); 
 
-                            default:
-                                break loop5;
-                            }
-                        } while (true);
+                	    retval.tree = (CtrlTree)_first_0;
+                	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
-                        match(this.input, Token.UP, null);
+                	    }
+                	    break;
+
+                	default :
+                	    break loop7;
                     }
-                    _last = _save_last_1;
-                }
+                } while (true);
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
+
+                match(input, Token.UP, null); 
+            }
+            _last = _save_last_1;
             }
 
-        } catch (RecognitionException re) {
+
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            }
+
+        }
+        catch (RecognitionException re) {
             reportError(re);
-            recover(this.input, re);
-        } finally {
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
         }
         return retval;
     }
-
     // $ANTLR end "block"
+
 
     public static class stat_return extends TreeRuleReturnScope {
         public CtrlAut aut;
         CtrlTree tree;
-
-        public Object getTree() {
-            return this.tree;
-        }
+        public Object getTree() { return tree; }
     };
 
+
     // $ANTLR start "stat"
-    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:95:1: stat returns [ CtrlAut aut ] : ( block | var_decl | ^( ALAP s= stat ) | ^( WHILE c= stat s= stat ) | ^( UNTIL c= stat s= stat ) | ^( TRY s1= stat (s2= stat )? ) | ^( IF c= stat s1= stat (s2= stat )? ) | ^( CHOICE s1= stat (s2= stat )* ) | ^( STAR s= stat ) | rule | ANY | OTHER | TRUE );
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:99:1: stat returns [ CtrlAut aut ] : ( ^( SEMI s= stat ) | block | var_decl | ^( ALAP s= stat ) | ^( ATOM s= stat ) | ^( WHILE c= stat s= stat ) | ^( UNTIL c= stat s= stat ) | ^( TRY s1= stat (s2= stat )? ) | ^( IF c= stat s1= stat (s2= stat )? ) | ^( CHOICE s1= stat (s2= stat )* ) | ^( STAR s= stat ) | rule | ANY | OTHER | TRUE );
     public final CtrlBuilder.stat_return stat() throws RecognitionException {
         CtrlBuilder.stat_return retval = new CtrlBuilder.stat_return();
-        retval.start = this.input.LT(1);
+        retval.start = input.LT(1);
+
 
         CtrlTree root_0 = null;
 
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree ALAP26 = null;
-        CtrlTree WHILE27 = null;
-        CtrlTree UNTIL28 = null;
-        CtrlTree TRY29 = null;
-        CtrlTree IF30 = null;
-        CtrlTree CHOICE31 = null;
-        CtrlTree STAR32 = null;
-        CtrlTree ANY34 = null;
-        CtrlTree OTHER35 = null;
-        CtrlTree TRUE36 = null;
-        CtrlBuilder.stat_return s = null;
+        CtrlTree SEMI36=null;
+        CtrlTree ALAP39=null;
+        CtrlTree ATOM40=null;
+        CtrlTree WHILE41=null;
+        CtrlTree UNTIL42=null;
+        CtrlTree TRY43=null;
+        CtrlTree IF44=null;
+        CtrlTree CHOICE45=null;
+        CtrlTree STAR46=null;
+        CtrlTree ANY48=null;
+        CtrlTree OTHER49=null;
+        CtrlTree TRUE50=null;
+        CtrlBuilder.stat_return s =null;
 
-        CtrlBuilder.stat_return c = null;
+        CtrlBuilder.stat_return c =null;
 
-        CtrlBuilder.stat_return s1 = null;
+        CtrlBuilder.stat_return s1 =null;
 
-        CtrlBuilder.stat_return s2 = null;
+        CtrlBuilder.stat_return s2 =null;
 
-        CtrlBuilder.block_return block24 = null;
+        CtrlBuilder.block_return block37 =null;
 
-        CtrlBuilder.var_decl_return var_decl25 = null;
+        CtrlBuilder.var_decl_return var_decl38 =null;
 
-        CtrlBuilder.rule_return rule33 = null;
+        CtrlBuilder.rule_return rule47 =null;
 
-        CtrlTree ALAP26_tree = null;
-        CtrlTree WHILE27_tree = null;
-        CtrlTree UNTIL28_tree = null;
-        CtrlTree TRY29_tree = null;
-        CtrlTree IF30_tree = null;
-        CtrlTree CHOICE31_tree = null;
-        CtrlTree STAR32_tree = null;
-        CtrlTree ANY34_tree = null;
-        CtrlTree OTHER35_tree = null;
-        CtrlTree TRUE36_tree = null;
+
+        CtrlTree SEMI36_tree=null;
+        CtrlTree ALAP39_tree=null;
+        CtrlTree ATOM40_tree=null;
+        CtrlTree WHILE41_tree=null;
+        CtrlTree UNTIL42_tree=null;
+        CtrlTree TRY43_tree=null;
+        CtrlTree IF44_tree=null;
+        CtrlTree CHOICE45_tree=null;
+        CtrlTree STAR46_tree=null;
+        CtrlTree ANY48_tree=null;
+        CtrlTree OTHER49_tree=null;
+        CtrlTree TRUE50_tree=null;
 
         try {
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:96:3: ( block | var_decl | ^( ALAP s= stat ) | ^( WHILE c= stat s= stat ) | ^( UNTIL c= stat s= stat ) | ^( TRY s1= stat (s2= stat )? ) | ^( IF c= stat s1= stat (s2= stat )? ) | ^( CHOICE s1= stat (s2= stat )* ) | ^( STAR s= stat ) | rule | ANY | OTHER | TRUE )
-            int alt9 = 13;
-            switch (this.input.LA(1)) {
-            case BLOCK: {
-                alt9 = 1;
-            }
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:100:3: ( ^( SEMI s= stat ) | block | var_decl | ^( ALAP s= stat ) | ^( ATOM s= stat ) | ^( WHILE c= stat s= stat ) | ^( UNTIL c= stat s= stat ) | ^( TRY s1= stat (s2= stat )? ) | ^( IF c= stat s1= stat (s2= stat )? ) | ^( CHOICE s1= stat (s2= stat )* ) | ^( STAR s= stat ) | rule | ANY | OTHER | TRUE )
+            int alt11=15;
+            switch ( input.LA(1) ) {
+            case SEMI:
+                {
+                alt11=1;
+                }
                 break;
-            case VAR: {
-                alt9 = 2;
-            }
+            case BLOCK:
+                {
+                alt11=2;
+                }
                 break;
-            case ALAP: {
-                alt9 = 3;
-            }
+            case VAR:
+                {
+                alt11=3;
+                }
                 break;
-            case WHILE: {
-                alt9 = 4;
-            }
+            case ALAP:
+                {
+                alt11=4;
+                }
                 break;
-            case UNTIL: {
-                alt9 = 5;
-            }
+            case ATOM:
+                {
+                alt11=5;
+                }
                 break;
-            case TRY: {
-                alt9 = 6;
-            }
+            case WHILE:
+                {
+                alt11=6;
+                }
                 break;
-            case IF: {
-                alt9 = 7;
-            }
+            case UNTIL:
+                {
+                alt11=7;
+                }
                 break;
-            case CHOICE: {
-                alt9 = 8;
-            }
+            case TRY:
+                {
+                alt11=8;
+                }
                 break;
-            case STAR: {
-                alt9 = 9;
-            }
+            case IF:
+                {
+                alt11=9;
+                }
                 break;
-            case CALL: {
-                alt9 = 10;
-            }
+            case CHOICE:
+                {
+                alt11=10;
+                }
                 break;
-            case ANY: {
-                alt9 = 11;
-            }
+            case STAR:
+                {
+                alt11=11;
+                }
                 break;
-            case OTHER: {
-                alt9 = 12;
-            }
+            case CALL:
+                {
+                alt11=12;
+                }
                 break;
-            case TRUE: {
-                alt9 = 13;
-            }
+            case ANY:
+                {
+                alt11=13;
+                }
+                break;
+            case OTHER:
+                {
+                alt11=14;
+                }
+                break;
+            case TRUE:
+                {
+                alt11=15;
+                }
                 break;
             default:
                 NoViableAltException nvae =
-                    new NoViableAltException("", 9, 0, this.input);
+                    new NoViableAltException("", 11, 0, input);
 
                 throw nvae;
+
             }
 
-            switch (alt9) {
-            case 1:
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:96:5: block
-            {
-                _last = (CtrlTree) this.input.LT(1);
-                pushFollow(FOLLOW_block_in_stat288);
-                block24 = block();
-
-                this.state._fsp--;
-
-                if (_first_0 == null) {
-                    _first_0 = block24.tree;
-                }
-                retval.aut = (block24 != null ? block24.aut : null);
-
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
-            }
-                break;
-            case 2:
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:98:5: var_decl
-            {
-                _last = (CtrlTree) this.input.LT(1);
-                pushFollow(FOLLOW_var_decl_in_stat300);
-                var_decl25 = var_decl();
-
-                this.state._fsp--;
-
-                if (_first_0 == null) {
-                    _first_0 = var_decl25.tree;
-                }
-                retval.aut = this.builder.buildTrue();
-
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
-            }
-                break;
-            case 3:
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:100:5: ^( ALAP s= stat )
-            {
-                _last = (CtrlTree) this.input.LT(1);
-                {
+            switch (alt11) {
+                case 1 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:100:5: ^( SEMI s= stat )
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    {
                     CtrlTree _save_last_1 = _last;
                     CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    ALAP26 =
-                        (CtrlTree) match(this.input, ALAP,
-                            FOLLOW_ALAP_in_stat313);
+                    _last = (CtrlTree)input.LT(1);
+                    SEMI36=(CtrlTree)match(input,SEMI,FOLLOW_SEMI_in_stat357); 
 
-                    if (_first_0 == null) {
-                        _first_0 = ALAP26;
-                    }
-                    match(this.input, Token.DOWN, null);
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_stat_in_stat317);
-                    s = stat();
 
-                    this.state._fsp--;
-
-                    if (_first_1 == null) {
-                        _first_1 = s.tree;
-                    }
-
-                    match(this.input, Token.UP, null);
-                    _last = _save_last_1;
-                }
-
-                retval.aut = this.builder.buildAlap((s != null ? s.aut : null));
-
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
-            }
-                break;
-            case 4:
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:102:5: ^( WHILE c= stat s= stat )
-            {
-                _last = (CtrlTree) this.input.LT(1);
-                {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    WHILE27 =
-                        (CtrlTree) match(this.input, WHILE,
-                            FOLLOW_WHILE_in_stat331);
-
-                    if (_first_0 == null) {
-                        _first_0 = WHILE27;
-                    }
-                    match(this.input, Token.DOWN, null);
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_stat_in_stat335);
-                    c = stat();
-
-                    this.state._fsp--;
-
-                    if (_first_1 == null) {
-                        _first_1 = c.tree;
-                    }
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_stat_in_stat339);
-                    s = stat();
-
-                    this.state._fsp--;
-
-                    if (_first_1 == null) {
-                        _first_1 = s.tree;
-                    }
-
-                    match(this.input, Token.UP, null);
-                    _last = _save_last_1;
-                }
-
-                retval.aut =
-                    this.builder.buildWhileDo((c != null ? c.aut : null),
-                        (s != null ? s.aut : null));
-
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
-            }
-                break;
-            case 5:
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:104:5: ^( UNTIL c= stat s= stat )
-            {
-                _last = (CtrlTree) this.input.LT(1);
-                {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    UNTIL28 =
-                        (CtrlTree) match(this.input, UNTIL,
-                            FOLLOW_UNTIL_in_stat353);
-
-                    if (_first_0 == null) {
-                        _first_0 = UNTIL28;
-                    }
-                    match(this.input, Token.DOWN, null);
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_stat_in_stat357);
-                    c = stat();
-
-                    this.state._fsp--;
-
-                    if (_first_1 == null) {
-                        _first_1 = c.tree;
-                    }
-                    _last = (CtrlTree) this.input.LT(1);
+                    if ( _first_0==null ) _first_0 = SEMI36;
+                    match(input, Token.DOWN, null); 
+                    _last = (CtrlTree)input.LT(1);
                     pushFollow(FOLLOW_stat_in_stat361);
-                    s = stat();
+                    s=stat();
 
-                    this.state._fsp--;
+                    state._fsp--;
 
-                    if (_first_1 == null) {
-                        _first_1 = s.tree;
-                    }
+                     
+                    if ( _first_1==null ) _first_1 = s.tree;
 
-                    match(this.input, Token.UP, null);
+
+                    match(input, Token.UP, null); 
                     _last = _save_last_1;
-                }
-
-                retval.aut =
-                    this.builder.buildUntilDo((c != null ? c.aut : null),
-                        (s != null ? s.aut : null));
-
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
-            }
-                break;
-            case 6:
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:106:5: ^( TRY s1= stat (s2= stat )? )
-            {
-                _last = (CtrlTree) this.input.LT(1);
-                {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    TRY29 =
-                        (CtrlTree) match(this.input, TRY, FOLLOW_TRY_in_stat375);
-
-                    if (_first_0 == null) {
-                        _first_0 = TRY29;
                     }
-                    match(this.input, Token.DOWN, null);
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_stat_in_stat379);
-                    s1 = stat();
 
-                    this.state._fsp--;
 
-                    if (_first_1 == null) {
-                        _first_1 = s1.tree;
+                     retval.aut = (s!=null?s.aut:null); 
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
                     }
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:106:19: (s2= stat )?
-                    int alt6 = 2;
-                    int LA6_0 = this.input.LA(1);
-
-                    if (((LA6_0 >= BLOCK && LA6_0 <= CALL) || LA6_0 == VAR
-                        || (LA6_0 >= ALAP && LA6_0 <= UNTIL) || LA6_0 == IF
-                        || (LA6_0 >= TRY && LA6_0 <= CHOICE) || LA6_0 == TRUE
-                        || (LA6_0 >= ANY && LA6_0 <= OTHER) || LA6_0 == STAR)) {
-                        alt6 = 1;
-                    }
-                    switch (alt6) {
-                    case 1:
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:106:20: s2= stat
+                    break;
+                case 2 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:102:5: block
                     {
-                        _last = (CtrlTree) this.input.LT(1);
-                        pushFollow(FOLLOW_stat_in_stat384);
-                        s2 = stat();
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_block_in_stat374);
+                    block37=block();
 
-                        this.state._fsp--;
+                    state._fsp--;
 
-                        if (_first_1 == null) {
-                            _first_1 = s2.tree;
-                        }
+                     
+                    if ( _first_0==null ) _first_0 = block37.tree;
 
-                        retval.tree = (CtrlTree) _first_0;
-                        if (this.adaptor.getParent(retval.tree) != null
-                            && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                            retval.tree =
-                                (CtrlTree) this.adaptor.getParent(retval.tree);
-                        }
-                    }
-                        break;
+
+                     retval.aut = (block37!=null?block37.aut:null); 
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
                     }
-
-                    match(this.input, Token.UP, null);
-                    _last = _save_last_1;
-                }
-
-                retval.aut =
-                    this.builder.buildTryElse((s1 != null ? s1.aut : null),
-                        (s2 != null ? s2.aut : null));
-
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
-            }
-                break;
-            case 7:
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:108:5: ^( IF c= stat s1= stat (s2= stat )? )
-            {
-                _last = (CtrlTree) this.input.LT(1);
-                {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    IF30 =
-                        (CtrlTree) match(this.input, IF, FOLLOW_IF_in_stat400);
-
-                    if (_first_0 == null) {
-                        _first_0 = IF30;
-                    }
-                    match(this.input, Token.DOWN, null);
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_stat_in_stat404);
-                    c = stat();
-
-                    this.state._fsp--;
-
-                    if (_first_1 == null) {
-                        _first_1 = c.tree;
-                    }
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_stat_in_stat408);
-                    s1 = stat();
-
-                    this.state._fsp--;
-
-                    if (_first_1 == null) {
-                        _first_1 = s1.tree;
-                    }
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:108:25: (s2= stat )?
-                    int alt7 = 2;
-                    int LA7_0 = this.input.LA(1);
-
-                    if (((LA7_0 >= BLOCK && LA7_0 <= CALL) || LA7_0 == VAR
-                        || (LA7_0 >= ALAP && LA7_0 <= UNTIL) || LA7_0 == IF
-                        || (LA7_0 >= TRY && LA7_0 <= CHOICE) || LA7_0 == TRUE
-                        || (LA7_0 >= ANY && LA7_0 <= OTHER) || LA7_0 == STAR)) {
-                        alt7 = 1;
-                    }
-                    switch (alt7) {
-                    case 1:
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:108:26: s2= stat
+                    break;
+                case 3 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:104:5: var_decl
                     {
-                        _last = (CtrlTree) this.input.LT(1);
-                        pushFollow(FOLLOW_stat_in_stat413);
-                        s2 = stat();
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_var_decl_in_stat386);
+                    var_decl38=var_decl();
 
-                        this.state._fsp--;
+                    state._fsp--;
 
-                        if (_first_1 == null) {
-                            _first_1 = s2.tree;
-                        }
+                     
+                    if ( _first_0==null ) _first_0 = var_decl38.tree;
 
-                        retval.tree = (CtrlTree) _first_0;
-                        if (this.adaptor.getParent(retval.tree) != null
-                            && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                            retval.tree =
-                                (CtrlTree) this.adaptor.getParent(retval.tree);
-                        }
-                    }
-                        break;
+
+                     retval.aut = builder.buildTrue(); 
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
                     }
-
-                    match(this.input, Token.UP, null);
-                    _last = _save_last_1;
-                }
-
-                retval.aut =
-                    this.builder.buildIfThenElse((c != null ? c.aut : null),
-                        (s1 != null ? s1.aut : null), (s2 != null ? s2.aut
-                                : null));
-
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
-            }
-                break;
-            case 8:
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:110:5: ^( CHOICE s1= stat (s2= stat )* )
-            {
-                _last = (CtrlTree) this.input.LT(1);
-                {
+                    break;
+                case 4 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:106:5: ^( ALAP s= stat )
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    {
                     CtrlTree _save_last_1 = _last;
                     CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    CHOICE31 =
-                        (CtrlTree) match(this.input, CHOICE,
-                            FOLLOW_CHOICE_in_stat430);
+                    _last = (CtrlTree)input.LT(1);
+                    ALAP39=(CtrlTree)match(input,ALAP,FOLLOW_ALAP_in_stat399); 
 
-                    if (_first_0 == null) {
-                        _first_0 = CHOICE31;
+
+                    if ( _first_0==null ) _first_0 = ALAP39;
+                    match(input, Token.DOWN, null); 
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_stat_in_stat403);
+                    s=stat();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = s.tree;
+
+
+                    match(input, Token.UP, null); 
+                    _last = _save_last_1;
                     }
-                    match(this.input, Token.DOWN, null);
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_stat_in_stat442);
-                    s1 = stat();
 
-                    this.state._fsp--;
 
-                    if (_first_1 == null) {
-                        _first_1 = s1.tree;
+                     retval.aut = builder.buildAlap((s!=null?s.aut:null)); 
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
                     }
-                    retval.aut = (s1 != null ? s1.aut : null);
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:113:8: (s2= stat )*
-                    loop8: do {
-                        int alt8 = 2;
-                        int LA8_0 = this.input.LA(1);
+                    break;
+                case 5 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:108:5: ^( ATOM s= stat )
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    {
+                    CtrlTree _save_last_1 = _last;
+                    CtrlTree _first_1 = null;
+                    _last = (CtrlTree)input.LT(1);
+                    ATOM40=(CtrlTree)match(input,ATOM,FOLLOW_ATOM_in_stat417); 
 
-                        if (((LA8_0 >= BLOCK && LA8_0 <= CALL) || LA8_0 == VAR
-                            || (LA8_0 >= ALAP && LA8_0 <= UNTIL) || LA8_0 == IF
-                            || (LA8_0 >= TRY && LA8_0 <= CHOICE)
-                            || LA8_0 == TRUE
-                            || (LA8_0 >= ANY && LA8_0 <= OTHER) || LA8_0 == STAR)) {
-                            alt8 = 1;
-                        }
 
-                        switch (alt8) {
-                        case 1:
-                        // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:113:10: s2= stat
-                        {
-                            _last = (CtrlTree) this.input.LT(1);
-                            pushFollow(FOLLOW_stat_in_stat464);
-                            s2 = stat();
+                    if ( _first_0==null ) _first_0 = ATOM40;
+                    match(input, Token.DOWN, null); 
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_stat_in_stat421);
+                    s=stat();
 
-                            this.state._fsp--;
+                    state._fsp--;
 
-                            if (_first_1 == null) {
-                                _first_1 = s2.tree;
+                     
+                    if ( _first_1==null ) _first_1 = s.tree;
+
+
+                    match(input, Token.UP, null); 
+                    _last = _save_last_1;
+                    }
+
+
+                     helper.emitErrorMessage((s!=null?((CtrlTree)s.tree):null), "Atomic blocks are not supported in this version");
+                          retval.aut = (s!=null?s.aut:null);
+                        
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    }
+                    break;
+                case 6 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:112:5: ^( WHILE c= stat s= stat )
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    {
+                    CtrlTree _save_last_1 = _last;
+                    CtrlTree _first_1 = null;
+                    _last = (CtrlTree)input.LT(1);
+                    WHILE41=(CtrlTree)match(input,WHILE,FOLLOW_WHILE_in_stat435); 
+
+
+                    if ( _first_0==null ) _first_0 = WHILE41;
+                    match(input, Token.DOWN, null); 
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_stat_in_stat439);
+                    c=stat();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = c.tree;
+
+
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_stat_in_stat443);
+                    s=stat();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = s.tree;
+
+
+                    match(input, Token.UP, null); 
+                    _last = _save_last_1;
+                    }
+
+
+                     retval.aut = builder.buildWhileDo((c!=null?c.aut:null), (s!=null?s.aut:null)); 
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    }
+                    break;
+                case 7 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:114:5: ^( UNTIL c= stat s= stat )
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    {
+                    CtrlTree _save_last_1 = _last;
+                    CtrlTree _first_1 = null;
+                    _last = (CtrlTree)input.LT(1);
+                    UNTIL42=(CtrlTree)match(input,UNTIL,FOLLOW_UNTIL_in_stat457); 
+
+
+                    if ( _first_0==null ) _first_0 = UNTIL42;
+                    match(input, Token.DOWN, null); 
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_stat_in_stat461);
+                    c=stat();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = c.tree;
+
+
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_stat_in_stat465);
+                    s=stat();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = s.tree;
+
+
+                    match(input, Token.UP, null); 
+                    _last = _save_last_1;
+                    }
+
+
+                     retval.aut = builder.buildUntilDo((c!=null?c.aut:null), (s!=null?s.aut:null)); 
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    }
+                    break;
+                case 8 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:116:5: ^( TRY s1= stat (s2= stat )? )
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    {
+                    CtrlTree _save_last_1 = _last;
+                    CtrlTree _first_1 = null;
+                    _last = (CtrlTree)input.LT(1);
+                    TRY43=(CtrlTree)match(input,TRY,FOLLOW_TRY_in_stat479); 
+
+
+                    if ( _first_0==null ) _first_0 = TRY43;
+                    match(input, Token.DOWN, null); 
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_stat_in_stat483);
+                    s1=stat();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = s1.tree;
+
+
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:116:19: (s2= stat )?
+                    int alt8=2;
+                    int LA8_0 = input.LA(1);
+
+                    if ( (LA8_0==ALAP||LA8_0==ANY||LA8_0==ATOM||LA8_0==BLOCK||(LA8_0 >= CALL && LA8_0 <= CHOICE)||LA8_0==IF||LA8_0==OTHER||LA8_0==SEMI||LA8_0==STAR||(LA8_0 >= TRUE && LA8_0 <= WHILE)) ) {
+                        alt8=1;
+                    }
+                    switch (alt8) {
+                        case 1 :
+                            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:116:20: s2= stat
+                            {
+                            _last = (CtrlTree)input.LT(1);
+                            pushFollow(FOLLOW_stat_in_stat488);
+                            s2=stat();
+
+                            state._fsp--;
+
+                             
+                            if ( _first_1==null ) _first_1 = s2.tree;
+
+
+                            retval.tree = (CtrlTree)_first_0;
+                            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
                             }
-                            retval.aut =
-                                this.builder.buildOr(retval.aut, (s2 != null
-                                        ? s2.aut : null));
-
-                            retval.tree = (CtrlTree) _first_0;
-                            if (this.adaptor.getParent(retval.tree) != null
-                                && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                                retval.tree =
-                                    (CtrlTree) this.adaptor.getParent(retval.tree);
-                            }
-                        }
                             break;
 
-                        default:
-                            break loop8;
+                    }
+
+
+                    match(input, Token.UP, null); 
+                    _last = _save_last_1;
+                    }
+
+
+                     retval.aut = builder.buildTryElse((s1!=null?s1.aut:null), (s2!=null?s2.aut:null)); 
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    }
+                    break;
+                case 9 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:118:5: ^( IF c= stat s1= stat (s2= stat )? )
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    {
+                    CtrlTree _save_last_1 = _last;
+                    CtrlTree _first_1 = null;
+                    _last = (CtrlTree)input.LT(1);
+                    IF44=(CtrlTree)match(input,IF,FOLLOW_IF_in_stat504); 
+
+
+                    if ( _first_0==null ) _first_0 = IF44;
+                    match(input, Token.DOWN, null); 
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_stat_in_stat508);
+                    c=stat();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = c.tree;
+
+
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_stat_in_stat512);
+                    s1=stat();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = s1.tree;
+
+
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:118:25: (s2= stat )?
+                    int alt9=2;
+                    int LA9_0 = input.LA(1);
+
+                    if ( (LA9_0==ALAP||LA9_0==ANY||LA9_0==ATOM||LA9_0==BLOCK||(LA9_0 >= CALL && LA9_0 <= CHOICE)||LA9_0==IF||LA9_0==OTHER||LA9_0==SEMI||LA9_0==STAR||(LA9_0 >= TRUE && LA9_0 <= WHILE)) ) {
+                        alt9=1;
+                    }
+                    switch (alt9) {
+                        case 1 :
+                            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:118:26: s2= stat
+                            {
+                            _last = (CtrlTree)input.LT(1);
+                            pushFollow(FOLLOW_stat_in_stat517);
+                            s2=stat();
+
+                            state._fsp--;
+
+                             
+                            if ( _first_1==null ) _first_1 = s2.tree;
+
+
+                            retval.tree = (CtrlTree)_first_0;
+                            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                            }
+                            break;
+
+                    }
+
+
+                    match(input, Token.UP, null); 
+                    _last = _save_last_1;
+                    }
+
+
+                     retval.aut = builder.buildIfThenElse((c!=null?c.aut:null), (s1!=null?s1.aut:null), (s2!=null?s2.aut:null)); 
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    }
+                    break;
+                case 10 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:120:5: ^( CHOICE s1= stat (s2= stat )* )
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    {
+                    CtrlTree _save_last_1 = _last;
+                    CtrlTree _first_1 = null;
+                    _last = (CtrlTree)input.LT(1);
+                    CHOICE45=(CtrlTree)match(input,CHOICE,FOLLOW_CHOICE_in_stat534); 
+
+
+                    if ( _first_0==null ) _first_0 = CHOICE45;
+                    match(input, Token.DOWN, null); 
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_stat_in_stat546);
+                    s1=stat();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = s1.tree;
+
+
+                     retval.aut = (s1!=null?s1.aut:null); 
+
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:123:8: (s2= stat )*
+                    loop10:
+                    do {
+                        int alt10=2;
+                        int LA10_0 = input.LA(1);
+
+                        if ( (LA10_0==ALAP||LA10_0==ANY||LA10_0==ATOM||LA10_0==BLOCK||(LA10_0 >= CALL && LA10_0 <= CHOICE)||LA10_0==IF||LA10_0==OTHER||LA10_0==SEMI||LA10_0==STAR||(LA10_0 >= TRUE && LA10_0 <= WHILE)) ) {
+                            alt10=1;
+                        }
+
+
+                        switch (alt10) {
+                    	case 1 :
+                    	    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:123:10: s2= stat
+                    	    {
+                    	    _last = (CtrlTree)input.LT(1);
+                    	    pushFollow(FOLLOW_stat_in_stat568);
+                    	    s2=stat();
+
+                    	    state._fsp--;
+
+                    	     
+                    	    if ( _first_1==null ) _first_1 = s2.tree;
+
+
+                    	     retval.aut = builder.buildOr(retval.aut, (s2!=null?s2.aut:null)); 
+
+                    	    retval.tree = (CtrlTree)_first_0;
+                    	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                    	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop10;
                         }
                     } while (true);
 
-                    match(this.input, Token.UP, null);
-                    _last = _save_last_1;
-                }
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
-            }
-                break;
-            case 9:
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:117:5: ^( STAR s= stat )
-            {
-                _last = (CtrlTree) this.input.LT(1);
-                {
+                    match(input, Token.UP, null); 
+                    _last = _save_last_1;
+                    }
+
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    }
+                    break;
+                case 11 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:127:5: ^( STAR s= stat )
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    {
                     CtrlTree _save_last_1 = _last;
                     CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    STAR32 =
-                        (CtrlTree) match(this.input, STAR,
-                            FOLLOW_STAR_in_stat499);
+                    _last = (CtrlTree)input.LT(1);
+                    STAR46=(CtrlTree)match(input,STAR,FOLLOW_STAR_in_stat603); 
 
-                    if (_first_0 == null) {
-                        _first_0 = STAR32;
-                    }
-                    match(this.input, Token.DOWN, null);
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_stat_in_stat503);
-                    s = stat();
 
-                    this.state._fsp--;
+                    if ( _first_0==null ) _first_0 = STAR46;
+                    match(input, Token.DOWN, null); 
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_stat_in_stat607);
+                    s=stat();
 
-                    if (_first_1 == null) {
-                        _first_1 = s.tree;
-                    }
+                    state._fsp--;
 
-                    match(this.input, Token.UP, null);
+                     
+                    if ( _first_1==null ) _first_1 = s.tree;
+
+
+                    match(input, Token.UP, null); 
                     _last = _save_last_1;
-                }
+                    }
 
-                retval.aut = this.builder.buildStar((s != null ? s.aut : null));
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
-            }
-                break;
-            case 10:
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:119:5: rule
-            {
-                _last = (CtrlTree) this.input.LT(1);
-                pushFollow(FOLLOW_rule_in_stat516);
-                rule33 = rule();
+                     retval.aut = builder.buildStar((s!=null?s.aut:null)); 
 
-                this.state._fsp--;
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
-                if (_first_0 == null) {
-                    _first_0 = rule33.tree;
-                }
-                retval.aut =
-                    this.builder.buildCall((rule33 != null
-                            ? ((CtrlTree) rule33.tree) : null).getCtrlCall(),
-                        this.namespace);
+                    }
+                    break;
+                case 12 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:129:5: rule
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_rule_in_stat620);
+                    rule47=rule();
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
-            }
-                break;
-            case 11:
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:121:5: ANY
-            {
-                _last = (CtrlTree) this.input.LT(1);
-                ANY34 =
-                    (CtrlTree) match(this.input, ANY, FOLLOW_ANY_in_stat528);
+                    state._fsp--;
 
-                if (_first_0 == null) {
-                    _first_0 = ANY34;
-                }
-                retval.aut = this.builder.buildAny(this.namespace);
+                     
+                    if ( _first_0==null ) _first_0 = rule47.tree;
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
-            }
-                break;
-            case 12:
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:123:5: OTHER
-            {
-                _last = (CtrlTree) this.input.LT(1);
-                OTHER35 =
-                    (CtrlTree) match(this.input, OTHER, FOLLOW_OTHER_in_stat540);
 
-                if (_first_0 == null) {
-                    _first_0 = OTHER35;
-                }
-                retval.aut = this.builder.buildOther(this.namespace);
+                     retval.aut = builder.buildCall((rule47!=null?((CtrlTree)rule47.tree):null).getCtrlCall(), namespace); 
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
-            }
-                break;
-            case 13:
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:126:5: TRUE
-            {
-                _last = (CtrlTree) this.input.LT(1);
-                TRUE36 =
-                    (CtrlTree) match(this.input, TRUE, FOLLOW_TRUE_in_stat552);
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
-                if (_first_0 == null) {
-                    _first_0 = TRUE36;
-                }
-                retval.aut = this.builder.buildTrue();
+                    }
+                    break;
+                case 13 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:131:5: ANY
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    ANY48=(CtrlTree)match(input,ANY,FOLLOW_ANY_in_stat632); 
+                     
+                    if ( _first_0==null ) _first_0 = ANY48;
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
-            }
-                break;
+
+                     retval.aut = builder.buildAny(namespace); 
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    }
+                    break;
+                case 14 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:133:5: OTHER
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    OTHER49=(CtrlTree)match(input,OTHER,FOLLOW_OTHER_in_stat644); 
+                     
+                    if ( _first_0==null ) _first_0 = OTHER49;
+
+
+                     retval.aut = builder.buildOther(namespace); 
+                        
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    }
+                    break;
+                case 15 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:136:5: TRUE
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    TRUE50=(CtrlTree)match(input,TRUE,FOLLOW_TRUE_in_stat656); 
+                     
+                    if ( _first_0==null ) _first_0 = TRUE50;
+
+
+                     retval.aut = builder.buildTrue(); 
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    }
+                    break;
 
             }
-        } catch (RecognitionException re) {
+        }
+        catch (RecognitionException re) {
             reportError(re);
-            recover(this.input, re);
-        } finally {
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
         }
         return retval;
     }
-
     // $ANTLR end "stat"
+
 
     public static class rule_return extends TreeRuleReturnScope {
         CtrlTree tree;
-
-        public Object getTree() {
-            return this.tree;
-        }
+        public Object getTree() { return tree; }
     };
 
+
     // $ANTLR start "rule"
-    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:130:1: rule : ^( CALL ID ( ^( ARGS ( arg )* ) )? ) ;
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:140:1: rule : ^( CALL ID ( ^( ARGS ( arg )* RPAR ) )? ) ;
     public final CtrlBuilder.rule_return rule() throws RecognitionException {
         CtrlBuilder.rule_return retval = new CtrlBuilder.rule_return();
-        retval.start = this.input.LT(1);
+        retval.start = input.LT(1);
+
 
         CtrlTree root_0 = null;
 
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree CALL37 = null;
-        CtrlTree ID38 = null;
-        CtrlTree ARGS39 = null;
-        CtrlBuilder.arg_return arg40 = null;
+        CtrlTree CALL51=null;
+        CtrlTree ID52=null;
+        CtrlTree ARGS53=null;
+        CtrlTree RPAR55=null;
+        CtrlBuilder.arg_return arg54 =null;
 
-        CtrlTree CALL37_tree = null;
-        CtrlTree ID38_tree = null;
-        CtrlTree ARGS39_tree = null;
+
+        CtrlTree CALL51_tree=null;
+        CtrlTree ID52_tree=null;
+        CtrlTree ARGS53_tree=null;
+        CtrlTree RPAR55_tree=null;
 
         try {
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:131:3: ( ^( CALL ID ( ^( ARGS ( arg )* ) )? ) )
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:131:5: ^( CALL ID ( ^( ARGS ( arg )* ) )? )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:141:3: ( ^( CALL ID ( ^( ARGS ( arg )* RPAR ) )? ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:141:5: ^( CALL ID ( ^( ARGS ( arg )* RPAR ) )? )
             {
-                _last = (CtrlTree) this.input.LT(1);
-                {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    CALL37 =
-                        (CtrlTree) match(this.input, CALL,
-                            FOLLOW_CALL_in_rule572);
+            _last = (CtrlTree)input.LT(1);
+            {
+            CtrlTree _save_last_1 = _last;
+            CtrlTree _first_1 = null;
+            _last = (CtrlTree)input.LT(1);
+            CALL51=(CtrlTree)match(input,CALL,FOLLOW_CALL_in_rule676); 
 
-                    if (_first_0 == null) {
-                        _first_0 = CALL37;
-                    }
-                    match(this.input, Token.DOWN, null);
-                    _last = (CtrlTree) this.input.LT(1);
-                    ID38 =
-                        (CtrlTree) match(this.input, ID, FOLLOW_ID_in_rule574);
 
-                    if (_first_1 == null) {
-                        _first_1 = ID38;
-                    }
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:131:15: ( ^( ARGS ( arg )* ) )?
-                    int alt11 = 2;
-                    int LA11_0 = this.input.LA(1);
+            if ( _first_0==null ) _first_0 = CALL51;
+            match(input, Token.DOWN, null); 
+            _last = (CtrlTree)input.LT(1);
+            ID52=(CtrlTree)match(input,ID,FOLLOW_ID_in_rule678); 
+             
+            if ( _first_1==null ) _first_1 = ID52;
 
-                    if ((LA11_0 == ARGS)) {
-                        alt11 = 1;
-                    }
-                    switch (alt11) {
-                    case 1:
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:131:16: ^( ARGS ( arg )* )
+
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:141:15: ( ^( ARGS ( arg )* RPAR ) )?
+            int alt13=2;
+            int LA13_0 = input.LA(1);
+
+            if ( (LA13_0==ARGS) ) {
+                alt13=1;
+            }
+            switch (alt13) {
+                case 1 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:141:16: ^( ARGS ( arg )* RPAR )
                     {
-                        _last = (CtrlTree) this.input.LT(1);
-                        {
-                            CtrlTree _save_last_2 = _last;
-                            CtrlTree _first_2 = null;
-                            _last = (CtrlTree) this.input.LT(1);
-                            ARGS39 =
-                                (CtrlTree) match(this.input, ARGS,
-                                    FOLLOW_ARGS_in_rule578);
+                    _last = (CtrlTree)input.LT(1);
+                    {
+                    CtrlTree _save_last_2 = _last;
+                    CtrlTree _first_2 = null;
+                    _last = (CtrlTree)input.LT(1);
+                    ARGS53=(CtrlTree)match(input,ARGS,FOLLOW_ARGS_in_rule682); 
 
-                            if (_first_1 == null) {
-                                _first_1 = ARGS39;
-                            }
-                            if (this.input.LA(1) == Token.DOWN) {
-                                match(this.input, Token.DOWN, null);
-                                // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:131:23: ( arg )*
-                                loop10: do {
-                                    int alt10 = 2;
-                                    int LA10_0 = this.input.LA(1);
 
-                                    if ((LA10_0 == ARG)) {
-                                        alt10 = 1;
-                                    }
+                    if ( _first_1==null ) _first_1 = ARGS53;
+                    match(input, Token.DOWN, null); 
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:141:23: ( arg )*
+                    loop12:
+                    do {
+                        int alt12=2;
+                        int LA12_0 = input.LA(1);
 
-                                    switch (alt10) {
-                                    case 1:
-                                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:131:23: arg
-                                    {
-                                        _last = (CtrlTree) this.input.LT(1);
-                                        pushFollow(FOLLOW_arg_in_rule580);
-                                        arg40 = arg();
-
-                                        this.state._fsp--;
-
-                                        if (_first_2 == null) {
-                                            _first_2 = arg40.tree;
-                                        }
-
-                                        retval.tree = (CtrlTree) _first_0;
-                                        if (this.adaptor.getParent(retval.tree) != null
-                                            && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                                            retval.tree =
-                                                (CtrlTree) this.adaptor.getParent(retval.tree);
-                                        }
-                                    }
-                                        break;
-
-                                    default:
-                                        break loop10;
-                                    }
-                                } while (true);
-
-                                match(this.input, Token.UP, null);
-                            }
-                            _last = _save_last_2;
+                        if ( (LA12_0==ARG) ) {
+                            alt12=1;
                         }
 
-                        retval.tree = (CtrlTree) _first_0;
-                        if (this.adaptor.getParent(retval.tree) != null
-                            && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                            retval.tree =
-                                (CtrlTree) this.adaptor.getParent(retval.tree);
+
+                        switch (alt12) {
+                    	case 1 :
+                    	    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:141:23: arg
+                    	    {
+                    	    _last = (CtrlTree)input.LT(1);
+                    	    pushFollow(FOLLOW_arg_in_rule684);
+                    	    arg54=arg();
+
+                    	    state._fsp--;
+
+                    	     
+                    	    if ( _first_2==null ) _first_2 = arg54.tree;
+
+
+                    	    retval.tree = (CtrlTree)_first_0;
+                    	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                    	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop12;
                         }
+                    } while (true);
+
+
+                    _last = (CtrlTree)input.LT(1);
+                    RPAR55=(CtrlTree)match(input,RPAR,FOLLOW_RPAR_in_rule687); 
+                     
+                    if ( _first_2==null ) _first_2 = RPAR55;
+
+
+                    match(input, Token.UP, null); 
+                    _last = _save_last_2;
                     }
-                        break;
+
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
 
                     }
+                    break;
 
-                    match(this.input, Token.UP, null);
-                    _last = _save_last_1;
-                }
-
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
             }
 
-        } catch (RecognitionException re) {
+
+            match(input, Token.UP, null); 
+            _last = _save_last_1;
+            }
+
+
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            }
+
+        }
+        catch (RecognitionException re) {
             reportError(re);
-            recover(this.input, re);
-        } finally {
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
         }
         return retval;
     }
-
     // $ANTLR end "rule"
+
 
     public static class var_decl_return extends TreeRuleReturnScope {
         CtrlTree tree;
-
-        public Object getTree() {
-            return this.tree;
-        }
+        public Object getTree() { return tree; }
     };
 
+
     // $ANTLR start "var_decl"
-    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:134:1: var_decl : ^( VAR type ( ID )+ ) ;
-    public final CtrlBuilder.var_decl_return var_decl()
-        throws RecognitionException {
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:144:1: var_decl : ^( VAR type ( ID )+ ) ;
+    public final CtrlBuilder.var_decl_return var_decl() throws RecognitionException {
         CtrlBuilder.var_decl_return retval = new CtrlBuilder.var_decl_return();
-        retval.start = this.input.LT(1);
+        retval.start = input.LT(1);
+
 
         CtrlTree root_0 = null;
 
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree VAR41 = null;
-        CtrlTree ID43 = null;
-        CtrlBuilder.type_return type42 = null;
+        CtrlTree VAR56=null;
+        CtrlTree ID58=null;
+        CtrlBuilder.type_return type57 =null;
 
-        CtrlTree VAR41_tree = null;
-        CtrlTree ID43_tree = null;
+
+        CtrlTree VAR56_tree=null;
+        CtrlTree ID58_tree=null;
 
         try {
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:135:2: ( ^( VAR type ( ID )+ ) )
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:135:4: ^( VAR type ( ID )+ )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:145:2: ( ^( VAR type ( ID )+ ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:145:4: ^( VAR type ( ID )+ )
             {
-                _last = (CtrlTree) this.input.LT(1);
-                {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    VAR41 =
-                        (CtrlTree) match(this.input, VAR,
-                            FOLLOW_VAR_in_var_decl599);
+            _last = (CtrlTree)input.LT(1);
+            {
+            CtrlTree _save_last_1 = _last;
+            CtrlTree _first_1 = null;
+            _last = (CtrlTree)input.LT(1);
+            VAR56=(CtrlTree)match(input,VAR,FOLLOW_VAR_in_var_decl705); 
 
-                    if (_first_0 == null) {
-                        _first_0 = VAR41;
-                    }
-                    match(this.input, Token.DOWN, null);
-                    _last = (CtrlTree) this.input.LT(1);
-                    pushFollow(FOLLOW_type_in_var_decl601);
-                    type42 = type();
 
-                    this.state._fsp--;
+            if ( _first_0==null ) _first_0 = VAR56;
+            match(input, Token.DOWN, null); 
+            _last = (CtrlTree)input.LT(1);
+            pushFollow(FOLLOW_type_in_var_decl707);
+            type57=type();
 
-                    if (_first_1 == null) {
-                        _first_1 = type42.tree;
-                    }
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:135:16: ( ID )+
-                    int cnt12 = 0;
-                    loop12: do {
-                        int alt12 = 2;
-                        int LA12_0 = this.input.LA(1);
+            state._fsp--;
 
-                        if ((LA12_0 == ID)) {
-                            alt12 = 1;
-                        }
+             
+            if ( _first_1==null ) _first_1 = type57.tree;
 
-                        switch (alt12) {
-                        case 1:
-                        // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:135:16: ID
-                        {
-                            _last = (CtrlTree) this.input.LT(1);
-                            ID43 =
-                                (CtrlTree) match(this.input, ID,
-                                    FOLLOW_ID_in_var_decl603);
 
-                            if (_first_1 == null) {
-                                _first_1 = ID43;
-                            }
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:145:16: ( ID )+
+            int cnt14=0;
+            loop14:
+            do {
+                int alt14=2;
+                int LA14_0 = input.LA(1);
 
-                            retval.tree = (CtrlTree) _first_0;
-                            if (this.adaptor.getParent(retval.tree) != null
-                                && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                                retval.tree =
-                                    (CtrlTree) this.adaptor.getParent(retval.tree);
-                            }
-                        }
-                            break;
-
-                        default:
-                            if (cnt12 >= 1) {
-                                break loop12;
-                            }
-                            EarlyExitException eee =
-                                new EarlyExitException(12, this.input);
-                            throw eee;
-                        }
-                        cnt12++;
-                    } while (true);
-
-                    match(this.input, Token.UP, null);
-                    _last = _save_last_1;
+                if ( (LA14_0==ID) ) {
+                    alt14=1;
                 }
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
+
+                switch (alt14) {
+            	case 1 :
+            	    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:145:16: ID
+            	    {
+            	    _last = (CtrlTree)input.LT(1);
+            	    ID58=(CtrlTree)match(input,ID,FOLLOW_ID_in_var_decl709); 
+            	     
+            	    if ( _first_1==null ) _first_1 = ID58;
+
+
+            	    retval.tree = (CtrlTree)_first_0;
+            	    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+            	        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            	    }
+            	    break;
+
+            	default :
+            	    if ( cnt14 >= 1 ) break loop14;
+                        EarlyExitException eee =
+                            new EarlyExitException(14, input);
+                        throw eee;
                 }
+                cnt14++;
+            } while (true);
+
+
+            match(input, Token.UP, null); 
+            _last = _save_last_1;
             }
 
-        } catch (RecognitionException re) {
+
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            }
+
+        }
+        catch (RecognitionException re) {
             reportError(re);
-            recover(this.input, re);
-        } finally {
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
         }
         return retval;
     }
-
     // $ANTLR end "var_decl"
+
 
     public static class type_return extends TreeRuleReturnScope {
         CtrlTree tree;
-
-        public Object getTree() {
-            return this.tree;
-        }
+        public Object getTree() { return tree; }
     };
 
+
     // $ANTLR start "type"
-    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:138:1: type : ( NODE | BOOL | STRING | INT | REAL );
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:148:1: type : ( NODE | BOOL | STRING | INT | REAL );
     public final CtrlBuilder.type_return type() throws RecognitionException {
         CtrlBuilder.type_return retval = new CtrlBuilder.type_return();
-        retval.start = this.input.LT(1);
+        retval.start = input.LT(1);
+
 
         CtrlTree root_0 = null;
 
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree set44 = null;
+        CtrlTree set59=null;
 
-        CtrlTree set44_tree = null;
+        CtrlTree set59_tree=null;
 
         try {
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:139:3: ( NODE | BOOL | STRING | INT | REAL )
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:149:3: ( NODE | BOOL | STRING | INT | REAL )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:
             {
-                _last = (CtrlTree) this.input.LT(1);
-                set44 = (CtrlTree) this.input.LT(1);
-                if ((this.input.LA(1) >= NODE && this.input.LA(1) <= REAL)) {
-                    this.input.consume();
+            _last = (CtrlTree)input.LT(1);
+            set59=(CtrlTree)input.LT(1);
 
-                    this.state.errorRecovery = false;
-                } else {
-                    MismatchedSetException mse =
-                        new MismatchedSetException(null, this.input);
-                    throw mse;
-                }
+            if ( input.LA(1)==BOOL||input.LA(1)==INT||input.LA(1)==NODE||input.LA(1)==REAL||input.LA(1)==STRING ) {
+                input.consume();
+                state.errorRecovery=false;
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                throw mse;
+            }
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+             
 
             }
 
-        } catch (RecognitionException re) {
+        }
+        catch (RecognitionException re) {
             reportError(re);
-            recover(this.input, re);
-        } finally {
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
         }
         return retval;
     }
-
     // $ANTLR end "type"
+
 
     public static class arg_return extends TreeRuleReturnScope {
         CtrlTree tree;
-
-        public Object getTree() {
-            return this.tree;
-        }
+        public Object getTree() { return tree; }
     };
 
+
     // $ANTLR start "arg"
-    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:142:1: arg : ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) ;
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:152:1: arg : ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) ;
     public final CtrlBuilder.arg_return arg() throws RecognitionException {
         CtrlBuilder.arg_return retval = new CtrlBuilder.arg_return();
-        retval.start = this.input.LT(1);
+        retval.start = input.LT(1);
+
 
         CtrlTree root_0 = null;
 
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree ARG45 = null;
-        CtrlTree OUT46 = null;
-        CtrlTree ID47 = null;
-        CtrlTree DONT_CARE48 = null;
-        CtrlBuilder.literal_return literal49 = null;
+        CtrlTree ARG60=null;
+        CtrlTree OUT61=null;
+        CtrlTree ID62=null;
+        CtrlTree DONT_CARE63=null;
+        CtrlBuilder.literal_return literal64 =null;
 
-        CtrlTree ARG45_tree = null;
-        CtrlTree OUT46_tree = null;
-        CtrlTree ID47_tree = null;
-        CtrlTree DONT_CARE48_tree = null;
+
+        CtrlTree ARG60_tree=null;
+        CtrlTree OUT61_tree=null;
+        CtrlTree ID62_tree=null;
+        CtrlTree DONT_CARE63_tree=null;
 
         try {
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:143:2: ( ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) )
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:143:4: ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:153:2: ( ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) ) )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:153:4: ^( ARG ( ( OUT )? ID | DONT_CARE | literal ) )
             {
-                _last = (CtrlTree) this.input.LT(1);
+            _last = (CtrlTree)input.LT(1);
+            {
+            CtrlTree _save_last_1 = _last;
+            CtrlTree _first_1 = null;
+            _last = (CtrlTree)input.LT(1);
+            ARG60=(CtrlTree)match(input,ARG,FOLLOW_ARG_in_arg756); 
+
+
+            if ( _first_0==null ) _first_0 = ARG60;
+            match(input, Token.DOWN, null); 
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:153:11: ( ( OUT )? ID | DONT_CARE | literal )
+            int alt16=3;
+            switch ( input.LA(1) ) {
+            case ID:
+            case OUT:
                 {
-                    CtrlTree _save_last_1 = _last;
-                    CtrlTree _first_1 = null;
-                    _last = (CtrlTree) this.input.LT(1);
-                    ARG45 =
-                        (CtrlTree) match(this.input, ARG, FOLLOW_ARG_in_arg650);
-
-                    if (_first_0 == null) {
-                        _first_0 = ARG45;
-                    }
-                    match(this.input, Token.DOWN, null);
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:143:11: ( ( OUT )? ID | DONT_CARE | literal )
-                    int alt14 = 3;
-                    switch (this.input.LA(1)) {
-                    case ID:
-                    case OUT: {
-                        alt14 = 1;
-                    }
-                        break;
-                    case DONT_CARE: {
-                        alt14 = 2;
-                    }
-                        break;
-                    case TRUE:
-                    case FALSE:
-                    case STRING_LIT:
-                    case INT_LIT:
-                    case REAL_LIT: {
-                        alt14 = 3;
-                    }
-                        break;
-                    default:
-                        NoViableAltException nvae =
-                            new NoViableAltException("", 14, 0, this.input);
-
-                        throw nvae;
-                    }
-
-                    switch (alt14) {
-                    case 1:
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:143:13: ( OUT )? ID
-                    {
-                        // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:143:13: ( OUT )?
-                        int alt13 = 2;
-                        int LA13_0 = this.input.LA(1);
-
-                        if ((LA13_0 == OUT)) {
-                            alt13 = 1;
-                        }
-                        switch (alt13) {
-                        case 1:
-                        // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:143:13: OUT
-                        {
-                            _last = (CtrlTree) this.input.LT(1);
-                            OUT46 =
-                                (CtrlTree) match(this.input, OUT,
-                                    FOLLOW_OUT_in_arg654);
-
-                            if (_first_1 == null) {
-                                _first_1 = OUT46;
-                            }
-
-                            retval.tree = (CtrlTree) _first_0;
-                            if (this.adaptor.getParent(retval.tree) != null
-                                && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                                retval.tree =
-                                    (CtrlTree) this.adaptor.getParent(retval.tree);
-                            }
-                        }
-                            break;
-
-                        }
-
-                        _last = (CtrlTree) this.input.LT(1);
-                        ID47 =
-                            (CtrlTree) match(this.input, ID,
-                                FOLLOW_ID_in_arg657);
-
-                        if (_first_1 == null) {
-                            _first_1 = ID47;
-                        }
-
-                        retval.tree = (CtrlTree) _first_0;
-                        if (this.adaptor.getParent(retval.tree) != null
-                            && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                            retval.tree =
-                                (CtrlTree) this.adaptor.getParent(retval.tree);
-                        }
-                    }
-                        break;
-                    case 2:
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:143:23: DONT_CARE
-                    {
-                        _last = (CtrlTree) this.input.LT(1);
-                        DONT_CARE48 =
-                            (CtrlTree) match(this.input, DONT_CARE,
-                                FOLLOW_DONT_CARE_in_arg661);
-
-                        if (_first_1 == null) {
-                            _first_1 = DONT_CARE48;
-                        }
-
-                        retval.tree = (CtrlTree) _first_0;
-                        if (this.adaptor.getParent(retval.tree) != null
-                            && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                            retval.tree =
-                                (CtrlTree) this.adaptor.getParent(retval.tree);
-                        }
-                    }
-                        break;
-                    case 3:
-                    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:143:35: literal
-                    {
-                        _last = (CtrlTree) this.input.LT(1);
-                        pushFollow(FOLLOW_literal_in_arg665);
-                        literal49 = literal();
-
-                        this.state._fsp--;
-
-                        if (_first_1 == null) {
-                            _first_1 = literal49.tree;
-                        }
-
-                        retval.tree = (CtrlTree) _first_0;
-                        if (this.adaptor.getParent(retval.tree) != null
-                            && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                            retval.tree =
-                                (CtrlTree) this.adaptor.getParent(retval.tree);
-                        }
-                    }
-                        break;
-
-                    }
-
-                    match(this.input, Token.UP, null);
-                    _last = _save_last_1;
+                alt16=1;
                 }
-
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
+                break;
+            case DONT_CARE:
+                {
+                alt16=2;
                 }
+                break;
+            case FALSE:
+            case INT_LIT:
+            case REAL_LIT:
+            case STRING_LIT:
+            case TRUE:
+                {
+                alt16=3;
+                }
+                break;
+            default:
+                NoViableAltException nvae =
+                    new NoViableAltException("", 16, 0, input);
+
+                throw nvae;
+
             }
 
-        } catch (RecognitionException re) {
+            switch (alt16) {
+                case 1 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:153:13: ( OUT )? ID
+                    {
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:153:13: ( OUT )?
+                    int alt15=2;
+                    int LA15_0 = input.LA(1);
+
+                    if ( (LA15_0==OUT) ) {
+                        alt15=1;
+                    }
+                    switch (alt15) {
+                        case 1 :
+                            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:153:13: OUT
+                            {
+                            _last = (CtrlTree)input.LT(1);
+                            OUT61=(CtrlTree)match(input,OUT,FOLLOW_OUT_in_arg760); 
+                             
+                            if ( _first_1==null ) _first_1 = OUT61;
+
+
+                            retval.tree = (CtrlTree)_first_0;
+                            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                            }
+                            break;
+
+                    }
+
+
+                    _last = (CtrlTree)input.LT(1);
+                    ID62=(CtrlTree)match(input,ID,FOLLOW_ID_in_arg763); 
+                     
+                    if ( _first_1==null ) _first_1 = ID62;
+
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    }
+                    break;
+                case 2 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:153:23: DONT_CARE
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    DONT_CARE63=(CtrlTree)match(input,DONT_CARE,FOLLOW_DONT_CARE_in_arg767); 
+                     
+                    if ( _first_1==null ) _first_1 = DONT_CARE63;
+
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    }
+                    break;
+                case 3 :
+                    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:153:35: literal
+                    {
+                    _last = (CtrlTree)input.LT(1);
+                    pushFollow(FOLLOW_literal_in_arg771);
+                    literal64=literal();
+
+                    state._fsp--;
+
+                     
+                    if ( _first_1==null ) _first_1 = literal64.tree;
+
+
+                    retval.tree = (CtrlTree)_first_0;
+                    if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                        retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+                    }
+                    break;
+
+            }
+
+
+            match(input, Token.UP, null); 
+            _last = _save_last_1;
+            }
+
+
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+
+            }
+
+        }
+        catch (RecognitionException re) {
             reportError(re);
-            recover(this.input, re);
-        } finally {
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
         }
         return retval;
     }
-
     // $ANTLR end "arg"
+
 
     public static class literal_return extends TreeRuleReturnScope {
         CtrlTree tree;
-
-        public Object getTree() {
-            return this.tree;
-        }
+        public Object getTree() { return tree; }
     };
 
+
     // $ANTLR start "literal"
-    // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:146:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
-    public final CtrlBuilder.literal_return literal()
-        throws RecognitionException {
+    // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:156:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
+    public final CtrlBuilder.literal_return literal() throws RecognitionException {
         CtrlBuilder.literal_return retval = new CtrlBuilder.literal_return();
-        retval.start = this.input.LT(1);
+        retval.start = input.LT(1);
+
 
         CtrlTree root_0 = null;
 
         CtrlTree _first_0 = null;
         CtrlTree _last = null;
 
-        CtrlTree set50 = null;
+        CtrlTree set65=null;
 
-        CtrlTree set50_tree = null;
+        CtrlTree set65_tree=null;
 
         try {
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:147:3: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
-            // D:\\eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:157:3: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
+            // D:\\Eclipse\\groove\\src\\groove\\control\\parse\\CtrlBuilder.g:
             {
-                _last = (CtrlTree) this.input.LT(1);
-                set50 = (CtrlTree) this.input.LT(1);
-                if (this.input.LA(1) == TRUE
-                    || (this.input.LA(1) >= FALSE && this.input.LA(1) <= REAL_LIT)) {
-                    this.input.consume();
+            _last = (CtrlTree)input.LT(1);
+            set65=(CtrlTree)input.LT(1);
 
-                    this.state.errorRecovery = false;
-                } else {
-                    MismatchedSetException mse =
-                        new MismatchedSetException(null, this.input);
-                    throw mse;
-                }
+            if ( input.LA(1)==FALSE||input.LA(1)==INT_LIT||input.LA(1)==REAL_LIT||(input.LA(1) >= STRING_LIT && input.LA(1) <= TRUE) ) {
+                input.consume();
+                state.errorRecovery=false;
+            }
+            else {
+                MismatchedSetException mse = new MismatchedSetException(null,input);
+                throw mse;
+            }
 
-                retval.tree = (CtrlTree) _first_0;
-                if (this.adaptor.getParent(retval.tree) != null
-                    && this.adaptor.isNil(this.adaptor.getParent(retval.tree))) {
-                    retval.tree =
-                        (CtrlTree) this.adaptor.getParent(retval.tree);
-                }
+            retval.tree = (CtrlTree)_first_0;
+            if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
+                retval.tree = (CtrlTree)adaptor.getParent(retval.tree);
+             
 
             }
 
-        } catch (RecognitionException re) {
+        }
+        catch (RecognitionException re) {
             reportError(re);
-            recover(this.input, re);
-        } finally {
+            recover(input,re);
+        }
+
+        finally {
+        	// do for sure before leaving
         }
         return retval;
     }
-
     // $ANTLR end "literal"
 
     // Delegated rules
 
-    public static final BitSet FOLLOW_PROGRAM_in_program59 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_package_decl_in_program61 = new BitSet(
-        new long[] {0x0000000000010800L});
-    public static final BitSet FOLLOW_import_decl_in_program63 = new BitSet(
-        new long[] {0x0000000000010800L});
-    public static final BitSet FOLLOW_functions_in_program66 = new BitSet(
-        new long[] {0x0000000000000010L});
-    public static final BitSet FOLLOW_recipes_in_program68 = new BitSet(
-        new long[] {0x0000000000000080L});
-    public static final BitSet FOLLOW_block_in_program70 = new BitSet(
-        new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_PACKAGE_in_package_decl91 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_ID_in_package_decl93 = new BitSet(
-        new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_IMPORT_in_import_decl110 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_ID_in_import_decl112 = new BitSet(
-        new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_FUNCTIONS_in_functions127 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_function_in_functions129 = new BitSet(
-        new long[] {0x0000000000400008L});
-    public static final BitSet FOLLOW_FUNCTION_in_function145 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_ID_in_function147 = new BitSet(
-        new long[] {0x0000000000000080L});
-    public static final BitSet FOLLOW_block_in_function149 = new BitSet(
-        new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_RECIPES_in_recipes172 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_recipe_in_recipes174 = new BitSet(
-        new long[] {0x0000000000080008L});
-    public static final BitSet FOLLOW_RECIPE_in_recipe190 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_ID_in_recipe192 = new BitSet(
-        new long[] {0x0000400000000080L});
-    public static final BitSet FOLLOW_INT_LIT_in_recipe194 = new BitSet(
-        new long[] {0x0000000000000080L});
-    public static final BitSet FOLLOW_block_in_recipe197 = new BitSet(
-        new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_BLOCK_in_block223 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_stat_in_block243 = new BitSet(
-        new long[] {0x00400189AE002188L});
-    public static final BitSet FOLLOW_block_in_stat288 = new BitSet(
-        new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_var_decl_in_stat300 = new BitSet(
-        new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_ALAP_in_stat313 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_stat_in_stat317 = new BitSet(
-        new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_WHILE_in_stat331 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_stat_in_stat335 = new BitSet(
-        new long[] {0x00400189AE002188L});
-    public static final BitSet FOLLOW_stat_in_stat339 = new BitSet(
-        new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_UNTIL_in_stat353 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_stat_in_stat357 = new BitSet(
-        new long[] {0x00400189AE002188L});
-    public static final BitSet FOLLOW_stat_in_stat361 = new BitSet(
-        new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_TRY_in_stat375 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_stat_in_stat379 = new BitSet(
-        new long[] {0x00400189AE002188L});
-    public static final BitSet FOLLOW_stat_in_stat384 = new BitSet(
-        new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_IF_in_stat400 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_stat_in_stat404 = new BitSet(
-        new long[] {0x00400189AE002188L});
-    public static final BitSet FOLLOW_stat_in_stat408 = new BitSet(
-        new long[] {0x00400189AE002188L});
-    public static final BitSet FOLLOW_stat_in_stat413 = new BitSet(
-        new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_CHOICE_in_stat430 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_stat_in_stat442 = new BitSet(
-        new long[] {0x00400189AE002188L});
-    public static final BitSet FOLLOW_stat_in_stat464 = new BitSet(
-        new long[] {0x00400189AE002188L});
-    public static final BitSet FOLLOW_STAR_in_stat499 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_stat_in_stat503 = new BitSet(
-        new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_rule_in_stat516 = new BitSet(
-        new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_ANY_in_stat528 = new BitSet(
-        new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_OTHER_in_stat540 = new BitSet(
-        new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_TRUE_in_stat552 = new BitSet(
-        new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_CALL_in_rule572 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_ID_in_rule574 = new BitSet(
-        new long[] {0x0000000000000048L});
-    public static final BitSet FOLLOW_ARGS_in_rule578 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_arg_in_rule580 = new BitSet(
-        new long[] {0x0000000000000028L});
-    public static final BitSet FOLLOW_VAR_in_var_decl599 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_type_in_var_decl601 = new BitSet(
-        new long[] {0x0000000000020000L});
-    public static final BitSet FOLLOW_ID_in_var_decl603 = new BitSet(
-        new long[] {0x0000000000020008L});
-    public static final BitSet FOLLOW_set_in_type0 = new BitSet(
-        new long[] {0x0000000000000002L});
-    public static final BitSet FOLLOW_ARG_in_arg650 = new BitSet(
-        new long[] {0x0000000000000004L});
-    public static final BitSet FOLLOW_OUT_in_arg654 = new BitSet(
-        new long[] {0x0000000000020000L});
-    public static final BitSet FOLLOW_ID_in_arg657 = new BitSet(
-        new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_DONT_CARE_in_arg661 = new BitSet(
-        new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_literal_in_arg665 = new BitSet(
-        new long[] {0x0000000000000008L});
-    public static final BitSet FOLLOW_set_in_literal0 = new BitSet(
-        new long[] {0x0000000000000002L});
+
+ 
+
+    public static final BitSet FOLLOW_PROGRAM_in_program59 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_package_decl_in_program61 = new BitSet(new long[]{0x0000000048000000L});
+    public static final BitSet FOLLOW_import_decl_in_program63 = new BitSet(new long[]{0x0000000048000000L});
+    public static final BitSet FOLLOW_functions_in_program66 = new BitSet(new long[]{0x0080000000000000L});
+    public static final BitSet FOLLOW_recipes_in_program68 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_block_in_program70 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_PACKAGE_in_package_decl91 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_ID_in_package_decl93 = new BitSet(new long[]{0x0200000000000000L});
+    public static final BitSet FOLLOW_SEMI_in_package_decl95 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_IMPORT_in_import_decl112 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_ID_in_import_decl114 = new BitSet(new long[]{0x0200000000000000L});
+    public static final BitSet FOLLOW_SEMI_in_import_decl116 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_FUNCTIONS_in_functions131 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_function_in_functions133 = new BitSet(new long[]{0x0000000004000008L});
+    public static final BitSet FOLLOW_FUNCTION_in_function149 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_ID_in_function151 = new BitSet(new long[]{0x0000400000000000L});
+    public static final BitSet FOLLOW_par_list_in_function153 = new BitSet(new long[]{0x0000000100001000L});
+    public static final BitSet FOLLOW_priority_in_function155 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_block_in_function157 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_RECIPES_in_recipes180 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_recipe_in_recipes182 = new BitSet(new long[]{0x0040000000000008L});
+    public static final BitSet FOLLOW_RECIPE_in_recipe198 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_ID_in_recipe200 = new BitSet(new long[]{0x0000400000000000L});
+    public static final BitSet FOLLOW_par_list_in_recipe202 = new BitSet(new long[]{0x0000000100001000L});
+    public static final BitSet FOLLOW_priority_in_recipe204 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_block_in_recipe206 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_INT_LIT_in_priority228 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PARS_in_par_list245 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_par_decl_in_par_list247 = new BitSet(new long[]{0x0000200000000008L});
+    public static final BitSet FOLLOW_PAR_in_par_decl264 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_OUT_in_par_decl266 = new BitSet(new long[]{0x2010004080002000L});
+    public static final BitSet FOLLOW_type_in_par_decl269 = new BitSet(new long[]{0x0000000010000000L});
+    public static final BitSet FOLLOW_ID_in_par_decl271 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_BLOCK_in_block291 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_stat_in_block311 = new BitSet(new long[]{0x9200040020019458L,0x000000000000000FL});
+    public static final BitSet FOLLOW_SEMI_in_stat357 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_stat_in_stat361 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_block_in_stat374 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_var_decl_in_stat386 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ALAP_in_stat399 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_stat_in_stat403 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_ATOM_in_stat417 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_stat_in_stat421 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_WHILE_in_stat435 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_stat_in_stat439 = new BitSet(new long[]{0x9200040020019450L,0x000000000000000FL});
+    public static final BitSet FOLLOW_stat_in_stat443 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_UNTIL_in_stat457 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_stat_in_stat461 = new BitSet(new long[]{0x9200040020019450L,0x000000000000000FL});
+    public static final BitSet FOLLOW_stat_in_stat465 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_TRY_in_stat479 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_stat_in_stat483 = new BitSet(new long[]{0x9200040020019458L,0x000000000000000FL});
+    public static final BitSet FOLLOW_stat_in_stat488 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_IF_in_stat504 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_stat_in_stat508 = new BitSet(new long[]{0x9200040020019450L,0x000000000000000FL});
+    public static final BitSet FOLLOW_stat_in_stat512 = new BitSet(new long[]{0x9200040020019458L,0x000000000000000FL});
+    public static final BitSet FOLLOW_stat_in_stat517 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_CHOICE_in_stat534 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_stat_in_stat546 = new BitSet(new long[]{0x9200040020019458L,0x000000000000000FL});
+    public static final BitSet FOLLOW_stat_in_stat568 = new BitSet(new long[]{0x9200040020019458L,0x000000000000000FL});
+    public static final BitSet FOLLOW_STAR_in_stat603 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_stat_in_stat607 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_rule_in_stat620 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ANY_in_stat632 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_OTHER_in_stat644 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_TRUE_in_stat656 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_CALL_in_rule676 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_ID_in_rule678 = new BitSet(new long[]{0x0000000000000108L});
+    public static final BitSet FOLLOW_ARGS_in_rule682 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_arg_in_rule684 = new BitSet(new long[]{0x0100000000000080L});
+    public static final BitSet FOLLOW_RPAR_in_rule687 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_VAR_in_var_decl705 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_type_in_var_decl707 = new BitSet(new long[]{0x0000000010000000L});
+    public static final BitSet FOLLOW_ID_in_var_decl709 = new BitSet(new long[]{0x0000000010000008L});
+    public static final BitSet FOLLOW_ARG_in_arg756 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_OUT_in_arg760 = new BitSet(new long[]{0x0000000010000000L});
+    public static final BitSet FOLLOW_ID_in_arg763 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_DONT_CARE_in_arg767 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_literal_in_arg771 = new BitSet(new long[]{0x0000000000000008L});
 
 }

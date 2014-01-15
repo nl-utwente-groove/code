@@ -19,8 +19,8 @@ package groove.explore.util;
 import groove.grammar.aspect.GraphConverter;
 import groove.io.FileType;
 import groove.io.external.Exportable;
-import groove.io.external.Exporters;
 import groove.io.external.Exporter;
+import groove.io.external.Exporters;
 import groove.io.external.PortException;
 import groove.lts.GraphState;
 import groove.util.Groove;
@@ -46,31 +46,43 @@ public class StateReporter extends AExplorationReporter {
     @Override
     public void report() throws IOException {
         for (GraphState state : getGTS().getResultStates()) {
-            String stateFilename =
-                this.statePattern.replace(PLACEHOLDER, "" + state.getNumber());
-            File stateFile = new File(stateFilename);
-            Pair<FileType,Exporter> stateFormat =
-                Exporters.getAcceptingFormat(state.getGraph(), stateFile);
-            if (stateFormat != null) {
-                try {
-                    stateFormat.two().doExport(new Exportable(state.getGraph()), stateFile,
-                        stateFormat.one());
-                } catch (PortException e1) {
-                    throw new IOException(e1);
-                }
-            } else {
-                if (!FileType.hasAnyExtension(stateFile)) {
-                    stateFile = FileType.STATE.addExtension(stateFile);
-                }
-                Groove.saveGraph(GraphConverter.toAspect(state.getGraph()),
-                    stateFile);
-            }
+            exportState(state, this.statePattern);
         }
         this.logger.append("States saved as %s%n", this.statePattern);
     }
 
     private final LogReporter logger;
     private final String statePattern;
+
+    /**
+     * Exports a given state using a filename derived from a state pattern.
+     * @param state the state to be exported
+     * @param pattern the filename pattern
+     * @throws IOException if anything went wrong during export
+     */
+    public static void exportState(GraphState state, String pattern)
+        throws IOException {
+        String stateFilename =
+            pattern.replace(PLACEHOLDER, "" + state.getNumber());
+        File stateFile = new File(stateFilename);
+        Pair<FileType,Exporter> stateFormat =
+            Exporters.getAcceptingFormat(state.getGraph(), stateFile);
+        if (stateFormat != null) {
+            try {
+                stateFormat.two().doExport(new Exportable(state.getGraph()),
+                    stateFile, stateFormat.one());
+            } catch (PortException e1) {
+                throw new IOException(e1);
+            }
+        } else {
+            if (!FileType.hasAnyExtension(stateFile)) {
+                stateFile = FileType.STATE.addExtension(stateFile);
+            }
+            Groove.saveGraph(GraphConverter.toAspect(state.getGraph()),
+                stateFile);
+        }
+    }
+
     /** Placeholder in LTS and state filename patterns to insert further information. */
     static private final String PLACEHOLDER = "#";
 }

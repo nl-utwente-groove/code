@@ -66,7 +66,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
      * Runs the exploration and returns the generated GTS.
      */
     @Override
-    public GTS run() throws Exception {
+    protected GTS run() throws Exception {
         Transformer transformer = computeTransformer();
         transformer.addListener(getReporter());
         if (!getVerbosity().isLow()) {
@@ -170,7 +170,7 @@ public class Generator extends GrooveCmdLineTool<GTS> {
     }
 
     @Option(name = RESULT_NAME, metaVar = RESULT_VAR, usage = RESULT_USAGE)
-    private int resultCount = 0;
+    private int resultCount;
 
     /** Returns the locally set grammar properties, if any. */
     public Map<Key,String> getGrammarProperties() {
@@ -205,8 +205,9 @@ public class Generator extends GrooveCmdLineTool<GTS> {
                 + "  s - label start state (default: 'start')\n" //
                 + "  f - label final states (default: 'final')\n" //
                 + "  o - label open states (default: 'open')\n" //
-                + "  n - label state with number (default: 's#', '#' replaced by number)" //
-                + "  r - result state label (default: 'result')" //
+                + "  n - label state with number (default: 's#', '#' replaced by number)\n" //
+                + "  t - include transient states (label: 't#', '#' replaced by depth)\n" //
+                + "  r - result state label (default: 'result')\n" //
                 + "Specify label to be used by appending flag with 'label' (single-quoted)",
             handler = LTSLabelsHandler.class)
     private LTSLabels ltsLabels;

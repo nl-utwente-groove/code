@@ -17,6 +17,7 @@
 package groove.grammar;
 
 import groove.algebra.AlgebraFamily;
+import groove.control.Switch;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
 import groove.control.CtrlType;
@@ -365,8 +366,8 @@ public class Rule implements Action, Fixable {
     }
 
     @Override
-    public Kind getKind() {
-        return Kind.RULE;
+    public Switch.Kind getKind() {
+        return Switch.Kind.RULE;
     }
 
     /**

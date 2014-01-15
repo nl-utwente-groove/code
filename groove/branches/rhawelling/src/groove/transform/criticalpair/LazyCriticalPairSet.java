@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -35,7 +36,7 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
     /**
      * The set of critical pair which have already been computed
      */
-    private Set<CriticalPair> pairs = new HashSet<CriticalPair>();
+    private Set<CriticalPair> pairs = new LinkedHashSet<CriticalPair>();
     /**
      * Set of ruleTuples for which the critical pairs still need to be computed
      */

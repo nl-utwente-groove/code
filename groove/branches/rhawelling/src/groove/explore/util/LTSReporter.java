@@ -19,9 +19,10 @@ package groove.explore.util;
 import groove.graph.plain.PlainGraph;
 import groove.io.FileType;
 import groove.io.external.Exportable;
-import groove.io.external.Exporters;
 import groove.io.external.Exporter;
+import groove.io.external.Exporters;
 import groove.io.external.PortException;
+import groove.lts.GTS;
 import groove.util.Groove;
 import groove.util.Pair;
 
@@ -45,33 +46,55 @@ public class LTSReporter extends AExplorationReporter {
 
     @Override
     public void report() throws IOException {
-        // Create the LTS view to be exported.
-        PlainGraph lts = getGTS().toPlainGraph(this.labels);
-        // Export GTS.
-        String outFilename =
-            this.filePattern.replace(PLACEHOLDER, getGTS().getGrammar().getId());
-        File outFile = new File(outFilename);
-        Pair<FileType,Exporter> gtsFormat =
-            Exporters.getAcceptingFormat(lts, outFile);
-        if (gtsFormat != null) {
-            try {
-                gtsFormat.two().doExport(new Exportable(lts), outFile,
-                    gtsFormat.one());
-            } catch (PortException e1) {
-                throw new IOException(e1);
-            }
-        } else {
-            if (!FileType.hasAnyExtension(outFilename)) {
-                outFile = new File(FileType.GXL.addExtension(outFilename));
-            }
-            Groove.saveGraph(lts, outFile);
-        }
-        this.logger.append("LTS saved as %s%n", outFilename);
+        File outFile = exportLTS(getGTS(), this.filePattern, this.labels);
+        this.logger.append("LTS saved as %s%n", outFile.getPath());
     }
 
     private final LogReporter logger;
     private final String filePattern;
     private final LTSLabels labels;
+
+    /**
+     * Saves a LTS as a plain graph under a given file name, 
+     * with options to label particular special states.
+     * @param lts the LTS to be saved
+     * @param filePattern string  to derive the file name and format from
+     * @param labels options to label particular special states
+     * @return the output file name
+     * @throws IOException if any error occurred during export
+     */
+    static public File exportLTS(GTS lts, String filePattern, LTSLabels labels)
+        throws IOException {
+        // Create the LTS view to be exported.
+        PlainGraph ltsGraph = lts.toPlainGraph(labels);
+        // Export GTS.
+        String ltsName;
+        File dir = new File(filePattern);
+        if (dir.isDirectory()) {
+            ltsName = PLACEHOLDER;
+        } else {
+            ltsName = dir.getName();
+            dir = dir.getParentFile();
+        }
+        ltsName = ltsName.replace(PLACEHOLDER, lts.getGrammar().getId());
+        File outFile = new File(dir, ltsName);
+        Pair<FileType,Exporter> gtsFormat =
+            Exporters.getAcceptingFormat(ltsGraph, outFile);
+        if (gtsFormat != null) {
+            try {
+                gtsFormat.two().doExport(new Exportable(ltsGraph), outFile,
+                    gtsFormat.one());
+            } catch (PortException e1) {
+                throw new IOException(e1);
+            }
+        } else {
+            if (!FileType.hasAnyExtension(outFile)) {
+                outFile = FileType.GXL.addExtension(outFile);
+            }
+            Groove.saveGraph(ltsGraph, outFile);
+        }
+        return outFile;
+    }
 
     /** Placeholder in LTS and state filename patterns to insert further information. */
     static private final String PLACEHOLDER = "#";

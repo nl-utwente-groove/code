@@ -1,6 +1,8 @@
 package groove.gui.dialog;
 
+import groove.control.CtrlAut;
 import groove.grammar.aspect.GraphConverter;
+import groove.grammar.model.GrammarModel;
 import groove.grammar.model.ResourceKind;
 import groove.graph.Graph;
 import groove.graph.GraphRole;
@@ -14,7 +16,11 @@ import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.PlainJGraph;
 
+import java.awt.Dialog;
 import java.awt.Point;
+import java.awt.Window;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -23,6 +29,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 /**
  * Dialog showing an given graph in the most appropriate
@@ -30,25 +38,62 @@ import javax.swing.JDialog;
  */
 public class GraphPreviewDialog<G extends Graph> extends JDialog {
     /** Constructs a new dialog, for a given graph. */
+    public GraphPreviewDialog(GrammarModel grammar, G graph) {
+        this(null, grammar, graph);
+    }
+
+    /** Constructs a new dialog, for a given graph. */
     public GraphPreviewDialog(Simulator simulator, G graph) {
+        this(simulator, null, graph);
+    }
+
+    /** Constructs a new dialog, for a given graph. */
+    private GraphPreviewDialog(Simulator simulator, GrammarModel grammar,
+            G graph) {
         super(simulator == null ? null : simulator.getFrame());
         this.simulator = simulator;
+        this.grammar = grammar;
         this.graph = graph;
         setTitle(graph.getName());
         if (simulator != null) {
             Point p = simulator.getFrame().getLocation();
             setLocation(new Point(p.x + 50, p.y + 50));
         }
-        JGraphPanel<G> autPanel = new JGraphPanel<G>(getJGraph());
-        autPanel.initialise();
-        autPanel.setEnabled(true);
-        add(autPanel);
+        add(getContent());
         setSize(600, 700);
         if (simulator == null) {
-            this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         }
+        pack();
     }
 
+    /** Returns the main panel shown on this dialog. */
+    public JPanel getContent() {
+        if (this.contentPanel == null) {
+            this.contentPanel = new JGraphPanel<G>(getJGraph());
+            this.contentPanel.initialise();
+            this.contentPanel.setEnabled(true);
+            // make any dialog in which this panel is embedded resizable
+            // taken from https://blogs.oracle.com/scblog/entry/tip_making_joptionpane_dialog_resizable
+            this.contentPanel.addHierarchyListener(new HierarchyListener() {
+                public void hierarchyChanged(HierarchyEvent e) {
+                    Window window =
+                        SwingUtilities.getWindowAncestor(GraphPreviewDialog.this.contentPanel);
+                    if (window instanceof Dialog) {
+                        Dialog dialog = (Dialog) window;
+                        if (!dialog.isResizable()) {
+                            dialog.setResizable(true);
+                        }
+                    }
+                }
+            });
+        }
+        return this.contentPanel;
+    }
+
+    private JGraphPanel<G> contentPanel;
+
+    /** Returns the JGraph shown on this dialog. */
     private JGraph<G> getJGraph() {
         if (this.jGraph == null) {
             this.jGraph = createJGraph();
@@ -59,24 +104,34 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
     /** Returns the proper jGraph for the graph set in the constructor. */
     @SuppressWarnings({"rawtypes", "unchecked"})
     protected JGraph<G> createJGraph() {
-        JGraph jGraph;
+        JGraph jGraph = null;
         Graph shownGraph = this.graph;
         switch (this.graph.getRole()) {
         case CTRL:
-            jGraph = new CtrlJGraph(this.simulator);
+            if (shownGraph instanceof CtrlAut) {
+                jGraph = new CtrlJGraph(this.simulator);
+            }
             break;
         case HOST:
         case TYPE:
         case RULE:
-            shownGraph = GraphConverter.toAspect(this.graph);
-            DisplayKind kind =
-                DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
-            jGraph = new AspectJGraph(this.simulator, kind, false);
+            if (this.simulator != null || this.grammar != null) {
+                shownGraph = GraphConverter.toAspect(this.graph);
+                DisplayKind kind =
+                    DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
+                AspectJGraph aspectJGraph =
+                    new AspectJGraph(this.simulator, kind, false);
+                if (this.simulator == null) {
+                    aspectJGraph.setGrammar(this.grammar);
+                }
+                jGraph = aspectJGraph;
+            }
             break;
         case LTS:
             jGraph = new LTSJGraph(this.simulator);
             break;
-        default:
+        }
+        if (jGraph == null) {
             jGraph = PlainJGraph.newInstance(this.simulator);
         }
         JModel<G> model = jGraph.newModel();
@@ -91,6 +146,8 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
     protected final G graph;
     /** The simulator reference, may be null. */
     protected final Simulator simulator;
+    /** The grammar model in case the simulator is null. */
+    protected final GrammarModel grammar;
 
     /** Sets the static simulator in a global variable,
      * to be used by calls to {@link #showGraph(Graph)}.
@@ -131,6 +188,11 @@ public class GraphPreviewDialog<G extends Graph> extends JDialog {
                 }
             }
         }
+    }
+
+    /** Creates a panel showing a preview of a given graph. */
+    static public JPanel createPanel(GrammarModel grammar, Graph graph) {
+        return new GraphPreviewDialog<Graph>(grammar, graph).getContent();
     }
 
     private static Simulator globalSimulator;
