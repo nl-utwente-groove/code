@@ -19,15 +19,20 @@ package groove.transform.criticalpair;
 import groove.algebra.Algebra;
 import groove.algebra.AlgebraFamily;
 import groove.algebra.Constant;
+import groove.algebra.SignatureKind;
+import groove.algebra.syntax.CallExpr;
+import groove.algebra.syntax.Expression;
 import groove.algebra.syntax.Variable;
 import groove.grammar.Rule;
 import groove.grammar.host.DefaultHostGraph;
 import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostFactory;
 import groove.grammar.host.HostNode;
+import groove.grammar.host.ValueNode;
 import groove.grammar.rule.DefaultRuleNode;
 import groove.grammar.rule.OperatorNode;
 import groove.grammar.rule.RuleEdge;
+import groove.grammar.rule.RuleGraph;
 import groove.grammar.rule.RuleNode;
 import groove.grammar.rule.RuleToHostMap;
 import groove.grammar.rule.VariableNode;
@@ -184,14 +189,14 @@ public class ParallelPair {
                     "target",
                     HostFactory.newInstance(this.rule1.getTypeGraph().getFactory()));
             RuleToHostMap match1 =
-                createRuleToHostMap(this.nodeMatch1, host,
-                    this.rule1.lhs().edgeSet());
+                createRuleToHostMap(this.nodeMatch1, host, this.rule1.lhs());
             RuleToHostMap match2 =
-                createRuleToHostMap(this.nodeMatch2, host,
-                    this.rule2.lhs().edgeSet());
+                createRuleToHostMap(this.nodeMatch2, host, this.rule2.lhs());
 
             CriticalPair potentialPair =
                 new CriticalPair(host, this.rule1, this.rule2, match1, match2);
+            System.out.println(potentialPair);
+            System.out.println(this);
             if (potentialPair.isParallelDependent()) {
                 //the pair is a critical pair
                 this.critPair = potentialPair;
@@ -210,10 +215,11 @@ public class ParallelPair {
 
     private RuleToHostMap createRuleToHostMap(
             Map<Long,Set<RuleNode>> nodeMatch, DefaultHostGraph host,
-            Set<RuleEdge> edges) {
+            RuleGraph ruleGraph) {
         if (this.hostNodes == null) {
             this.hostNodes = new HashMap<Long,HostNode>();
         }
+        Set<RuleEdge> edges = ruleGraph.edgeSet();
         RuleToHostMap result = new RuleToHostMap(host.getFactory());
 
         for (Entry<Long,Set<RuleNode>> entry : nodeMatch.entrySet()) {
@@ -258,6 +264,35 @@ public class ParallelPair {
             // add the node mappings to the result
             for (RuleNode rn : ruleNodes) {
                 result.putNode(rn, target);
+            }
+        }
+
+        //now we add all targets of operations to the match
+        for (RuleNode rn : ruleGraph.nodeSet()) {
+            if (rn instanceof OperatorNode) {
+                OperatorNode opNode = (OperatorNode) rn;
+                System.out.println("Opnode found " + opNode);
+                SignatureKind sig = opNode.getOperator().getResultType();
+                Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(sig);
+                Expression[] args =
+                    new Expression[opNode.getArguments().size()];
+                for (int i = 0; i < opNode.getArguments().size(); i++) {
+                    VariableNode varNode = opNode.getArguments().get(i);
+                    Expression term;
+                    if (varNode.hasConstant()) {
+                        term = varNode.getConstant();
+                    } else {
+                        ValueNode valNode = (ValueNode) result.getNode(varNode);
+                        term = valNode.getTerm();
+                    }
+                    args[i] = term;
+                }
+
+                HostNode target =
+                    host.getFactory().createNode(alg,
+                        new CallExpr(opNode.getOperator(), args));
+                host.addNode(target);
+                result.putNode(opNode.getTarget(), target);
             }
         }
 

@@ -42,6 +42,7 @@ import groove.transform.RuleEvent.Reuse;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -224,6 +225,9 @@ public class CriticalPair {
     public static Set<CriticalPair> computeCriticalPairs(Rule rule1, Rule rule2) {
         assert canComputePairs(rule1);
         assert canComputePairs(rule2);
+        //algebraFamily must be TERM, because the host graph will be constructed in the TERM algebra
+        assert rule1.getSystemProperties().getAlgebraFamily().equals(
+            AlgebraFamily.TERM);
         System.out.println("computeCriticalPairs(" + rule1.getFullName()
             + " , " + rule2.getFullName() + ")");
         if ((rule1.getTypeGraph() == null && rule2.getTypeGraph() != null)
@@ -235,7 +239,7 @@ public class CriticalPair {
             || rule2.hasNodeErasers() || rule2.hasEdgeErasers())) {
             return Collections.emptySet();
         }
-        Set<ParallelPair> parrPairs = new HashSet<ParallelPair>();
+        Set<ParallelPair> parrPairs = new LinkedHashSet<ParallelPair>();
 
         parrPairs = buildCriticalSet(parrPairs, rule1, rule2, MatchNumber.ONE);
         parrPairs = buildCriticalSet(parrPairs, rule1, rule2, MatchNumber.TWO);
@@ -244,9 +248,9 @@ public class CriticalPair {
 
         //        System.out.println(parrPairs.size()
         //            + " parralel pairs found (before removing)");
-        int totalNodes =
-            getNodesToProcess(rule1.lhs()).size()
-                + getNodesToProcess(rule2.lhs()).size();
+        //        int totalNodes =
+        //            getNodesToProcess(rule1.lhs()).size()
+        //                + getNodesToProcess(rule2.lhs()).size();
         //        System.out.println(calculateMaxPairs(totalNodes));
         //        System.out.println(totalNodes);
         assert parrPairs.size() <= calculateMaxPairs(getNodesToProcess(
@@ -267,7 +271,7 @@ public class CriticalPair {
         }
 
         //Filter out all critical pairs which are not parallel dependent
-        Set<CriticalPair> critPairs = new HashSet<CriticalPair>();
+        Set<CriticalPair> critPairs = new LinkedHashSet<CriticalPair>();
         //        System.out.println(parrPairs.size() + " parralel pairs found");
         for (ParallelPair pair : parrPairs) {
             CriticalPair criticalPair = pair.getCriticalPair();
@@ -335,9 +339,12 @@ public class CriticalPair {
         } else {
             throw new IllegalArgumentException("matchnum must be ONE or TWO");
         }
-        AlgebraFamily algebraFamily =
-            rule1.getSystemProperties().getAlgebraFamily();
-        assert algebraFamily == rule2.getSystemProperties().getAlgebraFamily();
+
+        //Always use the term algebra, other algebras are not yet supported
+        AlgebraFamily algebraFamily = AlgebraFamily.TERM;
+        //        AlgebraFamily algebraFamily =
+        //            rule1.getSystemProperties().getAlgebraFamily();
+        //        assert algebraFamily == rule2.getSystemProperties().getAlgebraFamily();
 
         //get the nodes from the rule that need to be in the match
         Set<RuleNode> nodesToProcess = getNodesToProcess(ruleGraph);
@@ -345,7 +352,8 @@ public class CriticalPair {
         //        System.out.println(nodesToProcess.size() + " nodes to process");
         for (RuleNode rnode : nodesToProcess) {
             Set<? extends RuleEdge> edges = ruleGraph.edgeSet(rnode);
-            HashSet<ParallelPair> newParrPairs = new HashSet<ParallelPair>();
+            LinkedHashSet<ParallelPair> newParrPairs =
+                new LinkedHashSet<ParallelPair>();
             //initial case, parrPairs contains no pairs yet, this can only happen if l1.nodeSet().isEmpty()
             if (parrPairs.isEmpty()) {
                 ParallelPair pair = new ParallelPair(rule1, rule2);
@@ -518,19 +526,30 @@ public class CriticalPair {
     }
 
     /**
-     * Computes the set of ruleNodes which are DefaultRuleNodes, non-constant VariableNodesn
+     * Computes the set of ruleNodes which are DefaultRuleNodes, non-constant VariableNodes
      * or Constant VariableNodes which are connected to a DefaultRuleNode
-     * These are the ruleNodes which are required in a match for the rule 
+     * These are the ruleNodes which are required in a match for the rule
+     * 
+     * In addition, also nodes which are targets of OperatorNodes are not included
+     * Since these need to be the result of a call expression, if these nodes
+     * any edges, an exception will be thrown
      * @param ruleGraph the ruleGraph containing the nodes
      * @return a subset of ruleGraph.nodeSet()
      */
     private static Set<RuleNode> getNodesToProcess(RuleGraph ruleGraph) {
-        Set<RuleNode> result = new HashSet<RuleNode>(ruleGraph.nodeSet());
-        Iterator<RuleNode> nodeIt = result.iterator();
-        while (nodeIt.hasNext()) {
-            RuleNode curNode = nodeIt.next();
+        Set<RuleNode> result = new LinkedHashSet<RuleNode>(ruleGraph.nodeSet());
+        Set<VariableNode> targetsOfOperatorNodes =
+            new LinkedHashSet<VariableNode>();
+        for (RuleNode curNode : ruleGraph.nodeSet()) {
             if (curNode instanceof OperatorNode) {
-                nodeIt.remove();
+                result.remove(curNode);
+                //also add the target of this operatorNode to a list of variableNodes
+                VariableNode target = ((OperatorNode) curNode).getTarget();
+                if (!targetsOfOperatorNodes.add(target)) {
+                    throw new RuntimeException("VariableNode " + target
+                        + " is a target of multiple operators");
+                }
+                result.remove(target);
             } else if (curNode instanceof VariableNode
                 && ((VariableNode) curNode).hasConstant()) {
                 Set<? extends RuleEdge> edges = ruleGraph.edgeSet(curNode);
@@ -549,7 +568,7 @@ public class CriticalPair {
                 if (!connectedToLhs) {
                     //curNode is only connected to OperatorNodes
                     //we do not need to include it in the match
-                    nodeIt.remove();
+                    result.remove(curNode);
                 }
             }
         }
@@ -579,9 +598,27 @@ public class CriticalPair {
                 result &= set.isEmpty();
             }
         }
+        result &= checkOperationTargets(rule);
         //TODO rule priorities are not allowed (these are NACs?)
-        //TODO this may not be complete
+        //TODO this check may not be complete
         return result;
+    }
+
+    private static boolean checkOperationTargets(Rule rule) {
+        for (RuleNode rn : rule.lhs().nodeSet()) {
+            if (rn instanceof OperatorNode) {
+                OperatorNode opNode = (OperatorNode) rn;
+                if (opNode.getTarget().hasConstant()
+                    || !rule.lhs().edgeSet(opNode.getTarget()).isEmpty()) {
+                    System.out.println(rule);
+                    System.out.println(opNode.getTarget().hasConstant());
+                    System.out.println(!rule.lhs().edgeSet(opNode.getTarget()).isEmpty());
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     @Override
