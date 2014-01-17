@@ -45,7 +45,7 @@ public class JGraphPanel<G extends Graph> extends JPanel {
      * @param jGraph the jgraph on which this panel is a view
      * @ensure <tt>getJGraph() == jGraph</tt>
      */
-    public JGraphPanel(JGraph<G> jGraph) {
+    public JGraphPanel(JGraph<? extends G> jGraph) {
         super(false);
         setFocusable(false);
         setFocusCycleRoot(true);
@@ -147,14 +147,14 @@ public class JGraphPanel<G extends Graph> extends JPanel {
     /**
      * Returns the underlying {@link JGraph}.
      */
-    public JGraph<G> getJGraph() {
+    public JGraph<? extends G> getJGraph() {
         return this.jGraph;
     }
 
     /**
      * The {@link JGraph}on which this panel provides a view.
      */
-    private final JGraph<G> jGraph;
+    private final JGraph<? extends G> jGraph;
 
     /**
      * Delegates the method to the content pane and to super.
