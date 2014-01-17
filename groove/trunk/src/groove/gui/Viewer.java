@@ -20,18 +20,23 @@ import groove.grammar.model.FormatException;
 import groove.grammar.model.GrammarModel;
 import groove.graph.Graph;
 import groove.gui.dialog.GraphPreviewDialog;
+import groove.gui.dialog.GraphPreviewDialog.GraphPreviewPanel;
 import groove.io.FileType;
 import groove.io.graph.GraphIO;
 import groove.util.Groove;
 import groove.util.cli.ExistingFileHandler;
 import groove.util.cli.GrooveCmdLineTool;
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 
 import org.kohsuke.args4j.Argument;
 
@@ -83,7 +88,9 @@ public class Viewer extends GrooveCmdLineTool<Object> {
 
     /** Shows a given graph in an optionally modal dialog. */
     private void show(final Graph graph, GrammarModel grammar, boolean modal) {
-        JPanel panel = GraphPreviewDialog.createPanel(grammar, graph);
+        GraphPreviewPanel panel =
+            GraphPreviewDialog.createPanel(grammar, graph);
+        panel.add(new NodeIdsButton(panel), BorderLayout.NORTH);
         JOptionPane optionPane =
             new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE);
         JDialog dialog = optionPane.createDialog(graph.getName());
@@ -91,6 +98,15 @@ public class Viewer extends GrooveCmdLineTool<Object> {
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setVisible(true);
     }
+
+    private JButton getNodeIdsButton() {
+        if (this.nodeIdsButton == null) {
+            this.nodeIdsButton = new JButton("Show node identities");
+        }
+        return this.nodeIdsButton;
+    }
+
+    private JButton nodeIdsButton;
 
     /**
      * Tries to find the enclosing grammar of the graph file
@@ -160,5 +176,29 @@ public class Viewer extends GrooveCmdLineTool<Object> {
      */
     static public void showGraph(Graph graph, boolean modal) {
         new Viewer().show(graph, modal);
+    }
+
+    private class NodeIdsButton extends JButton {
+        NodeIdsButton(GraphPreviewPanel panel) {
+            this.nodeIdsItem =
+                panel.getOptions().getItem(Options.SHOW_NODE_IDS_OPTION);
+            setText();
+            addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    NodeIdsButton.this.nodeIdsItem.setSelected(!NodeIdsButton.this.nodeIdsItem.isSelected());
+                    setText();
+                }
+            });
+        }
+
+        void setText() {
+            if (this.nodeIdsItem.isSelected()) {
+                setText("Hide node identities");
+            } else {
+                setText("Show node identities");
+            }
+        }
+
+        private final JMenuItem nodeIdsItem;
     }
 }
