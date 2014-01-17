@@ -39,7 +39,7 @@ import java.util.HashMap;
 
 program 
 @init { helper.clearErrors(); }
-  : ^(PROGRAM package_decl import_decl* functions recipes block) 
+  : ^(PROGRAM package_decl imports functions recipes block) 
   ;
 
 package_decl
@@ -47,7 +47,11 @@ package_decl
        { helper.checkPackage($ID); }
      )
   ;
-  
+
+imports
+  : ^(IMPORTS import_decl*)
+  ;
+
 import_decl
   : ^( IMPORT ID SEMI
        { helper.checkImport($ID); }

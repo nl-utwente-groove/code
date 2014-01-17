@@ -34,8 +34,7 @@ public class Frame extends ANode {
     /**
      * Nested frame instantiating a given control location.
      */
-    public Frame(Instance ctrl, Frame parent, Switch call,
-            Location location) {
+    public Frame(Instance ctrl, Frame parent, Switch call, Location location) {
         super(ctrl.getNextFrameNr());
         this.ctrl = ctrl;
         this.parent = parent;

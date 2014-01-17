@@ -16,37 +16,22 @@
  */
 package groove.control;
 
-import groove.control.Switch.Kind;
-import groove.control.CtrlPar.Var;
-
-import java.util.List;
-
 /**
- * Unit of functionality that can be called from a control program.
+ * Specialised position for a template.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface Callable {
-    /**
-     * Returns the kind of callable.
-     * @return the kind of callable; cannot be {@link Kind#VERDICT}
-     */
-    Kind getKind();
+public interface TemplatePosition extends Position<Location>,
+        Comparable<TemplatePosition> {
+    /* Specialises the return type. */
+    TemplatePosition onSuccess();
 
-    /** Returns the full (qualified) name of this unit. */
-    String getLastName();
+    /* Specialises the return type. */
+    TemplatePosition onFailure();
 
     /** 
-     * Returns the last part of the full name this unit. 
-     * @see #getLastName()
+     * Method to allow easy comparison of positions.
+     * The number uniquely identifies the position within a template.
      */
-    String getFullName();
-
-    /**
-     * Returns the priority of the action.
-     */
-    public int getPriority();
-
-    /** Returns the signature of the action. */
-    public List<Var> getSignature();
+    int getNumber();
 }

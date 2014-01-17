@@ -66,6 +66,31 @@ public abstract class CtrlPar {
     /** Prefix used to indicate output parameters. */
     public static final String OUT_PREFIX = "out";
 
+    /** Convenience method to construct a parameter with a given name, type and direction. */
+    public static Var var(String name, CtrlType type, boolean inOnly) {
+        return new Var(new CtrlVar(name, type), inOnly);
+    }
+
+    /** Convenience method to construct an input parameter with a given name and type. */
+    public static Var inVar(String name, CtrlType type) {
+        return var(name, type, true);
+    }
+
+    /** Convenience method to construct an input parameter with a given name and type. */
+    public static Var inVar(String name, String type) {
+        return inVar(name, CtrlType.getType(type));
+    }
+
+    /** Convenience method to construct an output parameter with a given name and type. */
+    public static Var outVar(String name, CtrlType type) {
+        return var(name, type, false);
+    }
+
+    /** Convenience method to construct an output parameter with a given name and type. */
+    public static Var outVar(String name, String type) {
+        return outVar(name, CtrlType.getType(type));
+    }
+
     /** 
      * Variable control parameter.
      * A variable parameter has a name and type,
@@ -216,7 +241,7 @@ public abstract class CtrlPar {
         public Const(Algebra<?> algebra, Object value) {
             this.algebra = algebra;
             this.value = value;
-            this.type = CtrlType.getDataType(algebra.getSignature());
+            this.type = CtrlType.getType(algebra.getSignature());
         }
 
         @Override

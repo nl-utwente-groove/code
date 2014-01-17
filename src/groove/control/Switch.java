@@ -31,15 +31,15 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Switch extends ALabelEdge<Location> {
-    /** Constructs a choice switch.
+public class Switch extends ALabelEdge<Location> implements Attempt<Location> {
+    /** Constructs a verdict switch.
      * @param source source location of the switch
      * @param target target location of the switch
      * @param success flag indicating if this is a success or failure switch
      */
     public Switch(Location source, Location target, boolean success) {
         super(source, target);
-        this.kind = Kind.CHOICE;
+        this.kind = Kind.VERDICT;
         this.success = success;
         this.call = null;
     }
@@ -59,11 +59,11 @@ public class Switch extends ALabelEdge<Location> {
     }
 
     /**
-     * Convenience method testing if this is a choice switch.
+     * Convenience method testing if this is a verdict switch.
      * @see #getKind() 
      */
-    public boolean isChoice() {
-        return getKind() == Kind.CHOICE;
+    public boolean isVerdict() {
+        return getKind() == Kind.VERDICT;
     }
 
     /**
@@ -81,7 +81,7 @@ public class Switch extends ALabelEdge<Location> {
      * Should only be called if this is a call switch.
      */
     public String getName() {
-        assert !isChoice();
+        assert !isVerdict();
         return getUnit().getFullName();
     }
 
@@ -91,7 +91,7 @@ public class Switch extends ALabelEdge<Location> {
      * @return the list of arguments
      */
     public final List<? extends CtrlPar> getArgs() {
-        assert !isChoice();
+        assert !isVerdict();
         return getCall().getArgs();
     }
 
@@ -122,12 +122,12 @@ public class Switch extends ALabelEdge<Location> {
 
     /**
      * Indicates if this transition is a success switch.
-     * Should only be invoked if this is a choice switch.
+     * Should only be invoked if this is a verdict switch.
      * @return {@code true} if this is a success switch, {@code false} if
      * this is a failure switch.
      */
     public boolean isSuccess() {
-        assert isChoice();
+        assert isVerdict();
         return this.success;
     }
 
@@ -151,7 +151,7 @@ public class Switch extends ALabelEdge<Location> {
 
     /** Initialises the input and output variables of this call. */
     private void initVars() {
-        assert !isChoice();
+        assert !isVerdict();
         Map<CtrlVar,Integer> outVars = new HashMap<CtrlVar,Integer>();
         Map<CtrlVar,Integer> inVars = new HashMap<CtrlVar,Integer>();
         if (getArgs() != null && !getArgs().isEmpty()) {
@@ -250,7 +250,7 @@ public class Switch extends ALabelEdge<Location> {
         if (getKind() != other.getKind()) {
             return false;
         }
-        if (getKind() == Kind.CHOICE) {
+        if (getKind() == Kind.VERDICT) {
             if (isSuccess() != other.isSuccess()) {
                 return false;
             }
@@ -272,7 +272,7 @@ public class Switch extends ALabelEdge<Location> {
 
     public String text() {
         String result;
-        if (getKind() == Kind.CHOICE) {
+        if (getKind() == Kind.VERDICT) {
             result = isSuccess() ? "succ" : "fail";
         } else {
             result = getName();
@@ -295,8 +295,8 @@ public class Switch extends ALabelEdge<Location> {
         FUNCTION("function"),
         /** Recipe call transition. */
         RECIPE("recipe"),
-        /** Choice transition. */
-        CHOICE("choice"),
+        /** Verdict transition. */
+        VERDICT("choice"),
         /** Legacy kind modelling final states. */
         OMEGA("omega"), ;
 

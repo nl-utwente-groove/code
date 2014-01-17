@@ -16,37 +16,17 @@
  */
 package groove.control;
 
-import groove.control.Switch.Kind;
-import groove.control.CtrlPar.Var;
-
-import java.util.List;
-
 /**
- * Unit of functionality that can be called from a control program.
+ * Supertype for attempts of a control position.
+ * An attempt wraps a call that is attempted, and a position that is
+ * reached afterwards.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface Callable {
-    /**
-     * Returns the kind of callable.
-     * @return the kind of callable; cannot be {@link Kind#VERDICT}
-     */
-    Kind getKind();
+public interface Attempt<P extends Position<P>> {
+    /** Returns the call that is attempted. */
+    public Call getCall();
 
-    /** Returns the full (qualified) name of this unit. */
-    String getLastName();
-
-    /** 
-     * Returns the last part of the full name this unit. 
-     * @see #getLastName()
-     */
-    String getFullName();
-
-    /**
-     * Returns the priority of the action.
-     */
-    public int getPriority();
-
-    /** Returns the signature of the action. */
-    public List<Var> getSignature();
+    /** Returns the target position after the call. */
+    public P target();
 }

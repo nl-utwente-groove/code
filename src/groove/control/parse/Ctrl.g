@@ -7,6 +7,7 @@ options {
 }
 
 tokens {
+  IMPORTS;
   RECIPES;
   ARG;
   ARGS;
@@ -84,7 +85,7 @@ program
     { helper.checkEOF($EOF.tree); }
     -> ^( PROGRAM
           package_decl
-          import_decl*
+          ^(IMPORTS import_decl*)
           ^(FUNCTIONS function*) 
           ^(RECIPES recipe*) 
           ^(BLOCK stat*)

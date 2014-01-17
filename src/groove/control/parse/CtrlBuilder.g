@@ -34,7 +34,7 @@ import java.util.HashSet;
 }
 
 program returns [ CtrlAut aut ]
-  : ^(PROGRAM package_decl import_decl* functions recipes block)
+  : ^(PROGRAM package_decl imports functions recipes block)
     { if ($block.tree.getChildCount() == 0) {
           $aut = null;
       } else {
@@ -45,6 +45,10 @@ program returns [ CtrlAut aut ]
 
 package_decl
   : ^(PACKAGE ID SEMI)
+  ;
+ 
+imports
+  : ^(IMPORTS import_decl*)
   ;
   
 import_decl

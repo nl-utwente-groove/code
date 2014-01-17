@@ -121,7 +121,7 @@ public class CompositeControlModel extends ResourceModel<CtrlAut> {
         if (this.loader == null) {
             this.loader =
                 new CtrlLoader(getGrammar().getProperties().getAlgebraFamily(),
-                    getRules());
+                    getRules(), true);
         }
         return this.loader;
     }

@@ -50,11 +50,14 @@ public class CtrlLoader {
      * Constructs a control loader for a given set of rules and algebra family.
      * @param algebraFamily name of the algebra family to compute constant data values
      * @param rules set of rules that can be invoked by the grammar
+     * @param checkDependencies flag to determine whether the name space
+     * should check for circular dependencies and forward references.
      */
-    public CtrlLoader(AlgebraFamily algebraFamily, Collection<Rule> rules) {
+    public CtrlLoader(AlgebraFamily algebraFamily, Collection<Rule> rules,
+            boolean checkDependencies) {
         this.family =
             algebraFamily == null ? AlgebraFamily.DEFAULT : algebraFamily;
-        this.namespace = new Namespace(this.family);
+        this.namespace = new Namespace(this.family, checkDependencies);
         for (Rule rule : rules) {
             this.namespace.addRule(rule);
         }
@@ -94,7 +97,6 @@ public class CtrlLoader {
      */
     public CtrlAut buildAutomaton(String name) throws FormatException {
         this.namespace.setControlName(name);
-        check();
         CtrlTree tree = this.treeMap.get(name);
         return tree.build();
     }
@@ -145,6 +147,11 @@ public class CtrlLoader {
         return rewriter.toString();
     }
 
+    /** Returns the name space of this loader. */
+    public Namespace getNamespace() {
+        return this.namespace;
+    }
+
     /** Namespace of this loader. */
     private Namespace namespace;
     /** Algebra family for this control loader. */
@@ -174,7 +181,7 @@ public class CtrlLoader {
             String program) throws FormatException {
         CtrlLoader instance =
             new CtrlLoader(grammar.getProperties().getAlgebraFamily(),
-                grammar.getAllRules());
+                grammar.getAllRules(), true);
         instance.parse(programName, program);
         return instance.buildAutomaton(programName).normalise();
     }
@@ -184,7 +191,7 @@ public class CtrlLoader {
         throws FormatException, IOException {
         CtrlLoader instance =
             new CtrlLoader(grammar.getProperties().getAlgebraFamily(),
-                grammar.getAllRules());
+                grammar.getAllRules(), true);
         QualName qualName = new QualName(programName);
         File control = base;
         for (String part : qualName.tokens()) {

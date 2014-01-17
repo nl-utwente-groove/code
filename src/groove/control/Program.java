@@ -17,10 +17,19 @@
 package groove.control;
 
 import groove.control.Switch.Kind;
+import groove.control.symbolic.CallTerm;
 import groove.control.symbolic.Term;
-import groove.util.DefaultFixable;
+import groove.control.symbolic.TermAttempt;
+import groove.grammar.Recipe;
+import groove.grammar.Rule;
+import groove.grammar.model.FormatErrorSet;
+import groove.grammar.model.FormatException;
+import groove.util.Duo;
+import groove.util.Fixable;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -32,7 +41,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Program extends DefaultFixable {
+public class Program implements Fixable {
     /** Constructs an unnamed, initially empty program. */
     public Program() {
         this.names = new TreeSet<String>();
@@ -119,28 +128,15 @@ public class Program extends DefaultFixable {
         return Collections.unmodifiableMap(this.procs);
     }
 
+    /** Returns the procedure for a given name.
+     * Should only be invoked after the program is fixed. 
+     */
+    public Procedure getProc(String name) {
+        assert isFixed();
+        return this.procs.get(name);
+    }
+
     private final Map<String,Procedure> procs = new TreeMap<String,Procedure>();
-
-    @Override
-    public boolean setFixed() {
-        boolean result = super.setFixed();
-        if (result) {
-            for (Procedure proc : this.procs.values()) {
-                proc.setFixed();
-            }
-        }
-        return result;
-    }
-
-    /** Checks that all calls in the program are resolved. */
-    public void checkCalls() {
-        if (hasBody()) {
-            checkCalls(getTemplate());
-        }
-        for (Procedure proc : getProcs().values()) {
-            checkCalls(proc.getTemplate());
-        }
-    }
 
     /** 
      * Adds all procedures of another program to this one.
@@ -150,24 +146,37 @@ public class Program extends DefaultFixable {
      */
     public void add(Program other) {
         assert !isFixed();
-        assert other.isFixed();
         this.names.addAll(other.names);
         if (this.term != null && other.hasBody()) {
             throw new IllegalArgumentException(
                 "Both programs have a main template");
         }
         if (this.term == null) {
-            this.term = other.getTerm();
+            this.term = other.term;
         }
         for (Procedure proc : other.procs.values()) {
             addProc(proc);
         }
     }
 
-    /** Checks that all calls in a given template are resolved within the program. */
-    public void checkCalls(Template template) {
+    /** Checks that all calls in the program are resolved.
+     * @throws IllegalStateException if there is an unresolved call 
+     */
+    public void checkCalls() throws IllegalStateException {
+        if (hasBody()) {
+            checkCalls(getTemplate());
+        }
+        for (Procedure proc : getProcs().values()) {
+            checkCalls(proc.getTemplate());
+        }
+    }
+
+    /** Checks that all calls in a given template are resolved within the program.
+     * @throws IllegalStateException if there is an unresolved call 
+     */
+    public void checkCalls(Template template) throws IllegalStateException {
         for (Switch edge : template.edgeSet()) {
-            if (edge.isChoice()) {
+            if (edge.isVerdict()) {
                 continue;
             }
             Callable unit = edge.getUnit();
@@ -179,6 +188,336 @@ public class Program extends DefaultFixable {
                     "'%s' called from '%s' is not defined in this program",
                     unit.getFullName(), template.getName()));
             }
+        }
+    }
+
+    /** Returns the set of procedure names that with initial recursion. */
+    public Set<String> getRecursion() {
+        if (this.recursion == null) {
+            this.recursion = computeRecursion();
+        }
+        return this.recursion;
+    }
+
+    private Set<String> recursion;
+
+    /** Computes the set of procedure names that with initial recursion. */
+    private Set<String> computeRecursion() {
+        Set<String> result = new TreeSet<String>();
+        // collect the unguarded calls into a map
+        Map<String,Set<String>> calls = new HashMap<String,Set<String>>();
+        for (Procedure proc : this.procs.values()) {
+            proc.setFixed();
+            calls.put(proc.getFullName(), getUnguardedCalls(proc));
+        }
+        Set<String> changed = new HashSet<String>(calls.keySet());
+        // iterate until a fixpoint is reached
+        do {
+            Set<String> newChanged = new HashSet<String>();
+            // propagate the changes
+            for (String callee : changed) {
+                Set<String> childCallees = calls.get(callee);
+                // add the childcallees to all callers of callee
+                for (Map.Entry<String,Set<String>> callerEntry : calls.entrySet()) {
+                    String caller = callerEntry.getKey();
+                    Set<String> callees = callerEntry.getValue();
+                    if (callees.contains(callee)
+                        && callees.addAll(childCallees)) {
+                        // caller got a new callee
+                        newChanged.add(caller);
+                    }
+                    if (callees.contains(caller)) {
+                        // we have found a recursion
+                        result.add(caller);
+                    }
+                }
+            }
+            changed = newChanged;
+        } while (!changed.isEmpty());
+        return result;
+    }
+
+    /** Returns the set of procedure names that appear on initial call switches. */
+    private Set<String> getUnguardedCalls(Procedure proc) {
+        Set<String> result = new HashSet<String>();
+        for (Call call : getInitCalls(proc.getTerm())) {
+            Callable unit = call.getUnit();
+            if (unit instanceof Procedure) {
+                result.add(unit.getFullName());
+            }
+        }
+        return result;
+    }
+
+    /** Recursively collects the initial calls of a term, after zero or more verdicts. */
+    private Set<Call> getInitCalls(Term term) {
+        Set<Call> result = new HashSet<Call>();
+        int arity = term.getOp().getArity();
+        Term arg0 = arity >= 1 ? term.getArgs()[0] : null;
+        Term arg1 = arity >= 2 ? term.getArgs()[1] : null;
+        Term arg2 = arity >= 3 ? term.getArgs()[2] : null;
+        Term arg3 = arity >= 4 ? term.getArgs()[3] : null;
+        switch (term.getOp()) {
+        case ALAP:
+        case ATOM:
+        case HASH:
+        case STAR:
+        case TRANSIT:
+        case UNTIL:
+            result = getInitCalls(arg0);
+            break;
+        case CALL:
+            result.add(((CallTerm) term).getCall());
+            break;
+        case DELTA:
+        case EPSILON:
+            break;
+        case IF:
+            result.addAll(getInitCalls(arg0));
+            Finality condFinal = getFinality(arg0, getFinalityMap());
+            if (condFinal.may()) {
+                result.addAll(getInitCalls(arg1));
+            }
+            if (!arg0.isDead()) {
+                result.addAll(getInitCalls(arg2));
+            }
+            if (!condFinal.will()) {
+                result.addAll(getInitCalls(arg3));
+            }
+            break;
+        case OR:
+            result.addAll(getInitCalls(arg0));
+            result.addAll(getInitCalls(arg1));
+            break;
+        case SEQ:
+        case WHILE:
+            result.addAll(getInitCalls(arg0));
+            if (mayFinalise(arg0)) {
+                result.addAll(getInitCalls(arg1));
+            }
+            break;
+        default:
+            assert false;
+        }
+        for (TermAttempt edge : term.getAttempts()) {
+            result.add(edge.getCall());
+        }
+        if (term.hasSuccess()) {
+            result.addAll(getInitCalls(term.onSuccess()));
+        }
+        if (term.hasFailure()) {
+            result.addAll(getInitCalls(term.onFailure()));
+        }
+        return result;
+    }
+
+    /** Indicates, for a given term, if it can potentially 
+     * immediately evolve (via verdict transitions only) to a final position. */
+    public boolean mayFinalise(Term term) {
+        return getFinality(term, getFinalityMap()).may();
+    }
+
+    /** Indicates, for a given procedure, if it can potentially 
+     * immediately evolve (via verdict transitions only) to a final position. */
+    public boolean mayFinalise(Procedure proc) {
+        return getFinalityMap().get(proc).may();
+    }
+
+    /** Indicates, for a given term, if it can potentially 
+     * immediately evolve (via verdict transitions only) to a final position. */
+    public boolean willFinalise(Term term) {
+        return getFinality(term, getFinalityMap()).will();
+    }
+
+    /** Indicates, for a given procedure, if it will certainly
+     * immediately evolve (via verdict transitions only) to a final position. */
+    public boolean willFinalise(Procedure proc) {
+        return getFinalityMap().get(proc).will();
+    }
+
+    /** Returns a mapping from procedures to their potential and certain immediate termination. */
+    private Map<Procedure,Finality> getFinalityMap() {
+        if (this.finalityMap == null) {
+            this.finalityMap = computeFinalityMap();
+        }
+        return this.finalityMap;
+    }
+
+    private Map<Procedure,Finality> finalityMap;
+
+    /**
+     * Computes the termination map.
+     */
+    private Map<Procedure,Finality> computeFinalityMap() {
+        Map<Procedure,Finality> result =
+            new HashMap<Procedure,Program.Finality>();
+        for (Procedure proc : this.procs.values()) {
+            result.put(proc, new Finality(false, false));
+        }
+        boolean changed;
+        do {
+            changed = iterateFinality(result);
+        } while (changed);
+        return result;
+    }
+
+    /** Iterates the computation of the finality map, by modifying the parameter.
+     * @return {@code true} if the map was changed in this iteration
+     */
+    private boolean iterateFinality(Map<Procedure,Finality> finalityMap) {
+        boolean result = false;
+        for (Procedure proc : this.procs.values()) {
+            Finality newResult = getFinality(proc.getTerm(), finalityMap);
+            Finality oldResult = finalityMap.put(proc, newResult);
+            result |= !newResult.equals(oldResult);
+        }
+        return result;
+    }
+
+    /**
+     * Computes the potential and certain transitive termination of a given term,
+     * given an assumption about the properties of the procedures called.
+     */
+    private Finality getFinality(Term term, Map<Procedure,Finality> finalityMap) {
+        Finality result = null;
+        boolean may = false;
+        boolean will = false;
+        int arity = term.getOp().getArity();
+        Term arg0 = arity >= 1 ? term.getArgs()[0] : null;
+        Term arg1 = arity >= 2 ? term.getArgs()[1] : null;
+        Term arg2 = arity >= 3 ? term.getArgs()[2] : null;
+        Term arg3 = arity >= 4 ? term.getArgs()[3] : null;
+        switch (term.getOp()) {
+        case ALAP:
+            may = !arg0.isFinal();
+            will = arg0.isDead();
+            break;
+        case CALL:
+            Callable unit = ((CallTerm) term).getCall().getUnit();
+            if (unit instanceof Rule) {
+                may = will = false;
+            } else {
+                result = finalityMap.get(unit);
+            }
+            break;
+        case DELTA:
+            may = will = false;
+            break;
+        case EPSILON:
+        case HASH:
+        case STAR:
+            may = will = true;
+            break;
+        case IF:
+            Finality condFinal = getFinality(arg0, finalityMap);
+            Finality thenFinal = getFinality(arg1, finalityMap);
+            Finality alsoFinal = getFinality(arg2, finalityMap);
+            Finality elseFinal = getFinality(arg3, finalityMap);
+            if (condFinal.will()) {
+                // we can only reach the then|also-part
+                may = thenFinal.may() || alsoFinal.may();
+                will = thenFinal.will() || alsoFinal.will();
+            } else if (condFinal.may()) {
+                // we either reach the then|also-part or the else-part
+                may = thenFinal.may() || alsoFinal.may() || elseFinal.may();
+                // the possibly unsuccessful cond-part means the then-part is irrelevant
+                will = alsoFinal.will() && elseFinal.will();
+            } else if (arg0.isDead()) {
+                // the if behaves as the else-part
+                result = elseFinal;
+            } else {
+                // we either reach the then|also-part or the else-part
+                // but the always unsuccessful cond-part blocks the then-part
+                may = alsoFinal.may() || elseFinal.may();
+                will = alsoFinal.will() && elseFinal.will();
+            }
+            break;
+        case OR:
+            Finality final0 = getFinality(arg0, finalityMap);
+            Finality final1 = getFinality(arg1, finalityMap);
+            may = final0.may() || final1.may();
+            will = final0.will() || final1.will();
+            break;
+        case SEQ:
+            final0 = getFinality(arg0, finalityMap);
+            final1 = getFinality(arg1, finalityMap);
+            may = final0.may() && final1.may();
+            will = final0.will() && final1.will();
+            break;
+        case ATOM:
+        case TRANSIT:
+        case UNTIL:
+            result = getFinality(arg0, finalityMap);
+            break;
+        case WHILE:
+            final0 = getFinality(arg0, finalityMap);
+            will = arg0.isDead();
+            may = !final0.will();
+            break;
+        default:
+            assert false;
+        }
+        return result == null ? new Finality(may, will) : result;
+    }
+
+    @Override
+    public boolean setFixed() throws FormatException {
+        boolean result = this.fixed;
+        if (!result) {
+            this.fixed = true;
+            FormatErrorSet errors = new FormatErrorSet();
+            // check that all calls are resolved
+            checkCalls();
+            // check that procedure bodies satisfy their requirements
+            for (Procedure proc : this.procs.values()) {
+                String name = proc.getFullName();
+                if (getRecursion().contains(name)) {
+                    errors.add("%s %s has unguarded recursion",
+                        proc.getKind().getName(true), name);
+                }
+                Term body = proc.getTerm();
+                if (body.isFinal()) {
+                    errors.add("%s %s is empty", proc.getKind().getName(true),
+                        name);
+                }
+                if (proc instanceof Recipe && mayFinalise(proc)) {
+                    errors.add("%s %s may immediately terminate",
+                        proc.getKind().getName(true), name);
+                }
+            }
+            errors.throwException();
+        }
+        return result;
+    }
+
+    public boolean isFixed() {
+        return this.fixed;
+    }
+
+    public void testFixed(boolean fixed) {
+        if (fixed != this.fixed) {
+            throw new IllegalStateException(String.format(
+                "Expected fixed = %b", fixed));
+        }
+    }
+
+    private boolean fixed;
+
+    /** Class storing potential and certain finality values. */
+    private static class Finality extends Duo<Boolean> {
+        /**
+         * Constructs a pair of may/will succeed.
+         */
+        public Finality(boolean may, boolean will) {
+            super(may, will);
+        }
+
+        boolean may() {
+            return one();
+        }
+
+        boolean will() {
+            return two();
         }
     }
 }

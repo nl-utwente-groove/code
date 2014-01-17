@@ -33,7 +33,7 @@ public class EpsilonTerm extends Term {
     }
 
     @Override
-    protected List<OutEdge> computeOutEdges() {
+    protected List<TermAttempt> computeAttempts() {
         return Collections.emptyList();
     }
 
@@ -48,42 +48,17 @@ public class EpsilonTerm extends Term {
     }
 
     @Override
-    protected int computeTransitDepth() {
+    protected int computeDepth() {
         return 0;
     }
 
     @Override
-    protected boolean computeFinal() {
-        return true;
-    }
-
-    @Override
-    public boolean hasClearFinal() {
-        return true;
+    protected Type computeType() {
+        return Type.FINAL;
     }
 
     @Override
     public Term seq(Term arg1) {
         return arg1;
-    }
-
-    @Override
-    public Term transit() {
-        return this;
-    }
-
-    @Override
-    public Term atom() {
-        return this;
-    }
-
-    @Override
-    public Term whileDo() {
-        return delta();
-    }
-
-    @Override
-    public Term ifElse(Term arg1) {
-        return this;
     }
 }

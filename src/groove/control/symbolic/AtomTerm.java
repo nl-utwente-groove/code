@@ -16,6 +16,7 @@
  */
 package groove.control.symbolic;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,24 +27,30 @@ import java.util.List;
 public class AtomTerm extends Term {
     /**
      * Constructs an atomic block.
-     * The argument must have a clear final location (see {@link #hasClearFinal()}).
      */
     public AtomTerm(Term arg0) {
         super(Op.ATOM, arg0);
         assert arg0.isTopLevel();
-        assert arg0.hasClearFinal();
     }
 
     @Override
-    protected List<OutEdge> computeOutEdges() {
-        return makeTransit(arg0().getOutEdges());
+    protected List<TermAttempt> computeAttempts() {
+        List<TermAttempt> result = null;
+        if (arg0().isTrial()) {
+            result = new ArrayList<TermAttempt>();
+            for (TermAttempt attempt : arg0().getAttempts()) {
+                result.add(attempt.newAttempt(attempt.target().transit()));
+            }
+            return result;
+        }
+        return result;
     }
 
     @Override
     protected Term computeSuccess() {
         Term result = null;
-        if (arg0().hasSuccess()) {
-            result = arg0().getSuccess().atom();
+        if (arg0().isTrial()) {
+            result = arg0().onSuccess().atom();
         }
         return result;
     }
@@ -51,30 +58,25 @@ public class AtomTerm extends Term {
     @Override
     protected Term computeFailure() {
         Term result = null;
-        if (arg0().hasFailure()) {
-            result = arg0().getFailure().atom();
+        if (arg0().isTrial()) {
+            result = arg0().onFailure().atom();
         }
         return result;
     }
 
     @Override
-    protected int computeTransitDepth() {
+    protected int computeDepth() {
         return 0;
     }
 
     @Override
-    protected boolean computeFinal() {
-        return arg0().isFinal();
-    }
-
-    @Override
-    public boolean hasClearFinal() {
-        // this term has a clear final location because that is demanded of the argument
-        return true;
+    protected Type computeType() {
+        return arg0().getType();
     }
 
     @Override
     public Term atom() {
         return this;
     }
+
 }

@@ -16,7 +16,6 @@
  */
 package groove.control.symbolic;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,10 +33,13 @@ public class StarTerm extends Term {
     }
 
     @Override
-    protected List<OutEdge> computeOutEdges() {
-        List<OutEdge> result = new ArrayList<OutEdge>();
-        for (OutEdge edge : arg0().getOutEdges()) {
-            result.add(edge.newEdge(edge.getTarget().seq(this)));
+    protected List<TermAttempt> computeAttempts() {
+        List<TermAttempt> result = null;
+        if (arg0().isTrial()) {
+            result = createAttempts();
+            for (TermAttempt attempt : arg0().getAttempts()) {
+                result.add(attempt.newAttempt(attempt.target().seq(this)));
+            }
         }
         return result;
     }
@@ -45,8 +47,8 @@ public class StarTerm extends Term {
     @Override
     protected Term computeSuccess() {
         Term result = null;
-        if (arg0().hasSuccess()) {
-            result = arg0().getSuccess().seq(this).or(epsilon());
+        if (arg0().isTrial()) {
+            result = arg0().onSuccess().seq(this).or(epsilon());
         }
         return result;
     }
@@ -54,24 +56,19 @@ public class StarTerm extends Term {
     @Override
     protected Term computeFailure() {
         Term result = null;
-        if (arg0().hasFailure()) {
-            result = arg0().getFailure().seq(this).or(epsilon());
+        if (arg0().isTrial()) {
+            result = arg0().onFailure().seq(this).or(epsilon());
         }
         return result;
     }
 
     @Override
-    protected int computeTransitDepth() {
+    protected int computeDepth() {
         return 0;
     }
 
     @Override
-    protected boolean computeFinal() {
-        return true;
-    }
-
-    @Override
-    public boolean hasClearFinal() {
-        return !hasOutEdges();
+    protected Type computeType() {
+        return arg0().isTrial() ? Type.TRIAL : Type.FINAL;
     }
 }

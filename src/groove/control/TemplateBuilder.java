@@ -16,9 +16,11 @@
  */
 package groove.control;
 
-import groove.control.symbolic.OutEdge;
+import groove.control.Position.Type;
 import groove.control.symbolic.Term;
+import groove.control.symbolic.TermAttempt;
 import groove.graph.GraphInfo;
+import groove.util.Duo;
 import groove.util.Pair;
 
 import java.util.Deque;
@@ -45,32 +47,38 @@ public class TemplateBuilder {
     /** Constructs a template from a symbolic location. */
     public Template build(String name, Term init) {
         // initialise the auxiliary data structures
-        Template result = this.template = createTemplate(name);
+        Template result = this.template = createTemplate(name, init.getDepth());
         Map<Term,Location> locMap = this.locMap = new HashMap<Term,Location>();
         Deque<Term> fresh = this.fresh = new LinkedList<Term>();
         // set the initial location
         locMap.put(init, result.getStart());
+        result.getStart().setType(init.getType());
         fresh.add(init);
         // do the following as long as there are fresh locations
         while (!fresh.isEmpty()) {
             Term next = fresh.poll();
             Location source = locMap.get(next);
-            for (OutEdge edge : next.getOutEdges()) {
-                Location target = addLocation(edge.getTarget());
+            for (TermAttempt edge : next.getAttempts()) {
+                Location target = addLocation(edge.target());
                 addSwitch(new Switch(source, target, edge.getCall()));
             }
-            Term succTerm = next.getSuccess();
+            Term succTerm = next.onSuccess();
             if (succTerm != null) {
-                Location target = addLocation(succTerm);
-                addSwitch(new Switch(source, target, true));
+                if (succTerm.isDead()) {
+                    setDeadlockVerdict(source, true);
+                } else {
+                    Location target = addLocation(succTerm);
+                    addSwitch(new Switch(source, target, true));
+                }
             }
-            Term failTerm = next.getFailure();
+            Term failTerm = next.onFailure();
             if (failTerm != null) {
-                Location target = addLocation(failTerm);
-                addSwitch(new Switch(source, target, false));
-            }
-            if (next.isFinal()) {
-                source.setFinal();
+                if (failTerm.isDead()) {
+                    setDeadlockVerdict(source, false);
+                } else {
+                    Location target = addLocation(failTerm);
+                    addSwitch(new Switch(source, target, false));
+                }
             }
         }
         result.setFixed();
@@ -85,22 +93,29 @@ public class TemplateBuilder {
     }
 
     /** 
-     * Adds a control location corresponding to a given symbolic state to the
+     * Adds a control location corresponding to a given symbolic term to the
      * template and auxiliary data structures, if it does not yet exist.
-     * @param symb the symbolic location to be added
+     * @param term the symbolic location to be added
      * @return the fresh or pre-existing control location
      */
-    private Location addLocation(Term symb) {
-        Location result = this.locMap.get(symb);
+    private Location addLocation(Term term) {
+        Location result = this.locMap.get(term);
         if (result == null) {
-            this.fresh.add(symb);
-            result = this.template.addLocation(symb.getTransitDepth());
-            this.locMap.put(symb, result);
-            if (symb.isFinal()) {
-                result.setFinal();
-            }
+            this.fresh.add(term);
+            result = this.template.addLocation(term.getDepth());
+            this.locMap.put(term, result);
+            result.setType(term.getType());
         }
         return result;
+    }
+
+    /** Sets a {@link Deadlock} verdict for a location. */
+    private void setDeadlockVerdict(Location loc, boolean success) {
+        if (success) {
+            loc.setDeadSuccess();
+        } else {
+            loc.setDeadFailure();
+        }
     }
 
     /** Mapping from symbolic locations to locations. */
@@ -129,7 +144,7 @@ public class TemplateBuilder {
 
     /** Computes a location partition for {@link #template}. */
     private Partition computePartition() {
-        this.recordMap = new HashMap<Location,Record<Location>>();
+        this.recordMap = new HashMap<Location,Record<TemplatePosition>>();
         for (Location loc : this.template.nodeSet()) {
             this.recordMap.put(loc, computeRecord(loc));
         }
@@ -179,7 +194,7 @@ public class TemplateBuilder {
         Partition result = new Partition();
         for (Cell cell : orig) {
             Map<Record<Cell>,Cell> split = new HashMap<Record<Cell>,Cell>();
-            for (Location loc : cell) {
+            for (TemplatePosition loc : cell) {
                 Record<Cell> rec = append(this.recordMap.get(loc), orig);
                 Cell locCell = split.get(rec);
                 if (locCell == null) {
@@ -193,68 +208,87 @@ public class TemplateBuilder {
     }
 
     /** Computes the record of the choice and call switches for a given location. */
-    private Record<Location> computeRecord(Location loc) {
-        Map<Call,Set<Location>> callMap = new HashMap<Call,Set<Location>>();
-        for (Switch edge : loc.getOutCalls()) {
+    private Record<TemplatePosition> computeRecord(TemplatePosition loc) {
+        Map<Call,Set<TemplatePosition>> callMap =
+            new HashMap<Call,Set<TemplatePosition>>();
+        for (Attempt<Location> edge : loc.getAttempts()) {
             Call call = edge.getCall();
-            Set<Location> targets = callMap.get(call);
+            Set<TemplatePosition> targets = callMap.get(call);
             if (targets == null) {
-                callMap.put(call, targets = new HashSet<Location>());
+                callMap.put(call, targets = new HashSet<TemplatePosition>());
             }
             targets.add(edge.target());
         }
-        return new Record<Location>(loc.getSuccessNext(), loc.getFailureNext(),
-            callMap);
+        return new Record<TemplatePosition>(loc.onSuccess(), loc.onFailure(),
+            callMap, loc.getType(), loc instanceof Deadlock);
     }
 
     /** Converts a record pointing to locations, to a record pointing to cells. */
-    private Record<Cell> append(Record<Location> record, Partition part) {
+    private Record<Cell> append(Record<TemplatePosition> record, Partition part) {
         Cell success = part.getCell(record.getSuccess());
         Cell failure = part.getCell(record.getFailure());
         Map<Call,Set<Cell>> map = new HashMap<Call,Set<Cell>>();
-        for (Map.Entry<Call,Set<Location>> e : record.getMap().entrySet()) {
+        for (Map.Entry<Call,Set<TemplatePosition>> e : record.getMap().entrySet()) {
             Set<Cell> target = new HashSet<Cell>();
-            for (Location loc : e.getValue()) {
+            for (TemplatePosition loc : e.getValue()) {
                 target.add(part.getCell(loc));
             }
             map.put(e.getKey(), target);
         }
-        return new Record<Cell>(success, failure, map);
+        return new Record<Cell>(success, failure, map, record.getType(),
+            record.isDeadlock());
     }
 
     /** Computes the quotient of {@link #template} from a given partition. */
     private Template computeQuotient(Partition partition) {
         Template result =
-            createTemplate("Normalised " + this.template.getName());
+            createTemplate("Normalised " + this.template.getName(),
+                this.template.getStart().getDepth());
         // set of representative source locations
-        Set<Location> reprSet = new HashSet<Location>();
+        Set<TemplatePosition> reprSet = new HashSet<TemplatePosition>();
         // map from all source locations to the result locations
-        Map<Location,Location> locMap = new HashMap<Location,Location>();
+        Map<TemplatePosition,TemplatePosition> locMap =
+            new HashMap<TemplatePosition,TemplatePosition>();
         for (Cell cell : partition) {
             // representative location of the cell
-            Location repr;
-            Location image;
+            TemplatePosition repr;
+            TemplatePosition image;
             if (cell.contains(this.template.getStart())) {
                 repr = this.template.getStart();
-                image = result.getStart();
+                Location locImage = result.getStart();
+                locImage.setType(repr.getType());
+                image = locImage;
             } else {
                 repr = cell.iterator().next();
-                image = result.addLocation(repr.getDepth());
-            }
-            if (repr.isFinal()) {
-                image.setFinal();
+                if (repr instanceof Deadlock) {
+                    image = repr;
+                } else {
+                    Location locImage = result.addLocation(repr.getDepth());
+                    locImage.setType(repr.getType());
+                    image = locImage;
+                }
             }
             reprSet.add(repr);
-            for (Location loc : cell) {
+            for (TemplatePosition loc : cell) {
                 locMap.put(loc, image);
             }
         }
         // Add transitions to the result
-        for (Location repr : reprSet) {
-            Location image = locMap.get(repr);
-            for (Switch edge : repr.getOutEdges()) {
-                Location target = locMap.get(edge.target());
-                if (edge.isChoice()) {
+        for (TemplatePosition repr : reprSet) {
+            if (repr instanceof Deadlock) {
+                continue;
+            }
+            Location locRepr = (Location) repr;
+            Location image = (Location) locMap.get(repr);
+            if (locRepr.onSuccess() instanceof Deadlock) {
+                image.setDeadSuccess();
+            }
+            if (locRepr.onFailure() instanceof Deadlock) {
+                image.setDeadFailure();
+            }
+            for (Switch edge : locRepr.getOutEdges()) {
+                Location target = (Location) locMap.get(edge.target());
+                if (edge.isVerdict()) {
                     result.addEdge(new Switch(image, target, edge.isSuccess()));
                 } else {
                     result.addEdge(new Switch(image, target, edge.getCall()));
@@ -266,11 +300,11 @@ public class TemplateBuilder {
     }
 
     /** Mapping from locations to their records, in terms of target locations. */
-    private Map<Location,Record<Location>> recordMap;
+    private Map<Location,Record<TemplatePosition>> recordMap;
 
     /** Callback factory method for a template. */
-    private Template createTemplate(String name) {
-        return new Template(name);
+    private Template createTemplate(String name, int depth) {
+        return new Template(name, depth);
     }
 
     /** Returns the singleton instance of this class. */
@@ -283,7 +317,7 @@ public class TemplateBuilder {
     private static final TemplateBuilder INSTANCE = new TemplateBuilder();
 
     /** Local type for a cell of a partition of locations. */
-    private static class Cell extends TreeSet<Location> {
+    private static class Cell extends TreeSet<TemplatePosition> {
         // empty
     }
 
@@ -293,29 +327,32 @@ public class TemplateBuilder {
         public boolean add(Cell cell) {
             boolean result = super.add(cell);
             if (result) {
-                for (Location loc : cell) {
+                for (TemplatePosition loc : cell) {
                     this.cellMap.put(loc, cell);
                 }
             }
             return result;
         }
 
-        Cell getCell(Location loc) {
+        Cell getCell(TemplatePosition loc) {
             return loc == null ? null : this.cellMap.get(loc);
         }
 
-        private final Map<Location,Cell> cellMap =
-            new TreeMap<Location,TemplateBuilder.Cell>();
+        private final Map<TemplatePosition,Cell> cellMap =
+            new TreeMap<TemplatePosition,TemplateBuilder.Cell>();
     }
 
     /**
-     * Convenience type to collect the targets of the choice and call switches
+     * Convenience type to collect the targets of the verdicts and call switches
      * of a given location.
      * @param <L> type of the targets
      */
-    private static class Record<L> extends Pair<Pair<L,L>,Map<Call,Set<L>>> {
-        Record(L success, L failure, Map<Call,Set<L>> transMap) {
-            super(Pair.newPair(success, failure), transMap);
+    private static class Record<L> extends Pair<Duo<L>,Map<Call,Set<L>>> {
+        Record(L success, L failure, Map<Call,Set<L>> transMap,
+                Position.Type type, boolean deadlock) {
+            super(Duo.newDuo(success, failure), transMap);
+            this.type = type;
+            this.deadlock = deadlock;
         }
 
         L getSuccess() {
@@ -328,6 +365,33 @@ public class TemplateBuilder {
 
         Map<Call,Set<L>> getMap() {
             return two();
+        }
+
+        Type getType() {
+            return this.type;
+        }
+
+        private final Type type;
+
+        boolean isDeadlock() {
+            return this.deadlock;
+        }
+
+        private final boolean deadlock;
+
+        @SuppressWarnings("rawtypes")
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj)) {
+                return false;
+            }
+            return this.deadlock == ((Record) obj).deadlock;
+        }
+
+        @Override
+        public int hashCode() {
+            int prime = 31;
+            return prime * super.hashCode() + (this.deadlock ? 1231 : 1237);
         }
     }
 }

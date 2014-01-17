@@ -91,7 +91,7 @@ public class ControlModel extends TextBasedModel<CtrlAut> {
         if (this.loader == null) {
             this.loader =
                 new CtrlLoader(getGrammar().getProperties().getAlgebraFamily(),
-                    getRules());
+                    getRules(), true);
         }
         return this.loader;
     }

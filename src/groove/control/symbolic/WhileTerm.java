@@ -16,7 +16,6 @@
  */
 package groove.control.symbolic;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,24 +25,48 @@ import java.util.List;
  */
 public class WhileTerm extends Term {
     /**
-     * Constructor for subclassing.
-     */
-    public WhileTerm(Op op, Term arg0) {
-        super(op, arg0);
-    }
-
-    /**
      * Constructs a while-do term.
+     * @param condPart the condition of the while
+     * @param bodyPart the body of the while
      */
-    public WhileTerm(Term arg0) {
-        this(Op.WHILE, arg0);
+    public WhileTerm(Term condPart, Term bodyPart) {
+        super(Op.WHILE, condPart, bodyPart);
     }
 
     @Override
-    protected List<OutEdge> computeOutEdges() {
-        List<OutEdge> result = new ArrayList<OutEdge>();
-        for (OutEdge edge : arg0().getOutEdges()) {
-            result.add(edge.newEdge(edge.getTarget().seq(this)));
+    protected Type computeType() {
+        switch (arg0().getType()) {
+        case TRIAL:
+            return Type.TRIAL;
+        case FINAL:
+            return arg1().getType() == Type.TRIAL ? Type.TRIAL : Type.DEAD;
+        case DEAD:
+            return Type.FINAL;
+        default:
+            assert false;
+            return null;
+        }
+    }
+
+    @Override
+    protected List<TermAttempt> computeAttempts() {
+        List<TermAttempt> result = null;
+        switch (arg0().getType()) {
+        case TRIAL:
+            result = createAttempts();
+            for (TermAttempt attempt : arg0().getAttempts()) {
+                result.add(attempt.newAttempt(attempt.target().seq(arg1()).seq(
+                    this)));
+            }
+            break;
+        case FINAL:
+            if (arg1().isTrial()) {
+                result = createAttempts();
+                for (TermAttempt attempt : arg1().getAttempts()) {
+                    result.add(attempt.newAttempt(attempt.target().seq(this)));
+                }
+            }
+            break;
         }
         return result;
     }
@@ -51,10 +74,15 @@ public class WhileTerm extends Term {
     @Override
     protected Term computeSuccess() {
         Term result = null;
-        if (arg0().hasSuccess()) {
-            result = arg0().getSuccess().seq(this);
-        } else if (!arg0().isFinal()) {
-            result = delta();
+        switch (arg0().getType()) {
+        case TRIAL:
+            result = arg0().onSuccess().seq(arg1()).seq(this);
+            break;
+        case FINAL:
+            if (arg1().isTrial()) {
+                result = arg1().onSuccess().seq(this);
+            }
+            break;
         }
         return result;
     }
@@ -62,28 +90,21 @@ public class WhileTerm extends Term {
     @Override
     protected Term computeFailure() {
         Term result = null;
-        if (arg0().hasFailure()) {
-            result = arg0().getFailure().seq(this).ifNoElse();
-        } else if (!arg0().isFinal()) {
-            result = epsilon();
+        switch (arg0().getType()) {
+        case TRIAL:
+            result = arg0().onFailure().ifOnly(arg1().seq(this));
+            break;
+        case FINAL:
+            if (arg1().isTrial()) {
+                result = arg1().onFailure().seq(this);
+            }
+            break;
         }
         return result;
     }
 
     @Override
-    protected int computeTransitDepth() {
+    protected int computeDepth() {
         return 0;
-    }
-
-    @Override
-    protected boolean computeFinal() {
-        return false;
-    }
-
-    @Override
-    public boolean hasClearFinal() {
-        // By definition, while only terminates if
-        // it cannot do any transitions
-        return true;
     }
 }

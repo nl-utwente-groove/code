@@ -22,6 +22,7 @@ import groove.control.CtrlAut;
 import groove.control.CtrlPar;
 import groove.control.Function;
 import groove.control.Procedure;
+import groove.control.symbolic.Term;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
@@ -47,9 +48,13 @@ import java.util.TreeSet;
  * @version $Revision $
  */
 public class Namespace implements ParseInfo {
-    /** Constructs a new name space, on the basis of a given algebra family. */
-    public Namespace(AlgebraFamily family) {
+    /** Constructs a new name space, on the basis of a given algebra family. 
+     * @param checkDependencies flag to determine whether the name space
+     * should check for circular dependencies and forward references.
+     */
+    public Namespace(AlgebraFamily family, boolean checkDependencies) {
         this.family = family;
+        this.checkDependencies = checkDependencies;
     }
 
     /** Returns the algebra family of this name space. */
@@ -58,6 +63,17 @@ public class Namespace implements ParseInfo {
     }
 
     private final AlgebraFamily family;
+
+    /** Indicates if the name space should check for circular
+     * dependencies ({@link #addDependency}) and
+     * call resolution ({@link #isResolved} and
+     * {@link #resolveFunctions}.
+     */
+    public boolean isCheckDependencies() {
+        return this.checkDependencies;
+    }
+
+    private final boolean checkDependencies;
 
     /**
      * Adds a function or recipe name to the set of declared names.
@@ -207,9 +223,11 @@ public class Namespace implements ParseInfo {
     /** Set of used rule names. */
     private final Set<String> usedNames = new HashSet<String>();
 
-    /** Indicates if a certain procedure name has been resolved. */
+    /** 
+     * Indicates if a certain procedure name has been resolved. 
+     */
     public boolean isResolved(String name) {
-        return this.resolved.contains(name);
+        return !isCheckDependencies() || this.resolved.contains(name);
     }
 
     private Set<String> resolved = new HashSet<String>();
@@ -219,16 +237,19 @@ public class Namespace implements ParseInfo {
      * was prevented by a circularity
      */
     public boolean addDependency(String caller, String callee) {
-        Set<String> parentCallers = this.callerMap.get(caller);
-        Set<String> callees = this.calleeMap.get(caller);
-        boolean result = !parentCallers.contains(callee);
-        if (result && callees.add(callee)) {
-            Set<String> childCallees = this.calleeMap.get(callee);
-            for (String parentCaller : parentCallers) {
-                this.calleeMap.get(parentCaller).addAll(childCallees);
-            }
-            for (String childCallee : childCallees) {
-                this.callerMap.get(childCallee).addAll(parentCallers);
+        boolean result = true;
+        if (isCheckDependencies()) {
+            Set<String> parentCallers = this.callerMap.get(caller);
+            Set<String> callees = this.calleeMap.get(caller);
+            result = !parentCallers.contains(callee);
+            if (result && callees.add(callee)) {
+                Set<String> childCallees = this.calleeMap.get(callee);
+                for (String parentCaller : parentCallers) {
+                    this.calleeMap.get(parentCaller).addAll(childCallees);
+                }
+                for (String childCallee : childCallees) {
+                    this.callerMap.get(childCallee).addAll(parentCallers);
+                }
             }
         }
         return result;
@@ -241,31 +262,35 @@ public class Namespace implements ParseInfo {
      * @return an ordered list consisting of the elements of {@code functions};
      * or {@code null} if no order exists
      */
-    public List<String> resolveFunctions(Set<String> functions) {
+    public List<String> resolveFunctions(Collection<String> functions) {
         List<String> result = new ArrayList<String>();
-        // collect the remaining functions to be resolved
-        Set<String> resolved = this.resolved;
-        functions = new HashSet<String>(functions);
-        while (!functions.isEmpty()) {
-            Iterator<String> remainingIter = functions.iterator();
-            String candidate = null;
-            while (remainingIter.hasNext()) {
-                candidate = remainingIter.next();
-                resolved.add(candidate);
-                if (resolved.containsAll(this.calleeMap.get(candidate))) {
-                    remainingIter.remove();
+        if (isCheckDependencies()) {
+            // collect the remaining functions to be resolved
+            Set<String> resolved = this.resolved;
+            functions = new HashSet<String>(functions);
+            while (!functions.isEmpty()) {
+                Iterator<String> remainingIter = functions.iterator();
+                String candidate = null;
+                while (remainingIter.hasNext()) {
+                    candidate = remainingIter.next();
+                    resolved.add(candidate);
+                    if (resolved.containsAll(this.calleeMap.get(candidate))) {
+                        remainingIter.remove();
+                        break;
+                    } else {
+                        resolved.remove(candidate);
+                        candidate = null;
+                    }
+                }
+                if (candidate == null) {
+                    result = null;
                     break;
                 } else {
-                    resolved.remove(candidate);
-                    candidate = null;
+                    result.add(candidate);
                 }
             }
-            if (candidate == null) {
-                result = null;
-                break;
-            } else {
-                result.add(candidate);
-            }
+        } else {
+            result.addAll(functions);
         }
         return result;
     }
@@ -300,4 +325,16 @@ public class Namespace implements ParseInfo {
     }
 
     private final FormatErrorSet errors = new FormatErrorSet();
+
+    /** Returns a prototype term, to be shared by all programs compiled
+     * against this name space.
+     */
+    public Term getPrototype() {
+        if (this.prototype == null) {
+            this.prototype = Term.prototype();
+        }
+        return this.prototype;
+    }
+
+    private Term prototype;
 }

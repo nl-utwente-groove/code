@@ -32,15 +32,36 @@ public class UntilTerm extends Term {
     }
 
     @Override
-    protected List<OutEdge> computeOutEdges() {
-        return arg0().getOutEdges();
+    protected List<TermAttempt> computeAttempts() {
+        List<TermAttempt> result = null;
+        switch (arg0().getType()) {
+        case TRIAL:
+            result = arg0().getAttempts();
+            break;
+        case DEAD:
+            if (arg1().isTrial()) {
+                result = createAttempts();
+                for (TermAttempt attempt : arg1().getAttempts()) {
+                    result.add(attempt.newAttempt(attempt.target().seq(this)));
+                }
+            }
+            break;
+        }
+        return result;
     }
 
     @Override
     protected Term computeSuccess() {
         Term result = null;
-        if (arg0().hasSuccess()) {
-            result = arg0().getSuccess();
+        switch (arg0().getType()) {
+        case TRIAL:
+            result = arg0().onSuccess();
+            break;
+        case DEAD:
+            if (arg1().isTrial()) {
+                result = arg1().onSuccess().seq(this);
+            }
+            break;
         }
         return result;
     }
@@ -48,26 +69,40 @@ public class UntilTerm extends Term {
     @Override
     protected Term computeFailure() {
         Term result = null;
-        if (arg0().hasFailure()) {
-            result = arg0().getFailure().ifElse(arg1().seq(this));
-        } else if (!arg0().isFinal()) {
-            result = arg1().seq(this);
+        switch (arg0().getType()) {
+        case TRIAL:
+            result = arg0().onFailure();
+            break;
+        case DEAD:
+            if (arg1().isTrial()) {
+                result = arg1().onFailure().seq(this);
+            }
+            break;
         }
         return result;
     }
 
     @Override
-    protected int computeTransitDepth() {
+    protected int computeDepth() {
         return 0;
     }
 
     @Override
-    protected boolean computeFinal() {
-        return arg0().isFinal();
-    }
-
-    @Override
-    public boolean hasClearFinal() {
-        return arg0().hasClearFinal();
+    protected Type computeType() {
+        switch (arg0().getType()) {
+        case TRIAL:
+            return Type.TRIAL;
+        case DEAD:
+            if (arg1().isTrial()) {
+                return Type.TRIAL;
+            } else {
+                return Type.DEAD;
+            }
+        case FINAL:
+            return Type.FINAL;
+        default:
+            assert false;
+            return null;
+        }
     }
 }

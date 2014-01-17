@@ -92,7 +92,8 @@ public abstract class Procedure implements Callable, Fixable {
      * The call fixes the procedure.
      */
     public void setTerm(Term body) {
-        assert body == null && !isFixed();
+        assert body != null;
+        assert !isFixed();
         this.term = body;
         setFixed();
     }

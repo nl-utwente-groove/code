@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -219,7 +220,7 @@ public class CtrlHelper {
             int priority =
                 unitTree.getChildCount() == 3 ? 0
                         : Integer.parseInt(unitTree.getChild(2).getText());
-            if (OLD_CONTROL && priority > 0) {
+            if (this.namespace.isCheckDependencies() && priority > 0) {
                 emitErrorMessage(unitTree.getChild(2),
                     "Priorities are not supported in this version.");
             }
@@ -252,9 +253,9 @@ public class CtrlHelper {
             CtrlTree typeTree = parTree.getChild(out ? 1 : 0);
             CtrlType type = typeTree.getCtrlType();
             String name = parTree.getChild(out ? 2 : 1).getText();
-            result.add(new CtrlPar.Var(new CtrlVar(name, type), !out));
+            result.add(CtrlPar.var(name, type, !out));
         }
-        if (OLD_CONTROL && !result.isEmpty()) {
+        if (this.namespace.isCheckDependencies() && !result.isEmpty()) {
             emitErrorMessage(parListTree,
                 "Parameters are not supported in this version.");
         }
@@ -555,7 +556,7 @@ public class CtrlHelper {
     void reorderFunctions(CtrlTree functionsTree) {
         assert functionsTree.getType() == CtrlChecker.FUNCTIONS;
         int functionsCount = functionsTree.getChildCount();
-        Map<String,CtrlTree> functionMap = new HashMap<String,CtrlTree>();
+        Map<String,CtrlTree> functionMap = new LinkedHashMap<String,CtrlTree>();
         for (int i = 0; i < functionsCount; i++) {
             CtrlTree function = functionsTree.getChild(i);
             functionMap.put(qualify(function.getChild(0).getText()), function);
@@ -661,6 +662,4 @@ public class CtrlHelper {
     private String packageName = "";
     /** Map from names to imported qualified names. */
     private Map<String,String> importMap = new HashMap<String,String>();
-    /** Flag switching between the old and the new control trees. */
-    private static final boolean OLD_CONTROL = true;
 }

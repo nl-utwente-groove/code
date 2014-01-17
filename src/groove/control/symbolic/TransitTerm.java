@@ -26,23 +26,28 @@ import java.util.List;
 public class TransitTerm extends Term {
     /**
      * Creates a term with increased transient depth.
-     * The argument must satisfy {@link #hasClearFinal()}.
      */
     public TransitTerm(Term arg0) {
         super(Op.TRANSIT, arg0);
-        assert arg0.hasClearFinal();
     }
 
     @Override
-    protected List<OutEdge> computeOutEdges() {
-        return makeTransit(arg0().computeOutEdges());
+    protected List<TermAttempt> computeAttempts() {
+        List<TermAttempt> result = null;
+        if (isTrial()) {
+            result = createAttempts();
+            for (TermAttempt edge : arg0().getAttempts()) {
+                result.add(edge.newAttempt(edge.target().transit()));
+            }
+        }
+        return result;
     }
 
     @Override
     protected Term computeSuccess() {
         Term result = null;
-        if (arg0().hasSuccess()) {
-            result = arg0().getSuccess().transit();
+        if (arg0().isTrial()) {
+            result = arg0().onSuccess().transit();
         }
         return result;
     }
@@ -50,25 +55,23 @@ public class TransitTerm extends Term {
     @Override
     protected Term computeFailure() {
         Term result = null;
-        if (arg0().hasFailure()) {
-            result = arg0().getFailure().transit();
+        if (arg0().isTrial()) {
+            result = arg0().onFailure().transit();
         }
         return result;
     }
 
     @Override
-    protected int computeTransitDepth() {
-        return arg0().getTransitDepth() + 1;
+    protected int computeDepth() {
+        if (arg0().isFinal()) {
+            return 0;
+        } else {
+            return arg0().getDepth() + 1;
+        }
     }
 
     @Override
-    protected boolean computeFinal() {
-        return false;
-    }
-
-    @Override
-    public boolean hasClearFinal() {
-        // this term has a clear final location because that is demanded of the argument
-        return true;
+    protected Type computeType() {
+        return arg0().getType();
     }
 }
