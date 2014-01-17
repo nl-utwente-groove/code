@@ -16,7 +16,6 @@
  */
 package groove.control.symbolic;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,13 +33,18 @@ public class SeqTerm extends Term {
     }
 
     @Override
-    protected List<OutEdge> computeOutEdges() {
-        List<OutEdge> result = new ArrayList<OutEdge>();
-        for (OutEdge out : arg0().getOutEdges()) {
-            result.add(out.newEdge(out.getTarget().seq(arg1())));
-        }
-        if (arg0().isFinal()) {
-            result.addAll(arg1().getOutEdges());
+    protected List<TermAttempt> computeAttempts() {
+        List<TermAttempt> result = null;
+        switch (arg0().getType()) {
+        case TRIAL:
+            result = createAttempts();
+            for (TermAttempt attempt : arg0().getAttempts()) {
+                result.add(attempt.newAttempt(attempt.target().seq(arg1())));
+            }
+            break;
+        case FINAL:
+            result = arg1().isTrial() ? arg1().getAttempts() : null;
+            break;
         }
         return result;
     }
@@ -48,10 +52,13 @@ public class SeqTerm extends Term {
     @Override
     protected Term computeSuccess() {
         Term result = null;
-        if (arg0().isFinal()) {
-            result = arg1().getSuccess();
-        } else if (arg0().hasSuccess()) {
-            result = arg0().getSuccess().seq(arg1());
+        switch (arg0().getType()) {
+        case TRIAL:
+            result = arg0().onSuccess().seq(arg1());
+            break;
+        case FINAL:
+            result = arg1().isTrial() ? arg1().onSuccess() : null;
+            break;
         }
         return result;
     }
@@ -59,27 +66,33 @@ public class SeqTerm extends Term {
     @Override
     protected Term computeFailure() {
         Term result = null;
-        if (arg0().isFinal()) {
-            result = arg1().getFailure();
-        } else if (arg0().hasFailure()) {
-            result = arg0().getFailure().seq(arg1());
+        switch (arg0().getType()) {
+        case TRIAL:
+            result = arg0().onFailure().seq(arg1());
+            break;
+        case FINAL:
+            result = arg1().isTrial() ? arg1().onFailure() : null;
+            break;
         }
         return result;
     }
 
     @Override
-    protected int computeTransitDepth() {
-        return arg0().getTransitDepth();
+    protected int computeDepth() {
+        return arg0().getDepth();
     }
 
     @Override
-    protected boolean computeFinal() {
-        return arg0().isFinal() && arg1().isFinal();
-    }
-
-    @Override
-    public boolean hasClearFinal() {
-        return (arg0().hasClearFinal() || !arg1().isFinal())
-            && arg1().hasClearFinal();
+    protected Type computeType() {
+        switch (arg0().getType()) {
+        case TRIAL:
+        case DEAD:
+            return arg0().getType();
+        case FINAL:
+            return arg1().getType();
+        default:
+            assert false;
+            return null;
+        }
     }
 }

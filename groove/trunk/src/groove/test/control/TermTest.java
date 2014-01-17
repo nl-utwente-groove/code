@@ -16,9 +16,9 @@
  */
 package groove.test.control;
 
+import static junit.framework.Assert.assertEquals;
 import groove.control.Call;
 import groove.control.symbolic.Term;
-import junit.framework.Assert;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -30,7 +30,7 @@ import org.junit.Test;
  * @version $Revision $
  */
 @SuppressWarnings("javadoc")
-public class TermBuildTest extends CtrlTester {
+public class TermTest extends CtrlTester {
     {
         initGrammar("abc");
     }
@@ -53,16 +53,16 @@ public class TermBuildTest extends CtrlTester {
         Term b = this.b;
         Term c = this.c;
         equal("a;", a);
-        equal("{}", p.epsilon());
+        equal("{}", epsilon());
         equal("{ a; b; }", a.seq(b));
         equal("a|b;", a.or(b));
         equal("choice { a; } or b;", a.or(b));
         equal("a*;", a.star());
         equal("a+;", a.seq(a.star()));
         equal("#a;", a.alap());
-        equal("while (a) { b; }", a.seq(b).whileDo());
-        equal("if (a) b;", a.seq(b).ifElse(p.epsilon()));
-        equal("if (a) b; else c;", a.seq(b).ifElse(c));
+        equal("while (a) { b; }", a.whileDo(b));
+        equal("if (a) b;", a.ifOnly(b));
+        equal("if (a) b; else c;", a.ifElse(b, c));
         equal("try b; else c;", b.tryElse(c));
     }
 
@@ -75,8 +75,12 @@ public class TermBuildTest extends CtrlTester {
         equal("a; any;", a.seq(a.or(b).or(c)));
     }
 
+    private Term epsilon() {
+        return p.epsilon();
+    }
+
     void equal(String program, Term term) {
-        Assert.assertEquals(term, buildTerm(program));
+        assertEquals(term, buildTerm(program));
     }
 
     static private Term p;

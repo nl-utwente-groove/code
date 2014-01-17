@@ -25,33 +25,57 @@ import java.util.List;
  */
 public class IfTerm extends Term {
     /**
-     * Constructor for subclassing.
-     */
-    IfTerm(Op op, Term arg0, Term arg1) {
-        super(op, arg0, arg1);
-        assert arg0.isTopLevel();
-        assert arg1.isTopLevel();
-    }
-
-    /**
      * Constructs an if-else term.
+     * @param cond term used as a condition, to be attempted first
+     * @param thenPart attempted after the condition has terminated
+     * @param alsoPart attempted after the condition has yielded a success verdict
+     * @param elsePart attempted after the condition has yielded a failure verdict
      */
-    IfTerm(Term arg0, Term arg1) {
-        this(Op.IF, arg0, arg1);
+    IfTerm(Term cond, Term thenPart, Term alsoPart, Term elsePart) {
+        super(Op.IF, cond, thenPart, alsoPart, elsePart);
+        assert cond.isTopLevel();
+        assert thenPart.isTopLevel();
+        assert alsoPart.isTopLevel();
+        assert elsePart.isTopLevel();
     }
 
     @Override
-    protected List<OutEdge> computeOutEdges() {
-        return arg0().getOutEdges();
+    protected List<TermAttempt> computeAttempts() {
+        List<TermAttempt> result = null;
+        switch (arg0().getType()) {
+        case TRIAL:
+            result = createAttempts();
+            for (TermAttempt attempt : arg0().getAttempts()) {
+                result.add(attempt.newAttempt(attempt.target().seq(arg1())));
+            }
+            break;
+        case FINAL:
+            result = arg1OrArg2().getAttempts();
+            break;
+        case DEAD:
+            result = arg3().getAttempts();
+            break;
+        default:
+            assert false;
+        }
+        return result;
     }
 
     @Override
     protected Term computeSuccess() {
         Term result = null;
-        if (arg0().hasSuccess()) {
-            result = arg0().getSuccess();
-        } else if (!arg0().isFinal()) {
-            result = delta();
+        switch (arg0().getType()) {
+        case TRIAL:
+            result = arg0().onSuccess().seq(arg1()).or(arg2());
+            break;
+        case FINAL:
+            result = arg1OrArg2().onSuccess();
+            break;
+        case DEAD:
+            result = arg3().onSuccess();
+            break;
+        default:
+            assert false;
         }
         return result;
     }
@@ -59,26 +83,53 @@ public class IfTerm extends Term {
     @Override
     protected Term computeFailure() {
         Term result = null;
-        if (arg0().hasFailure()) {
-            result = arg0().getFailure().ifElse(arg1());
-        } else if (!arg0().isFinal()) {
-            result = arg1();
+        switch (arg0().getType()) {
+        case TRIAL:
+            result = arg0().onFailure().ifAlsoElse(arg1(), arg2(), arg3());
+            break;
+        case FINAL:
+            result = arg1OrArg2().onFailure();
+            break;
+        case DEAD:
+            result = arg3().onFailure();
+            break;
+        default:
+            assert false;
         }
         return result;
     }
 
+    private Term arg1OrArg2() {
+        if (this.arg1OrArg2 == null) {
+            this.arg1OrArg2 = arg1().or(arg2());
+        }
+        return this.arg1OrArg2;
+    }
+
+    private Term arg1OrArg2;
+
     @Override
-    protected int computeTransitDepth() {
+    protected int computeDepth() {
         return 0;
     }
 
     @Override
-    protected boolean computeFinal() {
-        return arg0().isFinal();
-    }
-
-    @Override
-    public boolean hasClearFinal() {
-        return arg0().hasClearFinal() && arg1().hasClearFinal();
+    protected Type computeType() {
+        Type result;
+        switch (arg0().getType()) {
+        case TRIAL:
+            result = Type.TRIAL;
+            break;
+        case FINAL:
+            result = arg1().getType();
+            break;
+        case DEAD:
+            result = arg2().getType();
+            break;
+        default:
+            assert false;
+            result = null;
+        }
+        return result;
     }
 }

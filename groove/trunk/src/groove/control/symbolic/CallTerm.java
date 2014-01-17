@@ -36,36 +36,36 @@ public class CallTerm extends Term {
         this.call = call;
     }
 
+    /** Returns the call wrapped in this term. */
+    public Call getCall() {
+        return this.call;
+    }
+
     private final Call call;
 
     @Override
-    protected List<OutEdge> computeOutEdges() {
-        return Collections.singletonList(new OutEdge(this.call, epsilon()));
+    protected List<TermAttempt> computeAttempts() {
+        return Collections.singletonList(new TermAttempt(this.call, epsilon()));
     }
 
     @Override
     protected Term computeSuccess() {
-        return null;
+        return delta();
     }
 
     @Override
     protected Term computeFailure() {
-        return null;
+        return delta();
     }
 
     @Override
-    protected int computeTransitDepth() {
+    protected int computeDepth() {
         return 0;
     }
 
     @Override
-    protected boolean computeFinal() {
-        return false;
-    }
-
-    @Override
-    public boolean hasClearFinal() {
-        return true;
+    protected Type computeType() {
+        return Type.TRIAL;
     }
 
     @Override

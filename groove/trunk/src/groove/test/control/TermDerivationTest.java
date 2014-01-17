@@ -18,8 +18,8 @@ package groove.test.control;
 
 import static org.junit.Assert.fail;
 import groove.control.Call;
-import groove.control.symbolic.OutEdge;
 import groove.control.symbolic.Term;
+import groove.control.symbolic.TermAttempt;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
 import groove.util.Groove;
@@ -56,7 +56,7 @@ public class TermDerivationTest {
     public void testCall() {
         setSource(this.a);
         assertEdge(this.aCall, epsilon());
-        assertSuccFail(null, null);
+        assertSuccFail(delta(), delta());
         assertRest(false, 0);
     }
 
@@ -70,15 +70,15 @@ public class TermDerivationTest {
         assertEdge(this.aCall, epsilon());
         assertEdge(this.bCall, b);
         assertEdge(this.cCall, epsilon());
-        assertRest(true, 0);
-        assertSuccFail(null, null);
+        assertSuccFail(epsilon(), epsilon());
+        assertRest(false, 0);
         // (try a;a else b) | c
         setSource(a.seq(a).tryElse(b).or(c));
         assertEdge(this.aCall, a.transit());
         assertSuccFail(c, b.or(c));
         assertRest(false, 0);
-        // c | (if a;a else b) | c
-        setSource(c.or(a.seq(a).ifElse(b)));
+        // c | (if (a) a else b) | c
+        setSource(c.or(a.ifElse(a, b)));
         assertEdge(this.aCall, a);
         assertSuccFail(c, c.or(b));
         assertRest(false, 0);
@@ -95,33 +95,33 @@ public class TermDerivationTest {
         Term a = this.a;
         Term b = this.b;
         // if true else b
-        setSource(epsilon().ifElse(b));
+        setSource(epsilon().ifElse(epsilon(), b));
         assertSuccFail(null, null);
         assertRest(true, 0);
         // if a
-        setSource(a.ifNoElse());
+        setSource(a.ifOnly(epsilon()));
         assertEdge(this.aCall, epsilon());
         assertSuccFail(delta(), epsilon());
         assertRest(false, 0);
         // if (a|true) else b
-        setSource(epsilon().or(a).ifElse(b));
+        setSource(epsilon().or(a).ifElse(epsilon(), b));
         assertEdge(this.aCall, epsilon());
-        assertSuccFail(null, null);
-        assertRest(true, 0);
+        assertSuccFail(epsilon(), epsilon());
+        assertRest(false, 0);
         // if a else b
-        setSource(a.ifElse(b));
+        setSource(a.ifElse(epsilon(), b));
         assertEdge(this.aCall, epsilon());
         assertSuccFail(delta(), b);
         assertRest(false, 0);
         // if { if a } else b
-        setSource(a.ifNoElse().ifElse(b));
+        setSource(a.ifOnly(epsilon()).ifElse(epsilon(), b));
         assertEdge(this.aCall, epsilon());
-        assertSuccFail(delta(), epsilon().ifElse(b));
+        assertSuccFail(delta(), epsilon().ifElse(epsilon(), b));
         assertRest(false, 0);
         // if { if a else b }
-        setSource(a.ifElse(b).ifNoElse());
+        setSource(a.ifElse(epsilon(), b).ifOnly(epsilon()));
         assertEdge(this.aCall, epsilon());
-        assertSuccFail(delta(), b.ifNoElse());
+        assertSuccFail(delta(), b.ifOnly(epsilon()));
         assertRest(false, 0);
     }
 
@@ -130,26 +130,25 @@ public class TermDerivationTest {
         Term a = this.a;
         Term b = this.b;
         Term c = this.c;
-        // while { true }
-        setSource(epsilon().whileDo());
-        assertSuccFail(null, null);
+        // while (true) {}
+        setSource(epsilon().whileDo(epsilon()));
         assertRest(false, 0);
-        // while { a|b }
-        setSource(a.or(b).whileDo());
-        assertEdge(this.aCall, a.or(b).whileDo());
-        assertEdge(this.bCall, a.or(b).whileDo());
+        // while (a|b) {}
+        setSource(a.or(b).whileDo(epsilon()));
+        assertEdge(this.aCall, a.or(b).whileDo(epsilon()));
+        assertEdge(this.bCall, a.or(b).whileDo(epsilon()));
         assertSuccFail(delta(), epsilon());
         assertRest(false, 0);
-        // while { (a|b);c }
-        setSource(a.or(b).seq(c).whileDo());
-        assertEdge(this.aCall, c.seq(a.or(b).seq(c).whileDo()));
-        assertEdge(this.bCall, c.seq(a.or(b).seq(c).whileDo()));
+        // while (a|b) { c }
+        setSource(a.or(b).whileDo(c));
+        assertEdge(this.aCall, c.seq(a.or(b).whileDo(c)));
+        assertEdge(this.bCall, c.seq(a.or(b).whileDo(c)));
         assertSuccFail(delta(), epsilon());
         assertRest(false, 0);
-        // while { if a }
-        setSource(a.ifNoElse().whileDo());
+        // while (if a) {}
+        setSource(a.ifOnly(epsilon()).whileDo(epsilon()));
         assertEdge(this.aCall, source());
-        assertSuccFail(delta(), epsilon().seq(source().ifNoElse()));
+        assertSuccFail(delta(), this.source);
         assertRest(false, 0);
     }
 
@@ -165,15 +164,15 @@ public class TermDerivationTest {
         // atomic a
         setSource(a.atom());
         assertEdge(this.aCall, epsilon());
-        assertSuccFail(null, null);
+        assertSuccFail(delta(), delta());
         assertRest(false, 0);
         // atomic { a; b }
         setSource(a.seq(b).atom());
         assertEdge(this.aCall, b.transit());
-        assertSuccFail(null, null);
+        assertSuccFail(delta(), delta());
         assertRest(false, 0);
-        // atomic { if a;b else b;c }
-        setSource(a.seq(b).ifElse(b.seq(c)).atom());
+        // atomic { if (a) b else b;c }
+        setSource(a.ifElse(b, b.seq(c)).atom());
         assertEdge(this.aCall, b.transit());
         assertSuccFail(delta().atom(), b.seq(c).atom());
         assertRest(false, 0);
@@ -186,24 +185,23 @@ public class TermDerivationTest {
         // @a
         setSource(a.transit());
         assertEdge(this.aCall, epsilon());
-        assertSuccFail(null, null);
+        assertSuccFail(p.delta(1), p.delta(1));
         assertRest(false, 1);
         // @((a|skip).c)
         setSource(a.or(epsilon()).seq(c).transit());
         assertEdge(this.aCall, c.transit());
-        assertEdge(this.cCall, epsilon());
-        assertSuccFail(null, null);
+        assertSuccFail(c.transit(), c.transit());
         assertRest(false, 1);
         // @(alap { a;a; })
         setSource(a.seq(a).alap().transit());
         assertEdge(this.aCall, a.transit().seq(a.seq(a).alap()).transit());
-        assertSuccFail(delta(), epsilon());
+        assertSuccFail(p.delta(1), epsilon());
         assertRest(false, 1);
     }
 
     /** Predicts an outgoing transition of the current state. */
     private void assertEdge(Call call, Term target) {
-        OutEdge edge = new OutEdge(call, target);
+        TermAttempt edge = new TermAttempt(call, target);
         Assert.assertTrue(String.format("%s not in %s", edge, this.edges),
             this.edges.remove(edge));
     }
@@ -213,14 +211,14 @@ public class TermDerivationTest {
      */
     private void assertSuccFail(Term success, Term failure) {
         Assert.assertEquals(Collections.emptyList(), this.edges);
-        Assert.assertEquals(success, source().getSuccess());
-        Assert.assertEquals(failure, source().getFailure());
+        Assert.assertEquals(success, source().onSuccess());
+        Assert.assertEquals(failure, source().onFailure());
     }
 
     /** Predicts the final nature and transition depth of the current state. */
     private void assertRest(boolean isFinal, int depth) {
         Assert.assertEquals(isFinal, source().isFinal());
-        Assert.assertEquals(depth, source().getTransitDepth());
+        Assert.assertEquals(depth, source().getDepth());
     }
 
     private Term delta() {
@@ -237,12 +235,15 @@ public class TermDerivationTest {
 
     private void setSource(Term term) {
         this.source = term;
-        this.edges = new ArrayList<OutEdge>(term.getOutEdges());
+        this.edges = new ArrayList<TermAttempt>();
+        if (term.isTrial()) {
+            this.edges.addAll(term.getAttempts());
+        }
         // make sure the other values are properly computed
-        this.source.getSuccess();
-        this.source.getFailure();
+        this.source.onSuccess();
+        this.source.onFailure();
         this.source.isFinal();
-        this.source.getTransitDepth();
+        this.source.getDepth();
         if (DEBUG) {
             System.out.println(this.source.toDebugString());
             System.out.println();
@@ -255,7 +256,7 @@ public class TermDerivationTest {
     }
 
     private Term source;
-    private Collection<OutEdge> edges;
+    private Collection<TermAttempt> edges;
     private final Grammar grammar;
 
     {

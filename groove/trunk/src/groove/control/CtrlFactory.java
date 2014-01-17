@@ -370,7 +370,7 @@ public class CtrlFactory {
         FormatErrorSet errors = new FormatErrorSet();
         SortedMap<Integer,Set<Action>> priorityMap =
             new TreeMap<Integer,Set<Action>>();
-        Namespace namespace = new Namespace(family);
+        Namespace namespace = new Namespace(family, true);
         // first add the names and signatures to the namespace
         for (Action action : actions) {
             boolean needsInput = false;

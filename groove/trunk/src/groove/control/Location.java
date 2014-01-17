@@ -33,7 +33,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Location extends ANode implements Fixable, Comparable<Location> {
+public class Location extends ANode implements TemplatePosition, Fixable {
     /**
      * Constructs a numbered location for a given automaton.
      */
@@ -54,7 +54,12 @@ public class Location extends ANode implements Fixable, Comparable<Location> {
 
     private final Template template;
 
-    /** Returns the atomicity depth of this location. */
+    /** Indicates if this is the template's start locations. */
+    public boolean isStart() {
+        return getTemplate().getStart() == this;
+    }
+
+    @Override
     public int getDepth() {
         return this.depth;
     }
@@ -62,23 +67,34 @@ public class Location extends ANode implements Fixable, Comparable<Location> {
     private final int depth;
 
     /**
-     * Sets this state to final.
+     * Sets the position type of this location.
      * Should only be called if the location is not yet fixed.
      */
-    public void setFinal() {
+    public void setType(Type type) {
         assert !isFixed();
-        assert this.successNext == null && this.failureNext == null;
-        this.isFinal = true;
+        assert this.type == null;
+        assert type != null;
+        this.type = type;
     }
 
-    /**
-     * Indicates if this is a final location of the template.
-     */
+    public Type getType() {
+        return this.type;
+    }
+
+    private Type type;
+
+    @Override
     public boolean isFinal() {
-        return this.isFinal;
+        return getType() == Type.FINAL;
     }
 
-    private boolean isFinal;
+    public boolean isDead() {
+        return false;
+    }
+
+    public boolean isTrial() {
+        return getType() == Type.TRIAL;
+    }
 
     /**
      * Adds an outgoing edge to this location.
@@ -89,14 +105,14 @@ public class Location extends ANode implements Fixable, Comparable<Location> {
         assert edge.source() == this;
         assert !isFixed();
         this.outEdges.add(edge);
-        if (edge.getKind() == Kind.CHOICE) {
-            assert !this.isFinal;
+        if (edge.getKind() == Kind.VERDICT) {
+            assert !this.isFinal();
             if (edge.isSuccess()) {
-                assert this.successNext == null;
-                this.successNext = edge.target();
+                assert this.success == null;
+                this.success = edge.target();
             } else {
-                assert this.failureNext == null;
-                this.failureNext = edge.target();
+                assert this.failure == null;
+                this.failure = edge.target();
             }
         } else {
             this.outCalls.add(edge);
@@ -116,7 +132,8 @@ public class Location extends ANode implements Fixable, Comparable<Location> {
      * Returns the list of outgoing call edges of this location.
      * Should only be invoked after the location is fixed.
      */
-    public List<Switch> getOutCalls() {
+    @Override
+    public List<Switch> getAttempts() {
         assert isFixed();
         return this.outCalls;
     }
@@ -127,48 +144,35 @@ public class Location extends ANode implements Fixable, Comparable<Location> {
     /** The set of outgoing call edges. */
     private final List<Switch> outCalls;
 
-    /** 
-     * Indicates if there is a next state after failure.
-     * Should only be called after the state is fixed.
-     * @return {@code true} if {@link #getFailureNext()} is non-{@code null}
-     */
-    public boolean hasFailureNext() {
-        return getFailureNext() != null;
+    /** Sets the failure verdict to {@link Deadlock}. */
+    void setDeadFailure() {
+        assert !isFixed();
+        assert this.failure == null;
+        this.failure = Deadlock.instance(getDepth());
     }
 
-    /**
-     * Returns the next state to be tried after all transitions have failed.
-     * Should only be called after the state is fixed.
-     * @return the next state after success; may be {@code null}
-     */
-    public Location getFailureNext() {
+    @Override
+    public TemplatePosition onFailure() {
         assert isFixed();
-        return this.failureNext;
+        return this.failure;
     }
 
-    private Location failureNext;
+    private TemplatePosition failure;
 
-    /** 
-     * Indicates if there is a next state after success.
-     * Should only be called after the state is fixed.
-     * @return {@code true} if {@link #getSuccessNext()} is non-{@code null}
-     */
-    public boolean hasSuccessNext() {
-        return getSuccessNext() != null;
+    /** Sets the success verdict to {@link Deadlock}. */
+    void setDeadSuccess() {
+        assert !isFixed();
+        assert this.failure == null;
+        this.success = Deadlock.instance(getDepth());
     }
 
-    /**
-     * Returns the next state to be tried after at least one transition
-     * has succeeded.
-     * Should only be called after the state is fixed.
-     * @return the next state after success; may be {@code null}
-     */
-    public Location getSuccessNext() {
+    @Override
+    public TemplatePosition onSuccess() {
         assert isFixed();
-        return this.successNext;
+        return this.success;
     }
 
-    private Location successNext;
+    private TemplatePosition success;
 
     /**
      * Returns the list of control variables in this location,
@@ -226,11 +230,13 @@ public class Location extends ANode implements Fixable, Comparable<Location> {
     @Override
     public String toString() {
         String result = super.toString();
-        if (this.isFinal) {
+        if (isStart()) {
+            result = result + ", start";
+        }
+        if (this.type == Type.FINAL) {
             result = result + ", final";
-        } else if (this.depth == 0) {
-            result = result + ", top";
-        } else {
+        }
+        if (this.depth > 0) {
             result = result + ", depth=" + this.depth;
         }
         return result;
@@ -242,6 +248,7 @@ public class Location extends ANode implements Fixable, Comparable<Location> {
     }
 
     public boolean setFixed() {
+        assert this.type != null;
         boolean result = !this.fixed;
         this.fixed = true;
         return result;
@@ -260,7 +267,7 @@ public class Location extends ANode implements Fixable, Comparable<Location> {
 
     private boolean fixed;
 
-    public int compareTo(Location o) {
+    public int compareTo(TemplatePosition o) {
         return getNumber() - o.getNumber();
     }
 }

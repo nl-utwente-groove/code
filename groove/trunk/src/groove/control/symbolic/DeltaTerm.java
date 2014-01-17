@@ -28,12 +28,13 @@ public class DeltaTerm extends Term {
     /**
      * Constructs a delta term.
      */
-    public DeltaTerm(TermPool pool) {
+    public DeltaTerm(TermPool pool, int depth) {
         super(pool, Term.Op.DELTA);
+        this.depth = depth;
     }
 
     @Override
-    protected List<OutEdge> computeOutEdges() {
+    protected List<TermAttempt> computeAttempts() {
         return Collections.emptyList();
     }
 
@@ -48,47 +49,34 @@ public class DeltaTerm extends Term {
     }
 
     @Override
-    protected int computeTransitDepth() {
-        return 0;
+    protected int computeDepth() {
+        return this.depth;
+    }
+
+    private final int depth;
+
+    @Override
+    protected Type computeType() {
+        return Type.DEAD;
     }
 
     @Override
-    protected boolean computeFinal() {
-        return false;
+    public int hashCode() {
+        int prime = 31;
+        return prime * super.hashCode() + getDepth();
     }
 
     @Override
-    public boolean hasClearFinal() {
-        return true;
+    public boolean equals(Object obj) {
+        return super.equals(obj) && ((DeltaTerm) obj).depth == this.depth;
     }
 
     @Override
-    public Term seq(Term arg1) {
-        return this;
-    }
-
-    @Override
-    public Term or(Term arg1) {
-        return arg1;
-    }
-
-    @Override
-    public Term atom() {
-        return this;
-    }
-
-    @Override
-    public Term transit() {
-        return this;
-    }
-
-    @Override
-    public Term ifElse(Term arg1) {
-        return arg1;
-    }
-
-    @Override
-    public Term whileDo() {
-        return epsilon();
+    public String toString() {
+        String result = super.toString();
+        if (getDepth() > 0) {
+            result += "(" + getDepth() + ")";
+        }
+        return result;
     }
 }

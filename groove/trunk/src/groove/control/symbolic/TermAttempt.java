@@ -16,6 +16,7 @@
  */
 package groove.control.symbolic;
 
+import groove.control.Attempt;
 import groove.control.Call;
 import groove.util.Pair;
 
@@ -25,11 +26,11 @@ import groove.util.Pair;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class OutEdge extends Pair<Call,Term> {
+public class TermAttempt extends Pair<Call,Term> implements Attempt<Term> {
     /**
      * Constructs a symbolic edge out of a call and a target location.
      */
-    public OutEdge(Call call, Term target) {
+    public TermAttempt(Call call, Term target) {
         super(call, target);
     }
 
@@ -42,12 +43,12 @@ public class OutEdge extends Pair<Call,Term> {
     /**
      * Returns the target symbolic location wrapped into this edge.
      */
-    public Term getTarget() {
+    public Term target() {
         return two();
     }
 
     /** Creates a new edge, with the call of this edge but another target. */
-    public OutEdge newEdge(Term target) {
-        return new OutEdge(getCall(), target);
+    public TermAttempt newAttempt(Term target) {
+        return new TermAttempt(getCall(), target);
     }
 }

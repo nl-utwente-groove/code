@@ -16,7 +16,6 @@
  */
 package groove.control.symbolic;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,13 +33,19 @@ public class OrTerm extends Term {
     }
 
     @Override
-    protected List<OutEdge> computeOutEdges() {
-        List<OutEdge> result = new ArrayList<OutEdge>();
-        if (arg0().hasSuccess() || !arg1().hasSuccess()) {
-            result.addAll(arg0().getOutEdges());
-        }
-        if (!arg0().hasSuccess()) {
-            result.addAll(arg1().getOutEdges());
+    protected List<TermAttempt> computeAttempts() {
+        List<TermAttempt> result = null;
+        if (isTrial()) {
+            if (useArg0Only()) {
+                result = arg0().getAttempts();
+            } else if (useArg1Only()) {
+                result = arg1().getAttempts();
+            } else {
+                // optimise: combine the attempts of both args
+                result = createAttempts();
+                result.addAll(arg0().getAttempts());
+                result.addAll(arg1().getAttempts());
+            }
         }
         return result;
     }
@@ -48,10 +53,15 @@ public class OrTerm extends Term {
     @Override
     protected Term computeSuccess() {
         Term result = null;
-        if (arg0().hasSuccess()) {
-            result = arg0().getSuccess().or(arg1());
-        } else if (arg1().hasSuccess()) {
-            result = arg0().or(arg1().getSuccess());
+        if (isTrial()) {
+            if (useArg0Only()) {
+                result = arg0().onSuccess().or(arg1());
+            } else if (useArg1Only()) {
+                result = arg0().or(arg1().onSuccess());
+            } else {
+                // optimise: combine the attempts of both args
+                result = arg0().onSuccess().or(arg1().onSuccess());
+            }
         }
         return result;
     }
@@ -59,29 +69,51 @@ public class OrTerm extends Term {
     @Override
     protected Term computeFailure() {
         Term result = null;
-        if (arg0().hasFailure()) {
-            result = arg0().getFailure().or(arg1());
-        } else if (arg1().hasFailure()) {
-            result = arg0().or(arg1().getFailure());
+        if (isTrial()) {
+            if (useArg0Only()) {
+                result = arg0().onFailure().or(arg1());
+            } else if (useArg1Only()) {
+                result = arg0().or(arg1().onFailure());
+            } else {
+                // optimise: combine the attempts of both args
+                result = arg0().onFailure().or(arg1().onFailure());
+            }
         }
         return result;
     }
 
+    /** 
+     * Yields true if arg0 is a trial position for which the verdicts are distinct,
+     * or arg1 is not a trial position.
+     */
+    private boolean useArg0Only() {
+        return arg0().isTrial() && arg0().onSuccess() != arg0().onFailure()
+            || !arg1().isTrial();
+    }
+
+    /** 
+     * Yields true if arg0 is not a trial position, or it has equal verdicts
+     * and arg1 is a trial position with distinct verdicts.
+     */
+    private boolean useArg1Only() {
+        return !arg0().isTrial() || arg0().onSuccess() == arg0().onFailure()
+            && arg1().isTrial() && arg1().onSuccess() != arg1().onFailure();
+    }
+
     @Override
-    protected int computeTransitDepth() {
+    protected int computeDepth() {
         return 0;
     }
 
     @Override
-    protected boolean computeFinal() {
-        return arg0().isFinal() || arg1().isFinal();
-    }
-
-    @Override
-    public boolean hasClearFinal() {
-        boolean result = !(isFinal() && hasOutEdges());
-        if (result) {
-            result = arg0().hasClearFinal() && arg1().hasClearFinal();
+    protected Type computeType() {
+        Type result;
+        if (arg0().isTrial() || arg1().isTrial()) {
+            result = Type.TRIAL;
+        } else if (arg0().isFinal() || arg1().isFinal()) {
+            result = Type.FINAL;
+        } else {
+            result = Type.DEAD;
         }
         return result;
     }

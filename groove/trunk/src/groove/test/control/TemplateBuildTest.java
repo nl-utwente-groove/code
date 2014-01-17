@@ -20,14 +20,15 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
+import groove.control.Attempt;
 import groove.control.Call;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.control.Location;
-import groove.control.Switch;
 import groove.control.Template;
 import groove.control.TemplateBuilder;
+import groove.control.TemplatePosition;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -73,7 +74,7 @@ public class TemplateBuildTest extends CtrlTester {
         build("{ a; b; }");
         assertSize(3, 2);
         Location loc = getInit(this.aCall);
-        assertFalse(loc.hasSuccessNext());
+        assertTrue(loc.isTrial());
         loc = getNext(loc, this.bCall);
         assertTrue(loc.isFinal());
         //
@@ -82,34 +83,40 @@ public class TemplateBuildTest extends CtrlTester {
         assertEquals(getInit(this.aCall), getInit(this.bCall));
         //
         build("a*;");
-        assertSize(1, 1);
-        assertTrue(getStart().isFinal());
+        assertSize(2, 3);
+        assertFalse(getStart().isFinal());
+        assertTrue(getStart().onFailure().isFinal());
+        assertTrue(getStart().onSuccess().isFinal());
         assertEquals(getStart(), getInit(this.aCall));
         //
         build("#a;");
-        assertSize(3, 3);
+        assertSize(2, 2);
         assertEquals(getStart(), getInit(this.aCall));
-        assertTrue(getFailure(getStart()).isFinal());
-        loc = getSuccess(getStart());
-        assertFalse(loc.isFinal());
-        assertEquals(Collections.emptySet(), loc.getOutEdges());
+        assertTrue(onSuccess(getStart()).isDead());
+        assertTrue(onFailure(getStart()).isFinal());
+        //
+        build("while (true) a;");
+        assertSize(1, 1);
+        assertEquals(getStart(), getInit(this.aCall));
+        assertTrue(onSuccess(getStart()).isDead());
+        assertTrue(onFailure(getStart()).isDead());
         //
         build("while (a) { b; } c;");
-        assertSize(5, 5);
+        assertSize(4, 4);
         assertEquals(getStart(), getNext(getInit(this.aCall), this.bCall));
-        assertTrue(getNext(getFailure(getStart()), this.cCall).isFinal());
-        assertFalse(getFailure(getStart()).isFinal());
+        assertTrue(getNext(onFailure(getStart()), this.cCall).isFinal());
+        assertFalse(onFailure(getStart()).isDead());
         //
         build("choice { if (a) b; else { c;c; } } or c;");
         assertSize(5, 7);
         loc = getInit(this.aCall);
         assertTrue(getNext(loc, this.bCall).isFinal());
         assertFalse(hasNext(loc, this.cCall));
-        loc = getSuccess(getStart());
-        assertTrue(getNext(loc, this.cCall).isFinal());
-        Set<Location> locs = getNexts(getFailure(getStart()), this.cCall);
-        assertTrue(locs.contains(loc));
-        assertTrue(locs.contains(getNext(loc, this.cCall)));
+        TemplatePosition pos = onSuccess(getStart());
+        assertTrue(getNext(pos, this.cCall).isFinal());
+        Set<Location> locs = getNexts(onFailure(getStart()), this.cCall);
+        assertTrue(locs.contains(pos));
+        assertTrue(locs.contains(getNext(pos, this.cCall)));
         //
         build("atomic { a;b; } c;");
         loc = getInit(this.aCall);
@@ -131,22 +138,23 @@ public class TemplateBuildTest extends CtrlTester {
     @Test
     public void testOther() {
         build("choice a; or { alap other; }");
-        assertSize(6, 10);
-        assertTrue(getNext(getFailure(getStart()), this.aCall).isFinal());
-        Location loc = getInit(this.bCall);
+        assertSize(5, 11);
+        assertTrue(getNext(onFailure(getStart()), this.aCall).isFinal());
+        TemplatePosition loc = getInit(this.bCall);
         assertEquals(loc, getInit(this.cCall));
         assertEquals(loc, getNext(loc, this.bCall));
         assertEquals(loc, getNext(loc, this.cCall));
-        assertTrue(getFailure(loc).isFinal());
-        assertFalse(getSuccess(loc).isFinal());
+        assertTrue(onFailure(loc).isFinal());
+        assertFalse(onSuccess(loc).isFinal());
     }
 
     @Test
     public void testNormalise() {
         build("if (a) { b;choice {} or {} } else b;");
-        assertEquals(6, this.template.nodeCount());
-        assertEquals(5, this.template.edgeCount());
-        assertSize(4, 4);
+        assertSize(3, 3);
+        TemplatePosition loc = onFailure(getStart());
+        assertEquals(getInit(this.aCall), loc);
+        assertTrue(getNext(loc, this.bCall).isFinal());
     }
 
     @Test
@@ -185,7 +193,7 @@ public class TemplateBuildTest extends CtrlTester {
         this.minimal = builder.normalise(this.template);
     }
 
-    private Location getStart() {
+    private TemplatePosition getStart() {
         return this.minimal.getStart();
     }
 
@@ -193,9 +201,9 @@ public class TemplateBuildTest extends CtrlTester {
         return getNext(this.minimal.getStart(), call);
     }
 
-    private Set<Location> getNexts(Location loc, Call call) {
+    private Set<Location> getNexts(TemplatePosition loc, Call call) {
         Set<Location> result = new HashSet<Location>();
-        for (Switch edge : loc.getOutCalls()) {
+        for (Attempt<Location> edge : loc.getAttempts()) {
             if (edge.getCall().equals(call)) {
                 result.add(edge.target());
             }
@@ -204,25 +212,25 @@ public class TemplateBuildTest extends CtrlTester {
         return result;
     }
 
-    private Location getNext(Location loc, Call call) {
+    private Location getNext(TemplatePosition loc, Call call) {
         Set<Location> result = getNexts(loc, call);
         assertEquals(1, result.size());
         return result.iterator().next();
     }
 
-    private boolean hasNext(Location loc, Call call) {
+    private boolean hasNext(TemplatePosition loc, Call call) {
         Set<Location> result = getNexts(loc, call);
         return !result.isEmpty();
     }
 
-    private Location getSuccess(Location loc) {
-        assertTrue(loc.hasSuccessNext());
-        return loc.getSuccessNext();
+    private TemplatePosition onSuccess(TemplatePosition loc) {
+        assertTrue(loc.isTrial());
+        return loc.onSuccess();
     }
 
-    private Location getFailure(Location loc) {
-        assertTrue(loc.hasFailureNext());
-        return loc.getFailureNext();
+    private TemplatePosition onFailure(TemplatePosition loc) {
+        assertTrue(loc.isTrial());
+        return loc.onFailure();
     }
 
     private Template template;

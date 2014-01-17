@@ -20,8 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
-import groove.control.Program;
-import groove.control.parse.CtrlTree;
 import groove.control.symbolic.Term;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
@@ -30,7 +28,6 @@ import groove.util.Groove;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -172,63 +169,18 @@ abstract public class CtrlTester {
      */
     protected Term buildTerm(String program) {
         try {
-            return createLoader().parse("dummy", program).check().getChild(3).toTerm();
+            return createLoader().parse("dummy", program).check().getChild(4).toTerm();
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
             return null;
         }
     }
-
-    /** Builds a program object from a control expression.
-     * @param controlName name of the control program
-     * @param program control expression; non-{@code null}
-     */
-    protected Program buildProgram(String controlName, String program) {
-        try {
-            return createLoader().parse(controlName, program).toProgram();
-        } catch (FormatException e) {
-            Assert.fail(e.getMessage());
-            return null;
-        }
-    }
-
-    /** Incrementally adds control expressions to a complete program.
-     * The result can be retrieve by {@link #getProgram()}.
-     */
-    protected void addControl(String controlName, String program) {
-        if (this.loader == null) {
-            this.loader = createLoader();
-        }
-        try {
-            this.loader.parse(controlName, program);
-        } catch (FormatException e) {
-            Assert.fail(e.getMessage());
-        }
-    }
-
-    /** Returns the program build in successive calls to {@link #addControl(String, String)}. */
-    protected Program getProgram() {
-        Program result = new Program();
-        try {
-            for (Map.Entry<String,CtrlTree> entry : this.loader.check().entrySet()) {
-                this.program.add(entry.getValue().toProgram());
-            }
-        } catch (FormatException e) {
-            Assert.fail(e.getMessage());
-        }
-        this.loader = null;
-        result.setFixed();
-        return result;
-    }
-
-    private CtrlLoader loader;
-    private Program program;
 
     /** Callback factory method for a loader of the test grammar. */
     protected CtrlLoader createLoader() {
         return new CtrlLoader(
             this.testGrammar.getProperties().getAlgebraFamily(),
-            this.testGrammar.getAllRules());
+            this.testGrammar.getAllRules(), true);
     }
 
     static private final boolean DEBUG = false;

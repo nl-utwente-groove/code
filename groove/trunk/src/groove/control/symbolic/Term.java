@@ -17,6 +17,7 @@
 package groove.control.symbolic;
 
 import groove.control.Call;
+import groove.control.Position;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +29,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class Term {
+abstract public class Term implements Position<Term> {
     /** Constructor for a prototype term. */
     private Term(TermPool pool) {
         this.pool = pool;
@@ -102,31 +103,64 @@ abstract public class Term {
         return getArgs()[1];
     }
 
+    /** Returns the third argument of this term. */
+    protected final Term arg2() {
+        return getArgs()[2];
+    }
+
+    /** Returns the third argument of this term. */
+    protected final Term arg3() {
+        return getArgs()[3];
+    }
+
+    /** Returns whether this symbolic location is final. */
+    public final Type getType() {
+        if (this.type == null) {
+            this.type = computeType();
+        }
+        return this.type;
+    }
+
+    private Type type = null;
+
+    /** Computes whether this symbolic location is final. */
+    abstract protected Type computeType();
+
+    /** Returns whether this symbolic location is final. */
+    public final boolean isFinal() {
+        return getType() == Type.FINAL;
+    }
+
     /** Indicates if this term has any outgoing edges. */
-    public final boolean hasOutEdges() {
-        return !getOutEdges().isEmpty();
+    public final boolean isTrial() {
+        return getType() == Type.TRIAL;
+    }
+
+    /** Indicates that this term is dead, i.e., has no outgoing edges and is not final. */
+    public final boolean isDead() {
+        return getType() == Type.DEAD;
     }
 
     /** Returns the set of outgoing call edges for this symbolic location. */
-    public final List<OutEdge> getOutEdges() {
+    public final List<TermAttempt> getAttempts() {
         if (this.outEdges == null) {
-            this.outEdges = computeOutEdges();
+            this.outEdges = computeAttempts();
         }
         return this.outEdges;
     }
 
-    private List<OutEdge> outEdges;
+    private List<TermAttempt> outEdges;
 
     /** Computes the set of outgoing call edges for this symbolic location. */
-    abstract protected List<OutEdge> computeOutEdges();
+    abstract protected List<TermAttempt> computeAttempts();
 
     /** Indicates if this term has a success transition. */
     public final boolean hasSuccess() {
-        return getSuccess() != null;
+        return onSuccess() != null;
     }
 
     /** Returns the success transition for this symbolic location. */
-    public final Term getSuccess() {
+    public final Term onSuccess() {
         if (this.success == null) {
             this.success = computeSuccess();
         }
@@ -140,11 +174,11 @@ abstract public class Term {
 
     /** Indicates if this term has a failure transition. */
     public final boolean hasFailure() {
-        return getFailure() != null;
+        return onFailure() != null;
     }
 
     /** Returns the failure transition for this symbolic location. */
-    public final Term getFailure() {
+    public final Term onFailure() {
         if (this.failure == null) {
             this.failure = computeFailure();
         }
@@ -156,43 +190,32 @@ abstract public class Term {
     /** Computes the failure transition for this symbolic location. */
     abstract protected Term computeFailure();
 
+    /** Indicates if the failure verdicts transitively lead to a final term. */
+    public final boolean willSucceed() {
+        if (isTrial()) {
+            return onFailure().willSucceed();
+        } else {
+            return isFinal();
+        }
+    }
+
     /** Indicates if this is a top-revel term, i.e., with transient depth 0. */
     public final boolean isTopLevel() {
-        return getTransitDepth() == 0;
+        return getDepth() == 0;
     }
 
     /** Returns the transient depth of this symbolic location. */
-    public final int getTransitDepth() {
-        if (this.transitDepth == null) {
-            this.transitDepth = computeTransitDepth();
+    public final int getDepth() {
+        if (this.depth == null) {
+            this.depth = computeDepth();
         }
-        return this.transitDepth;
+        return this.depth;
     }
 
     /** Computes the transient depth of this symbolic location. */
-    abstract protected int computeTransitDepth();
+    abstract protected int computeDepth();
 
-    private Integer transitDepth;
-
-    /** Returns whether this symbolic location is final. */
-    public final boolean isFinal() {
-        if (this.isFinal == null) {
-            this.isFinal = computeFinal();
-        }
-        return this.isFinal;
-    }
-
-    private Boolean isFinal = null;
-
-    /** Computes whether this symbolic location is final. */
-    abstract protected boolean computeFinal();
-
-    /** 
-     * Indicates if this term will always go to a clear final term.
-     * A clear final term is one which is final and has no outgoing
-     * transitions. Atomic terms operands must be clear final.
-     */
-    abstract public boolean hasClearFinal();
+    private Integer depth;
 
     @Override
     public int hashCode() {
@@ -235,24 +258,28 @@ abstract public class Term {
         if (isFinal()) {
             result = result + " final, ";
         }
-        result = result + " transient depth " + getTransitDepth();
-        for (OutEdge edge : getOutEdges()) {
+        result = result + " transient depth " + getDepth();
+        for (TermAttempt edge : getAttempts()) {
             result =
                 result + "\n  --" + edge.getCall() + "--> "
-                    + edge.getTarget().toString();
+                    + edge.target().toString();
         }
         result =
             result + "\nSuccess: "
-                + (hasSuccess() ? getSuccess().toString() : "none");
+                + (hasSuccess() ? onSuccess().toString() : "none");
         result =
             result + "\nFailure: "
-                + (hasFailure() ? getFailure().toString() : "none");
+                + (hasFailure() ? onFailure().toString() : "none");
         return result;
     }
 
     /** Returns the sequential composition of this term with another. */
     public Term seq(Term arg1) {
-        if (arg1.equals(epsilon())) {
+        if (isFinal()) {
+            return arg1;
+        } else if (isDead()) {
+            return this;
+        } else if (arg1.isFinal()) {
             return this;
         } else {
             SeqTerm result = new SeqTerm(this, arg1);
@@ -260,9 +287,16 @@ abstract public class Term {
         }
     }
 
+    /** Callback factory method for a list of attempts. */
+    protected final List<TermAttempt> createAttempts() {
+        return new ArrayList<TermAttempt>();
+    }
+
     /** Returns the choice between this term and another. */
     public Term or(Term arg1) {
-        if (arg1.equals(delta())) {
+        if (isDead()) {
+            return arg1;
+        } else if (arg1.isDead()) {
             return this;
         } else {
             Term result = new OrTerm(this, arg1);
@@ -270,26 +304,42 @@ abstract public class Term {
         }
     }
 
-    /** Returns the if-else of this term and another. */
-    public Term ifElse(Term arg1) {
-        Term result = new IfTerm(this, arg1);
-        return getPool().normalise(result);
+    /** Returns the if-also-else of this term and two others. */
+    public Term ifAlsoElse(Term thenPart, Term alsoPart, Term elsePart) {
+        if (isDead()) {
+            return elsePart;
+        } else if (isFinal()) {
+            return thenPart.or(alsoPart);
+        } else {
+            Term result = new IfTerm(this, thenPart, alsoPart, elsePart);
+            return getPool().normalise(result);
+        }
     }
 
-    /** Returns the if of this term (which is the same as try-else-epsilon). */
-    public final Term ifNoElse() {
-        return ifElse(epsilon());
+    /** Returns the if-also of this term (which is the same as if-also-epsilon). */
+    public final Term ifAlso(Term thenPart, Term alsoPart) {
+        return ifAlsoElse(thenPart, alsoPart, epsilon());
+    }
+
+    /** Returns the if of this term (which is the same as if-delta-else). */
+    public final Term ifElse(Term thenPart, Term elsePart) {
+        return ifAlsoElse(thenPart, delta(), elsePart);
+    }
+
+    /** Returns the if of this term (which is the same as if-delta-epsilon). */
+    public final Term ifOnly(Term thenPart) {
+        return ifElse(thenPart, epsilon());
     }
 
     /** Returns the try-else of this term and another.
      * This is implemented as <code>if atomic { this } else arg1</code>.
      */
-    public final Term tryElse(Term arg1) {
-        return atom().ifElse(arg1);
+    public final Term tryElse(Term elsePart) {
+        return atom().ifElse(epsilon(), elsePart);
     }
 
     /** Returns the try of this term (which is the same as try-else-epsilon). */
-    public final Term tryNoElse() {
+    public final Term tryOnly() {
         return tryElse(epsilon());
     }
 
@@ -298,43 +348,74 @@ abstract public class Term {
      * This is implemented as <code>while atomic { this }</code>.
      */
     public final Term alap() {
-        return atom().whileDo();
+        return atom().whileDo(epsilon());
     }
 
     /** Returns the until of this term and another. */
     public Term untilDo(Term arg1) {
-        Term result = new UntilTerm(this, arg1);
-        return getPool().normalise(result);
+        if (isFinal()) {
+            return epsilon();
+        } else if (isDead()) {
+            return star().seq(delta());
+        } else {
+            Term result = new UntilTerm(this, arg1);
+            return getPool().normalise(result);
+        }
     }
 
     /** Returns the while of this term. */
-    public Term whileDo() {
-        Term result = new WhileTerm(this);
-        return getPool().normalise(result);
+    public Term whileDo(Term bodyPart) {
+        if (isDead()) {
+            return epsilon();
+        } else {
+            Term result = new WhileTerm(this, bodyPart);
+            return getPool().normalise(result);
+        }
     }
 
     /** Returns the Kleene star of this term. */
     public Term star() {
-        Term result = new StarTerm(this);
-        return getPool().normalise(result);
+        if (isDead() || isFinal()) {
+            return epsilon();
+        } else {
+            Term result = new StarTerm(this);
+            return getPool().normalise(result);
+        }
     }
 
     /** Returns this term, wrapped into an atomic block. */
     public Term atom() {
-        AtomTerm result = new AtomTerm(this);
-        return getPool().normalise(result);
+        if (isDead()) {
+            return this;
+        } else if (isFinal()) {
+            return epsilon();
+        } else {
+            AtomTerm result = new AtomTerm(this);
+            return getPool().normalise(result);
+        }
     }
 
     /** Returns this term, with increased atom depth. */
     public Term transit() {
-        TransitTerm result = new TransitTerm(this);
+        if (isFinal()) {
+            return epsilon();
+        } else if (isDead()) {
+            return delta(getDepth() + 1);
+        } else {
+            TransitTerm result = new TransitTerm(this);
+            return getPool().normalise(result);
+        }
+    }
+
+    /** Returns the unique delta term at a certain depth. */
+    public Term delta(int depth) {
+        DeltaTerm result = new DeltaTerm(getPool(), depth);
         return getPool().normalise(result);
     }
 
-    /** Returns the unique delta term. */
+    /** Returns the unique delta term at depth 0. */
     public Term delta() {
-        DeltaTerm result = new DeltaTerm(getPool());
-        return getPool().normalise(result);
+        return delta(0);
     }
 
     /** Returns the unique epsilon term. */
@@ -353,7 +434,7 @@ abstract public class Term {
     public static Term prototype() {
         return new Term(new TermPool()) {
             @Override
-            protected List<OutEdge> computeOutEdges() {
+            protected List<TermAttempt> computeAttempts() {
                 throw new UnsupportedOperationException();
             }
 
@@ -368,18 +449,13 @@ abstract public class Term {
             }
 
             @Override
-            protected int computeTransitDepth() {
+            protected int computeDepth() {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            protected boolean computeFinal() {
+            protected Type computeType() {
                 throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public boolean hasClearFinal() {
-                return false;
             }
         };
     }
@@ -388,10 +464,10 @@ abstract public class Term {
      * Helper method to modify a set of outgoing edges so that
      * their targets are made transient.
      */
-    static List<OutEdge> makeTransit(List<OutEdge> edges) {
-        List<OutEdge> result = new ArrayList<OutEdge>();
-        for (OutEdge edge : edges) {
-            result.add(edge.newEdge(edge.getTarget().transit()));
+    static List<TermAttempt> makeTransit(List<TermAttempt> edges) {
+        List<TermAttempt> result = new ArrayList<TermAttempt>();
+        for (TermAttempt edge : edges) {
+            result.add(edge.newAttempt(edge.target().transit()));
         }
         return result;
     }
@@ -408,16 +484,16 @@ abstract public class Term {
         SEQ(2),
         /** Choice. */
         OR(2),
-        /** If/else. */
-        IF(2),
+        /** If/also/else. */
+        IF(4),
         /** Try/else. */
-        TRY(2),
+        HASH(2),
         /** As-long-as-possible. */
         ALAP(1),
         /** UNTIL. */
         UNTIL(2),
         /** While. */
-        WHILE(1),
+        WHILE(2),
         /** Kleene star. */
         STAR(1),
         /** Atomic block. */

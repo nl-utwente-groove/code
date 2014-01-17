@@ -2463,7 +2463,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements
             CtrlType varType;
             AspectKind attrKind = node.getAttrKind();
             if (attrKind.hasSignature()) {
-                varType = CtrlType.getDataType(attrKind.getSignature());
+                varType = CtrlType.getType(attrKind.getSignature());
             } else {
                 varType = CtrlType.NODE;
             }
