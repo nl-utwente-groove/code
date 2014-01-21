@@ -33,7 +33,9 @@ import groove.util.Fixable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -461,6 +463,69 @@ public class Program implements Fixable {
         return result == null ? new Finality(may, will) : result;
     }
 
+    /** Indicates if the given procedure will always terminate. */
+    public boolean willTerminate(Procedure proc) {
+        return getTerminationSet().contains(proc);
+    }
+
+    private Set<Procedure> getTerminationSet() {
+        if (this.terminationSet == null) {
+            this.terminationSet = computeTerminationSet();
+        }
+        return this.terminationSet;
+    }
+
+    private Set<Procedure> terminationSet;
+
+    private Set<Procedure> computeTerminationSet() {
+        Set<Procedure> result = new HashSet<Procedure>();
+        Set<Procedure> remaining = new HashSet<Procedure>(getProcs().values());
+        boolean modified = true;
+        while (modified) {
+            modified = false;
+            for (Procedure proc : remaining) {
+                if (willTerminate(proc.getTemplate(), result)) {
+                    result.add(proc);
+                    remaining.remove(proc);
+                    modified = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    /** Computes if a final location is reachable from all locations in a given template,
+     * given that a certain set of procedure calls is known to terminate */
+    public boolean willTerminate(Template template,
+            Set<Procedure> terminationSet) {
+        boolean result = template.hasFinal();
+        if (result) {
+            Set<Location> terminating = new HashSet<Location>();
+            terminating.add(template.getFinal());
+            Map<Location,Set<Switch>> inMap = template.getInEdgeMap();
+            Queue<Location> queue = new LinkedList<Location>();
+            queue.add(template.getFinal());
+            while (!queue.isEmpty()) {
+                Location next = queue.poll();
+                for (Switch edge : inMap.get(next)) {
+                    if (!edge.getKind().isCallable()) {
+                        continue;
+                    }
+                    Callable unit = edge.getCall().getUnit();
+                    if (!(unit instanceof Rule)
+                        && !terminationSet.contains(unit)) {
+                        continue;
+                    }
+                    if (terminating.add(edge.source())) {
+                        queue.add(edge.source());
+                    }
+                }
+            }
+            result = terminating.size() == template.nodeCount();
+        }
+        return result;
+    }
+
     @Override
     public boolean setFixed() throws FormatException {
         boolean result = this.fixed;
@@ -485,8 +550,7 @@ public class Program implements Fixable {
                     errors.add("%s %s may immediately terminate",
                         proc.getKind().getName(true), name);
                 }
-                if (proc instanceof Recipe
-                    && !proc.getTemplate().willTerminate()) {
+                if (proc instanceof Recipe && !willTerminate(proc)) {
                     errors.add("%s %s may fail to terminate",
                         proc.getKind().getName(true), name);
                 }

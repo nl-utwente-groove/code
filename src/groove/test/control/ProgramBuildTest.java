@@ -81,6 +81,17 @@ public class ProgramBuildTest {
         buildWrong("empty", "recipe f() { try a; }");
     }
 
+    public void testNonTermination() {
+        build("nonterminating", "function f() { while (true) { a; } }");
+        buildWrong("nonterminating", "recipe f() { while (true) { a; } }");
+        build("nonterminating", "function f() { a; g; } function g() { a; f; }");
+        buildWrong("nonterminating",
+            "recipe f() { a; g; } function g() { a; f; }");
+        build("terminating",
+            "function f() { a; g; } function g() { a; (b|f); }");
+        build("terminating", "recipe f() { a; g; } function g() { a; (b|f); }");
+    }
+
     @Test
     public void testRecursion() {
         Program p =
@@ -103,7 +114,7 @@ public class ProgramBuildTest {
         build("guarded",
             "function f() { try a; else b; } function g() { f; g; }");
         //
-        p = build("forward call", "f; recipe f() { a;f; }");
+        p = build("forward call", "f; function f() { a;f; }");
         fProc = p.getProc("f");
         assertEquals(call(fProc), p.getTerm());
         assertEquals(call("a").seq(call("f")), fProc.getTerm());
