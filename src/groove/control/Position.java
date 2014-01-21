@@ -16,14 +16,12 @@
  */
 package groove.control;
 
-import groove.control.template.Location;
-import groove.control.template.Template;
 
 /**
- * Supertype for {@link Location} (which is a node of a {@link Template}) 
- * and Deadlock (which is not). This is so as to be able to keep the {@link Template}
- * graph "clean" by not having to include verdicts to deadlock locations (which
- * would otherwise be all over the place).
+ * Position in a control structure that encodes the functionality of an 
+ * {@link Attempt}, being one or more calls that are to be tried from this position,
+ * together with <i>verdicts</i> reflecting how to proceed after the attempt
+ * has either succeeded or failed.
  * @author Arend Rensink
  * @version $Revision $
  */

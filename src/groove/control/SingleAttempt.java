@@ -17,7 +17,7 @@
 package groove.control;
 
 /**
- * Supertype for attempts of a control position.
+ * Specialisation for single attempts of a control position.
  * An attempt wraps a call that is attempted, and a position that is
  * reached afterwards.
  * @author Arend Rensink

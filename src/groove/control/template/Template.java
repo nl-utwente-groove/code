@@ -185,6 +185,9 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
             }
             state.addVars(vars);
         }
+        for (Switch trans : edgeSet()) {
+            trans.source().addVars(trans.getInVars().keySet());
+        }
         Map<Location,Set<Switch>> inMap = getInEdgeMap();
         Queue<Switch> queue = new LinkedList<Switch>(edgeSet());
         while (!queue.isEmpty()) {

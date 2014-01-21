@@ -19,6 +19,8 @@ package groove.control;
 import java.util.ArrayList;
 
 /**
+ * Attempt specialisation consisting of a list of other attempts,
+ * to be tried successively in the given order.
  * @author Arend Rensink
  * @version $Revision $
  */
