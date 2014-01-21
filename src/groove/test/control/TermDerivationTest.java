@@ -18,8 +18,9 @@ package groove.test.control;
 
 import static org.junit.Assert.fail;
 import groove.control.Call;
-import groove.control.symbolic.Term;
-import groove.control.symbolic.TermAttempt;
+import groove.control.Callable;
+import groove.control.term.Derivation;
+import groove.control.term.Term;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
 import groove.util.Groove;
@@ -42,14 +43,14 @@ public class TermDerivationTest {
     public void testDelta() {
         setSource(delta());
         assertSuccFail(null, null);
-        assertRest(false, 0);
+        assertDepth(0);
     }
 
     @Test
     public void testEpsilon() {
         setSource(epsilon());
         assertSuccFail(null, null);
-        assertRest(true, 0);
+        assertDepth(0);
     }
 
     @Test
@@ -57,7 +58,7 @@ public class TermDerivationTest {
         setSource(this.a);
         assertEdge(this.aCall, epsilon());
         assertSuccFail(delta(), delta());
-        assertRest(false, 0);
+        assertDepth(0);
     }
 
     @Test
@@ -71,58 +72,92 @@ public class TermDerivationTest {
         assertEdge(this.bCall, b);
         assertEdge(this.cCall, epsilon());
         assertSuccFail(epsilon(), epsilon());
-        assertRest(false, 0);
+        assertDepth(0);
         // (try a;a else b) | c
         setSource(a.seq(a).tryElse(b).or(c));
         assertEdge(this.aCall, a.transit());
         assertSuccFail(c, b.or(c));
-        assertRest(false, 0);
+        assertDepth(0);
         // c | (if (a) a else b) | c
         setSource(c.or(a.ifElse(a, b)));
         assertEdge(this.aCall, a);
         assertSuccFail(c, c.or(b));
-        assertRest(false, 0);
+        assertDepth(0);
         // a | { alap other }
         setSource(a.or(b.or(c).alap()));
         assertEdge(this.bCall, b.or(c).alap());
         assertEdge(this.cCall, b.or(c).alap());
         assertSuccFail(a, a.or(epsilon()));
-        assertRest(false, 0);
+        assertDepth(0);
     }
 
     @Test
     public void testIfElse() {
         Term a = this.a;
         Term b = this.b;
+        Term c = this.c;
         // if true else b
         setSource(epsilon().ifElse(epsilon(), b));
         assertSuccFail(null, null);
-        assertRest(true, 0);
+        assertDepth(0);
         // if a
         setSource(a.ifOnly(epsilon()));
         assertEdge(this.aCall, epsilon());
         assertSuccFail(delta(), epsilon());
-        assertRest(false, 0);
+        assertDepth(0);
         // if (a|true) else b
         setSource(epsilon().or(a).ifElse(epsilon(), b));
         assertEdge(this.aCall, epsilon());
         assertSuccFail(epsilon(), epsilon());
-        assertRest(false, 0);
+        assertDepth(0);
         // if a else b
         setSource(a.ifElse(epsilon(), b));
         assertEdge(this.aCall, epsilon());
         assertSuccFail(delta(), b);
-        assertRest(false, 0);
+        assertDepth(0);
         // if { if a } else b
         setSource(a.ifOnly(epsilon()).ifElse(epsilon(), b));
         assertEdge(this.aCall, epsilon());
         assertSuccFail(delta(), epsilon().ifElse(epsilon(), b));
-        assertRest(false, 0);
+        assertDepth(0);
         // if { if a else b }
         setSource(a.ifElse(epsilon(), b).ifOnly(epsilon()));
         assertEdge(this.aCall, epsilon());
         assertSuccFail(delta(), b.ifOnly(epsilon()));
-        assertRest(false, 0);
+        assertDepth(0);
+        // if (a) a also b else c
+        setSource(a.ifAlsoElse(a, b, c));
+        assertEdge(this.aCall, a);
+        assertSuccFail(b, this.c);
+        assertDepth(0);
+        // if (a|skip) a also b else c
+        setSource(a.or(epsilon()).ifAlsoElse(a, b, c));
+        assertEdge(this.aCall, a);
+        assertSuccFail(a.or(b), a.or(b));
+        assertDepth(0);
+        // if (a|d) a also b else c
+        Call dCall = new Call(rule("d"));
+        Term d = call("d");
+        setSource(a.or(d).ifAlsoElse(a, b, c));
+        assertEdge(this.aCall, a);
+        assertEdge(dCall, a);
+        assertSuccFail(b, c);
+        assertDepth(0);
+        // if (if (a) d) a also b else c
+        setSource(a.ifOnly(d).ifAlsoElse(a, b, c));
+        assertEdge(this.aCall, d.seq(a));
+        assertSuccFail(b, a.or(b));
+        assertDepth(0);
+        // if (if (a) a else d) a also b else c
+        setSource(a.ifElse(a, d).ifAlsoElse(a, b, c));
+        assertEdge(this.aCall, a.seq(a));
+        assertSuccFail(b, d.ifAlsoElse(a, b, c));
+        assertDepth(0);
+        // if (if (a) b also skip else d) a also b else c
+        setSource(a.ifAlsoElse(b, epsilon(), d).ifAlsoElse(a, b, c));
+        assertEdge(this.aCall, b.seq(a));
+        assertSuccFail(a.or(b), d.ifAlsoElse(a, b, c));
+        assertDepth(0);
     }
 
     @Test
@@ -132,24 +167,24 @@ public class TermDerivationTest {
         Term c = this.c;
         // while (true) {}
         setSource(epsilon().whileDo(epsilon()));
-        assertRest(false, 0);
+        assertDepth(0);
         // while (a|b) {}
         setSource(a.or(b).whileDo(epsilon()));
         assertEdge(this.aCall, a.or(b).whileDo(epsilon()));
         assertEdge(this.bCall, a.or(b).whileDo(epsilon()));
         assertSuccFail(delta(), epsilon());
-        assertRest(false, 0);
+        assertDepth(0);
         // while (a|b) { c }
         setSource(a.or(b).whileDo(c));
         assertEdge(this.aCall, c.seq(a.or(b).whileDo(c)));
         assertEdge(this.bCall, c.seq(a.or(b).whileDo(c)));
         assertSuccFail(delta(), epsilon());
-        assertRest(false, 0);
+        assertDepth(0);
         // while (if a) {}
         setSource(a.ifOnly(epsilon()).whileDo(epsilon()));
         assertEdge(this.aCall, source());
         assertSuccFail(delta(), this.source);
-        assertRest(false, 0);
+        assertDepth(0);
     }
 
     @Test
@@ -160,22 +195,22 @@ public class TermDerivationTest {
         // atomic true
         setSource(epsilon().atom());
         assertSuccFail(null, null);
-        assertRest(true, 0);
+        assertDepth(0);
         // atomic a
         setSource(a.atom());
         assertEdge(this.aCall, epsilon());
         assertSuccFail(delta(), delta());
-        assertRest(false, 0);
+        assertDepth(0);
         // atomic { a; b }
         setSource(a.seq(b).atom());
         assertEdge(this.aCall, b.transit());
         assertSuccFail(delta(), delta());
-        assertRest(false, 0);
+        assertDepth(0);
         // atomic { if (a) b else b;c }
         setSource(a.ifElse(b, b.seq(c)).atom());
         assertEdge(this.aCall, b.transit());
         assertSuccFail(delta().atom(), b.seq(c).atom());
-        assertRest(false, 0);
+        assertDepth(0);
     }
 
     @Test
@@ -186,22 +221,22 @@ public class TermDerivationTest {
         setSource(a.transit());
         assertEdge(this.aCall, epsilon());
         assertSuccFail(p.delta(1), p.delta(1));
-        assertRest(false, 1);
+        assertDepth(1);
         // @((a|skip).c)
         setSource(a.or(epsilon()).seq(c).transit());
         assertEdge(this.aCall, c.transit());
         assertSuccFail(c.transit(), c.transit());
-        assertRest(false, 1);
+        assertDepth(1);
         // @(alap { a;a; })
         setSource(a.seq(a).alap().transit());
         assertEdge(this.aCall, a.transit().seq(a.seq(a).alap()).transit());
         assertSuccFail(p.delta(1), epsilon());
-        assertRest(false, 1);
+        assertDepth(1);
     }
 
     /** Predicts an outgoing transition of the current state. */
     private void assertEdge(Call call, Term target) {
-        TermAttempt edge = new TermAttempt(call, target);
+        Derivation edge = new Derivation(call, target);
         Assert.assertTrue(String.format("%s not in %s", edge, this.edges),
             this.edges.remove(edge));
     }
@@ -216,8 +251,7 @@ public class TermDerivationTest {
     }
 
     /** Predicts the final nature and transition depth of the current state. */
-    private void assertRest(boolean isFinal, int depth) {
-        Assert.assertEquals(isFinal, source().isFinal());
+    private void assertDepth(int depth) {
         Assert.assertEquals(depth, source().getDepth());
     }
 
@@ -235,9 +269,9 @@ public class TermDerivationTest {
 
     private void setSource(Term term) {
         this.source = term;
-        this.edges = new ArrayList<TermAttempt>();
+        this.edges = new ArrayList<Derivation>();
         if (term.isTrial()) {
-            this.edges.addAll(term.getAttempts());
+            this.edges.addAll(term.getAttempt());
         }
         // make sure the other values are properly computed
         this.source.onSuccess();
@@ -250,13 +284,18 @@ public class TermDerivationTest {
         }
     }
 
+    private Term call(String name) {
+        Callable unit = rule(name);
+        return p.call(new Call(unit));
+    }
+
     /** Returns the rule with a given name. */
-    private Rule getRule(String name) {
+    private Rule rule(String name) {
         return this.grammar.getRule(name);
     }
 
     private Term source;
-    private Collection<TermAttempt> edges;
+    private Collection<Derivation> edges;
     private final Grammar grammar;
 
     {
@@ -273,9 +312,9 @@ public class TermDerivationTest {
     private final Call aCall, bCall, cCall;
     private final Term a, b, c;
     {
-        this.aCall = new Call(getRule("a"));
-        this.bCall = new Call(getRule("b"));
-        this.cCall = new Call(getRule("c"));
+        this.aCall = new Call(rule("a"));
+        this.bCall = new Call(rule("b"));
+        this.cCall = new Call(rule("c"));
         this.a = p.call(this.aCall);
         this.b = p.call(this.bCall);
         this.c = p.call(this.cCall);

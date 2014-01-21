@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package groove.control.symbolic;
+package groove.control.term;
 
 import groove.control.Call;
 import groove.control.Position;
@@ -141,22 +141,22 @@ abstract public class Term implements Position<Term> {
         return getType() == Type.DEAD;
     }
 
-    /** Returns the set of outgoing call edges for this symbolic location. */
-    public final List<TermAttempt> getAttempts() {
+    /** Returns the set of derivations for this symbolic location. */
+    public final DerivationList getAttempt() {
         if (this.outEdges == null) {
-            this.outEdges = computeAttempts();
+            this.outEdges = computeAttempt();
         }
         return this.outEdges;
     }
 
-    private List<TermAttempt> outEdges;
+    private DerivationList outEdges;
 
     /** Computes the set of outgoing call edges for this symbolic location. */
-    abstract protected List<TermAttempt> computeAttempts();
+    abstract protected DerivationList computeAttempt();
 
-    /** Indicates if this term has a success transition. */
-    public final boolean hasSuccess() {
-        return onSuccess() != null;
+    /** Callback factory method for a list of attempts. */
+    protected final DerivationList createAttempt() {
+        return new DerivationList();
     }
 
     /** Returns the success transition for this symbolic location. */
@@ -171,11 +171,6 @@ abstract public class Term implements Position<Term> {
 
     /** Computes the success transition for this symbolic location. */
     abstract protected Term computeSuccess();
-
-    /** Indicates if this term has a failure transition. */
-    public final boolean hasFailure() {
-        return onFailure() != null;
-    }
 
     /** Returns the failure transition for this symbolic location. */
     public final Term onFailure() {
@@ -254,22 +249,23 @@ abstract public class Term implements Position<Term> {
 
     /** Yields an extensive description of the term. */
     public String toDebugString() {
-        String result = toString() + ":";
-        if (isFinal()) {
-            result = result + " final, ";
+        String result = toString() + ": transient depth " + getDepth();
+        switch (getType()) {
+        case DEAD:
+            result = result + ", deadlocked";
+            break;
+        case FINAL:
+            result = result + ", final";
+            break;
+        case TRIAL:
+            for (Derivation edge : getAttempt()) {
+                result =
+                    result + "\n  --" + edge.getCall() + "--> "
+                        + edge.target().toString();
+            }
+            result = result + "\nSuccess: " + onSuccess().toString();
+            result = result + "\nFailure: " + onFailure().toString();
         }
-        result = result + " transient depth " + getDepth();
-        for (TermAttempt edge : getAttempts()) {
-            result =
-                result + "\n  --" + edge.getCall() + "--> "
-                    + edge.target().toString();
-        }
-        result =
-            result + "\nSuccess: "
-                + (hasSuccess() ? onSuccess().toString() : "none");
-        result =
-            result + "\nFailure: "
-                + (hasFailure() ? onFailure().toString() : "none");
         return result;
     }
 
@@ -285,11 +281,6 @@ abstract public class Term implements Position<Term> {
             SeqTerm result = new SeqTerm(this, arg1);
             return getPool().normalise(result);
         }
-    }
-
-    /** Callback factory method for a list of attempts. */
-    protected final List<TermAttempt> createAttempts() {
-        return new ArrayList<TermAttempt>();
     }
 
     /** Returns the choice between this term and another. */
@@ -434,7 +425,7 @@ abstract public class Term implements Position<Term> {
     public static Term prototype() {
         return new Term(new TermPool()) {
             @Override
-            protected List<TermAttempt> computeAttempts() {
+            protected DerivationList computeAttempt() {
                 throw new UnsupportedOperationException();
             }
 
@@ -464,9 +455,9 @@ abstract public class Term implements Position<Term> {
      * Helper method to modify a set of outgoing edges so that
      * their targets are made transient.
      */
-    static List<TermAttempt> makeTransit(List<TermAttempt> edges) {
-        List<TermAttempt> result = new ArrayList<TermAttempt>();
-        for (TermAttempt edge : edges) {
+    static List<Derivation> makeTransit(List<Derivation> edges) {
+        List<Derivation> result = new ArrayList<Derivation>();
+        for (Derivation edge : edges) {
             result.add(edge.newAttempt(edge.target().transit()));
         }
         return result;

@@ -14,9 +14,8 @@
  *
  * $Id$
  */
-package groove.control.symbolic;
+package groove.control.term;
 
-import java.util.List;
 
 /**
  * Term with increased transient depth.
@@ -32,11 +31,11 @@ public class TransitTerm extends Term {
     }
 
     @Override
-    protected List<TermAttempt> computeAttempts() {
-        List<TermAttempt> result = null;
+    protected DerivationList computeAttempt() {
+        DerivationList result = null;
         if (isTrial()) {
-            result = createAttempts();
-            for (TermAttempt edge : arg0().getAttempts()) {
+            result = createAttempt();
+            for (Derivation edge : arg0().getAttempt()) {
                 result.add(edge.newAttempt(edge.target().transit()));
             }
         }

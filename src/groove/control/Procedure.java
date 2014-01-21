@@ -17,7 +17,9 @@
 package groove.control;
 
 import groove.control.CtrlPar.Var;
-import groove.control.symbolic.Term;
+import groove.control.template.Template;
+import groove.control.template.TemplateBuilder;
+import groove.control.term.Term;
 import groove.grammar.QualName;
 import groove.util.Fixable;
 import groove.util.Groove;

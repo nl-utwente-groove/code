@@ -18,7 +18,7 @@ package groove.grammar;
 
 import groove.control.CtrlPar;
 import groove.control.Procedure;
-import groove.control.Switch;
+import groove.control.template.Switch;
 
 import java.util.List;
 import java.util.Set;

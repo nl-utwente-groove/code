@@ -14,24 +14,29 @@
  *
  * $Id$
  */
-package groove.control;
+package groove.control.term;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Specialised position for a template.
+ * Pool of normalised terms, used to ensure that equal terms are reused.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface TemplatePosition extends Position<Location>,
-        Comparable<TemplatePosition> {
-    /* Specialises the return type. */
-    TemplatePosition onSuccess();
-
-    /* Specialises the return type. */
-    TemplatePosition onFailure();
-
-    /** 
-     * Method to allow easy comparison of positions.
-     * The number uniquely identifies the position within a template.
+public class TermPool {
+    /**
+     * Normalises a given (non-{@code null}) term.
+     * @return a normalised term equal to the argument
      */
-    int getNumber();
+    public Term normalise(Term term) {
+        Term result = this.pool.get(term);
+        if (result == null) {
+            result = term;
+            this.pool.put(result, result);
+        }
+        return result;
+    }
+
+    private Map<Term,Term> pool = new HashMap<Term,Term>();
 }

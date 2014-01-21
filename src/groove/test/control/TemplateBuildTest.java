@@ -20,15 +20,15 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
-import groove.control.Attempt;
 import groove.control.Call;
 import groove.control.CtrlPar;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
-import groove.control.Location;
-import groove.control.Template;
-import groove.control.TemplateBuilder;
-import groove.control.TemplatePosition;
+import groove.control.SingleAttempt;
+import groove.control.template.Location;
+import groove.control.template.Template;
+import groove.control.template.TemplateBuilder;
+import groove.control.template.TemplatePosition;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,6 +52,7 @@ public class TemplateBuildTest extends CtrlTester {
         this.aCall = new Call(getRule("a"));
         this.bCall = new Call(getRule("b"));
         this.cCall = new Call(getRule("c"));
+        this.dCall = new Call(getRule("d"));
         this.xInt = new CtrlVar("x", CtrlType.INT);
         this.xIntOut = new CtrlPar.Var(this.xInt, false);
     }
@@ -59,6 +60,7 @@ public class TemplateBuildTest extends CtrlTester {
     private Call aCall;
     private Call bCall;
     private Call cCall;
+    private Call dCall;
     private CtrlVar xInt;
     private CtrlPar xIntOut;
 
@@ -138,12 +140,13 @@ public class TemplateBuildTest extends CtrlTester {
     @Test
     public void testOther() {
         build("choice a; or { alap other; }");
-        assertSize(5, 11);
+        assertSize(5, 13);
         assertTrue(getNext(onFailure(getStart()), this.aCall).isFinal());
         TemplatePosition loc = getInit(this.bCall);
         assertEquals(loc, getInit(this.cCall));
         assertEquals(loc, getNext(loc, this.bCall));
         assertEquals(loc, getNext(loc, this.cCall));
+        assertEquals(loc, getNext(loc, this.dCall));
         assertTrue(onFailure(loc).isFinal());
         assertFalse(onSuccess(loc).isFinal());
     }
@@ -203,7 +206,7 @@ public class TemplateBuildTest extends CtrlTester {
 
     private Set<Location> getNexts(TemplatePosition loc, Call call) {
         Set<Location> result = new HashSet<Location>();
-        for (Attempt<Location> edge : loc.getAttempts()) {
+        for (SingleAttempt<Location> edge : loc.getAttempt()) {
             if (edge.getCall().equals(call)) {
                 result.add(edge.target());
             }

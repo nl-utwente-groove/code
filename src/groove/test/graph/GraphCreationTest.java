@@ -16,6 +16,7 @@
  */
 package groove.test.graph;
 
+import groove.graph.GraphRole;
 import groove.graph.Label;
 import groove.graph.plain.PlainEdge;
 import groove.graph.plain.PlainGraph;
@@ -47,7 +48,7 @@ public class GraphCreationTest extends TestCase {
 
     @Override
     protected void setUp() {
-        this.g = new PlainGraph("g");
+        this.g = new PlainGraph("g", GraphRole.NONE);
 
         for (int i = 0; i < NR_NODES_TOTAL; i++) {
             this.n[i] = this.g.getFactory().createNode();
@@ -71,7 +72,7 @@ public class GraphCreationTest extends TestCase {
     }
 
     public void testCreateEqualAndCompare() {
-        PlainGraph g2 = new PlainGraph("g2");
+        PlainGraph g2 = new PlainGraph("g2", GraphRole.NONE);
 
         for (int i = NR_NODES_IN_GRAPH - 1; i >= 0; i--) {
             assertTrue(!this.g.equals(g2));

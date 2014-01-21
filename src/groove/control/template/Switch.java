@@ -14,8 +14,14 @@
  *
  * $Id$
  */
-package groove.control;
+package groove.control.template;
 
+import groove.control.AssignSource;
+import groove.control.Call;
+import groove.control.Callable;
+import groove.control.CtrlPar;
+import groove.control.CtrlVar;
+import groove.control.SingleAttempt;
 import groove.grammar.Action;
 import groove.graph.ALabelEdge;
 import groove.graph.Edge;
@@ -31,7 +37,8 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Switch extends ALabelEdge<Location> implements Attempt<Location> {
+public class Switch extends ALabelEdge<Location> implements
+        SingleAttempt<Location> {
     /** Constructs a verdict switch.
      * @param source source location of the switch
      * @param target target location of the switch
@@ -210,8 +217,9 @@ public class Switch extends ALabelEdge<Location> implements Attempt<Location> {
 
     private AssignSource computeAssignSource(CtrlVar var) {
         AssignSource result;
-        if (getOutVars().containsKey(var)) {
-            int index = getOutVars().get(var);
+        Map<CtrlVar,Integer> outVars = getOutVars();
+        if (outVars.containsKey(var)) {
+            int index = outVars.get(var);
             result = AssignSource.arg(index);
         } else {
             List<CtrlVar> sourceVars = label().source().getVars();

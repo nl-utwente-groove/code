@@ -333,7 +333,7 @@ public class PGTS extends AGraph<PatternState,PatternTransition> {
 
     /** Exports the GTS to a plain graph representation. */
     public PlainGraph toPlainGraph() {
-        PlainGraph result = new PlainGraph(getName());
+        PlainGraph result = new PlainGraph(getName(), GraphRole.LTS);
         Map<PatternState,PlainNode> nodeMap =
             new HashMap<PatternState,PlainNode>();
         for (PatternState state : nodeSet()) {

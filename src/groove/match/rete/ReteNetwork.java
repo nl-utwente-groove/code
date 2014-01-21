@@ -1102,8 +1102,8 @@ public class ReteNetwork {
 
     /** Creates and returns a graph showing the structure of this RETE network. */
     public PlainGraph toPlainGraph() {
-        PlainGraph graph = new PlainGraph(this.grammarName + "-rete");
-        graph.setRole(GraphRole.RETE);
+        PlainGraph graph =
+            new PlainGraph(this.grammarName + "-rete", GraphRole.RETE);
         Map<ReteNetworkNode,PlainNode> map =
             new HashMap<ReteNetworkNode,PlainNode>();
         PlainNode rootNode = graph.addNode();

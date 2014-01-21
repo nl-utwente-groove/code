@@ -14,17 +14,14 @@
  *
  * $Id$
  */
-package groove.control;
+package groove.control.term;
+
+import groove.control.MultiAttempt;
 
 /**
- * Attempt to invoke one or more callable units, with for every
- * unit a successor position.
- * The attempt can succeed or fail; what happens then is 
- * reflected by the {@link Position#onSuccess()} and 
- * {@link Position#onFailure()} results.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface Attempt<P extends Position<P>> {
+public class DerivationList extends MultiAttempt<Term,Derivation> {
     // empty
 }

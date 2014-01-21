@@ -99,15 +99,6 @@ public class Viewer extends GrooveCmdLineTool<Object> {
         dialog.setVisible(true);
     }
 
-    private JButton getNodeIdsButton() {
-        if (this.nodeIdsButton == null) {
-            this.nodeIdsButton = new JButton("Show node identities");
-        }
-        return this.nodeIdsButton;
-    }
-
-    private JButton nodeIdsButton;
-
     /**
      * Tries to find the enclosing grammar of the graph file
      */

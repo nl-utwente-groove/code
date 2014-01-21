@@ -14,12 +14,15 @@
  *
  * $Id$
  */
-package groove.control;
+package groove.control.template;
 
-import groove.control.Switch.Kind;
-import groove.control.symbolic.CallTerm;
-import groove.control.symbolic.Term;
-import groove.control.symbolic.TermAttempt;
+import groove.control.Call;
+import groove.control.Callable;
+import groove.control.Procedure;
+import groove.control.template.Switch.Kind;
+import groove.control.term.CallTerm;
+import groove.control.term.Derivation;
+import groove.control.term.Term;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatErrorSet;
@@ -299,13 +302,11 @@ public class Program implements Fixable {
         default:
             assert false;
         }
-        for (TermAttempt edge : term.getAttempts()) {
-            result.add(edge.getCall());
-        }
-        if (term.hasSuccess()) {
+        if (term.isTrial()) {
+            for (Derivation edge : term.getAttempt()) {
+                result.add(edge.getCall());
+            }
             result.addAll(getInitCalls(term.onSuccess()));
-        }
-        if (term.hasFailure()) {
             result.addAll(getInitCalls(term.onFailure()));
         }
         return result;
@@ -482,6 +483,11 @@ public class Program implements Fixable {
                 }
                 if (proc instanceof Recipe && mayFinalise(proc)) {
                     errors.add("%s %s may immediately terminate",
+                        proc.getKind().getName(true), name);
+                }
+                if (proc instanceof Recipe
+                    && !proc.getTemplate().willTerminate()) {
+                    errors.add("%s %s may fail to terminate",
                         proc.getKind().getName(true), name);
                 }
             }

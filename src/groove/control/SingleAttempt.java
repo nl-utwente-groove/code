@@ -16,22 +16,17 @@
  */
 package groove.control;
 
-import groove.graph.NodeSetEdgeSetGraph;
-
 /**
+ * Supertype for attempts of a control position.
+ * An attempt wraps a call that is attempted, and a position that is
+ * reached afterwards.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Instance extends NodeSetEdgeSetGraph<Frame,Step> {
-    /**
-     * Instantiates a given template.
-     */
-    public Instance(Template template) {
-        super(template.getName());
-    }
+public interface SingleAttempt<P extends Position<P>> extends Attempt<P> {
+    /** Returns the call that is attempted. */
+    public Call getCall();
 
-    /** Returns the next available frame number. */
-    int getNextFrameNr() {
-        return nodeCount();
-    }
+    /** Returns the target position after the call. */
+    public P target();
 }

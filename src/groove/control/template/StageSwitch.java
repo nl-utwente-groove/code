@@ -14,41 +14,41 @@
  *
  * $Id$
  */
-package groove.control.symbolic;
+package groove.control.template;
 
-import groove.control.Attempt;
 import groove.control.Call;
+import groove.control.SingleAttempt;
 import groove.util.Pair;
 
 /**
- * Symbolic transition.
- * This is a pair of the control call and the target symbolic location.
+ * Switch to a location index.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TermAttempt extends Pair<Call,Term> implements Attempt<Term> {
+public class StageSwitch extends Pair<Switch,Stage> implements
+        SingleAttempt<Stage> {
     /**
-     * Constructs a symbolic edge out of a call and a target location.
+     * Constructs a switch index.
      */
-    public TermAttempt(Call call, Term target) {
-        super(call, target);
+    public StageSwitch(Switch edge, Stage target) {
+        super(edge, target);
     }
 
-    /** Returns the call wrapped into this edge.
-     */
-    public Call getCall() {
+    /** Returns the underlying switch. */
+    public Switch getSwitch() {
         return one();
     }
 
-    /**
-     * Returns the target symbolic location wrapped into this edge.
-     */
-    public Term target() {
-        return two();
+    /** Returns the template of which the stage switch is part. */
+    public Template getTemplate() {
+        return getSwitch().source().getTemplate();
     }
 
-    /** Creates a new edge, with the call of this edge but another target. */
-    public TermAttempt newAttempt(Term target) {
-        return new TermAttempt(getCall(), target);
+    public Call getCall() {
+        return getSwitch().getCall();
+    }
+
+    public Stage target() {
+        return two();
     }
 }

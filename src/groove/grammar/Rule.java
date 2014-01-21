@@ -17,9 +17,9 @@
 package groove.grammar;
 
 import groove.algebra.AlgebraFamily;
-import groove.control.Switch;
 import groove.control.CtrlPar;
 import groove.control.CtrlPar.Var;
+import groove.control.template.Switch;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
 import groove.grammar.host.HostEdgeSet;

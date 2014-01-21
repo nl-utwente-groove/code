@@ -14,9 +14,8 @@
  *
  * $Id$
  */
-package groove.control.symbolic;
+package groove.control.term;
 
-import java.util.List;
 
 /**
  * While-do term.
@@ -49,20 +48,20 @@ public class WhileTerm extends Term {
     }
 
     @Override
-    protected List<TermAttempt> computeAttempts() {
-        List<TermAttempt> result = null;
+    protected DerivationList computeAttempt() {
+        DerivationList result = null;
         switch (arg0().getType()) {
         case TRIAL:
-            result = createAttempts();
-            for (TermAttempt attempt : arg0().getAttempts()) {
+            result = createAttempt();
+            for (Derivation attempt : arg0().getAttempt()) {
                 result.add(attempt.newAttempt(attempt.target().seq(arg1()).seq(
                     this)));
             }
             break;
         case FINAL:
             if (arg1().isTrial()) {
-                result = createAttempts();
-                for (TermAttempt attempt : arg1().getAttempts()) {
+                result = createAttempt();
+                for (Derivation attempt : arg1().getAttempt()) {
                     result.add(attempt.newAttempt(attempt.target().seq(this)));
                 }
             }

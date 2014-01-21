@@ -26,8 +26,8 @@ import groove.control.CtrlState;
 import groove.control.CtrlTransition;
 import groove.control.CtrlType;
 import groove.control.CtrlVar;
-import groove.control.Switch;
-import groove.control.Switch.Kind;
+import groove.control.template.Switch;
+import groove.control.template.Switch.Kind;
 import groove.grammar.QualName;
 import groove.grammar.model.FormatException;
 

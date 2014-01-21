@@ -14,34 +14,31 @@
  *
  * $Id$
  */
-package groove.control.symbolic;
+package groove.control.term;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * Atomic block.
+ * Kleene-starred term.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AtomTerm extends Term {
+public class StarTerm extends Term {
     /**
-     * Constructs an atomic block.
+     * Constructs a Kleene-starred term.
      */
-    public AtomTerm(Term arg0) {
-        super(Op.ATOM, arg0);
+    public StarTerm(Term arg0) {
+        super(Op.STAR, arg0);
         assert arg0.isTopLevel();
     }
 
     @Override
-    protected List<TermAttempt> computeAttempts() {
-        List<TermAttempt> result = null;
+    protected DerivationList computeAttempt() {
+        DerivationList result = null;
         if (arg0().isTrial()) {
-            result = new ArrayList<TermAttempt>();
-            for (TermAttempt attempt : arg0().getAttempts()) {
-                result.add(attempt.newAttempt(attempt.target().transit()));
+            result = createAttempt();
+            for (Derivation attempt : arg0().getAttempt()) {
+                result.add(attempt.newAttempt(attempt.target().seq(this)));
             }
-            return result;
         }
         return result;
     }
@@ -50,7 +47,7 @@ public class AtomTerm extends Term {
     protected Term computeSuccess() {
         Term result = null;
         if (arg0().isTrial()) {
-            result = arg0().onSuccess().atom();
+            result = arg0().onSuccess().seq(this).or(epsilon());
         }
         return result;
     }
@@ -59,7 +56,7 @@ public class AtomTerm extends Term {
     protected Term computeFailure() {
         Term result = null;
         if (arg0().isTrial()) {
-            result = arg0().onFailure().atom();
+            result = arg0().onFailure().seq(this).or(epsilon());
         }
         return result;
     }
@@ -71,12 +68,6 @@ public class AtomTerm extends Term {
 
     @Override
     protected Type computeType() {
-        return arg0().getType();
+        return arg0().isTrial() ? Type.TRIAL : Type.FINAL;
     }
-
-    @Override
-    public Term atom() {
-        return this;
-    }
-
 }

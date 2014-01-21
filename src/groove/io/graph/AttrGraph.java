@@ -37,8 +37,8 @@ import groove.grammar.host.HostEdge;
 import groove.grammar.host.HostNode;
 import groove.grammar.type.TypeGraph;
 import groove.graph.AElementMap;
-import groove.graph.ElementFactory;
 import groove.graph.Edge;
+import groove.graph.ElementFactory;
 import groove.graph.GGraph;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
@@ -272,8 +272,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
      * Any attributes and hyperedges of the XML graph are discarded.
      */
     public PlainGraph toPlainGraph() {
-        PlainGraph result = new PlainGraph(getName());
-        result.setRole(getRole());
+        PlainGraph result = new PlainGraph(getName(), getRole());
         copyTo(result);
         result.setFixed();
         return result;

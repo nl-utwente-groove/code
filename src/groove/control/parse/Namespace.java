@@ -22,7 +22,7 @@ import groove.control.CtrlAut;
 import groove.control.CtrlPar;
 import groove.control.Function;
 import groove.control.Procedure;
-import groove.control.symbolic.Term;
+import groove.control.term.Term;
 import groove.grammar.QualName;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;

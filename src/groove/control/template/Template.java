@@ -14,11 +14,17 @@
  *
  * $Id$
  */
-package groove.control;
+package groove.control.template;
 
 import static groove.graph.GraphRole.CTRL;
+import groove.control.Callable;
+import groove.control.CtrlVar;
+import groove.control.CtrlVarSet;
+import groove.control.Function;
+import groove.control.Procedure;
 import groove.grammar.Action;
 import groove.graph.GraphRole;
+import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
 
 import java.util.Collections;
@@ -43,7 +49,7 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
     private Template(String name, Procedure proc, int depth) {
         super(name);
         this.maxNodeNr = -1;
-        this.parent = proc;
+        this.owner = proc;
         this.start = addLocation(depth);
     }
 
@@ -69,21 +75,21 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
 
     /** 
      * Indicates if this automaton is the body of a procedure.
-     * @see #getParent()
+     * @see #getOwner()
      */
-    public boolean hasParent() {
-        return getParent() != null;
+    public boolean hasOwner() {
+        return getOwner() != null;
     }
 
     /**
      * Returns the procedure of which this automaton
      * constitutes the body, if any.
      */
-    public Procedure getParent() {
-        return this.parent;
+    public Procedure getOwner() {
+        return this.owner;
     }
 
-    private final Procedure parent;
+    private final Procedure owner;
 
     /** Returns the initial location of this automaton. */
     public Location getStart() {
@@ -92,46 +98,35 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
 
     private final Location start;
 
-    /** Indicates if this template has a single final state without outgoing transitions. */
-    public boolean hasSingleFinal() {
-        return getFinal().size() == 1 && this.clearFinal;
-    }
-
-    /** 
-     * Returns the single final state of this template.
-     * Should only be called if {@link #hasSingleFinal()} holds.
+    /** Indicates if this template has a final location. 
+     * Should only be called after the automaton is fixed.
      */
-    public Location getSingleFinal() {
-        assert hasSingleFinal();
-        return getFinal().iterator().next();
+    public boolean hasFinal() {
+        return getFinal() != null;
     }
 
     /**
      * Returns the set of final location of this automaton.
      * Should only be called after the automaton is fixed.
      */
-    public Set<Location> getFinal() {
+    public Location getFinal() {
         assert isFixed();
-        if (this.finalLocs == null) {
-            this.finalLocs = computeFinal();
-            this.clearFinal =
-                this.finalLocs.size() == 1
-                    && this.finalLocs.iterator().next().getOutEdges().isEmpty();
+        if (this.finalLoc == null) {
+            this.finalLoc = computeFinal();
         }
-        return this.finalLocs;
+        return this.finalLoc;
     }
 
-    private Set<Location> finalLocs;
-    private boolean clearFinal;
+    private Location finalLoc;
 
     /**
-     * Computes the set of final location of this template.
+     * Computes the final location of this template.
      */
-    private Set<Location> computeFinal() {
-        Set<Location> result = new LinkedHashSet<Location>();
+    private Location computeFinal() {
+        Location result = null;
         for (Location loc : nodeSet()) {
             if (loc.isFinal()) {
-                result.add(loc);
+                result = loc;
             }
         }
         return result;
@@ -181,21 +176,16 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
      */
     void initVars() {
         // compute the map of incoming transitions
-        Map<Location,Set<Switch>> inMap = new HashMap<Location,Set<Switch>>();
         for (Location state : nodeSet()) {
-            inMap.put(state, new HashSet<Switch>());
             Set<CtrlVar> vars;
-            if (state.isFinal() && hasParent()) {
-                vars = getParent().getOutPars().keySet();
+            if (state.isFinal() && hasOwner()) {
+                vars = getOwner().getOutPars().keySet();
             } else {
                 vars = Collections.emptySet();
             }
             state.addVars(vars);
         }
-        for (Switch trans : edgeSet()) {
-            inMap.get(trans.target()).add(trans);
-            trans.source().addVars(trans.getInVars().keySet());
-        }
+        Map<Location,Set<Switch>> inMap = getInEdgeMap();
         Queue<Switch> queue = new LinkedList<Switch>(edgeSet());
         while (!queue.isEmpty()) {
             Switch next = queue.poll();
@@ -212,6 +202,51 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
                 queue.addAll(inMap.get(source));
             }
         }
+    }
+
+    /** Computes if a final location is reachable from all locations in this template. */
+    public boolean willTerminate() {
+        boolean result = hasFinal();
+        if (result) {
+            Set<Location> terminating = new HashSet<Location>();
+            terminating.add(getFinal());
+            Map<Location,Set<Switch>> inMap = getInEdgeMap();
+            Queue<Location> queue = new LinkedList<Location>();
+            queue.add(getFinal());
+            while (!queue.isEmpty()) {
+                Location next = queue.poll();
+                for (Switch edge : inMap.get(next)) {
+                    if (terminating.add(edge.source())) {
+                        queue.add(edge.source());
+                    }
+                }
+            }
+            result = terminating.size() == nodeCount();
+        }
+        return result;
+    }
+
+    /** Returns a mapping from locations to sets of incoming edges. */
+    private Map<Location,Set<Switch>> getInEdgeMap() {
+        if (this.inEdgeMap == null) {
+            this.inEdgeMap = computeInEdgeMap();
+        }
+        return this.inEdgeMap;
+    }
+
+    private Map<Location,Set<Switch>> inEdgeMap;
+
+    /** Computes a mapping from locations to sets of incoming edges. */
+    private Map<Location,Set<Switch>> computeInEdgeMap() {
+        Map<Location,Set<Switch>> result = new HashMap<Location,Set<Switch>>();
+        for (Location state : nodeSet()) {
+            result.put(state, new HashSet<Switch>());
+        }
+        for (Switch trans : edgeSet()) {
+            result.get(trans.target()).add(trans);
+            trans.source().addVars(trans.getInVars().keySet());
+        }
+        return result;
     }
 
     /** Returns a copy of this automaton for a given enclosing procedure. */
@@ -234,7 +269,7 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
     public boolean addEdge(Switch edge) {
         boolean result = super.addEdge(edge);
         if (result) {
-            edge.source().addOutEdge(edge);
+            edge.source().addSwitch(edge);
         }
         return result;
     }
@@ -242,6 +277,16 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
     @Override
     public Template newGraph(String name) {
         return new Template(name, getStart().getDepth());
+    }
+
+    @Override
+    public Set<? extends Switch> outEdgeSet(Node node) {
+        return ((Location) node).getSwitches();
+    }
+
+    @Override
+    public Set<? extends Switch> inEdgeSet(Node node) {
+        return getInEdgeMap().get(node);
     }
 
     @Override

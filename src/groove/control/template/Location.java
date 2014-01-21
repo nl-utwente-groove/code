@@ -14,10 +14,13 @@
  *
  * $Id$
  */
-package groove.control;
+package groove.control.template;
 
-import groove.control.Switch.Kind;
+import groove.control.CtrlVar;
+import groove.control.CtrlVarSet;
+import groove.control.template.Switch.Kind;
 import groove.graph.ANode;
+import groove.util.Duo;
 import groove.util.Fixable;
 
 import java.util.ArrayList;
@@ -41,8 +44,8 @@ public class Location extends ANode implements TemplatePosition, Fixable {
         super(nr);
         this.template = template;
         this.depth = depth;
-        this.outEdges = new LinkedHashSet<Switch>();
-        this.outCalls = new ArrayList<Switch>();
+        this.switches = new LinkedHashSet<Switch>();
+        this.outCalls = new MultiSwitch();
     }
 
     /**
@@ -101,10 +104,10 @@ public class Location extends ANode implements TemplatePosition, Fixable {
      * Should only be invoked if the location is not yet fixed.
      * @param edge the edge to be added
      */
-    public void addOutEdge(Switch edge) {
+    public void addSwitch(Switch edge) {
         assert edge.source() == this;
         assert !isFixed();
-        this.outEdges.add(edge);
+        this.switches.add(edge);
         if (edge.getKind() == Kind.VERDICT) {
             assert !this.isFinal();
             if (edge.isSuccess()) {
@@ -123,9 +126,9 @@ public class Location extends ANode implements TemplatePosition, Fixable {
      * Returns the list of all outgoing edges of this location.
      * Should only be invoked after the location is fixed.
      */
-    public Set<Switch> getOutEdges() {
+    public Set<Switch> getSwitches() {
         assert isFixed();
-        return this.outEdges;
+        return this.switches;
     }
 
     /**
@@ -133,16 +136,16 @@ public class Location extends ANode implements TemplatePosition, Fixable {
      * Should only be invoked after the location is fixed.
      */
     @Override
-    public List<Switch> getAttempts() {
+    public MultiSwitch getAttempt() {
         assert isFixed();
         return this.outCalls;
     }
 
     /** The set of all outgoing edges. */
-    private final Set<Switch> outEdges;
+    private final Set<Switch> switches;
 
     /** The set of outgoing call edges. */
-    private final List<Switch> outCalls;
+    private final MultiSwitch outCalls;
 
     /** Sets the failure verdict to {@link Deadlock}. */
     void setDeadFailure() {
@@ -173,6 +176,31 @@ public class Location extends ANode implements TemplatePosition, Fixable {
     }
 
     private TemplatePosition success;
+
+    @Override
+    public Stage getFirstStage() {
+        return getStage(0, false);
+    }
+
+    /**
+     * Returns a stage based on this position, with a given
+     * stage number and success status.
+     */
+    public Stage getStage(int nr, boolean success) {
+        if (this.indices == null) {
+            List<Duo<Stage>> indices = new ArrayList<Duo<Stage>>();
+            for (nr = 0; nr < getAttempt().size(); nr++) {
+                Stage succIx = new Stage(this, nr, true);
+                Stage failIx = new Stage(this, nr, false);
+                indices.add(Duo.newDuo(succIx, failIx));
+            }
+            this.indices = indices;
+        }
+        Duo<Stage> indexPair = this.indices.get(nr);
+        return success ? indexPair.one() : indexPair.two();
+    }
+
+    private List<Duo<Stage>> indices;
 
     /**
      * Returns the list of control variables in this location,

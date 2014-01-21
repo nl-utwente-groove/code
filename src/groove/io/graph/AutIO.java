@@ -161,8 +161,7 @@ public class AutIO extends GraphIO<PlainGraph> {
      * @see #setGraphRole(GraphRole)
      */
     private PlainGraph createGraph() {
-        PlainGraph result = new PlainGraph(getGraphName());
-        result.setRole(getGraphRole());
+        PlainGraph result = new PlainGraph(getGraphName(), getGraphRole());
         return result;
     }
 }
