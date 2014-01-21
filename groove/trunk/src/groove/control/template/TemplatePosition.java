@@ -22,7 +22,10 @@ import groove.control.Position;
 import java.util.Map;
 
 /**
- * Specialised position for a template.
+ * Supertype for {@link Location} (which is a node of a {@link Template}) 
+ * and {@link Deadlock} (which is not). This is so as to be able to keep the {@link Template}
+ * graph "clean" by not having to include verdicts to deadlock locations (which
+ * would otherwise be all over the place).
  * @author Arend Rensink
  * @version $Revision $
  */

@@ -179,6 +179,10 @@ public class TemplateBuildTest extends CtrlTester {
         loc = getInit(call);
         assertEquals(Collections.singletonList(this.xInt), loc.getVars());
         assertFalse(loc.isFinal());
+        //
+        build("int x; bInt(out x); bInt(_);");
+        loc = getInit(call);
+        assertEquals(Collections.emptyList(), loc.getVars());
     }
 
     @Test
