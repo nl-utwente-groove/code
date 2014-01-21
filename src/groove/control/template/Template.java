@@ -244,7 +244,6 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
         }
         for (Switch trans : edgeSet()) {
             result.get(trans.target()).add(trans);
-            trans.source().addVars(trans.getInVars().keySet());
         }
         return result;
     }

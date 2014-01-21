@@ -270,5 +270,5 @@ public class ProgramBuildTest {
 
     static private Term prot = Term.prototype();
 
-    static private final boolean DEBUG = true;
+    static private final boolean DEBUG = false;
 }
