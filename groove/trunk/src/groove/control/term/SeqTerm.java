@@ -14,9 +14,8 @@
  *
  * $Id$
  */
-package groove.control.symbolic;
+package groove.control.term;
 
-import java.util.List;
 
 /**
  * Sequential composition.
@@ -33,17 +32,17 @@ public class SeqTerm extends Term {
     }
 
     @Override
-    protected List<TermAttempt> computeAttempts() {
-        List<TermAttempt> result = null;
+    protected DerivationList computeAttempt() {
+        DerivationList result = null;
         switch (arg0().getType()) {
         case TRIAL:
-            result = createAttempts();
-            for (TermAttempt attempt : arg0().getAttempts()) {
+            result = createAttempt();
+            for (Derivation attempt : arg0().getAttempt()) {
                 result.add(attempt.newAttempt(attempt.target().seq(arg1())));
             }
             break;
         case FINAL:
-            result = arg1().isTrial() ? arg1().getAttempts() : null;
+            result = arg1().isTrial() ? arg1().getAttempt() : null;
             break;
         }
         return result;

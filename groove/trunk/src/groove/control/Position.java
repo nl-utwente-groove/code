@@ -16,7 +16,8 @@
  */
 package groove.control;
 
-import java.util.List;
+import groove.control.template.Location;
+import groove.control.template.Template;
 
 /**
  * Supertype for {@link Location} (which is a node of a {@link Template}) 
@@ -54,24 +55,24 @@ public interface Position<P extends Position<P>> {
      */
     public abstract boolean isTrial();
 
-    /** Returns the atomicity depth of this position. */
+    /** Returns the transient depth of this position. */
     public abstract int getDepth();
 
     /**
-     * Returns the list of attempts of this position.
+     * Returns the attempt of this position.
      * Should only be invoked after the position is fixed, and is a trial position.
      */
-    public abstract List<? extends Attempt<P>> getAttempts();
+    public abstract Attempt<P> getAttempt();
 
     /**
-     * Returns the next position to be tried after all switches have failed.
+     * Returns the next position to be tried after the attempt has failed.
      * Should only be called after the position is fixed, and is a trial position.
-     * @return the next position after success; may be {@code null}
+     * @return the next position after failure; may be {@code null}
      */
     public abstract Position<P> onFailure();
 
     /**
-     * Returns the next position to be tried after at least one switch
+     * Returns the next position to be tried after the attempt
      * has succeeded.
      * Should only be called after the position is fixed, and is a trial position.
      * @return the next position after success; may be {@code null}
@@ -80,11 +81,11 @@ public interface Position<P extends Position<P>> {
 
     /** Position type. */
     public static enum Type {
-        /** Final position: terminating, no attempts or verdicts. */
+        /** Final position: terminating, no attempt or verdicts. */
         FINAL,
-        /** Deadlock position: non-terminating, no attempts or verdicts. */
+        /** Deadlock position: non-terminating, no attempt or verdicts. */
         DEAD,
-        /** Trial position: at least one attempt, success and failure verdicts. */
+        /** Trial position: has an attempt, and corresponding success and failure verdicts. */
         TRIAL, ;
     }
 }

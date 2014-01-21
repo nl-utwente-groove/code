@@ -20,6 +20,7 @@ import groove.graph.AGraph;
 import groove.graph.Edge;
 import groove.graph.EdgeComparator;
 import groove.graph.Graph;
+import groove.graph.GraphRole;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.iso.CertificateStrategy.EdgeCertificate;
@@ -1016,7 +1017,7 @@ public class IsoChecker {
             System.out.printf("Graph certificate: %s%n",
                 checker.getCertifier(graph1, true).getGraphCertificate());
             for (int i = 0; i < 1000; i++) {
-                PlainGraph graph2 = new PlainGraph(name);
+                PlainGraph graph2 = new PlainGraph(name, GraphRole.NONE);
                 PlainMorphism nodeMap = new PlainMorphism();
                 for (PlainNode node : graph1.nodeSet()) {
                     PlainNode newNode = graph2.addNode();

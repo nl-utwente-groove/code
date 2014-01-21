@@ -14,11 +14,14 @@
  *
  * $Id$
  */
-package groove.control;
+package groove.control.template;
 
+import groove.control.Call;
+import groove.control.Position;
+import groove.control.SingleAttempt;
 import groove.control.Position.Type;
-import groove.control.symbolic.Term;
-import groove.control.symbolic.TermAttempt;
+import groove.control.term.Derivation;
+import groove.control.term.Term;
 import groove.graph.GraphInfo;
 import groove.util.Duo;
 import groove.util.Pair;
@@ -58,7 +61,7 @@ public class TemplateBuilder {
         while (!fresh.isEmpty()) {
             Term next = fresh.poll();
             Location source = locMap.get(next);
-            for (TermAttempt edge : next.getAttempts()) {
+            for (Derivation edge : next.getAttempt()) {
                 Location target = addLocation(edge.target());
                 addSwitch(new Switch(source, target, edge.getCall()));
             }
@@ -211,7 +214,7 @@ public class TemplateBuilder {
     private Record<TemplatePosition> computeRecord(TemplatePosition loc) {
         Map<Call,Set<TemplatePosition>> callMap =
             new HashMap<Call,Set<TemplatePosition>>();
-        for (Attempt<Location> edge : loc.getAttempts()) {
+        for (SingleAttempt<Location> edge : loc.getAttempt()) {
             Call call = edge.getCall();
             Set<TemplatePosition> targets = callMap.get(call);
             if (targets == null) {
@@ -286,7 +289,7 @@ public class TemplateBuilder {
             if (locRepr.onFailure() instanceof Deadlock) {
                 image.setDeadFailure();
             }
-            for (Switch edge : locRepr.getOutEdges()) {
+            for (Switch edge : locRepr.getSwitches()) {
                 Location target = (Location) locMap.get(edge.target());
                 if (edge.isVerdict()) {
                     result.addEdge(new Switch(image, target, edge.isSuccess()));

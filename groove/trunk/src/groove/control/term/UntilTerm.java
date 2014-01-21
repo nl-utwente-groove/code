@@ -14,9 +14,8 @@
  *
  * $Id$
  */
-package groove.control.symbolic;
+package groove.control.term;
 
-import java.util.List;
 
 /**
  * Until-do term.
@@ -32,16 +31,16 @@ public class UntilTerm extends Term {
     }
 
     @Override
-    protected List<TermAttempt> computeAttempts() {
-        List<TermAttempt> result = null;
+    protected DerivationList computeAttempt() {
+        DerivationList result = null;
         switch (arg0().getType()) {
         case TRIAL:
-            result = arg0().getAttempts();
+            result = arg0().getAttempt();
             break;
         case DEAD:
             if (arg1().isTrial()) {
-                result = createAttempts();
-                for (TermAttempt attempt : arg1().getAttempts()) {
+                result = createAttempt();
+                for (Derivation attempt : arg1().getAttempt()) {
                     result.add(attempt.newAttempt(attempt.target().seq(this)));
                 }
             }

@@ -14,7 +14,10 @@
  *
  * $Id$
  */
-package groove.control;
+package groove.control.instance;
+
+import groove.control.AssignSource;
+import groove.control.CtrlVar;
 
 import java.util.Map;
 

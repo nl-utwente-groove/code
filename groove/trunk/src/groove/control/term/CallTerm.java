@@ -14,13 +14,10 @@
  *
  * $Id$
  */
-package groove.control.symbolic;
+package groove.control.term;
 
 import groove.control.Call;
 import groove.control.Callable;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Term for a call (of a {@link Callable}).
@@ -44,8 +41,10 @@ public class CallTerm extends Term {
     private final Call call;
 
     @Override
-    protected List<TermAttempt> computeAttempts() {
-        return Collections.singletonList(new TermAttempt(this.call, epsilon()));
+    protected DerivationList computeAttempt() {
+        DerivationList result = createAttempt();
+        result.add(new Derivation(this.call, epsilon()));
+        return result;
     }
 
     @Override

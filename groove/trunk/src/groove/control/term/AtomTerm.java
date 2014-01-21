@@ -14,37 +14,52 @@
  *
  * $Id$
  */
-package groove.control.symbolic;
+package groove.control.term;
 
-import java.util.Collections;
-import java.util.List;
 
 /**
- * Successful termination.
+ * Atomic block.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class EpsilonTerm extends Term {
+public class AtomTerm extends Term {
     /**
-     * Constructs an epsilon term.
+     * Constructs an atomic block.
      */
-    public EpsilonTerm(TermPool pool) {
-        super(pool, Term.Op.EPSILON);
+    public AtomTerm(Term arg0) {
+        super(Op.ATOM, arg0);
+        assert arg0.isTopLevel();
     }
 
     @Override
-    protected List<TermAttempt> computeAttempts() {
-        return Collections.emptyList();
+    protected DerivationList computeAttempt() {
+        DerivationList result = null;
+        if (arg0().isTrial()) {
+            result = createAttempt();
+            for (Derivation attempt : arg0().getAttempt()) {
+                result.add(attempt.newAttempt(attempt.target().transit()));
+            }
+            return result;
+        }
+        return result;
     }
 
     @Override
     protected Term computeSuccess() {
-        return null;
+        Term result = null;
+        if (arg0().isTrial()) {
+            result = arg0().onSuccess().atom();
+        }
+        return result;
     }
 
     @Override
     protected Term computeFailure() {
-        return null;
+        Term result = null;
+        if (arg0().isTrial()) {
+            result = arg0().onFailure().atom();
+        }
+        return result;
     }
 
     @Override
@@ -54,11 +69,12 @@ public class EpsilonTerm extends Term {
 
     @Override
     protected Type computeType() {
-        return Type.FINAL;
+        return arg0().getType();
     }
 
     @Override
-    public Term seq(Term arg1) {
-        return arg1;
+    public Term atom() {
+        return this;
     }
+
 }

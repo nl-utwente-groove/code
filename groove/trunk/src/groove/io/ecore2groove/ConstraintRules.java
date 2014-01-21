@@ -665,10 +665,8 @@ public class ConstraintRules {
         PlainLabel attrLabel =
             PlainLabel.createLabel(GraphLabels.getLabel(eAttribute));
         PlainLabel datatypeLabel = PlainLabel.createLabel(type);
-        PlainLabel lowerBoundLabel =
-            PlainLabel.createLabel(type + lowerBound);
-        PlainLabel upperBoundLabel =
-            PlainLabel.createLabel(type + upperBound);
+        PlainLabel lowerBoundLabel = PlainLabel.createLabel(type + lowerBound);
+        PlainLabel upperBoundLabel = PlainLabel.createLabel(type + upperBound);
         PlainLabel boolLabel = PlainLabel.createLabel("bool:");
         PlainLabel trueLabel = PlainLabel.createLabel("bool:true");
         PlainLabel valLabel = PlainLabel.createLabel("val");
@@ -732,8 +730,7 @@ public class ConstraintRules {
             PlainLabel.createLabel(GraphLabels.getLabel(
                 eAttribute.getEAttributeType(), eAttribute.getDefaultValue()));
         PlainLabel boolLabel = PlainLabel.createLabel("bool:false");
-        PlainLabel compareLabel =
-            PlainLabel.createLabel(datatypeLabel + "eq");
+        PlainLabel compareLabel = PlainLabel.createLabel(datatypeLabel + "eq");
         PlainLabel valLabel = PlainLabel.createLabel("val");
         PlainLabel arg1Label = PlainLabel.createLabel("arg:0");
         PlainLabel arg2Label = PlainLabel.createLabel("arg:1");
@@ -1298,13 +1295,12 @@ public class ConstraintRules {
      * @param node1 the first node representing the EAttribute
      * @param node2 the second node representing the EAttribute
      */
-    private void addEnumCheck(PlainGraph constraintRule,
-            EAttribute eAttribute, PlainNode node1, PlainNode node2) {
+    private void addEnumCheck(PlainGraph constraintRule, EAttribute eAttribute,
+            PlainNode node1, PlainNode node2) {
 
         PlainLabel attrLabel =
             PlainLabel.createLabel(GraphLabels.getLabel(eAttribute));
-        PlainLabel attrNameLabel =
-            PlainLabel.createLabel(eAttribute.getName());
+        PlainLabel attrNameLabel = PlainLabel.createLabel(eAttribute.getName());
         PlainLabel enumLabel =
             PlainLabel.createLabel(GraphLabels.getLabel((EEnum) eAttribute.getEAttributeType()));
         PlainLabel valLabel = PlainLabel.createLabel("val");
@@ -1382,8 +1378,7 @@ public class ConstraintRules {
         PlainLabel dataTypeLabel = PlainLabel.createLabel(datatypeString);
         PlainLabel attrLabel =
             PlainLabel.createLabel(GraphLabels.getLabel(eAttribute));
-        PlainLabel attrNameLabel =
-            PlainLabel.createLabel(eAttribute.getName());
+        PlainLabel attrNameLabel = PlainLabel.createLabel(eAttribute.getName());
         PlainLabel valLabel = PlainLabel.createLabel("val");
 
         PlainNode attrA1Node = constraintRule.addNode();
@@ -1440,8 +1435,7 @@ public class ConstraintRules {
     }
 
     private PlainGraph createRuleGraph(String name) {
-        PlainGraph result = new PlainGraph(name);
-        result.setRole(RULE);
+        PlainGraph result = new PlainGraph(name, RULE);
         this.constraintRules.add(result);
         return result;
     }

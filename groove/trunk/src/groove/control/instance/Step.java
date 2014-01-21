@@ -14,10 +14,18 @@
  *
  * $Id$
  */
-package groove.control;
+package groove.control.instance;
 
+import groove.control.AssignSource;
+import groove.control.Call;
+import groove.control.CtrlPar;
+import groove.control.CtrlVar;
+import groove.control.Procedure;
+import groove.control.SingleAttempt;
 import groove.control.CtrlPar.Const;
 import groove.control.CtrlPar.Var;
+import groove.control.template.StageSwitch;
+import groove.control.template.Switch;
 import groove.grammar.Rule;
 import groove.graph.AEdge;
 
@@ -31,27 +39,43 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Step extends AEdge<Frame,Switch> {
+public class Step extends AEdge<Frame,Switch> implements SingleAttempt<Frame> {
     /**
      * Instantiates a given control edge, from a source to a target frame.
-     * @param entered the control units that are entered by this step
-     * @param exits the number of control units that are exited by this step
+     * @param entered the control call that are entered in this step
+     * @param exited the control calls that are entered in this step
      */
-    public Step(Switch edge, Frame source, Frame target, List<Switch> entered,
-            int exits) {
+    public Step(Switch edge, Frame source, Frame target,
+            List<StageSwitch> entered, List<StageSwitch> exited) {
         super(source, edge, target);
-        assert target.getDepth() == source.getDepth() + entered.size() - exits;
+        assert target.getDepth() == source.getDepth() + entered.size()
+            - exited.size();
         this.entered = entered;
-        this.exits = exits;
+        this.exited = exited;
     }
 
-    private final List<Switch> entered;
+    public Call getCall() {
+        return label().getCall();
+    }
 
-    private final int exits;
+    private List<StageSwitch> getEntered() {
+        return this.entered;
+    }
 
-    /** Returns the number of levels by which the frame stack depth changes. */
+    private List<StageSwitch> getExited() {
+        return this.exited;
+    }
+
+    /** List of initiated procedure calls in this step (from bottom to top 
+     * in call stack order). */
+    private List<StageSwitch> entered;
+    /** List of exited procedure calls in this step (from top to bottom
+     * in call stack order). */
+    private List<StageSwitch> exited;
+
+    /** Returns the number of levels by which the call stack depth changes. */
     public int getCallDepth() {
-        return this.entered.size() - this.exits;
+        return getEntered().size() - getExited().size();
     }
 
     /** Returns the actions associated with this step. */
@@ -68,20 +92,13 @@ public class Step extends AEdge<Frame,Switch> {
         List<StepAction> result = new ArrayList<StepAction>();
         // add pop actions for every successive call on the
         // stack of entered calls
-        for (Switch call : this.entered) {
-            result.add(StepAction.push(enter(call)));
+        for (StageSwitch sswit : getEntered()) {
+            result.add(StepAction.push(enter(sswit.getSwitch())));
         }
         result.add(StepAction.modify(rule(label())));
         // add pop actions for the calls that are finished
-        for (int down = 0; down < this.exits; down++) {
-            Switch call;
-            int depth = this.entered.size() - down - 1;
-            if (depth >= 0) {
-                call = this.entered.get(depth);
-            } else {
-                call = this.source.getAncestor(-depth).getCall();
-            }
-            result.add(StepAction.pop(exit(call)));
+        for (StageSwitch sswit : getExited()) {
+            result.add(StepAction.pop(exit(sswit.getSwitch())));
         }
         return result;
     }
@@ -127,7 +144,7 @@ public class Step extends AEdge<Frame,Switch> {
         List<CtrlPar.Var> sig = call.getUnit().getSignature();
         Map<CtrlVar,Integer> callerVars = call.source().getVarIxMap();
         Map<CtrlVar,Integer> finalVars =
-            ((Procedure) call.getUnit()).getTemplate().getSingleFinal().getVarIxMap();
+            ((Procedure) call.getUnit()).getTemplate().getFinal().getVarIxMap();
         for (CtrlVar var : call.target().getVars()) {
             Integer ix = call.getOutVars().get(var);
             AssignSource rhs;
@@ -194,7 +211,7 @@ public class Step extends AEdge<Frame,Switch> {
         List<? extends CtrlPar> args = label().getArgs();
         int size = args == null ? 0 : args.size();
         AssignSource[] result = new AssignSource[size];
-        Map<CtrlVar,Integer> sourceVars = source().getLocation().getVarIxMap();
+        Map<CtrlVar,Integer> sourceVars = source().getPosition().getVarIxMap();
         for (int i = 0; i < size; i++) {
             CtrlPar arg = args.get(i);
             if (arg instanceof CtrlPar.Var) {

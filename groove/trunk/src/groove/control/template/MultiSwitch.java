@@ -14,17 +14,31 @@
  *
  * $Id$
  */
-package groove.control;
+package groove.control.template;
+
+import groove.control.MultiAttempt;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Attempt to invoke one or more callable units, with for every
- * unit a successor position.
- * The attempt can succeed or fail; what happens then is 
- * reflected by the {@link Position#onSuccess()} and 
- * {@link Position#onFailure()} results.
+ * Vector of switches.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface Attempt<P extends Position<P>> {
-    // empty
+public class MultiSwitch extends MultiAttempt<Location,Switch> {
+    /** Returns a single slot of this vector, with target set
+     * to the first slot of the appropriate target location. */
+    public StageSwitch getStage(int nr) {
+        if (this.slots == null) {
+            this.slots = new ArrayList<StageSwitch>();
+            for (int i = 0; i < size(); i++) {
+                this.slots.add(new StageSwitch(get(i), get(i).target().getStage(
+                    0, false)));
+            }
+        }
+        return this.slots.get(nr);
+    }
+
+    private List<StageSwitch> slots;
 }

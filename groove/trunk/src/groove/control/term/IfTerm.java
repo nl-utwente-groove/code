@@ -14,9 +14,8 @@
  *
  * $Id$
  */
-package groove.control.symbolic;
+package groove.control.term;
 
-import java.util.List;
 
 /**
  * If-else term.
@@ -40,20 +39,20 @@ public class IfTerm extends Term {
     }
 
     @Override
-    protected List<TermAttempt> computeAttempts() {
-        List<TermAttempt> result = null;
+    protected DerivationList computeAttempt() {
+        DerivationList result = null;
         switch (arg0().getType()) {
         case TRIAL:
-            result = createAttempts();
-            for (TermAttempt attempt : arg0().getAttempts()) {
+            result = createAttempt();
+            for (Derivation attempt : arg0().getAttempt()) {
                 result.add(attempt.newAttempt(attempt.target().seq(arg1())));
             }
             break;
         case FINAL:
-            result = arg1OrArg2().getAttempts();
+            result = arg1OrArg2().getAttempt();
             break;
         case DEAD:
-            result = arg3().getAttempts();
+            result = arg3().getAttempt();
             break;
         default:
             assert false;

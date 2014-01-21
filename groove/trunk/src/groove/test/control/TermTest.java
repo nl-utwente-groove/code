@@ -18,7 +18,7 @@ package groove.test.control;
 
 import static junit.framework.Assert.assertEquals;
 import groove.control.Call;
-import groove.control.symbolic.Term;
+import groove.control.term.Term;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -45,6 +45,7 @@ public class TermTest extends CtrlTester {
         this.a = p.call(new Call(getRule("a")));
         this.b = p.call(new Call(getRule("b")));
         this.c = p.call(new Call(getRule("c")));
+        this.d = p.call(new Call(getRule("d")));
     }
 
     @Test
@@ -71,8 +72,9 @@ public class TermTest extends CtrlTester {
         Term a = this.a;
         Term b = this.b;
         Term c = this.c;
-        equal("a; other;", a.seq(b.or(c)));
-        equal("a; any;", a.seq(a.or(b).or(c)));
+        Term d = this.d;
+        equal("a; other;", a.seq(b.or(c).or(d)));
+        equal("a; any;", a.seq(a.or(b).or(c).or(d)));
     }
 
     private Term epsilon() {
@@ -84,5 +86,5 @@ public class TermTest extends CtrlTester {
     }
 
     static private Term p;
-    private Term a, b, c;
+    private Term a, b, c, d;
 }

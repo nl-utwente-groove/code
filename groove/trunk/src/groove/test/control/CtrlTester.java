@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import groove.control.CtrlAut;
 import groove.control.CtrlLoader;
-import groove.control.symbolic.Term;
+import groove.control.term.Term;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
 import groove.grammar.model.FormatException;

@@ -16,7 +16,7 @@
  */
 package groove.control;
 
-import groove.control.Switch.Kind;
+import groove.control.template.Switch.Kind;
 import groove.control.CtrlPar.Var;
 
 import java.util.List;

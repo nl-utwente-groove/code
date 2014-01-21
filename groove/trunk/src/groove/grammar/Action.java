@@ -17,7 +17,7 @@
 package groove.grammar;
 
 import groove.control.Callable;
-import groove.control.Switch.Kind;
+import groove.control.template.Switch.Kind;
 
 import java.util.Comparator;
 

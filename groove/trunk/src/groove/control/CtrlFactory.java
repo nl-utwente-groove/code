@@ -17,8 +17,8 @@
 package groove.control;
 
 import groove.algebra.AlgebraFamily;
-import groove.control.Switch.Kind;
 import groove.control.parse.Namespace;
+import groove.control.template.Switch.Kind;
 import groove.grammar.Action;
 import groove.grammar.Recipe;
 import groove.grammar.Rule;

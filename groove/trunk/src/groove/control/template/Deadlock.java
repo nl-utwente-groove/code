@@ -14,10 +14,14 @@
  *
  * $Id$
  */
-package groove.control;
+package groove.control.template;
+
+import groove.control.CtrlVar;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Arend Rensink
@@ -58,7 +62,7 @@ public final class Deadlock implements TemplatePosition {
     private final int depth;
 
     @Override
-    public List<Switch> getAttempts() {
+    public MultiSwitch getAttempt() {
         return null;
     }
 
@@ -70,6 +74,20 @@ public final class Deadlock implements TemplatePosition {
     @Override
     public TemplatePosition onSuccess() {
         return null;
+    }
+
+    @Override
+    public Stage getFirstStage() {
+        if (this.slot == null) {
+            this.slot = new Stage(this, 0, false);
+        }
+        return this.slot;
+    }
+
+    private Stage slot;
+
+    public Map<CtrlVar,Integer> getVarIxMap() {
+        return Collections.emptyMap();
     }
 
     /* We use negative numbers to distinguish the deadlock positions from locations. */

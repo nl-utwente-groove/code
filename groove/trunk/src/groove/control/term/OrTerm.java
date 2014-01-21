@@ -14,9 +14,8 @@
  *
  * $Id$
  */
-package groove.control.symbolic;
+package groove.control.term;
 
-import java.util.List;
 
 /**
  * @author Arend Rensink
@@ -33,18 +32,18 @@ public class OrTerm extends Term {
     }
 
     @Override
-    protected List<TermAttempt> computeAttempts() {
-        List<TermAttempt> result = null;
+    protected DerivationList computeAttempt() {
+        DerivationList result = null;
         if (isTrial()) {
             if (useArg0Only()) {
-                result = arg0().getAttempts();
+                result = arg0().getAttempt();
             } else if (useArg1Only()) {
-                result = arg1().getAttempts();
+                result = arg1().getAttempt();
             } else {
                 // optimise: combine the attempts of both args
-                result = createAttempts();
-                result.addAll(arg0().getAttempts());
-                result.addAll(arg1().getAttempts());
+                result = createAttempt();
+                result.addAll(arg0().getAttempt());
+                result.addAll(arg1().getAttempt());
             }
         }
         return result;

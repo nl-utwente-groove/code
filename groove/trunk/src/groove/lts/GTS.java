@@ -548,7 +548,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements
      * open states, and state identifiers.
      */
     public PlainGraph toPlainGraph(LTSLabels flags) {
-        PlainGraph result = new PlainGraph(getName());
+        PlainGraph result = new PlainGraph(getName(), GraphRole.LTS);
         Map<GraphState,PlainNode> nodeMap = new HashMap<GraphState,PlainNode>();
         for (GraphState state : nodeSet()) {
             // don't include transient states unless forced to

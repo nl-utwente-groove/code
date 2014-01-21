@@ -14,28 +14,25 @@
  *
  * $Id$
  */
-package groove.control.symbolic;
+package groove.control.term;
 
-import java.util.Collections;
-import java.util.List;
 
 /**
- * Deadlock.
+ * Successful termination.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DeltaTerm extends Term {
+public class EpsilonTerm extends Term {
     /**
-     * Constructs a delta term.
+     * Constructs an epsilon term.
      */
-    public DeltaTerm(TermPool pool, int depth) {
-        super(pool, Term.Op.DELTA);
-        this.depth = depth;
+    public EpsilonTerm(TermPool pool) {
+        super(pool, Term.Op.EPSILON);
     }
 
     @Override
-    protected List<TermAttempt> computeAttempts() {
-        return Collections.emptyList();
+    protected DerivationList computeAttempt() {
+        return createAttempt();
     }
 
     @Override
@@ -50,33 +47,16 @@ public class DeltaTerm extends Term {
 
     @Override
     protected int computeDepth() {
-        return this.depth;
+        return 0;
     }
-
-    private final int depth;
 
     @Override
     protected Type computeType() {
-        return Type.DEAD;
+        return Type.FINAL;
     }
 
     @Override
-    public int hashCode() {
-        int prime = 31;
-        return prime * super.hashCode() + getDepth();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj) && ((DeltaTerm) obj).depth == this.depth;
-    }
-
-    @Override
-    public String toString() {
-        String result = super.toString();
-        if (getDepth() > 0) {
-            result += "(" + getDepth() + ")";
-        }
-        return result;
+    public Term seq(Term arg1) {
+        return arg1;
     }
 }

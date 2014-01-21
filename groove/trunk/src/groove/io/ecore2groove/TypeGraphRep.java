@@ -73,10 +73,8 @@ public class TypeGraphRep {
      */
     public TypeGraphRep(String name, ModelHandler m) {
         this.mh = m;
-        this.tg = new PlainGraph(name);
-        this.tg.setRole(TYPE);
-        this.ecoreTG = new PlainGraph("EcoreTypes");
-        this.ecoreTG.setRole(TYPE);
+        this.tg = new PlainGraph(name, TYPE);
+        this.ecoreTG = new PlainGraph("EcoreTypes", TYPE);
 
         addEcoreTypes();
 
@@ -248,8 +246,7 @@ public class TypeGraphRep {
             PlainNode node = addTypeNode(this.tg, label);
 
             // add edges from source and to target of EReference
-            PlainLabel sourceLabel =
-                factory.createLabel(aReference.getName());
+            PlainLabel sourceLabel = factory.createLabel(aReference.getName());
             PlainNode source =
                 this.eClassToNodeMap.get(aReference.getEContainingClass());
             PlainNode target =
@@ -303,8 +300,7 @@ public class TypeGraphRep {
             // add edge from container EClass of EAttribute
             PlainNode source =
                 this.eClassToNodeMap.get(aAttribute.getEContainingClass());
-            PlainLabel sourceLabel =
-                factory.createLabel(aAttribute.getName());
+            PlainLabel sourceLabel = factory.createLabel(aAttribute.getName());
             this.tg.addEdge(source, sourceLabel, node);
 
             // If EAttribute is ordered and many, add "next" self edge

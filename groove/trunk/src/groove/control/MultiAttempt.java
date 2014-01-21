@@ -14,29 +14,15 @@
  *
  * $Id$
  */
-package groove.control.symbolic;
+package groove.control;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 
 /**
- * Pool of normalised terms, used to ensure that equal terms are reused.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TermPool {
-    /**
-     * Normalises a given (non-{@code null}) term.
-     * @return a normalised term equal to the argument
-     */
-    public Term normalise(Term term) {
-        Term result = this.pool.get(term);
-        if (result == null) {
-            result = term;
-            this.pool.put(result, result);
-        }
-        return result;
-    }
-
-    private Map<Term,Term> pool = new HashMap<Term,Term>();
+public class MultiAttempt<P extends Position<P>,A extends SingleAttempt<P>>
+        extends ArrayList<A> implements Attempt<P> {
+    // empty
 }
