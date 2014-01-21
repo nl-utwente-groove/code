@@ -230,7 +230,7 @@ public class Template extends NodeSetEdgeSetGraph<Location,Switch> {
     }
 
     /** Returns a mapping from locations to sets of incoming edges. */
-    private Map<Location,Set<Switch>> getInEdgeMap() {
+    public Map<Location,Set<Switch>> getInEdgeMap() {
         if (this.inEdgeMap == null) {
             this.inEdgeMap = computeInEdgeMap();
         }
