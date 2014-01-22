@@ -22,6 +22,7 @@ import static groove.lts.GraphState.Flag.DONE;
 import static groove.lts.GraphState.Flag.ERROR;
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
+import groove.control.instance.Frame;
 import groove.grammar.host.HostElement;
 import groove.grammar.host.HostNode;
 import groove.graph.Element;
@@ -44,8 +45,8 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-20 09:25:29 $
  */
-abstract public class AbstractGraphState extends
-        AbstractCacheHolder<StateCache> implements GraphState {
+abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements
+        GraphState {
     /**
      * Constructs a an abstract graph state.
      * @param number the number of the state; required to be non-negative
@@ -70,8 +71,7 @@ abstract public class AbstractGraphState extends
         return (Set<RuleTransition>) getTransitions(GraphTransition.Class.RULE);
     }
 
-    public Set<? extends GraphTransition> getTransitions(
-            GraphTransition.Class claz) {
+    public Set<? extends GraphTransition> getTransitions(GraphTransition.Class claz) {
         return getCache().getTransitions(claz);
     }
 
@@ -82,8 +82,7 @@ abstract public class AbstractGraphState extends
     public RuleTransitionStub getOutStub(MatchResult match) {
         assert match != null;
         RuleTransitionStub result = null;
-        Iterator<? extends GraphTransitionStub> outTransIter =
-            getTransitionStubIter();
+        Iterator<? extends GraphTransitionStub> outTransIter = getTransitionStubIter();
         while (outTransIter.hasNext()) {
             GraphTransitionStub stub = outTransIter.next();
             if (stub instanceof RuleTransitionStub
@@ -102,11 +101,10 @@ abstract public class AbstractGraphState extends
      * the target is a {@link AbstractGraphState}, otherwise it creates a
      * {@link IdentityTransitionStub}.
      */
-    protected RuleTransitionStub createTransitionStub(MatchResult match,
-            HostNode[] addedNodes, GraphState target) {
+    protected RuleTransitionStub createTransitionStub(MatchResult match, HostNode[] addedNodes,
+            GraphState target) {
         if (target instanceof AbstractGraphState) {
-            return ((AbstractGraphState) target).createInTransitionStub(this,
-                match, addedNodes);
+            return ((AbstractGraphState) target).createInTransitionStub(this, match, addedNodes);
         } else {
             return new IdentityTransitionStub(match, addedNodes, target);
         }
@@ -116,8 +114,8 @@ abstract public class AbstractGraphState extends
      * Callback factory method for creating a transition stub to this state,
      * from a given graph and with a given rule event.
      */
-    protected RuleTransitionStub createInTransitionStub(GraphState source,
-            MatchResult match, HostNode[] addedNodes) {
+    protected RuleTransitionStub createInTransitionStub(GraphState source, MatchResult match,
+            HostNode[] addedNodes) {
         return new IdentityTransitionStub(match, addedNodes, this);
     }
 
@@ -152,13 +150,11 @@ abstract public class AbstractGraphState extends
     /**
      * Stores a set of outgoing transition stubs in a memory efficient way.
      */
-    private void setStoredTransitionStubs(
-            Collection<GraphTransitionStub> outTransitionSet) {
+    private void setStoredTransitionStubs(Collection<GraphTransitionStub> outTransitionSet) {
         if (outTransitionSet.isEmpty()) {
             this.transitionStubs = EMPTY_TRANSITION_STUBS;
         } else {
-            this.transitionStubs =
-                new GraphTransitionStub[outTransitionSet.size()];
+            this.transitionStubs = new GraphTransitionStub[outTransitionSet.size()];
             outTransitionSet.toArray(this.transitionStubs);
         }
     }
@@ -293,8 +289,7 @@ abstract public class AbstractGraphState extends
     private boolean setStatus(Flag flag, boolean value) {
         boolean result = value != hasFlag(flag);
         if (result) {
-            this.status =
-                value ? flag.set(this.status) : flag.reset(this.status);
+            this.status = value ? flag.set(this.status) : flag.reset(this.status);
         }
         return result;
     }
@@ -336,8 +331,7 @@ abstract public class AbstractGraphState extends
             return getNumber() - ((GraphTransition) obj).source().getNumber();
         } else {
             throw new UnsupportedOperationException(String.format(
-                "Classes %s and %s cannot be compared", getClass(),
-                obj.getClass()));
+                "Classes %s and %s cannot be compared", getClass(), obj.getClass()));
         }
     }
 
@@ -411,6 +405,33 @@ abstract public class AbstractGraphState extends
     }
 
     /** 
+     * Sets the prime control frame.
+     * This should occur at initialisation.
+     */
+    public final void setFrame(Frame frame) {
+        this.actualFrame = frame;
+    }
+
+    @Override
+    public Frame getFrame() {
+        return this.actualFrame.getPrime();
+    }
+
+    @Override
+    public void setActualFrame(Frame actualFrame) {
+        assert actualFrame != null;
+        assert actualFrame.getPrime() == getFrame();
+        this.actualFrame = actualFrame;
+    }
+
+    @Override
+    public final Frame getActualFrame() {
+        return this.actualFrame;
+    }
+
+    private Frame actualFrame;
+
+    /** 
      * Sets the control schedule.
      * This should occur at initialisation.
      */
@@ -464,8 +485,7 @@ abstract public class AbstractGraphState extends
     static private int frozenGraphCount;
 
     /** Constant empty array of out transition, shared for memory efficiency. */
-    private static final GraphTransitionStub[] EMPTY_TRANSITION_STUBS =
-        new RuleTransitionStub[0];
+    private static final GraphTransitionStub[] EMPTY_TRANSITION_STUBS = new RuleTransitionStub[0];
     /** Fixed empty array of (created) nodes. */
     private static final HostNode[] EMPTY_NODE_LIST = new HostNode[0];
 }

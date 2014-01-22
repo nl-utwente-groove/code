@@ -18,6 +18,7 @@ package groove.lts;
 
 import groove.control.CtrlSchedule;
 import groove.control.CtrlState;
+import groove.control.instance.Frame;
 import groove.grammar.host.HostGraph;
 import groove.grammar.host.HostNode;
 import groove.graph.Node;
@@ -60,6 +61,24 @@ public interface GraphState extends Node {
     /** Returns the graph contained in this state. */
     public HostGraph getGraph();
 
+    /** Returns the prime control frame associated with this state. */
+    public Frame getFrame();
+
+    /** 
+     * Sets a new actual frame for this state.
+     * The prime frame of the new actual frame should equal the old prime frame.
+     */
+    public void setActualFrame(Frame actualFrame);
+
+    /** 
+     * Returns the actual control frame associated with this state.
+     * The actual control frame evolves as the state is explored, whereas the
+     * prime frame is fixed at creation time.
+     * The prime frame is always the prime of the actual frame.
+     * @see Frame#getPrime() 
+     */
+    public Frame getActualFrame();
+
     /** Returns the (non-{@code null}) control state associated with this state. */
     public CtrlState getCtrlState();
 
@@ -96,8 +115,7 @@ public interface GraphState extends Node {
      * transitions of a certain class starting in this state.
      * @param claz class of graph transformations to be returned
      */
-    public Set<? extends GraphTransition> getTransitions(
-            GraphTransition.Class claz);
+    public Set<? extends GraphTransition> getTransitions(GraphTransition.Class claz);
 
     /**
      * Adds an outgoing transition to this state, if it is not yet there.
