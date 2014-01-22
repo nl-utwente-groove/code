@@ -26,14 +26,18 @@ import groove.graph.Edge;
  */
 public interface HostEdge extends Edge, HostElement, AnchorValue {
     /* Specialises the return type. */
+    @Override
     HostNode source();
 
     /* Specialises the return type. */
+    @Override
     HostNode target();
 
     /* Specialises the return type. */
+    @Override
     TypeLabel label();
 
     /* Specialises the return type. */
+    @Override
     TypeEdge getType();
 }

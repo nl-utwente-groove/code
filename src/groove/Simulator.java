@@ -31,6 +31,7 @@ public class Simulator {
      */
     static public void main(String[] args) {
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
             public void uncaughtException(Thread t, Throwable e) {
                 new BugReportDialog(e);
                 System.exit(1);

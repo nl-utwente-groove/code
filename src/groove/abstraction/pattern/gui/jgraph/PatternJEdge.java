@@ -26,10 +26,9 @@ import groove.gui.look.Look;
  * 
  * @author Eduardo Zambon
  */
-public class PatternJEdge
-        extends
-        AJEdge<AbstractPatternGraph<?,?>,PatternJGraph,PatternJModel,PatternJVertex>
-        implements PatternJCell {
+public class PatternJEdge extends
+        AJEdge<AbstractPatternGraph<?,?>,PatternJGraph,PatternJModel,PatternJVertex> implements
+        PatternJCell {
 
     // ------------------------------------------------------------------------
     // Constructors
@@ -49,6 +48,7 @@ public class PatternJEdge
         return isOuter() ? Look.PATTERN : super.getStructuralLook();
     }
 
+    @Override
     public boolean isOuter() {
         return this.outer;
     }

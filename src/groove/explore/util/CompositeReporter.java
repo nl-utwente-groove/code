@@ -29,24 +29,28 @@ import java.util.ArrayList;
  */
 public class CompositeReporter extends ArrayList<ExplorationReporter> implements
         ExplorationReporter {
+    @Override
     public void start(Exploration exploration, GTS gts) {
         for (ExplorationReporter reporter : this) {
             reporter.start(exploration, gts);
         }
     }
 
+    @Override
     public void stop(GTS gts) {
         for (ExplorationReporter reporter : this) {
             reporter.stop(gts);
         }
     }
 
+    @Override
     public void abort(GTS gts) {
         for (ExplorationReporter reporter : this) {
             reporter.abort(gts);
         }
     }
 
+    @Override
     public void report() throws IOException {
         for (ExplorationReporter reporter : this) {
             reporter.report();

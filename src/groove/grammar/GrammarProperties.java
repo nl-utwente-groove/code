@@ -70,8 +70,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      */
     public boolean isCurrentVersionProperties() {
         return this.getGrooveVersion().equals(Version.getCurrentGrooveVersion())
-            && this.getGrammarVersion().equals(
-                Version.getCurrentGrammarVersion());
+            && this.getGrammarVersion().equals(Version.getCurrentGrammarVersion());
     }
 
     /**
@@ -80,8 +79,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      */
     public boolean isShowLoopsAsLabels() {
         String property = getProperty(Key.LOOPS_AS_LABELS);
-        return property == null || property.isEmpty()
-            || Boolean.valueOf(property);
+        return property == null || property.isEmpty() || Boolean.valueOf(property);
     }
 
     /**
@@ -98,8 +96,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      */
     public boolean isShowTransitionBrackets() {
         String property = getProperty(Key.TRANSITION_BRACKETS);
-        return property != null
-            && (Boolean.valueOf(property) || property.equals(NUMERIC_YES));
+        return property != null && (Boolean.valueOf(property) || property.equals(NUMERIC_YES));
     }
 
     /**
@@ -108,8 +105,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      */
     public boolean isUseParameters() {
         String params = getProperty(Key.TRANSITION_PARAMETERS);
-        return params != null
-            && (Boolean.valueOf(params) || params.equals(NUMERIC_YES));
+        return params != null && (Boolean.valueOf(params) || params.equals(NUMERIC_YES));
     }
 
     /** Sets the {@link Key#TRANSITION_PARAMETERS} property to the given value * */
@@ -160,8 +156,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * @see Key#CONTROL_LABELS
      */
     public void setControlLabels(List<String> controlLabels) {
-        setProperty(Key.CONTROL_LABELS,
-            Groove.toString(controlLabels.toArray(), "", "", " "));
+        setProperty(Key.CONTROL_LABELS, Groove.toString(controlLabels.toArray(), "", "", " "));
     }
 
     /**
@@ -183,8 +178,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * @see Key#COMMON_LABELS
      */
     public void setCommonLabels(List<String> commonLabels) {
-        setProperty(Key.COMMON_LABELS,
-            Groove.toString(commonLabels.toArray(), "", "", " "));
+        setProperty(Key.COMMON_LABELS, Groove.toString(commonLabels.toArray(), "", "", " "));
     }
 
     /**
@@ -247,8 +241,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      */
     public void setActiveNames(ResourceKind kind, Collection<String> names) {
         assert kind != ResourceKind.RULE;
-        setProperty(resourceKeyMap.get(kind),
-            Groove.toString(names.toArray(), "", "", " "));
+        setProperty(resourceKeyMap.get(kind), Groove.toString(names.toArray(), "", "", " "));
     }
 
     /**
@@ -502,6 +495,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * Freezes the properties object, after which changing any properties
      * becomes illegal.
      */
+    @Override
     public boolean setFixed() {
         boolean result = !isFixed();
         this.fixed = true;
@@ -513,14 +507,15 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
      * of the properties will result in an {@link IllegalStateException}.
      * @return <code>true</code> if the properties are fixed.
      */
+    @Override
     public boolean isFixed() {
         return this.fixed;
     }
 
+    @Override
     public void testFixed(boolean fixed) throws IllegalStateException {
         if (this.fixed != fixed) {
-            throw new IllegalStateException(String.format(
-                "Expected fixed = %b", fixed));
+            throw new IllegalStateException(String.format("Expected fixed = %b", fixed));
         }
     }
 
@@ -536,8 +531,7 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
             case PROLOG:
                 for (String name : getActiveNames(kind)) {
                     if (!grammar.getNames(kind).contains(name)) {
-                        errors.add("'%s' is not an existing %s", name,
-                            kind.getDescription());
+                        errors.add("'%s' is not an existing %s", name, kind.getDescription());
                     }
                 }
             }
@@ -684,13 +678,11 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
         /**
          * Property name for the Grammar version.
          */
-        GRAMMAR_VERSION("grammarVersion", PropertyKind.UNMODIFIABLE,
-                "The version of this grammar"),
+        GRAMMAR_VERSION("grammarVersion", PropertyKind.UNMODIFIABLE, "The version of this grammar"),
         /**
          * One-line documentation comment on the graph production system.
          */
-        REMARK("remark",
-                "A one-line description of the graph production system"),
+        REMARK("remark", "A one-line description of the graph production system"),
         /**
          * Property name for the algebra to be used during simulation.
          */
@@ -732,38 +724,32 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
         /**
          * Space-separated list of active start graph names.
          */
-        START_GRAPH_NAMES("startGraph",
-                "Space-separated list of active start graph names"),
+        START_GRAPH_NAMES("startGraph", "Space-separated list of active start graph names"),
         /**
          * Name of the active control program.
          */
-        CONTROL_NAMES("controlProgram",
-                "Space-separated list of enabled control programs"),
+        CONTROL_NAMES("controlProgram", "Space-separated list of enabled control programs"),
         /**
          * Space-separated list of active type graph names.
          */
-        TYPE_NAMES("typeGraph",
-                "Space-separated list of active type graph names"),
+        TYPE_NAMES("typeGraph", "Space-separated list of active type graph names"),
         /**
          * Space-separated list of active prolog program names.
          */
-        PROLOG_NAMES("prolog",
-                "Space-separated list of active prolog program names"),
+        PROLOG_NAMES("prolog", "Space-separated list of active prolog program names"),
         /**
          * Space-separated list of control labels of a graph grammar. The
          * control labels are those labels which should be matched first for optimal
          * performance, presumably because they occur infrequently or indicate a
          * place where rules are likely to be applicable.
          */
-        CONTROL_LABELS("controlLabels",
-                "A list of rare labels, used to optimise rule matching"),
+        CONTROL_LABELS("controlLabels", "A list of rare labels, used to optimise rule matching"),
         /**
          * Space-separated list of common labels of a graph grammar. The
          * control labels are those labels which should be matched last for optimal
          * performance, presumably because they occur frequently.
          */
-        COMMON_LABELS("commonLabels",
-                "A list of frequent labels, used to optimise rule matching"),
+        COMMON_LABELS("commonLabels", "A list of frequent labels, used to optimise rule matching"),
         /**
          * Space-separated list of abstraction node labels of a graph grammar.
          * These labels are used to define the level zero neighbourhood relation
@@ -780,15 +766,13 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
          * Flag that determines if transition parameters are included in the LTS
          * transition labels
          */
-        TRANSITION_BRACKETS("transitionBrackets",
-                PropertyKind.EXTENDED_BOOLEAN,
+        TRANSITION_BRACKETS("transitionBrackets", PropertyKind.EXTENDED_BOOLEAN,
                 "Flag controlling if transition labels should be bracketed"),
         /**
          * Flag that determines if transition parameters are included in the LTS
          * transition labels
          */
-        TRANSITION_PARAMETERS("transitionParameters",
-                PropertyKind.EXTENDED_BOOLEAN,
+        TRANSITION_PARAMETERS("transitionParameters", PropertyKind.EXTENDED_BOOLEAN,
                 "Flag controlling if transition labels should include rule parameters"),
         /**
          * Flag that determines if (binary) loops can be shown as vertex labels.
@@ -804,8 +788,8 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
             this(text, null, Groove.unCamel(text, false), "", property, comment);
         }
 
-        private Key(String text, String category, String description,
-                String defaultValue, PropertyKind property, String comment) {
+        private Key(String text, String category, String description, String defaultValue,
+                PropertyKind property, String comment) {
             this.name = text;
             this.category = category;
             this.description = description;
@@ -815,11 +799,13 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
         }
 
         /** Returns the text of this key. */
+        @Override
         public String getName() {
             return this.name;
         }
 
         /** Returns the syntax check property. */
+        @Override
         public Property<String> getFormat() {
             return this.format;
         }
@@ -874,10 +860,8 @@ public class GrammarProperties extends java.util.Properties implements Fixable {
             ALGEBRA {
                 @Override
                 public Property<String> newInstance(String comment) {
-                    return new Property.Choice<String>(comment,
-                        AlgebraFamily.DEFAULT.getName(),
-                        AlgebraFamily.POINT.getName(),
-                        AlgebraFamily.BIG.getName(),
+                    return new Property.Choice<String>(comment, AlgebraFamily.DEFAULT.getName(),
+                        AlgebraFamily.POINT.getName(), AlgebraFamily.BIG.getName(),
                         AlgebraFamily.TERM.getName());
                 }
             },

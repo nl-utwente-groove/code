@@ -27,12 +27,15 @@ import groove.lts.GraphTransition;
 public interface PatternTransition extends Edge {
 
     /** Overrides the method to specialise the result type. */
+    @Override
     PatternState source();
 
     /** Overrides the method to specialise the result type. */
+    @Override
     PatternState target();
 
     /** Overrides the method to specialise the result type. */
+    @Override
     PatternTransitionLabel label();
 
 }

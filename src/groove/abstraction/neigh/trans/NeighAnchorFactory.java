@@ -71,6 +71,7 @@ public final class NeighAnchorFactory implements AnchorFactory {
      * that the rule's internal sets of <tt>lhsOnlyNodes</tt> etc. have been
      * initialised already.
      */
+    @Override
     public Anchor newAnchor(Rule rule) {
         // EZ says: for simplicity this method assumes that the abstraction
         // radius is one.

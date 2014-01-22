@@ -158,15 +158,12 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
             CtrlState newSource = morphism.getNode(trans.source());
             CtrlState newTarget = morphism.getNode(trans.target());
             CtrlGuard newGuard = label.getGuard().newGuard(morphism.edgeMap());
-            Recipe newRecipe =
-                recipe == null || call.isOmega() ? trans.getRecipe() : recipe;
+            Recipe newRecipe = recipe == null || call.isOmega() ? trans.getRecipe() : recipe;
             CtrlCall newCall = call.embed(newRecipe);
             boolean newStart =
-                recipe == null ? trans.isStart()
-                        : newSource == result.getStart() || call.isOmega();
+                recipe == null ? trans.isStart() : newSource == result.getStart() || call.isOmega();
             CtrlLabel newLabel = new CtrlLabel(newCall, newGuard, newStart);
-            CtrlTransition newTrans =
-                newSource.addTransition(newLabel, newTarget);
+            CtrlTransition newTrans = newSource.addTransition(newLabel, newTarget);
             assert newTrans != null;
             morphism.putEdge(trans, newTrans);
         }
@@ -231,6 +228,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
         return this.transitions;
     }
 
+    @Override
     public Set<CtrlState> nodeSet() {
         return this.states;
     }
@@ -239,8 +237,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
     public String toString() {
         StringBuilder result = new StringBuilder();
         for (CtrlState state : nodeSet()) {
-            result.append(String.format("State %s, variables %s%n", state,
-                state.getBoundVars()));
+            result.append(String.format("State %s, variables %s%n", state, state.getBoundVars()));
             result.append(state.getSchedule().toString());
         }
         return result.toString();
@@ -337,8 +334,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
         CtrlAut result = this;
         if (!GraphInfo.hasErrors(this)) {
             Set<Set<CtrlState>> equivalence = computeEquivalence();
-            Map<CtrlState,Set<CtrlState>> partition =
-                computePartition(equivalence);
+            Map<CtrlState,Set<CtrlState>> partition = computePartition(equivalence);
             result = computeQuotient(partition);
             result.setBoundVars();
         }
@@ -356,8 +352,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
         for (CtrlState i : nodeSet()) {
             for (CtrlState j : nodeSet()) {
                 if (i.getNumber() < j.getNumber()) {
-                    Set<CtrlState> ijPair =
-                        new HashSet<CtrlState>(Arrays.asList(i, j));
+                    Set<CtrlState> ijPair = new HashSet<CtrlState>(Arrays.asList(i, j));
                     Set<Set<CtrlState>> depSet = new HashSet<Set<CtrlState>>();
                     depSet.add(ijPair);
                     depMap.put(ijPair, depSet);
@@ -371,8 +366,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
                 if (i.getNumber() >= j.getNumber()) {
                     continue;
                 }
-                Set<CtrlState> ijPair =
-                    new HashSet<CtrlState>(Arrays.asList(i, j));
+                Set<CtrlState> ijPair = new HashSet<CtrlState>(Arrays.asList(i, j));
                 Set<Set<CtrlState>> depSet = depMap.remove(ijPair);
                 assert depSet != null;
                 // establish whether i and j are distinguishable states
@@ -384,8 +378,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
                     distinct = !i.getBoundVars().equals(j.getBoundVars());
                 }
                 if (!distinct) {
-                    Map<CtrlTransition,CtrlTransition> equivalence =
-                        computeEquivalence(i, j);
+                    Map<CtrlTransition,CtrlTransition> equivalence = computeEquivalence(i, j);
                     distinct = equivalence == null;
                     if (!distinct) {
                         // defer the distinctness test to the target states
@@ -397,10 +390,8 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
                                 continue;
                             }
                             Set<CtrlState> ijTargetPair =
-                                new HashSet<CtrlState>(Arrays.asList(
-                                    iOut.target(), jOut.target()));
-                            Set<Set<CtrlState>> ijTargetDep =
-                                depMap.get(ijTargetPair);
+                                new HashSet<CtrlState>(Arrays.asList(iOut.target(), jOut.target()));
+                            Set<Set<CtrlState>> ijTargetDep = depMap.get(ijTargetPair);
                             if (ijTargetDep == null) {
                                 distinct = true;
                                 break;
@@ -421,10 +412,9 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
     /** Computes a one-to-one mapping between the outgoing transitions
      * of two control states. Return {@code null} if there is no such mapping.
      */
-    private Map<CtrlTransition,CtrlTransition> computeEquivalence(CtrlState i,
-            CtrlState j) throws FormatException {
-        Map<CtrlTransition,CtrlTransition> result =
-            new HashMap<CtrlTransition,CtrlTransition>();
+    private Map<CtrlTransition,CtrlTransition> computeEquivalence(CtrlState i, CtrlState j)
+        throws FormatException {
+        Map<CtrlTransition,CtrlTransition> result = new HashMap<CtrlTransition,CtrlTransition>();
         Map<CtrlCall,CtrlTransition> iOutMap = getOutTransitions(i);
         Map<CtrlCall,CtrlTransition> jOutMap = getOutTransitions(j);
         boolean distinct = !iOutMap.keySet().equals(jOutMap.keySet());
@@ -460,25 +450,20 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
         return distinct ? null : result;
     }
 
-    private Map<CtrlCall,CtrlTransition> getOutTransitions(CtrlState s)
-        throws FormatException {
-        Map<CtrlCall,CtrlTransition> result =
-            new HashMap<CtrlCall,CtrlTransition>();
+    private Map<CtrlCall,CtrlTransition> getOutTransitions(CtrlState s) throws FormatException {
+        Map<CtrlCall,CtrlTransition> result = new HashMap<CtrlCall,CtrlTransition>();
         for (CtrlTransition outTrans : s.getTransitions()) {
             CtrlCall call = outTrans.getCall();
             CtrlTransition oldTrans = result.put(call, outTrans);
             if (oldTrans != null) {
-                throw new FormatException(
-                    "State %s has multiple outgoing calls %s", s, call);
+                throw new FormatException("State %s has multiple outgoing calls %s", s, call);
             }
         }
         return result;
     }
 
-    private Map<CtrlState,Set<CtrlState>> computePartition(
-            Set<Set<CtrlState>> equivalence) {
-        Map<CtrlState,Set<CtrlState>> result =
-            new HashMap<CtrlState,Set<CtrlState>>();
+    private Map<CtrlState,Set<CtrlState>> computePartition(Set<Set<CtrlState>> equivalence) {
+        Map<CtrlState,Set<CtrlState>> result = new HashMap<CtrlState,Set<CtrlState>>();
         // initially the partition is discrete
         for (CtrlState state : nodeSet()) {
             Set<CtrlState> cell = new HashSet<CtrlState>();
@@ -507,8 +492,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
     private CtrlAut computeQuotient(Map<CtrlState,Set<CtrlState>> partition) {
         CtrlAut result = newGraph(getName());
         Set<CtrlState> representatives = new HashSet<CtrlState>();
-        Map<Set<CtrlState>,CtrlState> stateMap =
-            new HashMap<Set<CtrlState>,CtrlState>();
+        Map<Set<CtrlState>,CtrlState> stateMap = new HashMap<Set<CtrlState>,CtrlState>();
         for (Map.Entry<CtrlState,Set<CtrlState>> cellEntry : partition.entrySet()) {
             Set<CtrlState> cell = cellEntry.getValue();
             CtrlState image;
@@ -545,8 +529,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
      */
     private void setBoundVars() {
         // compute the map of incoming transitions
-        Map<CtrlState,Set<CtrlTransition>> inMap =
-            new HashMap<CtrlState,Set<CtrlTransition>>();
+        Map<CtrlState,Set<CtrlTransition>> inMap = new HashMap<CtrlState,Set<CtrlTransition>>();
         for (CtrlState state : nodeSet()) {
             inMap.put(state, new HashSet<CtrlTransition>());
         }
@@ -579,8 +562,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
     private final TransitionSet transitions = new TransitionSet();
 
     /** The set of omega transitions in this control automaton. */
-    private final Set<CtrlTransition> omegaTransitions =
-        new LinkedHashSet<CtrlTransition>();
+    private final Set<CtrlTransition> omegaTransitions = new LinkedHashSet<CtrlTransition>();
 
     /** Upper bound of the range of known consecutive state numbers. */
     private int maxStateNr = -1;
@@ -608,8 +590,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
         outer: for (CtrlTransition omegaTrans : getOmegas()) {
             Collection<CtrlTransition> guard = omegaTrans.label().getGuard();
             for (CtrlTransition otherTrans : outEdgeSet(omegaTrans.source())) {
-                if (!otherTrans.getCall().isOmega()
-                    && !guard.contains(otherTrans)) {
+                if (!otherTrans.getCall().isOmega() && !guard.contains(otherTrans)) {
                     result = false;
                     break outer;
                 }
@@ -632,8 +613,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
         public boolean contains(Object o) {
             if (o instanceof CtrlTransition) {
                 CtrlTransition trans = (CtrlTransition) o;
-                return trans.equals(trans.source().getTransition(
-                    trans.getCall()));
+                return trans.equals(trans.source().getTransition(trans.getCall()));
             } else {
                 return false;
             }
@@ -642,8 +622,7 @@ public class CtrlAut extends AGraph<CtrlState,CtrlTransition> {
         @Override
         public Iterator<CtrlTransition> iterator() {
             return new NestedIterator<CtrlTransition>(
-                new TransformIterator<CtrlState,Iterator<CtrlTransition>>(
-                    nodeSet().iterator()) {
+                new TransformIterator<CtrlState,Iterator<CtrlTransition>>(nodeSet().iterator()) {
                     @Override
                     protected Iterator<CtrlTransition> toOuter(CtrlState from) {
                         return from.getTransitions().iterator();

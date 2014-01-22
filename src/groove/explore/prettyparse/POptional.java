@@ -47,8 +47,7 @@ public class POptional implements SerializedParser {
      * argument name of a <code>Serialized</code>, a value to be stored on
      * presence and a value to be stored on absence.
      */
-    public POptional(String literal, String argumentName, String presentValue,
-            String absentValue) {
+    public POptional(String literal, String argumentName, String presentValue, String absentValue) {
         this.literal = literal;
         this.argumentName = argumentName;
         this.presentValue = presentValue;
@@ -66,6 +65,7 @@ public class POptional implements SerializedParser {
         return true;
     }
 
+    @Override
     public String toParsableString(Serialized serialized) {
         String result = null;
         String keyword = serialized.getArgument(this.argumentName);

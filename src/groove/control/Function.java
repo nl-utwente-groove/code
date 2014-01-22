@@ -16,8 +16,8 @@
  */
 package groove.control;
 
-import groove.control.template.Switch.Kind;
 import groove.control.CtrlPar.Var;
+import groove.control.template.Switch.Kind;
 import groove.util.Fixable;
 
 import java.util.List;
@@ -31,11 +31,12 @@ public class Function extends Procedure implements Fixable {
     /**
      * Constructs a function with a given name, priority and signature.
      */
-    public Function(String fullName, int priority, List<Var> signature,
-            String controlName, int startLine) {
+    public Function(String fullName, int priority, List<Var> signature, String controlName,
+            int startLine) {
         super(fullName, priority, signature, controlName, startLine);
     }
 
+    @Override
     public Kind getKind() {
         return Kind.FUNCTION;
     }

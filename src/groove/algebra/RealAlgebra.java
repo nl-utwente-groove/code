@@ -24,8 +24,9 @@ import groove.algebra.syntax.Expression;
  * @param <String> The representation type of the string algebra  
  */
 @SuppressWarnings("hiding")
-public abstract class RealAlgebra<Real,Bool,String> extends
-        RealSignature<Real,Bool,String> implements Algebra<Real> {
+public abstract class RealAlgebra<Real,Bool,String> extends RealSignature<Real,Bool,String>
+        implements Algebra<Real> {
+    @Override
     @SuppressWarnings("unchecked")
     public Real toValue(Expression term) {
         return (Real) getFamily().toValue(term);
@@ -39,8 +40,8 @@ public abstract class RealAlgebra<Real,Bool,String> extends
     final public Real toValueFromJava(Object value) {
         if (!(value instanceof Double)) {
             throw new IllegalArgumentException(java.lang.String.format(
-                "Native double type is %s, not %s",
-                Double.class.getSimpleName(), value.getClass().getSimpleName()));
+                "Native double type is %s, not %s", Double.class.getSimpleName(),
+                value.getClass().getSimpleName()));
         }
         return toValueFromJavaDouble((Double) value);
     }

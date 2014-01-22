@@ -24,8 +24,9 @@ import groove.algebra.syntax.Expression;
  * @param <String> The representation type of the string algebra 
  */
 @SuppressWarnings("hiding")
-public abstract class IntAlgebra<Int,Bool,String> extends
-        IntSignature<Int,Bool,String> implements Algebra<Int> {
+public abstract class IntAlgebra<Int,Bool,String> extends IntSignature<Int,Bool,String> implements
+        Algebra<Int> {
+    @Override
     @SuppressWarnings("unchecked")
     public Int toValue(Expression term) {
         return (Int) getFamily().toValue(term);

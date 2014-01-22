@@ -48,6 +48,7 @@ public final class TypeLabel extends ALabel {
         this.role = kind;
     }
 
+    @Override
     public String text() {
         return this.text;
     }
@@ -65,8 +66,7 @@ public final class TypeLabel extends ALabel {
 
     /** Indicates if this label stands for a data type. */
     public boolean isDataType() {
-        return getRole() == NODE_TYPE
-            && SignatureKind.getNames().contains(text());
+        return getRole() == NODE_TYPE && SignatureKind.getNames().contains(text());
     }
 
     /** The label text. */
@@ -99,13 +99,10 @@ public final class TypeLabel extends ALabel {
      * @throws FormatException if {@code text} does not satisfy the constraints
      * for labels
      */
-    public static TypeLabel createLabelWithCheck(String prefixedText)
-        throws FormatException {
+    public static TypeLabel createLabelWithCheck(String prefixedText) throws FormatException {
         TypeLabel result = createLabel(prefixedText);
-        if (result.getRole() != BINARY
-            && !ExprParser.isIdentifier(result.text())) {
-            throw new FormatException(
-                "%s label '%s' is not a valid identifier",
+        if (result.getRole() != BINARY && !ExprParser.isIdentifier(result.text())) {
+            throw new FormatException("%s label '%s' is not a valid identifier",
                 result.getRole().getDescription(true), result.text());
         }
         return result;
@@ -139,8 +136,7 @@ public final class TypeLabel extends ALabel {
     public static TypeLabel createLabel(EdgeRole kind, String text, boolean test)
         throws FormatException {
         if (test && kind != BINARY && !ExprParser.isIdentifier(text)) {
-            throw new FormatException(
-                "%s label '%s' is not a valid identifier",
+            throw new FormatException("%s label '%s' is not a valid identifier",
                 kind.getDescription(true), text);
         }
         return createLabel(kind, text);
@@ -196,14 +192,12 @@ public final class TypeLabel extends ALabel {
         new EnumMap<SignatureKind,TypeLabel>(SignatureKind.class);
     static {
         for (SignatureKind sigKind : SignatureKind.values()) {
-            sigLabelMap.put(sigKind, new TypeLabel(sigKind.getName(),
-                EdgeRole.NODE_TYPE));
+            sigLabelMap.put(sigKind, new TypeLabel(sigKind.getName(), EdgeRole.NODE_TYPE));
         }
     }
 
     /** Type label for nodes in an untyped setting. */
-    static public final TypeLabel NODE = new TypeLabel("\u03A9",
-        EdgeRole.NODE_TYPE);
+    static public final TypeLabel NODE = new TypeLabel("\u03A9", EdgeRole.NODE_TYPE);
 
     /** 
      * Unique type factory used for creating labels statically.

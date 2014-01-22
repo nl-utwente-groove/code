@@ -59,26 +59,22 @@ public class BigRealAlgebra extends RealAlgebra<BigDecimal,Boolean,String> {
 
     @Override
     public Boolean ge(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1).signum() >= 0
-            || approximatelyEquals(arg0, arg1);
+        return arg0.subtract(arg1).signum() >= 0 || approximatelyEquals(arg0, arg1);
     }
 
     @Override
     public Boolean gt(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1).signum() > 0
-            && !approximatelyEquals(arg0, arg1);
+        return arg0.subtract(arg1).signum() > 0 && !approximatelyEquals(arg0, arg1);
     }
 
     @Override
     public Boolean le(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1).signum() <= 0
-            || approximatelyEquals(arg0, arg1);
+        return arg0.subtract(arg1).signum() <= 0 || approximatelyEquals(arg0, arg1);
     }
 
     @Override
     public Boolean lt(BigDecimal arg0, BigDecimal arg1) {
-        return arg0.subtract(arg1).signum() < 0
-            && !approximatelyEquals(arg0, arg1);
+        return arg0.subtract(arg1).signum() < 0 && !approximatelyEquals(arg0, arg1);
     }
 
     @Override
@@ -111,6 +107,7 @@ public class BigRealAlgebra extends RealAlgebra<BigDecimal,Boolean,String> {
         return arg.toString();
     }
 
+    @Override
     public boolean isValue(Object value) {
         return value instanceof BigDecimal;
     }
@@ -138,11 +135,13 @@ public class BigRealAlgebra extends RealAlgebra<BigDecimal,Boolean,String> {
     /**
      * Delegates to {@link Double#toString()}.
      */
+    @Override
     public String getSymbol(Object value) {
         return value.toString();
     }
 
     /** Returns {@link #NAME}. */
+    @Override
     public String getName() {
         return NAME;
     }

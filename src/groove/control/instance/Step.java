@@ -54,29 +54,39 @@ public class Step extends AEdge<Frame,Switch> implements SoloAttempt<Frame> {
         this.onSuccess = onSuccess;
     }
 
+    @Override
     public Call getCall() {
         return label().getCall();
     }
 
+    @Override
     public Frame onFinish() {
         return target();
     }
 
+    @Override
     public Frame onSuccess() {
         return this.onSuccess;
     }
 
+    @Override
     public Frame onFailure() {
         return this.onFailure;
     }
+
+    @Override
+    public boolean sameVerdict() {
+        return onFailure() == onSuccess();
+    }
+
+    private final Frame onSuccess;
+    private final Frame onFailure;
 
     /** Returns the call stack for this step. */
     public List<Switch> getCallStack() {
         return this.callStack;
     }
 
-    private final Frame onSuccess;
-    private final Frame onFailure;
     private final CallStack callStack;
 
     /** Returns the number of levels by which the call stack depth changes. */

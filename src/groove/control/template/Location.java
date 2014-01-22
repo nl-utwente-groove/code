@@ -79,6 +79,7 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
         this.type = type;
     }
 
+    @Override
     public Type getType() {
         return this.type;
     }
@@ -90,10 +91,12 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
         return getType() == Type.FINAL;
     }
 
+    @Override
     public boolean isDead() {
         return getType() == Type.DEAD;
     }
 
+    @Override
     public boolean isTrial() {
         return getType() == Type.TRIAL;
     }
@@ -107,18 +110,6 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
         assert edge.source() == this;
         assert !isFixed();
         this.switches.add(edge);
-        //        if (edge.isVerdict()) {
-        //            assert !this.isFinal();
-        //            if (edge.isSuccess()) {
-        //                assert this.success == null;
-        //                this.success = edge.target();
-        //            } else {
-        //                assert this.failure == null;
-        //                this.failure = edge.target();
-        //            }
-        //        } else {
-        //            this.attempt.add(edge);
-        //        }
     }
 
     /**
@@ -285,6 +276,7 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
         return "c";
     }
 
+    @Override
     public boolean setFixed() {
         assert this.type != null;
         boolean result = !this.fixed;
@@ -292,10 +284,12 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
         return result;
     }
 
+    @Override
     public boolean isFixed() {
         return this.fixed;
     }
 
+    @Override
     public void testFixed(boolean fixed) {
         if (fixed != isFixed()) {
             throw new IllegalStateException(String.format("Control state should %sbe fixed", fixed
@@ -305,6 +299,7 @@ public class Location extends ANode implements Position<Location>, Comparable<Lo
 
     private boolean fixed;
 
+    @Override
     public int compareTo(Location o) {
         return getNumber() - o.getNumber();
     }

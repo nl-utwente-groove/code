@@ -24,13 +24,13 @@ import groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TermIntAlgebra extends
-        IntAlgebra<Expression,Expression,Expression> {
+public class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expression> {
     /** Private constructor for the singleton instance. */
     private TermIntAlgebra() {
         // empty
     }
 
+    @Override
     public String getName() {
         return NAME;
     }
@@ -42,10 +42,10 @@ public class TermIntAlgebra extends
 
     @Override
     public boolean isValue(Object value) {
-        return value instanceof Expression
-            && ((Expression) value).getSignature() == getSignature();
+        return value instanceof Expression && ((Expression) value).getSignature() == getSignature();
     }
 
+    @Override
     public String getSymbol(Object value) {
         return ((Expression) value).toDisplayString();
     }
@@ -55,6 +55,7 @@ public class TermIntAlgebra extends
         return (Expression) value;
     }
 
+    @Override
     public Expression toValueFromConstant(Constant constant) {
         return constant;
     }

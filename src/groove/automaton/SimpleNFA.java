@@ -28,8 +28,8 @@ import groove.grammar.type.TypeFactory;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
-import groove.graph.ElementFactory;
 import groove.graph.Edge;
+import groove.graph.ElementFactory;
 import groove.graph.NodeSetEdgeSetGraph;
 
 import java.util.ArrayList;
@@ -46,8 +46,7 @@ import java.util.Set;
  * An implementation of regular automata that also keeps track of the valuation
  * of the variables.
  */
-public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements
-        RegAut {
+public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements RegAut {
     /** Constructor for the singleton prototype object. */
     private SimpleNFA() {
         super("prototype");
@@ -71,8 +70,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements
         assert typeGraph != null;
         addNode(start);
         addNode(end);
-        this.dfas =
-            new EnumMap<Direction,Map<List<TypeLabel>,DFA>>(Direction.class);
+        this.dfas = new EnumMap<Direction,Map<List<TypeLabel>,DFA>>(Direction.class);
     }
 
     @Override
@@ -164,8 +162,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements
     /** Creates a normalised automaton for exploration in a given direction. */
     private DFA computeDFA(Direction dir, Valuation valuation) {
         DFA result =
-            new DFA(dir, dir == FORWARD ? getStartNode() : getEndNode(),
-                isAcceptsEmptyWord());
+            new DFA(dir, dir == FORWARD ? getStartNode() : getEndNode(), isAcceptsEmptyWord());
         // set of unexplored states
         Set<DFAState> unexplored = new HashSet<DFAState>();
         unexplored.add(result.getStartState());
@@ -175,8 +172,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements
             iter.remove();
             // mapping from type labels to target nodes, per direction
             Map<Direction,Map<TypeLabel,Set<RegNode>>> succMaps =
-                new EnumMap<Direction,Map<TypeLabel,Set<RegNode>>>(
-                    Direction.class);
+                new EnumMap<Direction,Map<TypeLabel,Set<RegNode>>>(Direction.class);
             // initialise the maps
             for (Direction edgeDir : Direction.values()) {
                 succMaps.put(edgeDir, new HashMap<TypeLabel,Set<RegNode>>());
@@ -207,8 +203,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements
                     Set<RegNode> ns = le.getValue();
                     DFAState target = result.getState(ns);
                     if (target == null) {
-                        RegNode finalNode =
-                            dir == FORWARD ? getEndNode() : getStartNode();
+                        RegNode finalNode = dir == FORWARD ? getEndNode() : getStartNode();
                         target = result.addState(ns, ns.contains(finalNode));
                         unexplored.add(target);
                     }
@@ -275,6 +270,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements
         return RegFactory.instance();
     }
 
+    @Override
     public boolean accepts(List<String> word) {
         assert isFixed();
         DFA dfa = getDFA(FORWARD, null);
@@ -287,9 +283,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements
                 letter = letter.substring(invOp.length());
             }
             TypeLabel label = typeFactory.createLabel(letter);
-            dfaState =
-                dfaState.getLabelMap().get(inverse ? BACKWARD : FORWARD).get(
-                    label);
+            dfaState = dfaState.getLabelMap().get(inverse ? BACKWARD : FORWARD).get(label);
             if (dfaState == null) {
                 break;
             }
@@ -297,8 +291,9 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements
         return dfaState != null && dfaState.isFinal();
     }
 
-    public Set<Result> getMatches(HostGraph graph, HostNode startImage,
-            HostNode endImage, Valuation valuation) {
+    @Override
+    public Set<Result> getMatches(HostGraph graph, HostNode startImage, HostNode endImage,
+            Valuation valuation) {
         assert isFixed();
         if (valuation == null) {
             valuation = Valuation.EMPTY;
@@ -318,8 +313,8 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements
         return normalAut.getRecogniser(graph).getMatches(fromNode, toNode);
     }
 
-    public Set<Result> getMatches(HostGraph graph, HostNode startImage,
-            HostNode endImage) {
+    @Override
+    public Set<Result> getMatches(HostGraph graph, HostNode startImage, HostNode endImage) {
         return getMatches(graph, startImage, endImage, null);
     }
 
@@ -341,9 +336,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements
             if (edgeLabel.isInv()) {
                 edgeLabel = edgeLabel.getInvLabel();
             }
-            result =
-                edgeLabel.isWildcard() || edgeLabel.isSharp()
-                    || edgeLabel.isAtom();
+            result = edgeLabel.isWildcard() || edgeLabel.isSharp() || edgeLabel.isAtom();
         }
         return result;
     }
@@ -365,6 +358,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements
     /** List of label variables occurring in this automaton. */
     private List<LabelVar> labelVars;
 
+    @Override
     public final TypeGraph getTypeGraph() {
         return this.typeGraph;
     }
@@ -372,8 +366,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements
     /** Type graph to be matched against. */
     private final TypeGraph typeGraph;
 
-    private static final List<TypeLabel> EMPTY_LABEL_LIST =
-        Collections.emptyList();
+    private static final List<TypeLabel> EMPTY_LABEL_LIST = Collections.emptyList();
 
     /** Prototype object for simple automata. */
     public static final SimpleNFA PROTOTYPE = new SimpleNFA();

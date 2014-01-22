@@ -122,15 +122,13 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         int arity = this.argNodes.size();
         Operator operator = this.operatorEdge.getOperator();
         if (arity != operator.getArity()) {
-            throw new FormatException(
-                "Product node arity %d is incorrect for operator %s", arity,
+            throw new FormatException("Product node arity %d is incorrect for operator %s", arity,
                 operator, this);
         }
         for (int i = 0; i < arity; i++) {
             AspectNode argNode = this.argNodes.get(i);
             if (argNode == null) {
-                throw new FormatException("Missing product argument %d", i,
-                    this);
+                throw new FormatException("Missing product argument %d", i, this);
             }
         }
         // type correctness of the parameters and result has already been tested for
@@ -145,9 +143,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
     @Override
     public void testFixed(boolean fixed) {
         if (this.allFixed != fixed) {
-            throw new IllegalStateException(String.format(
-                "Aspect node %d should%s be fixed", getNumber(), fixed ? ""
-                        : " not"));
+            throw new IllegalStateException(String.format("Aspect node %d should%s be fixed",
+                getNumber(), fixed ? "" : " not"));
         }
     }
 
@@ -239,22 +236,19 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 setAspect(READER.getAspect());
             }
             if (hasAttrAspect() && getKind() != READER && getKind() != EMBARGO) {
-                throw new FormatException("Conflicting aspects %s and %s",
-                    getAttrAspect(), getAspect());
+                throw new FormatException("Conflicting aspects %s and %s", getAttrAspect(),
+                    getAspect());
             }
         } else if (getKind().isRole()) {
-            throw new FormatException("Node aspect %s only allowed in rules",
-                getAspect(), this);
+            throw new FormatException("Node aspect %s only allowed in rules", getAspect(), this);
         } else if (!hasAspect()) {
             setAspect(AspectKind.DEFAULT.getAspect());
         }
         if (hasImport()) {
             if (getAttrKind().hasSignature()) {
-                throw new FormatException("Can't import data type",
-                    getAttrKind(), this);
+                throw new FormatException("Can't import data type", getAttrKind(), this);
             } else if (getKind() == ABSTRACT) {
-                throw new FormatException("Can't abstract an imported type",
-                    getAttrKind(), this);
+                throw new FormatException("Can't abstract an imported type", getAttrKind(), this);
             }
         }
         if (!hasAttrAspect()) {
@@ -268,19 +262,18 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      * declared one
      */
     private void addAspect(Aspect value) throws FormatException {
-        assert value.isForNode(getGraphRole()) : String.format(
-            "Inappropriate node aspect %s", value, this);
+        assert value.isForNode(getGraphRole()) : String.format("Inappropriate node aspect %s",
+            value, this);
         AspectKind kind = value.getKind();
         if (kind.isAttrKind()) {
             if (hasAttrAspect() && !isAttrConsistent(getAttrAspect(), value)) {
-                throw new FormatException("Conflicting node aspects %s and %s",
-                    getAttrKind(), value, this);
+                throw new FormatException("Conflicting node aspects %s and %s", getAttrKind(),
+                    value, this);
             }
             setAttrAspect(value);
         } else if (kind.isParam()) {
             if (hasParam()) {
-                throw new FormatException(
-                    "Conflicting parameter aspects %s and %s", this.param,
+                throw new FormatException("Conflicting parameter aspects %s and %s", this.param,
                     value, this);
             } else {
                 setParam(value);
@@ -294,11 +287,10 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         } else if (kind == IMPORT) {
             setImport(value);
         } else if (hasAspect()) {
-            throw new FormatException("Conflicting node aspects %s and %s",
-                getAspect(), value, this);
+            throw new FormatException("Conflicting node aspects %s and %s", getAspect(), value,
+                this);
         } else if (kind.isRole() && value.getContent() != null) {
-            throw new FormatException(
-                "Node aspect %s should not have quantifier name", value, this);
+            throw new FormatException("Node aspect %s should not have quantifier name", value, this);
         } else {
             setAspect(value);
             if (kind.isQuantifier() && value.getContent() != null) {
@@ -335,40 +327,33 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         testFixed(false);
         if (edge.getAttrKind() == ARGUMENT) {
             if (!hasAttrAspect()) {
-                throw new FormatException(
-                    "Target node of %s-edge should be attribute", edge.label(),
-                    this);
+                throw new FormatException("Target node of %s-edge should be attribute",
+                    edge.label(), this);
             }
         } else if (edge.getKind() == CONNECT) {
             if (getKind() != EMBARGO) {
-                throw new FormatException(
-                    "Target node of %s-edge should be embargo", edge.label(),
+                throw new FormatException("Target node of %s-edge should be embargo", edge.label(),
                     this);
             }
-        } else if ((edge.isNestedAt() || edge.isNestedIn())
-            && !getKind().isQuantifier()) {
-            throw new FormatException(
-                "Target node of %s-edge should be quantifier", edge.label(),
+        } else if ((edge.isNestedAt() || edge.isNestedIn()) && !getKind().isQuantifier()) {
+            throw new FormatException("Target node of %s-edge should be quantifier", edge.label(),
                 this);
         } else if (edge.isNestedCount()) {
             if (getAttrKind() != AspectKind.INT) {
-                throw new FormatException(
-                    "Target node of %s-edge should be int-node", edge.label(),
-                    this);
+                throw new FormatException("Target node of %s-edge should be int-node",
+                    edge.label(), this);
             }
         } else if (edge.isOperator()) {
             Operator operator = edge.getOperator();
-            Aspect operType =
-                Aspect.getAspect(operator.getResultType().getName());
+            Aspect operType = Aspect.getAspect(operator.getResultType().getName());
             AspectKind operKind = operType.getKind();
             if (!hasAttrAspect()) {
-                throw new FormatException(
-                    "Target node of %s-edge should be %s-attribute",
+                throw new FormatException("Target node of %s-edge should be %s-attribute",
                     edge.label(), operKind, this);
             } else if (getAttrKind() != operKind) {
                 throw new FormatException(
-                    "Inferred type %s of %s-target conflicts with declared type %s",
-                    operKind, edge.label(), getAttrKind(), this);
+                    "Inferred type %s of %s-target conflicts with declared type %s", operKind,
+                    edge.label(), getAttrKind(), this);
             }
         }
     }
@@ -392,21 +377,18 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         AspectLabel edgeLabel = edge.label();
         if (edge.getKind() == CONNECT) {
             if (getKind() != EMBARGO) {
-                throw new FormatException(
-                    "Source node of %s-edge should be embargo", edge.label(),
+                throw new FormatException("Source node of %s-edge should be embargo", edge.label(),
                     this);
             }
         } else if (edge.isNestedAt()) {
             if (getKind().isMeta()) {
-                throw new FormatException(
-                    "Source node of %s-edge should be rule element", edgeLabel,
-                    this);
+                throw new FormatException("Source node of %s-edge should be rule element",
+                    edgeLabel, this);
             }
             this.nestingLevelEdge = edge;
         } else if (edge.isNestedIn()) {
             if (!getKind().isQuantifier()) {
-                throw new FormatException(
-                    "Source node of %s-edge should be quantifier", edgeLabel,
+                throw new FormatException("Source node of %s-edge should be quantifier", edgeLabel,
                     this);
             }
             // collect collective nesting grandparents to test for circularity
@@ -417,15 +399,12 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 parent = parent.getNestingParent();
             }
             if (grandparents.contains(this)) {
-                throw new FormatException(
-                    "Circularity in the nesting hierarchy", this);
+                throw new FormatException("Circularity in the nesting hierarchy", this);
             }
             this.nestingParentEdge = edge;
         } else if (edge.isNestedCount()) {
-            if (getKind() != AspectKind.FORALL
-                && getKind() != AspectKind.FORALL_POS) {
-                throw new FormatException(
-                    "Source node of %s-edge should be universal quantifier",
+            if (getKind() != AspectKind.FORALL && getKind() != AspectKind.FORALL_POS) {
+                throw new FormatException("Source node of %s-edge should be universal quantifier",
                     edgeLabel, this);
             }
             this.matchCount = edge.target();
@@ -433,9 +412,8 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             if (!hasAttrAspect()) {
                 setAttrAspect(PRODUCT.getAspect());
             } else if (getAttrKind() != PRODUCT) {
-                throw new FormatException(
-                    "Source node of %s-edge should be product node", edgeLabel,
-                    this);
+                throw new FormatException("Source node of %s-edge should be product node",
+                    edgeLabel, this);
             }
             if (this.argNodes == null) {
                 this.argNodes = new ArrayList<AspectNode>();
@@ -446,14 +424,12 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                 this.argNodes.add(null);
             }
             if (this.argNodes.get(index) != null) {
-                throw new FormatException("Duplicate %s-edge", edge.label(),
-                    this);
+                throw new FormatException("Duplicate %s-edge", edge.label(), this);
             }
             this.argNodes.set(index, edge.target());
             // infer target type if an operator edge is already present
             if (this.operatorEdge != null) {
-                List<SignatureKind> paramTypes =
-                    this.operatorEdge.getOperator().getParamTypes();
+                List<SignatureKind> paramTypes = this.operatorEdge.getOperator().getParamTypes();
                 if (index < paramTypes.size()) {
                     edge.target().setDataType(paramTypes.get(index));
                 }
@@ -462,16 +438,14 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             if (!hasAttrAspect()) {
                 setAttrAspect(PRODUCT.getAspect());
             } else if (getAttrKind() != PRODUCT) {
-                throw new FormatException(
-                    "Source node of %s-edge should be product node", edgeLabel,
-                    this);
+                throw new FormatException("Source node of %s-edge should be product node",
+                    edgeLabel, this);
             }
             if (this.operatorEdge == null) {
                 this.operatorEdge = edge;
             } else if (!this.operatorEdge.getOperator().getParamTypes().equals(
                 edge.getOperator().getParamTypes())) {
-                throw new FormatException(
-                    "Conflicting operator signatures for %s and %s",
+                throw new FormatException("Conflicting operator signatures for %s and %s",
                     this.operatorEdge.label(), edgeLabel, this);
             } else if (!hasErrors() && this.argNodes != null) {
                 // only go here if there are no (signature) errors
@@ -480,8 +454,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
                     AspectNode argNode = this.argNodes.get(i);
                     if (argNode != null) {
                         SignatureKind paramType =
-                            this.operatorEdge.getOperator().getParamTypes().get(
-                                i);
+                            this.operatorEdge.getOperator().getParamTypes().get(i);
                         argNode.setDataType(paramType);
                     }
                 }
@@ -524,22 +497,24 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         if (!hasAttrAspect()) {
             this.attr = newAttr;
         } else if (getAttrKind() != attrKind) {
-            throw new FormatException("Conflicting (inferred) types %s and %s",
-                getAttrKind(), attrKind, this);
+            throw new FormatException("Conflicting (inferred) types %s and %s", getAttrKind(),
+                attrKind, this);
         } else if (!getAttrAspect().hasContent() && newAttr.hasContent()) {
             this.attr = newAttr;
         } else if (getAttrAspect().hasContent() && newAttr.hasContent()) {
-            throw new FormatException("Conflicting (inferred) types %s and %s",
-                getAttrKind(), attrKind, this);
+            throw new FormatException("Conflicting (inferred) types %s and %s", getAttrKind(),
+                attrKind, this);
         }
     }
 
     /** Returns the attribute aspect of this node, if any. */
+    @Override
     public Aspect getAttrAspect() {
         return this.attr;
     }
 
     /** Indicates if this represents a data attribute. */
+    @Override
     public boolean hasAttrAspect() {
         return this.attr != null && this.attr.getKind() != DEFAULT;
     }
@@ -579,18 +554,16 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** Sets the identifier aspect from a string representation. */
     private void setId(String id) throws FormatException {
-        Aspect idAspect =
-            AspectKind.ID.getAspect().newInstance(id, GraphRole.RULE);
+        Aspect idAspect = AspectKind.ID.getAspect().newInstance(id, GraphRole.RULE);
         setId(idAspect);
     }
 
     /** Sets the identifier aspect of this node. */
     private void setId(Aspect id) throws FormatException {
-        assert id.getKind() == ID : String.format(
-            "Aspect %s is not an identifier", id);
+        assert id.getKind() == ID : String.format("Aspect %s is not an identifier", id);
         if (this.id != null) {
-            throw new FormatException("Duplicate node identifiers %s and %s",
-                this.id.getClass(), id.getContent());
+            throw new FormatException("Duplicate node identifiers %s and %s", this.id.getClass(),
+                id.getContent());
         }
         this.id = id;
     }
@@ -607,8 +580,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** Sets the colour aspect of this node. */
     private void setColor(Aspect color) throws FormatException {
-        assert color.getKind() == COLOR : String.format(
-            "Aspect %s is not a color", color);
+        assert color.getKind() == COLOR : String.format("Aspect %s is not a color", color);
         if (this.color != null) {
             throw new FormatException("Duplicate colour specification");
         }
@@ -627,8 +599,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** Sets the colour aspect of this node. */
     private void setImport(Aspect imported) throws FormatException {
-        assert imported.getKind() == IMPORT : String.format(
-            "Aspect %s is not an import", imported);
+        assert imported.getKind() == IMPORT : String.format("Aspect %s is not an import", imported);
         if (this.imported != null) {
             throw new FormatException("Duplicate import specification");
         }
@@ -652,8 +623,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** Sets the edge aspect of this node. */
     private void setEdge(Aspect edge) throws FormatException {
-        assert edge.getKind() == EDGE : String.format(
-            "Aspect %s is not an edge declaration", edge);
+        assert edge.getKind() == EDGE : String.format("Aspect %s is not an edge declaration", edge);
         if (this.edge != null) {
             throw new FormatException("Duplicate edge pattern specification");
         }
@@ -678,8 +648,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
 
     /** Returns the parameter number, or {@code -1} if there is none. */
     public int getParamNr() {
-        return hasParam() && getParam().hasContent()
-                ? (Integer) getParam().getContent() : -1;
+        return hasParam() && getParam().hasContent() ? (Integer) getParam().getContent() : -1;
     }
 
     /** Changes the (aspect) type of this node. */
@@ -689,14 +658,14 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         if (this.aspect == null) {
             this.aspect = type;
         } else if (!this.aspect.equals(type)) {
-            throw new FormatException("Conflicting aspects %s and %s",
-                this.aspect, type, this);
+            throw new FormatException("Conflicting aspects %s and %s", this.aspect, type, this);
         }
     }
 
     /** 
      * Returns the aspect that determines the kind of this node.
      */
+    @Override
     public Aspect getAspect() {
         return this.aspect;
     }

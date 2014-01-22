@@ -114,6 +114,7 @@ abstract public class Term implements Position<Term> {
     }
 
     /** Returns whether this symbolic location is final. */
+    @Override
     public final Type getType() {
         if (this.type == null) {
             this.type = computeType();
@@ -127,21 +128,25 @@ abstract public class Term implements Position<Term> {
     abstract protected Type computeType();
 
     /** Returns whether this symbolic location is final. */
+    @Override
     public final boolean isFinal() {
         return getType() == Type.FINAL;
     }
 
     /** Indicates if this term has any outgoing edges. */
+    @Override
     public final boolean isTrial() {
         return getType() == Type.TRIAL;
     }
 
     /** Indicates that this term is dead, i.e., has no outgoing edges and is not final. */
+    @Override
     public final boolean isDead() {
         return getType() == Type.DEAD;
     }
 
     /** Returns the set of derivations for this symbolic location. */
+    @Override
     public final DerivationList getAttempt() {
         if (this.outEdges == null) {
             this.outEdges = computeAttempt();
@@ -174,6 +179,7 @@ abstract public class Term implements Position<Term> {
     }
 
     /** Returns the transient depth of this symbolic location. */
+    @Override
     public final int getDepth() {
         if (this.depth == null) {
             this.depth = computeDepth();

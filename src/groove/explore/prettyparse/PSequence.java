@@ -48,6 +48,7 @@ public class PSequence implements SerializedParser {
         return true;
     }
 
+    @Override
     public String toParsableString(Serialized source) {
         String result = "";
         for (SerializedParser parser : this.parsers) {

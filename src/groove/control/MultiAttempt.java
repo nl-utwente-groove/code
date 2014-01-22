@@ -26,7 +26,10 @@ import java.util.ArrayList;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class MultiAttempt<P extends Position<P>,A> extends
-        ArrayList<A> implements Attempt<P> {
-    // empty
+public abstract class MultiAttempt<P extends Position<P>,A> extends ArrayList<A> implements
+        Attempt<P> {
+    @Override
+    public boolean sameVerdict() {
+        return onFailure() == onSuccess();
+    }
 }

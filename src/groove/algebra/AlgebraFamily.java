@@ -55,11 +55,11 @@ public enum AlgebraFamily {
      * {@link String} for {@code string}, 
      * {@link BigDecimal} for {@code real}, 
      */
-    BIG("big", BigIntAlgebra.instance, BigBoolAlgebra.instance,
-            BigStringAlgebra.instance, BigRealAlgebra.instance),
+    BIG("big", BigIntAlgebra.instance, BigBoolAlgebra.instance, BigStringAlgebra.instance,
+            BigRealAlgebra.instance),
     /** Term algebra: symbolic representations for all values. */
-    TERM("term", TermIntAlgebra.instance, TermBoolAlgebra.instance,
-            TermStringAlgebra.instance, TermRealAlgebra.instance);
+    TERM("term", TermIntAlgebra.instance, TermBoolAlgebra.instance, TermStringAlgebra.instance,
+            TermRealAlgebra.instance);
 
     /**
      * Constructs a new register, loaded with a given set of algebras.
@@ -68,8 +68,8 @@ public enum AlgebraFamily {
      *         signature
      * @throws IllegalStateException if there are signatures without algebras
      */
-    private AlgebraFamily(String name, Algebra<?>... algebras)
-        throws IllegalArgumentException, IllegalStateException {
+    private AlgebraFamily(String name, Algebra<?>... algebras) throws IllegalArgumentException,
+        IllegalStateException {
         this.name = name;
         for (Algebra<?> algebra : algebras) {
             setImplementation(algebra);
@@ -87,8 +87,7 @@ public enum AlgebraFamily {
         Algebra<?> oldAlgebra = this.algebraMap.put(sigKind, algebra);
         if (oldAlgebra != null) {
             throw new IllegalArgumentException(String.format(
-                "Signature '%s' already implemented by '%s'", sigKind,
-                oldAlgebra.getName()));
+                "Signature '%s' already implemented by '%s'", sigKind, oldAlgebra.getName()));
         }
     }
 
@@ -176,8 +175,7 @@ public enum AlgebraFamily {
         Map<String,Operation> result = new HashMap<String,Operation>();
         // first find out what methods were declared in the signature
         Set<String> methodNames = new HashSet<String>();
-        Method[] signatureMethods =
-            algebra.getSignature().getSignatureClass().getDeclaredMethods();
+        Method[] signatureMethods = algebra.getSignature().getSignatureClass().getDeclaredMethods();
         for (Method method : signatureMethods) {
             if (Modifier.isAbstract(method.getModifiers())
                 && Modifier.isPublic(method.getModifiers())) {
@@ -190,8 +188,7 @@ public enum AlgebraFamily {
         while (!methodNames.isEmpty()) {
             for (Method method : myClass.getDeclaredMethods()) {
                 if (methodNames.remove(method.getName())) {
-                    result.put(method.getName(),
-                        createOperation(algebra, method));
+                    result.put(method.getName(), createOperation(algebra, method));
                 }
             }
             myClass = myClass.getSuperclass();
@@ -215,8 +212,8 @@ public enum AlgebraFamily {
     /** The algebra family name. */
     private final String name;
     /** A map from signature kinds to algebras registered for that name. */
-    private final Map<SignatureKind,Algebra<?>> algebraMap =
-        new EnumMap<SignatureKind,Algebra<?>>(SignatureKind.class);
+    private final Map<SignatureKind,Algebra<?>> algebraMap = new EnumMap<SignatureKind,Algebra<?>>(
+        SignatureKind.class);
     /** Store of operations created from the algebras. */
     private final Map<Algebra<?>,Map<String,Operation>> operationsMap =
         new HashMap<Algebra<?>,Map<String,Operation>>();
@@ -235,8 +232,7 @@ public enum AlgebraFamily {
     }
 
     /** Mapping from names to algebra families. */
-    private static Map<String,AlgebraFamily> familyMap =
-        new HashMap<String,AlgebraFamily>();
+    private static Map<String,AlgebraFamily> familyMap = new HashMap<String,AlgebraFamily>();
     static {
         for (AlgebraFamily family : values()) {
             familyMap.put(family.getName(), family);
@@ -253,6 +249,7 @@ public enum AlgebraFamily {
             this.returnType = register.getAlgebra(returnType);
         }
 
+        @Override
         public Object apply(List<Object> args) throws IllegalArgumentException {
             try {
                 return this.method.invoke(this.algebra, args.toArray());
@@ -267,18 +264,22 @@ public enum AlgebraFamily {
             }
         }
 
+        @Override
         public Algebra<?> getAlgebra() {
             return this.algebra;
         }
 
+        @Override
         public int getArity() {
             return this.method.getParameterTypes().length;
         }
 
+        @Override
         public Algebra<?> getResultAlgebra() {
             return this.returnType;
         }
 
+        @Override
         public String getName() {
             return this.method.getName();
         }

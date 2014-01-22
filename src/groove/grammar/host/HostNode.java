@@ -28,5 +28,6 @@ import groove.graph.Node;
 public interface HostNode extends Node, HostElement, AnchorValue {
     /** Returns the type of the host node, or {@code null} if
      * the host node is untyped. */
+    @Override
     public TypeNode getType();
 }

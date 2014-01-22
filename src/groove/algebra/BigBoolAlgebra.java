@@ -27,6 +27,7 @@ public class BigBoolAlgebra extends AbstractBoolAlgebra {
         // empty
     }
 
+    @Override
     public String getName() {
         return NAME;
     }

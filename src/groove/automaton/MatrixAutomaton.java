@@ -29,10 +29,10 @@ import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGraph;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
-import groove.graph.ElementFactory;
 import groove.graph.Edge;
 import groove.graph.EdgeRole;
 import groove.graph.Element;
+import groove.graph.ElementFactory;
 import groove.graph.NodeSetEdgeSetGraph;
 
 import java.util.ArrayList;
@@ -51,8 +51,7 @@ import java.util.Set;
  * An implementation of regular automata that also keeps track of the valuation
  * of the variables.
  */
-public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
-        implements RegAut {
+public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge> implements RegAut {
     private MatrixAutomaton() {
         super("prototype");
         this.start = null;
@@ -212,11 +211,9 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         Set<TypeLabel> initInvLabelSet = new HashSet<TypeLabel>();
         int indexedNodeCount = this.nodes.length;
         Map<Direction,Map<TypeLabel,Set<RegEdge>>[]> nodeInvLabelEdgeMap =
-            new EnumMap<Direction,Map<TypeLabel,Set<RegEdge>>[]>(
-                Direction.class);
+            new EnumMap<Direction,Map<TypeLabel,Set<RegEdge>>[]>(Direction.class);
         Map<Direction,Map<TypeLabel,Set<RegEdge>>[]> nodePosLabelEdgeMap =
-            new EnumMap<Direction,Map<TypeLabel,Set<RegEdge>>[]>(
-                Direction.class);
+            new EnumMap<Direction,Map<TypeLabel,Set<RegEdge>>[]>(Direction.class);
         for (Direction dir : Direction.values()) {
             nodeInvLabelEdgeMap.put(dir, new Map[indexedNodeCount]);
             nodePosLabelEdgeMap.put(dir, new Map[indexedNodeCount]);
@@ -257,10 +254,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         this.nodeInvLabelEdgeIndicesMap =
             new EnumMap<Direction,Map<TypeLabel,int[]>[]>(Direction.class);
         for (Direction direction : Direction.values()) {
-            Map<TypeLabel,int[]>[] posLabelEdgeIndices =
-                new Map[indexedNodeCount];
-            Map<TypeLabel,int[]>[] invLabelEdgeIndices =
-                new Map[indexedNodeCount];
+            Map<TypeLabel,int[]>[] posLabelEdgeIndices = new Map[indexedNodeCount];
+            Map<TypeLabel,int[]>[] invLabelEdgeIndices = new Map[indexedNodeCount];
             for (int nodeIndex = 0; nodeIndex < indexedNodeCount; nodeIndex++) {
                 posLabelEdgeIndices[nodeIndex] =
                     toIntArrayMap(nodePosLabelEdgeMap.get(direction)[nodeIndex]);
@@ -283,8 +278,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         Set<RegNode> remainingNodes = new HashSet<RegNode>();
         remainingNodes.add(getStartNode());
         // keep maps from automaton nodes to all vars and bound vars
-        Map<RegNode,Set<LabelVar>> allVarMap =
-            new HashMap<RegNode,Set<LabelVar>>();
+        Map<RegNode,Set<LabelVar>> allVarMap = new HashMap<RegNode,Set<LabelVar>>();
         allVarMap.put(getStartNode(), new HashSet<LabelVar>());
         while (!remainingNodes.isEmpty()) {
             RegNode source = remainingNodes.iterator().next();
@@ -292,8 +286,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
             Set<LabelVar> sourceAllVarSet = allVarMap.get(source);
             for (RegEdge outEdge : outEdgeSet(source)) {
                 RegNode target = outEdge.target();
-                Set<LabelVar> targetAllVarSet =
-                    new HashSet<LabelVar>(sourceAllVarSet);
+                Set<LabelVar> targetAllVarSet = new HashSet<LabelVar>(sourceAllVarSet);
                 RegExpr expr = outEdge.label().getMatchExpr();
                 targetAllVarSet.addAll(expr.allVarSet());
                 if (allVarMap.containsKey(target)) {
@@ -313,6 +306,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         }
     }
 
+    @Override
     public boolean accepts(List<String> word) {
         assert isFixed();
         assert this.typeGraph.isImplicit();
@@ -321,12 +315,10 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         } else {
             // keep the set of current matches (initially the start node)
             Map<RegNode,HashMap<LabelVar,TypeElement>> matchSet =
-                Collections.singletonMap(getStartNode(),
-                    new HashMap<LabelVar,TypeElement>());
+                Collections.singletonMap(getStartNode(), new HashMap<LabelVar,TypeElement>());
             boolean accepts = false;
             // go through the word
-            for (int index = 0; !accepts && !matchSet.isEmpty()
-                && index < word.size(); index++) {
+            for (int index = 0; !accepts && !matchSet.isEmpty() && index < word.size(); index++) {
                 boolean lastIndex = index == word.size() - 1;
                 TypeEdge letter = getLetter(word.get(index));
                 Map<RegNode,HashMap<LabelVar,TypeElement>> newMatchSet =
@@ -334,12 +326,10 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                 Iterator<? extends Map.Entry<RegNode,HashMap<LabelVar,TypeElement>>> matchIter =
                     matchSet.entrySet().iterator();
                 while (!accepts && matchIter.hasNext()) {
-                    Map.Entry<RegNode,HashMap<LabelVar,TypeElement>> matchEntry =
-                        matchIter.next();
+                    Map.Entry<RegNode,HashMap<LabelVar,TypeElement>> matchEntry = matchIter.next();
                     RegNode match = matchEntry.getKey();
                     HashMap<LabelVar,TypeElement> idMap = matchEntry.getValue();
-                    Iterator<? extends RegEdge> outEdgeIter =
-                        outEdgeSet(match).iterator();
+                    Iterator<? extends RegEdge> outEdgeIter = outEdgeSet(match).iterator();
                     while (!accepts && outEdgeIter.hasNext()) {
                         RegEdge outEdge = outEdgeIter.next();
                         RuleLabel label = outEdge.label();
@@ -350,17 +340,12 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                             TypeGuard guard = label.getWildcardGuard();
                             labelOK = guard.isSatisfied(letter);
                             if (guard.isNamed()) {
-                                idMap =
-                                    new HashMap<LabelVar,TypeElement>(idMap);
-                                TypeElement oldIdValue =
-                                    idMap.put(guard.getVar(), letter);
-                                labelOK =
-                                    oldIdValue == null
-                                        || oldIdValue.equals(letter);
+                                idMap = new HashMap<LabelVar,TypeElement>(idMap);
+                                TypeElement oldIdValue = idMap.put(guard.getVar(), letter);
+                                labelOK = oldIdValue == null || oldIdValue.equals(letter);
                             }
                         } else {
-                            labelOK =
-                                label.getTypeLabel().equals(letter.label());
+                            labelOK = label.getTypeLabel().equals(letter.label());
                         }
                         if (labelOK) {
                             // if we're at the last index, we don't have to
@@ -394,31 +379,30 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
         return result;
     }
 
-    public Set<Result> getMatches(HostGraph graph, HostNode startImage,
-            HostNode endImage, Valuation valuation) {
+    @Override
+    public Set<Result> getMatches(HostGraph graph, HostNode startImage, HostNode endImage,
+            Valuation valuation) {
         assert isFixed();
         if (valuation == null) {
             valuation = Valuation.EMPTY;
         }
         if (startImage != null) {
             // do forward matching from the start images
-            return getMatchingAlgorithm(FORWARD).computeMatches(graph,
-                startImage, endImage, valuation);
+            return getMatchingAlgorithm(FORWARD).computeMatches(graph, startImage, endImage,
+                valuation);
         } else if (endImage != null) {
             // do backwards matching from the end images
-            return getMatchingAlgorithm(BACKWARD).computeMatches(graph,
-                endImage, null, valuation);
+            return getMatchingAlgorithm(BACKWARD).computeMatches(graph, endImage, null, valuation);
         } else {
             // if we don't have any start or end images,
             // create a set of start images using the automaton's initial edges
-            return getMatchingAlgorithm(FORWARD).computeMatches(graph, null,
-                null, valuation);
+            return getMatchingAlgorithm(FORWARD).computeMatches(graph, null, null, valuation);
 
         }
     }
 
-    public Set<Result> getMatches(HostGraph graph, HostNode startImage,
-            HostNode endImage) {
+    @Override
+    public Set<Result> getMatches(HostGraph graph, HostNode startImage, HostNode endImage) {
         return getMatches(graph, startImage, endImage, null);
     }
 
@@ -443,16 +427,13 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
 
     @Override
     protected boolean isTypeCorrect(Edge edge) {
-        boolean result =
-            edge instanceof RegEdge && edge.label() instanceof RuleLabel;
+        boolean result = edge instanceof RegEdge && edge.label() instanceof RuleLabel;
         if (result) {
             RuleLabel edgeLabel = (RuleLabel) edge.label();
             if (edgeLabel.isInv()) {
                 edgeLabel = edgeLabel.getInvLabel();
             }
-            result =
-                edgeLabel.isWildcard() || edgeLabel.isSharp()
-                    || edgeLabel.isAtom();
+            result = edgeLabel.isWildcard() || edgeLabel.isSharp() || edgeLabel.isAtom();
         }
         return result;
     }
@@ -466,8 +447,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      */
     final MatchingAlgorithm getMatchingAlgorithm(Direction direction) {
         if (this.algorithm == null) {
-            this.algorithm =
-                new EnumMap<Direction,MatchingAlgorithm>(Direction.class);
+            this.algorithm = new EnumMap<Direction,MatchingAlgorithm>(Direction.class);
             this.algorithm.put(FORWARD, createMatchingAlgorithm(FORWARD));
             this.algorithm.put(BACKWARD, createMatchingAlgorithm(BACKWARD));
         }
@@ -538,11 +518,9 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      * Adds a combination of node, label and edge to one of the maps in this
      * automaton.
      */
-    final void addToNodeLabelEdgeSetMap(
-            Map<TypeLabel,Set<RegEdge>>[] nodeLabelEdgeSetMap, RegNode node,
-            TypeLabel label, RegEdge edge) {
-        Map<TypeLabel,Set<RegEdge>> labelEdgeMap =
-            nodeLabelEdgeSetMap[getIndex(node)];
+    final void addToNodeLabelEdgeSetMap(Map<TypeLabel,Set<RegEdge>>[] nodeLabelEdgeSetMap,
+            RegNode node, TypeLabel label, RegEdge edge) {
+        Map<TypeLabel,Set<RegEdge>> labelEdgeMap = nodeLabelEdgeSetMap[getIndex(node)];
         if (labelEdgeMap == null) {
             nodeLabelEdgeSetMap[getIndex(node)] =
                 labelEdgeMap = new HashMap<TypeLabel,Set<RegEdge>>();
@@ -675,6 +653,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      */
     private boolean acceptsEmptyWord;
 
+    @Override
     public final TypeGraph getTypeGraph() {
         return this.typeGraph;
     }
@@ -763,12 +742,11 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      * Array of dummy labels for each label kind.
      * Can be used to match wildcards in case there is no proper match for them. 
      */
-    private static final Map<EdgeRole,TypeLabel> DUMMY_LABELS =
-        new EnumMap<EdgeRole,TypeLabel>(EdgeRole.class);
+    private static final Map<EdgeRole,TypeLabel> DUMMY_LABELS = new EnumMap<EdgeRole,TypeLabel>(
+        EdgeRole.class);
     static {
         for (EdgeRole kind : EdgeRole.values()) {
-            DUMMY_LABELS.put(kind,
-                TypeLabel.createLabel(kind, DUMMY_LABEL_TEXT));
+            DUMMY_LABELS.put(kind, TypeLabel.createLabel(kind, DUMMY_LABEL_TEXT));
         }
     }
 
@@ -781,8 +759,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
      */
     private class MatchingAlgorithm {
         /** Dummy object used in matching. */
-        final MatchingComputation MATCH_DUMMY = new MatchingComputation(0,
-            null, null);
+        final MatchingComputation MATCH_DUMMY = new MatchingComputation(0, null, null);
 
         /**
          * Wraps a single computation of the enclosing {@link MatchingAlgorithm}
@@ -792,8 +769,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
          * images. Computations can <i>depend</i> on one another, meaning that
          * the results of one computation are copied to the dependent ones.
          */
-        protected class MatchingComputation extends
-                HashMap<HostNode,Set<Valuation>> {
+        protected class MatchingComputation extends HashMap<HostNode,Set<Valuation>> {
             /**
              * Constructs a computation for a given key-image pair, as a
              * sub-computation of another (the <i>dependent</i> computation).
@@ -805,8 +781,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
              *        which this one occurs
              * @param valuation the initial valuation for this computation
              */
-            public MatchingComputation(int keyIndex, HostNode image,
-                    MatchingComputation dependent, Valuation valuation) {
+            public MatchingComputation(int keyIndex, HostNode image, MatchingComputation dependent,
+                    Valuation valuation) {
                 this.keyIndex = keyIndex;
                 this.image = image;
                 this.valuation = valuation;
@@ -837,8 +813,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
              * @param image the image (graph node) for this computation
              * @param valuation the initial valuation for this computation
              */
-            public MatchingComputation(int keyIndex, HostNode image,
-                    Valuation valuation) {
+            public MatchingComputation(int keyIndex, HostNode image, Valuation valuation) {
                 this(keyIndex, image, null, valuation);
                 // if the set of end images is not null, count the number of
                 // remaining images
@@ -881,12 +856,9 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
              * @see #getPosEdgeSet(HostNode)
              * @see #getOpposite(HostEdge)
              */
-            private void propagate(int keyIndex, HostNode image,
-                    Valuation valuation) {
-                extend(getPosLabelEdgeMap(keyIndex), image,
-                    getPosEdgeSet(image), valuation, true);
-                extend(getInvLabelEdgeMap(keyIndex), image,
-                    getInvEdgeSet(image), valuation, false);
+            private void propagate(int keyIndex, HostNode image, Valuation valuation) {
+                extend(getPosLabelEdgeMap(keyIndex), image, getPosEdgeSet(image), valuation, true);
+                extend(getInvLabelEdgeMap(keyIndex), image, getInvEdgeSet(image), valuation, false);
             }
 
             /**
@@ -897,15 +869,13 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
              * @param valuation the valuation of the wildcard names encountered
              *        so far
              */
-            private void extend(Map<TypeLabel,int[]> keyLabelEdgeMap,
-                    HostNode image,
-                    Collection<? extends HostEdge> imageEdgeSet,
-                    Valuation valuation, boolean positive) {
+            private void extend(Map<TypeLabel,int[]> keyLabelEdgeMap, HostNode image,
+                    Collection<? extends HostEdge> imageEdgeSet, Valuation valuation,
+                    boolean positive) {
                 if (keyLabelEdgeMap != null) {
                     if (!MatrixAutomaton.this.typeGraph.isImplicit()) {
                         TypeElement imageType = image.getType();
-                        extend(keyLabelEdgeMap.get(imageType.label()), image,
-                            imageType, valuation);
+                        extend(keyLabelEdgeMap.get(imageType.label()), image, imageType, valuation);
                     }
                     for (HostEdge imageEdge : imageEdgeSet) {
                         if (MatchingAlgorithm.this.remainingImageCount == 0) {
@@ -913,10 +883,9 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                         }
                         TypeElement imageType = imageEdge.getType();
                         HostNode imageNode =
-                            positive ? getOpposite(imageEdge)
-                                    : getThisEnd(imageEdge);
-                        extend(keyLabelEdgeMap.get(imageType.label()),
-                            imageNode, imageType, valuation);
+                            positive ? getOpposite(imageEdge) : getThisEnd(imageEdge);
+                        extend(keyLabelEdgeMap.get(imageType.label()), imageNode, imageType,
+                            valuation);
                     }
                 }
             }
@@ -929,8 +898,8 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
              * @param valuation the valuation of the wildcard names encountered
              *        so far
              */
-            private void extend(int[] keyEdgeIndices, HostNode imageNode,
-                    TypeElement type, Valuation valuation) {
+            private void extend(int[] keyEdgeIndices, HostNode imageNode, TypeElement type,
+                    Valuation valuation) {
                 if (keyEdgeIndices != null) {
                     for (int keyEdgeIndex : keyEdgeIndices) {
                         if (MatchingAlgorithm.this.remainingImageCount == 0) {
@@ -957,8 +926,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                             }
                         }
                         if (labelOk) {
-                            extend(getOpposite(keyEdgeIndex), imageNode,
-                                valuation);
+                            extend(getOpposite(keyEdgeIndex), imageNode, valuation);
                         }
                     }
                 }
@@ -974,8 +942,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
              * @param valuation the valuation of the wildcard names encountered
              *        so far
              */
-            private void extend(int keyIndex, HostNode image,
-                    Valuation valuation) {
+            private void extend(int keyIndex, HostNode image, Valuation valuation) {
                 if (keyIndex == MatchingAlgorithm.this.endIndex) {
                     add(image, valuation);
                 } else if (!isCyclic(keyIndex)) {
@@ -997,8 +964,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                             // start a sub-process
                             // create a new result set for the key/image-pair
                             MatchingComputation newResult =
-                                new MatchingComputation(keyIndex, image, this,
-                                    valuation);
+                                new MatchingComputation(keyIndex, image, this, valuation);
                             putMatch(newResult);
                             newResult.start();
                         } else {
@@ -1021,8 +987,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                         // add the valuations to those stored for the image
                         Set<Valuation> currentValuations = get(image);
                         if (currentValuations == null) {
-                            put(image, currentValuations =
-                                new HashSet<Valuation>());
+                            put(image, currentValuations = new HashSet<Valuation>());
                         }
                         return currentValuations.add(valuation);
                     } else {
@@ -1052,8 +1017,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                         // add the valuations to those stored for the image
                         Set<Valuation> currentValuations = get(image);
                         if (currentValuations == null) {
-                            put(image, currentValuations =
-                                new HashSet<Valuation>());
+                            put(image, currentValuations = new HashSet<Valuation>());
                         }
                         currentValuations.addAll(valuations);
                     }
@@ -1183,8 +1147,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
                 this.endIndex = getStartNodeIndex();
                 break;
             default:
-                throw new IllegalArgumentException(
-                    "Illegal matching direction value" + direction);
+                throw new IllegalArgumentException("Illegal matching direction value" + direction);
             }
             this.nodePosLabelEdgeMap = getNodePosLabelEdgeMap(direction);
             this.nodeInvLabelEdgeMap = getNodeInvLabelEdgeMap(direction);
@@ -1205,22 +1168,19 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
          *        allowed
          * @param valuation initial mapping from variables to labels
          */
-        public Set<Result> computeMatches(HostGraph graph, HostNode startImage,
-                HostNode endImage, Valuation valuation) {
+        public Set<Result> computeMatches(HostGraph graph, HostNode startImage, HostNode endImage,
+                Valuation valuation) {
             if (graph != this.graph) {
                 // we're working on a different graph, so the previous matchings
                 // are no good
                 cleanOldMatches();
                 this.graph = graph;
             }
-            this.endImages =
-                endImage == null ? graph.nodeSet()
-                        : Collections.singleton(endImage);
+            this.endImages = endImage == null ? graph.nodeSet() : Collections.singleton(endImage);
             this.storeIntermediates = !hasVars();
             this.result = new HashSet<Result>();
             Set<? extends HostNode> startImages =
-                startImage == null ? graph.nodeSet()
-                        : Collections.singleton(startImage);
+                startImage == null ? graph.nodeSet() : Collections.singleton(startImage);
             for (HostNode start : startImages) {
                 if (isAcceptsEmptyWord() && isAllowedResult(start)) {
                     this.result.add(new Result(start, start));
@@ -1397,8 +1357,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
          * end images (and comparing this with the required number).
          */
         protected boolean isCountingEdgeImages() {
-            return this.endImages != null && !hasVars()
-                && !isStoringIntermediates();
+            return this.endImages != null && !hasVars() && !isStoringIntermediates();
         }
 
         /**
@@ -1475,7 +1434,6 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<RegNode,RegEdge>
          * images reachable from the automaton key/graph image pairs.
          */
         @SuppressWarnings("unchecked")
-        final Map<HostNode,MatchingComputation>[] auxResults =
-            new Map[indexedNodeCount()];
+        final Map<HostNode,MatchingComputation>[] auxResults = new Map[indexedNodeCount()];
     }
 }

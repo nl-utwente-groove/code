@@ -31,8 +31,8 @@ import java.util.Set;
  */
 public class Recipe extends Procedure implements Action {
     /** Constructs a recipe from a control automaton, given a priority. */
-    public Recipe(String name, int priority, List<CtrlPar.Var> sig,
-            String controlName, int startLine) {
+    public Recipe(String name, int priority, List<CtrlPar.Var> sig, String controlName,
+            int startLine) {
         super(name, priority, sig, controlName, startLine);
     }
 
@@ -56,6 +56,7 @@ public class Recipe extends Procedure implements Action {
     /**
      * Compares two actions on the basis of their names.
      */
+    @Override
     public int compareTo(Action other) {
         return getFullName().compareTo(other.getFullName());
     }

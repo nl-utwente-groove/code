@@ -25,8 +25,7 @@ import groove.util.ExprParser;
  * @author Arend Rensink
  * @version $Revision $
  */
-public abstract class AbstractStringAlgebra<Int> extends
-        StringAlgebra<String,Boolean,Int> {
+public abstract class AbstractStringAlgebra<Int> extends StringAlgebra<String,Boolean,Int> {
     /** Empty constructor for the singleton instance. */
     AbstractStringAlgebra() {
         // empty
@@ -67,14 +66,17 @@ public abstract class AbstractStringAlgebra<Int> extends
         return arg0.compareTo(arg1) < 0;
     }
 
+    @Override
     public boolean isValue(Object value) {
         return value instanceof String;
     }
 
+    @Override
     public String getSymbol(Object value) {
         return ExprParser.toQuoted((String) value, ExprParser.DOUBLE_QUOTE_CHAR);
     }
 
+    @Override
     public Expression toTerm(Object value) {
         return Constant.instance((String) value);
     }
@@ -84,6 +86,7 @@ public abstract class AbstractStringAlgebra<Int> extends
         return (String) value;
     }
 
+    @Override
     public String toValueFromConstant(Constant constant) {
         return constant.getStringRepr();
     }

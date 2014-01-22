@@ -1,4 +1,4 @@
-// $ANTLR 3.4 D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g 2014-01-16 09:30:03
+// $ANTLR 3.4 D:\\Eclipse\\groove\\src\\groove\\algebra\\syntax\\Expr.g 2014-01-22 23:01:14
 
 package groove.algebra.syntax;
 import groove.grammar.model.FormatErrorSet;
@@ -1729,7 +1729,7 @@ public TreeAdaptor getTreeAdaptor() {
                             stream_literal.add(literal44.getTree());
 
                             // AST REWRITE
-                            // elements: ID, literal, MINUS
+                            // elements: MINUS, ID, literal
                             // token labels: 
                             // rule labels: retval
                             // token list labels: 

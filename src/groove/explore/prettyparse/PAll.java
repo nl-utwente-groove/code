@@ -46,6 +46,7 @@ public class PAll implements SerializedParser {
         return true;
     }
 
+    @Override
     public String toParsableString(Serialized serialized) {
         return serialized.getArgument(this.argumentName);
     }

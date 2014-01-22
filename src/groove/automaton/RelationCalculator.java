@@ -36,8 +36,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RelationCalculator extends GTSAdapter implements
-        RegExprCalculator<NodeRelation> {
+public class RelationCalculator extends GTSAdapter implements RegExprCalculator<NodeRelation> {
     /**
      * Creates a relation calculator based on a given graph and 
      * relation factory.
@@ -51,6 +50,7 @@ public class RelationCalculator extends GTSAdapter implements
      * Copies the relation associated with the atom in <code>expr</code> and
      * stores it in the underlying mapping.
      */
+    @Override
     public NodeRelation computeAtom(RegExpr.Atom expr) {
         return createRelation(expr.text());
     }
@@ -59,8 +59,8 @@ public class RelationCalculator extends GTSAdapter implements
      * Computes the union of the relations associated with the operands of
      * <code>expr</code>, and stores it in the underlying mapping.
      */
-    public NodeRelation computeChoice(RegExpr.Choice expr,
-            List<NodeRelation> args) {
+    @Override
+    public NodeRelation computeChoice(RegExpr.Choice expr, List<NodeRelation> args) {
         Iterator<NodeRelation> argsIter = args.iterator();
         NodeRelation result = argsIter.next();
         while (argsIter.hasNext()) {
@@ -73,6 +73,7 @@ public class RelationCalculator extends GTSAdapter implements
     /**
      * Computes the identity relation and stores it in the underlying mapping.
      */
+    @Override
     public NodeRelation computeEmpty(RegExpr.Empty expr) {
         NodeRelation result = getFactory().newInstance();
         for (Node node : this.graph.nodeSet()) {
@@ -85,6 +86,7 @@ public class RelationCalculator extends GTSAdapter implements
      * Computes the inverse of the relation associated with the operand of
      * <code>expr</code> and stores it in the underlying mapping.
      */
+    @Override
     public NodeRelation computeInv(RegExpr.Inv expr, NodeRelation arg) {
         arg.doInverse();
         return arg;
@@ -94,6 +96,7 @@ public class RelationCalculator extends GTSAdapter implements
      * Negation of operations is not supported.
      * @throws UnsupportedOperationException always
      */
+    @Override
     public NodeRelation computeNeg(RegExpr.Neg expr, NodeRelation arg) {
         throw new UnsupportedOperationException();
     }
@@ -102,6 +105,7 @@ public class RelationCalculator extends GTSAdapter implements
      * Computes the transitive closure over the relation associated with the
      * operand of <code>expr</code>, and stores it in the underlying mapping.
      */
+    @Override
     public NodeRelation computePlus(RegExpr.Plus expr, NodeRelation arg) {
         arg.doTransitiveClosure();
         return arg;
@@ -111,6 +115,7 @@ public class RelationCalculator extends GTSAdapter implements
      * Computes the sequential composition of the relations associated with the
      * operands of <code>expr</code>, and stores it in the underlying mapping.
      */
+    @Override
     public NodeRelation computeSeq(RegExpr.Seq expr, List<NodeRelation> argList) {
         Iterator<NodeRelation> argsIter = argList.iterator();
         NodeRelation result = argsIter.next();
@@ -126,6 +131,7 @@ public class RelationCalculator extends GTSAdapter implements
      * associated with the operand of <code>expr</code>, and stores it in the
      * underlying mapping.
      */
+    @Override
     public NodeRelation computeStar(RegExpr.Star expr, NodeRelation arg) {
         arg.doTransitiveClosure();
         for (Node node : this.graph.nodeSet()) {
@@ -142,6 +148,7 @@ public class RelationCalculator extends GTSAdapter implements
     /**
      * Creates a fresh relation on the basis of the set of all pairs.
      */
+    @Override
     public NodeRelation computeWildcard(RegExpr.Wildcard expr) {
         NodeRelation result = getFactory().newInstance();
         for (Edge edge : this.graph.edgeSet()) {

@@ -39,8 +39,7 @@ public class PSeparated implements SerializedParser {
      * Constructs a <code>PSeparated</code> out of a parser for an item and a
      * parser for the separator symbol.
      */
-    public PSeparated(SerializedParser itemParser,
-            SerializedParser separatorParser) {
+    public PSeparated(SerializedParser itemParser, SerializedParser separatorParser) {
         this.itemParser = itemParser;
         this.separatorParser = separatorParser;
     }
@@ -62,6 +61,7 @@ public class PSeparated implements SerializedParser {
         }
     }
 
+    @Override
     public String toParsableString(Serialized source) {
         String result = this.itemParser.toParsableString(source);
         if (result != null) {
@@ -82,7 +82,6 @@ public class PSeparated implements SerializedParser {
 
     @Override
     public String describeGrammar() {
-        return this.itemParser.describeGrammar()
-            + this.separatorParser.describeGrammar() + "...";
+        return this.itemParser.describeGrammar() + this.separatorParser.describeGrammar() + "...";
     }
 }

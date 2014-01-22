@@ -44,20 +44,19 @@ public class PIdentifier implements SerializedParser {
     public boolean parse(StringConsumer stream, Serialized serialized) {
         boolean foundIdentifier = stream.consumeIdentifier();
         if (foundIdentifier) {
-            serialized.appendArgument(this.argumentName,
-                stream.getLastConsumed());
+            serialized.appendArgument(this.argumentName, stream.getLastConsumed());
             return true;
         } else {
             return false;
         }
     }
 
+    @Override
     public String toParsableString(Serialized serialized) {
         String value = serialized.getArgument(this.argumentName);
         String result = StringConsumer.parseIdentifier(value);
         if (result != null) {
-            serialized.setArgument(this.argumentName,
-                value.substring(result.length()));
+            serialized.setArgument(this.argumentName, value.substring(result.length()));
         }
         return result;
     }

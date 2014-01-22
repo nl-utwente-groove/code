@@ -31,4 +31,7 @@ public interface Attempt<P extends Position<P>> {
 
     /** Next alternative position in case this attempt fails. */
     public P onFailure();
+
+    /** Indicates that the success and failure alternates are identical. */
+    public boolean sameVerdict();
 }

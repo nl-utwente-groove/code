@@ -92,6 +92,7 @@ public abstract class BoolSignature<Bool> implements Signature {
         /** Value for {@link #neq(Object, Object)}. */
         NEQ, ;
 
+        @Override
         public Operator getOperator() {
             if (this.operator == null) {
                 this.operator = Operator.newInstance(SignatureKind.BOOL, this);
