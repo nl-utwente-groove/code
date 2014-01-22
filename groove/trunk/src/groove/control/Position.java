@@ -16,7 +16,6 @@
  */
 package groove.control;
 
-
 /**
  * Position in a control structure that encodes the functionality of an 
  * {@link Attempt}, being one or more calls that are to be tried from this position,
@@ -61,21 +60,6 @@ public interface Position<P extends Position<P>> {
      * Should only be invoked after the position is fixed, and is a trial position.
      */
     public abstract Attempt<P> getAttempt();
-
-    /**
-     * Returns the next position to be tried after the attempt has failed.
-     * Should only be called after the position is fixed, and is a trial position.
-     * @return the next position after failure; may be {@code null}
-     */
-    public abstract Position<P> onFailure();
-
-    /**
-     * Returns the next position to be tried after the attempt
-     * has succeeded.
-     * Should only be called after the position is fixed, and is a trial position.
-     * @return the next position after success; may be {@code null}
-     */
-    public abstract Position<P> onSuccess();
 
     /** Position type. */
     public static enum Type {

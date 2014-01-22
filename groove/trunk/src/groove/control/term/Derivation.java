@@ -16,7 +16,6 @@
  */
 package groove.control.term;
 
-import groove.control.SingleAttempt;
 import groove.control.Call;
 import groove.util.Pair;
 
@@ -26,7 +25,7 @@ import groove.util.Pair;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Derivation extends Pair<Call,Term> implements SingleAttempt<Term> {
+public class Derivation extends Pair<Call,Term> {
     /**
      * Constructs a symbolic edge out of a call and a target location.
      */
@@ -43,7 +42,7 @@ public class Derivation extends Pair<Call,Term> implements SingleAttempt<Term> {
     /**
      * Returns the target symbolic location wrapped into this edge.
      */
-    public Term target() {
+    public Term onFinish() {
         return two();
     }
 

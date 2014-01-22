@@ -19,88 +19,58 @@ package groove.control.template;
 import groove.control.Position;
 
 /**
- * Slot within a control location, corresponding to the part of the
+ * Stage of a control location, corresponding to the part of the
  * attempt of that location that has been completed.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class Stage implements Position<Stage> {
-    /** Constructs a location slot with the given arguments. */
-    public Stage(TemplatePosition pos, int nr, boolean success) {
-        assert nr < pos.getAttempt().size();
-        this.pos = pos;
+    /** Constructs a location stage with the given arguments. */
+    public Stage(Location loc, int nr, boolean success) {
+        this.loc = loc;
         this.nr = nr;
         this.success = success;
-        this.last = nr == pos.getAttempt().size() - 1;
     }
 
     public Type getType() {
-        return this.pos.getType();
+        return this.loc.getType();
     }
 
     public boolean isDead() {
-        return this.pos.isDead();
+        return this.loc.isDead();
     }
 
     public boolean isFinal() {
-        return this.pos.isFinal();
+        return this.loc.isFinal();
     }
 
     public boolean isTrial() {
-        return this.pos.isTrial();
+        return this.loc.isTrial();
     }
 
     public int getDepth() {
-        return this.pos.getDepth();
+        return this.loc.getDepth();
     }
 
-    public StageSwitch getAttempt() {
-        return this.pos.getAttempt().getStage(this.nr);
+    public Switch getAttempt() {
+        return this.loc.getAttempt().getStage(this.nr, this.success);
     }
 
-    public Stage onFailure() {
-        assert getPosition() instanceof Location;
-        Stage result;
-        // go to the next position only if this is the last slot
-        if (this.last) {
-            TemplatePosition resultPos =
-                this.success ? this.pos.onSuccess() : this.pos.onFailure();
-            result = resultPos.getFirstStage();
-        } else {
-            result =
-                ((Location) getPosition()).getStage(this.nr + 1, this.success);
-        }
-        return result;
+    /** Returns the template location of which this is a stage. */
+    public Location getLocation() {
+        return this.loc;
     }
 
-    public Stage onSuccess() {
-        assert getPosition() instanceof Location;
-        Stage result;
-        // go to the next position only if this is the last slot
-        if (this.last) {
-            result = this.pos.onSuccess().getFirstStage();
-        } else {
-            result = ((Location) getPosition()).getStage(this.nr + 1, true);
-        }
-        return result;
-    }
-
-    /** Returns the template position of which this is a stage. */
-    public TemplatePosition getPosition() {
-        return this.pos;
-    }
-
-    private final TemplatePosition pos;
+    private final Location loc;
     private final int nr;
     private final boolean success;
-    private final boolean last;
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + this.nr;
-        result = prime * result + this.pos.hashCode();
+        result = prime * result + this.loc.hashCode();
         result = prime * result + (this.success ? 1231 : 1237);
         return result;
     }
@@ -120,12 +90,17 @@ public class Stage implements Position<Stage> {
         if (this.nr != other.nr) {
             return false;
         }
-        if (!this.pos.equals(other.pos)) {
+        if (!this.loc.equals(other.loc)) {
             return false;
         }
         if (this.success != other.success) {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "" + this.loc + "/" + this.nr + "/" + this.success;
     }
 }

@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 import groove.control.Call;
 import groove.control.Callable;
 import groove.control.term.Derivation;
+import groove.control.term.DerivationList;
 import groove.control.term.Term;
 import groove.grammar.Grammar;
 import groove.grammar.Rule;
@@ -237,8 +238,7 @@ public class TermDerivationTest {
     /** Predicts an outgoing transition of the current state. */
     private void assertEdge(Call call, Term target) {
         Derivation edge = new Derivation(call, target);
-        Assert.assertTrue(String.format("%s not in %s", edge, this.edges),
-            this.edges.remove(edge));
+        Assert.assertTrue(String.format("%s not in %s", edge, this.edges), this.edges.remove(edge));
     }
 
     /** Predicts the success and failure of the current state.
@@ -246,8 +246,9 @@ public class TermDerivationTest {
      */
     private void assertSuccFail(Term success, Term failure) {
         Assert.assertEquals(Collections.emptyList(), this.edges);
-        Assert.assertEquals(success, source().onSuccess());
-        Assert.assertEquals(failure, source().onFailure());
+        DerivationList attempt = source().getAttempt();
+        Assert.assertEquals(success, success == null ? attempt : attempt.onSuccess());
+        Assert.assertEquals(failure, failure == null ? attempt : attempt.onFailure());
     }
 
     /** Predicts the final nature and transition depth of the current state. */
@@ -274,8 +275,6 @@ public class TermDerivationTest {
             this.edges.addAll(term.getAttempt());
         }
         // make sure the other values are properly computed
-        this.source.onSuccess();
-        this.source.onFailure();
         this.source.isFinal();
         this.source.getDepth();
         if (DEBUG) {

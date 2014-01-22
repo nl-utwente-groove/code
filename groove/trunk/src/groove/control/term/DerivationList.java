@@ -19,9 +19,41 @@ package groove.control.term;
 import groove.control.MultiAttempt;
 
 /**
+ * List of term derivations in combination with the success and failure alternates.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class DerivationList extends MultiAttempt<Term,Derivation> {
-    // empty
+    public Term onSuccess() {
+        assert this.onSuccess != null;
+        return this.onSuccess;
+    }
+
+    /** Sets the success alternate of this attempt. */
+    public void setSuccess(Term onSuccess) {
+        assert this.onSuccess == null;
+        assert onSuccess != null;
+        this.onSuccess = onSuccess;
+    }
+
+    private Term onSuccess;
+
+    public Term onFailure() {
+        assert this.onFailure != null;
+        return this.onFailure;
+    }
+
+    /** Sets the failure alternate of this attempt. */
+    public void setFailure(Term onFailure) {
+        assert this.onFailure == null;
+        assert onFailure != null;
+        this.onFailure = onFailure;
+    }
+
+    private Term onFailure;
+
+    /** Indicates that the success and failure alternates are the same. */
+    public boolean sameVerdict() {
+        return onFailure() == onSuccess();
+    }
 }

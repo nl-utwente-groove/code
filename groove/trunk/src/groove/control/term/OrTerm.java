@@ -16,7 +16,6 @@
  */
 package groove.control.term;
 
-
 /**
  * @author Arend Rensink
  * @version $Revision $
@@ -35,47 +34,23 @@ public class OrTerm extends Term {
     protected DerivationList computeAttempt() {
         DerivationList result = null;
         if (isTrial()) {
+            DerivationList ders0 = arg0().getAttempt();
+            DerivationList ders1 = arg1().getAttempt();
+            result = createAttempt();
             if (useArg0Only()) {
-                result = arg0().getAttempt();
+                result.addAll(ders0);
+                result.setSuccess(ders0.onSuccess().or(arg1()));
+                result.setFailure(ders0.onFailure().or(arg1()));
             } else if (useArg1Only()) {
-                result = arg1().getAttempt();
+                result.addAll(ders1);
+                result.setSuccess(arg0().or(ders1.onSuccess()));
+                result.setFailure(arg0().or(ders1.onFailure()));
             } else {
                 // optimise: combine the attempts of both args
-                result = createAttempt();
-                result.addAll(arg0().getAttempt());
-                result.addAll(arg1().getAttempt());
-            }
-        }
-        return result;
-    }
-
-    @Override
-    protected Term computeSuccess() {
-        Term result = null;
-        if (isTrial()) {
-            if (useArg0Only()) {
-                result = arg0().onSuccess().or(arg1());
-            } else if (useArg1Only()) {
-                result = arg0().or(arg1().onSuccess());
-            } else {
-                // optimise: combine the attempts of both args
-                result = arg0().onSuccess().or(arg1().onSuccess());
-            }
-        }
-        return result;
-    }
-
-    @Override
-    protected Term computeFailure() {
-        Term result = null;
-        if (isTrial()) {
-            if (useArg0Only()) {
-                result = arg0().onFailure().or(arg1());
-            } else if (useArg1Only()) {
-                result = arg0().or(arg1().onFailure());
-            } else {
-                // optimise: combine the attempts of both args
-                result = arg0().onFailure().or(arg1().onFailure());
+                result.addAll(ders0);
+                result.addAll(ders1);
+                result.setSuccess(ders0.onSuccess().or(ders1.onSuccess()));
+                result.setFailure(ders0.onFailure().or(ders1.onFailure()));
             }
         }
         return result;
@@ -86,8 +61,7 @@ public class OrTerm extends Term {
      * or arg1 is not a trial position.
      */
     private boolean useArg0Only() {
-        return arg0().isTrial() && arg0().onSuccess() != arg0().onFailure()
-            || !arg1().isTrial();
+        return arg0().isTrial() && !arg0().getAttempt().sameVerdict() || !arg1().isTrial();
     }
 
     /** 
@@ -95,8 +69,7 @@ public class OrTerm extends Term {
      * and arg1 is a trial position with distinct verdicts.
      */
     private boolean useArg1Only() {
-        return !arg0().isTrial() || arg0().onSuccess() == arg0().onFailure()
-            && arg1().isTrial() && arg1().onSuccess() != arg1().onFailure();
+        return !arg0().isTrial() || !useArg0Only() && !arg1().getAttempt().sameVerdict();
     }
 
     @Override

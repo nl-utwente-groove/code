@@ -20,11 +20,15 @@ package groove.control;
  * Attempt to invoke one or more callable units, with for every
  * unit a successor position.
  * The attempt can succeed or fail; what happens then is 
- * reflected by the {@link Position#onSuccess()} and 
- * {@link Position#onFailure()} results.
+ * reflected by the {@link #onSuccess()} and 
+ * {@link #onFailure()} results.
  * @author Arend Rensink
  * @version $Revision $
  */
 public interface Attempt<P extends Position<P>> {
-    // empty
+    /** Next alternative position in case this attempt succeeds. */
+    public P onSuccess();
+
+    /** Next alternative position in case this attempt fails. */
+    public P onFailure();
 }

@@ -16,7 +16,6 @@
  */
 package groove.control.term;
 
-
 /**
  * Term with increased transient depth.
  * @author Arend Rensink
@@ -35,27 +34,12 @@ public class TransitTerm extends Term {
         DerivationList result = null;
         if (isTrial()) {
             result = createAttempt();
-            for (Derivation edge : arg0().getAttempt()) {
-                result.add(edge.newAttempt(edge.target().transit()));
+            DerivationList ders = arg0().getAttempt();
+            for (Derivation deriv : ders) {
+                result.add(deriv.newAttempt(deriv.onFinish().transit()));
             }
-        }
-        return result;
-    }
-
-    @Override
-    protected Term computeSuccess() {
-        Term result = null;
-        if (arg0().isTrial()) {
-            result = arg0().onSuccess().transit();
-        }
-        return result;
-    }
-
-    @Override
-    protected Term computeFailure() {
-        Term result = null;
-        if (arg0().isTrial()) {
-            result = arg0().onFailure().transit();
+            result.setSuccess(ders.onSuccess().transit());
+            result.setFailure(ders.onFailure().transit());
         }
         return result;
     }

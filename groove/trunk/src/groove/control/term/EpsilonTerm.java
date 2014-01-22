@@ -16,7 +16,6 @@
  */
 package groove.control.term;
 
-
 /**
  * Successful termination.
  * @author Arend Rensink
@@ -32,16 +31,6 @@ public class EpsilonTerm extends Term {
 
     @Override
     protected DerivationList computeAttempt() {
-        return createAttempt();
-    }
-
-    @Override
-    protected Term computeSuccess() {
-        return null;
-    }
-
-    @Override
-    protected Term computeFailure() {
         return null;
     }
 

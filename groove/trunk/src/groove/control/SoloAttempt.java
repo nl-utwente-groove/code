@@ -23,10 +23,10 @@ package groove.control;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface SingleAttempt<P extends Position<P>> extends Attempt<P> {
+public interface SoloAttempt<P extends Position<P>> extends Attempt<P> {
     /** Returns the call that is attempted. */
     public Call getCall();
 
-    /** Returns the target position after the call. */
-    public P target();
+    /** Returns the position after the call has completed. */
+    public P onFinish();
 }

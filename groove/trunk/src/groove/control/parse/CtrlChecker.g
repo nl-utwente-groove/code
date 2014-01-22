@@ -125,12 +125,11 @@ stat
        { helper.endBranch(); }
      )
   | ^( IF 
-       stat 
        { helper.startBranch(); }
        stat 
-       ( { helper.nextBranch(); }
-         stat
-       )?
+       stat
+       { helper.nextBranch(); }
+       stat?
        { helper.endBranch(); }
      )
   | ^( CHOICE
@@ -139,8 +138,8 @@ stat
        ( { helper.nextBranch(); }
          stat
        )*
-       )
        { helper.endBranch(); }
+     )
   | ^( STAR
        { helper.startBranch(); }
        stat

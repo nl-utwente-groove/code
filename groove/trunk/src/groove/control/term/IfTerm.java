@@ -16,7 +16,6 @@
  */
 package groove.control.term;
 
-
 /**
  * If-else term.
  * @author Arend Rensink
@@ -44,53 +43,18 @@ public class IfTerm extends Term {
         switch (arg0().getType()) {
         case TRIAL:
             result = createAttempt();
-            for (Derivation attempt : arg0().getAttempt()) {
-                result.add(attempt.newAttempt(attempt.target().seq(arg1())));
+            DerivationList ders0 = arg0().getAttempt();
+            for (Derivation deriv : ders0) {
+                result.add(deriv.newAttempt(deriv.onFinish().seq(arg1())));
             }
+            result.setSuccess(ders0.onSuccess().seq(arg1()).or(arg2()));
+            result.setFailure(ders0.onFailure().ifAlsoElse(arg1(), arg2(), arg3()));
             break;
         case FINAL:
             result = arg1OrArg2().getAttempt();
             break;
         case DEAD:
             result = arg3().getAttempt();
-            break;
-        default:
-            assert false;
-        }
-        return result;
-    }
-
-    @Override
-    protected Term computeSuccess() {
-        Term result = null;
-        switch (arg0().getType()) {
-        case TRIAL:
-            result = arg0().onSuccess().seq(arg1()).or(arg2());
-            break;
-        case FINAL:
-            result = arg1OrArg2().onSuccess();
-            break;
-        case DEAD:
-            result = arg3().onSuccess();
-            break;
-        default:
-            assert false;
-        }
-        return result;
-    }
-
-    @Override
-    protected Term computeFailure() {
-        Term result = null;
-        switch (arg0().getType()) {
-        case TRIAL:
-            result = arg0().onFailure().ifAlsoElse(arg1(), arg2(), arg3());
-            break;
-        case FINAL:
-            result = arg1OrArg2().onFailure();
-            break;
-        case DEAD:
-            result = arg3().onFailure();
             break;
         default:
             assert false;

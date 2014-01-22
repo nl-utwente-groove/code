@@ -127,8 +127,11 @@ public class CtrlHelper {
      */
     void endBranch() {
         Set<String>[] topInitVarScope = this.initVarScopes.pop();
-        this.initVars = topInitVarScope[0];
-        if (topInitVarScope[1] != null) {
+        if (topInitVarScope[1] == null) {
+            // this was the only branch
+        } else {
+            // at least one branch was ended before; take the intersection
+            // with the current (final) branch
             this.initVars.retainAll(topInitVarScope[1]);
         }
     }

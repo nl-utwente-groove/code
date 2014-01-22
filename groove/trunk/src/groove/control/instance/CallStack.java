@@ -14,41 +14,29 @@
  *
  * $Id$
  */
-package groove.control.template;
+package groove.control.instance;
 
-import groove.control.Call;
-import groove.control.SingleAttempt;
-import groove.util.Pair;
+import groove.control.template.Switch;
+
+import java.util.LinkedList;
 
 /**
- * Switch to a location index.
+ * Stack of switches, corresponding to nested procedure calls.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class StageSwitch extends Pair<Switch,Stage> implements
-        SingleAttempt<Stage> {
+public class CallStack extends LinkedList<Switch> {
     /**
-     * Constructs a switch index.
+     * Constructs an empty stack.
      */
-    public StageSwitch(Switch edge, Stage target) {
-        super(edge, target);
+    public CallStack() {
+        // empty
     }
 
-    /** Returns the underlying switch. */
-    public Switch getSwitch() {
-        return one();
-    }
-
-    /** Returns the template of which the stage switch is part. */
-    public Template getTemplate() {
-        return getSwitch().source().getTemplate();
-    }
-
-    public Call getCall() {
-        return getSwitch().getCall();
-    }
-
-    public Stage target() {
-        return two();
+    /**
+     * Constructs a copy of a given stack.
+     */
+    public CallStack(CallStack stack) {
+        super(stack);
     }
 }

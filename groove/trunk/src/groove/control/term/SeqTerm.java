@@ -16,7 +16,6 @@
  */
 package groove.control.term;
 
-
 /**
  * Sequential composition.
  * @author Arend Rensink
@@ -37,40 +36,15 @@ public class SeqTerm extends Term {
         switch (arg0().getType()) {
         case TRIAL:
             result = createAttempt();
-            for (Derivation attempt : arg0().getAttempt()) {
-                result.add(attempt.newAttempt(attempt.target().seq(arg1())));
+            DerivationList ders0 = arg0().getAttempt();
+            for (Derivation deriv : ders0) {
+                result.add(deriv.newAttempt(deriv.onFinish().seq(arg1())));
             }
+            result.setSuccess(ders0.onSuccess().seq(arg1()));
+            result.setFailure(ders0.onFailure().seq(arg1()));
             break;
         case FINAL:
             result = arg1().isTrial() ? arg1().getAttempt() : null;
-            break;
-        }
-        return result;
-    }
-
-    @Override
-    protected Term computeSuccess() {
-        Term result = null;
-        switch (arg0().getType()) {
-        case TRIAL:
-            result = arg0().onSuccess().seq(arg1());
-            break;
-        case FINAL:
-            result = arg1().isTrial() ? arg1().onSuccess() : null;
-            break;
-        }
-        return result;
-    }
-
-    @Override
-    protected Term computeFailure() {
-        Term result = null;
-        switch (arg0().getType()) {
-        case TRIAL:
-            result = arg0().onFailure().seq(arg1());
-            break;
-        case FINAL:
-            result = arg1().isTrial() ? arg1().onFailure() : null;
             break;
         }
         return result;
