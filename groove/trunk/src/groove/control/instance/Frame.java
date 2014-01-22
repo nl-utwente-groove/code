@@ -137,6 +137,7 @@ public class Frame extends ANode implements Position<Frame> {
         return getStage().getAttempt();
     }
 
+    @Override
     public Type getType() {
         // we want this to work also for non-normal frames
         if (getNext() == null) {
@@ -170,18 +171,22 @@ public class Frame extends ANode implements Position<Frame> {
         }
     }
 
+    @Override
     public boolean isDead() {
         return getType() == Type.DEAD;
     }
 
+    @Override
     public boolean isFinal() {
         return getType() == Type.FINAL;
     }
 
+    @Override
     public boolean isTrial() {
         return getType() == Type.TRIAL;
     }
 
+    @Override
     public Step getAttempt() {
         if (this.attempt == null) {
             this.attempt = computeAttempt();
@@ -223,6 +228,7 @@ public class Frame extends ANode implements Position<Frame> {
         return new Step(this, swit, stack, onFinish, onSuccess, onFailure);
     }
 
+    @Override
     public int getDepth() {
         return this.depth;
     }

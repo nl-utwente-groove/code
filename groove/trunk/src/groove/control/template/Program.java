@@ -551,10 +551,12 @@ public class Program implements Fixable {
         return result;
     }
 
+    @Override
     public boolean isFixed() {
         return this.fixed;
     }
 
+    @Override
     public void testFixed(boolean fixed) {
         if (fixed != this.fixed) {
             throw new IllegalStateException(String.format("Expected fixed = %b", fixed));

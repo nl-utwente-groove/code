@@ -42,22 +42,19 @@ public class MultiSwitch extends MultiAttempt<Location,Switch> {
 
     private final Location source;
 
+    @Override
     public Location onFailure() {
         return this.onFailure;
     }
 
     private final Location onFailure;
 
+    @Override
     public Location onSuccess() {
         return this.onSuccess;
     }
 
     private final Location onSuccess;
-
-    /** Indicates that the success and failure alternates are the same. */
-    public boolean sameVerdict() {
-        return onFailure() == onSuccess();
-    }
 
     /**
      * Returns a single stage of this multiswitch, with target set

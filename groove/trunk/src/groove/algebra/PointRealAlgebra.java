@@ -26,8 +26,8 @@ import java.math.BigDecimal;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PointRealAlgebra extends RealAlgebra<Double,Boolean,String>
-        implements PointAlgebra<Double> {
+public class PointRealAlgebra extends RealAlgebra<Double,Boolean,String> implements
+        PointAlgebra<Double> {
     /** Private constructor for the singleton instance. */
     private PointRealAlgebra() {
         // empty
@@ -43,6 +43,7 @@ public class PointRealAlgebra extends RealAlgebra<Double,Boolean,String>
         return AlgebraFamily.POINT;
     }
 
+    @Override
     public boolean isValue(Object value) {
         return value == singleReal;
     }
@@ -57,6 +58,7 @@ public class PointRealAlgebra extends RealAlgebra<Double,Boolean,String>
         return singleReal;
     }
 
+    @Override
     public Expression toTerm(Object value) {
         return singlRealConstant;
     }
@@ -168,8 +170,7 @@ public class PointRealAlgebra extends RealAlgebra<Double,Boolean,String>
     /** Point value of the real algebra. */
     public static final Double singleReal = 0.0;
     /** Point value of the real algebra, represented as a {@link BigDecimal}. */
-    public static final Constant singlRealConstant =
-        Constant.instance(singleReal);
+    public static final Constant singlRealConstant = Constant.instance(singleReal);
     /** Singleton instance of this algebra. */
     public static final PointRealAlgebra instance = new PointRealAlgebra();
 }

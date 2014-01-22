@@ -21,8 +21,8 @@ import groove.algebra.syntax.Expression;
 /** Abstract superclass of all boolean algebras.
  * <Bool> Representation type for boolean values
  */
-abstract public class BoolAlgebra<Bool> extends BoolSignature<Bool> implements
-        Algebra<Bool> {
+abstract public class BoolAlgebra<Bool> extends BoolSignature<Bool> implements Algebra<Bool> {
+    @Override
     @SuppressWarnings("unchecked")
     public Bool toValue(Expression term) {
         return (Bool) getFamily().toValue(term);
@@ -35,10 +35,9 @@ abstract public class BoolAlgebra<Bool> extends BoolSignature<Bool> implements
     @Override
     final public Bool toValueFromJava(Object value) {
         if (!(value instanceof Boolean)) {
-            throw new IllegalArgumentException(
-                java.lang.String.format("Native boolean type is %s, not %s",
-                    Boolean.class.getSimpleName(),
-                    value.getClass().getSimpleName()));
+            throw new IllegalArgumentException(java.lang.String.format(
+                "Native boolean type is %s, not %s", Boolean.class.getSimpleName(),
+                value.getClass().getSimpleName()));
         }
         return toValueFromJavaBoolean((Boolean) value);
     }
@@ -50,5 +49,6 @@ abstract public class BoolAlgebra<Bool> extends BoolSignature<Bool> implements
     protected abstract Bool toValueFromJavaBoolean(Boolean value);
 
     /* Specialises the return type. */
+    @Override
     public abstract Boolean toJavaValue(Object value);
 }

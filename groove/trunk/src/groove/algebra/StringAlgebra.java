@@ -24,8 +24,9 @@ import groove.algebra.syntax.Expression;
  * @param <Int> The representation type of the integer algebra  
  */
 @SuppressWarnings("hiding")
-public abstract class StringAlgebra<String,Bool,Int> extends
-        StringSignature<String,Bool,Int> implements Algebra<String> {
+public abstract class StringAlgebra<String,Bool,Int> extends StringSignature<String,Bool,Int>
+        implements Algebra<String> {
+    @Override
     @SuppressWarnings("unchecked")
     public String toValue(Expression term) {
         return (String) getFamily().toValue(term);
@@ -39,8 +40,7 @@ public abstract class StringAlgebra<String,Bool,Int> extends
     final public String toValueFromJava(Object value) {
         if (!(value instanceof java.lang.String)) {
             throw new IllegalArgumentException(java.lang.String.format(
-                "Native int type is %s, not %s",
-                java.lang.String.class.getSimpleName(),
+                "Native int type is %s, not %s", java.lang.String.class.getSimpleName(),
                 value.getClass().getSimpleName()));
         }
         return toValueFromJavaString((java.lang.String) value);

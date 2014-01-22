@@ -88,23 +88,31 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage> {
         this.success = false;
     }
 
+    @Override
     public Stage onFinish() {
         return this.onFinish;
     }
 
     private final Stage onFinish;
 
+    @Override
     public Stage onSuccess() {
         return this.onSuccess;
     }
 
     private final Stage onSuccess;
 
+    @Override
     public Stage onFailure() {
         return this.onFailure;
     }
 
     private final Stage onFailure;
+
+    @Override
+    public boolean sameVerdict() {
+        return onFailure() == onSuccess();
+    }
 
     /** Indicates that this is a derived switch, used as a {@link SoloAttempt}. */
     public boolean hasBase() {
@@ -170,6 +178,7 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage> {
      * Should only be invoked if this is a call switch.
      * @see #getKind()
      */
+    @Override
     public final Call getCall() {
         assert getKind().isCallable();
         return this.call;
@@ -309,6 +318,7 @@ public class Switch extends ALabelEdge<Location> implements SoloAttempt<Stage> {
         return EdgeRole.BINARY;
     }
 
+    @Override
     public String text() {
         String result;
         if (getKind() == Kind.VERDICT) {

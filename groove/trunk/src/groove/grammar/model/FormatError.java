@@ -35,8 +35,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class FormatError implements Comparable<FormatError>,
-        SelectableListEntry {
+public class FormatError implements Comparable<FormatError>, SelectableListEntry {
     /** Constructs an error consisting of a string message. */
     public FormatError(String message) {
         this.message = message;
@@ -168,6 +167,7 @@ public class FormatError implements Comparable<FormatError>,
     }
 
     /** Returns the list of elements in which the error occurs. May be empty. */
+    @Override
     public final List<Element> getElements() {
         return this.elements;
     }
@@ -179,11 +179,13 @@ public class FormatError implements Comparable<FormatError>,
     }
 
     /** Returns the resource kind for which this error occurs. */
+    @Override
     public final ResourceKind getResourceKind() {
         return this.resourceKind;
     }
 
     /** Returns the resource kind for which this error occurs. */
+    @Override
     public final String getResourceName() {
         return this.resourceName;
     }
@@ -265,8 +267,6 @@ public class FormatError implements Comparable<FormatError>,
         return result;
     }
 
-    private static final NodeComparator nodeComparator =
-        NodeComparator.instance();
-    private static final EdgeComparator edgeComparator =
-        EdgeComparator.instance();
+    private static final NodeComparator nodeComparator = NodeComparator.instance();
+    private static final EdgeComparator edgeComparator = EdgeComparator.instance();
 }

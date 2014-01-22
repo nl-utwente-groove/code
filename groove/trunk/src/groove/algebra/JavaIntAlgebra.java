@@ -114,6 +114,7 @@ public class JavaIntAlgebra extends IntAlgebra<Integer,Boolean,String> {
         return value instanceof Integer;
     }
 
+    @Override
     public Expression toTerm(Object value) {
         return Constant.instance((Integer) value);
     }
@@ -137,11 +138,13 @@ public class JavaIntAlgebra extends IntAlgebra<Integer,Boolean,String> {
     /**
      * Delegates to {@link Integer#toString()}.
      */
+    @Override
     public String getSymbol(Object value) {
         return value.toString();
     }
 
     /** Returns {@link #NAME}. */
+    @Override
     public String getName() {
         return NAME;
     }

@@ -23,8 +23,7 @@ import groove.algebra.syntax.Expression;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class TermStringAlgebra extends
-        StringAlgebra<Expression,Expression,Expression> {
+public class TermStringAlgebra extends StringAlgebra<Expression,Expression,Expression> {
     /** Private constructor for the singleton instance. */
     private TermStringAlgebra() {
         // empty
@@ -70,6 +69,7 @@ public class TermStringAlgebra extends
         return Op.NEQ.getOperator().newTerm(arg0, arg1);
     }
 
+    @Override
     public String getName() {
         return NAME;
     }
@@ -81,10 +81,10 @@ public class TermStringAlgebra extends
 
     @Override
     public boolean isValue(Object value) {
-        return value instanceof Expression
-            && ((Expression) value).getSignature() == getSignature();
+        return value instanceof Expression && ((Expression) value).getSignature() == getSignature();
     }
 
+    @Override
     public String getSymbol(Object value) {
         return ((Expression) value).toDisplayString();
     }
@@ -94,6 +94,7 @@ public class TermStringAlgebra extends
         return (Expression) value;
     }
 
+    @Override
     public Expression toValueFromConstant(Constant constant) {
         return constant;
     }

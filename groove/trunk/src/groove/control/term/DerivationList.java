@@ -24,6 +24,7 @@ import groove.control.MultiAttempt;
  * @version $Revision $
  */
 public class DerivationList extends MultiAttempt<Term,Derivation> {
+    @Override
     public Term onSuccess() {
         assert this.onSuccess != null;
         return this.onSuccess;
@@ -38,6 +39,7 @@ public class DerivationList extends MultiAttempt<Term,Derivation> {
 
     private Term onSuccess;
 
+    @Override
     public Term onFailure() {
         assert this.onFailure != null;
         return this.onFailure;
@@ -51,9 +53,4 @@ public class DerivationList extends MultiAttempt<Term,Derivation> {
     }
 
     private Term onFailure;
-
-    /** Indicates that the success and failure alternates are the same. */
-    public boolean sameVerdict() {
-        return onFailure() == onSuccess();
-    }
 }

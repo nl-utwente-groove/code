@@ -32,26 +32,32 @@ public class Stage implements Position<Stage> {
         this.success = success;
     }
 
+    @Override
     public Type getType() {
         return this.loc.getType();
     }
 
+    @Override
     public boolean isDead() {
         return this.loc.isDead();
     }
 
+    @Override
     public boolean isFinal() {
         return this.loc.isFinal();
     }
 
+    @Override
     public boolean isTrial() {
         return this.loc.isTrial();
     }
 
+    @Override
     public int getDepth() {
         return this.loc.getDepth();
     }
 
+    @Override
     public Switch getAttempt() {
         return this.loc.getAttempt().getStage(this.nr, this.success);
     }

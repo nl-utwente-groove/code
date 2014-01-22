@@ -110,8 +110,8 @@ public class Condition implements Fixable {
      *        ground
      * @param properties properties for matching the condition
      */
-    public Condition(String name, Op operator, RuleGraph pattern,
-            RuleGraph root, GrammarProperties properties) {
+    public Condition(String name, Op operator, RuleGraph pattern, RuleGraph root,
+            GrammarProperties properties) {
         assert name != null;
         assert operator.hasPattern();
         this.op = operator;
@@ -292,6 +292,7 @@ public class Condition implements Fixable {
     }
 
     /** Fixes this condition and all its subconditions. */
+    @Override
     public boolean setFixed() throws FormatException {
         boolean result = !isFixed();
         if (result && !this.fixing) {
@@ -350,8 +351,7 @@ public class Condition implements Fixable {
      */
     void testGround() throws IllegalStateException {
         if (!isGround()) {
-            throw new IllegalStateException(
-                "Method only allowed on ground condition");
+            throw new IllegalStateException("Method only allowed on ground condition");
         }
     }
 
@@ -364,8 +364,7 @@ public class Condition implements Fixable {
      */
     public void checkResolution() throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
-        Map<VariableNode,List<Set<VariableNode>>> resolverMap =
-            createResolvers();
+        Map<VariableNode,List<Set<VariableNode>>> resolverMap = createResolvers();
         stabilise(resolverMap);
         for (RuleNode node : resolverMap.keySet()) {
             errors.add(
@@ -392,8 +391,7 @@ public class Condition implements Fixable {
         }
         // Set of variable nodes needing resolution
         for (RuleNode node : getPattern().nodeSet()) {
-            if (node instanceof VariableNode
-                && ((VariableNode) node).getConstant() == null
+            if (node instanceof VariableNode && ((VariableNode) node).getConstant() == null
                 && !resolved.contains(node)) {
                 VariableNode varNode = (VariableNode) node;
                 boolean isResolved = false;
@@ -480,8 +478,7 @@ public class Condition implements Fixable {
         while (!stable) {
             stable = true;
             // iterate over all resolver lists
-            Iterator<List<Set<VariableNode>>> iter =
-                resolverMap.values().iterator();
+            Iterator<List<Set<VariableNode>>> iter = resolverMap.values().iterator();
             while (iter.hasNext()) {
                 // try each resolver in turn
                 for (Set<VariableNode> resolver : iter.next()) {
@@ -507,8 +504,7 @@ public class Condition implements Fixable {
     public String toString(String prefix) {
         StringBuilder result = new StringBuilder();
         result.append(prefix);
-        result.append(String.format("%s condition %s", getOp().getName(),
-            getName()));
+        result.append(String.format("%s condition %s", getOp().getName(), getName()));
         if (hasPattern()) {
             result.append('\n');
             result.append(prefix);
@@ -617,8 +613,7 @@ public class Condition implements Fixable {
 
     /** Indicates if this condition should be matched injectively. */
     public boolean isInjective() {
-        return getSystemProperties() != null
-            && getSystemProperties().isInjective();
+        return getSystemProperties() != null && getSystemProperties().isInjective();
     }
 
     /** Sets the associated rule of this condition. */
@@ -657,8 +652,8 @@ public class Condition implements Fixable {
     public Condition reverse() {
         assert getOp() == Op.NOT;
         Condition result =
-            new Condition(getName() + "-reverse", Op.FORALL, getPattern(),
-                getRoot(), getSystemProperties());
+            new Condition(getName() + "-reverse", Op.FORALL, getPattern(), getRoot(),
+                getSystemProperties());
         result.addSubCondition(True);
         if (getTypeGraph() != null) {
             result.setTypeGraph(getTypeGraph());
@@ -733,8 +728,7 @@ public class Condition implements Fixable {
     private Rule rule;
 
     /** The collection of sub-conditions of this condition. */
-    private final Collection<Condition> subConditions =
-        new ArrayList<Condition>();
+    private final Collection<Condition> subConditions = new ArrayList<Condition>();
 
     /** Number of disjunctively interpreted subconditions. */
     private int disjunctCount;
@@ -794,8 +788,7 @@ public class Condition implements Fixable {
     }
 
     /** Constructs a disjunctive condition for a non-empty list of operands. */
-    static private final Condition newCondition(Op op, String descr,
-            Condition... operands) {
+    static private final Condition newCondition(Op op, String descr, Condition... operands) {
         if (operands.length == 0) {
             throw new IllegalArgumentException(String.format(
                 "Can't build '%s' with empty operand list", descr));
@@ -818,9 +811,8 @@ public class Condition implements Fixable {
         try {
             result.setFixed();
         } catch (FormatException e) {
-            throw new IllegalArgumentException(
-                String.format("Error while fixing new condition %s: %s", name,
-                    e.getMessage()));
+            throw new IllegalArgumentException(String.format(
+                "Error while fixing new condition %s: %s", name, e.getMessage()));
         }
         return result;
     }

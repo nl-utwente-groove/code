@@ -24,8 +24,8 @@ import groove.grammar.host.HostNode;
 import groove.grammar.type.TypeElement;
 import groove.grammar.type.TypeGuard;
 import groove.grammar.type.TypeLabel;
-import groove.graph.AElementMap;
 import groove.graph.AElementBiMap;
+import groove.graph.AElementMap;
 import groove.graph.Label;
 
 import java.util.HashMap;
@@ -38,8 +38,7 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RuleToHostMap extends
-        AElementBiMap<RuleNode,RuleEdge,HostNode,HostEdge> implements
+public class RuleToHostMap extends AElementBiMap<RuleNode,RuleEdge,HostNode,HostEdge> implements
         VarMap {
     /**
      * Creates an empty map with an empty valuation.
@@ -70,8 +69,8 @@ public class RuleToHostMap extends
         if (ruleLabel.isWildcard()) {
             TypeGuard guard = ruleLabel.getWildcardGuard();
             if (!guard.isNamed()) {
-                throw new IllegalArgumentException(String.format(
-                    "Label %s cannot be mapped", ruleLabel));
+                throw new IllegalArgumentException(String.format("Label %s cannot be mapped",
+                    ruleLabel));
             } else {
                 result = getVar(guard.getVar()).label();
             }
@@ -83,18 +82,22 @@ public class RuleToHostMap extends
         return result;
     }
 
+    @Override
     public Valuation getValuation() {
         return this.valuation;
     }
 
+    @Override
     public TypeElement getVar(LabelVar var) {
         return this.valuation.get(var);
     }
 
+    @Override
     public TypeElement putVar(LabelVar var, TypeElement value) {
         return this.valuation.put(var, value);
     }
 
+    @Override
     public void putAllVar(Valuation valuation) {
         this.valuation.putAll(valuation);
     }

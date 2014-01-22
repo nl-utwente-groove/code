@@ -27,6 +27,7 @@ public class JavaBoolAlgebra extends AbstractBoolAlgebra {
         // empty
     }
 
+    @Override
     public String getName() {
         return NAME;
     }

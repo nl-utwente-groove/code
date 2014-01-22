@@ -57,8 +57,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * implicit type graph for the labels in the expression.
      */
     public RegAut compute(RegExpr expr) {
-        return compute(expr,
-            ImplicitTypeGraph.newInstance(expr.getTypeLabels()));
+        return compute(expr, ImplicitTypeGraph.newInstance(expr.getTypeLabels()));
     }
 
     /**
@@ -78,6 +77,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * alphabet.
      * @throws UnsupportedOperationException always
      */
+    @Override
     public RegAut computeNeg(Neg expr, RegAut arg) {
         throw new UnsupportedOperationException();
     }
@@ -86,6 +86,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * Identical to {@link #computePlus}, except that the empty
      * word is also always allowed.
      */
+    @Override
     public RegAut computeStar(Star expr, RegAut arg) {
         RegAut result = computePlus(null, arg);
         result.setAcceptsEmptyWord(true);
@@ -97,6 +98,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * that node for every current edge to the end node, and edges from that
      * node for every current edge from the start node.
      */
+    @Override
     public RegAut computePlus(Plus expr, RegAut result) {
         RegNode newNode = createNode();
         result.addNode(newNode);
@@ -115,6 +117,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * Reverses all the edges as well as the start and end nodes of the
      * automaton passed in as a parameter.
      */
+    @Override
     public RegAut computeInv(Inv expr, RegAut arg) {
         RegAut result = createAutomaton();
         for (RegEdge edge : arg.edgeSet()) {
@@ -137,6 +140,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * empty word. It is assumed that the nodes of the argument automata are
      * disjoint.
      */
+    @Override
     public RegAut computeSeq(Seq expr, List<RegAut> argList) {
         Iterator<RegAut> argIter = argList.iterator();
         RegAut result = argIter.next();
@@ -150,8 +154,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
                 for (RegEdge nextInitEdge : next.outEdgeSet(next.getStartNode())) {
                     RegNode target = nextInitEdge.target();
                     result.addNode(target);
-                    result.addEdge(result.getStartNode(), nextInitEdge.label(),
-                        target);
+                    result.addEdge(result.getStartNode(), nextInitEdge.label(), target);
                 }
                 result.setAcceptsEmptyWord(next.isAcceptsEmptyWord());
             }
@@ -176,6 +179,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * and merging the start and end nodes. It is assumed that the nodes of the
      * argument automata are disjoint.
      */
+    @Override
     public RegAut computeChoice(Choice expr, List<RegAut> argList) {
         Iterator<RegAut> argIter = argList.iterator();
         RegAut result = argIter.next();
@@ -197,12 +201,12 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * with the text of the atomic expression.
      * It is required that the atom's type label occurs in the label store.
      */
+    @Override
     public RegAut computeAtom(Atom expr) {
         RegAut result = createAutomaton();
         // if this is an unknown label, don't add the edge
         if (!this.typeGraph.getTypes(expr.toTypeLabel()).isEmpty()) {
-            result.addEdge(result.getStartNode(), expr.toLabel(),
-                result.getEndNode());
+            result.addEdge(result.getStartNode(), expr.toLabel(), result.getEndNode());
         }
         return result;
     }
@@ -211,10 +215,10 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * Returns an automaton with a single edge, from start to end node, labelled
      * with <code>expr</code> (as a {@link RuleLabel}).
      */
+    @Override
     public RegAut computeSharp(Sharp expr) {
         RegAut result = createAutomaton();
-        result.addEdge(result.getStartNode(), expr.toLabel(),
-            result.getEndNode());
+        result.addEdge(result.getStartNode(), expr.toLabel(), result.getEndNode());
         return result;
     }
 
@@ -222,10 +226,10 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * Returns an automaton with a single edge, from start to end node, labelled
      * with <code>expr</code> (as a {@link RuleLabel}).
      */
+    @Override
     public RegAut computeWildcard(Wildcard expr) {
         RegAut result = createAutomaton();
-        result.addEdge(result.getStartNode(), expr.toLabel(),
-            result.getEndNode());
+        result.addEdge(result.getStartNode(), expr.toLabel(), result.getEndNode());
         return result;
     }
 
@@ -233,6 +237,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * Returns an automaton with end state equal to start state, and no
      * transitions.
      */
+    @Override
     public RegAut computeEmpty(Empty expr) {
         RegAut result = createAutomaton();
         result.setAcceptsEmptyWord(true);
@@ -244,8 +249,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      * identities (in the context of this calculator).
      */
     protected RegAut createAutomaton() {
-        return this.prototype.newAutomaton(createNode(), createNode(),
-            this.typeGraph);
+        return this.prototype.newAutomaton(createNode(), createNode(), this.typeGraph);
     }
 
     /**

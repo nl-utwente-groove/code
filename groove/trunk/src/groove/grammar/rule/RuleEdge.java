@@ -28,14 +28,11 @@ import java.util.List;
 import java.util.Set;
 
 /** Rule edge that is not attribute-related. */
-public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements
-        RuleElement {
+public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements RuleElement {
     /** Constructs a rule edge from a given rule label and/or type edge. */
-    public RuleEdge(RuleNode source, RuleLabel label, TypeEdge type,
-            RuleNode target) {
+    public RuleEdge(RuleNode source, RuleLabel label, TypeEdge type, RuleNode target) {
         super(source, label, target);
-        assert label.getTypeLabel() == null
-            || label.getTypeLabel().equals(type.label());
+        assert label.getTypeLabel() == null || label.getTypeLabel().equals(type.label());
         this.type = type;
         TypeGuard guard = label.getWildcardGuard();
         if (guard != null) {
@@ -48,10 +45,9 @@ public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements
             } else {
                 this.matchingTypes = new HashSet<TypeEdge>();
                 for (TypeEdge typeEdge : typeGraph.edgeSet()) {
-                    if (typeEdge.source().getSubtypes().contains(
-                        source.getType())
-                        && typeEdge.target().getSubtypes().contains(
-                            target.getType()) && guard.isSatisfied(typeEdge)) {
+                    if (typeEdge.source().getSubtypes().contains(source.getType())
+                        && typeEdge.target().getSubtypes().contains(target.getType())
+                        && guard.isSatisfied(typeEdge)) {
                         this.matchingTypes.add(typeEdge);
                     }
                 }
@@ -68,6 +64,7 @@ public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements
     /** 
      * Returns the (possibly {@code null}) edge type of this edge.
      */
+    @Override
     public TypeEdge getType() {
         return this.type;
     }

@@ -179,6 +179,7 @@ public abstract class RealSignature<Real,Bool,String> implements Signature {
         /** Value for {@link #toString(Object)}. */
         TO_STRING, ;
 
+        @Override
         public Operator getOperator() {
             if (this.operator == null) {
                 this.operator = Operator.newInstance(SignatureKind.REAL, this);

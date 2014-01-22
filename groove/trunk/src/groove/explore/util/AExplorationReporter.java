@@ -27,17 +27,20 @@ import java.io.IOException;
  * @version $Revision $
  */
 public abstract class AExplorationReporter implements ExplorationReporter {
+    @Override
     public void start(Exploration exploration, GTS gts) {
         this.exploration = exploration;
         this.gts = gts;
     }
 
     /** This implementation delegates to {@link #stop(GTS)}. */
+    @Override
     public void abort(GTS gts) {
         stop(gts);
     }
 
     /** This implementation does nothing. */
+    @Override
     public void stop(GTS gts) {
         // empty
     }

@@ -33,8 +33,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision: 2971 $
  */
-public class DefaultRuleNode extends ANode implements RuleNode,
-        AnchorKey {
+public class DefaultRuleNode extends ANode implements RuleNode, AnchorKey {
     /**
      * Constructs a fresh node, with an explicitly given number and node type.
      * @param nr the number for this node
@@ -42,8 +41,7 @@ public class DefaultRuleNode extends ANode implements RuleNode,
      * @param sharp if {@code true}, the node is sharply typed
      * @param typeGuards collection of named and unnamed type guards for this node
      */
-    protected DefaultRuleNode(int nr, TypeNode type, boolean sharp,
-            List<TypeGuard> typeGuards) {
+    protected DefaultRuleNode(int nr, TypeNode type, boolean sharp, List<TypeGuard> typeGuards) {
         super(nr);
         assert type != null : "Can't instantiate untyped rule node";
         this.type = type;
@@ -100,10 +98,12 @@ public class DefaultRuleNode extends ANode implements RuleNode,
         return "n";
     }
 
+    @Override
     public TypeNode getType() {
         return this.type;
     }
 
+    @Override
     public List<TypeGuard> getTypeGuards() {
         return this.typeGuards;
     }
@@ -121,10 +121,12 @@ public class DefaultRuleNode extends ANode implements RuleNode,
         return result;
     }
 
+    @Override
     public Set<TypeNode> getMatchingTypes() {
         return this.matchingTypes;
     }
 
+    @Override
     public boolean isSharp() {
         return this.sharp;
     }

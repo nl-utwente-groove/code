@@ -118,10 +118,10 @@ public abstract class StringSignature<String,Bool,Int> implements Signature {
         /** Value for {@link #lt(Object, Object)}. */
         NEQ, ;
 
+        @Override
         public Operator getOperator() {
             if (this.operator == null) {
-                this.operator =
-                    Operator.newInstance(SignatureKind.STRING, this);
+                this.operator = Operator.newInstance(SignatureKind.STRING, this);
             }
             return this.operator;
         }

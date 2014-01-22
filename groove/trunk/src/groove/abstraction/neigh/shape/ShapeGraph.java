@@ -60,6 +60,7 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
         this.factory = factory;
     }
 
+    @Override
     public boolean addNode(HostNode node) {
         boolean result;
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
@@ -67,14 +68,15 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
         return result;
     }
 
+    @Override
     public boolean removeEdge(HostEdge edge) {
-        assert !isFixed() : "Trying to remove " + edge
-            + " from unmodifiable graph";
+        assert !isFixed() : "Trying to remove " + edge + " from unmodifiable graph";
         return edgeSet().remove(edge);
     }
 
     // -------------------- PackageGraph methods ---------------------
 
+    @Override
     public boolean addEdge(HostEdge edge) {
         assert !isFixed();
         assert isTypeCorrect(edge);
@@ -83,6 +85,7 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
         return result;
     }
 
+    @Override
     public boolean removeNode(HostNode node) {
         assert !isFixed();
         assert isTypeCorrect(node);
@@ -98,10 +101,12 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
 
     // ------------- general methods (see AbstractGraph) ----------
 
+    @Override
     public Set<ShapeEdge> edgeSet() {
         return getCache().getEdgeSet();
     }
 
+    @Override
     public Set<ShapeNode> nodeSet() {
         return getCache().getNodeSet();
     }
@@ -228,8 +233,7 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
      * Fails in an assertion if the given node is in the shape. 
      */
     public EquivClass<ShapeNode> getEquivClassOf(ShapeNode node) {
-        assert this.nodeSet().contains(node) : "Node " + node
-            + " is not in the shape!";
+        assert this.nodeSet().contains(node) : "Node " + node + " is not in the shape!";
         return getEquivRelation().getEquivClassOf(node);
     }
 
@@ -244,8 +248,8 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
     }
 
     /** Factory method for edge signatures based on this shape. */
-    EdgeSignature createEdgeSignature(EdgeMultDir direction, ShapeNode node,
-            TypeLabel label, EquivClass<ShapeNode> ec) {
+    EdgeSignature createEdgeSignature(EdgeMultDir direction, ShapeNode node, TypeLabel label,
+            EquivClass<ShapeNode> ec) {
         return new EdgeSignature(direction, node, label, ec);
     }
 
@@ -253,8 +257,7 @@ public class ShapeGraph extends AGraph<HostNode,HostEdge> implements HostGraph {
     EdgeSignature createEdgeSignature(EdgeMultDir direction, ShapeEdge edge) {
         ShapeNode node = direction.incident(edge);
         TypeLabel label = edge.label();
-        EquivClass<ShapeNode> ec =
-            this.getEquivClassOf(direction.opposite(edge));
+        EquivClass<ShapeNode> ec = this.getEquivClassOf(direction.opposite(edge));
         return createEdgeSignature(direction, node, label, ec);
     }
 

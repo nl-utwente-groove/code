@@ -29,10 +29,10 @@ import java.util.Set;
  * 
  * @author Eduardo Zambon
  */
-public interface EquivClass<T extends HostElement> extends Fixable,
-        Iterable<T>, Set<T> {
+public interface EquivClass<T extends HostElement> extends Fixable, Iterable<T>, Set<T> {
 
     /** Fixes the equivalence class to avoid modifications. */
+    @Override
     public boolean setFixed();
 
     /** Returns true if this equivalence class has just one element. */
